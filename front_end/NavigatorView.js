@@ -496,6 +496,21 @@ WebInspector.NavigatorFolderTreeElement.prototype = {
         this.collapse();
     },
 
+    /**
+     * @param {WebInspector.NavigatorFolderTreeNode} node
+     */
+    setNode: function(node)
+    {
+        this._node = node;
+        var paths = [];
+        while (node && !node.isRoot()) {
+            paths.push(node._title);
+            node = node.parent;
+        }
+        paths.reverse();
+        this.tooltip = paths.join("/");
+    },
+
     __proto__: WebInspector.BaseNavigatorTreeElement.prototype
 }
 
@@ -932,7 +947,7 @@ WebInspector.NavigatorFolderTreeNode.prototype = {
     _createTreeElement: function(title, node)
     {
         var treeElement = new WebInspector.NavigatorFolderTreeElement(this._type, title);
-        treeElement._node = node;
+        treeElement.setNode(node);
         return treeElement;
     },
 
@@ -974,7 +989,7 @@ WebInspector.NavigatorFolderTreeNode.prototype = {
             node._isMerged = true;
             this._treeElement.titleText = this._treeElement.titleText + "/" + node._title;
             node._treeElement = this._treeElement;
-            this._treeElement._node = node;
+            this._treeElement.setNode(node);
             return;
         }
 
@@ -1003,7 +1018,7 @@ WebInspector.NavigatorFolderTreeNode.prototype = {
 
             if (!this.isPopulated()) {
                 this._treeElement.titleText = titleText;
-                this._treeElement._node = this;
+                this._treeElement.setNode(this);
                 for (var i = 0; i < nodes.length; ++i) {
                     delete nodes[i]._treeElement;
                     delete nodes[i]._isMerged;
@@ -1016,7 +1031,7 @@ WebInspector.NavigatorFolderTreeNode.prototype = {
                 mergedToNodes[i]._treeElement = treeElement;
             oldTreeElement.parent.appendChild(treeElement);
 
-            oldTreeElement._node = nodes[nodes.length - 1];
+            oldTreeElement.setNode(nodes[nodes.length - 1]);
             oldTreeElement.titleText = nodes.map(titleForNode).join("/");
             oldTreeElement.parent.removeChild(oldTreeElement);
             this._treeElement.appendChild(oldTreeElement);
