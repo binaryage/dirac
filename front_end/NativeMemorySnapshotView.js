@@ -577,7 +577,7 @@ WebInspector.NativeMemoryProfileType.prototype = {
 
     get description()
     {
-        return WebInspector.UIString("Native memory snapshot profiles show memory distribution among browser subsystems");
+        return WebInspector.UIString("Native memory snapshot profiles show memory distribution among browser subsystems.");
     },
 
     __proto__: WebInspector.NativeProfileTypeBase.prototype

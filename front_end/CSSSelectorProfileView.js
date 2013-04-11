@@ -308,7 +308,7 @@ WebInspector.CSSSelectorProfileType.prototype = {
 
     get description()
     {
-        return WebInspector.UIString("CSS selector profiles show how long the selector matching has taken in total and how many times a certain selector has matched DOM elements (the results are approximate due to matching algorithm optimizations.)");
+        return WebInspector.UIString("CSS selector profiles show how long the selector matching has taken in total and how many times a certain selector has matched DOM elements. The results are approximate due to matching algorithm optimizations.");
     },
 
     reset: function()

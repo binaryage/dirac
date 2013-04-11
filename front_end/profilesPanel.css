@@ -147,15 +147,8 @@
 }
 
 .profile-launcher-view-content {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    padding: 0 0 0 16px;
-    display: -webkit-flex;
+    padding: 0 16px;
     text-align: left;
-    -webkit-flex-direction: column;
 }
 
 .control-profiling {
