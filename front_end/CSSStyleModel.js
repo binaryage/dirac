@@ -793,9 +793,8 @@ WebInspector.CSSStyleDeclaration.prototype = {
             if (error) {
                 console.error(error);
                 userCallback(null);
-            } else {
+            } else
                 userCallback(WebInspector.CSSStyleDeclaration.parsePayload(payload));
-            }
         }
 
         if (!this.id)
@@ -813,6 +812,41 @@ WebInspector.CSSStyleDeclaration.prototype = {
     appendProperty: function(name, value, userCallback)
     {
         this.insertPropertyAt(this.allProperties.length, name, value, userCallback);
+    },
+
+    /**
+     * @param {string} text
+     * @param {function(?WebInspector.CSSStyleDeclaration)=} userCallback
+     */
+    setText: function(text, userCallback)
+    {
+        /**
+         * @param {?string} error
+         * @param {CSSAgent.CSSStyle} payload
+         */
+        function callback(error, payload)
+        {
+            WebInspector.cssModel._pendingCommandsMajorState.pop();
+            if (!userCallback)
+                return;
+
+            if (error) {
+                console.error(error);
+                userCallback(null);
+            } else
+                userCallback(WebInspector.CSSStyleDeclaration.parsePayload(payload));
+        }
+
+        if (!this.id)
+            throw "No style id";
+
+        if (typeof this.cssText === "undefined") {
+            userCallback(null);
+            return;
+        }
+
+        WebInspector.cssModel._pendingCommandsMajorState.push(true);
+        CSSAgent.setStyleText(this.id, text, callback);
     }
 }
 

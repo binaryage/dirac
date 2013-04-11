@@ -2351,7 +2351,7 @@
                     { "name": "status", "type": "string", "enum": ["active", "inactive", "disabled", "style"], "optional": true, "description": "The property status: \"active\" if the property is effective in the style, \"inactive\" if the property is overridden by a same-named property in this style later on, \"disabled\" if the property is disabled by the user, \"style\" (implied if absent) if the property is reported by the browser rather than by the CSS source parser." },
                     { "name": "range", "$ref": "SourceRange", "optional": true, "description": "The entire property range in the enclosing style declaration (if available)." }
                 ],
-                "description": "CSS style effective visual dimensions and source offsets."
+                "description": "CSS property declaration data."
             },
             {
                 "id": "CSSMedia",
@@ -2487,6 +2487,17 @@
                     { "name": "text", "type": "string" }
                 ],
                 "description": "Sets the new stylesheet text, thereby invalidating all existing <code>CSSStyleId</code>'s and <code>CSSRuleId</code>'s contained by this stylesheet."
+            },
+            {
+                "name": "setStyleText",
+                "parameters": [
+                    { "name": "styleId", "$ref": "CSSStyleId" },
+                    { "name": "text", "type": "string" }
+                ],
+                "returns": [
+                    { "name": "style", "$ref": "CSSStyle", "description": "The resulting style after the text modification." }
+                ],
+                "description": "Updates the CSSStyleDeclaration text."
             },
             {
                 "name": "setPropertyText",
