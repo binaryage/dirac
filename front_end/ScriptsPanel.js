@@ -793,9 +793,12 @@ WebInspector.ScriptsPanel.prototype = {
         return debugToolbar;
     },
 
+    /**
+     * @param {WebInspector.StatusBarButton} button
+     * @param {string} buttonTitle
+     */
     _updateButtonTitle: function(button, buttonTitle)
     {
-        button.buttonTitle = buttonTitle;
         var hasShortcuts = button.shortcuts && button.shortcuts.length;
         if (hasShortcuts)
             button.title = String.vsprintf(buttonTitle, [button.shortcuts[0].name]);
@@ -814,8 +817,6 @@ WebInspector.ScriptsPanel.prototype = {
     {
         var button = new WebInspector.StatusBarButton(buttonTitle, buttonId);
         button.element.addEventListener("click", handler, false);
-        button.className = "status-bar-item";
-        button.id = buttonId;
         button.shortcuts = shortcuts;
         this._updateButtonTitle(button, buttonTitle);
         this.registerShortcuts(shortcuts, handler);

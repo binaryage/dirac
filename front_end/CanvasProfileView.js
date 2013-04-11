@@ -124,11 +124,9 @@ WebInspector.CanvasProfileView.prototype = {
      */
     _createControlButton: function(parent, className, title, clickCallback)
     {
-        var button = parent.createChild("button", "status-bar-item");
-        button.addStyleClass(className);
-        button.title = title;
-        button.createChild("img");
-        button.addEventListener("click", clickCallback, false);
+        var button = new WebInspector.StatusBarButton(title, className);
+        button.element.addEventListener("click", clickCallback, false);
+        parent.appendChild(button.element);
     },
 
     _onReplayContextChanged: function()
