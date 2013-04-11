@@ -409,6 +409,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
     this.networkLog = new WebInspector.NetworkLog();
     this.domAgent = new WebInspector.DOMAgent();
+    this.domAgent.addEventListener(WebInspector.DOMAgent.Events.InspectNodeRequested, this._inspectNodeRequested, this);
     this.runtimeModel = new WebInspector.RuntimeModel(this.resourceTreeModel);
 
     this.consoleView = new WebInspector.ConsoleView(WebInspector.WorkerManager.isWorkerFrontend());
@@ -939,6 +940,11 @@ WebInspector.targetCrashed = function()
     (new WebInspector.HelpScreenUntilReload(
         WebInspector.UIString("Inspected target crashed"),
         WebInspector.UIString("Inspected target has crashed. Once it reloads we will attach to it automatically."))).showModal();
+}
+
+WebInspector._inspectNodeRequested = function(event)
+{
+    WebInspector._updateFocusedNode(event.data);
 }
 
 WebInspector._updateFocusedNode = function(nodeId)
