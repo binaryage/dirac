@@ -70,6 +70,7 @@
 
 .audit-launcher-view h1 {
     padding-top: 15px;
+    -webkit-flex: none;
 }
 
 .audit-launcher-view h1.no-audits {
@@ -80,10 +81,9 @@
 }
 
 .audit-launcher-view div.button-container {
-    display: -webkit-flex;
-    -webkit-flex-direction: column;
     width: 100%;
     padding: 16px 0;
+    -webkit-flex: none;
 }
 
 .audit-launcher-view div.button-container > button {
@@ -97,6 +97,7 @@
     width: 100%;
     overflow-y: auto;
     border: 0 none;
+    -webkit-flex: none;
 }
 
 .audit-launcher-view button {
@@ -111,6 +112,7 @@
 .panel-enabler-view.audit-launcher-view label {
     padding: 0 0 5px 0;
     margin: 0;
+    -webkit-flex: none;
 }
 
 .panel-enabler-view.audit-launcher-view label.disabled {
