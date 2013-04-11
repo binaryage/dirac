@@ -320,7 +320,7 @@ WebInspector.reload = function()
 
 WebInspector.loaded = function()
 {
-    InspectorBackend.loadFromJSONIfNeeded("../Inspector.json");
+    InspectorBackend.loadFromJSONIfNeeded("../protocol.json");
     WebInspector.dockController = new WebInspector.DockController();
 
     if (WebInspector.WorkerManager.isDedicatedWorkerFrontend()) {
