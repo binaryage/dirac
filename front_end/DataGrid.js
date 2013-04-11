@@ -121,6 +121,7 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
 
     headerRow.createChild("th", "corner");
     fillerRow.createChild("td", "corner");
+    columnGroup.createChild("col", "corner");
 
     this._headerTableColumnGroup = columnGroup;
     this._headerTable.appendChild(this._headerTableColumnGroup);
@@ -576,7 +577,7 @@ WebInspector.DataGrid.prototype = {
         var headerTableColumns = this._headerTableColumnGroup.children;
 
         var tableWidth = this._dataTable.offsetWidth;
-        var numColumns = headerTableColumns.length;
+        var numColumns = headerTableColumns.length - 1; // Do not process corner column.
 
         // Do not attempt to use offsetes if we're not attached to the document tree yet.
         if (!this._columnWidthsInitialized && this.element.offsetWidth) {
@@ -657,7 +658,7 @@ WebInspector.DataGrid.prototype = {
     _positionResizers: function()
     {
         var headerTableColumns = this._headerTableColumnGroup.children;
-        var numColumns = headerTableColumns.length;
+        var numColumns = headerTableColumns.length - 1; // Do not process corner column.
         var left = 0;
         var previousResizer = null;
 

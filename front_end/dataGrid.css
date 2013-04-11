@@ -57,7 +57,8 @@
 }
 
 .data-grid th.corner,
-.data-grid td.corner {
+.data-grid td.corner,
+.data-grid col.corner {
     width: 14px;
     padding-right: 0px;
     padding-left: 0px;
