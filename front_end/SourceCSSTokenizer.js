@@ -32,7 +32,7 @@
 // Generate js file as follows:
 
 /*
-re2c -isc Source/WebCore/inspector/front-end/SourceCSSTokenizer.re2js \
+re2c -isc devtools/front_end/SourceCSSTokenizer.re2js \
   | sed 's|^yy\([^:]*\)*\:|case \1:|' \
   | sed 's|[*]cursor[+][+]|this._charAt(cursor++)|' \
   | sed 's|[[*][+][+]cursor|this._charAt(++cursor)|' \
@@ -41,7 +41,7 @@ re2c -isc Source/WebCore/inspector/front-end/SourceCSSTokenizer.re2js \
   | sed 's|{ gotoCase = \([^; continue; };]*\)|{ gotoCase = \1; continue; }|' \
   | sed 's|yych <= \(0x[0-9a-fA-F]*\)|yych \<\= String.fromCharCode(\1)|' \
   | sed 's|unsigned\ int|var|' \
-  | sed 's|var\ yych|case 1: case 1: var yych|' > Source/WebCore/inspector/front-end/SourceCSSTokenizer.js
+  | sed 's|var\ yych|case 1: case 1: var yych|' > devtools/front_end/SourceCSSTokenizer.js
 */
 
 /**

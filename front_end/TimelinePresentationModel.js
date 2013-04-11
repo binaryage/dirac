@@ -1484,5 +1484,3 @@ WebInspector.TimelineCategory.prototype = {
 
     __proto__: WebInspector.Object.prototype
 }
-
-//@ sourceURL=http://localhost/inspector/front-end/TimelinePresentationModel.js
