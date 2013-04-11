@@ -1213,11 +1213,11 @@ WebInspector.AuditRules.CookieRuleBase.prototype = {
     doRun: function(requests, result, callback, progress)
     {
         var self = this;
-        function resultCallback(receivedCookies, isAdvanced) {
+        function resultCallback(receivedCookies) {
             if (progress.isCanceled())
                 return;
 
-            self.processCookies(isAdvanced ? receivedCookies : [], requests, result);
+            self.processCookies(receivedCookies, requests, result);
             callback(result);
         }
 
