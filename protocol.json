@@ -3085,8 +3085,7 @@
                 "properties": [
                     { "name": "typeId", "type": "string", "enum": ["CPU", "CSS", "HEAP"], "description": "Profile type name." },
                     { "name": "title", "type": "string", "description": "Profile title." },
-                    { "name": "uid", "type": "integer", "description": "Unique identifier of the profile." },
-                    { "name": "maxJSObjectId", "type": "integer", "optional": true, "description": "Last seen JS object Id." }
+                    { "name": "uid", "type": "integer", "description": "Unique identifier of the profile." }
                 ]
             },
             {
@@ -3154,12 +3153,6 @@
                 ]
             },
             {
-                "name": "getHeapSnapshot",
-                "parameters": [
-                    { "name": "uid", "type": "integer" }
-                ]
-            },
-            {
                 "name": "removeProfile",
                 "parameters": [
                     { "name": "type", "type": "string" },
@@ -3168,34 +3161,6 @@
             },
             {
                 "name": "clearProfiles"
-            },
-            {
-                "name": "takeHeapSnapshot",
-                "parameters": [
-                    { "name": "reportProgress", "type": "boolean", "optional": true, "description": "If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken." }
-                ]
-            },
-            {
-                "name": "collectGarbage"
-            },
-            {
-                "name": "getObjectByHeapObjectId",
-                "parameters": [
-                    { "name": "objectId", "$ref": "HeapSnapshotObjectId" },
-                    { "name": "objectGroup", "type": "string", "optional": true, "description": "Symbolic group name that can be used to release multiple objects." }
-                ],
-                "returns": [
-                    { "name": "result", "$ref": "Runtime.RemoteObject", "description": "Evaluation result." }
-                ]
-            },
-            {
-                "name": "getHeapObjectId",
-                "parameters": [
-                    { "name": "objectId", "$ref": "Runtime.RemoteObjectId", "description": "Identifier of the object to get heap object id for." }
-                ],
-                "returns": [
-                    { "name": "heapSnapshotObjectId", "$ref": "HeapSnapshotObjectId", "description": "Id of the heap snapshot object corresponding to the passed remote object id." }
-                ]
             }
         ],
         "events": [
@@ -3206,19 +3171,6 @@
                 ]
             },
             {
-                "name": "addHeapSnapshotChunk",
-                "parameters": [
-                    { "name": "uid", "type": "integer" },
-                    { "name": "chunk", "type": "string" }
-                ]
-            },
-            {
-                "name": "finishHeapSnapshot",
-                "parameters": [
-                    { "name": "uid", "type": "integer" }
-                ]
-            },
-            {
                 "name": "setRecordingProfile",
                 "parameters": [
                     { "name": "isProfiling", "type": "boolean" }
@@ -3226,13 +3178,6 @@
             },
             {
                 "name": "resetProfiles"
-            },
-            {
-                "name": "reportHeapSnapshotProgress",
-                "parameters": [
-                    { "name": "done", "type": "integer" },
-                    { "name": "total", "type": "integer" }
-                ]
             }
         ]
     },
