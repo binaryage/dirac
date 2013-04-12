@@ -336,7 +336,7 @@ var sortRange = {
             var pivotNewIndex = array.partition(comparator, left, right, pivotIndex);
             quickSortFirstK(array, comparator, left, pivotNewIndex - 1, k);
             if (pivotNewIndex < left + k - 1)
-                quickSortFirstK(array, comparator, pivotNewIndex + 1, right, k);
+                quickSortFirstK(array, comparator, pivotNewIndex + 1, right, left + k - 1 - pivotNewIndex);
         }
 
         if (leftBound === 0 && rightBound === (this.length - 1) && k >= this.length)
