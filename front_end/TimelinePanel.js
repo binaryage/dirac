@@ -58,7 +58,6 @@ WebInspector.TimelinePanel = function()
     this._overviewPane.show(this.element);
 
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), false);
-    this.element.tabIndex = 0;
 
     this.element.addStyleClass("split-view-vertical");
 
@@ -70,6 +69,7 @@ WebInspector.TimelinePanel = function()
     this.element.appendChild(this.splitView.resizerElement());
 
     this._containerElement = this.splitView.element;
+    this._containerElement.tabIndex = 0;
     this._containerElement.id = "timeline-container";
     this._containerElement.addEventListener("scroll", this._onScroll.bind(this), false);
 
@@ -90,6 +90,7 @@ WebInspector.TimelinePanel = function()
 
     var itemsTreeElement = new WebInspector.SidebarSectionTreeElement(WebInspector.UIString("RECORDS"), {}, true);
     this.sidebarTree.appendChild(itemsTreeElement);
+    this.sidebarTree.setFocusable(false);
 
     this._sidebarListElement = document.createElement("div");
     this.sidebarElement.appendChild(this._sidebarListElement);

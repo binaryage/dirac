@@ -1214,8 +1214,12 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             break;
         }
 
-        if (details && !(details instanceof Node))
-            return this._createSpanWithText("" + details);
+        if (details) {
+            if (details instanceof Node)
+                details.tabIndex = -1;
+            else
+                return this._createSpanWithText("" + details);
+        }
 
         return details || null;
     },
