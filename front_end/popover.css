@@ -15,6 +15,7 @@
     pointer-events: auto;
     overflow: auto;
     -webkit-user-select: text;
+    line-height: 11px;
 }
 
 .popover .content.fixed-height {
