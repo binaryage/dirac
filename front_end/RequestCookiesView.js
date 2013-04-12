@@ -88,7 +88,6 @@ WebInspector.RequestCookiesView.prototype = {
         if (!this._gotCookies || !this.isShowing())
             return;
         this._buildCookiesTable();
-        this._cookiesTable.updateWidths();
     },
 
     __proto__: WebInspector.View.prototype

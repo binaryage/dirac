@@ -44,14 +44,14 @@ WebInspector.CookiesTable = function(expandable, refreshCallback, selectedCallba
     this._refreshCallback = refreshCallback;
 
     var columns = [
-        {id: "name", title: WebInspector.UIString("Name"), sortable: true, disclosure: expandable, sort: WebInspector.DataGrid.Order.Ascending, width: "24%"},
-        {id: "value", title: WebInspector.UIString("Value"), sortable: true, width: "34%"},
-        {id: "domain", title: WebInspector.UIString("Domain"), sortable: true, width: "7%"},
-        {id: "path", title: WebInspector.UIString("Path"), sortable: true, width: "7%"},
-        {id: "expires", title: WebInspector.UIString("Expires / Max-Age"), sortable: true, width: "7%"},
-        {id: "size", title: WebInspector.UIString("Size"), sortable: true, align: WebInspector.DataGrid.Align.Right, width: "7%"},
-        {id: "httpOnly", title: WebInspector.UIString("HTTP"), sortable: true, align: WebInspector.DataGrid.Align.Center, width: "7%"},
-        {id: "secure", title: WebInspector.UIString("Secure"), sortable: true, align: WebInspector.DataGrid.Align.Center, width: "7%"}
+        {id: "name", title: WebInspector.UIString("Name"), sortable: true, disclosure: expandable, sort: WebInspector.DataGrid.Order.Ascending, weight: 24},
+        {id: "value", title: WebInspector.UIString("Value"), sortable: true, weight: 34},
+        {id: "domain", title: WebInspector.UIString("Domain"), sortable: true, weight: 7},
+        {id: "path", title: WebInspector.UIString("Path"), sortable: true, weight: 7},
+        {id: "expires", title: WebInspector.UIString("Expires / Max-Age"), sortable: true, weight: 7},
+        {id: "size", title: WebInspector.UIString("Size"), sortable: true, align: WebInspector.DataGrid.Align.Right, weight: 7},
+        {id: "httpOnly", title: WebInspector.UIString("HTTP"), sortable: true, align: WebInspector.DataGrid.Align.Center, weight: 7},
+        {id: "secure", title: WebInspector.UIString("Secure"), sortable: true, align: WebInspector.DataGrid.Align.Center, weight: 7}
     ];
 
     if (readOnly)
@@ -59,6 +59,7 @@ WebInspector.CookiesTable = function(expandable, refreshCallback, selectedCallba
     else
         this._dataGrid = new WebInspector.DataGrid(columns, undefined, this._onDeleteCookie.bind(this), refreshCallback, this._onContextMenu.bind(this));
 
+    this._dataGrid.setName("cookiesTable");
     this._dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._rebuildTable, this);
 
     if (selectedCallback)
@@ -71,12 +72,6 @@ WebInspector.CookiesTable = function(expandable, refreshCallback, selectedCallba
 }
 
 WebInspector.CookiesTable.prototype = {
-    updateWidths: function()
-    {
-        if (this._dataGrid)
-            this._dataGrid.updateWidths();
-    },
-
     /**
      * @param {?string} domain
      */

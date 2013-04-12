@@ -597,6 +597,46 @@ WebInspector.DataGrid.prototype = {
         this.dispatchEventToListeners(WebInspector.DataGrid.Events.ColumnsResized);
     },
 
+    /**
+     * @param {string} name
+     */
+    setName: function(name)
+    {
+        this._columnWeightsSetting = WebInspector.settings.createSetting("dataGrid-" + name + "-columnWeights", {});
+        this._loadColumnWeights();
+    },
+
+    _loadColumnWeights: function()
+    {
+        if (!this._columnWeightsSetting)
+            return;
+        var weights = this._columnWeightsSetting.get();
+        for (var i = 0; i < this._columnsArray.length; ++i) {
+            var column = this._columnsArray[i];
+            var weight = weights[column.identifier];
+            if (weight)
+                column.weight = weight;
+        }
+        this.applyColumnWeights();
+    },
+
+    _saveColumnWeights: function()
+    {
+        if (!this._columnWeightsSetting)
+            return;
+        var weights = {};
+        for (var i = 0; i < this._columnsArray.length; ++i) {
+            var column = this._columnsArray[i];
+            weights[column.identifier] = column.weight;
+        }
+        this._columnWeightsSetting.set(weights);
+    },
+
+    wasShown: function()
+    {
+       this._loadColumnWeights();
+    },
+
     applyColumnWeights: function()
     {
         var sumOfWeights = 0.0;
@@ -1059,6 +1099,7 @@ WebInspector.DataGrid.prototype = {
     _endResizerDragging: function(event)
     {
         this._currentResizer = null;
+        this._saveColumnWeights();
         this.dispatchEventToListeners(WebInspector.DataGrid.Events.ColumnsResized);
     },
 
