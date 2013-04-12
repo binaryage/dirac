@@ -38,17 +38,6 @@ console.assert = function(vararg) {}
 console.error = function(vararg) {}
 console.trace = function() {}
 
-var JSON = {}
-/** @param {string} str */
-JSON.parse = function(str) {}
-/**
- * @param {*} obj
- * @param {Function=} replacer
- * @param {number=} space
- * @return {string}
- */
-JSON.stringify = function(obj, replacer, space) {}
-
 /** @param {boolean=} param */
 Element.prototype.scrollIntoViewIfNeeded = function(param) {}
 /** @type {boolean} */
