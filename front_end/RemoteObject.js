@@ -66,7 +66,7 @@ WebInspector.RemoteObject.fromPrimitiveValue = function(value)
 }
 
 /**
- * @param {Object} value
+ * @param {*} value
  * @return {WebInspector.RemoteObject}
  */
 WebInspector.RemoteObject.fromLocalObject = function(value)
@@ -545,7 +545,7 @@ WebInspector.RemoteObjectProperty.fromScopeValue = function(name, value)
 /**
  * @constructor
  * @extends {WebInspector.RemoteObject}
- * @param {Object} value
+ * @param {*} value
  */
 WebInspector.LocalJSONObject = function(value)
 {
@@ -644,7 +644,9 @@ WebInspector.LocalJSONObject.prototype = {
      */
     get hasChildren()
     {
-        return typeof this._value === "object" && this._value !== null && !!Object.keys(this._value).length;
+        if ((typeof this._value !== "object") || (this._value === null))
+            return false;
+        return !!Object.keys(/** @type {!Object} */ (this._value)).length;
     },
 
     /**
@@ -670,13 +672,14 @@ WebInspector.LocalJSONObject.prototype = {
     {
         if (!this.hasChildren)
             return [];
+        var value = /** @type {!Object} */ (this._value);
 
         function buildProperty(propName)
         {
             return new WebInspector.RemoteObjectProperty(propName, new WebInspector.LocalJSONObject(this._value[propName]));
         }
         if (!this._cachedChildren)
-            this._cachedChildren = Object.keys(this._value || {}).map(buildProperty.bind(this));
+            this._cachedChildren = Object.keys(value).map(buildProperty.bind(this));
         return this._cachedChildren;
     },
 

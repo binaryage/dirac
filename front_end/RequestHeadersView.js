@@ -281,7 +281,7 @@ WebInspector.RequestHeadersView.prototype = {
     },
 
     /**
-     * @param {Object} parsedObject
+     * @param {*} parsedObject
      * @param {string} sourceText
      * @param {boolean} viewSource
      */

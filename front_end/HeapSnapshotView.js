@@ -903,7 +903,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
 
     /**
      * @override
-     * @param {function(this:WebInspector.ProfileType, ?string, Array.<ProfilerAgent.ProfileHeader>)} populateCallback
+     * @param {function(this:WebInspector.ProfileType, ?string, Array.<HeapProfilerAgent.ProfileHeader>)} populateCallback
      */
     _requestProfilesFromBackend: function(populateCallback)
     {

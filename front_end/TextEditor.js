@@ -38,6 +38,9 @@ WebInspector.TextEditor.Events = {
     GutterClick: "gutterClick"
 };
 
+/** @typedef {{lineNumber: number, event: Event}} */
+WebInspector.TextEditor.GutterClickEventData;
+
 WebInspector.TextEditor.prototype = {
     /**
      * @return {boolean}

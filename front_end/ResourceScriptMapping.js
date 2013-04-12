@@ -204,9 +204,9 @@ WebInspector.ResourceScriptMapping.prototype = {
 
     _initialize: function()
     {
-        /** @type {!Object.<string, !Array.<!WebInspector.UISourceCode>>} */
+        /** @type {!Object.<string, !Array.<!WebInspector.Script>>} */
         this._inlineScriptsForSourceURL = {};
-        /** @type {!Object.<string, !Array.<!WebInspector.UISourceCode>>} */
+        /** @type {!Object.<string, !Array.<!WebInspector.Script>>} */
         this._nonInlineScriptsForSourceURL = {};
     },
 
