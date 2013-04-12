@@ -54,7 +54,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 
     this._codeMirror = window.CodeMirror(this.element, {
         lineNumbers: true,
-        gutters: ["CodeMirror-linenumbers", "breakpoints"],
+        gutters: ["CodeMirror-linenumbers"],
         matchBrackets: true,
         autoCloseBrackets: WebInspector.experimentsSettings.textEditorSmartBraces.isEnabled()
     });
@@ -306,10 +306,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     addBreakpoint: function(lineNumber, disabled, conditional)
     {
-        var element = document.createElement("span");
-        element.textContent = lineNumber + 1;
-        element.className = "cm-breakpoint" + (disabled ? " cm-breakpoint-disabled" : "") + (conditional ? " cm-breakpoint-conditional" : "");
-        this._codeMirror.setGutterMarker(lineNumber, "breakpoints", element);
+        var className = "cm-breakpoint" + (conditional ? " cm-breakpoint-conditional" : "") + (disabled ? " cm-breakpoint-disabled" : "");
+        this._codeMirror.addLineClass(lineNumber, "wrap", className);
     },
 
     /**
@@ -317,7 +315,14 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     removeBreakpoint: function(lineNumber)
     {
-        this._codeMirror.setGutterMarker(lineNumber, "breakpoints", null);
+        var wrapClasses = this._codeMirror.getLineHandle(lineNumber).wrapClass;
+        if (!wrapClasses)
+            return;
+        var classes = wrapClasses.split(" ");
+        for(var i = 0; i < classes.length; ++i) {
+            if (classes[i].startsWith("cm-breakpoint"))
+                this._codeMirror.removeLineClass(lineNumber, "wrap", classes[i]);
+        }
     },
 
     /**
@@ -326,13 +331,13 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     setExecutionLine: function(lineNumber)
     {
         this._executionLine = this._codeMirror.getLineHandle(lineNumber);
-        this._codeMirror.addLineClass(this._executionLine, null, "cm-execution-line");
+        this._codeMirror.addLineClass(this._executionLine, "wrap", "cm-execution-line");
     },
 
     clearExecutionLine: function()
     {
         if (this._executionLine)
-            this._codeMirror.removeLineClass(this._executionLine, null, "cm-execution-line");
+            this._codeMirror.removeLineClass(this._executionLine, "wrap", "cm-execution-line");
         delete this._executionLine;
     },
 
