@@ -79,6 +79,7 @@ WebInspector.NativeSnapshotDataGrid.prototype = {
         var expandedNodes = {};
         this._totalNode._storeState(expandedNodes);
         this._totalNode.removeChildren();
+        this._totalNode._populated = false;
         this._totalNode.populate();
         this._totalNode._shouldRefreshChildren = true;
         this._totalNode._restoreState(expandedNodes);
