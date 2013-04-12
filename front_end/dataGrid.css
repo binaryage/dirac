@@ -169,11 +169,11 @@
 }
 
 .data-grid th.sort-ascending > div::after {
-    background-position: -20px -96px;
+    background-position: -4px -108px;
 }
 
 .data-grid th.sort-descending > div::after {
-    background-position: -4px -108px;
+    background-position: -20px -96px;
 }
 
 .data-grid button {
