@@ -230,6 +230,15 @@ WebInspector.FlameChart.Entry = function(colorPair, depth, duration, startTime, 
 }
 
 WebInspector.FlameChart.prototype = {
+    /**
+     * @param {!number} timeLeft
+     * @param {!number} timeRight
+     */
+    selectRange: function(timeLeft, timeRight)
+    {
+        this._overviewGrid.setWindow(timeLeft / this._totalTime, timeRight / this._totalTime);
+    },
+
     _onWindowChanged: function(event)
     {
         this._hidePopover();

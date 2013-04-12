@@ -52,9 +52,9 @@ WebInspector.CPUProfileView = function(profileHeader)
         this._splitView = new WebInspector.SplitView(false, "flameChartSplitLocation");
         this._splitView.show(this.element);
 
-        this.flameChart = new WebInspector.FlameChart(this);
-        this.flameChart.addEventListener(WebInspector.FlameChart.Events.SelectedNode, this._revealProfilerNode.bind(this));
-        this.flameChart.show(this._splitView.firstElement());
+        this._flameChart = new WebInspector.FlameChart(this);
+        this._flameChart.addEventListener(WebInspector.FlameChart.Events.SelectedNode, this._revealProfilerNode.bind(this));
+        this._flameChart.show(this._splitView.firstElement());
 
         this.dataGrid.show(this._splitView.secondElement());
     } else
@@ -96,6 +96,17 @@ WebInspector.CPUProfileView._TypeTree = "Tree";
 WebInspector.CPUProfileView._TypeHeavy = "Heavy";
 
 WebInspector.CPUProfileView.prototype = {
+    /**
+     * @param {!number} timeLeft
+     * @param {!number} timeRight
+     */
+    selectRange: function(timeLeft, timeRight)
+    {
+        if (!this._flameChart)
+            return;
+        this._flameChart.selectRange(timeLeft, timeRight);
+    },
+
     _revealProfilerNode: function(event)
     {
         var current = this.profileDataGridTree.children[0];
@@ -137,8 +148,8 @@ WebInspector.CPUProfileView.prototype = {
             this._buildIdToNodeMap();
         this._changeView();
         this._updatePercentButton();
-        if (this.flameChart)
-            this.flameChart.update();
+        if (this._flameChart)
+            this._flameChart.update();
     },
 
     get statusBarItems()

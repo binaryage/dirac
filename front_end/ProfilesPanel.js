@@ -749,15 +749,16 @@ WebInspector.ProfilesPanel.prototype = {
 
     /**
      * @param {!WebInspector.ProfileHeader} profile
+     * @return {WebInspector.View}
      */
     _showProfile: function(profile)
     {
         if (!profile || profile.isTemporary)
-            return;
+            return null;
 
         var view = profile.view(this);
         if (view === this.visibleView)
-            return;
+            return view;
 
         this.closeVisibleView();
 
@@ -775,6 +776,8 @@ WebInspector.ProfilesPanel.prototype = {
         if (statusBarItems)
             for (var i = 0; i < statusBarItems.length; ++i)
                 this._profileViewStatusBarItemsContainer.appendChild(statusBarItems[i]);
+
+        return view;
     },
 
     /**
@@ -846,10 +849,11 @@ WebInspector.ProfilesPanel.prototype = {
     /**
      * @param {string} typeId
      * @param {string} uid
+     * @return {WebInspector.View}
      */
     showProfile: function(typeId, uid)
     {
-        this._showProfile(this.getProfile(typeId, Number(uid)));
+        return this._showProfile(this.getProfile(typeId, Number(uid)));
     },
 
     closeVisibleView: function()
