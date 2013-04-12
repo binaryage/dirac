@@ -240,7 +240,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     defaultFocusedElement: function()
     {
-        return this.element;
+        return this.element.firstChild;
     },
 
     focus: function()
