@@ -151,7 +151,8 @@ WebInspector.InspectorView.prototype = {
             return;
 
         // Ctrl/Cmd + 1-9 should show corresponding panel.
-        if (!event.shiftKey && !event.altKey && event.keyCode > 0x30 && event.keyCode < 0x3A) {
+        var panelShortcutEnabled = WebInspector.experimentsSettings.shortcutPanelSwitch.isEnabled();
+        if (panelShortcutEnabled && !event.shiftKey && !event.altKey && event.keyCode > 0x30 && event.keyCode < 0x3A) {
             var panelName = this._panelOrder[event.keyCode - 0x31];
             if (panelName) {
                 this.showPanel(panelName);

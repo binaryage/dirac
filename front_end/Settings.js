@@ -210,6 +210,7 @@ WebInspector.ExperimentsSettings = function()
     this.textEditorSmartBraces = this._createExperiment("textEditorSmartBraces", "Enable smart braces in text editor");
     this.customizableToolbar = this._createExperiment("customizableToolbar", "Enable toolbar customization");
     this.cpuFlameChart = this._createExperiment("cpuFlameChart", "Show Flame Chart in CPU Profiler");
+    this.shortcutPanelSwitch = this._createExperiment("shortcutPanelSwitch", "Enable Ctrl/Cmd + 1-9 shortcut to switch panels");
 
     this._cleanUpSetting();
 }
