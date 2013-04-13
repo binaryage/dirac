@@ -42,7 +42,7 @@ WebInspector.Toolbar = function()
 
     this._panelsMenuButton = document.getElementById("toolbar-panels-menu");
     if (this._isToolbarCustomizable())
-        this._panelsMenuButton.addEventListener("mousedown", this._togglePanelsMenu.bind(this), false);
+        this._panelsMenuButton.addEventListener("click", this._togglePanelsMenu.bind(this), false);
     else
         this._panelsMenuButton.addStyleClass("hidden");
 
@@ -65,45 +65,12 @@ WebInspector.Toolbar.prototype = {
     {
         this._panelDescriptors.push(panelDescriptor);
         panelDescriptor._toolbarElement = this._createPanelToolbarItem(panelDescriptor);
-        if (!this._isToolbarCustomizable() || this._isPanelVisible(panelDescriptor.name()))
-            this.element.insertBefore(panelDescriptor._toolbarElement, this._panelInsertLocation(panelDescriptor));
-        this._updateAddPanelState();
+        if (this._isPanelVisible(panelDescriptor.name()))
+            panelDescriptor._toolbarElement.removeStyleClass("hidden");
+        else
+            panelDescriptor._toolbarElement.addStyleClass("hidden");
+        this.element.appendChild(panelDescriptor._toolbarElement);
         this.resize();
-    },
-
-    /**
-     * @param {!WebInspector.PanelDescriptor} panelDescriptor
-     * @return {Element}
-     */
-    _panelInsertLocation: function(panelDescriptor)
-    {
-        var newPanelElement = document.getElementById("toolbar-panels-menu").parentElement;
-        if (!this._isToolbarCustomizable())
-            return newPanelElement;
-
-        if (this._isDefaultPanel(panelDescriptor.name()))
-            return this._firstNonDefaultPanel || newPanelElement;
-
-        if (!this._firstNonDefaultPanel)
-            this._firstNonDefaultPanel = panelDescriptor._toolbarElement;
-        return newPanelElement;
-    },
-
-    /**
-     * @param {!string} name
-     * @return {boolean}
-     */
-    _isDefaultPanel: function(name)
-    {
-        var defaultPanels = {
-            "elements": true,
-            "resources": true,
-            "scripts": true,
-            "console": true,
-            "network": true,
-            "timeline": true,
-        };
-        return !!defaultPanels[name];
     },
 
     /**
@@ -132,7 +99,7 @@ WebInspector.Toolbar.prototype = {
      */
     _isToolbarCustomizable: function()
     {
-        return WebInspector.experimentsSettings.customizableToolbar.isEnabled();
+        return false;
     },
 
     /**
@@ -165,32 +132,25 @@ WebInspector.Toolbar.prototype = {
     {
         if (!this._isPanelVisible(panelDescriptor.name()))
             return;
-        var switchToSibling = panelDescriptor._toolbarElement.nextSibling;
-        if (!switchToSibling || !switchToSibling.classList.contains("toggleable"))
-            switchToSibling = panelDescriptor._toolbarElement.previousSibling;
-        if (!switchToSibling || !switchToSibling.classList || !switchToSibling.classList.contains("toggleable"))
+        // Do not hide the last visible panel.
+        var count = 0;
+        for (var i = 0; i < this._panelDescriptors.length; ++i) {
+            if (this._isPanelVisible(this._panelDescriptors[i].name()))
+                ++count;
+        }
+        if (count === 1)
             return;
         this._setPanelVisible(panelDescriptor.name(), false);
-        this.element.removeChild(panelDescriptor._toolbarElement);
+        panelDescriptor._toolbarElement.addStyleClass("hidden");
         if (WebInspector.inspectorView.currentPanel().name === panelDescriptor.name()) {
             for (var i = 0; i < this._panelDescriptors.length; ++i) {
-                var descr = this._panelDescriptors[i];
-                if (descr._toolbarElement === switchToSibling) {
-                    WebInspector.showPanel(descr.name());
+                if (this._isPanelVisible(this._panelDescriptors[i].name())) {
+                    WebInspector.showPanel(this._panelDescriptors[i].name());
                     break;
                 }
             }
         }
-        document.getElementById("toolbar-panels-menu").removeStyleClass("disabled");
         this.resize();
-    },
-
-    _updateAddPanelState: function()
-    {
-        if (this._panelDescriptors.every(function (descr) { return this._isPanelVisible(descr.name()); }, this))
-            document.getElementById("toolbar-panels-menu").addStyleClass("disabled");
-        else
-            document.getElementById("toolbar-panels-menu").removeStyleClass("disabled");
     },
 
     /**
@@ -200,10 +160,8 @@ WebInspector.Toolbar.prototype = {
     {
         if (this._isPanelVisible(panelDescriptor.name()))
             return;
-        this.element.insertBefore(panelDescriptor._toolbarElement, document.getElementById("toolbar-panels-menu").parentElement);
         panelDescriptor._toolbarElement.removeStyleClass("hidden");
         this._setPanelVisible(panelDescriptor.name(), true);
-        this._updateAddPanelState();
         this.resize();
     },
 
@@ -211,38 +169,19 @@ WebInspector.Toolbar.prototype = {
      * @param {WebInspector.PanelDescriptor} panelDescriptor
      * @return {Element}
      */
-    _createPanelToolbarItem: function(panelDescriptor, noCloseButton)
+    _createPanelToolbarItem: function(panelDescriptor)
     {
         var toolbarItem = document.createElement("button");
         toolbarItem.className = "toolbar-item toggleable";
         toolbarItem.panelDescriptor = panelDescriptor;
         toolbarItem.addStyleClass(panelDescriptor.name());
 
-        /**
-         * @param {Event} event
-         */
-        function onContextMenuEvent(event)
-        {
-            var contextMenu = new WebInspector.ContextMenu(event);
-            contextMenu.appendItem(WebInspector.UIString("Close"), this._hidePanel.bind(this, panelDescriptor));
-            contextMenu.show();
-        }
-        if (!this._isDefaultPanel(panelDescriptor.name()))
-            toolbarItem.addEventListener("contextmenu", onContextMenuEvent.bind(this), true);
-
         function onToolbarItemClicked()
         {
-            this._showPanel(panelDescriptor);
             this._updateDropdownButtonAndHideDropdown();
             WebInspector.inspectorView.setCurrentPanel(panelDescriptor.panel());
         }
         toolbarItem.addEventListener("click", onToolbarItemClicked.bind(this), false);
-
-        function onToolbarItemCloseButtonClicked(event)
-        {
-            event.stopPropagation();
-            this._hidePanel(panelDescriptor);
-        }
 
         function panelSelected()
         {
@@ -255,11 +194,6 @@ WebInspector.Toolbar.prototype = {
 
         var iconElement = toolbarItem.createChild("div", "toolbar-icon");
         toolbarItem.createChild("div", "toolbar-label").textContent = panelDescriptor.title();
-        if (this._isToolbarCustomizable() && !this._isDefaultPanel(panelDescriptor.name()) && !noCloseButton) {
-            var closeButton = toolbarItem.createChild("div", "toolbar-item-close-button");
-            closeButton.textContent = "\u00d7";
-            closeButton.addEventListener("click", onToolbarItemCloseButtonClicked.bind(this), false);
-        }
         if (panelDescriptor.iconURL()) {
             iconElement.addStyleClass("custom-toolbar-icon");
             iconElement.style.backgroundImage = "url(" + panelDescriptor.iconURL() + ")";
@@ -380,18 +314,21 @@ WebInspector.Toolbar.prototype = {
 
     _togglePanelsMenu: function(event)
     {
-        function activatePanel(panelDescriptor)
+        function togglePanel(panelDescriptor)
         {
-            this._showPanel(panelDescriptor);
-            WebInspector.showPanel(panelDescriptor.name());
+            if (this._isPanelVisible(panelDescriptor.name()))
+                this._hidePanel(panelDescriptor);
+            else
+                this._showPanel(panelDescriptor);
         }
 
         var contextMenu = new WebInspector.ContextMenu(event);
+        var numDefaultPanels = 4;
         for (var i = 0; i < this._panelDescriptors.length; ++i) {
+            if (i === numDefaultPanels)
+                contextMenu.appendSeparator();
             var descr = this._panelDescriptors[i];
-            if (this._isPanelVisible(descr.name()))
-                continue;
-            contextMenu.appendItem(descr.title(), activatePanel.bind(this, descr));
+            contextMenu.appendCheckboxItem(descr.title(), togglePanel.bind(this, descr), this._isPanelVisible(descr.name()));
         }
 
         contextMenu.showSoftMenu();
@@ -462,24 +399,9 @@ WebInspector.ToolbarDropdown.prototype = {
     {
         var toolbarItems = this._toolbar.element.querySelectorAll(".toolbar-item.toggleable");
 
-        var needsSeparator = false;
         for (var i = 0; i < toolbarItems.length; ++i) {
-            if (toolbarItems[i].offsetTop > 1) {
-                this._contentElement.appendChild(this._toolbar._createPanelToolbarItem(toolbarItems[i].panelDescriptor, true));
-                needsSeparator = true;
-            }
-        }
-
-        var panelDescriptors = this._toolbar._panelDescriptors;
-        for (var i = 0; i < panelDescriptors.length; ++i) {
-            var descr = panelDescriptors[i];
-            if (this._toolbar._isPanelVisible(descr.name()))
-                continue;
-            if (needsSeparator) {
-                this._contentElement.createChild("div", "toolbar-items-separator");
-                needsSeparator = false;
-            }
-            this._contentElement.appendChild(this._toolbar._createPanelToolbarItem(descr, true));
+            if (toolbarItems[i].offsetTop > 1)
+                this._contentElement.appendChild(this._toolbar._createPanelToolbarItem(toolbarItems[i].panelDescriptor));
         }
     },
 

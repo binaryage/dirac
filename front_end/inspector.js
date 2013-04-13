@@ -47,7 +47,7 @@ var WebInspector = {
         var console = new WebInspector.PanelDescriptor("console", WebInspector.UIString("Console"), "ConsolePanel");
         var allDescriptors = [elements, resources, network, scripts, timeline, profiles, audits, console];
         var allProfilers = [profiles];
-        if (WebInspector.experimentsSettings.customizableToolbar.isEnabled()) {
+        if (WebInspector.experimentsSettings.separateProfilers.isEnabled()) {
             allProfilers = [];
             allProfilers.push(new WebInspector.PanelDescriptor("cpu-profiler", WebInspector.UIString("CPU Profiler"), "CPUProfilerPanel", "ProfilesPanel.js"));
             if (!WebInspector.WorkerManager.isWorkerFrontend())
