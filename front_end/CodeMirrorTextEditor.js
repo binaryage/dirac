@@ -547,6 +547,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         this._muteTextChangedEvent = true;
         this._codeMirror.setValue(text);
+        this._codeMirror.clearHistory();
         delete this._muteTextChangedEvent;
     },
 
