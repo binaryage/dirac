@@ -2081,13 +2081,6 @@
                 "description": "Fired when <code>Document</code> has been totally updated. Node ids are no longer valid."
             },
             {
-                "name": "inspectNodeRequested",
-                "parameters": [
-                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to inspect." }
-                ],
-                "description": "Fired when the node should be inspected. This happens after call to <code>setInspectModeEnabled</code>."
-            },
-            {
                 "name": "setChildNodes",
                 "parameters": [
                     { "name": "parentId", "$ref": "NodeId", "description": "Parent node id to populate with children." },
