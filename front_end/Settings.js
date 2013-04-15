@@ -208,7 +208,7 @@ WebInspector.ExperimentsSettings = function()
     this.fileSystemProject = this._createExperiment("fileSystemProject", "File system folders in Sources Panel");
     this.showWhitespaceInEditor = this._createExperiment("showWhitespaceInEditor", "Show whitespace characters in editor");
     this.textEditorSmartBraces = this._createExperiment("textEditorSmartBraces", "Enable smart braces in text editor");
-    this.separateProfilers = this._createExperiment("separateProfilers", "Separate profiler tools");
+    this.customizableToolbar = this._createExperiment("customizableToolbar", "Enable toolbar customization");
     this.cpuFlameChart = this._createExperiment("cpuFlameChart", "Show Flame Chart in CPU Profiler");
     this.shortcutPanelSwitch = this._createExperiment("shortcutPanelSwitch", "Enable Ctrl/Cmd + 1-9 shortcut to switch panels");
 
