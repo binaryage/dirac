@@ -511,10 +511,10 @@ WebInspector.HeapSnapshotRetainmentDataGrid.prototype = {
         {
             this.removeEventListener(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this);
             this.expand();
-            if (this.children.length === 1 && --maxExpandLevels > 0) {
-                var child = this.children[0];
-                child.addEventListener(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, child);
-                child.populate();
+            if (--maxExpandLevels > 0 && this.children.length > 0 && (!this._distance || this._distance > 2)) {
+                var retainer = this.children[0];
+                retainer.addEventListener(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, retainer);
+                retainer.populate();
             } else
                 dataGrid.dispatchEventToListeners(WebInspector.HeapSnapshotRetainmentDataGrid.Events.ExpandRetainersComplete);
         }
