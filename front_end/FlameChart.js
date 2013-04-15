@@ -574,6 +574,7 @@ WebInspector.FlameChart.prototype = {
         context.font = (barHeight - 3) + "px sans-serif";
         context.textBaseline = "top";
         this._dotsWidth = context.measureText("\u2026").width;
+        var visibleTimeLeft = this._timeWindowLeft - this._paddingLeftTime;
 
         var anchorBox = new AnchorBox();
         for (var i = 0; i < timelineEntries.length; ++i) {
@@ -581,7 +582,7 @@ WebInspector.FlameChart.prototype = {
             var startTime = entry.startTime;
             if (startTime > this._timeWindowRight)
                 break;
-            if ((startTime + entry.duration) < this._timeWindowLeft)
+            if ((startTime + entry.duration) < visibleTimeLeft)
                 continue;
             this._entryToAnchorBox(entry, anchorBox);
             if (anchorBox.width < this._minWidth)
@@ -665,6 +666,7 @@ WebInspector.FlameChart.prototype = {
 
         this._timeToPixel = this._totalPixels / this._totalTime;
         this._pixelToTime = this._totalTime / this._totalPixels;
+        this._paddingLeftTime = this._paddingLeft / this._timeToPixel;
     },
 
     update: function()
