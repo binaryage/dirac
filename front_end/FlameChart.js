@@ -89,8 +89,8 @@ WebInspector.FlameChart.Calculator.prototype = {
     {
         this._minimumBoundaries = flameChart._windowLeft * flameChart._timelineData.totalTime;
         this._maximumBoundaries = flameChart._windowRight * flameChart._timelineData.totalTime;
-        this._paddingLeft = flameChart._paddingLeft;
-        this._width = flameChart._canvas.width - this._paddingLeft;
+        this.paddingLeft = flameChart._paddingLeft;
+        this._width = flameChart._canvas.width - this.paddingLeft;
         this._timeToPixel = this._width / this.boundarySpan();
     },
 
@@ -99,7 +99,7 @@ WebInspector.FlameChart.Calculator.prototype = {
      */
     computePosition: function(time)
     {
-        return (time - this._minimumBoundaries) * this._timeToPixel + this._paddingLeft;
+        return (time - this._minimumBoundaries) * this._timeToPixel + this.paddingLeft;
     },
 
     formatTime: function(value)
@@ -570,7 +570,6 @@ WebInspector.FlameChart.prototype = {
 
         var context = this._canvas.getContext("2d");
         var textPaddingLeft = 2;
-        var paddingLeft = this._paddingLeft;
         context.font = (barHeight - 3) + "px sans-serif";
         context.textBaseline = "top";
         this._dotsWidth = context.measureText("\u2026").width;

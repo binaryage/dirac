@@ -1294,7 +1294,7 @@ WebInspector.TimelineCalculator.prototype = {
      */
     computePosition: function(time)
     {
-        return (time - this._minimumBoundary) / this.boundarySpan() * this._workingArea + this._paddingLeft;
+        return (time - this._minimumBoundary) / this.boundarySpan() * this._workingArea + this.paddingLeft;
     },
 
     computeBarGraphPercentages: function(record)
@@ -1338,7 +1338,7 @@ WebInspector.TimelineCalculator.prototype = {
     setDisplayWindow: function(paddingLeft, clientWidth)
     {
         this._workingArea = clientWidth - WebInspector.TimelineCalculator._minWidth - paddingLeft;
-        this._paddingLeft = paddingLeft;
+        this.paddingLeft = paddingLeft;
     },
 
     formatTime: function(value)
