@@ -1000,8 +1000,11 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             case recordTypes.GCEvent:
                 contentHelper.appendTextRow(WebInspector.UIString("Collected"), Number.bytesToString(this.data["usedHeapSizeDelta"]));
                 break;
-            case recordTypes.TimerInstall:
             case recordTypes.TimerFire:
+                callSiteStackTraceLabel = WebInspector.UIString("Timer installed");
+                // Fall-through intended.
+
+            case recordTypes.TimerInstall:
             case recordTypes.TimerRemove:
                 contentHelper.appendTextRow(WebInspector.UIString("Timer ID"), this.data["timerId"]);
                 if (typeof this.timeout === "number") {
@@ -1010,6 +1013,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                 }
                 break;
             case recordTypes.FireAnimationFrame:
+                callSiteStackTraceLabel = WebInspector.UIString("Animation frame requested");
                 contentHelper.appendTextRow(WebInspector.UIString("Callback ID"), this.data["id"]);
                 break;
             case recordTypes.FunctionCall:
