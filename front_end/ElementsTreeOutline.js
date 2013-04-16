@@ -1603,10 +1603,18 @@ WebInspector.ElementsTreeElement.prototype = {
             }
         }
 
-        if (oldText !== newText)
-            this.representedObject.setAttribute(attributeName, newText, moveToNextAttributeIfNeeded.bind(this));
-        else
+        if (!attributeName.trim() && !newText.trim()) {
+            element.removeSelf();
             moveToNextAttributeIfNeeded.call(this);
+            return;
+        }
+
+        if (oldText !== newText) {
+            this.representedObject.setAttribute(attributeName, newText, moveToNextAttributeIfNeeded.bind(this));
+            return;
+        }
+
+        moveToNextAttributeIfNeeded.call(this);
     },
 
     _tagNameEditingCommitted: function(element, newText, oldText, tagName, moveDirection)
