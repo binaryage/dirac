@@ -736,6 +736,17 @@ WebInspector.UILocation.prototype = {
     url: function()
     {
         return this.uiSourceCode.contentURL();
+    },
+
+    /**
+     * @return {string}
+     */
+    linkText: function()
+    {
+        var linkText = this.uiSourceCode.name() || (this.uiSourceCode.project().displayName() + "/" + this.uiSourceCode.path().join("/"));
+        if (typeof this.lineNumber === "number")
+            linkText += ":" + (this.lineNumber + 1);
+        return linkText;
     }
 }
 

@@ -99,7 +99,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
         checkbox.addEventListener("click", this._breakpointCheckboxClicked.bind(this, breakpoint), false);
         element.appendChild(checkbox);
 
-        var labelElement = document.createTextNode(WebInspector.formatLinkText(uiLocation.uiSourceCode.originURL(), uiLocation.lineNumber));
+        var labelElement = document.createTextNode(uiLocation.linkText());
         element.appendChild(labelElement);
 
         var snippetElement = document.createElement("div");
