@@ -95,10 +95,6 @@ li.breakpoint-hit .breakpoint-hit-marker {
     z-index: -1;
 }
 
-.event-listener-breakpoints .event-category {
-    padding-top: 2px;
-}
-
 .event-listener-breakpoints.properties-tree .children li {
     margin-left: 12px;
     height: 16px;
@@ -109,4 +105,5 @@ li.breakpoint-hit .breakpoint-hit-marker {
     top: -2px;
     position: relative;
     left: -1px;
+    font-size: 10px;
 }

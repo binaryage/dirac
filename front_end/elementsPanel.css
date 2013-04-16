@@ -290,6 +290,7 @@
 .styles-section .properties li {
     margin-left: 12px;
     padding-left: 22px;
+    padding-top: 0;
     white-space: normal;
     text-overflow: ellipsis;
     overflow: hidden;

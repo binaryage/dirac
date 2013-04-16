@@ -1730,6 +1730,7 @@ iframe.panel.extension {
     overflow: hidden;
     -webkit-user-select: text;
     cursor: default;
+    padding-top: 2px;
 }
 
 .properties-tree li.parent {
@@ -1825,7 +1826,6 @@ li.editing .swatch, li.editing .enabled-button,  li.editing-sub-part .delete-but
 }
 
 .properties-tree.watch-expressions > li {
-    padding-top: 2px;
     padding-left: 4px;
 }
 
