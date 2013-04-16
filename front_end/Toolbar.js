@@ -464,7 +464,7 @@ WebInspector.ToolbarDropdown.prototype = {
 
         var needsSeparator = false;
         for (var i = 0; i < toolbarItems.length; ++i) {
-            if (toolbarItems[i].offsetTop > 1) {
+            if (toolbarItems[i].offsetTop >= toolbarItems[0].offsetHeight) {
                 this._contentElement.appendChild(this._toolbar._createPanelToolbarItem(toolbarItems[i].panelDescriptor, true));
                 needsSeparator = true;
             }
