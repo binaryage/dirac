@@ -107,6 +107,9 @@ WebInspector.InspectorView.prototype = {
         if (this._currentPanel === x)
             return;
 
+        // FIXME: remove search controller.
+        WebInspector.searchController.cancelSearch();
+
         if (this._currentPanel)
             this._currentPanel.detach();
 
@@ -115,8 +118,6 @@ WebInspector.InspectorView.prototype = {
         if (x) {
             x.show();
             this.dispatchEventToListeners(WebInspector.InspectorView.Events.PanelSelected);
-            // FIXME: remove search controller.
-            WebInspector.searchController.cancelSearch();
         }
         for (var panelName in WebInspector.panels) {
             if (WebInspector.panels[panelName] === x) {
