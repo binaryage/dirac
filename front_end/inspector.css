@@ -689,9 +689,11 @@ body.drawer-visible #main-panels {
 }
 
 .status-bar {
+    position: relative;
     white-space: nowrap;
     height: 23px;
     overflow: hidden;
+    width: 100%;
     z-index: 12;
     background-image: -webkit-linear-gradient(rgb(243,243,243), rgb(235,235,235));
     border-top: 1px solid rgb(202, 202, 202);
