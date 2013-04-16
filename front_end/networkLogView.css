@@ -518,10 +518,6 @@
     border-right: none;
 }
 
-#network-container.brief-mode th.corner {
-    display: none;
-}
-
 #network-container.brief-mode .network-log-grid.data-grid .data-grid-resizer {
     display: none;
 }
