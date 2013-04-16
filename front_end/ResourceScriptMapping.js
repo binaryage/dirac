@@ -319,6 +319,8 @@ WebInspector.ResourceScriptFile.prototype = {
      */
     _isDiverged: function()
     {
+        if (this._uiSourceCode.formatted())
+            return false;
         if (this._uiSourceCode.isDirty())
             return true;
         if (!this._script)
