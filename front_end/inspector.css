@@ -932,10 +932,11 @@ body.remote .dock-status-bar-item {
 }
 
 #error-warning-count {
-    padding: 5px 2px 6px 0px;
-    font-size: 10px;
+    padding: 4px 6px 6px 0px;
+    font-size: 11px;
     height: 19px;
     cursor: pointer;
+    line-height: 14px;
 }
 
 #error-warning-count:hover {
@@ -2956,12 +2957,13 @@ body.platform-mac .progress-bar-container progress {
 
 .source-frame-cursor-position {
     padding-left: 6px;
-    padding-top: 5px;
+    padding-top: 4px;
     display: inline-block;
     pointer-events: auto;
     -webkit-user-select: text;
     font-size: 11px;
     cursor: text;
+    line-height: 14px;
 }
 
 .elements-tree-outline li.parent::before {
