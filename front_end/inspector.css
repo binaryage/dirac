@@ -195,12 +195,12 @@ body.dock-to-bottom .toolbar-item:active .toolbar-icon {
 }
 
 .toolbar-item-close-button {
-    display: inline;
+    display: inline-block;
     margin: auto 0 auto 4px;
     color: #555;
-    line-height: 0;
+    line-height: 10px;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-size: 16px;
-    font-weight: bold;
     opacity: 0.4;
 }
 
@@ -333,6 +333,7 @@ body.show-toolbar-icons #toolbar-dropdown .toolbar-label {
     border: 0;
     -webkit-border-radius: 5px;
     cursor: default;
+    font-family: Arial, Helvetica, sans-serif !important;
     font-weight: bold;
     line-height: 16px;
     height: 22px;
