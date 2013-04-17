@@ -72,7 +72,7 @@ WebInspector.DOMStorageItemsView.prototype = {
      */
     _domStorageItemsCleared: function(event)
     {
-        if (!this.isShowing())
+        if (!this.isShowing() || !this._dataGrid)
             return;
 
         this._dataGrid.rootNode().removeChildren();
@@ -86,7 +86,7 @@ WebInspector.DOMStorageItemsView.prototype = {
      */
     _domStorageItemRemoved: function(event)
     {
-        if (!this.isShowing())
+        if (!this.isShowing() || !this._dataGrid)
             return;
 
         var storageData = event.data;
@@ -110,7 +110,7 @@ WebInspector.DOMStorageItemsView.prototype = {
      */
     _domStorageItemAdded: function(event)
     {
-        if (!this.isShowing())
+        if (!this.isShowing() || !this._dataGrid)
             return;
 
         var storageData = event.data;
@@ -133,7 +133,7 @@ WebInspector.DOMStorageItemsView.prototype = {
      */
     _domStorageItemUpdated: function(event)
     {
-        if (!this.isShowing())
+        if (!this.isShowing() || !this._dataGrid)
             return;
 
         var storageData = event.data;
