@@ -58,6 +58,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         gutters: ["CodeMirror-linenumbers"],
         matchBrackets: true,
         styleSelectedText: true,
+        electricChars: false,
         autoCloseBrackets: WebInspector.experimentsSettings.textEditorSmartBraces.isEnabled()
     });
 
@@ -758,6 +759,27 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
             codeMirror.execCommand("newlineAndIndent");
         } else
             return CodeMirror.Pass;
+    },
+
+    "'}'": function(codeMirror)
+    {
+        var cursor = codeMirror.getCursor();
+        var line = codeMirror.getLine(cursor.line);
+        for(var i = 0 ; i < line.length; ++i)
+            if (!WebInspector.TextUtils.isSpaceChar(line.charAt(i)))
+                return CodeMirror.Pass;
+
+        codeMirror.replaceRange("}", cursor);
+        var matchingBracket = codeMirror.findMatchingBracket();
+        if (!matchingBracket.match)
+            return;
+
+        line = codeMirror.getLine(matchingBracket.to.line);
+        var desiredIndentation = 0;
+        while (desiredIndentation < line.length && WebInspector.TextUtils.isSpaceChar(line.charAt(desiredIndentation)))
+            ++desiredIndentation;
+
+        codeMirror.replaceRange(line.substr(0, desiredIndentation) + "}", new CodeMirror.Pos(cursor.line, 0), new CodeMirror.Pos(cursor.line, cursor.ch + 1));
     }
 }
 
