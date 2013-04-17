@@ -59,6 +59,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         autoCloseBrackets: WebInspector.experimentsSettings.textEditorSmartBraces.isEnabled()
     });
 
+    var extraKeys = {};
     var indent = WebInspector.settings.textEditorIndent.get();
     if (indent === WebInspector.TextUtils.Indent.TabCharacter) {
         this._codeMirror.setOption("indentWithTabs", true);
@@ -66,7 +67,14 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     } else {
         this._codeMirror.setOption("indentWithTabs", false);
         this._codeMirror.setOption("indentUnit", indent.length);
+        extraKeys.Tab = function(codeMirror)
+        {
+            if (codeMirror.somethingSelected())
+                return CodeMirror.Pass;
+            codeMirror.replaceRange(indent, codeMirror.getCursor());
+        }
     }
+    this._codeMirror.setOption("extraKeys", extraKeys);
 
     this._tokenHighlighter = new WebInspector.CodeMirrorTextEditor.TokenHighlighter(this._codeMirror);
     this._blockIndentController = new WebInspector.CodeMirrorTextEditor.BlockIndentController(this._codeMirror);
