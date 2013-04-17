@@ -43,6 +43,16 @@ WebInspector.InspectorFrontendHostStub = function()
 }
 
 WebInspector.InspectorFrontendHostStub.prototype = {
+    getSelectionBackgroundColor: function()
+    {
+        return "#6e86ff";
+    },
+
+    getSelectionForegroundColor: function()
+    {
+        return "#ffffff";
+    },
+
     platform: function()
     {
         var match = navigator.userAgent.match(/Windows NT/);
