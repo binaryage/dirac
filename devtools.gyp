@@ -505,7 +505,7 @@
             'dependencies': [
                 'devtools_html',
                 # FIXME: split generator into front-end and backend.
-                '../WebCore/WebCore.gyp/WebCore.gyp:inspector_protocol_sources',
+                '../core/core.gyp/core.gyp:inspector_protocol_sources',
             ],
             'conditions': [
                 ['debug_devtools==0', {
@@ -684,7 +684,7 @@
                     'dependencies': [
                         'devtools_html',
                         # FIXME: split generator into front-end and backend.
-                        '../WebCore/WebCore.gyp/WebCore.gyp:inspector_protocol_sources'
+                        '../core/core.gyp/core.gyp:inspector_protocol_sources'
                     ],
                     'actions': [{
                         'action_name': 'concatenate_devtools_js',
