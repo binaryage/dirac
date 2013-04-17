@@ -197,11 +197,6 @@
             '<@(devtools_standalone_files)',
         ],
         'devtools_standalone_files': [
-            'front_end/ace/acedevtools.css',
-            'front_end/ace/mode_css.js',
-            'front_end/ace/mode_html.js',
-            'front_end/ace/mode_javascript.js',
-            'front_end/ace/theme_textmate.js',
             'front_end/auditsPanel.css',
             'front_end/breadcrumbList.css',
             'front_end/breakpointsList.css',
@@ -341,11 +336,6 @@
             'front_end/cm/xml.js',
         ],
 
-        'devtools_ace_editor_js_files': [
-            'front_end/AceTextEditor.js',
-            'front_end/ace/ace.js',
-        ],
-
         'devtools_modules_js_files': [
             '<@(devtools_elements_js_files)',
             '<@(devtools_resources_js_files)',
@@ -355,7 +345,6 @@
             '<@(devtools_profiles_js_files)',
             '<@(devtools_audits_js_files)',
             '<@(devtools_codemirror_js_files)',
-            '<@(devtools_ace_editor_js_files)',
         ],
         'devtools_uglifyjs_files': [
             'front_end/UglifyJS/parse-js.js',
@@ -518,7 +507,6 @@
                                      'concatenated_devtools_profiles_js',
                                      'concatenated_devtools_audits_js',
                                      'concatenated_devtools_codemirror_js',
-                                     'concatenated_devtools_ace_editor_js',
                                      'concatenated_heap_snapshot_worker_js',
                                      'concatenated_script_formatter_worker_js',
                                      'concatenated_devtools_css'],
@@ -604,7 +592,6 @@
                                      'concatenated_devtools_profiles_js',
                                      'concatenated_devtools_audits_js',
                                      'concatenated_devtools_codemirror_js',
-                                     'concatenated_devtools_ace_editor_js',
                                      'concatenated_heap_snapshot_worker_js',
                                      'concatenated_script_formatter_worker_js',
                                      'concatenated_devtools_css'],
@@ -622,7 +609,6 @@
                             '<(PRODUCT_DIR)/resources/inspector/ProfilesPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/AuditsPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/CodeMirrorTextEditor.js',
-                            '<(PRODUCT_DIR)/resources/inspector/AceTextEditor.js',
                             '<(PRODUCT_DIR)/resources/inspector/HeapSnapshotWorker.js',
                             '<(PRODUCT_DIR)/resources/inspector/ScriptFormatterWorker.js',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.css',
@@ -829,22 +815,6 @@
                         ],
                         'search_path': 'front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/CodeMirrorTextEditor.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)', 'true'],
-                    }],
-                },
-                {
-                    'target_name': 'concatenated_devtools_ace_editor_js',
-                    'type': 'none',
-                    'actions': [{
-                        'action_name': 'concatenate_devtools_ace_editor_js',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/AceTextEditor.js',
-                        'inputs': [
-                            '<@(_script_name)',
-                            '<@(devtools_ace_editor_js_files)',
-                        ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/AceTextEditor.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)', 'true'],
                     }],
                 },
