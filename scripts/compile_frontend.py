@@ -36,7 +36,7 @@ import tempfile
 
 scripts_path = os.path.dirname(os.path.abspath(__file__))
 devtools_path = os.path.dirname(scripts_path)
-inspector_path = os.path.dirname(devtools_path) + "/WebCore/inspector"
+inspector_path = os.path.dirname(devtools_path) + "/core/inspector"
 devtools_frontend_path = devtools_path + "/front_end"
 protocol_externs_path = devtools_frontend_path + "/protocol_externs.js"
 
