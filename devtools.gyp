@@ -334,6 +334,7 @@
             'front_end/cm/matchbrackets.js',
             'front_end/cm/javascript.js',
             'front_end/cm/xml.js',
+            'front_end/cm/markselection.js',
         ],
 
         'devtools_modules_js_files': [

@@ -35,6 +35,7 @@ importScript("cm/xml.js");
 importScript("cm/htmlmixed.js");
 importScript("cm/matchbrackets.js");
 importScript("cm/closebrackets.js");
+importScript("cm/markselection.js");
 
 /**
  * @constructor
@@ -56,6 +57,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         lineNumbers: true,
         gutters: ["CodeMirror-linenumbers"],
         matchBrackets: true,
+        styleSelectedText: true,
         autoCloseBrackets: WebInspector.experimentsSettings.textEditorSmartBraces.isEnabled()
     });
 
@@ -95,9 +97,21 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 
     this.element.addEventListener("focus", this._handleElementFocus.bind(this), false);
     this.element.tabIndex = 0;
+    this._setupSelectionColor();
 }
 
 WebInspector.CodeMirrorTextEditor.prototype = {
+    _setupSelectionColor: function()
+    {
+        if (WebInspector.CodeMirrorTextEditor._selectionStyleInjected)
+            return;
+        var style = document.createElement("style");
+        var backgroundColor = ".CodeMirror .CodeMirror-selected { background-color: " + WebInspector.getSelectionBackgroundColor() + ";}";
+        var foregroundColor = ".CodeMirror .CodeMirror-selectedtext { color: " + WebInspector.getSelectionForegroundColor() + "!important;}";
+        style.textContent = backgroundColor + foregroundColor;
+        document.head.appendChild(style);
+        WebInspector.CodeMirrorTextEditor._selectionStyleInjected = true;
+    },
 
     /**
      * @param {number} lineNumber
