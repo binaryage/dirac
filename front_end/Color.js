@@ -218,7 +218,7 @@ WebInspector.Color.prototype = {
         var l = hsla[2];
 
         s *= l < 0.5 ? l : 1 - l;
-        return [h, s, (l + s), hsla[3]];
+        return [h, 2 * s / (l + s), (l + s), hsla[3]];
     },
 
     /**
@@ -294,6 +294,12 @@ WebInspector.Color.prototype = {
         case WebInspector.Color.Format.HSLA:
             var hsla = this.hsla();
             return String.sprintf("hsla(%d, %d%, %d%, %f)", Math.round(hsla[0] * 360), Math.round(hsla[1] * 100), Math.round(hsla[2] * 100), hsla[3]);
+        case WebInspector.Color.Format.HSV:
+            var hsv = this.hsva();
+            return String.sprintf("hsv(%d, %d%, %d%)", Math.round(hsv[0] * 360), Math.round(hsv[1] * 100), Math.round(hsv[2] * 100));
+        case WebInspector.Color.Format.HSVA:
+            var hsva = this.hsva();
+            return String.sprintf("hsva(%d, %d%, %d%, %f)", Math.round(hsva[0] * 360), Math.round(hsva[1] * 100), Math.round(hsva[2] * 100), hsva[3]);
         case WebInspector.Color.Format.HEX:
             return String.sprintf("#%s%s%s", toHexValue(this._rgba[0]), toHexValue(this._rgba[1]), toHexValue(this._rgba[2])).toUpperCase();
         case WebInspector.Color.Format.ShortHEX:
@@ -597,5 +603,7 @@ WebInspector.Color.Format = {
     RGB: "rgb",
     RGBA: "rgba",
     HSL: "hsl",
-    HSLA: "hsla"
+    HSLA: "hsla",
+    HSV: "hsv",
+    HSVA: "hsva"
 }
