@@ -57,6 +57,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         lineNumbers: true,
         gutters: ["CodeMirror-linenumbers"],
         matchBrackets: true,
+        smartIndent: false,
         styleSelectedText: true,
         electricChars: false,
         autoCloseBrackets: WebInspector.experimentsSettings.textEditorSmartBraces.isEnabled()
@@ -757,6 +758,10 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
             codeMirror.execCommand("newlineAndIndent");
             codeMirror.setCursor(cursor);
             codeMirror.execCommand("newlineAndIndent");
+            codeMirror.execCommand("indentMore");
+        } else if (line.substr(cursor.ch-1, 1) === "{") {
+            codeMirror.execCommand("newlineAndIndent");
+            codeMirror.execCommand("indentMore");
         } else
             return CodeMirror.Pass;
     },
