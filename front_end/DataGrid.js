@@ -139,7 +139,7 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     this._columnWidthsInitialized = false;
 }
 
-/** @typedef {{id: ?string, editable: boolean, sort: WebInspector.DataGrid.Order, sortable: boolean, align: WebInspector.DataGrid.Align}} */
+/** @typedef {{id: ?string, editable: boolean, longText: ?boolean, sort: WebInspector.DataGrid.Order, sortable: boolean, align: WebInspector.DataGrid.Align}} */
 WebInspector.DataGrid.ColumnDescriptor;
 
 WebInspector.DataGrid.Events = {
@@ -1342,8 +1342,11 @@ WebInspector.DataGridNode.prototype = {
         var div = document.createElement("div");
         if (data instanceof Node)
             div.appendChild(data);
-        else
+        else {
             div.textContent = data;
+            if (this.dataGrid.columns[columnIdentifier].longText)
+                div.title = data;
+        }
         cell.appendChild(div);
 
         if (columnIdentifier === this.dataGrid.disclosureColumnIdentifier) {

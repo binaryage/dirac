@@ -44,8 +44,8 @@ WebInspector.CookiesTable = function(expandable, refreshCallback, selectedCallba
     this._refreshCallback = refreshCallback;
 
     var columns = [
-        {id: "name", title: WebInspector.UIString("Name"), sortable: true, disclosure: expandable, sort: WebInspector.DataGrid.Order.Ascending, weight: 24},
-        {id: "value", title: WebInspector.UIString("Value"), sortable: true, weight: 34},
+        {id: "name", title: WebInspector.UIString("Name"), sortable: true, disclosure: expandable, sort: WebInspector.DataGrid.Order.Ascending, longText: true, weight: 24},
+        {id: "value", title: WebInspector.UIString("Value"), sortable: true, longText: true, weight: 34},
         {id: "domain", title: WebInspector.UIString("Domain"), sortable: true, weight: 7},
         {id: "path", title: WebInspector.UIString("Path"), sortable: true, weight: 7},
         {id: "expires", title: WebInspector.UIString("Expires / Max-Age"), sortable: true, weight: 7},
