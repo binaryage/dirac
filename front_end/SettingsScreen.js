@@ -309,6 +309,9 @@ WebInspector.GenericSettingsTab = function()
     this._disableJSCheckbox = disableJSElement.getElementsByTagName("input")[0];
     this._updateScriptDisabledCheckbox();
 
+    var panelShortcutTitle = WebInspector.UIString("Enable %s + 1-9 shortcut to switch panels", WebInspector.isMac() ? "Cmd" : "Ctrl");
+    p.appendChild(this._createCheckboxSetting(panelShortcutTitle, WebInspector.settings.shortcutPanelSwitch));
+
     p = this._appendSection(WebInspector.UIString("Appearance"));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show toolbar icons"), WebInspector.settings.showToolbarIcons));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Split panels vertically when docked to right"), WebInspector.settings.splitVerticallyWhenDockedToRight));
