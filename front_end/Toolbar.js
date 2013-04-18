@@ -209,6 +209,7 @@ WebInspector.Toolbar.prototype = {
 
     /**
      * @param {WebInspector.PanelDescriptor} panelDescriptor
+     * @param {boolean=} noCloseButton
      * @return {Element}
      */
     _createPanelToolbarItem: function(panelDescriptor, noCloseButton)
