@@ -103,6 +103,8 @@ def main(argv):
         output.write('\n')
         input_file.close()
 
+    if os.path.exists(output_file_name):
+        os.remove(output_file_name);
     output_file = open(output_file_name, 'w')
     output_file.write(output.getvalue())
     output_file.close()

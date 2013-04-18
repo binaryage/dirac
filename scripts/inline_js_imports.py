@@ -73,6 +73,8 @@ def main(argv):
                         'Make sure you call "importScript" in module heads only.' %
                         (output_file_name))
 
+    if os.path.exists(output_file_name):
+        os.remove(output_file_name)
     output_file = open(output_file_name, 'w')
     if not no_minify:
         output_script = jsmin.jsmin(output_script)
