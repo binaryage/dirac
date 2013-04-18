@@ -347,6 +347,7 @@ CodeMirror.prototype = {
     execCommand: function(cmd) { },
     extendSelection: function(from, to) { },
     findMarksAt: function(pos) { },
+    findMatchingBracket: function() { },
     findPosH: function(from, amount, unit, visually) { },
     findPosV: function(from, amount, unit, goalColumn) { },
     firstLine: function() { },
@@ -358,6 +359,9 @@ CodeMirror.prototype = {
     getHistory: function() { },
     getInputField: function(){ },
     getLine: function(line) { },
+    /**
+     * @return {{wrapClass: string}}
+     */
     getLineHandle: function(line) { },
     getLineNumber: function(line) { },
     getMode: function() { },
