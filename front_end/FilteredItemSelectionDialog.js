@@ -602,7 +602,7 @@ WebInspector.SelectUISourceCodeDialog = function()
 WebInspector.SelectUISourceCodeDialog.prototype = {
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @param {number} lineNumber
+     * @param {number=} lineNumber
      */
     uiSourceCodeSelected: function(uiSourceCode, lineNumber)
     {
@@ -691,7 +691,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     selectItem: function(itemIndex, promptValue)
     {
         var lineNumberMatch = promptValue.match(/[^:]+\:([\d]*)$/);
-        var lineNumber = lineNumberMatch ? Math.max(parseInt(lineNumberMatch[1], 10) - 1, 0) : 0;
+        var lineNumber = lineNumberMatch ? Math.max(parseInt(lineNumberMatch[1], 10) - 1, 0) : undefined;
         this.uiSourceCodeSelected(this._uiSourceCodes[itemIndex], lineNumber);
     },
 
@@ -742,7 +742,7 @@ WebInspector.OpenResourceDialog.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @param {number} lineNumber
+     * @param {number=} lineNumber
      */
     uiSourceCodeSelected: function(uiSourceCode, lineNumber)
     {
@@ -790,7 +790,7 @@ WebInspector.SelectUISourceCodeForProjectTypeDialog = function(type, callback)
 WebInspector.SelectUISourceCodeForProjectTypeDialog.prototype = {
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @param {number} lineNumber
+     * @param {number=} lineNumber
      */
     uiSourceCodeSelected: function(uiSourceCode, lineNumber)
     {

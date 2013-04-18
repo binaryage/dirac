@@ -391,7 +391,7 @@ WebInspector.ScriptsPanel.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @param {number} lineNumber
+     * @param {number=} lineNumber
      */
     showUISourceCode: function(uiSourceCode, lineNumber)
     {
