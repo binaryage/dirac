@@ -171,7 +171,10 @@ WebInspector.SourceMap.prototype = {
         var originalToCanonicalURLMap = {};
         for (var i = 0; i < map.sources.length; ++i) {
             var originalSourceURL = map.sources[i];
-            var href = (map.sourceRoot ? map.sourceRoot + "/" : "") + originalSourceURL;
+            var sourceRoot = map.sourceRoot || "";
+            if (sourceRoot && !sourceRoot.endsWith("/"))
+                sourceRoot += "/";
+            var href = sourceRoot + originalSourceURL;
             var url = WebInspector.ParsedURL.completeURL(this._sourceMappingURL, href) || href;
             originalToCanonicalURLMap[originalSourceURL] = url;
             sources.push(url);
