@@ -11,7 +11,7 @@ body {
     right: 0;
     overflow: hidden;
     font-family: Lucida Grande, sans-serif;
-    font-size: 11px;
+    font-size: 12px;
     margin: 0;
     tab-size: 4;
     -webkit-user-select: none;
@@ -21,18 +21,15 @@ body {
 body.platform-linux {
   color: rgb(48, 57, 66);
   font-family: Ubuntu, Arial, sans-serif;
-  font-size: 12px;
 }
 
 body.platform-mac {
   color: rgb(48, 57, 66);
   font-family: 'Lucida Grande', sans-serif;
-  font-size: 12px;
 }
 
 body.platform-windows {
   font-family: 'Segoe UI', Tahoma, sans-serif;
-  font-size: 12px;
 }
 
 body.dock-to-right:not(.undocked) {
