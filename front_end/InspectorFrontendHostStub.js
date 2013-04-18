@@ -88,10 +88,6 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     {
     },
 
-    setAttachedWindowWidth: function(width)
-    {
-    },
-
     moveWindowBy: function(x, y)
     {
     },

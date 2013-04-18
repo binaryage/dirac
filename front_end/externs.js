@@ -157,7 +157,6 @@ InspectorFrontendHostAPI.prototype.bringToFront = function() {}
 InspectorFrontendHostAPI.prototype.closeWindow = function() {}
 InspectorFrontendHostAPI.prototype.requestSetDockSide = function(dockSide) {}
 InspectorFrontendHostAPI.prototype.setAttachedWindowHeight = function(height) {}
-InspectorFrontendHostAPI.prototype.setAttachedWindowWidth = function(width) {}
 InspectorFrontendHostAPI.prototype.moveWindowBy = function(x, y) {}
 InspectorFrontendHostAPI.prototype.setInjectedScriptForOrigin = function(origin, script) {}
 InspectorFrontendHostAPI.prototype.loaded = function() {}
