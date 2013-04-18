@@ -414,6 +414,7 @@ WebInspector.ProfilesPanel = function(name, type)
 
     this._createFileSelectorElement();
     this.element.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
+    this._registerShortcuts();
 
     WebInspector.ContextMenu.registerProvider(this);
 }
@@ -446,6 +447,11 @@ WebInspector.ProfilesPanel.prototype = {
                 return type;
         }
         return null;
+    },
+
+    _registerShortcuts: function()
+    {
+        this.registerShortcuts(WebInspector.ProfilesPanelDescriptor.ShortcutKeys.StartStopRecording, this.toggleRecordButton.bind(this));
     },
 
     /**
