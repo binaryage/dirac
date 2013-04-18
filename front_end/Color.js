@@ -218,7 +218,7 @@ WebInspector.Color.prototype = {
         var l = hsla[2];
 
         s *= l < 0.5 ? l : 1 - l;
-        return [h, s, (l + s), hsla[3]];
+        return [h, 2 * s / (l + s), (l + s), hsla[3]];
     },
 
     /**
