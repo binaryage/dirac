@@ -1565,6 +1565,9 @@ WebInspector.TextEditorMainPanel.prototype = {
 
     _handleKeyPress: function(event)
     {
+        if (event.target.enclosingNodeOrSelfWithClass("webkit-line-decorations"))
+            return;
+
         var char = String.fromCharCode(event.which);
         var handler = this._charOverrides[char];
         if (handler && handler()) {
