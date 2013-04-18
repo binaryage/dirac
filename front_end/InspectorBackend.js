@@ -46,9 +46,17 @@ function InspectorBackendClass()
 }
 
 InspectorBackendClass.prototype = {
+    /**
+     * @return {number}
+     */
+    nextCallbackId: function()
+    {
+        return this._lastCallbackId++;
+    },
+
     _wrap: function(callback, method)
     {
-        var callbackId = this._lastCallbackId++;
+        var callbackId = this.nextCallbackId();
         if (!callback)
             callback = function() {};
 

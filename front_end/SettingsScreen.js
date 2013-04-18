@@ -53,6 +53,8 @@ WebInspector.SettingsScreen = function(onHide)
         this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Overrides, WebInspector.UIString("Overrides"), new WebInspector.OverridesSettingsTab());
     if (WebInspector.experimentsSettings.fileSystemProject.isEnabled())
         this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Workspace, WebInspector.UIString("Workspace"), new WebInspector.WorkspaceSettingsTab());
+    if (WebInspector.experimentsSettings.tethering.isEnabled())
+        this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Tethering, WebInspector.UIString("Port forwarding"), new WebInspector.TetheringSettingsTab());
     if (WebInspector.experimentsSettings.experimentsEnabled)
         this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Experiments, WebInspector.UIString("Experiments"), new WebInspector.ExperimentsSettingsTab());
     this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Shortcuts, WebInspector.UIString("Shortcuts"), WebInspector.shortcutsScreen.createShortcutsTabView());
@@ -68,6 +70,7 @@ WebInspector.SettingsScreen.Tabs = {
     General: "general",
     Overrides: "overrides",
     Workspace: "workspace",
+    Tethering: "tethering",
     Experiments: "experiments",
     Shortcuts: "shortcuts"
 }
@@ -689,6 +692,146 @@ WebInspector.WorkspaceSettingsTab.prototype = {
         this._addMappingRow(mappingEntry);
         this._urlInputElement.value = "";
         this._pathInputElement.value = "";
+    },
+
+    __proto__: WebInspector.SettingsTab.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.SettingsTab}
+ */
+WebInspector.TetheringSettingsTab = function()
+{
+    WebInspector.SettingsTab.call(this, WebInspector.UIString("Port Forwarding"), "workspace-tab-content");
+}
+
+WebInspector.TetheringSettingsTab.prototype = {
+    wasShown: function()
+    {
+        if (this._paragraphElement)
+            return;
+
+        this._paragraphElement = this._appendSection(WebInspector.UIString("Mappings"));
+        WebInspector.SettingsTab.prototype.wasShown.call(this);
+        var mappingEntries = WebInspector.settings.portForwardings.get();
+        for (var i = 0; i < mappingEntries.length; ++i)
+            this._addMappingRow(mappingEntries[i].port, mappingEntries[i].location, false);
+        if (!mappingEntries.length)
+            this._addMappingRow("", "", true);
+        this._save();
+    },
+
+    /**
+     * @param {string} port
+     * @param {string} location
+     * @param {boolean} focus
+     * @return {Element}
+     */
+    _addMappingRow: function(port, location, focus)
+    {
+        var mappingRow = this._paragraphElement.createChild("div", "workspace-settings-row");
+        var portElement = mappingRow.createChild("input");
+        portElement.type = "text";
+        portElement.value = port || "";
+        if (!port)
+            portElement.placeholder = "8080";
+        portElement.addEventListener("keydown", this._editTextInputKey.bind(this, true), true);
+        portElement.addEventListener("blur", this._save.bind(this), true);
+        portElement.addEventListener("input", this._validatePort.bind(this, portElement), true);
+
+        var locationElement = mappingRow.createChild("input");
+        locationElement.type = "text";
+        locationElement.value = location || "127.0.0.1:";
+        locationElement.addEventListener("keydown", this._editTextInputKey.bind(this, false), true);
+        locationElement.addEventListener("blur", this._save.bind(this), true);
+        locationElement.addEventListener("input", this._validateLocation.bind(this, locationElement), true);
+
+        var removeButton = mappingRow.createChild("button", "button remove-button");
+        removeButton.value = WebInspector.UIString("Remove");
+        removeButton.tabIndex = -1;
+        removeButton.addEventListener("click", removeMappingClicked.bind(this), false);
+
+        function removeMappingClicked()
+        {
+            mappingRow.removeSelf();
+            if (!this._paragraphElement.querySelector(".workspace-settings-row"))
+                this._addMappingRow();
+            this._save();
+        }
+        if (focus)
+            setTimeout(function() { portElement.focus(); }, 0); // Needed to work on wasShown
+        return mappingRow;
+    },
+
+    _save: function()
+    {
+        var portForwardings = [];
+        for (var rowElement = this._paragraphElement.firstChild.nextSibling; rowElement; rowElement = rowElement.nextSibling) {
+            var portElement = rowElement.firstChild;
+            var locationElement = portElement.nextSibling;
+            var port = this._validatePort(portElement);
+            var location = this._validateLocation(locationElement);
+            if (!port || !location)
+                continue;
+            portForwardings.push({ port : parseInt(port, 10), location : location });
+        }
+        WebInspector.settings.portForwardings.set(portForwardings);
+    },
+
+    /**
+     * @param {boolean} isPort
+     * @param {Event} event
+     */
+    _editTextInputKey: function(isPort, event)
+    {
+        if (!WebInspector.KeyboardShortcut.hasNoModifiers(/** @type {KeyboardEvent}*/ (event)))
+            return;
+
+        if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Enter.code ||
+            event.keyCode === WebInspector.KeyboardShortcut.Keys.Tab.code) {
+            if (isPort)
+                event.target.nextElementSibling.focus();
+            else {
+                if (event.target.parentElement.nextSibling)
+                    event.target.parentElement.nextSibling.firstChild.focus();
+                else
+                    this._addMappingRow("", "", true);
+            }
+            event.consume(true);
+        }
+    },
+
+    /**
+     * @param {Element} element
+     * @param {Event=} event
+     * @return {number}
+     */
+    _validatePort: function(element, event)
+    {
+        var port = element.value;
+        if (isNaN(port) || port < 5000 || port > 10000) {
+            element.addStyleClass("workspace-settings-error");
+            return 0;
+        }
+        element.removeStyleClass("workspace-settings-error");
+        return parseInt(port, 10);
+    },
+
+    /**
+     * @param {Element} element
+     * @param {Event=} event
+     * @return {string}
+     */
+    _validateLocation: function(element, event)
+    {
+        var location = element.value;
+        if (!/\d+\.\d+\.\d+\.\d+:\d+/.test(location)) {
+            element.addStyleClass("workspace-settings-error");
+            return "";
+        }
+        element.removeStyleClass("workspace-settings-error");
+        return location;
     },
 
     __proto__: WebInspector.SettingsTab.prototype

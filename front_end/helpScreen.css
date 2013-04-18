@@ -487,3 +487,7 @@ body.platform-mac .help-content input[type=radio] {
 #workspace-tab-content .workspace-settings-row .file-system-add-button:hover {
     border-bottom: 1px gray dashed;
 }
+
+#workspace-tab-content .workspace-settings-error {
+    color: red;
+}

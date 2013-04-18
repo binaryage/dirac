@@ -109,6 +109,7 @@ WebInspector.Settings = function()
     this.splitVerticallyWhenDockedToRight = this.createSetting("splitVerticallyWhenDockedToRight", true);
     this.visiblePanels = this.createSetting("visiblePanels", {});
     this.shortcutPanelSwitch = this.createSetting("shortcutPanelSwitch", false);
+    this.portForwardings = this.createSetting("portForwardings", []);
 }
 
 WebInspector.Settings.prototype = {
@@ -210,6 +211,7 @@ WebInspector.ExperimentsSettings = function()
     this.textEditorSmartBraces = this._createExperiment("textEditorSmartBraces", "Enable smart braces in text editor");
     this.customizableToolbar = this._createExperiment("customizableToolbar", "Enable toolbar customization");
     this.cpuFlameChart = this._createExperiment("cpuFlameChart", "Show Flame Chart in CPU Profiler");
+    this.tethering = this._createExperiment("tethering", "Enable reverse port forwarding");
 
     this._cleanUpSetting();
 }

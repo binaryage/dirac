@@ -490,10 +490,15 @@ WebInspector.ProfilesPanel.prototype = {
         return this._statusBarButtons.select("element").concat(this._profileTypeStatusBarItemsContainer, this._profileViewStatusBarItemsContainer);
     },
 
-    toggleRecordButton: function()
+    /**
+     * @param {WebInspector.Event|Event=} event
+     * @return {boolean}
+     */
+    toggleRecordButton: function(event)
     {
         var isProfiling = this._selectedProfileType.buttonClicked();
         this.setRecordingProfile(this._selectedProfileType.id, isProfiling);
+        return true;
     },
 
     _populateAllProfiles: function()
