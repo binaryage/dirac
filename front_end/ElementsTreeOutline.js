@@ -77,6 +77,7 @@ WebInspector.ElementsTreeOutline.MappedCharToEntity = {
     "\u2002": "ensp",
     "\u2003": "emsp",
     "\u2009": "thinsp",
+    "\u200a": "#8202", // Hairspace
     "\u200b": "#8203", // ZWSP
     "\u200c": "zwnj",
     "\u200d": "zwj",
