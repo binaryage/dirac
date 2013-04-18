@@ -103,18 +103,12 @@ var WebInspector = {
         if (!this._toggleConsoleButton.enabled())
             return;
 
-        this._toggleConsoleButton.toggled = !this._toggleConsoleButton.toggled;
-
         var animationType = window.event && window.event.shiftKey ? WebInspector.Drawer.AnimationType.Slow : WebInspector.Drawer.AnimationType.Normal;
-        if (this._toggleConsoleButton.toggled) {
-            this._toggleConsoleButton.title = WebInspector.UIString("Hide console.");
-            this.drawer.show(this.consoleView, animationType);
-            this._consoleWasShown = true;
-        } else {
-            this._toggleConsoleButton.title = WebInspector.UIString("Show console.");
-            this.drawer.hide(animationType);
-            delete this._consoleWasShown;
-        }
+
+        if (this._toggleConsoleButton.toggled)
+            this.closeConsole(animationType);
+        else
+            this.showConsole(animationType);
     },
 
     /**
@@ -124,9 +118,9 @@ var WebInspector = {
      */
     showViewInDrawer: function(statusBarElement, view, onclose)
     {
-        this._toggleConsoleButton.title = WebInspector.UIString("Hide console.");
+        this._toggleConsoleButton.title = WebInspector.UIString("Show console.");
         this._toggleConsoleButton.toggled = false;
-        this._closePreviousDrawerView();
+        this._removeDrawerView();
 
         var drawerStatusBarHeader = document.createElement("div");
         drawerStatusBarHeader.className = "drawer-header status-bar-item";
@@ -148,25 +142,61 @@ var WebInspector = {
     closeViewInDrawer: function()
     {
         if (this._drawerStatusBarHeader) {
-            this._closePreviousDrawerView();
+            this._removeDrawerView();
 
             // Once drawer is closed console should be shown if it was shown before current view replaced it in drawer. 
-            if (!this._consoleWasShown)
-                this.drawer.hide(WebInspector.Drawer.AnimationType.Immediately);
+            if (this._consoleWasShown)
+                this.showConsole();
             else
-                this._toggleConsoleButtonClicked();
+                this.drawer.hide(WebInspector.Drawer.AnimationType.Immediately);
         }
     },
 
-    _closePreviousDrawerView: function()
+    _removeDrawerView: function()
     {
         if (this._drawerStatusBarHeader) {
-            this._drawerStatusBarHeader.parentElement.removeChild(this._drawerStatusBarHeader);
+            this._drawerStatusBarHeader.removeSelf();
             if (this._drawerStatusBarHeader.onclose)
                 this._drawerStatusBarHeader.onclose();
             delete this._drawerStatusBarHeader;
         }
     },
+
+    /**
+     * @param {WebInspector.Drawer.AnimationType=} animationType
+     */
+    showConsole: function(animationType)
+    {
+        animationType = animationType || WebInspector.Drawer.AnimationType.Normal;
+
+        if (this.consoleView.isShowing())
+            return;
+
+        if (WebInspector.drawer.visible)
+            this._removeDrawerView();
+
+        this._toggleConsoleButton.toggled = true;
+        this._toggleConsoleButton.title = WebInspector.UIString("Hide console.");
+        this.drawer.show(this.consoleView, animationType);
+        this._consoleWasShown = true;
+    },
+
+    /**
+     * @param {WebInspector.Drawer.AnimationType=} animationType
+     */
+    closeConsole: function(animationType)
+    {
+        animationType = animationType || WebInspector.Drawer.AnimationType.Normal;
+
+        if (!this.consoleView.isShowing() || !WebInspector.drawer.visible)
+            return;
+
+        this._toggleConsoleButton.toggled = false;
+        this._toggleConsoleButton.title = WebInspector.UIString("Show console.");
+        this.drawer.hide(animationType);
+        this._consoleWasShown = false;
+    },
+
 
     _updateErrorAndWarningCounts: function()
     {
@@ -810,15 +840,6 @@ WebInspector.contextMenuEventFired = function(event)
 {
     if (event.handled || event.target.hasStyleClass("popup-glasspane"))
         event.preventDefault();
-}
-
-WebInspector.showConsole = function()
-{
-    if (WebInspector._toggleConsoleButton && !WebInspector._toggleConsoleButton.toggled) {
-        if (WebInspector.drawer.visible)
-            this._closePreviousDrawerView();
-        WebInspector._toggleConsoleButtonClicked();
-    }
 }
 
 WebInspector.showPanel = function(panel)
