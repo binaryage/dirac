@@ -231,7 +231,8 @@ WebInspector.ConsoleMessage.MessageSource = {
     Rendering: "rendering",
     CSS: "css",
     Security: "security",
-    Other: "other"
+    Other: "other",
+    Deprecation: "deprecation"
 }
 
 WebInspector.ConsoleMessage.MessageType = {
