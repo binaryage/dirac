@@ -67,7 +67,7 @@ WebInspector.Toolbar.prototype = {
         panelDescriptor._toolbarElement = this._createPanelToolbarItem(panelDescriptor);
         if (!this._isToolbarCustomizable() || this._isPanelVisible(panelDescriptor.name()))
             this.element.insertBefore(panelDescriptor._toolbarElement, this._panelInsertLocation(panelDescriptor));
-        this._updateAddPanelState();
+        this._updatePanelsMenuState();
         this.resize();
     },
 
@@ -77,16 +77,15 @@ WebInspector.Toolbar.prototype = {
      */
     _panelInsertLocation: function(panelDescriptor)
     {
-        var newPanelElement = document.getElementById("toolbar-panels-menu").parentElement;
         if (!this._isToolbarCustomizable())
-            return newPanelElement;
+            return null;
 
         if (this._isDefaultPanel(panelDescriptor.name()))
-            return this._firstNonDefaultPanel || newPanelElement;
+            return this._firstNonDefaultPanel || null;
 
         if (!this._firstNonDefaultPanel)
             this._firstNonDefaultPanel = panelDescriptor._toolbarElement;
-        return newPanelElement;
+        return null;
     },
 
     /**
@@ -181,16 +180,25 @@ WebInspector.Toolbar.prototype = {
                 }
             }
         }
-        document.getElementById("toolbar-panels-menu").removeStyleClass("disabled");
+        this._updatePanelsMenuState();
         this.resize();
     },
 
-    _updateAddPanelState: function()
+    _updatePanelsMenuState: function()
     {
-        if (this._panelDescriptors.every(function (descr) { return this._isPanelVisible(descr.name()); }, this))
+        if (this._panelDescriptors.every(function (descr) { return this._isPanelVisible(descr.name()); }, this) && this._allItemsFitOntoToolbar())
             document.getElementById("toolbar-panels-menu").addStyleClass("disabled");
         else
             document.getElementById("toolbar-panels-menu").removeStyleClass("disabled");
+    },
+
+    /**
+     * @return {boolean}
+     */
+    _allItemsFitOntoToolbar: function()
+    {
+        var toolbarItems = this.element.querySelectorAll(".toolbar-item.toggleable");
+        return toolbarItems.length === 0 || this.element.scrollHeight < toolbarItems[0].offsetHeight * 2;
     },
 
     /**
@@ -200,10 +208,10 @@ WebInspector.Toolbar.prototype = {
     {
         if (this._isPanelVisible(panelDescriptor.name()))
             return;
-        this.element.insertBefore(panelDescriptor._toolbarElement, document.getElementById("toolbar-panels-menu").parentElement);
+        this.element.appendChild(panelDescriptor._toolbarElement);
         panelDescriptor._toolbarElement.removeStyleClass("hidden");
         this._setPanelVisible(panelDescriptor.name(), true);
-        this._updateAddPanelState();
+        this._updatePanelsMenuState();
         this.resize();
     },
 
@@ -388,6 +396,18 @@ WebInspector.Toolbar.prototype = {
         }
 
         var contextMenu = new WebInspector.ContextMenu(event);
+        var currentPanelName = WebInspector.inspectorView.currentPanel().name;
+        var toolbarItems = this.element.querySelectorAll(".toolbar-item.toggleable");
+        for (var i = 0; i < toolbarItems.length; ++i) {
+            if (toolbarItems[i].offsetTop >= toolbarItems[0].offsetHeight) {
+                var descr = toolbarItems[i].panelDescriptor;
+                if (descr.name() === currentPanelName)
+                    contextMenu.appendCheckboxItem(descr.title(), activatePanel.bind(this, descr), true);
+                else
+                    contextMenu.appendItem(descr.title(), activatePanel.bind(this, descr));
+            }
+        }
+        contextMenu.appendSeparator();
         for (var i = 0; i < this._panelDescriptors.length; ++i) {
             var descr = this._panelDescriptors[i];
             if (this._isPanelVisible(descr.name()))
@@ -405,6 +425,10 @@ WebInspector.Toolbar.prototype = {
 
     _innerUpdateDropdownButtonAndHideDropdown: function()
     {
+        if (this._isToolbarCustomizable()) {
+            this._updatePanelsMenuState();
+            return;
+        }
         this._setDropdownVisible(false);
 
         if (this.element.scrollHeight > this.element.offsetHeight)
