@@ -190,7 +190,8 @@ function SourceMapV3()
     /** @type {string} */ this.file;
     /** @type {Array.<string>} */ this.sources;
     /** @type {Array.<SourceMapV3.Section>} */ this.sections;
-    /** @type {string} */ this.mappings
+    /** @type {string} */ this.mappings;
+    /** @type {string} */ this.sourceRoot;
 }
 
 /** @constructor */
