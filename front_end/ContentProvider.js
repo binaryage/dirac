@@ -88,6 +88,7 @@ WebInspector.ContentProvider.performSearchInContent = function(content, query, c
         if (lineContent.length > 0 && lineContent.charAt(lineContent.length - 1) === "\r")
             lineContent = lineContent.substring(0, lineContent.length - 1)
 
+        regex.lastIndex = 0;
         if (regex.exec(lineContent))
             result.push(new WebInspector.ContentProvider.SearchMatch(i, lineContent));
     }
