@@ -21,3 +21,11 @@
 #flame-chart-overview-container {
     border-bottom: 1px solid rgba(0, 0, 0, 0.3);
 }
+
+.flame-chart-overview-canvas {
+    position: absolute;
+    top: 20px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+}
