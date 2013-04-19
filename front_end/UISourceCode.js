@@ -274,7 +274,7 @@ WebInspector.UISourceCode.prototype = {
         delete this._lastAcceptedContent;
         this._content = content;
         this._contentLoaded = true;
-        
+
         var lastRevision = this.history.length ? this.history[this.history.length - 1] : null;
         if (!lastRevision || lastRevision._content !== this._content) {
             var revision = new WebInspector.Revision(this, this._content, new Date());
@@ -282,9 +282,8 @@ WebInspector.UISourceCode.prototype = {
             revision._persist();
         }
 
-        var oldWorkingCopy = this._workingCopy;
         delete this._workingCopy;
-        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.WorkingCopyCommitted, {oldWorkingCopy: oldWorkingCopy, workingCopy: this.workingCopy()});
+        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.WorkingCopyCommitted);
         if (this._url && WebInspector.fileManager.isURLSaved(this._url)) {
             WebInspector.fileManager.save(this._url, this._content, false);
             WebInspector.fileManager.close(this._url);
@@ -426,14 +425,12 @@ WebInspector.UISourceCode.prototype = {
      */
     setWorkingCopy: function(newWorkingCopy)
     {
-        var wasDirty = this.isDirty();        
         this._mimeType = this.canonicalMimeType();
-        var oldWorkingCopy = this._workingCopy;
         if (this._content === newWorkingCopy)
             delete this._workingCopy;
         else
             this._workingCopy = newWorkingCopy;
-        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.WorkingCopyChanged, {oldWorkingCopy: oldWorkingCopy, workingCopy: this.workingCopy(), wasDirty: wasDirty});
+        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.WorkingCopyChanged);
     },
 
     /**
@@ -446,7 +443,7 @@ WebInspector.UISourceCode.prototype = {
             return;
         }
 
-        this._commitContent(this._workingCopy, true);
+        this._commitContent(this.workingCopy(), true);
         callback(null);
 
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
