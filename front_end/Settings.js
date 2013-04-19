@@ -110,6 +110,7 @@ WebInspector.Settings = function()
     this.visiblePanels = this.createSetting("visiblePanels", {});
     this.shortcutPanelSwitch = this.createSetting("shortcutPanelSwitch", false);
     this.portForwardings = this.createSetting("portForwardings", []);
+    this.codemirror = this.createSetting("codemirror", false);
 }
 
 WebInspector.Settings.prototype = {
@@ -203,7 +204,6 @@ WebInspector.ExperimentsSettings = function()
     this.fileSystemInspection = this._createExperiment("fileSystemInspection", "FileSystem inspection");
     this.canvasInspection = this._createExperiment("canvasInspection ", "Canvas inspection");
     this.sass = this._createExperiment("sass", "Support for Sass");
-    this.codemirror = this._createExperiment("codemirror", "Use CodeMirror editor");
     this.cssRegions = this._createExperiment("cssRegions", "CSS Regions Support");
     this.showOverridesInDrawer = this._createExperiment("showOverridesInDrawer", "Show Overrides in drawer");
     this.fileSystemProject = this._createExperiment("fileSystemProject", "File system folders in Sources Panel");
