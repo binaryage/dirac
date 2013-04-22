@@ -576,9 +576,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     if (WebInspector.settings.continuousPainting.get())
         PageAgent.setContinuousPaintingEnabled(true);
 
-    if (WebInspector.settings.javaScriptDisabled.get())
-        PageAgent.setScriptExecutionDisabled(true);
-
     if (WebInspector.settings.showFPSCounter.get())
         PageAgent.setShowFPSCounter(true);
 
