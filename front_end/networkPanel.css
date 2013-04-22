@@ -37,12 +37,6 @@
 
 #network-close-button {
     position: absolute;
-    width: 14px;
-    height: 14px;
-    background-image: url(Images/closeButtons.png);
-    background-position: 0 0;
-    background-color: transparent;
-    border: 0 none transparent;
     top: 8px;
     left: 5px;
     z-index: 10;
@@ -51,14 +45,6 @@
 
 #network-views.small #network-close-button {
     top: 4px;
-}
-
-#network-close-button:hover {
-    background-position: 14px 0;
-}
-
-#network-close-button:active {
-    background-position: 28px 0;
 }
 
 .network.panel.viewing-resource #network-close-button  {
@@ -92,7 +78,7 @@
 #network-views .network-item-view .tabbed-pane-header {
     height: 31px;
     padding-top: 8px;
-    padding-left: 25px;
+    padding-left: 13px;
     white-space: nowrap;
 }
 

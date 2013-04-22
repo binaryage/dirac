@@ -127,9 +127,7 @@ var WebInspector = {
         drawerStatusBarHeader.appendChild(statusBarElement);
         drawerStatusBarHeader.onclose = onclose;
 
-        var closeButton = drawerStatusBarHeader.createChild("span");
-        closeButton.textContent = WebInspector.UIString("\u00D7");
-        closeButton.addStyleClass("drawer-header-close-button");
+        var closeButton = drawerStatusBarHeader.createChild("div", "close-button");
         closeButton.addEventListener("click", this.closeViewInDrawer.bind(this), false);
 
         var panelStatusBar = document.getElementById("panel-status-bar");

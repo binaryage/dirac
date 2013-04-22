@@ -363,7 +363,6 @@
             'front_end/Images/breakpointConditionalCounterBorder.png',
             'front_end/Images/breakpointCounterBorder.png',
             'front_end/Images/checker.png',
-            'front_end/Images/closeButtons.png',
             'front_end/Images/cookie.png',
             'front_end/Images/namedFlowOverflow.png',
             'front_end/Images/database.png',
