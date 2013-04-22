@@ -1933,7 +1933,7 @@
                     { "name": "enabled", "type": "boolean", "description": "True to enable inspection mode, false to disable it." },
                     { "name": "highlightConfig", "$ref": "HighlightConfig", "optional": true, "description": "A descriptor for the highlight appearance of hovered-over nodes. May be omitted if <code>enabled == false</code>." }
                 ],
-                "description": "Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspect' command upon element selection."
+                "description": "Enters the 'inspect' mode. In this mode, elements that user is hovering over are highlighted. Backend then generates 'inspectNodeRequested' event upon element selection."
             },
             {
                 "name": "highlightRect",
@@ -2079,6 +2079,13 @@
             {
                 "name": "documentUpdated",
                 "description": "Fired when <code>Document</code> has been totally updated. Node ids are no longer valid."
+            },
+            {
+                "name": "inspectNodeRequested",
+                "parameters": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to inspect." }
+                ],
+                "description": "Fired when the node should be inspected. This happens after call to <code>setInspectModeEnabled</code>."
             },
             {
                 "name": "setChildNodes",
