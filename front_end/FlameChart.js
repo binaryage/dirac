@@ -510,7 +510,7 @@ WebInspector.FlameChart.prototype = {
 
         var drawData = new Uint8Array(width);
         var scaleFactor = width / this._totalTime;
-        var maxData = 0;
+        var maxStackDepth = 5; // minimum stack depth for the case when we see no activity.
 
         for (var nodeIndex = 0; nodeIndex < timelineEntries.length; ++nodeIndex) {
             var entry = timelineEntries[nodeIndex];
@@ -518,7 +518,7 @@ WebInspector.FlameChart.prototype = {
             var finish = Math.floor((entry.startTime + entry.duration) * scaleFactor);
             for (var x = start; x < finish; ++x) {
                 drawData[x] = Math.max(drawData[x], entry.depth + 1);
-                maxData = Math.max(maxData, entry.depth + 1);
+                maxStackDepth = Math.max(maxStackDepth, entry.depth + 1);
             }
         }
 
@@ -532,10 +532,10 @@ WebInspector.FlameChart.prototype = {
 
         var context = this._overviewCanvas.getContext("2d");
 
-        var yScaleFactor = canvasHeight / (maxData * 1.1);
+        var yScaleFactor = canvasHeight / (maxStackDepth * 1.1);
         context.lineWidth = 1;
         context.translate(0.5, 0.5);
-        context.strokeStyle = "rgba(20,0,0,0.8)";
+        context.strokeStyle = "rgba(20,0,0,0.4)";
         context.fillStyle = "rgba(214,225,254,0.8)";
         context.moveTo(-1, canvasHeight - 1);
         if (drawData)
@@ -593,7 +593,6 @@ WebInspector.FlameChart.prototype = {
         var context = this._canvas.getContext("2d");
         var textPaddingLeft = 2;
         context.scale(ratio, ratio);
-        context.translate(0.5, 0.5);
         context.font = (barHeight - 3) + "px sans-serif";
         context.textBaseline = "top";
         this._dotsWidth = context.measureText("\u2026").width;
