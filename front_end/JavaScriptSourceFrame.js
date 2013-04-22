@@ -77,13 +77,10 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         this._popoverHelper.hidePopover();
     },
 
-    /**
-     * @param {string} content
-     */
-    onUISourceCodeContentChanged: function(content, contentEncoded, mimeType)
+    onUISourceCodeContentChanged: function()
     {
         this._removeAllBreakpoints();
-        WebInspector.UISourceCodeFrame.prototype.onUISourceCodeContentChanged.call(this, content);
+        WebInspector.UISourceCodeFrame.prototype.onUISourceCodeContentChanged.call(this);
     },
 
     populateLineGutterContextMenu: function(contextMenu, lineNumber)

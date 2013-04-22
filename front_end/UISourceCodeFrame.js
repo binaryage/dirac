@@ -84,17 +84,19 @@ WebInspector.UISourceCodeFrame.prototype = {
         if (!this._uiSourceCode.isDirty())
             return;
 
-        this._isCommittingEditing = true;
+        this._muteSourceCodeEvents = true;
         this._uiSourceCode.commitWorkingCopy(this._didEditContent.bind(this));
-        delete this._isCommittingEditing;
+        delete this._muteSourceCodeEvents;
     },
 
     onTextChanged: function(oldRange, newRange)
     {
         WebInspector.SourceFrame.prototype.onTextChanged.call(this, oldRange, newRange);
-        this._isSettingWorkingCopy = true;
+        if (this._isSettingContent)
+            return;
+        this._muteSourceCodeEvents = true;
         this._uiSourceCode.setWorkingCopy(this._textEditor.text());
-        delete this._isSettingWorkingCopy;
+        delete this._muteSourceCodeEvents;
     },
 
     _didEditContent: function(error)
@@ -112,7 +114,7 @@ WebInspector.UISourceCodeFrame.prototype = {
     {
         var content = /** @type {string} */ (event.data.content);
         this._textEditor.setReadOnly(this._uiSourceCode.formatted());
-        this.setContent(content, false, this._uiSourceCode.mimeType());
+        this._innerSetContent(content);
     },
 
     /**
@@ -120,7 +122,10 @@ WebInspector.UISourceCodeFrame.prototype = {
      */
     _onWorkingCopyChanged: function(event)
     {
+        if (this._muteSourceCodeEvents)
+            return;
         this._innerSetContent(this._uiSourceCode.workingCopy());
+        this.onUISourceCodeContentChanged();
     },
 
     /**
@@ -128,15 +133,14 @@ WebInspector.UISourceCodeFrame.prototype = {
      */
     _onWorkingCopyCommitted: function(event)
     {
+        if (this._muteSourceCodeEvents)
+            return;
         this._innerSetContent(this._uiSourceCode.workingCopy());
+        this.onUISourceCodeContentChanged();
     },
 
-    /**
-     * @param {string} content
-     */
-    onUISourceCodeContentChanged: function(content)
+    onUISourceCodeContentChanged: function()
     {
-        this.setContent(content, false, this._uiSourceCode.mimeType());
     },
 
     /**
@@ -144,9 +148,9 @@ WebInspector.UISourceCodeFrame.prototype = {
      */
     _innerSetContent: function(content)
     {
-        if (this._isSettingWorkingCopy || this._isCommittingEditing)
-            return;
-        this.onUISourceCodeContentChanged(content);
+        this._isSettingContent = true;
+        this.setContent(content, false, this._uiSourceCode.mimeType());
+        delete this._isSettingContent;
     },
 
     populateTextAreaContextMenu: function(contextMenu, lineNumber)
