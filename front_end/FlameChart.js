@@ -465,10 +465,12 @@ WebInspector.FlameChart.prototype = {
     _onMouseWheel: function(e)
     {
         if (e.wheelDeltaY) {
-            var zoomFactor = (e.wheelDeltaY > 0) ? 0.9 : 1.1;
-            var windowPoint = (this._pixelWindowLeft + e.offsetX) / this._totalPixels;
-            var overviewReferencePoint = Math.floor(windowPoint * this._pixelWindowWidth);
-            this._overviewGrid.zoom(zoomFactor, overviewReferencePoint);
+            const zoomFactor = 1.1;
+            const mouseWheelZoomSpeed = 1 / 120;
+
+            var zoom = Math.pow(zoomFactor, -event.wheelDeltaY * mouseWheelZoomSpeed);
+            var overviewReference = (this._pixelWindowLeft + e.offsetX - this._paddingLeft) / this._totalPixels;
+            this._overviewGrid.zoom(zoom, overviewReference);
         } else {
             var shift = Number.constrain(-1 * this._windowWidth / 4 * e.wheelDeltaX / 120, -this._windowLeft, 1 - this._windowRight);
             this._overviewGrid.setWindow(this._windowLeft + shift, this._windowRight + shift);

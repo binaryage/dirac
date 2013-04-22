@@ -335,13 +335,25 @@ WebInspector.OverviewGrid.Window.prototype = {
     },
 
     /**
-     * @param {number} left
-     * @param {number} right
+     * @param {number} windowLeft
+     * @param {number} windowRight
      */
-    _setWindow: function(left, right)
+    _setWindow: function(windowLeft, windowRight)
     {
         var clientWidth = this._parentElement.clientWidth;
-        this._setWindowPosition(left * clientWidth, right * clientWidth);
+        const rulerAdjustment = 1 / clientWidth;
+
+        this.windowLeft = windowLeft;
+        this._leftResizeElement.style.left = this.windowLeft * 100 + "%";
+        this.windowRight = windowRight;
+        this._rightResizeElement.style.left = this.windowRight * 100 + "%";
+
+        this._overviewWindowElement.style.left = this.windowLeft * 100 + "%";
+        this._overviewWindowBordersElement.style.left = (this.windowLeft - rulerAdjustment) * 100 + "%";
+        this._overviewWindowElement.style.width = (this.windowRight - this.windowLeft) * 100 + "%";
+        this._overviewWindowBordersElement.style.right = (1 - this.windowRight + 2 * rulerAdjustment) * 100 + "%";
+
+        this.dispatchEventToListeners(WebInspector.OverviewGrid.Events.WindowChanged);
     },
 
     /**
@@ -351,20 +363,9 @@ WebInspector.OverviewGrid.Window.prototype = {
     _setWindowPosition: function(start, end)
     {
         var clientWidth = this._parentElement.clientWidth;
-        const rulerAdjustment = 1 / clientWidth;
-        if (typeof start === "number") {
-            this.windowLeft = start / clientWidth;
-            this._leftResizeElement.style.left = this.windowLeft * 100 + "%";
-            this._overviewWindowElement.style.left = this.windowLeft * 100 + "%";
-            this._overviewWindowBordersElement.style.left = (this.windowLeft - rulerAdjustment) * 100 + "%";
-        }
-        if (typeof end === "number") {
-            this.windowRight = end / clientWidth;
-            this._rightResizeElement.style.left = this.windowRight * 100 + "%";
-        }
-        this._overviewWindowElement.style.width = (this.windowRight - this.windowLeft) * 100 + "%";
-        this._overviewWindowBordersElement.style.right = (1 - this.windowRight + 2 * rulerAdjustment) * 100 + "%";
-        this.dispatchEventToListeners(WebInspector.OverviewGrid.Events.WindowChanged);
+        var windowLeft = typeof start === "number" ? start / clientWidth : this.windowLeft;
+        var windowRight = typeof end === "number" ? end / clientWidth : this.windowRight;
+        this._setWindow(windowLeft, windowRight);
     },
 
     /**
@@ -372,12 +373,12 @@ WebInspector.OverviewGrid.Window.prototype = {
      */
     _onMouseWheel: function(event)
     {
-        const zoomFactor = 1.1;
-        const mouseWheelZoomSpeed = 1 / 120;
-
         if (typeof event.wheelDeltaY === "number" && event.wheelDeltaY) {
-            var referencePoint = event.offsetX;
-            this._zoom(Math.pow(zoomFactor, -event.wheelDeltaY * mouseWheelZoomSpeed), referencePoint);
+            const zoomFactor = 1.1;
+            const mouseWheelZoomSpeed = 1 / 120;
+
+            var reference = event.offsetX / event.target.clientWidth;
+            this._zoom(Math.pow(zoomFactor, -event.wheelDeltaY * mouseWheelZoomSpeed), reference);
         }
         if (typeof event.wheelDeltaX === "number" && event.wheelDeltaX) {
             var offset = Math.round(event.wheelDeltaX * WebInspector.OverviewGrid.WindowScrollSpeedFactor);
@@ -398,22 +399,25 @@ WebInspector.OverviewGrid.Window.prototype = {
 
     /**
      * @param {number} factor
-     * @param {number} referencePoint
+     * @param {number} reference
      */
-    _zoom: function(factor, referencePoint)
+    _zoom: function(factor, reference)
     {
-        var left = this._leftResizeElement.offsetLeft + WebInspector.OverviewGrid.ResizerOffset;
-        var right = this._rightResizeElement.offsetLeft + WebInspector.OverviewGrid.ResizerOffset;
+        var left = this.windowLeft;
+        var right = this.windowRight;
+        var windowSize = right - left;
+        var newWindowSize = factor * windowSize;
+        var minWindowSize = WebInspector.OverviewGrid.MinSelectableSize / this._parentElement.clientWidth;
 
-        var delta = factor * (right - left);
-        if (factor < 1 && delta < WebInspector.OverviewGrid.MinSelectableSize)
-            return;
-        var max = this._parentElement.clientWidth;
-        if (typeof referencePoint !== "number")
-            referencePoint = (right + left) / 2;
-        left = Math.max(0, Math.min(max - delta, referencePoint + (left - referencePoint) * factor));
-        right = Math.min(max, left + delta);
-        this._setWindowPosition(left, right);
+        newWindowSize = Number.constrain(newWindowSize, minWindowSize, 1);
+        factor = newWindowSize / windowSize;
+
+        left = reference + (left - reference) * factor;
+        left = Number.constrain(left, 0, 1 - newWindowSize);
+
+        right = reference + (right - reference) * factor;
+        right = Number.constrain(right, newWindowSize, 1);
+        this._setWindow(left, right);
     },
 
     __proto__: WebInspector.Object.prototype
