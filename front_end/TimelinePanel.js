@@ -309,12 +309,18 @@ WebInspector.TimelinePanel.prototype = {
         labelContainer.addStyleClass("status-bar-item");
 
         var label = document.createElement("label");
-        var checkElement = document.createElement("input");
+        var checkBorder = label.createChild("div", "timeline-category-checkbox");
+        var checkElement = checkBorder.createChild("div", "timeline-category-checkbox-check timeline-category-checkbox-checked");
         checkElement.type = "checkbox";
-        checkElement.className = "timeline-category-checkbox";
         checkElement.checked = true;
-        checkElement.addEventListener("click", onCheckboxClicked, false);
-        label.appendChild(checkElement);
+        checkElement.addEventListener("click", listener, false);
+
+        function listener(event)
+        {
+            checkElement.checked = !checkElement.checked;
+            checkElement.enableStyleClass("timeline-category-checkbox-checked", checkElement.checked);
+            onCheckboxClicked(event);
+        }
 
         var typeElement = document.createElement("span");
         typeElement.className = "type";

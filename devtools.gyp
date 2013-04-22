@@ -454,7 +454,6 @@
             'front_end/Images/thumbVert.png',
             'front_end/Images/thumbHoverHoriz.png',
             'front_end/Images/thumbHoverVert.png',
-            'front_end/Images/tickMark.png',
             'front_end/Images/timelineHollowPillBlue.png',
             'front_end/Images/timelineHollowPillGray.png',
             'front_end/Images/timelineHollowPillGreen.png',

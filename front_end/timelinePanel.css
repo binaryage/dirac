@@ -135,12 +135,12 @@
 
 .timeline-category-statusbar-item {
     height: 24px;
-    line-height: 24px;
+    line-height: 22px;
     padding-left: 6px;
     white-space: nowrap;
     text-overflow: ellipsis;
+    text-shadow: white 0 1px 0;
     overflow: hidden;
-    font-weight: bold;
     min-width: 20px;
     -webkit-flex: auto 0 1;
 }
@@ -150,25 +150,38 @@
     color: rgb(65, 65, 65);
 }
 
-.timeline-category-statusbar-item input {
-    vertical-align: middle;
-}
-
-.timeline-category-statusbar-item .timeline-category-checkbox {
+.timeline-category-checkbox {
     width: 10px;
-    height: 11px;
+    height: 10px;
     margin: 0 3px 0 9px;
     padding: 0;
-    vertical-align: -2px;
     border-radius: 2px;
     border: solid 1px;
-    -webkit-appearance: none;
+    display: inline-block;
+    overflow: visible;
+    opacity: 0.8;
+    vertical-align: -1px;
 }
 
-.timeline-category-statusbar-item .timeline-category-checkbox:checked::before {
-    position: relative;
-    top: -5px;
-    content: url(Images/tickMark.png);
+
+.timeline-category-checkbox-check {
+    -webkit-appearance: none;
+    width: 11px;
+    height: 11px;
+    margin-top: -2px;
+    margin-left: 1px;
+}
+
+.timeline-category-checkbox-checked {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    background-position: -129px -110px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.timeline-category-checkbox-checked {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
 .timeline-tree-item {
@@ -370,7 +383,7 @@
 }
 
 .timeline-records-stats {
-    margin-top: 5px;
+    margin-top: 3px;
     margin-left: 6px;
     -webkit-flex: 1;
 }

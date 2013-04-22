@@ -1397,7 +1397,7 @@ WebInspector.TimelinePresentationModel.createStyleRuleForCategory = function(cat
         ".timeline-category-" + category.name + " .timeline-tree-icon"
 
     return selector + " { background-image: -webkit-linear-gradient(" +
-       category.fillColorStop0 + ", " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + " 75%, " + category.borderColor + ");" +
+       category.fillColorStop0 + ", " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + ");" +
        " border-color: " + category.borderColor +
        "}";
 }
