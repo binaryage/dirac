@@ -468,7 +468,7 @@ WebInspector.FlameChart.prototype = {
             const zoomFactor = 1.1;
             const mouseWheelZoomSpeed = 1 / 120;
 
-            var zoom = Math.pow(zoomFactor, -event.wheelDeltaY * mouseWheelZoomSpeed);
+            var zoom = Math.pow(zoomFactor, -e.wheelDeltaY * mouseWheelZoomSpeed);
             var overviewReference = (this._pixelWindowLeft + e.offsetX - this._paddingLeft) / this._totalPixels;
             this._overviewGrid.zoom(zoom, overviewReference);
         } else {
