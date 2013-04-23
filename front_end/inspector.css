@@ -194,18 +194,20 @@ body.dock-to-bottom .toolbar-item:active .toolbar-icon {
     display: inline;
 }
 
-.toolbar-item-close-button {
-    display: inline-block;
-    margin: auto 0 auto 4px;
-    color: #555;
-    line-height: 10px;
-    font-family: Arial, Helvetica, sans-serif !important;
-    font-size: 16px;
-    opacity: 0.4;
+.toolbar-item.toggleable .close-button {
+    margin-left: 2px;
+    margin-right: -2px;
+    position: relative;
+    top: 2px;
+    opacity: 0.5;
 }
 
-.toolbar-item .toolbar-item-close-button:hover {
+.toolbar-item.toggleable .close-button:hover {
     opacity: 1;
+}
+
+body.show-toolbar-icons.dock-to-bottom .toolbar-item.toggleable .close-button {
+    top: 3px;
 }
 
 #toolbar-dropdown .toolbar-items-separator {

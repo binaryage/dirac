@@ -265,8 +265,7 @@ WebInspector.Toolbar.prototype = {
         var iconElement = toolbarItem.createChild("div", "toolbar-icon");
         toolbarItem.createChild("div", "toolbar-label").textContent = panelDescriptor.title();
         if (this._isToolbarCustomizable() && !this._isDefaultPanel(panelDescriptor.name()) && !noCloseButton) {
-            var closeButton = toolbarItem.createChild("div", "toolbar-item-close-button");
-            closeButton.textContent = "\u00d7";
+            var closeButton = toolbarItem.createChild("div", "close-button");
             closeButton.addEventListener("click", onToolbarItemCloseButtonClicked.bind(this), false);
         }
         if (panelDescriptor.iconURL()) {
