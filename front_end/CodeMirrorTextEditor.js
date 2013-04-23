@@ -153,6 +153,17 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         return this._toRange(coords, coords);
     },
 
+    _convertTokenType: function(tokenType)
+    {
+        if (tokenType.startsWith("variable") || tokenType.startsWith("property") || tokenType === "def")
+            return "javascript-ident";
+        if (tokenType === "string-2")
+            return "javascript-regexp";
+        if (tokenType === "number" || tokenType === "comment" || tokenType === "string")
+            return "javascript-" + tokenType;
+        return null;
+    },
+
     /**
      * @param {number} lineNumber
      * @param {number} column
@@ -165,15 +176,14 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var token = this._codeMirror.getTokenAt(new CodeMirror.Pos(lineNumber, column || 1));
         if (!token || !token.type)
             return null;
-        var convertedType = null;
-        if (token.type.startsWith("variable") || token.type.startsWith("property") || token.type === "def") {
-            return {
-                startColumn: token.start,
-                endColumn: token.end - 1,
-                type: "javascript-ident"
-            };
-        }
-        return null;
+        var convertedType = this._convertTokenType(token.type);
+        if (!convertedType)
+            return null;
+        return {
+            startColumn: token.start,
+            endColumn: token.end - 1,
+            type: convertedType
+        };
     },
 
     /**
