@@ -40,12 +40,15 @@ WebInspector.ScriptsNavigator = function()
 
     this._scriptsView = new WebInspector.NavigatorView();
     this._scriptsView.addEventListener(WebInspector.NavigatorView.Events.ItemSelected, this._scriptSelected, this);
+    this._scriptsView.addEventListener(WebInspector.NavigatorView.Events.ItemSearchStarted, this._itemSearchStarted, this);
 
     this._contentScriptsView = new WebInspector.NavigatorView();
     this._contentScriptsView.addEventListener(WebInspector.NavigatorView.Events.ItemSelected, this._scriptSelected, this);
+    this._contentScriptsView.addEventListener(WebInspector.NavigatorView.Events.ItemSearchStarted, this._itemSearchStarted, this);
 
     this._snippetsView = new WebInspector.SnippetsNavigatorView();
     this._snippetsView.addEventListener(WebInspector.NavigatorView.Events.ItemSelected, this._scriptSelected, this);
+    this._snippetsView.addEventListener(WebInspector.NavigatorView.Events.ItemSearchStarted, this._itemSearchStarted, this);
     this._snippetsView.addEventListener(WebInspector.NavigatorView.Events.FileRenamed, this._fileRenamed, this);
     this._snippetsView.addEventListener(WebInspector.SnippetsNavigatorView.Events.SnippetCreationRequested, this._snippetCreationRequested, this);
     this._snippetsView.addEventListener(WebInspector.SnippetsNavigatorView.Events.ItemRenamingRequested, this._itemRenamingRequested, this);
@@ -61,6 +64,7 @@ WebInspector.ScriptsNavigator.Events = {
     ScriptSelected: "ScriptSelected",
     SnippetCreationRequested: "SnippetCreationRequested",
     ItemRenamingRequested: "ItemRenamingRequested",
+    ItemSearchStarted: "ItemSearchStarted",
     FileRenamed: "FileRenamed"
 }
 
@@ -134,6 +138,14 @@ WebInspector.ScriptsNavigator.prototype = {
     _scriptSelected: function(event)
     {
         this.dispatchEventToListeners(WebInspector.ScriptsNavigator.Events.ScriptSelected, event.data);
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _itemSearchStarted: function(event)
+    {
+        this.dispatchEventToListeners(WebInspector.ScriptsNavigator.Events.ItemSearchStarted, event.data);
     },
 
     /**

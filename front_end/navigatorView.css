@@ -76,19 +76,6 @@
     background-color: rgb(111, 140, 210);
 }
 
-.navigator .search-match-found li.selected .selection {
-    background-color: rgb(111, 140, 210);
-}
-
-.navigator .search-match-not-found li.selected .selection {
-    border-color: rgb(111, 140, 210);
-    background-color: white;
-}
-
-.navigator .searching li.selected .selection {
-    background-color: rgb(111, 140, 210);
-}
-
 .navigator .icon {
     width: 16px;
     height: 16px;
@@ -103,28 +90,6 @@
 
 .navigator .base-navigator-tree-element-title.editing {
     margin: auto;
-}
-
-.navigator-tree-search-box {
-    display: none;
-    position: absolute;
-    top: 0;
-    right: 0;
-    height: 26px;
-    width: 100px;
-    z-index: 1;
-    padding: 1px;
-    background-color: rgb(111, 140, 210);
-    border: 2px solid lightgray;
-}
-
-.navigator-tree-search-box.visible {
-    display: block;
-}
-
-.navigator-tree-search-box > input {
-    width: 100%;
-    height: 100%;
 }
 
 .navigator-tabbed-pane .tabbed-pane-content {

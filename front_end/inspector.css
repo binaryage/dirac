@@ -1478,11 +1478,6 @@ iframe.panel.extension {
     background-color: rgb(56, 121, 217);
 }
 
-.outline-disclosure ol.search-match-not-found li.selected .selection {
-    border: 1px solid rgb(56, 121, 217);
-    background-color: white;
-}
-
 .outline-disclosure > ol {
     position: relative;
     padding: 2px 6px !important;
@@ -1514,15 +1509,7 @@ iframe.panel.extension {
     color: white;
 }
 
-.outline-disclosure ol.search-match-found li.selected {
-    color: white;
-}
-
 .outline-disclosure ol:focus li.selected * {
-    color: inherit;
-}
-
-.outline-disclosure ol.search-match-found li.selected * {
     color: inherit;
 }
 
@@ -1568,20 +1555,8 @@ iframe.panel.extension {
     background-color: rgb(110, 110, 110);
 }
 
-.outline-disclosure ol:focus li.parent.selected::before,
-.outline-disclosure ol.search-match-found li.parent.selected::before {
-    -webkit-mask-position: -4px -96px;
-    background-color: white;
-}
-
 .outline-disclosure li.parent.expanded::before {
     -webkit-mask-position: -20px -96px;
-}
-
-.outline-disclosure ol:focus li.parent.expanded.selected::before,
-.outline-disclosure ol.search-match-found li.parent.expanded.selected::before {
-    -webkit-mask-position: -20px -96px;
-    background-color: white;
 }
 
 .outline-disclosure ol.children {

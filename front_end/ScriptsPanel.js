@@ -97,6 +97,7 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     this._navigatorController = new WebInspector.NavigatorOverlayController(this.editorView, this._navigator.view, this._editorContainer.view);
 
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.ScriptSelected, this._scriptSelected, this);
+    this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.ItemSearchStarted, this._itemSearchStarted, this);
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.SnippetCreationRequested, this._snippetCreationRequested, this);
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.ItemRenamingRequested, this._itemRenamingRequested, this);
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.FileRenamed, this._fileRenamed, this);
@@ -564,6 +565,12 @@ WebInspector.ScriptsPanel.prototype = {
         this._navigatorController.hideNavigatorOverlay();
         if (sourceFrame && event.data.focusSource)
             sourceFrame.focus();
+    },
+
+    _itemSearchStarted: function(event)
+    {
+        var searchText = /** @type {string} */ (event.data);
+        WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement, searchText);
     },
 
     _pauseOnExceptionStateChanged: function()

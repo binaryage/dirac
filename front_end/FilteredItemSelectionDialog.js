@@ -763,14 +763,17 @@ WebInspector.OpenResourceDialog.prototype = {
 /**
  * @param {WebInspector.ScriptsPanel} panel
  * @param {Element} relativeToElement
+ * @param {string=} name
  */
-WebInspector.OpenResourceDialog.show = function(panel, relativeToElement)
+WebInspector.OpenResourceDialog.show = function(panel, relativeToElement, name)
 {
     if (WebInspector.Dialog.currentInstance())
         return;
 
     var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.OpenResourceDialog(panel));
     filteredItemSelectionDialog.renderAsTwoRows();
+    if (name)
+        filteredItemSelectionDialog.setQuery(name);
     WebInspector.Dialog.show(relativeToElement, filteredItemSelectionDialog);
 }
 
