@@ -1758,7 +1758,8 @@
                     { "name": "contentColor", "$ref": "RGBA", "optional": true, "description": "The content box highlight fill color (default: transparent)." },
                     { "name": "paddingColor", "$ref": "RGBA", "optional": true, "description": "The padding highlight fill color (default: transparent)." },
                     { "name": "borderColor", "$ref": "RGBA", "optional": true, "description": "The border highlight fill color (default: transparent)." },
-                    { "name": "marginColor", "$ref": "RGBA", "optional": true, "description": "The margin highlight fill color (default: transparent)." }
+                    { "name": "marginColor", "$ref": "RGBA", "optional": true, "description": "The margin highlight fill color (default: transparent)." },
+                    { "name": "eventTargetColor", "$ref": "RGBA", "optional": true, "hidden": true, "description": "The event target element highlight fill color (default: transparent)." }
                 ],
                 "description": "Configuration data for the highlighting of page elements."
             }

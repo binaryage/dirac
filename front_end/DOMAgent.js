@@ -1295,6 +1295,9 @@ WebInspector.DOMAgent.prototype = {
         if (mode === "all" || mode === "margin")
             highlightConfig.marginColor = WebInspector.Color.PageHighlight.Margin.toProtocolRGBA();
 
+        if (mode === "all")
+            highlightConfig.eventTargetColor = WebInspector.Color.PageHighlight.EventTarget.toProtocolRGBA();
+
         return highlightConfig;
     },
 
