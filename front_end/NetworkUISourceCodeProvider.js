@@ -67,9 +67,7 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
     _parsedScriptSource: function(event)
     {
         var script = /** @type {WebInspector.Script} */ (event.data);
-        if (!script.sourceURL || script.isInlineScript())
-            return;
-        if (WebInspector.experimentsSettings.snippetsSupport.isEnabled() && script.isSnippet())
+        if (!script.sourceURL || script.isInlineScript() || script.isSnippet())
             return;
         var isDynamicAnonymousScript;
         // Only add uiSourceCodes for

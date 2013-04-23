@@ -264,7 +264,6 @@ modules = [
             "ScriptsPanel.js",
             "ScriptsPanelDescriptor.js",
             "ScriptsSearchScope.js",
-            "SnippetJavaScriptSourceFrame.js",
             "StyleSheetOutlineDialog.js",
             "TabbedEditorContainer.js",
             "UISourceCodeFrame.js",

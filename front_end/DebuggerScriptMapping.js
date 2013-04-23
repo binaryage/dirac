@@ -53,7 +53,7 @@ WebInspector.DebuggerScriptMapping.prototype = {
         var script = /** @type {WebInspector.Script} */ (event.data);
         this._defaultMapping.addScript(script);
 
-        if (WebInspector.experimentsSettings.snippetsSupport.isEnabled() && script.isSnippet()) {
+        if (script.isSnippet()) {
             this._snippetMapping.addScript(script);
             return;
         }

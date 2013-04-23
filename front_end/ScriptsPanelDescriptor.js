@@ -76,6 +76,10 @@ WebInspector.ScriptsPanelDescriptor.prototype = {
 }
 
 WebInspector.ScriptsPanelDescriptor.ShortcutKeys = {
+    RunSnippet: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Enter, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
     PauseContinue: [
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F8),
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Slash, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)

@@ -56,8 +56,7 @@ WebInspector.ScriptsNavigator = function()
     this._tabbedPane.appendTab(WebInspector.ScriptsNavigator.ScriptsTab, WebInspector.UIString("Sources"), this._scriptsView);
     this._tabbedPane.selectTab(WebInspector.ScriptsNavigator.ScriptsTab);
     this._tabbedPane.appendTab(WebInspector.ScriptsNavigator.ContentScriptsTab, WebInspector.UIString("Content scripts"), this._contentScriptsView);
-    if (WebInspector.experimentsSettings.snippetsSupport.isEnabled())
-        this._tabbedPane.appendTab(WebInspector.ScriptsNavigator.SnippetsTab, WebInspector.UIString("Snippets"), this._snippetsView);
+    this._tabbedPane.appendTab(WebInspector.ScriptsNavigator.SnippetsTab, WebInspector.UIString("Snippets"), this._snippetsView);
 }
 
 WebInspector.ScriptsNavigator.Events = {

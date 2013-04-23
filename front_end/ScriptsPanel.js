@@ -35,7 +35,6 @@ importScript("RevisionHistoryView.js");
 importScript("ScopeChainSidebarPane.js");
 importScript("ScriptsNavigator.js");
 importScript("ScriptsSearchScope.js");
-importScript("SnippetJavaScriptSourceFrame.js");
 importScript("StyleSheetOutlineDialog.js");
 importScript("TabbedEditorContainer.js");
 importScript("WatchExpressionsSidebarPane.js");
@@ -432,6 +431,11 @@ WebInspector.ScriptsPanel.prototype = {
         this._editorContainer.showFile(uiSourceCode);
         this._updateScriptViewStatusBarItems();
 
+        if (this._currentUISourceCode.project().type() === WebInspector.projectTypes.Snippets)
+            this._runSnippetButton.element.removeStyleClass("hidden");
+        else
+            this._runSnippetButton.element.addStyleClass("hidden");
+
         return sourceFrame;
     },
 
@@ -444,10 +448,7 @@ WebInspector.ScriptsPanel.prototype = {
         var sourceFrame;
         switch (uiSourceCode.contentType()) {
         case WebInspector.resourceTypes.Script:
-            if (uiSourceCode.project().type() === WebInspector.projectTypes.Snippets)
-                sourceFrame = new WebInspector.SnippetJavaScriptSourceFrame(this, uiSourceCode);
-            else
-                sourceFrame = new WebInspector.JavaScriptSourceFrame(this, uiSourceCode);
+            sourceFrame = new WebInspector.JavaScriptSourceFrame(this, uiSourceCode);
             break;
         case WebInspector.resourceTypes.Document:
             sourceFrame = new WebInspector.JavaScriptSourceFrame(this, uiSourceCode);
@@ -653,6 +654,18 @@ WebInspector.ScriptsPanel.prototype = {
      * @param {Event=} event
      * @return {boolean}
      */
+    _runSnippet: function(event)
+    {
+        if (this._currentUISourceCode.project().type() !== WebInspector.projectTypes.Snippets)
+            return false;
+        WebInspector.scriptSnippetModel.evaluateScriptSnippet(this._currentUISourceCode);
+        return true;
+    },
+
+    /**
+     * @param {Event=} event
+     * @return {boolean}
+     */
     _togglePause: function(event)
     {
         if (this._paused) {
@@ -764,6 +777,12 @@ WebInspector.ScriptsPanel.prototype = {
 
         var title, handler;
         var platformSpecificModifier = WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta;
+
+        // Run snippet.
+        handler = this._runSnippet.bind(this);
+        this._runSnippetButton = this._createButtonAndRegisterShortcuts("scripts-run-snippet", "", handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.RunSnippet);
+        debugToolbar.appendChild(this._runSnippetButton.element);
+        this._runSnippetButton.element.addStyleClass("hidden");
 
         // Continue.
         handler = this._togglePause.bind(this);

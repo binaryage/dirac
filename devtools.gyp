@@ -276,7 +276,6 @@
             'front_end/ScriptsNavigator.js',
             'front_end/ScriptsPanel.js',
             'front_end/ScriptsSearchScope.js',
-            'front_end/SnippetJavaScriptSourceFrame.js',
             'front_end/StyleSheetOutlineDialog.js',
             'front_end/TabbedEditorContainer.js',
             'front_end/UISourceCodeFrame.js',

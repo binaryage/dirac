@@ -198,7 +198,6 @@ WebInspector.ExperimentsSettings = function()
     this._enabledForTest = {};
 
     // Add currently running experiments here.
-    this.snippetsSupport = this._createExperiment("snippetsSupport", "Snippets support");
     this.nativeMemorySnapshots = this._createExperiment("nativeMemorySnapshots", "Native memory profiling");
     this.nativeMemoryTimeline = this._createExperiment("nativeMemoryTimeline", "Native memory timeline");
     this.fileSystemInspection = this._createExperiment("fileSystemInspection", "FileSystem inspection");

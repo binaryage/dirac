@@ -76,6 +76,10 @@
     opacity: 0.8;
 }
 
+.scripts-run-snippet .glyph {
+    -webkit-mask-position: -64px -48px;
+}
+
 .scripts-pause .glyph {
     -webkit-mask-position: -32px -72px;
 }
