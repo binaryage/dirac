@@ -969,24 +969,32 @@ body.remote .dock-status-bar-item {
     border-bottom: 1px solid rgb(96, 96, 96);
 }
 
-#error-count-img {
-    content: url(Images/errorIcon.png);
+.error-count-img, .warning-count-img {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
     width: 10px;
     height: 10px;
     vertical-align: -1px;
     margin-right: 2px;
+    display: inline-block;
 }
 
-#error-count + #warning-count-img {
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.error-count-img, .warning-count-img {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+.error-count-img {
+    background-position: -213px -96px;
+}
+
+.warning-count-img {
+    background-position: -202px -107px;
+}
+
+#error-count + .warning-count-img {
     margin-left: 6px;
-}
-
-#warning-count-img {
-    content: url(Images/warningIcon.png);
-    width: 10px;
-    height: 10px;
-    vertical-align: -1px;
-    margin-right: 2px;
 }
 
 #drawer {
@@ -1070,11 +1078,11 @@ body.platform-linux .monospace, body.platform-linux .source-code {
 }
 
 #console-prompt::before {
-    background-image: url(Images/userInputIcon.png);
+    background-position: -192px -96px;
 }
 
 .console-user-command-result.console-log-level::before {
-    background-image: url(Images/userInputResultIcon.png);
+    background-position: -202px -96px;
 }
 
 .console-message, .console-user-command {
@@ -1108,6 +1116,14 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     height: 10px;
     margin-top: -6px;
     -webkit-user-select: none;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.console-message::before, .console-user-command::before, #console-prompt::before, .console-group-title::before {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
 .console-message > .outline-disclosure li.parent::before {
@@ -1217,17 +1233,25 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     color: blue;
 }
 
-.console-debug-level::before {
-    background-image: url(Images/searchSmallBrightBlue.png);
+.console-error-level::before, .console-warning-level::before, .console-debug-level::before {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    width: 10px;
+    height: 10px;
 }
 
-.console-error-level::before {
-    background-image: url(Images/errorIcon.png);
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.console-error-level::before, .console-warning-level::before, .console-debug-level::before {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
 .console-warning-level::before {
-    background-image: url(Images/warningIcon.png);
-    margin-top: -7px;
+    background-position: -202px -107px;
+}
+
+.console-error-level::before {
+    background-position: -213px -96px;
 }
 
 .console-user-command .console-message {
@@ -1237,7 +1261,7 @@ body.platform-linux .monospace, body.platform-linux .source-code {
 }
 
 .console-user-command::before {
-    background-image: url(Images/userInputPreviousIcon.png);
+    background-position: -192px -107px;
 }
 
 .console-user-command > .console-message-text {

@@ -149,12 +149,20 @@ li.selected .base-storage-tree-element-subtitle {
     top: 0.8em;
     width: 10px;
     height: 10px;
-    margin-top: -5px;
+    margin-top: -7px;
     -webkit-user-select: none;
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.database-user-query::before, .database-query-prompt::before, .database-query-result::before {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
 .database-query-prompt::before {
-    background-image: url(Images/userInputIcon.png);
+    background-position: -192px -96px;
 }
 
 .database-user-query {
@@ -165,7 +173,7 @@ li.selected .base-storage-tree-element-subtitle {
 }
 
 .database-user-query::before {
-    background-image: url(Images/userInputPreviousIcon.png);
+    background-position: -192px -107px;
 }
 
 .database-query-text {
@@ -187,7 +195,7 @@ li.selected .base-storage-tree-element-subtitle {
 }
 
 .database-query-result.error::before {
-    background-image: url(Images/errorIcon.png);
+    background-position: -213px -96px;
 }
 
 .resource-sidebar-tree-item .icon {

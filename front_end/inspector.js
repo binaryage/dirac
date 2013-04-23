@@ -214,23 +214,17 @@ var WebInspector = {
         errorWarningElement.removeChildren();
 
         if (errors) {
-            var errorImageElement = document.createElement("img");
-            errorImageElement.id = "error-count-img";
-            errorWarningElement.appendChild(errorImageElement);
-            var errorElement = document.createElement("span");
+            var errorImageElement = errorWarningElement.createChild("div", "error-count-img");
+            var errorElement = errorWarningElement.createChild("span");
             errorElement.id = "error-count";
             errorElement.textContent = errors;
-            errorWarningElement.appendChild(errorElement);
         }
 
         if (warnings) {
-            var warningsImageElement = document.createElement("img");
-            warningsImageElement.id = "warning-count-img";
-            errorWarningElement.appendChild(warningsImageElement);
-            var warningsElement = document.createElement("span");
+            var warningsImageElement = errorWarningElement.createChild("div", "warning-count-img");
+            var warningsElement = errorWarningElement.createChild("span");
             warningsElement.id = "warning-count";
             warningsElement.textContent = warnings;
-            errorWarningElement.appendChild(warningsElement);
         }
 
         if (errors) {
