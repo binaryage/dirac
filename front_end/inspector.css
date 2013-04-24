@@ -961,6 +961,28 @@ body.remote .dock-status-bar-item {
     -webkit-mask-position: -64px 0;
 }
 
+.error-icon-small, .warning-icon-small {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    width: 10px;
+    height: 10px;
+    display: inline-block;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.error-icon-small, .warning-icon-small {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+.error-icon-small {
+    background-position: -213px -96px;
+}
+
+.warning-icon-small {
+    background-position: -202px -107px;
+}
+
 #error-warning-count {
     padding: 4px 6px 6px 0px;
     font-size: 11px;
@@ -973,31 +995,12 @@ body.remote .dock-status-bar-item {
     border-bottom: 1px solid rgb(96, 96, 96);
 }
 
-.error-count-img, .warning-count-img {
-    background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 120px;
-    width: 10px;
-    height: 10px;
+#error-warning-count .error-icon-small, #error-warning-count .warning-icon-small {
     vertical-align: -1px;
     margin-right: 2px;
-    display: inline-block;
 }
 
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-.error-count-img, .warning-count-img {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
-}
-}
-
-.error-count-img {
-    background-position: -213px -96px;
-}
-
-.warning-count-img {
-    background-position: -202px -107px;
-}
-
-#error-count + .warning-count-img {
+#error-warning-count .warning-icon-small {
     margin-left: 6px;
 }
 

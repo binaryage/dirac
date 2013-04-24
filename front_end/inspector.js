@@ -214,14 +214,14 @@ var WebInspector = {
         errorWarningElement.removeChildren();
 
         if (errors) {
-            var errorImageElement = errorWarningElement.createChild("div", "error-count-img");
+            var errorImageElement = errorWarningElement.createChild("div", "error-icon-small");
             var errorElement = errorWarningElement.createChild("span");
             errorElement.id = "error-count";
             errorElement.textContent = errors;
         }
 
         if (warnings) {
-            var warningsImageElement = errorWarningElement.createChild("div", "warning-count-img");
+            var warningsImageElement = errorWarningElement.createChild("div", "warning-icon-small");
             var warningsElement = errorWarningElement.createChild("span");
             warningsElement.id = "warning-count";
             warningsElement.textContent = warnings;

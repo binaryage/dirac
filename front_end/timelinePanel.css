@@ -253,9 +253,22 @@
 
 .timeline-tree-item.warning::after,
 .timeline-tree-item.child-warning::after {
-    content: url(Images/warningIcon.png);
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    width: 10px;
+    height: 10px;
     float: right;
-    padding-top: 1px;
+    content: "";
+    position: relative;
+    top: 2px;
+    background-position: -202px -107px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.timeline-tree-item.warning::after,
+.timeline-tree-item.child-warning::after {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
 .timeline-tree-item.child-warning::after {

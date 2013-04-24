@@ -490,9 +490,8 @@
     text-overflow : ellipsis;
 }
 
-.network-log-grid.data-grid .network-summary-bar img {
-    vertical-align: middle;
-    padding-right: 8px;
+.network-log-grid.data-grid .network-summary-bar .warning-icon-small {
+    margin-right: 8px;
 }
 
 #network-container {

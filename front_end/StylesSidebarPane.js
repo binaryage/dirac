@@ -133,8 +133,8 @@ WebInspector.StylesSidebarPane.canonicalPropertyName = function(name)
 
 WebInspector.StylesSidebarPane.createExclamationMark = function(propertyName)
 {
-    var exclamationElement = document.createElement("img");
-    exclamationElement.className = "exclamation-mark";
+    var exclamationElement = document.createElement("div");
+    exclamationElement.className = "exclamation-mark warning-icon-small";
     exclamationElement.title = WebInspector.CSSMetadata.cssPropertiesMetainfo.keySet()[propertyName.toLowerCase()] ? WebInspector.UIString("Invalid property value.") : WebInspector.UIString("Unknown property name.");
     return exclamationElement;
 }

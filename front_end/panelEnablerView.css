@@ -162,11 +162,3 @@ body.inactive .panel-enabler-view button:not(.status-bar-item), .panel-enabler-v
     background: url(Images/radioDot.png) center no-repeat,
                 -webkit-gradient(linear, left top, left bottom, from(rgb(194, 194, 194)), to(rgb(239, 239, 239)));
 }
-
-.panel-enabler-view.scripts img {
-    content: url(Images/scriptsSilhouette.png);
-}
-
-.panel-enabler-view.profiles img {
-    content: url(Images/profilesSilhouette.png);
-}
