@@ -1535,6 +1535,10 @@ iframe.panel.extension {
     background-color: rgb(56, 121, 217);
 }
 
+.outline-disclosure ol:focus li.parent.selected::before {
+    background-color: white;
+}
+
 .outline-disclosure > ol {
     position: relative;
     padding: 2px 6px !important;
