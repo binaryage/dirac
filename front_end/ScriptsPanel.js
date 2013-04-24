@@ -555,7 +555,8 @@ WebInspector.ScriptsPanel.prototype = {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
         var sourceFrame = this._showFile(uiSourceCode);
         this._navigatorController.hideNavigatorOverlay();
-        sourceFrame.focus();
+        if (!this._navigatorController.isNavigatorPinned())
+            sourceFrame.focus();
         WebInspector.searchController.resetSearch();
     },
 
@@ -564,7 +565,7 @@ WebInspector.ScriptsPanel.prototype = {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data.uiSourceCode);
         var sourceFrame = this._showFile(uiSourceCode);
         this._navigatorController.hideNavigatorOverlay();
-        if (sourceFrame && event.data.focusSource)
+        if (sourceFrame && (!this._navigatorController.isNavigatorPinned() || event.data.focusSource))
             sourceFrame.focus();
     },
 
