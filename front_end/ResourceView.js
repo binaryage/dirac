@@ -79,6 +79,7 @@ WebInspector.ResourceView.nonSourceViewForResource = function(resource)
 /**
  * @extends {WebInspector.SourceFrame}
  * @constructor
+ * @param {WebInspector.Resource} resource
  */
 WebInspector.ResourceSourceFrame = function(resource)
 {
@@ -100,4 +101,40 @@ WebInspector.ResourceSourceFrame.prototype = {
     },
 
     __proto__: WebInspector.SourceFrame.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.View}
+ * @param {WebInspector.Resource} resource
+ */
+WebInspector.ResourceSourceFrameFallback = function(resource)
+{
+    WebInspector.View.call(this);
+    this._resource = resource;
+    this.element.addStyleClass("fill");
+    this.element.addStyleClass("script-view");
+    this._content = this.element.createChild("div", "script-view-fallback monospace");
+}
+
+WebInspector.ResourceSourceFrameFallback.prototype = {
+    wasShown: function()
+    {
+        if (!this._contentRequested) {
+            this._contentRequested = true;
+            this._resource.requestContent(this._contentLoaded.bind(this));
+        }
+    },
+
+ /**
+     * @param {?string} content
+     * @param {boolean} contentEncoded
+     * @param {string} mimeType
+     */
+    _contentLoaded: function(content, contentEncoded, mimeType)
+    {
+        this._content.textContent = content;
+    },
+
+    __proto__: WebInspector.View.prototype
 }

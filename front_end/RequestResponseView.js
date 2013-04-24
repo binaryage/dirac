@@ -38,11 +38,13 @@ WebInspector.RequestResponseView = function(request)
     WebInspector.RequestContentView.call(this, request);
 }
 
+WebInspector.RequestResponseView._maxFormattedResourceSize = 100000;
+
 WebInspector.RequestResponseView.prototype = {
     get sourceView()
     {
         if (!this._sourceView && WebInspector.RequestView.hasTextContent(this.request))
-            this._sourceView = new WebInspector.ResourceSourceFrame(this.request);
+            this._sourceView = this.request.resourceSize < WebInspector.RequestResponseView._maxFormattedResourceSize ? new WebInspector.ResourceSourceFrame(this.request) : new WebInspector.ResourceSourceFrameFallback(this.request);
         return this._sourceView;
     },
 

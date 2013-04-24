@@ -108,3 +108,9 @@
     white-space: pre;
     content: "\A";
 }
+
+.script-view-fallback {
+    word-wrap: break-word;
+    -webkit-user-select: text;
+    background-color: inherit;
+}
