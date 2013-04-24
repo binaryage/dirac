@@ -74,7 +74,8 @@
 }
 
 .resource-status-image {
-    margin-top: -3px;
+    margin-top: -2px;
+    margin-right: 3px;
     vertical-align: middle;
 }
 

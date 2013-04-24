@@ -975,7 +975,7 @@ body.remote .dock-status-bar-item {
     -webkit-mask-position: -64px 0;
 }
 
-.error-icon-small, .warning-icon-small {
+.error-icon-small, .warning-icon-small, .red-ball, .green-ball, .orange-ball {
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 120px;
     width: 10px;
@@ -984,7 +984,7 @@ body.remote .dock-status-bar-item {
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
-.error-icon-small, .warning-icon-small {
+.error-icon-small, .warning-icon-small, .red-ball, .green-ball, .orange-ball {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
 }
@@ -995,6 +995,18 @@ body.remote .dock-status-bar-item {
 
 .warning-icon-small {
     background-position: -202px -107px;
+}
+
+.red-ball {
+    background-position: -224px -96px;
+}
+
+.green-ball {
+    background-position: -235px -96px;
+}
+
+.orange-ball {
+    background-position: -246px -96px;
 }
 
 #error-warning-count {
@@ -2364,8 +2376,7 @@ body.inactive li.selected .bubble.search-matches {
 }
 
 .storage-application-cache-status-icon, .storage-application-cache-connectivity-icon {
-    margin-bottom: -3px;
-    margin-left: 5px;
+    margin: 5px 5px 0;
     vertical-align: middle;
 }
 

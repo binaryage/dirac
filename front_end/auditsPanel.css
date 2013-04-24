@@ -137,16 +137,37 @@
     display: block;
 }
 
+.audit-result-view .severity-severe,
+.audit-result-view .severity-warning,
+.audit-result-view .severity-info {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    float: left;
+    margin-left: -28px;
+    margin-top: 3px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.audit-result-view .severity-severe,
+.audit-result-view .severity-warning,
+.audit-result-view .severity-info {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
 .audit-result-view .severity-severe {
-    content: url(Images/errorRedDot.png);
+    background-position: -224px -96px;
 }
 
 .audit-result-view .severity-warning {
-    content: url(Images/warningOrangeDot.png);
+    background-position: -246px -96px;
 }
 
 .audit-result-view .severity-info {
-    content: url(Images/successGreenDot.png);
+    background-position: -235px -96px;
 }
 
 .audit-result-tree li.parent::before {
@@ -162,7 +183,7 @@
     margin-left: 3px;
     margin-right: 4px;
     position: relative;
-    top: 1px;
+    top: 2px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
@@ -232,12 +253,6 @@
 
 .audit-result {
     font-weight: bold;
-}
-
-.audit-result img {
-    float: left;
-    margin-left: -28px;
-    margin-top: -1px;
 }
 
 .audit-launcher-view .progress-bar-container {

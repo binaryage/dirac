@@ -81,7 +81,7 @@ WebInspector.AuditCategoryResultPane = function(categoryResult)
         treeElement.listItemElement.addStyleClass("audit-result");
 
         if (ruleResult.severity) {
-            var severityElement = document.createElement("img");
+            var severityElement = document.createElement("div");
             severityElement.className = "severity-" + ruleResult.severity;
             treeElement.listItemElement.appendChild(severityElement);
         }

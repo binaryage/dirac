@@ -374,22 +374,21 @@ WebInspector.RequestHeadersView.prototype = {
         statusCodeElement.hidden = !this._request.statusCode;
 
         if (this._request.statusCode) {
-            var statusImageSource = "";
-            if (this._request.statusCode < 300 || this._request.statusCode === 304)
-                statusImageSource = "Images/successGreenDot.png";
-            else if (this._request.statusCode < 400)
-                statusImageSource = "Images/warningOrangeDot.png";
-            else
-                statusImageSource = "Images/errorRedDot.png";
-
-            requestMethodElement.title = this._formatHeader(WebInspector.UIString("Request Method"), this._request.requestMethod);
-
             var statusCodeFragment = document.createDocumentFragment();
             statusCodeFragment.createChild("div", "header-name").textContent = WebInspector.UIString("Status Code") + ":";
 
-            var statusCodeImage = statusCodeFragment.createChild("img", "resource-status-image");
-            statusCodeImage.src = statusImageSource;
+            var statusCodeImage = statusCodeFragment.createChild("div", "resource-status-image");
             statusCodeImage.title = this._request.statusCode + " " + this._request.statusText;
+
+            if (this._request.statusCode < 300 || this._request.statusCode === 304)
+                statusCodeImage.addStyleClass("green-ball");
+            else if (this._request.statusCode < 400)
+                statusCodeImage.addStyleClass("orange-ball");
+            else
+                statusCodeImage.addStyleClass("red-ball");
+
+            requestMethodElement.title = this._formatHeader(WebInspector.UIString("Request Method"), this._request.requestMethod);
+
             var value = statusCodeFragment.createChild("div", "header-value source-code");
             value.textContent = this._request.statusCode + " " + this._request.statusText;
             if (this._request.cached)

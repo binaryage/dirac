@@ -41,9 +41,7 @@ WebInspector.ApplicationCacheItemsView = function(model, frameId)
     this.deleteButton.visible = false;
     this.deleteButton.addEventListener("click", this._deleteButtonClicked, this);
 
-    this.connectivityIcon = document.createElement("img");
-    this.connectivityIcon.className = "storage-application-cache-connectivity-icon";
-    this.connectivityIcon.src = "";
+    this.connectivityIcon = document.createElement("div");
     this.connectivityMessage = document.createElement("span");
     this.connectivityMessage.className = "storage-application-cache-connectivity";
     this.connectivityMessage.textContent = "";
@@ -51,9 +49,7 @@ WebInspector.ApplicationCacheItemsView = function(model, frameId)
     this.divider = document.createElement("span");
     this.divider.className = "status-bar-item status-bar-divider";
 
-    this.statusIcon = document.createElement("img");
-    this.statusIcon.className = "storage-application-cache-status-icon";
-    this.statusIcon.src = "";
+    this.statusIcon = document.createElement("div");
     this.statusMessage = document.createElement("span");
     this.statusMessage.className = "storage-application-cache-status";
     this.statusMessage.textContent = "";
@@ -119,18 +115,18 @@ WebInspector.ApplicationCacheItemsView.prototype = {
         
         var statusInformation = {};
         // We should never have UNCACHED status, since we remove frames with UNCACHED application cache status from the tree. 
-        statusInformation[applicationCache.UNCACHED]    = { src: "Images/errorRedDot.png", text: "UNCACHED" };
-        statusInformation[applicationCache.IDLE]        = { src: "Images/successGreenDot.png", text: "IDLE" };
-        statusInformation[applicationCache.CHECKING]    = { src: "Images/warningOrangeDot.png",  text: "CHECKING" };
-        statusInformation[applicationCache.DOWNLOADING] = { src: "Images/warningOrangeDot.png",  text: "DOWNLOADING" };
-        statusInformation[applicationCache.UPDATEREADY] = { src: "Images/successGreenDot.png",  text: "UPDATEREADY" };
-        statusInformation[applicationCache.OBSOLETE]    = { src: "Images/errorRedDot.png",      text: "OBSOLETE" };
+        statusInformation[applicationCache.UNCACHED]    = { className: "red-ball", text: "UNCACHED" };
+        statusInformation[applicationCache.IDLE]        = { className: "green-ball", text: "IDLE" };
+        statusInformation[applicationCache.CHECKING]    = { className: "orange-ball",  text: "CHECKING" };
+        statusInformation[applicationCache.DOWNLOADING] = { className: "orange-ball",  text: "DOWNLOADING" };
+        statusInformation[applicationCache.UPDATEREADY] = { className: "green-ball",  text: "UPDATEREADY" };
+        statusInformation[applicationCache.OBSOLETE]    = { className: "red-ball",      text: "OBSOLETE" };
 
         var info = statusInformation[status] || statusInformation[applicationCache.UNCACHED];
 
-        this.statusIcon.src = info.src;
+        this.statusIcon.className = "storage-application-cache-status-icon " + info.className;
         this.statusMessage.textContent = info.text;
-        
+
         if (this.isShowing() && this._status === applicationCache.IDLE && (oldStatus === applicationCache.UPDATEREADY || !this._resources))
             this._markDirty();
         this._maybeUpdate();
@@ -142,10 +138,10 @@ WebInspector.ApplicationCacheItemsView.prototype = {
     updateNetworkState: function(isNowOnline)
     {
         if (isNowOnline) {
-            this.connectivityIcon.src = "Images/successGreenDot.png";
+            this.connectivityIcon.className = "storage-application-cache-connectivity-icon green-ball";
             this.connectivityMessage.textContent = WebInspector.UIString("Online");
         } else {
-            this.connectivityIcon.src = "Images/errorRedDot.png";
+            this.connectivityIcon.className = "storage-application-cache-connectivity-icon red-ball";
             this.connectivityMessage.textContent = WebInspector.UIString("Offline");
         }
     },
