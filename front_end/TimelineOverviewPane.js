@@ -802,7 +802,7 @@ WebInspector.TimelineFrameOverview.prototype = {
             this._context.fillText(label, labelX, labelY);
             labelTopMargin = labelY + lineHeight;
         }
-        this._context.strokeStyle = "rgb(51, 51, 51)";
+        this._context.strokeStyle = "rgb(0, 0, 0, 0.3)";
         this._context.stroke();
         this._context.restore();
     },
@@ -842,7 +842,7 @@ WebInspector.TimelineFrameOverview.prototype = {
         var y0 = Math.floor(this._canvas.height - frame.duration * scale) + 0.5;
         var y1 = this._canvas.height + 0.5;
 
-        this._context.strokeStyle = "rgb(90, 90, 90)";
+        this._context.strokeStyle = "rgba(90, 90, 90, 0.3)";
         this._context.beginPath();
         this._context.moveTo(x, y1);
         this._context.lineTo(x, y0);
