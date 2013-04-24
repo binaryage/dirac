@@ -760,7 +760,13 @@ body.drawer-visible #main-panels {
 }
 
 .animate #floating-status-bar-container {
-    -webkit-transition: padding 100ms linear;
+    -webkit-transition-property: padding-left, bottom;
+    -webkit-transition-duration: 100ms;
+    -webkit-transition-timing-function: linear;
+}
+
+body.drawer-overlay #floating-status-bar-container {
+    box-shadow: 1px 1px 5px 2px rgba(128, 128, 128, 0.7);
 }
 
 body.drawer-visible #floating-status-bar-container {
@@ -1038,6 +1044,7 @@ body.remote .dock-status-bar-item {
     right: 0;
     height: 200px;
     background-color: white;
+    z-index: 1;
 }
 
 .animate #drawer {

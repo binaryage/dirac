@@ -109,6 +109,7 @@ WebInspector.Settings = function()
     this.splitVerticallyWhenDockedToRight = this.createSetting("splitVerticallyWhenDockedToRight", true);
     this.visiblePanels = this.createSetting("visiblePanels", {});
     this.shortcutPanelSwitch = this.createSetting("shortcutPanelSwitch", false);
+    this.drawerOverlay = this.createSetting("drawerOverlay", false);
     this.portForwardings = this.createSetting("portForwardings", []);
     this.codemirror = this.createSetting("codemirror", false);
 }
