@@ -171,11 +171,13 @@ WebInspector.markBeingEdited = function(element, value)
     if (value) {
         if (element.__editing)
             return false;
+        element.addStyleClass("being-edited");
         element.__editing = true;
         WebInspector.__editingCount = (WebInspector.__editingCount || 0) + 1;
     } else {
         if (!element.__editing)
             return false;
+        element.removeStyleClass("being-edited");
         delete element.__editing;
         --WebInspector.__editingCount;
     }

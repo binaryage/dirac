@@ -199,7 +199,7 @@ WebInspector.SnippetsNavigatorView.prototype = {
         var contextMenu = new WebInspector.ContextMenu(event);
         if (uiSourceCode) {
             contextMenu.appendItem(WebInspector.UIString("Run"), this._handleEvaluateSnippet.bind(this, uiSourceCode));
-            contextMenu.appendItem(WebInspector.UIString("Rename"), this._handleRenameSnippet.bind(this, uiSourceCode));
+            contextMenu.appendItem(WebInspector.UIString("Rename"), this.handleRename.bind(this, uiSourceCode));
             contextMenu.appendItem(WebInspector.UIString("Remove"), this._handleRemoveSnippet.bind(this, uiSourceCode));
             contextMenu.appendSeparator();
         }
@@ -220,7 +220,7 @@ WebInspector.SnippetsNavigatorView.prototype = {
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      */
-    _handleRenameSnippet: function(uiSourceCode)
+    handleRename: function(uiSourceCode)
     {
         this.dispatchEventToListeners(WebInspector.ScriptsNavigator.Events.ItemRenamingRequested, uiSourceCode);
     },

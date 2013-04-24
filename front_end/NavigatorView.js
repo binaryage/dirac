@@ -260,6 +260,13 @@ WebInspector.NavigatorView.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
+     */
+    handleRename: function(uiSourceCode, callback)
+    {
+    },
+
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
      * @param {function(boolean)=} callback
      */
     rename: function(uiSourceCode, callback)
@@ -546,6 +553,28 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
         }
     },
 
+    _shouldRenameOnMouseDown: function(event)
+    {
+        var isSelected = this === this.treeOutline.selectedTreeElement;
+        var isFocused = this.treeOutline.childrenListElement.isSelfOrAncestor(document.activeElement);
+        return isSelected && isFocused && !WebInspector.isBeingEdited(this.treeOutline.element);
+    },
+
+    selectOnMouseDown: function(event)
+    {
+        if (!this._shouldRenameOnMouseDown()) {
+            TreeElement.prototype.selectOnMouseDown.call(this, event);
+            return;
+        }
+        setTimeout(rename.bind(this), 300);
+
+        function rename()
+        {
+            if (this._shouldRenameOnMouseDown())
+                this._navigatorView.handleRename(this._uiSourceCode);
+        }
+    },
+
     _ondragstart: function(event)
     {
         event.dataTransfer.setData("text/plain", this._warmedUpContent);
@@ -587,6 +616,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
      */
     _handleContextMenuEvent: function(event)
     {
+        this.select();
         this._navigatorView.handleContextMenu(event, this._uiSourceCode);
     },
 

@@ -69,12 +69,12 @@
 
 .navigator li.selected .selection {
     height: 18px;
-    background-color: rgb(180, 180, 180);
 }
 
-.navigator :focus li.selected .selection {
-    background-color: rgb(111, 140, 210);
+.navigator > ol.being-edited li.selected .selection {
+    background-color: rgb(56, 121, 217);
 }
+
 
 .navigator .icon {
     width: 16px;
