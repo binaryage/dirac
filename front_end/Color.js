@@ -143,20 +143,22 @@ WebInspector.Color.fromRGBA = function(rgba)
 
 /**
  * @param {Array.<number>} hsva
- * @param {string=} format
  * @return {WebInspector.Color}
  */
-WebInspector.Color.fromHSVA = function(hsva, format)
+WebInspector.Color.fromHSVA = function(hsva)
 {
     var h = hsva[0];
     var s = hsva[1];
     var v = hsva[2];
 
     var t = (2 - s) * v;
-    s *= v / (t < 1 ? t : 2 - t);
+    if (v === 0 || s === 0)
+        s = 0;
+    else
+        s *= v / (t < 1 ? t : 2 - t);
     var hsla = [h, s, t / 2, hsva[3]];
 
-    return new WebInspector.Color(WebInspector.Color._hsl2rgb(hsla), format);
+    return new WebInspector.Color(WebInspector.Color._hsl2rgb(hsla), WebInspector.Color.Format.HSVA);
 }
 
 WebInspector.Color.prototype = {
@@ -218,7 +220,7 @@ WebInspector.Color.prototype = {
         var l = hsla[2];
 
         s *= l < 0.5 ? l : 1 - l;
-        return [h, 2 * s / (l + s), (l + s), hsla[3]];
+        return [h, s !== 0 ? 2 * s / (l + s) : 0, (l + s), hsla[3]];
     },
 
     /**
@@ -226,10 +228,7 @@ WebInspector.Color.prototype = {
      */
     hasAlpha: function()
     {
-        if (this._rgba[3] !== 1)
-            return true;
-        return this._format === WebInspector.Color.Format.RGBA ||
-               this._format === WebInspector.Color.Format.HSLA;
+        return this._rgba[3] !== 1;
     },
 
     /**
@@ -237,9 +236,11 @@ WebInspector.Color.prototype = {
      */
     canBeShortHex: function()
     {
+        if (this.hasAlpha())
+            return false;
         for (var i = 0; i < 3; ++i) {
             var c = Math.round(this._rgba[i] * 255);
-            if ((c >> 4) !== (c & 0xF))
+            if (c % 17)
                 return false;
         }
         return true;
@@ -278,25 +279,33 @@ WebInspector.Color.prototype = {
          */
         function toShortHexValue(value)
         {
-            return (Math.round(value * 255) >> 4).toString(16);
+            return (Math.round(value * 255) / 17).toString(16);
         }
 
         switch (format) {
         case WebInspector.Color.Format.Original:
             return this._originalText;
         case WebInspector.Color.Format.RGB:
+            if (this.hasAlpha())
+                return null;
             return String.sprintf("rgb(%d, %d, %d)", toRgbValue(this._rgba[0]), toRgbValue(this._rgba[1]), toRgbValue(this._rgba[2]));
         case WebInspector.Color.Format.RGBA:
             return String.sprintf("rgba(%d, %d, %d, %f)", toRgbValue(this._rgba[0]), toRgbValue(this._rgba[1]), toRgbValue(this._rgba[2]), this._rgba[3]);
         case WebInspector.Color.Format.HSL:
+            if (this.hasAlpha())
+                return null;
             var hsl = this.hsla();
             return String.sprintf("hsl(%d, %d%, %d%)", Math.round(hsl[0] * 360), Math.round(hsl[1] * 100), Math.round(hsl[2] * 100));
         case WebInspector.Color.Format.HSLA:
             var hsla = this.hsla();
             return String.sprintf("hsla(%d, %d%, %d%, %f)", Math.round(hsla[0] * 360), Math.round(hsla[1] * 100), Math.round(hsla[2] * 100), hsla[3]);
         case WebInspector.Color.Format.HEX:
+            if (this.hasAlpha())
+                return null;
             return String.sprintf("#%s%s%s", toHexValue(this._rgba[0]), toHexValue(this._rgba[1]), toHexValue(this._rgba[2])).toUpperCase();
         case WebInspector.Color.Format.ShortHEX:
+            if (!this.canBeShortHex())
+                return null;
             return String.sprintf("#%s%s%s", toShortHexValue(this._rgba[0]), toShortHexValue(this._rgba[1]), toShortHexValue(this._rgba[2])).toUpperCase();
         case WebInspector.Color.Format.Nickname:
             return this.nickname();

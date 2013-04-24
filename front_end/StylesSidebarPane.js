@@ -1762,8 +1762,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
 
                 function spectrumChanged(e)
                 {
-                    color = e.data;
-                    var colorString = color.toString();
+                    var colorString = /** @type {string} */ (e.data);
                     spectrum.displayText = colorString;
                     colorValueElement.textContent = colorString;
                     colorSwatch.setColorString(colorString);

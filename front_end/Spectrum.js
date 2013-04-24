@@ -198,29 +198,30 @@ WebInspector.Spectrum.prototype = {
      */
     color: function()
     {
-        return WebInspector.Color.fromHSVA(this._hsv, this._outputColorFormat());
+        return WebInspector.Color.fromHSVA(this._hsv);
     },
 
-    _outputColorFormat: function()
+    _colorString: function()
     {
         var cf = WebInspector.Color.Format;
         var format = this._originalFormat;
+        var color = this.color();
+        var originalFormatString = color.toString(this._originalFormat);
+        if (originalFormatString)
+            return originalFormatString;
 
-        if (this._hsv[3] === 1) {
-            // Simplify transparent formats.
-            if (format === cf.RGBA)
-                format = cf.RGB;
-            else if (format === cf.HSLA)
-                format = cf.HSL;
-        } else {
+        if (color.hasAlpha()) {
             // Everything except HSL(A) should be returned as RGBA if transparency is involved.
-            if (format === cf.HSL || format === cf.HSLA)
-                format = cf.HSLA;
+            if (format === cf.HSLA || format === cf.HSL)
+                return color.toString(cf.HSLA);
             else
-                format = cf.RGBA;
+                return color.toString(cf.RGBA);
         }
 
-        return format;
+        if (format === cf.ShortHEX)
+            return color.toString(cf.HEX);
+        console.assert(format === cf.Nickname);
+        return color.toString(cf.RGB);
     },
 
 
@@ -232,7 +233,7 @@ WebInspector.Spectrum.prototype = {
     _onchange: function()
     {
         this._updateUI();
-        this.dispatchEventToListeners(WebInspector.Spectrum.Events.ColorChanged, this.color());
+        this.dispatchEventToListeners(WebInspector.Spectrum.Events.ColorChanged, this._colorString());
     },
 
     _updateHelperLocations: function()
