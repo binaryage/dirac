@@ -47,39 +47,40 @@ WebInspector.CPUProfileView = function(profileHeader)
     this.dataGrid = new WebInspector.DataGrid(columns);
     this.dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sortProfile, this);
     this.dataGrid.element.addEventListener("mousedown", this._mouseDownInDataGrid.bind(this), true);
-
-    if (WebInspector.experimentsSettings.cpuFlameChart.isEnabled()) {
-        this._splitView = new WebInspector.SplitView(false, "flameChartSplitLocation");
-        this._splitView.show(this.element);
-
-        this._flameChart = new WebInspector.FlameChart(this);
-        this._flameChart.addEventListener(WebInspector.FlameChart.Events.SelectedNode, this._revealProfilerNode.bind(this));
-        this._flameChart.show(this._splitView.firstElement());
-
-        this.dataGrid.show(this._splitView.secondElement());
-    } else
-        this.dataGrid.show(this.element);
+    this.dataGrid.show(this.element);
 
     this.viewSelectComboBox = new WebInspector.StatusBarComboBox(this._changeView.bind(this));
 
-    var heavyViewOption = this.viewSelectComboBox.createOption(WebInspector.UIString("Heavy (Bottom Up)"), "", WebInspector.CPUProfileView._TypeHeavy);
-    var treeViewOption = this.viewSelectComboBox.createOption(WebInspector.UIString("Tree (Top Down)"), "", WebInspector.CPUProfileView._TypeTree);
-    this.viewSelectComboBox.select(this._viewType.get() === WebInspector.CPUProfileView._TypeHeavy ? heavyViewOption : treeViewOption);
+    var options = {};
+    if (WebInspector.experimentsSettings.cpuFlameChart.isEnabled())
+        options[WebInspector.CPUProfileView._TypeFlame] = this.viewSelectComboBox.createOption(WebInspector.UIString("Flame Chart"), "", WebInspector.CPUProfileView._TypeFlame);
+    options[WebInspector.CPUProfileView._TypeHeavy] = this.viewSelectComboBox.createOption(WebInspector.UIString("Heavy (Bottom Up)"), "", WebInspector.CPUProfileView._TypeHeavy);
+    options[WebInspector.CPUProfileView._TypeTree] = this.viewSelectComboBox.createOption(WebInspector.UIString("Tree (Top Down)"), "", WebInspector.CPUProfileView._TypeTree);
+
+    var optionName = this._viewType.get() || WebInspector.CPUProfileView._TypeFlame;
+    var option = options[optionName] || options[WebInspector.CPUProfileView._TypeFlame];
+    this.viewSelectComboBox.select(option);
+
+    this._statusBarButtonsElement = document.createElement("span");
 
     this.percentButton = new WebInspector.StatusBarButton("", "percent-time-status-bar-item");
     this.percentButton.addEventListener("click", this._percentClicked, this);
+    this._statusBarButtonsElement.appendChild(this.percentButton.element);
 
     this.focusButton = new WebInspector.StatusBarButton(WebInspector.UIString("Focus selected function."), "focus-profile-node-status-bar-item");
     this.focusButton.setEnabled(false);
     this.focusButton.addEventListener("click", this._focusClicked, this);
+    this._statusBarButtonsElement.appendChild(this.focusButton.element);
 
     this.excludeButton = new WebInspector.StatusBarButton(WebInspector.UIString("Exclude selected function."), "exclude-profile-node-status-bar-item");
     this.excludeButton.setEnabled(false);
     this.excludeButton.addEventListener("click", this._excludeClicked, this);
+    this._statusBarButtonsElement.appendChild(this.excludeButton.element);
 
     this.resetButton = new WebInspector.StatusBarButton(WebInspector.UIString("Restore all functions."), "reset-profile-status-bar-item");
     this.resetButton.visible = false;
     this.resetButton.addEventListener("click", this._resetClicked, this);
+    this._statusBarButtonsElement.appendChild(this.resetButton.element);
 
     this.profileHead = /** @type {?ProfilerAgent.CPUProfileNode} */ (null);
     this.profileHeader = profileHeader;
@@ -92,6 +93,7 @@ WebInspector.CPUProfileView = function(profileHeader)
         ProfilerAgent.getCPUProfile(this.profileHeader.uid, this._getCPUProfileCallback.bind(this));
 }
 
+WebInspector.CPUProfileView._TypeFlame = "Flame";
 WebInspector.CPUProfileView._TypeTree = "Tree";
 WebInspector.CPUProfileView._TypeHeavy = "Heavy";
 
@@ -154,7 +156,7 @@ WebInspector.CPUProfileView.prototype = {
 
     get statusBarItems()
     {
-        return [this.viewSelectComboBox.element, this.percentButton.element, this.focusButton.element, this.excludeButton.element, this.resetButton.element];
+        return [this.viewSelectComboBox.element, this._statusBarButtonsElement];
     },
 
     /**
@@ -425,6 +427,13 @@ WebInspector.CPUProfileView.prototype = {
             return;
 
         switch (this.viewSelectComboBox.selectedOption().value) {
+        case WebInspector.CPUProfileView._TypeFlame:
+            this._flameChart = this._flameChart || new WebInspector.FlameChart(this);
+            this.dataGrid.detach();
+            this._flameChart.show(this.element);
+            this._viewType.set(WebInspector.CPUProfileView._TypeFlame);
+            this._statusBarButtonsElement.enableStyleClass("hidden", true);
+            return;
         case WebInspector.CPUProfileView._TypeTree:
             this.profileDataGridTree = this._getTopDownProfileDataGridTree();
             this._sortProfile();
@@ -434,7 +443,14 @@ WebInspector.CPUProfileView.prototype = {
             this.profileDataGridTree = this._getBottomUpProfileDataGridTree();
             this._sortProfile();
             this._viewType.set(WebInspector.CPUProfileView._TypeHeavy);
+            break;
         }
+
+        this._statusBarButtonsElement.enableStyleClass("hidden", false);
+
+        if (this._flameChart)
+            this._flameChart.detach();
+        this.dataGrid.show(this.element);
 
         if (!this.currentQuery || !this._searchFinishedCallback || !this._searchResults)
             return;
