@@ -300,16 +300,18 @@
     z-index: 160;
 }
 
-.timeline-frame-overview #timeline-overview-memory {
-    display: none;
+#timeline-overview-memory  {
+    top: 25px;
 }
 
-#timeline-overview-memory > canvas {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    top: 5px;
+#timeline-overview-container canvas {
+    width: 100%;
+    height: 100%;
+}
+
+#timeline-overview-frames canvas {
+    z-index: 200;
+    background-color: rgba(255, 255, 255, 0.8);
 }
 
 #timeline-graphs {
@@ -561,13 +563,6 @@
 #counter-values-bar {
     border-bottom: solid 1px lightgray;
     min-height: 15px;
-}
-
-.timeline-frame-overview-bars {
-    z-index: 200;
-    background-color: rgba(255, 255, 255, 0.8);
-    width: 100%;
-    height: 100%;
 }
 
 .timeline .resources-event-divider {
