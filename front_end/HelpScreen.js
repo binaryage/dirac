@@ -61,9 +61,8 @@ WebInspector.HelpScreen._visibleScreen = null;
 WebInspector.HelpScreen.prototype = {
     _createCloseButton: function()
     {
-        var closeButton = document.createElement("button");
-        closeButton.className = "help-close-button";
-        closeButton.textContent = "\u2716"; // Code stands for HEAVY MULTIPLICATION X.
+        var closeButton = document.createElement("div");
+        closeButton.className = "help-close-button close-button-gray";
         closeButton.addEventListener("click", this.hide.bind(this), false);
         return closeButton;
     },

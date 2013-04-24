@@ -67,31 +67,13 @@
 }
 
 .help-close-button {
-    border: 0;
-    padding: 0;
-    font-size: 14px;
-    color: rgb(222, 222, 222);
-    background: -webkit-gradient(radial, 30% 30%, 1, 50% 50%, 8, from(rgb(144, 144, 144)), to(rgb(96, 96, 96)));
-    border-radius: 8px;
-    height: 16px;
-    width: 16px;
-    line-height: 12px;
     position: absolute;
-    top: 6px;
-    right: 6px;
-}
-
-#settings-screen .help-close-button {
     top: 8px;
     right: 8px;
 }
 
 body.dock-to-bottom .help-content {
     margin-bottom: 8px;
-}
-
-.help-close-button:hover {
-    color: white;
 }
 
 body.platform-mac .help-window-main .tabbed-pane-header-contents {

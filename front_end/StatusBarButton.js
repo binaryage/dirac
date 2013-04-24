@@ -281,6 +281,7 @@ WebInspector.StatusBarComboBox = function(changeHandler, className)
     this.element.className = "status-bar-select-container";
 
     this._selectElement = this.element.createChild("select", "status-bar-item");
+    this.element.createChild("div", "status-bar-select-arrow");
     if (changeHandler)
         this._selectElement.addEventListener("change", changeHandler, false);
     if (className)

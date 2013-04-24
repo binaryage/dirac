@@ -210,18 +210,29 @@
     border-bottom: 1px solid rgb(163, 163, 163);
 }
 
-.timeline-expandable-collapsed {
-    background-image: url(Images/disclosureTriangleSmallRightBlack.png);
-    background-position-x: 1px;
-    background-position-y: 3px;
-    background-repeat: no-repeat;
+.timeline-expandable-arrow {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    opacity: 0.5;
+    width: 10px;
+    height: 10px;
+    position: relative;
+    top: 3px;
+    left: 2px;
 }
 
-.timeline-expandable-expanded {
-    background-image: url(Images/disclosureTriangleSmallDownBlack.png);
-    background-position-x: 1px;
-    background-position-y: 3px;
-    background-repeat: no-repeat;
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.timeline-expandable-arrow {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
+}
+
+.timeline-expandable-collapsed .timeline-expandable-arrow {
+    background-position: -4px -96px;
+}
+
+.timeline-expandable-expanded .timeline-expandable-arrow {
+    background-position: -20px -96px;
 }
 
 .timeline-tree-item .type {

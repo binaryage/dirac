@@ -863,12 +863,26 @@ button.status-bar-item.extension {
 
 .status-bar-select-container {
     display: inline-block;
-    background-image: url(Images/disclosureTriangleSmallDown.png);
-    background-repeat: no-repeat;
-    background-position-x: right;
-    background-position-y: 5px;
-    padding-right: 10px;
-    border-right: 5px solid transparent;
+}
+
+.status-bar-select-arrow {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    opacity: 0.7;
+    width: 10px;
+    height: 10px;
+    background-position: -20px -96px;
+    display: inline-block;
+    pointer-events: none;
+    position: relative;
+    top: 3px;
+    left: -3px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.status-bar-select-arrow {
+    background-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
 select.status-bar-item {
@@ -879,7 +893,7 @@ select.status-bar-item {
     border: 0;
     border-radius: 0;
     padding: 0 15px 0 5px;
-    margin-right: -15px;
+    margin-right: -10px;
     position: relative;
     line-height: 20px;
     font-family: inherit;
@@ -2156,50 +2170,43 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
 
 .sidebar-tree-item .disclosure-button {
     float: left;
-    width: 16px;
-    height: 100%;
+    width: 10px;
+    height: 10px;
     border: 0;
-    background-color: transparent;
-    background-image: url(Images/disclosureTriangleSmallRight.png);
-    background-repeat: no-repeat;
-    background-position: center;
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
+    -webkit-mask-size: 320px 120px;
     -webkit-apearance: none;
+    background-color: rgba(0, 0, 0, 0.75);
+    position: relative;
+    top: 10px;
+}
+
+@media (-webkit-min-device-pixel-ratio: 1.5) {
+.sidebar-tree-item .disclosure-button {
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+}
 }
 
 .sidebar-tree.hide-disclosure-buttons .sidebar-tree-item .disclosure-button {
     display: none;
 }
 
-body.inactive .sidebar-tree-item .disclosure-button {
-    background-image: url(Images/disclosureTriangleSmallRightBlack.png);
-}
-
-body.inactive .sidebar-tree-item.expanded .disclosure-button {
-    background-image: url(Images/disclosureTriangleSmallDownBlack.png);
-}
-
-body.inactive .sidebar-tree-item .disclosure-button:active {
-    background-image: url(Images/disclosureTriangleSmallRightDownBlack.png);
+.sidebar-tree-item .disclosure-button {
+    -webkit-mask-position: -4px -96px;
 }
 
 .sidebar-tree-item.selected .disclosure-button {
-    background-image: url(Images/disclosureTriangleSmallRightWhite.png) !important;
+    background-color: white;
+    -webkit-mask-position: -4px -96px;
 }
 
 .sidebar-tree-item.expanded .disclosure-button {
-    background-image: url(Images/disclosureTriangleSmallDown.png);
+    -webkit-mask-position: -20px -96px;
 }
 
 .sidebar-tree-item.selected.expanded .disclosure-button {
-    background-image: url(Images/disclosureTriangleSmallDownWhite.png) !important;
-}
-
-.sidebar-tree-item.selected .disclosure-button:active {
-    background-image: url(Images/disclosureTriangleSmallRightDownWhite.png) !important;
-}
-
-.sidebar-tree-item .disclosure-button:active {
-    background-image: url(Images/disclosureTriangleSmallRightDown.png);
+    background-color: white;
+    -webkit-mask-position: -20px -96px;
 }
 
 .sidebar-tree-item .icon {

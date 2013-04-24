@@ -1516,14 +1516,9 @@ WebInspector.TimelineRecordGraphRow.prototype = {
  */
 WebInspector.TimelineExpandableElement = function(container)
 {
-    this._element = document.createElement("div");
-    this._element.className = "timeline-expandable";
-
-    var leftBorder = document.createElement("div");
-    leftBorder.className = "timeline-expandable-left";
-    this._element.appendChild(leftBorder);
-
-    container.appendChild(this._element);
+    this._element = container.createChild("div", "timeline-expandable");
+    this._element.createChild("div", "timeline-expandable-left");
+    this._element.createChild("div", "timeline-expandable-arrow");
 }
 
 WebInspector.TimelineExpandableElement.prototype = {
