@@ -81,9 +81,13 @@ WebInspector.ViewportControl.prototype = {
         if (!this.element.clientHeight)
             return;  // Do nothing for invisible controls.
 
+        this._contentElement.removeChildren();
         var itemCount = this._provider.itemCount();
-        if (!itemCount)
+        if (!itemCount) {
+            this._firstVisibleIndex = -1;
+            this._lastVisibleIndex = -1;
             return;
+        }
 
         if (!this._rowHeight) {
             var firstElement = this._provider.itemElement(0);
@@ -99,7 +103,6 @@ WebInspector.ViewportControl.prototype = {
         this._topGapElement.style.height = (this._rowHeight * this._firstVisibleIndex) + "px";
         this._bottomGapElement.style.height = (this._rowHeight * (itemCount - this._lastVisibleIndex - 1)) + "px"; 
 
-        this._contentElement.removeChildren();
         for (var i = this._firstVisibleIndex; i <= this._lastVisibleIndex; ++i)
             this._contentElement.appendChild(this._provider.itemElement(i));
     },

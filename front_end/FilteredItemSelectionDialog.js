@@ -50,6 +50,7 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
     styleElement.textContent = xhr.responseText;
 
     this._promptElement = this.element.createChild("input", "monospace");
+    this._promptElement.addEventListener("input", this._onInput.bind(this), false);
     this._promptElement.type = "text";
     this._promptElement.setAttribute("spellcheck", "false");
 
@@ -302,7 +303,14 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
             }
         }
         this._viewportControl.refresh();
+        if (!query)
+            this._selectedIndexInFiltered = 0;
         this._updateSelection(this._selectedIndexInFiltered, false);
+    },
+
+    _onInput: function(event)
+    {
+        this._scheduleFilter();
     },
 
     _onKeyDown: function(event)
@@ -333,8 +341,6 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
             event.consume(true);
             break;
         default:
-            if (event.keyIdentifier !== "Shift" && event.keyIdentifier !== "Ctrl" && event.keyIdentifier !== "Meta" && event.keyIdentifier !== "Left" && event.keyIdentifier !== "Right")
-                this._scheduleFilter();
         }
     },
 
