@@ -202,12 +202,14 @@ WebInspector.TextEditorModel.prototype = {
     /**
      * @return {boolean}
      */
-    isClean: function() {
-        return !this._undoStack.length;
+    isClean: function()
+    {
+        return this._cleanState === this._undoStack.length;
     },
 
-    markClean: function() {
-        this._resetUndoStack();
+    markClean: function()
+    {
+        this._cleanState = this._undoStack.length;
     },
 
     /**
@@ -545,8 +547,11 @@ WebInspector.TextEditorModel.prototype = {
         if (this._inUndo)
             this._redoStack.push(command);
         else {
-            if (!this._inRedo)
+            if (!this._inRedo) {
                 this._redoStack = [];
+                if (typeof this._cleanState === "number" && this._cleanState > this._undoStack.length)
+                    delete this._cleanState;
+            }
             this._undoStack.push(command);
         }
         return command;
@@ -617,7 +622,9 @@ WebInspector.TextEditorModel.prototype = {
 
     _resetUndoStack: function()
     {
+        delete this._cleanState;
         this._undoStack = [];
+        this._redoStack = [];
     },
 
     /**
