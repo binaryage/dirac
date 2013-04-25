@@ -172,6 +172,10 @@ body.platform-mac .help-key {
     margin-left: 7px;
 }
 
+#general-tab-content .help-content fieldset legend {
+    font-size: 14px;
+}
+
 body.platform-mac .settings-tab.help-content fieldset {
     margin-left: 10px;
 }

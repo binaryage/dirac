@@ -302,7 +302,7 @@ WebInspector.SettingsTab.prototype = {
  */
 WebInspector.GenericSettingsTab = function()
 {
-    WebInspector.SettingsTab.call(this, WebInspector.UIString("General"));
+    WebInspector.SettingsTab.call(this, WebInspector.UIString("General"), "general-tab-content");
 
     var p = this._appendSection();
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Disable cache (while DevTools is open)"), WebInspector.settings.cacheDisabled));
@@ -311,9 +311,6 @@ WebInspector.GenericSettingsTab = function()
     WebInspector.settings.javaScriptDisabled.addChangeListener(this._javaScriptDisabledChanged, this);
     this._disableJSCheckbox = disableJSElement.getElementsByTagName("input")[0];
     this._updateScriptDisabledCheckbox();
-
-    var panelShortcutTitle = WebInspector.UIString("Enable %s + 1-9 shortcut to switch panels", WebInspector.isMac() ? "Cmd" : "Ctrl");
-    p.appendChild(this._createCheckboxSetting(panelShortcutTitle, WebInspector.settings.shortcutPanelSwitch));
 
     p = this._appendSection(WebInspector.UIString("Appearance"));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show toolbar icons"), WebInspector.settings.showToolbarIcons));
@@ -386,6 +383,10 @@ WebInspector.GenericSettingsTab = function()
         p = this._appendSection(WebInspector.UIString("Extensions"));
         p.appendChild(this._createCustomSetting(WebInspector.UIString("Open links in"), handlerSelector.element));
     }
+
+    p = this._appendSection();
+    var panelShortcutTitle = WebInspector.UIString("Enable %s + 1-9 shortcut to switch panels", WebInspector.isMac() ? "Cmd" : "Ctrl");
+    p.appendChild(this._createCheckboxSetting(panelShortcutTitle, WebInspector.settings.shortcutPanelSwitch));
 }
 
 WebInspector.GenericSettingsTab.prototype = {
