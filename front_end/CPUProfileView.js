@@ -421,6 +421,28 @@ WebInspector.CPUProfileView.prototype = {
         profileNode.revealAndSelect();
     },
 
+    _ensureFlameChartCreated: function()
+    {
+        if (this._flameChart)
+            return;
+        this._flameChart = new WebInspector.FlameChart(this);
+        this._flameChart.addEventListener(WebInspector.FlameChart.Events.SelectedNode, this._onSelectedNode.bind(this));
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _onSelectedNode: function(event)
+    {
+        var node = event.data;
+        if (!node || !node.url)
+            return;
+        var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(node.url);
+        if (!uiSourceCode)
+            return;
+        WebInspector.showPanel("scripts").showUISourceCode(uiSourceCode, node.lineNumber);
+    },
+
     _changeView: function()
     {
         if (!this.profileHeader)
@@ -428,7 +450,7 @@ WebInspector.CPUProfileView.prototype = {
 
         switch (this.viewSelectComboBox.selectedOption().value) {
         case WebInspector.CPUProfileView._TypeFlame:
-            this._flameChart = this._flameChart || new WebInspector.FlameChart(this);
+            this._ensureFlameChartCreated();
             this.dataGrid.detach();
             this._flameChart.show(this.element);
             this._viewType.set(WebInspector.CPUProfileView._TypeFlame);

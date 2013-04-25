@@ -72,8 +72,7 @@ WebInspector.FlameChart = function(cpuProfileView)
 }
 
 /**
- * @constructor            entries.push(new WebInspector.FlameChart.Entry(colorPair, level, node.totalTime, offset, node));
-/
+ * @constructor
  * @implements {WebInspector.TimelineGrid.Calculator}
  */
 WebInspector.FlameChart.Calculator = function()
