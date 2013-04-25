@@ -1385,19 +1385,23 @@ WebInspector.NetworkLogView.prototype = {
         function escapeCharacter(x)
         {
            var code = x.charCodeAt(0);
-           // Add leading zero when needed to not care about the next character.
-           return code < 16 ? "\\x0" + code.toString(16) : "\\x" + code.toString(16);
+           if (code < 256) {
+             // Add leading zero when needed to not care about the next character.
+             return code < 16 ? "\\x0" + code.toString(16) : "\\x" + code.toString(16);
+           }
+           code = code.toString(16);
+           return "\\u" + ("0000" + code).substr(code.length, 4);
         }
 
         function escape(str)
         {
-            if (/[\0-\x1f\']/.test(str)) {
+            if (/[^\x20-\x7E]|\'/.test(str)) {
                 // Use ANSI-C quoting syntax.
                 return "$\'" + str.replace(/\\/g, "\\\\")
                                   .replace(/\'/g, "\\\'")
                                   .replace(/\n/g, "\\n")
                                   .replace(/\r/g, "\\r")
-                                  .replace(/[\0-\x1f]/g, escapeCharacter) + "'";
+                                  .replace(/[^\x20-\x7E]/g, escapeCharacter) + "'";
             } else {
                 // Use single quote syntax.
                 return "'" + str + "'";
