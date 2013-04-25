@@ -260,8 +260,11 @@ WebInspector.StatusBarButton.prototype = {
             document.documentElement.removeEventListener("mouseup", mouseUpListener, false);
 
             for (var i = 0; i < buttons.length; ++i) {
-                if (buttons[i].element.hasStyleClass("emulate-active"))
+                if (buttons[i].element.hasStyleClass("emulate-active")) {
+                    buttons[i].element.removeStyleClass("emulate-active");
                     buttons[i]._clicked();
+                    break;
+                }
             }
         }
     },
