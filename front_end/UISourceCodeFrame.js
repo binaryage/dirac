@@ -95,7 +95,10 @@ WebInspector.UISourceCodeFrame.prototype = {
         if (this._isSettingContent)
             return;
         this._muteSourceCodeEvents = true;
-        this._uiSourceCode.setWorkingCopy(this._textEditor.text());
+        if (this._textEditor.isClean())
+            this._uiSourceCode.resetWorkingCopy();
+        else
+            this._uiSourceCode.setWorkingCopy(this._textEditor.text());
         delete this._muteSourceCodeEvents;
     },
 
@@ -133,6 +136,7 @@ WebInspector.UISourceCodeFrame.prototype = {
      */
     _onWorkingCopyCommitted: function(event)
     {
+        this._textEditor.markClean();
         if (this._muteSourceCodeEvents)
             return;
         this._innerSetContent(this._uiSourceCode.workingCopy());

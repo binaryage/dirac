@@ -317,6 +317,7 @@ WebInspector.SourceFrame.prototype = {
         if (!this._loaded) {
             this._loaded = true;
             this._textEditor.setText(content || "");
+            this._textEditor.markClean();
         } else
             this._textEditor.editRange(this._textEditor.range(), content || "");
 

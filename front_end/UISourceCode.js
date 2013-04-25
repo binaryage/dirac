@@ -417,7 +417,8 @@ WebInspector.UISourceCode.prototype = {
 
     resetWorkingCopy: function()
     {
-        this.setWorkingCopy(this._content);
+        delete this._workingCopy;
+        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.WorkingCopyChanged);
     },
 
     /**
@@ -426,10 +427,7 @@ WebInspector.UISourceCode.prototype = {
     setWorkingCopy: function(newWorkingCopy)
     {
         this._mimeType = this.canonicalMimeType();
-        if (this._content === newWorkingCopy)
-            delete this._workingCopy;
-        else
-            this._workingCopy = newWorkingCopy;
+        this._workingCopy = newWorkingCopy;
         this.dispatchEventToListeners(WebInspector.UISourceCode.Events.WorkingCopyChanged);
     },
 
@@ -457,7 +455,7 @@ WebInspector.UISourceCode.prototype = {
      */
     isDirty: function()
     {
-        return typeof this._workingCopy !== "undefined" && this._workingCopy !== this._content;
+        return typeof this._workingCopy !== "undefined";
     },
 
     /**
