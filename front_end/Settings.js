@@ -109,7 +109,6 @@ WebInspector.Settings = function()
     this.splitVerticallyWhenDockedToRight = this.createSetting("splitVerticallyWhenDockedToRight", true);
     this.visiblePanels = this.createSetting("visiblePanels", {});
     this.shortcutPanelSwitch = this.createSetting("shortcutPanelSwitch", false);
-    this.drawerOverlay = this.createSetting("drawerOverlay", false);
     this.portForwardings = this.createSetting("portForwardings", []);
     this.codemirror = this.createSetting("codemirror", false);
 }
@@ -212,6 +211,7 @@ WebInspector.ExperimentsSettings = function()
     this.customizableToolbar = this._createExperiment("customizableToolbar", "Enable toolbar customization");
     this.cpuFlameChart = this._createExperiment("cpuFlameChart", "Show Flame Chart in CPU Profiler");
     this.tethering = this._createExperiment("tethering", "Enable reverse port forwarding");
+    this.drawerOverlay = this._createExperiment("drawerOverlay", "Open console as overlay");
 
     this._cleanUpSetting();
 }

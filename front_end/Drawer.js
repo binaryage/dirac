@@ -51,12 +51,10 @@ WebInspector.Drawer = function()
     this._viewStatusBar.style.opacity = 0;
     this._bottomStatusBar = document.getElementById("bottom-status-bar-container");
 
-    var drawerIsOverlay = WebInspector.settings.drawerOverlay.get();
+    var drawerIsOverlay = WebInspector.experimentsSettings.drawerOverlay.isEnabled();
     this._elementToAdjust = drawerIsOverlay ?  this._floatingStatusBarContainer : this._mainElement;
 
     document.body.enableStyleClass("drawer-overlay", drawerIsOverlay);
-
-    WebInspector.settings.drawerOverlay.addChangeListener(this._overlayModeChanged.bind(this));
 }
 
 WebInspector.Drawer.AnimationType = {
@@ -206,20 +204,6 @@ WebInspector.Drawer.prototype = {
             this._animationFinished();
             delete this._animationFinished;
         }
-    },
-
-    _overlayModeChanged: function(event)
-    {
-        var newElementToAdjust = event.data ?  this._floatingStatusBarContainer : this._mainElement;
-
-        if (newElementToAdjust === this._elementToAdjust)
-            return;
-
-        document.body.enableStyleClass("drawer-overlay", event.data);
-
-        newElementToAdjust.style.bottom = this._elementToAdjust.style.bottom;
-        this._elementToAdjust.style.bottom = 0;
-        this._elementToAdjust = newElementToAdjust;
     },
 
     _animationStyles: function(animationType)
