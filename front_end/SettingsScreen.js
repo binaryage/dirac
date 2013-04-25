@@ -610,7 +610,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
             removeFileSystemButton.disabled = true;
             WebInspector.isolatedFileSystemManager.removeFileSystem(fileSystemPath, fileSystemRemoved.bind(this));
         }
-        
+
         function fileSystemRemoved()
         {
             this._fileSystemsEditor.removeChild(fileSystemRow);
@@ -828,7 +828,7 @@ WebInspector.TetheringSettingsTab.prototype = {
     _validateLocation: function(element, event)
     {
         var location = element.value;
-        if (!/\d+\.\d+\.\d+\.\d+:\d+/.test(location)) {
+        if (!/.*:\d+/.test(location)) {
             element.addStyleClass("workspace-settings-error");
             return "";
         }

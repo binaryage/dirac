@@ -420,13 +420,11 @@ body.platform-mac .help-content input[type=radio] {
     background-color: rgb(221, 221, 221);
 }
 
-
-
 .settings-tab .file-systems-editor input.file-system-path {
     width: 383px;
 }
 
-.settings-tab .file-mappings-editor .workspace-settings-row input {
+.settings-tab .workspace-settings-row input {
     width: 190px;
 }
 
