@@ -171,7 +171,10 @@ WebInspector.CanvasProfileView.prototype = {
         var selectedNode = this._logGrid.selectedNode;
         if (!selectedNode)
             return;
-        var nextNode = forward ? selectedNode.traverseNextNode(false) : selectedNode.traversePreviousNode(false);
+        var nextNode = selectedNode;
+        do {
+            nextNode = forward ? nextNode.traverseNextNode(false) : nextNode.traversePreviousNode(false);
+        } while (nextNode && typeof nextNode.index !== "number");
         (nextNode || selectedNode).revealAndSelect();
     },
 
