@@ -312,15 +312,15 @@ WebInspector.TimelinePresentationModel.prototype = {
                 origin = parentRecord;
                 parentRecord = newParentRecord;
             }
-            if (parentRecord === this._rootRecord) {
-                // On main thread, only coalesce if the last event is of same type.
+            // On main thread, only coalesce if the last event is of same type.
+            var coalescingBucket;
+            if (parentRecord === this._rootRecord)
                 coalescingBucket = record.thread ? record.type : "mainThread";
-                var coalescedRecord = this._findCoalescedParent(record, coalescingBucket);
-                if (coalescedRecord) {
-                    if (!origin)
-                        origin = parentRecord;
-                    parentRecord = coalescedRecord;
-                }
+            var coalescedRecord = this._findCoalescedParent(record, parentRecord, coalescingBucket);
+            if (coalescedRecord) {
+                if (!origin)
+                    origin = parentRecord;
+                parentRecord = coalescedRecord;
             }
         }
 
@@ -392,14 +392,17 @@ WebInspector.TimelinePresentationModel.prototype = {
 
     /**
      * @param {Object} record
+     * @param {Object} newParent
      * @param {String} bucket
      * @return {WebInspector.TimelinePresentationModel.Record?}
      */
-    _findCoalescedParent: function(record, bucket)
+    _findCoalescedParent: function(record, newParent, bucket)
     {
-        const coalescingThresholdSeconds = 0.001;
+        const coalescingThresholdSeconds = 0.005;
 
-        var lastRecord = this._coalescingBuckets[bucket];
+        var lastRecord = bucket ? this._coalescingBuckets[bucket] : newParent.children.peekLast();
+        if (lastRecord && lastRecord.coalesced)
+            lastRecord = lastRecord.children.peekLast();
         var startTime = WebInspector.TimelineModel.startTimeInSeconds(record);
         var endTime = WebInspector.TimelineModel.endTimeInSeconds(record);
         if (!lastRecord || lastRecord.type !== record.type)
@@ -410,9 +413,6 @@ WebInspector.TimelinePresentationModel.prototype = {
             return null;
         if (lastRecord.parent.coalesced)
             return lastRecord.parent;
-        // Do not aggregate records that were reparented.
-        if (lastRecord.parent !== this._rootRecord)
-            return null;
         return this._replaceWithCoalescedRecord(lastRecord);
     },
 
@@ -1132,7 +1132,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         if (typeof this._detailsNode === "undefined") {
             this._detailsNode = this._getRecordDetails();
 
-            if (this._detailsNode) {
+            if (this._detailsNode && !this.coalesced) {
                 this._detailsNode.insertBefore(document.createTextNode("("), this._detailsNode.firstChild);
                 this._detailsNode.appendChild(document.createTextNode(")"));
             }
