@@ -3235,6 +3235,12 @@
                 ]
             },
             {
+                "name": "startTrackingHeapObjects"
+            },
+            {
+                "name": "stopTrackingHeapObjects"
+            },
+            {
                 "name": "getHeapSnapshot",
                 "parameters": [
                     { "name": "uid", "type": "integer" }
@@ -3306,6 +3312,21 @@
                 "parameters": [
                     { "name": "done", "type": "integer" },
                     { "name": "total", "type": "integer" }
+                ]
+            },
+            {
+                "name": "lastSeenObjectId",
+                "description": "If heap objects tracking has been started then backend regulary sends a current value for last seen object id and corresponding timestamp. If the were changes in the heap since last event then one or more heapStatsUpdate events will be sent before a new lastSeenObjectId event.",
+                "parameters": [
+                    { "name": "lastSeenObjectId", "type": "integer" },
+                    { "name": "timestamp", "type": "number" }
+                ]
+            },
+            {
+                "name": "heapStatsUpdate",
+                "description": "If heap objects tracking has been started then backend may send update for one or more fragments",
+                "parameters": [
+                    { "name": "statsUpdate", "type": "array", "items": { "type": "integer" }, "description": "An array of triplets. Each triplet describes a fragment. The first integer is the fragment index, the second integer is a total count of objects for the fragment, the third integer is a total size of the objects for the fragment."}
                 ]
             }
         ]
