@@ -1801,6 +1801,7 @@ iframe.panel.extension {
     -webkit-user-select: text;
     cursor: default;
     padding-top: 2px;
+    line-height: 12px;
 }
 
 .properties-tree li.parent {

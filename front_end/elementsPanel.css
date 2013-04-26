@@ -386,7 +386,7 @@
     z-index: 1;
     width: 18px;
     left: -40px; /* original -2px + (-38px) to compensate for the first line outdent */
-    top: 2px;
+    top: 1px;
 }
 
 .styles-section.matched-styles .properties ol.expanded {
