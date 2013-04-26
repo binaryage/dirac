@@ -54,6 +54,7 @@ WebInspector.UISourceCodeFrame.prototype = {
         WebInspector.SourceFrame.prototype.willHide.call(this);
         window.removeEventListener("focus", this._boundWindowFocused, false);
         delete this._boundWindowFocused;
+        this._uiSourceCode.removeWorkingCopyGetter();
     },
 
     /**
@@ -98,7 +99,7 @@ WebInspector.UISourceCodeFrame.prototype = {
         if (this._textEditor.isClean())
             this._uiSourceCode.resetWorkingCopy();
         else
-            this._uiSourceCode.setWorkingCopy(this._textEditor.text());
+            this._uiSourceCode.setWorkingCopyGetter(this._textEditor.text.bind(this._textEditor));
         delete this._muteSourceCodeEvents;
     },
 
