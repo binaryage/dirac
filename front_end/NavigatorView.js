@@ -553,7 +553,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
         }
     },
 
-    _shouldRenameOnMouseDown: function(event)
+    _shouldRenameOnMouseDown: function()
     {
         var isSelected = this === this.treeOutline.selectedTreeElement;
         var isFocused = this.treeOutline.childrenListElement.isSelfOrAncestor(document.activeElement);

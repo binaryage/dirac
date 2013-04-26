@@ -36,8 +36,8 @@
 WebInspector.Color = function(rgba, format, originalText)
 {
     this._rgba = rgba;
-    this._originalText = originalText;
-    this._format = format;
+    this._originalText = originalText || null;
+    this._format = format || null;
     if (typeof this._rgba[3] === "undefined")
         this._rgba[3] = 1;
     for (var i = 0; i < 4; ++i) {
@@ -158,12 +158,12 @@ WebInspector.Color.fromHSVA = function(hsva)
         s *= v / (t < 1 ? t : 2 - t);
     var hsla = [h, s, t / 2, hsva[3]];
 
-    return new WebInspector.Color(WebInspector.Color._hsl2rgb(hsla), WebInspector.Color.Format.HSVA);
+    return new WebInspector.Color(WebInspector.Color._hsl2rgb(hsla), WebInspector.Color.Format.HSLA);
 }
 
 WebInspector.Color.prototype = {
     /**
-     * @return {string|undefined}
+     * @return {?string}
      */
     format: function()
     {
@@ -247,7 +247,7 @@ WebInspector.Color.prototype = {
     },
 
     /**
-     * @return {string|undefined}
+     * @return {?string}
      */
     toString: function(format)
     {
@@ -328,7 +328,7 @@ WebInspector.Color.prototype = {
     },
 
     /**
-     * @return {string|undefined} nickname
+     * @return {?string} nickname
      */
     nickname: function()
     {
@@ -340,7 +340,7 @@ WebInspector.Color.prototype = {
             }
         }
 
-        return WebInspector.Color._rgbaToNickname[this._canonicalRGBA()];
+        return WebInspector.Color._rgbaToNickname[this._canonicalRGBA()] || null;
     },
 
     /**

@@ -395,7 +395,7 @@ WebInspector.CSSStyleModel.prototype = {
     },
 
     /**
-     * @param {CSSAgent.CSSStyleSheetHeader}
+     * @param {CSSAgent.CSSStyleSheetHeader} header
      */
     _styleSheetAdded: function(header)
     {
@@ -404,7 +404,7 @@ WebInspector.CSSStyleModel.prototype = {
     },
 
     /**
-     * @param {CSSAgent.CSSStyleSheetId}
+     * @param {!CSSAgent.StyleSheetId} id
      */
     _styleSheetRemoved: function(id)
     {
@@ -1218,11 +1218,17 @@ WebInspector.CSSStyleSheetHeader = function(payload)
 }
 
 WebInspector.CSSStyleSheetHeader.prototype = {
+    /**
+     * @return {string}
+     */
     resourceURL: function()
     {
         return this.origin === "inspector" ? this._viaInspectorResourceURL() : this.sourceURL;
     },
 
+    /**
+     * @return {string}
+     */
     _key: function()
     {
         return this.frameId + ":" + this.resourceURL();
@@ -1364,7 +1370,7 @@ WebInspector.CSSStyleModelResourceBinding.prototype = {
 
     /**
      * @param {WebInspector.Resource} resource
-     * @return {CSSAgent.StyleSheetId}
+     * @return {?CSSAgent.StyleSheetId}
      */
     styleSheetIdForResource: function(resource)
     {
