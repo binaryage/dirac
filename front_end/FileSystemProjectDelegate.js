@@ -42,6 +42,7 @@ WebInspector.FileSystemProjectDelegate = function(isolatedFileSystem, workspace)
 }
 
 WebInspector.FileSystemProjectDelegate._scriptExtensions = ["js", "java", "cc", "cpp", "h", "cs", "py", "php"].keySet();
+WebInspector.FileSystemProjectDelegate._styleSheetExtensions = ["css", "scss", "sass"].keySet();
 
 WebInspector.FileSystemProjectDelegate.projectId = function(fileSystemPath)
 {
@@ -162,13 +163,13 @@ WebInspector.FileSystemProjectDelegate.prototype = {
         var extensionIndex = fileName.lastIndexOf(".");
         var extension = "";
         if (extensionIndex !== -1)
-            extension = fileName.substring(extensionIndex + 1);
+            extension = fileName.substring(extensionIndex + 1).toLowerCase();
         var contentType = WebInspector.resourceTypes.Other;
         if (WebInspector.FileSystemProjectDelegate._scriptExtensions[extension])
             return WebInspector.resourceTypes.Script;
-        if (extension === "css")
+        if (WebInspector.FileSystemProjectDelegate._styleSheetExtensions[extension])
             return WebInspector.resourceTypes.Stylesheet;
-        if (extension === "html")
+        if (extension === "html" || extension === "htm")
             return WebInspector.resourceTypes.Document;
         return WebInspector.resourceTypes.Other;
     },
