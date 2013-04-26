@@ -772,7 +772,7 @@ WebInspector.NetworkRequest.prototype = {
             return;
         }
         if (typeof this._content !== "undefined") {
-            callback(this.content || null, this._contentEncoded, this.type.canonicalMimeType());
+            callback(this.content || null, this._contentEncoded, this.type.canonicalMimeType() || this._mimeType);
             return;
         }
         this._pendingContentCallbacks.push(callback);

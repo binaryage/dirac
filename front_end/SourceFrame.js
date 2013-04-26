@@ -305,6 +305,17 @@ WebInspector.SourceFrame.prototype = {
         this.clearMessages();
     },
 
+    _simplifyMimeType: function(mimeType)
+    {
+        if (!mimeType)
+            return "";
+        if (mimeType.indexOf("javascript") >= 0 ||
+            mimeType.indexOf("jscript") >= 0 ||
+            mimeType.indexOf("ecmascript") >= 0)
+            return "text/javascript";
+        return mimeType;
+    },
+
     /**
      * @param {?string} content
      * @param {boolean} contentEncoded
@@ -312,7 +323,7 @@ WebInspector.SourceFrame.prototype = {
      */
     setContent: function(content, contentEncoded, mimeType)
     {
-        this._textEditor.mimeType = mimeType;
+        this._textEditor.mimeType = this._simplifyMimeType(mimeType);
 
         if (!this._loaded) {
             this._loaded = true;
