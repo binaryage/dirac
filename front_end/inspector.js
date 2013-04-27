@@ -740,11 +740,6 @@ WebInspector._registerShortcuts = function()
         shortcut.makeDescriptor("?")
     ];
     section.addAlternateKeys(keys, WebInspector.UIString("Show keyboard shortcuts"));
-
-    if (WebInspector.isMac()) {
-        keys = [ shortcut.makeDescriptor(",", shortcut.Modifiers.Meta) ];
-        section.addAlternateKeys(keys, WebInspector.UIString("Open settings"));
-    }
 }
 
 /**
@@ -757,12 +752,6 @@ WebInspector.documentKeyDown = function(event)
     if (event.keyIdentifier === "F1" ||
         (event.keyIdentifier === helpKey && event.shiftKey && (!WebInspector.isBeingEdited(event.target) || event.metaKey))) {
         this.settingsController.showSettingsScreen(WebInspector.SettingsScreen.Tabs.Shortcuts);
-        event.consume(true);
-        return;
-    }
-
-    if (WebInspector.isMac() && event.metaKey && event.keyCode === WebInspector.KeyboardShortcut.Keys.Comma.code) {
-        this.settingsController.showSettingsScreen(WebInspector.SettingsScreen.Tabs.General);
         event.consume(true);
         return;
     }
