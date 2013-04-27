@@ -109,33 +109,24 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.dataGrid = /** @type {WebInspector.HeapSnapshotSortableDataGrid} */ (this.constructorsDataGrid);
     this.currentView = this.constructorsView;
 
-    this.viewSelectElement = document.createElement("select");
-    this.viewSelectElement.className = "status-bar-item";
-    this.viewSelectElement.addEventListener("change", this._onSelectedViewChanged.bind(this), false);
+    this.viewSelect = new WebInspector.StatusBarComboBox(this._onSelectedViewChanged.bind(this));
 
     this.views = [{title: "Summary", view: this.constructorsView, grid: this.constructorsDataGrid},
                   {title: "Comparison", view: this.diffView, grid: this.diffDataGrid},
                   {title: "Containment", view: this.containmentView, grid: this.containmentDataGrid},
                   {title: "Dominators", view: this.dominatorView, grid: this.dominatorDataGrid}];
     this.views.current = 0;
-    for (var i = 0; i < this.views.length; ++i) {
-        var view = this.views[i];
-        var option = document.createElement("option");
-        option.label = WebInspector.UIString(view.title);
-        this.viewSelectElement.appendChild(option);
-    }
+    for (var i = 0; i < this.views.length; ++i)
+        this.viewSelect.createOption(WebInspector.UIString(this.views[i].title));
 
     this._profileUid = profile.uid;
     this._profileTypeId = profile.profileType().id;
 
-    this.baseSelectElement = document.createElement("select");
-    this.baseSelectElement.className = "status-bar-item";
-    this.baseSelectElement.addEventListener("change", this._changeBase.bind(this), false);
+    this.baseSelect = new WebInspector.StatusBarComboBox(this._changeBase.bind(this));
+    this.baseSelect.element.addStyleClass("hidden");
     this._updateBaseOptions();
 
-    this.filterSelectElement = document.createElement("select");
-    this.filterSelectElement.className = "status-bar-item";
-    this.filterSelectElement.addEventListener("change", this._changeFilter.bind(this), false);
+    this.filterSelect = new WebInspector.StatusBarComboBox(this._changeFilter.bind(this));
     this._updateFilterOptions();
 
     this.helpButton = new WebInspector.StatusBarButton("", "heap-snapshot-help-status-bar-item status-bar-item");
@@ -157,9 +148,9 @@ WebInspector.HeapSnapshotView = function(parent, profile)
         }
 
         if (profileIndex > 0)
-            this.baseSelectElement.selectedIndex = profileIndex - 1;
+            this.baseSelect.setSelectedIndex(profileIndex - 1);
         else
-            this.baseSelectElement.selectedIndex = profileIndex;
+            this.baseSelect.setSelectedIndex(profileIndex);
         this.dataGrid.setDataSource(heapSnapshotProxy);
     }
 }
@@ -194,17 +185,7 @@ WebInspector.HeapSnapshotView.prototype = {
 
     get statusBarItems()
     {
-        /**
-         * @param {boolean=} hidden
-         */
-        function appendArrowImage(element, hidden)
-        {
-            var span = document.createElement("span");
-            span.className = "status-bar-select-container" + (hidden ? " hidden" : "");
-            span.appendChild(element);
-            return span;
-        }
-        return [appendArrowImage(this.viewSelectElement), appendArrowImage(this.baseSelectElement, true), appendArrowImage(this.filterSelectElement), this.helpButton.element];
+        return [this.viewSelect.element, this.baseSelect.element, this.filterSelect.element, this.helpButton.element];
     },
 
     get profile()
@@ -386,10 +367,10 @@ WebInspector.HeapSnapshotView.prototype = {
 
     _changeBase: function()
     {
-        if (this._baseProfileUid === this._profiles()[this.baseSelectElement.selectedIndex].uid)
+        if (this._baseProfileUid === this._profiles()[this.baseSelect.selectedIndex()].uid)
             return;
 
-        this._baseProfileUid = this._profiles()[this.baseSelectElement.selectedIndex].uid;
+        this._baseProfileUid = this._profiles()[this.baseSelect.selectedIndex()].uid;
         var dataGrid = /** @type {WebInspector.HeapSnapshotDiffDataGrid} */ (this.dataGrid);
         // Change set base data source only if main data source is already set.
         if (dataGrid.snapshot)
@@ -407,12 +388,12 @@ WebInspector.HeapSnapshotView.prototype = {
 
     _changeFilter: function()
     {
-        var profileIndex = this.filterSelectElement.selectedIndex - 1;
+        var profileIndex = this.filterSelect.selectedIndex() - 1;
         this.dataGrid.filterSelectIndexChanged(this._profiles(), profileIndex);
 
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
             action: WebInspector.UserMetrics.UserActionNames.HeapSnapshotFilterChanged,
-            label: this.filterSelectElement[this.filterSelectElement.selectedIndex].label
+            label: this.filterSelect.selectedOption().label
         });
 
         if (!this.currentQuery || !this._searchFinishedCallback || !this._searchResults)
@@ -497,12 +478,13 @@ WebInspector.HeapSnapshotView.prototype = {
     changeView: function(viewTitle, callback)
     {
         var viewIndex = null;
-        for (var i = 0; i < this.views.length; ++i)
+        for (var i = 0; i < this.views.length; ++i) {
             if (this.views[i].title === viewTitle) {
                 viewIndex = i;
                 break;
             }
-        if (this.views.current === viewIndex) {
+        }
+        if (this.views.current === viewIndex || viewIndex == null) {
             setTimeout(callback, 0);
             return;
         }
@@ -516,7 +498,7 @@ WebInspector.HeapSnapshotView.prototype = {
         }
         this.views[viewIndex].grid.addEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.ContentShown, dataGridContentShown, this);
 
-        this.viewSelectElement.selectedIndex = viewIndex;
+        this.viewSelect.setSelectedIndex(viewIndex);
         this._changeView(viewIndex);
     },
 
@@ -535,7 +517,7 @@ WebInspector.HeapSnapshotView.prototype = {
                 dataGrid.setDataSource(snapshotProxy);
             if (dataGrid === this.diffDataGrid) {
                 if (!this._baseProfileUid)
-                    this._baseProfileUid = this._profiles()[this.baseSelectElement.selectedIndex].uid;
+                    this._baseProfileUid = this._profiles()[this.baseSelect.selectedIndex()].uid;
                 this.baseProfile.load(didLoadBaseSnaphot.bind(this));
             }
         }
@@ -555,9 +537,9 @@ WebInspector.HeapSnapshotView.prototype = {
     _updateSelectorsVisibility: function()
     {
         if (this.currentView === this.diffView)
-            this.baseSelectElement.parentElement.removeStyleClass("hidden");
+            this.baseSelect.element.removeStyleClass("hidden");
         else
-            this.baseSelectElement.parentElement.addStyleClass("hidden");
+            this.baseSelect.element.addStyleClass("hidden");
 
         if (this.currentView === this.constructorsView) {
             if (this._trackingOverviewGrid) {
@@ -565,9 +547,9 @@ WebInspector.HeapSnapshotView.prototype = {
                 this._trackingOverviewGrid.update(true);
                 this.viewsContainer.addStyleClass("reserve-80px-at-top");
             }
-            this.filterSelectElement.parentElement.removeStyleClass("hidden");
+            this.filterSelect.element.removeStyleClass("hidden");
         } else {
-            this.filterSelectElement.parentElement.addStyleClass("hidden");
+            this.filterSelect.element.addStyleClass("hidden");
             if (this._trackingOverviewGrid) {
                 this._trackingOverviewGrid.element.addStyleClass("hidden");
                 this.viewsContainer.removeStyleClass("reserve-80px-at-top");
@@ -726,16 +708,14 @@ WebInspector.HeapSnapshotView.prototype = {
     {
         var list = this._profiles();
         // We're assuming that snapshots can only be added.
-        if (this.baseSelectElement.length === list.length)
+        if (this.baseSelect.size() === list.length)
             return;
 
-        for (var i = this.baseSelectElement.length, n = list.length; i < n; ++i) {
-            var baseOption = document.createElement("option");
+        for (var i = this.baseSelect.size(), n = list.length; i < n; ++i) {
             var title = list[i].title;
             if (WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(title))
                 title = WebInspector.UIString("Snapshot %d", WebInspector.ProfilesPanelDescriptor.userInitiatedProfileIndex(title));
-            baseOption.label = title;
-            this.baseSelectElement.appendChild(baseOption);
+            this.baseSelect.createOption(title);
         }
     },
 
@@ -743,20 +723,16 @@ WebInspector.HeapSnapshotView.prototype = {
     {
         var list = this._profiles();
         // We're assuming that snapshots can only be added.
-        if (this.filterSelectElement.length - 1 === list.length)
+        if (this.filterSelect.size() - 1 === list.length)
             return;
 
-        if (!this.filterSelectElement.length) {
-            var filterOption = document.createElement("option");
-            filterOption.label = WebInspector.UIString("All objects");
-            this.filterSelectElement.appendChild(filterOption);
-        }
+        if (!this.filterSelect.size())
+            this.filterSelect.createOption(WebInspector.UIString("All objects"));
 
         if (this.profile.fromFile())
             return;
-        for (var i = this.filterSelectElement.length - 1, n = list.length; i < n; ++i) {
+        for (var i = this.filterSelect.size() - 1, n = list.length; i < n; ++i) {
             var profile = list[i];
-            var filterOption = document.createElement("option");
             var title = list[i].title;
             if (WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(title)) {
                 var profileIndex = WebInspector.ProfilesPanelDescriptor.userInitiatedProfileIndex(title);
@@ -765,8 +741,7 @@ WebInspector.HeapSnapshotView.prototype = {
                 else
                     title = WebInspector.UIString("Objects allocated between Snapshots %d and %d", profileIndex - 1, profileIndex);
             }
-            filterOption.label = title;
-            this.filterSelectElement.appendChild(filterOption);
+            this.filterSelect.createOption(title);
         }
     },
 
@@ -1514,7 +1489,7 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
     },
 
     /**
-     * @param {bool} updateOverviewCanvas
+     * @param {boolean} updateOverviewCanvas
      */
     update: function(updateOverviewCanvas)
     {

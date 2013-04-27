@@ -256,7 +256,7 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
 }
 
 .heap-snapshot-help-status-bar-item .glyph {
-    -webkit-mask-position: -160px 0;
+    -webkit-mask-position: -160px -2px;
 }
 
 table.heap-snapshot-help {

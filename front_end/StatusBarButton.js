@@ -380,5 +380,21 @@ WebInspector.StatusBarComboBox.prototype = {
         this._selectElement.selectedIndex = Array.prototype.indexOf.call(this._selectElement, option);
     },
 
+    /**
+     * @param {number} index
+     */
+    setSelectedIndex: function(index)
+    {
+        this._selectElement.selectedIndex = index;
+    },
+
+    /**
+     * @return {number}
+     */
+    selectedIndex: function()
+    {
+        return this._selectElement.selectedIndex;
+    },
+
     __proto__: WebInspector.StatusBarItem.prototype
 }
