@@ -401,7 +401,10 @@ WebInspector.ProfilesPanel = function(name, type)
         this._registerProfileType(new WebInspector.CPUProfileType());
         if (!WebInspector.WorkerManager.isWorkerFrontend())
             this._registerProfileType(new WebInspector.CSSSelectorProfileType());
-        this._registerProfileType(new WebInspector.HeapSnapshotProfileType());
+        var heapSnapshotProfileType = new WebInspector.HeapSnapshotProfileType();
+        this._registerProfileType(heapSnapshotProfileType);
+        if (WebInspector.experimentsSettings.heapObjectsTracking.isEnabled())
+            this._registerProfileType(new WebInspector.TrackingHeapSnapshotProfileType(this, heapSnapshotProfileType));
         if (!WebInspector.WorkerManager.isWorkerFrontend() && WebInspector.experimentsSettings.nativeMemorySnapshots.isEnabled()) {
             this._registerProfileType(new WebInspector.NativeSnapshotProfileType());
             this._registerProfileType(new WebInspector.NativeMemoryProfileType());
