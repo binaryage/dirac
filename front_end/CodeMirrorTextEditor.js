@@ -107,12 +107,17 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         if (WebInspector.CodeMirrorTextEditor._selectionStyleInjected)
             return;
-        var style = document.createElement("style");
-        var backgroundColor = ".CodeMirror .CodeMirror-selected { background-color: " + WebInspector.getSelectionBackgroundColor() + ";}";
-        var foregroundColor = ".CodeMirror .CodeMirror-selectedtext { color: " + WebInspector.getSelectionForegroundColor() + "!important;}";
-        style.textContent = backgroundColor + foregroundColor;
-        document.head.appendChild(style);
         WebInspector.CodeMirrorTextEditor._selectionStyleInjected = true;
+        var backgroundColor = WebInspector.getSelectionBackgroundColor();
+        var backgroundColorRule = backgroundColor ? ".CodeMirror .CodeMirror-selected { background-color: " + backgroundColor + ";}" : "";
+        var foregroundColor = WebInspector.getSelectionForegroundColor();
+        var foregroundColorRule = foregroundColor ? ".CodeMirror .CodeMirror-selectedtext { color: " + foregroundColor + "!important;}" : "";
+        if (!foregroundColorRule && !backgroundColorRule)
+            return;
+
+        var style = document.createElement("style");
+        style.textContent = backgroundColorRule + foregroundColorRule;
+        document.head.appendChild(style);
     },
 
     /**
