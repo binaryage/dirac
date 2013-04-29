@@ -1373,11 +1373,7 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         var usedSizes = this._profileSamples.max;
         var timestamps = this._profileSamples.timestamps;
 
-        var ratio = window.devicePixelRatio;
-        var canvasWidth = width * ratio;
-        var canvasHeight = height * ratio;
-
-        var scaleFactor = canvasWidth / this._totalTime;
+        var scaleFactor = width / this._totalTime;
         var maxUsedSize = 0;
         var currentX = 0;
         /**
@@ -1412,14 +1408,15 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
 
         aggregateAndCall(usedSizes, maxUsedSizeCallback);
 
-        this._overviewCanvas.width = canvasWidth;
-        this._overviewCanvas.height = canvasHeight;
+        this._overviewCanvas.width = width * window.devicePixelRatio;
+        this._overviewCanvas.height = height * window.devicePixelRatio;
         this._overviewCanvas.style.width = width + "px";
         this._overviewCanvas.style.height = height + "px";
-        var yScaleFactor = canvasHeight / (maxUsedSize * 1.1);
+        var yScaleFactor = height / (maxUsedSize * 1.1);
         var startTime = timestamps[0];
 
         var context = this._overviewCanvas.getContext("2d");
+        context.scale(window.devicePixelRatio, window.devicePixelRatio);
 
         /**
           * @param {number} x
@@ -1427,20 +1424,20 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
           */
         function drawBarCallback(x, size)
         {
-            context.moveTo(x, canvasHeight - 1);
-            context.lineTo(x, Math.round(canvasHeight - size * yScaleFactor - 1));
+            context.moveTo(x, height - 1);
+            context.lineTo(x, Math.round(height - size * yScaleFactor - 1));
         }
 
         context.beginPath();
         context.lineWidth = 2;
-        context.strokeStyle = "#CCC";
+        context.strokeStyle = "rgba(192, 192, 192, 0.6)";
         aggregateAndCall(usedSizes, drawBarCallback);
         context.stroke();
         context.closePath();
 
         context.beginPath();
         context.lineWidth = 2;
-        context.strokeStyle = "rgb(56, 121, 217)";
+        context.strokeStyle = "rgba(0, 0, 192, 0.8)";
         aggregateAndCall(sizes, drawBarCallback);
         context.stroke();
         context.closePath();
