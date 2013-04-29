@@ -59,11 +59,12 @@ WebInspector.NetworkLogView = function(coulmnsVisibilitySetting)
     this._lastRequestGridNodeId = 0;
     this._mainRequestLoadTime = -1;
     this._mainRequestDOMContentTime = -1;
-    this._hiddenCategories = {};
+    this._typeFilterElements = {};
+    this._typeFilter = WebInspector.NetworkLogView._trivialTypeFilter;
     this._matchedRequests = [];
     this._highlightedSubstringChanges = [];
     this._filteredOutRequests = new Map();
-    
+
     this._matchedRequestsMap = {};
     this._currentMatchedRequestIndex = -1;
 
@@ -86,6 +87,8 @@ WebInspector.NetworkLogView = function(coulmnsVisibilitySetting)
 
 WebInspector.NetworkLogView.HTTPSchemas = {"http": true, "https": true, "ws": true, "wss": true};
 WebInspector.NetworkLogView._defaultColumnsVisivility = {method: true, status: true, domain: false, type: true, initiator: true, cookies: false, setCookies: false, size: true, time: true};
+WebInspector.NetworkLogView._defaultRefreshDelay = 500;
+WebInspector.NetworkLogView.ALL_TYPES = "all";
 
 WebInspector.NetworkLogView.prototype = {
     _initializeView: function()
@@ -106,7 +109,7 @@ WebInspector.NetworkLogView.prototype = {
         this._popoverHelper.setTimeout(100);
 
         this.calculator = new WebInspector.NetworkTransferTimeCalculator();
-        this._filter(this._filterAllElement, false);
+        this._toggleTypeFilter(WebInspector.NetworkLogView.ALL_TYPES, false);
 
         this.switchToDetailedView();
     },
@@ -379,36 +382,34 @@ WebInspector.NetworkLogView.prototype = {
         this._updateOffscreenRows();
     },
 
+    /**
+     * @param {string} typeName
+     * @param {string} label
+     */
+    _addTypeFilter: function(typeName, label)
+    {
+        var typeFilterElement = this._filterBarElement.createChild("li", typeName);
+        typeFilterElement.typeName = typeName;
+        typeFilterElement.createTextChild(label);
+        typeFilterElement.addEventListener("click", this._onTypeFilterClicked.bind(this), false);
+        this._typeFilterElements[typeName] = typeFilterElement;
+    },
+
     _createStatusBarItems: function()
     {
         var filterBarElement = document.createElement("div");
         filterBarElement.className = "scope-bar status-bar-item";
         filterBarElement.title = WebInspector.UIString("Use %s Click to select multiple types.", WebInspector.KeyboardShortcut.shortcutToString("", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta));
+        this._filterBarElement = filterBarElement;
 
-        /**
-         * @param {string} typeName
-         * @param {string} label
-         */
-        function createFilterElement(typeName, label)
-        {
-            var categoryElement = document.createElement("li");
-            categoryElement.typeName = typeName;
-            categoryElement.className = typeName;
-            categoryElement.createTextChild(label);
-            categoryElement.addEventListener("click", this._updateFilter.bind(this), false);
-            filterBarElement.appendChild(categoryElement);
-
-            return categoryElement;
-        }
-
-        this._filterAllElement = createFilterElement.call(this, "all", WebInspector.UIString("All"));
+        this._addTypeFilter(WebInspector.NetworkLogView.ALL_TYPES, WebInspector.UIString("All"));
         filterBarElement.createChild("div", "scope-bar-divider");
 
         for (var typeId in WebInspector.resourceTypes) {
             var type = WebInspector.resourceTypes[typeId];
-            createFilterElement.call(this, type.name(), type.categoryTitle());
+            this._addTypeFilter(type.name(), type.categoryTitle());
         }
-        this._filterBarElement = filterBarElement;
+
         this._progressBarContainer = document.createElement("div");
         this._progressBarContainer.className = "status-bar-item";
     },
@@ -449,7 +450,7 @@ WebInspector.NetworkLogView.prototype = {
             var request = this._requests[i];
             var requestTransferSize = (request.cached || !request.transferSize) ? 0 : request.transferSize;
             transferSize += requestTransferSize;
-            if ((!this._hiddenCategories["all"] || !this._hiddenCategories[request.type.name()]) && !this._filteredOutRequests.get(request)) {
+            if (!this._filteredOutRequests.get(request)) {
                 selectedRequestsNumber++;
                 selectedTransferSize += requestTransferSize;
             }
@@ -475,89 +476,51 @@ WebInspector.NetworkLogView.prototype = {
         this._summaryBarElement.textContent = text;
     },
 
-    _showCategory: function(typeName)
+    /**
+     * @param {!Event} e
+     */
+    _onTypeFilterClicked: function(e)
     {
-        this._dataGrid.element.addStyleClass("filter-" + typeName);
-        delete this._hiddenCategories[typeName];
-    },
+        var toggle;
+        if (WebInspector.isMac())
+            toggle = e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey;
+        else
+            toggle = e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey;
 
-    _hideCategory: function(typeName)
-    {
-        this._dataGrid.element.removeStyleClass("filter-" + typeName);
-        this._hiddenCategories[typeName] = true;
-    },
+        this._toggleTypeFilter(e.target.typeName, toggle);
 
-    _updateFilter: function(e)
-    {
         this._removeAllNodeHighlights();
-        var isMac = WebInspector.isMac();
-        var selectMultiple = false;
-        if (isMac && e.metaKey && !e.ctrlKey && !e.altKey && !e.shiftKey)
-            selectMultiple = true;
-        if (!isMac && e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey)
-            selectMultiple = true;
-
-        this._filter(e.target, selectMultiple);
         this.searchCanceled();
-        this._updateSummaryBar();
+        this._filterRequests();
     },
 
-    _filter: function(target, selectMultiple)
+    /**
+     * @param {string} typeName
+     * @param {boolean} allowMultiSelect
+     */
+    _toggleTypeFilter: function(typeName, allowMultiSelect)
     {
-        function unselectAll()
-        {
-            for (var i = 0; i < this._filterBarElement.childNodes.length; ++i) {
-                var child = this._filterBarElement.childNodes[i];
-                if (!child.typeName)
-                    continue;
-
-                child.removeStyleClass("selected");
-                this._hideCategory(child.typeName);
-            }
+        if (allowMultiSelect && typeName !== WebInspector.NetworkLogView.ALL_TYPES)
+            this._typeFilterElements[WebInspector.NetworkLogView.ALL_TYPES].removeStyleClass("selected");
+        else {
+            for (var key in this._typeFilterElements)
+                this._typeFilterElements[key].removeStyleClass("selected");
         }
 
-        if (target === this._filterAllElement) {
-            if (target.hasStyleClass("selected")) {
-                // We can't unselect All, so we break early here
-                return;
-            }
+        var filterElement = this._typeFilterElements[typeName];
+        filterElement.enableStyleClass("selected", !filterElement.hasStyleClass("selected"));
 
-            // If All wasn't selected, and now is, unselect everything else.
-            unselectAll.call(this);
-        } else {
-            // Something other than All is being selected, so we want to unselect All.
-            if (this._filterAllElement.hasStyleClass("selected")) {
-                this._filterAllElement.removeStyleClass("selected");
-                this._hideCategory("all");
-            }
+        var allowedTypes = {};
+        for (var key in this._typeFilterElements) {
+            if (this._typeFilterElements[key].hasStyleClass("selected"))
+                allowedTypes[key] = true;
         }
 
-        if (!selectMultiple) {
-            // If multiple selection is off, we want to unselect everything else
-            // and just select ourselves.
-            unselectAll.call(this);
-
-            target.addStyleClass("selected");
-            this._showCategory(target.typeName);
-            this._updateOffscreenRows();
-            return;
-        }
-
-        if (target.hasStyleClass("selected")) {
-            // If selectMultiple is turned on, and we were selected, we just
-            // want to unselect ourselves.
-            target.removeStyleClass("selected");
-            this._hideCategory(target.typeName);
-        } else {
-            // If selectMultiple is turned on, and we weren't selected, we just
-            // want to select ourselves.
-            target.addStyleClass("selected");
-            this._showCategory(target.typeName);
-        }
-        this._updateOffscreenRows();
+        if (typeName === WebInspector.NetworkLogView.ALL_TYPES)
+            this._typeFilter = WebInspector.NetworkLogView._trivialTypeFilter;
+        else
+            this._typeFilter = WebInspector.NetworkLogView._typeFilter.bind(null, allowedTypes);
     },
-
-    _defaultRefreshDelay: 500,
 
     _scheduleRefresh: function()
     {
@@ -567,7 +530,7 @@ WebInspector.NetworkLogView.prototype = {
         this._needsRefresh = true;
 
         if (this.isShowing() && !this._refreshTimeout)
-            this._refreshTimeout = setTimeout(this.refresh.bind(this), this._defaultRefreshDelay);
+            this._refreshTimeout = setTimeout(this.refresh.bind(this), WebInspector.NetworkLogView._defaultRefreshDelay);
     },
 
     _updateDividersIfNeeded: function()
@@ -819,7 +782,7 @@ WebInspector.NetworkLogView.prototype = {
         this._requests.push(request);
 
         // In case of redirect request id is reassigned to a redirected
-        // request and we need to update _requestsById ans search results.
+        // request and we need to update _requestsById and search results.
         if (this._requestsById[request.requestId]) {
             var oldRequest = request.redirects[request.redirects.length - 1];
             this._requestsById[oldRequest.requestId] = oldRequest;
@@ -1294,17 +1257,19 @@ WebInspector.NetworkLogView.prototype = {
     /**
      * @param {!WebInspector.NetworkDataGridNode} node
      */
-    _applyFilter: function(node) {
+    _applyFilter: function(node)
+    {
         var filter = this._filterRegExp;
         var request = node._request;
-        if (!filter)
-            return;
-        if (filter.test(request.name()) || filter.test(request.path()))
-            this._highlightMatchedRequest(request, false, filter);
-        else {
-            node.element.addStyleClass("filtered-out");
-            this._filteredOutRequests.put(request, true);
+        var matches = false;
+        if (this._typeFilter(request)) {
+            matches = !filter || filter.test(request.name()) || filter.test(request.path());
+            if (filter && matches)
+                this._highlightMatchedRequest(request, false, filter);
         }
+        node.element.enableStyleClass("filtered-out", !matches);
+        if (!matches)
+            this._filteredOutRequests.put(request, true);
     },
 
     /**
@@ -1312,21 +1277,24 @@ WebInspector.NetworkLogView.prototype = {
      */
     performFilter: function(query)
     {
-        this._removeAllHighlights();
-        this._filteredOutRequests.clear();
         delete this._filterRegExp;
         if (query)
             this._filterRegExp = createPlainTextSearchRegex(query, "i");
+        this._filterRequests();
+    },
+
+    _filterRequests: function()
+    {
+        this._removeAllHighlights();
+        this._filteredOutRequests.clear();
 
         var nodes = this._dataGrid.rootNode().children;
-        for (var i = 0; i < nodes.length; ++i) {
-            nodes[i].element.removeStyleClass("filtered-out");
+        for (var i = 0; i < nodes.length; ++i)
             this._applyFilter(nodes[i]);
-        }
         this._updateSummaryBar();
         this._updateOffscreenRows();
     },
-    
+
     jumpToPreviousSearchResult: function()
     {
         if (!this._matchedRequests.length)
@@ -1439,7 +1407,7 @@ WebInspector.NetworkLogView.prototype = {
         command = command.concat(data);
         command.push("--compressed");
         return command.join(" ");
-    }, 
+    },
 
     __proto__: WebInspector.View.prototype
 }
@@ -1676,7 +1644,7 @@ WebInspector.NetworkPanel.prototype = {
 
     /**
      * @param {string} query
-     */    
+     */
     performFilter: function(query)
     {
         this._networkLogView.performFilter(query);
@@ -1731,14 +1699,6 @@ WebInspector.NetworkPanel.prototype = {
         }
         rules.push(hideSelectors.join(", ") + "{border-right: 0 none transparent;}");
         rules.push(bgSelectors.join(", ") + "{background-color: rgba(0, 0, 0, 0.07);}");
-
-        var filterSelectors = [];
-        for (var typeId in WebInspector.resourceTypes) {
-            var typeName = WebInspector.resourceTypes[typeId].name();
-            filterSelectors.push(".network-log-grid.data-grid.filter-" + typeName + " table.data tr.revealed.network-type-" + typeName + ":not(.filtered-out)");
-        }
-        filterSelectors.push(".network-log-grid.data-grid.filter-all table.data tr.revealed.network-item:not(.filtered-out)");
-        rules.push(filterSelectors.join(", ") + "{display: table-row;}");
 
         style.textContent = rules.join("\n");
         document.head.appendChild(style);
@@ -2053,9 +2013,7 @@ WebInspector.NetworkDataGridNode.prototype = {
     {
         if (this._parentView._filteredOutRequests.get(this._request))
             return true;
-        if (!this._parentView._hiddenCategories["all"])
-            return false;
-        return this._request.type.name() in this._parentView._hiddenCategories;
+        return !this._parentView._typeFilter(this._request);
     },
 
     _onClick: function()
@@ -2430,6 +2388,25 @@ WebInspector.NetworkDataGridNode.prototype = {
     },
 
     __proto__: WebInspector.DataGridNode.prototype
+}
+
+/**
+ * @param {WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._trivialTypeFilter = function(request)
+{
+    return true;
+}
+
+/**
+ * @param {!Object.<string, boolean>} allowedTypes
+ * @param {WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._typeFilter = function(allowedTypes, request)
+{
+    return request.type.name() in allowedTypes;
 }
 
 

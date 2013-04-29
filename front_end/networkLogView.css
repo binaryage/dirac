@@ -461,7 +461,7 @@
 
 /* Filters */
 
-.network-log-grid.data-grid table.data tr.revealed.network-item {
+.network-log-grid.data-grid table.data tr.revealed.network-item.filtered-out {
     display: none;
 }
 
