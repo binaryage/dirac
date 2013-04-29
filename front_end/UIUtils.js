@@ -152,7 +152,7 @@ WebInspector.GlassPane.prototype = {
 
 WebInspector.isBeingEdited = function(element)
 {
-    if (element.hasStyleClass("text-prompt") || element.nodeName === "INPUT")
+    if (element.hasStyleClass("text-prompt") || element.nodeName === "INPUT" || element.nodeName === "TEXTAREA")
         return true;
 
     if (!WebInspector.__editingCount)
