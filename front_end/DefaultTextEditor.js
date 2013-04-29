@@ -3680,9 +3680,6 @@ WebInspector.TextEditorMainPanel.SmartBraceController.prototype = {
      */
     registerShortcuts: function(shortcuts)
     {
-        if (!WebInspector.experimentsSettings.textEditorSmartBraces.isEnabled())
-            return;
-
         var keys = WebInspector.KeyboardShortcut.Keys;
         var modifiers = WebInspector.KeyboardShortcut.Modifiers;
 
@@ -3694,8 +3691,6 @@ WebInspector.TextEditorMainPanel.SmartBraceController.prototype = {
      */
     registerCharOverrides: function(charOverrides)
     {
-        if (!WebInspector.experimentsSettings.textEditorSmartBraces.isEnabled())
-            return;
         charOverrides["("] = this._handleBracePairInsertion.bind(this, "()");
         charOverrides[")"] = this._handleClosingBraceOverride.bind(this, ")");
         charOverrides["{"] = this._handleBracePairInsertion.bind(this, "{}");

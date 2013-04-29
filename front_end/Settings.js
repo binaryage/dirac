@@ -207,7 +207,6 @@ WebInspector.ExperimentsSettings = function()
     this.showOverridesInDrawer = this._createExperiment("showOverridesInDrawer", "Show Overrides in drawer");
     this.fileSystemProject = this._createExperiment("fileSystemProject", "File system folders in Sources Panel");
     this.showWhitespaceInEditor = this._createExperiment("showWhitespaceInEditor", "Show whitespace characters in editor");
-    this.textEditorSmartBraces = this._createExperiment("textEditorSmartBraces", "Enable smart braces in text editor");
     this.customizableToolbar = this._createExperiment("customizableToolbar", "Enable toolbar customization");
     this.cpuFlameChart = this._createExperiment("cpuFlameChart", "Show Flame Chart in CPU Profiler");
     this.tethering = this._createExperiment("tethering", "Enable reverse port forwarding");

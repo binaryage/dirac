@@ -60,7 +60,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         smartIndent: false,
         styleSelectedText: true,
         electricChars: false,
-        autoCloseBrackets: WebInspector.experimentsSettings.textEditorSmartBraces.isEnabled()
+        autoCloseBrackets: true
     });
 
     var extraKeys = {};
