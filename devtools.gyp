@@ -462,8 +462,7 @@
             'type': 'none',
             'dependencies': [
                 'devtools_html',
-                # FIXME: split generator into front-end and backend.
-                '../core/core.gyp/core.gyp:inspector_protocol_sources',
+                'frontend_protocol_sources',
             ],
             'conditions': [
                 ['debug_devtools==0', {
@@ -623,12 +622,39 @@
                         'search_path': [
                             'front_end/Images',
                         ],
+                        # Note that other files are put under /devtools directory, together with declared devtools_resources.grd
                         'outputs': ['<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd'],
                         'action': ['python', '<@(_script_name)', '<@(_input_pages)', '--images', '<@(_search_path)', '--output', '<@(_outputs)'],
                     }],
                 }],
             ],
         },
+	    {
+	      'target_name': 'frontend_protocol_sources',
+	      'type': 'none',
+	      'actions': [
+	        {
+	          'action_name': 'generateInspectorProtocolFrontendSources',
+	          'inputs': [
+	            # The python script in action below.
+	            'scripts/CodeGeneratorFrontend.py',
+	            # Input file for the script.
+	            'protocol.json',
+	          ],
+	          'outputs': [
+	            '<(SHARED_INTERMEDIATE_DIR)/webcore/InspectorBackendCommands.js',
+	          ],
+	          'action': [
+	            'python',
+	            'scripts/CodeGeneratorFrontend.py',
+	            'protocol.json',
+	            '--output_js_dir', '<(SHARED_INTERMEDIATE_DIR)/webcore',
+	          ],
+	          'message': 'Generating Inspector protocol frontend sources from protocol.json',
+	          'msvs_cygwin_shell': 1,
+	        },
+	      ]
+	    },
     ], # targets
     'conditions': [
         ['debug_devtools==0', {
@@ -638,8 +664,7 @@
                     'type': 'none',
                     'dependencies': [
                         'devtools_html',
-                        # FIXME: split generator into front-end and backend.
-                        '../core/core.gyp/core.gyp:inspector_protocol_sources'
+                        'frontend_protocol_sources'
                     ],
                     'actions': [{
                         'action_name': 'concatenate_devtools_js',
