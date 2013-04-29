@@ -748,6 +748,12 @@ body.drawer-visible #main-panels {
     background-color: transparent;
 }
 
+.status-bar-text {
+    padding-left: 5px;
+    padding-right: 15px;
+    padding-top: 3px;
+}
+
 #floating-status-bar-container {
     position: absolute;
     left: 0;

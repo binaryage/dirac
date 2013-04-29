@@ -63,8 +63,7 @@ WebInspector.SourceFrame = function(contentProvider)
     this._shortcuts[WebInspector.KeyboardShortcut.makeKey("s", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)] = this._commitEditing.bind(this);
     this.element.addEventListener("keydown", this._handleKeyDown.bind(this), false);
 
-    this._sourcePositionElement = document.createElement("div");
-    this._sourcePositionElement.className = "source-frame-cursor-position";
+    this._sourcePosition = new WebInspector.StatusBarText("", "source-frame-cursor-position");
 }
 
 /**
@@ -126,7 +125,7 @@ WebInspector.SourceFrame.prototype = {
      */
     statusBarText: function()
     {
-        return this._sourcePositionElement;
+        return this._sourcePosition.element;
     },
 
     /**
@@ -674,16 +673,16 @@ WebInspector.SourceFrame.prototype = {
             return;
 
         if (textRange.isEmpty()) {
-            this._sourcePositionElement.textContent = WebInspector.UIString("Line %d, Column %d", textRange.endLine + 1, textRange.endColumn + 1);
+            this._sourcePosition.setText(WebInspector.UIString("Line %d, Column %d", textRange.endLine + 1, textRange.endColumn + 1));
             return;
         }
         textRange = textRange.normalize();
 
         var selectedText = this._textEditor.copyRange(textRange);
         if (textRange.startLine === textRange.endLine)
-            this._sourcePositionElement.textContent = WebInspector.UIString("%d characters selected", selectedText.length);
+            this._sourcePosition.setText(WebInspector.UIString("%d characters selected", selectedText.length));
         else
-            this._sourcePositionElement.textContent = WebInspector.UIString("%d lines, %d characters selected", textRange.endLine - textRange.startLine + 1, selectedText.length);
+            this._sourcePosition.setText(WebInspector.UIString("%d lines, %d characters selected", textRange.endLine - textRange.startLine + 1, selectedText.length));
     },
 
     /**

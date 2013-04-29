@@ -132,6 +132,8 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.helpButton = new WebInspector.StatusBarButton("", "heap-snapshot-help-status-bar-item status-bar-item");
     this.helpButton.addEventListener("click", this._helpClicked, this);
 
+    this.selectedSizeText = new WebInspector.StatusBarText("");
+
     this._popoverHelper = new WebInspector.ObjectPopoverHelper(this.element, this._getHoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), undefined, true);
 
     this.profile.load(profileCallback.bind(this));
@@ -160,6 +162,7 @@ WebInspector.HeapSnapshotView.prototype = {
     {
         var minId = event.data.minId;
         var maxId = event.data.maxId;
+        this.selectedSizeText.setText(WebInspector.UIString("Selected size: %s", Number.bytesToString(event.data.size)));
         if (this.constructorsDataGrid._minNodeId !== minId || this.constructorsDataGrid._maxNodeId !== maxId) {
             // FIXME(loislo): we should implement rangeFilter method in constructorsDataGrid.
             this.constructorsDataGrid._minNodeId = minId;
@@ -185,7 +188,7 @@ WebInspector.HeapSnapshotView.prototype = {
 
     get statusBarItems()
     {
-        return [this.viewSelect.element, this.baseSelect.element, this.filterSelect.element, this.helpButton.element];
+        return [this.viewSelect.element, this.baseSelect.element, this.filterSelect.element, this.helpButton.element, this.selectedSizeText.element];
     },
 
     get profile()
@@ -1367,10 +1370,10 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         };
         var timestamps = this._profileSamples.timestamps;
         var startTime = timestamps[0];
-        for (var i = 1; i < this._profileSamples.sizes.length; ++i) {
+        for (var i = 0; i < this._profileSamples.sizes.length - 1; ++i) {
             timelineData.entries.push({
-                startTime: timestamps[i - 1] - startTime,
-                duration: timestamps[i] - timestamps[i - 1],
+                startTime: timestamps[i] - startTime,
+                duration: timestamps[i + 1] - timestamps[i],
                 depthMax: this._profileSamples.max[i],
                 depth: this._profileSamples.sizes[i]
             });
@@ -1494,8 +1497,7 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
     update: function(updateOverviewCanvas)
     {
         this._updateTimerId = null;
-        if (!this._timelineData)
-            this._calculateTimelineData();
+        this._calculateTimelineData();
         this._updateBoundaries();
         this._overviewCalculator._updateBoundaries(this);
         this._overviewGrid.updateDividers(this._overviewCalculator);
@@ -1511,6 +1513,7 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         this._updateBoundaries();
         var ids = this._profileSamples.ids;
         var timestamps = this._profileSamples.timestamps;
+        var sizes = this._profileSamples.sizes;
         var startTime = timestamps[0];
         var finishTime = timestamps[timestamps.length - 1];
         var timeRange = finishTime - startTime;
@@ -1518,18 +1521,21 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         var timeRight = startTime + timeRange * this._windowRight;
         var minId = 0;
         var maxId = ids[ids.length - 1] + 1;
+        var size = 0;
         for (var i = 1; i < timestamps.length; ++i) {
             if (!timestamps[i])
                 continue;
-            if (timestamps[i] <= timeLeft)
-                minId = ids[i];
-            else if (timestamps[i] > timeRight) {
+            if (timestamps[i] > timeRight)
                 break;
-            }
             maxId = ids[i];
+            if (timestamps[i] <= timeLeft) {
+                minId = ids[i];
+                continue;
+            }
+            size += sizes[i];
         }
 
-        this.dispatchEventToListeners(WebInspector.HeapTrackingOverviewGrid.IdsRangeChanged, {minId: minId, maxId: maxId});
+        this.dispatchEventToListeners(WebInspector.HeapTrackingOverviewGrid.IdsRangeChanged, {minId: minId, maxId: maxId, size: size});
     },
 
     __proto__: WebInspector.View.prototype

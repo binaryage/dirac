@@ -65,6 +65,34 @@ WebInspector.StatusBarItem.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.StatusBarItem}
+ * @param {string} text
+ * @param {string=} className
+ */
+WebInspector.StatusBarText = function(text, className)
+{
+    WebInspector.StatusBarItem.call(this, document.createElement("span"));
+    this.element.className = "status-bar-item status-bar-text";
+    if (className)
+        this.element.addStyleClass(className);
+    this.element.textContent = text;
+}
+
+WebInspector.StatusBarText.prototype = {
+    /**
+     * @param {string} text
+     */
+    setText: function(text)
+    {
+        this.element.textContent = text;
+    },
+
+    __proto__: WebInspector.StatusBarItem.prototype
+}
+
+
+/**
+ * @constructor
+ * @extends {WebInspector.StatusBarItem}
  * @param {string} title
  * @param {string} className
  * @param {number=} states
