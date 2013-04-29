@@ -347,7 +347,7 @@
     top: -1px;
     bottom: 0;
     margin: auto -2px;
-    height: 9px;
+    height: 10px;
     min-width: 5px;
     z-index: 180;
     pointer-events: visibleFill;
