@@ -313,7 +313,6 @@ WebInspector.TimelinePresentationModel.prototype = {
                 parentRecord = newParentRecord;
             }
             // On main thread, only coalesce if the last event is of same type.
-            var coalescingBucket;
             if (parentRecord === this._rootRecord)
                 coalescingBucket = record.thread ? record.type : "mainThread";
             var coalescedRecord = this._findCoalescedParent(record, parentRecord, coalescingBucket);
