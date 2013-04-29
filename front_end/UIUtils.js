@@ -471,6 +471,7 @@ WebInspector.startEditing = function(element, config)
             theme: config.theme,
             value: oldText
         });
+        codeMirror.getWrapperElement().addStyleClass("source-code");
     } else {
         element.addStyleClass("editing");
 
