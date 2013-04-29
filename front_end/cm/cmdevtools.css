@@ -3,6 +3,7 @@
 }
 
 .CodeMirror {
+  font-family: inherit !important;
   line-height: 1.2em !important;
   height: 100% !important;
   background-color: transparent !important;
