@@ -1353,6 +1353,9 @@ WebInspector.HeapTrackingOverviewGrid = function(heapProfileHeader)
     this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
 
     this._profileSamples = heapProfileHeader._profileSamples;
+    var timestamps = this._profileSamples.timestamps;
+    var startTime = timestamps[0];
+    this._totalTime = timestamps[timestamps.length - 1] - startTime;
     this._windowLeft = 0.0;
     this._windowRight = 1.0;
 }
@@ -1360,108 +1363,87 @@ WebInspector.HeapTrackingOverviewGrid = function(heapProfileHeader)
 WebInspector.HeapTrackingOverviewGrid.IdsRangeChanged = "IdsRangeChanged";
 
 WebInspector.HeapTrackingOverviewGrid.prototype = {
-    // FIXME(loislo): so simple data could be used directly in _drawOverviewCanvas.
-    _calculateTimelineData: function()
-    {
-        if (this._timelineData)
-            return;
-        var timelineData = {
-            entries: []
-        };
-        var timestamps = this._profileSamples.timestamps;
-        var startTime = timestamps[0];
-        for (var i = 0; i < this._profileSamples.sizes.length - 1; ++i) {
-            timelineData.entries.push({
-                startTime: timestamps[i] - startTime,
-                duration: timestamps[i + 1] - timestamps[i],
-                depthMax: this._profileSamples.max[i],
-                depth: this._profileSamples.sizes[i]
-            });
-        }
-        timelineData.entries[0].depth = 0;
-        timelineData.entries[0].depthMax = 0;
-        this._totalTime = timelineData.totalTime = timestamps[timestamps.length - 1] - startTime;
-        this._timelineData = timelineData;
-    },
-
     /**
       * @param {number} width
       * @param {number} height
       */
     _drawOverviewCanvas: function(width, height)
     {
-        var timelineEntries = this._timelineData.entries;
-
-        var drawData = new Uint32Array(width);
-        var drawDataMax = new Uint32Array(width);
-        var scaleFactor = width / this._totalTime;
-        var maxData = 0;
-
-        // FIXME(loislo): could be eliminated due to the nature of the data.
-        for (var nodeIndex = 0; nodeIndex < timelineEntries.length; ++nodeIndex) {
-            var entry = timelineEntries[nodeIndex];
-            var start = Math.floor(entry.startTime * scaleFactor);
-            var finish = Math.floor((entry.startTime + entry.duration) * scaleFactor);
-            for (var x = start; x < finish; ++x) {
-                drawData[x] = Math.max(drawData[x], entry.depth);
-                drawDataMax[x] = Math.max(drawDataMax[x], entry.depthMax);
-                maxData = Math.max(maxData, entry.depth);
-            }
-        }
+        var sizes = this._profileSamples.sizes;
+        var usedSizes = this._profileSamples.max;
+        var timestamps = this._profileSamples.timestamps;
 
         var ratio = window.devicePixelRatio;
         var canvasWidth = width * ratio;
         var canvasHeight = height * ratio;
+
+        var scaleFactor = canvasWidth / this._totalTime;
+        var maxUsedSize = 0;
+        var currentX = 0;
+        /**
+          * @param {Array.<number>} sizes
+          * @param {function(number, number):void} callback
+          */
+        function aggregateAndCall(sizes, callback)
+        {
+            var size = 0;
+            var currentX = 0;
+            for (var i = 1; i < timestamps.length; ++i) {
+                var x  = Math.floor((timestamps[i] - startTime) * scaleFactor) ;
+                if (x !== currentX) {
+                    if (size)
+                        callback(currentX, size);
+                    size = 0;
+                    currentX = x;
+                }
+                size += sizes[i];
+            }
+            callback(currentX, size);
+        }
+
+        /**
+          * @param {number} x
+          * @param {number} size
+          */
+        function maxUsedSizeCallback(x, size)
+        {
+            maxUsedSize = Math.max(maxUsedSize, size);
+        }
+
+        aggregateAndCall(usedSizes, maxUsedSizeCallback);
+
         this._overviewCanvas.width = canvasWidth;
         this._overviewCanvas.height = canvasHeight;
         this._overviewCanvas.style.width = width + "px";
         this._overviewCanvas.style.height = height + "px";
+        var yScaleFactor = canvasHeight / (maxUsedSize * 1.1);
+        var startTime = timestamps[0];
 
         var context = this._overviewCanvas.getContext("2d");
 
-        var yScaleFactor = canvasHeight / (maxData * 1.1);
-
-        if (drawDataMax)
+        /**
+          * @param {number} x
+          * @param {number} size
+          */
+        function drawBarCallback(x, size)
         {
-                // FIXME(loislo): should be extracted into a function and used for max and size arrays.
-                context.beginPath();
-                context.lineWidth = 1;
-                context.translate(0.5, 0.5);
-                context.strokeStyle = "rgb(230,230,230)";
-                context.fillStyle = "rgb(235,235,235)";
-                context.moveTo(-1, canvasHeight - 1);
-                if (drawDataMax)
-                  context.lineTo(-1, Math.round(height - drawDataMax[0] * yScaleFactor - 1));
-                var value;
-                for (var x = 0; x < width; ++x) {
-                    value = Math.round(canvasHeight - drawDataMax[x] * yScaleFactor - 1);
-                    context.lineTo(x * ratio, value);
-                }
-                context.lineTo(canvasWidth + 1, value);
-                context.lineTo(canvasWidth + 1, canvasHeight - 1);
-                context.closePath();
-                context.fill();
-                context.stroke();
+            context.moveTo(x, canvasHeight - 1);
+            context.lineTo(x, Math.round(canvasHeight - size * yScaleFactor - 1));
         }
 
         context.beginPath();
-        context.lineWidth = 1;
-        context.translate(0.5, 0.5);
-        context.strokeStyle = "rgb(180,180,200)";
-        context.fillStyle = "rgb(214,225,254)";
-        context.moveTo(-1, canvasHeight - 1);
-        if (drawData)
-          context.lineTo(-1, Math.round(height - drawData[0] * yScaleFactor - 1));
-        var value;
-        for (var x = 0; x < width; ++x) {
-            value = Math.round(canvasHeight - drawData[x] * yScaleFactor - 1);
-            context.lineTo(x * ratio, value);
-        }
-        context.lineTo(canvasWidth + 1, value);
-        context.lineTo(canvasWidth + 1, canvasHeight - 1);
-        context.closePath();
-        context.fill();
+        context.lineWidth = 2;
+        context.strokeStyle = "#CCC";
+        aggregateAndCall(usedSizes, drawBarCallback);
         context.stroke();
+        context.closePath();
+
+        context.beginPath();
+        context.lineWidth = 2;
+        context.strokeStyle = "rgb(56, 121, 217)";
+        aggregateAndCall(sizes, drawBarCallback);
+        context.stroke();
+        context.closePath();
     },
 
     onResize: function()
@@ -1488,7 +1470,6 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         this._windowLeft = this._overviewGrid.windowLeft();
         this._windowRight = this._overviewGrid.windowRight();
         this._windowWidth = this._windowRight - this._windowLeft;
-        this._totalTime = this._timelineData.totalTime;
     },
 
     /**
@@ -1497,7 +1478,6 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
     update: function(updateOverviewCanvas)
     {
         this._updateTimerId = null;
-        this._calculateTimelineData();
         this._updateBoundaries();
         this._overviewCalculator._updateBoundaries(this);
         this._overviewGrid.updateDividers(this._overviewCalculator);
@@ -1557,7 +1537,7 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
     _updateBoundaries: function(chart)
     {
         this._minimumBoundaries = 0;
-        this._maximumBoundaries = chart._timelineData.totalTime;
+        this._maximumBoundaries = chart._totalTime;
         this._xScaleFactor = chart._overviewContainer.clientWidth / this._maximumBoundaries;
     },
 
