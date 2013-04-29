@@ -611,10 +611,7 @@ WebInspector.TimelineEventOverview.prototype = {
 
         var x = begin + 0.5;
         var y = category.overviewStripGroupIndex * height + stripPadding + 0.5;
-        // Skia asserts upon attempt to draw an exactly 1px width box internally, so make
-        // sure to offset width away from fatal value. See http://code.google.com/p/skia/issues/detail?id=1259.
-        var skiaAssertWorkaroundTweak = 0.01;
-        var width = Math.max(end - begin, 1) + skiaAssertWorkaroundTweak;
+        var width = Math.max(end - begin, 1);
 
         this._context.save();
         this._context.translate(x, y);
