@@ -42,6 +42,11 @@ WebInspector.TextEditor.Events = {
 WebInspector.TextEditor.GutterClickEventData;
 
 WebInspector.TextEditor.prototype = {
+
+    undo: function() { },
+
+    redo: function() { },
+
     /**
      * @return {boolean}
      */

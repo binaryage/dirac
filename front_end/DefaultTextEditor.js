@@ -110,6 +110,17 @@ WebInspector.DefaultTextEditor.EditInfo = function(range, text)
 }
 
 WebInspector.DefaultTextEditor.prototype = {
+
+    undo: function()
+    {
+        this._mainPanel.undo();
+    },
+
+    redo: function()
+    {
+        this._mainPanel.redo();
+    },
+
     /**
      * @return {boolean}
      */
@@ -1881,6 +1892,16 @@ WebInspector.TextEditorMainPanel.prototype = {
         this._cachedSpans = [];
         this._cachedTextNodes = [];
         this._cachedRows = [];
+    },
+
+    undo: function()
+    {
+        this._handleUndoRedo(false);
+    },
+
+    redo: function()
+    {
+        this._handleUndoRedo(true);
     },
 
     /**

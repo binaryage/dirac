@@ -103,6 +103,17 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 }
 
 WebInspector.CodeMirrorTextEditor.prototype = {
+
+    undo: function()
+    {
+        this._codeMirror.undo();
+    },
+
+    redo: function()
+    {
+        this._codeMirror.redo();
+    },
+
     _setupSelectionColor: function()
     {
         if (WebInspector.CodeMirrorTextEditor._selectionStyleInjected)
