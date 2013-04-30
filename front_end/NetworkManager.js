@@ -64,7 +64,7 @@ WebInspector.NetworkManager._MIMETypes = {
     "image/png":                   {"image": true},
     "image/gif":                   {"image": true},
     "image/bmp":                   {"image": true},
-    "image/svg+xml":               {"image": true, "font": true},
+    "image/svg+xml":               {"image": true, "font": true, "document": true},
     "image/vnd.microsoft.icon":    {"image": true},
     "image/webp":                  {"image": true},
     "image/x-icon":                {"image": true},
