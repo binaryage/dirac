@@ -208,7 +208,6 @@ WebInspector.ExperimentsSettings = function()
     this.fileSystemProject = this._createExperiment("fileSystemProject", "File system folders in Sources Panel");
     this.showWhitespaceInEditor = this._createExperiment("showWhitespaceInEditor", "Show whitespace characters in editor");
     this.customizableToolbar = this._createExperiment("customizableToolbar", "Enable toolbar customization");
-    this.cpuFlameChart = this._createExperiment("cpuFlameChart", "Show Flame Chart in CPU Profiler");
     this.tethering = this._createExperiment("tethering", "Enable reverse port forwarding");
     this.drawerOverlay = this._createExperiment("drawerOverlay", "Open console as overlay");
     this.heapObjectsTracking = this._createExperiment("heapObjectsTracking", "Enable heap objects tracking profile type");
