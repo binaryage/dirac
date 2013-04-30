@@ -726,6 +726,7 @@ WebInspector.ExtensionServer.prototype = {
 
     _registerHandler: function(command, callback)
     {
+        console.assert(command);
         this._handlers[command] = callback;
     },
 
