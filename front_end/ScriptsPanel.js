@@ -780,8 +780,9 @@ WebInspector.ScriptsPanel.prototype = {
         var platformSpecificModifier = WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta;
 
         // Run snippet.
+        title = WebInspector.UIString("Run snippet (%s).");
         handler = this._runSnippet.bind(this);
-        this._runSnippetButton = this._createButtonAndRegisterShortcuts("scripts-run-snippet", "", handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.RunSnippet);
+        this._runSnippetButton = this._createButtonAndRegisterShortcuts("scripts-run-snippet", title, handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.RunSnippet);
         debugToolbar.appendChild(this._runSnippetButton.element);
         this._runSnippetButton.element.addStyleClass("hidden");
 
