@@ -59,7 +59,6 @@ WebInspector.ExtensionServer = function()
     this._registerHandler(commands.GetPageResources, this._onGetPageResources.bind(this));
     this._registerHandler(commands.GetRequestContent, this._onGetRequestContent.bind(this));
     this._registerHandler(commands.GetResourceContent, this._onGetResourceContent.bind(this));
-    this._registerHandler(commands.Log, this._onLog.bind(this));
     this._registerHandler(commands.Reload, this._onReload.bind(this));
     this._registerHandler(commands.SetOpenResourceHandler, this._onSetOpenResourceHandler.bind(this));
     this._registerHandler(commands.SetResourceContent, this._onSetResourceContent.bind(this));
@@ -298,11 +297,6 @@ WebInspector.ExtensionServer.prototype = {
             lineNumber: lineNumber
         });
         return true;
-    },
-
-    _onLog: function(message)
-    {
-        WebInspector.log(message.message);
     },
 
     _onReload: function(message)

@@ -94,6 +94,7 @@ function defineCommonExtensionSymbols(apiPrivate)
         SetSidebarPage: "setSidebarPage",
         ShowPanel: "showPanel",
         StopAuditCategoryRun: "stopAuditCategoryRun",
+        Reload: "Reload",
         Unsubscribe: "unsubscribe",
         UpdateAuditProgress: "updateAuditProgress",
         UpdateButton: "updateButton",
@@ -181,16 +182,6 @@ function InspectorExtensionAPI()
     defineDeprecatedProperty(this, "webInspector", "resources", "network");
     this.timeline = new Timeline();
     this.console = new ConsoleAPI();
-}
-
-/**
- * @constructor
- */
-InspectorExtensionAPI.prototype = {
-    log: function(message)
-    {
-        extensionServer.sendRequest({ command: commands.Log, message: message });
-    }
 }
 
 /**
