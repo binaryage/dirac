@@ -2260,6 +2260,7 @@
                     { "name": "styleSheetId", "$ref": "StyleSheetId", "description": "The stylesheet identifier."},
                     { "name": "frameId", "$ref": "Network.FrameId", "description": "Owner frame identifier."},
                     { "name": "sourceURL", "type": "string", "description": "Stylesheet resource URL."},
+                    { "name": "sourceMapURL", "type": "string", "optional": true, "description": "URL of source map associated with the stylesheet (if any)." },
                     { "name": "origin", "$ref": "StyleSheetOrigin", "description": "Stylesheet origin."},
                     { "name": "title", "type": "string", "description": "Stylesheet title."},
                     { "name": "disabled", "type": "boolean", "description": "Denotes whether the stylesheet is disabled."}
