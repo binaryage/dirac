@@ -1221,7 +1221,7 @@ WebInspector.ScriptsPanel.prototype = {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (target);
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Local modifications\u2026" : "Local Modifications\u2026"), this._showLocalHistory.bind(this, uiSourceCode));
 
-        if (WebInspector.isolatedFileSystemManager.supportsFileSystems() && WebInspector.experimentsSettings.fileSystemProject.isEnabled())
+        if (WebInspector.isolatedFileSystemManager.supportsFileSystems())
             this._appendUISourceCodeMappingItems(contextMenu, uiSourceCode);
 
         var resource = WebInspector.resourceForURL(uiSourceCode.url);

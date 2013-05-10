@@ -51,8 +51,7 @@ WebInspector.SettingsScreen = function(onHide)
     this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.General, WebInspector.UIString("General"), new WebInspector.GenericSettingsTab());
     if (!WebInspector.experimentsSettings.showOverridesInDrawer.isEnabled())
         this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Overrides, WebInspector.UIString("Overrides"), new WebInspector.OverridesSettingsTab());
-    if (WebInspector.experimentsSettings.fileSystemProject.isEnabled())
-        this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Workspace, WebInspector.UIString("Workspace"), new WebInspector.WorkspaceSettingsTab());
+    this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Workspace, WebInspector.UIString("Workspace"), new WebInspector.WorkspaceSettingsTab());
     if (WebInspector.experimentsSettings.tethering.isEnabled())
         this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Tethering, WebInspector.UIString("Port forwarding"), new WebInspector.TetheringSettingsTab());
     if (WebInspector.experimentsSettings.experimentsEnabled)
