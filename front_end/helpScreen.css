@@ -273,7 +273,7 @@ body.platform-mac .help-content input[type=radio] {
 .help-container-wrapper {
     position: absolute;
     top: 60px;
-    left: 5px;
+    left: 15px;
     right: 0;
     bottom: 0;
     overflow: auto;
@@ -474,4 +474,25 @@ body.platform-mac .help-content input[type=radio] {
 
 #workspace-tab-content .workspace-settings-error {
     color: red;
+}
+
+.tethering-help-info {
+    padding-bottom: 5px;
+}
+
+.tethering-help-title-left {
+    padding-top: 20px;
+    display: inline-block;
+    width: 100px;
+}
+
+
+.tethering-help-title-right {
+    padding-top: 20px;
+    display: inline-block;
+}
+
+.settings-tab .workspace-settings-row input.tethering-port-input {
+    width: 80px;
+    margin-right: 20px;
 }

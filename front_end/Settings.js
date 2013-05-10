@@ -205,10 +205,10 @@ WebInspector.ExperimentsSettings = function()
     this.sass = this._createExperiment("sass", "Support for Sass");
     this.cssRegions = this._createExperiment("cssRegions", "CSS Regions Support");
     this.showOverridesInDrawer = this._createExperiment("showOverridesInDrawer", "Show Overrides in drawer");
-    this.fileSystemProject = this._createExperiment("fileSystemProject", "File system folders in Sources Panel");
+    this.fileSystemProject = this._createExperiment("fileSystemProject", "Workspaces");
     this.showWhitespaceInEditor = this._createExperiment("showWhitespaceInEditor", "Show whitespace characters in editor");
     this.customizableToolbar = this._createExperiment("customizableToolbar", "Enable toolbar customization");
-    this.tethering = this._createExperiment("tethering", "Enable reverse port forwarding");
+    this.tethering = this._createExperiment("tethering", "Enable port forwarding");
     this.drawerOverlay = this._createExperiment("drawerOverlay", "Open console as overlay");
     this.heapObjectsTracking = this._createExperiment("heapObjectsTracking", "Enable heap objects tracking profile type");
 

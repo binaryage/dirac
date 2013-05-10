@@ -714,8 +714,17 @@ WebInspector.TetheringSettingsTab.prototype = {
         if (this._paragraphElement)
             return;
 
-        this._paragraphElement = this._appendSection(WebInspector.UIString("Mappings"));
         WebInspector.SettingsTab.prototype.wasShown.call(this);
+
+        var labelElement = this._appendSection();
+        labelElement.addStyleClass("tethering-help-info");
+        labelElement.textContent =
+            WebInspector.UIString("Creates a listen TCP port on your device that maps to a particular TCP port accessible from the host machine.");
+        labelElement.createChild("br");
+        labelElement.createChild("div", "tethering-help-title-left").textContent = WebInspector.UIString("Device port");
+        labelElement.createChild("div", "tethering-help-title-right").textContent = WebInspector.UIString("Target");
+
+        this._paragraphElement = this._appendSection();
         var mappingEntries = WebInspector.settings.portForwardings.get();
         for (var i = 0; i < mappingEntries.length; ++i)
             this._addMappingRow(mappingEntries[i].port, mappingEntries[i].location, false);
@@ -733,7 +742,7 @@ WebInspector.TetheringSettingsTab.prototype = {
     _addMappingRow: function(port, location, focus)
     {
         var mappingRow = this._paragraphElement.createChild("div", "workspace-settings-row");
-        var portElement = mappingRow.createChild("input");
+        var portElement = mappingRow.createChild("input", "tethering-port-input");
         portElement.type = "text";
         portElement.value = port || "";
         if (!port)
