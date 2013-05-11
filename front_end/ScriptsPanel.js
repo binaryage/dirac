@@ -90,8 +90,7 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     this._navigator = new WebInspector.ScriptsNavigator();
     this._navigator.view.show(this.editorView.sidebarElement);
 
-    var tabbedEditorPlaceholderText = WebInspector.isMac() ? WebInspector.UIString("Hit Cmd+O to open a file") : WebInspector.UIString("Hit Ctrl+O to open a file");
-    this._editorContainer = new WebInspector.TabbedEditorContainer(this, "previouslyViewedFiles", tabbedEditorPlaceholderText);
+    this._editorContainer = new WebInspector.TabbedEditorContainer(this, "previouslyViewedFiles");
     this._editorContainer.show(this.editorView.mainElement);
 
     this._navigatorController = new WebInspector.NavigatorOverlayController(this.editorView, this._navigator.view, this._editorContainer.view);

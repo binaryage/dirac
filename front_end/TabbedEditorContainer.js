@@ -44,15 +44,13 @@ WebInspector.TabbedEditorContainerDelegate.prototype = {
  * @extends {WebInspector.Object}
  * @param {WebInspector.TabbedEditorContainerDelegate} delegate
  * @param {string} settingName
- * @param {string} placeholderText
  */
-WebInspector.TabbedEditorContainer = function(delegate, settingName, placeholderText)
+WebInspector.TabbedEditorContainer = function(delegate, settingName)
 {
     WebInspector.Object.call(this);
     this._delegate = delegate;
 
     this._tabbedPane = new WebInspector.TabbedPane();
-    this._tabbedPane.setPlaceholderText(placeholderText);
     this._tabbedPane.setTabDelegate(new WebInspector.EditorContainerTabDelegate(this));
 
     this._tabbedPane.closeableTabs = true;
