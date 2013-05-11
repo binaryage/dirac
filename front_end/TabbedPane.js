@@ -300,15 +300,32 @@ WebInspector.TabbedPane.prototype = {
         WebInspector.invokeOnceAfterBatchUpdate(this, this._innerUpdateTabElements);
     },
 
+    /**
+     * @param {string} text
+     */
+    setPlaceholderText: function(text)
+    {
+        this._noTabsMessage = text;
+    },
+
     _innerUpdateTabElements: function()
     {
         if (!this.isShowing())
             return;
 
-        if (!this._tabs.length)
+        if (!this._tabs.length) {
             this._contentElement.addStyleClass("has-no-tabs");
-        else
+            if (this._noTabsMessage && !this._noTabsMessageElement) {
+                this._noTabsMessageElement = this._contentElement.createChild("div", "tabbed-pane-placeholder fill");
+                this._noTabsMessageElement.textContent = this._noTabsMessage;
+            }
+        } else {
             this._contentElement.removeStyleClass("has-no-tabs");
+            if (this._noTabsMessageElement) {
+                this._noTabsMessageElement.removeSelf();
+                delete this._noTabsMessageElement;
+            }
+        }
         
         if (!this._measuredDropDownButtonWidth)
             this._measureDropDownButton();
