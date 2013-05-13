@@ -586,8 +586,8 @@ WebInspector.FlameChart.prototype = {
         var context = this._canvas.getContext("2d");
         var textPaddingLeft = 2;
         context.scale(ratio, ratio);
-        context.font = (barHeight - 3) + "px sans-serif";
-        context.textBaseline = "top";
+        context.font = (barHeight - 4) + "px " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
+        context.textBaseline = "alphabetic";
         this._dotsWidth = context.measureText("\u2026").width;
         var visibleTimeLeft = this._timeWindowLeft - this._paddingLeftTime;
 
@@ -620,7 +620,7 @@ WebInspector.FlameChart.prototype = {
             var title = this._prepareText(context, entry.node.functionName, widthText);
             if (title) {
                 context.fillStyle = "#333";
-                context.fillText(title, xText + textPaddingLeft, anchorBox.y - 1);
+                context.fillText(title, xText + textPaddingLeft, anchorBox.y + barHeight - 4);
             }
         }
 
@@ -637,7 +637,9 @@ WebInspector.FlameChart.prototype = {
         const paddingTop = 5;
         const paddingLeftText = 10;
         var maxTitleWidth = 0;
-        context.font = "bold " + (this._barHeight - 3) + "px sans-serif";
+        var basicFont = "100% " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
+        context.font = "bold " + basicFont;
+        context.textBaseline = "top";
         for (var i = 0; i < entryInfo.length; ++i)
             maxTitleWidth = Math.max(maxTitleWidth, context.measureText(entryInfo[i].title).width);
 
@@ -652,7 +654,7 @@ WebInspector.FlameChart.prototype = {
         for (var i = 0; i < entryInfo.length; ++i)
             context.fillText(entryInfo[i].title, x + paddingLeft, y + lineHeight * i);
 
-        context.font = (this._barHeight - 3) + "px sans-serif";
+        context.font = basicFont;
         for (var i = 0; i < entryInfo.length; ++i) {
             var text = this._prepareText(context, entryInfo[i].text, maxTextWidth - maxTitleWidth - 2 * paddingLeft);
             context.fillText(text, x + paddingLeft + maxTitleWidth + paddingLeft, y + lineHeight * i);
