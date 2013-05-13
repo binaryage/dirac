@@ -301,10 +301,11 @@ WebInspector.ChunkedXHRReader.prototype = {
 WebInspector.createFileSelectorElement = function(callback) {
     var fileSelectorElement = document.createElement("input");
     fileSelectorElement.type = "file";
+    fileSelectorElement.style.display = "none";
     fileSelectorElement.setAttribute("tabindex", -1);
-    fileSelectorElement.style.zIndex = -1;
-    fileSelectorElement.style.position = "absolute";
-    fileSelectorElement.onchange = function(event) {
+    fileSelectorElement.onchange = onChange;
+    function onChange(event)
+    {
         callback(fileSelectorElement.files[0]);
     };
     return fileSelectorElement;
