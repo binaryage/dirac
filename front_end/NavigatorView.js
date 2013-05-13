@@ -271,10 +271,24 @@ WebInspector.NavigatorView.prototype = {
      */
     rename: function(uiSourceCode, callback)
     {
-        var node = this._uiSourceCodeNodes[uiSourceCode.uri()];
+        var uri = uiSourceCode.uri();
+        var node = this._uiSourceCodeNodes[uri];
         if (!node)
             return null;
-        node.rename(callback);
+        /**
+         * @param {boolean} renameCommitted
+         */
+        function callbackWrapper(renameCommitted)
+        {
+            if (renameCommitted) {
+                delete this._uiSourceCodeNodes[uri];
+                this._uiSourceCodeNodes[uiSourceCode.uri()] = node;
+            }
+
+            if (callback)
+                callback(renameCommitted);
+        }
+        node.rename(callbackWrapper.bind(this));
     },
 
     reset: function()
