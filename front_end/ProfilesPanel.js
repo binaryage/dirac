@@ -1346,10 +1346,25 @@ WebInspector.CSSSelectorProfilerPanel.prototype = {
  */
 WebInspector.HeapProfilerPanel = function()
 {
-    WebInspector.ProfilesPanel.call(this, "heap-profiler", new WebInspector.HeapSnapshotProfileType());
+    var heapSnapshotProfileType = new WebInspector.HeapSnapshotProfileType();
+    WebInspector.ProfilesPanel.call(this, "heap-profiler", heapSnapshotProfileType);
+    if (WebInspector.experimentsSettings.heapObjectsTracking.isEnabled()) {
+        this._singleProfileMode = false;
+        this._registerProfileType(new WebInspector.TrackingHeapSnapshotProfileType(this, heapSnapshotProfileType));
+        this._launcherView.addEventListener(WebInspector.MultiProfileLauncherView.EventTypes.ProfileTypeSelected, this._onProfileTypeSelected, this);
+        this._launcherView._profileTypeChanged(heapSnapshotProfileType);
+    }
 }
 
 WebInspector.HeapProfilerPanel.prototype = {
+    _createLauncherView: function()
+    {
+        if (WebInspector.experimentsSettings.heapObjectsTracking.isEnabled())
+            return new WebInspector.MultiProfileLauncherView(this);
+        else
+            return WebInspector.ProfilesPanel.prototype._createLauncherView.call(this);
+    },
+
     __proto__: WebInspector.ProfilesPanel.prototype
 }
 
