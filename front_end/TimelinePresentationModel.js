@@ -750,6 +750,7 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
             this.setHasWarning();
         presentationModel._layoutInvalidateStack[this.frameId] = null;
         this.highlightQuad = record.data.root || WebInspector.TimelinePresentationModel.quadFromRectData(record.data);
+        this._relatedBackendNodeId = record.data["rootNode"];
         break;
 
     case recordTypes.Paint:
@@ -960,17 +961,40 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     generatePopupContent: function(callback)
     {
-        if (WebInspector.TimelinePresentationModel.needsPreviewElement(this.type))
-            WebInspector.DOMPresentationUtils.buildImagePreviewContents(this.url, false, this._generatePopupContentWithImagePreview.bind(this, callback));
-        else
-            this._generatePopupContentWithImagePreview(callback);
+        var barrier = new CallbackBarrier();
+        if (WebInspector.TimelinePresentationModel.needsPreviewElement(this.type) && !this._imagePreviewElement)
+            WebInspector.DOMPresentationUtils.buildImagePreviewContents(this.url, false, barrier.createCallback(this._setImagePreviewElement.bind(this)));
+        if (this._relatedBackendNodeId && !this._relatedNode)
+            WebInspector.domAgent.pushNodeByBackendIdToFrontend(this._relatedBackendNodeId, barrier.createCallback(this._setRelatedNode.bind(this)));
+
+        barrier.callWhenDone(callbackWrapper.bind(this));
+        function callbackWrapper()
+        {
+            callback(this._generatePopupContentSynchronously());
+        }
     },
 
     /**
-     * @param {function(Element)} callback
-     * @param {Element=} previewElement
+     * @param {Element} element
      */
-    _generatePopupContentWithImagePreview: function(callback, previewElement)
+    _setImagePreviewElement: function(element)
+    {
+        this._imagePreviewElement = element;
+    },
+
+    /**
+     * @param {number} nodeId
+     */
+    _setRelatedNode: function(nodeId)
+    {
+        if (typeof nodeId === "number")
+            this._relatedNode = WebInspector.domAgent.nodeForId(nodeId);
+    },
+
+    /**
+     * @return {Element}
+     */
+    _generatePopupContentSynchronously: function()
     {
         var contentHelper = new WebInspector.PopoverContentHelper(this.title);
         var text = WebInspector.UIString("%s (at %s)", Number.secondsToString(this._lastChildEndTime - this.startTime, true),
@@ -985,10 +1009,9 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                 WebInspector.TimelinePresentationModel._generateAggregatedInfo(this._aggregatedStats));
         }
 
-        if (this.coalesced) {
-            callback(contentHelper.contentTable());
-            return;
-        }
+        if (this.coalesced)
+            return contentHelper.contentTable();
+
         const recordTypes = WebInspector.TimelineModel.RecordType;
 
         // The messages may vary per record type;
@@ -1024,8 +1047,8 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             case recordTypes.ResourceReceivedData:
             case recordTypes.ResourceFinish:
                 contentHelper.appendElementRow(WebInspector.UIString("Resource"), WebInspector.linkifyResourceAsNode(this.url));
-                if (previewElement)
-                    contentHelper.appendElementRow(WebInspector.UIString("Preview"), previewElement);
+                if (this._imagePreviewElement)
+                    contentHelper.appendElementRow(WebInspector.UIString("Preview"), this._imagePreviewElement);
                 if (this.data["requestMethod"])
                     contentHelper.appendTextRow(WebInspector.UIString("Request Method"), this.data["requestMethod"]);
                 if (typeof this.data["statusCode"] === "number")
@@ -1073,6 +1096,8 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                     callStackLabel = WebInspector.UIString("Layout forced");
                     contentHelper.appendTextRow(WebInspector.UIString("Note"), WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
                 }
+                if (this._relatedNode)
+                    contentHelper.appendElementRow(WebInspector.UIString("Layout root"), this._createNodeAnchor(this._relatedNode));
                 break;
             case recordTypes.Time:
             case recordTypes.TimeEnd:
@@ -1115,7 +1140,23 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         if (this.stackTrace)
             contentHelper.appendStackTrace(callStackLabel || WebInspector.UIString("Call Stack"), this.stackTrace, this._linkifyCallFrame.bind(this));
 
-        callback(contentHelper.contentTable());
+        return contentHelper.contentTable();
+    },
+
+    /**
+     * @param {WebInspector.DOMAgent} node
+     */
+    _createNodeAnchor: function(node)
+    {
+        var span = document.createElement("span");
+        span.classList.add("node-link");
+        span.addEventListener("click", onClick, false);
+        WebInspector.DOMPresentationUtils.decorateNodeLabel(node, span);
+        function onClick()
+        {
+            WebInspector.showPanel("elements").revealAndSelectNode(node.id);
+        }
+        return span;
     },
 
     _refreshDetails: function()

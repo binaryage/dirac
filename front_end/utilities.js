@@ -1005,3 +1005,47 @@ function importScript(scriptName)
 }
 
 var loadScript = importScript;
+
+/**
+ * @constructor
+ */
+function CallbackBarrier()
+{
+    this._pendingIncomingCallbacksCount = 0;
+}
+
+CallbackBarrier.prototype = {
+    /**
+     * @param {*} userCallback
+     * @return {function()}
+     */
+    createCallback: function(userCallback)
+    {
+        console.assert(!this._outgoingCallback, "CallbackBarrier.createCallback() is called after CallbackBarrier.callWhenDone()");
+        ++this._pendingIncomingCallbacksCount;
+        return this._incomingCallback.bind(this, userCallback);
+    },
+
+    /**
+     * @param {function()} callback
+     */
+    callWhenDone: function(callback)
+    {
+        console.assert(!this._outgoingCallback, "CallbackBarrier.callWhenDone() is called multiple times");
+        this._outgoingCallback = callback;
+        if (!this._pendingIncomingCallbacksCount)
+            this._outgoingCallback();
+    },
+
+    _incomingCallback: function(userCallback)
+    {
+        console.assert(this._pendingIncomingCallbacksCount > 0);
+        if (userCallback) {
+            var args = Array.prototype.slice.call(arguments, 1);
+            userCallback.apply(null, args);
+        }
+        if (!--this._pendingIncomingCallbacksCount && this._outgoingCallback)
+            this._outgoingCallback();
+    }
+}
+

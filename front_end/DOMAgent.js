@@ -910,6 +910,16 @@ WebInspector.DOMAgent.prototype = {
     },
 
     /**
+     * @param {number} backendNodeId
+     * @param {function(?number)=} callback
+     */
+    pushNodeByBackendIdToFrontend: function(backendNodeId, callback)
+    {
+        var callbackCast = /** @type {function(*)} */(callback);
+        this._dispatchWhenDocumentAvailable(DOMAgent.pushNodeByBackendIdToFrontend.bind(DOMAgent, backendNodeId), callbackCast);
+    },
+
+    /**
      * @param {function(*)=} callback
      * @return {function(?Protocol.Error,*=)|undefined}
      */
