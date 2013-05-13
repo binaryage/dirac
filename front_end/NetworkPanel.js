@@ -58,7 +58,7 @@ WebInspector.NetworkLogView = function(coulmnsVisibilitySetting)
     this._requestGridNodes = {};
     this._lastRequestGridNodeId = 0;
     this._mainRequestLoadTime = -1;
-    this._mainRequestDOMContentTime = -1;
+    this._mainRequestDOMContentLoadedTime = -1;
     this._typeFilterElements = {};
     this._typeFilter = WebInspector.NetworkLogView._trivialTypeFilter;
     this._matchedRequests = [];
@@ -467,11 +467,11 @@ WebInspector.NetworkLogView.prototype = {
             text += String.sprintf(WebInspector.UIString("%d requests"), requestsNumber);
             text += "  \u2758  " + String.sprintf(WebInspector.UIString("%s transferred"), Number.bytesToString(transferSize));
         }
-        if (baseTime !== -1 && this._mainRequestLoadTime !== -1 && this._mainRequestDOMContentTime !== -1 && this._mainRequestDOMContentTime > baseTime) {
+        if (baseTime !== -1 && this._mainRequestLoadTime !== -1 && this._mainRequestDOMContentLoadedTime !== -1 && this._mainRequestDOMContentLoadedTime > baseTime) {
             text += "  \u2758  " + String.sprintf(WebInspector.UIString("%s (onload: %s, DOMContentLoaded: %s)"),
                         Number.secondsToString(maxTime - baseTime),
                         Number.secondsToString(this._mainRequestLoadTime - baseTime),
-                        Number.secondsToString(this._mainRequestDOMContentTime - baseTime));
+                        Number.secondsToString(this._mainRequestDOMContentLoadedTime - baseTime));
         }
         this._summaryBarElement.textContent = text;
     },
@@ -581,18 +581,18 @@ WebInspector.NetworkLogView.prototype = {
             this._timelineGrid.addEventDivider(loadDividerPadding);
         }
 
-        if (this._mainRequestDOMContentTime !== -1) {
-            var percent = this.calculator.computePercentageFromEventTime(this._mainRequestDOMContentTime);
+        if (this._mainRequestDOMContentLoadedTime !== -1) {
+            var percent = this.calculator.computePercentageFromEventTime(this._mainRequestDOMContentLoadedTime);
 
-            var domContentDivider = document.createElement("div");
-            domContentDivider.className = "network-event-divider network-blue-divider";
+            var domContentLoadedDivider = document.createElement("div");
+            domContentLoadedDivider.className = "network-event-divider network-blue-divider";
 
-            var domContentDividerPadding = document.createElement("div");
-            domContentDividerPadding.className = "network-event-divider-padding";
-            domContentDividerPadding.title = WebInspector.UIString("DOMContent event fired");
-            domContentDividerPadding.appendChild(domContentDivider);
-            domContentDividerPadding.style.left = percent + "%";
-            this._timelineGrid.addEventDivider(domContentDividerPadding);
+            var domContentLoadedDividerPadding = document.createElement("div");
+            domContentLoadedDividerPadding.className = "network-event-divider-padding";
+            domContentLoadedDividerPadding.title = WebInspector.UIString("DOMContentLoaded event fired");
+            domContentLoadedDividerPadding.appendChild(domContentLoadedDivider);
+            domContentLoadedDividerPadding.style.left = percent + "%";
+            this._timelineGrid.addEventDivider(domContentLoadedDividerPadding);
         }
     },
 
@@ -662,7 +662,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _domContentLoadedEventFired: function(event)
     {
-        this._mainRequestDOMContentTime = event.data || -1;
+        this._mainRequestDOMContentLoadedTime = event.data || -1;
         // Schedule refresh to update boundaries and draw the new line.
         this._scheduleRefresh();
     },
@@ -690,7 +690,7 @@ WebInspector.NetworkLogView.prototype = {
         var boundariesChanged = false;
         if (this.calculator.updateBoundariesForEventTime) {
             boundariesChanged = this.calculator.updateBoundariesForEventTime(this._mainRequestLoadTime) || boundariesChanged;
-            boundariesChanged = this.calculator.updateBoundariesForEventTime(this._mainRequestDOMContentTime) || boundariesChanged;
+            boundariesChanged = this.calculator.updateBoundariesForEventTime(this._mainRequestDOMContentLoadedTime) || boundariesChanged;
         }
 
         for (var requestId in this._staleRequests) {
@@ -759,7 +759,7 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         this._mainRequestLoadTime = -1;
-        this._mainRequestDOMContentTime = -1;
+        this._mainRequestDOMContentLoadedTime = -1;
     },
 
     get requests()
