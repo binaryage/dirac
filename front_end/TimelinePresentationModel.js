@@ -755,6 +755,7 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
 
     case recordTypes.Paint:
         this.highlightQuad = record.data.clip || WebInspector.TimelinePresentationModel.quadFromRectData(record.data);
+        this._relatedBackendNodeId = record.data["layerRootNode"];
         break;
 
     case recordTypes.WebSocketCreate:
@@ -1076,6 +1077,8 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                     if (typeof this.data["width"] !== "undefined" && typeof this.data["height"] !== "undefined")
                         contentHelper.appendTextRow(WebInspector.UIString("Dimensions"), WebInspector.UIString("%d\u2009\u00d7\u2009%d", this.data["width"], this.data["height"]));
                 }
+                if (this._relatedNode)
+                    contentHelper.appendElementRow(WebInspector.UIString("Layer root"), this._createNodeAnchor(this._relatedNode));
                 break;
             case recordTypes.RecalculateStyles: // We don't want to see default details.
                 if (this.data["elementCount"])
