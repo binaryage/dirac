@@ -227,12 +227,12 @@ WebInspector.DOMStorageItemsView.prototype = {
     {
         var domStorage = this.domStorage;
         if ("key" === columnIdentifier) {
-            if (oldText)
+            if (typeof oldText === "string")
                 domStorage.removeItem(oldText);
-            domStorage.setItem(newText, editingNode.data.value);
+            domStorage.setItem(newText, editingNode.data.value || '');
             this._removeDupes(editingNode);
         } else
-            domStorage.setItem(editingNode.data.key, newText);
+            domStorage.setItem(editingNode.data.key || '', newText);
     },
 
     /**
