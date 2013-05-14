@@ -557,8 +557,6 @@ WebInspector.CSSStyleModel.prototype = {
         if (!cssRule._rawLocation)
             return null;
         var location = new WebInspector.CSSStyleModel.LiveLocation(cssRule._rawLocation, updateDelegate);
-        if (!location.uiLocation())
-            return null;
         this._locations.push(location);
         location.update();
         return location;

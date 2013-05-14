@@ -47,6 +47,7 @@ WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceP
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
     WebInspector.fileManager.addEventListener(WebInspector.FileManager.EventTypes.SavedURL, this._fileSaveFinished, this);
     this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetChanged, this);
+    this._workspace.addEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._uiSourceCodeContentCommitted, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._reset, this);
 }
@@ -285,6 +286,20 @@ WebInspector.SASSSourceMapping.prototype = {
     isIdentity: function()
     {
         return false;
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _uiSourceCodeAdded: function(event)
+    {
+        var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
+        var cssURLs = this._cssURLsForSASSURL[uiSourceCode.url];
+        // FIXME: we get back all the mappings that StylesSourceMapping stole from us.
+        // It should not have happened at the first place.
+        for (var i = 0; cssURLs && i < cssURLs.length; ++i)
+            this._cssModel.setSourceMapping(cssURLs[i], this);
+        uiSourceCode.setSourceMapping(this);
     },
 
     /**
