@@ -103,15 +103,8 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
         addRow(WebInspector.UIString("DNS Lookup"), "dns", request.timing.dnsStart, request.timing.dnsEnd);
 
     if (request.timing.connectStart !== -1) {
-        if (request.connectionReused)
-            addRow(WebInspector.UIString("Blocking"), "connecting", request.timing.connectStart, request.timing.connectEnd);
-        else {
-            var connectStart = request.timing.connectStart;
-            // Connection includes DNS, subtract it here.
-            if (request.timing.dnsStart !== -1)
-                connectStart += request.timing.dnsEnd - request.timing.dnsStart;
-            addRow(WebInspector.UIString("Connecting"), "connecting", connectStart, request.timing.connectEnd);
-        }
+        var label = request.connectionReused ? WebInspector.UIString("Blocking") : WebInspector.UIString("Connecting");
+        addRow(label, "connecting", request.timing.connectStart, request.timing.connectEnd);
     }
 
     if (request.timing.sslStart !== -1)
