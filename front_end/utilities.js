@@ -746,13 +746,16 @@ Set.prototype = {
     
     /**
      * @param {!Object} item
+     * @return {boolean}
      */
     remove: function(item)
     {
         if (this._set[item.__identifier]) {
             --this._size;
             delete this._set[item.__identifier];
+            return true;
         }
+        return false;
     },
 
     /**
@@ -769,11 +772,11 @@ Set.prototype = {
 
     /**
      * @param {!Object} item
-     * @return {?Object}
+     * @return {boolean}
      */
     hasItem: function(item)
     {
-        return this._set[item.__identifier];
+        return !!this._set[item.__identifier];
     },
 
     /**
@@ -838,6 +841,9 @@ Map.prototype = {
         return this._list(0);
     },
 
+    /**
+     * @return {Array.<*>}
+     */
     values: function()
     {
         return this._list(1);
@@ -845,6 +851,7 @@ Map.prototype = {
 
     /**
      * @param {number} index
+     * @return {Array.<Array>}
      */
     _list: function(index)
     {
@@ -866,6 +873,7 @@ Map.prototype = {
 
     /**
      * @param {Object} key
+     * @return {boolean}
      */
     contains: function(key)
     {
@@ -873,6 +881,9 @@ Map.prototype = {
         return !!entry;
     },
 
+    /**
+     * @return {number}
+     */
     size: function()
     {
         return this._size;
@@ -884,6 +895,122 @@ Map.prototype = {
         this._size = 0;
     }
 }
+
+/**
+ * @constructor
+ */
+var StringMap = function()
+{
+    this._map = {};
+    this._size = 0;
+}
+
+StringMap.prototype = {
+    /**
+     * @param {string} key
+     * @param {*=} value
+     */
+    put: function(key, value)
+    {
+        if (key === "__proto__") {
+            if (!this._hasProtoKey) {
+                ++this._size;
+                this._hasProtoKey = true;
+            }
+            this._protoValue = value;
+            return;
+        }
+        if (!Object.prototype.hasOwnProperty.call(this._map, key))
+            ++this._size;
+        this._map[key] = value;
+    },
+
+    /**
+     * @param {string} key
+     */
+    remove: function(key)
+    {
+        var result;
+        if (key === "__proto__") {
+            if (!this._hasProtoKey)
+                return undefined;
+            --this._size;
+            delete this._hasProtoKey;
+            result = this._protoValue;
+            delete this._protoValue;
+            return result;
+        }
+        if (!Object.prototype.hasOwnProperty.call(this._map, key))
+            return undefined;
+        --this._size;
+        result = this._map[key];
+        delete this._map[key];
+        return result;
+    },
+
+    /**
+     * @return {Array.<string>}
+     */
+    keys: function()
+    {
+        var result = Object.keys(this._map);
+        if (this._hasProtoKey)
+            result.push("__proto__");
+        return result;
+    },
+
+    /**
+     * @return {Array.<*>}
+     */
+    values: function()
+    {
+        var result = Object.values(this._map);
+        if (this._hasProtoKey)
+            result.push(this._protoValue);
+        return result;
+    },
+
+    /**
+     * @param {string} key
+     */
+    get: function(key)
+    {
+        if (key === "__proto__")
+            return this._protoValue;
+        if (!Object.prototype.hasOwnProperty.call(this._map, key))
+            return undefined;
+        return this._map[key];
+    },
+
+    /**
+     * @param {string} key
+     * @return {boolean}
+     */
+    contains: function(key)
+    {
+        var result;
+        if (key === "__proto__")
+            return this._hasProtoKey;
+        return Object.prototype.hasOwnProperty.call(this._map, key);
+    },
+
+    /**
+     * @return {number}
+     */
+    size: function()
+    {
+        return this._size;
+    },
+
+    clear: function()
+    {
+        this._map = {};
+        this._size = 0;
+        delete this._hasProtoKey;
+        delete this._protoValue;
+    }
+}
+
 /**
  * @param {string} url
  * @param {boolean=} async
