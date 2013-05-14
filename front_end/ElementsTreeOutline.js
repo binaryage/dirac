@@ -289,9 +289,13 @@ WebInspector.ElementsTreeOutline.prototype = {
 
     _revealAndSelectNode: function(node, omitFocus)
     {
-        if (!node || this._suppressRevealAndSelect)
+        if (this._suppressRevealAndSelect)
             return;
 
+        if (!this._includeRootDOMNode && node === this.rootDOMNode && this.rootDOMNode)
+            node = this.rootDOMNode.firstChild;
+        if (!node)
+            return;
         var treeElement = this.createTreeElementFor(node);
         if (!treeElement)
             return;
