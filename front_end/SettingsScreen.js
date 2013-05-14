@@ -520,13 +520,13 @@ WebInspector.WorkspaceSettingsTab.prototype = {
 
     _createFileSystemsEditor: function()
     {
-        var p = this._appendSection(WebInspector.UIString("File systems"));
+        var p = this._appendSection(WebInspector.UIString("Folders"));
         this._fileSystemsEditor = p.createChild("p", "file-systems-editor");
 
         this._addFileSystemRowElement = this._fileSystemsEditor.createChild("div", "workspace-settings-row");
         var addFileSystemButton = this._addFileSystemRowElement.createChild("input", "file-system-add-button");
         addFileSystemButton.type = "button";
-        addFileSystemButton.value = WebInspector.UIString("Add file system");
+        addFileSystemButton.value = WebInspector.UIString("Add folder");
         addFileSystemButton.addEventListener("click", this._addFileSystemClicked.bind(this));
 
         var fileSystemPaths = WebInspector.isolatedFileSystemManager.mapping().fileSystemPaths();
@@ -638,9 +638,9 @@ WebInspector.WorkspaceSettingsTab.prototype = {
 
         this._addMappingRowElement = this._fileMappingEditor.createChild("div", "workspace-settings-row");
 
-        this._urlInputElement = this._createEditTextInput("file-mapping-url", WebInspector.UIString("File mapping url"));
+        this._urlInputElement = this._createEditTextInput("file-mapping-url", WebInspector.UIString("URL prefix"));
         this._addMappingRowElement.appendChild(this._urlInputElement);
-        this._pathInputElement = this._createEditTextInput("file-mapping-path", WebInspector.UIString("File mapping path"));
+        this._pathInputElement = this._createEditTextInput("file-mapping-path", WebInspector.UIString("Folder path"));
         this._addMappingRowElement.appendChild(this._pathInputElement);
 
         this._addMappingRowElement.appendChild(this._createAddButton(this._addFileMappingClicked.bind(this)));
