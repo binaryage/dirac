@@ -168,7 +168,7 @@ WebInspector.MetricsSidebarPane.prototype = {
                 width = width - borderBox.left - borderBox.right - paddingBox.left - paddingBox.right;
             }
 
-            return width;
+            return width % 1 ? Number(width).toFixed(3) : width;
         }
 
         function getContentAreaHeightPx(style)
@@ -181,7 +181,7 @@ WebInspector.MetricsSidebarPane.prototype = {
                 height = height - borderBox.top - borderBox.bottom - paddingBox.top - paddingBox.bottom;
             }
 
-            return height;
+            return height % 1 ? Number(height).toFixed(3) : height;
         }
 
         // Display types for which margin is ignored.
