@@ -574,6 +574,13 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     if (WebInspector.settings.showFPSCounter.get())
         PageAgent.setShowFPSCounter(true);
 
+    WebInspector.settings.showMetricsRulers.addChangeListener(showRulersChanged);
+    function showRulersChanged()
+    {
+        PageAgent.setShowViewportSizeOnResize(true, WebInspector.settings.showMetricsRulers.get());
+    }
+    showRulersChanged();
+
     this.domAgent._emulateTouchEventsChanged();
 
     WebInspector.WorkerManager.loadCompleted();
