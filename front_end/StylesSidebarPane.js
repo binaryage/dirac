@@ -101,6 +101,9 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrModified, this._attributeChanged, this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrRemoved, this._attributeChanged, this);
     WebInspector.settings.showUserAgentStyles.addChangeListener(this._showUserAgentStylesSettingChanged.bind(this));
+    this.element.addEventListener("mousemove", this._mouseMovedOverElement.bind(this), false);
+    document.body.addEventListener("keydown", this._keyDown.bind(this), false);
+    document.body.addEventListener("keyup", this._keyUp.bind(this), false);
 }
 
 // Keep in sync with RenderStyleConstants.h PseudoId enum. Array below contains pseudo id names for corresponding enum indexes.
@@ -178,6 +181,7 @@ WebInspector.StylesSidebarPane.prototype = {
     update: function(node, forceUpdate)
     {
         this._spectrumHelper.hide();
+        delete this._elementUnderMouse;
 
         var refresh = false;
 
@@ -766,6 +770,34 @@ WebInspector.StylesSidebarPane.prototype = {
     willHide: function()
     {
         this._spectrumHelper.hide();
+        delete this._elementUnderMouse;
+    },
+
+    _mouseMovedOverElement: function(e)
+    {
+        if (this._elementUnderMouse && e.target !== this._elementUnderMouse)
+            this._elementUnderMouse.removeStyleClass("styles-panel-hovered");
+        this._elementUnderMouse = e.target;
+        if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(e))
+            this._elementUnderMouse.addStyleClass("styles-panel-hovered");
+    },
+
+    _keyDown: function(e)
+    {
+        if ((!WebInspector.isMac() && e.keyCode === WebInspector.KeyboardShortcut.Keys.Ctrl.code) ||
+            (WebInspector.isMac() && e.keyCode === WebInspector.KeyboardShortcut.Keys.Meta.code)) {
+            if (this._elementUnderMouse)
+                this._elementUnderMouse.addStyleClass("styles-panel-hovered");
+        }
+    },
+
+    _keyUp: function(e)
+    {
+        if ((!WebInspector.isMac() && e.keyCode === WebInspector.KeyboardShortcut.Keys.Ctrl.code) ||
+            (WebInspector.isMac() && e.keyCode === WebInspector.KeyboardShortcut.Keys.Meta.code)) {
+            if (this._elementUnderMouse)
+                this._elementUnderMouse.removeStyleClass("styles-panel-hovered");
+        }
     },
 
     __proto__: WebInspector.SidebarPane.prototype

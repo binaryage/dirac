@@ -91,7 +91,9 @@ WebInspector.KeyboardShortcut.Keys = {
     Slash: { code: 191, name: "/" },
     Apostrophe: { code: 192, name: "`" },
     SingleQuote: { code: 222, name: "\'" },
-    H: { code: 72, name: "H" }
+    H: { code: 72, name: "H" },
+    Ctrl: { code: 17, name: "Ctrl" },
+    Meta: { code: 91, name: "Meta" },
 };
 
 /**

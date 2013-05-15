@@ -592,3 +592,10 @@
 .panel.elements .sidebar-pane-toolbar > select > option, .panel.elements .sidebar-pane-toolbar > select > hr {
     color: black;
 }
+
+.styles-section:not(.read-only) .properties .webkit-css-property.styles-panel-hovered,
+.styles-section:not(.read-only) .properties .value .styles-panel-hovered,
+.styles-section:not(.read-only) .properties .value.styles-panel-hovered {
+    text-decoration: underline;
+    cursor: default;
+}
