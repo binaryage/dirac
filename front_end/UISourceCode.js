@@ -312,6 +312,9 @@ WebInspector.UISourceCode.prototype = {
 
         function filterOutStale(historyItem)
         {
+            // FIXME: Main frame might not have been loaded yet when uiSourceCodes for snippets are created.
+            if (!WebInspector.resourceTreeModel.mainFrame)
+                return false;
             return historyItem.loaderId === WebInspector.resourceTreeModel.mainFrame.loaderId;
         }
 
