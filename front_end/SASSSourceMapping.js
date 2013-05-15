@@ -294,6 +294,8 @@ WebInspector.SASSSourceMapping.prototype = {
     _uiSourceCodeAdded: function(event)
     {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
+        if (uiSourceCode.contentType() !== WebInspector.resourceTypes.Stylesheet)
+            return;
         var cssURLs = this._cssURLsForSASSURL[uiSourceCode.url];
         // FIXME: we get back all the mappings that StylesSourceMapping stole from us.
         // It should not have happened at the first place.
