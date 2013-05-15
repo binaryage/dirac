@@ -576,7 +576,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
 
     selectOnMouseDown: function(event)
     {
-        if (!this._shouldRenameOnMouseDown()) {
+        if (event.which !== 1 || !this._shouldRenameOnMouseDown()) {
             TreeElement.prototype.selectOnMouseDown.call(this, event);
             return;
         }
@@ -910,6 +910,7 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
         {
             WebInspector.markBeingEdited(treeOutlineElement, false);
             this.updateTitle();
+            this._treeElement.treeOutline.childrenListElement.focus();
             if (callback)
                 callback(committed);
         }
