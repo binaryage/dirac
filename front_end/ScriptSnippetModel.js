@@ -46,7 +46,8 @@ WebInspector.ScriptSnippetModel = function(workspace)
     this._snippetStorage = new WebInspector.SnippetStorage("script", "Script snippet #");
     this._lastSnippetEvaluationIndexSetting = WebInspector.settings.createSetting("lastSnippetEvaluationIndex", 0);
     this._snippetScriptMapping = new WebInspector.SnippetScriptMapping(this);
-    this._workspaceProvider = new WebInspector.SimpleWorkspaceProvider(this._workspace, WebInspector.projectTypes.Snippets);
+    this._projectDelegate = new WebInspector.SnippetsProjectDelegate();
+    this._workspace.addProject(this._projectDelegate);
     this.reset();
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 }
@@ -82,7 +83,8 @@ WebInspector.ScriptSnippetModel.prototype = {
      */
     _addScriptSnippet: function(snippet)
     {
-        var uiSourceCode = this._workspaceProvider.addFileByName("", snippet.name, new WebInspector.SnippetContentProvider(snippet), true);
+        var path = this._projectDelegate.addFile(snippet.name, new WebInspector.SnippetContentProvider(snippet));
+        var uiSourceCode = this._workspace.uiSourceCode(this._projectDelegate.id(), path);
         var scriptFile = new WebInspector.SnippetScriptFile(this, uiSourceCode);
         uiSourceCode.setScriptFile(scriptFile);
         this._snippetIdForUISourceCode.put(uiSourceCode, snippet.id);
@@ -103,7 +105,7 @@ WebInspector.ScriptSnippetModel.prototype = {
         this._releaseSnippetScript(uiSourceCode);
         delete this._uiSourceCodeForSnippetId[snippet.id];
         this._snippetIdForUISourceCode.remove(uiSourceCode);
-        this._workspaceProvider.removeFileByName("", snippet.name);
+        this._projectDelegate.removeFile([snippet.name]);
     },
 
     /**
@@ -384,7 +386,7 @@ WebInspector.ScriptSnippetModel.prototype = {
         /** @type {!Object.<string, WebInspector.UISourceCode>} */
         this._uiSourceCodeForSnippetId = {};
         this._snippetIdForUISourceCode = new Map();
-        this._workspaceProvider.reset();
+        this._projectDelegate.reset();
         this._loadSnippets();
     },
 
@@ -536,6 +538,38 @@ WebInspector.SnippetContentProvider = function(snippet)
 
 WebInspector.SnippetContentProvider.prototype = {
     __proto__: WebInspector.StaticContentProvider.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.ContentProviderBasedProjectDelegate}
+ */
+WebInspector.SnippetsProjectDelegate = function()
+{
+    WebInspector.ContentProviderBasedProjectDelegate.call(this, WebInspector.projectTypes.Snippets);
+}
+
+WebInspector.SnippetsProjectDelegate.prototype = {
+    /**
+     * @override
+     * @return {string}
+     */
+    id: function()
+    {
+        return WebInspector.projectTypes.Snippets + ":";
+    },
+
+    /**
+     * @param {string} name
+     * @param {WebInspector.ContentProvider} contentProvider
+     * @return {Array.<string>}
+     */
+    addFile: function(name, contentProvider)
+    {
+        return this.addContentProvider([name], name, contentProvider, true, false);
+    },
+
+    __proto__: WebInspector.ContentProviderBasedProjectDelegate.prototype
 }
 
 /**

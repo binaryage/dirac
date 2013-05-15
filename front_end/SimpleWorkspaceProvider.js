@@ -187,46 +187,10 @@ WebInspector.SimpleWorkspaceProvider.prototype = {
         var splittedURL = WebInspector.ParsedURL.splitURL(url);
         var projectName = splittedURL[0];
         var path = WebInspector.SimpleWorkspaceProvider.pathForSplittedURL(splittedURL);
-        return this._innerAddFile(projectName, path, url, contentProvider, isEditable, forceUnique, isContentScript);
-    },
 
-    /**
-     * @param {string} projectName
-     * @param {string} name
-     * @param {WebInspector.ContentProvider} contentProvider
-     * @param {boolean} isEditable
-     * @param {boolean=} isContentScript
-     * @return {WebInspector.UISourceCode}
-     */
-    addFileByName: function(projectName, name, contentProvider, isEditable, isContentScript)
-    {
-        return this._innerAddFile("", [name], name, contentProvider, isEditable, false, isContentScript);
-    },
-
-    /**
-     * @param {string} projectName
-     * @param {Array.<string>} path
-     * @param {WebInspector.ContentProvider} contentProvider
-     * @param {boolean} isEditable
-     * @param {boolean} forceUnique
-     * @param {boolean=} isContentScript
-     * @return {WebInspector.UISourceCode}
-     */
-    _innerAddFile: function(projectName, path, url, contentProvider, isEditable, forceUnique, isContentScript)
-    {
         var projectDelegate = this._projectDelegate(projectName);
         path = projectDelegate.addFile(path, forceUnique, url, contentProvider, isEditable, isContentScript);
         return this._workspace.uiSourceCode(projectDelegate.id(), path);
-    },
-
-    /**
-     * @param {string} projectName
-     * @param {string} name
-     */
-    removeFileByName: function(projectName, name)
-    {
-        var projectDelegate = this._projectDelegate(projectName);
-        projectDelegate.removeFile([name]);
     },
 
     reset: function()
