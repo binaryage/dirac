@@ -423,9 +423,16 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     /**
      * @param {number} lineNumber
+     * @param {number=} columnNumber
      */
-    highlightLine: function(lineNumber)
+    highlightLine: function(lineNumber, columnNumber)
     {
+        if (typeof lineNumber !== "number" || lineNumber < 0)
+            return;
+        lineNumber = Math.min(lineNumber, this._codeMirror.lineCount());
+        if (typeof columnNumber !== "number" || columnNumber < 0 || columnNumber > this._codeMirror.getLine(lineNumber).length)
+            columnNumber = 0;
+
         this.clearLineHighlight();
         this._highlightedLine = this._codeMirror.getLineHandle(lineNumber);
         if (!this._highlightedLine)
@@ -433,6 +440,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this.revealLine(lineNumber);
         this._codeMirror.addLineClass(this._highlightedLine, null, "cm-highlight");
         this._clearHighlightTimeout = setTimeout(this.clearLineHighlight.bind(this), 2000);
+        if (!this.readOnly())
+            this._codeMirror.setSelection(new CodeMirror.Pos(lineNumber, columnNumber));
     },
 
     clearLineHighlight: function()
