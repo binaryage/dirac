@@ -46,7 +46,7 @@ WebInspector.ScriptSnippetModel = function(workspace)
     this._snippetStorage = new WebInspector.SnippetStorage("script", "Script snippet #");
     this._lastSnippetEvaluationIndexSetting = WebInspector.settings.createSetting("lastSnippetEvaluationIndex", 0);
     this._snippetScriptMapping = new WebInspector.SnippetScriptMapping(this);
-    this._projectDelegate = new WebInspector.SnippetsProjectDelegate();
+    this._projectDelegate = new WebInspector.SnippetsProjectDelegate(this);
     this._workspace.addProject(this._projectDelegate);
     this.reset();
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
@@ -109,18 +109,26 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {string} name
      * @param {string} newName
+     * @param {function(boolean, string=)} callback
      */
-    renameScriptSnippet: function(uiSourceCode, newName)
+    renameScriptSnippet: function(name, newName, callback)
     {
-        var breakpointLocations = this._removeBreakpoints(uiSourceCode);
-        var snippetId = this._snippetIdForUISourceCode.get(uiSourceCode);
-        var snippet = this._snippetStorage.snippetForId(snippetId);
-        if (!snippet || !newName || snippet.name === newName)
+        newName = newName.trim();
+        if (!newName || newName.indexOf("/") !== -1 || name === newName || this._snippetStorage.snippetForName(newName)) {
+            callback(false);
             return;
+        }
+        var snippet = this._snippetStorage.snippetForName(name);
+        console.assert(snippet, "Snippet '" + name + "' was not found.");
+        var uiSourceCode = this._uiSourceCodeForSnippetId[snippet.id];
+        console.assert(uiSourceCode, "No uiSourceCode was found for snippet '" + name + "'.");
+
+        var breakpointLocations = this._removeBreakpoints(uiSourceCode);
         snippet.name = newName;
         this._restoreBreakpoints(uiSourceCode, breakpointLocations);
+        callback(true, newName);
     },
 
     /**
@@ -543,10 +551,12 @@ WebInspector.SnippetContentProvider.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ContentProviderBasedProjectDelegate}
+ * @param {WebInspector.ScriptSnippetModel} model
  */
-WebInspector.SnippetsProjectDelegate = function()
+WebInspector.SnippetsProjectDelegate = function(model)
 {
     WebInspector.ContentProviderBasedProjectDelegate.call(this, WebInspector.projectTypes.Snippets);
+    this._model = model;
 }
 
 WebInspector.SnippetsProjectDelegate.prototype = {
@@ -567,6 +577,24 @@ WebInspector.SnippetsProjectDelegate.prototype = {
     addFile: function(name, contentProvider)
     {
         return this.addContentProvider([name], name, contentProvider, true, false);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    canRename: function()
+    {
+        return true;
+    },
+
+    /**
+     * @param {Array.<string>} path
+     * @param {string} newName
+     * @param {function(boolean, string=)} callback
+     */
+    rename: function(path, newName, callback)
+    {
+        this._model.renameScriptSnippet(path[0], newName, callback);
     },
 
     __proto__: WebInspector.ContentProviderBasedProjectDelegate.prototype

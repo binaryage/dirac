@@ -61,7 +61,7 @@ WebInspector.NavigatorView = function()
 WebInspector.NavigatorView.Events = {
     ItemSelected: "ItemSelected",
     ItemSearchStarted: "ItemSearchStarted",
-    FileRenamed: "FileRenamed"
+    ItemRenamingRequested: "ItemRenamingRequested"
 }
 
 WebInspector.NavigatorView.iconClassForType = function(type)
@@ -252,17 +252,12 @@ WebInspector.NavigatorView.prototype = {
         }
     },
 
-    _fileRenamed: function(uiSourceCode, newTitle)
-    {    
-        var data = { uiSourceCode: uiSourceCode, name: newTitle };
-        this.dispatchEventToListeners(WebInspector.NavigatorView.Events.FileRenamed, data);
-    },
-
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      */
-    handleRename: function(uiSourceCode, callback)
+    requestRename: function(uiSourceCode)
     {
+        this.dispatchEventToListeners(WebInspector.ScriptsNavigator.Events.ItemRenamingRequested, uiSourceCode);
     },
 
     /**
@@ -271,24 +266,21 @@ WebInspector.NavigatorView.prototype = {
      */
     rename: function(uiSourceCode, callback)
     {
-        var uri = uiSourceCode.uri();
-        var node = this._uiSourceCodeNodes[uri];
+        var node = this._uiSourceCodeNodes[uiSourceCode.uri()];
         if (!node)
             return null;
-        /**
-         * @param {boolean} renameCommitted
-         */
-        function callbackWrapper(renameCommitted)
-        {
-            if (renameCommitted) {
-                delete this._uiSourceCodeNodes[uri];
-                this._uiSourceCodeNodes[uiSourceCode.uri()] = node;
-            }
+        node.rename(callback);
+    },
 
-            if (callback)
-                callback(renameCommitted);
-        }
-        node.rename(callbackWrapper.bind(this));
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {string} oldURI
+     */
+    _titleChanged: function(uiSourceCode, oldURI)
+    {
+        var node = this._uiSourceCodeNodes[oldURI];
+        delete this._uiSourceCodeNodes[oldURI];
+        this._uiSourceCodeNodes[uiSourceCode.uri()] = node;
     },
 
     reset: function()
@@ -569,6 +561,8 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
 
     _shouldRenameOnMouseDown: function()
     {
+        if (!this._uiSourceCode.canRename())
+            return false;
         var isSelected = this === this.treeOutline.selectedTreeElement;
         var isFocused = this.treeOutline.childrenListElement.isSelfOrAncestor(document.activeElement);
         return isSelected && isFocused && !WebInspector.isBeingEdited(this.treeOutline.element);
@@ -585,7 +579,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
         function rename()
         {
             if (this._shouldRenameOnMouseDown())
-                this._navigatorView.handleRename(this._uiSourceCode);
+                this._navigatorView.requestRename(this._uiSourceCode);
         }
     },
 
@@ -849,6 +843,8 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
 
     _titleChanged: function(event)
     {
+        var oldURI = /** @type {string} */ (event.data);
+        this._navigatorView._titleChanged(this._uiSourceCode, oldURI);
         this.updateTitle();
     },
 
@@ -893,8 +889,22 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
 
         function commitHandler(element, newTitle, oldTitle)
         {
-            if (newTitle && newTitle !== oldTitle)
-                this._navigatorView._fileRenamed(this._uiSourceCode, newTitle);
+            if (newTitle !== oldTitle) {
+                this._treeElement.titleText = newTitle;
+                this._uiSourceCode.rename(newTitle, renameCallback.bind(this));
+                return;
+            }
+            afterEditing.call(this, true);
+        }
+
+        function renameCallback(success)
+        {
+            if (!success) {
+                WebInspector.markBeingEdited(treeOutlineElement, false);
+                this.updateTitle();
+                this.rename(callback);
+                return;
+            }
             afterEditing.call(this, true);
         }
 

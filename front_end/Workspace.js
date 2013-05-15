@@ -113,6 +113,18 @@ WebInspector.ProjectDelegate.prototype = {
     setFileContent: function(path, newContent, callback) { },
 
     /**
+     * @return {boolean}
+     */
+    canRename: function() { },
+
+    /**
+     * @param {Array.<string>} path
+     * @param {string} newName
+     * @param {function(boolean, string=)} callback
+     */
+    rename: function(path, newName, callback) { },
+
+    /**
      * @param {Array.<string>} path
      * @param {string} query
      * @param {boolean} caseSensitive
@@ -264,6 +276,24 @@ WebInspector.Project.prototype = {
     {
         this._projectDelegate.setFileContent(uiSourceCode.path(), newContent, callback);
         this._workspace.dispatchEventToListeners(WebInspector.Workspace.Events.UISourceCodeContentCommitted, { uiSourceCode: uiSourceCode, content: newContent });
+    },
+
+    /**
+     * @return {boolean}
+     */
+    canRename: function()
+    {
+        return this._projectDelegate.canRename();
+    },
+
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {string} newName
+     * @param {function(boolean, string=)} callback
+     */
+    rename: function(uiSourceCode, newName, callback)
+    {
+        this._projectDelegate.rename(uiSourceCode.path(), newName, callback);
     },
 
     /**

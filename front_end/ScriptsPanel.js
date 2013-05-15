@@ -100,7 +100,6 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.ItemSearchStarted, this._itemSearchStarted, this);
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.SnippetCreationRequested, this._snippetCreationRequested, this);
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.ItemRenamingRequested, this._itemRenamingRequested, this);
-    this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.FileRenamed, this._fileRenamed, this);
 
     this._editorContainer.addEventListener(WebInspector.TabbedEditorContainer.Events.EditorSelected, this._editorSelected, this);
     this._editorContainer.addEventListener(WebInspector.TabbedEditorContainer.Events.EditorClosed, this._editorClosed, this);
@@ -1057,16 +1056,6 @@ WebInspector.ScriptsPanel.prototype = {
         WebInspector.settings.debuggerSidebarHidden.set(true);
     },
 
-    _fileRenamed: function(event)
-    {
-        var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data.uiSourceCode);
-        var name = /** @type {string} */ (event.data.name);
-        if (uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets)
-            return;
-        WebInspector.scriptSnippetModel.renameScriptSnippet(uiSourceCode, name);
-        uiSourceCode.rename(name);
-    },
-        
     /**
      * @param {WebInspector.Event} event
      */

@@ -97,6 +97,24 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    canRename: function()
+    {
+        return false;
+    },
+
+    /**
+     * @param {Array.<string>} path
+     * @param {string} newName
+     * @param {function(boolean, string=)} callback
+     */
+    rename: function(path, newName, callback)
+    {
+        callback(false);
+    },
+
+    /**
      * @param {Array.<string>} path
      * @param {string} query
      * @param {boolean} caseSensitive

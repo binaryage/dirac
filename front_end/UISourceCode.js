@@ -132,16 +132,41 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @param {string} newName
+     * @return {boolean}
      */
-    rename: function(newName)
+    canRename: function()
+    {
+        return this._project.canRename();
+    },
+
+    /**
+     * @param {string} newName
+     * @param {function(boolean)} callback
+     */
+    rename: function(newName, callback)
+    {
+        this._project.rename(this, newName, innerCallback.bind(this));
+
+        function innerCallback(success, newName)
+        {
+            if (success)
+                this._updateName(newName);
+            callback(success);
+        }
+    },
+
+    /**
+     * @param {string} name
+     */
+    _updateName: function(name)
     {
         if (!this._path.length)
             return;
-        this._path[this._path.length - 1] = newName;
-        this._url = newName;
-        this._originURL = newName;
-        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.TitleChanged, null);
+        var oldURI = this.uri();
+        this._path[this._path.length - 1] = name;
+        this._url = name;
+        this._originURL = name;
+        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.TitleChanged, oldURI);
     },
 
     /**
