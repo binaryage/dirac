@@ -578,6 +578,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
             anchor.appendChild(contentSpan);
             
             var searchMatchElement = new TreeElement("", null, false);
+            searchMatchElement.selectable = false;
             fileTreeElement.appendChild(searchMatchElement);
             searchMatchElement.listItemElement.className = "search-match source-code";
             searchMatchElement.listItemElement.appendChild(anchor);

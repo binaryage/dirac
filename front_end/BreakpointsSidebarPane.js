@@ -552,7 +552,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
             hitMarker.className = "breakpoint-hit-marker";
             breakpointItem.element.listItemElement.appendChild(hitMarker);
             breakpointItem.element.listItemElement.addStyleClass("source-code");
-            breakpointItem.element.selectable = true;
+            breakpointItem.element.selectable = false;
 
             breakpointItem.checkbox = this._createCheckbox(breakpointItem.element);
             breakpointItem.checkbox.addEventListener("click", this._breakpointCheckboxClicked.bind(this, eventName), true);
