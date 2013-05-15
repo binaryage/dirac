@@ -181,7 +181,7 @@ WebInspector.StylesSidebarPane.prototype = {
     update: function(node, forceUpdate)
     {
         this._spectrumHelper.hide();
-        delete this._elementUnderMouse;
+        this._discardElementUnderMouse();
 
         var refresh = false;
 
@@ -770,13 +770,20 @@ WebInspector.StylesSidebarPane.prototype = {
     willHide: function()
     {
         this._spectrumHelper.hide();
+        this._discardElementUnderMouse();
+    },
+
+    _discardElementUnderMouse: function()
+    {
+        if (this._elementUnderMouse)
+            this._elementUnderMouse.removeStyleClass("styles-panel-hovered");
         delete this._elementUnderMouse;
     },
 
     _mouseMovedOverElement: function(e)
     {
         if (this._elementUnderMouse && e.target !== this._elementUnderMouse)
-            this._elementUnderMouse.removeStyleClass("styles-panel-hovered");
+            this._discardElementUnderMouse();
         this._elementUnderMouse = e.target;
         if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(e))
             this._elementUnderMouse.addStyleClass("styles-panel-hovered");
@@ -795,8 +802,7 @@ WebInspector.StylesSidebarPane.prototype = {
     {
         if ((!WebInspector.isMac() && e.keyCode === WebInspector.KeyboardShortcut.Keys.Ctrl.code) ||
             (WebInspector.isMac() && e.keyCode === WebInspector.KeyboardShortcut.Keys.Meta.code)) {
-            if (this._elementUnderMouse)
-                this._elementUnderMouse.removeStyleClass("styles-panel-hovered");
+            this._discardElementUnderMouse();
         }
     },
 
