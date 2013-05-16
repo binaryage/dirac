@@ -111,7 +111,38 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
      */
     rename: function(path, newName, callback)
     {
+        this.performRename(path, newName, innerCallback.bind(this));
+
+        function innerCallback(success, newName)
+        {
+            if (success)
+                this._updateName(path, newName);
+            callback(success, newName);
+        }
+    },
+
+    /**
+     * @param {Array.<string>} path
+     * @param {string} newName
+     * @param {function(boolean, string=)} callback
+     */
+    performRename: function(path, newName, callback)
+    {
         callback(false);
+    },
+
+    /**
+     * @param {Array.<string>} path
+     * @param {string} newName
+     */
+    _updateName: function(path, newName)
+    {
+        var copyOfPath = path.slice();
+        var oldPath = copyOfPath.join("/");
+        copyOfPath[copyOfPath.length - 1] = newName;
+        var newPath = copyOfPath.join("/");
+        this._contentProviders[newPath] = this._contentProviders[oldPath];
+        delete this._contentProviders[oldPath];
     },
 
     /**

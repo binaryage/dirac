@@ -293,7 +293,23 @@ WebInspector.Project.prototype = {
      */
     rename: function(uiSourceCode, newName, callback)
     {
-        this._projectDelegate.rename(uiSourceCode.path(), newName, callback);
+        this._projectDelegate.rename(uiSourceCode.path(), newName, innerCallback.bind(this));
+
+        function innerCallback(success, newName)
+        {
+            if (!success) {
+                callback(false);
+                return;
+            }
+
+            var copyOfPath = uiSourceCode.path().slice();
+            var oldPath = copyOfPath.join("/");
+            copyOfPath[copyOfPath.length - 1] = newName;
+            var newPath = copyOfPath.join("/");
+            this._uiSourceCodes[newPath] = this._uiSourceCodes[oldPath];
+            delete this._uiSourceCodes[oldPath];
+            callback(true, newName);
+        }
     },
 
     /**

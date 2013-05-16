@@ -536,16 +536,57 @@ WebInspector.SnippetScriptMapping.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.StaticContentProvider}
+ * @implements {WebInspector.ContentProvider}
  * @param {WebInspector.Snippet} snippet
  */
 WebInspector.SnippetContentProvider = function(snippet)
 {
-    WebInspector.StaticContentProvider.call(this, WebInspector.resourceTypes.Script, snippet.content);
+    this._snippet = snippet;
 }
 
 WebInspector.SnippetContentProvider.prototype = {
-    __proto__: WebInspector.StaticContentProvider.prototype
+    /**
+     * @return {string}
+     */
+    contentURL: function()
+    {
+        return "";
+    },
+
+    /**
+     * @return {WebInspector.ResourceType}
+     */
+    contentType: function()
+    {
+        return WebInspector.resourceTypes.Script;
+    },
+
+    /**
+     * @param {function(?string,boolean,string)} callback
+     */
+    requestContent: function(callback)
+    {
+        callback(this._snippet.content, false, WebInspector.resourceTypes.Script.canonicalMimeType());
+    },
+
+    /**
+     * @param {string} query
+     * @param {boolean} caseSensitive
+     * @param {boolean} isRegex
+     * @param {function(Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     */
+    searchInContent: function(query, caseSensitive, isRegex, callback)
+    {
+        function performSearch()
+        {
+            callback(WebInspector.ContentProvider.performSearchInContent(this._snippet.content, query, caseSensitive, isRegex));
+        }
+
+        // searchInContent should call back later.
+        window.setTimeout(performSearch.bind(this), 0);
+    },
+
+    __proto__: WebInspector.ContentProvider.prototype
 }
 
 /**
@@ -592,7 +633,7 @@ WebInspector.SnippetsProjectDelegate.prototype = {
      * @param {string} newName
      * @param {function(boolean, string=)} callback
      */
-    rename: function(path, newName, callback)
+    performRename: function(path, newName, callback)
     {
         this._model.renameScriptSnippet(path[0], newName, callback);
     },
