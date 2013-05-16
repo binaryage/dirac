@@ -37,8 +37,6 @@ WebInspector.CSSStyleModel = function(workspace)
 {
     this._workspace = workspace;
     this._pendingCommandsMajorState = [];
-    /** @type {Array.<WebInspector.CSSStyleModel.LiveLocation>} */
-    this._locations = [];
     this._sourceMappings = {};
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.UndoRedoRequested, this._undoRedoRequested, this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.UndoRedoCompleted, this._undoRedoCompleted, this);
@@ -543,8 +541,9 @@ WebInspector.CSSStyleModel.prototype = {
 
     _updateLocations: function()
     {
-        for (var i = 0; i < this._locations.length; ++i)
-            this._locations[i].update();
+        var headers = Object.values(this._resourceBinding._styleSheetIdToHeader);
+        for (var i = 0; i < headers.length; ++i)
+            headers[i].updateLocations();
     },
 
     /**
@@ -556,10 +555,10 @@ WebInspector.CSSStyleModel.prototype = {
     {
         if (!cssRule._rawLocation)
             return null;
-        var location = new WebInspector.CSSStyleModel.LiveLocation(cssRule._rawLocation, updateDelegate);
-        this._locations.push(location);
-        location.update();
-        return location;
+        var header = this._resourceBinding._styleSheetIdToHeader[cssRule.id.styleSheetId];
+        if (!header)
+            return null;
+        return header.createLiveLocation(cssRule, updateDelegate);
     },
 
     /**
@@ -589,9 +588,10 @@ WebInspector.CSSStyleModel.prototype = {
  * @param {WebInspector.CSSLocation} rawLocation
  * @param {function(WebInspector.UILocation):(boolean|undefined)} updateDelegate
  */
-WebInspector.CSSStyleModel.LiveLocation = function(rawLocation, updateDelegate)
+WebInspector.CSSStyleModel.LiveLocation = function(rawLocation, updateDelegate, header)
 {
     WebInspector.LiveLocation.call(this, rawLocation, updateDelegate);
+    this._header = header;
 }
 
 WebInspector.CSSStyleModel.LiveLocation.prototype = {
@@ -607,9 +607,7 @@ WebInspector.CSSStyleModel.LiveLocation.prototype = {
     dispose: function()
     {
         WebInspector.LiveLocation.prototype.dispose.call(this);
-        var locations = WebInspector.cssModel._locations;
-        if (locations)
-            locations.remove(this);
+        this._header._removeLocation(this);
     },
 
     __proto__: WebInspector.LiveLocation.prototype
@@ -1213,6 +1211,7 @@ WebInspector.CSSStyleSheetHeader = function(payload)
     this.origin = payload.origin;
     this.title = payload.title;
     this.disabled = payload.disabled;
+    this._locations = new Set();
 }
 
 WebInspector.CSSStyleSheetHeader.prototype = {
@@ -1222,6 +1221,34 @@ WebInspector.CSSStyleSheetHeader.prototype = {
     resourceURL: function()
     {
         return this.origin === "inspector" ? this._viaInspectorResourceURL() : this.sourceURL;
+    },
+
+    /**
+     * @param {WebInspector.CSSRule} cssRule
+     * @param {function(WebInspector.UILocation):(boolean|undefined)} updateDelegate
+     * @return {?WebInspector.LiveLocation}
+     */
+    createLiveLocation: function(cssRule, updateDelegate)
+    {
+        var location = new WebInspector.CSSStyleModel.LiveLocation(cssRule._rawLocation, updateDelegate, this);
+        this._locations.add(location);
+        location.update();
+        return location;
+    },
+
+    updateLocations: function()
+    {
+        var items = this._locations.items();
+        for (var i = 0; i < items.length; ++i)
+            items[i].update();
+    },
+
+    /**
+     * @param {!WebInspector.CSSStyleModel.LiveLocation} location
+     */
+    _removeLocation: function(location)
+    {
+        this._locations.remove(location);
     },
 
     /**
