@@ -619,8 +619,12 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
     this._lastChildEndTime = this.endTime;
     this._startTimeOffset = this.startTime - presentationModel._minimumRecordTime;
 
-    if (record.data && record.data["url"])
-        this.url = record.data["url"];
+    if (record.data) {
+        if (record.data["url"])
+            this.url = record.data["url"];
+        if (record.data["layerRootNode"])
+            this._relatedBackendNodeId = record.data["layerRootNode"];
+    }
     if (scriptDetails) {
         this.scriptName = scriptDetails.scriptName;
         this.scriptLine = scriptDetails.scriptLine;
@@ -755,7 +759,6 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
 
     case recordTypes.Paint:
         this.highlightQuad = record.data.clip || WebInspector.TimelinePresentationModel.quadFromRectData(record.data);
-        this._relatedBackendNodeId = record.data["layerRootNode"];
         break;
 
     case recordTypes.WebSocketCreate:
@@ -1077,6 +1080,9 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                     if (typeof this.data["width"] !== "undefined" && typeof this.data["height"] !== "undefined")
                         contentHelper.appendTextRow(WebInspector.UIString("Dimensions"), WebInspector.UIString("%d\u2009\u00d7\u2009%d", this.data["width"], this.data["height"]));
                 }
+                // Fall-through intended.
+
+            case recordTypes.Rasterize:
                 if (this._relatedNode)
                     contentHelper.appendElementRow(WebInspector.UIString("Layer root"), this._createNodeAnchor(this._relatedNode));
                 break;
