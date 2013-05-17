@@ -850,7 +850,7 @@ WebInspector.TimelineFrameOverview.prototype = {
 
     windowTimes: function(windowLeft, windowRight)
     {
-        var windowSpan = this.element.clientWidth;
+        var windowSpan = this._canvas.width;
         var leftOffset = windowLeft * windowSpan - this._outerPadding + this._actualPadding;
         var rightOffset = windowRight * windowSpan - this._outerPadding;
         var bars = this.element.children;
