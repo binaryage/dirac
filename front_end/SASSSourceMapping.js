@@ -44,7 +44,6 @@ WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceP
     this._sourceMapByStyleSheetURL = {};
     this._cssURLsForSASSURL = {};
     this._timeoutForURL = {};
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
     WebInspector.fileManager.addEventListener(WebInspector.FileManager.EventTypes.SavedURL, this._fileSaveFinished, this);
     this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetChanged, this);
     this._workspace.addEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
@@ -133,11 +132,10 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {WebInspector.Resource} resource
      */
-    _resourceAdded: function(event)
+    addResource: function(resource)
     {
-        var resource = /** @type {WebInspector.Resource} */ (event.data);
         if (resource.type !== WebInspector.resourceTypes.Stylesheet)
             return;
 

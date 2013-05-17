@@ -72,6 +72,7 @@ modules = [
             "CookieParser.js",
             "CSSMetadata.js",
             "CSSStyleModel.js",
+            "CSSStyleSheetMapping.js",
             "BreakpointManager.js",
             "Database.js",
             "DOMAgent.js",

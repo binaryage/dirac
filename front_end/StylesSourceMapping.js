@@ -42,7 +42,6 @@ WebInspector.StylesSourceMapping = function(cssModel, workspace)
     this._workspace.addEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
 
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameCreatedOrNavigated, this._mainFrameCreatedOrNavigated, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
     this._initialize();
 }
 
@@ -77,9 +76,11 @@ WebInspector.StylesSourceMapping.prototype = {
         return true;
     },
 
-    _resourceAdded: function(event)
+    /**
+     * @param {WebInspector.Resource} resource
+     */
+    addResource: function(resource)
     {
-        var resource = /** @type {WebInspector.UISourceCode} */ (event.data);
         if (resource.contentType() !== WebInspector.resourceTypes.Stylesheet)
             return;
         if (!resource.url)

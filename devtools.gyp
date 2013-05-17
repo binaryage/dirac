@@ -54,6 +54,7 @@
             'front_end/CookiesTable.js',
             'front_end/CSSMetadata.js',
             'front_end/CSSStyleModel.js',
+            'front_end/CSSStyleSheetMapping.js',
             'front_end/Database.js',
             'front_end/DataGrid.js',
             'front_end/DebuggerModel.js',

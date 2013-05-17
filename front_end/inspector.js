@@ -524,10 +524,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     new WebInspector.DebuggerScriptMapping(this.workspace, this.networkWorkspaceProvider);
     this.liveEditSupport = new WebInspector.LiveEditSupport(this.workspace);
     this.styleContentBinding = new WebInspector.StyleContentBinding(this.cssModel, this.workspace);
-    new WebInspector.StylesSourceMapping(this.cssModel, this.workspace);
-    if (WebInspector.experimentsSettings.sass.isEnabled())
-        new WebInspector.SASSSourceMapping(this.cssModel, this.workspace, this.networkWorkspaceProvider);
-
+    new WebInspector.CSSStyleSheetMapping(this.cssModel, this.workspace, this.networkWorkspaceProvider);
     new WebInspector.PresentationConsoleMessageHelper(this.workspace);
 
     this._createGlobalStatusBarItems();

@@ -393,12 +393,12 @@ WebInspector.CSSStyleModel.prototype = {
     },
 
     /**
-     * @param {CSSAgent.CSSStyleSheetHeader} header
+     * @param {!CSSAgent.CSSStyleSheetHeader} header
      */
     _styleSheetAdded: function(header)
     {
         this._resourceBinding._setHeaderForStyleSheetId(header.styleSheetId, header);
-        this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.StyleSheetAdded, header);
+        this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._resourceBinding._styleSheetIdToHeader[header.styleSheetId]);
     },
 
     /**
