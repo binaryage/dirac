@@ -1,5 +1,5 @@
 .CodeMirror * {
-  -webkit-box-sizing: content-box;
+  box-sizing: content-box;
 }
 
 .CodeMirror {
@@ -128,8 +128,8 @@
 .cm-s-web-inspector-html span.cm-link {color: #00e;}
 
 .CodeMirror .webkit-html-message-bubble {
-    -webkit-box-shadow: black 0px 2px 5px;
-    -webkit-border-radius: 9px;
+    box-shadow: black 0px 2px 5px;
+    border-radius: 9px;
     -webkit-border-fit: lines;
     font-size: 10px;
     font-family: Lucida Grande, sans-serif;

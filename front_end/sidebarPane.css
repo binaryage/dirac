@@ -76,8 +76,8 @@
     border-top: 1px solid rgb(189, 189, 189);
     border-bottom: 1px solid rgb(189, 189, 189);
     line-height: 18px;
-    -webkit-background-origin: padding;
-    -webkit-background-clip: padding;
+    background-origin: padding;
+    background-clip: padding;
 }
 
 .sidebar-pane-title + .sidebar-pane-title, .pane:not(.visible) + .sidebar-pane-title, .sidebar-pane-title:first-of-type {
@@ -142,7 +142,7 @@
     background-repeat: no-repeat;
     margin: 1px 0 0 0;
     padding: 0;
-    -webkit-border-radius: 0;
+    border-radius: 0;
     -webkit-appearance: none;
 }
 

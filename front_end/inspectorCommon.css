@@ -41,7 +41,7 @@ body.dock-to-right.inactive:not(.undocked) {
 }
 
 * {
-    -webkit-box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 :focus {
@@ -190,8 +190,8 @@ iframe.view {
     background-color: rgb(153, 153, 153);
     z-index: 500;
     cursor: ew-resize;
-    -webkit-border-radius: 2px;
-    -webkit-box-shadow: white 1px 0 0, white -1px 0 0, white 0 1px 0, white 0 -1px 0;
+    border-radius: 2px;
+    box-shadow: white 1px 0 0, white -1px 0 0, white 0 1px 0, white 0 -1px 0;
 }
 
 /* Network timing is shared between popover and network item view pane */
@@ -217,11 +217,11 @@ iframe.view {
 }
 
 .webkit-search-result {
-    -webkit-border-radius: 4px;
+    border-radius: 4px;
     padding: 2px 2px 2px 3px;
     margin: -2px -2px -2px -3px;
     opacity: 0.8;
-    -webkit-box-shadow: rgba(0, 0, 0, .5) 3px 3px 4px;
+    box-shadow: rgba(0, 0, 0, .5) 3px 3px 4px;
     background-color: rgb(241, 234, 0);
     color: #222;
 }

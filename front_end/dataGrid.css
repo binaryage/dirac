@@ -84,7 +84,7 @@
     height: 100%;
     border-top: 0 none transparent;
     background-image: -webkit-gradient(linear, left top, left bottom, from(white), color-stop(0.5, white), color-stop(0.5, rgb(234, 243, 255)), to(rgb(234, 243, 255)));
-    -webkit-background-size: 1px 32px;
+    background-size: 1px 32px;
     table-layout: fixed;
 }
 
@@ -102,7 +102,7 @@
 
 .data-grid td {
     vertical-align: top;
-    height: 16px; /* Keep in sync with .data-grid table.data @ -webkit-background-size */
+    height: 16px; /* Keep in sync with .data-grid table.data @ background-size */
     line-height: 13px;
     padding: 1px 4px;
     white-space: nowrap;

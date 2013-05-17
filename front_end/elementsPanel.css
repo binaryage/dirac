@@ -57,7 +57,7 @@
 
 #elements-content .CodeMirror {
     /* Consistent with the .editing class in inspector.css */
-    -webkit-box-shadow: rgba(0, 0, 0, .5) 3px 3px 4px;
+    box-shadow: rgba(0, 0, 0, .5) 3px 3px 4px;
     outline: 1px solid rgb(66%, 66%, 66%) !important;
     background-color: white;
 }
@@ -175,8 +175,8 @@
     padding: 2px 2px 4px 4px;
     min-height: 18px;
     white-space: nowrap;
-    -webkit-background-origin: padding;
-    -webkit-background-clip: padding;
+    background-origin: padding;
+    background-clip: padding;
     -webkit-user-select: text;
 }
 
@@ -209,8 +209,8 @@
 
 .styles-section .header {
     white-space: nowrap;
-    -webkit-background-origin: padding;
-    -webkit-background-clip: padding;
+    background-origin: padding;
+    background-clip: padding;
 }
 
 .styles-section .header .title {
@@ -472,8 +472,8 @@
     min-height: 16px;
     opacity: 1.0;
     white-space: nowrap;
-    -webkit-background-origin: padding;
-    -webkit-background-clip: padding;
+    background-origin: padding;
+    background-clip: padding;
 }
 
 .event-bars .event-bar .header .title {
@@ -570,7 +570,7 @@
     background-repeat: no-repeat;
     margin: 1px 0 0 0;
     padding: 0;
-    -webkit-border-radius: 0;
+    border-radius: 0;
     -webkit-appearance: none;
 }
 

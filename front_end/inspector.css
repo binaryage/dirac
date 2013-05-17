@@ -62,8 +62,8 @@ input[type="search"]:focus, input[type="text"]:focus {
     padding-left: 5px;
     border-bottom: 1px solid rgb(80, 80, 80);
     -webkit-flex-direction: row;
-    -webkit-background-origin: padding;
-    -webkit-background-clip: padding;
+    background-origin: padding;
+    background-clip: padding;
 }
 
 body.show-toolbar-icons #toolbar {
@@ -247,7 +247,7 @@ body.dock-to-bottom #search-toolbar-label {
     font-weight: bold;
     border: 0;
     background-color: transparent;
-    -webkit-border-radius: 5px;
+    border-radius: 5px;
     text-shadow: none;
     cursor: default;
     margin: 0;
@@ -271,7 +271,7 @@ body.dock-to-bottom #search-toolbar-label {
 #toolbar-dropdown {
     position: absolute;
     z-index: 1000;
-    -webkit-box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.4);
+    box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.4);
     border: 1px solid rgb(128, 128, 128);
     background-color: inherit;
     background-image: inherit;
@@ -333,7 +333,7 @@ body.show-toolbar-icons #toolbar-dropdown .toolbar-label {
 
 #toolbar-panels-menu {
     border: 0;
-    -webkit-border-radius: 5px;
+    border-radius: 5px;
     cursor: default;
     font-family: Arial, Helvetica, sans-serif !important;
     font-weight: bold;
@@ -1192,7 +1192,7 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     font-weight: bold;
     text-shadow: none;
     color: white;
-    -webkit-border-radius: 7px;
+    border-radius: 7px;
 }
 
 .console-message-text {
@@ -1508,12 +1508,12 @@ iframe.panel.extension {
     left: 3px;
     right: 3px;
     background-color: rgba(56, 121, 217, 0.1);
-    -webkit-border-radius: 5px;
+    border-radius: 5px;
 }
 
 .outline-disclosure li.highlighted .highlight {
     background-color: rgb(255, 230, 179);
-    -webkit-border-radius: 4px;
+    border-radius: 4px;
     padding-bottom: 2px;
     margin-bottom: -2px;
 }
@@ -1656,8 +1656,8 @@ iframe.panel.extension {
 .placard.selected {
     border-top: 1px solid rgb(172, 172, 172);
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(182, 182, 182)), to(rgb(162, 162, 162)));
-    -webkit-background-origin: padding;
-    -webkit-background-clip: padding;
+    background-origin: padding;
+    background-clip: padding;
 }
 
 :focus .placard.selected {
@@ -1709,8 +1709,8 @@ iframe.panel.extension {
     padding: 0 8px 0 5px;
     min-height: 18px;
     white-space: nowrap;
-    -webkit-background-origin: padding;
-    -webkit-background-clip: padding;
+    background-origin: padding;
+    background-clip: padding;
 }
 
 .section > .header::before {
@@ -1860,7 +1860,7 @@ iframe.panel.extension {
 
 .editing {
     -webkit-user-select: text;
-    -webkit-box-shadow: rgba(0, 0, 0, .5) 3px 3px 4px;
+    box-shadow: rgba(0, 0, 0, .5) 3px 3px 4px;
     outline: 1px solid rgb(66%, 66%, 66%) !important;
     background-color: white;
     -webkit-user-modify: read-write-plaintext-only;
@@ -2014,7 +2014,7 @@ body.inactive .sidebar {
     border: 1px solid rgb(165, 165, 165);
     background-color: rgb(237, 237, 237);
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(252, 252, 252)), to(rgb(223, 223, 223)));
-    -webkit-border-radius: 12px;
+    border-radius: 12px;
     -webkit-appearance: none;
 }
 
@@ -2033,7 +2033,7 @@ button.show-all-nodes {
     border: 1px solid rgb(165, 165, 165);
     background-color: rgb(237, 237, 237);
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(252, 252, 252)), to(rgb(223, 223, 223)));
-    -webkit-border-radius: 12px;
+    border-radius: 12px;
     -webkit-appearance: none;
 }
 
@@ -2074,7 +2074,7 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
     line-height: 12px;
     background: transparent;
     text-shadow: rgba(255, 255, 255, 0.5) 0 1px 0;
-    -webkit-border-radius: 8px;
+    border-radius: 8px;
     vertical-align: middle;
 }
 
@@ -2274,7 +2274,7 @@ li .status .bubble {
     font-weight: bold;
     text-shadow: none;
     color: white;
-    -webkit-border-radius: 7px;
+    border-radius: 7px;
 }
 
 li .status .bubble:empty {
@@ -2312,8 +2312,8 @@ body.inactive li.selected .status .bubble {
     border-top: 1px solid rgb(145, 160, 192);
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(162, 177, 207)), to(rgb(120, 138, 177)));
     text-shadow: rgba(0, 0, 0, 0.33) 1px 1px 0;
-    -webkit-background-origin: padding;
-    -webkit-background-clip: padding;
+    background-origin: padding;
+    background-clip: padding;
 }
 
 :focus .sidebar-tree-item.selected {
@@ -2442,7 +2442,7 @@ body.inactive li.selected .bubble.search-matches {
     z-index: 30;
     padding: 4px;
     background-color: rgb(203, 226, 255);
-    -webkit-border-radius: 7px;
+    border-radius: 7px;
     border: 2px solid rgb(169, 172, 203);
     width: 90%;
     pointer-events: auto;
@@ -2559,7 +2559,7 @@ body.inactive li.selected .bubble.search-matches {
     padding: 4px 0 4px 0;
     border-radius: 4px;
     background-color: white;
-    -webkit-box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.25);
 }
 
 .soft-context-menu-item {
