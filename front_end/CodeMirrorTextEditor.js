@@ -180,7 +180,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             return "javascript-ident";
         if (tokenType === "string-2")
             return "javascript-regexp";
-        if (tokenType === "number" || tokenType === "comment" || tokenType === "string")
+        if (tokenType === "number" || tokenType === "comment" || tokenType === "string" || tokenType === "keyword")
             return "javascript-" + tokenType;
         return null;
     },
