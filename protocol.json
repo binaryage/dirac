@@ -2272,7 +2272,8 @@
                     { "name": "sourceMapURL", "type": "string", "optional": true, "description": "URL of source map associated with the stylesheet (if any)." },
                     { "name": "origin", "$ref": "StyleSheetOrigin", "description": "Stylesheet origin."},
                     { "name": "title", "type": "string", "description": "Stylesheet title."},
-                    { "name": "disabled", "type": "boolean", "description": "Denotes whether the stylesheet is disabled."}
+                    { "name": "disabled", "type": "boolean", "description": "Denotes whether the stylesheet is disabled."},
+                    { "name": "hasSourceURL", "type": "boolean", "optional": true, "description": "Whether the sourceURL field value comes from the sourceURL comment." }
                 ],
                 "description": "CSS stylesheet metainformation."
             },
@@ -2309,7 +2310,7 @@
                     { "name": "endLine", "type": "integer", "description": "End line of range" },
                     { "name": "endColumn", "type": "integer", "description": "End column of range (exclusive)." }
                 ],
-                "description": "Text range within a resource."
+                "description": "Text range within a resource. All numbers are zero-based."
             },
             {
                 "id": "ShorthandEntry",
