@@ -122,6 +122,11 @@ WebInspector.DefaultTextEditor.prototype = {
     },
 
     /**
+     * @param {WebInspector.CompletionDictionary} dictionary
+     */
+    setCompletionDictionary: function(dictionary) { },
+
+    /**
      * @return {boolean}
      */
     isClean: function()

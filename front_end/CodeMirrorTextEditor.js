@@ -132,6 +132,11 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
+     * @param {WebInspector.CompletionDictionary} dictionary
+     */
+    setCompletionDictionary: function(dictionary) { },
+
+    /**
      * @param {number} lineNumber
      * @param {number} column
      * @return {?{x: number, y: number, height: number}}

@@ -41,6 +41,7 @@
             'front_end/Checkbox.js',
             'front_end/Color.js',
             'front_end/CompilerScriptMapping.js',
+            'front_end/CompletionDictionary.js',
             'front_end/ConsoleMessage.js',
             'front_end/ConsoleModel.js',
             'front_end/ConsolePanel.js',

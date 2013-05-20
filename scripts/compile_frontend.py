@@ -128,6 +128,7 @@ modules = [
             "Checkbox.js",
             "CodeMirrorTextEditor.js",
             "ContextMenu.js",
+            "CompletionDictionary.js",
             "DOMSyntaxHighlighter.js",
             "DataGrid.js",
             "DefaultTextEditor.js",

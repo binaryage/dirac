@@ -260,7 +260,12 @@ WebInspector.TextEditor.prototype = {
 
     wasShown: function() { },
 
-    willHide: function() { }
+    willHide: function() { },
+
+    /**
+     * @param {WebInspector.CompletionDictionary} dictionary
+     */
+    setCompletionDictionary: function(dictionary) { },
 }
 
 /**
