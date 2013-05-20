@@ -2710,6 +2710,12 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
                 return;
             }
             break;
+        case "Enter":
+            if (this.autoCompleteElement && !this.autoCompleteElement.textContent.length) {
+                this.tabKeyPressed();
+                return;
+            }
+            break;
         }
 
         WebInspector.TextPrompt.prototype.onKeyDown.call(this, event);
