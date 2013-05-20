@@ -51,6 +51,14 @@ WebInspector.ProfileType.Events = {
 
 WebInspector.ProfileType.prototype = {
     /**
+     * @return {boolean}
+     */
+    hasTemporaryView: function()
+    {
+        return false;
+    },
+
+    /**
      * @return {string|null}
      */
     fileExtension: function()
@@ -716,7 +724,7 @@ WebInspector.ProfilesPanel.prototype = {
 
         sidebarParent.appendChild(profileTreeElement);
         if (!profile.isTemporary) {
-            if (!this.visibleView)
+            if (!this.visibleView || this.visibleView === this._launcherView)
                 this._showProfile(profile);
             this.dispatchEventToListeners("profile added", {
                 type: typeId
@@ -767,7 +775,7 @@ WebInspector.ProfilesPanel.prototype = {
      */
     _showProfile: function(profile)
     {
-        if (!profile || profile.isTemporary)
+        if (!profile || (profile.isTemporary && !profile.profileType().hasTemporaryView()))
             return null;
 
         var view = profile.view(this);
@@ -1127,6 +1135,8 @@ WebInspector.ProfilesPanel.prototype = {
         if (isProfiling) {
             this._launcherView.profileStarted();
             this._createTemporaryProfile(profileType);
+            if (profileTypeObject.hasTemporaryView())
+                this._showProfile(profileTypeObject.findTemporaryProfile());
         } else
             this._launcherView.profileFinished();
     },
