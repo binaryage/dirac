@@ -870,7 +870,6 @@ button.status-bar-item:disabled {
 
 button.status-bar-item.extension {
     background-image: none;
-    background-color: auto;
 }
 
 .status-bar-select-container {
