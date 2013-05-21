@@ -68,9 +68,9 @@
 #timeline-overview-sidebar {
     position: absolute;
     width: 200px;
-    top: 0px;
-    bottom: 0px;
-    left: 0px;
+    top: 0;
+    bottom: 0;
+    left: 0;
     padding-top: 2px;
     background: -webkit-gradient(linear, 0% 0%, 0% 100%, from(rgb(242, 242, 242)), to(rgb(209, 209, 209)));
     border-right: 1px solid rgb(163, 163, 163);
@@ -327,7 +327,7 @@
     height: 18px;
     padding: 0 5px;
     white-space: nowrap;
-    margin-top: 0px;
+    margin-top: 0;
     border-top: 1px solid transparent;
     overflow: hidden;
     pointer-events: none;
@@ -357,7 +357,7 @@
 
 .timeline-graph-bar.with-children {
     opacity: 0.25;
-    box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
 }
 
 .timeline-graph-bar.cpu {
@@ -385,7 +385,7 @@
 }
 
 .popover .timeline-aggregated-category.timeline-loading {
-    margin-left: 0px;
+    margin-left: 0;
 }
 
 .garbage-collect-status-bar-item .glyph {

@@ -189,7 +189,7 @@
 }
 
 .styles-section .properties li.not-parsed-ok {
-    margin-left: 0px;
+    margin-left: 0;
 }
 
 .styles-section.computed-style .properties li.not-parsed-ok {
@@ -575,11 +575,11 @@
 }
 
 .panel.elements .sidebar-pane-toolbar > select:hover {
-    background-position: -23px 0px;
+    background-position: -23px 0;
 }
 
 .panel.elements .sidebar-pane-toolbar > select:active {
-    background-position: -46px 0px;
+    background-position: -46px 0;
 }
 
 .panel.elements .sidebar-pane-toolbar > select.select-settings {

@@ -130,7 +130,7 @@
     z-index: 10;
     background-color: white;
     border-right: 1px solid gray;
-    box-shadow: rgb(90,90,90) 20px 0px 50px -25px;
+    box-shadow: rgb(90,90,90) 20px 0 50px -25px;
     display: -webkit-flex;
     -webkit-flex-direction: column;
 }

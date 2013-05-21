@@ -97,7 +97,7 @@ iframe.view {
 .resources-dividers-label-bar {
     position: absolute;
     top: 0;
-    left: 0px;
+    left: 0;
     right: 0;
     background-color: rgba(255, 255, 255, 0.8);
     background-clip: padding;
@@ -163,7 +163,7 @@ iframe.view {
 .overview-grid-dividers-background {
     left: 0%;
     right: 0%;
-    top: 0px;
+    top: 0;
     bottom: 60px;
     background-color: black;
     position: absolute;
@@ -182,7 +182,7 @@ iframe.view {
 
 .overview-grid-window-resizer {
     position: absolute;
-    top: 0px;
+    top: 0;
     bottom: 60px;
     width: 5px;
     margin-left: -3px;

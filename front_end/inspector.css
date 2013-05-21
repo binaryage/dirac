@@ -303,7 +303,7 @@ body.undocked.platform-mac-snowleopard #toolbar-dropdown {
 body.show-toolbar-icons #toolbar-dropdown .toolbar-item {
     position: relative;
     left: -2px;
-    margin: 0px 2px;
+    margin: 0 2px;
     padding: 4px;
 }
 
@@ -458,7 +458,7 @@ body.show-toolbar-icons.dock-to-bottom #toolbar-panels-menu {
 .toolbar-search button {
     border: 1px solid rgb(163, 163, 163);
     border-radius: 8px;
-    margin: 0 0px;
+    margin: 0;
     font-size: 11px;
     background-image: -webkit-linear-gradient(rgb(241, 241, 241), rgb(220, 220, 220));
     width: 100%;
@@ -486,7 +486,7 @@ body.show-toolbar-icons.dock-to-bottom #toolbar-panels-menu {
 }
 
 .toolbar-search-navigation.enabled:active {
-    background-position: 4px 7px, 0px 0px;
+    background-position: 4px 7px, 0 0;
 }
 
 .toolbar-search-navigation.toolbar-search-navigation-prev {
@@ -1021,7 +1021,7 @@ body.remote .dock-status-bar-item {
 }
 
 #error-warning-count {
-    padding: 4px 6px 6px 0px;
+    padding: 4px 6px 6px 0;
     font-size: 11px;
     height: 19px;
     cursor: pointer;
@@ -1115,7 +1115,7 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     clear: right;
     position: relative;
     border-top: 1px solid rgb(240, 240, 240);
-    padding: 1px 22px 1px 0px;
+    padding: 1px 22px 1px 0;
     margin-left: 24px;
     min-height: 16px;
     white-space: pre-wrap;
@@ -1134,7 +1134,7 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     clear: right;
     position: relative;
     border-top: 1px solid rgb(240, 240, 240);
-    padding: 1px 22px 1px 0px;
+    padding: 1px 22px 1px 0;
     margin-left: 24px;
     min-height: 16px;
 }
@@ -1263,7 +1263,7 @@ body.platform-linux .monospace, body.platform-linux .source-code {
     width: 3px;
     border-style: solid;
     border-color: #A3A3A3;
-    border-width: 0px 0px 1px 1px;
+    border-width: 0 0 1px 1px;
 }
 
 .console-group.collapsed > .console-group-bracket {

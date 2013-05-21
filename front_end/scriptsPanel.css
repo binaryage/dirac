@@ -202,11 +202,11 @@ button.status-bar-item.scripts-navigator-show-hide-button.toggled-overlay
 }
 
 .dedicated-worker-item {
-    margin: 5px 0px 5px 1px;
+    margin: 5px 0 5px 1px;
 }
 
 #shared-workers-list {
-    margin: 5px 0px 5px 20px;
+    margin: 5px 0 5px 20px;
     font-style:italic;
 }
 
@@ -279,7 +279,7 @@ button.status-bar-item.scripts-debugger-show-hide-button.toggled-hidden {
 }
 
 button.status-bar-item.scripts-debugger-show-hide-button.toggled-hidden:active {
-    right: 0px;
+    right: 0;
 }
 
 .status-bar-item.scripts-debugger-show-hide-button.toggled-hidden > .glyph {

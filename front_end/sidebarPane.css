@@ -147,11 +147,11 @@
 }
 
 .sidebar-pane-toolbar > .pane-title-button:hover {
-    background-position: -23px 0px;
+    background-position: -23px 0;
 }
 
 .sidebar-pane-toolbar > .pane-title-button:active, .sidebar-pane-toolbar > .pane-title-button.toggled {
-    background-position: -46px 0px;
+    background-position: -46px 0;
 }
 
 .sidebar-pane-toolbar > .pane-title-button.add {

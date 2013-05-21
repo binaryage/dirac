@@ -71,7 +71,7 @@
 }
 
 .webkit-html-message-bubble {
-    box-shadow: black 0px 2px 5px;
+    box-shadow: black 0 2px 5px;
     border-radius: 9px;
     -webkit-border-fit: lines;
     font-size: 10px;
@@ -125,7 +125,7 @@
     margin-left: -4px;
     border-color: transparent;
     border-style: solid;
-    border-width: 0 0 0px 2px;
+    border-width: 0 0 0 2px;
     vertical-align: top;
 }
 
@@ -139,19 +139,19 @@
 
 .webkit-breakpoint .webkit-line-number-outer {
     color: white;
-    border-width: 0 14px 0px 2px;
+    border-width: 0 14px 0 2px;
     -webkit-border-image: url(Images/breakpointBorder.png) 0 14 0 2;
 }
 
 .webkit-breakpoint-conditional .webkit-line-number-outer {
     color: white;
-    border-width: 0 14px 0px 2px;
+    border-width: 0 14px 0 2px;
     -webkit-border-image: url(Images/breakpointConditionalBorder.png) 0 14 0 2;
 }
 
 .webkit-execution-line .webkit-line-number-outer {
     color: transparent;
-    border-width: 0 14px 0px 2px;
+    border-width: 0 14px 0 2px;
     -webkit-border-image: url(Images/programCounterBorder.png) 0 14 0 2;
 }
 
