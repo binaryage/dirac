@@ -199,7 +199,8 @@ WebInspector.SearchController.prototype = {
             case "F3":
                 if (!isMac) {
                     this.showSearchField();
-                    event.consume();
+                    event.consume(true);
+                    return true;
                 }
                 break;
 
