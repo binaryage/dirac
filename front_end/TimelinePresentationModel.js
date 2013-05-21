@@ -1259,7 +1259,6 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             break;
         case WebInspector.TimelineModel.RecordType.Time:
         case WebInspector.TimelineModel.RecordType.TimeEnd:
-        case WebInspector.TimelineModel.RecordType.TimeStamp:
             details = this.data["message"];
             break;
         default:
