@@ -62,8 +62,8 @@ input[type="search"]:focus, input[type="text"]:focus {
     padding-left: 5px;
     border-bottom: 1px solid rgb(80, 80, 80);
     -webkit-flex-direction: row;
-    background-origin: padding;
-    background-clip: padding;
+    background-origin: padding-box;
+    background-clip: padding-box;
 }
 
 body.show-toolbar-icons #toolbar {
@@ -1655,8 +1655,8 @@ iframe.panel.extension {
 .placard.selected {
     border-top: 1px solid rgb(172, 172, 172);
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(182, 182, 182)), to(rgb(162, 162, 162)));
-    background-origin: padding;
-    background-clip: padding;
+    background-origin: padding-box;
+    background-clip: padding-box;
 }
 
 :focus .placard.selected {
@@ -1708,8 +1708,8 @@ iframe.panel.extension {
     padding: 0 8px 0 5px;
     min-height: 18px;
     white-space: nowrap;
-    background-origin: padding;
-    background-clip: padding;
+    background-origin: padding-box;
+    background-clip: padding-box;
 }
 
 .section > .header::before {
@@ -2204,7 +2204,7 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
     border: 0;
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
     -webkit-mask-size: 320px 120px;
-    -webkit-apearance: none;
+    -webkit-appearance: none;
     background-color: rgba(0, 0, 0, 0.75);
     position: relative;
     top: 10px;
@@ -2311,8 +2311,8 @@ body.inactive li.selected .status .bubble {
     border-top: 1px solid rgb(145, 160, 192);
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(162, 177, 207)), to(rgb(120, 138, 177)));
     text-shadow: rgba(0, 0, 0, 0.33) 1px 1px 0;
-    background-origin: padding;
-    background-clip: padding;
+    background-origin: padding-box;
+    background-clip: padding-box;
 }
 
 :focus .sidebar-tree-item.selected {
