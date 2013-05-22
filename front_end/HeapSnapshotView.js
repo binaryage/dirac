@@ -1662,13 +1662,13 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         var minId = 0;
         var maxId = ids[ids.length - 1] + 1;
         var size = 0;
-        for (var i = 1; i < timestamps.length; ++i) {
+        for (var i = 0; i < timestamps.length; ++i) {
             if (!timestamps[i])
                 continue;
             if (timestamps[i] > timeRight)
                 break;
             maxId = ids[i];
-            if (timestamps[i] <= timeLeft) {
+            if (timestamps[i] < timeLeft) {
                 minId = ids[i];
                 continue;
             }
