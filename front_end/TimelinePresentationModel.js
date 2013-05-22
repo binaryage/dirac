@@ -405,11 +405,15 @@ WebInspector.TimelinePresentationModel.prototype = {
             lastRecord = lastRecord.children.peekLast();
         var startTime = WebInspector.TimelineModel.startTimeInSeconds(record);
         var endTime = WebInspector.TimelineModel.endTimeInSeconds(record);
-        if (!lastRecord || lastRecord.type !== record.type)
+        if (!lastRecord)
+            return null;
+        if (lastRecord.type !== record.type)
             return null;
         if (lastRecord.endTime + coalescingThresholdSeconds < startTime)
             return null;
         if (endTime + coalescingThresholdSeconds < lastRecord.startTime)
+            return null;
+        if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp && lastRecord.data.message !== record.data.message)
             return null;
         if (lastRecord.parent.coalesced)
             return lastRecord.parent;
@@ -430,6 +434,8 @@ WebInspector.TimelinePresentationModel.prototype = {
         };
         if (record._record.thread)
             rawRecord.thread = "aggregated";
+        if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp)
+            rawRecord.data.message = record.data.message;
         var coalescedRecord = new WebInspector.TimelinePresentationModel.Record(this, rawRecord, null, null, null, false);
         var parent = record.parent;
 
