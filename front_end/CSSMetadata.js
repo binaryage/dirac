@@ -117,8 +117,8 @@ WebInspector.CSSMetadata._colors = [
 WebInspector.CSSMetadata._colorAwareProperties = [
     "background", "background-color", "background-image", "border", "border-color", "border-top", "border-right", "border-bottom",
     "border-left", "border-top-color", "border-right-color", "border-bottom-color", "border-left-color", "box-shadow", "color",
-    "fill", "outline", "outline-color", "stroke", "text-line-through", "text-line-through-color", "text-overline", "text-overline-color",
-    "text-shadow", "text-underline", "text-underline-color", "-webkit-box-shadow", "-webkit-column-rule-color",
+    "fill", "outline", "outline-color", "stroke", "text-line-through-color", "text-overline-color",
+    "text-shadow", "text-underline-color", "-webkit-box-shadow", "-webkit-column-rule-color",
     "-webkit-text-decoration-color", "-webkit-text-emphasis", "-webkit-text-emphasis-color"
 ].keySet();
 
@@ -131,9 +131,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     ] },
     "background-repeat": { values: [
         "repeat", "repeat-x", "repeat-y", "no-repeat", "space", "round"
-    ] },
-    "text-underline": { values: [
-        "none", "dotted", "dashed", "solid", "double", "dot-dash", "dot-dot-dash", "wave"
     ] },
     "content": { values: [
         "list-item", "close-quote", "no-close-quote", "no-open-quote", "open-quote"
@@ -302,10 +299,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     ] },
     "speak": { values: [
         "none", "normal", "spell-out", "digits", "literal-punctuation", "no-punctuation"
-    ] },
-    "text-line-through": { values: [
-        "none", "dotted", "dashed", "solid", "double", "dot-dash", "dot-dot-dash", "wave", "continuous",
-        "skip-white-space"
     ] },
     "color-rendering": { values: [
         "auto", "optimizeSpeed", "optimizeQuality"
