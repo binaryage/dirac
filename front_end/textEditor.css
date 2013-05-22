@@ -133,7 +133,9 @@
     margin-right: 4px;
 }
 
-.webkit-breakpoint .webkit-line-number-inner, .webkit-breakpoint-conditional .webkit-line-number-inner, .webkit-execution-line .webkit-line-number-inner {
+.webkit-breakpoint .webkit-line-number-inner,
+.webkit-breakpoint-conditional .webkit-line-number-inner,
+.webkit-execution-line .webkit-line-number-inner {
     margin-right: -10px;
 }
 

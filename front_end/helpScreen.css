@@ -151,7 +151,8 @@ body.platform-mac .help-key {
     font-family: Lucida Grande, sans-serif;
 }
 
-.help-combine-keys, .help-key-delimiter {
+.help-combine-keys,
+.help-key-delimiter {
     font-size: 9px;
 }
 
@@ -338,7 +339,8 @@ body.platform-mac .help-content input[type=radio] {
     padding: 0;
 }
 
-.settings-tab input:not([type]), .settings-tab input[type="text"] {
+.settings-tab input:not([type]),
+.settings-tab input[type="text"] {
     border: 1px solid rgb(213, 213, 213);
     border-radius: 2px;
     color: #444444;

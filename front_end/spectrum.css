@@ -69,7 +69,8 @@
     margin: 3px 0 0 0;
 }
 
-.spectrum-dragger, .spectrum-slider {
+.spectrum-dragger,
+.spectrum-slider {
     -webkit-user-select: none;
 }
 

@@ -134,7 +134,8 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
     float: right;
 }
 
-.heap-snapshot-view .console-formatted-object, .console-formatted-node {
+.heap-snapshot-view .console-formatted-object,
+.console-formatted-node {
     display: inline;
     position: static;
 }

@@ -85,7 +85,8 @@
     -webkit-border-image: url(Images/segmentSelected.png) 0 12 0 2;
 }
 
-.crumbs .crumb.selected.end, .crumbs .crumb.selected.end:hover {
+.crumbs .crumb.selected.end,
+.crumbs .crumb.selected.end:hover {
     -webkit-border-image: url(Images/segmentSelectedEnd.png) 0 2 0 2;
 }
 

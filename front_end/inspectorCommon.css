@@ -52,7 +52,8 @@ img {
     -webkit-user-drag: none;
 }
 
-iframe, a img {
+iframe,
+a img {
     border: none;
 }
 

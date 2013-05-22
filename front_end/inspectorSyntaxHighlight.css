@@ -30,7 +30,10 @@
     color: rgb(0, 116, 0);
 }
 
-.webkit-css-url, .webkit-css-color, .webkit-css-string, .webkit-css-keyword {
+.webkit-css-url,
+.webkit-css-color,
+.webkit-css-string,
+.webkit-css-keyword {
     color: rgb(7, 144, 154);
  }
 
@@ -38,7 +41,8 @@
     color: rgb(50, 0, 255);
 }
 
-.webkit-css-property, .webkit-css-at-rule {
+.webkit-css-property,
+.webkit-css-at-rule {
     color: rgb(200, 0, 0);
 }
 
@@ -66,7 +70,8 @@
     color: rgb(28, 0, 207);
 }
 
-.webkit-javascript-string, .webkit-javascript-regexp {
+.webkit-javascript-string,
+.webkit-javascript-regexp {
     color: rgb(196, 26, 22);
 }
 
@@ -125,7 +130,8 @@
     color: rgb(26, 26, 166);
 }
 
-.webkit-html-external-link, .webkit-html-resource-link {
+.webkit-html-external-link,
+.webkit-html-resource-link {
     /* Keep this in sync with view-source.css (.webkit-html-external-link, .webkit-html-resource-link) */
     color: #00e;
 }

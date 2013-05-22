@@ -71,7 +71,8 @@
     padding-top: 5px;
 }
 
-.network.panel .data-grid th.sort-descending, .network.panel .data-grid th.sort-ascending {
+.network.panel .data-grid th.sort-descending,
+.network.panel .data-grid th.sort-ascending {
     background: -webkit-gradient(linear, left top, left bottom, from(rgb(236, 236, 236)), to(rgb(217, 217, 217)));
 }
 
@@ -270,7 +271,8 @@
     -webkit-user-select: text;
 }
 
-.resource-websocket, .resource-websocket .data-grid {
+.resource-websocket,
+.resource-websocket .data-grid {
     position: absolute;
     top: 0;
     left: 0;

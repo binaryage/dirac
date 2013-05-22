@@ -80,7 +80,9 @@
     background-clip: padding;
 }
 
-.sidebar-pane-title + .sidebar-pane-title, .pane:not(.visible) + .sidebar-pane-title, .sidebar-pane-title:first-of-type {
+.sidebar-pane-title + .sidebar-pane-title,
+.pane:not(.visible) + .sidebar-pane-title,
+.sidebar-pane-title:first-of-type {
     margin-top: -1px;
 }
 
@@ -150,7 +152,8 @@
     background-position: -23px 0;
 }
 
-.sidebar-pane-toolbar > .pane-title-button:active, .sidebar-pane-toolbar > .pane-title-button.toggled {
+.sidebar-pane-toolbar > .pane-title-button:active,
+.sidebar-pane-toolbar > .pane-title-button.toggled {
     background-position: -46px 0;
 }
 
@@ -175,7 +178,8 @@ body.platform-windows .sidebar-pane-subtitle {
     padding-top: 1px;
 }
 
-.sidebar-pane-subtitle input, .section > .header input[type=checkbox] {
+.sidebar-pane-subtitle input,
+.section > .header input[type=checkbox] {
     font-size: inherit;
     height: 1em;
     width: 1em;

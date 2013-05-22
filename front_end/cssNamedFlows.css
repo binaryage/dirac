@@ -63,7 +63,10 @@
     position: relative;
 }
 
-.css-named-flow-collections-view .split-view-sidebar .named-flow-overflow::before, .css-named-flow-collections-view .region-empty:before, .css-named-flow-collections-view .region-fit::before, .css-named-flow-collections-view .region-overset::before {
+.css-named-flow-collections-view .split-view-sidebar .named-flow-overflow::before,
+.css-named-flow-collections-view .region-empty:before,
+.css-named-flow-collections-view .region-fit::before,
+.css-named-flow-collections-view .region-overset::before {
     cursor: default;
     float: left;
     height: 10px;

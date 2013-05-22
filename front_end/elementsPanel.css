@@ -218,7 +218,8 @@
     white-space: normal;
 }
 
-.styles-section .header .title .media, .styles-section .header .title .media .subtitle {
+.styles-section .header .title .media,
+.styles-section .header .title .media .subtitle {
     color: rgb(128, 128, 128);
     overflow: hidden;
 }
@@ -405,7 +406,8 @@
     opacity: 0.5;
 }
 
-.styles-section .properties .implicit, .styles-section .properties .inherited {
+.styles-section .properties .implicit,
+.styles-section .properties .inherited {
     opacity: 0.5;
 }
 
@@ -589,7 +591,8 @@
 .panel.elements .sidebar-pane-toolbar > select.select-filter {
     background-image: url(Images/paneFilterButtons.png);
 }
-.panel.elements .sidebar-pane-toolbar > select > option, .panel.elements .sidebar-pane-toolbar > select > hr {
+.panel.elements .sidebar-pane-toolbar > select > option,
+.panel.elements .sidebar-pane-toolbar > select > hr {
     color: black;
 }
 

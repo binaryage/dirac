@@ -111,7 +111,8 @@
     -webkit-user-select: text;
 }
 
-.data-grid td > div, .data-grid th > div {
+.data-grid td > div,
+.data-grid th > div {
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
@@ -136,7 +137,8 @@
 .data-grid th.sortable:active {
     background-image: url(Images/glossyHeaderPressed.png);
 }
-.data-grid th.sort-ascending, .data-grid th.sort-descending {
+.data-grid th.sort-ascending,
+.data-grid th.sort-descending {
     border-right: 1px solid rgb(107, 140, 196);
     border-bottom: 1px solid rgb(107, 140, 196);
     background-image: url(Images/glossyHeaderSelected.png);
@@ -181,7 +183,8 @@
     color: inherit;
 }
 
-body.inactive .data-grid th.sort-ascending, body.inactive .data-grid th.sort-descending {
+body.inactive .data-grid th.sort-ascending,
+body.inactive .data-grid th.sort-descending {
     background-image: url(Images/glossyHeader.png);
     border-right: 1px solid rgb(179, 179, 179);
     border-bottom: 1px solid rgb(179, 179, 179);
