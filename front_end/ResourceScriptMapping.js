@@ -86,7 +86,7 @@ WebInspector.ResourceScriptMapping.prototype = {
      */
     addScript: function(script)
     {
-        if (script.isAnonymousScript() || script.isDynamicScript())
+        if (script.isAnonymousScript())
             return;
         script.pushSourceMapping(this);
         
@@ -144,10 +144,7 @@ WebInspector.ResourceScriptMapping.prototype = {
      */
     _workspaceUISourceCodeForScript: function(script)
     {
-        if (script.isAnonymousScript() || script.isDynamicScript())
-            return null;
-        // FIXME: workaround for script.isDynamicScript() being unreliable.
-        if (!script.isInlineScript() && this._inlineScriptsForSourceURL[script.sourceURL])
+        if (script.isAnonymousScript())
             return null;
         return this._workspace.uiSourceCodeForURL(script.sourceURL);
     },

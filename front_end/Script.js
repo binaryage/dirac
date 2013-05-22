@@ -180,22 +180,6 @@ WebInspector.Script.prototype = {
     },
 
     /**
-     * @param {boolean} isDynamicScript
-     */
-    setIsDynamicScript: function(isDynamicScript)
-    {
-        this._isDynamicScript = isDynamicScript;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isDynamicScript: function()
-    {
-        return !!this._isDynamicScript;
-    },
-
-    /**
      * @return {boolean}
      */
     isSnippet: function()

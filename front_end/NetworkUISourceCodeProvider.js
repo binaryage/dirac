@@ -42,7 +42,6 @@ WebInspector.NetworkUISourceCodeProvider = function(networkWorkspaceProvider, wo
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
 
     this._processedURLs = {};
-    this._lastDynamicAnonymousScriptIndexForURL = {};
 }
 
 WebInspector.NetworkUISourceCodeProvider.prototype = {
@@ -69,7 +68,6 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
         var script = /** @type {WebInspector.Script} */ (event.data);
         if (!script.sourceURL || script.isInlineScript() || script.isSnippet())
             return;
-        var isDynamicAnonymousScript;
         // Only add uiSourceCodes for
         // - content scripts;
         // - scripts with explicit sourceURL comment;
@@ -128,7 +126,6 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
     _reset: function()
     {
         this._processedURLs = {};
-        this._lastDynamicAnonymousScriptIndexForURL = {};
         this._networkWorkspaceProvider.reset();
         this._populate();
     }
