@@ -55,6 +55,7 @@ WebInspector.TimelineModel.RecordType = {
     RecalculateStyles: "RecalculateStyles",
     InvalidateLayout: "InvalidateLayout",
     Layout: "Layout",
+    PaintSetup: "PaintSetup",
     Paint: "Paint",
     Rasterize: "Rasterize",
     ScrollLayer: "ScrollLayer",
