@@ -156,7 +156,7 @@ iframe.view {
     left: 0;
     right: 0;
     top: 0;
-    bottom: 60px;
+    height: 20px;
     z-index: 150;
 }
 
@@ -164,7 +164,7 @@ iframe.view {
     left: 0%;
     right: 0%;
     top: 0;
-    bottom: 60px;
+    height: 20px;
     background-color: black;
     position: absolute;
 }
@@ -183,7 +183,7 @@ iframe.view {
 .overview-grid-window-resizer {
     position: absolute;
     top: 0;
-    bottom: 60px;
+    height: 20px;
     width: 5px;
     margin-left: -3px;
     margin-right: -2px;

@@ -89,11 +89,11 @@
 }
 
 .timeline-frame-overview .overview-grid-window {
-    bottom: 0;
+    height: 80px;
 }
 
 .timeline-frame-overview .overview-grid-dividers-background {
-    bottom: 0;
+    height: 80px;
 }
 
 #timeline-overview-grid #resources-graphs {
