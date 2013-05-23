@@ -54,6 +54,7 @@ WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceP
 WebInspector.SASSSourceMapping.prototype = {
     _populate: function()
     {
+        /** @this {WebInspector.SASSSourceMapping} */
         function populateFrame(frame)
         {
             for (var i = 0; i < frame.childFrames.length; ++i)
@@ -61,7 +62,7 @@ WebInspector.SASSSourceMapping.prototype = {
 
             var resources = frame.resources();
             for (var i = 0; i < resources.length; ++i)
-                this._resourceAdded({data:resources[i]});
+                this.addResource(resources[i]);
         }
 
         populateFrame.call(this, WebInspector.resourceTreeModel.mainFrame);
