@@ -1208,9 +1208,11 @@ WebInspector.CSSStyleSheetHeader = function(payload)
     this.id = payload.styleSheetId;
     this.frameId = payload.frameId;
     this.sourceURL = payload.sourceURL;
+    this.hasSourceURL = !!payload.hasSourceURL;
     this.origin = payload.origin;
     this.title = payload.title;
     this.disabled = payload.disabled;
+    this.isInline = payload.isInline;
     this._locations = new Set();
 }
 
@@ -1264,7 +1266,9 @@ WebInspector.CSSStyleSheetHeader.prototype = {
      */
     _viaInspectorResourceURL: function()
     {
-        var parsedURL = new WebInspector.ParsedURL(this.sourceURL);
+        var frame = WebInspector.resourceTreeModel.frameForId(this.frameId);
+        console.assert(frame);
+        var parsedURL = new WebInspector.ParsedURL(frame.url);
         var fakeURL = "inspector://" + parsedURL.host + parsedURL.folderPathComponents;
         if (!fakeURL.endsWith("/"))
             fakeURL += "/";
@@ -1414,12 +1418,8 @@ WebInspector.CSSStyleModelResourceBinding.prototype = {
         var viaInspectorURL = header._viaInspectorResourceURL();
         console.assert(!frame.resourceForURL(viaInspectorURL));
 
-        var resource = frame.resourceForURL(header.sourceURL);
-        if (!resource)
-            return;
-
         this._frameAndURLToStyleSheetId[header._key()] = header.id;
-        var inspectorResource = new WebInspector.Resource(null, viaInspectorURL, resource.documentURL, resource.frameId, resource.loaderId, WebInspector.resourceTypes.Stylesheet, "text/css", true);
+        var inspectorResource = new WebInspector.Resource(null, viaInspectorURL, frame.url, frame.id, frame.loaderId, WebInspector.resourceTypes.Stylesheet, "text/css", true);
 
         /**
          * @param {function(?string, boolean, string)} callback

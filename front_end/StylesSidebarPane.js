@@ -1237,7 +1237,6 @@ WebInspector.StylePropertiesSection.prototype = {
         if (!this.rule)
             return document.createTextNode("");
 
-        var origin = "";
         if (this.rule.isUserAgent)
             return document.createTextNode(WebInspector.UIString("user agent stylesheet"));
         if (this.rule.isUser)
@@ -1251,6 +1250,7 @@ WebInspector.StylePropertiesSection.prototype = {
                 element.textContent = WebInspector.UIString("via inspector");
             return element;
         }
+        return document.createTextNode("");
     },
 
     _handleEmptySpaceMouseDown: function(event)
