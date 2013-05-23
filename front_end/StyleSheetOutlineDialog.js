@@ -79,7 +79,7 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
      */
     itemSubtitleAt: function(itemIndex)
     {
-        return ":" + (this._rules[itemIndex].sourceLine + 1);
+        return ":" + (this._rules[itemIndex].rawLocation.lineNumber + 1);
     },
 
     /**
@@ -144,9 +144,10 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
      */
     selectItem: function(itemIndex, promptValue)
     {
-        var lineNumber = this._rules[itemIndex].sourceLine;
+        var rule = this._rules[itemIndex];
+        var lineNumber = rule.rawLocation.lineNumber;
         if (!isNaN(lineNumber) && lineNumber >= 0)
-            this._view.highlightLine(lineNumber);
+            this._view.highlightPosition(lineNumber, rule.rawLocation.columnNumber);
         this._view.focus();
     },
 

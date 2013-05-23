@@ -574,7 +574,7 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
     {
         var lineNumber = this._functionItems[itemIndex].line;
         if (!isNaN(lineNumber) && lineNumber >= 0)
-            this._view.highlightLine(lineNumber);
+            this._view.highlightPosition(lineNumber, this._functionItems[itemIndex].column);
         this._view.focus();
     },
 

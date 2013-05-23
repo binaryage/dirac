@@ -553,7 +553,7 @@ WebInspector.CSSStyleModel.prototype = {
      */
     createLiveLocation: function(cssRule, updateDelegate)
     {
-        if (!cssRule._rawLocation)
+        if (!cssRule.rawLocation)
             return null;
         var header = this._resourceBinding._styleSheetIdToHeader[cssRule.id.styleSheetId];
         if (!header)
@@ -915,11 +915,11 @@ WebInspector.CSSRule.prototype = {
         if (this.selectorRange) {
             var resource = WebInspector.resourceTreeModel.resourceForURL(payload.sourceURL);
             if (resource && resource.type === WebInspector.resourceTypes.Stylesheet) {
-                this._rawLocation = new WebInspector.CSSLocation(payload.sourceURL, this.selectorRange.startLine, this.selectorRange.startColumn);
+                this.rawLocation = new WebInspector.CSSLocation(payload.sourceURL, this.selectorRange.startLine, this.selectorRange.startColumn);
                 return;
             }
         }
-        this._rawLocation = new WebInspector.CSSLocation(payload.sourceURL, payload.sourceLine);
+        this.rawLocation = new WebInspector.CSSLocation(payload.sourceURL, payload.sourceLine);
     },
 
     get isUserAgent()
@@ -1153,7 +1153,7 @@ WebInspector.CSSProperty.prototype = {
         var range = this.range;
         var line = forName ? range.startLine : range.endLine;
         // End of range is exclusive, so subtract 1 from the end offset.
-        var column = forName ? range.startColumn : range.endColumn - 1;
+        var column = forName ? range.startColumn : range.endColumn - (this.text && this.text.endsWith(";") ? 2 : 1);
         var rawLocation = new WebInspector.CSSLocation(this.ownerStyle.parentRule.sourceURL, line, column);
         return WebInspector.cssModel.rawLocationToUILocation(rawLocation);
     }
@@ -1230,7 +1230,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
      */
     createLiveLocation: function(cssRule, updateDelegate)
     {
-        var location = new WebInspector.CSSStyleModel.LiveLocation(cssRule._rawLocation, updateDelegate, this);
+        var location = new WebInspector.CSSStyleModel.LiveLocation(cssRule.rawLocation, updateDelegate, this);
         this._locations.add(location);
         location.update();
         return location;

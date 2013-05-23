@@ -110,7 +110,7 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     this.sidebarPanes.watchExpressions = new WebInspector.WatchExpressionsSidebarPane();
     this.sidebarPanes.callstack = new WebInspector.CallStackSidebarPane();
     this.sidebarPanes.scopechain = new WebInspector.ScopeChainSidebarPane();
-    this.sidebarPanes.jsBreakpoints = new WebInspector.JavaScriptBreakpointsSidebarPane(WebInspector.breakpointManager, this._showSourceLine.bind(this));
+    this.sidebarPanes.jsBreakpoints = new WebInspector.JavaScriptBreakpointsSidebarPane(WebInspector.breakpointManager, this._showSourceLocation.bind(this));
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane.createProxy(this);
     this.sidebarPanes.xhrBreakpoints = new WebInspector.XHRBreakpointsSidebarPane();
     this.sidebarPanes.eventListenerBreakpoints = new WebInspector.EventListenerBreakpointsSidebarPane();
@@ -372,6 +372,9 @@ WebInspector.ScriptsPanel.prototype = {
         }
     },
 
+    /**
+     * @param {Element} anchor
+     */
     canShowAnchorLocation: function(anchor)
     {
         if (WebInspector.debuggerModel.debuggerEnabled() && anchor.uiSourceCode)
@@ -384,29 +387,34 @@ WebInspector.ScriptsPanel.prototype = {
         return false;
     },
 
+    /**
+     * @param {Element} anchor
+     */
     showAnchorLocation: function(anchor)
     {
-        this._showSourceLine(anchor.uiSourceCode, anchor.lineNumber);
+        this._showSourceLocation(anchor.uiSourceCode, anchor.lineNumber, anchor.columnNumber);
     },
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber
+     * @param {number=} columnNumber
      */
-    showUISourceCode: function(uiSourceCode, lineNumber)
+    showUISourceCode: function(uiSourceCode, lineNumber, columnNumber)
     {
-        this._showSourceLine(uiSourceCode, lineNumber);
+        this._showSourceLocation(uiSourceCode, lineNumber, columnNumber);
     },
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber
+     * @param {number=} columnNumber
      */
-    _showSourceLine: function(uiSourceCode, lineNumber)
+    _showSourceLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
         var sourceFrame = this._showFile(uiSourceCode);
         if (typeof lineNumber === "number")
-            sourceFrame.highlightLine(lineNumber);
+            sourceFrame.highlightPosition(lineNumber, columnNumber);
         sourceFrame.focus();
 
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
@@ -1062,7 +1070,7 @@ WebInspector.ScriptsPanel.prototype = {
     _snippetCreationRequested: function(event)
     {
         var uiSourceCode = WebInspector.scriptSnippetModel.createScriptSnippet();
-        this._showSourceLine(uiSourceCode);
+        this._showSourceLocation(uiSourceCode);
         
         var shouldHideNavigator = !this._navigatorController.isNavigatorPinned();
         if (this._navigatorController.isNavigatorHidden())
@@ -1082,7 +1090,7 @@ WebInspector.ScriptsPanel.prototype = {
                 return;
             }
 
-            this._showSourceLine(uiSourceCode);
+            this._showSourceLocation(uiSourceCode);
         }
     },
 
@@ -1105,7 +1113,7 @@ WebInspector.ScriptsPanel.prototype = {
         {
             if (shouldHideNavigator && committed) {
                 this._navigatorController.hideNavigatorOverlay();
-                this._showSourceLine(uiSourceCode);
+                this._showSourceLocation(uiSourceCode);
             }
         }
     },
@@ -1239,7 +1247,7 @@ WebInspector.ScriptsPanel.prototype = {
             }
             WebInspector.inspectorView.showPanelForAnchorNavigation(this);
             var uiLocation = WebInspector.debuggerModel.rawLocationToUILocation(response.location);
-            this._showSourceLine(uiLocation.uiSourceCode, uiLocation.lineNumber);
+            this._showSourceLocation(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
         }
 
         function revealFunction()

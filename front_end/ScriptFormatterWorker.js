@@ -92,7 +92,7 @@ function outline(params)
                 previousIdentifier = tokenValue;
                 if (tokenValue && previousToken === "function") {
                     // A named function: "function f...".
-                    currentFunction = { line: i, name: tokenValue };
+                    currentFunction = { line: i, column: column, name: tokenValue };
                     addedFunction = true;
                     previousIdentifier = null;
                 }
@@ -101,7 +101,7 @@ function outline(params)
                     if (previousIdentifier && (previousToken === "=" || previousToken === ":")) {
                         // Anonymous function assigned to an identifier: "...f = function..."
                         // or "funcName: function...".
-                        currentFunction = { line: i, name: previousIdentifier };
+                        currentFunction = { line: i, column: column, name: previousIdentifier };
                         addedFunction = true;
                         previousIdentifier = null;
                     }
