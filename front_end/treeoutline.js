@@ -74,21 +74,6 @@ TreeOutline.prototype.appendChild = function(child)
     this.insertChild(child, insertionIndex);
 }
 
-TreeOutline.prototype.insertBeforeChild = function(child, beforeChild)
-{
-    if (!child)
-        throw("child can't be undefined or null");
-
-    if (!beforeChild)
-        throw("beforeChild can't be undefined or null");
-
-    var childIndex = this.children.indexOf(beforeChild);
-    if (childIndex === -1)
-        throw("beforeChild not found in this node's children");
-
-    this.insertChild(child, childIndex);
-}
-
 TreeOutline.prototype.insertChild = function(child, index)
 {
     if (!child)
@@ -529,7 +514,6 @@ TreeElement.prototype = {
 
 TreeElement.prototype.appendChild = TreeOutline.prototype.appendChild;
 TreeElement.prototype.insertChild = TreeOutline.prototype.insertChild;
-TreeElement.prototype.insertBeforeChild = TreeOutline.prototype.insertBeforeChild;
 TreeElement.prototype.removeChild = TreeOutline.prototype.removeChild;
 TreeElement.prototype.removeChildAtIndex = TreeOutline.prototype.removeChildAtIndex;
 TreeElement.prototype.removeChildren = TreeOutline.prototype.removeChildren;
