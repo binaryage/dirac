@@ -168,21 +168,15 @@ WebInspector.RequestContentView.prototype = {
         // Should be implemented by subclasses.
     },
 
-    /**
-     * @override
-     */
-    canHighlightPosition: function()
+    canHighlightLine: function()
     {
-        return this._innerView && this._innerView.canHighlightPosition();
+        return this._innerView && this._innerView.canHighlightLine();
     },
 
-    /**
-     * @override
-     */
-    highlightPosition: function(line, column)
+    highlightLine: function(line)
     {
-        if (this.canHighlightPosition())
-            this._innerView.highlightPosition(line, column);
+        if (this.canHighlightLine())
+            this._innerView.highlightLine(line);
     },
 
     __proto__: WebInspector.RequestView.prototype

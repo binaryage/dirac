@@ -343,20 +343,20 @@ WebInspector.DefaultTextEditor.prototype = {
      * @param {number} lineNumber
      * @param {number=} columnNumber
      */
-    highlightPosition: function(lineNumber, columnNumber)
+    highlightLine: function(lineNumber, columnNumber)
     {
-        if (lineNumber < 0)
+        if (typeof lineNumber !== "number" || lineNumber < 0)
             return;
 
         lineNumber = Math.min(lineNumber, this._textModel.linesCount - 1);
         if (typeof columnNumber !== "number" || columnNumber < 0 || columnNumber > this._textModel.lineLength(lineNumber))
             columnNumber = 0;
-        this._mainPanel.highlightPosition(lineNumber, columnNumber);
+        this._mainPanel.highlightLine(lineNumber, columnNumber);
     },
 
-    clearPositionHighlight: function()
+    clearLineHighlight: function()
     {
-        this._mainPanel.clearPositionHighlight();
+        this._mainPanel.clearLineHighlight();
     },
 
     /**
@@ -1876,9 +1876,9 @@ WebInspector.TextEditorMainPanel.prototype = {
      * @param {number} lineNumber
      * @param {number} columnNumber
      */
-    highlightPosition: function(lineNumber, columnNumber)
+    highlightLine: function(lineNumber, columnNumber)
     {
-        this.clearPositionHighlight();
+        this.clearLineHighlight();
         this._highlightedLine = lineNumber;
         this.revealLine(lineNumber);
 
@@ -1888,7 +1888,7 @@ WebInspector.TextEditorMainPanel.prototype = {
         this.addDecoration(lineNumber, "webkit-highlighted-line");
     },
 
-    clearPositionHighlight: function()
+    clearLineHighlight: function()
     {
         if (typeof this._highlightedLine === "number") {
             this.removeDecoration(this._highlightedLine, "webkit-highlighted-line");

@@ -408,11 +408,9 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Resource} resource
      * @param {number=} line
-     * @param {number=} column
      */
-    showResource: function(resource, line, column)
+    showResource: function(resource, line)
     {
         var resourceTreeElement = this._findTreeElementForResource(resource);
         if (resourceTreeElement)
@@ -420,8 +418,8 @@ WebInspector.ResourcesPanel.prototype = {
 
         if (typeof line === "number") {
             var view = this._resourceViewForResource(resource);
-            if (view.canHighlightPosition())
-                view.highlightPosition(line, column);
+            if (view.canHighlightLine())
+                view.highlightLine(line);
         }
         return true;
     },

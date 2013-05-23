@@ -159,9 +159,9 @@ WebInspector.TextEditor.prototype = {
      * @param {number} lineNumber
      * @param {number=} columnNumber
      */
-    highlightPosition: function(lineNumber, columnNumber) { },
+    highlightLine: function(lineNumber, columnNumber) { },
 
-    clearPositionHighlight: function() { },
+    clearLineHighlight: function() { },
 
     /**
      * @return {Array.<Element>}

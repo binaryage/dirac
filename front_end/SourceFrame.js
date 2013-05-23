@@ -116,7 +116,7 @@ WebInspector.SourceFrame.prototype = {
     {
         WebInspector.View.prototype.willHide.call(this);
 
-        this._clearPositionHighlight();
+        this._clearLineHighlight();
         this._clearLineToReveal();
     },
 
@@ -185,40 +185,38 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
-     * @override
+     * @param {number} line
      */
-    canHighlightPosition: function()
+    canHighlightLine: function(line)
     {
         return true;
     },
 
     /**
-     * @override
+     * @param {number} line
      */
-    highlightPosition: function(line, column)
+    highlightLine: function(line)
     {
         this._clearLineToReveal();
         this._clearLineToScrollTo();
-        this._positionToHighlight = { line: line, column: column };
-        this._innerHighlightPositionIfNeeded();
+        this._lineToHighlight = line;
+        this._innerHighlightLineIfNeeded();
     },
 
-    _innerHighlightPositionIfNeeded: function()
+    _innerHighlightLineIfNeeded: function()
     {
-        if (!this._positionToHighlight)
-            return;
-
-        if (!this.loaded || !this._isEditorShowing())
-            return;
-
-        this._textEditor.highlightPosition(this._positionToHighlight.line, this._positionToHighlight.column);
-        delete this._positionToHighlight;
+        if (typeof this._lineToHighlight === "number") {
+            if (this.loaded && this._isEditorShowing()) {
+                this._textEditor.highlightLine(this._lineToHighlight);
+                delete this._lineToHighlight
+            }
+        }
     },
 
-    _clearPositionHighlight: function()
+    _clearLineHighlight: function()
     {
-        this._textEditor.clearPositionHighlight();
-        delete this._positionToHighlight;
+        this._textEditor.clearLineHighlight();
+        delete this._lineToHighlight;
     },
 
     /**
@@ -226,7 +224,7 @@ WebInspector.SourceFrame.prototype = {
      */
     revealLine: function(line)
     {
-        this._clearPositionHighlight();
+        this._clearLineHighlight();
         this._clearLineToScrollTo();
         this._lineToReveal = line;
         this._innerRevealLineIfNeeded();
@@ -237,7 +235,7 @@ WebInspector.SourceFrame.prototype = {
         if (typeof this._lineToReveal === "number") {
             if (this.loaded && this._isEditorShowing()) {
                 this._textEditor.revealLine(this._lineToReveal);
-                delete this._lineToReveal;
+                delete this._lineToReveal
             }
         }
     },
@@ -252,7 +250,7 @@ WebInspector.SourceFrame.prototype = {
      */
     scrollToLine: function(line)
     {
-        this._clearPositionHighlight();
+        this._clearLineHighlight();
         this._clearLineToReveal();
         this._lineToScrollTo = line;
         this._innerScrollToLineIfNeeded();
@@ -292,7 +290,7 @@ WebInspector.SourceFrame.prototype = {
 
     _wasShownOrLoaded: function()
     {
-        this._innerHighlightPositionIfNeeded();
+        this._innerHighlightLineIfNeeded();
         this._innerRevealLineIfNeeded();
         this._innerScrollToLineIfNeeded();
         this._innerSetSelectionIfNeeded();

@@ -292,16 +292,12 @@ WebInspector.View.prototype = {
         }
     },
 
-    canHighlightPosition: function()
+    canHighlightLine: function()
     {
         return false;
     },
 
-    /**
-     * @param {number} line
-     * @param {number=} column
-     */
-    highlightPosition: function(line, column)
+    highlightLine: function(line)
     {
     },
 
