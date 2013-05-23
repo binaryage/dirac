@@ -70,6 +70,10 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.constructorsDataGrid.show(this.constructorsView.element);
     this.constructorsDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
+    this.dataGrid = /** @type {WebInspector.HeapSnapshotSortableDataGrid} */ (this.constructorsDataGrid);
+    this.currentView = this.constructorsView;
+    this.currentView.show(this.viewsContainer);
+
     this.diffView = new WebInspector.View();
     this.diffView.element.addStyleClass("view");
     this.diffView.element.appendChild(this._createToolbarWithClassNameFilter());
@@ -105,9 +109,6 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.retainmentDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._inspectedObjectChanged, this);
     this.retainmentView.show(this.element);
     this.retainmentDataGrid.reset();
-
-    this.dataGrid = /** @type {WebInspector.HeapSnapshotSortableDataGrid} */ (this.constructorsDataGrid);
-    this.currentView = this.constructorsView;
 
     this.viewSelect = new WebInspector.StatusBarComboBox(this._onSelectedViewChanged.bind(this));
 
@@ -205,17 +206,10 @@ WebInspector.HeapSnapshotView.prototype = {
     wasShown: function()
     {
         // FIXME: load base and current snapshots in parallel
-        this.profile.load(profileCallback1.bind(this));
-
-        function profileCallback1() {
+        this.profile.load(profileCallback.bind(this));
+        function profileCallback() {
             if (this.baseProfile)
-                this.baseProfile.load(profileCallback2.bind(this));
-            else
-                profileCallback2.call(this);
-        }
-
-        function profileCallback2() {
-            this.currentView.show(this.viewsContainer);
+                this.baseProfile.load(function() { });
         }
     },
 
