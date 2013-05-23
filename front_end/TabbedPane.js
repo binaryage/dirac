@@ -561,15 +561,21 @@ WebInspector.TabbedPane.prototype = {
         tab.view.detach();
     },
 
-    canHighlightLine: function()
+    /**
+     * @override
+     */
+    canHighlightPosition: function()
     {
-        return this._currentTab && this._currentTab.view && this._currentTab.view.canHighlightLine();
+        return this._currentTab && this._currentTab.view && this._currentTab.view.canHighlightPosition();
     },
 
-    highlightLine: function(line)
+    /**
+     * @override
+     */
+    highlightPosition: function(line, column)
     {
-        if (this.canHighlightLine())
-            this._currentTab.view.highlightLine(line);
+        if (this.canHighlightPosition())
+            this._currentTab.view.highlightPosition(line, column);
     },
 
     /**

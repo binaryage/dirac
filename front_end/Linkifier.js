@@ -116,6 +116,7 @@ WebInspector.Linkifier.prototype = {
         anchor.href = sanitizeHref(uiLocation.uiSourceCode.originURL());
         anchor.uiSourceCode = uiLocation.uiSourceCode;
         anchor.lineNumber = uiLocation.lineNumber;
+        anchor.columnNumber = uiLocation.columnNumber;
         this._formatter.formatLiveAnchor(anchor, uiLocation);
     }
 }
