@@ -233,6 +233,7 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._windowEndTime = Infinity;
         this._overviewCalculator.reset();
         this._overviewGrid.reset();
+        this._overviewGrid.setResizeEnabled(false);
         this._eventDividers = [];
         this._overviewGrid.updateDividers(this._overviewCalculator);
         this._overviewControl.reset();
@@ -284,9 +285,11 @@ WebInspector.TimelineOverviewPane.prototype = {
     {
         var offset = this._model.minimumRecordTime();
         var timeSpan = this._model.maximumRecordTime() - offset;
-        var left = this._windowStartTime ? (this._windowStartTime - offset) / timeSpan : 0;
-        var right = this._windowEndTime < Infinity ? (this._windowEndTime - offset) / timeSpan : 1;
+        var haveRecords = offset >= 0;
+        var left = haveRecords && this._windowStartTime ? (this._windowStartTime - offset) / timeSpan : 0;
+        var right = haveRecords && this._windowEndTime < Infinity ? (this._windowEndTime - offset) / timeSpan : 1;
         this._ignoreWindowChangedEvent = true;
+        this._overviewGrid.setResizeEnabled(haveRecords);
         this._overviewGrid.setWindow(left, right);
         this._ignoreWindowChangedEvent = false;
     },

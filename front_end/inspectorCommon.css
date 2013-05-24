@@ -106,8 +106,11 @@ iframe.view {
     height: 20px;
     z-index: 200;
     pointer-events: none;
-    cursor: move;
     overflow: hidden;
+}
+
+.resize-enabled .resources-dividers-label-bar {
+    cursor: move;
 }
 
 .resources-divider {
@@ -190,9 +193,12 @@ iframe.view {
     margin-right: -2px;
     background-color: rgb(153, 153, 153);
     z-index: 500;
-    cursor: ew-resize;
     border-radius: 2px;
     box-shadow: white 1px 0 0, white -1px 0 0, white 0 1px 0, white 0 -1px 0;
+}
+
+.resize-enabled .overview-grid-window-resizer {
+    cursor: ew-resize;
 }
 
 /* Network timing is shared between popover and network item view pane */

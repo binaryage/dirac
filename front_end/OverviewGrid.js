@@ -133,6 +133,14 @@ WebInspector.OverviewGrid.prototype = {
     zoom: function(zoomFactor, referencePoint)
     {
         this._window._zoom(zoomFactor, referencePoint);
+    },
+
+    /**
+     * @param {boolean} enabled
+     */
+    setResizeEnabled: function(enabled)
+    {
+        this._window._setEnabled(!!enabled);
     }
 }
 
@@ -163,29 +171,18 @@ WebInspector.OverviewGrid.Window = function(parentElement, dividersLabelBarEleme
     this._parentElement.addEventListener("mousewheel", this._onMouseWheel.bind(this), true);
     this._parentElement.addEventListener("dblclick", this._resizeWindowMaximum.bind(this), true);
 
-    this._overviewWindowElement = document.createElement("div");
-    this._overviewWindowElement.className = "overview-grid-window";
-    parentElement.appendChild(this._overviewWindowElement);
+    this._overviewWindowElement = parentElement.createChild("div", "overview-grid-window");
+    this._overviewWindowBordersElement = parentElement.createChild("div", "overview-grid-window-rulers");
+    parentElement.createChild("div", "overview-grid-dividers-background");
 
-    this._overviewWindowBordersElement = document.createElement("div");
-    this._overviewWindowBordersElement.className = "overview-grid-window-rulers";
-    parentElement.appendChild(this._overviewWindowBordersElement);
-
-    var overviewDividersBackground = document.createElement("div");
-    overviewDividersBackground.className = "overview-grid-dividers-background";
-    parentElement.appendChild(overviewDividersBackground);
-
-    this._leftResizeElement = document.createElement("div");
-    this._leftResizeElement.className = "overview-grid-window-resizer";
+    this._leftResizeElement = parentElement.createChild("div", "overview-grid-window-resizer");
     this._leftResizeElement.style.left = 0;
-    parentElement.appendChild(this._leftResizeElement);
     WebInspector.installDragHandle(this._leftResizeElement, this._resizerElementStartDragging.bind(this), this._leftResizeElementDragging.bind(this), null, "ew-resize");
 
-    this._rightResizeElement = document.createElement("div");
-    this._rightResizeElement.className = "overview-grid-window-resizer overview-grid-window-resizer-right";
+    this._rightResizeElement = parentElement.createChild("div", "overview-grid-window-resizer overview-grid-window-resizer-right");
     this._rightResizeElement.style.right = 0;
-    parentElement.appendChild(this._rightResizeElement);
     WebInspector.installDragHandle(this._rightResizeElement, this._resizerElementStartDragging.bind(this), this._rightResizeElementDragging.bind(this), null, "ew-resize");
+    this._setEnabled(true);
 }
 
 WebInspector.OverviewGrid.Events = {
@@ -204,6 +201,19 @@ WebInspector.OverviewGrid.Window.prototype = {
         this._overviewWindowBordersElement.style.right = "0%";
         this._leftResizeElement.style.left = "0%";
         this._rightResizeElement.style.left = "100%";
+        this._setEnabled(true);
+    },
+
+    /**
+     * @param {boolean} enabled
+     */
+    _setEnabled: function(enabled)
+    {
+        enabled = !!enabled;
+        if (this._enabled === enabled)
+            return;
+        this._enabled = enabled;
+        this._parentElement.enableStyleClass("resize-enabled", enabled);
     },
 
     /**
@@ -211,6 +221,8 @@ WebInspector.OverviewGrid.Window.prototype = {
      */
     _resizerElementStartDragging: function(event)
     {
+        if (!this._enabled)
+            return false;
         this._resizerParentOffsetLeft = event.pageX - event.offsetX - event.target.offsetLeft;
         event.preventDefault();
         return true;
@@ -240,6 +252,8 @@ WebInspector.OverviewGrid.Window.prototype = {
      */
     _startWindowSelectorDragging: function(event)
     {
+        if (!this._enabled)
+            return false;
         this._offsetLeft = event.pageX - event.offsetX;
         var position = event.pageX - this._offsetLeft;
         this._overviewWindowSelector = new WebInspector.OverviewGrid.WindowSelector(this._parentElement, position);
