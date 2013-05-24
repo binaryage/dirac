@@ -298,6 +298,7 @@ body.undocked.platform-mac-snowleopard #toolbar-dropdown {
 #toolbar-dropdown .toolbar-item {
     display: -webkit-flex;
     -webkit-flex-direction: row;
+    -webkit-flex: none;
     width: 100%;
     border: 1px solid rgba(0, 0, 0, 0);
 }
