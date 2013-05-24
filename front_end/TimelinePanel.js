@@ -632,7 +632,7 @@ WebInspector.TimelinePanel.prototype = {
         var records = this._model.records;
         for (var i = 0; i < records.length; ++i)
             this._innerAddRecordToTimeline(records[i]);
-        this._invalidateAndScheduleRefresh(false, true);
+        this._invalidateAndScheduleRefresh(false, false);
     },
 
     _onTimelineEventRecorded: function(event)
