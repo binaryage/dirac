@@ -424,6 +424,7 @@ CodeMirror.prototype = {
 /** @type {number} */
 CodeMirror.prototype.lineCount;
 CodeMirror.Pass;
+CodeMirror.showHint = function(codeMirror, hintintFunction) { };
 
 /** @constructor */
 CodeMirror.Pos = function(line, ch) { }
