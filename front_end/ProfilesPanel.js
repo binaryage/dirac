@@ -676,9 +676,6 @@ WebInspector.ProfilesPanel.prototype = {
      */
     _addProfileHeader: function(profile)
     {
-        if (!profile.isTemporary)
-            this._removeTemporaryProfile(profile.profileType().id);
-
         var profileType = profile.profileType();
         var typeId = profileType.id;
         var sidebarParent = profileType.treeElement;
@@ -728,10 +725,18 @@ WebInspector.ProfilesPanel.prototype = {
             profileTreeElement.mainTitle = alternateTitle;
         profile._profilesTreeElement = profileTreeElement;
 
-        sidebarParent.appendChild(profileTreeElement);
-        if (!profile.isTemporary) {
+        var temporaryProfile = profileType.findTemporaryProfile();
+        if (profile.isTemporary || !temporaryProfile)
+            sidebarParent.appendChild(profileTreeElement);
+        else {
+            if (temporaryProfile) {
+                sidebarParent.insertBeforeChild(profileTreeElement, temporaryProfile._profilesTreeElement);
+                this._removeTemporaryProfile(profile.profileType().id);
+            }
+
             if (!this.visibleView || this.visibleView === this._launcherView)
                 this._showProfile(profile);
+
             this.dispatchEventToListeners("profile added", {
                 type: typeId
             });
