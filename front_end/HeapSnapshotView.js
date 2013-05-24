@@ -1496,8 +1496,11 @@ WebInspector.HeapTrackingOverviewGrid = function(heapProfileHeader)
         this._profileType.addEventListener(WebInspector.TrackingHeapSnapshotProfileType.HeapStatsUpdate, this._onHeapStatsUpdate, this);
         this._profileType.addEventListener(WebInspector.TrackingHeapSnapshotProfileType.TrackingStopped, this._onStopTracking, this);
     }
+    var timestamps = this._profileSamples.timestamps;
+    var totalTime = this._profileSamples.totalTime;
     this._windowLeft = 0.0;
-    this._windowRight = 1.0;
+    this._windowRight = totalTime && timestamps.length ? (timestamps[timestamps.length - 1] - timestamps[0]) / totalTime : 1.0;
+    this._overviewGrid.setWindow(this._windowLeft, this._windowRight);
 }
 
 WebInspector.HeapTrackingOverviewGrid.IdsRangeChanged = "IdsRangeChanged";
