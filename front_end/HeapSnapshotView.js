@@ -1585,6 +1585,27 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         context.stroke();
         context.closePath();
 
+        var gridY;
+        var gridValue;
+        var gridLabelHeight = 14;
+        if (maxUsedSize) {
+            const maxGridValue = (height - gridLabelHeight) / yScaleFactor;
+            // The round value calculation is a bit tricky, because
+            // it has a form k*10^n*1024^m, where k=[1..9], n=[0..3], m is an integer,
+            // e.g. a round value 20KB is 20480 bytes.
+            gridValue = Math.pow(1024, Math.floor(Math.log(maxGridValue) / Math.log(1024)));
+            gridValue *= Math.pow(10, Math.floor(Math.log(maxGridValue / gridValue) / Math.log(10)));
+            gridValue *= Math.floor(maxGridValue / gridValue);
+            gridY = Math.round(height - gridValue * yScaleFactor - 0.5) + 0.5;
+            context.beginPath();
+            context.lineWidth = 1;
+            context.strokeStyle = "rgba(0, 0, 0, 0.2)";
+            context.moveTo(0, gridY);
+            context.lineTo(width, gridY);
+            context.stroke();
+            context.closePath();
+        }
+
         /**
           * @param {number} x
           * @param {number} size
@@ -1608,6 +1629,23 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         aggregateAndCall(sizes, drawBarCallback);
         context.stroke();
         context.closePath();
+
+        if (gridValue) {
+            var label = Number.bytesToString(gridValue);
+            var labelPadding = 4;
+            var labelX = 0;
+            var labelY = gridY - 0.5;
+            var labelWidth = 2 * labelPadding + context.measureText(label).width;
+            context.beginPath();
+            context.textBaseline = "bottom";
+            context.font = "10px " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
+            context.fillStyle = "rgba(255, 255, 255, 0.75)";
+            context.fillRect(labelX, labelY - gridLabelHeight, labelWidth, gridLabelHeight);
+            context.fillStyle = "rgb(64, 64, 64)";
+            context.fillText(label, labelX + labelPadding, labelY);
+            context.fill();
+            context.closePath();
+        }
     },
 
     onResize: function()
