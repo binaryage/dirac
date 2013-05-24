@@ -1232,7 +1232,7 @@ WebInspector.StylePropertiesSection.prototype = {
         }
 
         if (this.styleRule.sourceURL)
-            return this._parentPane._linkifier.linkifyCSSRuleLocation(this.rule) || linkifyUncopyable(this.styleRule.sourceURL, this.rule.sourceLine);
+            return this._parentPane._linkifier.linkifyCSSRuleLocation(this.rule) || linkifyUncopyable(this.styleRule.sourceURL, this.rule.lineNumberInSource());
 
         if (!this.rule)
             return document.createTextNode("");
@@ -1245,7 +1245,7 @@ WebInspector.StylePropertiesSection.prototype = {
             var element = document.createElement("span");
             var resource = WebInspector.cssModel.viaInspectorResourceForRule(this.rule);
             if (resource)
-                element.appendChild(linkifyUncopyable(resource.url, this.rule.sourceLine));
+                element.appendChild(linkifyUncopyable(resource.url, this.rule.lineNumberInSource()));
             else
                 element.textContent = WebInspector.UIString("via inspector");
             return element;

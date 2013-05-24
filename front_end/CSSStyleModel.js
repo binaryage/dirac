@@ -887,7 +887,6 @@ WebInspector.CSSRule = function(payload, matchingSelectors)
     this.selectors = payload.selectorList.selectors;
     this.selectorText = this.selectors.join(", ");
     this.selectorRange = payload.selectorList.range;
-    this.sourceLine = payload.sourceLine;
     this.sourceURL = payload.sourceURL;
     this.origin = payload.origin;
     this.style = WebInspector.CSSStyleDeclaration.parsePayload(payload.style);
@@ -912,14 +911,30 @@ WebInspector.CSSRule.prototype = {
     {
         if (!payload.sourceURL)
             return;
-        if (this.selectorRange) {
-            var resource = WebInspector.resourceTreeModel.resourceForURL(payload.sourceURL);
-            if (resource && resource.type === WebInspector.resourceTypes.Stylesheet) {
-                this.rawLocation = new WebInspector.CSSLocation(payload.sourceURL, this.selectorRange.startLine, this.selectorRange.startColumn);
-                return;
-            }
-        }
-        this.rawLocation = new WebInspector.CSSLocation(payload.sourceURL, payload.sourceLine);
+        this.rawLocation = new WebInspector.CSSLocation(payload.sourceURL, this.lineNumberInSource(), this.columnNumberInSource());
+    },
+
+    /**
+     * @return {number}
+     */
+    lineNumberInSource: function()
+    {
+        if (!this.selectorRange)
+            return 0;
+        var styleSheetHeader = WebInspector.cssModel._resourceBinding._styleSheetIdToHeader[this.id.styleSheetId];
+        return styleSheetHeader.startLine + this.selectorRange.startLine;
+    },
+
+    /**
+     * @return {number|undefined}
+     */
+    columnNumberInSource: function()
+    {
+        if (!this.selectorRange)
+            return undefined;
+        var styleSheetHeader = WebInspector.cssModel._resourceBinding._styleSheetIdToHeader[this.id.styleSheetId];
+        console.assert(styleSheetHeader);
+        return (this.selectorRange.startLine ? 0 : styleSheetHeader.startColumn) + this.selectorRange.startColumn;
     },
 
     get isUserAgent()
@@ -1213,6 +1228,8 @@ WebInspector.CSSStyleSheetHeader = function(payload)
     this.title = payload.title;
     this.disabled = payload.disabled;
     this.isInline = payload.isInline;
+    this.startLine = payload.startLine;
+    this.startColumn = payload.startColumn;
     this._locations = new Set();
 }
 
