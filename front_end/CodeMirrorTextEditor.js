@@ -92,8 +92,6 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._codeMirror.on("scroll", this._scroll.bind(this));
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this));
 
-    this._lastRange = this.range();
-
     this.element.firstChild.addStyleClass("source-code");
     this.element.firstChild.addStyleClass("fill");
     this._elementToWidget = new Map();
@@ -496,17 +494,32 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         return newRange;
     },
 
-    _change: function()
+    _change: function(codeMirror, changeObject)
     {
         var widgets = this._elementToWidget.values();
         for (var i = 0; i < widgets.length; ++i)
             this._codeMirror.removeLineWidget(widgets[i]);
         this._elementToWidget.clear();
 
-        var newRange = this.range();
-        if (!this._muteTextChangedEvent)
-            this._delegate.onTextChanged(this._lastRange, newRange);
-        this._lastRange = newRange;
+        do {
+            var oldRange = this._toRange(changeObject.from, changeObject.to);
+            var newRange = oldRange.clone();
+            var linesAdded = changeObject.text.length;
+            if (linesAdded === 0) {
+                newRange.endLine = newRange.startLine;
+                newRange.endColumn = newRange.startColumn;
+            } else if (linesAdded === 1) {
+                newRange.endLine = newRange.startLine;
+                newRange.endColumn = newRange.startColumn + changeObject.text[0].length;
+            } else {
+                newRange.endLine = newRange.startLine + linesAdded - 1;
+                newRange.endColumn = changeObject.text[linesAdded - 1].length;
+            }
+
+            if (!this._muteTextChangedEvent)
+                this._delegate.onTextChanged(oldRange, newRange);
+
+        } while (changeObject = changeObject.next);
     },
 
     _cursorActivity: function()
