@@ -81,12 +81,14 @@ WebInspector.NetworkLog.prototype = {
         // Preserve requests from the new session.
         this._currentPageLoad = null;
         var oldRequests = this._requests.splice(0, this._requests.length);
+        this._requestForId = {};
         for (var i = 0; i < oldRequests.length; ++i) {
             var request = oldRequests[i];
             if (request.loaderId === mainFrame.loaderId) {
                 if (!this._currentPageLoad)
                     this._currentPageLoad = new WebInspector.PageLoad(request);
                 this._requests.push(request);
+                this._requestForId[request.requestId] = request;
                 request.__page = this._currentPageLoad;
             }
         }
