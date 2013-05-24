@@ -1216,6 +1216,7 @@ WebInspector.CSSMedia.parseMediaArrayPayload = function(payload)
 
 /**
  * @constructor
+ * @implements {WebInspector.ContentProvider}
  * @param {CSSAgent.CSSStyleSheetHeader} payload
  */
 WebInspector.CSSStyleSheetHeader = function(payload)
@@ -1291,6 +1292,54 @@ WebInspector.CSSStyleSheetHeader.prototype = {
             fakeURL += "/";
         fakeURL += "inspector-stylesheet";
         return fakeURL;
+    },
+
+    /**
+     * @override
+     */
+    contentURL: function()
+    {
+        return this.sourceURL;
+    },
+
+    /**
+     * @override
+     */
+    contentType: function()
+    {
+        return WebInspector.resourceTypes.Stylesheet;
+    },
+
+    /**
+     * @override
+     */
+    requestContent: function(callback)
+    {
+        CSSAgent.getStyleSheetText(this.id, textCallback.bind(this));
+
+        function textCallback(error, text)
+        {
+            if (error) {
+                WebInspector.log("Failed to get text for stylesheet " + this.id + ": " + error);
+                text = "";
+                // Fall through.
+            }
+            callback(text, false, "text/css");
+        }
+    },
+
+    /**
+     * @override
+     */
+    searchInContent: function(query, caseSensitive, isRegex, callback)
+    {
+        function performSearch(content)
+        {
+            callback(WebInspector.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex));
+        }
+
+        // searchInContent should call back later.
+        this.requestContent(performSearch);
     }
 }
 

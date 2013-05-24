@@ -40,6 +40,7 @@ WebInspector.NetworkUISourceCodeProvider = function(networkWorkspaceProvider, wo
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
+    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetAdded, this);
 
     this._processedURLs = {};
 }
@@ -84,6 +85,18 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
                 return;
         }
         this._addFile(script.sourceURL, script, script.isContentScript);
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _styleSheetAdded: function(event)
+    {
+        var header = /** @type {WebInspector.CSSStyleSheetHeader} */ (event.data);
+        if (!header.hasSourceURL || header.isInline)
+            return;
+
+        this._addFile(header.sourceURL, header, false);
     },
 
     /**
