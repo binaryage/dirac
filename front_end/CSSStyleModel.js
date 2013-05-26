@@ -507,10 +507,7 @@ WebInspector.CSSStyleModel.prototype = {
         return this._resourceBinding;
     },
 
-    /**
-     * @param {WebInspector.Event} event
-     */
-    _mainFrameCreatedOrNavigated: function(event)
+    _mainFrameCreatedOrNavigated: function()
     {
         this._resetSourceMappings();
         this._resourceBinding._reset();
@@ -526,7 +523,7 @@ WebInspector.CSSStyleModel.prototype = {
             this._sourceMappings[url] = sourceMapping;
         else
             delete this._sourceMappings[url];
-        this._updateLocations();
+        this.updateLocations();
     },
 
     _resetSourceMappings: function()
@@ -539,7 +536,7 @@ WebInspector.CSSStyleModel.prototype = {
         this._namedFlowCollections = {};
     },
 
-    _updateLocations: function()
+    updateLocations: function()
     {
         var headers = Object.values(this._resourceBinding._styleSheetIdToHeader);
         for (var i = 0; i < headers.length; ++i)
@@ -1225,6 +1222,7 @@ WebInspector.CSSStyleSheetHeader = function(payload)
     this.frameId = payload.frameId;
     this.sourceURL = payload.sourceURL;
     this.hasSourceURL = !!payload.hasSourceURL;
+    this.sourceMapURL = payload.sourceMapURL;
     this.origin = payload.origin;
     this.title = payload.title;
     this.disabled = payload.disabled;

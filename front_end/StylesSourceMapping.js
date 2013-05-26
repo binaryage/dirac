@@ -54,6 +54,8 @@ WebInspector.StylesSourceMapping.prototype = {
     {
         var location = /** @type WebInspector.CSSLocation */ (rawLocation);
         var uiSourceCode = this._workspace.uiSourceCodeForURL(location.url);
+        if (!uiSourceCode)
+            return null;
         return new WebInspector.UILocation(uiSourceCode, location.lineNumber, location.columnNumber);
     },
 
@@ -77,53 +79,91 @@ WebInspector.StylesSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.Resource} resource
+     * @param {WebInspector.CSSStyleSheetHeader} header
      */
-    addResource: function(resource)
+    addHeader: function(header)
     {
-        if (resource.contentType() !== WebInspector.resourceTypes.Stylesheet)
+        var url = header.resourceURL();
+        if (!url)
             return;
-        if (!resource.url)
-            return;
-        var uiSourceCode = this._workspace.uiSourceCodeForURL(resource.url);
-        if (!uiSourceCode)
-            return;
-        this._bindUISourceCode(uiSourceCode);
+
+        this._cssModel.setSourceMapping(url, this);
+        var map = this._urlToHeadersByFrameId[url];
+        if (!map) {
+            map = new StringMap();
+            this._urlToHeadersByFrameId[url] = map;
+        }
+        var headers = map.get(header.frameId);
+        if (!headers) {
+            headers = [];
+            map.put(header.frameId, headers);
+        }
+        headers.push(header);
+        var uiSourceCode = this._workspace.uiSourceCodeForURL(url);
+        if (uiSourceCode)
+            this._bindUISourceCode(uiSourceCode, header);
     },
 
+    /**
+     * @param {WebInspector.CSSStyleSheetHeader} header
+     */
+    removeHeader: function(header)
+    {
+        // Do nothing as of yet.
+    },
+
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     */
+    _unbindUISourceCode: function(uiSourceCode)
+    {
+        if (uiSourceCode.styleFile()) {
+            uiSourceCode.styleFile().dispose();
+            uiSourceCode.setStyleFile(null);
+        }
+        uiSourceCode.setSourceMapping(null);
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
     _uiSourceCodeAddedToWorkspace: function(event)
     {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
-        if (uiSourceCode.contentType() !== WebInspector.resourceTypes.Stylesheet)
+        var url = uiSourceCode.url;
+        if (!url || !this._urlToHeadersByFrameId[url])
             return;
-        if (!uiSourceCode.url || !WebInspector.resourceForURL(uiSourceCode.url))
-            return;
-        this._bindUISourceCode(uiSourceCode);
+        this._bindUISourceCode(uiSourceCode, this._urlToHeadersByFrameId[url].values()[0][0]);
     },
 
-    _bindUISourceCode: function(uiSourceCode)
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {WebInspector.CSSStyleSheetHeader} header
+     */
+    _bindUISourceCode: function(uiSourceCode, header)
     {
-        if (this._mappedURLs[uiSourceCode.url])
-            return;
-        this._mappedURLs[uiSourceCode.url] = true;
+        var url = uiSourceCode.url;
         uiSourceCode.setSourceMapping(this);
-        var styleFile = new WebInspector.StyleFile(uiSourceCode);
-        uiSourceCode.setStyleFile(styleFile);
-        this._cssModel.setSourceMapping(uiSourceCode.url, this);
+        if (!uiSourceCode.styleFile() && !header.isInline)
+            uiSourceCode.setStyleFile(new WebInspector.StyleFile(uiSourceCode));
+        this._cssModel.updateLocations();
     },
 
+    /**
+     * @param {WebInspector.Event} event
+     */
     _projectWillReset: function(event)
     {
-        var project = event.data;
+        var project = /** @type {WebInspector.Project} */ (event.data);
         var uiSourceCodes = project.uiSourceCodes();
         for (var i = 0; i < uiSourceCodes; ++i)
-            delete this._mappedURLs[uiSourceCodes[i].url];
+            delete this._urlToHeadersByFrameId[uiSourceCodes[i].url];
     },
 
     _initialize: function()
     {
-        /** {Object.<string, boolean>} */
-        this._mappedURLs = {};
+        /** {Object.<string, StringMap>} */
+        this._urlToHeadersByFrameId = {};
     },
 
     /**
@@ -131,13 +171,11 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     _mainFrameCreatedOrNavigated: function(event)
     {
-        for (var mappedURL in this._mappedURLs) {
-            var uiSourceCode = this._workspace.uiSourceCodeForURL(mappedURL);
+        for (var url in this._urlToHeadersByFrameId) {
+            var uiSourceCode = this._workspace.uiSourceCodeForURL(url);
             if (!uiSourceCode)
                 continue;
-            uiSourceCode.styleFile().dispose();
-            uiSourceCode.setStyleFile(null);
-            uiSourceCode.setSourceMapping(null);
+            this._unbindUISourceCode(uiSourceCode);
         }
         this._initialize();
     }

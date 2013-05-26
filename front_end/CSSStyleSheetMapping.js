@@ -39,21 +39,30 @@ WebInspector.CSSStyleSheetMapping = function(cssModel, workspace, networkWorkspa
     this._cssModel = cssModel;
     this._workspace = workspace;
     this._stylesSourceMapping = new WebInspector.StylesSourceMapping(cssModel, workspace);
-    if (WebInspector.experimentsSettings.sass.isEnabled())
-        this._sassSourceMapping = new WebInspector.SASSSourceMapping(cssModel, workspace, networkWorkspaceProvider);
+    this._sassSourceMapping = new WebInspector.SASSSourceMapping(cssModel, workspace, networkWorkspaceProvider);
 
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
+    cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetAdded, this);
+    cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._styleSheetRemoved, this);
 }
 
 WebInspector.CSSStyleSheetMapping.prototype = {
     /**
      * @param {WebInspector.Event} event
      */
-    _resourceAdded: function(event)
+    _styleSheetAdded: function(event)
     {
-        var resource = /** @type {WebInspector.Resource} */ (event.data);
-        this._stylesSourceMapping.addResource(resource);
-        if (this._sassSourceMapping)
-            this._sassSourceMapping.addResource(resource);
+        var header = /** @type {WebInspector.CSSStyleSheetHeader} */ (event.data);
+        this._stylesSourceMapping.addHeader(header);
+        this._sassSourceMapping.addHeader(header);
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _styleSheetRemoved: function(event)
+    {
+        var header = /** @type {WebInspector.CSSStyleSheetHeader} */ (event.data);
+        this._stylesSourceMapping.removeHeader(header);
+        this._sassSourceMapping.removeHeader(header);
     }
 }
