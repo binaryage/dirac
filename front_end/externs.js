@@ -325,6 +325,7 @@ WebInspector.AceTextEditor = function(url, delegate) { }
 
 /** @constructor */
 var CodeMirror = function() { }
+CodeMirror.on = function(obj, type, handler) { }
 CodeMirror.prototype = {
     addKeyMap: function(map) { },
     addLineClass: function(handle, where, cls) { },
@@ -425,6 +426,7 @@ CodeMirror.prototype = {
 CodeMirror.prototype.lineCount;
 CodeMirror.Pass;
 CodeMirror.showHint = function(codeMirror, hintintFunction) { };
+CodeMirror.commands = {};
 
 /** @constructor */
 CodeMirror.Pos = function(line, ch) { }

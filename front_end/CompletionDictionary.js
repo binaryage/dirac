@@ -45,6 +45,12 @@ WebInspector.CompletionDictionary.prototype = {
     removeWord: function(word) { },
 
     /**
+     * @param {string} word
+     * @return {boolean}
+     */
+    hasWord: function(word) { },
+
+    /**
      * @param {string} prefix
      * @return {Array.<string>}
      */
@@ -96,5 +102,14 @@ WebInspector.SampleCompletionDictionary.prototype = {
                 words.push(i);
         }
         return words;
+    },
+
+    /**
+     * @param {string} word
+     * @return {boolean}
+     */
+    hasWord: function(word)
+    {
+        return !!this._words[word];
     }
 }

@@ -210,6 +210,7 @@ WebInspector.ExperimentsSettings = function()
     this.tethering = this._createExperiment("tethering", "Enable port forwarding");
     this.drawerOverlay = this._createExperiment("drawerOverlay", "Open console as overlay");
     this.heapObjectsTracking = this._createExperiment("heapObjectsTracking", "Enable heap objects tracking profile type");
+    this.textEditorAutocomplete = this._createExperiment("textEditorAutocomplete", "Enable text editor autocompletion");
 
     this._cleanUpSetting();
 }
