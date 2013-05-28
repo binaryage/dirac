@@ -381,8 +381,8 @@ WebInspector.ScriptSnippetModel.prototype = {
         var snippetPrefix = WebInspector.Script.snippetSourceURLPrefix;
         if (!sourceURL.startsWith(snippetPrefix))
             return null;
-        var splittedURL = sourceURL.substring(snippetPrefix.length).split("_");
-        var snippetId = splittedURL[0];
+        var splitURL = sourceURL.substring(snippetPrefix.length).split("_");
+        var snippetId = splitURL[0];
         return snippetId;
     },
 

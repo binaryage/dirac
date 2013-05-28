@@ -125,12 +125,12 @@ WebInspector.SimpleWorkspaceProvider = function(workspace, type)
 }
 
 /**
- * @param {Array.<string>} splittedURL
+ * @param {Array.<string>} splitURL
  * @return {Array.<string>}
  */
-WebInspector.SimpleWorkspaceProvider.pathForSplittedURL = function(splittedURL)
+WebInspector.SimpleWorkspaceProvider.pathForSplitURL = function(splitURL)
 {
-    var result = splittedURL.slice();
+    var result = splitURL.slice();
     result.shift();
     return result;
 }
@@ -184,9 +184,9 @@ WebInspector.SimpleWorkspaceProvider.prototype = {
      */
     _innerAddFileForURL: function(url, contentProvider, isEditable, forceUnique, isContentScript)
     {
-        var splittedURL = WebInspector.ParsedURL.splitURL(url);
-        var projectName = splittedURL[0];
-        var path = WebInspector.SimpleWorkspaceProvider.pathForSplittedURL(splittedURL);
+        var splitURL = WebInspector.ParsedURL.splitURL(url);
+        var projectName = splitURL[0];
+        var path = WebInspector.SimpleWorkspaceProvider.pathForSplitURL(splitURL);
 
         var projectDelegate = this._projectDelegate(projectName);
         path = projectDelegate.addFile(path, forceUnique, url, contentProvider, isEditable, isContentScript);

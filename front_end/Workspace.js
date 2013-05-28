@@ -477,6 +477,8 @@ WebInspector.Workspace.prototype = {
      */
     hasMappingForURL: function(url)
     {
+        if (!InspectorFrontendHost.supportsFileSystems())
+            return false;
         var entry = this._fileMapping.mappingEntryForURL(url);
         if (!entry)
             return false;
@@ -491,21 +493,33 @@ WebInspector.Workspace.prototype = {
     {
         return this._fileSystemMapping.fileSystemPathForPrefix(entry.pathPrefix);
     },
+
+    /**
+     * @param {string} url
+     * @return {WebInspector.UISourceCode}
+     */
+    _networkUISourceCodeForURL: function(url)
+    {
+        var splitURL = WebInspector.ParsedURL.splitURL(url);
+        var projectId = WebInspector.SimpleProjectDelegate.projectId(splitURL[0], WebInspector.projectTypes.Network);
+        var path = WebInspector.SimpleWorkspaceProvider.pathForSplitURL(splitURL);
+        var project = this.project(projectId);
+        return project ? project.uiSourceCode(path) : null;
+    },
+
     /**
      * @param {string} url
      * @return {WebInspector.UISourceCode}
      */
     uiSourceCodeForURL: function(url)
     {
+        if (!InspectorFrontendHost.supportsFileSystems())
+            return this._networkUISourceCodeForURL(url);
+
         var entry = this._fileMapping.mappingEntryForURL(url);
         var fileSystemPath = entry ? this._fileSystemPathForEntry(entry) : null;
-        if (!fileSystemPath) {
-            var splittedURL = WebInspector.ParsedURL.splitURL(url);
-            var projectId = WebInspector.SimpleProjectDelegate.projectId(splittedURL[0], WebInspector.projectTypes.Network);
-            var path = WebInspector.SimpleWorkspaceProvider.pathForSplittedURL(splittedURL);
-            var project = this.project(projectId);
-            return project ? project.uiSourceCode(path) : null;
-        }
+        if (!fileSystemPath)
+            return this._networkUISourceCodeForURL(url);
 
         var projectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
         var pathPrefix = entry.pathPrefix.substr(fileSystemPath.length + 1);
