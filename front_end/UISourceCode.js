@@ -687,6 +687,9 @@ WebInspector.UISourceCode.prototype = {
         if (this._formatted === formatted)
             return;
 
+        if (this.isDirty())
+            return;
+
         this._formatted = formatted;
 
         // Re-request content
