@@ -546,6 +546,7 @@ WebInspector.ProfilesPanel.prototype = {
     {
         this.recordButton.title = this._selectedProfileType.buttonTooltip;
 
+        this._launcherView.updateProfileType(this._selectedProfileType);
         this._profileTypeStatusBarItemsContainer.removeChildren();
         var statusBarItems = this._selectedProfileType.statusBarItems;
         if (statusBarItems) {

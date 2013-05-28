@@ -806,6 +806,15 @@ WebInspector.CanvasProfileType.prototype = {
         this.dispatchEventToListeners(WebInspector.ProfileType.Events.ViewUpdated);
     },
 
+    /**
+     * @override
+     * @return {boolean}
+     */
+    isInstantProfile: function()
+    {
+        return this._isSingleFrameMode();
+    },
+
     __proto__: WebInspector.ProfileType.prototype
 }
 

@@ -94,6 +94,15 @@ WebInspector.ProfileLauncherView.prototype = {
         this._updateControls();
     },
 
+    /**
+     * @param {WebInspector.ProfileType} profileType
+     */
+    updateProfileType: function(profileType)
+    {
+        this._isInstantProfile = profileType.isInstantProfile();
+        this._updateControls();
+    },
+
     __proto__: WebInspector.View.prototype
 }
 
