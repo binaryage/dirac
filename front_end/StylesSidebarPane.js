@@ -397,7 +397,7 @@ WebInspector.StylesSidebarPane.prototype = {
             // Add rules in reverse order to match the cascade order.
             for (var j = pseudoElementCSSRules.rules.length - 1; j >= 0; --j) {
                 var rule = pseudoElementCSSRules.rules[j];
-                styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, sourceURL: rule.sourceURL, rule: rule, editable: !!(rule.style && rule.style.id) });
+                styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, sourceURL: rule.resourceURL(), rule: rule, editable: !!(rule.style && rule.style.id) });
             }
             usedProperties = {};
             this._markUsedProperties(styleRules, usedProperties);
@@ -465,7 +465,7 @@ WebInspector.StylesSidebarPane.prototype = {
                 addedAttributesStyle = true;
                 addAttributesStyle();
             }
-            styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, sourceURL: rule.sourceURL, rule: rule, editable: !!(rule.style && rule.style.id) });
+            styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, sourceURL: rule.resourceURL(), rule: rule, editable: !!(rule.style && rule.style.id) });
         }
 
         if (!addedAttributesStyle)
@@ -507,7 +507,7 @@ WebInspector.StylesSidebarPane.prototype = {
                     insertInheritedNodeSeparator(parentNode);
                     separatorInserted = true;
                 }
-                styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, sourceURL: rule.sourceURL, rule: rule, isInherited: true, parentNode: parentNode, editable: !!(rule.style && rule.style.id) });
+                styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, sourceURL: rule.resourceURL(), rule: rule, isInherited: true, parentNode: parentNode, editable: !!(rule.style && rule.style.id) });
             }
             parentNode = parentNode.parentNode;
         }
@@ -939,7 +939,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
         else {
             // Check this is a real CSSRule, not a bogus object coming from WebInspector.BlankStylePropertiesSection.
             if (this.rule.id)
-                this.navigable = this.rule.isSourceNavigable();
+                this.navigable = !!this.rule.resourceURL();
         }
         this.titleElement.addStyleClass("styles-selector");
     }
@@ -1243,15 +1243,8 @@ WebInspector.StylePropertiesSection.prototype = {
             return document.createTextNode(WebInspector.UIString("user agent stylesheet"));
         if (this.rule.isUser)
             return document.createTextNode(WebInspector.UIString("user stylesheet"));
-        if (this.rule.isViaInspector) {
-            var element = document.createElement("span");
-            var resource = WebInspector.cssModel.viaInspectorResourceForRule(this.rule);
-            if (resource)
-                element.appendChild(linkifyUncopyable(resource.url, this.rule.lineNumberInSource()));
-            else
-                element.textContent = WebInspector.UIString("via inspector");
-            return element;
-        }
+        if (this.rule.isViaInspector)
+            return document.createTextNode(WebInspector.UIString("via inspector"));
         return document.createTextNode("");
     },
 
@@ -1366,7 +1359,7 @@ WebInspector.StylePropertiesSection.prototype = {
             }
 
             this.rule = newRule;
-            this.styleRule = { section: this, style: newRule.style, selectorText: newRule.selectorText, media: newRule.media, sourceURL: newRule.sourceURL, rule: newRule };
+            this.styleRule = { section: this, style: newRule.style, selectorText: newRule.selectorText, media: newRule.media, sourceURL: newRule.resourceURL(), rule: newRule };
 
             this._parentPane.update(selectedNode);
 
@@ -1545,7 +1538,7 @@ WebInspector.BlankStylePropertiesSection.prototype = {
 
         function successCallback(newRule, doesSelectorAffectSelectedNode)
         {
-            var styleRule = { section: this, style: newRule.style, selectorText: newRule.selectorText, sourceURL: newRule.sourceURL, rule: newRule };
+            var styleRule = { section: this, style: newRule.style, selectorText: newRule.selectorText, sourceURL: newRule.resourceURL(), rule: newRule };
             this.makeNormal(styleRule);
 
             if (!doesSelectorAffectSelectedNode) {

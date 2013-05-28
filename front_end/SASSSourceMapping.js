@@ -57,14 +57,18 @@ WebInspector.SASSSourceMapping.prototype = {
      */
     _styleSheetChanged: function(event)
     {
+        var id = /** @type {!CSSAgent.StyleSheetId} */ (event.data.styleSheetId);
         var isAddingRevision = this._isAddingRevision;
         delete this._isAddingRevision;
-
         if (isAddingRevision)
             return;
-        var url = this._cssModel.resourceBinding().resourceURLForStyleSheetId(event.data.styleSheetId);
+        var header = this._cssModel.styleSheetHeaderForId(id);
+        if (!header)
+            return;
+        var url = header.resourceURL();
         if (!url)
             return;
+
         this._cssModel.setSourceMapping(url, null);
     },
 
