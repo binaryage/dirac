@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// See http://groups.google.com/group/http-archive-specification/web/har-1-2-spec
+// See http://www.softwareishard.com/blog/har-12-spec/
 // for HAR specification.
 
 // FIXME: Some fields are not yet supported due to back-end limitations.
@@ -124,33 +124,22 @@ WebInspector.HAREntry.prototype = {
     _buildTimings: function()
     {
         var waitForConnection = this._interval("connectStart", "connectEnd");
-        var blocked;
-        var connect;
-        var dns = this._interval("dnsStart", "dnsEnd");
-        var send = this._interval("sendStart", "sendEnd");
-        var ssl = this._interval("sslStart", "sslEnd");
+        var blocked = 0;
+        var connect = -1;
 
-        if (ssl !== -1 && send !== -1)
-            send -= ssl;
-
-        if (this._request.connectionReused) {
-            connect = -1;
+        if (this._request.connectionReused)
             blocked = waitForConnection;
-        } else {
-            blocked = 0;
+        else
             connect = waitForConnection;
-            if (dns !== -1)
-                connect -= dns;
-        }
 
         return {
             blocked: blocked,
-            dns: dns,
+            dns: this._interval("dnsStart", "dnsEnd"),
             connect: connect,
-            send: send,
+            send: this._interval("sendStart", "sendEnd"),
             wait: this._interval("sendEnd", "receiveHeadersEnd"),
             receive: WebInspector.HAREntry._toMilliseconds(this._request.receiveDuration),
-            ssl: ssl
+            ssl: this._interval("sslStart", "sslEnd")
         };
     },
 

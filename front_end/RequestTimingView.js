@@ -110,10 +110,6 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
     if (request.timing.sslStart !== -1)
         addRow(WebInspector.UIString("SSL"), "ssl", request.timing.sslStart, request.timing.sslEnd);
 
-    var sendStart = request.timing.sendStart;
-    if (request.timing.sslStart !== -1)
-        sendStart += request.timing.sslEnd - request.timing.sslStart;
-
     addRow(WebInspector.UIString("Sending"), "sending", request.timing.sendStart, request.timing.sendEnd);
     addRow(WebInspector.UIString("Waiting"), "waiting", request.timing.sendEnd, request.timing.receiveHeadersEnd);
     addRow(WebInspector.UIString("Receiving"), "receiving", (request.responseReceivedTime - request.timing.requestTime) * 1000, (request.endTime - request.timing.requestTime) * 1000);
