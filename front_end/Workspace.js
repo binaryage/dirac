@@ -295,9 +295,13 @@ WebInspector.Project.prototype = {
     {
         this._projectDelegate.rename(uiSourceCode.path(), newName, innerCallback.bind(this));
 
+        /**
+         * @param {boolean} success
+         * @param {string=} newName
+         */
         function innerCallback(success, newName)
         {
-            if (!success) {
+            if (!success || !newName) {
                 callback(false);
                 return;
             }

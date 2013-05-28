@@ -113,6 +113,10 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     {
         this.performRename(path, newName, innerCallback.bind(this));
 
+        /**
+         * @param {boolean} success
+         * @param {string=} newName
+         */
         function innerCallback(success, newName)
         {
             if (success)
