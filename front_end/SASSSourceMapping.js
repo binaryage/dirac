@@ -139,7 +139,20 @@ WebInspector.SASSSourceMapping.prototype = {
      */
     removeHeader: function(header)
     {
-        // Do nothing as of yet.
+        if (!header.sourceMapURL || !header.sourceURL || header.isInline)
+            return;
+        var sourceURL = header.sourceURL;
+        delete this._sourceMapByStyleSheetURL[sourceURL];
+        delete this._completeSourceMapURLForCSSURL[sourceURL];
+        for (var sassURL in this._cssURLsForSASSURL) {
+            var urls = this._cssURLsForSASSURL[sassURL];
+            urls.remove(sourceURL);
+            if (!urls.length)
+                delete this._cssURLsForSASSURL[sassURL];
+        }
+        var completeSourceMapURL = WebInspector.ParsedURL.completeURL(sourceURL, header.sourceMapURL);
+        if (completeSourceMapURL)
+            delete this._sourceMapByURL[completeSourceMapURL];
     },
 
     /**

@@ -93,12 +93,12 @@ WebInspector.StylesSourceMapping.prototype = {
             map = new StringMap();
             this._urlToHeadersByFrameId[url] = map;
         }
-        var headers = map.get(header.frameId);
-        if (!headers) {
-            headers = [];
-            map.put(header.frameId, headers);
+        var headersById = map.get(header.frameId);
+        if (!headersById) {
+            headersById = new StringMap();
+            map.put(header.frameId, headersById);
         }
-        headers.push(header);
+        headersById.put(header.id, header);
         var uiSourceCode = this._workspace.uiSourceCodeForURL(url);
         if (uiSourceCode)
             this._bindUISourceCode(uiSourceCode, header);
@@ -109,7 +109,26 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     removeHeader: function(header)
     {
-        // Do nothing as of yet.
+        var url = header.resourceURL();
+        if (!url)
+            return;
+
+        this._cssModel.setSourceMapping(url, null);
+        var map = this._urlToHeadersByFrameId[url];
+        console.assert(map);
+        var headersById = map.get(header.frameId);
+        console.assert(headersById);
+        headersById.remove(header.id);
+
+        if (!headersById.size()) {
+            map.remove(header.frameId);
+            if (!map.size()) {
+                delete this._urlToHeadersByFrameId[url];
+                var uiSourceCode = this._workspace.uiSourceCodeForURL(url);
+                if (uiSourceCode)
+                    this._unbindUISourceCode(uiSourceCode);
+            }
+        }
     },
 
     /**
@@ -133,7 +152,7 @@ WebInspector.StylesSourceMapping.prototype = {
         var url = uiSourceCode.url;
         if (!url || !this._urlToHeadersByFrameId[url])
             return;
-        this._bindUISourceCode(uiSourceCode, this._urlToHeadersByFrameId[url].values()[0][0]);
+        this._bindUISourceCode(uiSourceCode, this._urlToHeadersByFrameId[url].values()[0].values()[0]);
     },
 
     /**
