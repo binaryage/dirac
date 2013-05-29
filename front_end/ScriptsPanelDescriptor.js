@@ -70,6 +70,7 @@ WebInspector.ScriptsPanelDescriptor.prototype = {
         section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.EvaluateSelectionInConsole, WebInspector.UIString("Evaluate selection in console"));
         section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.GoToMember, WebInspector.UIString("Go to member"));
         section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.ToggleBreakpoint, WebInspector.UIString("Toggle breakpoint"));
+        section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.ToggleComment, WebInspector.UIString("Toggle comment"));
     },
 
     __proto__: WebInspector.PanelDescriptor.prototype
@@ -81,8 +82,7 @@ WebInspector.ScriptsPanelDescriptor.ShortcutKeys = {
     ],
 
     PauseContinue: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F8),
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Slash, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F8)
     ],
 
     StepOver: [
@@ -118,5 +118,10 @@ WebInspector.ScriptsPanelDescriptor.ShortcutKeys = {
 
     PrevCallFrame: [
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Comma, WebInspector.KeyboardShortcut.Modifiers.Ctrl)
+    ],
+
+    ToggleComment: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Slash, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+
     ]
 };

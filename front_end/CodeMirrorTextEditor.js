@@ -37,6 +37,7 @@ importScript("cm/matchbrackets.js");
 importScript("cm/closebrackets.js");
 importScript("cm/markselection.js");
 importScript("cm/showhint.js");
+importScript("cm/comment.js");
 
 /**
  * @constructor
@@ -73,7 +74,9 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         autoCloseBrackets: true
     });
 
-    var extraKeys = {"Ctrl-Space": "autocomplete"};
+    var extraKeys = {};
+    extraKeys["Ctrl-Space"] = "autocomplete";
+    extraKeys[(WebInspector.isMac() ? "Cmd-" : "Ctrl-") + "/"] = "toggleComment";
     var indent = WebInspector.settings.textEditorIndent.get();
     if (indent === WebInspector.TextUtils.Indent.TabCharacter) {
         this._codeMirror.setOption("indentWithTabs", true);
