@@ -113,6 +113,14 @@ WebInspector.ProfileType.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isEnabled: function()
+    {
+        return true;
+    },
+
+    /**
      * @return {!Array.<!WebInspector.ProfileHeader>}
      */
     getProfiles: function()
