@@ -168,7 +168,7 @@
 .data-grid th.sort-descending > div::after {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .data-grid th.sort-ascending > div::after {
     background-position: -4px -108px;
@@ -212,7 +212,7 @@ body.inactive .data-grid th.sort-descending {
 .data-grid tr.parent td.disclosure::before {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .data-grid tr.expanded td.disclosure::before {
     -webkit-mask-position: -20px -96px;

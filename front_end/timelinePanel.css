@@ -182,7 +182,7 @@
 .timeline-category-checkbox-checked {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .timeline-tree-item {
     height: 18px;
@@ -225,7 +225,7 @@
 .timeline-expandable-arrow {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .timeline-expandable-collapsed .timeline-expandable-arrow {
     background-position: -4px -96px;
@@ -280,7 +280,7 @@
 .timeline-tree-item.child-warning::after {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .timeline-tree-item.child-warning::after {
     opacity: 0.5;
@@ -481,7 +481,7 @@
 #timeline-overview-sidebar .icon {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .timeline-overview-sidebar-events .icon {
     -webkit-mask-position: -192px -48px;

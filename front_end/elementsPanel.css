@@ -354,7 +354,7 @@
 .styles-section.matched-styles .properties li.parent .expand-element {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media* /
 
 .styles-section.matched-styles .properties li.parent .expand-element {
     background-position: -4px -96px;
@@ -505,7 +505,7 @@
 .event-bars .event-bar .header::before {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .event-bars .event-bar .header::before {
     background-position: -4px -96px;

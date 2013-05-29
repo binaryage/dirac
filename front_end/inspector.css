@@ -629,7 +629,7 @@ body.dock-to-bottom .toolbar-item.console .toolbar-icon {
 .close-button-gray {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .close-button:hover {
     background-position: -96px -216px;
@@ -836,7 +836,7 @@ body.drawer-visible #floating-status-bar-container {
 .long-click-glyph {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .long-click-glyph.shadow {
     top: 1px;
@@ -900,7 +900,7 @@ button.status-bar-item.extension {
 .status-bar-select-arrow {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 select.status-bar-item {
     min-width: 48px;
@@ -932,7 +932,7 @@ select.status-bar-item:hover {
 .status-bar-item > .glyph {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 button.dock-status-bar-item.status-bar-item.toggled-undock .glyph {
     -webkit-mask-position: 0 -48px;
@@ -1013,7 +1013,7 @@ body.remote .dock-status-bar-item {
 .orange-ball {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .error-icon-small {
     background-position: -213px -96px;
@@ -1195,7 +1195,7 @@ body.platform-linux .source-code {
 .console-group-title::before {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .console-message > .outline-disclosure li.parent::before {
     top: 0;
@@ -1265,7 +1265,7 @@ body.platform-linux .source-code {
 .console-group-title::before {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .console-group .console-group-title::before {
     -webkit-mask-position: -20px -96px;
@@ -1323,7 +1323,7 @@ body.platform-linux .source-code {
 .console-debug-level::before {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .console-warning-level::before {
     background-position: -202px -107px;
@@ -1666,7 +1666,7 @@ iframe.panel.extension {
 .outline-disclosure li.parent::before {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .outline-disclosure li.parent::before {
     -webkit-mask-position: -4px -96px;
@@ -1775,7 +1775,7 @@ iframe.panel.extension {
 .section > .header::before {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .section > .header::before {
     background-position: -4px -96px;
@@ -1882,7 +1882,7 @@ iframe.panel.extension {
 .properties-tree li.parent::before {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .properties-tree li.parent::before {
     background-position: -4px -96px;
@@ -2276,7 +2276,7 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
 .sidebar-tree-item .disclosure-button {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .sidebar-tree.hide-disclosure-buttons .sidebar-tree-item .disclosure-button {
     display: none;
@@ -2828,7 +2828,7 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
 #search-results-pane-file-based li.parent::before {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 #search-results-pane-file-based li.parent::before {
     background-position: -4px -96px;

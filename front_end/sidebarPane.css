@@ -110,7 +110,7 @@
 .sidebar-pane-title::before {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .sidebar-pane-title::before {
     background-position: -4px -96px;

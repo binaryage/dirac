@@ -163,7 +163,7 @@ li.selected .base-storage-tree-element-subtitle {
 .database-query-result::before {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
-}
+} /* media */
 
 .database-query-prompt::before {
     background-position: -192px -96px;

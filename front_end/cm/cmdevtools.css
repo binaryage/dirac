@@ -54,13 +54,13 @@
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
-  .cm-breakpoint .CodeMirror-linenumber {
-    -webkit-border-image: url(Images/breakpoint2_2x.png) 2 8 2 2;
-  }
-  .cm-breakpoint.cm-breakpoint-conditional .CodeMirror-linenumber {
-    -webkit-border-image: url(Images/breakpointConditional2_2x.png) 2 8 2 2;
-  }
+.cm-breakpoint .CodeMirror-linenumber {
+  -webkit-border-image: url(Images/breakpoint2_2x.png) 2 8 2 2;
 }
+.cm-breakpoint.cm-breakpoint-conditional .CodeMirror-linenumber {
+  -webkit-border-image: url(Images/breakpointConditional2_2x.png) 2 8 2 2;
+}
+} /* media */
 
 .cm-breakpoint-disabled .CodeMirror-linenumber {
   opacity: 0.5;
