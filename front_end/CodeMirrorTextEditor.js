@@ -135,7 +135,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var backgroundColor = WebInspector.getSelectionBackgroundColor();
         var backgroundColorRule = backgroundColor ? ".CodeMirror .CodeMirror-selected { background-color: " + backgroundColor + ";}" : "";
         var foregroundColor = WebInspector.getSelectionForegroundColor();
-        var foregroundColorRule = foregroundColor ? ".CodeMirror .CodeMirror-selectedtext { color: " + foregroundColor + "!important;}" : "";
+        var foregroundColorRule = foregroundColor ? ".CodeMirror .CodeMirror-selectedtext:not(.CodeMirror-persist-highlight) { color: " + foregroundColor + "!important;}" : "";
         if (!foregroundColorRule && !backgroundColorRule)
             return;
 
@@ -346,6 +346,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     highlightRange: function(range, cssClass)
     {
+        cssClass = "CodeMirror-persist-highlight " + cssClass;
         var pos = this._toPos(range);
         ++pos.end.ch;
         return this._codeMirror.markText(pos.start, pos.end, {
