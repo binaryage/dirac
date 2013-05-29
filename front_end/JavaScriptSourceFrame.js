@@ -216,12 +216,28 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     {
         if (!WebInspector.debuggerModel.isPaused())
             return null;
-        if (window.getSelection().type === "Range")
-            return null;
 
         var textPosition = this.textEditor.coordinatesToCursorPosition(event.x, event.y);
         if (!textPosition)
             return null;
+        var mouseLine = textPosition.startLine;
+        var mouseColumn = textPosition.startColumn;
+        var textSelection = this.textEditor.selection();
+        if (textSelection && !textSelection.isEmpty()) {
+            if (textSelection.startLine !== textSelection.endLine || textSelection.startLine !== mouseLine || mouseColumn < textSelection.startColumn || mouseColumn > textSelection.endColumn)
+                return null;
+
+            var leftCorner = this.textEditor.cursorPositionToCoordinates(textSelection.startLine, textSelection.startColumn);
+            var rightCorner = this.textEditor.cursorPositionToCoordinates(textSelection.endLine, textSelection.endColumn);
+            var anchorBox = new AnchorBox(leftCorner.x, leftCorner.y, rightCorner.x - leftCorner.x, leftCorner.height);
+            anchorBox.highlight = {
+                lineNumber: textSelection.startLine,
+                startColumn: textSelection.startColumn,
+                endColumn: textSelection.endColumn - 1
+            };
+            anchorBox.forSelection = true;
+            return anchorBox;
+        }
 
         var token = this.textEditor.tokenAtTextPosition(textPosition.startLine, textPosition.startColumn);
         if (!token)
@@ -236,8 +252,11 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var rightCorner = this.textEditor.cursorPositionToCoordinates(lineNumber, token.endColumn + 1);
         var anchorBox = new AnchorBox(leftCorner.x, leftCorner.y, rightCorner.x - leftCorner.x, leftCorner.height);
 
-        anchorBox.token = token;
-        anchorBox.lineNumber = lineNumber;
+        anchorBox.highlight = {
+            lineNumber: lineNumber,
+            startColumn: token.startColumn,
+            endColumn: token.endColumn
+        };
 
         return anchorBox;
     },
@@ -258,7 +277,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             showCallback(WebInspector.RemoteObject.fromPayload(result), wasThrown, this._popoverAnchorBox);
             // Popover may have been removed by showCallback().
             if (this._popoverAnchorBox) {
-                var highlightRange = new WebInspector.TextRange(anchorBox.lineNumber, startHighlight, anchorBox.lineNumber, endHighlight);
+                var highlightRange = new WebInspector.TextRange(lineNumber, startHighlight, lineNumber, endHighlight);
                 this._popoverAnchorBox._highlightDescriptor = this.textEditor.highlightRange(highlightRange, "source-frame-eval-expression");
             }
         }
@@ -267,14 +286,15 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             this._popoverHelper.hidePopover();
             return;
         }
-
-        var startHighlight = anchorBox.token.startColumn;
-        var endHighlight = anchorBox.token.endColumn;
-        var line = this.textEditor.line(anchorBox.lineNumber);
-        while (startHighlight > 1 && line.charAt(startHighlight - 1) === '.')
-            startHighlight = this.textEditor.tokenAtTextPosition(anchorBox.lineNumber, startHighlight - 2).startColumn;
+        var lineNumber = anchorBox.highlight.lineNumber;
+        var startHighlight = anchorBox.highlight.startColumn;
+        var endHighlight = anchorBox.highlight.endColumn;
+        var line = this.textEditor.line(lineNumber);
+        if (!anchorBox.forSelection) {
+            while (startHighlight > 1 && line.charAt(startHighlight - 1) === '.')
+                startHighlight = this.textEditor.tokenAtTextPosition(lineNumber, startHighlight - 2).startColumn;
+        }
         var evaluationText = line.substring(startHighlight, endHighlight + 1);
-
         var selectedCallFrame = WebInspector.debuggerModel.selectedCallFrame();
         selectedCallFrame.evaluate(evaluationText, objectGroupName, false, true, false, false, showObjectPopover.bind(this));
     },
