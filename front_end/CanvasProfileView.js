@@ -522,12 +522,20 @@ WebInspector.CanvasProfileType = function()
     WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.FrameExecutionContextListAdded, this._frameAdded, this);
     WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.FrameExecutionContextListRemoved, this._frameRemoved, this);
 
-    this._dispatcher = new WebInspector.CanvasDispatcher(this);
-    this._canvasAgentEnabled = false;
-
     this._decorationElement = document.createElement("div");
-    this._decorationElement.className = "profile-canvas-decoration";
-    this._updateDecorationElement();
+    this._decorationElement.className = "profile-canvas-decoration hidden";
+    this._decorationElement.createChild("div", "warning-icon-small");
+    this._decorationElement.appendChild(document.createTextNode(WebInspector.UIString("There is an uninstrumented canvas on the page. Reload the page to instrument it.")));
+    var reloadPageButton = this._decorationElement.createChild("button");
+    reloadPageButton.type = "button";
+    reloadPageButton.textContent = WebInspector.UIString("Reload");
+    reloadPageButton.addEventListener("click", this._onReloadPageButtonClick.bind(this), false);
+
+    this._dispatcher = new WebInspector.CanvasDispatcher(this);
+
+    // FIXME: enable/disable by a UI action?
+    CanvasAgent.enable(this._updateDecorationElement.bind(this));
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._updateDecorationElement, this);
 }
 
 WebInspector.CanvasProfileType.TypeId = "CANVAS_PROFILE";
@@ -552,8 +560,6 @@ WebInspector.CanvasProfileType.prototype = {
      */
     buttonClicked: function()
     {
-        if (!this._canvasAgentEnabled)
-            return false;
         if (this._recording) {
             this._recording = false;
             this._stopFrameCapturing();
@@ -674,64 +680,26 @@ WebInspector.CanvasProfileType.prototype = {
         return new WebInspector.CanvasProfileHeader(this, profile.title, -1);
     },
 
-    /**
-     * @param {boolean=} forcePageReload
-     */
-    _updateDecorationElement: function(forcePageReload)
+    _updateDecorationElement: function()
     {
-        this._decorationElement.removeChildren();
-        this._decorationElement.createChild("div", "warning-icon-small");
-        this._decorationElement.appendChild(document.createTextNode(this._canvasAgentEnabled ? WebInspector.UIString("Canvas Profiler is enabled.") : WebInspector.UIString("Canvas Profiler is disabled.")));
-        var button = this._decorationElement.createChild("button");
-        button.type = "button";
-        button.textContent = this._canvasAgentEnabled ? WebInspector.UIString("Disable") : WebInspector.UIString("Enable");
-        button.addEventListener("click", this._onProfilerEnableButtonClick.bind(this, !this._canvasAgentEnabled), false);
-
-        if (forcePageReload) {
-            if (this._canvasAgentEnabled) {
-                /**
-                 * @param {?Protocol.Error} error
-                 * @param {boolean} result
-                 */
-                function hasUninstrumentedCanvasesCallback(error, result)
-                {
-                    if (error || result)
-                        PageAgent.reload();
-                }
-                CanvasAgent.hasUninstrumentedCanvases(hasUninstrumentedCanvasesCallback.bind(this));
-            } else {
-                for (var frameId in this._framesWithCanvases) {
-                    if (this._framesWithCanvases.hasOwnProperty(frameId)) {
-                        PageAgent.reload();
-                        break;
-                    }
-                }
-            }
+        /**
+         * @param {?Protocol.Error} error
+         * @param {boolean} result
+         */
+        function callback(error, result)
+        {
+            var hideWarning = (error || !result);
+            this._decorationElement.enableStyleClass("hidden", hideWarning);
         }
+        CanvasAgent.hasUninstrumentedCanvases(callback.bind(this));
     },
 
     /**
-     * @param {boolean} enable
+     * @param {MouseEvent} event
      */
-    _onProfilerEnableButtonClick: function(enable)
+    _onReloadPageButtonClick: function(event)
     {
-        if (this._canvasAgentEnabled === enable)
-            return;
-        /**
-         * @param {?Protocol.Error} error
-         */
-        function callback(error)
-        {
-            if (error)
-                return;
-            this._canvasAgentEnabled = enable;
-            this._updateDecorationElement(true);
-            this._dispatchViewUpdatedEvent();
-        }
-        if (enable)
-            CanvasAgent.enable(callback.bind(this));
-        else
-            CanvasAgent.disable(callback.bind(this));
+        PageAgent.reload(event.shiftKey);
     },
 
     /**
@@ -845,15 +813,6 @@ WebInspector.CanvasProfileType.prototype = {
     isInstantProfile: function()
     {
         return this._isSingleFrameMode();
-    },
-
-    /**
-     * @override
-     * @return {boolean}
-     */
-    isEnabled: function()
-    {
-        return this._canvasAgentEnabled;
     },
 
     __proto__: WebInspector.ProfileType.prototype
