@@ -56,14 +56,6 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this.registerRequiredCSS("cm/showhint.css");
     this.registerRequiredCSS("cm/cmdevtools.css");
 
-    function autocompleteCommand()
-    {
-        if (!this._dictionary || this._codeMirror.somethingSelected())
-            return;
-        CodeMirror.showHint(this._codeMirror, this._autocomplete.bind(this));
-    }
-    CodeMirror.commands.autocomplete = autocompleteCommand.bind(this);
-
     this._codeMirror = window.CodeMirror(this.element, {
         lineNumbers: true,
         gutters: ["CodeMirror-linenumbers"],
@@ -73,6 +65,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         electricChars: false,
         autoCloseBrackets: true
     });
+    this._codeMirror._codeMirrorTextEditor = this;
 
     var extraKeys = {};
     extraKeys["Ctrl-Space"] = "autocomplete";
@@ -114,6 +107,15 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this.element.tabIndex = 0;
     this._setupSelectionColor();
 }
+
+WebInspector.CodeMirrorTextEditor.autocompleteCommand = function(codeMirror)
+{
+    var textEditor = codeMirror._codeMirrorTextEditor;
+    if (!textEditor._dictionary || codeMirror.somethingSelected())
+        return;
+    CodeMirror.showHint(codeMirror, textEditor._autocomplete.bind(textEditor));
+}
+CodeMirror.commands.autocomplete = WebInspector.CodeMirrorTextEditor.autocompleteCommand;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
 
