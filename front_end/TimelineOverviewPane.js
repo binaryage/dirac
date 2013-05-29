@@ -785,40 +785,40 @@ WebInspector.TimelineFrameOverview.prototype = {
 
         this._context.save();
         this._context.beginPath();
-        this._context.font = 9 * window.devicePixelRatio + "px monospace";
+        this._context.font = (10 * window.devicePixelRatio) + "px " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
         this._context.textAlign = "right";
-        this._context.textBaseline = "top";
+        this._context.textBaseline = "alphabetic";
 
-        const labelPadding = 2 * window.devicePixelRatio;
+        const labelPadding = 4 * window.devicePixelRatio;
+        const baselineHeight = 3 * window.devicePixelRatio;
         var lineHeight = 12 * window.devicePixelRatio;
         var labelTopMargin = 0;
+        var labelOffsetY = 0; // Labels are going to be under their grid lines.
 
         for (var i = 0; i < fpsMarks.length; ++i) {
             var fps = fpsMarks[i];
             // Draw lines one pixel above they need to be, so 60pfs line does not cross most of the frames tops.
             var y = this._canvas.height - Math.floor(1.0 / fps * scale) - 0.5;
-            var label = fps + " FPS ";
-            var labelWidth = this._context.measureText(label).width;
+            var label = WebInspector.UIString("%d\u2009fps", fps);
+            var labelWidth = this._context.measureText(label).width + 2 * labelPadding;
             var labelX = this._canvas.width;
-            var labelY;
 
-            if (labelTopMargin < y - lineHeight)
-                labelY = y - lineHeight;
-            else if (y + lineHeight < this._canvas.height)
-                labelY = y;
-            else
+            if (!i && labelTopMargin < y - lineHeight)
+                labelOffsetY = -lineHeight; // Labels are going to be over their grid lines.
+            var labelY = y + labelOffsetY;
+            if (labelY < labelTopMargin || labelY + lineHeight > this._canvas.height)
                 break; // No space for the label, so no line as well.
 
             this._context.moveTo(0, y);
             this._context.lineTo(this._canvas.width, y);
 
-            this._context.fillStyle = "rgba(255, 255, 255, 0.75)";
-            this._context.fillRect(labelX - labelWidth - labelPadding, labelY, labelWidth + 2 * labelPadding, lineHeight);
-            this._context.fillStyle = "rgb(0, 0, 0)";
-            this._context.fillText(label, labelX, labelY);
+            this._context.fillStyle = "rgba(255, 255, 255, 0.5)";
+            this._context.fillRect(labelX - labelWidth, labelY, labelWidth, lineHeight);
+            this._context.fillStyle = "black";
+            this._context.fillText(label, labelX - labelPadding, labelY + lineHeight - baselineHeight);
             labelTopMargin = labelY + lineHeight;
         }
-        this._context.strokeStyle = "rgb(0, 0, 0, 0.3)";
+        this._context.strokeStyle = "rgba(128, 128, 128, 0.5)";
         this._context.stroke();
         this._context.restore();
     },
