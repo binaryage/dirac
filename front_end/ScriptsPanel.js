@@ -121,7 +121,6 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     }
 
     this.sidebarPanes.callstack.registerShortcuts(this.registerShortcuts.bind(this));
-    this.registerShortcuts(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.EvaluateSelectionInConsole, this._evaluateSelectionInConsole.bind(this));
     this.registerShortcuts(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.GoToMember, this._showOutlineDialog.bind(this));
     this.registerShortcuts(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.ToggleBreakpoint, this._toggleBreakpoint.bind(this));
 
@@ -763,19 +762,6 @@ WebInspector.ScriptsPanel.prototype = {
             WebInspector.inspectorView.element.addStyleClass("breakpoints-deactivated");
             this.sidebarPanes.jsBreakpoints.listElement.addStyleClass("breakpoints-list-deactivated");
         }
-    },
-
-    /**
-     * @param {Event=} event
-     * @return {boolean}
-     */
-    _evaluateSelectionInConsole: function(event)
-    {
-        var selection = window.getSelection();
-        if (selection.type !== "Range" || selection.isCollapsed)
-            return false;
-        WebInspector.evaluateInConsole(selection.toString());
-        return true;
     },
 
     _createDebugToolbar: function()

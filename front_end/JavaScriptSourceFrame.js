@@ -61,10 +61,30 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
 
+    this._registerShortcuts();
     this._updateScriptFile();
 }
 
 WebInspector.JavaScriptSourceFrame.prototype = {
+    _registerShortcuts: function()
+    {
+        var modifiers = WebInspector.KeyboardShortcut.Modifiers;
+        this.addShortcut(WebInspector.KeyboardShortcut.makeKey("e", modifiers.Shift | modifiers.Ctrl), this._evaluateSelectionInConsole.bind(this));
+    },
+
+    /**
+     * @param {Event=} event
+     * @return {boolean}
+     */
+    _evaluateSelectionInConsole: function(event)
+    {
+        var selection = this.textEditor.selection();
+        if (!selection || selection.isEmpty())
+            return false;
+        WebInspector.evaluateInConsole(this.textEditor.copyRange(selection));
+        return true;
+    },
+
     // View events
     wasShown: function()
     {
