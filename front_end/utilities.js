@@ -192,6 +192,18 @@ Number.constrain = function(num, min, max)
     return num;
 }
 
+/**
+ * @param {string} value
+ * @return {string}
+ */
+Number.toFixedIfFloating = function(value)
+{
+    if (!value || isNaN(value))
+        return value;
+    var number = Number(value);
+    return number % 1 ? number.toFixed(3) : String(number);
+}
+
 Date.prototype.toISO8601Compact = function()
 {
     function leadZero(x)

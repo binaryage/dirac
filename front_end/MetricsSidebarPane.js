@@ -150,6 +150,7 @@ WebInspector.MetricsSidebarPane.prototype = {
             else if (name === "position" && value === "auto")
                 value = "\u2012";
             value = value.replace(/px$/, "");
+            value = Number.toFixedIfFloating(value);
 
             var element = document.createElement("div");
             element.className = side;
@@ -168,7 +169,7 @@ WebInspector.MetricsSidebarPane.prototype = {
                 width = width - borderBox.left - borderBox.right - paddingBox.left - paddingBox.right;
             }
 
-            return width % 1 ? Number(width).toFixed(3) : width;
+            return Number.toFixedIfFloating(width);
         }
 
         function getContentAreaHeightPx(style)
@@ -181,7 +182,7 @@ WebInspector.MetricsSidebarPane.prototype = {
                 height = height - borderBox.top - borderBox.bottom - paddingBox.top - paddingBox.bottom;
             }
 
-            return height % 1 ? Number(height).toFixed(3) : height;
+            return Number.toFixedIfFloating(height);
         }
 
         // Display types for which margin is ignored.
