@@ -332,14 +332,14 @@ WebInspector.SourceFrame.prototype = {
      */
     setContent: function(content, contentEncoded, mimeType)
     {
-        this._textEditor.mimeType = this._simplifyMimeType(mimeType);
-
         if (!this._loaded) {
             this._loaded = true;
             this._textEditor.setText(content || "");
             this._textEditor.markClean();
         } else
             this._textEditor.editRange(this._textEditor.range(), content || "");
+
+        this._textEditor.mimeType = this._simplifyMimeType(mimeType);
 
         this._textEditor.beginUpdates();
 

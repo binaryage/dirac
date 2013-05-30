@@ -66,6 +66,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         autoCloseBrackets: true
     });
     this._codeMirror._codeMirrorTextEditor = this;
+    this._codeMirror.setOption("mode", null);
 
     var extraKeys = {};
     extraKeys["Ctrl-Space"] = "autocomplete";
@@ -116,6 +117,8 @@ WebInspector.CodeMirrorTextEditor.autocompleteCommand = function(codeMirror)
     CodeMirror.showHint(codeMirror, textEditor._autocomplete.bind(textEditor));
 }
 CodeMirror.commands.autocomplete = WebInspector.CodeMirrorTextEditor.autocompleteCommand;
+
+WebInspector.CodeMirrorTextEditor.SyntaxHighlightLineLengthThreshold = 1000;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
 
@@ -304,11 +307,27 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._codeMirror.markClean();
     },
 
+    _hasLongLines: function()
+    {
+        function lineIterator(lineHandle)
+        {
+            if (lineHandle.text.length > WebInspector.CodeMirrorTextEditor.SyntaxHighlightLineLengthThreshold)
+                hasLongLines = true;
+        }
+        var hasLongLines = false;
+        this._codeMirror.eachLine(lineIterator);
+        return hasLongLines;
+    },
+
     /**
      * @param {string} mimeType
      */
     set mimeType(mimeType)
     {
+        if (this._hasLongLines()) {
+            this._codeMirror.setOption("mode", null);
+            return;
+        }
         this._codeMirror.setOption("mode", mimeType);
         switch(mimeType) {
             case "text/html": this._codeMirror.setOption("theme", "web-inspector-html"); break;
