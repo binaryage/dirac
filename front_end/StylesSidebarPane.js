@@ -126,6 +126,9 @@ WebInspector.StylesSidebarPane.PseudoIdNames = [
     "-webkit-resizer", "-webkit-inner-spin-button", "-webkit-outer-spin-button"
 ];
 
+/**
+ * @param {string} name
+ */
 WebInspector.StylesSidebarPane.canonicalPropertyName = function(name)
 {
     if (!name || name.length < 9 || name.charAt(0) !== "-")
@@ -136,12 +139,51 @@ WebInspector.StylesSidebarPane.canonicalPropertyName = function(name)
     return match[1];
 }
 
-WebInspector.StylesSidebarPane.createExclamationMark = function(propertyName)
+/**
+ * @param {WebInspector.CSSProperty} property
+ */
+WebInspector.StylesSidebarPane.createExclamationMark = function(property)
 {
     var exclamationElement = document.createElement("div");
-    exclamationElement.className = "exclamation-mark warning-icon-small";
-    exclamationElement.title = WebInspector.CSSMetadata.cssPropertiesMetainfo.keySet()[propertyName.toLowerCase()] ? WebInspector.UIString("Invalid property value.") : WebInspector.UIString("Unknown property name.");
+    exclamationElement.className = "exclamation-mark" + (WebInspector.StylesSidebarPane._ignoreErrorsForProperty(property) ? "" : " warning-icon-small");
+    exclamationElement.title = WebInspector.CSSMetadata.cssPropertiesMetainfo.keySet()[property.name.toLowerCase()] ? WebInspector.UIString("Invalid property value.") : WebInspector.UIString("Unknown property name.");
     return exclamationElement;
+}
+
+/**
+ * @param {WebInspector.CSSProperty} property
+ */
+WebInspector.StylesSidebarPane._ignoreErrorsForProperty = function(property) {
+    function hasUnknownVendorPrefix(string)
+    {
+        return !string.startsWith("-webkit-") && /^[-_][\w\d]+-\w/.test(string);
+    }
+
+    var name = property.name.toLowerCase();
+
+    // IE hack.
+    if (name.charAt(0) === "_")
+        return true;
+
+    // IE has a different format for this.
+    if (name === "filter")
+        return true;
+
+    // Common IE-specific property prefix.
+    if (name.startsWith("scrollbar-"))
+        return true;
+    if (hasUnknownVendorPrefix(name))
+        return true;
+
+    var value = property.value.toLowerCase();
+
+    // IE hack.
+    if (value.endsWith("\9"))
+        return true;
+    if (hasUnknownVendorPrefix(value))
+        return true;
+
+    return false;
 }
 
 WebInspector.StylesSidebarPane.prototype = {
@@ -1489,7 +1531,9 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
                         childElement.listItemElement.addStyleClass("overloaded");
                     if (!property.parsedOk) {
                         childElement.listItemElement.addStyleClass("not-parsed-ok");
-                        childElement.listItemElement.insertBefore(WebInspector.StylesSidebarPane.createExclamationMark(property.name), childElement.listItemElement.firstChild);
+                        childElement.listItemElement.insertBefore(WebInspector.StylesSidebarPane.createExclamationMark(property), childElement.listItemElement.firstChild);
+                        if (WebInspector.StylesSidebarPane._ignoreErrorsForProperty(property))
+                            childElement.listItemElement.addStyleClass("has-ignorable-error");
                     }
                 }
             }
@@ -1630,6 +1674,11 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
     get inherited()
     {
         return this._inherited;
+    },
+
+    hasIgnorableError: function()
+    {
+        return !this.parsedOk && WebInspector.StylesSidebarPane._ignoreErrorsForProperty(this.property);
     },
 
     set inherited(x)
@@ -1927,7 +1976,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             var colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
             var colorProcessor = processValue.bind(window, colorRegex, processColor, null);
 
-            valueElement.appendChild(processValue(/url\(\s*([^)]+)\s*\)/g, linkifyURL.bind(this), WebInspector.CSSMetadata.isColorAwareProperty(self.name) ? colorProcessor : null, value));
+            valueElement.appendChild(processValue(/url\(\s*([^)]+)\s*\)/g, linkifyURL.bind(this), WebInspector.CSSMetadata.isColorAwareProperty(self.name) && self.parsedOk ? colorProcessor : null, value));
         }
 
         this.listItemElement.removeChildren();
@@ -1949,7 +1998,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             this.listItemElement.addStyleClass("not-parsed-ok");
 
             // Add a separate exclamation mark IMG element with a tooltip.
-            this.listItemElement.insertBefore(WebInspector.StylesSidebarPane.createExclamationMark(this.property.name), this.listItemElement.firstChild);
+            this.listItemElement.insertBefore(WebInspector.StylesSidebarPane.createExclamationMark(this.property), this.listItemElement.firstChild);
         }
         if (this.property.inactive)
             this.listItemElement.addStyleClass("inactive");
@@ -1960,10 +2009,15 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         if (!this.listItemElement)
             return;
 
-        if (this.style.isPropertyImplicit(this.name) || this.value === "initial")
+        if (this.style.isPropertyImplicit(this.name))
             this.listItemElement.addStyleClass("implicit");
         else
             this.listItemElement.removeStyleClass("implicit");
+
+        if (this.hasIgnorableError())
+            this.listItemElement.addStyleClass("has-ignorable-error");
+        else
+            this.listItemElement.removeStyleClass("has-ignorable-error");
 
         if (this.inherited)
             this.listItemElement.addStyleClass("inherited");
