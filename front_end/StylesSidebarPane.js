@@ -2557,12 +2557,16 @@ WebInspector.StylePropertyTreeElement.prototype = {
                 propertyText = "";
             else {
                 if (isEditingName)
-                    propertyText = userInput + ": " + this.valueElement.textContent;
+                    propertyText = userInput + ": " + this.property.value;
                 else
-                    propertyText = this.nameElement.textContent + ": " + userInput;
+                    propertyText = this.property.name + ": " + userInput;
             }
             this.applyStyleText(propertyText, true, true, false);
         } else {
+            if (isEditingName)
+                this.property.name = userInput;
+            else
+                this.property.value = userInput;
             if (!isDataPasted && !this._newProperty)
                 this.updateTitle();
             moveToNextCallback.call(this, this._newProperty, false, section);
