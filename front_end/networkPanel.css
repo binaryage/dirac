@@ -292,8 +292,9 @@
 }
 
 .resource-websocket .data-column div {
-    word-break: break-all;
-    white-space: pre-wrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .resource-websocket-row-outcoming {
