@@ -230,7 +230,7 @@ WebInspector.HAREntry.prototype = {
     {
         if (this._request.cached || this._request.statusCode === 304)
             return 0;
-        return this._request.transferSize - this._request.responseHeadersSize
+        return this._request.transferSize - this._request.responseHeadersSize;
     },
 
     /**
@@ -238,9 +238,9 @@ WebInspector.HAREntry.prototype = {
      */
     get responseCompression()
     {
-        if (this._request.cached || this._request.statusCode === 304)
+        if (this._request.cached || this._request.statusCode === 304 || this._request.statusCode === 206)
             return;
-        return this._request.resourceSize - (this._request.transferSize - this._request.responseHeadersSize);
+        return this._request.resourceSize - this.responseBodySize;
     }
 }
 

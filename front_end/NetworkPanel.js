@@ -448,7 +448,7 @@ WebInspector.NetworkLogView.prototype = {
         var maxTime = -1;
         for (var i = 0; i < this._requests.length; ++i) {
             var request = this._requests[i];
-            var requestTransferSize = (request.cached || !request.transferSize) ? 0 : request.transferSize;
+            var requestTransferSize = request.transferSize;
             transferSize += requestTransferSize;
             if (!this._filteredOutRequests.get(request)) {
                 selectedRequestsNumber++;
@@ -2266,8 +2266,8 @@ WebInspector.NetworkDataGridNode.prototype = {
             this._sizeCell.setTextAndTitle(WebInspector.UIString("(from cache)"));
             this._sizeCell.addStyleClass("network-dim-cell");
         } else {
-            var resourceSize = typeof this._request.resourceSize === "number" ? Number.bytesToString(this._request.resourceSize) : "?";
-            var transferSize = typeof this._request.transferSize === "number" ? Number.bytesToString(this._request.transferSize) : "?";
+            var resourceSize = Number.bytesToString(this._request.resourceSize);
+            var transferSize = Number.bytesToString(this._request.transferSize);
             this._sizeCell.setTextAndTitle(transferSize);
             this._sizeCell.removeStyleClass("network-dim-cell");
             this._appendSubtitle(this._sizeCell, resourceSize);
@@ -2427,9 +2427,6 @@ WebInspector.NetworkDataGridNode.SizeComparator = function(a, b)
         return 1;
     if (a._request.cached && !b._request.cached)
         return -1;
-
-    if (a._request.transferSize === b._request.transferSize)
-        return 0;
 
     return a._request.transferSize - b._request.transferSize;
 }

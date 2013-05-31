@@ -236,12 +236,12 @@ WebInspector.NetworkRequest.prototype = {
      */
     get transferSize()
     {
-        if (this.cached)
-            return 0;
+        if (typeof this._transferSize === "number")
+            return this._transferSize;
         if (this.statusCode === 304) // Not modified
             return this.responseHeadersSize;
-        if (this._transferSize !== undefined)
-            return this._transferSize;
+        if (this._cached)
+            return 0;
         // If we did not receive actual transfer size from network
         // stack, we prefer using Content-Length over resourceSize as
         // resourceSize may differ from actual transfer size if platform's
@@ -317,7 +317,7 @@ WebInspector.NetworkRequest.prototype = {
      */
     get cached()
     {
-        return this._cached;
+        return this._cached && !this._transferSize;
     },
 
     set cached(x)
