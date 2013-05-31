@@ -164,15 +164,8 @@ WebInspector.HeapSnapshotView.prototype = {
         var minId = event.data.minId;
         var maxId = event.data.maxId;
         this.selectedSizeText.setText(WebInspector.UIString("Selected size: %s", Number.bytesToString(event.data.size)));
-        if (this.constructorsDataGrid._minNodeId !== minId || this.constructorsDataGrid._maxNodeId !== maxId) {
-            // FIXME(loislo): we should implement rangeFilter method in constructorsDataGrid.
-            this.constructorsDataGrid._minNodeId = minId;
-            this.constructorsDataGrid._maxNodeId = maxId;
-            if (this.constructorsDataGrid.snapshot) {
-                this.constructorsDataGrid._profileIndex = 1;
-                this.constructorsDataGrid._populateChildren();
-            }
-        }
+        if (this.constructorsDataGrid.snapshot)
+            this.constructorsDataGrid.setSelectionRange(minId, maxId);
     },
 
     dispose: function()

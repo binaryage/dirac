@@ -524,7 +524,6 @@ WebInspector.HeapSnapshotRetainmentDataGrid.prototype = {
     __proto__: WebInspector.HeapSnapshotContainmentDataGrid.prototype
 }
 
-
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotViewportDataGrid}
@@ -543,6 +542,22 @@ WebInspector.HeapSnapshotConstructorsDataGrid = function()
     this._topLevelNodes = [];
 
     this._objectIdToSelect = null;
+}
+
+/**
+ * @constructor
+ * @param {number=} minNodeId
+ * @param {number=} maxNodeId
+ */
+WebInspector.HeapSnapshotConstructorsDataGrid.Request = function(minNodeId, maxNodeId)
+{
+    if (typeof minNodeId === "number") {
+        this.key = minNodeId + ".." + maxNodeId;
+        this.filter = "function(node) { var id = node.id(); return id > " + minNodeId + " && id <= " + maxNodeId + "; }";
+    } else {
+        this.key = "allObjects";
+        this.filter = null;
+    }
 }
 
 WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
@@ -594,39 +609,61 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
         }
     },
 
-    _aggregatesReceived: function(key, aggregates)
+    /**
+      * @param {number} minNodeId
+      * @param {number} maxNodeId
+      */
+    setSelectionRange: function(minNodeId, maxNodeId)
     {
-        for (var constructor in aggregates)
-            this.appendTopLevelNode(new WebInspector.HeapSnapshotConstructorNode(this, constructor, aggregates[constructor], key));
-        this.sortingChanged();
+        this._populateChildren(new WebInspector.HeapSnapshotConstructorsDataGrid.Request(minNodeId, maxNodeId));
     },
 
-    _populateChildren: function()
+    _aggregatesReceived: function(key, aggregates)
     {
-
+        this._requestInProgress = null;
+        if (this._nextRequest) {
+            this.snapshot.aggregates(false, this._nextRequest.key, this._nextRequest.filter, this._aggregatesReceived.bind(this, this._nextRequest.key));
+            this._requestInProgress = this._nextRequest;
+            this._nextRequest = null;
+        }
         this.dispose();
         this.removeTopLevelNodes();
         this.resetSortingCache();
+        for (var constructor in aggregates)
+            this.appendTopLevelNode(new WebInspector.HeapSnapshotConstructorNode(this, constructor, aggregates[constructor], key));
+        this.sortingChanged();
+        this._lastKey = key;
+    },
 
-        var key = this._profileIndex === -1 ? "allObjects" : this._minNodeId + ".." + this._maxNodeId;
-        var filter = this._profileIndex === -1 ? null : "function(node) { var id = node.id(); return id > " + this._minNodeId + " && id <= " + this._maxNodeId + "; }";
+    /**
+      * @param {WebInspector.HeapSnapshotConstructorsDataGrid.Request=} request
+      */
+    _populateChildren: function(request)
+    {
+        request = request || new WebInspector.HeapSnapshotConstructorsDataGrid.Request();
 
-        this.snapshot.aggregates(false, key, filter, this._aggregatesReceived.bind(this, key));
+        if (this._requestInProgress) {
+            this._nextRequest = this._requestInProgress.key === request.key ? null : request;
+            return;
+        }
+        if (this._lastKey === request.key)
+            return;
+        this._requestInProgress = request;
+        this.snapshot.aggregates(false, request.key, request.filter, this._aggregatesReceived.bind(this, request.key));
     },
 
     filterSelectIndexChanged: function(profiles, profileIndex)
     {
         this._profileIndex = profileIndex;
 
-        delete this._maxNodeId;
-        delete this._minNodeId;
-
-        if (this._profileIndex !== -1) {
-            this._minNodeId = profileIndex > 0 ? profiles[profileIndex - 1].maxJSObjectId : 0;
-            this._maxNodeId = profiles[profileIndex].maxJSObjectId;
+        var request = null;
+        if (profileIndex !== -1) {
+            var minNodeId = profileIndex > 0 ? profiles[profileIndex - 1].maxJSObjectId : 0;
+            var maxNodeId = profiles[profileIndex].maxJSObjectId;
+            request = new WebInspector.HeapSnapshotConstructorsDataGrid.Request(minNodeId, maxNodeId)
         }
 
-        this._populateChildren();
+        this._populateChildren(request);
     },
 
     __proto__: WebInspector.HeapSnapshotViewportDataGrid.prototype
