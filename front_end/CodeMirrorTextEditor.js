@@ -329,10 +329,13 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             return;
         }
         this._codeMirror.setOption("mode", mimeType);
-        switch(mimeType) {
-            case "text/html": this._codeMirror.setOption("theme", "web-inspector-html"); break;
-            case "text/css": this._codeMirror.setOption("theme", "web-inspector-css"); break;
-            case "text/javascript": this._codeMirror.setOption("theme", "web-inspector-js"); break;
+        switch (mimeType) {
+        case "text/html": this._codeMirror.setOption("theme", "web-inspector-html"); break;
+        case "text/css":
+        case "text/x-scss":
+            this._codeMirror.setOption("theme", "web-inspector-css");
+            break;
+        case "text/javascript": this._codeMirror.setOption("theme", "web-inspector-js"); break;
         }
     },
 
