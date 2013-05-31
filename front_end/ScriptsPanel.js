@@ -1246,7 +1246,11 @@ WebInspector.ScriptsPanel.prototype = {
 
     showGoToSourceDialog: function()
     {
-        WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement);
+        var uris = this._editorContainer.historyUris();
+        var defaultScores = {};
+        for (var i = 1; i < uris.length; ++i) // Skip current element
+            defaultScores[uris[i]] = uris.length - i;
+        WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement, undefined, defaultScores);
     },
 
     _dockSideChanged: function()

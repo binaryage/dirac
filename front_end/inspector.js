@@ -785,6 +785,7 @@ WebInspector.documentKeyDown = function(event)
 
     switch (event.keyIdentifier) {
         case "U+004F": // O key
+        case "U+0050": // P key
             if (!event.shiftKey && !event.altKey && WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
                 WebInspector.showPanel("scripts").showGoToSourceDialog();
                 event.consume(true);

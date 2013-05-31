@@ -90,6 +90,14 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
     {
         return this._rules[itemIndex].selectorText;
     },
+    /**
+     * @param {number} itemIndex
+     * @return {number}
+     */
+    itemScoreAt: function(itemIndex)
+    {
+        return 0;
+    },
 
     /**
      * @return {number}
