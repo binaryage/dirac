@@ -46,7 +46,6 @@ WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceP
     this._reset();
     WebInspector.fileManager.addEventListener(WebInspector.FileManager.EventTypes.SavedURL, this._fileSaveFinished, this);
     this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetChanged, this);
-    this._workspace.addEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._uiSourceCodeContentCommitted, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._reset, this);
 }
@@ -63,13 +62,10 @@ WebInspector.SASSSourceMapping.prototype = {
         if (isAddingRevision)
             return;
         var header = this._cssModel.styleSheetHeaderForId(id);
-        if (!header)
-            return;
-        var url = header.resourceURL();
-        if (!url)
+        if (!header || !header.sourceMapURL || !header.sourceURL || header.isInline || !WebInspector.experimentsSettings.sass.isEnabled())
             return;
 
-        this._cssModel.setSourceMapping(url, null);
+        header.popSourceMapping();
     },
 
     /**
@@ -135,7 +131,7 @@ WebInspector.SASSSourceMapping.prototype = {
         if (!completeSourceMapURL)
             return;
         this._completeSourceMapURLForCSSURL[header.sourceURL] = completeSourceMapURL;
-        this._loadSourceMapAndBindUISourceCode(header.sourceURL, false, completeSourceMapURL);
+        this._loadSourceMapAndBindUISourceCode(header, false, completeSourceMapURL);
     },
 
     /**
@@ -160,18 +156,18 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {string} cssURL
+     * @param {WebInspector.CSSStyleSheetHeader} header
      * @param {boolean} forceRebind
      * @param {string} completeSourceMapURL
      */
-    _loadSourceMapAndBindUISourceCode: function(cssURL, forceRebind, completeSourceMapURL)
+    _loadSourceMapAndBindUISourceCode: function(header, forceRebind, completeSourceMapURL)
     {
-        var sourceMap = this._loadSourceMapForStyleSheet(completeSourceMapURL, cssURL, forceRebind);
+        var sourceMap = this._loadSourceMapForStyleSheet(completeSourceMapURL, header.sourceURL, forceRebind);
         if (!sourceMap)
             return;
 
-        this._sourceMapByStyleSheetURL[cssURL] = sourceMap;
-        this._bindUISourceCode(cssURL, sourceMap);
+        this._sourceMapByStyleSheetURL[header.sourceURL] = sourceMap;
+        this._bindUISourceCode(header, sourceMap);
     },
 
     /**
@@ -212,12 +208,13 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {string} rawURL
+     * @param {WebInspector.CSSStyleSheetHeader} header
      * @param {WebInspector.SourceMap} sourceMap
      */
-    _bindUISourceCode: function(rawURL, sourceMap)
+    _bindUISourceCode: function(header, sourceMap)
     {
-        this._cssModel.setSourceMapping(rawURL, this);
+        header.pushSourceMapping(this);
+        var rawURL = header.sourceURL;
         var sources = sourceMap.sources();
         for (var i = 0; i < sources.length; ++i) {
             var url = sources[i];
@@ -277,22 +274,6 @@ WebInspector.SASSSourceMapping.prototype = {
     /**
      * @param {WebInspector.Event} event
      */
-    _uiSourceCodeAdded: function(event)
-    {
-        var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
-        if (uiSourceCode.contentType() !== WebInspector.resourceTypes.Stylesheet)
-            return;
-        var cssURLs = this._cssURLsForSASSURL[uiSourceCode.url];
-        // FIXME: we get back all the mappings that StylesSourceMapping stole from us.
-        // It should not have happened in the first place.
-        for (var i = 0; cssURLs && i < cssURLs.length; ++i)
-            this._cssModel.setSourceMapping(cssURLs[i], this);
-        uiSourceCode.setSourceMapping(this);
-    },
-
-    /**
-     * @param {WebInspector.Event} event
-     */
     _uiSourceCodeContentCommitted: function(event)
     {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data.uiSourceCode);
@@ -303,5 +284,7 @@ WebInspector.SASSSourceMapping.prototype = {
     {
         this._sourceMapByURL = {};
         this._sourceMapByStyleSheetURL = {};
+        this._cssURLsForSASSURL = {};
+        this._timeoutForURL = {};
     }
 }

@@ -37,7 +37,6 @@ WebInspector.CSSStyleModel = function(workspace)
 {
     this._workspace = workspace;
     this._pendingCommandsMajorState = [];
-    this._sourceMappings = {};
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.UndoRedoRequested, this._undoRedoRequested, this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.UndoRedoCompleted, this._undoRedoCompleted, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameCreatedOrNavigated, this._mainFrameCreatedOrNavigated, this);
@@ -523,7 +522,6 @@ WebInspector.CSSStyleModel.prototype = {
 
     _mainFrameCreatedOrNavigated: function()
     {
-        this._resetSourceMappings();
         this._resetStyleSheets();
     },
 
@@ -533,24 +531,6 @@ WebInspector.CSSStyleModel.prototype = {
         this._styleSheetIdsForURL = {};
         /** @type {!Object.<CSSAgent.StyleSheetId, !WebInspector.CSSStyleSheetHeader>} */
         this._styleSheetIdToHeader = {};
-    },
-
-    /**
-     * @param {string} url
-     * @param {WebInspector.SourceMapping} sourceMapping
-     */
-    setSourceMapping: function(url, sourceMapping)
-    {
-        if (sourceMapping)
-            this._sourceMappings[url] = sourceMapping;
-        else
-            delete this._sourceMappings[url];
-        this.updateLocations();
-    },
-
-    _resetSourceMappings: function()
-    {
-        this._sourceMappings = {};
     },
 
     _resetNamedFlowCollections: function()
@@ -586,16 +566,17 @@ WebInspector.CSSStyleModel.prototype = {
      */
     rawLocationToUILocation: function(rawLocation)
     {
-        var sourceMapping = this._sourceMappings[rawLocation.url];
-        if (sourceMapping) {
-            var uiLocation = sourceMapping.rawLocationToUILocation(rawLocation);
-            if (uiLocation)
-                return uiLocation;
-        }
-        var uiSourceCode = this._workspace.uiSourceCodeForURL(rawLocation.url);
-        if (!uiSourceCode)
+        var frameIdToSheetId = this._styleSheetIdsForURL[rawLocation.url];
+        if (!frameIdToSheetId)
             return null;
-        return new WebInspector.UILocation(uiSourceCode, rawLocation.lineNumber, rawLocation.columnNumber);
+        var styleSheetIds = Object.values(frameIdToSheetId);
+        var uiLocation;
+        for (var i = 0; !uiLocation && i < styleSheetIds.length; ++i) {
+            var header = this.styleSheetHeaderForId(styleSheetIds[i]);
+            console.assert(header);
+            uiLocation = header.rawLocationToUILocation(rawLocation.lineNumber, rawLocation.columnNumber);
+        }
+        return uiLocation || null;
     },
 
     __proto__: WebInspector.Object.prototype
@@ -1260,6 +1241,7 @@ WebInspector.CSSStyleSheetHeader = function(payload)
     this.startLine = payload.startLine;
     this.startColumn = payload.startColumn;
     this._locations = new Set();
+    this._sourceMappings = [];
 }
 
 WebInspector.CSSStyleSheetHeader.prototype = {
@@ -1300,6 +1282,35 @@ WebInspector.CSSStyleSheetHeader.prototype = {
     },
 
     /**
+     * @param {number} lineNumber
+     * @param {number=} columnNumber
+     * @return {?WebInspector.UILocation}
+     */
+    rawLocationToUILocation: function(lineNumber, columnNumber)
+    {
+        var uiLocation;
+        var rawLocation = new WebInspector.CSSLocation(this.resourceURL(), lineNumber, columnNumber || 0);
+        for (var i = this._sourceMappings.length - 1; !uiLocation && i >= 0; --i)
+            uiLocation = this._sourceMappings[i].rawLocationToUILocation(rawLocation);
+        return uiLocation || null;
+    },
+
+    /**
+     * @param {WebInspector.SourceMapping} sourceMapping
+     */
+    pushSourceMapping: function(sourceMapping)
+    {
+        this._sourceMappings.push(sourceMapping);
+        this.updateLocations();
+    },
+
+    popSourceMapping: function()
+    {
+        this._sourceMappings.pop();
+        this.updateLocations();
+    },
+
+    /**
      * @return {string}
      */
     _key: function()
@@ -1327,7 +1338,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
      */
     contentURL: function()
     {
-        return this.sourceURL;
+        return this.resourceURL();
     },
 
     /**
