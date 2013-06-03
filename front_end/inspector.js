@@ -648,7 +648,11 @@ WebInspector.documentClick = function(event)
 
     function followLink()
     {
-        if (WebInspector.isBeingEdited(event.target) || WebInspector._showAnchorLocation(anchor))
+        if (WebInspector.isBeingEdited(event.target))
+            return;
+        if (WebInspector.openAnchorLocationRegistry.dispatch({ url: anchor.href, lineNumber: anchor.lineNumber}))
+            return;
+        if (WebInspector.showAnchorLocation(anchor))
             return;
 
         const profileMatch = WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp.exec(anchor.href);
@@ -1012,10 +1016,8 @@ WebInspector._updateFocusedNode = function(nodeId)
     WebInspector.showPanel("elements").revealAndSelectNode(nodeId);
 }
 
-WebInspector._showAnchorLocation = function(anchor)
+WebInspector.showAnchorLocation = function(anchor)
 {
-    if (WebInspector.openAnchorLocationRegistry.dispatch({ url: anchor.href, lineNumber: anchor.lineNumber}))
-        return true;
     var preferredPanel = this.panels[anchor.preferredPanel];
     if (preferredPanel && WebInspector._showAnchorLocationInPanel(anchor, preferredPanel))
         return true;

@@ -68,6 +68,7 @@ WebInspector.ExtensionServer = function()
     this._registerHandler(commands.ShowPanel, this._onShowPanel.bind(this));
     this._registerHandler(commands.StopAuditCategoryRun, this._onStopAuditCategoryRun.bind(this));
     this._registerHandler(commands.Subscribe, this._onSubscribe.bind(this));
+    this._registerHandler(commands.OpenResource, this._onOpenResource.bind(this));
     this._registerHandler(commands.Unsubscribe, this._onUnsubscribe.bind(this));
     this._registerHandler(commands.UpdateButton, this._onUpdateButton.bind(this));
     this._registerHandler(commands.UpdateAuditProgress, this._onUpdateAuditProgress.bind(this));
@@ -270,6 +271,14 @@ WebInspector.ExtensionServer.prototype = {
         if (!sidebar)
             return this._status.E_NOTFOUND(message.id);
         sidebar.setPage(this._expandResourcePath(port._extensionOrigin, message.page));
+    },
+
+    _onOpenResource: function(message)
+    {
+        var a = document.createElement("a");
+        a.href = message.url;
+        a.lineNumber = message.lineNumber;
+        return WebInspector.showAnchorLocation(a) ? this._status.OK() : this._status.E_NOTFOUND(message.url);
     },
 
     _onSetOpenResourceHandler: function(message, port)

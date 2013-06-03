@@ -245,6 +245,11 @@ WebInspector.evaluateInConsole = function(expression, showResultOnly) {}
 
 WebInspector.queryParamsObject = {}
 
+/**
+ * @param {Element} element
+ */
+WebInspector.showAnchorLocation = function(element) {}
+
 WebInspector.Events = {
     InspectorLoaded: "InspectorLoaded",
     InspectorClosing: "InspectorClosing"
