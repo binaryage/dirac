@@ -80,10 +80,6 @@ WebInspector.Settings = function()
     this.deviceMetrics = this.createSetting("deviceMetrics", "");
     this.deviceFitWindow = this.createSetting("deviceFitWindow", false);
     this.emulateTouchEvents = this.createSetting("emulateTouchEvents", false);
-    this.showPaintRects = this.createSetting("showPaintRects", false);
-    this.continuousPainting = this.createSetting("continuousPainting", false);
-    this.showDebugBorders = this.createSetting("showDebugBorders", false);
-    this.showFPSCounter = this.createSetting("showFPSCounter", false);
     this.showShadowDOM = this.createSetting("showShadowDOM", false);
     this.zoomLevel = this.createSetting("zoomLevel", 0);
     this.savedURLs = this.createSetting("savedURLs", {});
@@ -123,6 +119,19 @@ WebInspector.Settings.prototype = {
     {
         if (!this._registry[key])
             this._registry[key] = new WebInspector.Setting(key, defaultValue, this._eventSupport, window.localStorage);
+        return this._registry[key];
+    },
+
+    /**
+     * @param {string} key
+     * @param {*} defaultValue
+     * @param {function(*, function(string, ...))} setterCallback
+     * @return {!WebInspector.Setting}
+     */
+    createBackendSetting: function(key, defaultValue, setterCallback)
+    {
+        if (!this._registry[key])
+            this._registry[key] = new WebInspector.BackendSetting(key, defaultValue, this._eventSupport, window.localStorage, setterCallback);
         return this._registry[key];
     }
 }
@@ -187,6 +196,44 @@ WebInspector.Setting.prototype = {
         this._eventSupport.dispatchEventToListeners(this._name, value);
     }
 }
+
+/**
+ * @constructor
+ * @extends {WebInspector.Setting}
+ * @param {string} name
+ * @param {*} defaultValue
+ * @param {!WebInspector.Object} eventSupport
+ * @param {?Storage} storage
+ * @param {function(*,function(string, ...))} setterCallback
+ */
+WebInspector.BackendSetting = function(name, defaultValue, eventSupport, storage, setterCallback)
+{
+    WebInspector.Setting.call(this, name, defaultValue, eventSupport, storage);
+    this._setterCallback = setterCallback;
+    var currentValue = this.get();
+    if (currentValue !== defaultValue) {
+        this._value = defaultValue; // Make sure we're in sync with backend, in case setting fails.
+        this.set(currentValue);
+    }
+}
+
+WebInspector.BackendSetting.prototype = {
+    set: function(value)
+    {
+        function callback(error)
+        {
+            if (error) {
+                WebInspector.log("Error applying setting " + this._name + ": " + error);
+                this._eventSupport.dispatchEventToListeners(this._name, this._value);
+                return;
+            }
+            WebInspector.Setting.prototype.set.call(this, value);
+        }
+        this._setterCallback(value, callback.bind(this));
+    },
+
+    __proto__: WebInspector.Setting.prototype
+};
 
 /**
  * @constructor

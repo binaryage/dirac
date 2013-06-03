@@ -328,19 +328,12 @@ WebInspector.GenericSettingsTab = function()
 
     p = this._appendSection(WebInspector.UIString("Rendering"));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show paint rectangles"), WebInspector.settings.showPaintRects));
-    WebInspector.settings.showPaintRects.addChangeListener(this._showPaintRectsChanged, this);
-
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show composited layer borders"), WebInspector.settings.showDebugBorders));
-    WebInspector.settings.showDebugBorders.addChangeListener(this._showDebugBordersChanged, this);
 
-    if (Capabilities.canShowFPSCounter) {
+    if (Capabilities.canShowFPSCounter)
         p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show FPS meter"), WebInspector.settings.showFPSCounter));
-        WebInspector.settings.showFPSCounter.addChangeListener(this._showFPSCounterChanged, this);
-    }
-    if (Capabilities.canContinuouslyPaint) {
+    if (Capabilities.canContinuouslyPaint)
         p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Enable continuous page repainting"), WebInspector.settings.continuousPainting));
-        WebInspector.settings.continuousPainting.addChangeListener(this._continuousPaintingChanged, this);
-    }
 
     p = this._appendSection(WebInspector.UIString("Sources"));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Search in content scripts"), WebInspector.settings.searchInContentScripts));
@@ -388,26 +381,6 @@ WebInspector.GenericSettingsTab = function()
 }
 
 WebInspector.GenericSettingsTab.prototype = {
-    _showPaintRectsChanged: function()
-    {
-        PageAgent.setShowPaintRects(WebInspector.settings.showPaintRects.get());
-    },
-
-    _showDebugBordersChanged: function()
-    {
-        PageAgent.setShowDebugBorders(WebInspector.settings.showDebugBorders.get());
-    },
-
-    _showFPSCounterChanged: function()
-    {
-        PageAgent.setShowFPSCounter(WebInspector.settings.showFPSCounter.get());
-    },
-
-    _continuousPaintingChanged: function()
-    {
-        PageAgent.setContinuousPaintingEnabled(WebInspector.settings.continuousPainting.get());
-    },
-
     /**
      * @param {HTMLFieldSetElement} fieldset
      */

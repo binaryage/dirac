@@ -464,3 +464,9 @@ WebInspector.reload = function() { }
 
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;
+
+WebInspector.settings.continuousPainting = /** type {WebInspector.Setting} */ { }
+WebInspector.settings.showDebugBorders = /** type {WebInspector.Setting} */ { }
+WebInspector.settings.showFPSCounter = /** type {WebInspector.Setting} */ { }
+WebInspector.settings.showPaintRects = /** type {WebInspector.Setting} */ { }
+WebInspector.settings.showFPSCounter = /** type {WebInspector.Setting} */ { }
