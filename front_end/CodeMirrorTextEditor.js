@@ -422,12 +422,12 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     revealLine: function(lineNumber)
     {
         var pos = new CodeMirror.Pos(lineNumber, 0);
-        var topLine = this._topScrolledLine();
-        var bottomLine = this._bottomScrolledLine();
+        var scrollInfo = this._codeMirror.getScrollInfo();
+        var topLine = this._codeMirror.lineAtHeight(scrollInfo.top, "local");
+        var bottomLine = this._codeMirror.lineAtHeight(scrollInfo.top + scrollInfo.clientHeight, "local");
 
         var margin = null;
         var lineMargin = 3;
-        var scrollInfo = this._codeMirror.getScrollInfo();
         if ((lineNumber < topLine + lineMargin) || (lineNumber >= bottomLine - lineMargin)) {
             // scrollIntoView could get into infinite loop if margin exceeds half of the clientHeight.
             margin = (scrollInfo.clientHeight*0.9/2) >>> 0;
@@ -675,42 +675,12 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._delegate.selectionChanged(this._toRange(start, end));
     },
 
-    _coordsCharLocal: function(coords)
-    {
-        var top = coords.top;
-        var totalLines = this._codeMirror.lineCount();
-        var begin = 0;
-        var end = totalLines - 1;
-        while (end - begin > 1) {
-            var middle = (begin + end) >> 1;
-            coords = this._codeMirror.charCoords(new CodeMirror.Pos(middle, 0), "local");
-            if (coords.top >= top)
-                end = middle;
-            else
-                begin = middle;
-        }
-
-        return end;
-    },
-
-    _topScrolledLine: function()
-    {
-        var scrollInfo = this._codeMirror.getScrollInfo();
-        // Workaround for CodeMirror's coordsChar incorrect result for "local" mode.
-        return this._coordsCharLocal(scrollInfo);
-    },
-
-    _bottomScrolledLine: function()
-    {
-        var scrollInfo = this._codeMirror.getScrollInfo();
-        scrollInfo.top += scrollInfo.clientHeight;
-        // Workaround for CodeMirror's coordsChar incorrect result for "local" mode.
-        return this._coordsCharLocal(scrollInfo);
-    },
-
     _scroll: function()
     {
-        this._delegate.scrollChanged(this._topScrolledLine());
+        if (this._scrollTimer)
+            clearTimeout(this._scrollTimer);
+        var topmostLineNumber = this._codeMirror.lineAtHeight(this._codeMirror.getScrollInfo().top, "local");
+        this._scrollTimer = setTimeout(this._delegate.scrollChanged.bind(this._delegate, topmostLineNumber), 100);
     },
 
     /**
