@@ -160,10 +160,11 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     _bindUISourceCode: function(uiSourceCode, header)
     {
+        if (uiSourceCode.styleFile() || header.isInline)
+            return;
         var url = uiSourceCode.url;
         uiSourceCode.setSourceMapping(this);
-        if (!uiSourceCode.styleFile() && !header.isInline)
-            uiSourceCode.setStyleFile(new WebInspector.StyleFile(uiSourceCode));
+        uiSourceCode.setStyleFile(new WebInspector.StyleFile(uiSourceCode));
         header.updateLocations();
     },
 
