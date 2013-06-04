@@ -55,23 +55,30 @@ WebInspector.SourceMap = function(sourceMappingURL, payload)
 /**
  * @param {string} sourceMapURL
  * @param {string} compiledURL
- * @return {WebInspector.SourceMap}
+ * @param {function(WebInspector.SourceMap)} callback
  */
-WebInspector.SourceMap.load = function(sourceMapURL, compiledURL)
+WebInspector.SourceMap.load = function(sourceMapURL, compiledURL, callback)
 {
-    try {
-        // FIXME: make sendRequest async.
-        var response = InspectorFrontendHost.loadResourceSynchronously(sourceMapURL);
-        if (!response)
-            return null;
-        if (response.slice(0, 3) === ")]}")
-            response = response.substring(response.indexOf('\n'));
-        var payload = /** @type {SourceMapV3} */ (JSON.parse(response));
-        var baseURL = sourceMapURL.startsWith("data:") ? compiledURL : sourceMapURL;
-        return new WebInspector.SourceMap(baseURL, payload);
-    } catch(e) {
-        console.error(e.message);
-        return null;
+    NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, sourceMapURL, contentLoaded.bind(this));
+
+    function contentLoaded(error, content)
+    {
+        if (error || !content) {
+            console.error("Could not load content for " + sourceMapURL + " : " + error);
+            callback(null);
+            return;
+        }
+
+        if (content.slice(0, 3) === ")]}")
+            content = content.substring(content.indexOf('\n'));
+        try {
+            var payload = /** @type {SourceMapV3} */ (JSON.parse(content));
+            var baseURL = sourceMapURL.startsWith("data:") ? compiledURL : sourceMapURL;
+            callback(new WebInspector.SourceMap(baseURL, payload));
+        } catch(e) {
+            console.error(e.message);
+            callback(null);
+        }
     }
 }
 
@@ -91,6 +98,22 @@ WebInspector.SourceMap.prototype = {
     sourceContent: function(sourceURL)
     {
         return this._sourceContentByURL[sourceURL];
+    },
+
+    /**
+     * @param {string} sourceURL
+     * @param {WebInspector.ResourceType} contentType
+     * @param {string=} mimeType
+     * @return {WebInspector.ContentProvider}
+     */
+    sourceContentProvider: function(sourceURL, contentType, mimeType)
+    {
+        // FIXME: We should detect mime type automatically (e.g. based on file extension)
+        var sourceContent = this.sourceContent(sourceURL);
+        var contentProvider;
+        if (sourceContent)
+            return new WebInspector.StaticContentProvider(contentType, sourceContent);
+        return new WebInspector.CompilerSourceMappingContentProvider(sourceURL, contentType, mimeType);
     },
 
     /**

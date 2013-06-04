@@ -187,9 +187,11 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
  * @param {string} sourceURL
  * @implements {WebInspector.ContentProvider}
  */
-WebInspector.CompilerSourceMappingContentProvider = function(sourceURL)
+WebInspector.CompilerSourceMappingContentProvider = function(sourceURL, contentType, mimeType)
 {
     this._sourceURL = sourceURL;
+    this._contentType = contentType;
+    this._mimeType = mimeType;
 }
 
 WebInspector.CompilerSourceMappingContentProvider.prototype = {
@@ -206,7 +208,7 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
      */
     contentType: function()
     {
-        return WebInspector.resourceTypes.Script;
+        return this._contentType;
     },
     
     /**
@@ -214,14 +216,18 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
      */
     requestContent: function(callback)
     {
-        var sourceCode = "";
-        try {
-            // FIXME: make sendRequest async.
-            sourceCode = InspectorFrontendHost.loadResourceSynchronously(this._sourceURL);
-        } catch(e) {
-            console.error(e.message);
+        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, this._sourceURL, contentLoaded.bind(this));
+
+        function contentLoaded(error, content)
+        {
+            if (error) {
+                console.error("Could not load content for " + this._sourceURL + " : " + error);
+                callback(null, false, this._mimeType);
+                return;
+            }
+
+            callback(content, false, this._mimeType);
         }
-        callback(sourceCode, false, "text/javascript");
     },
 
     /**
@@ -232,7 +238,22 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {
-        callback([]);
+        this.requestContent(contentLoaded);
+
+        /**
+         * @param {?string} content
+         * @param {boolean} base64Encoded
+         * @param {string} mimeType
+         */
+        function contentLoaded(content, base64Encoded, mimeType)
+        {
+            if (typeof content !== "string") {
+                callback([]);
+                return;
+            }
+
+            callback(WebInspector.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex));
+        }
     },
 
     __proto__: WebInspector.ContentProvider.prototype

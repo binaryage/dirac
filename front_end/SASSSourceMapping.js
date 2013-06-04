@@ -109,15 +109,25 @@ WebInspector.SASSSourceMapping.prototype = {
         var uiSourceCode = this._workspace.uiSourceCodeForURL(url);
         if (!uiSourceCode)
             return;
-        var newContent = InspectorFrontendHost.loadResourceSynchronously(url);
-        this._isAddingRevision = true;
-        uiSourceCode.addRevision(newContent);
-        // this._isAddingRevision will be deleted in this._styleSheetChanged().
 
-        var completeSourceMapURL = this._completeSourceMapURLForCSSURL[url];
-        if (!completeSourceMapURL)
-            return;
-        this._loadSourceMapAndBindUISourceCode(url, true, completeSourceMapURL);
+        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, url, contentLoaded.bind(this));
+
+        function contentLoaded(error, content)
+        {
+            if (error) {
+                console.error("Could not load content for " + url + " : " + error);
+                return;
+            }
+
+            this._isAddingRevision = true;
+            uiSourceCode.addRevision(content);
+            // this._isAddingRevision will be deleted in this._styleSheetChanged().
+
+            var completeSourceMapURL = this._completeSourceMapURLForCSSURL[url];
+            if (!completeSourceMapURL)
+                return;
+            this._loadSourceMapAndBindUISourceCode(url, true, completeSourceMapURL);
+        }
     },
 
     /**
@@ -162,12 +172,19 @@ WebInspector.SASSSourceMapping.prototype = {
      */
     _loadSourceMapAndBindUISourceCode: function(header, forceRebind, completeSourceMapURL)
     {
-        var sourceMap = this._loadSourceMapForStyleSheet(completeSourceMapURL, header.sourceURL, forceRebind);
-        if (!sourceMap)
-            return;
+        var sourceMap = this._loadSourceMapForStyleSheet(completeSourceMapURL, header.sourceURL, forceRebind, sourceMapLoaded.bind(this));
 
-        this._sourceMapByStyleSheetURL[header.sourceURL] = sourceMap;
-        this._bindUISourceCode(header, sourceMap);
+        /**
+         * @param {?WebInspector.SourceMap} sourceMap
+         */
+        function sourceMapLoaded(sourceMap)
+        {
+            if (!sourceMap)
+                return;
+
+            this._sourceMapByStyleSheetURL[header.sourceURL] = sourceMap;
+            this._bindUISourceCode(header, sourceMap);
+        }
     },
 
     /**
@@ -190,21 +207,44 @@ WebInspector.SASSSourceMapping.prototype = {
     /**
      * @param {string} completeSourceMapURL
      * @param {string} completeStyleSheetURL
-     * @param {boolean=} forceReload
-     * @return {WebInspector.SourceMap}
+     * @param {boolean} forceReload
+     * @param {function(?WebInspector.SourceMap)} callback
      */
-    _loadSourceMapForStyleSheet: function(completeSourceMapURL, completeStyleSheetURL, forceReload)
+    _loadSourceMapForStyleSheet: function(completeSourceMapURL, completeStyleSheetURL, forceReload, callback)
     {
         var sourceMap = this._sourceMapByURL[completeSourceMapURL];
-        if (sourceMap && !forceReload)
-            return sourceMap;
-        sourceMap = WebInspector.SourceMap.load(completeSourceMapURL, completeStyleSheetURL);
-        if (!sourceMap) {
-            delete this._sourceMapByURL[completeSourceMapURL];
-            return null;
+        if (sourceMap && !forceReload) {
+            callback(sourceMap);
+            return;
         }
-        this._sourceMapByURL[completeSourceMapURL] = sourceMap;
-        return sourceMap;
+
+        var pendingCallbacks = this._pendingSourceMapLoadingCallbacks[completeSourceMapURL];
+        if (pendingCallbacks) {
+            pendingCallbacks.push(callback);
+            return;
+        }
+
+        pendingCallbacks = [callback];
+        this._pendingSourceMapLoadingCallbacks[completeSourceMapURL] = pendingCallbacks;
+
+        sourceMap = WebInspector.SourceMap.load(completeSourceMapURL, completeStyleSheetURL, sourceMapLoaded.bind(this));
+
+        /**
+         * @param {?WebInspector.SourceMap} sourceMap
+         */
+        function sourceMapLoaded(sourceMap)
+        {
+            var callbacks = this._pendingSourceMapLoadingCallbacks[completeSourceMapURL];
+            delete this._pendingSourceMapLoadingCallbacks[completeSourceMapURL];
+            if (!callbacks)
+                return;
+            if (sourceMap)
+                this._sourceMapByURL[completeSourceMapURL] = sourceMap;
+            else
+                delete this._sourceMapByURL[completeSourceMapURL];
+            for (var i = 0; i < callbacks.length; ++i)
+                callbacks[i](sourceMap);
+        }
     },
 
     /**
@@ -218,16 +258,12 @@ WebInspector.SASSSourceMapping.prototype = {
         var sources = sourceMap.sources();
         for (var i = 0; i < sources.length; ++i) {
             var url = sources[i];
-            if (!this._workspace.hasMappingForURL(url)) {
-                if (!this._workspace.uiSourceCodeForURL(url)) {
-                    var content = InspectorFrontendHost.loadResourceSynchronously(url);
-                    var contentProvider = new WebInspector.StaticContentProvider(WebInspector.resourceTypes.Stylesheet, content, "text/x-scss");
-                    var uiSourceCode = this._networkWorkspaceProvider.addFileForURL(url, contentProvider, true);
-                    uiSourceCode.setSourceMapping(this);
-                    this._addCSSURLforSASSURL(rawURL, url);
-                }
-            } else
-                this._addCSSURLforSASSURL(rawURL, url);
+            if (!this._workspace.hasMappingForURL(url) && !this._workspace.uiSourceCodeForURL(url)) {
+                var contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.Stylesheet, "text/x-scss");
+                var uiSourceCode = this._networkWorkspaceProvider.addFileForURL(url, contentProvider, true);
+                uiSourceCode.setSourceMapping(this);
+            }
+            this._addCSSURLforSASSURL(rawURL, url);
         }
     },
 
@@ -282,7 +318,10 @@ WebInspector.SASSSourceMapping.prototype = {
 
     _reset: function()
     {
+        /** @type {Object.<string, WebInspector.SourceMap>} */
         this._sourceMapByURL = {};
+        /** @type {Object.<string, Array.<function(?WebInspector.SourceMap)>>} */
+        this._pendingSourceMapLoadingCallbacks = {};
         this._sourceMapByStyleSheetURL = {};
         this._cssURLsForSASSURL = {};
         this._timeoutForURL = {};
