@@ -106,7 +106,6 @@ WebInspector.Settings = function()
     this.visiblePanels = this.createSetting("visiblePanels", {});
     this.shortcutPanelSwitch = this.createSetting("shortcutPanelSwitch", false);
     this.portForwardings = this.createSetting("portForwardings", []);
-    this.codemirror = this.createSetting("codemirror", false);
 }
 
 WebInspector.Settings.prototype = {
