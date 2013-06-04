@@ -1140,7 +1140,7 @@ function importScript(scriptName)
     if (!xhr.responseText)
         throw "empty response arrived for script '" + scriptName + "'";
     var sourceURL = WebInspector.ParsedURL.completeURL(window.location.href, scriptName); 
-    window.eval(xhr.responseText + "\n//@ sourceURL=" + sourceURL);
+    window.eval(xhr.responseText + "\n//# sourceURL=" + sourceURL);
 }
 
 var loadScript = importScript;

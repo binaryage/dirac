@@ -149,7 +149,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
                 }
             } else {
                 if (this.url) {
-                    var isExternal = !WebInspector.resourceForURL(this.url);
+                    var isExternal = !WebInspector.resourceForURL(this.url) && !WebInspector.workspace.uiSourceCodeForURL(this.url);
                     this._anchorElement = WebInspector.linkifyURLAsNode(this.url, this.url, "console-message-url", isExternal);
                 }
                 this._messageElement = this._format([this._messageText]);

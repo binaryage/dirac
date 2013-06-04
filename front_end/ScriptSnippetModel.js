@@ -189,7 +189,7 @@ WebInspector.ScriptSnippetModel.prototype = {
         // In case we don't need that since debugger is already paused.
         // We do the same when we are stopped on the call frame  since debugger is already paused and can not stop on breakpoint anymore.
         if (WebInspector.debuggerModel.selectedCallFrame()) {
-            expression = uiSourceCode.workingCopy() + "\n//@ sourceURL=" + evaluationUrl + "\n";
+            expression = uiSourceCode.workingCopy() + "\n//# sourceURL=" + evaluationUrl + "\n";
             WebInspector.evaluateInConsole(expression, true);
             return;
         }

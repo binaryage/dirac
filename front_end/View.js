@@ -358,7 +358,7 @@ WebInspector.View.prototype = {
 
     _buildSourceURL: function(cssFile)
     {
-        return "\n/*@ sourceURL=" + WebInspector.ParsedURL.completeURL(window.location.href, cssFile) + " */";
+        return "\n/*# sourceURL=" + WebInspector.ParsedURL.completeURL(window.location.href, cssFile) + " */";
     },
 
     _disableCSSIfNeeded: function()
