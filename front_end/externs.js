@@ -392,6 +392,7 @@ CodeMirror.prototype = {
     lastLine: function() { },
     lineCount: function() { },
     lineInfo: function(line) { },
+    lineAtHeight: function(height) { },
     linkedDoc: function(options) { },
     markClean: function() { },
     markText: function(from, to, options) { },
