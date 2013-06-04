@@ -1521,11 +1521,11 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
             return;
         var profileSamples = this._profileSamples;
         var sizes = profileSamples.sizes;
-        var usedSizes = profileSamples.max;
+        var topSizes = profileSamples.max;
         var timestamps = profileSamples.timestamps;
 
         var scaleFactor = width / profileSamples.totalTime;
-        var maxUsedSize = 0;
+        var maxSize = 0;
         /**
           * @param {Array.<number>} sizes
           * @param {function(number, number):void} callback
@@ -1535,7 +1535,7 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
             var size = 0;
             var currentX = 0;
             for (var i = 1; i < timestamps.length; ++i) {
-                var x  = Math.floor((timestamps[i] - startTime) * scaleFactor);
+                var x = Math.floor((timestamps[i] - startTime) * scaleFactor);
                 if (x !== currentX) {
                     if (size)
                         callback(currentX, size);
@@ -1551,18 +1551,18 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
           * @param {number} x
           * @param {number} size
           */
-        function maxUsedSizeCallback(x, size)
+        function maxSizeCallback(x, size)
         {
-            maxUsedSize = Math.max(maxUsedSize, size);
+            maxSize = Math.max(maxSize, size);
         }
 
-        aggregateAndCall(usedSizes, maxUsedSizeCallback);
+        aggregateAndCall(sizes, maxSizeCallback);
 
         this._overviewCanvas.width = width * window.devicePixelRatio;
         this._overviewCanvas.height = height * window.devicePixelRatio;
         this._overviewCanvas.style.width = width + "px";
         this._overviewCanvas.style.height = height + "px";
-        var yScaleFactor = height / (maxUsedSize * 1.1);
+        var yScaleFactor = height / (maxSize * 1.1);
 
         var context = this._overviewCanvas.getContext("2d");
         context.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -1581,7 +1581,7 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         var gridY;
         var gridValue;
         var gridLabelHeight = 14;
-        if (maxUsedSize) {
+        if (maxSize) {
             const maxGridValue = (height - gridLabelHeight) / yScaleFactor;
             // The round value calculation is a bit tricky, because
             // it has a form k*10^n*1024^m, where k=[1..9], n=[0..3], m is an integer,
@@ -1612,7 +1612,7 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         context.beginPath();
         context.lineWidth = 2;
         context.strokeStyle = "rgba(192, 192, 192, 0.6)";
-        aggregateAndCall(usedSizes, drawBarCallback);
+        aggregateAndCall(topSizes, drawBarCallback);
         context.stroke();
         context.closePath();
 
