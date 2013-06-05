@@ -601,7 +601,7 @@ WebInspector.CSSStyleModel.LiveLocation.prototype = {
     uiLocation: function()
     {
         var cssLocation = /** @type WebInspector.CSSLocation */ (this.rawLocation());
-        return WebInspector.cssModel.rawLocationToUILocation(cssLocation);
+        return this._header.rawLocationToUILocation(cssLocation.lineNumber, cssLocation.columnNumber);
     },
 
     dispose: function()

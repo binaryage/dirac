@@ -46,6 +46,7 @@ WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceP
     this._reset();
     WebInspector.fileManager.addEventListener(WebInspector.FileManager.EventTypes.SavedURL, this._fileSaveFinished, this);
     this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetChanged, this);
+    this._workspace.addEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._uiSourceCodeContentCommitted, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._reset, this);
 }
@@ -305,6 +306,26 @@ WebInspector.SASSSourceMapping.prototype = {
     isIdentity: function()
     {
         return false;
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _uiSourceCodeAdded: function(event)
+    {
+        var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
+        var cssURLs = this._cssURLsForSASSURL[uiSourceCode.url];
+        if (!cssURLs)
+            return;
+        uiSourceCode.setSourceMapping(this);
+        for (var i = 0; i < cssURLs.length; ++i) {
+            var ids = this._cssModel.styleSheetIdsForURL(cssURLs[i]);
+            for (var j = 0; j < ids.length; ++j) {
+                var header = this._cssModel.styleSheetHeaderForId(ids[j]);
+                console.assert(header);
+                header.updateLocations();
+            }
+        }
     },
 
     /**
