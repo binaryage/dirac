@@ -75,6 +75,12 @@
   color: #222 !important;
 }
 
+.cm-whitespace::before {
+    position: absolute;
+    pointer-events: none;
+    color: rgb(175, 175, 175);
+}
+
 .cm-execution-line {
     background-color: rgb(171, 191, 254) !important;
     outline: 1px solid rgb(64, 115, 244);

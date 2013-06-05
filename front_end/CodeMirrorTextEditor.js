@@ -38,6 +38,7 @@ importScript("cm/closebrackets.js");
 importScript("cm/markselection.js");
 importScript("cm/showhint.js");
 importScript("cm/comment.js");
+importScript("cm/overlay.js");
 
 /**
  * @constructor
@@ -86,6 +87,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         }
     }
     this._codeMirror.setOption("extraKeys", extraKeys);
+    this._codeMirror.setOption("flattenSpans", false);
 
     this._tokenHighlighter = new WebInspector.CodeMirrorTextEditor.TokenHighlighter(this._codeMirror);
     this._blockIndentController = new WebInspector.CodeMirrorTextEditor.BlockIndentController(this._codeMirror);
@@ -107,6 +109,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this.element.addEventListener("keydown", this._handleKeyDown.bind(this), false);
     this.element.tabIndex = 0;
     this._setupSelectionColor();
+    this._setupWhitespaceHighlight();
 }
 
 WebInspector.CodeMirrorTextEditor.autocompleteCommand = function(codeMirror)
@@ -119,6 +122,7 @@ WebInspector.CodeMirrorTextEditor.autocompleteCommand = function(codeMirror)
 CodeMirror.commands.autocomplete = WebInspector.CodeMirrorTextEditor.autocompleteCommand;
 
 WebInspector.CodeMirrorTextEditor.SyntaxHighlightLineLengthThreshold = 1000;
+WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
 
@@ -146,6 +150,25 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
         var style = document.createElement("style");
         style.textContent = backgroundColorRule + foregroundColorRule;
+        document.head.appendChild(style);
+    },
+
+    _setupWhitespaceHighlight: function()
+    {
+        if (WebInspector.CodeMirrorTextEditor._whitespaceStyleInjected)
+            return;
+        WebInspector.CodeMirrorTextEditor._whitespaceStyleInjected = true;
+        const classBase = ".cm-whitespace-";
+        const spaceChar = "·";
+        var spaceChars = "";
+        var rules = "";
+        for(var i = 1; i <= WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan; ++i) {
+            spaceChars += spaceChar;
+            var rule = classBase + i + "::before { content: '" + spaceChars + "';}\n";
+            rules += rule;
+        }
+        var style = document.createElement("style");
+        style.textContent = rules;
         document.head.appendChild(style);
     },
 
@@ -319,6 +342,37 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         return hasLongLines;
     },
 
+    _whitespaceOverlayMode: function(mimeType)
+    {
+        var modeName = mimeType + "+whitespaces";
+        if (CodeMirror.modes[modeName])
+            return modeName;
+
+        function modeConstructor(config, parserConfig)
+        {
+            function nextToken(stream)
+            {
+                if (stream.peek() === " ") {
+                    var spaces = 0;
+                    while (spaces < WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan && stream.peek() === " ") {
+                        ++spaces;
+                        stream.next();
+                    }
+                    return "whitespace whitespace-" + spaces;
+                }
+                while (!stream.eol() && stream.peek() !== " ")
+                    stream.next();
+                return null;
+            }
+            var whitespaceMode = {
+                token: nextToken
+            };
+            return CodeMirror.overlayMode(CodeMirror.getMode(config, mimeType), whitespaceMode, false);
+        }
+        CodeMirror.defineMode(modeName, modeConstructor);
+        return modeName;
+    },
+
     /**
      * @param {string} mimeType
      */
@@ -328,7 +382,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             this._codeMirror.setOption("mode", null);
             return;
         }
-        this._codeMirror.setOption("mode", mimeType);
+        var showWhitespaces = WebInspector.experimentsSettings.showWhitespaceInEditor.isEnabled();
+        this._codeMirror.setOption("mode", showWhitespaces ? this._whitespaceOverlayMode(mimeType) : mimeType);
         switch (mimeType) {
         case "text/html": this._codeMirror.setOption("theme", "web-inspector-html"); break;
         case "text/css":

@@ -433,6 +433,10 @@ CodeMirror.prototype.lineCount;
 CodeMirror.Pass;
 CodeMirror.showHint = function(codeMirror, hintintFunction) { };
 CodeMirror.commands = {};
+CodeMirror.modes = {};
+CodeMirror.getMode = function(options, spec) { };
+CodeMirror.overlayMode = function(mode1, mode2, squashSpans) { };
+CodeMirror.defineMode = function(modeName, modeConstructor) { };
 
 /** @constructor */
 CodeMirror.Pos = function(line, ch) { }
