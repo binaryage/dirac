@@ -822,9 +822,6 @@ WebInspector.DOMAgent = function() {
     this._document = null;
     this._attributeLoadNodeIds = {};
     InspectorBackend.registerDOMDispatcher(new WebInspector.DOMDispatcher(this));
-    if (WebInspector.settings.emulateTouchEvents.get())
-        this._emulateTouchEventsChanged();
-    WebInspector.settings.emulateTouchEvents.addChangeListener(this._emulateTouchEventsChanged, this);
 }
 
 WebInspector.DOMAgent.Events = {
@@ -1329,7 +1326,10 @@ WebInspector.DOMAgent.prototype = {
         return wrapperFunction.bind(this);
     },
 
-    _emulateTouchEventsChanged: function()
+    /**
+     * @param {boolean} emulationEnabled
+     */
+    emulateTouchEventObjects: function(emulationEnabled)
     {
         const injectedFunction = function() {
             const touchEvents = ["ontouchstart", "ontouchend", "ontouchmove", "ontouchcancel"];
@@ -1342,7 +1342,6 @@ WebInspector.DOMAgent.prototype = {
             }
         }
 
-        var emulationEnabled = WebInspector.settings.emulateTouchEvents.get();
         if (emulationEnabled && !this._addTouchEventsScriptInjecting) {
             this._addTouchEventsScriptInjecting = true;
             PageAgent.addScriptToEvaluateOnLoad("(" + injectedFunction.toString() + ")()", scriptAddedCallback.bind(this));

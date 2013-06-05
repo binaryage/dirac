@@ -571,8 +571,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     }
     showRulersChanged();
 
-    this.domAgent._emulateTouchEventsChanged();
-
     WebInspector.WorkerManager.loadCompleted();
     InspectorFrontendAPI.loadCompleted();
 

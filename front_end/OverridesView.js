@@ -57,7 +57,7 @@ WebInspector.OverridesView = function()
     appendBlockTo(container, this._createDeviceMetricsControl());
     appendBlockTo(container, this._createGeolocationOverrideControl());
     appendBlockTo(container, this._createDeviceOrientationOverrideControl());
-    appendBlockTo(container, this._createCheckboxSetting(WebInspector.UIString("Emulate touch events"), WebInspector.settings.emulateTouchEvents));
+    appendBlockTo(container, this._createNonPersistedCheckbox(WebInspector.UIString("Emulate touch events"), WebInspector.domAgent.emulateTouchEventObjects.bind(WebInspector.domAgent)));
     appendBlockTo(container, this._createMediaEmulationElement());
 
     this._statusElement = document.createElement("span");
@@ -101,20 +101,34 @@ WebInspector.OverridesView.prototype = {
         return p;
     },
 
+    /**
+     * @return {Element}
+     */
     _createUserAgentControl: function()
     {
-        var userAgent = WebInspector.settings.userAgent.get();
-
-        var p = document.createElement("p");
-        var labelElement = p.createChild("label");
-        var checkboxElement = labelElement.createChild("input");
-        checkboxElement.type = "checkbox";
-        checkboxElement.checked = false;
-        labelElement.appendChild(document.createTextNode(WebInspector.UIString("User Agent")));
+        var p = this._createNonPersistedCheckbox(WebInspector.UIString("User Agent"), checkboxClicked.bind(this));
+        var checkboxElement = p.getElementsByTagName("input")[0];
         p.appendChild(this._createUserAgentSelectRowElement(checkboxElement));
+
+        function checkboxClicked()
+        {
+            if (checkboxElement.checked) {
+                this._userAgentFieldsetElement.disabled = false;
+                this._selectionChanged();
+            } else {
+                this._userAgentFieldsetElement.disabled = true;
+                this._otherUserAgentElement.disabled = true;
+            }
+            WebInspector.userAgentSupport.toggleUserAgentOverride(checkboxElement.checked);
+        }
+
+        checkboxClicked.call(this);
         return p;
     },
 
+    /**
+     * @return {Element}
+     */
     _createUserAgentSelectRowElement: function(checkboxElement)
     {
         var userAgent = WebInspector.settings.userAgent.get();
@@ -199,20 +213,6 @@ WebInspector.OverridesView.prototype = {
             WebInspector.settings.userAgent.set(this._otherUserAgentElement.value);
         }
 
-        function checkboxClicked()
-        {
-            if (checkboxElement.checked) {
-                this._userAgentFieldsetElement.disabled = false;
-                this._selectionChanged();
-            } else {
-                this._userAgentFieldsetElement.disabled = true;
-                this._otherUserAgentElement.disabled = true;
-            }
-            WebInspector.userAgentSupport.toggleUserAgentOverride(checkboxElement.checked);
-        }
-        checkboxElement.addEventListener("click", checkboxClicked.bind(this), false);
-
-        checkboxClicked.call(this);
         return fieldsetElement;
     },
 
@@ -263,20 +263,38 @@ WebInspector.OverridesView.prototype = {
         return element;
     },
 
+    /**
+     * @param {string} title
+     * @param {function(boolean)=} callback
+     * @param {string=} id
+     */
+    _createNonPersistedCheckbox: function(title, callback, id)
+    {
+        var p = document.createElement("p");
+        var labelElement = p.createChild("label");
+        var checkboxElement = labelElement.createChild("input");
+        checkboxElement.type = "checkbox";
+        checkboxElement.checked = false;
+        if (id)
+            checkboxElement.id = id;
+        if (callback)
+            checkboxElement.addEventListener("click", onclick, false);
+        labelElement.appendChild(document.createTextNode(title));
+        return p;
+
+        function onclick()
+        {
+            callback(checkboxElement.checked);
+        }
+    },
+
     _createDeviceMetricsControl: function()
     {
         const metricsSetting = WebInspector.settings.deviceMetrics.get();
         var metrics = WebInspector.UserAgentSupport.DeviceMetrics.parseSetting(metricsSetting);
 
-        const p = document.createElement("p");
-        const labelElement = p.createChild("label");
-        const checkboxElement = labelElement.createChild("input");
-        checkboxElement.id = "metrics-override-checkbox";
-        checkboxElement.type = "checkbox";
-        checkboxElement.checked = false;
-        checkboxElement.addEventListener("click", this._onMetricsCheckboxClicked.bind(this), false);
-        this._metricsCheckboxElement = checkboxElement;
-        labelElement.appendChild(document.createTextNode(WebInspector.UIString("Device metrics")));
+        const p = this._createNonPersistedCheckbox(WebInspector.UIString("Device metrics"), this._onMetricsCheckboxClicked.bind(this), "metrics-override-checkbox");
+        this._metricsCheckboxElement = p.getElementsByTagName("input")[0];
 
         const metricsSectionElement = this._createDeviceMetricsElement(metrics);
         p.appendChild(metricsSectionElement);
@@ -400,15 +418,8 @@ WebInspector.OverridesView.prototype = {
     {
         const geolocationSetting = WebInspector.settings.geolocationOverride.get();
         var geolocation = WebInspector.UserAgentSupport.GeolocationPosition.parseSetting(geolocationSetting);
-        var p = document.createElement("p");
-        var labelElement = p.createChild("label");
-        var checkboxElement = labelElement.createChild("input");
-        checkboxElement.id = "geolocation-override-checkbox";
-        checkboxElement.type = "checkbox";
-        checkboxElement.checked = false;
-        checkboxElement.addEventListener("click", this._onGeolocationOverrideCheckboxClicked.bind(this), false);
-        this._geolocationOverrideCheckboxElement = checkboxElement;
-        labelElement.appendChild(document.createTextNode(WebInspector.UIString("Override Geolocation")));
+        var p = this._createNonPersistedCheckbox(WebInspector.UIString("Override Geolocation"), this._onGeolocationOverrideCheckboxClicked.bind(this), "geolocation-override-checkbox");
+        this._geolocationOverrideCheckboxElement = p.getElementsByTagName("input")[0];
 
         var geolocationSectionElement = this._createGeolocationOverrideElement(geolocation);
         p.appendChild(geolocationSectionElement);
@@ -504,16 +515,8 @@ WebInspector.OverridesView.prototype = {
     {
         const deviceOrientationSetting = WebInspector.settings.deviceOrientationOverride.get();
         var deviceOrientation = WebInspector.UserAgentSupport.DeviceOrientation.parseSetting(deviceOrientationSetting);
-
-        var p = document.createElement("p");
-        var labelElement = p.createChild("label");
-        var checkboxElement = labelElement.createChild("input");
-        checkboxElement.id = "device-orientation-override-checkbox";
-        checkboxElement.type = "checkbox";
-        checkboxElement.checked = false;
-        checkboxElement.addEventListener("click", this._onDeviceOrientationOverrideCheckboxClicked.bind(this), false);
-        this._deviceOrientationOverrideCheckboxElement = checkboxElement;
-        labelElement.appendChild(document.createTextNode(WebInspector.UIString("Override Device Orientation")));
+        var p = this._createNonPersistedCheckbox(WebInspector.UIString("Override Device Orientation"), this._onDeviceOrientationOverrideCheckboxClicked.bind(this), "device-orientation-override-checkbox");
+        this._deviceOrientationOverrideCheckboxElement = p.getElementsByTagName("input")[0];
 
         var deviceOrientationSectionElement = this._createDeviceOrientationOverrideElement(deviceOrientation);
         p.appendChild(deviceOrientationSectionElement);
@@ -596,12 +599,7 @@ WebInspector.OverridesView.prototype = {
 
     _createMediaEmulationElement: function()
     {
-        const p = document.createElement("p");
-        const labelElement = p.createChild("label");
-        const checkboxElement = labelElement.createChild("input");
-        checkboxElement.type = "checkbox";
-        checkboxElement.checked = false;
-        labelElement.appendChild(document.createTextNode(WebInspector.UIString("Emulate CSS media")));
+        const p = this._createNonPersistedCheckbox(WebInspector.UIString("Emulate CSS media"));
 
         var mediaSelectElement = p.createChild("select");
         var mediaTypes = WebInspector.CSSStyleModel.MediaTypes;
@@ -620,6 +618,8 @@ WebInspector.OverridesView.prototype = {
                 mediaSelectElement.selectedIndex = mediaSelectElement.options.length - 1;
         }
         mediaSelectElement.disabled = true;
+
+        var checkboxElement = p.getElementsByTagName("input")[0];
         var boundListener = this._emulateMediaChanged.bind(this, checkboxElement, mediaSelectElement);
         checkboxElement.addEventListener("click", boundListener, false);
         mediaSelectElement.addEventListener("change", boundListener, false);
