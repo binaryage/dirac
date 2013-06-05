@@ -339,6 +339,7 @@
             'front_end/cm/javascript.js',
             'front_end/cm/xml.js',
             'front_end/cm/markselection.js',
+            'front_end/cm/overlay.js',
         ],
 
         'devtools_modules_js_files': [
