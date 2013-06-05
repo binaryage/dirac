@@ -79,20 +79,18 @@ WebInspector.DOMStorage.prototype = {
     /**
      * @param {string} key
      * @param {string} value
-     * @param {function(?Protocol.Error):void=} callback
      */
-    setItem: function(key, value, callback)
+    setItem: function(key, value)
     {
-        DOMStorageAgent.setDOMStorageItem(this.id, key, value, callback);
+        DOMStorageAgent.setDOMStorageItem(this.id, key, value);
     },
 
     /**
      * @param {string} key
-     * @param {function(?Protocol.Error):void=} callback
      */
-    removeItem: function(key, callback)
+    removeItem: function(key)
     {
-        DOMStorageAgent.removeDOMStorageItem(this.id, key, callback);
+        DOMStorageAgent.removeDOMStorageItem(this.id, key);
     }
 }
 
