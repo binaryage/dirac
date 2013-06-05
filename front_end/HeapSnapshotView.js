@@ -1494,6 +1494,8 @@ WebInspector.HeapTrackingOverviewGrid = function(heapProfileHeader)
     this._windowLeft = 0.0;
     this._windowRight = totalTime && timestamps.length ? (timestamps[timestamps.length - 1] - timestamps[0]) / totalTime : 1.0;
     this._overviewGrid.setWindow(this._windowLeft, this._windowRight);
+    this._yScaleFactor = 0.0;
+    this._yScaleFactorLastUpdate = 0;
 }
 
 WebInspector.HeapTrackingOverviewGrid.IdsRangeChanged = "IdsRangeChanged";
@@ -1564,7 +1566,19 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         this._overviewCanvas.height = height * window.devicePixelRatio;
         this._overviewCanvas.style.width = width + "px";
         this._overviewCanvas.style.height = height + "px";
-        var yScaleFactor = height / (maxSize * 1.1);
+
+        var targetYScaleFactor = maxSize ? height / (maxSize * 1.1) : 0.0;
+        var now = Date.now();
+        if (this._yScaleFactor) {
+            var timeDeltaMs = now - this._yScaleFactorLastUpdate;
+            var maxScaleChangeSpeedPerSec = 10; // 10x per second
+            var maxChangePerDelta = Math.pow(maxScaleChangeSpeedPerSec, timeDeltaMs / 1000);
+            var scaleChange = targetYScaleFactor / this._yScaleFactor;
+            this._yScaleFactor *= Number.constrain(scaleChange, 1 / maxChangePerDelta, maxChangePerDelta);
+        } else
+            this._yScaleFactor = targetYScaleFactor;
+        var yScaleFactor = this._yScaleFactor;
+        this._yScaleFactorLastUpdate = now;
 
         var context = this._overviewCanvas.getContext("2d");
         context.scale(window.devicePixelRatio, window.devicePixelRatio);
@@ -1584,11 +1598,12 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         if (maxSize) {
             const maxGridValue = (height - gridLabelHeight) / yScaleFactor;
             // The round value calculation is a bit tricky, because
-            // it has a form k*10^n*1024^m, where k=[1..9], n=[0..3], m is an integer,
-            // e.g. a round value 20KB is 20480 bytes.
+            // it has a form k*10^n*1024^m, where k=[1,5], n=[0..3], m is an integer,
+            // e.g. a round value 10KB is 10240 bytes.
             gridValue = Math.pow(1024, Math.floor(Math.log(maxGridValue) / Math.log(1024)));
             gridValue *= Math.pow(10, Math.floor(Math.log(maxGridValue / gridValue) / Math.log(10)));
-            gridValue *= Math.floor(maxGridValue / gridValue);
+            if (gridValue * 5 <= maxGridValue)
+                gridValue *= 5;
             gridY = Math.round(height - gridValue * yScaleFactor - 0.5) + 0.5;
             context.beginPath();
             context.lineWidth = 1;
