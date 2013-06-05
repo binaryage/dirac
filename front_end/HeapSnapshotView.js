@@ -1067,7 +1067,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
             var count = samples[i+1];
             var size  = samples[i+2];
             this._profileSamples.sizes[index] = size;
-            if (size > this._profileSamples.max[index])
+            if (!this._profileSamples.max[index] || size > this._profileSamples.max[index])
                 this._profileSamples.max[index] = size;
         }
         this._lastUpdatedIndex = index;
