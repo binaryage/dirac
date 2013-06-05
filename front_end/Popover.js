@@ -93,6 +93,11 @@ WebInspector.Popover.prototype = {
             WebInspector.Popover._popover.detach();
         WebInspector.Popover._popover = this;
 
+        // Temporarily attach in order to measure preferred dimensions.
+        var preferredSize = view ? view.measurePreferredSize() : this.contentElement.measurePreferredSize();
+        preferredWidth = preferredWidth || preferredSize.width;
+        preferredHeight = preferredHeight || preferredSize.height;
+
         WebInspector.View.prototype.show.call(this, document.body);
 
         if (view)
@@ -100,8 +105,6 @@ WebInspector.Popover.prototype = {
         else
             this._contentDiv.appendChild(this.contentElement);
 
-        preferredWidth = preferredWidth || this.contentElement.offsetWidth;
-        preferredHeight = preferredHeight || this.contentElement.offsetHeight;
         this._positionElement(anchor, preferredWidth, preferredHeight, arrowDirection);
 
         if (this._popoverHelper) {
@@ -214,7 +217,7 @@ WebInspector.Popover.prototype = {
         this.element.className = "popover custom-popup-vertical-scroll custom-popup-horizontal-scroll " + verticalAlignment + "-" + horizontalAlignment + "-arrow";
         this.element.positionAt(newElementPosition.x - borderWidth, newElementPosition.y - borderWidth);
         this.element.style.width = newElementPosition.width + borderWidth * 2 + "px";
-        this.element.style.height = newElementPosition.height + borderWidth * 2 + 1 + "px";
+        this.element.style.height = newElementPosition.height + borderWidth * 2 + "px";
     },
 
     __proto__: WebInspector.View.prototype
