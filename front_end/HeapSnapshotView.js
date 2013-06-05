@@ -1523,6 +1523,8 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         var sizes = profileSamples.sizes;
         var topSizes = profileSamples.max;
         var timestamps = profileSamples.timestamps;
+        var startTime = timestamps[0];
+        var endTime = timestamps[timestamps.length - 1];
 
         var scaleFactor = width / profileSamples.totalTime;
         var maxSize = 0;
@@ -1567,8 +1569,6 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         var context = this._overviewCanvas.getContext("2d");
         context.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-        var startTime = timestamps[0];
-        var endTime = timestamps[timestamps.length - 1];
         context.beginPath();
         context.lineWidth = 2;
         context.strokeStyle = "rgba(192, 192, 192, 0.6)";
