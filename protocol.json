@@ -12,6 +12,10 @@
             {
                 "name": "disable",
                 "description": "Disables inspector domain notifications."
+            },
+            {
+                "name": "reset",
+                "description": "Resets all domains."
             }
         ],
         "events": [

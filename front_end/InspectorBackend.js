@@ -169,15 +169,8 @@ InspectorBackendClass.prototype = {
 
     sendMessageObjectToBackend: function(messageObject)
     {
-        if (this._disconnected)
-            return;
         var message = JSON.stringify(messageObject);
         InspectorFrontendHost.sendMessageToBackend(message);
-    },
-
-    disconnect: function()
-    {
-        this._disconnected = true;
     },
 
     registerDomainDispatcher: function(domain, dispatcher)

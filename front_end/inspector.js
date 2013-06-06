@@ -369,6 +369,8 @@ WebInspector.suggestReload = function()
 
 WebInspector.reload = function()
 {
+    InspectorAgent.reset();
+
     var queryParams = window.location.search;
     var url = window.location.href;
     url = url.substring(0, url.length - queryParams.length);
@@ -380,8 +382,6 @@ WebInspector.reload = function()
     var names = Object.keys(queryParamsObject);
     for (var i = 0; i < names.length; ++i)
         url += (i ? "&" : "?") + names[i] + "=" + queryParamsObject[names[i]];
-
-    InspectorBackend.disconnect();
     document.location = url;
 }
 
