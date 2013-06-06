@@ -696,7 +696,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     {
         var uiSourceCode = this._uiSourceCodes[itemIndex]
         var projectName = uiSourceCode.project().displayName();
-        return uiSourceCode.path().join("/");
+        return projectName + "/" + uiSourceCode.path().join("/");
     },
 
     /**
