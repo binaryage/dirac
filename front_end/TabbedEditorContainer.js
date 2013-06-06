@@ -428,6 +428,7 @@ WebInspector.TabbedEditorContainer.prototype = {
     {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.target);
         this._updateFileTitle(uiSourceCode);
+        this._updateHistory();
     },
 
     _uiSourceCodeWorkingCopyChanged: function(event)

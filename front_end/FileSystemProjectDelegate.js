@@ -134,7 +134,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
      */
     canRename: function()
     {
-        return false;
+        return true;
     },
 
     /**
@@ -144,7 +144,8 @@ WebInspector.FileSystemProjectDelegate.prototype = {
      */
     rename: function(path, newName, callback)
     {
-        callback(false);
+        var filePath = this._filePathForPath(path);
+        this._fileSystem.renameFile(filePath, newName, callback);
     },
 
     /**

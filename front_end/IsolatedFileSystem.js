@@ -203,7 +203,7 @@ WebInspector.IsolatedFileSystem.prototype = {
          */
         function fileSystemLoaded(domFileSystem)
         {
-            domFileSystem.root.getFile(path, { create: true }, fileEntryLoaded, errorHandler);
+            domFileSystem.root.getFile(path, { create: true }, fileEntryLoaded, errorHandler.bind(this));
         }
 
         /**
@@ -211,7 +211,7 @@ WebInspector.IsolatedFileSystem.prototype = {
          */
         function fileEntryLoaded(entry)
         {
-            entry.createWriter(fileWriterCreated, errorHandler);
+            entry.createWriter(fileWriterCreated, errorHandler.bind(this));
         }
 
         /**
@@ -219,7 +219,7 @@ WebInspector.IsolatedFileSystem.prototype = {
          */
         function fileWriterCreated(fileWriter)
         {
-            fileWriter.onerror = errorHandler;
+            fileWriter.onerror = errorHandler.bind(this);
             fileWriter.onwriteend = fileTruncated;
             fileWriter.truncate(0);
 
@@ -241,6 +241,87 @@ WebInspector.IsolatedFileSystem.prototype = {
             var errorMessage = WebInspector.IsolatedFileSystem.errorMessage(error);
             console.error(errorMessage + " when setting content for file '" + (this._path + "/" + path) + "'");
             callback();
+        }
+    },
+
+    /**
+     * @param {string} path
+     * @param {string} content
+     * @param {function(boolean, string=)} callback
+     */
+    renameFile: function(path, newName, callback)
+    {
+        newName = newName ? newName.trim() : newName;
+        if (!newName || newName.indexOf("/") !== -1) {
+            callback(false);
+            return;
+        }
+        var fileEntry;
+        var dirEntry;
+        var newFileEntry;
+        this._requestFileSystem(fileSystemLoaded);
+
+        /**
+         * @param {DOMFileSystem} domFileSystem
+         */
+        function fileSystemLoaded(domFileSystem)
+        {
+            domFileSystem.root.getFile(path, null, fileEntryLoaded, errorHandler.bind(this));
+        }
+
+        /**
+         * @param {FileEntry} entry
+         */
+        function fileEntryLoaded(entry)
+        {
+            if (entry.name === newName) {
+                callback(false);
+                return;
+            }
+
+            fileEntry = entry;
+            fileEntry.getParent(dirEntryLoaded, errorHandler.bind(this));
+        }
+
+        /**
+         * @param {DirectoryEntry} entry
+         */
+        function dirEntryLoaded(entry)
+        {
+            dirEntry = entry;
+            dirEntry.getFile(newName, null, newFileEntryLoaded, newFileEntryLoadErrorHandler);
+        }
+
+        /**
+         * @param {FileEntry} entry
+         */
+        function newFileEntryLoaded(entry)
+        {
+            callback(false);
+        }
+
+        function newFileEntryLoadErrorHandler(error)
+        {
+            if (error.code !== FileError.NOT_FOUND_ERR) {
+                callback(false);
+                return;
+            }
+            fileEntry.moveTo(dirEntry, newName, fileRenamed, errorHandler.bind(this));
+        }
+
+        /**
+         * @param {FileEntry} entry
+         */
+        function fileRenamed(entry)
+        {
+            callback(true, entry.name);
+        }
+
+        function errorHandler(error)
+        {
+            var errorMessage = WebInspector.IsolatedFileSystem.errorMessage(error);
+            console.error(errorMessage + " when renaming file '" + (this._path + "/" + path) + "' to '" + newName + "'");
+            callback(false);
         }
     },
 
