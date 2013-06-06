@@ -382,7 +382,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             this._codeMirror.setOption("mode", null);
             return;
         }
-        var showWhitespaces = WebInspector.experimentsSettings.showWhitespaceInEditor.isEnabled();
+        var showWhitespaces = WebInspector.settings.showWhitespacesInEditor.get();
         this._codeMirror.setOption("mode", showWhitespaces ? this._whitespaceOverlayMode(mimeType) : mimeType);
         switch (mimeType) {
         case "text/html": this._codeMirror.setOption("theme", "web-inspector-html"); break;

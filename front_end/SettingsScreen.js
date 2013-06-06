@@ -348,6 +348,7 @@ WebInspector.GenericSettingsTab = function()
         ], WebInspector.settings.textEditorIndent);
     indentationElement.firstChild.className = "toplevel";
     p.appendChild(indentationElement);
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show whitespace characters"), WebInspector.settings.showWhitespacesInEditor));
 
     p = this._appendSection(WebInspector.UIString("Profiler"));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show objects' hidden properties"), WebInspector.settings.showHeapSnapshotObjectsHiddenProperties));

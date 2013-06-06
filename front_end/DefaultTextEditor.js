@@ -1382,7 +1382,7 @@ WebInspector.TextEditorMainPanel = function(delegate, textModel, url, syncScroll
     this.element.addEventListener("cut", this._handleCut.bind(this), false);
     this.element.addEventListener("keypress", this._handleKeyPress.bind(this), false);
 
-    this._showWhitespace = WebInspector.experimentsSettings.showWhitespaceInEditor.isEnabled();
+    this._showWhitespace = WebInspector.settings.showWhitespacesInEditor.get();
 
     this._container.addEventListener("focus", this._handleFocused.bind(this), false);
 

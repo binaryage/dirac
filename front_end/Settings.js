@@ -106,6 +106,7 @@ WebInspector.Settings = function()
     this.visiblePanels = this.createSetting("visiblePanels", {});
     this.shortcutPanelSwitch = this.createSetting("shortcutPanelSwitch", false);
     this.portForwardings = this.createSetting("portForwardings", []);
+    this.showWhitespacesInEditor = this.createSetting("showWhitespacesInEditor", false);
 }
 
 WebInspector.Settings.prototype = {
@@ -251,7 +252,6 @@ WebInspector.ExperimentsSettings = function()
     this.sass = this._createExperiment("sass", "Sass stylesheet debugging");
     this.cssRegions = this._createExperiment("cssRegions", "CSS Regions Support");
     this.showOverridesInDrawer = this._createExperiment("showOverridesInDrawer", "Show Overrides in drawer");
-    this.showWhitespaceInEditor = this._createExperiment("showWhitespaceInEditor", "Show whitespace characters in editor");
     this.customizableToolbar = this._createExperiment("customizableToolbar", "Enable toolbar customization");
     this.tethering = this._createExperiment("tethering", "Enable port forwarding");
     this.drawerOverlay = this._createExperiment("drawerOverlay", "Open console as overlay");
