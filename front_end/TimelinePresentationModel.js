@@ -413,7 +413,7 @@ WebInspector.TimelinePresentationModel.prototype = {
             return null;
         if (endTime + coalescingThresholdSeconds < lastRecord.startTime)
             return null;
-        if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp && lastRecord.data.message !== record.data.message)
+        if (WebInspector.TimelinePresentationModel.coalescingKeyForRecord(record) !== WebInspector.TimelinePresentationModel.coalescingKeyForRecord(lastRecord._record))
             return null;
         if (lastRecord.parent.coalesced)
             return lastRecord.parent;
@@ -436,6 +436,7 @@ WebInspector.TimelinePresentationModel.prototype = {
             rawRecord.thread = "aggregated";
         if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp)
             rawRecord.data.message = record.data.message;
+
         var coalescedRecord = new WebInspector.TimelinePresentationModel.Record(this, rawRecord, null, null, null, false);
         var parent = record.parent;
 
@@ -774,7 +775,7 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
             this.webSocketProtocol = record.data["webSocketProtocol"];
         presentationModel._webSocketCreateRecords[record.data["identifier"]] = this;
         break;
-   
+
     case recordTypes.WebSocketSendHandshakeRequest:
     case recordTypes.WebSocketReceiveHandshakeResponse:
     case recordTypes.WebSocketDestroy:
@@ -1456,6 +1457,22 @@ WebInspector.TimelinePresentationModel.createStyleRuleForCategory = function(cat
        category.fillColorStop0 + ", " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + ");" +
        " border-color: " + category.borderColor +
        "}";
+}
+
+
+/**
+ * @param {Object} rawRecord
+ * @return {string?}
+ */
+WebInspector.TimelinePresentationModel.coalescingKeyForRecord = function(rawRecord)
+{
+    var recordTypes = WebInspector.TimelineModel.RecordType;
+    switch (rawRecord.type)
+    {
+    case recordTypes.EventDispatch: return rawRecord.data["type"];
+    case recordTypes.TimeStamp: return rawRecord.data["message"];
+    default: return null;
+    }
 }
 
 /**
