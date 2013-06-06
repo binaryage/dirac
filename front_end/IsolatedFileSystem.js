@@ -246,7 +246,7 @@ WebInspector.IsolatedFileSystem.prototype = {
 
     /**
      * @param {string} path
-     * @param {string} content
+     * @param {string} newName
      * @param {function(boolean, string=)} callback
      */
     renameFile: function(path, newName, callback)
@@ -284,7 +284,7 @@ WebInspector.IsolatedFileSystem.prototype = {
         }
 
         /**
-         * @param {DirectoryEntry} entry
+         * @param {Entry} entry
          */
         function dirEntryLoaded(entry)
         {

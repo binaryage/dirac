@@ -585,7 +585,7 @@ WebInspector.DebuggerModel.prototype = {
             DebuggerAgent.stepInto();
         else {
             if (newCallFrames && newCallFrames.length)
-                this._pausedScript(newCallFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData);
+                this._pausedScript(newCallFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData, this._debuggerPausedDetails.breakpointIds);
 
         }
     },
@@ -614,11 +614,11 @@ WebInspector.DebuggerDispatcher.prototype = {
      * @param {Array.<DebuggerAgent.CallFrame>} callFrames
      * @param {string} reason
      * @param {Object=} auxData
-     * @param {Array.<string>} breakointsIds
+     * @param {Array.<string>=} breakpointIds
      */
-    paused: function(callFrames, reason, auxData, breakointsIds)
+    paused: function(callFrames, reason, auxData, breakpointIds)
     {
-        this._debuggerModel._pausedScript(callFrames, reason, auxData, breakointsIds);
+        this._debuggerModel._pausedScript(callFrames, reason, auxData, breakpointIds || []);
     },
 
     resumed: function()
