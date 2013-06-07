@@ -275,7 +275,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
         for (var i = 0; i < parameters.length; ++i) {
             // Inline strings when formatting.
             if (shouldFormatMessage && parameters[i].type === "string")
-                formattedResult.appendChild(document.createTextNode(parameters[i].description));
+                formattedResult.appendChild(WebInspector.linkifyStringAsFragment(parameters[i].description));
             else
                 formattedResult.appendChild(this._formatParameter(parameters[i], false, true));
             if (i < parameters.length - 1)
