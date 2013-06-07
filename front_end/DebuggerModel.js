@@ -94,7 +94,8 @@ WebInspector.DebuggerModel.BreakReason = {
     XHR: "XHR",
     Exception: "exception",
     Assert: "assert",
-    CSPViolation: "CSPViolation"
+    CSPViolation: "CSPViolation",
+    DebugCommand: "debugCommand"
 }
 
 WebInspector.DebuggerModel.prototype = {
