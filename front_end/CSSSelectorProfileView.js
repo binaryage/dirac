@@ -58,10 +58,6 @@ WebInspector.CSSSelectorDataGridNode.prototype = {
     createCell: function(columnIdentifier)
     {
         var cell = WebInspector.DataGridNode.prototype.createCell.call(this, columnIdentifier);
-        if (columnIdentifier === "selector" && cell.firstChild) {
-            cell.firstChild.title = this.rawData.selector;
-            return cell;
-        }
 
         if (columnIdentifier !== "source")
             return cell;
@@ -93,7 +89,7 @@ WebInspector.CSSSelectorProfileView = function(profile)
     this.showTimeAsPercent = WebInspector.settings.createSetting("selectorProfilerShowTimeAsPercent", true);
 
     var columns = [
-        {id: "selector", title: WebInspector.UIString("Selector"), width: "550px", sortable: true},
+        {id: "selector", title: WebInspector.UIString("Selector"), width: "550px", sortable: true, longText: true},
         {id: "source", title: WebInspector.UIString("Source"), width: "100px", sortable: true},
         {id: "time", title: WebInspector.UIString("Total"), width: "72px", sort: WebInspector.DataGrid.Order.Descending, sortable: true},
         {id: "matches", title: WebInspector.UIString("Matches"), width: "72px", sortable: true}
