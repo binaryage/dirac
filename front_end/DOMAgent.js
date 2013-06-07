@@ -58,8 +58,8 @@ WebInspector.DOMNode = function(domAgent, doc, isInShadowTree, payload) {
     this._userProperties = {};
     this._descendantUserPropertyCounters = {};
 
-    this._childNodeCount = payload.childNodeCount;
-    this.children = null;
+    this._childNodeCount = payload.childNodeCount || 0;
+    this._children = null;
 
     this.nextSibling = null;
     this.previousSibling = null;
@@ -67,23 +67,26 @@ WebInspector.DOMNode = function(domAgent, doc, isInShadowTree, payload) {
     this.lastChild = null;
     this.parentNode = null;
 
-    if (payload.shadowRoots && WebInspector.settings.showShadowDOM.get()) {
+    if (payload.shadowRoots) {
         for (var i = 0; i < payload.shadowRoots.length; ++i) {
             var root = payload.shadowRoots[i];
             var node = new WebInspector.DOMNode(this._domAgent, this.ownerDocument, true, root);
             this._shadowRoots.push(node);
+            node.parentNode = this;
         }
     }
 
-    if (payload.templateContent)
+    if (payload.templateContent) {
         this._templateContent = new WebInspector.DOMNode(this._domAgent, this.ownerDocument, true, payload.templateContent);
+        this._templateContent.parentNode = this;
+    }
 
     if (payload.children)
         this._setChildrenPayload(payload.children);
 
     if (payload.contentDocument) {
         this._contentDocument = new WebInspector.DOMDocument(domAgent, payload.contentDocument);
-        this.children = [this._contentDocument];
+        this._children = [this._contentDocument];
         this._renumber();
     }
 
@@ -123,6 +126,14 @@ WebInspector.DOMNode.XPathStep.prototype = {
 
 WebInspector.DOMNode.prototype = {
     /**
+     * @return {Array.<WebInspector.DOMNode>}
+     */
+    children: function()
+    {
+        return this._children ? this._children.slice() : null;
+    },
+
+    /**
      * @return {boolean}
      */
     hasAttributes: function()
@@ -131,11 +142,11 @@ WebInspector.DOMNode.prototype = {
     },
 
     /**
-     * @return {boolean}
+     * @return {number}
      */
-    hasChildNodes: function()
+    childNodeCount: function()
     {
-        return this._childNodeCount > 0 || !!this._shadowRoots.length || !!this._templateContent;
+        return this._childNodeCount;
     },
 
     /**
@@ -144,6 +155,22 @@ WebInspector.DOMNode.prototype = {
     hasShadowRoots: function()
     {
         return !!this._shadowRoots.length;
+    },
+
+    /**
+     * @return {Array.<WebInspector.DOMNode>}
+     */
+    shadowRoots: function()
+    {
+        return this._shadowRoots.slice();
+    },
+
+    /**
+     * @return {WebInspector.DOMNode}
+     */
+    templateContent: function()
+    {
+        return this._templateContent;
     },
 
     /**
@@ -281,9 +308,9 @@ WebInspector.DOMNode.prototype = {
      */
     getChildNodes: function(callback)
     {
-        if (this.children) {
+        if (this._children) {
             if (callback)
-                callback(this.children);
+                callback(this.children());
             return;
         }
 
@@ -294,7 +321,7 @@ WebInspector.DOMNode.prototype = {
         function mycallback(error)
         {
             if (!error && callback)
-                callback(this.children);
+                callback(this.children());
         }
 
         DOMAgent.requestChildNodes(this.id, undefined, mycallback.bind(this));
@@ -313,7 +340,7 @@ WebInspector.DOMNode.prototype = {
         function mycallback(error)
         {
             if (callback)
-                callback(error ? null : this.children);                
+                callback(error ? null : this._children);
         }
 
         DOMAgent.requestChildNodes(this.id, depth, mycallback.bind(this));
@@ -473,18 +500,7 @@ WebInspector.DOMNode.prototype = {
     _insertChild: function(prev, payload)
     {
         var node = new WebInspector.DOMNode(this._domAgent, this.ownerDocument, this._isInShadowTree, payload);
-        if (!prev) {
-            if (!this.children) {
-                // First node
-                this.children = this._shadowRoots.slice();
-                if (this._templateContent)
-                    this.children.push(this._templateContent);
-
-                this.children.push(node);
-            } else
-                this.children.unshift(node);
-        } else
-            this.children.splice(this.children.indexOf(prev) + 1, 0, node);
+        this._children.splice(this._children.indexOf(prev) + 1, 0, node);
         this._renumber();
         return node;
     },
@@ -494,7 +510,7 @@ WebInspector.DOMNode.prototype = {
      */
     _removeChild: function(node)
     {
-        this.children.splice(this.children.indexOf(node), 1);
+        this._children.splice(this._children.indexOf(node), 1);
         node.parentNode = null;
         node._updateChildUserPropertyCountsOnRemoval(this);
         this._renumber();
@@ -509,33 +525,30 @@ WebInspector.DOMNode.prototype = {
         if (this._contentDocument)
             return;
 
-        this.children = this._shadowRoots.slice();
-        if (this._templateContent)
-            this.children.push(this._templateContent);
-
+        this._children = [];
         for (var i = 0; i < payloads.length; ++i) {
             var payload = payloads[i];
             var node = new WebInspector.DOMNode(this._domAgent, this.ownerDocument, this._isInShadowTree, payload);
-            this.children.push(node);
+            this._children.push(node);
         }
         this._renumber();
     },
 
     _renumber: function()
     {
-        this._childNodeCount = this.children.length;
+        this._childNodeCount = this._children.length;
         if (this._childNodeCount == 0) {
             this.firstChild = null;
             this.lastChild = null;
             return;
         }
-        this.firstChild = this.children[0];
-        this.lastChild = this.children[this._childNodeCount - 1];
+        this.firstChild = this._children[0];
+        this.lastChild = this._children[this._childNodeCount - 1];
         for (var i = 0; i < this._childNodeCount; ++i) {
-            var child = this.children[i];
+            var child = this._children[i];
             child.index = i;
-            child.nextSibling = i + 1 < this._childNodeCount ? this.children[i + 1] : null;
-            child.previousSibling = i - 1 >= 0 ? this.children[i - 1] : null;
+            child.nextSibling = i + 1 < this._childNodeCount ? this._children[i + 1] : null;
+            child.previousSibling = i - 1 >= 0 ? this._children[i - 1] : null;
             child.parentNode = this;
         }
     },
@@ -690,7 +703,7 @@ WebInspector.DOMNode.prototype = {
             return leftType === rightType;
         }
 
-        var siblings = this.parentNode ? this.parentNode.children : null;
+        var siblings = this.parentNode ? this.parentNode._children : null;
         if (!siblings)
             return 0; // Root node - no siblings.
         var hasSameNamedElements;
@@ -1128,10 +1141,36 @@ WebInspector.DOMAgent.prototype = {
     },
 
     /**
+     * @param {DOMAgent.NodeId} hostId
+     * @param {DOMAgent.Node} root
+     */
+    _shadowRootPushed: function(hostId, root)
+    {
+        var host = this._idToDOMNode[hostId];
+        if (!host)
+            return;
+        var node = new WebInspector.DOMNode(this, host.ownerDocument, true, root);
+        node.parentNode = host;
+        this._idToDOMNode[node.id] = node;
+        host._shadowRoots.push(node);
+        this.dispatchEventToListeners(WebInspector.DOMAgent.Events.NodeInserted, root);
+    },
+
+    /**
+     * @param {DOMAgent.NodeId} hostId
      * @param {DOMAgent.NodeId} rootId
      */
-    _shadowRootPopped: function(rootId)
+    _shadowRootPopped: function(hostId, rootId)
     {
+        var host = this._idToDOMNode[hostId];
+        if (!host)
+            return;
+        var root = this._idToDOMNode[rootId];
+        if (!root)
+            return;
+        host._shadowRoots.remove(root);
+        this._unbind(root);
+        this.dispatchEventToListeners(WebInspector.DOMAgent.Events.NodeRemoved, {node: root, parent: host});
     },
 
     /**
@@ -1140,8 +1179,12 @@ WebInspector.DOMAgent.prototype = {
     _unbind: function(node)
     {
         delete this._idToDOMNode[node.id];
-        for (var i = 0; node.children && i < node.children.length; ++i)
-            this._unbind(node.children[i]);
+        for (var i = 0; node._children && i < node._children.length; ++i)
+            this._unbind(node._children[i]);
+        for (var i = 0; i < node._shadowRoots.length; ++i)
+            this._unbind(node._shadowRoots[i]);
+        if (node._templateContent)
+            this._unbind(node._templateContent);
     },
 
     /**
@@ -1504,7 +1547,7 @@ WebInspector.DOMDispatcher.prototype = {
      */
     shadowRootPushed: function(hostId, root)
     {
-        this._domAgent._childNodeInserted(hostId, 0, root);
+        this._domAgent._shadowRootPushed(hostId, root);
     },
 
     /**
@@ -1513,7 +1556,7 @@ WebInspector.DOMDispatcher.prototype = {
      */
     shadowRootPopped: function(hostId, rootId)
     {
-        this._domAgent._childNodeRemoved(hostId, rootId);
+        this._domAgent._shadowRootPopped(hostId, rootId);
     }
 }
 

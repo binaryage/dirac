@@ -107,6 +107,7 @@ WebInspector.ElementsPanel = function()
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.NodeRemoved, this._nodeRemoved, this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.DocumentUpdated, this._documentUpdatedEvent, this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.InspectElementRequested, this._inspectElementRequested, this);
+    WebInspector.settings.showShadowDOM.addChangeListener(this._showShadowDOMChanged.bind(this));
 
     if (WebInspector.domAgent.existingDocument())
         this._documentUpdated(WebInspector.domAgent.existingDocument());
@@ -1065,6 +1066,9 @@ WebInspector.ElementsPanel.prototype = {
         if (!node)
             return;
 
+        while (!WebInspector.settings.showShadowDOM.get() && node && node.isInShadowTree())
+            node = node.parentNode;
+
         WebInspector.domAgent.highlightDOMNodeForTwoSeconds(nodeId);
         this.selectDOMNode(node, true);
     },
@@ -1106,6 +1110,11 @@ WebInspector.ElementsPanel.prototype = {
         var dockSide = WebInspector.dockController.dockSide();
         var vertically = dockSide === WebInspector.DockController.State.DockedToRight && WebInspector.settings.splitVerticallyWhenDockedToRight.get();
         this._splitVertically(vertically);
+    },
+
+    _showShadowDOMChanged: function()
+    {
+        this.treeOutline.update();
     },
 
     /**
