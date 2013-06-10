@@ -78,11 +78,6 @@
     line-height: 18px;
     background-origin: padding;
     background-clip: padding;
-}
-
-.sidebar-pane-title + .sidebar-pane-title,
-.pane:not(.visible) + .sidebar-pane-title,
-.sidebar-pane-title:first-of-type {
     margin-top: -1px;
 }
 

@@ -47,6 +47,7 @@ ol.breakpoint-list {
     -webkit-padding-start: 0;
     list-style: none;
     margin: 0;
+    padding-bottom: 3px;
 }
 
 .breakpoints-list-deactivated {

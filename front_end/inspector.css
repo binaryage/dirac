@@ -1687,7 +1687,6 @@ iframe.panel.extension {
 
 .placard {
     position: relative;
-    margin-top: 1px;
     padding: 3px 8px 4px 18px;
     min-height: 18px;
     white-space: nowrap;
