@@ -472,6 +472,13 @@ CodeMirror.StringStream.prototype = {
 WebInspector.suggestReload = function() { }
 WebInspector.reload = function() { }
 
+WebInspector.settings.continuousPainting = /** type {WebInspector.Setting} */ { }
+WebInspector.settings.showDebugBorders = /** type {WebInspector.Setting} */ { }
+WebInspector.settings.forceCompositingMode = /** type {WebInspector.Setting} */ { }
+WebInspector.settings.showFPSCounter = /** type {WebInspector.Setting} */ { }
+WebInspector.settings.showPaintRects = /** type {WebInspector.Setting} */ { }
+WebInspector.settings.showFPSCounter = /** type {WebInspector.Setting} */ { }
+
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;
 

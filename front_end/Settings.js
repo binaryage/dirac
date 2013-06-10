@@ -42,8 +42,6 @@ var Preferences = {
 }
 
 var Capabilities = {
-    canShowFPSCounter: false,
-    canContinuouslyPaint: false,
     canInspectWorkers: false
 }
 

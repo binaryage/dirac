@@ -338,26 +338,10 @@
                 "hidden": true
             },
             {
-                "name": "canShowFPSCounter",
-                "description": "Tells if backend supports a FPS counter display",
-                "returns": [
-                    { "name": "show", "type": "boolean", "description": "True if the FPS count can be shown" }
-                ],
-                "hidden": true
-            },
-            {
                 "name": "setShowFPSCounter",
                 "description": "Requests that backend shows the FPS counter",
                 "parameters": [
                     { "name": "show", "type": "boolean", "description": "True for showing the FPS counter" }
-                ],
-                "hidden": true
-            },
-            {
-                "name": "canContinuouslyPaint",
-                "description": "Tells if backend supports continuous painting",
-                "returns": [
-                    { "name": "value", "type": "boolean", "description": "True if continuous painting is available" }
                 ],
                 "hidden": true
             },
@@ -467,6 +451,14 @@
                 "parameters": [
                     { "name": "show", "type": "boolean", "description": "Whether to paint size or not." },
                     { "name": "showGrid", "type": "boolean", "optional": true, "description": "Whether to paint grid as well." }
+                ],
+                "hidden": true
+            },
+            {
+                "name": "setForceCompositingMode",
+                "description": "Force accelerated compositing mode for inspected page.",
+                "parameters": [
+                    { "name": "force", "type": "boolean", "description": "Whether to force accelerated compositing or not." }
                 ],
                 "hidden": true
             }

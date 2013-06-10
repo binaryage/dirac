@@ -327,13 +327,17 @@ WebInspector.GenericSettingsTab = function()
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show rulers"), WebInspector.settings.showMetricsRulers));
 
     p = this._appendSection(WebInspector.UIString("Rendering"));
+    this._forceCompositingModeCheckbox = document.createElement("input");
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Force accelerated compositing"), WebInspector.settings.forceCompositingMode, false, this._forceCompositingModeCheckbox));
+    WebInspector.settings.forceCompositingMode.addChangeListener(this._forceCompositingModeChanged, this);
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show paint rectangles"), WebInspector.settings.showPaintRects));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show composited layer borders"), WebInspector.settings.showDebugBorders));
-
-    if (Capabilities.canShowFPSCounter)
-        p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show FPS meter"), WebInspector.settings.showFPSCounter));
-    if (Capabilities.canContinuouslyPaint)
-        p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Enable continuous page repainting"), WebInspector.settings.continuousPainting));
+    this._showCompositedLayersBordersCheckbox = document.createElement("input");
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show composited layer borders"), WebInspector.settings.showDebugBorders, false, this._showCompositedLayersBordersCheckbox));
+    this._showFPSCheckbox = document.createElement("input");
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show FPS meter"), WebInspector.settings.showFPSCounter, false, this._showFPSCheckbox));
+    this._continousPaintingCheckbox = document.createElement("input");
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Enable continuous page repainting"), WebInspector.settings.continuousPainting, false, this._continousPaintingCheckbox));
+    this._forceCompositingModeChanged();
 
     p = this._appendSection(WebInspector.UIString("Sources"));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Search in content scripts"), WebInspector.settings.searchInContentScripts));
@@ -381,6 +385,26 @@ WebInspector.GenericSettingsTab = function()
 }
 
 WebInspector.GenericSettingsTab.prototype = {
+    /**
+     * @param {WebInspector.Event=} event
+     */
+    _forceCompositingModeChanged: function(event)
+    {
+        var compositing = event ? !!event.data : WebInspector.settings.forceCompositingMode.get();
+        this._showFPSCheckbox.disabled = !compositing;
+        this._continousPaintingCheckbox.disabled = !compositing;
+        this._showCompositedLayersBordersCheckbox.disabled = !compositing;
+        if (!compositing) {
+            this._showFPSCheckbox.checked = false;
+            this._continousPaintingCheckbox.checked = false;
+            this._showCompositedLayersBordersCheckbox.checked = false;
+            WebInspector.settings.showFPSCounter.set(false);
+            WebInspector.settings.continuousPainting.set(false);
+            WebInspector.settings.showDebugBorders.set(false);
+        }
+        this._forceCompositingModeCheckbox.checked = compositing;
+    },
+
     /**
      * @param {HTMLFieldSetElement} fieldset
      */
