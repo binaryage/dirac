@@ -845,7 +845,6 @@ WebInspector.DOMAgent.Events = {
     NodeRemoved: "NodeRemoved",
     DocumentUpdated: "DocumentUpdated",
     ChildNodeCountUpdated: "ChildNodeCountUpdated",
-    InspectElementRequested: "InspectElementRequested",
     UndoRedoRequested: "UndoRedoRequested",
     UndoRedoCompleted: "UndoRedoCompleted",
     InspectNodeRequested: "InspectNodeRequested"
@@ -1194,7 +1193,7 @@ WebInspector.DOMAgent.prototype = {
     {
         var node = this._idToDOMNode[nodeId];
         if (node)
-            this.dispatchEventToListeners(WebInspector.DOMAgent.Events.InspectElementRequested, node);
+            this.dispatchEventToListeners(WebInspector.DOMAgent.Events.InspectNodeRequested, nodeId);
     },
 
     /**
