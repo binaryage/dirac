@@ -3111,7 +3111,23 @@
                 "parameters": [
                     { "name": "eventName", "type": "string", "description": "Instrumentation name to stop on." }
                 ],
-                "description": "Sets breakpoint on particular native event.",
+                "description": "Removes breakpoint on particular native event.",
+                "hidden": true
+            },
+            {
+                "name": "setWebGLBreakpoint",
+                "parameters": [
+                    { "name": "eventName", "type": "string", "description": "WebGL event to stop on." }
+                ],
+                "description": "Sets breakpoint on particular WebGL event.",
+                "hidden": true
+            },
+            {
+                "name": "removeWebGLBreakpoint",
+                "parameters": [
+                    { "name": "eventName", "type": "string", "description": "WebGL event to remove." }
+                ],
+                "description": "Removes breakpoint on particular WebGL event.",
                 "hidden": true
             },
             {
