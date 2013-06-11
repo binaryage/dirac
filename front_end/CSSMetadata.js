@@ -335,7 +335,8 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "display": { values: [
         "none", "inline", "block", "list-item", "run-in", "compact", "inline-block", "table", "inline-table",
         "table-row-group", "table-header-group", "table-footer-group", "table-row", "table-column-group",
-        "table-column", "table-cell", "table-caption", "-webkit-box", "-webkit-inline-box", "-wap-marquee"
+        "table-column", "table-cell", "table-caption", "-webkit-box", "-webkit-inline-box",
+        "-webkit-flex", "-webkit-inline-flex", "-webkit-grid", "-webkit-inline-grid", "-wap-marquee"
     ] },
     "-webkit-text-emphasis-position": { values: [
         "over", "under"
