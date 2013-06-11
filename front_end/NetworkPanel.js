@@ -77,7 +77,7 @@ WebInspector.NetworkLogView = function(coulmnsVisibilitySetting)
     WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestUpdated, this);
 
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.OnLoad, this._onLoadEventFired, this);
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.DOMContentLoaded, this._domContentLoadedEventFired, this);
 
     this._initializeView();
@@ -468,7 +468,7 @@ WebInspector.NetworkLogView.prototype = {
             text += "  \u2758  " + String.sprintf(WebInspector.UIString("%s transferred"), Number.bytesToString(transferSize));
         }
         if (baseTime !== -1 && this._mainRequestLoadTime !== -1 && this._mainRequestDOMContentLoadedTime !== -1 && this._mainRequestDOMContentLoadedTime > baseTime) {
-            text += "  \u2758  " + String.sprintf(WebInspector.UIString("%s (onload: %s, DOMContentLoaded: %s)"),
+            text += "  \u2758  " + String.sprintf(WebInspector.UIString("%s (load: %s, DOMContentLoaded: %s)"),
                         Number.secondsToString(maxTime - baseTime),
                         Number.secondsToString(this._mainRequestLoadTime - baseTime),
                         Number.secondsToString(this._mainRequestDOMContentLoadedTime - baseTime));
@@ -653,7 +653,7 @@ WebInspector.NetworkLogView.prototype = {
         this._largerRequestsButton.addEventListener("click", this._toggleLargerRequests, this);
     },
 
-    _onLoadEventFired: function(event)
+    _loadEventFired: function(event)
     {
         this._mainRequestLoadTime = event.data || -1;
         // Schedule refresh to update boundaries and draw the new line.

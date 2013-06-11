@@ -63,7 +63,7 @@ WebInspector.ResourceTreeModel.EventTypes = {
     WillLoadCachedResources: "WillLoadCachedResources",
     CachedResourcesLoaded: "CachedResourcesLoaded",
     DOMContentLoaded: "DOMContentLoaded",
-    OnLoad: "OnLoad",
+    Load: "Load",
     InspectedURLChanged: "InspectedURLChanged",
     SecurityOriginAdded: "SecurityOriginAdded",
     SecurityOriginRemoved: "SecurityOriginRemoved"
@@ -665,7 +665,7 @@ WebInspector.PageDispatcher.prototype = {
 
     loadEventFired: function(time)
     {
-        this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.OnLoad, time);
+        this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.Load, time);
     },
 
     frameNavigated: function(frame)

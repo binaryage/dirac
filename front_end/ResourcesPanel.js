@@ -109,7 +109,7 @@ WebInspector.ResourcesPanel = function(database)
     if (WebInspector.resourceTreeModel.cachedResourcesLoaded())
         this._cachedResourcesLoaded();
 
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.OnLoad, this._onLoadEventFired, this);
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._cachedResourcesLoaded, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillLoadCachedResources, this._resetWithFrames, this);
 
@@ -140,7 +140,7 @@ WebInspector.ResourcesPanel.prototype = {
         }
     },
 
-    _onLoadEventFired: function()
+    _loadEventFired: function()
     {
         this._initDefaultSelection();
     },
