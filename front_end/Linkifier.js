@@ -86,13 +86,14 @@ WebInspector.Linkifier.prototype = {
     },
 
     /**
-     * @param {WebInspector.CSSRule} rule
+     * @param {CSSAgent.StyleSheetId} styleSheetId
+     * @param {WebInspector.CSSLocation} rawLocation
      * @return {?Element}
      */
-    linkifyCSSRuleLocation: function(rule)
+    linkifyCSSLocation: function(styleSheetId, rawLocation)
     {
         var anchor = WebInspector.linkifyURLAsNode("", "", "", false);
-        var liveLocation = WebInspector.cssModel.createLiveLocation(rule, this._updateAnchor.bind(this, anchor));
+        var liveLocation = WebInspector.cssModel.createLiveLocation(styleSheetId, rawLocation, this._updateAnchor.bind(this, anchor));
         if (!liveLocation)
             return null;
         this._liveLocations.push(liveLocation);

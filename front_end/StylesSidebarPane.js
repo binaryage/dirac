@@ -1276,7 +1276,7 @@ WebInspector.StylePropertiesSection.prototype = {
         }
 
         if (this.styleRule.sourceURL)
-            return this._parentPane._linkifier.linkifyCSSRuleLocation(this.rule) || linkifyUncopyable(this.styleRule.sourceURL, this.rule.lineNumberInSource());
+            return this._parentPane._linkifier.linkifyCSSLocation(this.rule.id.styleSheetId, this.rule.rawLocation) || linkifyUncopyable(this.styleRule.sourceURL, this.rule.lineNumberInSource());
 
         if (!this.rule)
             return document.createTextNode("");

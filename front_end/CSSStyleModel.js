@@ -546,18 +546,19 @@ WebInspector.CSSStyleModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.CSSRule} cssRule
+     * @param {CSSAgent.StyleSheetId} styleSheetId
+     * @param {WebInspector.CSSLocation} rawLocation
      * @param {function(WebInspector.UILocation):(boolean|undefined)} updateDelegate
      * @return {?WebInspector.LiveLocation}
      */
-    createLiveLocation: function(cssRule, updateDelegate)
+    createLiveLocation: function(styleSheetId, rawLocation, updateDelegate)
     {
-        if (!cssRule.rawLocation)
+        if (!rawLocation)
             return null;
-        var header = this.styleSheetHeaderForId(cssRule.id.styleSheetId);
+        var header = this.styleSheetHeaderForId(styleSheetId);
         if (!header)
             return null;
-        return header.createLiveLocation(cssRule, updateDelegate);
+        return header.createLiveLocation(rawLocation, updateDelegate);
     },
 
     /**
@@ -937,7 +938,7 @@ WebInspector.CSSRule.prototype = {
         if (!this.selectorRange)
             return 0;
         var styleSheetHeader = WebInspector.cssModel.styleSheetHeaderForId(this.id.styleSheetId);
-        return styleSheetHeader.startLine + this.selectorRange.startLine;
+        return styleSheetHeader.lineNumberInSource(this.selectorRange.startLine);
     },
 
     /**
@@ -949,7 +950,7 @@ WebInspector.CSSRule.prototype = {
             return undefined;
         var styleSheetHeader = WebInspector.cssModel.styleSheetHeaderForId(this.id.styleSheetId);
         console.assert(styleSheetHeader);
-        return (this.selectorRange.startLine ? 0 : styleSheetHeader.startColumn) + this.selectorRange.startColumn;
+        return styleSheetHeader.columnNumberInSource(this.selectorRange.startLine, this.selectorRange.startColumn);
     },
 
     get isUserAgent()
@@ -1254,13 +1255,13 @@ WebInspector.CSSStyleSheetHeader.prototype = {
     },
 
     /**
-     * @param {WebInspector.CSSRule} cssRule
+     * @param {WebInspector.CSSLocation} rawLocation
      * @param {function(WebInspector.UILocation):(boolean|undefined)} updateDelegate
      * @return {?WebInspector.LiveLocation}
      */
-    createLiveLocation: function(cssRule, updateDelegate)
+    createLiveLocation: function(rawLocation, updateDelegate)
     {
-        var location = new WebInspector.CSSStyleModel.LiveLocation(cssRule.rawLocation, updateDelegate, this);
+        var location = new WebInspector.CSSStyleModel.LiveLocation(rawLocation, updateDelegate, this);
         this._locations.add(location);
         location.update();
         return location;
@@ -1331,6 +1332,25 @@ WebInspector.CSSStyleSheetHeader.prototype = {
             fakeURL += "/";
         fakeURL += "inspector-stylesheet";
         return fakeURL;
+    },
+
+    /**
+     * @param {number} lineNumberInStyleSheet
+     * @return {number}
+     */
+    lineNumberInSource: function(lineNumberInStyleSheet)
+    {
+        return this.startLine + lineNumberInStyleSheet;
+    },
+
+    /**
+     * @param {number} lineNumberInStyleSheet
+     * @param {number} columnNumberInStyleSheet
+     * @return {number|undefined}
+     */
+    columnNumberInSource: function(lineNumberInStyleSheet, columnNumberInStyleSheet)
+    {
+        return (lineNumberInStyleSheet ? 0 : this.startColumn) + columnNumberInStyleSheet;
     },
 
     /**
