@@ -28,12 +28,13 @@ WebInspector.ResourceWebSocketFrameView = function(resource)
     this.element.removeChildren();
 
     this._dataGrid = new WebInspector.DataGrid([
-        {id: "data", title: WebInspector.UIString("Data"), sortable: false},
-        {id: "length", title: WebInspector.UIString("Length"), sortable: false, alig: WebInspector.DataGrid.Align.Right, width: "50px"},
-        {id: "time", title: WebInspector.UIString("Time"), width: "70px"}
+        {id: "data", title: WebInspector.UIString("Data"), sortable: false, weight: 88},
+        {id: "length", title: WebInspector.UIString("Length"), sortable: false, alig: WebInspector.DataGrid.Align.Right, weight: 5},
+        {id: "time", title: WebInspector.UIString("Time"), weight: 7}
     ]);
 
     this.refresh();
+    this._dataGrid.setName("ResourceWebSocketFrameView");
     this._dataGrid.show(this.element);
 }
 
