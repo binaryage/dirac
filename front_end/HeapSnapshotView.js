@@ -1685,6 +1685,8 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
     update: function()
     {
         this._updateTimerId = null;
+        if (!this.isShowing())
+            return;
         this._updateBoundaries();
         this._overviewCalculator._updateBoundaries(this);
         this._overviewGrid.updateDividers(this._overviewCalculator);
