@@ -462,7 +462,7 @@ WebInspector.startEditing = function(element, config)
         cssLoadView = new WebInspector.CodeMirrorCSSLoadView();
         cssLoadView.show(element);
         WebInspector.setCurrentFocusElement(element);
-        element.addEventListener("copy", consumeCopy, true);
+        element.addEventListener("copy", consumeCopy, false);
         codeMirror = window.CodeMirror(element, {
             mode: config.mode,
             lineWrapping: config.lineWrapping,
@@ -512,7 +512,7 @@ WebInspector.startEditing = function(element, config)
         WebInspector.restoreFocusFromElement(element);
 
         if (isMultiline) {
-            element.removeEventListener("copy", consumeCopy, true);
+            element.removeEventListener("copy", consumeCopy, false);
             cssLoadView.detach();
             return;
         }
