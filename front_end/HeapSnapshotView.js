@@ -1567,7 +1567,7 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         this._overviewCanvas.style.width = width + "px";
         this._overviewCanvas.style.height = height + "px";
 
-        var targetYScaleFactor = maxSize ? height / (maxSize * 1.1) : 0.0;
+        var targetYScaleFactor = maxSize ? height / (maxSize * 1.1) : this._yScaleFactor || 0.0;
         var now = Date.now();
         if (this._yScaleFactor) {
             var timeDeltaMs = now - this._yScaleFactorLastUpdate;
@@ -1595,7 +1595,7 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         var gridY;
         var gridValue;
         var gridLabelHeight = 14;
-        if (maxSize) {
+        if (yScaleFactor) {
             const maxGridValue = (height - gridLabelHeight) / yScaleFactor;
             // The round value calculation is a bit tricky, because
             // it has a form k*10^n*1024^m, where k=[1,5], n=[0..3], m is an integer,
