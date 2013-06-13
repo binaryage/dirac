@@ -71,7 +71,7 @@ WebInspector.Spectrum = function()
 
     function hueDrag(element, dragX, dragY)
     {
-        this._hsv[0] = dragY / this.slideHeight;
+        this._hsv[0] = (this.slideHeight - dragY) / this.slideHeight;
 
         this._onchange();
     }
@@ -254,7 +254,7 @@ WebInspector.Spectrum.prototype = {
         this._dragHelperElement.positionAt(dragX, dragY);
 
         // Where to show the bar that displays your current selected hue.
-        var slideY = (h * this.slideHeight) - this.slideHelperHeight;
+        var slideY = this.slideHeight - ((h * this.slideHeight) + this.slideHelperHeight);
         this.slideHelper.style.top = slideY + "px";
 
         this._alphaElement.value = this._hsv[3] * 100;
