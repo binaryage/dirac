@@ -1152,7 +1152,7 @@ WebInspector.DOMAgent.prototype = {
         node.parentNode = host;
         this._idToDOMNode[node.id] = node;
         host._shadowRoots.push(node);
-        this.dispatchEventToListeners(WebInspector.DOMAgent.Events.NodeInserted, root);
+        this.dispatchEventToListeners(WebInspector.DOMAgent.Events.NodeInserted, node);
     },
 
     /**

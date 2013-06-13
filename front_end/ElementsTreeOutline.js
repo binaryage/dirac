@@ -668,6 +668,12 @@ WebInspector.ElementsTreeOutline.prototype = {
     __proto__: TreeOutline.prototype
 }
 
+WebInspector.ElementsTreeOutline.showShadowDOM = function()
+{
+    return WebInspector.settings.showShadowDOM.get() || WebInspector.ElementsTreeOutline["showShadowDOMForTest"];
+}
+
+
 /**
  * @interface
  */
@@ -1976,7 +1982,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
     _showInlineText: function()
     {
-        if (this._node.templateContent() || (WebInspector.settings.showShadowDOM.get() && this._node.hasShadowRoots()))
+        if (this._node.templateContent() || (WebInspector.ElementsTreeOutline.showShadowDOM() && this._node.hasShadowRoots()))
             return false;
         if (this._node.nodeType() !== Node.ELEMENT_NODE)
             return false;
@@ -2108,7 +2114,7 @@ WebInspector.ElementsTreeElement.prototype = {
      */
     _visibleChildren: function()
     {
-        var visibleChildren = WebInspector.settings.showShadowDOM.get() ? this._node.shadowRoots() : [];
+        var visibleChildren = WebInspector.ElementsTreeOutline.showShadowDOM() ? this._node.shadowRoots() : [];
         if (this._node.templateContent())
             visibleChildren.push(this._node.templateContent());
         if (this._node.childNodeCount())
@@ -2124,7 +2130,7 @@ WebInspector.ElementsTreeElement.prototype = {
         var childCount = this._node.childNodeCount();
         if (this._node.templateContent())
             childCount++;
-        if (WebInspector.settings.showShadowDOM.get())
+        if (WebInspector.ElementsTreeOutline.showShadowDOM())
             childCount += this._node.shadowRoots().length;
         return childCount;
     },

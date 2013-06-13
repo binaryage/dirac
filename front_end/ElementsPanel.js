@@ -1059,7 +1059,7 @@ WebInspector.ElementsPanel.prototype = {
         if (!node)
             return;
 
-        while (!WebInspector.settings.showShadowDOM.get() && node && node.isInShadowTree())
+        while (!WebInspector.ElementsTreeOutline.showShadowDOM() && node && node.isInShadowTree())
             node = node.parentNode;
 
         WebInspector.domAgent.highlightDOMNodeForTwoSeconds(nodeId);
