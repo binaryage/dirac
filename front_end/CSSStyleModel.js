@@ -1305,12 +1305,6 @@ WebInspector.CSSStyleSheetHeader.prototype = {
         this.updateLocations();
     },
 
-    popSourceMapping: function()
-    {
-        this._sourceMappings.pop();
-        this.updateLocations();
-    },
-
     /**
      * @return {string}
      */

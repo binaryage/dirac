@@ -152,8 +152,9 @@ WebInspector.ScriptSnippetModel.prototype = {
             return;
 
         var breakpointLocations = this._removeBreakpoints(uiSourceCode);
-        var scriptUISourceCode = this._releaseSnippetScript(uiSourceCode);
+        this._releaseSnippetScript(uiSourceCode);
         this._restoreBreakpoints(uiSourceCode, breakpointLocations);
+        var scriptUISourceCode = script.rawLocationToUILocation(0, 0).uiSourceCode;
         if (scriptUISourceCode)
             this._restoreBreakpoints(scriptUISourceCode, breakpointLocations);
     },
@@ -270,6 +271,8 @@ WebInspector.ScriptSnippetModel.prototype = {
     _rawLocationToUILocation: function(rawLocation)
     {
         var uiSourceCode = this._uiSourceCodeForScriptId[rawLocation.scriptId];
+        if (!uiSourceCode)
+            return;
         return new WebInspector.UILocation(uiSourceCode, rawLocation.lineNumber, rawLocation.columnNumber || 0);
     },
 
@@ -335,7 +338,6 @@ WebInspector.ScriptSnippetModel.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @return {WebInspector.UISourceCode}
      */
     _releaseSnippetScript: function(uiSourceCode)
     {
@@ -348,9 +350,7 @@ WebInspector.ScriptSnippetModel.prototype = {
         delete this._uiSourceCodeForScriptId[script.scriptId];
         this._scriptForUISourceCode.remove(uiSourceCode);
         delete uiSourceCode._evaluationIndex;
-        script.popSourceMapping(this._snippetScriptMapping);
         uiSourceCode.scriptFile().setIsDivergingFromVM(false);
-        return script.rawLocationToUILocation(0, 0).uiSourceCode;
     },
 
     _debuggerReset: function()
