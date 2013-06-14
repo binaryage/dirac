@@ -39,6 +39,7 @@ devtools_path = os.path.dirname(scripts_path)
 inspector_path = os.path.dirname(devtools_path) + "/core/inspector"
 devtools_frontend_path = devtools_path + "/front_end"
 protocol_externs_path = devtools_frontend_path + "/protocol_externs.js"
+webgl_rendering_context_idl_path = os.path.dirname(devtools_path) + "/core/html/canvas/WebGLRenderingContext.idl"
 
 generate_protocol_externs.generate_protocol_externs(protocol_externs_path, devtools_path + "/protocol.json")
 
@@ -423,6 +424,7 @@ else:
     command += "    --externs " + devtools_frontend_path + "/externs.js"
     for module in modules:
         command += dump_module(module["name"], False, {})
+    print "Compiling front_end..."
     os.system(command)
 
 if not process_recursively:
@@ -449,6 +451,10 @@ if not process_recursively:
     command += "\n"
     os.system(command)
     os.system("rm " + inspector_path + "/" + "InjectedScriptCanvasModuleSourceTmp.js")
+
+    print "Checking generated code in InjectedScriptCanvasModuleSource.js..."
+    check_injected_webgl_calls_command = "%s/check_injected_webgl_calls_info.py %s %s/InjectedScriptCanvasModuleSource.js" % (scripts_path, webgl_rendering_context_idl_path, inspector_path)
+    os.system(check_injected_webgl_calls_command)
 
 shutil.rmtree(modules_dir)
 #os.system("rm " + protocol_externs_path)
