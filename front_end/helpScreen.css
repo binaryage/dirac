@@ -422,10 +422,6 @@ body.platform-mac .help-content input[type=radio] {
     background-color: rgb(221, 221, 221);
 }
 
-.settings-tab .file-systems-editor input.file-system-path {
-    width: 383px;
-}
-
 .settings-tab .workspace-settings-row input {
     width: 190px;
 }
@@ -462,18 +458,6 @@ body.platform-mac .help-content input[type=radio] {
     background-image: url(Images/addIcon.png);
 }
 
-#workspace-tab-content .workspace-settings-row .file-system-add-button {
-    color: gray;
-    border: none;
-    border-bottom: 1px transparent solid;
-    -webkit-appearance: none;
-    background: transparent;
-}
-
-#workspace-tab-content .workspace-settings-row .file-system-add-button:hover {
-    border-bottom: 1px gray dashed;
-}
-
 #workspace-tab-content .workspace-settings-error {
     color: red;
 }
@@ -497,4 +481,105 @@ body.platform-mac .help-content input[type=radio] {
 .settings-tab .workspace-settings-row input.tethering-port-input {
     width: 80px;
     margin-right: 20px;
+}
+
+.settings-tab .text-button {
+    background-image: -webkit-linear-gradient(hsl(0, 0%, 93%), hsl(0, 0%, 93%) 38%, hsl(0, 0%, 87%));
+    border: 1px solid hsla(0, 0%, 0%, 0.25);
+    border-radius: 2px;
+    box-shadow: 0 1px 0 hsla(0, 0%, 0%, 0.08), inset 0 1px 2px hsla(0, 100%, 100%, 0.75);
+    color: hsl(0, 0%, 27%);
+    font-size: 12px;
+    margin: 0 1px 0 0;
+    text-shadow: 0 1px 0 hsl(0, 0%, 94%);
+    min-height: 2em;
+    padding-left: 10px;
+    padding-right: 10px;
+}
+
+.settings-tab .text-button:hover {
+    background-image: -webkit-linear-gradient(hsl(0, 0%, 94%), hsl(0, 0%, 94%) 38%, hsl(0, 0%, 88%));
+    border-color: hsla(0, 0%, 0%, 0.3);
+    box-shadow: 0 1px 0 hsla(0, 0%, 0%, 0.12), inset 0 1px 2px hsla(0, 100%, 100%, 0.95);
+    color: hsl(0, 0%, 0%);
+}
+
+.settings-tab .text-button:active {
+    background-image: -webkit-linear-gradient(hsl(0, 0%, 91%), hsl(0, 0%, 91%) 38%, hsl(0, 0%, 84%));
+    box-shadow: none;
+    text-shadow: none;
+}
+
+.settings-tab .settings-list-container {
+    margin-bottom: 5px;
+}
+
+.settings-tab .settings-list {
+    border: 1px solid hsl(0, 0%, 85%);
+    border-radius: 2px;
+}
+
+.settings-tab .settings-list .settings-list-item {
+    height: 40px;
+    -webkit-box-align: center;
+    -webkit-transition: 150ms background-color;
+    display: -webkit-box;
+    padding-right: 3px;
+}
+
+.settings-tab .settings-list .settings-list-item.selected {
+    background-color: hsl(0, 0%, 82%);
+}
+
+.settings-tab .settings-list .settings-list-item:hover {
+    background-color: hsl(215, 54%, 93%);
+}
+
+.settings-tab .settings-list .settings-list-item.selected:hover {
+    background-color: hsl(215, 51%, 82%);
+}
+
+.settings-tab .settings-list .settings-list-item .remove-item-button {
+    -webkit-transition: 150ms opacity;
+    background-color: hsla(0, 0%, 0%, 0);
+    background-image: -webkit-image-set(
+        url(Images/settingsListRemove.png) 1x,
+        url(Images/settingsListRemove_2x.png) 2x);
+    background-size: 48px 16px;
+    border: none;
+    display: block;
+    height: 16px;
+    width: 16px;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.settings-tab .settings-list .settings-list-item.selected .remove-item-button,
+.settings-tab .settings-list .settings-list-item:hover .remove-item-button {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.settings-tab .settings-list .settings-list-item .remove-item-button:hover {
+    background-position-x: -32px;
+}
+
+.settings-tab .settings-list .settings-list-item .remove-item-button:active {
+    background-position-x: -16px;
+}
+
+#workspace-tab-content .settings-list .settings-list-item .file-system-path {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 12px;
+    padding-left: 6px;
+    padding-right: 5px;
+    -webkit-box-flex: 1;
+    color: hsl(210, 16%, 22%);
+}
+
+#workspace-tab-content .settings-list .settings-list-item .file-system-path-name {
+    padding-right: 6px;
+    font-weight: bold;
 }

@@ -422,6 +422,8 @@
             'front_end/Images/segmentSelected.png',
             'front_end/Images/segmentSelectedEnd.png',
             'front_end/Images/sessionStorage.png',
+            'front_end/Images/settingsListRemove.png',
+            'front_end/Images/settingsListRemove_2x.png',
             'front_end/Images/spinner.gif',
             'front_end/Images/spinnerActive.gif',
             'front_end/Images/spinnerActiveSelected.gif',

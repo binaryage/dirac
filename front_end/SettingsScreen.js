@@ -498,6 +498,26 @@ WebInspector.OverridesSettingsTab.prototype = {
 WebInspector.WorkspaceSettingsTab = function()
 {
     WebInspector.SettingsTab.call(this, WebInspector.UIString("Workspace"), "workspace-tab-content");
+    WebInspector.isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, this._fileSystemAdded, this);
+    WebInspector.isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemRemoved, this._fileSystemRemoved, this);
+
+    this._fileSystemsSection = this._appendSection(WebInspector.UIString("Folders"));
+    this._fileSystemsListContainer = this._fileSystemsSection.createChild("p", "settings-list-container");
+    this._addFileSystemRowElement = this._fileSystemsSection.createChild("div");
+    var addFileSystemButton = this._addFileSystemRowElement.createChild("input", "text-button");
+    addFileSystemButton.type = "button";
+    addFileSystemButton.value = WebInspector.UIString("Add folder");
+    addFileSystemButton.addEventListener("click", this._addFileSystemClicked.bind(this));
+
+    this._fileMappingsSection = this._appendSection(WebInspector.UIString("Mappings"));
+    this._fileMappingsListElement = this._fileMappingsSection.createChild("p", "file-mappings-list");
+    this._addMappingRowElement = this._fileMappingsSection.createChild("div", "workspace-settings-row");
+    this._urlInputElement = this._createEditTextInput("file-mapping-url", WebInspector.UIString("URL prefix"));
+    this._addMappingRowElement.appendChild(this._urlInputElement);
+    this._pathInputElement = this._createEditTextInput("file-mapping-path", WebInspector.UIString("Folder path"));
+    this._addMappingRowElement.appendChild(this._pathInputElement);
+    this._addMappingRowElement.appendChild(this._createAddButton(this._addFileMappingClicked.bind(this)));
+
     this._reset();
 }
 
@@ -510,27 +530,26 @@ WebInspector.WorkspaceSettingsTab.prototype = {
 
     _reset: function()
     {
-        this.containerElement.removeChildren();
-        this._createFileSystemsEditor();
-        this._createFileMappingEditor();
+        this._resetFileSystems();
+        this._resetFileMappings();
     },
 
-    _createFileSystemsEditor: function()
+    _resetFileSystems: function()
     {
-        var p = this._appendSection(WebInspector.UIString("Folders"));
-        this._fileSystemsEditor = p.createChild("p", "file-systems-editor");
-
-        this._addFileSystemRowElement = this._fileSystemsEditor.createChild("div", "workspace-settings-row");
-        var addFileSystemButton = this._addFileSystemRowElement.createChild("input", "file-system-add-button");
-        addFileSystemButton.type = "button";
-        addFileSystemButton.value = WebInspector.UIString("Add folder");
-        addFileSystemButton.addEventListener("click", this._addFileSystemClicked.bind(this));
-
+        this._fileSystemsListContainer.removeChildren();
         var fileSystemPaths = WebInspector.isolatedFileSystemManager.mapping().fileSystemPaths();
-        for (var i = 0; i < fileSystemPaths.length; ++i)
-            this._addFileSystemRow(fileSystemPaths[i]);
+        delete this._fileSystemsList;
 
-        return this._fileSystemsEditor;
+        if (!fileSystemPaths.length) {
+            var noFileSystemsMessageElement = this._fileSystemsListContainer.createChild("div", "no-file-systems-message");
+            noFileSystemsMessageElement.textContent = WebInspector.UIString("You have no file systems added.");
+            return;
+        }
+
+        this._fileSystemsList = new WebInspector.SettingsList(this._renderFileSystem, this._removeFileSystem);
+        this._fileSystemsListContainer.appendChild(this._fileSystemsList.element);
+        for (var i = 0; i < fileSystemPaths.length; ++i)
+            this._fileSystemsList.addItem(fileSystemPaths[i]);
     },
 
     /**
@@ -588,64 +607,73 @@ WebInspector.WorkspaceSettingsTab.prototype = {
     },
 
     /**
-     * @param {string} fileSystemPath
+     * @param {Element} listItem
+     * @param {?string} id
      */
-    _addFileSystemRow: function(fileSystemPath)
+    _renderFileSystem: function(listItem, id)
     {
-        var fileSystemRow = document.createElement("div");
-        fileSystemRow.addStyleClass("workspace-settings-row");
-        fileSystemRow.addStyleClass("file-system-row");
-        this._fileSystemsEditor.insertBefore(fileSystemRow, this._addFileSystemRowElement);
+        var fileSystemPath = id;
+        var pathElement = listItem.createChild("div", "file-system-path");
+        pathElement.title = fileSystemPath;
 
-        fileSystemRow.appendChild(this._createShowTextInput("file-system-path", fileSystemPath));
-        var removeFileSystemButton = this._createRemoveButton(removeFileSystemClicked.bind(this));
-        fileSystemRow.appendChild(removeFileSystemButton);
+        const maxTotalPathLength = 60;
+        const maxFolderNameLength = 30;
+        var lastIndexOfSlash = fileSystemPath.lastIndexOf("/");
+        var folderName = fileSystemPath.substr(lastIndexOfSlash + 1);
+        var folderPath = fileSystemPath.substr(0, lastIndexOfSlash);
+        folderPath = folderPath.trimMiddle(maxTotalPathLength - Math.min(maxFolderNameLength, folderName.length));
+        folderName = folderName.trimMiddle(maxFolderNameLength);
 
-        function removeFileSystemClicked()
-        {
-            removeFileSystemButton.disabled = true;
-            WebInspector.isolatedFileSystemManager.removeFileSystem(fileSystemPath, fileSystemRemoved.bind(this));
-        }
+        var nameElement = pathElement.createChild("span", "file-system-path-name");
+        nameElement.textContent = folderName;
 
-        function fileSystemRemoved()
-        {
-            this._fileSystemsEditor.removeChild(fileSystemRow);
-            removeFileSystemButton.disabled = false;
-        }
+        var folderPathElement = pathElement.createChild("span");
+        folderPathElement.textContent = folderPath;
+    },
+
+    /**
+     * @param {?string} id
+     */
+    _removeFileSystem: function(id)
+    {
+        if (!id)
+            return;
+        WebInspector.isolatedFileSystemManager.removeFileSystem(id);
     },
 
     _addFileSystemClicked: function()
     {
-        WebInspector.isolatedFileSystemManager.addFileSystem(this._fileSystemAdded.bind(this));
+        WebInspector.isolatedFileSystemManager.addFileSystem();
     },
 
-    /**
-     * @param {?string} fileSystemPath
-     */
-    _fileSystemAdded: function(fileSystemPath)
+    _fileSystemAdded: function(event)
     {
-        if (fileSystemPath)
-            this._addFileSystemRow(fileSystemPath);
+        var fileSystem = /** @type {WebInspector.IsolatedFileSystem} */ (event.data);
+        if (!this._fileSystemsList)
+            this._reset();
+        else
+            this._fileSystemsList.addItem(fileSystem.path());
     },
 
-    _createFileMappingEditor: function()
+    _fileSystemRemoved: function(event)
     {
-        var p = this._appendSection(WebInspector.UIString("Mappings"));
-        this._fileMappingEditor = p.createChild("p", "file-mappings-editor");
+        var fileSystem = /** @type {WebInspector.IsolatedFileSystem} */ (event.data);
+        this._fileSystemsList.removeItem(fileSystem.path());
+        if (!this._fileSystemsList.itemIds().length)
+            this._reset();
+    },
 
-        this._addMappingRowElement = this._fileMappingEditor.createChild("div", "workspace-settings-row");
+    _resetFileMappings: function()
+    {
+        this._fileMappingsListElement.removeChildren();
 
-        this._urlInputElement = this._createEditTextInput("file-mapping-url", WebInspector.UIString("URL prefix"));
-        this._addMappingRowElement.appendChild(this._urlInputElement);
-        this._pathInputElement = this._createEditTextInput("file-mapping-path", WebInspector.UIString("Folder path"));
-        this._addMappingRowElement.appendChild(this._pathInputElement);
-
-        this._addMappingRowElement.appendChild(this._createAddButton(this._addFileMappingClicked.bind(this)));
+        if (this._fileMappingEditor && this._fileMappingEditor.parentElement)
+            this._fileMappingEditor.parentElement.removeChild(this._fileMappingEditor);
+        this._fileMappingEditor = this._fileMappingsListElement.createChild("div", "file-mappings-editor");
 
         var mappingEntries = WebInspector.fileMapping.mappingEntries();
         for (var i = 0; i < mappingEntries.length; ++i)
             this._addMappingRow(mappingEntries[i]);
-
         return this._fileMappingEditor;
     },
 
@@ -656,7 +684,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
     {
         var fileMappingRow = document.createElement("div");
         fileMappingRow.addStyleClass("workspace-settings-row");
-        this._fileMappingEditor.insertBefore(fileMappingRow, this._addMappingRowElement);
+        this._fileMappingEditor.appendChild(fileMappingRow);
 
         fileMappingRow.appendChild(this._createShowTextInput("file-mapping-url", mappingEntry.urlPrefix));
         fileMappingRow.appendChild(this._createShowTextInput("file-mapping-path", mappingEntry.pathPrefix));
@@ -985,5 +1013,110 @@ WebInspector.SettingsController.prototype =
     {
         if (this._settingsScreen && this._settingsScreen.isShowing())
             this._settingsScreen.doResize();
+    }
+}
+
+/**
+ * @constructor
+ * @param {function(Element, ?string)} itemRenderer
+ * @param {function(?string)} itemRemover
+ */
+WebInspector.SettingsList = function(itemRenderer, itemRemover)
+{
+    this.element = document.createElement("div");
+    this.element.addStyleClass("settings-list");
+    this.element.tabIndex = -1;
+    this._itemRenderer = itemRenderer;
+    this._listItems = {};
+    this._ids = [];
+    this._itemRemover = itemRemover;
+}
+
+WebInspector.SettingsList.prototype = {
+    /**
+     * @param {?string} id
+     * @return {Element}
+     */
+    addItem: function(id)
+    {
+        var listItem = document.createElement("div");
+        listItem._id = id;
+        listItem.addStyleClass("settings-list-item");
+        this.element.appendChild(listItem);
+
+        this._itemRenderer(listItem, id);
+
+        var removeItemButton = this._createRemoveButton(removeItemClicked.bind(this));
+        listItem.addEventListener("click", this.selectItem.bind(this, id), false);
+        listItem.appendChild(removeItemButton);
+        this._listItems[id] = listItem;
+        this._ids.push(id);
+
+        function removeItemClicked()
+        {
+            removeItemButton.disabled = true;
+            this._itemRemover(id);
+        }
+
+        return listItem;
+    },
+
+    /**
+     * @param {?string} id
+     */
+    removeItem: function(id)
+    {
+        var listItem = this._listItems[id];
+        if (listItem.parentElement)
+            listItem.parentElement.removeChild(listItem);
+        delete this._listItems[id];
+        this._ids.remove(id);
+        if (id === this._selectedId) {
+            delete this._selectedId;
+            if (this._ids.length)
+                this.selectItem(this._ids[0]);
+        }
+    },
+
+    /**
+     * @return {Array.<?string>}
+     */
+    itemIds: function()
+    {
+        return this._ids.slice();
+    },
+
+    /**
+     * @return {?string}
+     */
+    selectedId: function()
+    {
+        return this._selectedId;
+    },
+
+    /**
+     * @param {?string} id
+     */
+    selectItem: function(id)
+    {
+        if (id === this._selectedId)
+            return;
+        if (this._selectedId)
+            this._listItems[this._selectedId].removeStyleClass("selected");
+        this._selectedId = id;
+        this._listItems[this._selectedId].addStyleClass("selected");
+    },
+
+    /**
+     * @param {function(Event)} handler
+     * @return {Element}
+     */
+    _createRemoveButton: function(handler)
+    {
+        var removeButton = document.createElement("button");
+        removeButton.addStyleClass("remove-item-button");
+        removeButton.value = WebInspector.UIString("Remove");
+        removeButton.addEventListener("click", handler, false);
+        return removeButton;
     }
 }
