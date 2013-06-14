@@ -252,8 +252,8 @@ WebInspector.RemoteObject.prototype = {
 
             this.doSetObjectPropertyValue(result, name, callback);
 
-            if (result._objectId)
-                RuntimeAgent.releaseObject(result._objectId);
+            if (result.objectId)
+                RuntimeAgent.releaseObject(result.objectId);
         }
     },
 
