@@ -272,7 +272,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     {
         var uiSourceCode = this._uiSourceCodeForScriptId[rawLocation.scriptId];
         if (!uiSourceCode)
-            return;
+            return null;
         return new WebInspector.UILocation(uiSourceCode, rawLocation.lineNumber, rawLocation.columnNumber || 0);
     },
 
