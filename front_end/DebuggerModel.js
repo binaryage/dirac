@@ -357,7 +357,7 @@ WebInspector.DebuggerModel.prototype = {
     /**
      * @param {Array.<DebuggerAgent.CallFrame>} callFrames
      * @param {string} reason
-     * @param {*} auxData
+     * @param {Object|undefined} auxData
      * @param {Array.<string>} breakpointIds
      */
     _pausedScript: function(callFrames, reason, auxData, breakpointIds)
@@ -824,7 +824,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
  * @param {WebInspector.DebuggerModel} model
  * @param {Array.<DebuggerAgent.CallFrame>} callFrames
  * @param {string} reason
- * @param {*} auxData
+ * @param {Object|undefined} auxData
  * @param {Array.<string>} breakpointIds
  */
 WebInspector.DebuggerPausedDetails = function(model, callFrames, reason, auxData, breakpointIds)

@@ -3116,22 +3116,6 @@
                 "hidden": true
             },
             {
-                "name": "setWebGLBreakpoint",
-                "parameters": [
-                    { "name": "eventName", "type": "string", "description": "WebGL event to stop on." }
-                ],
-                "description": "Sets breakpoint on particular WebGL event.",
-                "hidden": true
-            },
-            {
-                "name": "removeWebGLBreakpoint",
-                "parameters": [
-                    { "name": "eventName", "type": "string", "description": "WebGL event to remove." }
-                ],
-                "description": "Removes breakpoint on particular WebGL event.",
-                "hidden": true
-            },
-            {
                 "name": "setXHRBreakpoint",
                 "parameters": [
                     { "name": "url", "type": "string", "description": "Resource URL substring. All XHRs having this substring in the URL will get stopped upon." }
