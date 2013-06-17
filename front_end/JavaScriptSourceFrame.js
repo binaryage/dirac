@@ -125,12 +125,13 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     populateTextAreaContextMenu: function(contextMenu, lineNumber)
     {
-        var selection = window.getSelection();
-        if (selection.type === "Range" && !selection.isCollapsed) {
+        var textSelection = this.textEditor.selection();
+        if (textSelection && !textSelection.isEmpty()) {
+            var selection = this.textEditor.copyRange(textSelection);
             var addToWatchLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add to watch" : "Add to Watch");
-            contextMenu.appendItem(addToWatchLabel, this._scriptsPanel.addToWatch.bind(this._scriptsPanel, selection.toString()));
+            contextMenu.appendItem(addToWatchLabel, this._scriptsPanel.addToWatch.bind(this._scriptsPanel, selection));
             var evaluateLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Evaluate in console" : "Evaluate in Console");
-            contextMenu.appendItem(evaluateLabel, WebInspector.evaluateInConsole.bind(WebInspector, selection.toString()));
+            contextMenu.appendItem(evaluateLabel, WebInspector.evaluateInConsole.bind(WebInspector, selection));
             contextMenu.appendSeparator();
         } else if (!this._uiSourceCode.isEditable() && this._uiSourceCode.contentType() === WebInspector.resourceTypes.Script) {
             function liveEdit(event)
