@@ -908,7 +908,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     {
     },
 
-    get  treeItemTitle()
+    get treeItemTitle()
     {
         return WebInspector.UIString("HEAP SNAPSHOTS");
     },
@@ -1040,7 +1040,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
  */
 WebInspector.TrackingHeapSnapshotProfileType = function(profilesPanel)
 {
-    WebInspector.ProfileType.call(this, WebInspector.TrackingHeapSnapshotProfileType.TypeId, WebInspector.UIString("Track Allocations"));
+    WebInspector.ProfileType.call(this, WebInspector.TrackingHeapSnapshotProfileType.TypeId, WebInspector.UIString("Record Heap Allocations"));
     this._profilesPanel = profilesPanel;
     WebInspector.HeapProfilerDispatcher._dispatcher.register(this);
 }
@@ -1165,12 +1165,12 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
 
     get treeItemTitle()
     {
-        return WebInspector.UIString("TRACK HEAP SNAPSHOTS");
+        return WebInspector.UIString("HEAP TIMELINES");
     },
 
     get description()
     {
-        return WebInspector.UIString("Run heap profiler continuously to track JavaScript allocations over time.");
+        return WebInspector.UIString("Record JavaScript object allocations over time. Use this profile type to isolate memory leaks.");
     },
 
     /**
