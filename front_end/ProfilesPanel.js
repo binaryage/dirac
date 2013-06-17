@@ -423,10 +423,8 @@ WebInspector.ProfilesPanel = function(name, type)
         this._registerProfileType(new WebInspector.CPUProfileType());
         if (!WebInspector.WorkerManager.isWorkerFrontend())
             this._registerProfileType(new WebInspector.CSSSelectorProfileType());
-        var heapSnapshotProfileType = new WebInspector.HeapSnapshotProfileType();
-        this._registerProfileType(heapSnapshotProfileType);
-        if (WebInspector.experimentsSettings.heapObjectsTracking.isEnabled())
-            this._registerProfileType(new WebInspector.TrackingHeapSnapshotProfileType(this));
+        this._registerProfileType(new WebInspector.HeapSnapshotProfileType());
+        this._registerProfileType(new WebInspector.TrackingHeapSnapshotProfileType(this));
         if (!WebInspector.WorkerManager.isWorkerFrontend() && WebInspector.experimentsSettings.nativeMemorySnapshots.isEnabled()) {
             this._registerProfileType(new WebInspector.NativeSnapshotProfileType());
             this._registerProfileType(new WebInspector.NativeMemoryProfileType());
@@ -1378,21 +1376,16 @@ WebInspector.HeapProfilerPanel = function()
 {
     var heapSnapshotProfileType = new WebInspector.HeapSnapshotProfileType();
     WebInspector.ProfilesPanel.call(this, "heap-profiler", heapSnapshotProfileType);
-    if (WebInspector.experimentsSettings.heapObjectsTracking.isEnabled()) {
-        this._singleProfileMode = false;
-        this._registerProfileType(new WebInspector.TrackingHeapSnapshotProfileType(this));
-        this._launcherView.addEventListener(WebInspector.MultiProfileLauncherView.EventTypes.ProfileTypeSelected, this._onProfileTypeSelected, this);
-        this._launcherView._profileTypeChanged(heapSnapshotProfileType);
-    }
+    this._singleProfileMode = false;
+    this._registerProfileType(new WebInspector.TrackingHeapSnapshotProfileType(this));
+    this._launcherView.addEventListener(WebInspector.MultiProfileLauncherView.EventTypes.ProfileTypeSelected, this._onProfileTypeSelected, this);
+    this._launcherView._profileTypeChanged(heapSnapshotProfileType);
 }
 
 WebInspector.HeapProfilerPanel.prototype = {
     _createLauncherView: function()
     {
-        if (WebInspector.experimentsSettings.heapObjectsTracking.isEnabled())
-            return new WebInspector.MultiProfileLauncherView(this);
-        else
-            return WebInspector.ProfilesPanel.prototype._createLauncherView.call(this);
+        return new WebInspector.MultiProfileLauncherView(this);
     },
 
     __proto__: WebInspector.ProfilesPanel.prototype
