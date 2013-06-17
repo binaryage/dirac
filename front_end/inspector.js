@@ -737,7 +737,7 @@ WebInspector._registerShortcuts = function()
         shortcut.Keys.F1,
         shortcut.makeDescriptor("?")
     ];
-    section.addAlternateKeys(keys, WebInspector.UIString("Show keyboard shortcuts"));
+    section.addAlternateKeys(keys, WebInspector.UIString("Show general settings"));
 }
 
 /**
