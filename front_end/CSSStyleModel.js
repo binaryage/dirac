@@ -445,6 +445,18 @@ WebInspector.CSSStyleModel.prototype = {
     },
 
     /**
+     * @param {string} url
+     * @return {Object.<NetworkAgent.FrameId, string>}
+     */
+    styleSheetIdsByFrameIdForURL: function(url)
+    {
+        var styleSheetIdsForFrame = this._styleSheetIdsForURL[url];
+        if (!styleSheetIdsForFrame)
+            return {};
+        return styleSheetIdsForFrame;
+    },
+
+    /**
      * @param {CSSAgent.NamedFlow} namedFlowPayload
      */
     _namedFlowCreated: function(namedFlowPayload)
@@ -892,9 +904,9 @@ WebInspector.CSSRule = function(payload, matchingSelectors)
     this.origin = payload.origin;
     this.style = WebInspector.CSSStyleDeclaration.parsePayload(payload.style);
     this.style.parentRule = this;
+    this._setRawLocationAndFrameId();
     if (payload.media)
-        this.media = WebInspector.CSSMedia.parseMediaArrayPayload(payload.media);
-    this._setRawLocation();
+        this.media = WebInspector.CSSMedia.parseMediaArrayPayload(payload.media, this.frameId);
 }
 
 /**
@@ -908,11 +920,12 @@ WebInspector.CSSRule.parsePayload = function(payload, matchingIndices)
 }
 
 WebInspector.CSSRule.prototype = {
-    _setRawLocation: function()
+    _setRawLocationAndFrameId: function()
     {
         if (!this.id)
             return;
         var styleSheetHeader = WebInspector.cssModel.styleSheetHeaderForId(this.id.styleSheetId);
+        this.frameId = styleSheetHeader.frameId;
         var url = styleSheetHeader.resourceURL();
         if (!url)
             return;
@@ -1186,14 +1199,16 @@ WebInspector.CSSProperty.prototype = {
 /**
  * @constructor
  * @param {CSSAgent.CSSMedia} payload
+ * @param {!NetworkAgent.FrameId} frameId
  */
-WebInspector.CSSMedia = function(payload)
+WebInspector.CSSMedia = function(payload, frameId)
 {
     this.text = payload.text;
     this.source = payload.source;
     this.sourceURL = payload.sourceURL || "";
     this.sourceLine = typeof payload.sourceLine === "undefined" || this.source === "linkedSheet" ? -1 : payload.sourceLine;
     this.range = payload.range;
+    this.frameId = frameId;
 }
 
 WebInspector.CSSMedia.Source = {
@@ -1205,22 +1220,66 @@ WebInspector.CSSMedia.Source = {
 
 /**
  * @param {CSSAgent.CSSMedia} payload
+ * @param {!NetworkAgent.FrameId} frameId
  * @return {WebInspector.CSSMedia}
  */
-WebInspector.CSSMedia.parsePayload = function(payload)
+WebInspector.CSSMedia.parsePayload = function(payload, frameId)
 {
-    return new WebInspector.CSSMedia(payload);
+    return new WebInspector.CSSMedia(payload, frameId);
+}
+
+WebInspector.CSSMedia.prototype = {
+    /**
+     * @return {number|undefined}
+     */
+    lineNumberInSource: function()
+    {
+        if (!this.range)
+            return undefined;
+        var header = this.header();
+        if (!header)
+            return undefined;
+        return header.lineNumberInSource(this.range.startLine);
+    },
+
+    /**
+     * @return {number|undefined}
+     */
+    columnNumberInSource: function()
+    {
+        if (!this.range)
+            return undefined;
+        var header = this.header();
+        if (!header)
+            return undefined;
+        return header.columnNumberInSource(this.range.startLine, this.range.startColumn);
+    },
+
+    /**
+     * @return {?WebInspector.CSSStyleSheetHeader}
+     */
+    header: function()
+    {
+        var styleSheetIdsByFrameId = WebInspector.cssModel.styleSheetIdsByFrameIdForURL(this.sourceURL);
+        if (!styleSheetIdsByFrameId)
+            return null;
+        var mediaHeaderId = styleSheetIdsByFrameId[this.frameId];
+        if (!mediaHeaderId)
+            return null;
+        return WebInspector.cssModel.styleSheetHeaderForId(mediaHeaderId);
+    }
 }
 
 /**
  * @param {Array.<CSSAgent.CSSMedia>} payload
+ * @param {!NetworkAgent.FrameId} frameId
  * @return {Array.<WebInspector.CSSMedia>}
  */
-WebInspector.CSSMedia.parseMediaArrayPayload = function(payload)
+WebInspector.CSSMedia.parseMediaArrayPayload = function(payload, frameId)
 {
     var result = [];
     for (var i = 0; i < payload.length; ++i)
-        result.push(WebInspector.CSSMedia.parsePayload(payload[i]));
+        result.push(WebInspector.CSSMedia.parsePayload(payload[i], frameId));
     return result;
 }
 

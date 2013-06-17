@@ -916,6 +916,12 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
     // We don't really use properties' disclosure.
     this.propertiesElement.removeStyleClass("properties-tree");
 
+    this._parentPane = parentPane;
+    this.styleRule = styleRule;
+    this.rule = this.styleRule.rule;
+    this.editable = editable;
+    this.isInherited = isInherited;
+
     if (styleRule.media) {
         for (var i = styleRule.media.length - 1; i >= 0; --i) {
             var media = styleRule.media[i];
@@ -936,8 +942,25 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
 
             if (media.sourceURL) {
                 var refElement = mediaDataElement.createChild("div", "subtitle");
-                var lineNumber = media.sourceLine < 0 ? undefined : media.sourceLine;
-                var anchor = WebInspector.linkifyResourceAsNode(media.sourceURL, lineNumber, "subtitle", media.sourceURL + (isNaN(lineNumber) ? "" : (":" + (lineNumber + 1))));
+                var rawLocation;
+                var mediaHeader;
+                if (media.range) {
+                    mediaHeader = media.header();
+                    if (mediaHeader) {
+                        var lineNumber = media.lineNumberInSource();
+                        var columnNumber = media.columnNumberInSource();
+                        console.assert(typeof lineNumber !== "undefined" && typeof columnNumber !== "undefined");
+                        rawLocation = new WebInspector.CSSLocation(media.sourceURL, lineNumber, columnNumber);
+                    }
+                }
+
+                var anchor;
+                if (rawLocation)
+                    anchor = this._parentPane._linkifier.linkifyCSSLocation(mediaHeader.id, rawLocation);
+                else {
+                    // The "linkedStylesheet" case.
+                    anchor = WebInspector.linkifyResourceAsNode(media.sourceURL, undefined, "subtitle", media.sourceURL);
+                }
                 anchor.preferredPanel = "scripts";
                 anchor.style.float = "right";
                 refElement.appendChild(anchor);
@@ -967,12 +990,6 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
     this._selectorElement.addEventListener("click", this._handleSelectorClick.bind(this), false);
     this.element.addEventListener("mousedown", this._handleEmptySpaceMouseDown.bind(this), false);
     this.element.addEventListener("click", this._handleEmptySpaceClick.bind(this), false);
-
-    this._parentPane = parentPane;
-    this.styleRule = styleRule;
-    this.rule = this.styleRule.rule;
-    this.editable = editable;
-    this.isInherited = isInherited;
 
     if (this.rule) {
         // Prevent editing the user agent and user rules.
