@@ -263,6 +263,27 @@ WebInspector.Resource.prototype = {
             callback(searchMatches || []);
         }
 
+        if (this.type === WebInspector.resourceTypes.Document) {
+            /**
+             * @param {?string} content
+             * @param {boolean} contentEncoded
+             * @param {string} mimeType
+             */
+            function documentContentLoaded(content, contentEncoded, mimeType)
+            {
+                if (content === null) {
+                    callback([]);
+                    return;
+                }
+
+                var result = WebInspector.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex);
+                callback(result);
+            }
+
+            this.requestContent(documentContentLoaded);
+            return;
+        }
+
         if (this.frameId)
             PageAgent.searchInResource(this.frameId, this.url, query, caseSensitive, isRegex, callbackWrapper);
         else
@@ -321,11 +342,50 @@ WebInspector.Resource.prototype = {
          */
         function resourceContentLoaded(error, content, contentEncoded)
         {
-            if (error)
-                console.error("Resource content request failed: " + error);
+            if (error) {
+                loadFallbackContent.call(this, error);
+                return;
+            }
             contentLoaded.call(this, error ? null : content, contentEncoded);
         }
         
+        /**
+         * @param {?Protocol.Error} error
+         */
+        function loadFallbackContent(error)
+        {
+            var scripts = WebInspector.debuggerModel.scriptsForSourceURL(this.url);
+            if (!scripts.length) {
+                console.error("Resource content request failed: " + error);
+                contentLoaded.call(this, null, false);
+                return;
+            }
+
+            var contentProvider;
+            if (this.type === WebInspector.resourceTypes.Document)
+                contentProvider = new WebInspector.ConcatenatedScriptsContentProvider(scripts);
+            else if (this.type === WebInspector.resourceTypes.Script)
+                contentProvider = scripts[0];
+
+            if (!contentProvider) {
+                console.error("Resource content request failed: " + error);
+                contentLoaded.call(this, null, false);
+                return;
+            }
+
+            contentProvider.requestContent(fallbackContentLoaded.bind(this));
+        }
+
+        /**
+         * @param {?string} content
+         * @param {boolean} contentEncoded
+         * @param {string} mimeType
+         */
+        function fallbackContentLoaded(content, contentEncoded, mimeType)
+        {
+            contentLoaded.call(this, content, contentEncoded);
+        }
+
         if (this.request) {
             /**
              * @param {?string} content

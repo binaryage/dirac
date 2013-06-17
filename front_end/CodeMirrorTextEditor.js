@@ -587,7 +587,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         if (lineNumber < 0)
             return;
-        lineNumber = Math.min(lineNumber, this._codeMirror.lineCount());
+        lineNumber = Math.min(lineNumber, this._codeMirror.lineCount() - 1);
         if (typeof columnNumber !== "number" || columnNumber < 0 || columnNumber > this._codeMirror.getLine(lineNumber).length)
             columnNumber = 0;
 
