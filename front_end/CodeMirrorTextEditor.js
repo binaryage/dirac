@@ -155,7 +155,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     _setupWhitespaceHighlight: function()
     {
-        if (WebInspector.CodeMirrorTextEditor._whitespaceStyleInjected)
+        if (WebInspector.CodeMirrorTextEditor._whitespaceStyleInjected || !WebInspector.settings.showWhitespacesInEditor.get())
             return;
         WebInspector.CodeMirrorTextEditor._whitespaceStyleInjected = true;
         const classBase = ".cm-whitespace-";
@@ -167,6 +167,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             var rule = classBase + i + "::before { content: '" + spaceChars + "';}\n";
             rules += rule;
         }
+        rules += ".cm-tab:before { display: block !important; }\n";
         var style = document.createElement("style");
         style.textContent = rules;
         document.head.appendChild(style);

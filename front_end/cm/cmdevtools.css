@@ -81,6 +81,21 @@
     color: rgb(175, 175, 175);
 }
 
+.cm-tab {
+    position: relative;
+}
+
+.cm-tab:before {
+    display: none;
+    content: ".";
+    color: transparent;
+    border-bottom: 1px solid rgb(175, 175, 175);
+    position: absolute;
+    width: 90%;
+    bottom: 50%;
+    left: 5%;
+}
+
 .cm-execution-line {
     background-color: rgb(171, 191, 254) !important;
     outline: 1px solid rgb(64, 115, 244);
