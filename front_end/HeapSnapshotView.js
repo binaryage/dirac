@@ -1083,7 +1083,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
         var profileSamples = this._profileSamples;
         if (!profileSamples)
             return;
-        var currentIndex = profileSamples.ids.length;
+        var currentIndex = Math.max(profileSamples.ids.length, profileSamples.max.length - 1);
         profileSamples.ids[currentIndex] = lastSeenObjectId;
         if (!profileSamples.max[currentIndex]) {
             profileSamples.max[currentIndex] = 0;
@@ -1171,6 +1171,15 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
     get description()
     {
         return WebInspector.UIString("Record JavaScript object allocations over time. Use this profile type to isolate memory leaks.");
+    },
+
+    _reset: function()
+    {
+        WebInspector.HeapSnapshotProfileType.prototype._reset.call(this);
+        if (this._recording)
+            this._stopRecordingProfile();
+        this._profileSamples = null;
+        this._lastSeenIndex = -1;
     },
 
     /**
