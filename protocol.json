@@ -2785,6 +2785,20 @@
                     { "name": "object", "$ref": "Runtime.RemoteObject", "description": "Object representing the scope. For <code>global</code> and <code>with</code> scopes it represents the actual object; for the rest of the scopes, it is artificial transient object enumerating scope variables as its properties." }
                 ],
                 "description": "Scope description."
+            },
+            {
+                "id": "SetScriptSourceError",
+                "type": "object",
+                "properties": [
+                    { "name": "compileError", "optional": true, "type": "object", "properties":
+                        [
+                            { "name": "message", "type": "string", "description": "Compiler error message" },
+                            { "name": "lineNumber", "type": "integer", "description": "Compile error line number (1-based)" },
+                            { "name": "columnNumber", "type": "integer", "description": "Compile error column number (1-based)" }
+                        ]
+                    }
+                ],
+                "description": "Error data for setScriptSource command. compileError is a case type for uncompilable script source error."
             }
         ],
         "commands": [
@@ -2895,6 +2909,9 @@
                     { "name": "callFrames", "type": "array", "optional": true, "items": { "$ref": "CallFrame"}, "description": "New stack trace in case editing has happened while VM was stopped." },
                     { "name": "result", "type": "object", "optional": true, "description": "VM-specific description of the changes applied.", "hidden": true }
                 ],
+                "error": {
+                    "$ref": "SetScriptSourceError"
+                },
                 "description": "Edits JavaScript source live."
             },
             {
