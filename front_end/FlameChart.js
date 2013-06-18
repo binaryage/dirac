@@ -356,6 +356,7 @@ WebInspector.FlameChart.prototype = {
 
         var samples = this._cpuProfileView.samples;
         var idToNode = this._cpuProfileView._idToNode;
+        var gcNode = this._cpuProfileView._gcNode;
         var samplesCount = samples.length;
 
         var index = 0;
@@ -376,6 +377,21 @@ WebInspector.FlameChart.prototype = {
             var depth = 0;
             node = stackTrace.pop();
             var intervalIndex;
+
+            // GC samples have no stack, so we just put GC node on top of the last recoreded sample.
+            if (node === gcNode) {
+                while (depth < openIntervals.length) {
+                    intervalIndex = openIntervals[depth].index;
+                    entries[intervalIndex].duration += 1;
+                    ++depth;
+                }
+                // If previous stack is also GC then just continue.
+                if (openIntervals.length > 0 && openIntervals.peekLast().node === node) {
+                    entries[intervalIndex].selfTime += 1;
+                    continue;
+                }
+            }
+
             while (node && depth < openIntervals.length && node === openIntervals[depth].node) {
                 intervalIndex = openIntervals[depth].index;
                 entries[intervalIndex].duration += 1;

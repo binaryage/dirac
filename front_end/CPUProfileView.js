@@ -618,6 +618,15 @@ WebInspector.CPUProfileView.prototype = {
             for (var i = 0; i < node.children.length; i++)
                 stack.push(node.children[i]);
         }
+
+        var topLevelNodes = this.profileHead.children;
+        for (var i = 0; i < topLevelNodes.length; i++) {
+            var node = topLevelNodes[i];
+            if (node.functionName == "(garbage collector)") {
+                this._gcNode = node;
+                break;
+            }
+        }
     },
 
     /**
