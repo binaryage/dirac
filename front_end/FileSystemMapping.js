@@ -29,75 +29,116 @@
  */
 
 /**
- * @interface
- */
-WebInspector.FileSystemMapping = function() { }
-
-WebInspector.FileSystemMapping.prototype = {
-    /**
-     * @return {Array.<string>}
-     */
-    fileSystemPaths: function() { },
-
-    /**
-     * @param {string} prefix
-     * @return {?string}
-     */
-    fileSystemPathForPrefix: function(prefix) { }
-}
-
-/**
  * @constructor
- * @implements {WebInspector.FileSystemMapping}
  * @extends {WebInspector.Object}
  */
-WebInspector.FileSystemMappingImpl = function()
+WebInspector.FileSystemMapping = function()
 {
     WebInspector.Object.call(this);
     this._fileSystemMappingSetting = WebInspector.settings.createSetting("fileSystemMapping", {});
-    /** @type {!Object.<string, boolean>} */
-    this._fileSystemPaths = {};
+    /** @type {!Object.<string, Array.<WebInspector.FileSystemMapping.Entry>>} */
+    this._fileSystemMappings = {};
     this._loadFromSettings();
 }
 
-WebInspector.FileSystemMappingImpl.prototype = {
+WebInspector.FileSystemMapping.Events = {
+    FileMappingAdded: "FileMappingAdded",
+    FileMappingRemoved: "FileMappingRemoved"
+}
+
+
+WebInspector.FileSystemMapping.prototype = {
     _loadFromSettings: function()
     {
         var savedMapping = this._fileSystemMappingSetting.get();
-        this._fileSystemPaths = savedMapping ? /** @type {!Object.<string, string>} */ (savedMapping.registeredFileSystemPaths) || {} : {};
+        this._fileSystemMappings = {};
+        for (var fileSystemPath in savedMapping) {
+            var savedFileSystemMappings = savedMapping[fileSystemPath];
+
+            this._fileSystemMappings[fileSystemPath] = [];
+            var fileSystemMappings = this._fileSystemMappings[fileSystemPath];
+
+            for (var i = 0; i < savedFileSystemMappings.length; ++i) {
+                var savedEntry = savedFileSystemMappings[i];
+                var entry = new WebInspector.FileSystemMapping.Entry(savedEntry.fileSystemPath, savedEntry.urlPrefix, savedEntry.pathPrefix);
+                fileSystemMappings.push(entry);
+            }
+        }
+        this._rebuildIndexes();
     },
 
     _saveToSettings: function()
     {
-        var savedMapping = {};
-        savedMapping.registeredFileSystemPaths = this._fileSystemPaths;
+        var savedMapping = this._fileSystemMappings;
         this._fileSystemMappingSetting.set(savedMapping);
+        this._rebuildIndexes();
     },
 
+    _rebuildIndexes: function()
+    {
+        // We are building an index here to search for the longest url prefix match faster.
+        this._mappingForURLPrefix = {};
+        this._urlPrefixes = [];
+        for (var fileSystemPath in this._fileSystemMappings) {
+            var fileSystemMapping = this._fileSystemMappings[fileSystemPath];
+            for (var i = 0; i < fileSystemMapping.length; ++i) {
+                var entry = fileSystemMapping[i];
+                this._mappingForURLPrefix[entry.urlPrefix] = entry;
+                this._urlPrefixes.push(entry.urlPrefix);
+            }
+        }
+        this._urlPrefixes.sort();
+    },
 
     /**
      * @param {string} fileSystemPath
      */
-    addFileSystemMapping: function(fileSystemPath)
+    addFileSystem: function(fileSystemPath)
     {
-        if (this._fileSystemPaths[fileSystemPath])
+        if (this._fileSystemMappings[fileSystemPath])
             return;
 
-        this._fileSystemPaths[fileSystemPath] = true;
+        this._fileSystemMappings[fileSystemPath] = [];
         this._saveToSettings();
-        delete this._cachedFileSystemPaths;
     },
 
     /**
      * @param {string} fileSystemPath
      */
-    removeFileSystemMapping: function(fileSystemPath)
+    removeFileSystem: function(fileSystemPath)
     {
-        if (!this._fileSystemPaths[fileSystemPath])
+        if (!this._fileSystemMappings[fileSystemPath])
             return;
-        delete this._fileSystemPaths[fileSystemPath];
+        delete this._fileSystemMappings[fileSystemPath];
         this._saveToSettings();
-        delete this._cachedFileSystemPaths;
+    },
+
+    /**
+     * @param {string} fileSystemPath
+     * @param {string} urlPrefix
+     * @param {string} pathPrefix
+     */
+    addFileMapping: function(fileSystemPath, urlPrefix, pathPrefix)
+    {
+        var entry = new WebInspector.FileSystemMapping.Entry(fileSystemPath, urlPrefix, pathPrefix);
+        this._fileSystemMappings[fileSystemPath].push(entry);
+        this._saveToSettings();
+        this.dispatchEventToListeners(WebInspector.FileSystemMapping.Events.FileMappingAdded, entry);
+    },
+
+    /**
+     * @param {string} fileSystemPath
+     * @param {string} urlPrefix
+     * @param {string} pathPrefix
+     */
+    removeFileMapping: function(fileSystemPath, urlPrefix, pathPrefix)
+    {
+        var entry = this._mappingEntryForPathPrefix(fileSystemPath, pathPrefix);
+        if (!entry)
+            return;
+        this._fileSystemMappings[fileSystemPath].remove(entry);
+        this._saveToSettings();
+        this.dispatchEventToListeners(WebInspector.FileSystemMapping.Events.FileMappingRemoved, entry);
     },
 
     /**
@@ -105,28 +146,153 @@ WebInspector.FileSystemMappingImpl.prototype = {
      */
     fileSystemPaths: function()
     {
-        return Object.keys(this._fileSystemPaths);
+        return Object.keys(this._fileSystemMappings);
     },
 
     /**
-     * @param {string} prefix
-     * @return {?string}
+     * @param {string} url
+     * @return {WebInspector.FileSystemMapping.Entry}
      */
-    fileSystemPathForPrefix: function(prefix)
+    _mappingEntryForURL: function(url)
     {
-        this._cachedFileSystemPaths = this._cachedFileSystemPaths || {};
-        if (this._cachedFileSystemPaths.hasOwnProperty(prefix))
-            return this._cachedFileSystemPaths[prefix];
-        var result = null;
-        for (var fileSystemPath in this._fileSystemPaths) {
-            if (prefix.startsWith(fileSystemPath + "/")) {
-                result = fileSystemPath;
-                break;
-            }
+        for (var i = this._urlPrefixes.length - 1; i >= 0; --i) {
+            var urlPrefix = this._urlPrefixes[i];
+            if (url.startsWith(urlPrefix))
+                return this._mappingForURLPrefix[urlPrefix];
         }
-        this._cachedFileSystemPaths[prefix] = result;
-        return result;
+        return null;
+    },
+
+    /**
+     * @param {string} fileSystemPath
+     * @param {string} filePath
+     * @return {?WebInspector.FileSystemMapping.Entry}
+     */
+    _mappingEntryForPath: function(fileSystemPath, filePath)
+    {
+        var entries = this._fileSystemMappings[fileSystemPath];
+        if (!entries)
+            return null;
+
+        var entry = null;
+        for (var i = 0; i < entries.length; ++i) {
+            var pathPrefix = entries[i].pathPrefix;
+            // We are looking for the longest pathPrefix match.
+            if (entry && entry.pathPrefix.length > pathPrefix.length)
+                continue;
+            if (filePath.startsWith(pathPrefix.substr(1)))
+                entry = entries[i];
+        }
+        return entry;
+    },
+
+    /**
+     * @param {string} fileSystemPath
+     * @param {string} pathPrefix
+     * @return {WebInspector.FileSystemMapping.Entry}
+     */
+    _mappingEntryForPathPrefix: function(fileSystemPath, pathPrefix)
+    {
+        var entries = this._fileSystemMappings[fileSystemPath];
+        for (var i = 0; i < entries.length; ++i) {
+            if (pathPrefix === entries[i].pathPrefix)
+                return entries[i];
+        }
+        return null;
+    },
+
+    /**
+     * @param {string} fileSystemPath
+     * @return {Array.<WebInspector.FileSystemMapping.Entry>}
+     */
+    mappingEntries: function(fileSystemPath)
+    {
+        return this._fileSystemMappings[fileSystemPath].slice();
+    },
+
+    /**
+     * @param {string} url
+     * @return {boolean}
+     */
+    hasMappingForURL: function(url)
+    {
+        return !!this._mappingEntryForURL(url);
+    },
+
+    /**
+     * @param {string} url
+     * @return {?{fileSystemPath: string, filePath: string}}
+     */
+    fileForURL: function(url)
+    {
+        var entry = this._mappingEntryForURL(url);
+        if (!entry)
+            return null;
+        var file = {};
+        file.fileSystemPath = entry.fileSystemPath;
+        file.filePath = entry.pathPrefix.substr(1) + url.substr(entry.urlPrefix.length);
+        return file;
+    },
+
+    /**
+     * @param {string} fileSystemPath
+     * @param {string} filePath
+     * @return {string}
+     */
+    urlForPath: function(fileSystemPath, filePath)
+    {
+        var entry = this._mappingEntryForPath(fileSystemPath, filePath);
+        if (!entry)
+            return "";
+        return entry.urlPrefix + filePath.substring(entry.pathPrefix.length - 1);
+    },
+
+    /**
+     * @param {string} url
+     */
+    removeMappingForURL: function(url)
+    {
+        var entry = this._mappingEntryForURL(url);
+        if (!entry)
+            return;
+        this._fileSystemMappings[entry.fileSystemPath].remove(entry);
+        this._saveToSettings();
+    },
+
+    /**
+     * @param {string} url
+     * @param {string} fileSystemPath
+     * @param {string} filePath
+     */
+    addMappingForResource: function(url, fileSystemPath, filePath)
+    {
+        var commonPathSuffixLength = 0;
+        var normalizedFilePath = "/" + filePath;
+        for (var i = 0; i < normalizedFilePath.length; ++i) {
+            var filePathCharacter = normalizedFilePath[normalizedFilePath.length - 1 - i];
+            var urlCharacter = url[url.length - 1 - i];
+            if (filePathCharacter !== urlCharacter)
+                break;
+            if (filePathCharacter === "/")
+                commonPathSuffixLength = i;
+        }
+        var pathPrefix = normalizedFilePath.substr(0, normalizedFilePath.length - commonPathSuffixLength);
+        var urlPrefix = url.substr(0, url.length - commonPathSuffixLength);
+        this.addFileMapping(fileSystemPath, urlPrefix, pathPrefix);
     },
 
     __proto__: WebInspector.Object.prototype
+}
+
+/**
+ * @constructor
+ * @param {string} fileSystemPath
+ * @param {string} urlPrefix
+ * @param {string} pathPrefix
+ */
+WebInspector.FileSystemMapping.Entry = function(fileSystemPath, urlPrefix, pathPrefix)
+{
+    this.fileSystemPath = fileSystemPath;
+    this.urlPrefix = urlPrefix;
+    this.pathPrefix = pathPrefix;
 }

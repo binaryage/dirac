@@ -204,10 +204,10 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     _addFile: function(filePath)
     {
         var path = filePath.split("/");
-        path.shift();
         console.assert(path.length);
-        var fullPath = this._fileSystem.path() + filePath;
-        var url = this._workspace.urlForPath(fullPath);
+        var fullPath = this._fileSystem.path() + "/" + filePath;
+
+        var url = this._workspace.urlForPath(this._fileSystem.path(), filePath);
         var contentType = this._contentTypeForPath(path);
         var fileDescriptor = new WebInspector.FileDescriptor(path, "file://" + fullPath, url, contentType, true);
         this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.FileAdded, fileDescriptor);

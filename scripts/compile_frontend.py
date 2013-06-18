@@ -81,7 +81,6 @@ modules = [
             "DebuggerModel.js",
             "DebuggerScriptMapping.js",
             "FileManager.js",
-            "FileMapping.js",
             "FileSystemMapping.js",
             "FileSystemModel.js",
             "FileSystemProjectDelegate.js",

@@ -483,8 +483,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     this.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
     this.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(this.isolatedFileSystemManager);
-    this.fileMapping = new WebInspector.FileMapping();
-    this.workspace = new WebInspector.Workspace(this.fileMapping, this.isolatedFileSystemManager.mapping());
+    this.workspace = new WebInspector.Workspace(this.isolatedFileSystemManager.mapping());
 
     this.cssModel = new WebInspector.CSSStyleModel(this.workspace);
     this.timelineManager = new WebInspector.TimelineManager();

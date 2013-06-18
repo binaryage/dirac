@@ -127,7 +127,7 @@ WebInspector.IsolatedFileSystem.prototype = {
             for (var i = 0; i < entries.length; ++i) {
                 var entry = entries[i];
                 if (!entry.isDirectory)
-                    callback(entry.fullPath);
+                    callback(entry.fullPath.substr(1));
                 else
                     this._requestEntries(domFileSystem, entry.fullPath, innerCallback.bind(this));
             }

@@ -354,12 +354,10 @@ WebInspector.projectTypes = {
  * @constructor
  * @implements {WebInspector.UISourceCodeProvider}
  * @extends {WebInspector.Object}
- * @param {WebInspector.FileMapping} fileMapping
  * @param {WebInspector.FileSystemMapping} fileSystemMapping
  */
-WebInspector.Workspace = function(fileMapping, fileSystemMapping)
+WebInspector.Workspace = function(fileSystemMapping)
 {
-    this._fileMapping = fileMapping;
     this._fileSystemMapping = fileSystemMapping;
     /** @type {!Object.<string, WebInspector.Project>} */
     this._projects = {};
@@ -487,19 +485,7 @@ WebInspector.Workspace.prototype = {
     {
         if (!InspectorFrontendHost.supportsFileSystems())
             return false;
-        var entry = this._fileMapping.mappingEntryForURL(url);
-        if (!entry)
-            return false;
-        return !!this._fileSystemPathForEntry(entry);
-    },
-    
-    /**
-     * @param {WebInspector.FileMapping.Entry} entry
-     * @return {?string}
-     */
-    _fileSystemPathForEntry: function(entry)
-    {
-        return this._fileSystemMapping.fileSystemPathForPrefix(entry.pathPrefix);
+        return this._fileSystemMapping.hasMappingForURL(url);
     },
 
     /**
@@ -523,29 +509,23 @@ WebInspector.Workspace.prototype = {
     {
         if (!InspectorFrontendHost.supportsFileSystems())
             return this._networkUISourceCodeForURL(url);
-
-        var entry = this._fileMapping.mappingEntryForURL(url);
-        var fileSystemPath = entry ? this._fileSystemPathForEntry(entry) : null;
-        if (!fileSystemPath)
+        var file = this._fileSystemMapping.fileForURL(url);
+        if (!file)
             return this._networkUISourceCodeForURL(url);
 
-        var projectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
-        var pathPrefix = entry.pathPrefix.substr(fileSystemPath.length + 1);
-        var path = pathPrefix + url.substr(entry.urlPrefix.length);
+        var projectId = WebInspector.FileSystemProjectDelegate.projectId(file.fileSystemPath);
         var project = this.project(projectId);
-        return project ? project.uiSourceCode(path.split("/")) : null;
+        return project ? project.uiSourceCode(file.filePath.split("/")) : null;
     },
 
     /**
-     * @param {string} path
+     * @param {string} fileSystemPath
+     * @param {string} filePath
      * @return {string}
      */
-    urlForPath: function(path)
+    urlForPath: function(fileSystemPath, filePath)
     {
-        var entry = this._fileMapping.mappingEntryForPath(path);
-        if (!entry)
-            return "";
-        return entry.urlPrefix + path.substring(entry.pathPrefix.length);
+        return this._fileSystemMapping.urlForPath(fileSystemPath, filePath);
     },
 
     /**
@@ -557,22 +537,9 @@ WebInspector.Workspace.prototype = {
     {
         var url = networkUISourceCode.url;
         var path = uiSourceCode.path();
-        var suffix = "";
-        for (var i = path.length - 1; i >= 0; --i) {
-            var nextSuffix = "/" + path[i] + suffix;
-            if (!url.endsWith(nextSuffix))
-                break;
-            suffix = nextSuffix;
-        }
         var fileSystemPath = fileSystemWorkspaceProvider.fileSystemPath(uiSourceCode);
-        var filePath = "/" + path.join("/");
-        var pathPrefix = fileSystemPath + filePath.substr(0, filePath.length - suffix.length) + "/";
-        var urlPrefix = url.substr(0, url.length - suffix.length) + "/";
-
-        var entries = this._fileMapping.mappingEntries();
-        var entry = new WebInspector.FileMapping.Entry(urlPrefix, pathPrefix);
-        entries.push(entry);
-        this._fileMapping.setMappingEntries(entries);
+        var filePath = path.join("/");
+        this._fileSystemMapping.addMappingForResource(url, fileSystemPath, filePath);
         WebInspector.suggestReload();
     },
 
@@ -581,10 +548,7 @@ WebInspector.Workspace.prototype = {
      */
     removeMapping: function(uiSourceCode)
     {
-        var entry = this._fileMapping.mappingEntryForURL(uiSourceCode.url);
-        var entries = this._fileMapping.mappingEntries();
-        entries.remove(entry);
-        this._fileMapping.setMappingEntries(entries);
+        this._fileSystemMapping.removeMappingForURL(uiSourceCode.url);
         WebInspector.suggestReload();
     },
 

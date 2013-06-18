@@ -84,7 +84,6 @@
             'front_end/ExtensionServer.js',
             'front_end/ExtensionView.js',
             'front_end/FileManager.js',
-            'front_end/FileMapping.js',
             'front_end/FileSystemMapping.js',
             'front_end/FileSystemModel.js',
             'front_end/FileSystemProjectDelegate.js',

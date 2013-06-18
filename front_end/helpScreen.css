@@ -426,7 +426,7 @@ body.platform-mac .help-content input[type=radio] {
     width: 190px;
 }
 
-.settings-tab .file-mappings-editor .workspace-settings-row input.file-mapping-url {
+.settings-tab .file-mappings-list .workspace-settings-row input.file-mapping-url {
     margin-right: 3px;
 }
 

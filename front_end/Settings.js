@@ -396,7 +396,7 @@ WebInspector.VersionController = function()
 {
 }
 
-WebInspector.VersionController.currentVersion = 2;
+WebInspector.VersionController.currentVersion = 3;
 
 WebInspector.VersionController.prototype = {
     updateVersion: function()
@@ -431,6 +431,13 @@ WebInspector.VersionController.prototype = {
     {
         var versionSetting = WebInspector.settings.createSetting("previouslyViewedFiles", []);
         versionSetting.set([]);
+    },
+
+    _updateVersionFrom2To3: function()
+    {
+        var fileSystemMappingSetting = WebInspector.settings.createSetting("fileSystemMapping", {});
+        fileSystemMappingSetting.set({});
+        delete window.localStorage["fileMappingEntries"];
     },
 
     /**
