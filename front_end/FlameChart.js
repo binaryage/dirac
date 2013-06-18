@@ -60,7 +60,7 @@ WebInspector.FlameChart = function(cpuProfileView)
     this._windowLeft = 0.0;
     this._windowRight = 1.0;
     this._barHeight = 15;
-    this._minWidth = 1;
+    this._minWidth = 2;
     this._paddingLeft = 15;
     this._canvas.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
     this.element.addEventListener("click", this._onClick.bind(this), false);
@@ -583,7 +583,7 @@ WebInspector.FlameChart.prototype = {
     {
         anchorBox.x = Math.floor(entry.startTime * this._timeToPixel) - this._pixelWindowLeft + this._paddingLeft;
         anchorBox.y = this._canvas.height / window.devicePixelRatio - (entry.depth + 1) * this._barHeight;
-        anchorBox.width = Math.floor(entry.duration * this._timeToPixel);
+        anchorBox.width = Math.max(Math.ceil(entry.duration * this._timeToPixel), this._minWidth);
         anchorBox.height = this._barHeight;
         if (anchorBox.x < 0) {
             anchorBox.width += anchorBox.x;
@@ -630,8 +630,6 @@ WebInspector.FlameChart.prototype = {
             if ((startTime + entry.duration) < visibleTimeLeft)
                 continue;
             this._entryToAnchorBox(entry, anchorBox);
-            if (anchorBox.width < this._minWidth)
-                continue;
 
             var colorPair = entry.colorPair;
             var color;
