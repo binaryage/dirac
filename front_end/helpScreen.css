@@ -519,7 +519,8 @@ body.platform-mac .help-content input[type=radio] {
     border-radius: 2px;
 }
 
-.settings-tab .settings-list .settings-list-item {
+#workspace-tab-content .settings-list .settings-list-item .settings-list-item-contents {
+    width: 100%;
     height: 40px;
     -webkit-box-align: center;
     -webkit-transition: 150ms background-color;
@@ -527,7 +528,14 @@ body.platform-mac .help-content input[type=radio] {
     padding-right: 3px;
 }
 
-.settings-tab .settings-list .settings-list-item.selected {
+#workspace-tab-content .settings-list .settings-list-item .settings-list-item-contents > :first-child {
+    -webkit-box-align: center;
+    -webkit-box-flex: 1;
+    -webkit-padding-end: 5px;
+    display: -webkit-box;
+}
+
+.settings-tab .settings-list .settings-list-item.selected:not(.editable) {
     background-color: hsl(0, 0%, 82%);
 }
 
@@ -535,7 +543,7 @@ body.platform-mac .help-content input[type=radio] {
     background-color: hsl(215, 54%, 93%);
 }
 
-.settings-tab .settings-list .settings-list-item.selected:hover {
+.settings-tab .settings-list .settings-list-item.selected:not(.editable):hover {
     background-color: hsl(215, 51%, 82%);
 }
 
@@ -569,8 +577,6 @@ body.platform-mac .help-content input[type=radio] {
 }
 
 #workspace-tab-content .settings-list .settings-list-item .file-system-path {
-    overflow: hidden;
-    text-overflow: ellipsis;
     white-space: nowrap;
     font-size: 12px;
     padding-left: 6px;
@@ -582,4 +588,59 @@ body.platform-mac .help-content input[type=radio] {
 #workspace-tab-content .settings-list .settings-list-item .file-system-path-name {
     padding-right: 6px;
     font-weight: bold;
+}
+
+.file-mappings-section {
+    padding: 0 10px 10px 10px;
+}
+
+.file-mappings-list-container {
+    background-color: white;
+}
+
+.settings-list-item-columns {
+    height: 100%;
+}
+
+.settings-tab .settings-list .settings-list-item .list-column {
+    displaY: -webkit-box;
+    -webkit-box-align: center;
+    padding-left: 5px;
+    padding-right: 2px;
+    box-sizing: border-box;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    height: 100%;
+}
+
+.settings-tab .settings-list .settings-list-item .list-column .list-column-editor {
+    width: 100%;
+}
+
+.settings-tab .settings-list .settings-list-item.add-list-item .remove-item-button {
+    visibility: hidden;
+}
+
+.settings-tab .settings-list .settings-list-item .list-column.file-mapping-url {
+    width: 50%;
+}
+
+.settings-tab .settings-list .settings-list-item .list-column.file-mapping-path {
+    width: 50%;
+}
+
+.settings-tab .file-mappings-list .settings-list-item.editable .list-column .list-column-editor {
+    display: none;
+}
+
+.settings-tab .file-mappings-list .settings-list-item.editable.item-editing .list-column .list-column-editor {
+    display: inline;
+}
+
+.settings-tab .file-mappings-list .settings-list-item.editable.item-editing .list-column .list-column-text {
+    display: none;
+}
+
+.settings-tab .file-mappings-list .settings-list-item.editable.item-editing .list-column .list-column-editor.editable-item-error {
+    background-color: pink;
 }
