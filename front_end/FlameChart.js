@@ -190,6 +190,9 @@ WebInspector.FlameChart.ColorGenerator = function()
 {
     this._colorPairs = {};
     this._currentColorIndex = 0;
+    this._colorPairs["(idle)::0"] = this._createPair(0, 50);
+    this._colorPairs["(program)::0"] = this._createPair(5, 50);
+    this._colorPairs["(garbage collector)::0"] = this._createPair(10, 50);
 }
 
 WebInspector.FlameChart.ColorGenerator.prototype = {
@@ -200,12 +203,21 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
     {
         var colorPairs = this._colorPairs;
         var colorPair = colorPairs[id];
-        if (!colorPair) {
-            var currentColorIndex = ++this._currentColorIndex;
-            var hue = (currentColorIndex * 5 + 11 * (currentColorIndex % 2)) % 360;
-            colorPairs[id] = colorPair = {highlighted: "hsla(" + hue + ", 100%, 33%, 0.7)", normal: "hsla(" + hue + ", 100%, 66%, 0.7)"};
-        }
+        if (!colorPair)
+            colorPairs[id] = colorPair = this._createPair(++this._currentColorIndex);
         return colorPair;
+    },
+
+    /**
+     * @param {!number} index
+     * @param {number=} sat
+     */
+    _createPair: function(index, sat)
+    {
+        var hue = (index * 7 + 12 * (index % 2)) % 360;
+        if (typeof sat !== "number")
+            sat = 100;
+        return {highlighted: "hsla(" + hue + ", " + sat + "%, 33%, 0.7)", normal: "hsla(" + hue + ", " + sat + "%, 66%, 0.7)"}
     }
 }
 
@@ -437,6 +449,8 @@ WebInspector.FlameChart.prototype = {
             pushEntryInfoRow(WebInspector.UIString("Self time"), Number.secondsToString(entry.selfTime / 1000, true));
             pushEntryInfoRow(WebInspector.UIString("Total time"), Number.secondsToString(entry.duration / 1000, true));
         }
+        if (node.url)
+            pushEntryInfoRow(WebInspector.UIString("URL"), node.url + ":" + node.lineNumber);
         pushEntryInfoRow(WebInspector.UIString("Aggregated self time"), Number.secondsToString(node.selfTime / 1000, true));
         pushEntryInfoRow(WebInspector.UIString("Aggregated total time"), Number.secondsToString(node.totalTime / 1000, true));
         return entryInfo;
@@ -626,16 +640,14 @@ WebInspector.FlameChart.prototype = {
 
         var entryInfo = this._prepareHighlightedEntryInfo();
         if (entryInfo)
-            this._printEntryInfo(context, entryInfo, 0, 25);
+            this._printEntryInfo(context, entryInfo, 0, 25, width);
     },
 
-    _printEntryInfo: function(context, entryInfo, x, y)
+    _printEntryInfo: function(context, entryInfo, x, y, width)
     {
         const lineHeight = 18;
-        const maxTextWidth = 290;
         const paddingLeft = 10;
         const paddingTop = 5;
-        const paddingLeftText = 10;
         var maxTitleWidth = 0;
         var basicFont = "100% " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
         context.font = "bold " + basicFont;
@@ -643,8 +655,13 @@ WebInspector.FlameChart.prototype = {
         for (var i = 0; i < entryInfo.length; ++i)
             maxTitleWidth = Math.max(maxTitleWidth, context.measureText(entryInfo[i].title).width);
 
+        var maxTextWidth = 0;
+        for (var i = 0; i < entryInfo.length; ++i)
+            maxTextWidth = Math.max(maxTextWidth, context.measureText(entryInfo[i].text).width);
+        maxTextWidth = Math.min(maxTextWidth, width - 2 * paddingLeft - maxTitleWidth);
+
         context.beginPath();
-        context.rect(x, y, maxTextWidth + 5, lineHeight * entryInfo.length + 5);
+        context.rect(x, y, maxTitleWidth + maxTextWidth + 5, lineHeight * entryInfo.length + 5);
         context.strokeStyle = "rgba(0,0,0,0)";
         context.fillStyle = "rgba(254,254,254,0.8)";
         context.fill();
@@ -656,7 +673,7 @@ WebInspector.FlameChart.prototype = {
 
         context.font = basicFont;
         for (var i = 0; i < entryInfo.length; ++i) {
-            var text = this._prepareText(context, entryInfo[i].text, maxTextWidth - maxTitleWidth - 2 * paddingLeft);
+            var text = this._prepareText(context, entryInfo[i].text, maxTextWidth);
             context.fillText(text, x + paddingLeft + maxTitleWidth + paddingLeft, y + lineHeight * i);
         }
     },
