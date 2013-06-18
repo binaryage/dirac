@@ -126,6 +126,8 @@ WebInspector.StylesSidebarPane.PseudoIdNames = [
     "-webkit-resizer", "-webkit-inner-spin-button", "-webkit-outer-spin-button"
 ];
 
+WebInspector.StylesSidebarPane._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
+
 /**
  * @param {string} name
  */
@@ -148,6 +150,28 @@ WebInspector.StylesSidebarPane.createExclamationMark = function(property)
     exclamationElement.className = "exclamation-mark" + (WebInspector.StylesSidebarPane._ignoreErrorsForProperty(property) ? "" : " warning-icon-small");
     exclamationElement.title = WebInspector.CSSMetadata.cssPropertiesMetainfo.keySet()[property.name.toLowerCase()] ? WebInspector.UIString("Invalid property value.") : WebInspector.UIString("Unknown property name.");
     return exclamationElement;
+}
+
+/**
+ * @param {WebInspector.Color} color
+ */
+WebInspector.StylesSidebarPane._colorFormat = function(color)
+{
+    const cf = WebInspector.Color.Format;
+    var format;
+    var formatSetting = WebInspector.settings.colorFormat.get();
+    if (formatSetting === cf.Original)
+        format = cf.Original;
+    else if (formatSetting === cf.RGB)
+        format = (color.hasAlpha() ? cf.RGBA : cf.RGB);
+    else if (formatSetting === cf.HSL)
+        format = (color.hasAlpha() ? cf.HSLA : cf.HSL);
+    else if (!color.hasAlpha())
+        format = (color.canBeShortHex() ? cf.ShortHEX : cf.HEX);
+    else
+        format = cf.RGBA;
+
+    return format;
 }
 
 /**
@@ -1846,7 +1870,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
                 if (!color)
                     return document.createTextNode(text);
 
-                var format = getFormat();
+                var format = WebInspector.StylesSidebarPane._colorFormat(color);
                 var spectrumHelper = self.editablePane() && self.editablePane()._spectrumHelper;
                 var spectrum = spectrumHelper ? spectrumHelper.spectrum() : null;
 
@@ -1908,24 +1932,6 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
                         }
                     }
                     e.consume(true);
-                }
-
-                function getFormat()
-                {
-                    var format;
-                    var formatSetting = WebInspector.settings.colorFormat.get();
-                    if (formatSetting === cf.Original)
-                        format = cf.Original;
-                    else if (formatSetting === cf.RGB)
-                        format = (color.hasAlpha() ? cf.RGBA : cf.RGB);
-                    else if (formatSetting === cf.HSL)
-                        format = (color.hasAlpha() ? cf.HSLA : cf.HSL);
-                    else if (!color.hasAlpha())
-                        format = (color.canBeShortHex() ? cf.ShortHEX : cf.HEX);
-                    else
-                        format = cf.RGBA;
-
-                    return format;
                 }
 
                 var colorValueElement = document.createElement("span");
@@ -1990,8 +1996,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
                 return container;
             }
 
-            var colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
-            var colorProcessor = processValue.bind(window, colorRegex, processColor, null);
+            var colorProcessor = processValue.bind(window, WebInspector.StylesSidebarPane._colorRegex, processColor, null);
 
             valueElement.appendChild(processValue(/url\(\s*([^)]+)\s*\)/g, linkifyURL.bind(this), WebInspector.CSSMetadata.isColorAwareProperty(self.name) && self.parsedOk ? colorProcessor : null, value));
         }
@@ -2323,7 +2328,24 @@ WebInspector.StylePropertyTreeElement.prototype = {
                 selectElement = this.valueElement;
             }
 
-            this.valueElement.textContent = this.value;
+            this.valueElement.textContent = (!this._newProperty && WebInspector.CSSMetadata.isColorAwareProperty(this.name)) ? formatColors(this.value) : this.value;
+        }
+
+        /**
+         * @param {string} value
+         * @return {string}
+         */
+        function formatColors(value)
+        {
+            var result = [];
+            var items = value.replace(WebInspector.StylesSidebarPane._colorRegex, "\0$1\0").split("\0");
+            for (var i = 0; i < items.length; ++i) {
+                var color = WebInspector.Color.parse(items[i]);
+
+                // We can be called with valid non-color values of |text| (like 'none' from border style).
+                result.push(color ? color.toString(WebInspector.StylesSidebarPane._colorFormat(color)) : items[i]);
+            }
+            return result.join("");
         }
 
         if (WebInspector.isBeingEdited(selectElement))
