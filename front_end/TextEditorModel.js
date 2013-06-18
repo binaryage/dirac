@@ -271,6 +271,7 @@ WebInspector.TextEditorModel.prototype = {
     {
         this._resetUndoStack();
         text = text || "";
+        this._attributes = [];
         var range = this.range();
         this._lineBreak = /\r\n/.test(text) ? "\r\n" : "\n";
         var newRange = this._innerSetText(range, text);

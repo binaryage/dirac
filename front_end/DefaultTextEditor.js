@@ -1769,6 +1769,7 @@ WebInspector.TextEditorMainPanel.prototype = {
     set mimeType(mimeType)
     {
         this._highlighter.mimeType = mimeType;
+        this._updateHighlightsForRange(this._textModel.range());
     },
 
     get mimeType()
