@@ -251,6 +251,15 @@ WebInspector.Project.prototype = {
     },
 
     /**
+     * @param {function(WebInspector.UISourceCode)} callback
+     */
+    forEachUISourceCode: function(callback)
+    {
+        for (var key in this._uiSourceCodes)
+            callback(this._uiSourceCodes[key]);
+    },
+
+    /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      * @param {function(?string,boolean,string)} callback
      */
@@ -475,6 +484,15 @@ WebInspector.Workspace.prototype = {
             result = result.concat(project.uiSourceCodes());
         }
         return result;
+    },
+
+    /**
+     * @param {function(WebInspector.UISourceCode)} callback
+     */
+    forEachUISourceCode: function(callback)
+    {
+        for (var projectId in this._projects)
+            this._projects[projectId].forEachUISourceCode(callback);
     },
 
     /**
