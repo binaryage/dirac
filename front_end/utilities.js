@@ -36,11 +36,11 @@ Object.isEmpty = function(obj)
 
 Object.values = function(obj)
 {
-    var keys = Object.keys(obj);
-    var result = [];
+    var result = Object.keys(obj);
+    var length = result.length;
 
-    for (var i = 0; i < keys.length; ++i)
-        result.push(obj[keys[i]]);
+    for (var i = 0; i < length; ++i)
+        result[i] = obj[result[i]];
     return result;
 }
 
