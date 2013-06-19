@@ -1184,7 +1184,7 @@ WebInspector.AuditRules.VendorPrefixedCSSProperties.prototype = {
             if (!this._ruleResult) {
                 var anchor = WebInspector.linkifyURLAsNode(rule.sourceURL, rule.selectorText);
                 anchor.preferredPanel = "resources";
-                anchor.lineNumber = rule.sourceLine;
+                anchor.lineNumber = rule.lineNumberInSource();
                 this._ruleResult = this._styleSheetResult.addChild(anchor);
             }
             ++result.violationCount;
