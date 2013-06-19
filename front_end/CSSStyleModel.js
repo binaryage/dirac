@@ -1206,7 +1206,6 @@ WebInspector.CSSMedia = function(payload, frameId)
     this.text = payload.text;
     this.source = payload.source;
     this.sourceURL = payload.sourceURL || "";
-    this.sourceLine = typeof payload.sourceLine === "undefined" || this.source === "linkedSheet" ? -1 : payload.sourceLine;
     this.range = payload.range;
     this.frameId = frameId;
 }
