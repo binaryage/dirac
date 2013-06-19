@@ -150,6 +150,7 @@ WebInspector.Project = function(workspace, projectDelegate)
     this._uiSourceCodes = {};
     this._workspace = workspace;
     this._projectDelegate = projectDelegate;
+    this._displayName = this._projectDelegate.displayName();
     this._projectDelegate.addEventListener(WebInspector.ProjectDelegate.Events.FileAdded, this._fileAdded, this);
     this._projectDelegate.addEventListener(WebInspector.ProjectDelegate.Events.FileRemoved, this._fileRemoved, this);
     this._projectDelegate.addEventListener(WebInspector.ProjectDelegate.Events.Reset, this._reset, this);
@@ -177,7 +178,7 @@ WebInspector.Project.prototype = {
      */
     displayName: function() 
     {
-        return this._projectDelegate.displayName(); 
+        return this._displayName;
     },
 
     /**

@@ -113,11 +113,25 @@ WebInspector.TabbedEditorContainer.prototype = {
     },
 
     /**
-     * @return {Array.<string>}
+     * @return {Array.<WebInspector.UISourceCode>}
      */
-    historyUris: function()
+    historyUISourceCodes: function()
     {
-        return this._history._urls();
+        // FIXME: there should be a way to fetch UISourceCode for its uri.
+        var uriToUISourceCode = {};
+        for (var id in this._files) {
+            var uiSourceCode = this._files[id];
+            uriToUISourceCode[uiSourceCode.uri()] = uiSourceCode;
+        }
+
+        var result = [];
+        var uris = this._history._urls();
+        for (var i = 0; i < uris.length; ++i) {
+            var uiSourceCode = uriToUISourceCode[uris[i]];
+            if (uiSourceCode)
+                result.push(uiSourceCode);
+        }
+        return result;
     },
 
     _addScrollAndSelectionListeners: function()

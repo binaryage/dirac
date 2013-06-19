@@ -54,8 +54,6 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
     this._promptElement.type = "text";
     this._promptElement.setAttribute("spellcheck", "false");
 
-    this._progressElement = this.element.createChild("div", "progress");
-
     this._filteredItems = [];
     this._viewportControl = new WebInspector.ViewportControl(this);
     this._itemElementsContainer = this._viewportControl.element;
@@ -65,7 +63,27 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
     this.element.appendChild(this._itemElementsContainer);
 
     this._delegate = delegate;
-    this._delegate.requestItems(this._itemsLoaded.bind(this));
+    this._delegate.setRefreshCallback(this._itemsLoaded.bind(this));
+    this._itemsLoaded();
+}
+
+/**
+ * @param {string} query
+ * @return {RegExp}
+ */
+WebInspector.FilteredItemSelectionDialog._createSearchRegex = function(query)
+{
+    const toEscape = String.regexSpecialCharacters();
+    var regexString = "";
+    for (var i = 0; i < query.length; ++i) {
+        var c = query.charAt(i);
+        if (toEscape.indexOf(c) !== -1)
+            c = "\\" + c;
+        if (i)
+            regexString += "[^" + c + "]*";
+        regexString += c;
+    }
+    return new RegExp(regexString, "i");
 }
 
 WebInspector.FilteredItemSelectionDialog.prototype = {
@@ -113,36 +131,23 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
 
     onEnter: function()
     {
-        if (!this._delegate.itemsCount())
+        if (!this._delegate.itemCount())
             return;
         this._delegate.selectItem(this._filteredItems[this._selectedIndexInFiltered], this._promptElement.value.trim());
     },
 
-    /**
-     * @param {number} loadedCount
-     * @param {number} totalCount
-     */
-    _itemsLoaded: function(loadedCount, totalCount)
+    _itemsLoaded: function()
     {
-        this._loadedCount = loadedCount;
-        this._totalCount = totalCount;
 
         if (this._loadTimeout)
             return;
-        this._loadTimeout = setTimeout(this._updateAfterItemsLoaded.bind(this), 100);
+        this._loadTimeout = setTimeout(this._updateAfterItemsLoaded.bind(this), 0);
     },
 
     _updateAfterItemsLoaded: function()
     {
         delete this._loadTimeout;
         this._filterItems();
-        if (this._loadedCount === this._totalCount)
-            this._progressElement.style.backgroundImage = "";
-        else {
-            const color = "rgb(66, 129, 235)";
-            const percent = ((this._loadedCount / this._totalCount) * 100) + "%";
-            this._progressElement.style.backgroundImage = "-webkit-linear-gradient(left, " + color + ", " + color + " " + percent + ",  transparent " + percent + ")";
-        }
     },
 
     /**
@@ -154,79 +159,12 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         var itemElement = document.createElement("div");
         itemElement.className = "filtered-item-list-dialog-item " + (this._renderAsTwoRows ? "two-rows" : "one-row");
         itemElement._titleElement = itemElement.createChild("span");
-        itemElement._titleElement.textContent = this._delegate.itemTitleAt(index);
         itemElement._titleSuffixElement = itemElement.createChild("span");
-        itemElement._titleSuffixElement.textContent = this._delegate.itemSuffixAt(index);
         itemElement._subtitleElement = itemElement.createChild("div", "filtered-item-list-dialog-subtitle");
-        itemElement._subtitleElement.textContent = this._delegate.itemSubtitleAt(index) || "\u200B";
+        itemElement._subtitleElement.textContent = "\u200B";
         itemElement._index = index;
-
-        if (this._query) {
-            function highlightRanges(element)
-            {
-                var text = element.textContent.toUpperCase();
-                var query = this._query.toUpperCase();
-                var lastIndex = -1;
-                var ranges = [];
-                for (var i = 0; i < query.length; ++i) {
-                    lastIndex = text.indexOf(query[i], lastIndex + 1);
-                    if (lastIndex === -1)
-                        break;
-                    ranges.push({offset: lastIndex, length: 1});
-                }
-                if (ranges.length === query.length)
-                    WebInspector.highlightRangesWithStyleClass(element, ranges, "highlight");
-            }
-            highlightRanges.call(this, itemElement._titleElement);
-            highlightRanges.call(this, itemElement._subtitleElement);
-        }
-        if (index === this._filteredItems[this._selectedIndexInFiltered])
-            itemElement.addStyleClass("selected");
-
+        this._delegate.renderItem(index, this._promptElement.value.trim(), itemElement._titleElement, itemElement._subtitleElement);
         return itemElement;
-    },
-
-    /**
-     * @param {?string} query
-     * @param {boolean=} isGlobal
-     */
-    _createSearchRegex: function(query, isGlobal)
-    {
-        const toEscape = String.regexSpecialCharacters();
-        var regexString = "";
-        for (var i = 0; i < query.length; ++i) {
-            var c = query.charAt(i);
-            if (toEscape.indexOf(c) !== -1)
-                c = "\\" + c;
-            if (i)
-                regexString += "[^" + c + "]*";
-            regexString += c;
-        }
-        return new RegExp(regexString, "i" + (isGlobal ? "g" : ""));
-    },
-
-    /**
-     * @param {string} query
-     * @param {boolean} ignoreCase
-     * @param {boolean} camelCase
-     * @return {RegExp}
-     */
-    _createScoringRegex: function(query, ignoreCase, camelCase)
-    {
-        if (!camelCase || (camelCase && ignoreCase))
-            query = query.toUpperCase();
-        var regexString = "";
-        for (var i = 0; i < query.length; ++i) {
-            var c = query.charAt(i);
-            if (c < "A" || c > "Z")
-               continue;
-            if (regexString)
-               regexString += camelCase ? "[^A-Z]*" : "[^-_ .]*[-_ .]";
-            regexString += c;
-        }
-        if (!camelCase)
-            regexString = "(?:^|[-_ .])" + regexString;
-        return new RegExp(regexString, camelCase ? "" : "i");
     },
 
     /**
@@ -241,59 +179,62 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     _filterItems: function()
     {
         delete this._filterTimer;
+        if (this._scoringTimer) {
+            clearTimeout(this._scoringTimer);
+            delete this._scoringTimer;
+        }
 
         var query = this._delegate.rewriteQuery(this._promptElement.value.trim());
-        var queryToUpper = query ? query.toUpperCase() : null;
         this._query = query;
-
-        var ignoreCase = (query === query.toLowerCase());
-
-        var filterRegex = query ? this._createSearchRegex(query) : null;
-        var camelCaseScoringRegex = query ? this._createScoringRegex(query, ignoreCase, true) : null;
-        var underscoreScoringRegex = query ? this._createScoringRegex(query, ignoreCase, false) : null;
+        var queryLength = query.length;
+        var filterRegex = query ? WebInspector.FilteredItemSelectionDialog._createSearchRegex(query) : null;
 
         var oldSelectedAbsoluteIndex = this._selectedIndexInFiltered ? this._filteredItems[this._selectedIndexInFiltered] : null;
         this._filteredItems = [];
         this._selectedIndexInFiltered = 0;
 
-        var cachedKeys = new Array(this._delegate.itemsCount());
-        var scores = new Array(this._delegate.itemsCount());
+        var cachedKeys = new Array(this._delegate.itemCount());
+        var scores = new Array(this._delegate.itemCount());
 
-        for (var i = 0; i < this._delegate.itemsCount(); ++i) {
-            var key = this._delegate.itemKeyAt(i);
-            if (filterRegex && !filterRegex.test(key))
-                continue;
-            cachedKeys[i] = key;
-            this._filteredItems.push(i);
+        scoreItems.call(this, 0);
 
-            var score = this._delegate.itemScoreAt(i) * 10;
-
-            if (!filterRegex) {
-                scores[i] = score;
-                continue;
+        function scoreItems(fromIndex)
+        {
+            const maxWorkItems = 1000;
+            var workDone = 0;
+            for (var i = fromIndex; i < this._delegate.itemCount() && workDone < maxWorkItems; ++i) {
+                var key = this._delegate.itemKeyAt(i);
+                if (filterRegex && !filterRegex.test(key))
+                    continue;
+                cachedKeys[i] = key;
+                this._filteredItems.push(i);
+                scores[i] = this._delegate.itemScoreAt(i, query);
+                if (query)
+                    workDone++;
             }
 
-            var title = this._delegate.itemTitleAt(i);
-            if (filterRegex.test(title)) {
-                score += 500;
-                if (title.indexOf(query) !== -1)
-                    score += 500;
-                else if (title.toUpperCase().indexOf(queryToUpper) !== -1)
-                    score += 250;
+            if (i < this._delegate.itemCount()) {
+                this._scoringTimer = setTimeout(scoreItems.bind(this, i), 0);
+                return;
             }
-            if (underscoreScoringRegex.test(key))
-                score += 10;
-            if (camelCaseScoringRegex.test(key))
-                score += ignoreCase ? 10 : 20;
-            for (var j = 0; j < key.length && j < query.length; ++j) {
-                if (key[j] === query[j])
-                    score++;
-                if (key[j].toUpperCase() === query[j].toUpperCase())
-                    score++;
-                else
+
+            delete this._scoringTimer;
+            const numberOfItemsToSort = 100;
+            if (this._filteredItems.length > numberOfItemsToSort)
+                this._filteredItems.sortRange(compareFunction.bind(this), 0, this._filteredItems.length - 1, numberOfItemsToSort);
+            else
+                this._filteredItems.sort(compareFunction.bind(this));
+
+            for (var i = 0; i < this._filteredItems.length; ++i) {
+                if (this._filteredItems[i] === oldSelectedAbsoluteIndex) {
+                    this._selectedIndexInFiltered = i;
                     break;
+                }
             }
-            scores[i] = score;
+            this._viewportControl.refresh();
+            if (!query)
+                this._selectedIndexInFiltered = 0;
+            this._updateSelection(this._selectedIndexInFiltered, false);
         }
 
         function compareFunction(index1, index2)
@@ -310,23 +251,6 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
             var key2 = cachedKeys[index2];
             return key1.compareTo(key2) || (index2 - index1);
         }
-
-        const numberOfItemsToSort = 100;
-        if (this._filteredItems.length > numberOfItemsToSort)
-            this._filteredItems.sortRange(compareFunction.bind(this), 0, this._filteredItems.length - 1, numberOfItemsToSort);
-        else
-            this._filteredItems.sort(compareFunction.bind(this));
-
-        for (var i = 0; i < this._filteredItems.length; ++i) {
-            if (this._filteredItems[i] === oldSelectedAbsoluteIndex) {
-                this._selectedIndexInFiltered = i;
-                break;
-            }
-        }
-        this._viewportControl.refresh();
-        if (!query)
-            this._selectedIndexInFiltered = 0;
-        this._updateSelection(this._selectedIndexInFiltered, false);
     },
 
     _onInput: function(event)
@@ -412,16 +336,14 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     itemElement: function(index)
     {
         var delegateIndex = this._filteredItems[index];
-        var element = this._createItemElement(delegateIndex);
-        element._filteredIndex = index;
-        return element;
+        return this._createItemElement(delegateIndex);
     },
 
     __proto__: WebInspector.DialogDelegate.prototype
 }
 
 /**
- * @interface
+ * @constructor
  */
 WebInspector.SelectionDialogContentProvider = function()
 {
@@ -429,115 +351,19 @@ WebInspector.SelectionDialogContentProvider = function()
 
 WebInspector.SelectionDialogContentProvider.prototype = {
     /**
-     * @param {number} itemIndex
-     * @return {string}
+     * @param {function():void} refreshCallback
      */
-    itemTitleAt: function(itemIndex) { },
-
-    /*
-     * @param {number} itemIndex
-     * @return {string}
-     */
-    itemSuffixAt: function(itemIndex) { },
-
-    /*
-     * @param {number} itemIndex
-     * @return {string}
-     */
-    itemSubtitleAt: function(itemIndex) { },
-
-    /**
-     * @param {number} itemIndex
-     * @return {string}
-     */
-    itemKeyAt: function(itemIndex) { },
-
-    /**
-     * @param {number} itemIndex
-     * @return {number}
-     */
-    itemScoreAt: function(itemIndex) { },
+    setRefreshCallback: function(refreshCallback)
+    {
+        this._refreshCallback = refreshCallback;
+    },
 
     /**
      * @return {number}
      */
-    itemsCount: function() { },
-
-    /**
-     * @param {function(number, number)} callback
-     */
-    requestItems: function(callback) { },
-
-    /**
-     * @param {number} itemIndex
-     * @param {string} promptValue
-     */
-    selectItem: function(itemIndex, promptValue) { },
-
-    /**
-     * @param {string} query
-     * @return {string}
-     */
-    rewriteQuery: function(query) { },
-
-    dispose: function() { }
-}
-
-/**
- * @constructor
- * @implements {WebInspector.SelectionDialogContentProvider}
- * @param {WebInspector.View} view
- * @param {WebInspector.ContentProvider} contentProvider
- */
-WebInspector.JavaScriptOutlineDialog = function(view, contentProvider)
-{
-    WebInspector.SelectionDialogContentProvider.call(this);
-
-    this._functionItems = [];
-    this._view = view;
-    this._contentProvider = contentProvider;
-}
-
-/**
- * @param {WebInspector.View} view
- * @param {WebInspector.ContentProvider} contentProvider
- */
-WebInspector.JavaScriptOutlineDialog.show = function(view, contentProvider)
-{
-    if (WebInspector.Dialog.currentInstance())
-        return null;
-    var delegate = new WebInspector.JavaScriptOutlineDialog(view, contentProvider);
-    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(delegate);
-    WebInspector.Dialog.show(view.element, filteredItemSelectionDialog);
-}
-
-WebInspector.JavaScriptOutlineDialog.prototype = {
-    /**
-     * @param {number} itemIndex
-     * @return {string}
-     */
-    itemTitleAt: function(itemIndex)
+    itemCount: function()
     {
-        var functionItem = this._functionItems[itemIndex];
-        return functionItem.name + (functionItem.arguments ? functionItem.arguments : "");
-    },
-
-    /*
-     * @param {number} itemIndex
-     * @return {string}
-     */
-    itemSuffixAt: function(itemIndex)
-    {
-        return "";
-    },
-
-    /*
-     * @param {number} itemIndex
-     * @return {string}
-     */
-    itemSubtitleAt: function(itemIndex)
-    {
-        return ":" + (this._functionItems[itemIndex].line + 1);
+        return 0;
     },
 
     /**
@@ -546,60 +372,69 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
      */
     itemKeyAt: function(itemIndex)
     {
-        return this._functionItems[itemIndex].name;
+        return "";
     },
 
     /**
      * @param {number} itemIndex
+     * @param {string} query
      * @return {number}
      */
-    itemScoreAt: function(itemIndex)
+    itemScoreAt: function(itemIndex, query)
     {
-        return 0;
+        return 1;
     },
 
     /**
-     * @return {number}
+     * @param {number} itemIndex
+     * @param {string} query
+     * @param {Element} titleElement
+     * @param {Element} subtitleElement
      */
-    itemsCount: function()
+    renderItem: function(itemIndex, query, titleElement, subtitleElement)
     {
-        return this._functionItems.length;
     },
 
     /**
-     * @param {function(number, number)} callback
+     * @param {Element} element
+     * @param {string} query
+     * @return {boolean}
      */
-    requestItems: function(callback)
+    highlightRanges: function(element, query)
     {
+        if (!query)
+            return false;
+
         /**
-         * @param {?string} content
-         * @param {boolean} contentEncoded
-         * @param {string} mimeType
+         * @param {string} text
+         * @param {string} query
+         * @return {?Array.<{offset:number, length:number}>}
          */
-        function contentCallback(content, contentEncoded, mimeType)
+        function rangesForMatch(text, query)
         {
-            if (this._outlineWorker)
-                this._outlineWorker.terminate();
-            this._outlineWorker = new Worker("ScriptFormatterWorker.js");
-            this._outlineWorker.onmessage = this._didBuildOutlineChunk.bind(this, callback);
-            const method = "outline";
-            this._outlineWorker.postMessage({ method: method, params: { content: content } });
-        }
-        this._contentProvider.requestContent(contentCallback.bind(this));
-    },
+            var sm = new difflib.SequenceMatcher(query, text);
+            var opcodes = sm.get_opcodes();
+            var ranges = [];
 
-    _didBuildOutlineChunk: function(callback, event)
-    {
-        var data = event.data;
-        var chunk = data["chunk"];
-        for (var i = 0; i < chunk.length; ++i)
-            this._functionItems.push(chunk[i]);
-        callback(data.index, data.total);
-
-        if (data.total === data.index && this._outlineWorker) {
-            this._outlineWorker.terminate();
-            delete this._outlineWorker;
+            for (var i = 0; i < opcodes.length; ++i) {
+                var opcode = opcodes[i];
+                if (opcode[0] === "equal")
+                    ranges.push({offset: opcode[3], length: opcode[4] - opcode[3]});
+                else if (opcode[0] !== "insert")
+                    return null;
+            }
+            return ranges;
         }
+
+        var text = element.textContent;
+        var ranges = rangesForMatch(text, query);
+        if (!ranges)
+            ranges = rangesForMatch(text.toUpperCase(), query.toUpperCase());
+        if (ranges) {
+            WebInspector.highlightRangesWithStyleClass(element, ranges, "highlight");
+            return true;
+        }
+        return false;
     },
 
     /**
@@ -608,10 +443,11 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
      */
     selectItem: function(itemIndex, promptValue)
     {
-        var lineNumber = this._functionItems[itemIndex].line;
-        if (!isNaN(lineNumber) && lineNumber >= 0)
-            this._view.highlightPosition(lineNumber, this._functionItems[itemIndex].column);
-        this._view.focus();
+    },
+
+    refresh: function()
+    {
+        this._refreshCallback();
     },
 
     /**
@@ -630,13 +466,134 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.SelectionDialogContentProvider}
- * @param {Object.<string,number>=} defaultScores
+ * @extends {WebInspector.SelectionDialogContentProvider}
+ * @param {WebInspector.View} view
+ * @param {WebInspector.ContentProvider} contentProvider
+ */
+WebInspector.JavaScriptOutlineDialog = function(view, contentProvider)
+{
+    WebInspector.SelectionDialogContentProvider.call(this);
+
+    this._functionItems = [];
+    this._view = view;
+    contentProvider.requestContent(this._contentAvailable.bind(this));
+}
+
+/**
+ * @param {WebInspector.View} view
+ * @param {WebInspector.ContentProvider} contentProvider
+ */
+WebInspector.JavaScriptOutlineDialog.show = function(view, contentProvider)
+{
+    if (WebInspector.Dialog.currentInstance())
+        return null;
+    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.JavaScriptOutlineDialog(view, contentProvider));
+    WebInspector.Dialog.show(view.element, filteredItemSelectionDialog);
+}
+
+WebInspector.JavaScriptOutlineDialog.prototype = {
+    /**
+     * @param {?string} content
+     * @param {boolean} contentEncoded
+     * @param {string} mimeType
+     */
+    _contentAvailable: function(content, contentEncoded, mimeType)
+    {
+        this._outlineWorker = new Worker("ScriptFormatterWorker.js");
+        this._outlineWorker.onmessage = this._didBuildOutlineChunk.bind(this);
+        const method = "outline";
+        this._outlineWorker.postMessage({ method: method, params: { content: content } });
+    },
+
+    _didBuildOutlineChunk: function(event)
+    {
+        var data = event.data;
+        var chunk = data["chunk"];
+        for (var i = 0; i < chunk.length; ++i)
+            this._functionItems.push(chunk[i]);
+
+        if (data.total === data.index)
+            this.dispose();
+
+        this.refresh();
+    },
+
+    /**
+     * @return {number}
+     */
+    itemCount: function()
+    {
+        return this._functionItems.length;
+    },
+
+    /**
+     * @param {number} itemIndex
+     * @return {string}
+     */
+    itemKeyAt: function(itemIndex)
+    {
+        return this._functionItems[itemIndex].name;
+    },
+
+    /**
+     * @param {number} itemIndex
+     * @param {string} query
+     * @return {number}
+     */
+    itemScoreAt: function(itemIndex, query)
+    {
+        var item = this._functionItems[itemIndex];
+        return -item.line;
+    },
+
+    /**
+     * @param {number} itemIndex
+     * @param {string} query
+     * @param {Element} titleElement
+     * @param {Element} subtitleElement
+     */
+    renderItem: function(itemIndex, query, titleElement, subtitleElement)
+    {
+        var item = this._functionItems[itemIndex];
+        titleElement.textContent = item.name + (item.arguments ? item.arguments : "");
+        this.highlightRanges(titleElement, query);
+        subtitleElement.textContent = ":" + (item.line + 1);
+    },
+
+    /**
+     * @param {number} itemIndex
+     * @param {string} promptValue
+     */
+    selectItem: function(itemIndex, promptValue)
+    {
+        var lineNumber = this._functionItems[itemIndex].line;
+        if (!isNaN(lineNumber) && lineNumber >= 0)
+            this._view.highlightPosition(lineNumber, this._functionItems[itemIndex].column);
+        this._view.focus();
+    },
+
+    dispose: function()
+    {
+        if (this._outlineWorker) {
+            this._outlineWorker.terminate();
+            delete this._outlineWorker;
+        }
+    },
+
+    __proto__: WebInspector.SelectionDialogContentProvider.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.SelectionDialogContentProvider}
+ * @param {Map=} defaultScores
  */
 WebInspector.SelectUISourceCodeDialog = function(defaultScores)
 {
-    var projects = WebInspector.workspace.projects().filter(this.filterProject.bind(this));
+    WebInspector.SelectionDialogContentProvider.call(this);
+
     this._uiSourceCodes = [];
+    var projects = WebInspector.workspace.projects().filter(this.filterProject.bind(this));
     for (var i = 0; i < projects.length; ++i)
         this._uiSourceCodes = this._uiSourceCodes.concat(projects[i].uiSourceCodes().filter(this.filterUISourceCode.bind(this)));
     this._defaultScores = defaultScores;
@@ -671,32 +628,11 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     },
 
     /**
-     * @param {number} itemIndex
-     * @return {string}
+     * @return {number}
      */
-    itemTitleAt: function(itemIndex)
+    itemCount: function()
     {
-        return this._uiSourceCodes[itemIndex].name().trimEnd(100);
-    },
-
-    /*
-     * @param {number} itemIndex
-     * @return {string}
-     */
-    itemSuffixAt: function(itemIndex)
-    {
-        return this._queryLineNumber || "";
-    },
-
-    /*
-     * @param {number} itemIndex
-     * @return {string}
-     */
-    itemSubtitleAt: function(itemIndex)
-    {
-        var uiSourceCode = this._uiSourceCodes[itemIndex]
-        var projectName = uiSourceCode.project().displayName();
-        return projectName + "/" + uiSourceCode.path().join("/");
+        return this._uiSourceCodes.length;
     },
 
     /**
@@ -705,33 +641,145 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
      */
     itemKeyAt: function(itemIndex)
     {
-        return this._uiSourceCodes[itemIndex].path().join("/");
+        var uiSourceCode = this._uiSourceCodes[itemIndex];
+        return uiSourceCode.project().displayName() + "/" + uiSourceCode.path().join("/");
     },
 
     /**
      * @param {number} itemIndex
+     * @param {string} query
      * @return {number}
      */
-    itemScoreAt: function(itemIndex)
+    itemScoreAt: function(itemIndex, query)
     {
-        return this._defaultScores ? (this._defaultScores[this._uiSourceCodes[itemIndex].uri()] || 0) : 0;
+        var uiSourceCode = this._uiSourceCodes[itemIndex];
+        var score = this._defaultScores ? (this._defaultScores.get(uiSourceCode) || 0) : 0;
+        if (!query || query.length < 2)
+            return score;
+
+        if (this._query !== query) {
+            this._query = query;
+            this._queryToUpperCase = query.toUpperCase();
+            this._ignoreCase = query === this._queryToUpperCase;
+            this._filterRegex = WebInspector.FilteredItemSelectionDialog._createSearchRegex(query);
+        }
+
+        var path = uiSourceCode.project().displayName() + "/" + uiSourceCode.path().join("/");
+        return score + 10 * this._scoreTokens(path, this._queryToUpperCase, null);
     },
 
     /**
-     * @return {number}
+     * @param {string} path
+     * @param {string} queryToUpperCase
+     * @param {?Array.<number>} matchIndexes
      */
-    itemsCount: function()
+    _scoreTokens: function(path, queryToUpperCase, matchIndexes)
     {
-        return this._uiSourceCodes.length;
+        var pathLength = path.length;
+        var queryLength = queryToUpperCase.length;
+        var indexOfLastSlash = path.lastIndexOf("/");
+        var totalLength = pathLength * queryLength;
+        var dynamics = new Array(totalLength * 2);
+
+        /**
+         * @param {number} pathIndex
+         * @param {number} queryIndex
+         * @param {boolean} previousWasAMatch
+         * @param {?Array.<number>} indexes
+         */
+        function score(pathIndex, queryIndex, previousWasAMatch, indexes)
+        {
+            var key = pathIndex * queryLength + queryIndex + (previousWasAMatch ? queryLength * pathLength : 0);
+            if (!indexes && key in dynamics)
+                return dynamics[key];
+
+            if (queryIndex >= queryLength)
+                return 0;
+
+            var match = -1;
+            var queryChar = queryToUpperCase[queryIndex];
+            while (match === -1 && pathIndex < path.length) {
+                var pathChar = path[pathIndex];
+                var prevPathChar = path[pathIndex - 1];
+                if ((!prevPathChar || prevPathChar === "/") && pathChar.toUpperCase() === queryChar)
+                    match = 2; // Word start
+                else if ((prevPathChar === "_" || prevPathChar === "-") && pathChar.toUpperCase() === queryChar)
+                    match = 1; // Token start
+                else if (previousWasAMatch && pathChar.toUpperCase() === queryChar)
+                    match = 3; // Subsequent match
+                else if (pathChar === queryChar)
+                    match = 1; // Upper case match
+                else if (pathChar.toUpperCase() === queryChar)
+                    match = 0; // Regular letter match
+                else
+                    pathIndex++;
+                previousWasAMatch = false;
+            }
+
+            if (pathIndex >= path.length) {
+                dynamics[key] = -1;
+                return -1;
+            }
+
+            // Boost name match score.
+            if (pathIndex > indexOfLastSlash)
+                match *= 2;
+
+            // skipIndexes and useIndexes are used to collect highlight info if necessary.
+            var useIndexes = matchIndexes ? [] : null;
+            var useScore = score(pathIndex + 1, queryIndex + 1, match > 0, useIndexes);
+            if (useScore >= 0)
+                useScore += match;
+
+            var skipIndexes = matchIndexes ? [] : null;
+            var skipScore = score(pathIndex + 1, queryIndex, false, skipIndexes);
+
+            var maxScore = Math.max(skipScore, useScore);
+            dynamics[key] = maxScore;
+
+            if (matchIndexes) {
+                indexes.length = 0;
+                if (skipScore > useScore)
+                    indexes.push.apply(indexes, skipIndexes);
+                else {
+                    indexes.push(pathIndex);
+                    indexes.push.apply(indexes, useIndexes);
+                }
+            }
+            return maxScore;
+        }
+        return score(0, 0, false, matchIndexes);
     },
 
     /**
-     * @param {function(number, number)} callback
+     * @param {number} itemIndex
+     * @param {string} query
+     * @param {Element} titleElement
+     * @param {Element} subtitleElement
      */
-    requestItems: function(callback)
+    renderItem: function(itemIndex, query, titleElement, subtitleElement)
     {
-        this._itemsLoaded = callback;
-        this._itemsLoaded(1, 1);
+        query = this.rewriteQuery(query);
+        var uiSourceCode = this._uiSourceCodes[itemIndex];
+        titleElement.textContent = uiSourceCode.name().trimEnd(100) + (this._queryLineNumber ? this._queryLineNumber : "");
+        subtitleElement.textContent = uiSourceCode.project().displayName() + "/" + uiSourceCode.path().join("/");
+
+        function highlightMatchingScores(element)
+        {
+            var indexes = [];
+            var score = this._scoreTokens(element.textContent, query.toUpperCase(), indexes);
+            if (score > 0) {
+                var ranges = [];
+                for (var i = 0; i < indexes.length; ++i)
+                    ranges.push({offset: indexes[i], length: 1});
+                return WebInspector.highlightRangesWithStyleClass(element, ranges, "highlight");
+            }
+            return this.highlightRanges(element, query);
+        }
+        if (query) {
+            if (!highlightMatchingScores.call(this, titleElement))
+                highlightMatchingScores.call(this, subtitleElement);
+        }
     },
 
     /**
@@ -768,20 +816,22 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
         if (!this.filterUISourceCode(uiSourceCode))
             return;
         this._uiSourceCodes.push(uiSourceCode)
-        this._itemsLoaded(1, 1);
+        this.refresh();
     },
 
     dispose: function()
     {
         WebInspector.workspace.removeEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
-    }
+    },
+
+    __proto__: WebInspector.SelectionDialogContentProvider.prototype
 }
 
 /**
  * @constructor
  * @extends {WebInspector.SelectUISourceCodeDialog}
  * @param {WebInspector.ScriptsPanel} panel
- * @param {Object.<string,number>=} defaultScores
+ * @param {Map=} defaultScores
  */
 WebInspector.OpenResourceDialog = function(panel, defaultScores)
 {
@@ -815,7 +865,7 @@ WebInspector.OpenResourceDialog.prototype = {
  * @param {WebInspector.ScriptsPanel} panel
  * @param {Element} relativeToElement
  * @param {string=} name
- * @param {Object.<string,number>=} defaultScores
+ * @param {Map=} defaultScores
  */
 WebInspector.OpenResourceDialog.show = function(panel, relativeToElement, name, defaultScores)
 {

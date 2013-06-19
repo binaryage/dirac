@@ -1247,10 +1247,10 @@ WebInspector.ScriptsPanel.prototype = {
 
     showGoToSourceDialog: function()
     {
-        var uris = this._editorContainer.historyUris();
-        var defaultScores = {};
-        for (var i = 1; i < uris.length; ++i) // Skip current element
-            defaultScores[uris[i]] = uris.length - i;
+        var uiSourceCodes = this._editorContainer.historyUISourceCodes();
+        var defaultScores = new Map();
+        for (var i = 1; i < uiSourceCodes.length; ++i) // Skip current element
+            defaultScores.put(uiSourceCodes[i], uiSourceCodes.length - i);
         WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement, undefined, defaultScores);
     },
 
