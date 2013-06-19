@@ -235,14 +235,15 @@ WebInspector.TabbedEditorContainer.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {string} uri
      */
-    addUISourceCode: function(uiSourceCode)
+    addUISourceCode: function(uiSourceCode, uri)
     {
-        if (this._userSelectedFiles || this._loadedURIs[uiSourceCode.uri()])
+        if (this._userSelectedFiles || this._loadedURIs[uri])
             return;
-        this._loadedURIs[uiSourceCode.uri()] = true;
+        this._loadedURIs[uri] = true;
 
-        var index = this._history.index(uiSourceCode.uri())
+        var index = this._history.index(uri)
         if (index === -1)
             return;
 

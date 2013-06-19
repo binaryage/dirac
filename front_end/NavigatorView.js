@@ -76,12 +76,13 @@ WebInspector.NavigatorView.iconClassForType = function(type)
 WebInspector.NavigatorView.prototype = {
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {string} uri
      */
-    addUISourceCode: function(uiSourceCode)
+    addUISourceCode: function(uiSourceCode, uri)
     {
         var node = this._getOrCreateUISourceCodeParentNode(uiSourceCode);
         var uiSourceCodeNode = new WebInspector.NavigatorUISourceCodeTreeNode(this, uiSourceCode);
-        this._uiSourceCodeNodes[uiSourceCode.uri()] = uiSourceCodeNode;
+        this._uiSourceCodeNodes[uri] = uiSourceCodeNode;
         node.appendChild(uiSourceCodeNode);
         if (uiSourceCode.url === WebInspector.inspectedPageURL)
             this.revealUISourceCode(uiSourceCode);
@@ -237,10 +238,11 @@ WebInspector.NavigatorView.prototype = {
         var parentNode = this._getUISourceCodeParentNode(uiSourceCode);
         if (!parentNode)
             return;
-        var node = this._uiSourceCodeNodes[uiSourceCode.uri()];
+        var uri = uiSourceCode.uri();
+        var node = this._uiSourceCodeNodes[uri];
         if (!node)
             return;
-        delete this._uiSourceCodeNodes[uiSourceCode.uri()]
+        delete this._uiSourceCodeNodes[uri]
         parentNode.removeChild(node);
         node = parentNode;
         while (node) {
