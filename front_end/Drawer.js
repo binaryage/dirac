@@ -108,7 +108,8 @@ WebInspector.Drawer.prototype = {
 
         function animationFinished()
         {
-            WebInspector.inspectorView.currentPanel().doResize();
+            if (WebInspector.inspectorView.currentPanel())
+                WebInspector.inspectorView.currentPanel().doResize();
             if (this._view && this._view.afterShow)
                 this._view.afterShow();
         }
@@ -153,7 +154,8 @@ WebInspector.Drawer.prototype = {
 
         function animationFinished()
         {
-            WebInspector.inspectorView.currentPanel().doResize();
+            if (WebInspector.inspectorView.currentPanel())
+                WebInspector.inspectorView.currentPanel().doResize();
             this._view.detach();
             delete this._view;
             this._bottomStatusBar.removeChildren();
