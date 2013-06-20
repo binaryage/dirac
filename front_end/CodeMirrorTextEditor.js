@@ -88,6 +88,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     }
     this._codeMirror.setOption("extraKeys", extraKeys);
     this._codeMirror.setOption("flattenSpans", false);
+    this._codeMirror.setOption("maxHighlightLength", 1000);
 
     this._tokenHighlighter = new WebInspector.CodeMirrorTextEditor.TokenHighlighter(this._codeMirror);
     this._blockIndentController = new WebInspector.CodeMirrorTextEditor.BlockIndentController(this._codeMirror);
@@ -121,7 +122,7 @@ WebInspector.CodeMirrorTextEditor.autocompleteCommand = function(codeMirror)
 }
 CodeMirror.commands.autocomplete = WebInspector.CodeMirrorTextEditor.autocompleteCommand;
 
-WebInspector.CodeMirrorTextEditor.SyntaxHighlightLineLengthThreshold = 1000;
+WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 1000;
 WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
@@ -334,8 +335,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         function lineIterator(lineHandle)
         {
-            if (lineHandle.text.length > WebInspector.CodeMirrorTextEditor.SyntaxHighlightLineLengthThreshold)
+            if (lineHandle.text.length > WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold)
                 hasLongLines = true;
+            return hasLongLines;
         }
         var hasLongLines = false;
         this._codeMirror.eachLine(lineIterator);
@@ -373,15 +375,33 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         return modeName;
     },
 
+    _enableLongLinesMode: function()
+    {
+        this._codeMirror.setOption("matchBrackets", false);
+        this._codeMirror.setOption("styleSelectedText", false);
+        this._longLinesMode = true;
+    },
+
+    _disableLongLinesMode: function()
+    {
+        this._codeMirror.setOption("matchBrackets", true);
+        this._codeMirror.setOption("styleSelectedText", true);
+        this._longLinesMode = false;
+    },
+
+    _longLinesMode: function() {
+        return this._longLinesMode;
+    },
+
     /**
      * @param {string} mimeType
      */
     set mimeType(mimeType)
     {
-        if (this._hasLongLines()) {
-            this._codeMirror.setOption("mode", null);
-            return;
-        }
+        if (this._hasLongLines())
+            this._enableLongLinesMode();
+        else
+            this._disableLongLinesMode();
         var showWhitespaces = WebInspector.settings.showWhitespacesInEditor.get();
         this._codeMirror.setOption("mode", showWhitespaces ? this._whitespaceOverlayMode(mimeType) : mimeType);
         switch (mimeType) {
@@ -1003,8 +1023,8 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
                 return CodeMirror.Pass;
 
         codeMirror.replaceRange("}", cursor);
-        var matchingBracket = codeMirror.findMatchingBracket();
-        if (!matchingBracket.match)
+        var matchingBracket = this._longLinesMode() ? null : codeMirror.findMatchingBracket();
+        if (!matchingBracket || !matchingBracket.match)
             return;
 
         line = codeMirror.getLine(matchingBracket.to.line);

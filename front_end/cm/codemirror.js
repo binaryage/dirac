@@ -1,5 +1,3 @@
-// CodeMirror version 3.14
-//
 // CodeMirror is the only global var we claim
 window.CodeMirror = (function() {
   "use strict";
@@ -962,7 +960,7 @@ window.CodeMirror = (function() {
     data = data || measureLine(cm, line);
 
     for (var pos = ch;; pos += dir) {
-      var r = data[pos];
+      var r = data.get(pos);
       if (r) break;
       if (dir < 0 && pos == 0) dir = 1;
     }
@@ -995,7 +993,13 @@ window.CodeMirror = (function() {
     if (cached) return cached.measure;
 
     // Failing that, recompute and store result in cache
-    var measure = measureLineInner(cm, line);
+    var measure = measureLineInner(cm, line, 0, 10);
+    measure.get = function(num) {
+      if (this[num]) return this[num];
+      if (num < 0 || num >= line.text.length) return null;
+      measureLineInner(cm, line, Math.max(num - 50, 0), Math.min(num + 50, line.text.length), this);
+      return this[num];
+    };
     var cache = cm.display.measureLineCache;
     var memo = {text: line.text, width: cm.display.scroller.clientWidth,
                 markedSpans: line.markedSpans, measure: measure,
@@ -1005,9 +1009,9 @@ window.CodeMirror = (function() {
     return measure;
   }
 
-  function measureLineInner(cm, line) {
+  function measureLineInner(cm, line, from, to, oldMeasure) {
     var display = cm.display, measure = emptyArray(line.text.length);
-    var pre = lineContent(cm, line, measure);
+    var pre = lineContent(cm, line, measure, from, to);
 
     // IE does not cache element positions of inline elements between
     // calls to getBoundingClientRect. This makes the loop below,
@@ -1037,7 +1041,7 @@ window.CodeMirror = (function() {
     removeChildrenAndAdd(display.measure, pre);
 
     var outer = getRect(display.lineDiv);
-    var vranges = [], data = emptyArray(line.text.length), maxBot = pre.offsetHeight;
+    var vranges = [], data = oldMeasure || emptyArray(line.text.length), maxBot = pre.offsetHeight;
     // Work around an IE7/8 bug where it will sometimes have randomly
     // replaced our pre with a clone at this point.
     if (ie_lt9 && display.measure.first != pre)
@@ -1081,7 +1085,7 @@ window.CodeMirror = (function() {
       if (cur.measureRight) right = getRect(cur.measureRight).left;
       data[i] = {left: size.left - outer.left, right: right - outer.left, top: vCat};
     }
-    for (var i = 0, cur; i < data.length; ++i) if (cur = data[i]) {
+    for (var i = 0, cur; i < data.length; ++i) if (measure[i] && (cur = data[i])) {
       var vr = cur.top, vrRight = cur.topRight;
       cur.top = vranges[vr]; cur.bottom = vranges[vr+1];
       if (vrRight != null) { cur.topRight = vranges[vrRight]; cur.bottomRight = vranges[vrRight+1]; }
@@ -4207,13 +4211,13 @@ window.CodeMirror = (function() {
       (styleToClassCache[style] = "cm-" + style.replace(/ +/g, " cm-"));
   }
 
-  function lineContent(cm, realLine, measure) {
+  function lineContent(cm, realLine, measure, from, to) {
     var merged, line = realLine, empty = true;
     while (merged = collapsedSpanAtStart(line))
       line = getLine(cm.doc, merged.find().from.line);
 
     var builder = {pre: elt("pre"), col: 0, pos: 0, display: !measure,
-                   measure: null, measuredSomething: false, cm: cm};
+                   measure: null, measuredSomething: false, cm: cm, from: from, to: to};
     if (line.textClass) builder.pre.className = line.textClass;
 
     do {
@@ -4295,6 +4299,14 @@ window.CodeMirror = (function() {
   }
 
   function buildTokenMeasure(builder, text, style, startStyle, endStyle) {
+    //FIXME consider 2-byte chars
+    if (builder.from || builder.to) {
+      if (builder.from >= builder.pos + text.length) {
+        buildToken(builder, text, style, startStyle, endStyle);
+        builder.pos += text.length;
+        return;
+      }
+    }
     var wrapping = builder.cm.options.lineWrapping;
     for (var i = 0; i < text.length; ++i) {
       var ch = text.charAt(i), start = i == 0;
@@ -4348,8 +4360,27 @@ window.CodeMirror = (function() {
   function insertLineContent(line, builder, styles) {
     var spans = line.markedSpans, allText = line.text, at = 0;
     if (!spans) {
-      for (var i = 1; i < styles.length; i+=2)
-        builder.addToken(builder, allText.slice(at, at = styles[i]), styleToClass(styles[i+1]));
+      if (builder.to || builder.from) {
+        for (var i = 1; i < styles.length && (!builder.to || builder.pos < builder.to); i+=2) {
+          var text = allText.slice(at, at = styles[i]);
+          var textLength = text.length;
+          var resolvedStyles = styleToClass(styles[i+1]);
+          if (builder.pos + textLength <= builder.from) {
+            builder.addToken(builder, text, resolvedStyles);
+            continue;
+          }
+          // if we are not inside, but will get over it
+          if (builder.pos < builder.from && builder.pos + textLength > builder.from) {
+            var overlap = builder.from - builder.pos;
+            builder.addToken(builder, text.substring(0, overlap), resolvedStyles);
+            text = text.substring(overlap);
+          }
+          builder.addToken(builder, text.substr(0, Math.min(builder.to - builder.from, text.length)), resolvedStyles);
+        }
+      } else {
+        for (var i = 1; i < styles.length; i+=2)
+          builder.addToken(builder, allText.slice(at, at = styles[i]), styleToClass(styles[i+1]));
+      }
       return;
     }
 
@@ -4392,6 +4423,8 @@ window.CodeMirror = (function() {
             var tokenText = end > upto ? text.slice(0, upto - pos) : text;
             builder.addToken(builder, tokenText, style ? style + spanStyle : spanStyle,
                              spanStartStyle, pos + tokenText.length == nextChange ? spanEndStyle : "");
+            if (builder.to && builder.pos >= builder.to)
+              return;
           }
           if (end >= upto) {text = text.slice(upto - pos); pos = upto; break;}
           pos = end;
