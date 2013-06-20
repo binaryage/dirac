@@ -129,9 +129,9 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
 }
 
 .heap-snapshot-view .data-grid span.percent-column {
-    color: grey;
+    color: #999;
     width: 32px;
-    float: right;
+    display: inline-block;
 }
 
 .heap-snapshot-view .console-formatted-object,
