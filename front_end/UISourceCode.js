@@ -1006,6 +1006,9 @@ WebInspector.Revision.prototype = {
 
     _persist: function()
     {
+        if (this._uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem)
+            return;
+
         if (!window.localStorage)
             return;
 
