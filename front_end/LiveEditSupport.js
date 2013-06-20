@@ -76,6 +76,28 @@ WebInspector.LiveEditSupport.prototype = {
 }
 
 /**
+ * @param {?string} error
+ * @param {DebuggerAgent.SetScriptSourceError=} errorData
+ * @param {WebInspector.Script=} contextScript
+ */
+WebInspector.LiveEditSupport.logDetailedError = function(error, errorData, contextScript)
+{
+    if (!errorData) {
+        WebInspector.showErrorMessage(error);
+        return;
+    }
+    var compileError = errorData.compileError;
+    if (compileError) {
+        var message = compileError.message;
+        if (contextScript)
+            message += " at " + contextScript.sourceURL + ":" + compileError.lineNumber + ":" + compileError.columnNumber;
+        WebInspector.showErrorMessage(message);
+    } else {
+        WebInspector.showErrorMessage("Unknown LiveEdit error: " + JSON.stringify(errorData) + "; " + error);
+    }
+}
+
+/**
  * @constructor
  * @implements {WebInspector.ScriptFile}
  * @extends {WebInspector.Object}
@@ -97,11 +119,13 @@ WebInspector.LiveEditScriptFile.prototype = {
     {
         /**
          * @param {?string} error
+         * @param {DebuggerAgent.SetScriptSourceError=} errorData
          */
-        function innerCallback(error)
+        function innerCallback(error, errorData)
         {
             if (error) {
-                WebInspector.showErrorMessage(error);
+                var script = WebInspector.debuggerModel.scriptForId(this._scriptId);
+                WebInspector.LiveEditSupport.logDetailedError(error, errorData, script);
                 return;
             }
         }

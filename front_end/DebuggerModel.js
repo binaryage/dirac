@@ -298,7 +298,7 @@ WebInspector.DebuggerModel.prototype = {
     /**
      * @param {DebuggerAgent.ScriptId} scriptId
      * @param {string} newSource
-     * @param {function(?Protocol.Error)} callback
+     * @param {function(?Protocol.Error, DebuggerAgent.SetScriptSourceError=)} callback
      */
     setScriptSource: function(scriptId, newSource, callback)
     {
@@ -308,13 +308,14 @@ WebInspector.DebuggerModel.prototype = {
     /**
      * @param {DebuggerAgent.ScriptId} scriptId
      * @param {string} newSource
-     * @param {function(?Protocol.Error)} callback
+     * @param {function(?Protocol.Error, DebuggerAgent.SetScriptSourceError=)} callback
      * @param {?Protocol.Error} error
+     * @param {DebuggerAgent.SetScriptSourceError=} errorData
      * @param {Array.<DebuggerAgent.CallFrame>=} callFrames
      */
-    _didEditScriptSource: function(scriptId, newSource, callback, error, callFrames)
+    _didEditScriptSource: function(scriptId, newSource, callback, error, errorData, callFrames)
     {
-        callback(error);
+        callback(error, errorData);
         if (!error && callFrames && callFrames.length)
             this._pausedScript(callFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData, this._debuggerPausedDetails.breakpointIds);
     },

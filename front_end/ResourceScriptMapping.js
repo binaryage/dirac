@@ -291,12 +291,13 @@ WebInspector.ResourceScriptFile.prototype = {
     {
         /**
          * @param {?string} error
+         * @param {DebuggerAgent.SetScriptSourceError=} errorData
          */
-        function innerCallback(error)
+        function innerCallback(error, errorData)
         {
             if (error) {
                 this._update();
-                WebInspector.showErrorMessage(error);
+                WebInspector.LiveEditSupport.logDetailedError(error, errorData, this._script);
                 return;
             }
 

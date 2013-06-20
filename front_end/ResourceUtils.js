@@ -110,10 +110,11 @@ WebInspector.linkifyStringAsFragmentWithCustomLinkifier = function(string, linki
         if (lineColumnMatch) {
             realURL = realURL.substring(0, realURL.length - lineColumnMatch[0].length);
             lineNumber = parseInt(lineColumnMatch[1], 10);
-            lineNumber = isNaN(lineNumber) ? undefined : lineNumber;
+            // Immediately convert line and column to 0-based numbers.
+            lineNumber = isNaN(lineNumber) ? undefined : lineNumber - 1;
             if (typeof(lineColumnMatch[3]) === "string") {
                 columnNumber = parseInt(lineColumnMatch[3], 10);
-                columnNumber = isNaN(columnNumber) ? undefined : columnNumber;
+                columnNumber = isNaN(columnNumber) ? undefined : columnNumber - 1;
             }
         }
 
