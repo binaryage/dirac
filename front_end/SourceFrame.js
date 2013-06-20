@@ -205,6 +205,7 @@ WebInspector.SourceFrame.prototype = {
     {
         this._clearLineToReveal();
         this._clearLineToScrollTo();
+        this._clearSelectionToSet();
         this._positionToHighlight = { line: line, column: column };
         this._innerHighlightPositionIfNeeded();
     },
@@ -234,6 +235,7 @@ WebInspector.SourceFrame.prototype = {
     {
         this._clearPositionHighlight();
         this._clearLineToScrollTo();
+        this._clearSelectionToSet();
         this._lineToReveal = line;
         this._innerRevealLineIfNeeded();
     },
@@ -296,12 +298,17 @@ WebInspector.SourceFrame.prototype = {
         }
     },
 
+    _clearSelectionToSet: function()
+    {
+        delete this._selectionToSet;
+    },
+
     _wasShownOrLoaded: function()
     {
         this._innerHighlightPositionIfNeeded();
         this._innerRevealLineIfNeeded();
-        this._innerScrollToLineIfNeeded();
         this._innerSetSelectionIfNeeded();
+        this._innerScrollToLineIfNeeded();
     },
 
     onTextChanged: function(oldRange, newRange)

@@ -355,12 +355,12 @@ WebInspector.TabbedEditorContainer.prototype = {
         this._tabIds.put(uiSourceCode, tabId);
         this._files[tabId] = uiSourceCode;
 
-        var savedScrollLineNumber = this._history.scrollLineNumber(uiSourceCode.uri());
-        if (savedScrollLineNumber)
-            view.scrollToLine(savedScrollLineNumber);
         var savedSelectionRange = this._history.selectionRange(uiSourceCode.uri());
         if (savedSelectionRange)
             view.setSelection(savedSelectionRange);
+        var savedScrollLineNumber = this._history.scrollLineNumber(uiSourceCode.uri());
+        if (savedScrollLineNumber)
+            view.scrollToLine(savedScrollLineNumber);
 
         this._tabbedPane.appendTab(tabId, title, view, tooltip, userGesture);
 
