@@ -95,11 +95,10 @@ WebInspector.ScriptsNavigator.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @param {string} uri
      */
-    addUISourceCode: function(uiSourceCode, uri)
+    addUISourceCode: function(uiSourceCode)
     {
-        this._navigatorViewForUISourceCode(uiSourceCode).addUISourceCode(uiSourceCode, uri);
+        this._navigatorViewForUISourceCode(uiSourceCode).addUISourceCode(uiSourceCode);
     },
 
     /**

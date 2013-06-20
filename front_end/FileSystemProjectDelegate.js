@@ -202,7 +202,8 @@ WebInspector.FileSystemProjectDelegate.prototype = {
      */
     _addFile: function(filePath)
     {
-        console.assert(filePath);
+        if (!filePath)
+            console.assert(false);
         var fullPath = this._fileSystem.path() + "/" + filePath;
 
         var slash = filePath.lastIndexOf("/");

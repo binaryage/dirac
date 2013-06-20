@@ -503,7 +503,9 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
 
     _setInDebugger: function()
     {
-        console.assert(!this._debuggerId);
+        if (!this._debuggerId)
+            console.assert(false);
+
         var rawLocation = this._primaryUILocation.uiLocationToRawLocation();
         var debuggerModelLocation = /** @type {WebInspector.DebuggerModel.Location} */ (rawLocation);
         if (debuggerModelLocation)
