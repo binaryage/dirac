@@ -2004,6 +2004,11 @@ li.editing-sub-part .delete-button {
     display: none;
 }
 
+.tabbed-pane-content .watch-expressions li:first-child .delete-button {
+    right: 55px;
+    top: 3px;
+}
+
 .section .properties li.hovered .delete-button {
     display: inline;
 }
