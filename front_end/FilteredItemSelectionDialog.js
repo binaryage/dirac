@@ -641,8 +641,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
      */
     itemKeyAt: function(itemIndex)
     {
-        var uiSourceCode = this._uiSourceCodes[itemIndex];
-        return uiSourceCode.project().displayName() + "/" + uiSourceCode.path().join("/");
+        return this._uiSourceCodes[itemIndex].fullName();
     },
 
     /**
@@ -664,7 +663,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
             this._filterRegex = WebInspector.FilteredItemSelectionDialog._createSearchRegex(query);
         }
 
-        var path = uiSourceCode.project().displayName() + "/" + uiSourceCode.path().join("/");
+        var path = uiSourceCode.fullName();
         return score + 10 * this._scoreTokens(path, this._queryToUpperCase, null);
     },
 
@@ -762,7 +761,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
         query = this.rewriteQuery(query);
         var uiSourceCode = this._uiSourceCodes[itemIndex];
         titleElement.textContent = uiSourceCode.name().trimEnd(100) + (this._queryLineNumber ? this._queryLineNumber : "");
-        subtitleElement.textContent = uiSourceCode.project().displayName() + "/" + uiSourceCode.path().join("/");
+        subtitleElement.textContent = uiSourceCode.fullName();
 
         function highlightMatchingScores(element)
         {

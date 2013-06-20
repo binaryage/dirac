@@ -175,7 +175,8 @@ WebInspector.NavigatorView.prototype = {
         var projectNode = this._getProjectNode(uiSourceCode.project());
         if (!projectNode)
             return null;
-        var path = uiSourceCode.path();
+        var parentPath = uiSourceCode.parentPath();
+        var path = parentPath ? parentPath.split("/").concat(uiSourceCode.name()) : [uiSourceCode.name()];
         var parentNode = projectNode;
         for (var i = 0; i < path.length - 1; ++i) {
             parentNode = this._getFolderNode(parentNode, path[i]);
@@ -194,7 +195,8 @@ WebInspector.NavigatorView.prototype = {
         var projectNode = this._getOrCreateProjectNode(uiSourceCode.project());
         if (!projectNode)
             return null;
-        var path = uiSourceCode.path();
+        var parentPath = uiSourceCode.parentPath();
+        var path = parentPath ? parentPath.split("/").concat(uiSourceCode.name()) : [uiSourceCode.name()];
         var parentNode = projectNode;
         for (var i = 0; i < path.length - 1; ++i) {
             parentNode = this._getOrCreateFolderNode(parentNode, path[i]);

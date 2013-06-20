@@ -49,16 +49,18 @@ WebInspector.WorkspaceController.prototype = {
 
 /**
  * @constructor
- * @param {Array.<string>} path
+ * @param {string} parentPath
+ * @param {string} name
  * @param {string} originURL
  * @param {string} url
  * @param {WebInspector.ResourceType} contentType
  * @param {boolean} isEditable
  * @param {boolean=} isContentScript
  */
-WebInspector.FileDescriptor = function(path, originURL, url, contentType, isEditable, isContentScript)
+WebInspector.FileDescriptor = function(parentPath, name, originURL, url, contentType, isEditable, isContentScript)
 {
-    this.path = path;
+    this.parentPath = parentPath;
+    this.name = name;
     this.originURL = originURL;
     this.url = url;
     this.contentType = contentType;
@@ -95,7 +97,7 @@ WebInspector.ProjectDelegate.prototype = {
     displayName: function() { }, 
 
     /**
-     * @param {Array.<string>} path
+     * @param {string} path
      * @param {function(?string,boolean,string)} callback
      */
     requestFileContent: function(path, callback) { },
@@ -106,7 +108,7 @@ WebInspector.ProjectDelegate.prototype = {
     canSetFileContent: function() { },
 
     /**
-     * @param {Array.<string>} path
+     * @param {string} path
      * @param {string} newContent
      * @param {function(?string)} callback
      */
@@ -118,14 +120,14 @@ WebInspector.ProjectDelegate.prototype = {
     canRename: function() { },
 
     /**
-     * @param {Array.<string>} path
+     * @param {string} path
      * @param {string} newName
      * @param {function(boolean, string=)} callback
      */
     rename: function(path, newName, callback) { },
 
     /**
-     * @param {Array.<string>} path
+     * @param {string} path
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
@@ -198,19 +200,19 @@ WebInspector.Project.prototype = {
             return;
         }
 
-        uiSourceCode = new WebInspector.UISourceCode(this, fileDescriptor.path, fileDescriptor.originURL, fileDescriptor.url, fileDescriptor.contentType, fileDescriptor.isEditable); 
+        uiSourceCode = new WebInspector.UISourceCode(this, fileDescriptor.parentPath, fileDescriptor.name, fileDescriptor.originURL, fileDescriptor.url, fileDescriptor.contentType, fileDescriptor.isEditable);
         uiSourceCode.isContentScript = fileDescriptor.isContentScript;
-        this._uiSourceCodes[uiSourceCode.path().join("/")] = uiSourceCode;
+        this._uiSourceCodes[uiSourceCode.path()] = uiSourceCode;
         this._workspace.dispatchEventToListeners(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, uiSourceCode);
     },
 
     _fileRemoved: function(event)
     {
-        var path = /** @type {Array.<string>} */ (event.data);
+        var path = /** @type {string} */ (event.data);
         var uiSourceCode = this.uiSourceCode(path);
         if (!uiSourceCode)
             return;
-        delete this._uiSourceCodes[uiSourceCode.path().join("/")];
+        delete this._uiSourceCodes[uiSourceCode.path()];
         this._workspace.dispatchEventToListeners(WebInspector.UISourceCodeProvider.Events.UISourceCodeRemoved, uiSourceCode);
     },
 
@@ -221,12 +223,12 @@ WebInspector.Project.prototype = {
     },
 
     /**
-     * @param {Array.<string>} path
+     * @param {string} path
      * @return {?WebInspector.UISourceCode}
      */
     uiSourceCode: function(path)
     {
-        return this._uiSourceCodes[path.join("/")] || null;
+        return this._uiSourceCodes[path] || null;
     },
 
     /**
@@ -311,6 +313,11 @@ WebInspector.Project.prototype = {
      */
     rename: function(uiSourceCode, newName, callback)
     {
+        if (newName === uiSourceCode.name()) {
+            callback(true, newName);
+            return;
+        }
+
         this._projectDelegate.rename(uiSourceCode.path(), newName, innerCallback.bind(this));
 
         /**
@@ -323,11 +330,8 @@ WebInspector.Project.prototype = {
                 callback(false);
                 return;
             }
-
-            var copyOfPath = uiSourceCode.path().slice();
-            var oldPath = copyOfPath.join("/");
-            copyOfPath[copyOfPath.length - 1] = newName;
-            var newPath = copyOfPath.join("/");
+            var oldPath = uiSourceCode.path();
+            var newPath = uiSourceCode.parentPath() ? uiSourceCode.parentPath() + "/" + newName : newName;
             this._uiSourceCodes[newPath] = this._uiSourceCodes[oldPath];
             delete this._uiSourceCodes[oldPath];
             callback(true, newName);
@@ -381,7 +385,7 @@ WebInspector.Workspace.Events = {
 WebInspector.Workspace.prototype = {
     /**
      * @param {string} projectId
-     * @param {Array.<string>} path
+     * @param {string} path
      * @return {?WebInspector.UISourceCode}
      */
     uiSourceCode: function(projectId, path)
@@ -515,9 +519,8 @@ WebInspector.Workspace.prototype = {
     {
         var splitURL = WebInspector.ParsedURL.splitURL(url);
         var projectId = WebInspector.SimpleProjectDelegate.projectId(splitURL[0], WebInspector.projectTypes.Network);
-        var path = WebInspector.SimpleWorkspaceProvider.pathForSplitURL(splitURL);
         var project = this.project(projectId);
-        return project ? project.uiSourceCode(path) : null;
+        return project ? project.uiSourceCode(splitURL.slice(1).join("/")) : null;
     },
 
     /**
@@ -534,7 +537,7 @@ WebInspector.Workspace.prototype = {
 
         var projectId = WebInspector.FileSystemProjectDelegate.projectId(file.fileSystemPath);
         var project = this.project(projectId);
-        return project ? project.uiSourceCode(file.filePath.split("/")) : null;
+        return project ? project.uiSourceCode(file.filePath) : null;
     },
 
     /**
@@ -557,8 +560,7 @@ WebInspector.Workspace.prototype = {
         var url = networkUISourceCode.url;
         var path = uiSourceCode.path();
         var fileSystemPath = fileSystemWorkspaceProvider.fileSystemPath(uiSourceCode);
-        var filePath = path.join("/");
-        this._fileSystemMapping.addMappingForResource(url, fileSystemPath, filePath);
+        this._fileSystemMapping.addMappingForResource(url, fileSystemPath, path);
         WebInspector.suggestReload();
     },
 

@@ -83,7 +83,7 @@ WebInspector.ScriptSnippetModel.prototype = {
      */
     _addScriptSnippet: function(snippet)
     {
-        var path = this._projectDelegate.addFile(snippet.name, new WebInspector.SnippetContentProvider(snippet));
+        var path = this._projectDelegate.addSnippet(snippet.name, new WebInspector.SnippetContentProvider(snippet));
         var uiSourceCode = this._workspace.uiSourceCode(this._projectDelegate.id(), path);
         var scriptFile = new WebInspector.SnippetScriptFile(this, uiSourceCode);
         uiSourceCode.setScriptFile(scriptFile);
@@ -105,7 +105,7 @@ WebInspector.ScriptSnippetModel.prototype = {
         this._releaseSnippetScript(uiSourceCode);
         delete this._uiSourceCodeForSnippetId[snippet.id];
         this._snippetIdForUISourceCode.remove(uiSourceCode);
-        this._projectDelegate.removeFile([snippet.name]);
+        this._projectDelegate.removeFile(snippet.name);
     },
 
     /**
@@ -613,11 +613,11 @@ WebInspector.SnippetsProjectDelegate.prototype = {
     /**
      * @param {string} name
      * @param {WebInspector.ContentProvider} contentProvider
-     * @return {Array.<string>}
+     * @return {string}
      */
-    addFile: function(name, contentProvider)
+    addSnippet: function(name, contentProvider)
     {
-        return this.addContentProvider([name], name, contentProvider, true, false);
+        return this.addContentProvider("", name, name, contentProvider, true, false);
     },
 
     /**
@@ -629,13 +629,13 @@ WebInspector.SnippetsProjectDelegate.prototype = {
     },
 
     /**
-     * @param {Array.<string>} path
+     * @param {string} path
      * @param {string} newName
      * @param {function(boolean, string=)} callback
      */
     performRename: function(path, newName, callback)
     {
-        this._model.renameScriptSnippet(path[0], newName, callback);
+        this._model.renameScriptSnippet(path, newName, callback);
     },
 
     __proto__: WebInspector.ContentProviderBasedProjectDelegate.prototype

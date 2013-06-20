@@ -140,7 +140,7 @@ WebInspector.DebuggerProjectDelegate.prototype = {
 
     /**
      * @param {WebInspector.Script} script
-     * @return {Array.<string>}
+     * @return {string}
      */
     addScript: function(script)
     {
@@ -148,7 +148,7 @@ WebInspector.DebuggerProjectDelegate.prototype = {
         var splitURL = WebInspector.ParsedURL.splitURL(script.sourceURL);
         var name = splitURL[splitURL.length - 1];
         name = "[VM] " + name + " (" + script.scriptId + ")";
-        return this.addContentProvider([name], script.sourceURL, contentProvider, false, script.isContentScript);
+        return this.addContentProvider("", name, script.sourceURL, contentProvider, false, script.isContentScript);
     },
     
     __proto__: WebInspector.ContentProviderBasedProjectDelegate.prototype

@@ -34,15 +34,17 @@
  * @extends {WebInspector.Object}
  * @implements {WebInspector.ContentProvider}
  * @param {WebInspector.Project} project
- * @param {Array.<string>} path
+ * @param {string} parentPath
+ * @param {string} name
  * @param {string} url
  * @param {WebInspector.ResourceType} contentType
  * @param {boolean} isEditable
  */
-WebInspector.UISourceCode = function(project, path, originURL, url, contentType, isEditable)
+WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, contentType, isEditable)
 {
     this._project = project;
-    this._path = path;
+    this._parentPath = parentPath;
+    this._name = name;
     this._originURL = originURL;
     this._url = url;
     this._contentType = contentType;
@@ -87,19 +89,35 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @return {Array.<string>}
+     * @return {string}
      */
-    path: function()
+    name: function()
     {
-        return this._path;
+        return this._name;
     },
 
     /**
      * @return {string}
      */
-    name: function()
+    parentPath: function()
     {
-        return this._path[this._path.length - 1];
+        return this._parentPath;
+    },
+
+    /**
+     * @return {string}
+     */
+    path: function()
+    {
+        return this._parentPath ? this._parentPath + "/" + this._name : this._name;
+    },
+
+    /**
+     * @return {string}
+     */
+    fullName: function()
+    {
+        return this._project.displayName() + "/" + this.path();
     },
 
     /**
@@ -107,7 +125,7 @@ WebInspector.UISourceCode.prototype = {
      */
     displayName: function()
     {
-        var displayName = this.name() || (this._project.displayName() + "/" + this._path.join("/"));
+        var displayName = this.name() || this.fullName();
         return displayName.trimEnd(100);
     },
 
@@ -116,11 +134,12 @@ WebInspector.UISourceCode.prototype = {
      */
     uri: function()
     {
+        var path = this.path();
         if (!this._project.id())
-            return this._path.join("/");
-        if (!this._path.length)
+            return path;
+        if (!path)
             return this._project.id();
-        return this._project.id() + "/" + this._path.join("/");
+        return this._project.id() + "/" + path;
     },
 
     /**
@@ -164,10 +183,9 @@ WebInspector.UISourceCode.prototype = {
      */
     _updateName: function(name)
     {
-        if (!this._path.length)
-            return;
         var oldURI = this.uri();
-        this._path[this._path.length - 1] = name;
+        this._name = name;
+        // FIXME: why?
         this._url = name;
         this._originURL = name;
         this.dispatchEventToListeners(WebInspector.UISourceCode.Events.TitleChanged, oldURI);
@@ -808,7 +826,7 @@ WebInspector.UILocation.prototype = {
      */
     linkText: function()
     {
-        var linkText = this.uiSourceCode.name() || (this.uiSourceCode.project().displayName() + "/" + this.uiSourceCode.path().join("/"));
+        var linkText = this.uiSourceCode.name() || this.uiSourceCode.fullName();
         if (typeof this.lineNumber === "number")
             linkText += ":" + (this.lineNumber + 1);
         return linkText;
