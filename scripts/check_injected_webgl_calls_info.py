@@ -63,11 +63,14 @@ def parse_idl_file(idlFileName):
                 continue
             argument_types.append(match.group(1).strip())
 
-        # Special case for texParameterf/texParameteri: treat the third argument as GLenum regardless of the IDL specification:
+        # Special case for texParameterf/texParameteri and getTexParameter: treat the parameter as GLenum regardless of the IDL specification:
         #     void texParameterf(GLenum target, GLenum pname, GLfloat param)
         #     void texParameteri(GLenum target, GLenum pname, GLint param)
+        #     any getTexParameter(GLenum target, GLenum pname)
         if function_name == "texParameterf" or function_name == "texParameteri":
             argument_types[2] = "GLenum"
+        if function_name == "getTexParameter":
+            return_type = "GLenum"
 
         parsed_webgl_calls.append({"function_name": function_name, "return_type": return_type, "argument_types": argument_types})
 
@@ -79,7 +82,6 @@ def generate_json_lines(parsed_webgl_calls):
     hints = {
         "blendFunc": ["ZERO", "ONE"],
         "blendFuncSeparate": ["ZERO", "ONE"],
-        "getParameter": ["ZERO", "ONE"],
         "stencilOp": ["ZERO", "ONE"],
         "stencilOpSeparate": ["ZERO", "ONE"],
         "drawArrays": ["POINTS", "LINES"],
