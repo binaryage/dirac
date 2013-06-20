@@ -125,7 +125,6 @@ WebInspector.CodeMirrorTextEditor.SyntaxHighlightLineLengthThreshold = 1000;
 WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
-
     undo: function()
     {
         this._codeMirror.undo();
@@ -575,8 +574,10 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     markAndRevealRange: function(range)
     {
-        if (range)
-            this.setSelection(range);
+        if (!range)
+            return;
+        this.revealLine(range.startLine);
+        this.setSelection(range);
     },
 
     /**
