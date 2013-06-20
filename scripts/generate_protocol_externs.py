@@ -149,6 +149,8 @@ Protocol.Error;
                             params.append(in_param["name"])
                             output_file.write(" * @param {%s} %s\n" % (param_type(domain_name, in_param), in_param["name"]))
                 returns = ["?Protocol.Error"]
+                if ("error" in command):
+                    returns.append("%s=" % param_type(domain_name, command["error"]))
                 if ("returns" in command):
                     for out_param in command["returns"]:
                         if ("optional" in out_param):

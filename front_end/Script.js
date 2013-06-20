@@ -143,10 +143,11 @@ WebInspector.Script.prototype = {
         /**
          * @this {WebInspector.Script}
          * @param {?Protocol.Error} error
+         * @param {DebuggerAgent.SetScriptSourceError=} errorData
          * @param {Array.<DebuggerAgent.CallFrame>=} callFrames
          * @param {Object=} debugData
          */
-        function didEditScriptSource(error, callFrames, debugData)
+        function didEditScriptSource(error, errorData, callFrames, debugData)
         {
             // FIXME: support debugData.stack_update_needs_step_in flag by calling WebInspector.debugger_model.callStackModified
             if (!error)

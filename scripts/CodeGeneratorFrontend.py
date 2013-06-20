@@ -269,8 +269,12 @@ class Generator:
                 backend_js_reply_param_list.append("\"%s\"" % json_return_name)
 
         js_reply_list = "[%s]" % ", ".join(backend_js_reply_param_list)
+        if "error" in json_command:
+            has_error_data_param = "true"
+        else:
+            has_error_data_param = "false"
 
-        Generator.backend_js_domain_initializer_list.append("InspectorBackend.registerCommand(\"%s.%s\", [%s], %s);\n" % (domain_name, json_command_name, js_parameters_text, js_reply_list))
+        Generator.backend_js_domain_initializer_list.append("InspectorBackend.registerCommand(\"%s.%s\", [%s], %s, %s);\n" % (domain_name, json_command_name, js_parameters_text, js_reply_list, has_error_data_param))
 
 Generator.go()
 
