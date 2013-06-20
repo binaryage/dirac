@@ -100,3 +100,31 @@
 .canvas-replay-next-draw .glyph {
     -webkit-mask-position: -128px -72px;
 }
+
+.canvas-function-name {
+}
+
+.canvas-formatted-resource {
+}
+
+/* Keep in sync with "console-formatted-*" CSS styles. */
+.canvas-formatted-object,
+.canvas-formatted-node,
+.canvas-formatted-array {
+    color: #222;
+}
+.canvas-formatted-number {
+    color: rgb(28, 0, 207);
+}
+.canvas-formatted-string,
+.canvas-formatted-regexp {
+    color: rgb(196, 26, 22);
+}
+.canvas-formatted-null,
+.canvas-formatted-undefined {
+    color: rgb(128, 128, 128);
+}
+.data-grid:focus tr.selected .canvas-call-argument,
+.data-grid:focus tr.selected .canvas-formatted-string {
+    color: inherit !important;
+}

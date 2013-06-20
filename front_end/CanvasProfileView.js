@@ -450,9 +450,11 @@ WebInspector.CanvasProfileView.prototype = {
      */
     _createCallNode: function(index, call)
     {
+        var callViewElement = document.createElement("div");
+
         var data = {};
         data[0] = index + 1;
-        data[1] = call.functionName || "context." + call.property;
+        data[1] = callViewElement;
         data[2] = "";
         if (call.sourceURL) {
             // FIXME(62725): stack trace line/column numbers are one-based.
@@ -461,22 +463,56 @@ WebInspector.CanvasProfileView.prototype = {
             data[2] = this._linkifier.linkifyLocation(call.sourceURL, lineNumber, columnNumber);
         }
 
-        if (call.arguments) {
-            var args = call.arguments.map(function(argument) {
-                return argument.description;
-            });
-            data[1] += "(" + args.join(", ") + ")";
-        } else
-            data[1] += " = " + call.value.description;
+        callViewElement.createChild("span", "canvas-function-name").textContent = call.functionName || "context." + call.property;
 
-        if (typeof call.result !== "undefined")
-            data[1] += " => " + call.result.description;
+        if (call.arguments) {
+            callViewElement.createTextChild("(");
+            for (var i = 0, n = call.arguments.length; i < n; ++i) {
+                var argument = call.arguments[i];
+                if (i)
+                    callViewElement.createTextChild(", ");
+                this._createCallArgumentChild(callViewElement, argument).argumentIndex = i;
+            }
+            callViewElement.createTextChild(")");
+        } else if (typeof call.value !== "undefined") {
+            callViewElement.createTextChild(" = ");
+            this._createCallArgumentChild(callViewElement, call.value);
+        }
+
+        if (typeof call.result !== "undefined") {
+            callViewElement.createTextChild(" => ");
+            this._createCallArgumentChild(callViewElement, call.result);
+        }
 
         var node = new WebInspector.DataGridNode(data);
         node.index = index;
         node.selectable = true;
         node.call = call;
         return node;
+    },
+
+    /**
+     * @param {!Element} parentElement
+     * @param {CanvasAgent.CallArgument} callArgument
+     * @return {!Element}
+     */
+    _createCallArgumentChild: function(parentElement, callArgument)
+    {
+        var element = parentElement.createChild("span", "canvas-call-argument");
+        if (callArgument.type === "string") {
+            element.createTextChild("\"");
+            element.createChild("span", "canvas-formatted-string").textContent = callArgument.description.trimMiddle(150);
+            element.createTextChild("\"");
+        } else {
+            if (callArgument.subtype || callArgument.type)
+                element.addStyleClass("canvas-formatted-" + (callArgument.subtype || callArgument.type));
+            element.textContent = callArgument.description;
+        }
+        if (callArgument.resourceId) {
+            element.addStyleClass("canvas-formatted-resource");
+            element.resourceId = callArgument.resourceId;
+        }
+        return element;
     },
 
     _flattenSingleFrameNode: function()
