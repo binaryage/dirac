@@ -102,7 +102,7 @@ WebInspector.FlameChart.Calculator.prototype = {
 
     formatTime: function(value)
     {
-        return Number.secondsToString((value + this._minimumBoundaries) / 1000);
+        return WebInspector.UIString("%s\u2009ms", Number.withThousandsSeparator(Math.round(value + this._minimumBoundaries)));
     },
 
     maximumBoundary: function()
