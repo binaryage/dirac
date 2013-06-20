@@ -426,7 +426,7 @@ WebInspector.ConsoleView.prototype = {
                         anchor = visibleMessage.toMessageElement();
                 } else {
                     visibleMessage.willHide();
-                    visibleMessage.toMessageElement().removeSelf();
+                    visibleMessage.toMessageElement().remove();
                 }
             } else {
                 if (this._filter.shouldBeVisible(sourceMessage)) {

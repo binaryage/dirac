@@ -476,7 +476,7 @@ WebInspector.OverviewGrid.WindowSelector.prototype = {
     _close: function(position)
     {
         position = Math.max(0, Math.min(position, this._width));
-        this._windowSelector.parentNode.removeChild(this._windowSelector);
+        this._windowSelector.remove();
         return this._startPosition < position ? {start: this._startPosition, end: position} : {start: position, end: this._startPosition};
     },
 

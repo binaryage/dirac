@@ -1277,7 +1277,7 @@ WebInspector.TextEditorGutterChunk.prototype = {
             parentElement.insertBefore(lineRow, this.element);
             this._expandedLineRows.push(lineRow);
         }
-        parentElement.removeChild(this.element);
+        this.element.remove();
         this._chunkedPanel._syncLineHeightListener(this._expandedLineRows[0]);
 
         this._chunkedPanel.endDomUpdates();
@@ -1307,7 +1307,7 @@ WebInspector.TextEditorGutterChunk.prototype = {
                     elementInserted = true;
                     parentElement.insertBefore(this.element, lineRow);
                 }
-                parentElement.removeChild(lineRow);
+                lineRow.remove();
             }
             this._chunkedPanel._cachedRows.push(lineRow);
         }
@@ -3265,7 +3265,7 @@ WebInspector.TextEditorMainChunk.prototype = {
             parentElement.insertBefore(lineRow, this.element);
             this._expandedLineRows.push(lineRow);
         }
-        parentElement.removeChild(this.element);
+        this.element.remove();
         this._chunkedPanel._paintLines(this.startLine, this.startLine + this.linesCount);
 
         this._chunkedPanel.endDomUpdates();
@@ -3291,7 +3291,7 @@ WebInspector.TextEditorMainChunk.prototype = {
                     elementInserted = true;
                     parentElement.insertBefore(this.element, lineRow);
                 }
-                parentElement.removeChild(lineRow);
+                lineRow.remove();
             }
             this._chunkedPanel._releaseLinesHighlight(lineRow);
         }

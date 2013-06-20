@@ -767,8 +767,7 @@ WebInspector.StylesSidebarPane.prototype = {
             if (index === -1)
                 continue;
             sections.splice(index, 1);
-            if (section.element.parentNode)
-                section.element.parentNode.removeChild(section.element);
+            section.element.remove();
         }
     },
 

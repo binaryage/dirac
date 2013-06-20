@@ -363,7 +363,7 @@ WebInspector.DOMBreakpointsSidebarPane.Proxy = function(pane, panel)
     this._wrappedPane = pane;
     this._panel = panel;
 
-    this.bodyElement.removeSelf();
+    this.bodyElement.remove();
     this.bodyElement = this._wrappedPane.bodyElement;
 }
 

@@ -810,8 +810,7 @@ WebInspector.ElementsTreeElement.prototype = {
         {
             switch (entry.type) {
                 case "added":
-                    if (entry.node.parentElement)
-                        entry.node.parentElement.removeChild(entry.node);
+                    entry.node.remove();
                     break;
                 case "changed":
                     entry.node.textContent = entry.oldText;
@@ -1619,7 +1618,7 @@ WebInspector.ElementsTreeElement.prototype = {
         }
 
         if (!attributeName.trim() && !newText.trim()) {
-            element.removeSelf();
+            element.remove();
             moveToNextAttributeIfNeeded.call(this);
             return;
         }
@@ -1791,8 +1790,8 @@ WebInspector.ElementsTreeElement.prototype = {
 
     _updateDecorations: function()
     {
-        if (this._decoratorElement && this._decoratorElement.parentElement)
-            this._decoratorElement.parentElement.removeChild(this._decoratorElement);
+        if (this._decoratorElement)
+            this._decoratorElement.remove();
         this._decoratorElement = this._createDecoratorElement();
         if (this._decoratorElement && this.listItemElement)
             this.listItemElement.insertBefore(this._decoratorElement, this.listItemElement.firstChild);

@@ -473,7 +473,7 @@ WebInspector.ToolbarDropdown.prototype = {
         if (!this.visible)
             return;
         this._arrow.removeStyleClass("dropdown-visible");
-        this.element.parentNode.removeChild(this.element);
+        this.element.remove();
         this._contentElement.removeChildren();
     },
 

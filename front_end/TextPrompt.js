@@ -127,12 +127,12 @@ WebInspector.TextPrompt.prototype = {
     {
         this._removeFromElement();
         this.proxyElement.parentElement.insertBefore(this._element, this.proxyElement);
-        this.proxyElement.parentElement.removeChild(this.proxyElement);
+        this.proxyElement.remove();
+        delete this._proxyElement;
         this._element.removeStyleClass("text-prompt");
         this._element.removeEventListener("keydown", this._boundOnKeyDown, false);
         this._element.removeEventListener("mousewheel", this._boundOnMouseWheel, false);
         this._element.removeEventListener("selectstart", this._boundSelectStart, false);
-        delete this._proxyElement;
         WebInspector.restoreFocusFromElement(this._element);
     },
 
@@ -320,8 +320,7 @@ WebInspector.TextPrompt.prototype = {
         if (!this.autoCompleteElement)
             return;
 
-        if (this.autoCompleteElement.parentNode)
-            this.autoCompleteElement.parentNode.removeChild(this.autoCompleteElement);
+        this.autoCompleteElement.remove();
         delete this.autoCompleteElement;
 
         if (!this._userEnteredRange || !this._userEnteredText)
@@ -402,7 +401,7 @@ WebInspector.TextPrompt.prototype = {
         anchorElement.textContent = "\u200B";
         textRange.insertNode(anchorElement);
         var box = anchorElement.boxInWindow(window);
-        anchorElement.parentElement.removeChild(anchorElement);
+        anchorElement.remove();
         selection.removeAllRanges();
         selection.addRange(rangeCopy);
         return box;
@@ -565,8 +564,8 @@ WebInspector.TextPrompt.prototype = {
         var finalSelectionRange = document.createRange();
         var completionTextNode = document.createTextNode(completionText);
         this._userEnteredRange.insertNode(completionTextNode);
-        if (this.autoCompleteElement && this.autoCompleteElement.parentNode) {
-            this.autoCompleteElement.parentNode.removeChild(this.autoCompleteElement);
+        if (this.autoCompleteElement) {
+            this.autoCompleteElement.remove();
             delete this.autoCompleteElement;
         }
 

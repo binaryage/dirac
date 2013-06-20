@@ -483,7 +483,7 @@ WebInspector.OverridesSettingsTab = function()
     WebInspector.SettingsTab.call(this, WebInspector.UIString("Overrides"), "overrides-tab-content");
     this._view = new WebInspector.OverridesView();
     this.containerElement.parentElement.appendChild(this._view.containerElement);
-    this.containerElement.removeSelf();
+    this.containerElement.remove();
     this.containerElement = this._view.containerElement;
 }
 
@@ -673,8 +673,8 @@ WebInspector.WorkspaceSettingsTab.prototype = {
     _resetFileMappings: function()
     {
 
-        if (this._fileMappingsSection && this._fileMappingsSection.parentElement) {
-            this._fileMappingsSection.parentElement.removeChild(this._fileMappingsSection);
+        if (this._fileMappingsSection) {
+            this._fileMappingsSection.remove();
             delete this._fileMappingsSection;
             delete this._fileMappingsListContainer;
             delete this._fileMappingsList;
@@ -689,8 +689,8 @@ WebInspector.WorkspaceSettingsTab.prototype = {
 
         var entries = WebInspector.isolatedFileSystemManager.mapping().mappingEntries(this._selectedFileSystemPath());
 
-        if (this._fileMappingsList && this._fileMappingsList.element.parentElement)
-            this._fileMappingsList.element.parentElement.removeChild(this._fileMappingsList.element);
+        if (this._fileMappingsList)
+            this._fileMappingsList.element.remove();
 
         this._fileMappingsList = new WebInspector.EditableSettingsList(["url", "path"], this._fileMappingValuesProvider.bind(this), this._removeFileMapping.bind(this), this._fileMappingValidate.bind(this), this._fileMappingEdit.bind(this));
         this._fileMappingsList.element.addStyleClass("file-mappings-list");
@@ -905,7 +905,7 @@ WebInspector.TetheringSettingsTab.prototype = {
 
         function removeMappingClicked()
         {
-            mappingRow.removeSelf();
+            mappingRow.remove();
             if (!this._paragraphElement.querySelector(".workspace-settings-row"))
                 this._addMappingRow();
             this._save();
@@ -1201,9 +1201,7 @@ WebInspector.SettingsList.prototype = {
      */
     removeItem: function(id)
     {
-        var listItem = this._listItems[id];
-        if (listItem.parentElement)
-            listItem.parentElement.removeChild(listItem);
+        this._listItems[id].remove();
         delete this._listItems[id];
         this._ids.remove(id);
         if (id === this._selectedId) {

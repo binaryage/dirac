@@ -160,7 +160,7 @@ WebInspector.SuggestBox.prototype = {
         if (!this.visible())
             return;
 
-        this._element.parentElement.removeChild(this._element);
+        this._element.remove();
         delete this._selectedElement;
     },
 

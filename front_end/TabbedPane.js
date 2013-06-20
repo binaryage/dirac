@@ -322,7 +322,7 @@ WebInspector.TabbedPane.prototype = {
         } else {
             this._contentElement.removeStyleClass("has-no-tabs");
             if (this._noTabsMessageElement) {
-                this._noTabsMessageElement.removeSelf();
+                this._noTabsMessageElement.remove();
                 delete this._noTabsMessageElement;
             }
         }
@@ -467,7 +467,7 @@ WebInspector.TabbedPane.prototype = {
 
         // Nuke elements from the UI
         for (var i = 0; i < measuringTabElements.length; ++i)
-            measuringTabElements[i].parentElement.removeChild(measuringTabElements[i]);
+            measuringTabElements[i].remove();
 
         // Combine the results.
         var measuredWidths = [];

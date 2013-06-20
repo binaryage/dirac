@@ -145,8 +145,7 @@ WebInspector.GlassPane.prototype = {
     {
         delete WebInspector._glassPane;
         WebInspector.inspectorView.focus();
-        if (this.element.parentElement)
-            this.element.parentElement.removeChild(this.element);
+        this.element.remove();
     }
 }
 
@@ -1003,8 +1002,7 @@ WebInspector.revertDomChanges = function(domChanges)
         var entry = domChanges[i];
         switch (entry.type) {
         case "added":
-            if (entry.node.parentElement)
-                entry.node.parentElement.removeChild(entry.node);
+            entry.node.remove();
             break;
         case "changed":
             entry.node.textContent = entry.oldText;

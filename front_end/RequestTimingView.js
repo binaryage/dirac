@@ -71,7 +71,7 @@ WebInspector.RequestTimingView.prototype = {
     _refresh: function()
     {
         if (this._tableElement)
-            this._tableElement.parentElement.removeChild(this._tableElement);
+            this._tableElement.remove();
 
         this._tableElement = WebInspector.RequestTimingView.createTimingTable(this._request);
         this.element.appendChild(this._tableElement);

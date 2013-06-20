@@ -153,7 +153,7 @@ var WebInspector = {
     _removeDrawerView: function()
     {
         if (this._drawerStatusBarHeader) {
-            this._drawerStatusBarHeader.removeSelf();
+            this._drawerStatusBarHeader.remove();
             if (this._drawerStatusBarHeader.onclose)
                 this._drawerStatusBarHeader.onclose();
             delete this._drawerStatusBarHeader;

@@ -273,8 +273,7 @@ WebInspector.RevisionHistoryTreeElement.prototype = {
 
     oncollapse: function()
     {
-        if (this._revertElement.parentElement)
-            this._revertElement.parentElement.removeChild(this._revertElement);
+        this._revertElement.remove();
     },
 
     /**

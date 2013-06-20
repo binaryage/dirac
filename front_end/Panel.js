@@ -80,12 +80,12 @@ WebInspector.Panel.prototype = {
 
     willHide: function()
     {
-        if (this._statusBarItemContainer && this._statusBarItemContainer.parentNode)
-            this._statusBarItemContainer.parentNode.removeChild(this._statusBarItemContainer);
+        if (this._statusBarItemContainer)
+            this._statusBarItemContainer.remove();
         delete this._statusBarItemContainer;
 
-        if (this._statusBarTextElement && this._statusBarTextElement.parentNode)
-            this._statusBarTextElement.parentNode.removeChild(this._statusBarTextElement);
+        if (this._statusBarTextElement)
+            this._statusBarTextElement.remove();
         delete this._statusBarTextElement;
     },
 
