@@ -35,7 +35,6 @@
     overflow-y: auto;
     overflow-x: hidden;
     scrollbar-width: 11px;
-    -webkit-flex: 1;
     margin: 8px;
     padding: 0 4px;
     font-size: 13px;
