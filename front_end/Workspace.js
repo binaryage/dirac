@@ -207,7 +207,7 @@ WebInspector.Project.prototype = {
 
         this._uiSourceCodesMap[uiSourceCode.path()] = {uiSourceCode: uiSourceCode, index: this._uiSourceCodesList.length};
         this._uiSourceCodesList.push(uiSourceCode);
-        this._workspace.dispatchEventToListeners(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, uiSourceCode);
+        this._workspace.dispatchEventToListeners(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCode);
     },
 
     _fileRemoved: function(event)
@@ -224,7 +224,7 @@ WebInspector.Project.prototype = {
         movedEntry.index = entry.index;
         this._uiSourceCodesList.splice(this._uiSourceCodesList.length - 1, 1);
         delete this._uiSourceCodesMap[path];
-        this._workspace.dispatchEventToListeners(WebInspector.UISourceCodeProvider.Events.UISourceCodeRemoved, entry.uiSourceCode);
+        this._workspace.dispatchEventToListeners(WebInspector.Workspace.Events.UISourceCodeRemoved, entry.uiSourceCode);
     },
 
     _reset: function()
@@ -370,7 +370,6 @@ WebInspector.projectTypes = {
 
 /**
  * @constructor
- * @implements {WebInspector.UISourceCodeProvider}
  * @extends {WebInspector.Object}
  * @param {WebInspector.FileSystemMapping} fileSystemMapping
  */
@@ -382,6 +381,8 @@ WebInspector.Workspace = function(fileSystemMapping)
 }
 
 WebInspector.Workspace.Events = {
+    UISourceCodeAdded: "UISourceCodeAdded",
+    UISourceCodeRemoved: "UISourceCodeRemoved",
     UISourceCodeContentCommitted: "UISourceCodeContentCommitted",
     ProjectWillReset: "ProjectWillReset"
 }

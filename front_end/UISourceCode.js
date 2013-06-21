@@ -811,26 +811,6 @@ WebInspector.UISourceCode.prototype = {
 }
 
 /**
- * @interface
- * @extends {WebInspector.EventTarget}
- */
-WebInspector.UISourceCodeProvider = function()
-{
-}
-
-WebInspector.UISourceCodeProvider.Events = {
-    UISourceCodeAdded: "UISourceCodeAdded",
-    UISourceCodeRemoved: "UISourceCodeRemoved"
-}
-
-WebInspector.UISourceCodeProvider.prototype = {
-    /**
-     * @return {Array.<WebInspector.UISourceCode>}
-     */
-    uiSourceCodes: function() {},
-}
-
-/**
  * @constructor
  * @param {WebInspector.UISourceCode} uiSourceCode
  * @param {number} lineNumber

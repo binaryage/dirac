@@ -601,7 +601,7 @@ WebInspector.SelectUISourceCodeDialog = function(defaultScores)
     for (var i = 0; i < projects.length; ++i)
         this._uiSourceCodes = this._uiSourceCodes.concat(projects[i].uiSourceCodes().filter(this.filterUISourceCode.bind(this)));
     this._defaultScores = defaultScores;
-    WebInspector.workspace.addEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
+    WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
 }
 
 WebInspector.SelectUISourceCodeDialog.prototype = {
@@ -824,7 +824,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
 
     dispose: function()
     {
-        WebInspector.workspace.removeEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
+        WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
     },
 
     __proto__: WebInspector.SelectionDialogContentProvider.prototype
