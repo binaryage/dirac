@@ -434,7 +434,10 @@ WebInspector.OverviewGrid.Window.prototype = {
         var right = this.windowRight;
         var windowSize = right - left;
         var newWindowSize = factor * windowSize;
-
+        if (newWindowSize > 1) {
+            newWindowSize = 1;
+            factor = newWindowSize / windowSize;
+        }
         left = reference + (left - reference) * factor;
         left = Number.constrain(left, 0, 1 - newWindowSize);
 
