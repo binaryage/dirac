@@ -917,7 +917,7 @@ WebInspector.TetheringSettingsTab.prototype = {
     _save: function()
     {
         var portForwardings = [];
-        for (var rowElement = this._paragraphElement.firstChild.nextSibling; rowElement; rowElement = rowElement.nextSibling) {
+        for (var rowElement = this._paragraphElement.firstChild; rowElement; rowElement = rowElement.nextSibling) {
             var portElement = rowElement.firstChild;
             var locationElement = portElement.nextSibling;
             var port = this._validatePort(portElement);
