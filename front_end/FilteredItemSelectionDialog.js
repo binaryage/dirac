@@ -190,41 +190,60 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         var filterRegex = query ? WebInspector.FilteredItemSelectionDialog._createSearchRegex(query) : null;
 
         var oldSelectedAbsoluteIndex = this._selectedIndexInFiltered ? this._filteredItems[this._selectedIndexInFiltered] : null;
-        this._filteredItems = [];
+        var filteredItems = [];
         this._selectedIndexInFiltered = 0;
 
-        var cachedKeys = new Array(this._delegate.itemCount());
-        var scores = new Array(this._delegate.itemCount());
+        var bestScores = [];
+        var bestItems = [];
+        var bestItemsToCollect = 100;
+        var minBestScore = 0;
+        var overflowItems = [];
 
         scoreItems.call(this, 0);
 
+        function compareIntegers(a, b)
+        {
+            return /** @type {number} */ (b) - /** @type {number} */ (a);
+        }
+
         function scoreItems(fromIndex)
         {
-            const maxWorkItems = 1000;
+            var maxWorkItems = 1000;
             var workDone = 0;
             for (var i = fromIndex; i < this._delegate.itemCount() && workDone < maxWorkItems; ++i) {
-                var key = this._delegate.itemKeyAt(i);
-                if (filterRegex && !filterRegex.test(key))
+                // Filter out non-matching items quickly.
+                if (filterRegex && !filterRegex.test(this._delegate.itemKeyAt(i)))
                     continue;
-                cachedKeys[i] = key;
-                this._filteredItems.push(i);
-                scores[i] = this._delegate.itemScoreAt(i, query);
+
+                // Score item.
+                var score = this._delegate.itemScoreAt(i, query);
                 if (query)
                     workDone++;
+
+                // Find its index in the scores array (earlier elements have bigger scores).
+                if (score > minBestScore || bestScores.length < bestItemsToCollect) {
+                    var index = insertionIndexForObjectInListSortedByFunction(score, bestScores, compareIntegers, true);
+                    bestScores.splice(index, 0, score);
+                    bestItems.splice(index, 0, i);
+                    if (bestScores.length > bestItemsToCollect) {
+                        // Best list is too large -> drop last elements.
+                        overflowItems.push(bestItems.peekLast());
+                        bestScores.length = bestItemsToCollect;
+                        bestItems.length = bestItemsToCollect;
+                    }
+                    minBestScore = /** @type {number} */ (bestScores.peekLast());
+                } else
+                    filteredItems.push(i);
             }
 
+            // Process everything in chunks.
             if (i < this._delegate.itemCount()) {
                 this._scoringTimer = setTimeout(scoreItems.bind(this, i), 0);
                 return;
             }
-
             delete this._scoringTimer;
-            const numberOfItemsToSort = 100;
-            if (this._filteredItems.length > numberOfItemsToSort)
-                this._filteredItems.sortRange(compareFunction.bind(this), 0, this._filteredItems.length - 1, numberOfItemsToSort);
-            else
-                this._filteredItems.sort(compareFunction.bind(this));
 
+            this._filteredItems = bestItems.concat(overflowItems).concat(filteredItems);
             for (var i = 0; i < this._filteredItems.length; ++i) {
                 if (this._filteredItems[i] === oldSelectedAbsoluteIndex) {
                     this._selectedIndexInFiltered = i;
@@ -235,21 +254,6 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
             if (!query)
                 this._selectedIndexInFiltered = 0;
             this._updateSelection(this._selectedIndexInFiltered, false);
-        }
-
-        function compareFunction(index1, index2)
-        {
-            if (scores) {
-                var score1 = scores[index1];
-                var score2 = scores[index2];
-                if (score1 > score2)
-                    return -1;
-                if (score1 < score2)
-                    return 1;
-            }
-            var key1 = cachedKeys[index1];
-            var key2 = cachedKeys[index2];
-            return key1.compareTo(key2) || (index2 - index1);
         }
     },
 
