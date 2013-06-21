@@ -121,6 +121,16 @@ WebInspector.ExtensionServer.prototype = {
     },
 
     /**
+     * @param {string} type
+     * @return {boolean}
+     */
+    hasSubscribers: function(type)
+    {
+        return !!this._subscribers[type];
+    },
+
+    /**
+     * @param {string} type
      * @param {...*} vararg
      */
     _postNotification: function(type, vararg)

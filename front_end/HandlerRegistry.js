@@ -144,11 +144,8 @@ WebInspector.HandlerRegistry.prototype = {
         {
             if (contentProvider instanceof WebInspector.UISourceCode) {
                 var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (contentProvider);
-                if (uiSourceCode.isDirty()) {
-                    doSave(forceSaveAs, uiSourceCode.workingCopy());
-                    uiSourceCode.commitWorkingCopy(function() { });
-                    return;
-                }
+                uiSourceCode.saveToFileSystem(forceSaveAs);
+                return;
             }
             contentProvider.requestContent(doSave.bind(this, forceSaveAs));
         }

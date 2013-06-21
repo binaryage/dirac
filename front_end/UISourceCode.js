@@ -73,6 +73,7 @@ WebInspector.UISourceCode.Events = {
     WorkingCopyChanged: "WorkingCopyChanged",
     WorkingCopyCommitted: "WorkingCopyCommitted",
     TitleChanged: "TitleChanged",
+    SavedStateUpdated: "SavedStateUpdated",
     ConsoleMessageAdded: "ConsoleMessageAdded",
     ConsoleMessageRemoved: "ConsoleMessageRemoved",
     ConsoleMessagesCleared: "ConsoleMessagesCleared",
@@ -330,13 +331,51 @@ WebInspector.UISourceCode.prototype = {
         }
 
         this._innerResetWorkingCopy();
+        this._hasCommittedChanges = true;
         this.dispatchEventToListeners(WebInspector.UISourceCode.Events.WorkingCopyCommitted);
-        if (this._url && WebInspector.fileManager.isURLSaved(this._url)) {
-            WebInspector.fileManager.save(this._url, this._content, false);
-            WebInspector.fileManager.close(this._url);
-        }
+        if (this._url && WebInspector.fileManager.isURLSaved(this._url))
+            this._saveURLWithFileManager(false, this._content);
         if (shouldSetContentInProject)
             this._project.setFileContent(this, this._content, function() { });
+    },
+
+    /**
+     * @param {boolean} forceSaveAs
+     */
+    _saveURLWithFileManager: function(forceSaveAs, content)
+    {
+        WebInspector.fileManager.save(this._url, content, forceSaveAs, callback.bind(this));
+        WebInspector.fileManager.close(this._url);
+
+        function callback()
+        {
+            this._savedWithFileManager = true;
+            this.dispatchEventToListeners(WebInspector.UISourceCode.Events.SavedStateUpdated);
+        }
+    },
+
+    /**
+     * @param {boolean} forceSaveAs
+     */
+    saveToFileSystem: function(forceSaveAs)
+    {
+        if (this.isDirty()) {
+            this._saveURLWithFileManager(forceSaveAs, this.workingCopy());
+            this.commitWorkingCopy(function() { });
+            return;
+        }
+        this.requestContent(this._saveURLWithFileManager.bind(this, forceSaveAs));
+    },
+
+    /**
+     * @return {boolean}
+     */
+    hasUnsavedCommittedChanges: function()
+    {
+        var mayHavePersistingExtensions = WebInspector.extensionServer.hasSubscribers(WebInspector.extensionAPI.Events.ResourceContentCommitted);
+        if (this._savedWithFileManager || this.project().canSetFileContent() || mayHavePersistingExtensions)
+            return false;
+        return !!this._hasCommittedChanges;
     },
 
     /**

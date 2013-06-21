@@ -410,6 +410,7 @@ WebInspector.TabbedEditorContainer.prototype = {
         uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.TitleChanged, this._uiSourceCodeTitleChanged, this);
         uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._uiSourceCodeWorkingCopyChanged, this);
         uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._uiSourceCodeWorkingCopyCommitted, this);
+        uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.SavedStateUpdated, this._uiSourceCodeSavedStateUpdated, this);
         uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.FormattedChanged, this._uiSourceCodeFormattedChanged, this);
     },
 
@@ -421,6 +422,7 @@ WebInspector.TabbedEditorContainer.prototype = {
         uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.TitleChanged, this._uiSourceCodeTitleChanged, this);
         uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._uiSourceCodeWorkingCopyChanged, this);
         uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._uiSourceCodeWorkingCopyCommitted, this);
+        uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.SavedStateUpdated, this._uiSourceCodeSavedStateUpdated, this);
         uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.FormattedChanged, this._uiSourceCodeFormattedChanged, this);
     },
 
@@ -433,6 +435,10 @@ WebInspector.TabbedEditorContainer.prototype = {
         if (tabId) {
             var title = this._titleForFile(uiSourceCode);
             this._tabbedPane.changeTabTitle(tabId, title);
+            if (uiSourceCode.hasUnsavedCommittedChanges())
+                this._tabbedPane.setTabIcon(tabId, "editor-container-unsaved-committed-changes-icon", WebInspector.UIString("Changes to this file were not saved to file system."));
+            else
+                this._tabbedPane.setTabIcon(tabId, "");
         }
     },
 
@@ -450,6 +456,12 @@ WebInspector.TabbedEditorContainer.prototype = {
     },
 
     _uiSourceCodeWorkingCopyCommitted: function(event)
+    {
+        var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.target);
+        this._updateFileTitle(uiSourceCode);
+    },
+
+    _uiSourceCodeSavedStateUpdated: function(event)
     {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.target);
         this._updateFileTitle(uiSourceCode);

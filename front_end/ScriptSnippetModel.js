@@ -132,13 +132,12 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {string} name
      * @param {string} newContent
      */
-    _setScriptSnippetContent: function(uiSourceCode, newContent)
+    _setScriptSnippetContent: function(name, newContent)
     {
-        var snippetId = this._snippetIdForUISourceCode.get(uiSourceCode);
-        var snippet = this._snippetStorage.snippetForId(snippetId);
+        var snippet = this._snippetStorage.snippetForName(name);
         snippet.content = newContent;
     },
 
@@ -414,7 +413,6 @@ WebInspector.SnippetScriptFile = function(scriptSnippetModel, uiSourceCode)
     this._scriptSnippetModel = scriptSnippetModel;
     this._uiSourceCode = uiSourceCode;
     this._hasDivergedFromVM = true;
-    this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
 }
 
@@ -461,11 +459,6 @@ WebInspector.SnippetScriptFile.prototype = {
     setIsDivergingFromVM: function(isDivergingFromVM)
     {
         this._isDivergingFromVM = isDivergingFromVM;
-    },
-
-    _workingCopyCommitted: function()
-    {
-        this._scriptSnippetModel._setScriptSnippetContent(this._uiSourceCode, this._uiSourceCode.workingCopy());
     },
 
     _workingCopyChanged: function()
@@ -618,6 +611,25 @@ WebInspector.SnippetsProjectDelegate.prototype = {
     addSnippet: function(name, contentProvider)
     {
         return this.addContentProvider("", name, name, contentProvider, true, false);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    canSetFileContent: function()
+    {
+        return true;
+    },
+
+    /**
+     * @param {string} path
+     * @param {string} newContent
+     * @param {function(?string)} callback
+     */
+    setFileContent: function(path, newContent, callback)
+    {
+        this._model._setScriptSnippetContent(path, newContent);
+        callback("");
     },
 
     /**

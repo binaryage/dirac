@@ -256,6 +256,18 @@ WebInspector.TabbedPane.prototype = {
 
     /**
      * @param {string} id
+     * @param {string} iconClass
+     * @param {string=} iconTooltip
+     */
+    setTabIcon: function(id, iconClass, iconTooltip)
+    {
+        var tab = this._tabsById[id];
+        tab._setIconClass(iconClass, iconTooltip);
+        this._updateTabElements();
+    },
+
+    /**
+     * @param {string} id
      * @param {string} tabTitle
      */
     changeTabTitle: function(id, tabTitle)
@@ -654,6 +666,31 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
+     * @return {string}
+     */
+    iconClass: function()
+    {
+        return this._iconClass;
+    },
+
+    /**
+     * @param {string} iconClass
+     * @param {string} iconTooltip
+     */
+    _setIconClass: function(iconClass, iconTooltip)
+    {
+        if (iconClass === this._iconClass && iconTooltip === this._iconTooltip)
+            return;
+        this._iconClass = iconClass;
+        this._iconTooltip = iconTooltip;
+        if (this._iconElement)
+            this._iconElement.remove();
+        if (this._iconClass)
+            this._iconElement = this._createIconElement(this._tabElement, this._titleElement);
+        delete this._measuredWidth;
+    },
+
+    /**
      * @return {WebInspector.View}
      */
     get view()
@@ -718,6 +755,16 @@ WebInspector.TabbedPaneTab.prototype = {
         this._delegate = delegate;
     },
 
+    _createIconElement: function(tabElement, titleElement)
+    {
+        var iconElement = document.createElement("span");
+        iconElement.className = "tabbed-pane-header-tab-icon " + this._iconClass;
+        if (this._iconTooltip)
+            iconElement.title = this._iconTooltip;
+        tabElement.insertBefore(iconElement, titleElement);
+        return iconElement;
+    },
+
     /**
      * @param {boolean} measuring
      */
@@ -731,6 +778,8 @@ WebInspector.TabbedPaneTab.prototype = {
         var titleElement = tabElement.createChild("span", "tabbed-pane-header-tab-title");
         titleElement.textContent = this.title;
         titleElement.title = this.tooltip || "";
+        if (this._iconClass)
+            this._createIconElement(tabElement, titleElement);
         if (!measuring)
             this._titleElement = titleElement;
 

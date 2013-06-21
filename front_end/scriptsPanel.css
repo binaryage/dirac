@@ -320,3 +320,18 @@ a.worker-item:hover {
     margin-top: 20px;
     text-shadow: rgba(255, 255, 255, 0.75) 0 1px 0;
 }
+
+.tabbed-pane-header-tab-icon {
+    width: 13px;
+    height: 10px;
+    margin-top: 3px;
+    float: left;
+    display: block;
+    margin-right: 1px;
+}
+
+.editor-container-unsaved-committed-changes-icon {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    background-position: -202px -107px;
+}
