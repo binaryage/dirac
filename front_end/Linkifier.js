@@ -159,8 +159,10 @@ WebInspector.Linkifier.DefaultFormatter.prototype = {
  */
 WebInspector.Linkifier.DefaultCSSFormatter = function()
 {
-    WebInspector.Linkifier.DefaultFormatter.call(this);
+    WebInspector.Linkifier.DefaultFormatter.call(this, WebInspector.Linkifier.DefaultCSSFormatter.MaxLengthForDisplayedURLs);
 }
+
+WebInspector.Linkifier.DefaultCSSFormatter.MaxLengthForDisplayedURLs = 30;
 
 WebInspector.Linkifier.DefaultCSSFormatter.prototype = {
     /**
