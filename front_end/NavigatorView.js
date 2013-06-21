@@ -720,6 +720,7 @@ WebInspector.NavigatorUISourceCodeTreeNode = function(navigatorView, uiSourceCod
     WebInspector.NavigatorTreeNode.call(this, uiSourceCode.name());
     this._navigatorView = navigatorView;
     this._uiSourceCode = uiSourceCode;
+    this._treeElement = null;
 }
 
 WebInspector.NavigatorUISourceCodeTreeNode.prototype = {

@@ -160,7 +160,7 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.BreakpointsActiveStateChanged, this._breakpointsActiveStateChanged, this);
 
     WebInspector.startBatchUpdate();
-    this._workspace.forEachUISourceCode(this._addUISourceCode.bind(this));
+    this._workspace.uiSourceCodes().forEach(this._addUISourceCode.bind(this));
     WebInspector.endBatchUpdate();
 
     this._workspace.addEventListener(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);

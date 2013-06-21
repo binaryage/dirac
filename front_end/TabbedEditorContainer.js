@@ -63,7 +63,6 @@ WebInspector.TabbedEditorContainer = function(delegate, settingName, placeholder
 
     this._tabIds = new Map();
     this._files = {};
-    this._loadedURIs = {};
 
     this._previouslyViewedFilesSetting = WebInspector.settings.createSetting(settingName, []);
     this._history = WebInspector.TabbedEditorContainer.History.fromObject(this._previouslyViewedFilesSetting.get());
@@ -253,9 +252,8 @@ WebInspector.TabbedEditorContainer.prototype = {
     addUISourceCode: function(uiSourceCode)
     {
         var uri = uiSourceCode.uri();
-        if (this._userSelectedFiles || this._loadedURIs[uri])
+        if (this._userSelectedFiles)
             return;
-        this._loadedURIs[uri] = true;
 
         var index = this._history.index(uri)
         if (index === -1)
@@ -295,7 +293,6 @@ WebInspector.TabbedEditorContainer.prototype = {
         var tabIds = [];
         for (var i = 0; i < uiSourceCodes.length; ++i) {
             var uiSourceCode = uiSourceCodes[i];
-            delete this._loadedURIs[uiSourceCode.uri()];
             var tabId = this._tabIds.get(uiSourceCode);
             if (tabId)
                 tabIds.push(tabId);

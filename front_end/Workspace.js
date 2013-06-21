@@ -148,8 +148,10 @@ WebInspector.workspaceController = null;
  */
 WebInspector.Project = function(workspace, projectDelegate)
 {
-    /** @type {Object.<string, WebInspector.UISourceCode>} */
-    this._uiSourceCodes = {};
+    /** @type {Object.<string, {uiSourceCode: WebInspector.UISourceCode, index: number}>} */
+    this._uiSourceCodesMap = {};
+    /** @type {Array.<WebInspector.UISourceCode>} */
+    this._uiSourceCodesList = [];
     this._workspace = workspace;
     this._projectDelegate = projectDelegate;
     this._displayName = this._projectDelegate.displayName();
@@ -202,7 +204,9 @@ WebInspector.Project.prototype = {
 
         uiSourceCode = new WebInspector.UISourceCode(this, fileDescriptor.parentPath, fileDescriptor.name, fileDescriptor.originURL, fileDescriptor.url, fileDescriptor.contentType, fileDescriptor.isEditable);
         uiSourceCode.isContentScript = fileDescriptor.isContentScript;
-        this._uiSourceCodes[uiSourceCode.path()] = uiSourceCode;
+
+        this._uiSourceCodesMap[uiSourceCode.path()] = {uiSourceCode: uiSourceCode, index: this._uiSourceCodesList.length};
+        this._uiSourceCodesList.push(uiSourceCode);
         this._workspace.dispatchEventToListeners(WebInspector.UISourceCodeProvider.Events.UISourceCodeAdded, uiSourceCode);
     },
 
@@ -212,14 +216,22 @@ WebInspector.Project.prototype = {
         var uiSourceCode = this.uiSourceCode(path);
         if (!uiSourceCode)
             return;
-        delete this._uiSourceCodes[uiSourceCode.path()];
-        this._workspace.dispatchEventToListeners(WebInspector.UISourceCodeProvider.Events.UISourceCodeRemoved, uiSourceCode);
+
+        var entry = this._uiSourceCodesMap[path];
+        var movedUISourceCode = this._uiSourceCodesList[this._uiSourceCodesList.length - 1];
+        this._uiSourceCodesList[entry.index] = movedUISourceCode;
+        var movedEntry = this._uiSourceCodesMap[movedUISourceCode.path()];
+        movedEntry.index = entry.index;
+        this._uiSourceCodesList.splice(this._uiSourceCodesList.length - 1, 1);
+        delete this._uiSourceCodesMap[path];
+        this._workspace.dispatchEventToListeners(WebInspector.UISourceCodeProvider.Events.UISourceCodeRemoved, entry.uiSourceCode);
     },
 
     _reset: function()
     {
         this._workspace.dispatchEventToListeners(WebInspector.Workspace.Events.ProjectWillReset, this);
-        this._uiSourceCodes = {};
+        this._uiSourceCodesMap = {};
+        this._uiSourceCodesList = [];
     },
 
     /**
@@ -228,7 +240,8 @@ WebInspector.Project.prototype = {
      */
     uiSourceCode: function(path)
     {
-        return this._uiSourceCodes[path] || null;
+        var entry = this._uiSourceCodesMap[path];
+        return entry ? entry.uiSourceCode : null;
     },
 
     /**
@@ -237,8 +250,8 @@ WebInspector.Project.prototype = {
      */
     uiSourceCodeForOriginURL: function(originURL)
     {
-        for (var path in this._uiSourceCodes) {
-            var uiSourceCode = this._uiSourceCodes[path];
+        for (var i = 0; i < this._uiSourceCodesList.length; ++i) {
+            var uiSourceCode = this._uiSourceCodesList[i];
             if (uiSourceCode.originURL() === originURL)
                 return uiSourceCode;
         }
@@ -250,16 +263,7 @@ WebInspector.Project.prototype = {
      */
     uiSourceCodes: function()
     {
-        return Object.values(this._uiSourceCodes);
-    },
-
-    /**
-     * @param {function(WebInspector.UISourceCode)} callback
-     */
-    forEachUISourceCode: function(callback)
-    {
-        for (var key in this._uiSourceCodes)
-            callback(this._uiSourceCodes[key]);
+        return this._uiSourceCodesList;
     },
 
     /**
@@ -332,8 +336,8 @@ WebInspector.Project.prototype = {
             }
             var oldPath = uiSourceCode.path();
             var newPath = uiSourceCode.parentPath() ? uiSourceCode.parentPath() + "/" + newName : newName;
-            this._uiSourceCodes[newPath] = this._uiSourceCodes[oldPath];
-            delete this._uiSourceCodes[oldPath];
+            this._uiSourceCodesMap[newPath] = this._uiSourceCodesMap[oldPath];
+            delete this._uiSourceCodesMap[oldPath];
             callback(true, newName);
         }
     },
@@ -489,15 +493,6 @@ WebInspector.Workspace.prototype = {
             result = result.concat(project.uiSourceCodes());
         }
         return result;
-    },
-
-    /**
-     * @param {function(WebInspector.UISourceCode)} callback
-     */
-    forEachUISourceCode: function(callback)
-    {
-        for (var projectId in this._projects)
-            this._projects[projectId].forEachUISourceCode(callback);
     },
 
     /**
