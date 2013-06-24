@@ -389,10 +389,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._longLinesMode = false;
     },
 
-    _longLinesMode: function() {
-        return this._longLinesMode;
-    },
-
     /**
      * @param {string} mimeType
      */
@@ -1023,7 +1019,7 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
                 return CodeMirror.Pass;
 
         codeMirror.replaceRange("}", cursor);
-        var matchingBracket = this._longLinesMode() ? null : codeMirror.findMatchingBracket();
+        var matchingBracket = codeMirror._codeMirrorTextEditor._longLinesMode ? null : codeMirror.findMatchingBracket();
         if (!matchingBracket || !matchingBracket.match)
             return;
 
