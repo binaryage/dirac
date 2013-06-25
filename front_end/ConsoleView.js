@@ -29,6 +29,7 @@
 
 /**
  * @extends {WebInspector.View}
+ * @implements {WebInspector.Searchable}
  * @constructor
  * @param {boolean} hideContextSelector
  */
@@ -338,6 +339,8 @@ WebInspector.ConsoleView.prototype = {
 
         this.dispatchEventToListeners(WebInspector.ConsoleView.Events.ConsoleCleared);
 
+        this._clearCurrentSearchResultHighlight();
+
         this._linkifier.reset();
     },
 
@@ -567,6 +570,87 @@ WebInspector.ConsoleView.prototype = {
     elementsToRestoreScrollPositionsFor: function()
     {
         return [this.messagesElement];
+    },
+
+    searchCanceled: function()
+    {
+        this._clearCurrentSearchResultHighlight();
+        delete this._searchResults;
+        delete this._searchRegex;
+    },
+
+    canSearchAndReplace: function()
+    {
+        return false;
+    },
+
+    canFilter: function()
+    {
+        return false;
+    },
+
+    /**
+     * @param {string} query
+     * @param {WebInspector.Searchable=} self
+     */
+    performSearch: function(query, self)
+    {
+        WebInspector.searchController.updateSearchMatchesCount(0, self || this);
+        this.searchCanceled();
+        this._searchRegex = createPlainTextSearchRegex(query, "gi");
+
+        this._searchResults = [];
+        for (var i = 0; i < this._visibleMessages.length; i++) {
+            if (this._visibleMessages[i].matchesRegex(this._searchRegex)) {
+                this._searchResults.push(this._visibleMessages[i]);
+                this._searchRegex.lastIndex = 0;
+            }
+        }
+        WebInspector.searchController.updateSearchMatchesCount(this._searchResults.length, self || this);
+        this._currentSearchResultIndex = -1;
+        if (this._searchResults.length)
+            this._jumpToSearchResult(0, self);
+    },
+
+    /**
+     * @param {WebInspector.Searchable=} self
+     */
+    jumpToNextSearchResult: function(self)
+    {
+        if (!this._searchResults || !this._searchResults.length)
+            return;
+        this._jumpToSearchResult((this._currentSearchResultIndex + 1) % this._searchResults.length, self);
+    },
+
+    /**
+     * @param {WebInspector.Searchable=} self
+     */
+    jumpToPreviousSearchResult: function(self)
+    {
+        if (!this._searchResults || !this._searchResults.length)
+            return;
+        var index = this._currentSearchResultIndex - 1;
+        if (index === -1)
+            index = this._searchResults.length - 1;
+        this._jumpToSearchResult(index, self);
+    },
+
+    _clearCurrentSearchResultHighlight: function()
+    {
+        if (!this._searchResults)
+            return;
+        var highlightedMessage = this._searchResults[this._currentSearchResultIndex];
+        if (highlightedMessage)
+            highlightedMessage.clearHighlight();
+        this._currentSearchResultIndex = -1;
+    },
+
+    _jumpToSearchResult: function(index, self)
+    {
+        this._clearCurrentSearchResultHighlight();
+        this._currentSearchResultIndex = index;
+        WebInspector.searchController.updateCurrentMatchIndex(this._currentSearchResultIndex, self || this);
+        this._searchResults[index].highlightSearchResults(this._searchRegex);
     },
 
     __proto__: WebInspector.View.prototype

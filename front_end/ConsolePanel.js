@@ -66,9 +66,7 @@ WebInspector.ConsolePanel.prototype = {
 
     searchCanceled: function()
     {
-        this._clearCurrentSearchResultHighlight();
-        delete this._searchResults;
-        delete this._searchRegex;
+        this._view.searchCanceled();
     },
 
     /**
@@ -76,57 +74,17 @@ WebInspector.ConsolePanel.prototype = {
      */
     performSearch: function(query)
     {
-        WebInspector.searchController.updateSearchMatchesCount(0, this);
-        this.searchCanceled();
-        this._searchRegex = createPlainTextSearchRegex(query, "gi");
-
-        this._searchResults = [];
-        var messages = WebInspector.console.messages;
-        for (var i = 0; i < messages.length; i++) {
-            if (messages[i].matchesRegex(this._searchRegex)) {
-                this._searchResults.push(messages[i]);
-                this._searchRegex.lastIndex = 0;
-            }
-        }
-        WebInspector.searchController.updateSearchMatchesCount(this._searchResults.length, this);
-        this._currentSearchResultIndex = -1;
-        if (this._searchResults.length)
-            this._jumpToSearchResult(0);
+        this._view.performSearch(query, this);
     },
 
     jumpToNextSearchResult: function()
     {
-        if (!this._searchResults || !this._searchResults.length)
-            return;
-        this._jumpToSearchResult((this._currentSearchResultIndex + 1) % this._searchResults.length);
+        this._view.jumpToNextSearchResult(this);
     },
 
     jumpToPreviousSearchResult: function()
     {
-        if (!this._searchResults || !this._searchResults.length)
-            return;
-        var index = this._currentSearchResultIndex - 1;
-        if (index === -1)
-            index = this._searchResults.length - 1;
-        this._jumpToSearchResult(index);
-    },
-
-    _clearCurrentSearchResultHighlight: function()
-    {
-        if (!this._searchResults)
-            return;
-        var highlightedMessage = this._searchResults[this._currentSearchResultIndex];
-        if (highlightedMessage)
-            highlightedMessage.clearHighlight();
-        this._currentSearchResultIndex = -1;
-    },
-
-    _jumpToSearchResult: function(index)
-    {
-        this._clearCurrentSearchResultHighlight();
-        this._currentSearchResultIndex = index;
-        WebInspector.searchController.updateCurrentMatchIndex(this._currentSearchResultIndex, this);
-        this._searchResults[index].highlightSearchResults(this._searchRegex);
+        this._view.jumpToPreviousSearchResult(this);
     },
 
     _consoleMessageAdded: function(event)
@@ -145,7 +103,6 @@ WebInspector.ConsolePanel.prototype = {
     {
         if (!this._searchResults)
             return;
-        this._clearCurrentSearchResultHighlight();
         this._searchResults.length = 0;
         if (this.isShowing())
             WebInspector.searchController.updateSearchMatchesCount(0, this);

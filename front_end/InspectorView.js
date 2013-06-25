@@ -98,6 +98,11 @@ WebInspector.InspectorView.prototype = {
     {
         return this._currentPanel;
     },
+
+    getSearchProvider: function()
+    {
+        return this._currentPanel;
+    },
     
     /**
      * @param {WebInspector.Panel} x

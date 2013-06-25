@@ -28,6 +28,7 @@
 
 /**
  * @extends {WebInspector.View}
+ * @implements {WebInspector.Searchable}
  * @constructor
  */
 WebInspector.Panel = function(name)

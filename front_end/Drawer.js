@@ -42,10 +42,15 @@ WebInspector.Drawer = function()
     this._floatingStatusBarContainer = document.getElementById("floating-status-bar-container");
     WebInspector.installDragHandle(this._floatingStatusBarContainer, this._startStatusBarDragging.bind(this), this._statusBarDragging.bind(this), this._endStatusBarDragging.bind(this), "row-resize");
 
-    this._drawerContentsElement = document.createElement("div");
+    this._drawerBodyElement = this.element.createChild("div");
+    this._drawerBodyElement.id = "drawer-body";
+
+    this._drawerContentsElement = this._drawerBodyElement.createChild("div");
     this._drawerContentsElement.id = "drawer-contents";
-    this._drawerContentsElement.className = "drawer-contents";
-    this.element.appendChild(this._drawerContentsElement);
+
+    this._footerElementContainer = this._drawerBodyElement.createChild("div", "status-bar hidden");
+    this._footerElementContainer.id = "drawer-footer";
+
     this._viewStatusBar = document.createElement("div");
     this._viewStatusBar.addEventListener("webkitTransitionEnd", this.immediatelyFinishAnimation.bind(this), false);
     this._viewStatusBar.style.opacity = 0;
@@ -58,9 +63,9 @@ WebInspector.Drawer = function()
 }
 
 WebInspector.Drawer.AnimationType = {
-        Immediately: 0,
-        Normal: 1,
-        Slow: 2
+    Immediately: 0,
+    Normal: 1,
+    Slow: 2
 }
 
 WebInspector.Drawer.prototype = {
@@ -76,6 +81,7 @@ WebInspector.Drawer.prototype = {
 
     show: function(view, animationType)
     {
+        WebInspector.searchController.cancelSearch();
         this.immediatelyFinishAnimation();
 
         var drawerWasVisible = this.visible;
@@ -101,7 +107,7 @@ WebInspector.Drawer.prototype = {
 
         if (drawerWasVisible)
             return;
-        
+
         var height = this._constrainHeight(this._savedHeight || this.element.offsetHeight);
 
         this._floatingStatusBarContainer.style.paddingLeft = this._bottomStatusBar.offsetLeft + "px";
@@ -138,6 +144,7 @@ WebInspector.Drawer.prototype = {
 
     hide: function(animationType)
     {
+        WebInspector.searchController.cancelSearch();
         this.immediatelyFinishAnimation();
         if (!this.visible)
             return;
@@ -253,6 +260,34 @@ WebInspector.Drawer.prototype = {
         delete this._statusBarDragOffset;
 
         event.consume();
+    },
+
+    /**
+     * @param {Element} element
+     */
+    setFooterElement: function(element)
+    {
+        if (element) {
+            this._footerElementContainer.removeStyleClass("hidden");
+            this._footerElementContainer.appendChild(element);
+            this._drawerContentsElement.style.bottom = this._footerElementContainer.offsetHeight + "px";
+        } else {
+            this._footerElementContainer.addStyleClass("hidden");
+            this._footerElementContainer.removeChildren();
+            this._drawerContentsElement.style.bottom = 0;
+        }
+        this._view.doResize();
+    },
+
+    /**
+     * @returns {WebInspector.Searchable}
+     */
+    getSearchProvider: function()
+    {
+        if (this._view && this._view.performSearch)
+            return this._view;
+
+        return null;
     }
 }
 

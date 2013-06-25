@@ -1076,12 +1076,29 @@ body.remote .dock-status-bar-item {
     -webkit-transition: height 100ms linear;
 }
 
-#drawer-contents {
+#drawer-body {
     position: absolute;
     top: 0;
     bottom: 24px;
     left: 0;
     right: 0;
+}
+
+#drawer-contents {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+}
+
+#drawer-footer {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    font-size: 11px;
+    height: 23px;
 }
 
 body.drawer-visible #drawer {
