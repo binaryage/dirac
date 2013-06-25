@@ -377,9 +377,11 @@ WebInspector.SourceFrame.prototype = {
 
     /**
      * @param {string} query
+     * @param {boolean} shouldJump
      * @param {function(WebInspector.View, number)} callback
+     * @param {function(number)=} currentMatchChangedCallback
      */
-    performSearch: function(query, callback)
+    performSearch: function(query, shouldJump, callback, currentMatchChangedCallback)
     {
         // Call searchCanceled since it will reset everything we need before doing a new search.
         this.searchCanceled();
@@ -391,21 +393,12 @@ WebInspector.SourceFrame.prototype = {
 
             var regex = WebInspector.SourceFrame.createSearchRegex(query);
             this._searchResults = this._collectRegexMatches(regex);
-            var shiftToIndex = 0;
-            var selection = this._textEditor.lastSelection();
-            for (var i = 0; selection && i < this._searchResults.length; ++i) {
-                if (this._searchResults[i].compareTo(selection) >= 0) {
-                    shiftToIndex = i;
-                    break;
-                }
-            }
-
-            if (shiftToIndex)
-                this._searchResults = this._searchResults.rotate(shiftToIndex);
-
             callback(this, this._searchResults.length);
+            if (shouldJump && this._searchResults.length)
+                this.jumpToNextSearchResult();
         }
 
+        this._currentSearchMatchChangedCallback = currentMatchChangedCallback;
         if (this.loaded)
             doFindSearchMatches.call(this, query);
         else
@@ -414,9 +407,28 @@ WebInspector.SourceFrame.prototype = {
         this._ensureContentLoaded();
     },
 
+    _editorFocused: function()
+    {
+        this._currentSearchResultIndex = -1;
+        if (this._currentSearchMatchChangedCallback)
+            this._currentSearchMatchChangedCallback(this._currentSearchResultIndex);
+    },
+
+    _searchResultAfterSelectionIndex: function(selection)
+    {
+        if (!selection)
+            return 0;
+        for (var i = 0; i < this._searchResults.length; ++i) {
+            if (this._searchResults[i].compareTo(selection) >= 0)
+                return i;
+        }
+        return 0;
+    },
+
     searchCanceled: function()
     {
         delete this._delayedFindSearchMatches;
+        delete this._currentSearchMatchChangedCallback;
         if (!this.loaded)
             return;
 
@@ -442,12 +454,15 @@ WebInspector.SourceFrame.prototype = {
 
     jumpToNextSearchResult: function()
     {
-        this.jumpToSearchResult(this._currentSearchResultIndex + 1);
+        var currentIndex = this._searchResultAfterSelectionIndex(this._textEditor.selection());
+        var nextIndex = this._currentSearchResultIndex === -1 ? currentIndex : currentIndex + 1;
+        this.jumpToSearchResult(nextIndex);
     },
 
     jumpToPreviousSearchResult: function()
     {
-        this.jumpToSearchResult(this._currentSearchResultIndex - 1);
+        var currentIndex = this._searchResultAfterSelectionIndex(this._textEditor.selection());
+        this.jumpToSearchResult(currentIndex - 1);
     },
 
     showingFirstSearchResult: function()
@@ -470,6 +485,8 @@ WebInspector.SourceFrame.prototype = {
         if (!this.loaded || !this._searchResults.length)
             return;
         this._currentSearchResultIndex = (index + this._searchResults.length) % this._searchResults.length;
+        if (this._currentSearchMatchChangedCallback)
+            this._currentSearchMatchChangedCallback(this._currentSearchResultIndex);
         this._textEditor.markAndRevealRange(this._searchResults[this._currentSearchResultIndex]);
     },
 
@@ -758,6 +775,11 @@ WebInspector.TextEditorDelegateForSourceFrame.prototype = {
     scrollChanged: function(lineNumber)
     {
         this._sourceFrame.scrollChanged(lineNumber);
+    },
+
+    editorFocused: function()
+    {
+        this._sourceFrame._editorFocused();
     },
 
     populateLineGutterContextMenu: function(contextMenu, lineNumber)

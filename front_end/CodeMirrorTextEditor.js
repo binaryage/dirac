@@ -99,6 +99,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._codeMirror.on("gutterClick", this._gutterClick.bind(this));
     this._codeMirror.on("cursorActivity", this._cursorActivity.bind(this));
     this._codeMirror.on("scroll", this._scroll.bind(this));
+    this._codeMirror.on("focus", this._focus.bind(this));
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this));
 
     this.element.firstChild.addStyleClass("source-code");
@@ -754,6 +755,11 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             clearTimeout(this._scrollTimer);
         var topmostLineNumber = this._codeMirror.lineAtHeight(this._codeMirror.getScrollInfo().top, "local");
         this._scrollTimer = setTimeout(this._delegate.scrollChanged.bind(this._delegate, topmostLineNumber), 100);
+    },
+
+    _focus: function()
+    {
+        this._delegate.editorFocused();
     },
 
     /**

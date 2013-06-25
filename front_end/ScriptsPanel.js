@@ -877,12 +877,14 @@ WebInspector.ScriptsPanel.prototype = {
                 return;
 
             WebInspector.searchController.updateSearchMatchesCount(searchMatches, this);
-            if (shouldJump)
-                view.jumpToNextSearchResult();
-            WebInspector.searchController.updateCurrentMatchIndex(view.currentSearchResultIndex, this);
         }
 
-        this._searchView.performSearch(query, finishedCallback.bind(this));
+        function currentMatchChanged(currentMatchIndex)
+        {
+            WebInspector.searchController.updateCurrentMatchIndex(currentMatchIndex, this);
+        }
+
+        this._searchView.performSearch(query, shouldJump, finishedCallback.bind(this), currentMatchChanged.bind(this));
     },
 
     /**
@@ -903,11 +905,7 @@ WebInspector.ScriptsPanel.prototype = {
             return;
         }
 
-        if (this._searchView.showingLastSearchResult())
-            this._searchView.jumpToFirstSearchResult();
-        else
-            this._searchView.jumpToNextSearchResult();
-        WebInspector.searchController.updateCurrentMatchIndex(this._searchView.currentSearchResultIndex, this);
+        this._searchView.jumpToNextSearchResult();
         return true;
     },
 
@@ -923,11 +921,7 @@ WebInspector.ScriptsPanel.prototype = {
             return;
         }
 
-        if (this._searchView.showingFirstSearchResult())
-            this._searchView.jumpToLastSearchResult();
-        else
-            this._searchView.jumpToPreviousSearchResult();
-        WebInspector.searchController.updateCurrentMatchIndex(this._searchView.currentSearchResultIndex, this);
+        this._searchView.jumpToPreviousSearchResult();
     },
 
     /**

@@ -784,7 +784,7 @@ WebInspector.ResourcesPanel.prototype = {
                 // We give id to each search, so that we can skip callbacks for obsolete searches.
                 this._lastViewSearchId = this._lastViewSearchId ? this._lastViewSearchId + 1 : 0;
                 this._viewSearchInProgress = true;
-                this.visibleView.performSearch(this.currentQuery, viewSearchPerformedCallback.bind(this, this._lastViewSearchId));
+                this.visibleView.performSearch(this.currentQuery, false, viewSearchPerformedCallback.bind(this, this._lastViewSearchId));
             } else
                 callback();
         }

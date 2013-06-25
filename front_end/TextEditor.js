@@ -292,6 +292,8 @@ WebInspector.TextEditorDelegate.prototype = {
      */
     scrollChanged: function(lineNumber) { },
 
+    editorFocused: function() { },
+
     /**
      * @param {WebInspector.ContextMenu} contextMenu
      * @param {number} lineNumber
