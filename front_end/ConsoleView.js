@@ -614,6 +614,14 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
+     * @return {number}
+     */
+    minimalSearchQuerySize: function()
+    {
+        return 0;
+    },
+
+    /**
      * @param {WebInspector.Searchable=} self
      */
     jumpToNextSearchResult: function(self)

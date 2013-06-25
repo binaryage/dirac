@@ -885,6 +885,14 @@ WebInspector.ScriptsPanel.prototype = {
         this._searchView.performSearch(query, finishedCallback.bind(this));
     },
 
+    /**
+     * @return {number}
+     */
+    minimalSearchQuerySize: function()
+    {
+        return 0;
+    },
+
     jumpToNextSearchResult: function()
     {
         if (!this._searchView)

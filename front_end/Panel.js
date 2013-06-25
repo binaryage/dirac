@@ -48,6 +48,8 @@ WebInspector.Panel = function(name)
 // Should by in sync with style declarations.
 WebInspector.Panel.counterRightMargin = 25;
 
+WebInspector.Panel._minimalSearchQuerySize = 3;
+
 WebInspector.Panel.prototype = {
     get name()
     {
@@ -113,6 +115,14 @@ WebInspector.Panel.prototype = {
     {
         // Call searchCanceled since it will reset everything we need before doing a new search.
         this.searchCanceled();
+    },
+
+    /**
+     * @return {number}
+     */
+    minimalSearchQuerySize: function()
+    {
+        return WebInspector.Panel._minimalSearchQuerySize;
     },
 
     jumpToNextSearchResult: function()

@@ -412,7 +412,8 @@ WebInspector.SearchController.prototype = {
     _performSearch: function(forceSearch, shouldJump)
     {
         var query = this._searchInputElement.value;
-        if (!query || !this._searchHost || (!forceSearch && query.length < 3 && !this._currentQuery)) {
+        var minimalSearchQuerySize = this._searchProvider.minimalSearchQuerySize();
+        if (!query || !this._searchProvider || (!forceSearch && query.length < minimalSearchQuerySize && !this._currentQuery)) {
             this._clearSearch();
             return;
         }
@@ -522,6 +523,11 @@ WebInspector.Searchable.prototype = {
      * @param {WebInspector.Searchable=} self
      */
     performSearch: function(query, shouldJump, self) { },
+
+    /**
+     * @return {number}
+     */
+    minimalSearchQuerySize: function() { },
 
     /**
      * @param {WebInspector.Searchable=} self

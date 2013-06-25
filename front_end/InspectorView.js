@@ -99,6 +99,9 @@ WebInspector.InspectorView.prototype = {
         return this._currentPanel;
     },
 
+    /**
+     * @return {WebInspector.Searchable}
+     */
     getSearchProvider: function()
     {
         return this._currentPanel;
