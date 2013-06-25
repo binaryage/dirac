@@ -953,7 +953,7 @@ WebInspector.TimelinePanel.prototype = {
         this._itemsGraphsElement.insertBefore(this._graphRowsElement, this._bottomGapElement);
         this._itemsGraphsElement.appendChild(this._expandElements);
         this._adjustScrollPosition((recordsInWindow.length + this._headerLineCount) * rowHeight);
-        this._updateSearchHighlight(false);
+        this._updateSearchHighlight(false, true);
 
         if (highlightedListRowElement) {
             highlightedListRowElement.addStyleClass("highlighted-timeline-record");
@@ -1139,21 +1139,23 @@ WebInspector.TimelinePanel.prototype = {
 
     jumpToNextSearchResult: function()
     {
-        this._jumpToAdjacentRecord(1);
+        if (!this._searchResults || !this._searchResults.length)
+            return;
+        var index = this._selectedSearchResult ? this._searchResults.indexOf(this._selectedSearchResult) : -1;
+        this._jumpToSearchResult(index + 1);
     },
 
     jumpToPreviousSearchResult: function()
     {
-        this._jumpToAdjacentRecord(-1);
+        if (!this._searchResults || !this._searchResults.length)
+            return;
+        var index = this._selectedSearchResult ? this._searchResults.indexOf(this._selectedSearchResult) : 0;
+        this._jumpToSearchResult(index - 1);
     },
 
-    _jumpToAdjacentRecord: function(offset)
+    _jumpToSearchResult: function(index)
     {
-        if (!this._searchResults || !this._searchResults.length || !this._selectedSearchResult)
-            return;
-        var index = this._searchResults.indexOf(this._selectedSearchResult);
-        index = (index + offset + this._searchResults.length) % this._searchResults.length;
-        this._selectSearchResult(index);
+        this._selectSearchResult((index + this._searchResults.length) % this._searchResults.length);
         this._highlightSelectedSearchResult(true);
     },
 
@@ -1193,8 +1195,9 @@ WebInspector.TimelinePanel.prototype = {
 
     /**
      * @param {boolean} revealRecord
+     * @param {boolean} shouldJump
      */
-    _updateSearchHighlight: function(revealRecord)
+    _updateSearchHighlight: function(revealRecord, shouldJump)
     {
         if (this._searchFilter || !this._searchRegExp) {
             this._clearHighlight();
@@ -1202,12 +1205,11 @@ WebInspector.TimelinePanel.prototype = {
         }
 
         if (!this._searchResults)
-            this._updateSearchResults();
-
+            this._updateSearchResults(shouldJump);
         this._highlightSelectedSearchResult(revealRecord);
     },
 
-    _updateSearchResults: function()
+    _updateSearchResults: function(shouldJump)
     {
         var searchRegExp = this._searchRegExp;
         if (!searchRegExp)
@@ -1230,7 +1232,7 @@ WebInspector.TimelinePanel.prototype = {
             WebInspector.searchController.updateSearchMatchesCount(matchesCount, this);
 
             var selectedIndex = matches.indexOf(this._selectedSearchResult);
-            if (selectedIndex === -1)
+            if (shouldJump && selectedIndex === -1)
                 selectedIndex = 0;
             this._selectSearchResult(selectedIndex);
         } else {
@@ -1267,11 +1269,15 @@ WebInspector.TimelinePanel.prototype = {
         this._invalidateAndScheduleRefresh(true, true);
     },
 
-    performSearch: function(searchQuery)
+    /**
+     * @param {string} query
+     * @param {boolean} shouldJump
+     */
+    performSearch: function(query, shouldJump)
     {
-        this._searchRegExp = createPlainTextSearchRegex(searchQuery, "i");
+        this._searchRegExp = createPlainTextSearchRegex(query, "i");
         delete this._searchResults;
-        this._updateSearchHighlight(true);
+        this._updateSearchHighlight(true, shouldJump);
     },
 
     __proto__: WebInspector.Panel.prototype

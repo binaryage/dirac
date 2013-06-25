@@ -856,8 +856,9 @@ WebInspector.ScriptsPanel.prototype = {
 
     /**
      * @param {string} query
+     * @param {boolean} shouldJump
      */
-    performSearch: function(query)
+    performSearch: function(query, shouldJump)
     {
         WebInspector.searchController.updateSearchMatchesCount(0, this);
 
@@ -876,7 +877,8 @@ WebInspector.ScriptsPanel.prototype = {
                 return;
 
             WebInspector.searchController.updateSearchMatchesCount(searchMatches, this);
-            view.jumpToNextSearchResult();
+            if (shouldJump)
+                view.jumpToNextSearchResult();
             WebInspector.searchController.updateCurrentMatchIndex(view.currentSearchResultIndex, this);
         }
 
@@ -889,7 +891,7 @@ WebInspector.ScriptsPanel.prototype = {
             return;
 
         if (this._searchView !== this.visibleView) {
-            this.performSearch(this._searchQuery);
+            this.performSearch(this._searchQuery, true);
             return;
         }
 
@@ -907,7 +909,7 @@ WebInspector.ScriptsPanel.prototype = {
             return;
 
         if (this._searchView !== this.visibleView) {
-            this.performSearch(this._searchQuery);
+            this.performSearch(this._searchQuery, true);
             if (this._searchView)
                 this._searchView.jumpToLastSearchResult();
             return;
@@ -1231,7 +1233,8 @@ WebInspector.ScriptsPanel.prototype = {
                 console.error(error);
                 return;
             }
-            WebInspector.inspectorView.showPanelForAnchorNavigation(this);
+
+            WebInspector.inspectorView.setCurrentPanel(this);
             var uiLocation = WebInspector.debuggerModel.rawLocationToUILocation(response.location);
             this._showSourceLocation(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
         }

@@ -591,9 +591,10 @@ WebInspector.ConsoleView.prototype = {
 
     /**
      * @param {string} query
+     * @param {boolean} shouldJump
      * @param {WebInspector.Searchable=} self
      */
-    performSearch: function(query, self)
+    performSearch: function(query, shouldJump, self)
     {
         WebInspector.searchController.updateSearchMatchesCount(0, self || this);
         this.searchCanceled();
@@ -608,7 +609,7 @@ WebInspector.ConsoleView.prototype = {
         }
         WebInspector.searchController.updateSearchMatchesCount(this._searchResults.length, self || this);
         this._currentSearchResultIndex = -1;
-        if (this._searchResults.length)
+        if (shouldJump && this._searchResults.length)
             this._jumpToSearchResult(0, self);
     },
 

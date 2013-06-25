@@ -107,8 +107,9 @@ WebInspector.Panel.prototype = {
 
     /**
      * @param {string} query
+     * @param {boolean} shouldJump
      */
-    performSearch: function(query)
+    performSearch: function(query, shouldJump)
     {
         // Call searchCanceled since it will reset everything we need before doing a new search.
         this.searchCanceled();

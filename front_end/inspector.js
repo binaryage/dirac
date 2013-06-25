@@ -1041,7 +1041,7 @@ WebInspector._showAnchorLocationInPanel = function(anchor, panel)
         anchor.addStyleClass("webkit-html-resource-link");
     }
 
-    WebInspector.inspectorView.showPanelForAnchorNavigation(panel);
+    WebInspector.inspectorView.setCurrentPanel(panel);
     panel.showAnchorLocation(anchor);
     return true;
 }

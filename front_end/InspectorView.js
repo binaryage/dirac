@@ -274,15 +274,6 @@ WebInspector.InspectorView.prototype = {
         this.doResize();
     },
 
-    /**
-     * @param {WebInspector.Panel} panel
-     */
-    showPanelForAnchorNavigation: function(panel)
-    {
-        WebInspector.searchController.disableSearchUntilExplicitAction();
-        this.setCurrentPanel(panel);
-    },
-
     __proto__: WebInspector.View.prototype
 }
 

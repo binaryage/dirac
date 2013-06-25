@@ -905,8 +905,9 @@ WebInspector.ProfilesPanel.prototype = {
 
     /**
      * @param {string} query
+     * @param {boolean} shouldJump
      */
-    performSearch: function(query)
+    performSearch: function(query, shouldJump)
     {
         this.searchCanceled();
 
@@ -946,7 +947,7 @@ WebInspector.ProfilesPanel.prototype = {
 
             updateMatchesCountSoon.call(this);
 
-            if (view === visibleView)
+            if (shouldJump && view === visibleView)
                 view.jumpToFirstSearchResult();
         }
 

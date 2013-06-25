@@ -71,10 +71,11 @@ WebInspector.ConsolePanel.prototype = {
 
     /**
      * @param {string} query
+     * @param {boolean} shouldJump
      */
-    performSearch: function(query)
+    performSearch: function(query, shouldJump)
     {
-        this._view.performSearch(query, this);
+        this._view.performSearch(query, shouldJump, this);
     },
 
     jumpToNextSearchResult: function()

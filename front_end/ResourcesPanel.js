@@ -416,7 +416,7 @@ WebInspector.ResourcesPanel.prototype = {
     {
         var resourceTreeElement = this._findTreeElementForResource(resource);
         if (resourceTreeElement)
-            resourceTreeElement.revealAndSelect();
+            resourceTreeElement.revealAndSelect(true);
 
         if (typeof line === "number") {
             var view = this._resourceViewForResource(resource);
@@ -694,8 +694,9 @@ WebInspector.ResourcesPanel.prototype = {
 
     /**
      * @param {string} query
+     * @param {boolean} shouldJump
      */
-    performSearch: function(query)
+    performSearch: function(query, shouldJump)
     {
         this._resetSearchResults();
         var regex = WebInspector.SourceFrame.createSearchRegex(query);
@@ -755,7 +756,7 @@ WebInspector.ResourcesPanel.prototype = {
             WebInspector.searchController.updateSearchMatchesCount(totalMatchesCount, this);
             this._searchController = new WebInspector.ResourcesSearchController(this.resourcesListTreeElement, totalMatchesCount);
 
-            if (this.sidebarTree.selectedTreeElement && this.sidebarTree.selectedTreeElement.searchMatchesCount)
+            if (shouldJump && this.sidebarTree.selectedTreeElement && this.sidebarTree.selectedTreeElement.searchMatchesCount)
                 this.jumpToNextSearchResult();
         }
 
@@ -795,10 +796,8 @@ WebInspector.ResourcesPanel.prototype = {
         this._lastSearchResultTreeElement = searchResult.treeElement;
 
         // At first show view for treeElement.
-        if (searchResult.treeElement !== this.sidebarTree.selectedTreeElement) {
+        if (searchResult.treeElement !== this.sidebarTree.selectedTreeElement)
             this.showResource(searchResult.treeElement.representedObject);
-            WebInspector.searchController.showSearchField();
-        }
 
         function callback(searchId)
         {

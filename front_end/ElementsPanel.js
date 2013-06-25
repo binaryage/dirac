@@ -302,8 +302,9 @@ WebInspector.ElementsPanel.prototype = {
 
     /**
      * @param {string} query
+     * @param {boolean} shouldJump
      */
-    performSearch: function(query)
+    performSearch: function(query, shouldJump)
     {
         // Call searchCanceled since it will reset everything we need before doing a new search.
         this.searchCanceled();
@@ -325,7 +326,8 @@ WebInspector.ElementsPanel.prototype = {
 
             this._searchResults = new Array(resultCount);
             this._currentSearchResultIndex = -1;
-            this.jumpToNextSearchResult();
+            if (shouldJump)
+                this.jumpToNextSearchResult();
         }
         WebInspector.domAgent.performSearch(whitespaceTrimmedQuery, resultCountCallback.bind(this));
     },

@@ -182,14 +182,9 @@ WebInspector.SearchController.prototype = {
 
     resetSearch: function()
     {
-        this._performSearch("", false, false);
+        this._clearSearch();
         this._updateReplaceVisibility();
         this._matchesElement.textContent = "";
-    },
-
-    disableSearchUntilExplicitAction: function()
-    {
-        this._performSearch("", false, false);
     },
 
     /**
@@ -258,8 +253,14 @@ WebInspector.SearchController.prototype = {
      */
     _updateSearchMatchesCountAndCurrentMatchIndex: function(matches, currentMatchIndex)
     {
-        if (matches === 0 || currentMatchIndex >= 0)
+        if (!this._currentQuery)
+            this._matchesElement.textContent = "";
+        else if (matches === 0 || currentMatchIndex >= 0)
             this._matchesElement.textContent = WebInspector.UIString("%d of %d", currentMatchIndex + 1, matches);
+        else if (matches === 1)
+            this._matchesElement.textContent = WebInspector.UIString("1 match");
+        else
+            this._matchesElement.textContent = WebInspector.UIString("%d matches", matches);
         this._updateSearchNavigationButtonState(matches > 0);
     },
 
@@ -280,10 +281,13 @@ WebInspector.SearchController.prototype = {
         this._updateFilterVisibility();
         if (WebInspector.currentFocusElement() !== this._searchInputElement) {
             var selection = window.getSelection();
-            if (selection.rangeCount)
-                this._searchInputElement.value = selection.toString().replace(/\r?\n.*/, "");
+            if (selection.rangeCount) {
+                var queryCandidate = selection.toString().replace(/\r?\n.*/, "");
+                if (queryCandidate)
+                    this._searchInputElement.value = queryCandidate;
+            }
         }
-        this._performSearch(this._searchInputElement.value, true, false);
+        this._performSearch(false, false);
         this._searchInputElement.focus();
         this._searchInputElement.select();
         this._searchIsVisible = true;
@@ -345,17 +349,37 @@ WebInspector.SearchController.prototype = {
     _onKeyDown: function(event)
     {
         if (isEnterKey(event)) {
-            if (event.target === this._searchInputElement)
-                this._performSearch(event.target.value, true, event.shiftKey);
-            else if (event.target === this._replaceInputElement)
+            if (event.target === this._searchInputElement) {
+                // FIXME: This won't start backwards search with Shift+Enter correctly.
+                if (!this._currentQuery)
+                    this._performSearch(true, true);
+                else
+                    this._jumpToNextSearchResult(event.shiftKey);
+            } else if (event.target === this._replaceInputElement)
                 this._replace();
         }
     },
 
+    /**
+     * @param {boolean=} isBackwardSearch
+     */
+    _jumpToNextSearchResult: function(isBackwardSearch)
+    {
+        if (!this._currentQuery || !this._searchNavigationPrevElement.hasStyleClass("enabled"))
+            return;
+
+        if (isBackwardSearch)
+            this._searchProvider.jumpToPreviousSearchResult();
+        else
+            this._searchProvider.jumpToNextSearchResult();
+    },
+
     _onNextButtonSearch: function(event)
     {
+        if (!this._searchNavigationNextElement.hasStyleClass("enabled"))
+            return;
         // Simulate next search on search-navigation-button click.
-        this._performSearch(this._searchInputElement.value, true, false);
+        this._jumpToNextSearchResult();
         this._searchInputElement.focus();
     },
 
@@ -364,52 +388,38 @@ WebInspector.SearchController.prototype = {
         if (!this._searchNavigationPrevElement.hasStyleClass("enabled"))
             return;
         // Simulate previous search on search-navigation-button click.
-        this._performSearch(this._searchInputElement.value, true, true);
+        this._jumpToNextSearchResult(true);
         this._searchInputElement.focus();
     },
 
-    /**
-     * @param {string} query
-     * @param {boolean} forceSearch
-     * @param {boolean} isBackwardSearch
-     */
-    _performSearch: function(query, forceSearch, isBackwardSearch)
+    _clearSearch: function()
     {
-        if (!query || !query.length || !this._searchHost) {
-            delete this._currentQuery;
-
-            if (this._searchHost){
-                var searchProvider = this._searchHost.getSearchProvider();
-
-                if (searchProvider && !!searchProvider.currentQuery) {
-                    delete searchProvider.currentQuery;
-                    searchProvider.searchCanceled();
-                }
+        delete this._currentQuery;
+        if (this._searchHost){
+            var searchProvider = this._searchHost.getSearchProvider();
+            if (searchProvider && !!searchProvider.currentQuery) {
+                delete searchProvider.currentQuery;
+                searchProvider.searchCanceled();
             }
+        }
+        this._updateSearchMatchesCountAndCurrentMatchIndex(0, -1);
+    },
 
-            this._updateSearchMatchesCountAndCurrentMatchIndex(0, -1);
+    /**
+     * @param {boolean} forceSearch
+     * @param {boolean} shouldJump
+     */
+    _performSearch: function(forceSearch, shouldJump)
+    {
+        var query = this._searchInputElement.value;
+        if (!query || !this._searchHost || (!forceSearch && query.length < 3 && !this._currentQuery)) {
+            this._clearSearch();
             return;
         }
-
-        if (query === this._searchProvider.currentQuery && this._searchProvider.currentQuery === this._currentQuery) {
-            // When this is the same query and a forced search, jump to the next
-            // search result for a good user experience.
-            if (forceSearch) {
-                if (!isBackwardSearch)
-                    this._searchProvider.jumpToNextSearchResult();
-                else if (isBackwardSearch)
-                    this._searchProvider.jumpToPreviousSearchResult();
-            }
-            return;
-        }
-
-        if (!forceSearch && query.length < 3 && !this._currentQuery)
-            return;
 
         this._currentQuery = query;
-
         this._searchProvider.currentQuery = query;
-        this._searchProvider.performSearch(query);
+        this._searchProvider.performSearch(query, shouldJump);
     },
 
     _updateSecondRowVisibility: function()
@@ -437,9 +447,8 @@ WebInspector.SearchController.prototype = {
     _replace: function()
     {
         this._searchProvider.replaceSelectionWith(this._replaceInputElement.value);
-        var query = this._currentQuery;
         delete this._currentQuery;
-        this._performSearch(query, true, false);
+        this._performSearch(true, true);
     },
 
     _replaceAll: function()
@@ -454,7 +463,7 @@ WebInspector.SearchController.prototype = {
             this._performFilter(this._filterInputElement.value);
         } else {
             this._switchFilterToSearch();
-            this._performSearch(this._searchInputElement.value, false, false);
+            this._performSearch(false, false);
         }
     },
 
@@ -473,7 +482,7 @@ WebInspector.SearchController.prototype = {
 
     _onSearchInput: function(event)
     {
-        this._performSearch(event.target.value, false, false);
+        this._performSearch(false, true);
     },
 
     resetFilter: function()
@@ -509,9 +518,10 @@ WebInspector.Searchable.prototype = {
 
     /**
      * @param {string} query
+     * @param {boolean} shouldJump
      * @param {WebInspector.Searchable=} self
      */
-    performSearch: function(query, self) { },
+    performSearch: function(query, shouldJump, self) { },
 
     /**
      * @param {WebInspector.Searchable=} self

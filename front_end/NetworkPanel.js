@@ -1229,7 +1229,11 @@ WebInspector.NetworkLogView.prototype = {
         this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.SearchIndexUpdated, this._currentMatchedRequestIndex);
     },
 
-    performSearch: function(searchQuery)
+    /**
+     * @param {string} query
+     * @param {boolean} shouldJump
+     */
+    performSearch: function(query, shouldJump)
     {
         var newMatchedRequestIndex = 0;
         var currentMatchedRequestId;
@@ -1237,7 +1241,7 @@ WebInspector.NetworkLogView.prototype = {
             currentMatchedRequestId = this._matchedRequests[this._currentMatchedRequestIndex];
 
         this._clearSearchMatchedList();
-        this._searchRegExp = createPlainTextSearchRegex(searchQuery, "i");
+        this._searchRegExp = createPlainTextSearchRegex(query, "i");
 
         var childNodes = this._dataGrid.dataTableBody.childNodes;
         var requestNodes = Array.prototype.slice.call(childNodes, 0, childNodes.length - 1); // drop the filler row.
@@ -1251,7 +1255,8 @@ WebInspector.NetworkLogView.prototype = {
         }
 
         this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.SearchCountUpdated, this._matchedRequests.length);
-        this._highlightNthMatchedRequestForSearch(newMatchedRequestIndex, false);
+        if (shouldJump)
+            this._highlightNthMatchedRequestForSearch(newMatchedRequestIndex, false);
     },
 
     /**
@@ -1627,11 +1632,12 @@ WebInspector.NetworkPanel.prototype = {
     },
 
     /**
-     * @param {string} searchQuery
+     * @param {string} query
+     * @param {boolean} shouldJump
      */
-    performSearch: function(searchQuery)
+    performSearch: function(query, shouldJump)
     {
-        this._networkLogView.performSearch(searchQuery);
+        this._networkLogView.performSearch(query, shouldJump);
     },
 
     /**

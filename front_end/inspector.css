@@ -512,7 +512,7 @@ body.show-toolbar-icons.dock-to-bottom #toolbar-panels-menu {
 
 .search-results-matches {
     display: inline-block;
-    min-width: 50px;
+    min-width: 70px;
     min-height: 10px;
     margin-right: 36px;
     text-align: right;
