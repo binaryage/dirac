@@ -138,6 +138,8 @@ WebInspector.JSHeapSnapshot.prototype = {
     {
         if (node.isUserRoot())
             return 0;
+        if (node.isDocumentDOMTreesRoot())
+            return 0;
         return this._noDistance;
     },
 
