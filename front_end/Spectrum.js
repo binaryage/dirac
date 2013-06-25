@@ -265,7 +265,7 @@ WebInspector.Spectrum.prototype = {
         this._updateHelperLocations();
 
         this._draggerElement.style.backgroundColor = WebInspector.Color.fromHSVA([this._hsv[0], 1, 1, 1]).toString(WebInspector.Color.Format.RGB);
-        this._swatchInnerElement.style.backgroundColor = this.color().toString(WebInspector.Color.Format.RGB);
+        this._swatchInnerElement.style.backgroundColor = this.color().toString(WebInspector.Color.Format.RGBA);
 
         this._alphaElement.value = this._hsv[3] * 100;
     },
