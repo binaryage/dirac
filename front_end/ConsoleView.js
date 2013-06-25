@@ -586,7 +586,7 @@ WebInspector.ConsoleView.prototype = {
 
     canFilter: function()
     {
-        return false;
+        return true;
     },
 
     /**
@@ -602,10 +602,9 @@ WebInspector.ConsoleView.prototype = {
 
         this._searchResults = [];
         for (var i = 0; i < this._visibleMessages.length; i++) {
-            if (this._visibleMessages[i].matchesRegex(this._searchRegex)) {
+            this._searchRegex.lastIndex = 0;
+            if (this._visibleMessages[i].matchesRegex(this._searchRegex))
                 this._searchResults.push(this._visibleMessages[i]);
-                this._searchRegex.lastIndex = 0;
-            }
         }
         WebInspector.searchController.updateSearchMatchesCount(this._searchResults.length, self || this);
         this._currentSearchResultIndex = -1;
@@ -619,6 +618,15 @@ WebInspector.ConsoleView.prototype = {
     minimalSearchQuerySize: function()
     {
         return 0;
+    },
+
+    /**
+     * @param {string} query
+     * @param {WebInspector.Searchable=} self
+     */
+    performFilter: function(query, self)
+    {
+        this._filter.performFilter(query);
     },
 
     /**
@@ -688,10 +696,10 @@ WebInspector.ConsoleViewFilter = function()
             this._sourceToKeyMap[WebInspector.ConsoleViewFilter._messageSourceGroups[key].sources[i]] = key;
     }
 
-    var listener = this.dispatchEventToListeners.bind(this, WebInspector.ConsoleViewFilter.Events.FilterChanged);
-    WebInspector.settings.messageURLFilters.addChangeListener(listener);
-    WebInspector.settings.messageSourceFilters.addChangeListener(listener);
-    WebInspector.settings.messageLevelFilters.addChangeListener(listener);
+    this._filterChangeListener = this.dispatchEventToListeners.bind(this, WebInspector.ConsoleViewFilter.Events.FilterChanged);
+    WebInspector.settings.messageURLFilters.addChangeListener(this._filterChangeListener);
+    WebInspector.settings.messageSourceFilters.addChangeListener(this._filterChangeListener);
+    WebInspector.settings.messageLevelFilters.addChangeListener(this._filterChangeListener);
 
     WebInspector.settings.messageSourceFilters.addChangeListener(this._updateSourceFilterButton.bind(this));
     WebInspector.settings.messageLevelFilters.addChangeListener(this._updateLevelFilterBar.bind(this));
@@ -777,6 +785,12 @@ WebInspector.ConsoleViewFilter.prototype = {
         if (message.level && this._messageLevelFilters[message.level])
             return false;
 
+        if (this._filterRegex) {
+            this._filterRegex.lastIndex = 0;
+            if (!message.matchesRegex(this._filterRegex))
+                return false;
+        }
+
         // We store group keys, and we have resolved group by message source
         if (message.source) {
             if (this._sourceToKeyMap[message.source])
@@ -785,7 +799,21 @@ WebInspector.ConsoleViewFilter.prototype = {
                 return !this._messageSourceFilters[this._otherKey];
         }
 
+
         return true;
+    },
+
+    /**
+     * @param {string} query
+     */
+    performFilter: function(query)
+    {
+        if (!query)
+            delete this._filterRegex;
+        else
+            this._filterRegex = createPlainTextSearchRegex(query, "gi");
+
+        this._filterChangeListener();
     },
 
     /**
