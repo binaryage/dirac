@@ -836,6 +836,10 @@ WebInspector.postDocumentKeyDown = function(event)
         return;
 
     if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Esc.code) {
+        if (WebInspector.searchController.isSearchVisible()) {
+            WebInspector.searchController.closeSearch();
+            return;
+        }
         // If drawer is open with some view other than console then close it.
         if (!this._toggleConsoleButton.toggled && WebInspector.drawer.visible)
             this.closeViewInDrawer();

@@ -128,7 +128,7 @@ WebInspector.SearchController = function()
     var cancelButtonElement = this._firstRowElement.createChild("td").createChild("button");
     cancelButtonElement.textContent = WebInspector.UIString("Cancel");
     cancelButtonElement.tabIndex = -1;
-    cancelButtonElement.addEventListener("click", this.cancelSearch.bind(this), false);
+    cancelButtonElement.addEventListener("click", this.closeSearch.bind(this), false);
 }
 
 WebInspector.SearchController.prototype = {
@@ -147,6 +147,17 @@ WebInspector.SearchController.prototype = {
     {
         if (panel === WebInspector.inspectorView.currentPanel())
             this._updateSearchMatchesCountAndCurrentMatchIndex(panel.currentSearchMatches, currentMatchIndex);
+    },
+
+    isSearchVisible: function()
+    {
+        return this._searchIsVisible;
+    },
+
+    closeSearch: function()
+    {
+        this.cancelSearch();
+        WebInspector.setCurrentFocusElement(WebInspector.previousFocusElement());
     },
 
     cancelSearch: function()
@@ -308,16 +319,6 @@ WebInspector.SearchController.prototype = {
 
     _onKeyDown: function(event)
     {
-        // Escape Key will clear the field and clear the search results
-        if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Esc.code) {
-            event.consume(true);
-            this.cancelSearch();
-            WebInspector.setCurrentFocusElement(WebInspector.previousFocusElement());
-            if (WebInspector.currentFocusElement() === event.target)
-                WebInspector.currentFocusElement().select();
-            return false;
-        }
-
         if (isEnterKey(event)) {
             if (event.target === this._searchInputElement)
                 this._performSearch(event.target.value, true, event.shiftKey);
