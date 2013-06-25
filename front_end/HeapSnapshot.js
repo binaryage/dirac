@@ -488,6 +488,7 @@ WebInspector.HeapSnapshot = function(profile)
     this._metaNode = profile.snapshot.meta;
     this._strings = profile.strings;
 
+    this._noDistance = -5;
     this._rootNodeIndex = 0;
     if (profile.snapshot.root_index)
         this._rootNodeIndex = profile.snapshot.root_index;
@@ -776,13 +777,17 @@ WebInspector.HeapSnapshot.prototype = {
 
     distanceForUserRoot: function(node)
     {
-        return 1;
+        return 0;
     },
 
     _calculateDistances: function()
     {
         var nodeFieldCount = this._nodeFieldCount;
-        var distances = new Uint32Array(this.nodeCount);
+        var nodeCount = this.nodeCount;
+        var distances = new Int32Array(nodeCount);
+        var noDistance = this._noDistance;
+        for (var i = 0; i < nodeCount; ++i)
+            distances[i] = noDistance;
 
         // bfs for Window roots
         var nodesToVisit = new Uint32Array(this.nodeCount);
@@ -790,7 +795,7 @@ WebInspector.HeapSnapshot.prototype = {
         for (var iter = this.rootNode().edges(); iter.hasNext(); iter.next()) {
             var node = iter.edge.node();
             var distance = this.distanceForUserRoot(node);
-            if (distance !== -1) {
+            if (distance !== noDistance) {
                 nodesToVisit[nodesToVisitLength++] = node.nodeIndex;
                 distances[node.nodeIndex / nodeFieldCount] = distance;
             }
@@ -800,14 +805,15 @@ WebInspector.HeapSnapshot.prototype = {
         // bfs for root
         nodesToVisitLength = 0;
         nodesToVisit[nodesToVisitLength++] = this._rootNodeIndex;
-        distances[this._rootNodeIndex / nodeFieldCount] = 1;
+        // Make the snapshot meta root have a distance of -1 so its children get distance of 0.
+        distances[this._rootNodeIndex / nodeFieldCount] = -1;
         this._bfs(nodesToVisit, nodesToVisitLength, distances);
         this._nodeDistances = distances;
     },
 
     _bfs: function(nodesToVisit, nodesToVisitLength, distances)
     {
-        // Peload fields into local variables for better performance.
+        // Preload fields into local variables for better performance.
         var edgeFieldsCount = this._edgeFieldsCount;
         var nodeFieldCount = this._nodeFieldCount;
         var containmentEdges = this._containmentEdges;
@@ -818,6 +824,7 @@ WebInspector.HeapSnapshot.prototype = {
         var nodeCount = this.nodeCount;
         var containmentEdgesLength = containmentEdges.length;
         var edgeWeakType = this._edgeWeakType;
+        var noDistance = this._noDistance;
 
         var index = 0;
         while (index < nodesToVisitLength) {
@@ -832,7 +839,7 @@ WebInspector.HeapSnapshot.prototype = {
                     continue;
                 var childNodeIndex = containmentEdges[edgeIndex + edgeToNodeOffset];
                 var childNodeOrdinal = childNodeIndex / nodeFieldCount;
-                if (distances[childNodeOrdinal])
+                if (distances[childNodeOrdinal] !== noDistance)
                     continue;
                 distances[childNodeOrdinal] = distance;
                 nodesToVisit[nodesToVisitLength++] = childNodeIndex;
