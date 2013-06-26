@@ -117,16 +117,18 @@ WebInspector.SASSSourceMapping.prototype = {
         if (!uiSourceCode)
             return;
 
-        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, url, contentLoaded.bind(this));
+        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, url, undefined, contentLoaded.bind(this));
 
         /**
          * @param {?Protocol.Error} error
+         * @param {number} statusCode
+         * @param {NetworkAgent.Headers} headers
          * @param {string} content
          */
-        function contentLoaded(error, content)
+        function contentLoaded(error, statusCode, headers, content)
         {
-            if (error) {
-                console.error("Could not load content for " + url + " : " + error);
+            if (error || statusCode >= 400) {
+                console.error("Could not load content for " + url + " : " + (error || ("HTTP status code: " + statusCode)));
                 return;
             }
 
@@ -140,10 +142,10 @@ WebInspector.SASSSourceMapping.prototype = {
             var ids = this._cssModel.styleSheetIdsForURL(url);
             if (!ids)
                 return;
-            var headers = [];
+            var styleSheetHeaders = [];
             for (var i = 0; i < ids.length; ++i)
-                headers.push(this._cssModel.styleSheetHeaderForId(ids[i]));
-            this._loadSourceMapAndBindUISourceCode(headers, true, completeSourceMapURL);
+                styleSheetHeaders.push(this._cssModel.styleSheetHeaderForId(ids[i]));
+            this._loadSourceMapAndBindUISourceCode(styleSheetHeaders, true, completeSourceMapURL);
         }
     },
 

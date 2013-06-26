@@ -1047,9 +1047,12 @@
                 "async": true,
                 "parameters": [
                     { "name": "frameId", "$ref": "FrameId", "description": "Frame to load the resource from." },
-                    { "name": "url", "type": "string", "description": "URL of the resource to load." }
+                    { "name": "url", "type": "string", "description": "URL of the resource to load." },
+                    { "name": "requestHeaders", "$ref": "Network.Headers", "optional": true, "description": "Request headers." }
                 ],
                 "returns": [
+                    { "name": "statusCode", "type": "number", "description": "HTTP status code." },
+                    { "name": "responseHeaders", "$ref": "Network.Headers", "description": "Response headers." },
                     { "name": "content", "type": "string", "description": "Resource content." }
                 ],
                 "description": "Loads a resource in the context of a frame on the inspected page without cross origin checks.",

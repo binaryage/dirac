@@ -216,12 +216,18 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
      */
     requestContent: function(callback)
     {
-        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, this._sourceURL, contentLoaded.bind(this));
+        NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, this._sourceURL, undefined, contentLoaded.bind(this));
 
-        function contentLoaded(error, content)
+        /**
+         * @param {?Protocol.Error} error
+         * @param {number} statusCode
+         * @param {NetworkAgent.Headers} headers
+         * @param {string} content
+         */
+        function contentLoaded(error, statusCode, headers, content)
         {
-            if (error) {
-                console.error("Could not load content for " + this._sourceURL + " : " + error);
+            if (error || statusCode >= 400) {
+                console.error("Could not load content for " + this._sourceURL + " : " + (error || ("HTTP status code: " + statusCode)));
                 callback(null, false, this._mimeType);
                 return;
             }

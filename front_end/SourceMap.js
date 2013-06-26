@@ -59,12 +59,18 @@ WebInspector.SourceMap = function(sourceMappingURL, payload)
  */
 WebInspector.SourceMap.load = function(sourceMapURL, compiledURL, callback)
 {
-    NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, sourceMapURL, contentLoaded.bind(this));
+    NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, sourceMapURL, undefined, contentLoaded.bind(this));
 
-    function contentLoaded(error, content)
+    /**
+     * @param {?Protocol.Error} error
+     * @param {number} statusCode
+     * @param {NetworkAgent.Headers} headers
+     * @param {string} content
+     */
+    function contentLoaded(error, statusCode, headers, content)
     {
-        if (error || !content) {
-            console.error("Could not load content for " + sourceMapURL + " : " + error);
+        if (error || !content || statusCode >= 400) {
+            console.error("Could not load content for " + sourceMapURL + " : " + (error || ("HTTP status code: " + statusCode)));
             callback(null);
             return;
         }
