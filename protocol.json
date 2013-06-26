@@ -414,22 +414,6 @@
                 "hidden": true
             },
             {
-                "name": "getCompositingBordersVisible",
-                "description": "Indicates the visibility of compositing borders.",
-                "returns": [
-                    { "name": "result", "type": "boolean", "description": "If true, compositing borders are visible." }
-                ],
-                "hidden": true
-            },
-            {
-                "name": "setCompositingBordersVisible",
-                "description": "Controls the visibility of compositing borders.",
-                "parameters": [
-                    { "name": "visible", "type": "boolean", "description": "True for showing compositing borders." }
-                ],
-                "hidden": true
-            },
-            {
                 "name": "captureScreenshot",
                 "description": "Capture page screenshot.",
                 "returns": [
