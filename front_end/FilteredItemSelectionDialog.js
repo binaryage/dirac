@@ -340,7 +340,10 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     itemElement: function(index)
     {
         var delegateIndex = this._filteredItems[index];
-        return this._createItemElement(delegateIndex);
+        var element = this._createItemElement(delegateIndex);
+        if (index === this._selectedIndexInFiltered)
+            element.addStyleClass("selected");
+        return element;
     },
 
     __proto__: WebInspector.DialogDelegate.prototype
