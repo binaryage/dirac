@@ -144,10 +144,15 @@ WebInspector.ObjectPropertiesSection.CompareProperties = function(propertyA, pro
     var chunk = /^\d+|^\D+/;
     var chunka, chunkb, anum, bnum;
     while (diff === 0) {
-        if (!a && b)
-            return -1;
-        if (!b && a)
-            return 1;
+        if (a) {
+            if (!b)
+                return 1;
+        } else {
+            if (b)
+                return -1;
+            else
+                return 0;
+        }
         chunka = a.match(chunk)[0];
         chunkb = b.match(chunk)[0];
         anum = !isNaN(chunka);
