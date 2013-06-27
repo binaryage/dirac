@@ -539,7 +539,7 @@ WebInspector.DebuggerModel.prototype = {
             var scope = selectedCallFrame.scopeChain[i];
             var object = WebInspector.RemoteObject.fromPayload(scope.object);
             pendingRequests++;
-            object.getAllProperties(propertiesCollected);
+            object.getAllProperties(false, propertiesCollected);
         }
     },
 
