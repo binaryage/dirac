@@ -70,6 +70,15 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
 
     /**
      * @param {string} path
+     * @param {function(?Date, ?number)} callback
+     */
+    requestMetadata: function(path, callback)
+    {
+        callback(null, null);
+    },
+
+    /**
+     * @param {string} path
      * @param {function(?string,boolean,string)} callback
      */
     requestFileContent: function(path, callback)

@@ -111,6 +111,16 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     },
 
     /**
+     * @param {string} path
+     * @param {function(?Date, ?number)} callback
+     */
+    requestMetadata: function(path, callback)
+    {
+        var filePath = this._filePathForPath(path);
+        this._fileSystem.requestMetadata(filePath, callback);
+    },
+
+    /**
      * @return {boolean}
      */
     canSetFileContent: function()

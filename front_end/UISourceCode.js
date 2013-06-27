@@ -249,6 +249,14 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
+     * @param {function(?Date, ?number)} callback
+     */
+    requestMetadata: function(callback)
+    {
+        this._project.requestMetadata(this, callback);
+    },
+
+    /**
      * @param {function(?string,boolean,string)} callback
      */
     requestContent: function(callback)

@@ -98,6 +98,12 @@ WebInspector.ProjectDelegate.prototype = {
 
     /**
      * @param {string} path
+     * @param {function(?Date, ?number)} callback
+     */
+    requestMetadata: function(path, callback) { },
+
+    /**
+     * @param {string} path
      * @param {function(?string,boolean,string)} callback
      */
     requestFileContent: function(path, callback) { },
@@ -264,6 +270,15 @@ WebInspector.Project.prototype = {
     uiSourceCodes: function()
     {
         return this._uiSourceCodesList;
+    },
+
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {function(?Date, ?number)} callback
+     */
+    requestMetadata: function(uiSourceCode, callback)
+    {
+        this._projectDelegate.requestMetadata(uiSourceCode.path(), callback);
     },
 
     /**
