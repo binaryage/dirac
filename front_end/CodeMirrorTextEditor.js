@@ -768,14 +768,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     scrollToLine: function(lineNumber)
     {
-        function performScroll()
-        {
-            var pos = new CodeMirror.Pos(lineNumber, 0);
-            var coords = this._codeMirror.charCoords(pos, "local");
-            this._codeMirror.scrollTo(0, coords.top);
-        }
-
-        setTimeout(performScroll.bind(this), 0);
+        var pos = new CodeMirror.Pos(lineNumber, 0);
+        var coords = this._codeMirror.charCoords(pos, "local");
+        this._codeMirror.scrollTo(0, coords.top);
     },
 
     /**
@@ -805,14 +800,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     setSelection: function(textRange)
     {
-        function performSelectionSet()
-        {
-            this._lastSelection = textRange;
-            var pos = this._toPos(textRange);
-            this._codeMirror.setSelection(pos.start, pos.end);
-        }
-
-        setTimeout(performSelectionSet.bind(this), 0);
+        this._lastSelection = textRange;
+        var pos = this._toPos(textRange);
+        this._codeMirror.setSelection(pos.start, pos.end);
     },
 
     /**
