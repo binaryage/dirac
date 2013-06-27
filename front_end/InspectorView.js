@@ -261,10 +261,14 @@ WebInspector.InspectorView.prototype = {
     },
 
     /**
-     * @param {Element?} element
+     * @param {?Element} element
      */
     setFooterElement: function(element)
     {
+        if (this._currentPanel && this._currentPanel.canSetFooterElement()) {
+            this._currentPanel.setFooterElement(element);
+            return;
+        }
         if (element) {
             this._footerElementContainer.removeStyleClass("hidden");
             this._footerElementContainer.appendChild(element);

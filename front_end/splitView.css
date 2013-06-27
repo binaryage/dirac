@@ -127,7 +127,7 @@
     top: 0;
     bottom: 0;
     left: 0;
-    z-index: 10;
+    z-index: 12;
     background-color: white;
     border-right: 1px solid gray;
     box-shadow: rgb(90,90,90) 20px 0 50px -25px;

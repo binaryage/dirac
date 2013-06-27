@@ -92,8 +92,11 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     this._navigator.view.show(this.editorView.sidebarElement);
 
     var tabbedEditorPlaceholderText = WebInspector.isMac() ? WebInspector.UIString("Hit Cmd+O to open a file") : WebInspector.UIString("Hit Ctrl+O to open a file");
+
+    this._editorContentsElement = this.editorView.mainElement.createChild("div", "fill");
+    this._editorFooterElement = this.editorView.mainElement.createChild("div", "inspector-footer status-bar hidden");
     this._editorContainer = new WebInspector.TabbedEditorContainer(this, "previouslyViewedFiles", tabbedEditorPlaceholderText);
-    this._editorContainer.show(this.editorView.mainElement);
+    this._editorContainer.show(this._editorContentsElement);
 
     this._navigatorController = new WebInspector.NavigatorOverlayController(this.editorView, this._navigator.view, this._editorContainer.view);
 
@@ -1317,6 +1320,30 @@ WebInspector.ScriptsPanel.prototype = {
 
         if (WebInspector.settings.watchExpressions.get().length > 0)
             this.sidebarPanes.watchExpressions.expand();
+    },
+
+    /**
+     * @return {boolean}
+     */
+    canSetFooterElement: function()
+    {
+        return true;
+    },
+
+    /**
+     * @param {Element?} element
+     */
+    setFooterElement: function(element)
+    {
+        if (element) {
+            this._editorFooterElement.removeStyleClass("hidden");
+            this._editorFooterElement.appendChild(element);
+            this._editorContentsElement.style.bottom = this._editorFooterElement.offsetHeight + "px";
+        } else {
+            this._editorFooterElement.addStyleClass("hidden");
+            this._editorFooterElement.removeChildren();
+            this._editorContentsElement.style.bottom = 0;
+        }
     },
 
     __proto__: WebInspector.Panel.prototype

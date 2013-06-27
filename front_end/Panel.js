@@ -172,6 +172,21 @@ WebInspector.Panel.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    canSetFooterElement: function()
+    {
+        return false;
+    },
+
+    /**
+     * @param {?Element} element
+     */
+    setFooterElement: function(element)
+    {
+    },
+
+    /**
      * @param {Element=} parentElement
      * @param {string=} position
      * @param {number=} defaultWidth
