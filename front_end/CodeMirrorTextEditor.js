@@ -83,7 +83,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         {
             if (codeMirror.somethingSelected())
                 return CodeMirror.Pass;
-            codeMirror.replaceRange(indent, codeMirror.getCursor());
+            var pos = codeMirror.getCursor("head");
+            codeMirror.replaceRange(indent.substring(pos.ch % indent.length), codeMirror.getCursor());
         }
     }
     this._codeMirror.setOption("extraKeys", extraKeys);
