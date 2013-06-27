@@ -46,32 +46,24 @@ WebInspector.SearchController = function()
     this._searchControlElement = searchControlElementColumn.createChild("span", "toolbar-search-control");
     this._searchInputElement = this._searchControlElement.createChild("input", "search-replace");
     this._searchInputElement.id = "search-input-field";
-    this._searchInputElement.placeholder = WebInspector.UIString("Find");
-
-    this._filterControlElement = searchControlElementColumn.createChild("span", "toolbar-search-control");
-    this._filterControlElement.addStyleClass("hidden");
-    this._filterInputElement = this._filterControlElement.createChild("input", "filter");
-    this._filterInputElement.id = "filter-input-field";
-    this._filterInputElement.placeholder = WebInspector.UIString("Filter");
 
     this._matchesElement = this._searchControlElement.createChild("label", "search-results-matches");
     this._matchesElement.setAttribute("for", "search-input-field");
 
-    var searchNavigationElement = this._searchControlElement.createChild("div", "toolbar-search-navigation-controls");
+    this._searchNavigationElement = this._searchControlElement.createChild("div", "toolbar-search-navigation-controls");
+    this._toggleFilterUI(false);
 
-    this._searchNavigationPrevElement = searchNavigationElement.createChild("div", "toolbar-search-navigation toolbar-search-navigation-prev");
+    this._searchNavigationPrevElement = this._searchNavigationElement.createChild("div", "toolbar-search-navigation toolbar-search-navigation-prev");
     this._searchNavigationPrevElement.addEventListener("click", this._onPrevButtonSearch.bind(this), false);
     this._searchNavigationPrevElement.title = WebInspector.UIString("Search Previous");
 
-    this._searchNavigationNextElement = searchNavigationElement.createChild("div", "toolbar-search-navigation toolbar-search-navigation-next");
+    this._searchNavigationNextElement = this._searchNavigationElement.createChild("div", "toolbar-search-navigation toolbar-search-navigation-next");
     this._searchNavigationNextElement.addEventListener("click", this._onNextButtonSearch.bind(this), false);
     this._searchNavigationNextElement.title = WebInspector.UIString("Search Next");
 
     this._searchInputElement.addEventListener("mousedown", this._onSearchFieldManualFocus.bind(this), false); // when the search field is manually selected
     this._searchInputElement.addEventListener("keydown", this._onKeyDown.bind(this), true);
-    this._filterInputElement.addEventListener("keydown", this._onKeyDown.bind(this), true);
-    this._filterInputElement.addEventListener("input", this._onFilterInput.bind(this), false);
-    this._searchInputElement.addEventListener("input", this._onSearchInput.bind(this), false);
+    this._searchInputElement.addEventListener("input", this._onInput.bind(this), false);
 
     this._replaceInputElement = this._secondRowElement.createChild("td").createChild("input", "search-replace toolbar-replace-control");
     this._replaceInputElement.addEventListener("keydown", this._onKeyDown.bind(this), true);
@@ -171,8 +163,10 @@ WebInspector.SearchController.prototype = {
             return;
         if (this._filterCheckboxElement.checked) {
             this._filterCheckboxElement.checked = false;
-            this._switchFilterToSearch();
-        }
+            this._toggleFilterUI(false);
+            this.resetFilter();
+        } else
+            this.resetSearch();
         delete this._searchIsVisible;
         this._searchHost.setFooterElement(null);
         this.resetSearch();
@@ -293,24 +287,14 @@ WebInspector.SearchController.prototype = {
         this._searchIsVisible = true;
     },
 
-    _switchFilterToSearch: function()
+    /**
+     * @param {boolean} filter
+     */
+    _toggleFilterUI: function(filter)
     {
-        this._filterControlElement.addStyleClass("hidden");
-        this._searchControlElement.removeStyleClass("hidden");
-        this._searchInputElement.focus();
-        this._searchInputElement.select();
-        this._searchInputElement.value = this._filterInputElement.value;
-        this.resetFilter();
-    },
-
-    _switchSearchToFilter: function()
-    {
-        this._filterControlElement.removeStyleClass("hidden");
-        this._searchControlElement.addStyleClass("hidden");
-        this._filterInputElement.focus();
-        this._filterInputElement.select();
-        this._filterInputElement.value = this._searchInputElement.value;
-        this.resetSearch();
+        this._matchesElement.enableStyleClass("hidden", filter);
+        this._searchNavigationElement.enableStyleClass("hidden", filter);
+        this._searchInputElement.placeholder = filter ? WebInspector.UIString("Filter") : WebInspector.UIString("Find");
     },
 
     _updateFilterVisibility: function()
@@ -459,11 +443,16 @@ WebInspector.SearchController.prototype = {
 
     _filterCheckboxClick: function()
     {
+        this._searchInputElement.focus();
+        this._searchInputElement.select();
+
         if (this._filterCheckboxElement.checked) {
-            this._switchSearchToFilter();
-            this._performFilter(this._filterInputElement.value);
+            this._toggleFilterUI(true);
+            this.resetSearch();
+            this._performFilter(this._searchInputElement.value);
         } else {
-            this._switchFilterToSearch();
+            this._toggleFilterUI(false);
+            this.resetFilter();
             this._performSearch(false, false);
         }
     },
@@ -476,14 +465,12 @@ WebInspector.SearchController.prototype = {
         this._searchProvider.performFilter(query);
     },
 
-    _onFilterInput: function(event)
+    _onInput: function(event)
     {
-        this._performFilter(event.target.value);
-    },
-
-    _onSearchInput: function(event)
-    {
-        this._performSearch(false, true);
+        if (this._filterCheckboxElement.checked)
+            this._performFilter(event.target.value);
+        else
+            this._performSearch(false, false);
     },
 
     resetFilter: function()

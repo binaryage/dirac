@@ -406,15 +406,7 @@ body.show-toolbar-icons.dock-to-bottom #toolbar-panels-menu {
     border: 0;
     padding: 0 2px;
     margin: 0;
-    width: 165px;
-}
-
-.filter {
-    -webkit-appearance: none;
-    border: 0;
-    padding: 0 2px;
-    margin: 0;
-    width: 251px;
+    -webkit-flex: 1;
 }
 
 .search-replace:focus {
@@ -430,10 +422,7 @@ body.show-toolbar-icons.dock-to-bottom #toolbar-panels-menu {
 }
 
 .toolbar-search-navigation-controls {
-    position: absolute;
-    top: 0;
-    right: 0;
-    height: 18px;
+    vertical-align: top;
     background-image: -webkit-linear-gradient(rgb(228, 228, 228), rgb(206, 206, 206));
 }
 
@@ -472,13 +461,13 @@ body.show-toolbar-icons.dock-to-bottom #toolbar-panels-menu {
 }
 
 .toolbar-search-control {
-    display: inline-block;
+    display: -webkit-flex;
+    width: 253px;
     position: relative;
     background-color: white;
     border: 1px solid rgb(163, 163, 163);
     height: 20px;
     border-radius: 2px;
-    padding-top: 1px;
 }
 
 .toolbar-replace-control {
@@ -512,12 +501,10 @@ body.show-toolbar-icons.dock-to-bottom #toolbar-panels-menu {
 
 .search-results-matches {
     display: inline-block;
-    min-width: 70px;
     min-height: 10px;
-    margin-right: 36px;
     text-align: right;
     font-size: 11px;
-    padding: 0 4px;
+    padding: 1px 4px;
     color: rgb(165, 165, 165);
 }
 
