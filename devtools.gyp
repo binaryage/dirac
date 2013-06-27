@@ -269,6 +269,7 @@
         'devtools_scripts_js_files': [
             'front_end/BreakpointsSidebarPane.js',
             'front_end/CallStackSidebarPane.js',
+            'front_end/FilePathScoreFunction.js',
             'front_end/FilteredItemSelectionDialog.js',
             'front_end/JavaScriptSourceFrame.js',
             'front_end/NavigatorOverlayController.js',

@@ -256,6 +256,7 @@ modules = [
         "sources": [
             "BreakpointsSidebarPane.js",
             "CallStackSidebarPane.js",
+            "FilePathScoreFunction.js",
             "FilteredItemSelectionDialog.js",
             "JavaScriptSourceFrame.js",
             "NavigatorOverlayController.js",

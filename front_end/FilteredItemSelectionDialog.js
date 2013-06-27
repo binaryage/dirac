@@ -67,25 +67,6 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
     this._itemsLoaded();
 }
 
-/**
- * @param {string} query
- * @return {RegExp}
- */
-WebInspector.FilteredItemSelectionDialog._createSearchRegex = function(query)
-{
-    const toEscape = String.regexSpecialCharacters();
-    var regexString = "";
-    for (var i = 0; i < query.length; ++i) {
-        var c = query.charAt(i);
-        if (toEscape.indexOf(c) !== -1)
-            c = "\\" + c;
-        if (i)
-            regexString += "[^" + c + "]*";
-        regexString += c;
-    }
-    return new RegExp(regexString, "i");
-}
-
 WebInspector.FilteredItemSelectionDialog.prototype = {
     /**
      * @param {Element} element
@@ -187,7 +168,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         var query = this._delegate.rewriteQuery(this._promptElement.value.trim());
         this._query = query;
         var queryLength = query.length;
-        var filterRegex = query ? WebInspector.FilteredItemSelectionDialog._createSearchRegex(query) : null;
+        var filterRegex = query ? WebInspector.FilePathScoreFunction.filterRegex(query) : null;
 
         var oldSelectedAbsoluteIndex = this._selectedIndexInFiltered ? this._filteredItems[this._selectedIndexInFiltered] : null;
         var filteredItems = [];
@@ -604,6 +585,7 @@ WebInspector.SelectUISourceCodeDialog = function(defaultScores)
     for (var i = 0; i < projects.length; ++i)
         this._uiSourceCodes = this._uiSourceCodes.concat(projects[i].uiSourceCodes().filter(this.filterUISourceCode.bind(this)));
     this._defaultScores = defaultScores;
+    this._scorer = new WebInspector.FilePathScoreFunction("");
     WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
 }
 
@@ -665,96 +647,11 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
 
         if (this._query !== query) {
             this._query = query;
-            this._queryToUpperCase = query.toUpperCase();
-            this._ignoreCase = query === this._queryToUpperCase;
-            this._filterRegex = WebInspector.FilteredItemSelectionDialog._createSearchRegex(query);
+            this._scorer = new WebInspector.FilePathScoreFunction(query);
         }
 
         var path = uiSourceCode.fullName();
-        return score + 10 * this._scoreTokens(path, this._queryToUpperCase, null);
-    },
-
-    /**
-     * @param {string} path
-     * @param {string} queryToUpperCase
-     * @param {?Array.<number>} matchIndexes
-     */
-    _scoreTokens: function(path, queryToUpperCase, matchIndexes)
-    {
-        var pathLength = path.length;
-        var queryLength = queryToUpperCase.length;
-        var indexOfLastSlash = path.lastIndexOf("/");
-        var totalLength = pathLength * queryLength;
-        var dynamics = new Array(totalLength * 2);
-
-        /**
-         * @param {number} pathIndex
-         * @param {number} queryIndex
-         * @param {boolean} previousWasAMatch
-         * @param {?Array.<number>} indexes
-         */
-        function score(pathIndex, queryIndex, previousWasAMatch, indexes)
-        {
-            var key = pathIndex * queryLength + queryIndex + (previousWasAMatch ? queryLength * pathLength : 0);
-            if (!indexes && key in dynamics)
-                return dynamics[key];
-
-            if (queryIndex >= queryLength)
-                return 0;
-
-            var match = -1;
-            var queryChar = queryToUpperCase[queryIndex];
-            while (match === -1 && pathIndex < path.length) {
-                var pathChar = path[pathIndex];
-                var prevPathChar = path[pathIndex - 1];
-                if ((!prevPathChar || prevPathChar === "/") && pathChar.toUpperCase() === queryChar)
-                    match = 2; // Word start
-                else if ((prevPathChar === "_" || prevPathChar === "-") && pathChar.toUpperCase() === queryChar)
-                    match = 1; // Token start
-                else if (previousWasAMatch && pathChar.toUpperCase() === queryChar)
-                    match = 3; // Subsequent match
-                else if (pathChar === queryChar)
-                    match = 1; // Upper case match
-                else if (pathChar.toUpperCase() === queryChar)
-                    match = 0; // Regular letter match
-                else
-                    pathIndex++;
-                previousWasAMatch = false;
-            }
-
-            if (pathIndex >= path.length) {
-                dynamics[key] = -1;
-                return -1;
-            }
-
-            // Boost name match score.
-            if (pathIndex > indexOfLastSlash)
-                match *= 2;
-
-            // skipIndexes and useIndexes are used to collect highlight info if necessary.
-            var useIndexes = matchIndexes ? [] : null;
-            var useScore = score(pathIndex + 1, queryIndex + 1, match > 0, useIndexes);
-            if (useScore >= 0)
-                useScore += match;
-
-            var skipIndexes = matchIndexes ? [] : null;
-            var skipScore = score(pathIndex + 1, queryIndex, false, skipIndexes);
-
-            var maxScore = Math.max(skipScore, useScore);
-            dynamics[key] = maxScore;
-
-            if (matchIndexes) {
-                indexes.length = 0;
-                if (skipScore > useScore)
-                    indexes.push.apply(indexes, skipIndexes);
-                else {
-                    indexes.push(pathIndex);
-                    indexes.push.apply(indexes, useIndexes);
-                }
-            }
-            return maxScore;
-        }
-        return score(0, 0, false, matchIndexes);
+        return score + 10 * this._scorer.score(path, null);
     },
 
     /**
@@ -770,21 +667,18 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
         titleElement.textContent = uiSourceCode.name().trimEnd(100) + (this._queryLineNumber ? this._queryLineNumber : "");
         subtitleElement.textContent = uiSourceCode.fullName();
 
-        function highlightMatchingScores(element)
-        {
-            var indexes = [];
-            var score = this._scoreTokens(element.textContent, query.toUpperCase(), indexes);
-            if (score > 0) {
-                var ranges = [];
-                for (var i = 0; i < indexes.length; ++i)
-                    ranges.push({offset: indexes[i], length: 1});
-                return WebInspector.highlightRangesWithStyleClass(element, ranges, "highlight");
-            }
-            return this.highlightRanges(element, query);
-        }
-        if (query) {
-            if (!highlightMatchingScores.call(this, titleElement))
-                highlightMatchingScores.call(this, subtitleElement);
+        var indexes = [];
+        var score = this._scorer.score(subtitleElement.textContent, indexes);
+        var fileNameIndex = subtitleElement.textContent.lastIndexOf("/");
+        var ranges = [];
+        for (var i = 0; i < indexes.length; ++i)
+            ranges.push({offset: indexes[i], length: 1});
+        if (indexes[0] > fileNameIndex) {
+            for (var i = 0; i < ranges.length; ++i)
+                ranges[i].offset -= fileNameIndex + 1;
+            return WebInspector.highlightRangesWithStyleClass(titleElement, ranges, "highlight");
+        } else {
+            return WebInspector.highlightRangesWithStyleClass(subtitleElement, ranges, "highlight");
         }
     },
 
