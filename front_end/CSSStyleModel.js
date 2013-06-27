@@ -76,7 +76,8 @@ WebInspector.CSSStyleModel.Events = {
     MediaQueryResultChanged: "MediaQueryResultChanged",
     NamedFlowCreated: "NamedFlowCreated",
     NamedFlowRemoved: "NamedFlowRemoved",
-    RegionLayoutUpdated: "RegionLayoutUpdated"
+    RegionLayoutUpdated: "RegionLayoutUpdated",
+    RegionOversetChanged: "RegionOversetChanged"
 }
 
 WebInspector.CSSStyleModel.MediaTypes = ["all", "braille", "embossed", "handheld", "print", "projection", "screen", "speech", "tty", "tv"];
@@ -499,6 +500,21 @@ WebInspector.CSSStyleModel.prototype = {
 
         namedFlowCollection._appendNamedFlow(namedFlow);
         this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.RegionLayoutUpdated, namedFlow);
+    },
+
+    /**
+     * @param {CSSAgent.NamedFlow} namedFlowPayload
+     */
+    _regionOversetChanged: function(namedFlowPayload)
+    {
+        var namedFlow = WebInspector.NamedFlow.parsePayload(namedFlowPayload);
+        var namedFlowCollection = this._namedFlowCollections[namedFlow.documentNodeId];
+
+         if (!namedFlowCollection)
+            return;
+
+        namedFlowCollection._appendNamedFlow(namedFlow);
+        this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.RegionOversetChanged, namedFlow);
     },
 
     /**
@@ -1591,6 +1607,14 @@ WebInspector.CSSDispatcher.prototype = {
     regionLayoutUpdated: function(namedFlowPayload)
     {
         this._cssModel._regionLayoutUpdated(namedFlowPayload);
+    },
+
+    /**
+     * @param {CSSAgent.NamedFlow} namedFlowPayload
+     */
+    regionOversetChanged: function(namedFlowPayload)
+    {
+        this._cssModel._regionOversetChanged(namedFlowPayload);
     }
 }
 
