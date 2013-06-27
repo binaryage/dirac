@@ -67,11 +67,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         autoCloseBrackets: true
     });
     this._codeMirror._codeMirrorTextEditor = this;
-    this._codeMirror.setOption("mode", null);
 
     var extraKeys = {};
-    extraKeys["Ctrl-Space"] = "autocomplete";
-    extraKeys[(WebInspector.isMac() ? "Cmd-" : "Ctrl-") + "/"] = "toggleComment";
     var indent = WebInspector.settings.textEditorIndent.get();
     if (indent === WebInspector.TextUtils.Indent.TabCharacter) {
         this._codeMirror.setOption("indentWithTabs", true);
@@ -88,8 +85,62 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         }
     }
     this._codeMirror.setOption("extraKeys", extraKeys);
+
+    CodeMirror.keyMap["devtools-common"] = {
+        "Left": "goCharLeft",
+        "Right": "goCharRight",
+        "Up": "goLineUp",
+        "Down": "goLineDown",
+        "End": "goLineEnd",
+        "Home": "goLineStartSmart",
+        "PageUp": "goPageUp",
+        "PageDown": "goPageDown",
+        "Delete": "delCharAfter",
+        "Backspace": "delCharBefore",
+        "Tab": "defaultTab",
+        "Shift-Tab": "indentLess",
+        "Enter": "newlineAndIndent",
+        "Ctrl-Space": "autocomplete"
+    };
+
+    CodeMirror.keyMap["devtools-pc"] = {
+        "Ctrl-A": "selectAll",
+        "Ctrl-Z": "undo",
+        "Shift-Ctrl-Z": "redo",
+        "Ctrl-Home": "goDocStart",
+        "Ctrl-Up": "goDocStart",
+        "Ctrl-End": "goDocEnd",
+        "Ctrl-Down": "goDocEnd",
+        "Ctrl-Left": "goGroupLeft",
+        "Ctrl-Right": "goGroupRight",
+        "Alt-Left": "goLineStart",
+        "Alt-Right": "goLineEnd",
+        "Ctrl-Backspace": "delGroupBefore",
+        "Ctrl-Delete": "delGroupAfter",
+        "Ctrl-/": "toggleComment",
+        fallthrough: "devtools-common"
+    };
+
+    CodeMirror.keyMap["devtools-mac"] = {
+        "Cmd-A" : "selectAll",
+        "Cmd-Z" : "undo",
+        "Shift-Cmd-Z": "redo",
+        "Cmd-Up": "goDocStart",
+        "Cmd-Down": "goDocEnd",
+        "Alt-Left": "goGroupLeft",
+        "Alt-Right": "goGroupRight",
+        "Cmd-Left": "goLineStart",
+        "Cmd-Right": "goLineEnd",
+        "Alt-Backspace": "delGroupBefore",
+        "Alt-Delete": "delGroupAfter",
+        "Cmd-/": "toggleComment",
+        fallthrough: "devtools-common"
+    };
+
+    this._codeMirror.setOption("keyMap", WebInspector.isMac() ? "devtools-mac" : "devtools-pc");
     this._codeMirror.setOption("flattenSpans", false);
     this._codeMirror.setOption("maxHighlightLength", 1000);
+    this._codeMirror.setOption("mode", null);
 
     this._tokenHighlighter = new WebInspector.CodeMirrorTextEditor.TokenHighlighter(this._codeMirror);
     this._blockIndentController = new WebInspector.CodeMirrorTextEditor.BlockIndentController(this._codeMirror);
