@@ -123,7 +123,7 @@ WebInspector.CodeMirrorTextEditor.autocompleteCommand = function(codeMirror)
 }
 CodeMirror.commands.autocomplete = WebInspector.CodeMirrorTextEditor.autocompleteCommand;
 
-WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 1000;
+WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 2000;
 WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
