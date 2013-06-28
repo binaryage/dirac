@@ -3610,6 +3610,20 @@
                 "returns": [
                     { "name": "resourceState", "$ref": "ResourceState" }
                 ]
+            },
+            {
+                "name": "evaluateTraceLogCallArgument",
+                "parameters": [
+                    { "name": "traceLogId", "$ref": "TraceLogId" },
+                    { "name": "callIndex", "type": "integer", "description": "Index of the call to evaluate on (zero based)." },
+                    { "name": "argumentIndex", "type": "integer", "description": "Index of the argument to evaluate (zero based). Provide <code>-1</code> to evaluate call result." },
+                    { "name": "objectGroup", "type": "string", "optional": true, "description": "String object group name to put result into (allows rapid releasing resulting object handles using <code>Runtime.releaseObjectGroup</code>)." }
+                ],
+                "returns": [
+                    { "name": "result", "$ref": "Runtime.RemoteObject", "optional": true, "description": "Object wrapper for the evaluation result." },
+                    { "name": "resourceState", "$ref": "ResourceState", "optional": true, "description": "State of the <code>Resource</code> object." }
+                ],
+                "description": "Evaluates a given trace call argument or its result."
             }
         ],
         "events": [
