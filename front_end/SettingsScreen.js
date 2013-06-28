@@ -157,7 +157,7 @@ WebInspector.SettingsTab.prototype = {
      * @param {boolean=} omitParagraphElement
      * @param {Element=} inputElement
      */
-    _createCheckboxSetting: function(name, setting, omitParagraphElement, inputElement)
+    _createCheckboxSetting: function(name, setting, omitParagraphElement, inputElement, tooltip)
     {
         var input = inputElement || document.createElement("input");
         input.type = "checkbox";
@@ -173,6 +173,9 @@ WebInspector.SettingsTab.prototype = {
         var label = document.createElement("label");
         label.appendChild(input);
         label.appendChild(document.createTextNode(name));
+        if (tooltip)
+            label.title = tooltip;
+
         if (omitParagraphElement)
             return label;
 
@@ -338,6 +341,9 @@ WebInspector.GenericSettingsTab = function()
     this._compositingModeSettings.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show FPS meter"), WebInspector.settings.showFPSCounter, false, this._showFPSCheckbox));
     this._continousPaintingCheckbox = document.createElement("input");
     this._compositingModeSettings.appendChild(this._createCheckboxSetting(WebInspector.UIString("Enable continuous page repainting"), WebInspector.settings.continuousPainting, false, this._continousPaintingCheckbox));
+    this._showScrollBottleneckRectsCheckbox = document.createElement("input");
+    var tooltip = WebInspector.UIString("Shows areas of the page that slow down scrolling:\nTouch and mousewheel event listeners can delay scrolling.\nSome areas need to repaint their content when scrolled.");
+    this._compositingModeSettings.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show potential scroll bottlenecks"), WebInspector.settings.showScrollBottleneckRects, false, this._showScrollBottleneckRectsCheckbox, tooltip));
     this._forceCompositingModeChanged();
 
     p = this._appendSection(WebInspector.UIString("Sources"));
@@ -397,9 +403,11 @@ WebInspector.GenericSettingsTab.prototype = {
             this._showFPSCheckbox.checked = false;
             this._continousPaintingCheckbox.checked = false;
             this._showCompositedLayersBordersCheckbox.checked = false;
+            this._showScrollBottleneckRectsCheckbox.checked = false;
             WebInspector.settings.showFPSCounter.set(false);
             WebInspector.settings.continuousPainting.set(false);
             WebInspector.settings.showDebugBorders.set(false);
+            WebInspector.settings.showScrollBottleneckRects.set(false);
         }
         this._forceCompositingModeCheckbox.checked = compositing;
     },

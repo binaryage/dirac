@@ -354,6 +354,14 @@
                 "hidden": true
             },
             {
+                "name": "setShowScrollBottleneckRects",
+                "description": "Requests that backend shows scroll bottleneck rects",
+                "parameters": [
+                    { "name": "show", "type": "boolean", "description": "True for showing scroll bottleneck rects" }
+                ],
+                "hidden": true
+            },
+            {
                 "name": "getScriptExecutionStatus",
                 "description": "Determines if scripts can be executed in the page.",
                 "returns": [
