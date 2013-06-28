@@ -1308,6 +1308,7 @@ WebInspector.ElementsTreeElement.prototype = {
         contextMenu.appendItem(WebInspector.UIString("Copy as HTML"), this._copyHTML.bind(this));
         contextMenu.appendItem(WebInspector.UIString("Copy XPath"), this._copyXPath.bind(this));
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Delete node" : "Delete Node"), this.remove.bind(this));
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Inspect DOM properties" : "Inspect DOM Properties"), this._inspectDOMProperties.bind(this));
     },
 
     _startEditing: function()
@@ -2062,6 +2063,24 @@ WebInspector.ElementsTreeElement.prototype = {
     _copyXPath: function()
     {
         this._node.copyXPath(true);
+    },
+
+    _inspectDOMProperties: function()
+    {
+        WebInspector.RemoteObject.resolveNode(this._node, "console", callback);
+
+        /**
+         * @param {WebInspector.RemoteObject} nodeObject
+         */
+        function callback(nodeObject)
+        {
+            if (!nodeObject)
+                return;
+
+            var message = WebInspector.ConsoleMessage.create(WebInspector.ConsoleMessage.MessageSource.ConsoleAPI, WebInspector.ConsoleMessage.MessageLevel.Log, "", WebInspector.ConsoleMessage.MessageType.Dir, undefined, undefined, undefined, [nodeObject]);
+            WebInspector.console.addMessage(message);
+            WebInspector.showConsole();
+        }
     },
 
     _highlightSearchResults: function()
