@@ -94,7 +94,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
         if (this.source === WebInspector.ConsoleMessage.MessageSource.ConsoleAPI) {
             switch (this.type) {
                 case WebInspector.ConsoleMessage.MessageType.Trace:
-                    this._messageElement = document.createTextNode("console.trace()");
+                    this._messageElement = this._format(this._parameters || ["console.trace()"]);
                     break;
                 case WebInspector.ConsoleMessage.MessageType.Clear:
                     this._messageElement = document.createTextNode(WebInspector.UIString("Console was cleared"));
