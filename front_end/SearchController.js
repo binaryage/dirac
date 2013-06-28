@@ -470,7 +470,7 @@ WebInspector.SearchController.prototype = {
         if (this._filterCheckboxElement.checked)
             this._performFilter(event.target.value);
         else
-            this._performSearch(false, false);
+            this._performSearch(false, true);
     },
 
     resetFilter: function()
