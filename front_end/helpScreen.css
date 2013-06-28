@@ -94,7 +94,7 @@ body.platform-mac .settings-tab.help-container {
 }
 
 body.platform-mac .help-container {
-    -webkit-column-width: 330px;
+    -webkit-column-width: 361px;
 }
 
 .help-block {
@@ -121,7 +121,8 @@ body.platform-mac .settings-tab .help-block {
 }
 
 .help-line {
-    padding-bottom: 3px;
+    padding-bottom: 5px;
+    margin-bottom: 5px;
 }
 
 .help-key-cell {
@@ -131,7 +132,7 @@ body.platform-mac .settings-tab .help-block {
 }
 
 body.platform-mac .help-key-cell {
-    width: 120px;
+    width: 151px;
 }
 
 .help-cell {
@@ -143,7 +144,18 @@ body.platform-mac .help-key-cell {
 }
 
 .help-key {
-    font-weight: bold;
+    padding: 0.1em 0.6em;
+    border: 1px solid #ccc;
+    font-size: 11px;
+    background-color: #f7f7f7;
+    color: #333;
+    box-shadow: 0 1px 0px rgba(0, 0, 0, 0.2), 0 0 0 2px #ffffff inset;
+    border-radius: 3px;
+    display: inline-block;
+    margin: 0 0.1em;
+    text-shadow: 0 1px 0 #fff;
+    line-height: 1.5;
+    white-space: nowrap;
 }
 
 body.platform-mac .help-key {

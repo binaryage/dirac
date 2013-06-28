@@ -171,7 +171,7 @@ WebInspector.ShortcutsSection.prototype = {
     {
         var keyName = key.name;
         var plus = this._createSpan("help-combine-keys", "+");
-        return this._joinNodes(keyName.split(" + ").map(this._createSpan.bind(this, "help-key monospace")), plus);
+        return this._joinNodes(keyName.split(" + ").map(this._createSpan.bind(this, "help-key")), plus);
     },
 
     /**
