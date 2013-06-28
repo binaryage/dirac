@@ -156,6 +156,7 @@ WebInspector.SettingsTab.prototype = {
     /**
      * @param {boolean=} omitParagraphElement
      * @param {Element=} inputElement
+     * @param {string=} tooltip
      */
     _createCheckboxSetting: function(name, setting, omitParagraphElement, inputElement, tooltip)
     {

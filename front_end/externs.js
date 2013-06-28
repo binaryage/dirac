@@ -255,6 +255,9 @@ WebInspector.Events = {
     InspectorClosing: "InspectorClosing"
 }
 
+/** @type {WebInspector.SettingsController} */
+WebInspector.settingsController;
+
 /** Extensions API */
 
 /** @constructor */
@@ -324,9 +327,6 @@ difflib.stringAsLines = function(text) { return []; }
 /** @constructor */
 difflib.SequenceMatcher = function(baseText, newText) { }
 difflib.SequenceMatcher.prototype.get_opcodes = function() { return []; }
-
-/** @constructor */
-WebInspector.AceTextEditor = function(url, delegate) { }
 
 /** @constructor */
 var CodeMirror = function() { }
@@ -469,21 +469,18 @@ CodeMirror.StringStream.prototype = {
     sol: function () { }
 }
 
+/** @type {Object.<string, Object.<string, string>>} */
+CodeMirror.keyMap;
+
 WebInspector.suggestReload = function() { }
 WebInspector.reload = function() { }
 
 WebInspector.settings.continuousPainting = /** type {WebInspector.Setting} */ { }
 WebInspector.settings.showDebugBorders = /** type {WebInspector.Setting} */ { }
+WebInspector.settings.showScrollBottleneckRects = /** type {WebInspector.Setting} */ { }
 WebInspector.settings.forceCompositingMode = /** type {WebInspector.Setting} */ { }
 WebInspector.settings.showFPSCounter = /** type {WebInspector.Setting} */ { }
 WebInspector.settings.showPaintRects = /** type {WebInspector.Setting} */ { }
-WebInspector.settings.showFPSCounter = /** type {WebInspector.Setting} */ { }
 
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;
-
-WebInspector.settings.continuousPainting = /** type {WebInspector.Setting} */ { }
-WebInspector.settings.showDebugBorders = /** type {WebInspector.Setting} */ { }
-WebInspector.settings.showFPSCounter = /** type {WebInspector.Setting} */ { }
-WebInspector.settings.showPaintRects = /** type {WebInspector.Setting} */ { }
-WebInspector.settings.showFPSCounter = /** type {WebInspector.Setting} */ { }
