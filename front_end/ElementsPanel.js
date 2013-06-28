@@ -787,13 +787,19 @@ WebInspector.ElementsPanel.prototype = {
         crumbs.firstChild.addStyleClass("end");
         crumbs.lastChild.addStyleClass("start");
 
+        var rightPadding = 20;
+        var crumbsTotalOffsetLeft = crumbs.totalOffsetLeft();
+        var windowInnerWidth = window.innerWidth;
+        var errorWarningElement = document.getElementById("error-warning-count");
+        if (!WebInspector.drawer.visible) {
+            if (errorWarningElement)
+                rightPadding += errorWarningElement.offsetWidth;
+            rightPadding += WebInspector.settingsController.statusBarItem.offsetWidth;
+        }
+
         function crumbsAreSmallerThanContainer()
         {
-            var rightPadding = 20;
-            var errorWarningElement = document.getElementById("error-warning-count");
-            if (!WebInspector.drawer.visible && errorWarningElement)
-                rightPadding += errorWarningElement.offsetWidth;
-            return ((crumbs.totalOffsetLeft() + crumbs.offsetWidth + rightPadding) < window.innerWidth);
+            return (crumbsTotalOffsetLeft + crumbs.offsetWidth + rightPadding) < windowInnerWidth;
         }
 
         if (crumbsAreSmallerThanContainer())
