@@ -179,6 +179,32 @@ WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 2000;
 WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
+    /**
+     * @param {!RegExp} regex
+     * @param {WebInspector.TextRange} range
+     */
+    highlightSearchResults: function(regex, range)
+    {
+        function innerHighlightRegex()
+        {
+            if (range) {
+                this.revealLine(range.startLine);
+                this.setSelection(WebInspector.TextRange.createFromLocation(range.startLine, range.startColumn));
+            } else {
+                // Collapse selection to end on search start so that we jump to next occurence on the first enter press.
+                this.setSelection(this.selection().collapseToEnd());
+            }
+            this._tokenHighlighter.highlightSearchResults(regex, range);
+        }
+
+        this._codeMirror.operation(innerHighlightRegex.bind(this));
+    },
+
+    cancelSearchResultsHighlight: function()
+    {
+        this._codeMirror.operation(this._tokenHighlighter.highlightSelectedTokens.bind(this._tokenHighlighter));
+    },
+
     undo: function()
     {
         this._codeMirror.undo();
@@ -639,17 +665,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} range
-     */
-    markAndRevealRange: function(range)
-    {
-        if (!range)
-            return;
-        this.revealLine(range.startLine);
-        this.setSelection(range);
-    },
-
-    /**
      * @param {number} lineNumber
      * @param {number=} columnNumber
      */
@@ -799,6 +814,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var start = this._codeMirror.getCursor("anchor");
         var end = this._codeMirror.getCursor("head");
         this._delegate.selectionChanged(this._toRange(start, end));
+        if (!this._tokenHighlighter.highlightedRegex())
+            this._codeMirror.operation(this._tokenHighlighter.highlightSelectedTokens.bind(this._tokenHighlighter));
     },
 
     _scroll: function()
@@ -963,13 +980,53 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 WebInspector.CodeMirrorTextEditor.TokenHighlighter = function(codeMirror)
 {
     this._codeMirror = codeMirror;
-    this._codeMirror.on("cursorActivity", this._cursorChange.bind(this));
 }
 
 WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
-    _cursorChange: function()
+    /**
+     * @param {RegExp} regex
+     * @param {WebInspector.TextRange} range
+     */
+    highlightSearchResults: function(regex, range)
     {
-        this._codeMirror.operation(this._removeHighlight.bind(this));
+        var oldRegex = this._highlightRegex;
+        this._highlightRegex = regex;
+        this._highlightRange = range;
+        if (this._searchResultMarker) {
+            this._searchResultMarker.clear();
+            delete this._searchResultMarker;
+        }
+        if (this._highlightDescriptor && this._highlightDescriptor.selectionStart)
+            this._codeMirror.removeLineClass(this._highlightDescriptor.selectionStart.line, "wrap", "cm-line-with-selection");
+        var selectionStart = this._highlightRange ? new CodeMirror.Pos(this._highlightRange.startLine, this._highlightRange.startColumn) : null;
+        if (selectionStart)
+            this._codeMirror.addLineClass(selectionStart.line, "wrap", "cm-line-with-selection");
+        if (this._highlightRegex === oldRegex) {
+            // Do not re-add overlay mode if regex did not change for better performance.
+            this._highlightDescriptor.selectionStart = selectionStart;
+        } else {
+            this._removeHighlight();
+            this._setHighlighter(this._searchHighlighter.bind(this, this._highlightRegex, this._highlightRange), selectionStart);
+        }
+        if (selectionStart) {
+            var pos = WebInspector.CodeMirrorTextEditor.prototype._toPos(this._highlightRange);
+            this._searchResultMarker = this._codeMirror.markText(pos.start, pos.end, {className: "cm-column-with-selection"});
+        }
+    },
+
+    highlightedRegex: function()
+    {
+        return this._highlightRegex;
+    },
+
+    highlightSelectedTokens: function()
+    {
+        delete this._highlightRegex;
+        delete this._highlightRange;
+
+        if (this._highlightDescriptor && this._highlightDescriptor.selectionStart)
+            this._codeMirror.removeLineClass(this._highlightDescriptor.selectionStart.line, "wrap", "cm-line-with-selection");
+        this._removeHighlight();
         var selectionStart = this._codeMirror.getCursor("start");
         var selectionEnd = this._codeMirror.getCursor("end");
         if (selectionStart.line !== selectionEnd.line)
@@ -978,10 +1035,19 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
             return;
 
         var selectedText = this._codeMirror.getSelection();
-        if (this._isWord(selectedText, selectionStart.line, selectionStart.ch, selectionEnd.ch))
-            this._codeMirror.operation(this._addHighlight.bind(this, selectedText, selectionStart));
+        if (this._isWord(selectedText, selectionStart.line, selectionStart.ch, selectionEnd.ch)) {
+            if (selectionStart)
+                this._codeMirror.addLineClass(selectionStart.line, "wrap", "cm-line-with-selection")
+            this._setHighlighter(this._tokenHighlighter.bind(this, selectedText, selectionStart), selectionStart);
+        }
     },
 
+    /**
+     * @param {string} selectedText
+     * @param {number} lineNumber
+     * @param {number} startColumn
+     * @param {number} endColumn
+     */
     _isWord: function(selectedText, lineNumber, startColumn, endColumn)
     {
         var line = this._codeMirror.getLine(lineNumber);
@@ -994,33 +1060,69 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
     {
         if (this._highlightDescriptor) {
             this._codeMirror.removeOverlay(this._highlightDescriptor.overlay);
-            this._codeMirror.removeLineClass(this._highlightDescriptor.selectionStart.line, "wrap", "cm-line-with-selection");
             delete this._highlightDescriptor;
         }
     },
 
-    _addHighlight: function(token, selectionStart)
+    /**
+     * @param {RegExp} regex
+     * @param {WebInspector.TextRange} range
+     * @param {CodeMirror.StringStream} stream
+     */
+    _searchHighlighter: function(regex, range, stream)
     {
-        const tokenFirstChar = token.charAt(0);
-        /**
-         * @param {CodeMirror.StringStream} stream
-         */
-        function nextToken(stream)
-        {
-            if (stream.match(token) && (stream.eol() || !WebInspector.TextUtils.isWordChar(stream.peek())))
-                return stream.column() === selectionStart.ch ? "token-highlight column-with-selection" : "token-highlight";
-
-            var eatenChar;
-            do {
-                eatenChar = stream.next();
-            } while (eatenChar && (WebInspector.TextUtils.isWordChar(eatenChar) || stream.peek() !== tokenFirstChar));
+        if (stream.column() === 0)
+            delete this._searchMatchLength;
+        if (this._searchMatchLength) {
+            if (this._searchMatchLength > 1) {
+                for (var i = 0; i < this._searchMatchLength - 2; ++i)
+                    stream.next();
+                this._searchMatchLength = 1;
+                return "search-highlight";
+            } else {
+                stream.next();
+                delete this._searchMatchLength;
+                return "search-highlight search-highlight-end";
+            }
         }
+        var match = stream.match(regex, false);
+        if (match) {
+            stream.next();
+            var matchLength = match[0].length;
+            if (matchLength === 1)
+                return "search-highlight search-highlight-full";
+            this._searchMatchLength = matchLength;
+            return "search-highlight search-highlight-start";
+        }
+        stream.next();
+    },
 
+    /**
+     * @param {string} token
+     * @param {CodeMirror.Pos} selectionStart
+     * @param {CodeMirror.StringStream} stream
+     */
+    _tokenHighlighter: function(token, selectionStart, stream)
+    {
+        var tokenFirstChar = token.charAt(0);
+        if (stream.match(token) && (stream.eol() || !WebInspector.TextUtils.isWordChar(stream.peek())))
+            return stream.column() === selectionStart.ch ? "token-highlight column-with-selection" : "token-highlight";
+
+        var eatenChar;
+        do {
+            eatenChar = stream.next();
+        } while (eatenChar && (WebInspector.TextUtils.isWordChar(eatenChar) || stream.peek() !== tokenFirstChar));
+    },
+
+    /**
+     * @param {function(CodeMirror.StringStream)} highlighter
+     */
+    _setHighlighter: function(highlighter, selectionStart)
+    {
         var overlayMode = {
-            token: nextToken
+            token: highlighter
         };
         this._codeMirror.addOverlay(overlayMode);
-        this._codeMirror.addLineClass(selectionStart.line, "wrap", "cm-line-with-selection")
         this._highlightDescriptor = {
             overlay: overlayMode,
             selectionStart: selectionStart

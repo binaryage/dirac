@@ -151,9 +151,10 @@ WebInspector.TextEditor.prototype = {
     removeDecoration: function(lineNumber, element) { },
 
     /**
+     * @param {!RegExp} regex
      * @param {WebInspector.TextRange} range
      */
-    markAndRevealRange: function(range) { },
+    highlightSearchResults: function(regex, range) { },
 
     /**
      * @param {number} lineNumber

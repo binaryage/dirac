@@ -330,9 +330,10 @@ WebInspector.DefaultTextEditor.prototype = {
     },
 
     /**
+     * @param {!RegExp} regex
      * @param {WebInspector.TextRange} range
      */
-    markAndRevealRange: function(range)
+    highlightSearchResults: function(regex, range)
     {
         if (range)
             this.setSelection(range);

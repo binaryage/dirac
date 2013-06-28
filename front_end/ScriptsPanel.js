@@ -870,9 +870,6 @@ WebInspector.ScriptsPanel.prototype = {
         if (!this.visibleView)
             return;
 
-        // Call searchCanceled since it will reset everything we need before doing a new search.
-        this.searchCanceled();
-
         this._searchView = this.visibleView;
         this._searchQuery = query;
 

@@ -383,21 +383,24 @@ WebInspector.SourceFrame.prototype = {
      */
     performSearch: function(query, shouldJump, callback, currentMatchChangedCallback)
     {
-        // Call searchCanceled since it will reset everything we need before doing a new search.
-        this.searchCanceled();
-
         function doFindSearchMatches(query)
         {
             this._currentSearchResultIndex = -1;
             this._searchResults = [];
 
             var regex = WebInspector.SourceFrame.createSearchRegex(query);
+            this._searchRegex = regex;
             this._searchResults = this._collectRegexMatches(regex);
-            callback(this, this._searchResults.length);
-            if (shouldJump && this._searchResults.length)
+            if (!this._searchResults.length)
+                this._textEditor.cancelSearchResultsHighlight();
+            else if (shouldJump)
                 this.jumpToNextSearchResult();
+            else
+                this._textEditor.highlightSearchResults(regex, null);
+            callback(this, this._searchResults.length);
         }
 
+        this._resetSearch();
         this._currentSearchMatchChangedCallback = currentMatchChangedCallback;
         if (this.loaded)
             doFindSearchMatches.call(this, query);
@@ -409,9 +412,12 @@ WebInspector.SourceFrame.prototype = {
 
     _editorFocused: function()
     {
+        if (!this._searchResults.length)
+            return;
         this._currentSearchResultIndex = -1;
         if (this._currentSearchMatchChangedCallback)
             this._currentSearchMatchChangedCallback(this._currentSearchResultIndex);
+        this._textEditor.highlightSearchResults(this._searchRegex, null);
     },
 
     _searchResultAfterSelectionIndex: function(selection)
@@ -425,16 +431,24 @@ WebInspector.SourceFrame.prototype = {
         return 0;
     },
 
-    searchCanceled: function()
+    _resetSearch: function()
     {
         delete this._delayedFindSearchMatches;
         delete this._currentSearchMatchChangedCallback;
-        if (!this.loaded)
-            return;
-
         this._currentSearchResultIndex = -1;
         this._searchResults = [];
-        this._textEditor.markAndRevealRange(null);
+        delete this._searchRegex;
+    },
+
+    searchCanceled: function()
+    {
+        var range = this._currentSearchResultIndex !== -1 ? this._searchResults[this._currentSearchResultIndex] : null;
+        this._resetSearch();
+        if (!this.loaded)
+            return;
+        this._textEditor.cancelSearchResultsHighlight();
+        if (range)
+            this._textEditor.setSelection(range);
     },
 
     hasSearchResults: function()
@@ -487,7 +501,7 @@ WebInspector.SourceFrame.prototype = {
         this._currentSearchResultIndex = (index + this._searchResults.length) % this._searchResults.length;
         if (this._currentSearchMatchChangedCallback)
             this._currentSearchMatchChangedCallback(this._currentSearchResultIndex);
-        this._textEditor.markAndRevealRange(this._searchResults[this._currentSearchResultIndex]);
+        this._textEditor.highlightSearchResults(this._searchRegex, this._searchResults[this._currentSearchResultIndex]);
     },
 
     /**
@@ -498,7 +512,7 @@ WebInspector.SourceFrame.prototype = {
         var range = this._searchResults[this._currentSearchResultIndex];
         if (!range)
             return;
-        this._textEditor.markAndRevealRange(null);
+        this._textEditor.highlightSearchResults(this._searchRegex, null);
 
         this._isReplacing = true;
         var newRange = this._textEditor.editRange(range, text);
@@ -513,7 +527,7 @@ WebInspector.SourceFrame.prototype = {
      */
     replaceAllWith: function(query, replacement)
     {
-        this._textEditor.markAndRevealRange(null);
+        this._textEditor.highlightSearchResults(this._searchRegex, null);
 
         var text = this._textEditor.text();
         var range = this._textEditor.range();
