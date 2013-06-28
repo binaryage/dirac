@@ -309,6 +309,8 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
             ++i;
         }
 
+        var selectedNode = this.selectedNode;
+
         this.rootNode().removeChildren();
         // The height of the view port + invisible top part.
         var heightToFill = viewPortHeight + (scrollTop - topPadding);
@@ -328,6 +330,15 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
         }
 
         this._addPaddingRows(topPadding, bottomPadding);
+
+        if (selectedNode) {
+            if (selectedNode.parent) {
+                selectedNode.select(true);
+            } else {
+                // Keep selection even if the node is not in the current viewport.
+                this.selectedNode = selectedNode;
+            }
+        }
     },
 
     appendTopLevelNode: function(node)
