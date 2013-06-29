@@ -107,6 +107,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         "Ctrl-A": "selectAll",
         "Ctrl-Z": "undo",
         "Shift-Ctrl-Z": "redo",
+        "Ctrl-Y": "redo",
         "Ctrl-Home": "goDocStart",
         "Ctrl-Up": "goDocStart",
         "Ctrl-End": "goDocEnd",
