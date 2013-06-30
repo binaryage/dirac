@@ -457,14 +457,12 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     _enableLongLinesMode: function()
     {
-        this._codeMirror.setOption("matchBrackets", false);
         this._codeMirror.setOption("styleSelectedText", false);
         this._longLinesMode = true;
     },
 
     _disableLongLinesMode: function()
     {
-        this._codeMirror.setOption("matchBrackets", true);
         this._codeMirror.setOption("styleSelectedText", true);
         this._longLinesMode = false;
     },
@@ -1170,7 +1168,7 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
                 return CodeMirror.Pass;
 
         codeMirror.replaceRange("}", cursor);
-        var matchingBracket = codeMirror._codeMirrorTextEditor._longLinesMode ? null : codeMirror.findMatchingBracket();
+        var matchingBracket = codeMirror.findMatchingBracket();
         if (!matchingBracket || !matchingBracket.match)
             return;
 
