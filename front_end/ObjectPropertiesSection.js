@@ -197,7 +197,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
     ondblclick: function(event)
     {
-        if (this.property.writable)
+        if (this.property.writable || this.property.setter)
             this.startEditing(event);
     },
 

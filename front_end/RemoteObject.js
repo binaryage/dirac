@@ -260,8 +260,10 @@ WebInspector.RemoteObject.prototype = {
      */
     doSetObjectPropertyValue: function(result, name, callback)
     {
-        // Note that it is not that simple with accessor properties. The proto object may contain the property,
-        // however not the proto object must be 'this', but the main object.
+        // This assignment may be for a regular (data) property, and for an acccessor property (with getter/setter).
+        // Note the sensitive matter about accessor property: the property may be physically defined in some proto object,
+        // but logically it is bound to the object in question. JavaScript passes this object to getters/setters, not the object
+        // where property was defined; so do we.
         var setPropertyValueFunction = "function(a, b) { this[a] = b; }";
 
         // Special case for NaN, Infinity and -Infinity
