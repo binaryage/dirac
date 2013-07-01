@@ -99,7 +99,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         "Backspace": "delCharBefore",
         "Tab": "defaultTab",
         "Shift-Tab": "indentLess",
-        "Enter": "newlineAndIndent",
+        "Enter": "smartNewlineAndIndent",
         "Ctrl-Space": "autocomplete"
     };
 
@@ -180,6 +180,36 @@ WebInspector.CodeMirrorTextEditor.autocompleteCommand = function(codeMirror)
     CodeMirror.showHint(codeMirror, textEditor._autocomplete.bind(textEditor));
 }
 CodeMirror.commands.autocomplete = WebInspector.CodeMirrorTextEditor.autocompleteCommand;
+
+CodeMirror.commands.smartNewlineAndIndent = function(codeMirror)
+{
+    codeMirror.operation(innerSmartNewlineAndIndent.bind(this, codeMirror));
+
+    function countIndent(line)
+    {
+        for(var i = 0; i < line.length; ++i) {
+            if (!WebInspector.TextUtils.isSpaceChar(line[i]))
+                return i;
+        }
+        return line.length;
+    }
+
+    function innerSmartNewlineAndIndent(codeMirror)
+    {
+        if (codeMirror.somethingSelected()) {
+            codeMirror.execCommand("newlineAndIndent");
+            return;
+        }
+        var cur = codeMirror.getCursor();
+        var line = codeMirror.getLine(cur.line);
+        var indent = cur.line > 0 ? countIndent(line) : 0;
+        if (cur.ch <= indent) {
+            codeMirror.replaceSelection("\n" + line.substring(0, cur.ch), "end", "+input");
+            codeMirror.setSelection(new CodeMirror.Pos(cur.line + 1, cur.ch));
+        } else
+            codeMirror.execCommand("newlineAndIndent");
+    }
+}
 
 WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 2000;
 WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
