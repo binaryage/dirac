@@ -96,6 +96,13 @@ WebInspector.ConsoleView = function(hideContextSelector)
     WebInspector.runtimeModel.contextLists().forEach(this._addFrame, this);
     WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.FrameExecutionContextListAdded, this._frameAdded, this);
     WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.FrameExecutionContextListRemoved, this._frameRemoved, this);
+
+    this._filterStatusMessageElement = document.createElement("div");
+    this._filterStatusMessageElement.classList.add("console-message");
+    this._filterStatusTextElement = this._filterStatusMessageElement.createChild("span", "console-info");
+    this.messagesElement.insertBefore(this._filterStatusMessageElement, this.topGroup.element);
+
+    this._updateFilterStatus();
 }
 
 WebInspector.ConsoleView.Events = {
@@ -283,6 +290,12 @@ WebInspector.ConsoleView.prototype = {
         delete this._scrollIntoViewTimer;
     },
 
+    _updateFilterStatus: function() {
+        var filteredCount = this._messages.length - this._visibleMessages.length;
+        this._filterStatusTextElement.textContent = WebInspector.UIString(filteredCount == 1 ? "%d message is hidden by filters" : "%d messages are hidden by filters", filteredCount);
+        this._filterStatusMessageElement.style.display = filteredCount ? "" : "none";
+    },
+
     /**
      * @param {WebInspector.Event} event
      */
@@ -298,6 +311,8 @@ WebInspector.ConsoleView.prototype = {
 
         if (this._filter.shouldBeVisible(message))
             this._appendConsoleMessage(message);
+        else
+            this._updateFilterStatus();
     },
 
     _appendConsoleMessage: function(message)
@@ -340,6 +355,7 @@ WebInspector.ConsoleView.prototype = {
         this.dispatchEventToListeners(WebInspector.ConsoleView.Events.ConsoleCleared);
 
         this._clearCurrentSearchResultHighlight();
+        this._updateFilterStatus();
 
         this._linkifier.reset();
     },
@@ -441,6 +457,7 @@ WebInspector.ConsoleView.prototype = {
         }
 
         this._visibleMessages = newVisibleMessages;
+        this._updateFilterStatus();
     },
 
     _monitoringXHREnabledSettingChanged: function(event)
