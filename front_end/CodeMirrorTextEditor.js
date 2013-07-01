@@ -68,24 +68,6 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     });
     this._codeMirror._codeMirrorTextEditor = this;
 
-    var extraKeys = {};
-    var indent = WebInspector.settings.textEditorIndent.get();
-    if (indent === WebInspector.TextUtils.Indent.TabCharacter) {
-        this._codeMirror.setOption("indentWithTabs", true);
-        this._codeMirror.setOption("indentUnit", 4);
-    } else {
-        this._codeMirror.setOption("indentWithTabs", false);
-        this._codeMirror.setOption("indentUnit", indent.length);
-        extraKeys.Tab = function(codeMirror)
-        {
-            if (codeMirror.somethingSelected())
-                return CodeMirror.Pass;
-            var pos = codeMirror.getCursor("head");
-            codeMirror.replaceRange(indent.substring(pos.ch % indent.length), codeMirror.getCursor());
-        }
-    }
-    this._codeMirror.setOption("extraKeys", extraKeys);
-
     CodeMirror.keyMap["devtools-common"] = {
         "Left": "goCharLeft",
         "Right": "goCharRight",
@@ -137,6 +119,9 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         "Cmd-/": "toggleComment",
         fallthrough: "devtools-common"
     };
+
+    WebInspector.settings.textEditorIndent.addChangeListener(this._updateEditorIndentation, this);
+    this._updateEditorIndentation();
 
     this._codeMirror.setOption("keyMap", WebInspector.isMac() ? "devtools-mac" : "devtools-pc");
     this._codeMirror.setOption("flattenSpans", false);
@@ -215,6 +200,27 @@ WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 2000;
 WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
+    _updateEditorIndentation: function()
+    {
+        var extraKeys = {};
+        var indent = WebInspector.settings.textEditorIndent.get();
+        if (indent === WebInspector.TextUtils.Indent.TabCharacter) {
+            this._codeMirror.setOption("indentWithTabs", true);
+            this._codeMirror.setOption("indentUnit", 4);
+        } else {
+            this._codeMirror.setOption("indentWithTabs", false);
+            this._codeMirror.setOption("indentUnit", indent.length);
+            extraKeys.Tab = function(codeMirror)
+            {
+                if (codeMirror.somethingSelected())
+                    return CodeMirror.Pass;
+                var pos = codeMirror.getCursor("head");
+                codeMirror.replaceRange(indent.substring(pos.ch % indent.length), codeMirror.getCursor());
+            }
+        }
+        this._codeMirror.setOption("extraKeys", extraKeys);
+    },
+
     /**
      * @param {!RegExp} regex
      * @param {WebInspector.TextRange} range
