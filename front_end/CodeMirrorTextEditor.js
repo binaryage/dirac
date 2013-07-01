@@ -1217,13 +1217,15 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
         if (codeMirror.somethingSelected())
             return CodeMirror.Pass;
         var cursor = codeMirror.getCursor();
+        if (cursor.ch === 0)
+            return CodeMirror.Pass;
         var line = codeMirror.getLine(cursor.line);
         if (line.substr(cursor.ch - 1, 2) === "{}") {
             codeMirror.execCommand("newlineAndIndent");
             codeMirror.setCursor(cursor);
             codeMirror.execCommand("newlineAndIndent");
             codeMirror.execCommand("indentMore");
-        } else if (line.substr(cursor.ch-1, 1) === "{") {
+        } else if (line.substr(cursor.ch - 1, 1) === "{") {
             codeMirror.execCommand("newlineAndIndent");
             codeMirror.execCommand("indentMore");
         } else
