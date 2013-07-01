@@ -58,6 +58,8 @@ WebInspector.NetworkRequest = function(requestId, url, documentURL, frameId, loa
     this._contentEncoded = false;
     this._pendingContentCallbacks = [];
     this._frames = [];
+
+    this._responseHeaderValues = {};
 }
 
 WebInspector.NetworkRequest.Events = {
@@ -573,6 +575,7 @@ WebInspector.NetworkRequest.prototype = {
         this._responseHeaders = x;
         delete this._sortedResponseHeaders;
         delete this._responseCookies;
+        this._responseHeaderValues = {};
 
         this.dispatchEventToListeners(WebInspector.NetworkRequest.Events.ResponseHeadersChanged);
     },
@@ -625,7 +628,12 @@ WebInspector.NetworkRequest.prototype = {
      */
     responseHeaderValue: function(headerName)
     {
-        return this._headerValue(this.responseHeaders, headerName);
+        var value = this._responseHeaderValues[headerName];
+        if (value === undefined) {
+            value = this._headerValue(this.responseHeaders, headerName);
+            this._responseHeaderValues[headerName] = (value !== undefined) ? value : null;
+        }
+        return (value !== null) ? value : undefined;
     },
 
     /**
