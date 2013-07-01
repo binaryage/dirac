@@ -103,7 +103,8 @@ CodeMirror.defineMode("css-base", function(config, parserConfig) {
     startState: function(base) {
       return {tokenize: tokenBase,
               baseIndent: base || 0,
-              stack: []};
+              stack: [],
+              lastToken: null};
     },
 
     token: function(stream, state) {
@@ -163,7 +164,7 @@ CodeMirror.defineMode("css-base", function(config, parserConfig) {
       var context = state.stack[state.stack.length-1];
       if (style == "variable") {
         if (type == "variable-definition") state.stack.push("propertyValue");
-        return "variable-2";
+        return state.lastToken = "variable-2";
       } else if (style == "property") {
         var word = stream.current().toLowerCase();
         if (context == "propertyValue") {
@@ -273,10 +274,10 @@ CodeMirror.defineMode("css-base", function(config, parserConfig) {
       else if (context == "@mediaType" && stream.current() == ",") state.stack.pop();
       else if (context == "@mediaType" && type == "(") state.stack.push("@mediaType(");
       else if (context == "@mediaType(" && type == ")") state.stack.pop();
-      else if ((context == "rule" || context == "block") && type == ":") state.stack.push("propertyValue");
+      else if (type == ":" && state.lastToken == "property") state.stack.push("propertyValue");
       else if (context == "propertyValue" && type == ";") state.stack.pop();
       else if (context == "@import" && type == ";") state.stack.pop();
-      return style;
+      return state.lastToken = style;
     },
 
     indent: function(state, textAfter) {
@@ -406,8 +407,32 @@ CodeMirror.defineMode("css-base", function(config, parserConfig) {
   ]);
 
   var colorKeywords = keySet([
-    "black", "silver", "gray", "white", "maroon", "red", "purple", "fuchsia",
-    "green", "lime", "olive", "yellow", "navy", "blue", "teal", "aqua"
+    "aliceblue", "antiquewhite", "aqua", "aquamarine", "azure", "beige",
+    "bisque", "black", "blanchedalmond", "blue", "blueviolet", "brown",
+    "burlywood", "cadetblue", "chartreuse", "chocolate", "coral", "cornflowerblue",
+    "cornsilk", "crimson", "cyan", "darkblue", "darkcyan", "darkgoldenrod",
+    "darkgray", "darkgreen", "darkkhaki", "darkmagenta", "darkolivegreen",
+    "darkorange", "darkorchid", "darkred", "darksalmon", "darkseagreen",
+    "darkslateblue", "darkslategray", "darkturquoise", "darkviolet",
+    "deeppink", "deepskyblue", "dimgray", "dodgerblue", "firebrick",
+    "floralwhite", "forestgreen", "fuchsia", "gainsboro", "ghostwhite",
+    "gold", "goldenrod", "gray", "green", "greenyellow", "honeydew",
+    "hotpink", "indianred", "indigo", "ivory", "khaki", "lavender",
+    "lavenderblush", "lawngreen", "lemonchiffon", "lightblue", "lightcoral",
+    "lightcyan", "lightgoldenrodyellow", "lightgray", "lightgreen", "lightpink",
+    "lightsalmon", "lightseagreen", "lightskyblue", "lightslategray",
+    "lightsteelblue", "lightyellow", "lime", "limegreen", "linen", "magenta",
+    "maroon", "mediumaquamarine", "mediumblue", "mediumorchid", "mediumpurple",
+    "mediumseagreen", "mediumslateblue", "mediumspringgreen", "mediumturquoise",
+    "mediumvioletred", "midnightblue", "mintcream", "mistyrose", "moccasin",
+    "navajowhite", "navy", "oldlace", "olive", "olivedrab", "orange", "orangered",
+    "orchid", "palegoldenrod", "palegreen", "paleturquoise", "palevioletred",
+    "papayawhip", "peachpuff", "peru", "pink", "plum", "powderblue",
+    "purple", "red", "rosybrown", "royalblue", "saddlebrown", "salmon",
+    "sandybrown", "seagreen", "seashell", "sienna", "silver", "skyblue",
+    "slateblue", "slategray", "snow", "springgreen", "steelblue", "tan",
+    "teal", "thistle", "tomato", "turquoise", "violet", "wheat", "white",
+    "whitesmoke", "yellow", "yellowgreen"
   ]);
 
   var valueKeywords = keySet([
@@ -490,7 +515,7 @@ CodeMirror.defineMode("css-base", function(config, parserConfig) {
     "upper-alpha", "upper-armenian", "upper-greek", "upper-hexadecimal",
     "upper-latin", "upper-norwegian", "upper-roman", "uppercase", "urdu", "url",
     "vertical", "vertical-text", "visible", "visibleFill", "visiblePainted",
-    "visibleStroke", "visual", "w-resize", "wait", "wave", "white", "wider",
+    "visibleStroke", "visual", "w-resize", "wait", "wave", "wider",
     "window", "windowframe", "windowtext", "x-large", "x-small", "xor",
     "xx-large", "xx-small"
   ]);
