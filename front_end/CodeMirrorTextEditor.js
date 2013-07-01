@@ -163,6 +163,11 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this.element.addEventListener("focus", this._handleElementFocus.bind(this), false);
     this.element.addEventListener("keydown", this._handleKeyDown.bind(this), false);
     this.element.tabIndex = 0;
+
+    this._overrideModeWithPrefixedTokens("css-base", "css-");
+    this._overrideModeWithPrefixedTokens("javascript", "js-");
+    this._overrideModeWithPrefixedTokens("xml", "xml-");
+
     this._setupSelectionColor();
     this._setupWhitespaceHighlight();
 }
@@ -424,9 +429,13 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         return hasLongLines;
     },
 
+    /**
+     * @param {string} mimeType
+     * @return {string}
+     */
     _whitespaceOverlayMode: function(mimeType)
     {
-        var modeName = mimeType + "+whitespaces";
+        var modeName = CodeMirror.mimeModes[mimeType] + "+whitespaces";
         if (CodeMirror.modes[modeName])
             return modeName;
 
@@ -453,6 +462,38 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         }
         CodeMirror.defineMode(modeName, modeConstructor);
         return modeName;
+    },
+
+    /**
+     * @param {string} modeName
+     * @param {string} tokenPrefix
+     */
+    _overrideModeWithPrefixedTokens: function(modeName, tokenPrefix)
+    {
+        var oldModeName = modeName + "-old";
+        if (CodeMirror.modes[oldModeName])
+            return;
+
+        CodeMirror.defineMode(oldModeName, CodeMirror.modes[modeName]);
+        CodeMirror.defineMode(modeName, modeConstructor);
+
+        function modeConstructor(config, parserConfig)
+        {
+            var innerConfig = {};
+            for (var i in parserConfig)
+                innerConfig[i] = parserConfig[i];
+            innerConfig.name = oldModeName;
+            var codeMirrorMode = CodeMirror.getMode(config, innerConfig);
+            codeMirrorMode.name = modeName;
+            codeMirrorMode.token = tokenOverride.bind(this, codeMirrorMode.token);
+            return codeMirrorMode;
+        }
+
+        function tokenOverride(superToken, stream, state)
+        {
+            var token = superToken(stream, state);
+            return tokenPrefix + token;
+        }
     },
 
     _enableLongLinesMode: function()
