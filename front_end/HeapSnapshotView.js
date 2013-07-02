@@ -201,6 +201,7 @@ WebInspector.HeapSnapshotView.prototype = {
         // FIXME: load base and current snapshots in parallel
         this.profile.load(profileCallback.bind(this));
         function profileCallback() {
+            this.profile._wasShown();
             if (this.baseProfile)
                 this.baseProfile.load(function() { });
         }
@@ -887,7 +888,8 @@ WebInspector.HeapSnapshotProfileType.prototype = {
      */
     buttonClicked: function()
     {
-        this._takeHeapSnapshot();
+        this._takeHeapSnapshot(function() {});
+        WebInspector.userMetrics.ProfilesHeapProfileTaken.record();
         return false;
     },
 
@@ -939,13 +941,12 @@ WebInspector.HeapSnapshotProfileType.prototype = {
         return new WebInspector.HeapProfileHeader(this, profile.title, profile.uid, profile.maxJSObjectId || 0);
     },
 
-    _takeHeapSnapshot: function()
+    _takeHeapSnapshot: function(callback)
     {
         var temporaryProfile = this.findTemporaryProfile();
         if (!temporaryProfile)
             this.addProfile(this.createTemporaryProfile());
-        HeapProfilerAgent.takeHeapSnapshot(true, function() {});
-        WebInspector.userMetrics.ProfilesHeapProfileTaken.record();
+        HeapProfilerAgent.takeHeapSnapshot(true, callback);
     },
 
     /**
@@ -1370,6 +1371,11 @@ WebInspector.HeapProfileHeader.prototype = {
     finishHeapSnapshot: function()
     {
         this._totalNumberOfChunks = this._numberOfChunks;
+    },
+
+    // Hook point for tests.
+    _wasShown: function()
+    {
     },
 
     /**
