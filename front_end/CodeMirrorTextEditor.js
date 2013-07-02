@@ -547,7 +547,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     /**
      * @param {string} mimeType
      */
-    set mimeType(mimeType)
+    setMimeType: function(mimeType)
     {
         if (this._hasLongLines())
             this._enableLongLinesMode();

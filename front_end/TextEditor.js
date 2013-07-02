@@ -78,7 +78,7 @@ WebInspector.TextEditor.prototype = {
     /**
      * @param {string} mimeType
      */
-    set mimeType(mimeType) { },
+    setMimeType: function(mimeType) { },
 
     /**
      * @param {boolean} readOnly

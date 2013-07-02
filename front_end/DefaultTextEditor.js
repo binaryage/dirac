@@ -208,9 +208,9 @@ WebInspector.DefaultTextEditor.prototype = {
     /**
      * @param {string} mimeType
      */
-    set mimeType(mimeType)
+    setMimeType: function(mimeType)
     {
-        this._mainPanel.mimeType = mimeType;
+        this._mainPanel.setMimeType(mimeType);
     },
 
     /**
@@ -1767,7 +1767,7 @@ WebInspector.TextEditorMainPanel.prototype = {
     /**
      * @param {string} mimeType
      */
-    set mimeType(mimeType)
+    setMimeType: function(mimeType)
     {
         this._highlighter.mimeType = mimeType;
         this._updateHighlightsForRange(this._textModel.range());

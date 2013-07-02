@@ -343,7 +343,7 @@ WebInspector.SourceFrame.prototype = {
         } else
             this._textEditor.editRange(this._textEditor.range(), content || "");
 
-        this._textEditor.mimeType = this._simplifyMimeType(mimeType);
+        this._textEditor.setMimeType(this._simplifyMimeType(mimeType));
 
         this._textEditor.beginUpdates();
 
