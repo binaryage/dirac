@@ -406,12 +406,12 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     _convertTokenType: function(tokenType)
     {
-        if (tokenType.startsWith("variable") || tokenType.startsWith("property") || tokenType === "def")
+        if (tokenType.startsWith("js-variable") || tokenType.startsWith("js-property") || tokenType === "js-def")
             return "javascript-ident";
-        if (tokenType === "string-2")
+        if (tokenType === "js-string-2")
             return "javascript-regexp";
-        if (tokenType === "number" || tokenType === "comment" || tokenType === "string" || tokenType === "keyword")
-            return "javascript-" + tokenType;
+        if (tokenType === "js-number" || tokenType === "js-comment" || tokenType === "js-string" || tokenType === "js-keyword")
+            return "javascript-" + tokenType.substring("js-".length);
         return null;
     },
 
@@ -536,7 +536,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         function tokenOverride(superToken, stream, state)
         {
             var token = superToken(stream, state);
-            return tokenPrefix + token;
+            return token ? tokenPrefix + token : token;
         }
     },
 
