@@ -374,6 +374,10 @@ modules = [
     }
 ]
 
+if os.system("which java") != 0:
+    print "Cannot find java ('which java' returns non-zero error code)"
+    sys.exit(1)
+
 modules_by_name = {}
 for module in modules:
     modules_by_name[module["name"]] = module
