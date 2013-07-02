@@ -170,13 +170,13 @@ WebInspector.InspectorFrontendHostStub.prototype = {
 
         var blob = new Blob(content, { type: "application/octet-stream" });
         var objectUrl = window.URL.createObjectURL(blob);
-        window.location = objectUrl + "#" + fileNameSuffix;
+        window.location = objectUrl + "#/" + fileNameSuffix;
 
         function cleanup()
         {
             window.URL.revokeObjectURL(objectUrl);
         }
-        setTimeout(cleanup, 0);
+        setTimeout(cleanup, 3000);
     },
 
     sendMessageToBackend: function(message)
