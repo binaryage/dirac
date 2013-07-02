@@ -130,6 +130,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 
     WebInspector.settings.textEditorIndent.addChangeListener(this._updateEditorIndentation, this);
     this._updateEditorIndentation();
+    WebInspector.settings.showWhitespacesInEditor.addChangeListener(this._updateCodeMirrorMode, this);
 
     this._codeMirror.setOption("keyMap", WebInspector.isMac() ? "devtools-mac" : "devtools-pc");
     this._codeMirror.setOption("flattenSpans", false);
@@ -552,17 +553,23 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._longLinesMode = false;
     },
 
+    _updateCodeMirrorMode: function()
+    {
+        var showWhitespaces = WebInspector.settings.showWhitespacesInEditor.get();
+        this._codeMirror.setOption("mode", showWhitespaces ? this._whitespaceOverlayMode(this._mimeType) : this._mimeType);
+    },
+
     /**
      * @param {string} mimeType
      */
     setMimeType: function(mimeType)
     {
+        this._mimeType = mimeType;
         if (this._hasLongLines())
             this._enableLongLinesMode();
         else
             this._disableLongLinesMode();
-        var showWhitespaces = WebInspector.settings.showWhitespacesInEditor.get();
-        this._codeMirror.setOption("mode", showWhitespaces ? this._whitespaceOverlayMode(mimeType) : mimeType);
+        this._updateCodeMirrorMode();
     },
 
     /**
