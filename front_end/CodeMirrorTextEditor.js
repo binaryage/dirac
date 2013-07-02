@@ -1171,7 +1171,7 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
             return "search-highlight search-highlight-start";
         }
 
-        while (!stream.match(regex, false) && stream.next());
+        while (!stream.match(regex, false) && stream.next()) {};
     },
 
     /**
