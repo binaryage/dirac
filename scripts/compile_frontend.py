@@ -30,6 +30,7 @@
 import os
 import os.path
 import generate_protocol_externs
+import re
 import shutil
 import sys
 import tempfile
@@ -432,29 +433,43 @@ else:
     os.system(command)
 
 if not process_recursively:
-    print "Compiling InjectedScriptSource.js..."
-    os.system("echo \"var injectedScriptValue = \" > " + inspector_path + "/" + "InjectedScriptSourceTmp.js")
-    os.system("cat  " + inspector_path + "/" + "InjectedScriptSource.js" + " >> " + inspector_path + "/" + "InjectedScriptSourceTmp.js")
-    command = compiler_command
-    command += "    --externs " + inspector_path + "/" + "InjectedScriptExterns.js" + " \\\n"
-    command += "    --externs " + protocol_externs_path + " \\\n"
-    command += "    --module " + jsmodule_name_prefix + "injected_script" + ":" + "1" + " \\\n"
-    command += "        --js " + inspector_path + "/" + "InjectedScriptSourceTmp.js" + " \\\n"
-    command += "\n"
-    os.system(command)
-    os.system("rm " + inspector_path + "/" + "InjectedScriptSourceTmp.js")
 
-    print "Compiling InjectedScriptCanvasModuleSource.js..."
-    os.system("echo \"var injectedScriptCanvasModuleValue = \" > " + inspector_path + "/" + "InjectedScriptCanvasModuleSourceTmp.js")
-    os.system("cat  " + inspector_path + "/" + "InjectedScriptCanvasModuleSource.js" + " >> " + inspector_path + "/" + "InjectedScriptCanvasModuleSourceTmp.js")
+    def unclosure_injected_script(sourceFileName, outFileName):
+        sourceFile = open(sourceFileName, "r")
+        source = sourceFile.read()
+        sourceFile.close()
+
+        def replace_function(matchobj):
+            return re.sub(r"@param", "param", matchobj.group(1) or "") + "\n//" + matchobj.group(2)
+
+        # Comment out the closure function and its jsdocs
+        source = re.sub(r"(/\*\*(?:[\s\n]*\*\s*@param[^\n]+\n)+\s*\*/\s*)?\n(\(function)", replace_function, source, count=1)
+
+        # Comment out its return statement
+        source = re.sub(r"\n(\s*return\s+[^;]+;\s*\n\}\)\s*)$", "\n/*\\1*/", source)
+
+        outFileName = open(outFileName, "w")
+        outFileName.write(source)
+        outFileName.close()
+
+    injectedScriptSourceTmpFile = inspector_path + "/" + "InjectedScriptSourceTmp.js"
+    injectedScriptCanvasModuleSourceTmpFile = inspector_path + "/" + "InjectedScriptCanvasModuleSourceTmp.js"
+
+    unclosure_injected_script(inspector_path + "/" + "InjectedScriptSource.js", injectedScriptSourceTmpFile)
+    unclosure_injected_script(inspector_path + "/" + "InjectedScriptCanvasModuleSource.js", injectedScriptCanvasModuleSourceTmpFile)
+
+    print "Compiling InjectedScriptSource.js and InjectedScriptCanvasModuleSource.js..."
     command = compiler_command
     command += "    --externs " + inspector_path + "/" + "InjectedScriptExterns.js" + " \\\n"
     command += "    --externs " + protocol_externs_path + " \\\n"
-    command += "    --module " + jsmodule_name_prefix + "injected_script" + ":" + "1" + " \\\n"
-    command += "        --js " + inspector_path + "/" + "InjectedScriptCanvasModuleSourceTmp.js" + " \\\n"
+    command += "    --module " + jsmodule_name_prefix + "injected_script" + ":1" + " \\\n"
+    command += "        --js " + injectedScriptSourceTmpFile + " \\\n"
+    command += "    --module " + jsmodule_name_prefix + "injected_canvas_script" + ":1:" + jsmodule_name_prefix + "injected_script" + " \\\n"
+    command += "        --js " + injectedScriptCanvasModuleSourceTmpFile + " \\\n"
     command += "\n"
     os.system(command)
-    os.system("rm " + inspector_path + "/" + "InjectedScriptCanvasModuleSourceTmp.js")
+    os.system("rm " + injectedScriptSourceTmpFile)
+    os.system("rm " + injectedScriptCanvasModuleSourceTmpFile)
 
     print "Checking generated code in InjectedScriptCanvasModuleSource.js..."
     check_injected_webgl_calls_command = "%s/check_injected_webgl_calls_info.py %s %s/InjectedScriptCanvasModuleSource.js" % (scripts_path, webgl_rendering_context_idl_path, inspector_path)
