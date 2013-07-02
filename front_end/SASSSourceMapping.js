@@ -285,7 +285,7 @@ WebInspector.SASSSourceMapping.prototype = {
         for (var i = 0; i < sources.length; ++i) {
             var url = sources[i];
             if (!this._workspace.hasMappingForURL(url) && !this._workspace.uiSourceCodeForURL(url)) {
-                var contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.Stylesheet, "text/x-scss");
+                var contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.Stylesheet);
                 var uiSourceCode = this._networkWorkspaceProvider.addFileForURL(url, contentProvider, true);
                 uiSourceCode.setSourceMapping(this);
             }

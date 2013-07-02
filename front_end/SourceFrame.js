@@ -318,7 +318,7 @@ WebInspector.SourceFrame.prototype = {
         this.clearMessages();
     },
 
-    _simplifyMimeType: function(mimeType)
+    _simplifyMimeType: function(content, mimeType)
     {
         if (!mimeType)
             return "";
@@ -326,6 +326,9 @@ WebInspector.SourceFrame.prototype = {
             mimeType.indexOf("jscript") >= 0 ||
             mimeType.indexOf("ecmascript") >= 0)
             return "text/javascript";
+        // A hack around the fact that files with "php" extension might be either standalone or html embedded php scripts.
+        if (mimeType === "text/x-php" && content.match(/\<\?.*\?\>/g))
+            return "application/x-httpd-php";
         return mimeType;
     },
 
@@ -343,7 +346,7 @@ WebInspector.SourceFrame.prototype = {
         } else
             this._textEditor.editRange(this._textEditor.range(), content || "");
 
-        this._textEditor.setMimeType(this._simplifyMimeType(mimeType));
+        this._textEditor.setMimeType(this._simplifyMimeType(content, mimeType));
 
         this._textEditor.beginUpdates();
 

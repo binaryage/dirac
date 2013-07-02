@@ -533,7 +533,8 @@ WebInspector.UISourceCode.prototype = {
      */
     setWorkingCopy: function(newWorkingCopy)
     {
-        this._mimeType = this.canonicalMimeType();
+        if (!this._mimeType)
+            this._mimeType = this.canonicalMimeType();
         this._workingCopy = newWorkingCopy;
         delete this._workingCopyGetter;
         this.dispatchEventToListeners(WebInspector.UISourceCode.Events.WorkingCopyChanged);

@@ -33,12 +33,20 @@ importScript("cm/css.js");
 importScript("cm/javascript.js");
 importScript("cm/xml.js");
 importScript("cm/htmlmixed.js");
+
 importScript("cm/matchbrackets.js");
 importScript("cm/closebrackets.js");
 importScript("cm/markselection.js");
 importScript("cm/showhint.js");
 importScript("cm/comment.js");
 importScript("cm/overlay.js");
+
+importScript("cm/htmlembedded.js");
+importScript("cm/clike.js");
+importScript("cm/coffeescript.js");
+importScript("cm/php.js");
+importScript("cm/python.js");
+importScript("cm/shell.js");
 
 /**
  * @constructor
@@ -555,14 +563,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             this._disableLongLinesMode();
         var showWhitespaces = WebInspector.settings.showWhitespacesInEditor.get();
         this._codeMirror.setOption("mode", showWhitespaces ? this._whitespaceOverlayMode(mimeType) : mimeType);
-        switch (mimeType) {
-        case "text/html": this._codeMirror.setOption("theme", "web-inspector-html"); break;
-        case "text/css":
-        case "text/x-scss":
-            this._codeMirror.setOption("theme", "web-inspector-css");
-            break;
-        case "text/javascript": this._codeMirror.setOption("theme", "web-inspector-js"); break;
-        }
     },
 
     /**

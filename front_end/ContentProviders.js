@@ -185,6 +185,8 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
 /**
  * @constructor
  * @param {string} sourceURL
+ * @param {WebInspector.ResourceType} contentType
+ * @param {string} mimeType
  * @implements {WebInspector.ContentProvider}
  */
 WebInspector.CompilerSourceMappingContentProvider = function(sourceURL, contentType, mimeType)
@@ -319,6 +321,62 @@ WebInspector.StaticContentProvider.prototype = {
 
         // searchInContent should call back later.
         window.setTimeout(performSearch.bind(this), 0);
+    },
+
+    __proto__: WebInspector.ContentProvider.prototype
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ContentProvider}
+ * @param {WebInspector.ContentProvider} contentProvider
+ * @param {string} mimeType
+ */
+WebInspector.ContentProviderOverridingMimeType = function(contentProvider, mimeType)
+{
+    this._contentProvider = contentProvider;
+    this._mimeType = mimeType;
+}
+
+WebInspector.ContentProviderOverridingMimeType.prototype = {
+    /**
+     * @return {string}
+     */
+    contentURL: function()
+    {
+        return this._contentProvider.contentURL();
+    },
+
+    /**
+     * @return {WebInspector.ResourceType}
+     */
+    contentType: function()
+    {
+        return this._contentProvider.contentType();
+    },
+
+    /**
+     * @param {function(?string,boolean,string)} callback
+     */
+    requestContent: function(callback)
+    {
+        this._contentProvider.requestContent(innerCallback.bind(this));
+
+        function innerCallback(content, contentEncoded, mimeType)
+        {
+            callback(content, contentEncoded, this._mimeType);
+        }
+    },
+
+    /**
+     * @param {string} query
+     * @param {boolean} caseSensitive
+     * @param {boolean} isRegex
+     * @param {function(Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     */
+    searchInContent: function(query, caseSensitive, isRegex, callback)
+    {
+        this._contentProvider.searchInContent(query, caseSensitive, isRegex, callback);
     },
 
     __proto__: WebInspector.ContentProvider.prototype

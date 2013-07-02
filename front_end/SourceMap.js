@@ -109,16 +109,16 @@ WebInspector.SourceMap.prototype = {
     /**
      * @param {string} sourceURL
      * @param {WebInspector.ResourceType} contentType
-     * @param {string=} mimeType
      * @return {WebInspector.ContentProvider}
      */
-    sourceContentProvider: function(sourceURL, contentType, mimeType)
+    sourceContentProvider: function(sourceURL, contentType)
     {
-        // FIXME: We should detect mime type automatically (e.g. based on file extension)
+        var lastIndexOfDot = sourceURL.lastIndexOf(".");
+        var extension = lastIndexOfDot !== -1 ? sourceURL.substr(lastIndexOfDot + 1) : "";
+        var mimeType = WebInspector.ResourceType.mimeTypesForExtensions[extension.toLowerCase()];
         var sourceContent = this.sourceContent(sourceURL);
-        var contentProvider;
         if (sourceContent)
-            return new WebInspector.StaticContentProvider(contentType, sourceContent);
+            return new WebInspector.StaticContentProvider(contentType, sourceContent, mimeType);
         return new WebInspector.CompilerSourceMappingContentProvider(sourceURL, contentType, mimeType);
     },
 

@@ -133,6 +133,10 @@ WebInspector.HandlerRegistry.prototype = {
             contentType !== WebInspector.resourceTypes.Script)
             return;
 
+        /**
+         * @param {boolean} forceSaveAs
+         * @param {?string} content
+         */
         function doSave(forceSaveAs, content)
         {
             var url = contentProvider.contentURL();
@@ -140,6 +144,9 @@ WebInspector.HandlerRegistry.prototype = {
             WebInspector.fileManager.close(url);
         }
 
+        /**
+         * @param {boolean} forceSaveAs
+         */
         function save(forceSaveAs)
         {
             if (contentProvider instanceof WebInspector.UISourceCode) {

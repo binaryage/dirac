@@ -131,7 +131,7 @@ WebInspector.CompilerScriptMapping.prototype = {
                     continue;
                 this._sourceMapForURL[sourceURL] = sourceMap;
                 if (!this._workspace.hasMappingForURL(sourceURL) && !this._workspace.uiSourceCodeForURL(sourceURL)) {
-                    var contentProvider = sourceMap.sourceContentProvider(sourceURL, WebInspector.resourceTypes.Script, "text/javascript");
+                    var contentProvider = sourceMap.sourceContentProvider(sourceURL, WebInspector.resourceTypes.Script);
                     this._networkWorkspaceProvider.addFileForURL(sourceURL, contentProvider, true);
                 }
                 var uiSourceCode = this._workspace.uiSourceCodeForURL(sourceURL);
