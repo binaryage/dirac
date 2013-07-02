@@ -268,6 +268,8 @@ WebInspector.SearchView.prototype = {
         this._resetCounters();
 
         this._searchMessageElement.textContent = WebInspector.UIString("Searching...");
+        if (this._progressIndicator)
+            this._progressIndicator.done();
         this._progressIndicator = new WebInspector.ProgressIndicator();
         this._progressIndicator.setTotalWork(totalSearchResultsCount);
         this._progressIndicator.show(this._searchStatusBarElement);
