@@ -235,23 +235,8 @@ WebInspector.TextPrompt.prototype = {
         var invokeDefault = true;
 
         switch (event.keyIdentifier) {
-        case "Up":
-            handled = this.upKeyPressed(event);
-            break;
-        case "Down":
-            handled = this.downKeyPressed(event);
-            break;
-        case "PageUp":
-            handled = this.pageUpKeyPressed(event);
-            break;
-        case "PageDown":
-            handled = this.pageDownKeyPressed(event);
-            break;
         case "U+0009": // Tab
             handled = this.tabKeyPressed(event);
-            break;
-        case "Enter":
-            handled = this.enterKeyPressed(event);
             break;
         case "Left":
         case "Home":
@@ -285,6 +270,9 @@ WebInspector.TextPrompt.prototype = {
             invokeDefault = false;
             break;
         }
+
+        if (!handled && this.isSuggestBoxVisible())
+            handled = this._suggestBox.keyPressed(event);
 
         if (!handled && invokeDefault)
             handled = this.defaultKeyHandler(event);
@@ -723,46 +711,6 @@ WebInspector.TextPrompt.prototype = {
 
         // Consume the key.
         return true;
-    },
-
-    enterKeyPressed: function(event)
-    {
-        if (this.isSuggestBoxVisible())
-            return this._suggestBox.enterKeyPressed();
-
-        return false;
-    },
-
-    upKeyPressed: function(event)
-    {
-        if (this.isSuggestBoxVisible())
-            return this._suggestBox.upKeyPressed();
-
-        return false;
-    },
-
-    downKeyPressed: function(event)
-    {
-        if (this.isSuggestBoxVisible())
-            return this._suggestBox.downKeyPressed();
-
-        return false;
-    },
-
-    pageUpKeyPressed: function(event)
-    {
-        if (this.isSuggestBoxVisible())
-            return this._suggestBox.pageUpKeyPressed();
-
-        return false;
-    },
-
-    pageDownKeyPressed: function(event)
-    {
-        if (this.isSuggestBoxVisible())
-            return this._suggestBox.pageDownKeyPressed();
-
-        return false;
     },
 
     __proto__: WebInspector.Object.prototype

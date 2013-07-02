@@ -2821,6 +2821,7 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
         WebInspector.TextPrompt.prototype.onMouseWheel.call(this, event);
     },
 
+    /** @override */
     tabKeyPressed: function()
     {
         this.acceptAutoComplete();

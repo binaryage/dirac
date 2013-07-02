@@ -338,6 +338,27 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
+     * @param {KeyboardEvent} event
+     * @return {boolean}
+     */
+    keyPressed: function(event)
+    {
+        switch (event.keyIdentifier) {
+        case "Up":
+            return this.upKeyPressed();
+        case "Down":
+            return this.downKeyPressed();
+        case "PageUp":
+            return this.pageUpKeyPressed();
+        case "PageDown":
+            return this.pageDownKeyPressed();
+        case "Enter":
+            return this.enterKeyPressed();
+        }
+        return false;
+    },
+
+    /**
      * @return {boolean}
      */
     upKeyPressed: function()
@@ -380,13 +401,5 @@ WebInspector.SuggestBox.prototype = {
         // Report the event as non-handled if there is no selected item,
         // to commit the input or handle it otherwise.
         return hasSelectedItem;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    tabKeyPressed: function()
-    {
-        return this.enterKeyPressed();
     }
 }
