@@ -192,6 +192,7 @@ WebInspector.NetworkDispatcher.prototype = {
                 WebInspector.ConsoleMessage.MessageType.Log,
                 "",
                 0,
+                0,
                 1,
                 [],
                 null,

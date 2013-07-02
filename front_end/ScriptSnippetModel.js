@@ -259,7 +259,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     _printRunScriptResult: function(result, wasThrown)
     {
         var level = (wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log);
-        var message = WebInspector.ConsoleMessage.create(WebInspector.ConsoleMessage.MessageSource.JS, level, "", undefined, undefined, undefined, undefined, [result]);
+        var message = WebInspector.ConsoleMessage.create(WebInspector.ConsoleMessage.MessageSource.JS, level, "", undefined, undefined, undefined, undefined, undefined, [result]);
         WebInspector.console.addMessage(message)
     },
 

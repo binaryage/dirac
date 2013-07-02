@@ -1035,7 +1035,7 @@ WebInspector.ConsoleCommandResult = function(result, wasThrown, originatingComma
 {
     var level = (wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log);
     this.originatingCommand = originatingCommand;
-    WebInspector.ConsoleMessageImpl.call(this, WebInspector.ConsoleMessage.MessageSource.JS, level, "", linkifier, WebInspector.ConsoleMessage.MessageType.Result, undefined, undefined, undefined, [result]);
+    WebInspector.ConsoleMessageImpl.call(this, WebInspector.ConsoleMessage.MessageSource.JS, level, "", linkifier, WebInspector.ConsoleMessage.MessageType.Result, undefined, undefined, undefined, undefined, [result]);
 }
 
 WebInspector.ConsoleCommandResult.prototype = {
@@ -1129,7 +1129,7 @@ WebInspector.ConsoleGroup.prototype = {
  */
 WebInspector.consoleView = null;
 
-WebInspector.ConsoleMessage.create = function(source, level, message, type, url, line, repeatCount, parameters, stackTrace, requestId, isOutdated)
+WebInspector.ConsoleMessage.create = function(source, level, message, type, url, line, column, repeatCount, parameters, stackTrace, requestId, isOutdated)
 {
-    return new WebInspector.ConsoleMessageImpl(source, level, message, WebInspector.consoleView._linkifier, type, url, line, repeatCount, parameters, stackTrace, requestId, isOutdated);
+    return new WebInspector.ConsoleMessageImpl(source, level, message, WebInspector.consoleView._linkifier, type, url, line, column, repeatCount, parameters, stackTrace, requestId, isOutdated);
 }
