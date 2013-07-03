@@ -3172,6 +3172,7 @@
                 "description": "CPU Profile node. Holds callsite information, execution statistics and child nodes.",
                 "properties": [
                     { "name": "functionName", "type": "string", "description": "Function name." },
+                    { "name": "scriptId", "$ref": "Debugger.ScriptId", "description": "Script identifier." },
                     { "name": "url", "type": "string", "description": "URL." },
                     { "name": "lineNumber", "type": "integer", "description": "Line number." },
                     { "name": "totalTime", "type": "number", "description": "Total execution time." },

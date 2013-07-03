@@ -434,12 +434,15 @@ WebInspector.CPUProfileView.prototype = {
     _onSelectedNode: function(event)
     {
         var node = event.data;
-        if (!node || !node.url)
+        if (!node || !node.scriptId)
             return;
-        var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(node.url);
-        if (!uiSourceCode)
+        var script = WebInspector.debuggerModel.scriptForId(node.scriptId)
+        if (!script)
             return;
-        WebInspector.showPanel("scripts").showUISourceCode(uiSourceCode, node.lineNumber);
+        var uiLocation = script.rawLocationToUILocation(node.lineNumber);
+        if (!uiLocation)
+            return;
+        WebInspector.showPanel("scripts").showUISourceCode(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
     },
 
     _changeView: function()
