@@ -100,6 +100,11 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._filterStatusMessageElement = document.createElement("div");
     this._filterStatusMessageElement.classList.add("console-message");
     this._filterStatusTextElement = this._filterStatusMessageElement.createChild("span", "console-info");
+    this._filterStatusMessageElement.createTextChild(" ");
+    var resetFiltersLink = this._filterStatusMessageElement.createChild("span", "console-info node-link");
+    resetFiltersLink.textContent = WebInspector.UIString("Show all messages.");
+    resetFiltersLink.addEventListener("click", this._filter.reset.bind(this._filter), true);
+
     this.messagesElement.insertBefore(this._filterStatusMessageElement, this.topGroup.element);
 
     this._updateFilterStatus();
@@ -292,7 +297,7 @@ WebInspector.ConsoleView.prototype = {
 
     _updateFilterStatus: function() {
         var filteredCount = this._messages.length - this._visibleMessages.length;
-        this._filterStatusTextElement.textContent = WebInspector.UIString(filteredCount == 1 ? "%d message is hidden by filters" : "%d messages are hidden by filters", filteredCount);
+        this._filterStatusTextElement.textContent = WebInspector.UIString(filteredCount == 1 ? "%d message is hidden by filters." : "%d messages are hidden by filters.", filteredCount);
         this._filterStatusMessageElement.style.display = filteredCount ? "" : "none";
     },
 
@@ -713,10 +718,7 @@ WebInspector.ConsoleViewFilter = function()
             this._sourceToKeyMap[WebInspector.ConsoleViewFilter._messageSourceGroups[key].sources[i]] = key;
     }
 
-    this._filterChangeListener = this.dispatchEventToListeners.bind(this, WebInspector.ConsoleViewFilter.Events.FilterChanged);
-    WebInspector.settings.messageURLFilters.addChangeListener(this._filterChangeListener);
-    WebInspector.settings.messageSourceFilters.addChangeListener(this._filterChangeListener);
-    WebInspector.settings.messageLevelFilters.addChangeListener(this._filterChangeListener);
+    this._filterChanged = this.dispatchEventToListeners.bind(this, WebInspector.ConsoleViewFilter.Events.FilterChanged);
 
     WebInspector.settings.messageSourceFilters.addChangeListener(this._updateSourceFilterButton.bind(this));
     WebInspector.settings.messageLevelFilters.addChangeListener(this._updateLevelFilterBar.bind(this));
@@ -764,6 +766,7 @@ WebInspector.ConsoleViewFilter.prototype = {
     {
         this._messageURLFilters[url] = true;
         WebInspector.settings.messageURLFilters.set(this._messageURLFilters);
+        this._filterChanged();
     },
 
     /**
@@ -777,6 +780,7 @@ WebInspector.ConsoleViewFilter.prototype = {
             delete this._messageURLFilters[url];
 
         WebInspector.settings.messageURLFilters.set(this._messageURLFilters);
+        this._filterChanged();
     },
 
     /**
@@ -821,6 +825,20 @@ WebInspector.ConsoleViewFilter.prototype = {
     },
 
     /**
+     * @param {string} resets filters
+     */
+    reset: function()
+    {
+        this._messageSourceFilters = {};
+        WebInspector.settings.messageSourceFilters.set(this._messageSourceFilters);
+        this._messageURLFilters = {};
+        WebInspector.settings.messageURLFilters.set(this._messageURLFilters);
+        this._messageLevelFilters = {};
+        WebInspector.settings.messageLevelFilters.set(this._messageLevelFilters);
+        this._filterChanged();
+    },
+
+    /**
      * @param {string} query
      */
     performFilter: function(query)
@@ -830,7 +848,7 @@ WebInspector.ConsoleViewFilter.prototype = {
         else
             this._filterRegex = createPlainTextSearchRegex(query, "gi");
 
-        this._filterChangeListener();
+        this._filterChanged();
     },
 
     /**
@@ -845,6 +863,7 @@ WebInspector.ConsoleViewFilter.prototype = {
             delete this._messageSourceFilters[sourceGroup];
 
         WebInspector.settings.messageSourceFilters.set(this._messageSourceFilters);
+        this._filterChanged();
     },
 
     /**
@@ -927,6 +946,7 @@ WebInspector.ConsoleViewFilter.prototype = {
         }
 
         WebInspector.settings.messageLevelFilters.set(this._messageLevelFilters);
+        this._filterChanged();
     },
 
     /**
