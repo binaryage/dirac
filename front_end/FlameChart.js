@@ -436,6 +436,11 @@ WebInspector.FlameChart.prototype = {
         if (this._highlightedEntryIndex === entryIndex)
             return;
 
+        if (entryIndex === -1 || this._timelineData.entries[entryIndex].node.scriptId === "0")
+            this._canvas.style.cursor = "default";
+        else
+            this._canvas.style.cursor = "pointer";
+
         this._highlightedEntryIndex = entryIndex;
         this._scheduleUpdate();
     },
