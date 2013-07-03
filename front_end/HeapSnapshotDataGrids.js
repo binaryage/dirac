@@ -442,6 +442,7 @@ WebInspector.HeapSnapshotContainmentDataGrid = function(columns)
 {
     columns = columns || [
         {id: "object", title: WebInspector.UIString("Object"), disclosure: true, sortable: true},
+        {id: "distance", title: WebInspector.UIString("Distance"), width: "80px", sortable: true},
         {id: "shallowSize", title: WebInspector.UIString("Shallow Size"), width: "120px", sortable: true},
         {id: "retainedSize", title: WebInspector.UIString("Retained Size"), width: "120px", sortable: true, sort: WebInspector.DataGrid.Order.Descending}
     ];
@@ -476,9 +477,9 @@ WebInspector.HeapSnapshotRetainmentDataGrid = function()
     this.showRetainingEdges = true;
     var columns = [
         {id: "object", title: WebInspector.UIString("Object"), disclosure: true, sortable: true},
+        {id: "distance", title: WebInspector.UIString("Distance"), width: "80px", sortable: true, sort: WebInspector.DataGrid.Order.Ascending},
         {id: "shallowSize", title: WebInspector.UIString("Shallow Size"), width: "120px", sortable: true},
-        {id: "retainedSize", title: WebInspector.UIString("Retained Size"), width: "120px", sortable: true},
-        {id: "distance", title: WebInspector.UIString("Distance"), width: "80px", sortable: true, sort: WebInspector.DataGrid.Order.Ascending}
+        {id: "retainedSize", title: WebInspector.UIString("Retained Size"), width: "120px", sortable: true}
     ];
     WebInspector.HeapSnapshotContainmentDataGrid.call(this, columns);
 }
