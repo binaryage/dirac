@@ -65,7 +65,7 @@ WebInspector.FlameChart = function(cpuProfileView)
     this._canvas.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
     this.element.addEventListener("click", this._onClick.bind(this), false);
     this._linkifier = new WebInspector.Linkifier();
-    this._highlightedNodeIndex = -1;
+    this._highlightedEntryIndex = -1;
 
     if (!WebInspector.FlameChart._colorGenerator)
         WebInspector.FlameChart._colorGenerator = new WebInspector.FlameChart.ColorGenerator();
@@ -431,12 +431,12 @@ WebInspector.FlameChart.prototype = {
         if (this._isDragging)
             return;
 
-        var nodeIndex = this._coordinatesToNodeIndex(event.offsetX, event.offsetY);
+        var entryIndex = this._coordinatesToEntryIndex(event.offsetX, event.offsetY);
 
-        if (this._highlightedNodeIndex === nodeIndex)
+        if (this._highlightedEntryIndex === entryIndex)
             return;
 
-        this._highlightedNodeIndex = nodeIndex;
+        this._highlightedEntryIndex = entryIndex;
         this._scheduleUpdate();
     },
 
@@ -444,7 +444,7 @@ WebInspector.FlameChart.prototype = {
     {
         if (this._isDragging)
             return null;
-        var entry = this._timelineData.entries[this._highlightedNodeIndex];
+        var entry = this._timelineData.entries[this._highlightedEntryIndex];
         if (!entry)
             return null;
         var node = entry.node;
@@ -474,9 +474,9 @@ WebInspector.FlameChart.prototype = {
 
     _onClick: function(e)
     {
-        if (this._highlightedNodeIndex === -1)
+        if (this._highlightedEntryIndex === -1)
             return;
-        var node = this._timelineData.entries[this._highlightedNodeIndex].node;
+        var node = this._timelineData.entries[this._highlightedEntryIndex].node;
         this.dispatchEventToListeners(WebInspector.FlameChart.Events.SelectedNode, node);
     },
 
@@ -499,7 +499,7 @@ WebInspector.FlameChart.prototype = {
      * @param {!number} x
      * @param {!number} y
      */
-    _coordinatesToNodeIndex: function(x, y)
+    _coordinatesToEntryIndex: function(x, y)
     {
         var timelineData = this._timelineData;
         if (!timelineData)
@@ -535,8 +535,8 @@ WebInspector.FlameChart.prototype = {
         var scaleFactor = width / this._totalTime;
         var maxStackDepth = 5; // minimum stack depth for the case when we see no activity.
 
-        for (var nodeIndex = 0; nodeIndex < timelineEntries.length; ++nodeIndex) {
-            var entry = timelineEntries[nodeIndex];
+        for (var entryIndex = 0; entryIndex < timelineEntries.length; ++entryIndex) {
+            var entry = timelineEntries[entryIndex];
             var start = Math.floor(entry.startTime * scaleFactor);
             var finish = Math.floor((entry.startTime + entry.duration) * scaleFactor);
             for (var x = start; x < finish; ++x) {
@@ -633,7 +633,7 @@ WebInspector.FlameChart.prototype = {
 
             var colorPair = entry.colorPair;
             var color;
-            if (this._highlightedNodeIndex === i)
+            if (this._highlightedEntryIndex === i)
                 color =  colorPair.highlighted;
             else
                 color = colorPair.normal;
