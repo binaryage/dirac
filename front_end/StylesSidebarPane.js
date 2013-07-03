@@ -488,7 +488,8 @@ WebInspector.StylesSidebarPane.prototype = {
                 continue;
             if (section.computedStyle)
                 section.styleRule.style = nodeComputedStyle;
-            var styleRule = { section: section, style: section.styleRule.style, computedStyle: section.computedStyle, rule: section.rule, editable: !!(section.styleRule.style && section.styleRule.style.id), isAttribute: section.styleRule.isAttribute, isInherited: section.styleRule.isInherited };
+            var styleRule = { section: section, style: section.styleRule.style, computedStyle: section.computedStyle, rule: section.rule, editable: !!(section.styleRule.style && section.styleRule.style.id),
+                isAttribute: section.styleRule.isAttribute, isInherited: section.styleRule.isInherited, parentNode: section.styleRule.parentNode };
             styleRules.push(styleRule);
         }
         return styleRules;
@@ -584,6 +585,7 @@ WebInspector.StylesSidebarPane.prototype = {
     {
         var foundImportantProperties = {};
         var propertyToEffectiveRule = {};
+        var inheritedPropertyToNode = {};
         for (var i = 0; i < styleRules.length; ++i) {
             var styleRule = styleRules[i];
             if (styleRule.computedStyle || styleRule.isStyleSeparator)
@@ -612,9 +614,16 @@ WebInspector.StylesSidebarPane.prototype = {
                 if (!isImportant && usedProperties.hasOwnProperty(canonicalName))
                     continue;
 
+                var isKnownProperty = propertyToEffectiveRule.hasOwnProperty(canonicalName);
+                if (!isKnownProperty && styleRule.isInherited && !inheritedPropertyToNode[canonicalName])
+                    inheritedPropertyToNode[canonicalName] = styleRule.parentNode;
+
                 if (isImportant) {
+                    if (styleRule.isInherited && isKnownProperty && styleRule.parentNode !== inheritedPropertyToNode[canonicalName])
+                        continue;
+
                     foundImportantProperties[canonicalName] = true;
-                    if (propertyToEffectiveRule.hasOwnProperty(canonicalName))
+                    if (isKnownProperty)
                         delete propertyToEffectiveRule[canonicalName].usedProperties[canonicalName];
                 }
 
