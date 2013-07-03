@@ -824,9 +824,6 @@ WebInspector.ConsoleViewFilter.prototype = {
         return true;
     },
 
-    /**
-     * @param {string} resets filters
-     */
     reset: function()
     {
         this._messageSourceFilters = {};
