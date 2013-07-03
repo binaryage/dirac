@@ -188,7 +188,7 @@ WebInspector.IsolatedFileSystem.prototype = {
          */
         function fileSystemLoaded(domFileSystem)
         {
-            domFileSystem.root.getFile(path, null, fileEntryLoaded, errorHandler);
+            domFileSystem.root.getFile(path, null, fileEntryLoaded, errorHandler.bind(this));
         }
 
         /**
@@ -196,7 +196,7 @@ WebInspector.IsolatedFileSystem.prototype = {
          */
         function fileEntryLoaded(entry)
         {
-            entry.file(fileLoaded, errorHandler);
+            entry.file(fileLoaded, errorHandler.bind(this));
         }
 
         /**

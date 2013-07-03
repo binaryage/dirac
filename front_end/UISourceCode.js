@@ -270,7 +270,10 @@ WebInspector.UISourceCode.prototype = {
             this._project.requestFileContent(this, this._fireContentAvailable.bind(this));
     },
 
-    checkContentUpdated: function()
+    /**
+     * @param {function()=} callback
+     */
+    checkContentUpdated: function(callback)
     {
         if (!this._project.canSetFileContent())
             return;
@@ -286,21 +289,29 @@ WebInspector.UISourceCode.prototype = {
                 this._commitContent("", false);
                 this.setWorkingCopy(workingCopy);
                 delete this._checkingContent;
+                if (callback)
+                    callback();
                 return;
             }
             if (typeof this._lastAcceptedContent === "string" && this._lastAcceptedContent === updatedContent) {
                 delete this._checkingContent;
+                if (callback)
+                    callback();
                 return;
             }
             if (this._content === updatedContent) {
                 delete this._lastAcceptedContent;
                 delete this._checkingContent;
+                if (callback)
+                    callback();
                 return;
             }
 
             if (!this.isDirty()) {
                 this._commitContent(updatedContent, false);
                 delete this._checkingContent;
+                if (callback)
+                    callback();
                 return;
             }
 
@@ -310,6 +321,8 @@ WebInspector.UISourceCode.prototype = {
             else
                 this._lastAcceptedContent = updatedContent;
             delete this._checkingContent;
+            if (callback)
+                callback();
         }
     },
 

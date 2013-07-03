@@ -351,7 +351,7 @@ WebInspector.GenericSettingsTab = function()
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Search in content scripts"), WebInspector.settings.searchInContentScripts));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Enable source maps"), WebInspector.settings.sourceMapsEnabled));
     if (WebInspector.experimentsSettings.isEnabled("sass"))
-        p.appendChild(this._createCSSAutoReloadControls());
+        p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Auto-reload CSS upon Sass save"), WebInspector.settings.cssReloadEnabled));
     var indentationElement = this._createSelectSetting(WebInspector.UIString("Indentation"), [
             [ WebInspector.UIString("2 spaces"), WebInspector.TextUtils.Indent.TwoSpaces ],
             [ WebInspector.UIString("4 spaces"), WebInspector.TextUtils.Indent.FourSpaces ],
@@ -449,34 +449,6 @@ WebInspector.GenericSettingsTab.prototype = {
     {
         // We need to manually update the checkbox state, since enabling JavaScript in the page can actually uncover the "forbidden" state.
         PageAgent.setScriptExecutionDisabled(WebInspector.settings.javaScriptDisabled.get(), this._updateScriptDisabledCheckbox.bind(this));
-    },
-
-    _createCSSAutoReloadControls: function()
-    {
-        var fragment = document.createDocumentFragment();
-        var labelElement = fragment.createChild("label");
-        var checkboxElement = labelElement.createChild("input");
-        checkboxElement.type = "checkbox";
-        checkboxElement.checked = WebInspector.settings.cssReloadEnabled.get();
-        checkboxElement.addEventListener("click", checkboxClicked, false);
-        labelElement.appendChild(document.createTextNode(WebInspector.UIString("Auto-reload CSS upon Sass save")));
-
-        var fieldsetElement = this._createInputSetting(WebInspector.UIString("Timeout (ms)"), WebInspector.settings.cssReloadTimeout, true, 8, "60px", validateReloadTimeout);
-        fieldsetElement.disabled = !checkboxElement.checked;
-        fragment.appendChild(fieldsetElement);
-        return fragment;
-
-        function checkboxClicked()
-        {
-            var reloadEnabled = checkboxElement.checked;
-            WebInspector.settings.cssReloadEnabled.set(reloadEnabled);
-            fieldsetElement.disabled = !reloadEnabled;
-        }
-
-        function validateReloadTimeout(value)
-        {
-            return isFinite(value) && value > 0;
-        }
     },
 
     __proto__: WebInspector.SettingsTab.prototype

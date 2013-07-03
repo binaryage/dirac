@@ -90,7 +90,6 @@ WebInspector.Settings = function()
     this.textEditorIndent = this.createSetting("textEditorIndent", "    ");
     this.lastDockState = this.createSetting("lastDockState", "");
     this.cssReloadEnabled = this.createSetting("cssReloadEnabled", false);
-    this.cssReloadTimeout = this.createSetting("cssReloadTimeout", 1000);
     this.showCpuOnTimelineRuler = this.createSetting("showCpuOnTimelineRuler", false);
     this.timelineStackFramesToCapture = this.createSetting("timelineStackFramesToCapture", 30);
     this.timelineLimitStackFramesFlag = this.createSetting("timelineLimitStackFramesFlag", false);
