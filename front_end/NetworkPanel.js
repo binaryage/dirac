@@ -1202,6 +1202,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _removeAllHighlights: function()
     {
+        this._removeAllNodeHighlights();
         for (var i = 0; i < this._highlightedSubstringChanges.length; ++i)
             WebInspector.revertDomChanges(this._highlightedSubstringChanges[i]);
         this._highlightedSubstringChanges = [];
@@ -1224,8 +1225,10 @@ WebInspector.NetworkLogView.prototype = {
             this._toggleLargerRequests();
         var highlightedSubstringChanges = node._highlightMatchedSubstring(regExp);
         this._highlightedSubstringChanges.push(highlightedSubstringChanges);
-        if (reveal)
+        if (reveal) {
             node.reveal();
+            this._highlightNode(node);
+        }
     },
 
     /**
@@ -1273,7 +1276,7 @@ WebInspector.NetworkLogView.prototype = {
 
         this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.SearchCountUpdated, this._matchedRequests.length);
         if (shouldJump)
-            this._highlightNthMatchedRequestForSearch(newMatchedRequestIndex, false);
+            this._highlightNthMatchedRequestForSearch(newMatchedRequestIndex, true);
     },
 
     /**

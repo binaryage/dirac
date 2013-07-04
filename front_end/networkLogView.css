@@ -114,8 +114,8 @@
 }
 
 @-webkit-keyframes network-row-highlight-fadeout {
-    from {background-color: rgba(56, 121, 217, 1); }
-    to { background-color: rgba(56, 121, 217, 0); }
+    from {background-color: rgba(255, 255, 120, 1); }
+    to { background-color: rgba(255, 255, 120, 0); }
 }
 
 .network-header-subtitle {
