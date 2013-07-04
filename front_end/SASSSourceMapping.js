@@ -83,24 +83,53 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
+     * @param {string} headerName
+     * @param {NetworkAgent.Headers} headers
+     * @return {?string}
+     */
+    _headerValue: function(headerName, headers)
+    {
+        headerName = headerName.toLowerCase();
+        var value = null;
+        for (var name in headers) {
+            if (name.toLowerCase() === headerName) {
+                value = headers[name];
+                break;
+            }
+        }
+        return value;
+    },
+
+    /**
      * @param {NetworkAgent.Headers} headers
      * @return {?Date}
      */
     _lastModified: function(headers)
     {
-        var lastModifiedHeader;
-        for (var name in headers) {
-            if (name.toLowerCase() === "last-modified") {
-                lastModifiedHeader = headers[name];
-                break;
-            }
-        }
+        var lastModifiedHeader = this._headerValue("last-modified", headers);
         if (!lastModifiedHeader)
             return null;
         var lastModified = new Date(lastModifiedHeader);
         if (isNaN(lastModified.getTime()))
             return null;
         return lastModified;
+    },
+
+    /**
+     * @param {NetworkAgent.Headers} headers
+     * @param {string} url
+     * @return {?Date}
+     */
+    _checkLastModified: function(headers, url)
+    {
+        var lastModified = this._lastModified(headers);
+        if (lastModified)
+            return lastModified;
+
+        var etagMessage = this._headerValue("etag", headers) ? ", \"ETag\" response header found instead" : "";
+        var message = String.sprintf("The \"Last-Modified\" response header is missing or invalid for %s%s. The CSS auto-reload functionality will not work correctly.", url, etagMessage);
+        WebInspector.log(message);
+        return null;
     },
 
     /**
@@ -134,7 +163,7 @@ WebInspector.SASSSourceMapping.prototype = {
                 console.error("Could not load content for " + sassURL + " : " + (error || ("HTTP status code: " + statusCode)));
                 return;
             }
-            var lastModified = this._lastModified(headers);
+            var lastModified = this._checkLastModified(headers, sassURL);
             if (!lastModified)
                 return;
             metadataReceived.call(this, lastModified);
@@ -246,8 +275,12 @@ WebInspector.SASSSourceMapping.prototype = {
                 callback(cssURL, sassURL, false);
                 return;
             }
-            var lastModified = this._lastModified(headers);
-            if (!lastModified || lastModified.getTime() < data.sassTimestamp.getTime()) {
+            var lastModified = this._checkLastModified(headers, cssURL);
+            if (!lastModified) {
+                callback(cssURL, sassURL, true);
+                return;
+            }
+            if (lastModified.getTime() < data.sassTimestamp.getTime()) {
                 callback(cssURL, sassURL, false);
                 return;
             }
