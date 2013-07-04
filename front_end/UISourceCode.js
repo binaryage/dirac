@@ -116,18 +116,19 @@ WebInspector.UISourceCode.prototype = {
     /**
      * @return {string}
      */
-    fullName: function()
+    fullDisplayName: function()
     {
-        return this._project.displayName() + "/" + this.path();
+        return this._project.displayName() + "/" + (this._parentPath ? this._parentPath + "/" : "") + this.displayName(true);
     },
 
     /**
+     * @param {boolean=} skipTrim
      * @return {string}
      */
-    displayName: function()
+    displayName: function(skipTrim)
     {
-        var displayName = this.name() || this.fullName();
-        return displayName.trimEnd(100);
+        var displayName = this.name() || WebInspector.UIString("(index)");
+        return skipTrim ? displayName : displayName.trimEnd(100);
     },
 
     /**
@@ -867,7 +868,7 @@ WebInspector.UILocation.prototype = {
      */
     linkText: function()
     {
-        var linkText = this.uiSourceCode.name() || this.uiSourceCode.fullName();
+        var linkText = this.uiSourceCode.displayName();
         if (typeof this.lineNumber === "number")
             linkText += ":" + (this.lineNumber + 1);
         return linkText;

@@ -759,9 +759,7 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
         if (!this._treeElement)
             return;
 
-        var titleText = this._uiSourceCode.name().trimEnd(100);
-        if (!titleText)
-            titleText = WebInspector.UIString("(program)");
+        var titleText = this._uiSourceCode.displayName();
         if (!ignoreIsDirty && this._uiSourceCode.isDirty())
             titleText = "*" + titleText;
         this._treeElement.titleText = titleText;

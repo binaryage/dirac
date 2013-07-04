@@ -583,7 +583,7 @@ WebInspector.SelectUISourceCodeDialog = function(defaultScores)
     this._uiSourceCodes = [];
     var projects = WebInspector.workspace.projects().filter(this.filterProject.bind(this));
     for (var i = 0; i < projects.length; ++i)
-        this._uiSourceCodes = this._uiSourceCodes.concat(projects[i].uiSourceCodes().filter(this.filterUISourceCode.bind(this)));
+        this._uiSourceCodes = this._uiSourceCodes.concat(projects[i].uiSourceCodes());
     this._defaultScores = defaultScores;
     this._scorer = new WebInspector.FilePathScoreFunction("");
     WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
@@ -609,14 +609,6 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
-     */
-    filterUISourceCode: function(uiSourceCode)
-    {
-        return uiSourceCode.name();
-    },
-
-    /**
      * @return {number}
      */
     itemCount: function()
@@ -630,7 +622,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
      */
     itemKeyAt: function(itemIndex)
     {
-        return this._uiSourceCodes[itemIndex].fullName();
+        return this._uiSourceCodes[itemIndex].fullDisplayName();
     },
 
     /**
@@ -650,7 +642,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
             this._scorer = new WebInspector.FilePathScoreFunction(query);
         }
 
-        var path = uiSourceCode.fullName();
+        var path = uiSourceCode.fullDisplayName();
         return score + 10 * this._scorer.score(path, null);
     },
 
@@ -664,8 +656,8 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     {
         query = this.rewriteQuery(query);
         var uiSourceCode = this._uiSourceCodes[itemIndex];
-        titleElement.textContent = uiSourceCode.name().trimEnd(100) + (this._queryLineNumber ? this._queryLineNumber : "");
-        subtitleElement.textContent = uiSourceCode.fullName();
+        titleElement.textContent = uiSourceCode.displayName() + (this._queryLineNumber ? this._queryLineNumber : "");
+        subtitleElement.textContent = uiSourceCode.fullDisplayName().trimEnd(100);
 
         var indexes = [];
         var score = new WebInspector.FilePathScoreFunction(query).score(subtitleElement.textContent, indexes);
@@ -713,7 +705,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     _uiSourceCodeAdded: function(event)
     {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
-        if (!this.filterUISourceCode(uiSourceCode))
+        if (!this.filterProject(uiSourceCode.project()))
             return;
         this._uiSourceCodes.push(uiSourceCode)
         this.refresh();

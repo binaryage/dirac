@@ -192,11 +192,8 @@ WebInspector.TabbedEditorContainer.prototype = {
      */
     _titleForFile: function(uiSourceCode)
     {
-        const maxDisplayNameLength = 30;
-        const minDisplayQueryParamLength = 5;
-
-        var title = uiSourceCode.name();
-        title = title ? title.trimMiddle(maxDisplayNameLength) : WebInspector.UIString("(program)");
+        var maxDisplayNameLength = 30;
+        var title = uiSourceCode.displayName(true).trimMiddle(maxDisplayNameLength);
         if (uiSourceCode.isDirty())
             title += "*";
         return title;
