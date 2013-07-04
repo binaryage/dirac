@@ -577,7 +577,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     setReadOnly: function(readOnly)
     {
-        this._codeMirror.setOption("readOnly", readOnly ? "nocursor" : false);
+        this.element.enableStyleClass("CodeMirror-readonly", readOnly)
+        this._codeMirror.setOption("readOnly", readOnly);
     },
 
     /**

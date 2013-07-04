@@ -25,6 +25,9 @@
   margin-left: -1px;
 }
 
+.CodeMirror-readonly .CodeMirror-cursor {
+    display: none;
+}
 
 .CodeMirror-linenumber {
   min-width: 22px !important;
