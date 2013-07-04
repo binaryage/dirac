@@ -668,7 +668,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
         subtitleElement.textContent = uiSourceCode.fullName();
 
         var indexes = [];
-        var score = this._scorer.score(subtitleElement.textContent, indexes);
+        var score = new WebInspector.FilePathScoreFunction(query).score(subtitleElement.textContent, indexes);
         var fileNameIndex = subtitleElement.textContent.lastIndexOf("/");
         var ranges = [];
         for (var i = 0; i < indexes.length; ++i)
