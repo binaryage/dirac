@@ -134,13 +134,13 @@ WebInspector.JSHeapSnapshot.prototype = {
         this._markPageOwnedNodes();
     },
 
-    distanceForUserRoot: function(node)
+    /**
+     * @param {!WebInspector.HeapSnapshotNode} node
+     * @return {!boolean}
+     */
+    _isUserRoot: function(node)
     {
-        if (node.isUserRoot())
-            return 0;
-        if (node.isDocumentDOMTreesRoot())
-            return 0;
-        return this._noDistance;
+        return node.isUserRoot() || node.isDocumentDOMTreesRoot();
     },
 
     userObjectsMapAndFlag: function()
@@ -359,12 +359,18 @@ WebInspector.JSHeapSnapshotNode.prototype = {
         return this._type() === this._snapshot._nodeSyntheticType;
     },
 
+    /**
+     * @return {!boolean}
+     */
     isUserRoot: function()
     {
-        var userRootRE = /^Window/;
+        var userRootRE = /^[^(]/;
         return userRootRE.test(this.name());
     },
 
+    /**
+     * @return {!boolean}
+     */
     isDocumentDOMTreesRoot: function()
     {
         return this.isSynthetic() && this.name() === "(Document DOM trees)";

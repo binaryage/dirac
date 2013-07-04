@@ -775,9 +775,13 @@ WebInspector.HeapSnapshot.prototype = {
         return this._aggregatesForDiff;
     },
 
-    distanceForUserRoot: function(node)
+    /**
+     * @param {!WebInspector.HeapSnapshotNode} node
+     * @return {!boolean}
+     */
+    _isUserRoot: function(node)
     {
-        return 0;
+        return true;
     },
 
     _calculateDistances: function()
@@ -789,28 +793,75 @@ WebInspector.HeapSnapshot.prototype = {
         for (var i = 0; i < nodeCount; ++i)
             distances[i] = noDistance;
 
-        // bfs for Window roots
         var nodesToVisit = new Uint32Array(this.nodeCount);
         var nodesToVisitLength = 0;
+
+        /**
+         * @param {!WebInspector.HeapSnapshotNode} node
+         * @param {!number} distance
+         */
+        function enqueueNode(node, distance)
+        {
+            nodesToVisit[nodesToVisitLength++] = node.nodeIndex;
+            distances[node._ordinal()] = distance;
+        }
+
+        /**
+         * @param {!WebInspector.HeapSnapshotNode} node
+         * @param {!string} name
+         * @return {!WebInspector.HeapSnapshotNode|null}
+         */
+        function getChildNodeByName(node, name)
+        {
+            for (var iter = node.edges(); iter.hasNext(); iter.next()) {
+                var child = iter.edge.node();
+                if (child.name() === name)
+                    return child;
+            }
+            return null;
+        }
+
+        // bfs for user roots
         for (var iter = this.rootNode().edges(); iter.hasNext(); iter.next()) {
             var node = iter.edge.node();
-            var distance = this.distanceForUserRoot(node);
-            if (distance !== noDistance) {
-                nodesToVisit[nodesToVisitLength++] = node.nodeIndex;
-                distances[node.nodeIndex / nodeFieldCount] = distance;
-            }
+            if (this._isUserRoot(node))
+                enqueueNode(node, 1);
         }
         this._bfs(nodesToVisit, nodesToVisitLength, distances);
 
-        // bfs for root
+        // bfs for the rest of objects
         nodesToVisitLength = 0;
-        nodesToVisit[nodesToVisitLength++] = this._rootNodeIndex;
-        // Make the snapshot meta root have a distance of -1 so its children get distance of 0.
-        distances[this._rootNodeIndex / nodeFieldCount] = -1;
+        distances[this._rootNodeIndex / nodeFieldCount] = 0;
+        var gcRoots = getChildNodeByName(this.rootNode(), "(GC roots)");
+        if (gcRoots) {
+            distances[gcRoots._ordinal()] = 0;
+            for (var iter = gcRoots.edges(); iter.hasNext(); iter.next()) {
+                var subroot = iter.edge.node();
+                distances[subroot._ordinal()] = 0;
+                for (var iter2 = subroot.edges(); iter2.hasNext(); iter2.next()) {
+                    var node = iter2.edge.node();
+                    if (distances[node._ordinal()] === noDistance)
+                        enqueueNode(node, 0);
+                    else
+                        distances[node._ordinal()] = 0;
+                }
+            }
+        }
+        for (var iter = this.rootNode().edges(); iter.hasNext(); iter.next()) {
+            var node = iter.edge.node();
+            if (distances[node._ordinal()] === noDistance)
+                enqueueNode(node, 0);
+        }
         this._bfs(nodesToVisit, nodesToVisitLength, distances);
+
         this._nodeDistances = distances;
     },
 
+    /**
+     * @param {!Uint32Array} nodesToVisit
+     * @param {!number} nodesToVisitLength
+     * @param {!Int32Array} distances
+     */
     _bfs: function(nodesToVisit, nodesToVisitLength, distances)
     {
         // Preload fields into local variables for better performance.
