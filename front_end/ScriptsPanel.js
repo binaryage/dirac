@@ -75,10 +75,6 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     this.splitView.setMinimumSidebarWidth(Preferences.minScriptsSidebarWidth);
     this.splitView.setMinimumMainWidthPercent(minimumDebugSidebarWidthPercent);
 
-    this.debugSidebarResizeWidgetElement = document.createElement("div");
-    this.debugSidebarResizeWidgetElement.id = "scripts-debug-sidebar-resizer-widget";
-    this.splitView.installResizer(this.debugSidebarResizeWidgetElement);
-
     // Create scripts navigator
     const initialNavigatorWidth = 225;
     const minimumViewsContainerWidthPercent = 50;
@@ -109,7 +105,9 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     this._editorContainer.addEventListener(WebInspector.TabbedEditorContainer.Events.EditorSelected, this._editorSelected, this);
     this._editorContainer.addEventListener(WebInspector.TabbedEditorContainer.Events.EditorClosed, this._editorClosed, this);
 
-    this.splitView.mainElement.appendChild(this.debugSidebarResizeWidgetElement);
+    this._debugSidebarResizeWidgetElement = this.splitView.mainElement.createChild("div", "resizer-widget");
+    this._debugSidebarResizeWidgetElement.id = "scripts-debug-sidebar-resizer-widget";
+    this.splitView.installResizer(this._debugSidebarResizeWidgetElement);
 
     this.sidebarPanes = {};
     this.sidebarPanes.watchExpressions = new WebInspector.WatchExpressionsSidebarPane();
@@ -1016,13 +1014,13 @@ WebInspector.ScriptsPanel.prototype = {
 
     _installDebuggerSidebarController: function()
     {
-        this._toggleDebuggerSidebarButton = new WebInspector.StatusBarButton(WebInspector.UIString("Hide debugger"), "scripts-debugger-show-hide-button", 3);
-        this._toggleDebuggerSidebarButton.state = "shown";
+        this._toggleDebuggerSidebarButton = new WebInspector.StatusBarButton(WebInspector.UIString("Hide debugger"), "right-sidebar-show-hide-button scripts-debugger-show-hide-button", 3);
+        this._toggleDebuggerSidebarButton.state = "right";
         this._toggleDebuggerSidebarButton.addEventListener("click", clickHandler, this);
 
         function clickHandler()
         {
-            if (this._toggleDebuggerSidebarButton.state === "shown")
+            if (this._toggleDebuggerSidebarButton.state === "right")
                 this._hideDebuggerSidebar();
             else
                 this._showDebuggerSidebar();
@@ -1036,23 +1034,23 @@ WebInspector.ScriptsPanel.prototype = {
 
     _showDebuggerSidebar: function()
     {
-        if (this._toggleDebuggerSidebarButton.state === "shown")
+        if (this._toggleDebuggerSidebarButton.state === "right")
             return;
-        this._toggleDebuggerSidebarButton.state = "shown";
+        this._toggleDebuggerSidebarButton.state = "right";
         this._toggleDebuggerSidebarButton.title = WebInspector.UIString("Hide debugger");
         this.splitView.showSidebarElement();
-        this.debugSidebarResizeWidgetElement.removeStyleClass("hidden");
+        this._debugSidebarResizeWidgetElement.removeStyleClass("hidden");
         WebInspector.settings.debuggerSidebarHidden.set(false);
     },
 
     _hideDebuggerSidebar: function()
     {
-        if (this._toggleDebuggerSidebarButton.state === "hidden")
+        if (this._toggleDebuggerSidebarButton.state === "left")
             return;
-        this._toggleDebuggerSidebarButton.state = "hidden";
+        this._toggleDebuggerSidebarButton.state = "left";
         this._toggleDebuggerSidebarButton.title = WebInspector.UIString("Show debugger");
         this.splitView.hideSidebarElement();
-        this.debugSidebarResizeWidgetElement.addStyleClass("hidden");
+        this._debugSidebarResizeWidgetElement.addStyleClass("hidden");
         WebInspector.settings.debuggerSidebarHidden.set(true);
     },
 

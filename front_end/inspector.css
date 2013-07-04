@@ -925,16 +925,16 @@ select.status-bar-item:hover {
 }
 } /* media */
 
-button.dock-status-bar-item.status-bar-item.toggled-undock .glyph {
+button.status-bar-item.dock-status-bar-item.toggled-undock .glyph {
     -webkit-mask-position: 0 -48px;
 }
 
-button.dock-status-bar-item.status-bar-item.toggled-bottom .glyph {
+button.status-bar-item.dock-status-bar-item.toggled-bottom .glyph {
     -webkit-mask-position: -32px -24px;
     background-color: rgba(0, 0, 0, 0.75);
 }
 
-button.dock-status-bar-item.status-bar-item.toggled-right .glyph {
+button.status-bar-item.dock-status-bar-item.toggled-right .glyph {
     -webkit-mask-position: -256px -48px;
     background-color: rgba(0, 0, 0, 0.75);
 }
@@ -966,6 +966,55 @@ body.undocked .alternate-status-bar-buttons-bar {
 button.status-bar-item.settings-status-bar-item,
 button.status-bar-item.settings-status-bar-item:active {
     border-right: 0 transparent none;
+}
+
+button.status-bar-item.left-sidebar-show-hide-button,
+button.status-bar-item.right-sidebar-show-hide-button {
+    position: absolute;
+    top: 0;
+    background-image: none;
+    height: 16px;
+    width: 16px;
+    margin: 4px 2px 2px 2px;
+    border: none;
+}
+
+button.status-bar-item.left-sidebar-show-hide-button:active,
+button.status-bar-item.right-sidebar-show-hide-button:active {
+    margin: 5px 1px 1px 3px;
+}
+
+button.status-bar-item.left-sidebar-show-hide-button.toggled-left > .glyph {
+    -webkit-mask-position: -199px -76px;
+}
+
+button.status-bar-item.left-sidebar-show-hide-button.toggled-right > .glyph {
+    -webkit-mask-position: -168px -76px;
+}
+
+button.status-bar-item.right-sidebar-show-hide-button.toggled-left > .glyph {
+    -webkit-mask-position: -296px -76px;
+}
+
+button.status-bar-item.right-sidebar-show-hide-button.toggled-right > .glyph {
+    -webkit-mask-position: -264px -76px;
+}
+
+button.status-bar-item.left-sidebar-show-hide-button.toggled-overlay > .glyph {
+    -webkit-mask-position: -231px -76px;
+}
+
+div.resizer-widget {
+    position: absolute;
+    top: 0;
+    right: 0;
+    height: 24px;
+    width: 16px;
+    cursor: ew-resize;
+    background-image: url(Images/statusbarResizerHorizontal.png);
+    background-repeat: no-repeat;
+    background-position: center;
+    z-index: 13;
 }
 
 .settings-status-bar-item .glyph {
