@@ -260,22 +260,21 @@ WebInspector.MemoryStatistics.prototype = {
         var calculator = this._timelinePanel.calculator;
         var start = calculator.minimumBoundary() * 1000;
         var end = calculator.maximumBoundary() * 1000;
-        var firstIndex = 0;
-        var lastIndex = this._counters.length - 1;
-        for (var i = 0; i < this._counters.length; i++) {
-            var time = this._counters[i].time;
-            if (time <= start) {
-                firstIndex = i;
-            } else {
-                if (end < time)
-                    break;
-                lastIndex = i;
-            }
+        function comparator(value, sample)
+        {
+            return value - sample.time;
         }
+        var firstIndex = binarySearch(start, this._counters, comparator);
+        var lastIndex = binarySearch(end, this._counters, comparator);
+        if (firstIndex < 0)
+            firstIndex = -firstIndex - 2;
+        if (lastIndex < 0)
+            lastIndex = -lastIndex - 1;
+
         // Maximum index of element whose time <= start.
         this._minimumIndex = firstIndex;
 
-        // Maximum index of element whose time <= end.
+        // Minimum index of element whose time >= end.
         this._maximumIndex = lastIndex;
 
         // Current window bounds.

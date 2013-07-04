@@ -411,7 +411,8 @@ function binarySearch(object, array, comparator)
             return mid;
     }
 
-    // Return the nearest lesser index, "-1" means "0, "-2" means "1", etc.
+    // Return the nearest lesser index negated minus 2, i.e.:
+    // "-1" means "-1", "-2" means "0, "-3" means "1", etc.
     return -(first + 1);
 }
 
@@ -471,12 +472,12 @@ function insertionIndexForObjectInListSortedByFunction(anObject, aList, aFunctio
     }
 
     if (!insertionIndexAfter) {
-        // Return the first occurance of an item in the list.
+        // Return the first occurence of an item in the list.
         while (index > 0 && aFunction(anObject, aList[index - 1]) === 0)
             index--;
         return index;
     }
-    // Return the last occurance of an item in the list.
+    // Return the last occurence of an item in the list.
     while (index < aList.length && aFunction(anObject, aList[index]) === 0)
         index++;
     return index;
