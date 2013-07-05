@@ -267,9 +267,9 @@ WebInspector.MemoryStatistics.prototype = {
         var firstIndex = binarySearch(start, this._counters, comparator);
         var lastIndex = binarySearch(end, this._counters, comparator);
         if (firstIndex < 0)
-            firstIndex = -firstIndex - 2;
+            firstIndex = Math.max(0, -firstIndex - 2);
         if (lastIndex < 0)
-            lastIndex = -lastIndex - 1;
+            lastIndex = Math.min(-lastIndex - 1, this._counters.length - 1);
 
         // Maximum index of element whose time <= start.
         this._minimumIndex = firstIndex;
