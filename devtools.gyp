@@ -204,7 +204,6 @@
             'front_end/buildSystemOnly.js',
             'front_end/cm/cmdevtools.css',
             'front_end/cm/codemirror.css',
-            'front_end/cm/showhint.css',
             'front_end/cssNamedFlows.css',
             'front_end/dataGrid.css',
             'front_end/elementsPanel.css',
@@ -344,7 +343,6 @@
             'front_end/cm/php.js',
             'front_end/cm/python.js',
             'front_end/cm/shell.js',
-            'front_end/cm/showhint.js',
             'front_end/cm/xml.js',
         ],
 

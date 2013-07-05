@@ -37,7 +37,6 @@ importScript("cm/htmlmixed.js");
 importScript("cm/matchbrackets.js");
 importScript("cm/closebrackets.js");
 importScript("cm/markselection.js");
-importScript("cm/showhint.js");
 importScript("cm/comment.js");
 importScript("cm/overlay.js");
 
@@ -62,7 +61,6 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._url = url;
 
     this.registerRequiredCSS("cm/codemirror.css");
-    this.registerRequiredCSS("cm/showhint.css");
     this.registerRequiredCSS("cm/cmdevtools.css");
 
     this._codeMirror = window.CodeMirror(this.element, {
@@ -140,6 +138,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._tokenHighlighter = new WebInspector.CodeMirrorTextEditor.TokenHighlighter(this._codeMirror);
     this._blockIndentController = new WebInspector.CodeMirrorTextEditor.BlockIndentController(this._codeMirror);
     this._fixWordMovement = new WebInspector.CodeMirrorTextEditor.FixWordMovement(this._codeMirror);
+    this._autocompleteController = new WebInspector.CodeMirrorTextEditor.AutocompleteController(this, this._codeMirror);
 
     this._codeMirror.on("change", this._change.bind(this));
     this._codeMirror.on("beforeChange", this._beforeChange.bind(this));
@@ -147,6 +146,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._codeMirror.on("cursorActivity", this._cursorActivity.bind(this));
     this._codeMirror.on("scroll", this._scroll.bind(this));
     this._codeMirror.on("focus", this._focus.bind(this));
+    this._codeMirror.on("blur", this._blur.bind(this));
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this));
 
     this.element.firstChild.addStyleClass("source-code");
@@ -155,7 +155,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._nestedUpdatesCounter = 0;
 
     this.element.addEventListener("focus", this._handleElementFocus.bind(this), false);
-    this.element.addEventListener("keydown", this._handleKeyDown.bind(this), false);
+    this.element.addEventListener("keydown", this._handleKeyDown.bind(this), true);
     this.element.tabIndex = 0;
 
     this._overrideModeWithPrefixedTokens("css-base", "css-");
@@ -168,10 +168,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 
 WebInspector.CodeMirrorTextEditor.autocompleteCommand = function(codeMirror)
 {
-    var textEditor = codeMirror._codeMirrorTextEditor;
-    if (!textEditor._dictionary || codeMirror.somethingSelected())
-        return;
-    CodeMirror.showHint(codeMirror, textEditor._autocomplete.bind(textEditor));
+    codeMirror._codeMirrorTextEditor._autocompleteController.autocomplete();
 }
 CodeMirror.commands.autocomplete = WebInspector.CodeMirrorTextEditor.autocompleteCommand;
 
@@ -303,37 +300,10 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         document.head.appendChild(style);
     },
 
-    _autocomplete: function(codeMirror)
-    {
-        var cursor = codeMirror.getCursor();
-        var prefixRange = this._wordRangeForCursorPosition(cursor.line, cursor.ch, true);
-        if (!prefixRange)
-            return null;
-        var prefix = this.copyRange(prefixRange);
-        this._dictionary.removeWord(prefix);
-        var wordsWithPrefix = this._dictionary.wordsWithPrefix(this.copyRange(prefixRange));
-        this._dictionary.addWord(prefix);
-
-        var data = {
-            list: wordsWithPrefix,
-            from: new CodeMirror.Pos(prefixRange.startLine, prefixRange.startColumn),
-            to: new CodeMirror.Pos(prefixRange.endLine, prefixRange.endColumn)
-        };
-        CodeMirror.on(data, "close", this._handleAutocompletionClose.bind(this));
-
-        return data;
-    },
-
     _handleKeyDown: function(e)
     {
-        if (!!this._consumeEsc && e.keyCode === WebInspector.KeyboardShortcut.Keys.Esc.code)
+        if (this._autocompleteController.keyDown(e))
             e.consume(true);
-        delete this._consumeEsc;
-    },
-
-    _handleAutocompletionClose: function()
-    {
-        this._consumeEsc = true;
     },
 
     /**
@@ -825,7 +795,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     _wordRangeForCursorPosition: function(lineNumber, column, prefixOnly)
     {
         var line = this.line(lineNumber);
-        if (!WebInspector.TextUtils.isWordChar(line.charAt(column - 1)))
+        if (column === 0 || !WebInspector.TextUtils.isWordChar(line.charAt(column - 1)))
             return null;
         var wordStart = column - 1;
         while(wordStart > 0 && WebInspector.TextUtils.isWordChar(line.charAt(wordStart - 1)))
@@ -913,6 +883,11 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     _focus: function()
     {
         this._delegate.editorFocused();
+    },
+
+    _blur: function()
+    {
+        this._autocompleteController.finishAutocomplete();
     },
 
     /**
@@ -1306,4 +1281,142 @@ WebInspector.CodeMirrorTextEditor.FixWordMovement = function(codeMirror)
     keyMap["Shift-" + leftKey] = moveLeft.bind(this, true);
     keyMap["Shift-" + rightKey] = moveRight.bind(this, true);
     codeMirror.addKeyMap(keyMap);
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.SuggestBoxDelegate}
+ * @param {WebInspector.CodeMirrorTextEditor} textEditor
+ * @param {CodeMirror} codeMirror
+ */
+WebInspector.CodeMirrorTextEditor.AutocompleteController = function(textEditor, codeMirror)
+{
+    this._textEditor = textEditor;
+    this._codeMirror = codeMirror;
+    this._codeMirror.on("scroll", this._onScroll.bind(this));
+    this._codeMirror.on("cursorActivity", this._onCursorActivity.bind(this));
+}
+
+WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
+    autocomplete: function()
+    {
+        var dictionary = this._textEditor._dictionary;
+        if (!dictionary || this._codeMirror.somethingSelected()) {
+            this.finishAutocomplete();
+            return;
+        }
+
+        var cursor = this._codeMirror.getCursor();
+        var substituteRange = this._textEditor._wordRangeForCursorPosition(cursor.line, cursor.ch, false);
+        if (!substituteRange || substituteRange.startColumn === cursor.ch) {
+            this.finishAutocomplete();
+            return;
+        }
+        var prefixRange = substituteRange.clone();
+        prefixRange.endColumn = cursor.ch;
+
+        var substituteWord = this._textEditor.copyRange(substituteRange);
+        var hasPrefixInDictionary = dictionary.hasWord(substituteWord);
+        if (hasPrefixInDictionary)
+            dictionary.removeWord(substituteWord);
+        var wordsWithPrefix = dictionary.wordsWithPrefix(this._textEditor.copyRange(prefixRange));
+        if (hasPrefixInDictionary)
+            dictionary.addWord(substituteWord);
+
+        function sortSuggestions(a, b)
+        {
+            return a.length - b.length;
+        }
+
+        wordsWithPrefix.sort(sortSuggestions);
+
+        if (!this._suggestBox) {
+            this._suggestBox = new WebInspector.SuggestBox(this, this._textEditor.element, "generic-suggest", 6);
+            this._anchorBox = this._anchorBoxForPosition(cursor.line, cursor.ch);
+        }
+        this._suggestBox.updateSuggestions(this._anchorBox, wordsWithPrefix, 0, true, this._textEditor.copyRange(prefixRange));
+        this._prefixRange = prefixRange;
+        if (!this._suggestBox.visible())
+            this.finishAutocomplete();
+    },
+
+    finishAutocomplete: function()
+    {
+        if (!this._suggestBox)
+            return;
+        this._suggestBox.hide();
+        this._suggestBox = null;
+        this._prefixRange = null;
+        this._anchorBox = null;
+    },
+
+    /**
+     * @param {Event} e
+     */
+    keyDown: function(e)
+    {
+        if (!this._suggestBox)
+            return false;
+        if (e.keyCode === WebInspector.KeyboardShortcut.Keys.Esc.code) {
+            this.finishAutocomplete();
+            return true;
+        }
+        return this._suggestBox.keyPressed(e);
+    },
+
+    /**
+     * @param {string} suggestion
+     * @param {boolean=} isIntermediateSuggestion
+     */
+    applySuggestion: function(suggestion, isIntermediateSuggestion)
+    {
+        this._currentSuggestion = suggestion;
+    },
+
+    acceptSuggestion: function()
+    {
+        var substituteRange = this._textEditor._wordRangeForCursorPosition(this._prefixRange.endLine, this._prefixRange.endColumn, false);
+        if (substituteRange.endColumn - substituteRange.startColumn !== this._currentSuggestion.length) {
+            var pos = this._textEditor._toPos(substituteRange);
+            this._codeMirror.replaceRange(this._currentSuggestion, pos.start, pos.end, "+autocomplete");
+        }
+    },
+
+    _onScroll: function()
+    {
+        if (!this._suggestBox)
+            return;
+        var cursor = this._codeMirror.getCursor();
+        var scrollInfo = this._codeMirror.getScrollInfo();
+        var topmostLineNumber = this._codeMirror.lineAtHeight(scrollInfo.top, "local");
+        var bottomLine = this._codeMirror.lineAtHeight(scrollInfo.top + scrollInfo.clientHeight, "local");
+        if (cursor.line < topmostLineNumber || cursor.line > bottomLine)
+            this.finishAutocomplete();
+        else {
+            this._anchorBox = this._anchorBoxForPosition(cursor.line, cursor.ch);
+            this._suggestBox.setPosition(this._anchorBox);
+        }
+    },
+
+    _onCursorActivity: function()
+    {
+        if (!this._suggestBox)
+            return;
+        var cursor = this._codeMirror.getCursor();
+        if (cursor.line !== this._prefixRange.startLine || Math.abs(cursor.ch  -this._prefixRange.endColumn) > 1 || cursor.ch === this._prefixRange.startColumn)
+            this.finishAutocomplete();
+        else
+            this.autocomplete();
+    },
+
+    /**
+     * @param {number} line
+     * @param {number} column
+     * @return {AnchorBox}
+     */
+    _anchorBoxForPosition: function(line, column)
+    {
+        var metrics = this._textEditor.cursorPositionToCoordinates(line, column);
+        return metrics ? new AnchorBox(metrics.x, metrics.y, 0, metrics.height) : null;
+    },
 }

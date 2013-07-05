@@ -360,6 +360,7 @@ CodeMirror.prototype = {
     firstLine: function() { },
     focus: function() { },
     getAllMarks: function() { },
+    /** @param {string=} start */
     getCursor: function(start) { },
     getDoc: function() { },
     getGutterElement: function() { },
@@ -392,7 +393,11 @@ CodeMirror.prototype = {
     lastLine: function() { },
     lineCount: function() { },
     lineInfo: function(line) { },
-    lineAtHeight: function(height) { },
+    /**
+     * @param {number} height
+     * @param {string=} mode
+     */
+    lineAtHeight: function(height, mode) { },
     linkedDoc: function(options) { },
     markClean: function() { },
     markText: function(from, to, options) { },

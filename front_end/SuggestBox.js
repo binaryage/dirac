@@ -53,14 +53,16 @@ WebInspector.SuggestBoxDelegate.prototype = {
  * @param {WebInspector.SuggestBoxDelegate} suggestBoxDelegate
  * @param {Element} anchorElement
  * @param {string=} className
+ * @param {number=} maxItemsHeight
  */
-WebInspector.SuggestBox = function(suggestBoxDelegate, anchorElement, className)
+WebInspector.SuggestBox = function(suggestBoxDelegate, anchorElement, className, maxItemsHeight)
 {
     this._suggestBoxDelegate = suggestBoxDelegate;
     this._anchorElement = anchorElement;
     this._length = 0;
     this._selectedIndex = -1;
     this._selectedElement = null;
+    this._maxItemsHeight = maxItemsHeight;
     this._boundOnScroll = this._onScrollOrResize.bind(this, true);
     this._boundOnResize = this._onScrollOrResize.bind(this, false);
     window.addEventListener("scroll", this._boundOnScroll, true);
@@ -97,6 +99,14 @@ WebInspector.SuggestBox.prototype = {
     /**
      * @param {AnchorBox} anchorBox
      */
+    setPosition: function(anchorBox)
+    {
+        this._updateBoxPosition(anchorBox);
+    },
+
+    /**
+     * @param {AnchorBox} anchorBox
+     */
     _updateBoxPosition: function(anchorBox)
     {
         this._anchorBox = anchorBox;
@@ -128,7 +138,8 @@ WebInspector.SuggestBox.prototype = {
         var boxY;
         var aboveHeight = anchorBox.y;
         var underHeight = document.body.offsetHeight - anchorBox.y - anchorBox.height;
-        var maxHeight = Math.max(underHeight, aboveHeight) - spacer;
+
+        var maxHeight = this._maxItemsHeight ? contentHeight * this._maxItemsHeight / this._length : Math.max(underHeight, aboveHeight) - spacer;
         var height = Math.min(contentHeight, maxHeight - suggestBoxPaddingY) + suggestBoxPaddingY;
         if (underHeight >= aboveHeight) {
             // Locate the suggest box under the anchorBox.
