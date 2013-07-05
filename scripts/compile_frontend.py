@@ -94,6 +94,7 @@ modules = [
             "Linkifier.js",
             "NetworkLog.js",
             "NetworkUISourceCodeProvider.js",
+            "OverridesSupport.js",
             "PresentationConsoleMessageHelper.js",
             "RuntimeModel.js",
             "SASSSourceMapping.js",
@@ -117,7 +118,6 @@ modules = [
             "NetworkManager.js",
             "NetworkRequest.js",
             "UISourceCode.js",
-            "UserAgentSupport.js",
             "Workspace.js",
             "protocol_externs.js",
         ]

@@ -119,7 +119,7 @@ WebInspector.OverridesView.prototype = {
                 this._userAgentFieldsetElement.disabled = true;
                 this._otherUserAgentElement.disabled = true;
             }
-            WebInspector.userAgentSupport.toggleUserAgentOverride(checkboxElement.checked);
+            WebInspector.overridesSupport.toggleUserAgentOverride(checkboxElement.checked);
         }
 
         checkboxClicked.call(this);
@@ -234,7 +234,7 @@ WebInspector.OverridesView.prototype = {
 
         if (isUserGesture) {
             var metrics = this._selectElement.options[this._selectElement.selectedIndex]._metrics;
-            this._setDeviceMetricsOverride(WebInspector.UserAgentSupport.DeviceMetrics.parseSetting(metrics), false, true);
+            this._setDeviceMetricsOverride(WebInspector.OverridesSupport.DeviceMetrics.parseSetting(metrics), false, true);
         }
     },
 
@@ -291,7 +291,7 @@ WebInspector.OverridesView.prototype = {
     _createDeviceMetricsControl: function()
     {
         const metricsSetting = WebInspector.settings.deviceMetrics.get();
-        var metrics = WebInspector.UserAgentSupport.DeviceMetrics.parseSetting(metricsSetting);
+        var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(metricsSetting);
 
         const p = this._createNonPersistedCheckbox(WebInspector.UIString("Device metrics"), this._onMetricsCheckboxClicked.bind(this), "metrics-override-checkbox");
         this._metricsCheckboxElement = p.getElementsByTagName("input")[0];
@@ -310,14 +310,14 @@ WebInspector.OverridesView.prototype = {
         this._deviceMetricsFieldsetElement.disabled = controlsDisabled;
 
         if (controlsDisabled) {
-            WebInspector.userAgentSupport.toggleDeviceMetricsOverride(false);
+            WebInspector.overridesSupport.toggleDeviceMetricsOverride(false);
             return;
         }
 
-        var metrics = WebInspector.UserAgentSupport.DeviceMetrics.parseUserInput(this._widthOverrideElement.value, this._heightOverrideElement.value, this._fontScaleFactorOverrideElement.value);
+        var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseUserInput(this._widthOverrideElement.value, this._heightOverrideElement.value, this._fontScaleFactorOverrideElement.value);
         if (metrics && metrics.isValid() && metrics.width && metrics.height) {
             this._setDeviceMetricsOverride(metrics, false, false);
-            WebInspector.userAgentSupport.toggleDeviceMetricsOverride(true);
+            WebInspector.overridesSupport.toggleDeviceMetricsOverride(true);
         }
         if (!this._widthOverrideElement.value)
             this._widthOverrideElement.focus();
@@ -325,11 +325,11 @@ WebInspector.OverridesView.prototype = {
 
     _applyDeviceMetricsUserInput: function()
     {
-        this._setDeviceMetricsOverride(WebInspector.UserAgentSupport.DeviceMetrics.parseUserInput(this._widthOverrideElement.value.trim(), this._heightOverrideElement.value.trim(), this._fontScaleFactorOverrideElement.value.trim()), true, false);
+        this._setDeviceMetricsOverride(WebInspector.OverridesSupport.DeviceMetrics.parseUserInput(this._widthOverrideElement.value.trim(), this._heightOverrideElement.value.trim(), this._fontScaleFactorOverrideElement.value.trim()), true, false);
     },
 
     /**
-     * @param {?WebInspector.UserAgentSupport.DeviceMetrics} metrics
+     * @param {?WebInspector.OverridesSupport.DeviceMetrics} metrics
      * @param {boolean} userInputModified
      */
     _setDeviceMetricsOverride: function(metrics, userInputModified, updateCheckbox)
@@ -368,7 +368,7 @@ WebInspector.OverridesView.prototype = {
     },
 
     /**
-     * @param {WebInspector.UserAgentSupport.DeviceMetrics} metrics
+     * @param {WebInspector.OverridesSupport.DeviceMetrics} metrics
      */
     _createDeviceMetricsElement: function(metrics)
     {
@@ -417,7 +417,7 @@ WebInspector.OverridesView.prototype = {
     _createGeolocationOverrideControl: function()
     {
         const geolocationSetting = WebInspector.settings.geolocationOverride.get();
-        var geolocation = WebInspector.UserAgentSupport.GeolocationPosition.parseSetting(geolocationSetting);
+        var geolocation = WebInspector.OverridesSupport.GeolocationPosition.parseSetting(geolocationSetting);
         var p = this._createNonPersistedCheckbox(WebInspector.UIString("Override Geolocation"), this._onGeolocationOverrideCheckboxClicked.bind(this), "geolocation-override-checkbox");
         this._geolocationOverrideCheckboxElement = p.getElementsByTagName("input")[0];
 
@@ -434,14 +434,14 @@ WebInspector.OverridesView.prototype = {
         this._geolocationFieldsetElement.disabled = controlsDisabled;
 
         if (controlsDisabled) {
-            WebInspector.userAgentSupport.toggleGeolocationPositionOverride(false);
+            WebInspector.overridesSupport.toggleGeolocationPositionOverride(false);
             return;
         }
 
-        var geolocation = WebInspector.UserAgentSupport.GeolocationPosition.parseUserInput(this._latitudeElement.value, this._longitudeElement.value, this._geolocationErrorElement.checked);
+        var geolocation = WebInspector.OverridesSupport.GeolocationPosition.parseUserInput(this._latitudeElement.value, this._longitudeElement.value, this._geolocationErrorElement.checked);
         if (geolocation) {
             this._setGeolocationPosition(geolocation, false, false);
-            WebInspector.userAgentSupport.toggleGeolocationPositionOverride(true);
+            WebInspector.overridesSupport.toggleGeolocationPositionOverride(true);
         }
         if (!this._latitudeElement.value)
             this._latitudeElement.focus();
@@ -449,11 +449,11 @@ WebInspector.OverridesView.prototype = {
 
     _applyGeolocationUserInput: function()
     {
-        this._setGeolocationPosition(WebInspector.UserAgentSupport.GeolocationPosition.parseUserInput(this._latitudeElement.value.trim(), this._longitudeElement.value.trim(), this._geolocationErrorElement.checked), true, false);
+        this._setGeolocationPosition(WebInspector.OverridesSupport.GeolocationPosition.parseUserInput(this._latitudeElement.value.trim(), this._longitudeElement.value.trim(), this._geolocationErrorElement.checked), true, false);
     },
 
     /**
-     * @param {?WebInspector.UserAgentSupport.GeolocationPosition} geolocation
+     * @param {?WebInspector.OverridesSupport.GeolocationPosition} geolocation
      * @param {boolean} userInputModified
      * @param {boolean} updateCheckbox
      */
@@ -477,7 +477,7 @@ WebInspector.OverridesView.prototype = {
     },
 
     /**
-     * @param {WebInspector.UserAgentSupport.GeolocationPosition} geolocation
+     * @param {WebInspector.OverridesSupport.GeolocationPosition} geolocation
      */
     _createGeolocationOverrideElement: function(geolocation)
     {
@@ -514,7 +514,7 @@ WebInspector.OverridesView.prototype = {
     _createDeviceOrientationOverrideControl: function()
     {
         const deviceOrientationSetting = WebInspector.settings.deviceOrientationOverride.get();
-        var deviceOrientation = WebInspector.UserAgentSupport.DeviceOrientation.parseSetting(deviceOrientationSetting);
+        var deviceOrientation = WebInspector.OverridesSupport.DeviceOrientation.parseSetting(deviceOrientationSetting);
         var p = this._createNonPersistedCheckbox(WebInspector.UIString("Override Device Orientation"), this._onDeviceOrientationOverrideCheckboxClicked.bind(this), "device-orientation-override-checkbox");
         this._deviceOrientationOverrideCheckboxElement = p.getElementsByTagName("input")[0];
 
@@ -531,14 +531,14 @@ WebInspector.OverridesView.prototype = {
         this._deviceOrientationFieldsetElement.disabled = controlsDisabled;
 
         if (controlsDisabled) {
-            WebInspector.userAgentSupport.toggleDeviceOrientationOverride(false);
+            WebInspector.overridesSupport.toggleDeviceOrientationOverride(false);
             return;
         }
 
-        var deviceOrientation = WebInspector.UserAgentSupport.DeviceOrientation.parseUserInput(this._alphaElement.value, this._betaElement.value, this._gammaElement.value);
+        var deviceOrientation = WebInspector.OverridesSupport.DeviceOrientation.parseUserInput(this._alphaElement.value, this._betaElement.value, this._gammaElement.value);
         if (deviceOrientation) {
             this._setDeviceOrientation(deviceOrientation, false, false);
-            WebInspector.userAgentSupport.toggleDeviceOrientationOverride(true);
+            WebInspector.overridesSupport.toggleDeviceOrientationOverride(true);
         }
         if (!this._alphaElement.value)
             this._alphaElement.focus();
@@ -546,11 +546,11 @@ WebInspector.OverridesView.prototype = {
 
     _applyDeviceOrientationUserInput: function()
     {
-        this._setDeviceOrientation(WebInspector.UserAgentSupport.DeviceOrientation.parseUserInput(this._alphaElement.value.trim(), this._betaElement.value.trim(), this._gammaElement.value.trim()), true, false);
+        this._setDeviceOrientation(WebInspector.OverridesSupport.DeviceOrientation.parseUserInput(this._alphaElement.value.trim(), this._betaElement.value.trim(), this._gammaElement.value.trim()), true, false);
     },
 
     /**
-     * @param {?WebInspector.UserAgentSupport.DeviceOrientation} deviceOrientation
+     * @param {?WebInspector.OverridesSupport.DeviceOrientation} deviceOrientation
      * @param {boolean} userInputModified
      * @param {boolean} updateCheckbox
      */
@@ -575,7 +575,7 @@ WebInspector.OverridesView.prototype = {
     },
 
     /**
-     * @param {WebInspector.UserAgentSupport.DeviceOrientation} deviceOrientation
+     * @param {WebInspector.OverridesSupport.DeviceOrientation} deviceOrientation
      */
     _createDeviceOrientationOverrideElement: function(deviceOrientation)
     {
