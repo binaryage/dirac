@@ -321,10 +321,24 @@ WebInspector.Resource.prototype = {
         this._contentRequested = true;
 
         /**
+         * @param {?Protocol.Error} error
          * @param {?string} content
          * @param {boolean} contentEncoded
          */
-        function contentLoaded(content, contentEncoded)
+        function contentLoaded(error, content, contentEncoded)
+        {
+            if (error || content === null) {
+                loadFallbackContent.call(this, error);
+                return;
+            }
+            replyWithContent.call(this, content, contentEncoded);
+        }
+
+        /**
+         * @param {?string} content
+         * @param {boolean} contentEncoded
+         */
+        function replyWithContent(content, contentEncoded)
         {
             this._content = content;
             this._contentEncoded = contentEncoded;
@@ -342,11 +356,7 @@ WebInspector.Resource.prototype = {
          */
         function resourceContentLoaded(error, content, contentEncoded)
         {
-            if (error) {
-                loadFallbackContent.call(this, error);
-                return;
-            }
-            contentLoaded.call(this, error ? null : content, contentEncoded);
+            contentLoaded.call(this, error, content, contentEncoded);
         }
         
         /**
@@ -357,7 +367,7 @@ WebInspector.Resource.prototype = {
             var scripts = WebInspector.debuggerModel.scriptsForSourceURL(this.url);
             if (!scripts.length) {
                 console.error("Resource content request failed: " + error);
-                contentLoaded.call(this, null, false);
+                replyWithContent.call(this, null, false);
                 return;
             }
 
@@ -369,7 +379,7 @@ WebInspector.Resource.prototype = {
 
             if (!contentProvider) {
                 console.error("Resource content request failed: " + error);
-                contentLoaded.call(this, null, false);
+                replyWithContent.call(this, null, false);
                 return;
             }
 
@@ -383,7 +393,7 @@ WebInspector.Resource.prototype = {
          */
         function fallbackContentLoaded(content, contentEncoded, mimeType)
         {
-            contentLoaded.call(this, content, contentEncoded);
+            replyWithContent.call(this, content, contentEncoded);
         }
 
         if (this.request) {
@@ -394,7 +404,7 @@ WebInspector.Resource.prototype = {
              */
             function requestContentLoaded(content, contentEncoded, mimeType)
             {
-                contentLoaded.call(this, content, contentEncoded);
+                contentLoaded.call(this, null, content, contentEncoded);
             }
             
             this.request.requestContent(requestContentLoaded.bind(this));
