@@ -1147,7 +1147,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             if (this.usedHeapSizeDelta) {
                 var sign = this.usedHeapSizeDelta > 0 ? "+" : "-";
                 contentHelper.appendTextRow(WebInspector.UIString("Used Heap Size"),
-                    WebInspector.UIString("%s (%s%s)", Number.bytesToString(this.usedHeapSize), sign, Number.bytesToString(this.usedHeapSizeDelta)));
+                    WebInspector.UIString("%s (%s%s)", Number.bytesToString(this.usedHeapSize), sign, Number.bytesToString(Math.abs(this.usedHeapSizeDelta))));
             } else if (this.category === WebInspector.TimelinePresentationModel.categories().scripting)
                 contentHelper.appendTextRow(WebInspector.UIString("Used Heap Size"), Number.bytesToString(this.usedHeapSize));
         }
