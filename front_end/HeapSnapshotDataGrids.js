@@ -523,12 +523,15 @@ WebInspector.HeapSnapshotRetainmentDataGrid.prototype = {
         {
             this.removeEventListener(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this);
             this.expand();
-            if (--maxExpandLevels > 0 && this.children.length > 0 && (!this._distance || this._distance > 2)) {
+            if (--maxExpandLevels > 0 && this.children.length > 0) {
                 var retainer = this.children[0];
-                retainer.addEventListener(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, retainer);
-                retainer.populate();
-            } else
-                dataGrid.dispatchEventToListeners(WebInspector.HeapSnapshotRetainmentDataGrid.Events.ExpandRetainersComplete);
+                if (retainer._distance > 1) {
+                    retainer.addEventListener(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, retainer);
+                    retainer.populate();
+                    return;
+                }
+            }
+            dataGrid.dispatchEventToListeners(WebInspector.HeapSnapshotRetainmentDataGrid.Events.ExpandRetainersComplete);
         }
         this.rootNode().addEventListener(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this.rootNode());
     },
