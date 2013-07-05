@@ -831,10 +831,12 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         }
 
         var linesToUpdate = {};
+        var singleCharInput = false;
         do {
             var oldRange = this._toRange(changeObject.from, changeObject.to);
             var newRange = oldRange.clone();
             var linesAdded = changeObject.text.length;
+            singleCharInput = changeObject.origin === "+input" && changeObject.text.length === 1 && changeObject.text[0].length === 1;
             if (linesAdded === 0) {
                 newRange.endLine = newRange.startLine;
                 newRange.endColumn = newRange.startColumn;
@@ -861,6 +863,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             for(var lineNumber in linesToUpdate)
                 this._addTextToCompletionDictionary(linesToUpdate[lineNumber]);
         }
+        if (singleCharInput)
+            this._autocompleteController.autocomplete();
     },
 
     _cursorActivity: function()
