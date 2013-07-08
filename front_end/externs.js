@@ -87,8 +87,18 @@ function addEventListener(eventName, listener, capturing) {}
 /** @param {boolean=} onlyFirst */
 Array.prototype.remove = function(obj, onlyFirst) {}
 Array.prototype.keySet = function() {}
-/** @return {number} */
-Array.prototype.upperBound = function(anchor) {}
+/**
+ * @param {*} object
+ * @param {function(*,*):number=} comparator
+ * @return {number}
+ */
+Array.prototype.lowerBound = function(object, comparator) {}
+/**
+ * @param {*} object
+ * @param {function(*,*):number=} comparator
+ * @return {number}
+ */
+Array.prototype.upperBound = function(object, comparator) {}
 /** @return {number} */
 Array.prototype.binaryIndexOf = function(anchor) {}
 Array.prototype.sortRange = function(comparator, leftBound, rightBound, k) {}

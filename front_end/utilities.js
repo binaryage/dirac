@@ -330,30 +330,6 @@ Object.defineProperty(Array.prototype, "keySet",
     }
 });
 
-Object.defineProperty(Array.prototype, "upperBound",
-{
-    /**
-     * @param {number} value
-     * @return {number}
-     * @this {Array.<number>}
-     */
-    value: function(value)
-    {
-        var first = 0;
-        var count = this.length;
-        while (count > 0) {
-          var step = count >> 1;
-          var middle = first + step;
-          if (value >= this[middle]) {
-              first = middle + 1;
-              count -= step + 1;
-          } else
-              count = step;
-        }
-        return first;
-    }
-});
-
 Object.defineProperty(Array.prototype, "rotate",
 {
     /**
@@ -470,45 +446,84 @@ Object.defineProperty(Array.prototype, "qselect",
     }
 });
 
-/**
- * @param {*} object
- * @param {Array.<*>} array
- * @param {function(*, *): number} comparator
- * @return {number}
- */
-function binarySearch(object, array, comparator)
+Object.defineProperty(Array.prototype, "lowerBound",
 {
-    var first = 0;
-    var last = array.length - 1;
-
-    while (first <= last) {
-        var mid = (first + last) >> 1;
-        var c = comparator(object, array[mid]);
-        if (c > 0)
-            first = mid + 1;
-        else if (c < 0)
-            last = mid - 1;
-        else
-            return mid;
+    /**
+     * Return index of the leftmost element that is equal or greater
+     * than the specimen object. If there's no such element (i.e. all
+     * elements are smaller than the specimen) returns array.length.
+     * The function works for sorted array.
+     *
+     * @this {Array.<*>}
+     * @param {*} object
+     * @param {function(*,*):number=} comparator
+     * @return {number}
+     */
+    value: function(object, comparator)
+    {
+        function defaultComparator(a, b)
+        {
+            return a - b;
+        }
+        comparator = comparator || defaultComparator;
+        var l = 0;
+        var r = this.length;
+        while (l < r) {
+            var m = (l + r) >> 1;
+            if (comparator(object, this[m]) > 0)
+                l = m + 1;
+            else
+                r = m;
+        }
+        return r;
     }
+});
 
-    // Return the nearest lesser index negated minus 2, i.e.:
-    // "-1" means "-1", "-2" means "0, "-3" means "1", etc.
-    return -(first + 1);
-}
+Object.defineProperty(Array.prototype, "upperBound",
+{
+    /**
+     * Return index of the leftmost element that is greater
+     * than the specimen object. If there's no such element (i.e. all
+     * elements are smaller than the specimen) returns array.length.
+     * The function works for sorted array.
+     *
+     * @this {Array.<*>}
+     * @param {*} object
+     * @param {function(*,*):number=} comparator
+     * @return {number}
+     */
+    value: function(object, comparator)
+    {
+        function defaultComparator(a, b)
+        {
+            return a - b;
+        }
+        comparator = comparator || defaultComparator;
+        var l = 0;
+        var r = this.length;
+        while (l < r) {
+            var m = (l + r) >> 1;
+            if (comparator(object, this[m]) >= 0)
+                l = m + 1;
+            else
+                r = m;
+        }
+        return r;
+    }
+});
 
 Object.defineProperty(Array.prototype, "binaryIndexOf",
 {
     /**
-     * @param {*} value
-     * @param {function(*, *): number} comparator
-     * @return {number}
      * @this {Array.<*>}
+     * @param {*} value
+     * @param {function(*,*):number} comparator
+     * @return {number}
      */
     value: function(value, comparator)
     {
-        var result = binarySearch(value, this, comparator);
-        return result >= 0 ? result : -1;
+        var index = this.lowerBound(value, comparator);
+        return index < this.length && comparator(value, this[index]) === 0 ? index : -1;
     }
 });
 
@@ -541,30 +556,18 @@ Object.defineProperty(Array.prototype, "peekLast",
 });
 
 /**
- * @param {*} anObject
- * @param {Array.<*>} aList
- * @param {function(*, *)} aFunction
+ * @param {*} object
+ * @param {Array.<*>} list
+ * @param {function(*,*):number=} comparator
  * @param {boolean=} insertionIndexAfter
  * @return {number}
  */
-function insertionIndexForObjectInListSortedByFunction(anObject, aList, aFunction, insertionIndexAfter)
+function insertionIndexForObjectInListSortedByFunction(object, list, comparator, insertionIndexAfter)
 {
-    var index = binarySearch(anObject, aList, aFunction);
-    if (index < 0) {
-        // See binarySearch implementation.
-        return -index - 1;
-    }
-
-    if (!insertionIndexAfter) {
-        // Return the first occurence of an item in the list.
-        while (index > 0 && aFunction(anObject, aList[index - 1]) === 0)
-            index--;
-        return index;
-    }
-    // Return the last occurence of an item in the list.
-    while (index < aList.length && aFunction(anObject, aList[index]) === 0)
-        index++;
-    return index;
+    if (insertionIndexAfter)
+        return list.upperBound(object, comparator);
+    else
+        return list.lowerBound(object, comparator);
 }
 
 /**

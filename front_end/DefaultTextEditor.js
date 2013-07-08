@@ -1429,7 +1429,7 @@ WebInspector.TextEditorMainPanel.prototype = {
                 return 0;
             return value - object.startColumn;
         }
-        var index = binarySearch(column, highlight.ranges, compare);
+        var index = highlight.ranges.binaryIndexOf(column, compare);
         if (index >= 0) {
             var range = highlight.ranges[index];
             return {
