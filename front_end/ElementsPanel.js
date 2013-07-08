@@ -48,14 +48,12 @@ WebInspector.ElementsPanel = function()
     this.setHideOnDetach();
 
     const initialSidebarWidth = 325;
-    const minimumContentWidthPercent = 34;
+    const minimumContentWidthPercent = 0.34;
     const initialSidebarHeight = 325;
-    const minimumContentHeightPercent = 34;
+    const minimumContentHeightPercent = 0.34;
     this.createSidebarView(this.element, WebInspector.SidebarView.SidebarPosition.End, initialSidebarWidth, initialSidebarHeight);
-    this.splitView.setMinimumSidebarWidth(Preferences.minElementsSidebarWidth);
-    this.splitView.setMinimumMainWidthPercent(minimumContentWidthPercent);
-    this.splitView.setMinimumSidebarHeight(Preferences.minElementsSidebarHeight);
-    this.splitView.setMinimumMainHeightPercent(minimumContentHeightPercent);
+    this.splitView.setSidebarElementConstraints(Preferences.minElementsSidebarWidth, Preferences.minElementsSidebarHeight);
+    this.splitView.setMainElementConstraints(minimumContentWidthPercent, minimumContentHeightPercent);
 
     this.contentElement = this.splitView.mainElement;
     this.contentElement.id = "elements-content";

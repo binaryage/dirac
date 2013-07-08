@@ -234,10 +234,7 @@ WebInspector.SplitView.prototype = {
         if (this._resizable === resizable)
             return;
         this._resizable = resizable;
-        if (resizable)
-            this._resizerElement.removeStyleClass("hidden");
-        else
-            this._resizerElement.addStyleClass("hidden");
+        this._resizerElement.enableStyleClass("hidden", !resizable);
     },
 
     /**
@@ -248,7 +245,7 @@ WebInspector.SplitView.prototype = {
         if (this._sidebarSize === size)
             return;
 
-        size = this.applyConstraints(size);
+        size = this._applyConstraints(size);
         if (size < 0) {
             // Never apply bad values, fix it upon onResize instead.
             this._sidebarSize = size;
@@ -331,16 +328,67 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @param {number} size
+     * @param {number=} minWidth
+     * @param {number=} minHeight
+     */
+    setSidebarElementConstraints: function(minWidth, minHeight)
+    {
+        if (typeof minWidth === "number")
+            this._minimumSidebarWidth = minWidth;
+        if (typeof minHeight === "number")
+            this._minimumSidebarHeight = minHeight;
+    },
+
+    /**
+     * @param {number=} minWidth
+     * @param {number=} minHeight
+     */
+    setMainElementConstraints: function(minWidth, minHeight)
+    {
+        if (typeof minWidth === "number")
+            this._minimumMainWidth = minWidth;
+        if (typeof minHeight === "number")
+            this._minimumMainHeight = minHeight;
+    },
+
+    /**
+     * @param {number} sidebarSize
      * @return {number}
      */
-    applyConstraints: function(size)
+    _applyConstraints: function(sidebarSize)
     {
-        const minSize = 20;
-        size = Math.max(size, minSize);
-        if (this._totalSize - size < minSize)
-            size = this._totalSize - minSize;
-        return size < minSize ? -1 : size;
+        const minPadding = 20;
+        var totalSize = this.totalSize();
+        var from = (this.isVertical() ? this._minimumSidebarWidth : this._minimumSidebarHeight) || 0;
+        var fromInPercents = false;
+        if (from && from < 1) {
+            fromInPercents = true;
+            from = Math.round(totalSize * from);
+        }
+        from = Math.max(from, minPadding);
+
+        var minMainSize = (this.isVertical() ? this._minimumMainWidth : this._minimumMainHeight) || 0;
+        var toInPercents = false;
+        if (minMainSize && minMainSize < 1) {
+            toInPercents = true;
+            minMainSize = Math.round(totalSize * minMainSize);
+        }
+        minMainSize = Math.max(minMainSize, minPadding);
+
+        var to = totalSize - minMainSize;
+        if (from <= to)
+            return Number.constrain(sidebarSize, from, to);
+
+        // Respect fixed constraints over percents. This will, for example, shrink
+        // the sidebar to its minimum size when possible.
+        if (!fromInPercents && !toInPercents)
+            return -1;
+        if (toInPercents && sidebarSize > from && from < totalSize)
+            return from;
+        if (fromInPercents && sidebarSize < to && to < totalSize)
+            return to;
+
+        return -1;
     },
 
     wasShown: function()
