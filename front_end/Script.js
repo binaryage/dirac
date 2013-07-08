@@ -185,7 +185,7 @@ WebInspector.Script.prototype = {
      */
     isSnippet: function()
     {
-        return this.sourceURL && this.sourceURL.startsWith(WebInspector.Script.snippetSourceURLPrefix);
+        return !!this.sourceURL && this.sourceURL.startsWith(WebInspector.Script.snippetSourceURLPrefix);
     },
 
     /**

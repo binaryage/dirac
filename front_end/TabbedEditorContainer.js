@@ -338,6 +338,7 @@ WebInspector.TabbedEditorContainer.prototype = {
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      * @param {boolean=} userGesture
+     * @return {string}
      */
     _appendFileTab: function(uiSourceCode, userGesture)
     {

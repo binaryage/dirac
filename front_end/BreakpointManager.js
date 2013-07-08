@@ -389,7 +389,7 @@ WebInspector.BreakpointManager.Breakpoint = function(breakpointManager, uiSource
     this._sourceFileId = WebInspector.BreakpointManager.sourceFileId(uiSourceCode);
     /** @type {Array.<WebInspector.Script.Location>} */
     this._liveLocations = [];
-    /** @type {Object.<string, WebInspector.UILocation>} */
+    /** @type {!Object.<string, WebInspector.UILocation>} */
     this._uiLocations = {};
 
     // Force breakpoint update.

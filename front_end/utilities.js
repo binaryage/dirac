@@ -27,6 +27,10 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/**
+ * @param {Object} obj
+ * @return {boolean}
+ */
 Object.isEmpty = function(obj)
 {
     for (var i in obj)
@@ -34,6 +38,10 @@ Object.isEmpty = function(obj)
     return true;
 }
 
+/**
+ * @param {!Object} obj
+ * @return {!Array}
+ */
 Object.values = function(obj)
 {
     var result = Object.keys(obj);
@@ -44,13 +52,22 @@ Object.values = function(obj)
     return result;
 }
 
+/**
+ * @param {string} string
+ * @param {boolean=} caseInsensitive
+ * @return {boolean}
+ */
 String.prototype.hasSubstring = function(string, caseInsensitive)
 {
     if (!caseInsensitive)
         return this.indexOf(string) !== -1;
-    return this.match(new RegExp(string.escapeForRegExp(), "i"));
+    return !!this.match(new RegExp(string.escapeForRegExp(), "i"));
 }
 
+/**
+ * @param {string} string
+ * @return {!Array.<number>}
+ */
 String.prototype.findAll = function(string)
 {
     var matches = [];
@@ -62,6 +79,9 @@ String.prototype.findAll = function(string)
     return matches;
 }
 
+/**
+ * @return {!Array.<number>}
+ */
 String.prototype.lineEndings = function()
 {
     if (!this._lineEndings) {
@@ -71,6 +91,10 @@ String.prototype.lineEndings = function()
     return this._lineEndings;
 }
 
+/**
+ * @param {string} chars
+ * @return {string}
+ */
 String.prototype.escapeCharacters = function(chars)
 {
     var foundChar = false;
@@ -94,26 +118,42 @@ String.prototype.escapeCharacters = function(chars)
     return result;
 }
 
+/**
+ * @return {string}
+ */
 String.regexSpecialCharacters = function()
 {
     return "^[]{}()\\.$*+?|-,";
 }
 
+/**
+ * @return {string}
+ */
 String.prototype.escapeForRegExp = function()
 {
-    return this.escapeCharacters(String.regexSpecialCharacters);
+    return this.escapeCharacters(String.regexSpecialCharacters());
 }
 
+/**
+ * @return {string}
+ */
 String.prototype.escapeHTML = function()
 {
     return this.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;"); //" doublequotes just for editor
 }
 
+/**
+ * @return {string}
+ */
 String.prototype.collapseWhitespace = function()
 {
     return this.replace(/[\s\xA0]+/g, " ");
 }
 
+/**
+ * @param {number} maxLength
+ * @return {string}
+ */
 String.prototype.trimMiddle = function(maxLength)
 {
     if (this.length <= maxLength)
@@ -123,6 +163,10 @@ String.prototype.trimMiddle = function(maxLength)
     return this.substr(0, leftHalf) + "\u2026" + this.substr(this.length - rightHalf, rightHalf);
 }
 
+/**
+ * @param {number} maxLength
+ * @return {string}
+ */
 String.prototype.trimEnd = function(maxLength)
 {
     if (this.length <= maxLength)
@@ -130,6 +174,10 @@ String.prototype.trimEnd = function(maxLength)
     return this.substr(0, maxLength - 1) + "\u2026";
 }
 
+/**
+ * @param {string} baseURLDomain
+ * @return {string}
+ */
 String.prototype.trimURL = function(baseURLDomain)
 {
     var result = this.replace(/^(https|http|file):\/\//i, "");
@@ -138,6 +186,9 @@ String.prototype.trimURL = function(baseURLDomain)
     return result;
 }
 
+/**
+ * @return {string}
+ */
 String.prototype.toTitleCase = function()
 {
     return this.substring(0, 1).toUpperCase() + this.substring(1);
@@ -165,6 +216,9 @@ function sanitizeHref(href)
     return href && href.trim().toLowerCase().startsWith("javascript:") ? "" : href;
 }
 
+/**
+ * @return {string}
+ */
 String.prototype.removeURLFragment = function()
 {
     var fragmentIndex = this.indexOf("#");
@@ -173,16 +227,28 @@ String.prototype.removeURLFragment = function()
     return this.substring(0, fragmentIndex);
 }
 
+/**
+ * @return {boolean}
+ */
 String.prototype.startsWith = function(substring)
 {
     return !this.lastIndexOf(substring, 0);
 }
 
+/**
+ * @return {boolean}
+ */
 String.prototype.endsWith = function(substring)
 {
     return this.indexOf(substring, this.length - substring.length) !== -1;
 }
 
+/**
+ * @param {number} num
+ * @param {number} min
+ * @param {number} max
+ * @return {number}
+ */
 Number.constrain = function(num, min, max)
 {
     if (num < min)
@@ -204,15 +270,22 @@ Number.toFixedIfFloating = function(value)
     return number % 1 ? number.toFixed(3) : String(number);
 }
 
+/**
+ * @return {string}
+ */
 Date.prototype.toISO8601Compact = function()
 {
+    /**
+     * @param {number} x
+     * @return {string}
+     */
     function leadZero(x)
     {
-        return x > 9 ? '' + x : '0' + x
+        return (x > 9 ? "" : "0") + x;
     }
     return this.getFullYear() +
            leadZero(this.getMonth() + 1) +
-           leadZero(this.getDate()) + 'T' +
+           leadZero(this.getDate()) + "T" +
            leadZero(this.getHours()) +
            leadZero(this.getMinutes()) +
            leadZero(this.getSeconds());
@@ -221,6 +294,8 @@ Date.prototype.toISO8601Compact = function()
 Object.defineProperty(Array.prototype, "remove",
 {
     /**
+     * @param {*} value
+     * @param {boolean=} onlyFirst
      * @this {Array.<*>}
      */
     value: function(value, onlyFirst)
@@ -243,6 +318,7 @@ Object.defineProperty(Array.prototype, "remove",
 Object.defineProperty(Array.prototype, "keySet",
 {
     /**
+     * @return {!Object.<string, boolean>}
      * @this {Array.<*>}
      */
     value: function()
@@ -257,6 +333,8 @@ Object.defineProperty(Array.prototype, "keySet",
 Object.defineProperty(Array.prototype, "upperBound",
 {
     /**
+     * @param {number} value
+     * @return {number}
      * @this {Array.<number>}
      */
     value: function(value)
@@ -279,9 +357,9 @@ Object.defineProperty(Array.prototype, "upperBound",
 Object.defineProperty(Array.prototype, "rotate",
 {
     /**
-     * @this {Array.<*>}
      * @param {number} index
      * @return {Array.<*>}
+     * @this {Array.<*>}
      */
     value: function(index)
     {
@@ -300,7 +378,7 @@ Object.defineProperty(Uint32Array.prototype, "sort", {
 var partition = {
     /**
      * @this {Array.<number>}
-     * @param {function(number,number):number} comparator
+     * @param {function(number, number): number} comparator
      * @param {number} left
      * @param {number} right
      * @param {number} pivotIndex
@@ -332,11 +410,12 @@ Object.defineProperty(Uint32Array.prototype, "partition", partition);
 
 var sortRange = {
     /**
-     * @this {Array.<number>}
-     * @param {function(number,number):number} comparator
+     * @param {function(number, number): number} comparator
      * @param {number} leftBound
      * @param {number} rightBound
      * @param {number} k
+     * @return {!Array.<number>}
+     * @this {Array.<number>}
      */
     value: function(comparator, leftBound, rightBound, k)
     {
@@ -365,9 +444,10 @@ Object.defineProperty(Uint32Array.prototype, "sortRange", sortRange);
 Object.defineProperty(Array.prototype, "qselect",
 {
     /**
-     * @this {Array.<number>}
      * @param {number} k
-     * @param {function(number,number):boolean=} comparator
+     * @param {function(number, number): number=} comparator
+     * @return {number|undefined}
+     * @this {Array.<number>}
      */
     value: function(k, comparator)
     {
@@ -393,7 +473,8 @@ Object.defineProperty(Array.prototype, "qselect",
 /**
  * @param {*} object
  * @param {Array.<*>} array
- * @param {function(*, *):number} comparator
+ * @param {function(*, *): number} comparator
+ * @return {number}
  */
 function binarySearch(object, array, comparator)
 {
@@ -419,8 +500,10 @@ function binarySearch(object, array, comparator)
 Object.defineProperty(Array.prototype, "binaryIndexOf",
 {
     /**
+     * @param {*} value
+     * @param {function(*, *): number} comparator
+     * @return {number}
      * @this {Array.<*>}
-     * @param {function(*, *):number} comparator
      */
     value: function(value, comparator)
     {
@@ -432,9 +515,9 @@ Object.defineProperty(Array.prototype, "binaryIndexOf",
 Object.defineProperty(Array.prototype, "select",
 {
     /**
-     * @this {Array.<*>}
      * @param {string} field
-     * @return {Array.<*>}
+     * @return {!Array.<*>}
+     * @this {Array.<*>}
      */
     value: function(field)
     {
@@ -448,8 +531,8 @@ Object.defineProperty(Array.prototype, "select",
 Object.defineProperty(Array.prototype, "peekLast",
 {
     /**
-     * @this {Array.<*>}
      * @return {*}
+     * @this {Array.<*>}
      */
     value: function()
     {
@@ -462,6 +545,7 @@ Object.defineProperty(Array.prototype, "peekLast",
  * @param {Array.<*>} aList
  * @param {function(*, *)} aFunction
  * @param {boolean=} insertionIndexAfter
+ * @return {number}
  */
 function insertionIndexForObjectInListSortedByFunction(anObject, aList, aFunction, insertionIndexAfter)
 {
@@ -486,6 +570,7 @@ function insertionIndexForObjectInListSortedByFunction(anObject, aList, aFunctio
 /**
  * @param {string} format
  * @param {...*} var_arg
+ * @return {string}
  */
 String.sprintf = function(format, var_arg)
 {
@@ -580,6 +665,11 @@ String.standardFormatters = {
     }
 }
 
+/**
+ * @param {string} format
+ * @param {Array.<*>} substitutions
+ * @return {string}
+ */
 String.vsprintf = function(format, substitutions)
 {
     return String.format(format, substitutions, String.standardFormatters, "", function(a, b) { return a + b; }).formattedResult;
@@ -728,12 +818,12 @@ function numberToStringWithSpacesPadding(value, symbolsCount)
 }
 
 /**
-  * @return {string}
-  */
+ * @return {string}
+ */
 var createObjectIdentifier = function()
 {
     // It has to be string for better performance.
-    return '_' + ++createObjectIdentifier._last;
+    return "_" + ++createObjectIdentifier._last;
 }
 
 createObjectIdentifier._last = 0;
@@ -763,7 +853,7 @@ Set.prototype = {
             ++this._size;
         this._set[objectIdentifier] = item;
     },
-    
+
     /**
      * @param {!Object} item
      * @return {boolean}
@@ -839,7 +929,7 @@ Map.prototype = {
             ++this._size;
         this._map[objectIdentifier] = [key, value];
     },
-    
+
     /**
      * @param {Object} key
      */
@@ -1055,7 +1145,7 @@ function loadXHR(url, async, callback)
     var xhr = new XMLHttpRequest();
     xhr.open("GET", url, async);
     if (async)
-        xhr.onreadystatechange = onReadyStateChanged;        
+        xhr.onreadystatechange = onReadyStateChanged;
     xhr.send(null);
 
     if (!async) {
@@ -1163,7 +1253,7 @@ function CallbackBarrier()
 
 CallbackBarrier.prototype = {
     /**
-     * @param {*} userCallback
+     * @param {function(...)} userCallback
      * @return {function()}
      */
     createCallback: function(userCallback)
@@ -1184,6 +1274,9 @@ CallbackBarrier.prototype = {
             this._outgoingCallback();
     },
 
+    /**
+     * @param {function(...)} userCallback
+     */
     _incomingCallback: function(userCallback)
     {
         console.assert(this._pendingIncomingCallbacksCount > 0);
@@ -1195,4 +1288,3 @@ CallbackBarrier.prototype = {
             this._outgoingCallback();
     }
 }
-

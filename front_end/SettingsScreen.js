@@ -1303,9 +1303,9 @@ WebInspector.EditableSettingsList = function(columns, valuesProvider, itemRemove
     this._validateHandler = validateHandler;
     this._editHandler = editHandler;
     this._valuesProvider = valuesProvider;
-    /** @type {Object.<string, HTMLInputElement>} */
+    /** @type {!Object.<string, HTMLInputElement>} */
     this._addInputElements = {};
-    /** @type {Object.<string, Object.<string, HTMLInputElement>>} */
+    /** @type {!Object.<string, !Object.<string, HTMLInputElement>>} */
     this._editInputElements = {};
     /** @type {Object.<string, Object.<string, HTMLSpanElement>>} */
     this._textElements = {};
