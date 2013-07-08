@@ -506,7 +506,7 @@ WebInspector.EventListenerBreakpointsSidebarPane = function()
     this._createCategory(WebInspector.UIString("Mouse"), true, ["click", "dblclick", "mousedown", "mouseup", "mouseover", "mousemove", "mouseout", "mousewheel"]);
     this._createCategory(WebInspector.UIString("Timer"), false, ["setTimer", "clearTimer", "timerFired"]);
     this._createCategory(WebInspector.UIString("Touch"), true, ["touchstart", "touchmove", "touchend", "touchcancel"]);
-    this._createCategory(WebInspector.UIString("WebGL"), false, ["webglErrorFired"]);
+    this._createCategory(WebInspector.UIString("WebGL"), false, ["webglErrorFired", "webglWarningFired"]);
 
     this._restoreBreakpoints();
 }
@@ -529,7 +529,8 @@ WebInspector.EventListenerBreakpointsSidebarPane.eventNameForUI = function(event
             "instrumentation:requestAnimationFrame": WebInspector.UIString("Request Animation Frame"),
             "instrumentation:cancelAnimationFrame": WebInspector.UIString("Cancel Animation Frame"),
             "instrumentation:animationFrameFired": WebInspector.UIString("Animation Frame Fired"),
-            "instrumentation:webglErrorFired": WebInspector.UIString("WebGL Error Fired")
+            "instrumentation:webglErrorFired": WebInspector.UIString("WebGL Error Fired"),
+            "instrumentation:webglWarningFired": WebInspector.UIString("WebGL Warning Fired")
         };
     }
     if (auxData) {
