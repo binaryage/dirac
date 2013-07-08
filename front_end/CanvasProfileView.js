@@ -141,6 +141,7 @@ WebInspector.CanvasProfileView.prototype = {
          */
         function didReceiveResourceState(error, resourceState)
         {
+            const emptyTransparentImageURL = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
             this._enableWaitIcon(false);
             if (error)
                 return;
@@ -149,7 +150,7 @@ WebInspector.CanvasProfileView.prototype = {
 
             var selectedContextId = this._replayContextSelector.selectedOption().value;
             if (selectedContextId === resourceState.id)
-                this._replayImageElement.src = resourceState.imageURL;
+                this._replayImageElement.src = resourceState.imageURL || emptyTransparentImageURL;
         }
 
         var selectedContextId = this._replayContextSelector.selectedOption().value || "auto";
@@ -158,7 +159,6 @@ WebInspector.CanvasProfileView.prototype = {
             this._replayImageElement.src = resourceState.imageURL;
         else {
             this._enableWaitIcon(true);
-            this._replayImageElement.src = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="; // Empty transparent image.
             CanvasAgent.getResourceState(this._traceLogId, selectedContextId, didReceiveResourceState.bind(this));
         }
     },
@@ -283,11 +283,16 @@ WebInspector.CanvasProfileView.prototype = {
         var callNodes = [];
         var calls = traceLog.calls;
         var index = traceLog.startOffset;
-        for (var i = 0, n = calls.length; i < n; ++i) {
-            var call = calls[i];
-            this._requestReplayContextInfo(call.contextId);
-            var gridNode = this._createCallNode(index++, call);
-            callNodes.push(gridNode);
+        for (var i = 0, n = calls.length; i < n; ++i)
+            callNodes.push(this._createCallNode(index++, calls[i]));
+        var contexts = traceLog.contexts;
+        for (var i = 0, n = contexts.length; i < n; ++i) {
+            var contextId = contexts[i].resourceId || "";
+            var description = contexts[i].description || "";
+            if (this._replayContexts[contextId])
+                continue;
+            this._replayContexts[contextId] = true;
+            this._replayContextSelector.createOption(description, WebInspector.UIString("Show screenshot of this context's canvas."), contextId);
         }
         this._appendCallNodes(callNodes);
         if (traceLog.alive)
@@ -305,29 +310,6 @@ WebInspector.CanvasProfileView.prototype = {
     {
         this._enableWaitIcon(true);
         CanvasAgent.getTraceLog(this._traceLogId, offset, undefined, this._didReceiveTraceLog.bind(this));
-    },
-
-    /**
-     * @param {string} contextId
-     */
-    _requestReplayContextInfo: function(contextId)
-    {
-        if (this._replayContexts[contextId])
-            return;
-        this._replayContexts[contextId] = true;
-        /**
-         * @param {?Protocol.Error} error
-         * @param {CanvasAgent.ResourceInfo} resourceInfo
-         */
-        function didReceiveResourceInfo(error, resourceInfo)
-        {
-            if (error) {
-                delete this._replayContexts[contextId];
-                return;
-            }
-            this._replayContextSelector.createOption(resourceInfo.description, WebInspector.UIString("Show screenshot of this context's canvas."), contextId);
-        }
-        CanvasAgent.getResourceInfo(contextId, didReceiveResourceInfo.bind(this));
     },
 
     /**

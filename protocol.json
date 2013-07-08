@@ -3465,14 +3465,6 @@
                 "description": "Unique resource identifier."
             },
             {
-                "id": "ResourceInfo",
-                "type": "object",
-                "properties": [
-                    { "name": "id", "$ref": "ResourceId" },
-                    { "name": "description", "type": "string" }
-                ]
-            },
-            {
                 "id": "ResourceState",
                 "type": "object",
                 "properties": [
@@ -3519,6 +3511,7 @@
                 "properties": [
                     { "name": "id", "$ref": "TraceLogId" },
                     { "name": "calls", "type": "array", "items": { "$ref": "Call" } },
+                    { "name": "contexts", "type": "array", "items": { "$ref": "CallArgument" } },
                     { "name": "startOffset", "type": "integer" },
                     { "name": "alive", "type": "boolean" },
                     { "name": "totalAvailableCalls", "type": "number" }
@@ -3592,15 +3585,6 @@
                 ],
                 "returns": [
                     { "name": "resourceState", "$ref": "ResourceState" }
-                ]
-            },
-            {
-                "name": "getResourceInfo",
-                "parameters": [
-                    { "name": "resourceId", "$ref": "ResourceId" }
-                ],
-                "returns": [
-                    { "name": "resourceInfo", "$ref": "ResourceInfo" }
                 ]
             },
             {
