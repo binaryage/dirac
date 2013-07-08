@@ -81,6 +81,8 @@ WebInspector.CanvasProfileView = function(profile)
     this._logGrid.show(logGridContainer);
     this._logGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._replayTraceLog.bind(this));
 
+    this._popoverHelper = new WebInspector.ObjectPopoverHelper(this.element, this._popoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), this._onHidePopover.bind(this), true);
+
     this._splitView.show(this.element);
     this._requestTraceLog(0);
 }
@@ -453,7 +455,7 @@ WebInspector.CanvasProfileView.prototype = {
                 var argument = call.arguments[i];
                 if (i)
                     callViewElement.createTextChild(", ");
-                this._createCallArgumentChild(callViewElement, argument).argumentIndex = i;
+                this._createCallArgumentChild(callViewElement, argument)._argumentIndex = i;
             }
             callViewElement.createTextChild(")");
         } else if (typeof call.value !== "undefined") {
@@ -481,13 +483,28 @@ WebInspector.CanvasProfileView.prototype = {
     _createCallArgumentChild: function(parentElement, callArgument)
     {
         var element = parentElement.createChild("span", "canvas-call-argument");
+        element._argumentIndex = -1;
         if (callArgument.type === "string") {
+            const maxStringLength = 150;
             element.createTextChild("\"");
-            element.createChild("span", "canvas-formatted-string").textContent = callArgument.description.trimMiddle(150);
+            element.createChild("span", "canvas-formatted-string").textContent = callArgument.description.trimMiddle(maxStringLength);
             element.createTextChild("\"");
+            element._suppressPopover = (callArgument.description.length <= maxStringLength && !/[\r\n]/.test(callArgument.description));
         } else {
-            if (callArgument.subtype || callArgument.type)
-                element.addStyleClass("canvas-formatted-" + (callArgument.subtype || callArgument.type));
+            var type = callArgument.subtype || callArgument.type;
+            if (type) {
+                element.addStyleClass("canvas-formatted-" + type);
+                switch (type) {
+                case "null":
+                case "undefined":
+                case "boolean":
+                    element._suppressPopover = true;
+                    break;
+                case "number":
+                    element._suppressPopover = !isNaN(callArgument.description);
+                    break;
+                }
+            }
             element.textContent = callArgument.description;
         }
         if (callArgument.resourceId) {
@@ -495,6 +512,66 @@ WebInspector.CanvasProfileView.prototype = {
             element.resourceId = callArgument.resourceId;
         }
         return element;
+    },
+
+    _popoverAnchor: function(element, event)
+    {
+        var argumentElement = element.enclosingNodeOrSelfWithClass("canvas-call-argument");
+        if (!argumentElement || argumentElement._suppressPopover)
+            return null;
+        return argumentElement;
+    },
+
+    _resolveObjectForPopover: function(argumentElement, showCallback, objectGroupName)
+    {
+        var dataGridNode = this._logGrid.dataGridNodeFromNode(argumentElement);
+        if (!dataGridNode) {
+            this._popoverHelper.hidePopover();
+            return;
+        }
+        var callIndex = dataGridNode.index;
+        var argumentIndex = argumentElement._argumentIndex;
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {RuntimeAgent.RemoteObject=} result
+         * @param {CanvasAgent.ResourceState=} resourceState
+         */
+        function showObjectPopover(error, result, resourceState)
+        {
+            if (error)
+                return;
+
+            // FIXME: handle resourceState also
+            if (!result)
+                return;
+
+            if (result && result.type === "number") {
+                // Show numbers in hex with min length of 4 (e.g. 0x0012).
+                var str = "0000" + Number(result.description).toString(16).toUpperCase();
+                str = str.replace(/^0+(.{4,})$/, "$1");
+                result.description = "0x" + str;
+            }
+
+            this._popoverAnchorElement = argumentElement.cloneNode(true);
+            this._popoverAnchorElement.addStyleClass("canvas-popover-anchor");
+            this._popoverAnchorElement.addStyleClass("source-frame-eval-expression");
+            argumentElement.parentElement.appendChild(this._popoverAnchorElement);
+
+            var diffLeft = this._popoverAnchorElement.boxInWindow().x - argumentElement.boxInWindow().x;
+            this._popoverAnchorElement.style.left = this._popoverAnchorElement.offsetLeft - diffLeft + "px";
+
+            showCallback(WebInspector.RemoteObject.fromPayload(result), false, this._popoverAnchorElement);
+        }
+        CanvasAgent.evaluateTraceLogCallArgument(this._traceLogId, callIndex, argumentIndex, objectGroupName, showObjectPopover.bind(this));
+    },
+
+    _onHidePopover: function()
+    {
+        if (this._popoverAnchorElement) {
+            this._popoverAnchorElement.remove()
+            delete this._popoverAnchorElement;
+        }
     },
 
     _flattenSingleFrameNode: function()
