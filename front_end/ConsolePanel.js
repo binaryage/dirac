@@ -34,8 +34,6 @@ WebInspector.ConsolePanel = function()
 {
     WebInspector.Panel.call(this, "console");
 
-    WebInspector.consoleView.addEventListener(WebInspector.ConsoleView.Events.EntryAdded, this._consoleMessageAdded, this);
-    WebInspector.consoleView.addEventListener(WebInspector.ConsoleView.Events.ConsoleCleared, this._consoleCleared, this);
     this._view = WebInspector.consoleView;
 }
 
@@ -88,7 +86,7 @@ WebInspector.ConsolePanel.prototype = {
      */
     performFilter: function(query)
     {
-        this._view.performFilter(query, this);
+        this._view.performFilter(query);
     },
 
     jumpToNextSearchResult: function()
@@ -99,27 +97,6 @@ WebInspector.ConsolePanel.prototype = {
     jumpToPreviousSearchResult: function()
     {
         this._view.jumpToPreviousSearchResult(this);
-    },
-
-    _consoleMessageAdded: function(event)
-    {
-        if (!this._searchRegex || !this.isShowing())
-            return;
-        var message = event.data;
-        this._searchRegex.lastIndex = 0;
-        if (message.matchesRegex(this._searchRegex)) {
-            this._searchResults.push(message);
-            WebInspector.searchController.updateSearchMatchesCount(this._searchResults.length, this);
-        }
-    },
-
-    _consoleCleared: function()
-    {
-        if (!this._searchResults)
-            return;
-        this._searchResults.length = 0;
-        if (this.isShowing())
-            WebInspector.searchController.updateSearchMatchesCount(0, this);
     },
 
     __proto__: WebInspector.Panel.prototype

@@ -852,8 +852,9 @@ TestSuite.prototype.evaluateInConsole_ = function(code, callback)
     WebInspector.consoleView.prompt.text = code;
     WebInspector.consoleView.promptElement.dispatchEvent(TestSuite.createKeyEvent("Enter"));
 
-    this.addSniffer(WebInspector.ConsoleView.prototype, "_appendConsoleMessage",
-        function(commandResult) {
+    this.addSniffer(WebInspector.ConsoleView.prototype, "_showConsoleMessage",
+        function(messageIndex) {
+            var commandResult = WebInspector.consoleView._messages[messageIndex];
             callback(commandResult.toMessageElement().textContent);
         });
 };
