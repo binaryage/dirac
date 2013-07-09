@@ -833,10 +833,12 @@ WebInspector.documentKeyDown = function(event)
 
 WebInspector.postDocumentKeyDown = function(event)
 {
+    var Esc = "U+001B";
+
     if (event.handled)
         return;
 
-    if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Esc.code) {
+    if (event.keyIdentifier === Esc) {
         if (WebInspector.searchController.isSearchVisible()) {
             WebInspector.searchController.closeSearch();
             return;

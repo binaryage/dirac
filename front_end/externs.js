@@ -46,6 +46,14 @@ Event.prototype.isMetaOrCtrlForTest = false;
 Event.prototype.initWebKitWheelEvent = function(vararg) {}
 Event.prototype.stopImmediatePropagation = function() {}
 
+/**
+ * @constructor
+ * @extends {KeyboardEvent}
+ * @param {string} eventType
+ * @param {Object=} properties
+ */
+window.KeyboardEvent = function(eventType, properties) {}
+
 /** @param {Element} element */
 window.getComputedStyle = function(element) {}
 /** @param {*} message */
