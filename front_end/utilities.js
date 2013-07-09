@@ -259,6 +259,19 @@ Number.constrain = function(num, min, max)
 }
 
 /**
+ * @param {number} a
+ * @param {number} b
+ * @return {number}
+ */
+Number.gcd = function(a, b)
+{
+    if (b === 0)
+        return a;
+    else
+        return Number.gcd(b, a % b);
+}
+
+/**
  * @param {string} value
  * @return {string}
  */

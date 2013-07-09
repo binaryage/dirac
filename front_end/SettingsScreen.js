@@ -353,6 +353,7 @@ WebInspector.GenericSettingsTab = function()
     if (WebInspector.experimentsSettings.isEnabled("sass"))
         p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Auto-reload CSS upon Sass save"), WebInspector.settings.cssReloadEnabled));
     var indentationElement = this._createSelectSetting(WebInspector.UIString("Indentation"), [
+            [ WebInspector.UIString("Auto-detect"), WebInspector.TextUtils.Indent.AutoDetect ],
             [ WebInspector.UIString("2 spaces"), WebInspector.TextUtils.Indent.TwoSpaces ],
             [ WebInspector.UIString("4 spaces"), WebInspector.TextUtils.Indent.FourSpaces ],
             [ WebInspector.UIString("8 spaces"), WebInspector.TextUtils.Indent.EightSpaces ],
