@@ -893,7 +893,7 @@ WebInspector.highlightSearchResult = function(element, offset, length, domChange
  */
 WebInspector.highlightSearchResults = function(element, resultRanges, changes)
 {
-    return WebInspector.highlightRangesWithStyleClass(element, resultRanges, "webkit-search-result", changes);
+    return WebInspector.highlightRangesWithStyleClass(element, resultRanges, "search-result", changes);
 }
 
 /**
