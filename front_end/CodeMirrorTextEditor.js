@@ -118,7 +118,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         "Cmd-Down": "goDocEnd",
         "Alt-Left": "goGroupLeft",
         "Alt-Right": "goGroupRight",
-        "Cmd-Left": "goLineStart",
+        "Cmd-Left": "goLineStartSmart",
         "Cmd-Right": "goLineEnd",
         "Alt-Backspace": "delGroupBefore",
         "Alt-Delete": "delGroupAfter",
@@ -383,7 +383,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     cursorPositionToCoordinates: function(lineNumber, column)
     {
-        if (lineNumber >= this._codeMirror.lineCount || column > this._codeMirror.getLine(lineNumber).length || lineNumber < 0 || column < 0)
+        if (lineNumber >= this._codeMirror.lineCount() || lineNumber < 0 || column < 0 || column > this._codeMirror.getLine(lineNumber).length)
             return null;
 
         var metrics = this._codeMirror.cursorCoords(new CodeMirror.Pos(lineNumber, column));
@@ -434,7 +434,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         if (lineNumber < 0 || lineNumber >= this._codeMirror.lineCount())
             return null;
-        var token = this._codeMirror.getTokenAt(new CodeMirror.Pos(lineNumber, column || 1));
+        var token = this._codeMirror.getTokenAt(new CodeMirror.Pos(lineNumber, (column || 0) + 1));
         if (!token || !token.type)
             return null;
         var convertedType = this._convertTokenType(token.type);
@@ -950,11 +950,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     selection: function()
     {
-        var start = this._codeMirror.getCursor(true);
-        var end = this._codeMirror.getCursor(false);
-
-        if (start.line > end.line || (start.line == end.line && start.ch > end.ch))
-            return this._toRange(end, start);
+        var start = this._codeMirror.getCursor("anchor");
+        var end = this._codeMirror.getCursor("head");
 
         return this._toRange(start, end);
     },
@@ -1317,6 +1314,16 @@ WebInspector.CodeMirrorTextEditor.FixWordMovement = function(codeMirror)
         codeMirror.execCommand("goLineStart");
         codeMirror.setExtending(false);
     }
+    function delWordBack(codeMirror)
+    {
+        if (codeMirror.somethingSelected())
+            return CodeMirror.Pass;
+        var cursor = codeMirror.getCursor("head");
+        if (cursor.ch === 0)
+            codeMirror.execCommand("delCharBefore");
+        else
+            return CodeMirror.Pass;
+    }
 
     var modifierKey = WebInspector.isMac() ? "Alt" : "Ctrl";
     var leftKey = modifierKey + "-Left";
@@ -1326,6 +1333,7 @@ WebInspector.CodeMirrorTextEditor.FixWordMovement = function(codeMirror)
     keyMap[rightKey] = moveRight.bind(this, false);
     keyMap["Shift-" + leftKey] = moveLeft.bind(this, true);
     keyMap["Shift-" + rightKey] = moveRight.bind(this, true);
+    keyMap[modifierKey + "-Backspace"] = delWordBack.bind(this);
     codeMirror.addKeyMap(keyMap);
 }
 
