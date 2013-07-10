@@ -110,11 +110,6 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._updateFilterStatus();
 }
 
-WebInspector.ConsoleView.Events = {
-    ConsoleCleared: "console-cleared",
-    EntryAdded: "console-entry-added",
-}
-
 WebInspector.ConsoleView.prototype = {
     get statusBarItems()
     {
@@ -349,8 +344,6 @@ WebInspector.ConsoleView.prototype = {
             this._searchResultsIndices.push(index);
             WebInspector.searchController.updateSearchMatchesCount(this._searchResultsIndices.length, this._searchProvider);
         }
-
-        this.dispatchEventToListeners(WebInspector.ConsoleView.Events.EntryAdded, message);
     },
 
     _consoleCleared: function()
@@ -367,8 +360,6 @@ WebInspector.ConsoleView.prototype = {
 
         this.currentGroup = this.topGroup;
         this.topGroup.messagesElement.removeChildren();
-
-        this.dispatchEventToListeners(WebInspector.ConsoleView.Events.ConsoleCleared);
 
         this._clearCurrentSearchResultHighlight();
         this._updateFilterStatus();
