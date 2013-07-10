@@ -54,6 +54,11 @@ WebInspector.TextEditor.prototype = {
 
     markClean: function() { },
 
+    /**
+     * @return {string}
+     */
+    indent: function() { },
+
     /*
      * @param {number} lineNumber
      * @param {number} column

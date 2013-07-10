@@ -110,6 +110,10 @@ WebInspector.DefaultTextEditor.EditInfo = function(range, text)
 }
 
 WebInspector.DefaultTextEditor.prototype = {
+    indent: function()
+    {
+        return WebInspector.settings.textEditorIndent.get();
+    },
 
     undo: function()
     {

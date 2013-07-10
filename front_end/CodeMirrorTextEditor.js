@@ -219,6 +219,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             var i = 0;
             while (i < text.length && WebInspector.TextUtils.isSpaceChar(text[i]))
                 ++i;
+            if (i % 2 !== 0)
+                return;
             indents[i] = 1 + (indents[i] || 0);
         }
         this._codeMirror.eachLine(processLine);
@@ -260,6 +262,15 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             }
         }
         this._codeMirror.setOption("extraKeys", extraKeys);
+        this._indentationLevel = indent;
+    },
+
+    /**
+     * @return {string}
+     */
+    indent: function()
+    {
+        return this._indentationLevel;
     },
 
     /**
