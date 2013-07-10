@@ -865,6 +865,10 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             this._updatedLines[i] = this.line(i);
     },
 
+    /**
+     * @param {CodeMirror} codeMirror
+     * @param {{origin: string, text: Array.<string>, removed: Array.<string>}} changeObject
+     */
     _change: function(codeMirror, changeObject)
     {
         var widgets = this._elementToWidget.values();
@@ -884,7 +888,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             var oldRange = this._toRange(changeObject.from, changeObject.to);
             var newRange = oldRange.clone();
             var linesAdded = changeObject.text.length;
-            singleCharInput = changeObject.origin === "+input" && changeObject.text.length === 1 && changeObject.text[0].length === 1;
+            singleCharInput = (changeObject.origin === "+input" && changeObject.text.length === 1 && changeObject.text[0].length === 1) ||
+                (changeObject.origin === "+delete" && changeObject.removed.length === 1 && changeObject.removed[0].length === 1);
             if (linesAdded === 0) {
                 newRange.endLine = newRange.startLine;
                 newRange.endColumn = newRange.startColumn;
@@ -1436,9 +1441,8 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
 
     acceptSuggestion: function()
     {
-        var substituteRange = this._textEditor._wordRangeForCursorPosition(this._prefixRange.endLine, this._prefixRange.endColumn, false);
-        if (substituteRange.endColumn - substituteRange.startColumn !== this._currentSuggestion.length) {
-            var pos = this._textEditor._toPos(substituteRange);
+        if (this._prefixRange.endColumn - this._prefixRange.startColumn !== this._currentSuggestion.length) {
+            var pos = this._textEditor._toPos(this._prefixRange);
             this._codeMirror.replaceRange(this._currentSuggestion, pos.start, pos.end, "+autocomplete");
         }
     },
@@ -1464,10 +1468,8 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
         if (!this._suggestBox)
             return;
         var cursor = this._codeMirror.getCursor();
-        if (cursor.line !== this._prefixRange.startLine || Math.abs(cursor.ch  -this._prefixRange.endColumn) > 1 || cursor.ch === this._prefixRange.startColumn)
+        if (cursor.line !== this._prefixRange.startLine || cursor.ch > this._prefixRange.endColumn || cursor.ch < this._prefixRange.startColumn)
             this.finishAutocomplete();
-        else
-            this.autocomplete();
     },
 
     /**
