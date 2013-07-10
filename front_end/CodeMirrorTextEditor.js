@@ -187,11 +187,7 @@ CodeMirror.commands.smartNewlineAndIndent = function(codeMirror)
 
     function innerSmartNewlineAndIndent(codeMirror)
     {
-        if (codeMirror.somethingSelected()) {
-            codeMirror.execCommand("newlineAndIndent");
-            return;
-        }
-        var cur = codeMirror.getCursor();
+        var cur = codeMirror.getCursor("start");
         var line = codeMirror.getLine(cur.line);
         var indent = cur.line > 0 ? countIndent(line) : 0;
         if (cur.ch <= indent) {
