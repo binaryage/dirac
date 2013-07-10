@@ -140,11 +140,11 @@ WebInspector.UISourceCodeFrame.prototype = {
      */
     _onWorkingCopyCommitted: function(event)
     {
+        if (!this._muteSourceCodeEvents) {
+            this._innerSetContent(this._uiSourceCode.workingCopy());
+            this.onUISourceCodeContentChanged();
+        }
         this._textEditor.markClean();
-        if (this._muteSourceCodeEvents)
-            return;
-        this._innerSetContent(this._uiSourceCode.workingCopy());
-        this.onUISourceCodeContentChanged();
     },
 
     onUISourceCodeContentChanged: function()
