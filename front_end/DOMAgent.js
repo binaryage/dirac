@@ -1317,12 +1317,13 @@ WebInspector.DOMAgent.prototype = {
 
     /**
      * @param {boolean} enabled
+     * @param {boolean} inspectShadowDOM
      * @param {function(?Protocol.Error)=} callback
      */
-    setInspectModeEnabled: function(enabled, callback)
+    setInspectModeEnabled: function(enabled, inspectShadowDOM, callback)
     {
         var callbackCast = /** @type {function(*)} */ (callback);
-        this._dispatchWhenDocumentAvailable(DOMAgent.setInspectModeEnabled.bind(DOMAgent, enabled, this._buildHighlightConfig()), callbackCast);
+        this._dispatchWhenDocumentAvailable(DOMAgent.setInspectModeEnabled.bind(DOMAgent, enabled, inspectShadowDOM, this._buildHighlightConfig()), callbackCast);
     },
 
     /**
