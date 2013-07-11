@@ -540,6 +540,15 @@ WebInspector.DefaultTextEditor.prototype = {
     },
 
     /**
+     * @return {number}
+     */
+    firstVisibleLine: function()
+    {
+        var visibleFrom = this._mainPanel.scrollTop();
+        return this._mainPanel.lineNumberAtOffset(visibleFrom);
+    },
+
+    /**
      * @return {WebInspector.TextRange}
      */
     selection: function()

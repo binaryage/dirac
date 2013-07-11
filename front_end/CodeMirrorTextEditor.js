@@ -958,6 +958,14 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
+     * @return {number}
+     */
+    firstVisibleLine: function()
+    {
+        return this._codeMirror.lineAtHeight(this._codeMirror.getScrollInfo().top, "local");
+    },
+
+    /**
      * @return {WebInspector.TextRange}
      */
     selection: function()

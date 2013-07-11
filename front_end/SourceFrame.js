@@ -343,8 +343,13 @@ WebInspector.SourceFrame.prototype = {
             this._loaded = true;
             this._textEditor.setText(content || "");
             this._textEditor.markClean();
-        } else
+        } else {
+            var firstLine = this._textEditor.firstVisibleLine();
+            var selection = this._textEditor.selection();
             this._textEditor.editRange(this._textEditor.range(), content || "");
+            this._textEditor.scrollToLine(firstLine);
+            this._textEditor.setSelection(selection);
+        }
 
         this._textEditor.setMimeType(this._simplifyMimeType(content, mimeType));
 

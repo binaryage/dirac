@@ -198,6 +198,11 @@ WebInspector.TextEditor.prototype = {
     scrollToLine: function(lineNumber) { },
 
     /**
+     * @return {number}
+     */
+    firstVisibleLine: function() { },
+
+    /**
      * @return {WebInspector.TextRange}
      */
     selection: function() { },
