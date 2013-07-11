@@ -189,8 +189,8 @@ iframe.view {
     top: 0;
     height: 20px;
     width: 5px;
-    margin-left: -3px;
-    margin-right: -2px;
+    margin-left: -2px;
+    margin-right: -3px;
     background-color: rgb(153, 153, 153);
     z-index: 500;
     border-radius: 2px;
@@ -199,6 +199,11 @@ iframe.view {
 
 .resize-enabled .overview-grid-window-resizer {
     cursor: ew-resize;
+}
+
+.overview-grid-window-resizer-right {
+    margin-left: -3px;
+    margin-right: -2px;
 }
 
 /* Network timing is shared between popover and network item view pane */

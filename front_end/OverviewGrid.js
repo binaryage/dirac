@@ -145,7 +145,7 @@ WebInspector.OverviewGrid.prototype = {
 }
 
 
-WebInspector.OverviewGrid.MinSelectableSize = 12;
+WebInspector.OverviewGrid.MinSelectableSize = 14;
 
 WebInspector.OverviewGrid.WindowScrollSpeedFactor = .3;
 
@@ -354,15 +354,12 @@ WebInspector.OverviewGrid.Window.prototype = {
      */
     _setWindow: function(windowLeft, windowRight)
     {
-        var clientWidth = this._parentElement.clientWidth;
-        const rulerAdjustment = 1 / clientWidth;
-
         var left = windowLeft;
         var right = windowRight;
         var width = windowRight - windowLeft;
 
         // We allow actual time window to be arbitrarily small but don't want the UI window to be too small.
-        var widthInPixels = width * clientWidth;
+        var widthInPixels = width * this._parentElement.clientWidth;
         var minWidthInPixels = WebInspector.OverviewGrid.MinSelectableSize / 2;
         if (widthInPixels < minWidthInPixels) {
             var factor = minWidthInPixels / widthInPixels;
@@ -376,9 +373,9 @@ WebInspector.OverviewGrid.Window.prototype = {
         this._rightResizeElement.style.left = right * 100 + "%";
 
         this._overviewWindowElement.style.left = left * 100 + "%";
-        this._overviewWindowBordersElement.style.left = (left - rulerAdjustment) * 100 + "%";
-        this._overviewWindowElement.style.width = width * 100 + "%";
-        this._overviewWindowBordersElement.style.right = (1 - right + 2 * rulerAdjustment) * 100 + "%";
+        this._overviewWindowBordersElement.style.left = left * 100 + "%";
+        this._overviewWindowElement.style.width = (right - left) * 100 + "%";
+        this._overviewWindowBordersElement.style.right = (1 - right) * 100 + "%";
 
         this.dispatchEventToListeners(WebInspector.OverviewGrid.Events.WindowChanged);
     },
