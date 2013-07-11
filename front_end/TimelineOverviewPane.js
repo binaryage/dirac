@@ -483,7 +483,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
         var width = this._canvas.width;
         var height = this._canvas.height - lowerOffset;
         var xFactor = width / (maxTime - minTime);
-        var yFactor = height / (maxUsedHeapSize - minUsedHeapSize);
+        var yFactor = height / Math.max(maxUsedHeapSize - minUsedHeapSize, 1);
 
         var histogram = new Array(width);
         WebInspector.TimelinePresentationModel.forAllRecords(records, function(r) {
@@ -497,35 +497,35 @@ WebInspector.TimelineMemoryOverview.prototype = {
         var ctx = this._context;
         this._clear(ctx);
 
-        // +1 so that the border always fit into the canvas area.
-        height = height + 1;
+        height++; // +1 so that the border always fit into the canvas area.
 
+        var y = 0;
+        var isFirstPoint = true;
         ctx.beginPath();
-        var initialY = 0;
-        for (var k = 0; k < histogram.length; k++) {
-            if (histogram[k]) {
-                initialY = histogram[k];
-                break;
-            }
-        }
-        ctx.moveTo(0, height - initialY);
-
+        ctx.moveTo(0, this._canvas.height);
         for (var x = 0; x < histogram.length; x++) {
-             if (!histogram[x])
-                 continue;
-             ctx.lineTo(x, height - histogram[x]);
+            if (typeof histogram[x] === "undefined")
+                continue;
+            if (isFirstPoint) {
+                isFirstPoint = false;
+                y = histogram[x];
+                ctx.lineTo(0, height - y);
+            }
+            ctx.lineTo(x, height - y);
+            y = histogram[x];
+            ctx.lineTo(x, height - y);
         }
+        ctx.lineTo(width, height - y);
+        ctx.lineTo(width, this._canvas.height);
+        ctx.lineTo(0, this._canvas.height);
+        ctx.closePath();
 
         ctx.lineWidth = 0.5;
         ctx.strokeStyle = "rgba(20,0,0,0.8)";
         ctx.stroke();
 
         ctx.fillStyle = "rgba(214,225,254, 0.8);";
-        ctx.lineTo(width, this._canvas.height);
-        ctx.lineTo(0, this._canvas.height);
-        ctx.lineTo(0, height - initialY);
         ctx.fill();
-        ctx.closePath();
 
         this._maxHeapSizeLabel.textContent = Number.bytesToString(maxUsedHeapSize);
         this._minHeapSizeLabel.textContent = Number.bytesToString(minUsedHeapSize);
