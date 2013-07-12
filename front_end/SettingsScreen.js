@@ -283,11 +283,14 @@ WebInspector.GenericSettingsTab = function()
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Split panels vertically when docked to right"), WebInspector.settings.splitVerticallyWhenDockedToRight));
 
     p = this._appendSection(WebInspector.UIString("Elements"));
-    p.appendChild(this._createSelectSetting(WebInspector.UIString("Color format"), [
-        [ WebInspector.UIString("As authored"), WebInspector.Color.Format.Original ],
-        [ "HEX: #DAC0DE", WebInspector.Color.Format.HEX ],
-        [ "RGB: rgb(128, 255, 255)", WebInspector.Color.Format.RGB ],
-        [ "HSL: hsl(300, 80%, 90%)", WebInspector.Color.Format.HSL ] ], WebInspector.settings.colorFormat));
+    var colorFormatElement = this._createSelectSetting(WebInspector.UIString("Color format"), [
+            [ WebInspector.UIString("As authored"), WebInspector.Color.Format.Original ],
+            [ "HEX: #DAC0DE", WebInspector.Color.Format.HEX ],
+            [ "RGB: rgb(128, 255, 255)", WebInspector.Color.Format.RGB ],
+            [ "HSL: hsl(300, 80%, 90%)", WebInspector.Color.Format.HSL ]
+        ], WebInspector.settings.colorFormat);
+    p.appendChild(colorFormatElement);
+    colorFormatElement.firstChild.className = "toplevel";
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show user agent styles"), WebInspector.settings.showUserAgentStyles));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Word wrap"), WebInspector.settings.domWordWrap));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show Shadow DOM"), WebInspector.settings.showShadowDOM));

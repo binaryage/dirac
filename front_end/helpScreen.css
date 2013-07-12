@@ -414,6 +414,10 @@ body.platform-mac .help-content input[type=radio] {
     font-size: 13px;
 }
 
+.settings-tab .help-block fieldset.toplevel {
+    margin-left: 20px;
+}
+
 .settings-tab .help-block fieldset:disabled label:hover,
 .settings-tab .help-block fieldset.toplevel label:hover {
     color: inherit;
