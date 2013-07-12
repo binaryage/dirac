@@ -29,6 +29,15 @@
     display: none;
 }
 
+.CodeMirror .CodeMirror-gutters {
+  border-right: 1px solid rgb(187, 187, 187);
+  background-color: rgb(240, 240, 240);
+}
+
+.CodeMirror .CodeMirror-linenumber {
+  color: rgb(128, 128, 128);
+}
+
 .CodeMirror-linenumber {
   min-width: 22px !important;
 }
