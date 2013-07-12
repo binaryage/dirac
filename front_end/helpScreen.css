@@ -192,6 +192,7 @@ body.platform-mac .help-key {
 .help-content fieldset {
     border: none;
     margin-left: 7px;
+    padding: 0 initial;
 }
 
 #general-tab-content .help-content fieldset legend {

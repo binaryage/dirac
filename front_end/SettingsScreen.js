@@ -213,43 +213,6 @@ WebInspector.SettingsTab.prototype = {
         return p;
     },
 
-    _createRadioSetting: function(name, options, setting)
-    {
-        var pp = document.createElement("p");
-        var fieldsetElement = document.createElement("fieldset");
-        var legendElement = document.createElement("legend");
-        legendElement.textContent = name;
-        fieldsetElement.appendChild(legendElement);
-
-        function clickListener(e)
-        {
-            setting.set(e.target.value);
-        }
-
-        var settingValue = setting.get();
-        for (var i = 0; i < options.length; ++i) {
-            var p = document.createElement("p");
-            var label = document.createElement("label");
-            p.appendChild(label);
-
-            var input = document.createElement("input");
-            input.type = "radio";
-            input.name = setting.name;
-            input.value = options[i][0];
-            input.addEventListener("click", clickListener, false);
-            if (settingValue == input.value)
-                input.checked = true;
-
-            label.appendChild(input);
-            label.appendChild(document.createTextNode(options[i][1]));
-
-            fieldsetElement.appendChild(p);
-        }
-
-        pp.appendChild(fieldsetElement);
-        return pp;
-    },
-
     /**
      * @param {string} label
      * @param {WebInspector.Setting} setting
@@ -320,11 +283,11 @@ WebInspector.GenericSettingsTab = function()
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Split panels vertically when docked to right"), WebInspector.settings.splitVerticallyWhenDockedToRight));
 
     p = this._appendSection(WebInspector.UIString("Elements"));
-    p.appendChild(this._createRadioSetting(WebInspector.UIString("Color format"), [
-        [ WebInspector.Color.Format.Original, WebInspector.UIString("As authored") ],
-        [ WebInspector.Color.Format.HEX, "HEX: #DAC0DE" ],
-        [ WebInspector.Color.Format.RGB, "RGB: rgb(128, 255, 255)" ],
-        [ WebInspector.Color.Format.HSL, "HSL: hsl(300, 80%, 90%)" ] ], WebInspector.settings.colorFormat));
+    p.appendChild(this._createSelectSetting(WebInspector.UIString("Color format"), [
+        [ WebInspector.UIString("As authored"), WebInspector.Color.Format.Original ],
+        [ "HEX: #DAC0DE", WebInspector.Color.Format.HEX ],
+        [ "RGB: rgb(128, 255, 255)", WebInspector.Color.Format.RGB ],
+        [ "HSL: hsl(300, 80%, 90%)", WebInspector.Color.Format.HSL ] ], WebInspector.settings.colorFormat));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show user agent styles"), WebInspector.settings.showUserAgentStyles));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Word wrap"), WebInspector.settings.domWordWrap));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show Shadow DOM"), WebInspector.settings.showShadowDOM));
