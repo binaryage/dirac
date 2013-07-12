@@ -1610,19 +1610,6 @@ iframe.panel.extension {
     border-radius: 5px;
 }
 
-.outline-disclosure li.highlighted .highlight {
-    background-color: rgb(255, 230, 179);
-    border-radius: 4px;
-    padding-bottom: 2px;
-    margin-bottom: -2px;
-}
-
-.outline-disclosure li.selected.highlighted .highlight {
-    background-color: transparent;
-    padding-bottom: 0;
-    margin-bottom: 0;
-}
-
 .outline-disclosure li .selection {
     display: none;
     position: absolute;

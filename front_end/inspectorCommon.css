@@ -228,7 +228,7 @@ iframe.view {
     top: 1px;
 }
 
-.search-result {
+.highlighted-search-result {
     border-radius: 1px;
     padding: 1px;
     margin: -1px;
