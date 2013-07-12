@@ -46,6 +46,7 @@ WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceP
     this._addingRevisionCounter = 0;
     this._reset();
     WebInspector.fileManager.addEventListener(WebInspector.FileManager.EventTypes.SavedURL, this._fileSaveFinished, this);
+    WebInspector.settings.cssSourceMapsEnabled.addChangeListener(this._toggleSourceMapSupport, this)
     this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetChanged, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._uiSourceCodeContentCommitted, this);
@@ -64,13 +65,25 @@ WebInspector.SASSSourceMapping.prototype = {
             return;
         }
         var header = this._cssModel.styleSheetHeaderForId(id);
-        if (!header || !WebInspector.experimentsSettings.sass.isEnabled())
+        if (!header)
             return;
 
-        var wasHeaderKnown = header.sourceURL && !!this._completeSourceMapURLForCSSURL[header.sourceURL];
         this.removeHeader(header);
-        if (wasHeaderKnown)
-            header.updateLocations();
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _toggleSourceMapSupport: function(event)
+    {
+        var enabled = /** @type {boolean} */ (event.data);
+        var headers = this._cssModel.styleSheetHeaders();
+        for (var i = 0; i < headers.length; ++i) {
+            if (enabled)
+                this.addHeader(headers[i]);
+            else
+                this.removeHeader(headers[i]);
+        }
     },
 
     /**
@@ -369,7 +382,7 @@ WebInspector.SASSSourceMapping.prototype = {
      */
     addHeader: function(header)
     {
-        if (!header.sourceMapURL || !header.sourceURL || header.isInline || !WebInspector.experimentsSettings.sass.isEnabled())
+        if (!header.sourceMapURL || !header.sourceURL || header.isInline || !WebInspector.settings.cssSourceMapsEnabled.get())
             return;
         var completeSourceMapURL = WebInspector.ParsedURL.completeURL(header.sourceURL, header.sourceMapURL);
         if (!completeSourceMapURL)
@@ -397,6 +410,7 @@ WebInspector.SASSSourceMapping.prototype = {
         var completeSourceMapURL = WebInspector.ParsedURL.completeURL(sourceURL, header.sourceMapURL);
         if (completeSourceMapURL)
             delete this._sourceMapByURL[completeSourceMapURL];
+        header.updateLocations();
     },
 
     /**

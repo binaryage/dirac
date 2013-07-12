@@ -315,9 +315,14 @@ WebInspector.GenericSettingsTab = function()
 
     p = this._appendSection(WebInspector.UIString("Sources"));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Search in content scripts"), WebInspector.settings.searchInContentScripts));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Enable source maps"), WebInspector.settings.sourceMapsEnabled));
-    if (WebInspector.experimentsSettings.isEnabled("sass"))
-        p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Auto-reload CSS upon Sass save"), WebInspector.settings.cssReloadEnabled));
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Enable JS source maps"), WebInspector.settings.jsSourceMapsEnabled));
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Enable CSS source maps"), WebInspector.settings.cssSourceMapsEnabled));
+    WebInspector.settings.cssSourceMapsEnabled.addChangeListener(this._cssSourceMapsEnablementChanged, this);
+    this._cssSourceMapSettings = p.createChild("fieldset");
+    var autoReloadCSSCheckbox = this._cssSourceMapSettings.createChild("input");
+    this._cssSourceMapSettings.appendChild(this._createCheckboxSetting(WebInspector.UIString("Auto-reload generated CSS"), WebInspector.settings.cssReloadEnabled, false, autoReloadCSSCheckbox));
+    this._cssSourceMapsEnablementChanged();
+
     var indentationElement = this._createSelectSetting(WebInspector.UIString("Indentation"), [
             [ WebInspector.UIString("Auto-detect"), WebInspector.TextUtils.Indent.AutoDetect ],
             [ WebInspector.UIString("2 spaces"), WebInspector.TextUtils.Indent.TwoSpaces ],
@@ -378,6 +383,15 @@ WebInspector.GenericSettingsTab.prototype = {
             WebInspector.settings.showScrollBottleneckRects.set(false);
         }
         this._forceCompositingModeCheckbox.checked = compositing;
+    },
+
+    /**
+     * @param {WebInspector.Event=} event
+     */
+    _cssSourceMapsEnablementChanged: function(event)
+    {
+        var cssSourceMapsEnabled = event ? /** @type {boolean} */ (event.data) : WebInspector.settings.cssSourceMapsEnabled.get();
+        this._cssSourceMapSettings.disabled = !cssSourceMapsEnabled;
     },
 
     /**
