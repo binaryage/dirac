@@ -1086,7 +1086,7 @@ WebInspector.ProfilesPanel.prototype = {
 
     searchMatchFound: function(view, matches)
     {
-        view.profileHeader._profilesTreeElement.searchMatches = matches;
+        view.profile._profilesTreeElement.searchMatches = matches;
     },
 
     searchCanceled: function()
