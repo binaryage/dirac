@@ -39,7 +39,6 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
     this.element.id = "console-view";
     this._visibleMessagesIndices = [];
-    this._messages = [];
     this._urlToMessageCount = {};
 
     this._clearConsoleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear console log."), "clear-status-bar-item");
@@ -291,7 +290,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     _updateFilterStatus: function() {
-        var filteredCount = this._messages.length - this._visibleMessagesIndices.length;
+        var filteredCount = WebInspector.console.messages.length - this._visibleMessagesIndices.length;
         this._filterStatusTextElement.textContent = WebInspector.UIString(filteredCount == 1 ? "%d message is hidden by filters." : "%d messages are hidden by filters.", filteredCount);
         this._filterStatusMessageElement.style.display = filteredCount ? "" : "none";
     },
@@ -302,7 +301,7 @@ WebInspector.ConsoleView.prototype = {
     _consoleMessageAdded: function(event)
     {
         var message = /** @type {WebInspector.ConsoleMessage} */ (event.data);
-        var index = this._messages.push(message) - 1;
+        var index = message.index;
 
         if (this._urlToMessageCount[message.url])
             this._urlToMessageCount[message.url]++;
@@ -317,7 +316,7 @@ WebInspector.ConsoleView.prototype = {
 
     _showConsoleMessage: function(index)
     {
-        var message = this._messages[index];
+        var message = WebInspector.console.messages[index];
 
         // this.messagesElement.isScrolledToBottom() is forcing style recalculation.
         // We just skip it if the scroll action has been scheduled.
@@ -350,9 +349,8 @@ WebInspector.ConsoleView.prototype = {
     {
         this._scrolledToBottom = true;
         for (var i = 0; i < this._visibleMessagesIndices.length; ++i)
-            this._messages[this._visibleMessagesIndices[i]].willHide();
+            WebInspector.console.messages[this._visibleMessagesIndices[i]].willHide();
         this._visibleMessagesIndices = [];
-        this._messages = [];
         this._searchResultsIndices = [];
 
         if (this._searchRegex)
@@ -430,7 +428,7 @@ WebInspector.ConsoleView.prototype = {
     _updateMessageList: function()
     {
         var group = this.topGroup;
-        var sourceMessages = this._messages;
+        var sourceMessages = WebInspector.console.messages;
         var visibleMessageIndex = 0;
         var newVisibleMessages = [];
 
@@ -440,7 +438,7 @@ WebInspector.ConsoleView.prototype = {
         var anchor = null;
         for (var i = 0; i < sourceMessages.length; ++i) {
             var sourceMessage = sourceMessages[i];
-            var visibleMessage = this._messages[this._visibleMessagesIndices[visibleMessageIndex]];
+            var visibleMessage = WebInspector.console.messages[this._visibleMessagesIndices[visibleMessageIndex]];
 
             if (visibleMessage === sourceMessage) {
                 if (this._filter.shouldBeVisible(visibleMessage)) {
@@ -575,17 +573,14 @@ WebInspector.ConsoleView.prototype = {
         if (!result)
             return;
         var message = new WebInspector.ConsoleCommandResult(result, wasThrown, originatingCommand, this._linkifier);
-        var index = this._messages.push(message) - 1;
-        this._showConsoleMessage(index);
+        WebInspector.console.addMessage(message);
     },
 
     _appendCommand: function(text, newPromptText, useCommandLineAPI, showResultOnly)
     {
         if (!showResultOnly) {
             var commandMessage = new WebInspector.ConsoleCommand(text);
-            WebInspector.console.interruptRepeatCount();
-            var index = this._messages.push(commandMessage) - 1;
-            this._showConsoleMessage(index);
+            WebInspector.console.addMessage(commandMessage);
         }
         this.prompt.text = newPromptText;
 
@@ -643,7 +638,7 @@ WebInspector.ConsoleView.prototype = {
 
         this._searchResultsIndices = [];
         for (var i = 0; i < this._visibleMessagesIndices.length; i++) {
-            if (this._messages[this._visibleMessagesIndices[i]].matchesRegex(this._searchRegex))
+            if (WebInspector.console.messages[this._visibleMessagesIndices[i]].matchesRegex(this._searchRegex))
                 this._searchResultsIndices.push(this._visibleMessagesIndices[i]);
         }
         WebInspector.searchController.updateSearchMatchesCount(this._searchResultsIndices.length, this._searchProvider);
@@ -695,7 +690,7 @@ WebInspector.ConsoleView.prototype = {
     {
         if (!this._searchResultsIndices)
             return;
-        var highlightedMessage = this._messages[this._searchResultsIndices[this._currentSearchResultIndex]];
+        var highlightedMessage = WebInspector.console.messages[this._searchResultsIndices[this._currentSearchResultIndex]];
         if (highlightedMessage)
             highlightedMessage.clearHighlight();
         this._currentSearchResultIndex = -1;
@@ -706,7 +701,7 @@ WebInspector.ConsoleView.prototype = {
         this._clearCurrentSearchResultHighlight();
         this._currentSearchResultIndex = index;
         WebInspector.searchController.updateCurrentMatchIndex(this._currentSearchResultIndex, this._searchProvider);
-        this._messages[this._searchResultsIndices[index]].highlightSearchResults(this._searchRegex);
+        WebInspector.console.messages[this._searchResultsIndices[index]].highlightSearchResults(this._searchRegex);
     },
 
     __proto__: WebInspector.View.prototype
@@ -994,10 +989,11 @@ WebInspector.ConsoleViewFilter.prototype = {
 
 /**
  * @constructor
+ * @extends WebInspector.ConsoleMessage
  */
-WebInspector.ConsoleCommand = function(command)
+WebInspector.ConsoleCommand = function(text)
 {
-    this.command = command;
+    this.text = text;
 }
 
 WebInspector.ConsoleCommand.prototype = {
@@ -1020,12 +1016,11 @@ WebInspector.ConsoleCommand.prototype = {
     highlightSearchResults: function(regexObject)
     {
         regexObject.lastIndex = 0;
-        var text = this.command;
-        var match = regexObject.exec(text);
+        var match = regexObject.exec(this.text);
         var matchRanges = [];
         while (match) {
             matchRanges.push({ offset: match.index, length: match[0].length });
-            match = regexObject.exec(text);
+            match = regexObject.exec(this.text);
         }
         WebInspector.highlightSearchResults(this._formattedCommand, matchRanges);
         this._element.scrollIntoViewIfNeeded();
@@ -1034,7 +1029,7 @@ WebInspector.ConsoleCommand.prototype = {
     matchesRegex: function(regexObject)
     {
         regexObject.lastIndex = 0;
-        return regexObject.test(this.command);
+        return regexObject.test(this.text);
     },
 
     toMessageElement: function()
@@ -1054,8 +1049,10 @@ WebInspector.ConsoleCommand.prototype = {
     {
         this._formattedCommand = document.createElement("span");
         this._formattedCommand.className = "console-message-text source-code";
-        this._formattedCommand.textContent = this.command;
+        this._formattedCommand.textContent = this.text;
     },
+
+    __proto__: WebInspector.ConsoleMessage.prototype
 }
 
 /**

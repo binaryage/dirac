@@ -854,7 +854,7 @@ TestSuite.prototype.evaluateInConsole_ = function(code, callback)
 
     this.addSniffer(WebInspector.ConsoleView.prototype, "_showConsoleMessage",
         function(messageIndex) {
-            var commandResult = WebInspector.consoleView._messages[messageIndex];
+            var commandResult = WebInspector.console.messages[messageIndex];
             callback(commandResult.toMessageElement().textContent);
         });
 };
