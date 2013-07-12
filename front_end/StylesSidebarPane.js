@@ -2425,7 +2425,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
             this._prompt.addEventListener(WebInspector.TextPrompt.Events.ItemApplied, applyItemCallback, this);
             this._prompt.addEventListener(WebInspector.TextPrompt.Events.ItemAccepted, applyItemCallback, this);
         }
-        this._prompt.setShowSuggestForEmptyInput(!isEditingName);
         var proxyElement = this._prompt.attachAndStartEditing(selectElement, blurListener.bind(this, context));
 
         proxyElement.addEventListener("keydown", this.editingNameValueKeyDown.bind(this, context), false);
@@ -2840,9 +2839,6 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
         return false;
     },
 
-    /**
-     * @param {Event} event
-     */
     _handleNameOrValueUpDown: function(event)
     {
         function finishHandler(originalValue, replacementString)
@@ -2858,10 +2854,6 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
         return false;
     },
 
-    /**
-     * @param {string} word
-     * @return {boolean}
-     */
     _isValueSuggestion: function(word)
     {
         if (!word)
@@ -2873,11 +2865,16 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
     /**
      * @param {Element} proxyElement
      * @param {Range} wordRange
+     * @param {boolean} force
      * @param {function(!Array.<string>, number=)} completionsReadyCallback
      */
-    _buildPropertyCompletions: function(proxyElement, wordRange, completionsReadyCallback)
+    _buildPropertyCompletions: function(proxyElement, wordRange, force, completionsReadyCallback)
     {
-        var results = this._cssCompletions.startsWith(wordRange.toString().toLowerCase());
+        var prefix = wordRange.toString().toLowerCase();
+        if (!prefix && !force)
+            return;
+
+        var results = this._cssCompletions.startsWith(prefix);
         var selectedIndex = this._cssCompletions.mostUsedOf(results);
         completionsReadyCallback(results, selectedIndex);
     },
