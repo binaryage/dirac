@@ -330,7 +330,7 @@ WebInspector.GenericSettingsTab = function()
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show whitespace characters"), WebInspector.settings.showWhitespacesInEditor));
 
     p = this._appendSection(WebInspector.UIString("Profiler"));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show objects' hidden properties"), WebInspector.settings.showHeapSnapshotObjectsHiddenProperties));
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show advanced heap snapshot properties"), WebInspector.settings.showAdvancedHeapSnapshotProperties));
     if (WebInspector.experimentsSettings.nativeMemorySnapshots.isEnabled())
         p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show uninstrumented native memory"), WebInspector.settings.showNativeSnapshotUninstrumentedSize));
 

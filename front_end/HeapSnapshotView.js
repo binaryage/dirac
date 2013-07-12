@@ -114,8 +114,9 @@ WebInspector.HeapSnapshotView = function(parent, profile)
 
     this.views = [{title: "Summary", view: this.constructorsView, grid: this.constructorsDataGrid},
                   {title: "Comparison", view: this.diffView, grid: this.diffDataGrid},
-                  {title: "Containment", view: this.containmentView, grid: this.containmentDataGrid},
-                  {title: "Dominators", view: this.dominatorView, grid: this.dominatorDataGrid}];
+                  {title: "Containment", view: this.containmentView, grid: this.containmentDataGrid}];
+    if (WebInspector.settings.showAdvancedHeapSnapshotProperties.get())
+        this.views.push({title: "Dominators", view: this.dominatorView, grid: this.dominatorDataGrid});
     this.views.current = 0;
     for (var i = 0; i < this.views.length; ++i)
         this.viewSelect.createOption(WebInspector.UIString(this.views[i].title));

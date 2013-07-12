@@ -84,7 +84,7 @@ WebInspector.Settings = function()
     this.javaScriptDisabled = this.createSetting("javaScriptDisabled", false);
     this.geolocationOverride = this.createSetting("geolocationOverride", "");
     this.deviceOrientationOverride = this.createSetting("deviceOrientationOverride", "");
-    this.showHeapSnapshotObjectsHiddenProperties = this.createSetting("showHeaSnapshotObjectsHiddenProperties", false);
+    this.showAdvancedHeapSnapshotProperties = this.createSetting("showAdvancedHeapSnapshotProperties", false);
     this.showNativeSnapshotUninstrumentedSize = this.createSetting("showNativeSnapshotUninstrumentedSize", false);
     this.searchInContentScripts = this.createSetting("searchInContentScripts", false);
     this.textEditorIndent = this.createSetting("textEditorIndent", "    ");
@@ -395,7 +395,7 @@ WebInspector.VersionController = function()
 {
 }
 
-WebInspector.VersionController.currentVersion = 3;
+WebInspector.VersionController.currentVersion = 4;
 
 WebInspector.VersionController.prototype = {
     updateVersion: function()
@@ -437,6 +437,12 @@ WebInspector.VersionController.prototype = {
         var fileSystemMappingSetting = WebInspector.settings.createSetting("fileSystemMapping", {});
         fileSystemMappingSetting.set({});
         delete window.localStorage["fileMappingEntries"];
+    },
+
+    _updateVersionFrom3To4: function()
+    {
+        var advancedMode = WebInspector.settings.createSetting("showHeaSnapshotObjectsHiddenProperties", false).get();
+        WebInspector.settings.showAdvancedHeapSnapshotProperties.set(advancedMode);
     },
 
     /**
