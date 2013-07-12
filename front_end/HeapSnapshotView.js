@@ -236,6 +236,10 @@ WebInspector.HeapSnapshotView.prototype = {
         this._searchResults = [];
     },
 
+    /**
+     * @param {string} query
+     * @param {function(!WebInspector.View, number)} finishedCallback
+     */
     performSearch: function(query, finishedCallback)
     {
         // Call searchCanceled since it will reset everything we need before doing a new search.
@@ -243,26 +247,28 @@ WebInspector.HeapSnapshotView.prototype = {
 
         query = query.trim();
 
-        if (!query.length)
+        if (!query)
             return;
         if (this.currentView !== this.constructorsView && this.currentView !== this.diffView)
             return;
 
         this._searchFinishedCallback = finishedCallback;
+        var nameRegExp = createPlainTextSearchRegex(query, "i");
+        var snapshotNodeId = null;
 
         function matchesByName(gridNode) {
-            return ("_name" in gridNode) && gridNode._name.hasSubstring(query, true);
+            return ("_name" in gridNode) && nameRegExp.test(gridNode._name);
         }
 
         function matchesById(gridNode) {
-            return ("snapshotNodeId" in gridNode) && gridNode.snapshotNodeId === query;
+            return ("snapshotNodeId" in gridNode) && gridNode.snapshotNodeId === snapshotNodeId;
         }
 
         var matchPredicate;
         if (query.charAt(0) !== "@")
             matchPredicate = matchesByName;
         else {
-            query = parseInt(query.substring(1), 10);
+            snapshotNodeId = parseInt(query.substring(1), 10);
             matchPredicate = matchesById;
         }
 

@@ -54,18 +54,6 @@ Object.values = function(obj)
 
 /**
  * @param {string} string
- * @param {boolean=} caseInsensitive
- * @return {boolean}
- */
-String.prototype.hasSubstring = function(string, caseInsensitive)
-{
-    if (!caseInsensitive)
-        return this.indexOf(string) !== -1;
-    return !!this.match(new RegExp(string.escapeForRegExp(), "i"));
-}
-
-/**
- * @param {string} string
  * @return {!Array.<number>}
  */
 String.prototype.findAll = function(string)
@@ -175,7 +163,7 @@ String.prototype.trimEnd = function(maxLength)
 }
 
 /**
- * @param {string} baseURLDomain
+ * @param {?string=} baseURLDomain
  * @return {string}
  */
 String.prototype.trimURL = function(baseURLDomain)

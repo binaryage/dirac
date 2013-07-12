@@ -268,7 +268,7 @@ WebInspector.CPUProfileView.prototype = {
         if (!isNaN(queryNumber) && !(greaterThan || lessThan))
             equalTo = true;
 
-        var matcher = new RegExp(query.escapeForRegExp(), "i");
+        var matcher = createPlainTextSearchRegex(query, "i");
 
         function matchesQuery(/*ProfileDataGridNode*/ profileDataGridNode)
         {

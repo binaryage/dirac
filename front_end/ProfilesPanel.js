@@ -942,8 +942,7 @@ WebInspector.ProfilesPanel.prototype = {
             this._totalSearchMatches += searchMatches;
             this._searchResults.push(view);
 
-            if (this.searchMatchFound)
-                this.searchMatchFound(view, searchMatches);
+            this.searchMatchFound(view, searchMatches);
 
             updateMatchesCountSoon.call(this);
 
