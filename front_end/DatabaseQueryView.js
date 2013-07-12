@@ -64,15 +64,11 @@ WebInspector.DatabaseQueryView.prototype = {
     /**
      * @param {Element} proxyElement
      * @param {Range} wordRange
-     * @param {boolean} force
      * @param {function(!Array.<string>, number=)} completionsReadyCallback
      */
-    completions: function(proxyElement, wordRange, force, completionsReadyCallback)
+    completions: function(proxyElement, wordRange, completionsReadyCallback)
     {
         var prefix = wordRange.toString().toLowerCase();
-        if (!prefix.length && !force)
-            return;
-
         var results = [];
 
         function accumulateMatches(textArray)
