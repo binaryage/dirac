@@ -366,7 +366,6 @@ body.platform-mac .help-content input[type=radio] {
     border: 1px solid rgb(213, 213, 213);
     border-radius: 2px;
     color: #444444;
-    font: inherit;
     padding: 3px;
 }
 

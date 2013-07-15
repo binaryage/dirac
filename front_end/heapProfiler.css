@@ -219,7 +219,6 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
     width: 200px;
     height: 18px;
     font-size: 11px;
-    font-family: inherit;
     padding: 2px;
     margin: 2px 10px;
     background-color: white;

@@ -116,7 +116,7 @@
 .panel-enabler-view button:not(.status-bar-item) {
     font-size: 13px;
     margin: 6px 0 0 0;
-    padding: 3px 20px;
+    padding: 2px 20px;
     height: 24px;
     color: rgb(6, 6, 6);
     border: 1px solid rgb(165, 165, 165);
