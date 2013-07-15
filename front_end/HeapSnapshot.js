@@ -1086,19 +1086,19 @@ WebInspector.HeapSnapshot.prototype = {
         }
 
         if (postOrderIndex !== nodeCount) {
+            console.log("Error: Corrupted snapshot. " + (nodeCount - postOrderIndex) + " nodes are unreachable from the root:");
             var dumpNode = this.rootNode();
             for (var i = 0; i < nodeCount; ++i) {
                 if (painted[i] !== black) {
+                    // Fix it by giving the node a postorder index anyway.
+                    nodeOrdinal2PostOrderIndex[i] = postOrderIndex;
+                    postOrderIndex2NodeOrdinal[postOrderIndex++] = i;
                     dumpNode.nodeIndex = i * nodeFieldCount;
                     console.log(JSON.stringify(dumpNode.serialize()));
-                    var retainers = dumpNode.retainers();
-                    while (retainers) {
-                        console.log("edgeName: " + retainers.item().name() + " nodeClassName: " + retainers.item().node().className());
-                        retainers = retainers.item().node().retainers();
-                    }
+                    for (var retainers = dumpNode.retainers(); retainers.hasNext(); retainers = retainers.item().node().retainers())
+                        console.log("  edgeName: " + retainers.item().name() + " nodeClassName: " + retainers.item().node().className());
                 }
             }
-            throw new Error("Postordering failed. " + (nodeCount - postOrderIndex) + " hanging nodes");
         }
 
         return {postOrderIndex2NodeOrdinal: postOrderIndex2NodeOrdinal, nodeOrdinal2PostOrderIndex: nodeOrdinal2PostOrderIndex};
