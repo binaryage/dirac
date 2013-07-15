@@ -225,20 +225,20 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         }
         this._codeMirror.eachLine(processLine);
 
-        function compare(a, b)
-        {
-            return indents[b] - indents[a];
-        }
-
-        var keys = Object.keys(indents);
-        var firstMax = parseInt(keys.qselect(0, compare), 10);
-        if (!tabLines && !firstMax)
-            return WebInspector.TextUtils.Indent.FourSpaces;
-        if (tabLines && (!firstMax || indents[firstMax] < tabLines))
+        var onePercentFilterThreshold = this.linesCount / 100;
+        if (tabLines && tabLines > onePercentFilterThreshold)
             return "\t";
-        var secondMax = parseInt(keys.qselect(1, compare), 10) || 0;
-        var indent = Number.gcd(firstMax, secondMax);
-        return new Array(indent + 1).join(" ");
+        var minimumIndent = Infinity;
+        for (var i in indents) {
+            if (indents[i] * 100 / this.linesCount < onePercentFilterThreshold)
+                continue;
+            var indent = parseInt(i, 10);
+            if (minimumIndent > indent)
+                minimumIndent = indent;
+        }
+        if (minimumIndent === Infinity)
+            return WebInspector.TextUtils.Indent.FourSpaces;
+        return new Array(minimumIndent + 1).join(" ");
     },
 
     _updateEditorIndentation: function()
