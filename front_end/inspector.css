@@ -674,14 +674,6 @@ body:not(.platform-mac) .toolbar-item.close-left {
     background-color: white;
 }
 
-.animate-slow * {
-    -webkit-transition-duration: 2.5s !important;
-}
-
-.animate #main {
-    -webkit-transition: bottom 100ms linear;
-}
-
 body.show-toolbar-icons #main {
     top: 56px;
 }
@@ -756,12 +748,6 @@ body.drawer-visible #main-panels {
     border-bottom: 1px solid rgb(202, 202, 202);
     cursor: ns-resize;
     height: 24px;
-}
-
-.animate #floating-status-bar-container {
-    -webkit-transition-property: padding-left, bottom;
-    -webkit-transition-duration: 100ms;
-    -webkit-transition-timing-function: linear;
 }
 
 body.drawer-overlay #floating-status-bar-container {
@@ -1106,10 +1092,6 @@ body.remote .dock-status-bar-item {
     height: 200px;
     background-color: white;
     z-index: 1;
-}
-
-.animate #drawer {
-    -webkit-transition: height 100ms linear;
 }
 
 #drawer-body {
@@ -2803,10 +2785,6 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
     -webkit-flex: 1 1 0;
     width: 0;
     overflow: hidden;
-}
-
-.animate #bottom-status-bar-container > * {
-    -webkit-transition: opacity 100ms linear;
 }
 
 .search-status-bar-item {
