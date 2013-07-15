@@ -70,7 +70,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         smartIndent: false,
         styleSelectedText: true,
         electricChars: false,
-        autoCloseBrackets: true
+        autoCloseBrackets: { explode: false }
     });
     this._codeMirror._codeMirrorTextEditor = this;
 
