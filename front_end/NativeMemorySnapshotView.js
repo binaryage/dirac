@@ -471,6 +471,13 @@ WebInspector.NativeSnapshotProfileHeader.prototype = {
         return WebInspector.NativeHeapSnapshotProxy;
     },
 
+    /**
+     * @override
+     */
+    notifySnapshotReceived: function()
+    {
+    },
+
     addNativeSnapshotChunk: function(chunk)
     {
         this._strings = this._strings.concat(chunk.strings);
@@ -617,6 +624,13 @@ WebInspector.NativeMemoryProfileHeader.prototype = {
     createView: function(profilesPanel)
     {
         return new WebInspector.NativeMemorySnapshotView(this);
+    },
+
+    /**
+     * @override
+     */
+    notifySnapshotReceived: function()
+    {
     },
 
     /**

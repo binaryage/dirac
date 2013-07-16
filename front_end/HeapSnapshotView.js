@@ -1372,6 +1372,11 @@ WebInspector.HeapProfileHeader.prototype = {
         var worker = /** @type {WebInspector.HeapSnapshotWorker} */ (this._snapshotProxy.worker);
         this.isTemporary = false;
         worker.startCheckingForLongRunningCalls();
+        this.notifySnapshotReceived();
+    },
+
+    notifySnapshotReceived: function()
+    {
         this._profileType._snapshotReceived(this);
     },
 
