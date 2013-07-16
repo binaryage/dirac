@@ -412,8 +412,13 @@ WebInspector.CSSStyleModel.prototype = {
         var url = styleSheetHeader.resourceURL();
         if (!this._styleSheetIdsForURL[url])
             this._styleSheetIdsForURL[url] = {};
-        var styleSheetIdsForFrame = this._styleSheetIdsForURL[url];
-        styleSheetIdsForFrame[styleSheetHeader.frameId] = styleSheetHeader.id;
+        var frameIdToStyleSheetIds = this._styleSheetIdsForURL[url];
+        var styleSheetIds = frameIdToStyleSheetIds[styleSheetHeader.frameId];
+        if (!styleSheetIds) {
+            styleSheetIds = [];
+            frameIdToStyleSheetIds[styleSheetHeader.frameId] = styleSheetIds;
+        }
+        styleSheetIds.push(styleSheetHeader.id);
         this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetHeader);
     },
 
@@ -426,10 +431,13 @@ WebInspector.CSSStyleModel.prototype = {
         console.assert(header);
         delete this._styleSheetIdToHeader[id];
         var url = header.resourceURL();
-        var styleSheetIdsForFrame = this._styleSheetIdsForURL[url];
-        delete styleSheetIdsForFrame[header.frameId];
-        if (!Object.keys(styleSheetIdsForFrame).length)
-            delete this._styleSheetIdsForURL[url];
+        var frameIdToStyleSheetIds = this._styleSheetIdsForURL[url];
+        frameIdToStyleSheetIds[header.frameId].remove(id);
+        if (!frameIdToStyleSheetIds[header.frameId].length) {
+            delete frameIdToStyleSheetIds[header.frameId];
+            if (!Object.keys(this._styleSheetIdsForURL[url]).length)
+                delete this._styleSheetIdsForURL[url];
+        }
         this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, header);
     },
 
@@ -439,15 +447,19 @@ WebInspector.CSSStyleModel.prototype = {
      */
     styleSheetIdsForURL: function(url)
     {
-        var styleSheetIdsForFrame = this._styleSheetIdsForURL[url];
-        if (!styleSheetIdsForFrame)
+        var frameIdToStyleSheetIds = this._styleSheetIdsForURL[url];
+        if (!frameIdToStyleSheetIds)
             return [];
-        return Object.values(styleSheetIdsForFrame);
+
+        var result = [];
+        for (var frameId in frameIdToStyleSheetIds)
+            result = result.concat(frameIdToStyleSheetIds[frameId]);
+        return result;
     },
 
     /**
      * @param {string} url
-     * @return {Object.<NetworkAgent.FrameId, string>}
+     * @return {Object.<NetworkAgent.FrameId, Array.<CSSAgent.StyleSheetId>>}
      */
     styleSheetIdsByFrameIdForURL: function(url)
     {
@@ -555,7 +567,7 @@ WebInspector.CSSStyleModel.prototype = {
 
     _resetStyleSheets: function()
     {
-        /** @type {!Object.<string, !Object.<NetworkAgent.FrameId, !CSSAgent.StyleSheetId>>} */
+        /** @type {!Object.<string, !Object.<NetworkAgent.FrameId, !Array.<!CSSAgent.StyleSheetId>>>} */
         this._styleSheetIdsForURL = {};
         /** @type {!Object.<CSSAgent.StyleSheetId, !WebInspector.CSSStyleSheetHeader>} */
         this._styleSheetIdToHeader = {};
@@ -595,10 +607,12 @@ WebInspector.CSSStyleModel.prototype = {
      */
     rawLocationToUILocation: function(rawLocation)
     {
-        var frameIdToSheetId = this._styleSheetIdsForURL[rawLocation.url];
-        if (!frameIdToSheetId)
+        var frameIdToSheetIds = this._styleSheetIdsForURL[rawLocation.url];
+        if (!frameIdToSheetIds)
             return null;
-        var styleSheetIds = Object.values(frameIdToSheetId);
+        var styleSheetIds = [];
+        for (var frameId in frameIdToSheetIds)
+            styleSheetIds = styleSheetIds.concat(frameIdToSheetIds[frameId]);
         var uiLocation;
         for (var i = 0; !uiLocation && i < styleSheetIds.length; ++i) {
             var header = this.styleSheetHeaderForId(styleSheetIds[i]);
@@ -1278,10 +1292,10 @@ WebInspector.CSSMedia.prototype = {
         var styleSheetIdsByFrameId = WebInspector.cssModel.styleSheetIdsByFrameIdForURL(this.sourceURL);
         if (!styleSheetIdsByFrameId)
             return null;
-        var mediaHeaderId = styleSheetIdsByFrameId[this.frameId];
-        if (!mediaHeaderId)
+        var mediaHeaderIds = styleSheetIdsByFrameId[this.frameId];
+        if (!mediaHeaderIds)
             return null;
-        return WebInspector.cssModel.styleSheetHeaderForId(mediaHeaderId);
+        return WebInspector.cssModel.styleSheetHeaderForId(mediaHeaderIds[0]);
     }
 }
 
