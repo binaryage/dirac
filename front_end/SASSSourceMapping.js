@@ -513,12 +513,12 @@ WebInspector.SASSSourceMapping.prototype = {
         var sources = sourceMap.sources();
         for (var i = 0; i < sources.length; ++i) {
             var url = sources[i];
+            this._addCSSURLforSASSURL(rawURL, url);
             if (!this._workspace.hasMappingForURL(url) && !this._workspace.uiSourceCodeForURL(url)) {
                 var contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.Stylesheet);
                 var uiSourceCode = this._networkWorkspaceProvider.addFileForURL(url, contentProvider, true);
                 uiSourceCode.setSourceMapping(this);
             }
-            this._addCSSURLforSASSURL(rawURL, url);
         }
     },
 
