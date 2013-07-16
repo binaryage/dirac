@@ -41,7 +41,6 @@
     scrollbar-width: 11px;
     margin: 8px;
     padding: 0 4px;
-    font-size: 13px;
 }
 
 .help-footnote {
@@ -128,6 +127,7 @@ body.platform-mac .settings-tab .help-block {
 
 .settings-tab .help-block {
     width: 410px;
+    margin-left: 20px;
 }
 
 .help-line {
@@ -150,7 +150,7 @@ body.platform-mac .help-key-cell {
 }
 
 .help-section-title {
-    font-weight: bold;
+    font-size: 120%;
 }
 
 .help-key {
@@ -327,7 +327,6 @@ body.platform-mac .help-content input[type=radio] {
     text-shadow: none;
     color: #999999;
     height: 22px;
-    font-size: 13px;
     padding-left: 0;
 }
 
@@ -402,15 +401,8 @@ body.platform-mac .help-content input[type=radio] {
 }
 
 .settings-tab .help-section-title {
+    margin-left: -20px;
     color: #222;
-}
-
-.settings-tab .help-block label {
-    font-size: 14px;
-}
-
-.settings-tab .help-block fieldset:not(.toplevel) label {
-    font-size: 13px;
 }
 
 .settings-tab .help-block fieldset.toplevel {
