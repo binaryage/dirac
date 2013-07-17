@@ -31,7 +31,6 @@
 
 importScript("MemoryStatistics.js");
 importScript("DOMCountersGraph.js");
-importScript("NativeMemoryGraph.js");
 importScript("TimelineModel.js");
 importScript("TimelineOverviewPane.js");
 importScript("TimelinePresentationModel.js");
@@ -78,14 +77,8 @@ WebInspector.TimelinePanel = function()
     WebInspector.installDragHandle(this._timelineMemorySplitter, this._startSplitterDragging.bind(this), this._splitterDragging.bind(this), this._endSplitterDragging.bind(this), "ns-resize");
     this._timelineMemorySplitter.addStyleClass("hidden");
     this._includeDomCounters = false;
-    this._includeNativeMemoryStatistics = false;
-    if (WebInspector.experimentsSettings.nativeMemoryTimeline.isEnabled()) {
-        this._memoryStatistics = new WebInspector.NativeMemoryGraph(this, this._model, this.splitView.sidebarWidth());
-        this._includeNativeMemoryStatistics = true;
-    } else {
-        this._memoryStatistics = new WebInspector.DOMCountersGraph(this, this._model, this.splitView.sidebarWidth());
-        this._includeDomCounters = true;
-    }
+    this._memoryStatistics = new WebInspector.DOMCountersGraph(this, this._model, this.splitView.sidebarWidth());
+    this._includeDomCounters = true;
     WebInspector.settings.memoryCounterGraphsHeight = WebInspector.settings.createSetting("memoryCounterGraphsHeight", 150);
 
     var itemsTreeElement = new WebInspector.SidebarSectionTreeElement(WebInspector.UIString("RECORDS"), {}, true);
@@ -594,7 +587,7 @@ WebInspector.TimelinePanel.prototype = {
             this._model.stopRecord();
             this.toggleTimelineButton.title = WebInspector.UIString("Record");
         } else {
-            this._model.startRecord(this._includeDomCounters, this._includeNativeMemoryStatistics);
+            this._model.startRecord(this._includeDomCounters);
             this.toggleTimelineButton.title = WebInspector.UIString("Stop");
             WebInspector.userMetrics.TimelineStarted.record();
         }

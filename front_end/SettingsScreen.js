@@ -336,8 +336,6 @@ WebInspector.GenericSettingsTab = function()
 
     p = this._appendSection(WebInspector.UIString("Profiler"));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show advanced heap snapshot properties"), WebInspector.settings.showAdvancedHeapSnapshotProperties));
-    if (WebInspector.experimentsSettings.nativeMemorySnapshots.isEnabled())
-        p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show uninstrumented native memory"), WebInspector.settings.showNativeSnapshotUninstrumentedSize));
 
     p = this._appendSection(WebInspector.UIString("Timeline"));
     var checkbox = this._createCheckboxSetting(WebInspector.UIString("Limit number of captured JS stack frames"), WebInspector.settings.timelineLimitStackFramesFlag);

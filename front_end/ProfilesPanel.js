@@ -425,10 +425,6 @@ WebInspector.ProfilesPanel = function(name, type)
             this._registerProfileType(new WebInspector.CSSSelectorProfileType());
         this._registerProfileType(new WebInspector.HeapSnapshotProfileType());
         this._registerProfileType(new WebInspector.TrackingHeapSnapshotProfileType(this));
-        if (!WebInspector.WorkerManager.isWorkerFrontend() && WebInspector.experimentsSettings.nativeMemorySnapshots.isEnabled()) {
-            this._registerProfileType(new WebInspector.NativeSnapshotProfileType());
-            this._registerProfileType(new WebInspector.NativeMemoryProfileType());
-        }
         if (!WebInspector.WorkerManager.isWorkerFrontend() && WebInspector.experimentsSettings.canvasInspection.isEnabled())
             this._registerProfileType(new WebInspector.CanvasProfileType());
     }
@@ -1406,34 +1402,6 @@ WebInspector.CanvasProfilerPanel.prototype = {
 }
 
 
-/**
- * @constructor
- * @extends {WebInspector.ProfilesPanel}
- */
-WebInspector.MemoryChartProfilerPanel = function()
-{
-    WebInspector.ProfilesPanel.call(this, "memory-chart-profiler", new WebInspector.NativeMemoryProfileType());
-}
-
-WebInspector.MemoryChartProfilerPanel.prototype = {
-    __proto__: WebInspector.ProfilesPanel.prototype
-}
-
-
-/**
- * @constructor
- * @extends {WebInspector.ProfilesPanel}
- */
-WebInspector.NativeMemoryProfilerPanel = function()
-{
-    WebInspector.ProfilesPanel.call(this, "memory-snapshot-profiler", new WebInspector.NativeSnapshotProfileType());
-}
-
-WebInspector.NativeMemoryProfilerPanel.prototype = {
-    __proto__: WebInspector.ProfilesPanel.prototype
-}
-
-
 importScript("ProfileDataGridTree.js");
 importScript("BottomUpProfileDataGridTree.js");
 importScript("CPUProfileView.js");
@@ -1447,8 +1415,6 @@ importScript("HeapSnapshotProxy.js");
 importScript("HeapSnapshotView.js");
 importScript("HeapSnapshotWorkerDispatcher.js");
 importScript("JSHeapSnapshot.js");
-importScript("NativeHeapSnapshot.js");
-importScript("NativeMemorySnapshotView.js");
 importScript("ProfileLauncherView.js");
 importScript("TopDownProfileDataGridTree.js");
 importScript("CanvasProfileView.js");

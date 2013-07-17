@@ -86,7 +86,6 @@ WebInspector.Settings = function()
     this.geolocationOverride = this.createSetting("geolocationOverride", "");
     this.deviceOrientationOverride = this.createSetting("deviceOrientationOverride", "");
     this.showAdvancedHeapSnapshotProperties = this.createSetting("showAdvancedHeapSnapshotProperties", false);
-    this.showNativeSnapshotUninstrumentedSize = this.createSetting("showNativeSnapshotUninstrumentedSize", false);
     this.searchInContentScripts = this.createSetting("searchInContentScripts", false);
     this.textEditorIndent = this.createSetting("textEditorIndent", "    ");
     this.lastDockState = this.createSetting("lastDockState", "");
@@ -245,8 +244,6 @@ WebInspector.ExperimentsSettings = function()
     this._enabledForTest = {};
 
     // Add currently running experiments here.
-    this.nativeMemorySnapshots = this._createExperiment("nativeMemorySnapshots", "Native memory profiling");
-    this.nativeMemoryTimeline = this._createExperiment("nativeMemoryTimeline", "Native memory timeline");
     this.fileSystemInspection = this._createExperiment("fileSystemInspection", "FileSystem inspection");
     this.canvasInspection = this._createExperiment("canvasInspection ", "Canvas inspection");
     this.cssRegions = this._createExperiment("cssRegions", "CSS Regions Support");

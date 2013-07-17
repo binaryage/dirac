@@ -289,7 +289,6 @@ modules = [
         "sources": [
             "DOMCountersGraph.js",
             "MemoryStatistics.js",
-            "NativeMemoryGraph.js",
             "TimelineModel.js",
             "TimelineOverviewPane.js",
             "TimelinePanel.js",
@@ -355,8 +354,6 @@ modules = [
             "HeapSnapshotWorker.js",
             "HeapSnapshotWorkerDispatcher.js",
             "JSHeapSnapshot.js",
-            "NativeHeapSnapshot.js",
-            "NativeMemorySnapshotView.js",
             "ProfileDataGridTree.js",
             "ProfilesPanel.js",
             "ProfilesPanelDescriptor.js",
