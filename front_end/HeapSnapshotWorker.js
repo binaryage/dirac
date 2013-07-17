@@ -35,7 +35,6 @@ importScripts("HeapSnapshot.js");
 importScripts("HeapSnapshotLoader.js");
 importScripts("HeapSnapshotWorkerDispatcher.js");
 importScripts("JSHeapSnapshot.js");
-importScripts("NativeHeapSnapshot.js");
 importScripts("FileUtils.js");
 importScripts("utilities.js");
 
