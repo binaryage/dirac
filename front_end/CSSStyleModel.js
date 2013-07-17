@@ -934,9 +934,9 @@ WebInspector.CSSRule = function(payload, matchingSelectors)
     this.origin = payload.origin;
     this.style = WebInspector.CSSStyleDeclaration.parsePayload(payload.style);
     this.style.parentRule = this;
-    this._setRawLocationAndFrameId();
     if (payload.media)
-        this.media = WebInspector.CSSMedia.parseMediaArrayPayload(payload.media, this.frameId);
+        this.media = WebInspector.CSSMedia.parseMediaArrayPayload(payload.media);
+    this._setRawLocationAndFrameId();
 }
 
 /**
@@ -1229,15 +1229,14 @@ WebInspector.CSSProperty.prototype = {
 /**
  * @constructor
  * @param {CSSAgent.CSSMedia} payload
- * @param {!NetworkAgent.FrameId} frameId
  */
-WebInspector.CSSMedia = function(payload, frameId)
+WebInspector.CSSMedia = function(payload)
 {
     this.text = payload.text;
     this.source = payload.source;
     this.sourceURL = payload.sourceURL || "";
     this.range = payload.range;
-    this.frameId = frameId;
+    this.parentStyleSheetId = payload.parentStyleSheetId;
 }
 
 WebInspector.CSSMedia.Source = {
@@ -1249,12 +1248,23 @@ WebInspector.CSSMedia.Source = {
 
 /**
  * @param {CSSAgent.CSSMedia} payload
- * @param {!NetworkAgent.FrameId} frameId
  * @return {WebInspector.CSSMedia}
  */
-WebInspector.CSSMedia.parsePayload = function(payload, frameId)
+WebInspector.CSSMedia.parsePayload = function(payload)
 {
-    return new WebInspector.CSSMedia(payload, frameId);
+    return new WebInspector.CSSMedia(payload);
+}
+
+/**
+ * @param {Array.<CSSAgent.CSSMedia>} payload
+ * @return {Array.<WebInspector.CSSMedia>}
+ */
+WebInspector.CSSMedia.parseMediaArrayPayload = function(payload)
+{
+    var result = [];
+    for (var i = 0; i < payload.length; ++i)
+        result.push(WebInspector.CSSMedia.parsePayload(payload[i]));
+    return result;
 }
 
 WebInspector.CSSMedia.prototype = {
@@ -1289,27 +1299,8 @@ WebInspector.CSSMedia.prototype = {
      */
     header: function()
     {
-        var styleSheetIdsByFrameId = WebInspector.cssModel.styleSheetIdsByFrameIdForURL(this.sourceURL);
-        if (!styleSheetIdsByFrameId)
-            return null;
-        var mediaHeaderIds = styleSheetIdsByFrameId[this.frameId];
-        if (!mediaHeaderIds)
-            return null;
-        return WebInspector.cssModel.styleSheetHeaderForId(mediaHeaderIds[0]);
+        return this.parentStyleSheetId ? WebInspector.cssModel.styleSheetHeaderForId(this.parentStyleSheetId) : null;
     }
-}
-
-/**
- * @param {Array.<CSSAgent.CSSMedia>} payload
- * @param {!NetworkAgent.FrameId} frameId
- * @return {Array.<WebInspector.CSSMedia>}
- */
-WebInspector.CSSMedia.parseMediaArrayPayload = function(payload, frameId)
-{
-    var result = [];
-    for (var i = 0; i < payload.length; ++i)
-        result.push(WebInspector.CSSMedia.parsePayload(payload[i], frameId));
-    return result;
 }
 
 /**
