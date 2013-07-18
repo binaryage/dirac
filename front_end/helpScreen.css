@@ -315,6 +315,8 @@ body.platform-mac .help-content input[type=radio] {
 }
 
 #settings-screen .tabbed-pane-header-tabs {
+    display: flex;
+    flex-direction: column;
     padding-top: 5px;
     width: 100px;
 }
