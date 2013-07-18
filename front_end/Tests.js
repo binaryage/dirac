@@ -514,12 +514,13 @@ TestSuite.prototype.testConsoleOnNavigateBack = function()
         WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
 
     function firstConsoleMessageReceived() {
+        WebInspector.console.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, firstConsoleMessageReceived, this);
         this.evaluateInConsole_("clickLink();", didClickLink.bind(this));
     }
 
     function didClickLink() {
         // Check that there are no new messages(command is not a message).
-        this.assertEquals(1, WebInspector.console.messages.length);
+        this.assertEquals(3, WebInspector.console.messages.length);
         this.assertEquals(1, WebInspector.console.messages[0].totalRepeatCount);
         this.evaluateInConsole_("history.back();", didNavigateBack.bind(this));
     }
@@ -531,7 +532,7 @@ TestSuite.prototype.testConsoleOnNavigateBack = function()
     }
 
     function didCompleteNavigation() {
-        this.assertEquals(1, WebInspector.console.messages.length);
+        this.assertEquals(7, WebInspector.console.messages.length);
         this.assertEquals(1, WebInspector.console.messages[0].totalRepeatCount);
         this.releaseControl();
     }

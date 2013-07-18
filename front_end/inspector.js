@@ -191,19 +191,28 @@ var WebInspector = {
         this._consoleWasShown = false;
     },
 
-
-    _updateErrorAndWarningCounts: function()
+    _resetErrorAndWarningCounts: function()
     {
         var errorWarningElement = document.getElementById("error-warning-count");
         if (!errorWarningElement)
             return;
 
+        errorWarningElement.addStyleClass("hidden");
+    },
+
+    _updateErrorAndWarningCounts: function()
+    {
         var errors = WebInspector.console.errors;
         var warnings = WebInspector.console.warnings;
+
         if (!errors && !warnings) {
-            errorWarningElement.addStyleClass("hidden");
+            this._resetErrorAndWarningCounts();
             return;
         }
+
+        var errorWarningElement = document.getElementById("error-warning-count");
+        if (!errorWarningElement)
+            return;
 
         errorWarningElement.removeStyleClass("hidden");
 
@@ -456,7 +465,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
         panelDescriptors[i].registerShortcuts();
 
     this.console = new WebInspector.ConsoleModel();
-    this.console.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._updateErrorAndWarningCounts, this);
+    this.console.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._resetErrorAndWarningCounts, this);
     this.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
     this.console.addEventListener(WebInspector.ConsoleModel.Events.RepeatCountUpdated, this._updateErrorAndWarningCounts, this);
 

@@ -289,10 +289,13 @@ WebInspector.ConsoleView.prototype = {
         delete this._scrollIntoViewTimer;
     },
 
-    _updateFilterStatus: function() {
-        var filteredCount = WebInspector.console.messages.length - this._visibleMessagesIndices.length;
-        this._filterStatusTextElement.textContent = WebInspector.UIString(filteredCount == 1 ? "%d message is hidden by filters." : "%d messages are hidden by filters.", filteredCount);
-        this._filterStatusMessageElement.style.display = filteredCount ? "" : "none";
+    /**
+     * @param {number=} count
+     */
+    _updateFilterStatus: function(count) {
+        count = (typeof count === undefined) ? (WebInspector.console.messages.length - this._visibleMessagesIndices.length) : count;
+        this._filterStatusTextElement.textContent = WebInspector.UIString(count == 1 ? "%d message is hidden by filters." : "%d messages are hidden by filters.", count);
+        this._filterStatusMessageElement.style.display = count ? "" : "none";
     },
 
     /**
@@ -360,7 +363,7 @@ WebInspector.ConsoleView.prototype = {
         this.topGroup.messagesElement.removeChildren();
 
         this._clearCurrentSearchResultHighlight();
-        this._updateFilterStatus();
+        this._updateFilterStatus(0);
 
         this._linkifier.reset();
     },
