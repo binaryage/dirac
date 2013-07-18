@@ -359,8 +359,8 @@ WebInspector.ExecutionContext = function(id, name, isPageContext)
 }
 
 /**
- * @param {*} a
- * @param {*} b
+ * @param {!WebInspector.ExecutionContext} a
+ * @param {!WebInspector.ExecutionContext} b
  * @return {number}
  */
 WebInspector.ExecutionContext.comparator = function(a, b)
@@ -398,7 +398,7 @@ WebInspector.FrameExecutionContextList.prototype =
     },
 
     /**
-     * @param {WebInspector.ExecutionContext} context
+     * @param {!WebInspector.ExecutionContext} context
      */
     _addExecutionContext: function(context)
     {

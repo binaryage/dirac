@@ -182,9 +182,14 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
 
         scoreItems.call(this, 0);
 
+        /**
+         * @param {number} a
+         * @param {number} b
+         * @return {number}
+         */
         function compareIntegers(a, b)
         {
-            return /** @type {number} */ (b) - /** @type {number} */ (a);
+            return b - a;
         }
 
         function scoreItems(fromIndex)
@@ -212,7 +217,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
                         bestScores.length = bestItemsToCollect;
                         bestItems.length = bestItemsToCollect;
                     }
-                    minBestScore = /** @type {number} */ (bestScores.peekLast());
+                    minBestScore = bestScores.peekLast();
                 } else
                     filteredItems.push(i);
             }

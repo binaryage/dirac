@@ -92,23 +92,57 @@ WebKitMutationObserver.prototype.disconnect = function() {}
  */
 function addEventListener(eventName, listener, capturing) {}
 
-/** @param {boolean=} onlyFirst */
-Array.prototype.remove = function(obj, onlyFirst) {}
+/**
+ * @param {T} value
+ * @param {boolean=} onlyFirst
+ * @this {Array.<T>}
+ * @template T
+ */
+Array.prototype.remove = function(value, onlyFirst) {}
+/**
+ * @return {!Object.<string, boolean>}
+ * @this {Array.<*>}
+ */
 Array.prototype.keySet = function() {}
 /**
- * @param {*} object
- * @param {function(*,*):number=} comparator
+ * @param {number} index
+ * @return {!Array.<T>}
+ * @this {Array.<T>}
+ * @template T
+ */
+Array.prototype.rotate = function(index) {}
+/**
+ * @param {T} object
+ * @param {function(T,S):number=} comparator
  * @return {number}
+ * @this {Array.<S>}
+ * @template T,S
  */
 Array.prototype.lowerBound = function(object, comparator) {}
 /**
- * @param {*} object
- * @param {function(*,*):number=} comparator
+ * @param {T} object
+ * @param {function(T,S):number=} comparator
  * @return {number}
+ * @this {Array.<S>}
+ * @template T,S
  */
 Array.prototype.upperBound = function(object, comparator) {}
-/** @return {number} */
-Array.prototype.binaryIndexOf = function(anchor) {}
+/**
+ * @param {T} value
+ * @param {function(T,S):number} comparator
+ * @return {number}
+ * @this {Array.<S>}
+ * @template T,S
+ */
+Array.prototype.binaryIndexOf = function(value, comparator) {}
+/**
+ * @param {function(number, number): number} comparator
+ * @param {number} leftBound
+ * @param {number} rightBound
+ * @param {number} k
+ * @return {!Array.<number>}
+ * @this {Array.<number>}
+ */
 Array.prototype.sortRange = function(comparator, leftBound, rightBound, k) {}
 
 /**
@@ -130,15 +164,17 @@ Array.prototype.partition = function(comparator, left, right, pivotIndex) {}
 Array.prototype.qselect = function(k, comparator) {}
 
 /**
- * @this {Array.<*>}
  * @param {string} field
- * @return {Array.<*>}
+ * @return {!Array.<T>}
+ * @this {Array.<Object.<string,T>>}
+ * @template T
  */
 Array.prototype.select = function(field) {}
 
 /**
- * @this {Array.<*>}
- * @return {*}
+ * @return {T|undefined}
+ * @this {Array.<T>}
+ * @template T
  */
 Array.prototype.peekLast = function() {}
 

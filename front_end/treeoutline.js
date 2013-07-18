@@ -33,9 +33,7 @@
  */
 function TreeOutline(listNode, nonFocusable)
 {
-    /**
-     * @type {Array.<TreeElement>}
-     */
+    /** @type {!Array.<TreeElement>} */
     this.children = [];
     this.selectedTreeElement = null;
     this._childrenListNode = listNode;
@@ -47,6 +45,7 @@ function TreeOutline(listNode, nonFocusable)
     this.expanded = true;
     this.selected = false;
     this.treeOutline = this;
+    /** @type {function(TreeElement,TreeElement):number|null} */
     this.comparator = null;
 
     this.setFocusable(!nonFocusable);
@@ -64,6 +63,9 @@ TreeOutline.prototype.setFocusable = function(focusable)
         this._childrenListNode.removeAttribute("tabIndex");
 }
 
+/**
+ * @param {TreeElement} child
+ */
 TreeOutline.prototype.appendChild = function(child)
 {
     var insertionIndex;
@@ -74,6 +76,10 @@ TreeOutline.prototype.appendChild = function(child)
     this.insertChild(child, insertionIndex);
 }
 
+/**
+ * @param {TreeElement} child
+ * @param {TreeElement} beforeChild
+ */
 TreeOutline.prototype.insertBeforeChild = function(child, beforeChild)
 {
     if (!child)
@@ -89,6 +95,10 @@ TreeOutline.prototype.insertBeforeChild = function(child, beforeChild)
     this.insertChild(child, childIndex);
 }
 
+/**
+ * @param {TreeElement} child
+ * @param {number} index
+ */
 TreeOutline.prototype.insertChild = function(child, index)
 {
     if (!child)
@@ -137,6 +147,9 @@ TreeOutline.prototype.insertChild = function(child, index)
     child._attach();
 }
 
+/**
+ * @param {number} childIndex
+ */
 TreeOutline.prototype.removeChildAtIndex = function(childIndex)
 {
     if (childIndex < 0 || childIndex >= this.children.length)
@@ -172,6 +185,9 @@ TreeOutline.prototype.removeChildAtIndex = function(childIndex)
     child.previousSibling = null;
 }
 
+/**
+ * @param {TreeElement} child
+ */
 TreeOutline.prototype.removeChild = function(child)
 {
     if (!child)

@@ -972,6 +972,11 @@ WebInspector.TimelinePanel.prototype = {
 
         var tasks = this._mainThreadMonitoringEnabled ? this._mainThreadTasks : [];
 
+        /**
+         * @param {number} value
+         * @param {{startTime: number, endTime: number}} task
+         * @return {number}
+         */
         function compareEndTime(value, task)
         {
             return value < task.endTime ? -1 : 1;

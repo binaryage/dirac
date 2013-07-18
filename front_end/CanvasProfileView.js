@@ -331,7 +331,7 @@ WebInspector.CanvasProfileView.prototype = {
     {
         var lastChild;
         while ((lastChild = node.children.peekLast()))
-            node = /** @type {!WebInspector.DataGridNode} */ (lastChild);
+            node = lastChild;
         return node;
     },
 
@@ -341,7 +341,7 @@ WebInspector.CanvasProfileView.prototype = {
     _appendCallNodes: function(callNodes)
     {
         var rootNode = this._logGrid.rootNode();
-        var frameNode = /** @type {WebInspector.DataGridNode} */ (rootNode.children.peekLast());
+        var frameNode = rootNode.children.peekLast();
         if (frameNode && this._peekLastRecursively(frameNode).call.isFrameEndCall)
             frameNode = null;
         for (var i = 0, n = callNodes.length; i < n; ++i) {

@@ -72,6 +72,7 @@ WebInspector.ResourceTreeModel.EventTypes = {
 WebInspector.ResourceTreeModel.prototype = {
     _fetchResourceTree: function()
     {
+        /** @type {!Object.<string, WebInspector.ResourceTreeFrame>} */
         this._frames = {};
         delete this._cachedResourcesProcessed;
         PageAgent.getResourceTree(this._processCachedResources.bind(this));
@@ -189,7 +190,7 @@ WebInspector.ResourceTreeModel.prototype = {
             addedOrigin = frame.securityOrigin;
         } else {
             // Either a new frame or a main frame navigation to the new backend process. 
-            var parentFrame = this._frames[framePayload.parentId];
+            var parentFrame = framePayload.parentId ? this._frames[framePayload.parentId] : null;
             frame = new WebInspector.ResourceTreeFrame(this, parentFrame, framePayload);
             if (frame.isMainFrame() && this.mainFrame) {
                 this._handleMainFrameDetached(this.mainFrame);

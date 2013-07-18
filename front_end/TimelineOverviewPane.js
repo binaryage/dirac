@@ -673,6 +673,7 @@ WebInspector.TimelineFrameOverview.prototype = {
     reset: function()
     {
         this._recordsPerBar = 1;
+        /** @type {!Array.<{startTime:number, endTime:number}>} */
         this._barTimes = [];
         this._frames = [];
     },
@@ -896,10 +897,20 @@ WebInspector.TimelineFrameOverview.prototype = {
      */
     windowBoundaries: function(startTime, endTime)
     {
+        /**
+         * @param {number} time
+         * @param {{startTime:number, endTime:number}} barTime
+         * @return {number}
+         */
         function barStartComparator(time, barTime)
         {
             return time - barTime.startTime;
         }
+        /**
+         * @param {number} time
+         * @param {{startTime:number, endTime:number}} barTime
+         * @return {number}
+         */
         function barEndComparator(time, barTime)
         {
             // We need a frame where time is in [barTime.startTime, barTime.endTime), so exclude exact matches against endTime.
@@ -915,7 +926,7 @@ WebInspector.TimelineFrameOverview.prototype = {
 
     /**
      * @param {number} time
-     * @param {function(*, *):number} comparator
+     * @param {function(number, {startTime:number, endTime:number}):number} comparator
      */
     _windowBoundaryFromTime: function(time, comparator)
     {
@@ -929,7 +940,7 @@ WebInspector.TimelineFrameOverview.prototype = {
 
     /**
      * @param {number} time
-     * @param {function(*, *):number} comparator
+     * @param {function(number, {startTime:number, endTime:number}):number} comparator
      */
     _firstBarAfter: function(time, comparator)
     {

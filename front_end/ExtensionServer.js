@@ -436,6 +436,9 @@ WebInspector.ExtensionServer.prototype = {
         };
     },
 
+    /**
+     * @return {!Array.<WebInspector.ContentProvider>}
+     */
     _onGetPageResources: function()
     {
         var resources = {};
