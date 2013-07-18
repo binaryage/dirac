@@ -123,13 +123,12 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         }
 
         var debuggerPausedDetails = WebInspector.debuggerModel.debuggerPausedDetails();
-        if (debuggerPausedDetails.callFrames) {
-            if (debuggerPausedDetails.callFrames[0]) {
-                var topCallFrame = debuggerPausedDetails.callFrames[0];
-                var uiLocation = WebInspector.debuggerModel.rawLocationToUILocation(topCallFrame.location);
-                if (uiLocation.uiSourceCode === this._uiSourceCode && uiLocation.lineNumber === lineNumber) {
+        if (debuggerPausedDetails && debuggerPausedDetails.callFrames.length) {
+            var topCallFrame = debuggerPausedDetails.callFrames[0];
+            var uiLocation = WebInspector.debuggerModel.rawLocationToUILocation(topCallFrame.location);
+            if (uiLocation.uiSourceCode === this._uiSourceCode && uiLocation.lineNumber === lineNumber) {
+                if (debuggerPausedDetails.reason === WebInspector.DebuggerModel.BreakReason.Exception)
                     contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Do not pause on exceptions here" : "Do Not Pause on Exceptions Here"), this._setAntiBreakpoint.bind(this, lineNumber, breakpoint));
-                }
             }
         }
     },
