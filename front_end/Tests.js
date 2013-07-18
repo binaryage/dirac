@@ -306,30 +306,6 @@ TestSuite.prototype.testContentScriptIsPresent = function()
 
 
 /**
- * Tests renderer process memory size obtained and passed to inspector
- * successfully.
- */
-TestSuite.prototype.testRendererProcessNativeMemorySize = function()
-{
-    var test = this;
-    var KB = 1024;
-    var MB = KB * KB;
-
-    function step1(error, memoryBlock)
-    {
-        test.assertTrue(!error, "An error has occurred: " + error);
-        test.assertTrue(memoryBlock.size > 1 * MB && memoryBlock.size < 1500 * MB, "Unfeasible process size: " + memoryBlock.size + " bytes.");
-
-        test.releaseControl();
-    }
-
-    MemoryAgent.getProcessMemoryDistribution(false, step1);
-
-    this.takeControl();
-};
-
-
-/**
  * Tests that scripts are not duplicaed on Scripts tab switch.
  */
 TestSuite.prototype.testNoScriptDuplicatesOnPanelSwitch = function()
