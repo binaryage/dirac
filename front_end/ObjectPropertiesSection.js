@@ -124,6 +124,11 @@ WebInspector.ObjectPropertiesSection.prototype = {
     __proto__: WebInspector.PropertiesSection.prototype
 }
 
+/**
+ * @param {WebInspector.RemoteObjectProperty} propertyA
+ * @param {WebInspector.RemoteObjectProperty} propertyB
+ * @return {number}
+ */
 WebInspector.ObjectPropertiesSection.CompareProperties = function(propertyA, propertyB)
 {
     var a = propertyA.name;
@@ -132,46 +137,7 @@ WebInspector.ObjectPropertiesSection.CompareProperties = function(propertyA, pro
         return 1;
     if (b === "__proto__")
         return -1;
-
-    // if used elsewhere make sure to
-    //  - convert a and b to strings (not needed here, properties are all strings)
-    //  - check if a == b (not needed here, no two properties can be the same)
-
-    var diff = 0;
-    var chunk = /^\d+|^\D+/;
-    var chunka, chunkb, anum, bnum;
-    while (diff === 0) {
-        if (a) {
-            if (!b)
-                return 1;
-        } else {
-            if (b)
-                return -1;
-            else
-                return 0;
-        }
-        chunka = a.match(chunk)[0];
-        chunkb = b.match(chunk)[0];
-        anum = !isNaN(chunka);
-        bnum = !isNaN(chunkb);
-        if (anum && !bnum)
-            return -1;
-        if (bnum && !anum)
-            return 1;
-        if (anum && bnum) {
-            diff = chunka - chunkb;
-            if (diff === 0 && chunka.length !== chunkb.length) {
-                if (!+chunka && !+chunkb) // chunks are strings of all 0s (special case)
-                    return chunka.length - chunkb.length;
-                else
-                    return chunkb.length - chunka.length;
-            }
-        } else if (chunka !== chunkb)
-            return (chunka < chunkb) ? -1 : 1;
-        a = a.substring(chunka.length);
-        b = b.substring(chunkb.length);
-    }
-    return diff;
+    return String.naturalOrderComparator(a, b);
 }
 
 /**

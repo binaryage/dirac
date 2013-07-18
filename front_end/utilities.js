@@ -232,6 +232,50 @@ String.prototype.endsWith = function(substring)
 }
 
 /**
+ * @param {string} a
+ * @param {string} b
+ * @return {number}
+ */
+String.naturalOrderComparator = function(a, b)
+{
+    var chunk = /^\d+|^\D+/;
+    var chunka, chunkb, anum, bnum;
+    while (1) {
+        if (a) {
+            if (!b)
+                return 1;
+        } else {
+            if (b)
+                return -1;
+            else
+                return 0;
+        }
+        chunka = a.match(chunk)[0];
+        chunkb = b.match(chunk)[0];
+        anum = !isNaN(chunka);
+        bnum = !isNaN(chunkb);
+        if (anum && !bnum)
+            return -1;
+        if (bnum && !anum)
+            return 1;
+        if (anum && bnum) {
+            var diff = chunka - chunkb;
+            if (diff)
+                return diff;
+            if (chunka.length !== chunkb.length) {
+                if (!+chunka && !+chunkb) // chunks are strings of all 0s (special case)
+                    return chunka.length - chunkb.length;
+                else
+                    return chunkb.length - chunka.length;
+            }
+        } else if (chunka !== chunkb)
+            return (chunka < chunkb) ? -1 : 1;
+        a = a.substring(chunka.length);
+        b = b.substring(chunkb.length);
+    }
+}
+
+/**
  * @param {number} num
  * @param {number} min
  * @param {number} max
