@@ -246,12 +246,12 @@ WebInspector.CanvasProfileView.prototype = {
             return;
         this._lastReplayCallIndex = index;
         this._pendingReplayTraceLogEvent = true;
-        var time = Date.now();
         /**
          * @param {?Protocol.Error} error
          * @param {CanvasAgent.ResourceState} resourceState
+         * @param {number} replayTime
          */
-        function didReplayTraceLog(error, resourceState)
+        function didReplayTraceLog(error, resourceState, replayTime)
         {
             delete this._pendingReplayTraceLogEvent;
 
@@ -262,7 +262,7 @@ WebInspector.CanvasProfileView.prototype = {
                 this._currentResourceStates["auto"] = resourceState;
                 this._currentResourceStates[resourceState.id] = resourceState;
 
-                this._debugInfoElement.textContent = "Replay time: " + (Date.now() - time) + "ms";
+                this._debugInfoElement.textContent = "Replay time: " + Number(replayTime).toFixed() + "ms";
                 this._onReplayContextChanged();
             }
 
