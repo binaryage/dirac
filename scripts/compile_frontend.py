@@ -132,7 +132,6 @@ modules = [
             "CompletionDictionary.js",
             "DOMSyntaxHighlighter.js",
             "DataGrid.js",
-            "DefaultTextEditor.js",
             "Dialog.js",
             "DockController.js",
             "Drawer.js",

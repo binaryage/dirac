@@ -149,6 +149,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._codeMirror.on("blur", this._blur.bind(this));
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this));
 
+    this.element.addStyleClass("fill");
     this.element.firstChild.addStyleClass("source-code");
     this.element.firstChild.addStyleClass("fill");
     this._elementToWidget = new Map();

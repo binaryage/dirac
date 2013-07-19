@@ -2914,12 +2914,18 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
     white-space: pre;
 }
 
-#search-results-pane-file-based .search-match .webkit-line-number.search-match-line-number {
+#search-results-pane-file-based .search-match .search-match-line-number {
+    color: rgb(128, 128, 128);
+    text-align: right;
+    vertical-align: top;
+    word-break: normal;
+    padding-right: 4px;
+    padding-left: 6px;
     margin-right: 5px;
     border-right: 1px solid #BBB;
 }
 
-#search-results-pane-file-based .search-match:not(:hover) .webkit-line-number.search-match-line-number {
+#search-results-pane-file-based .search-match:not(:hover) .search-match-line-number {
     background-color: #F0F0F0;
 }
 

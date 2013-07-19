@@ -177,8 +177,7 @@ WebInspector.AdvancedSearchController.prototype = {
 WebInspector.SearchView = function(controller)
 {
     WebInspector.View.call(this);
-    this.registerRequiredCSS("textEditor.css");
-    
+
     this._controller = controller;
 
     this.element.className = "search-view";
@@ -571,7 +570,6 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
             
             var numberString = numberToStringWithSpacesPadding(lineNumber + 1, 4);
             var lineNumberSpan = document.createElement("span");
-            lineNumberSpan.addStyleClass("webkit-line-number");
             lineNumberSpan.addStyleClass("search-match-line-number");
             lineNumberSpan.textContent = numberString;
             anchor.appendChild(lineNumberSpan);
