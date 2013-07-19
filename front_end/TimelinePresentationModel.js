@@ -1092,6 +1092,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
 
             case recordTypes.PaintSetup:
             case recordTypes.Rasterize:
+            case recordTypes.ScrollLayer:
                 if (this._relatedNode)
                     contentHelper.appendElementRow(WebInspector.UIString("Layer root"), this._createNodeAnchor(this._relatedNode));
                 break;
