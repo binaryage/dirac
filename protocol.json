@@ -3470,11 +3470,23 @@
                 "description": "Unique resource identifier."
             },
             {
+                "id": "ResourceStateDescriptor",
+                "type": "object",
+                "description": "Resource state descriptor.",
+                "properties": [
+                    { "name": "name", "type": "string", "description": "State name." },
+                    { "name": "value", "$ref": "CallArgument", "optional": true, "description": "The value associated with the particular state." },
+                    { "name": "values", "type": "array", "items": { "$ref": "ResourceStateDescriptor" }, "optional": true, "description": "Array of values associated with the particular state. Either <code>value</code> or <code>values</code> will be specified." }
+                ]
+            },
+            {
                 "id": "ResourceState",
                 "type": "object",
+                "description": "Resource state.",
                 "properties": [
                     { "name": "id", "$ref": "ResourceId" },
                     { "name": "traceLogId", "$ref": "TraceLogId" },
+                    { "name": "descriptors", "type": "array", "items": { "$ref": "ResourceStateDescriptor" }, "optional": true, "description": "Describes current <code>Resource</code> state." },
                     { "name": "imageURL", "type": "string", "optional": true, "description": "Screenshot image data URL." }
                 ]
             },
@@ -3586,7 +3598,7 @@
                 "name": "replayTraceLog",
                 "parameters": [
                     { "name": "traceLogId", "$ref": "TraceLogId" },
-                    { "name": "stepNo", "type": "integer" }
+                    { "name": "stepNo", "type": "integer", "description": "Last call index in the trace log to replay (zero based)." }
                 ],
                 "returns": [
                     { "name": "resourceState", "$ref": "ResourceState" }
