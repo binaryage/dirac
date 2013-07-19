@@ -93,8 +93,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 
     CodeMirror.keyMap["devtools-pc"] = {
         "Ctrl-A": "selectAll",
-        "Ctrl-Z": "undo",
-        "Shift-Ctrl-Z": "redo",
+        "Ctrl-Z": "undoAndReveal",
+        "Shift-Ctrl-Z": "redoAndReveal",
         "Ctrl-Y": "redo",
         "Ctrl-Home": "goDocStart",
         "Ctrl-Up": "goDocStart",
@@ -112,8 +112,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 
     CodeMirror.keyMap["devtools-mac"] = {
         "Cmd-A" : "selectAll",
-        "Cmd-Z" : "undo",
-        "Shift-Cmd-Z": "redo",
+        "Cmd-Z" : "undoAndReveal",
+        "Shift-Cmd-Z": "redoAndReveal",
         "Cmd-Up": "goDocStart",
         "Cmd-Down": "goDocEnd",
         "Alt-Left": "goGroupLeft",
@@ -196,6 +196,22 @@ CodeMirror.commands.smartNewlineAndIndent = function(codeMirror)
         } else
             codeMirror.execCommand("newlineAndIndent");
     }
+}
+
+CodeMirror.commands.undoAndReveal = function(codemirror)
+{
+    var scrollInfo = codemirror.getScrollInfo();
+    codemirror.execCommand("undo");
+    var cursor = codemirror.getCursor("start");
+    codemirror._codeMirrorTextEditor._innerRevealLine(cursor.line, scrollInfo);
+}
+
+CodeMirror.commands.redoAndReveal = function(codemirror)
+{
+    var scrollInfo = codemirror.getScrollInfo();
+    codemirror.execCommand("redo");
+    var cursor = codemirror.getCursor("start");
+    codemirror._codeMirrorTextEditor._innerRevealLine(cursor.line, scrollInfo);
 }
 
 WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 2000;
@@ -671,18 +687,25 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     revealLine: function(lineNumber)
     {
-        var pos = new CodeMirror.Pos(lineNumber, 0);
-        var scrollInfo = this._codeMirror.getScrollInfo();
+        this._innerRevealLine(lineNumber, this._codeMirror.getScrollInfo());
+    },
+
+    /**
+     * @param {number} lineNumber
+     * @param {{left: number, top: number, width: number, height: number, clientWidth: number, clientHeight: number}} scrollInfo
+     */
+    _innerRevealLine: function(lineNumber, scrollInfo)
+    {
         var topLine = this._codeMirror.lineAtHeight(scrollInfo.top, "local");
         var bottomLine = this._codeMirror.lineAtHeight(scrollInfo.top + scrollInfo.clientHeight, "local");
-
-        var margin = null;
-        var lineMargin = 3;
-        if ((lineNumber < topLine + lineMargin) || (lineNumber >= bottomLine - lineMargin)) {
-            // scrollIntoView could get into infinite loop if margin exceeds half of the clientHeight.
-            margin = (scrollInfo.clientHeight*0.9/2) >>> 0;
+        var linesPerScreen = bottomLine - topLine + 1;
+        if (lineNumber < topLine) {
+            var topLineToReveal = Math.max(lineNumber - (linesPerScreen / 2), 0) | 0;
+            this._codeMirror.scrollIntoView(new CodeMirror.Pos(topLineToReveal, 0));
+        } else if (lineNumber > bottomLine) {
+            var bottomLineToReveal = Math.min(lineNumber + (linesPerScreen / 2), this.linesCount - 1) | 0;
+            this._codeMirror.scrollIntoView(new CodeMirror.Pos(bottomLineToReveal, 0));
         }
-        this._codeMirror.scrollIntoView(pos, margin);
     },
 
     _gutterClick: function(instance, lineNumber, gutter, event)

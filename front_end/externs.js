@@ -427,6 +427,9 @@ CodeMirror.prototype = {
     getMode: function() { },
     getOption: function(option) { },
     getRange: function(from, to, lineSep) { },
+    /**
+     * @return {{left: number, top: number, width: number, height: number, clientWidth: number, clientHeight: number}}
+     */
     getScrollInfo: function() { },
     getScrollerElement: function() { },
     getSelection: function() { },
