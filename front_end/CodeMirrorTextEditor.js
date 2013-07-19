@@ -1458,6 +1458,11 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
             this.finishAutocomplete();
             return true;
         }
+        if (e.keyCode === WebInspector.KeyboardShortcut.Keys.Tab.code) {
+            this._suggestBox.acceptSuggestion();
+            this.finishAutocomplete();
+            return true;
+        }
         return this._suggestBox.keyPressed(e);
     },
 
