@@ -195,7 +195,7 @@ WebInspector.ConsoleView.prototype = {
      */
     _frameUpdated: function(event)
     {
-        var contextList = /** {WebInspector.FrameExecutionContextList */ event.data;
+        var contextList = /** @type {WebInspector.FrameExecutionContextList} */ (event.data);
         var option = contextList._consoleOption;
         option.text = contextList.displayName;
         option.title = contextList.url;
@@ -206,7 +206,7 @@ WebInspector.ConsoleView.prototype = {
      */
     _contextAdded: function(event)
     {
-        var contextList = /** {WebInspector.FrameExecutionContextList */ event.data;
+        var contextList = /** @type {WebInspector.FrameExecutionContextList} */ (event.data);
         if (contextList === this._currentFrame())
             this._frameChanged();
     },

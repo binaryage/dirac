@@ -210,7 +210,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     _debuggerReset: function()
     {
         /**
-         * @param {!Object.<string, !Array.<!WebInspector.UISourceCode>>} scriptsForSourceURL
+         * @param {!Object.<string, !Array.<!WebInspector.Script>>} scriptsForSourceURL
          */
         function unbindUISourceCodes(scriptsForSourceURL)
         {

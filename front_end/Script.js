@@ -48,7 +48,9 @@ WebInspector.Script = function(scriptId, sourceURL, startLine, startColumn, endL
     this.isContentScript = isContentScript;
     this.sourceMapURL = sourceMapURL;
     this.hasSourceURL = hasSourceURL;
+    /** @type {!Set.<!WebInspector.Script.Location>} */
     this._locations = new Set();
+    /** @type {!Array.<!WebInspector.SourceMapping>} */
     this._sourceMappings = [];
 }
 
@@ -204,7 +206,7 @@ WebInspector.Script.prototype = {
     },
 
     /**
-     * @param {WebInspector.SourceMapping} sourceMapping
+     * @param {!WebInspector.SourceMapping} sourceMapping
      */
     pushSourceMapping: function(sourceMapping)
     {

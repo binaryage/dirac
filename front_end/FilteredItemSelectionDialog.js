@@ -579,12 +579,13 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.SelectionDialogContentProvider}
- * @param {Map=} defaultScores
+ * @param {Map.<WebInspector.UISourceCode, number>=} defaultScores
  */
 WebInspector.SelectUISourceCodeDialog = function(defaultScores)
 {
     WebInspector.SelectionDialogContentProvider.call(this);
 
+    /** @type {!Array.<!WebInspector.UISourceCode>} */
     this._uiSourceCodes = [];
     var projects = WebInspector.workspace.projects().filter(this.filterProject.bind(this));
     for (var i = 0; i < projects.length; ++i)
@@ -728,7 +729,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
  * @constructor
  * @extends {WebInspector.SelectUISourceCodeDialog}
  * @param {WebInspector.ScriptsPanel} panel
- * @param {Map=} defaultScores
+ * @param {Map.<WebInspector.UISourceCode, number>=} defaultScores
  */
 WebInspector.OpenResourceDialog = function(panel, defaultScores)
 {
@@ -762,7 +763,7 @@ WebInspector.OpenResourceDialog.prototype = {
  * @param {WebInspector.ScriptsPanel} panel
  * @param {Element} relativeToElement
  * @param {string=} name
- * @param {Map=} defaultScores
+ * @param {Map.<WebInspector.UISourceCode, number>=} defaultScores
  */
 WebInspector.OpenResourceDialog.show = function(panel, relativeToElement, name, defaultScores)
 {

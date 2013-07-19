@@ -90,12 +90,12 @@ WebInspector.StylesSourceMapping.prototype = {
         header.pushSourceMapping(this);
         var map = this._urlToHeadersByFrameId[url];
         if (!map) {
-            map = new StringMap();
+            map = /** @type {!StringMap.<!StringMap.<!WebInspector.CSSStyleSheetHeader>>} */ (new StringMap());
             this._urlToHeadersByFrameId[url] = map;
         }
         var headersById = map.get(header.frameId);
         if (!headersById) {
-            headersById = new StringMap();
+            headersById = /** @type {!StringMap.<!WebInspector.CSSStyleSheetHeader>} */ (new StringMap());
             map.put(header.frameId, headersById);
         }
         headersById.put(header.id, header);
@@ -181,7 +181,7 @@ WebInspector.StylesSourceMapping.prototype = {
 
     _initialize: function()
     {
-        /** {Object.<string, StringMap>} */
+        /** @type {!Object.<string, !StringMap.<!StringMap.<!WebInspector.CSSStyleSheetHeader>>>} */
         this._urlToHeadersByFrameId = {};
     },
 

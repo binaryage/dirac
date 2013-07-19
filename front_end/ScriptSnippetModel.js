@@ -36,11 +36,13 @@
 WebInspector.ScriptSnippetModel = function(workspace)
 {
     this._workspace = workspace;
-    /** {Object.<string, WebInspector.UISourceCode>} */
+    /** @type {!Object.<string, WebInspector.UISourceCode>} */
     this._uiSourceCodeForScriptId = {};
+    /** @type {!Map.<WebInspector.UISourceCode, WebInspector.Script>} */
     this._scriptForUISourceCode = new Map();
-    /** {Object.<string, WebInspector.UISourceCode>} */
+    /** @type {!Object.<string, WebInspector.UISourceCode>} */
     this._uiSourceCodeForSnippetId = {};
+    /** @type {!Map.<WebInspector.UISourceCode, string>} */
     this._snippetIdForUISourceCode = new Map();
     
     this._snippetStorage = new WebInspector.SnippetStorage("script", "Script snippet #");
@@ -98,7 +100,7 @@ WebInspector.ScriptSnippetModel.prototype = {
      */
     deleteScriptSnippet: function(uiSourceCode)
     {
-        var snippetId = this._snippetIdForUISourceCode.get(uiSourceCode);
+        var snippetId = this._snippetIdForUISourceCode.get(uiSourceCode) || "";
         var snippet = this._snippetStorage.snippetForId(snippetId);
         this._snippetStorage.deleteSnippet(snippet);
         this._removeBreakpoints(uiSourceCode);
@@ -177,7 +179,7 @@ WebInspector.ScriptSnippetModel.prototype = {
         var breakpointLocations = this._removeBreakpoints(uiSourceCode);
         this._releaseSnippetScript(uiSourceCode);
         this._restoreBreakpoints(uiSourceCode, breakpointLocations);
-        var snippetId = this._snippetIdForUISourceCode.get(uiSourceCode);
+        var snippetId = this._snippetIdForUISourceCode.get(uiSourceCode) || "";
         var evaluationIndex = this._nextEvaluationIndex(snippetId);
         uiSourceCode._evaluationIndex = evaluationIndex;
         var evaluationUrl = this._evaluationSourceURL(uiSourceCode);

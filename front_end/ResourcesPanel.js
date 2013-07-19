@@ -88,13 +88,19 @@ WebInspector.ResourcesPanel = function(database)
     this.storageViewStatusBarItemsContainer = document.createElement("div");
     this.storageViewStatusBarItemsContainer.className = "status-bar-items";
 
+    /** @type {!Map.<!WebInspector.Database, !Object.<string, !WebInspector.DatabaseTableView>>} */
     this._databaseTableViews = new Map();
+    /** @type {!Map.<!WebInspector.Database, !WebInspector.DatabaseQueryView>} */
     this._databaseQueryViews = new Map();
+    /** @type {!Map.<!WebInspector.Database, !WebInspector.DatabaseTreeElement>} */
     this._databaseTreeElements = new Map();
+    /** @type {!Map.<!WebInspector.DOMStorage, !WebInspector.DOMStorageItemsView>} */
     this._domStorageViews = new Map();
+    /** @type {!Map.<!WebInspector.DOMStorage, !WebInspector.DOMStorageTreeElement>} */
     this._domStorageTreeElements = new Map();
+    /** @type {!Object.<string, !WebInspector.CookieItemsView>} */
     this._cookieViews = {};
-    this._origins = {};
+    /** @type {!Object.<string, boolean>} */
     this._domains = {};
 
     this.sidebarElement.addEventListener("mousemove", this._onmousemove.bind(this), false);
@@ -174,7 +180,6 @@ WebInspector.ResourcesPanel.prototype = {
 
     _reset: function()
     {
-        this._origins = {};
         this._domains = {};
         var queryViews = this._databaseQueryViews.values();
         for (var i = 0; i < queryViews.length; ++i)
@@ -450,6 +455,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
+     * @param {WebInspector.Database} database
      * @param {string=} tableName
      */
     _showDatabase: function(database, tableName)
@@ -461,7 +467,7 @@ WebInspector.ResourcesPanel.prototype = {
         if (tableName) {
             var tableViews = this._databaseTableViews.get(database);
             if (!tableViews) {
-                tableViews = {};
+                tableViews = /** @type {!Object.<string, !WebInspector.DatabaseTableView>} */ ({});
                 this._databaseTableViews.put(database, tableViews);
             }
             view = tableViews[tableName];
@@ -489,6 +495,9 @@ WebInspector.ResourcesPanel.prototype = {
         this._innerShowView(view);
     },
 
+    /**
+     * @param {WebInspector.DOMStorage} domStorage
+     */
     _showDOMStorage: function(domStorage)
     {
         if (!domStorage)
@@ -504,6 +513,10 @@ WebInspector.ResourcesPanel.prototype = {
         this._innerShowView(view);
     },
 
+    /**
+     * @param {!WebInspector.CookieTreeElement} treeElement
+     * @param {string} cookieDomain
+     */
     showCookies: function(treeElement, cookieDomain)
     {
         var view = this._cookieViews[cookieDomain];
@@ -1394,6 +1407,7 @@ WebInspector.FrameResourceTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.BaseStorageTreeElement}
+ * @param {WebInspector.Database} database
  */
 WebInspector.DatabaseTreeElement = function(storagePanel, database)
 {

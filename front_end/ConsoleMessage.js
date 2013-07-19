@@ -57,7 +57,9 @@ WebInspector.ConsoleMessageImpl = function(source, level, message, linkifier, ty
     this._stackTrace = stackTrace;
     this._request = requestId ? WebInspector.networkLog.requestForId(requestId) : null;
     this._isOutdated = isOutdated;
+    /** @type {!Array.<!WebInspector.DataGrid>} */
     this._dataGrids = [];
+    /** @type {!Map.<!WebInspector.DataGrid, Element>} */
     this._dataGridParents = new Map();
 
     this._customFormatters = {
@@ -73,7 +75,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
     {
         for (var i = 0; this._dataGrids && i < this._dataGrids.length; ++i) {
             var dataGrid = this._dataGrids[i];
-            var parentElement = this._dataGridParents.get(dataGrid);
+            var parentElement = this._dataGridParents.get(dataGrid) || null;
             dataGrid.show(parentElement);
         }
     },
@@ -195,6 +197,9 @@ WebInspector.ConsoleMessageImpl.prototype = {
         this._message = this._messageElement.textContent;
     },
 
+    /**
+     * @return {string}
+     */
     get message()
     {
         // force message formatting
@@ -202,6 +207,9 @@ WebInspector.ConsoleMessageImpl.prototype = {
         return this._message;
     },
 
+    /**
+     * @return {Element}
+     */
     get formattedMessage()
     {
         if (!this._formattedMessage)
@@ -217,6 +225,12 @@ WebInspector.ConsoleMessageImpl.prototype = {
         return this._request;
     },
 
+    /**
+     * @param {string} url
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @return {Element}
+     */
     _linkifyLocation: function(url, lineNumber, columnNumber)
     {
         // FIXME(62725): stack trace line/column numbers are one-based.
@@ -225,11 +239,18 @@ WebInspector.ConsoleMessageImpl.prototype = {
         return this._linkifier.linkifyLocation(url, lineNumber, columnNumber, "console-message-url");
     },
 
+    /**
+     * @param {!ConsoleAgent.CallFrame} callFrame
+     * @return {Element}
+     */
     _linkifyCallFrame: function(callFrame)
     {
         return this._linkifyLocation(callFrame.url, callFrame.lineNumber, callFrame.columnNumber);
     },
 
+    /**
+     * @return {boolean}
+     */
     isErrorOrWarning: function()
     {
         return (this.level === WebInspector.ConsoleMessage.MessageLevel.Warning || this.level === WebInspector.ConsoleMessage.MessageLevel.Error);

@@ -38,8 +38,6 @@ console.assert = function(vararg) {}
 console.error = function(vararg) {}
 console.trace = function() {}
 
-/** @param {boolean=} param */
-Element.prototype.scrollIntoViewIfNeeded = function(param) {}
 /** @type {boolean} */
 Event.prototype.isMetaOrCtrlForTest = false;
 /** @param {...*} vararg */

@@ -49,7 +49,9 @@ WebInspector.NavigatorView = function()
     this.element.appendChild(scriptsOutlineElement);
     this.setDefaultFocusedElement(this._scriptsTree.element);
 
+    /** @type {!Map.<WebInspector.UISourceCode, !WebInspector.NavigatorUISourceCodeTreeNode>} */
     this._uiSourceCodeNodes = new Map();
+    /** @type {!Map.<WebInspector.NavigatorTreeNode, !StringMap.<!WebInspector.NavigatorFolderTreeNode>>} */
     this._subfolderNodes = new Map();
 
     this._rootNode = new WebInspector.NavigatorRootTreeNode(this);
@@ -131,7 +133,7 @@ WebInspector.NavigatorView.prototype = {
 
         var subfolderNodes = this._subfolderNodes.get(projectNode);
         if (!subfolderNodes) {
-            subfolderNodes = new StringMap();
+            subfolderNodes = /** @type {!StringMap.<!WebInspector.NavigatorFolderTreeNode>} */ (new StringMap());
             this._subfolderNodes.put(projectNode, subfolderNodes);
         }
 
@@ -231,8 +233,8 @@ WebInspector.NavigatorView.prototype = {
             nodes[i].dispose();
 
         this._scriptsTree.removeChildren();
-        this._uiSourceCodeNodes = new Map();
-        this._subfolderNodes = new Map();
+        this._uiSourceCodeNodes.clear();
+        this._subfolderNodes.clear();
         this._rootNode.reset();
     },
 
@@ -581,6 +583,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
 WebInspector.NavigatorTreeNode = function(id)
 {
     this.id = id;
+    /** @type {!StringMap.<!WebInspector.NavigatorTreeNode>} */
     this._children = new StringMap();
 }
 
@@ -625,38 +628,60 @@ WebInspector.NavigatorTreeNode.prototype = {
             this.treeElement().appendChild(children[i].treeElement());
     },
 
+    /**
+     * @param {!WebInspector.NavigatorTreeNode} node
+     */
     didAddChild: function(node)
     {
         if (this.isPopulated())
             this.treeElement().appendChild(node.treeElement());
     },
 
+    /**
+     * @param {!WebInspector.NavigatorTreeNode} node
+     */
     willRemoveChild: function(node)
     {
         if (this.isPopulated())
             this.treeElement().removeChild(node.treeElement());
     },
 
+    /**
+     * @return {boolean}
+     */
     isPopulated: function()
     {
         return this._populated;
     },
 
+    /**
+     * @return {boolean}
+     */
     isEmpty: function()
     {
         return !this._children.size();
     },
 
+    /**
+     * @param {string} id
+     * @return {WebInspector.NavigatorTreeNode}
+     */
     child: function(id)
     {
         return this._children.get(id);
     },
 
+    /**
+     * @return {!Array.<!WebInspector.NavigatorTreeNode>}
+     */
     children: function()
     {
         return this._children.values();
     },
 
+    /**
+     * @param {!WebInspector.NavigatorTreeNode} node
+     */
     appendChild: function(node)
     {
         this._children.put(node.id, node);
@@ -664,6 +689,9 @@ WebInspector.NavigatorTreeNode.prototype = {
         this.didAddChild(node);
     },
 
+    /**
+     * @param {!WebInspector.NavigatorTreeNode} node
+     */
     removeChild: function(node)
     {
         this.willRemoveChild(node);

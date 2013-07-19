@@ -886,17 +886,18 @@ createObjectIdentifier._last = 0;
 
 /**
  * @constructor
+ * @template T
  */
 var Set = function()
 {
-    /** @type {!Object.<string, Object>} */
+    /** @type {!Object.<string, !T>} */
     this._set = {};
     this._size = 0;
 }
 
 Set.prototype = {
     /**
-     * @param {!Object} item
+     * @param {!T} item
      */
     add: function(item)
     {
@@ -911,7 +912,7 @@ Set.prototype = {
     },
 
     /**
-     * @param {!Object} item
+     * @param {!T} item
      * @return {boolean}
      */
     remove: function(item)
@@ -925,7 +926,7 @@ Set.prototype = {
     },
 
     /**
-     * @return {!Array.<Object>}
+     * @return {!Array.<!T>}
      */
     items: function()
     {
@@ -937,7 +938,7 @@ Set.prototype = {
     },
 
     /**
-     * @param {!Object} item
+     * @param {!T} item
      * @return {boolean}
      */
     hasItem: function(item)
@@ -962,18 +963,19 @@ Set.prototype = {
 
 /**
  * @constructor
+ * @template K,V
  */
 var Map = function()
 {
-    /** @type {!Object.<string, !Array.<*>>} */
+    /** @type {!Object.<string, !Array.<K|V>>} */
     this._map = {};
     this._size = 0;
 }
 
 Map.prototype = {
     /**
-     * @param {Object} key
-     * @param {*=} value
+     * @param {!K} key
+     * @param {V=} value
      */
     put: function(key, value)
     {
@@ -988,7 +990,7 @@ Map.prototype = {
     },
 
     /**
-     * @param {Object} key
+     * @param {!K} key
      */
     remove: function(key)
     {
@@ -1001,7 +1003,7 @@ Map.prototype = {
     },
 
     /**
-     * @return {Array.<Object>}
+     * @return {!Array.<!K>}
      */
     keys: function()
     {
@@ -1009,7 +1011,7 @@ Map.prototype = {
     },
 
     /**
-     * @return {Array.<*>}
+     * @return {!Array.<V>}
      */
     values: function()
     {
@@ -1018,7 +1020,7 @@ Map.prototype = {
 
     /**
      * @param {number} index
-     * @return {Array.<Array>}
+     * @return {!Array.<K|V>}
      */
     _list: function(index)
     {
@@ -1030,7 +1032,8 @@ Map.prototype = {
     },
 
     /**
-     * @param {Object} key
+     * @param {!K} key
+     * @return {V|undefined}
      */
     get: function(key)
     {
@@ -1039,7 +1042,7 @@ Map.prototype = {
     },
 
     /**
-     * @param {Object} key
+     * @param {!K} key
      * @return {boolean}
      */
     contains: function(key)
@@ -1065,10 +1068,11 @@ Map.prototype = {
 
 /**
  * @constructor
+ * @template T
  */
 var StringMap = function()
 {
-    /** @type {!Object.<string, *>} */
+    /** @type {!Object.<string, T>} */
     this._map = {};
     this._size = 0;
 }
@@ -1076,7 +1080,7 @@ var StringMap = function()
 StringMap.prototype = {
     /**
      * @param {string} key
-     * @param {*=} value
+     * @param {T} value
      */
     put: function(key, value)
     {
@@ -1085,6 +1089,7 @@ StringMap.prototype = {
                 ++this._size;
                 this._hasProtoKey = true;
             }
+            /** @type {T} */
             this._protoValue = value;
             return;
         }
@@ -1117,18 +1122,18 @@ StringMap.prototype = {
     },
 
     /**
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     keys: function()
     {
-        var result = Object.keys(this._map);
+        var result = Object.keys(this._map) || [];
         if (this._hasProtoKey)
             result.push("__proto__");
         return result;
     },
 
     /**
-     * @return {Array.<*>}
+     * @return {!Array.<T>}
      */
     values: function()
     {

@@ -162,8 +162,9 @@ WebInspector.DataGrid.Align = {
 }
 
 /**
- * @param {Array.<string>} columnNames
- * @param {Array.<string>} values
+ * @param {!Array.<string>} columnNames
+ * @param {!Array.<string>} values
+ * @return {WebInspector.DataGrid}
  */
 WebInspector.DataGrid.createSortableDataGrid = function(columnNames, values)
 {

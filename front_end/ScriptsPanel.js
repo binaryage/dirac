@@ -146,6 +146,7 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
     this._dockSideChanged();
 
+    /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.SourceFrame>} */
     this._sourceFramesByUISourceCode = new Map();
     this._updateDebuggerButtons();
     this._pauseOnExceptionStateChanged();
@@ -1238,6 +1239,7 @@ WebInspector.ScriptsPanel.prototype = {
     showGoToSourceDialog: function()
     {
         var uiSourceCodes = this._editorContainer.historyUISourceCodes();
+        /** @type {!Map.<WebInspector.UISourceCode, number>} */
         var defaultScores = new Map();
         for (var i = 1; i < uiSourceCodes.length; ++i) // Skip current element
             defaultScores.put(uiSourceCodes[i], uiSourceCodes.length - i);

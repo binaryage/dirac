@@ -49,19 +49,14 @@ WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, 
     this._url = url;
     this._contentType = contentType;
     this._isEditable = isEditable;
-    /**
-     * @type Array.<function(?string,boolean,string)>
-     */
+    /** @type {!Array.<function(?string,boolean,string)>} */
     this._requestContentCallbacks = [];
+    /** @type {!Set.<!WebInspector.LiveLocation>} */
     this._liveLocations = new Set();
-    /**
-     * @type {Array.<WebInspector.PresentationConsoleMessage>}
-     */
+    /** @type {!Array.<WebInspector.PresentationConsoleMessage>} */
     this._consoleMessages = [];
     
-    /**
-     * @type {Array.<WebInspector.Revision>}
-     */
+    /** @type {!Array.<WebInspector.Revision>} */
     this.history = [];
     if (this.isEditable() && this._url)
         this._restoreRevisionHistory();

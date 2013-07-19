@@ -50,8 +50,10 @@ function TreeOutline(listNode, nonFocusable)
 
     this.setFocusable(!nonFocusable);
     this._childrenListNode.addEventListener("keydown", this._treeKeyDown.bind(this), true);
-    
+
+    /** @type {!Map.<Object, !Array.<!TreeElement>>} */
     this._treeElementsMap = new Map();
+    /** @type {!Map.<Object, boolean>} */
     this._expandedStateMap = new Map();
 }
 
@@ -221,6 +223,9 @@ TreeOutline.prototype.removeChildren = function()
     this.children = [];
 }
 
+/**
+ * @param {TreeElement} element
+ */
 TreeOutline.prototype._rememberTreeElement = function(element)
 {
     if (!this._treeElementsMap.get(element.representedObject))
@@ -235,6 +240,9 @@ TreeOutline.prototype._rememberTreeElement = function(element)
     elements.push(element);
 }
 
+/**
+ * @param {TreeElement} element
+ */
 TreeOutline.prototype._forgetTreeElement = function(element)
 {
     if (this._treeElementsMap.get(element.representedObject)) {
@@ -245,6 +253,9 @@ TreeOutline.prototype._forgetTreeElement = function(element)
     }
 }
 
+/**
+ * @param {TreeElement} parentElement
+ */
 TreeOutline.prototype._forgetChildrenRecursive = function(parentElement)
 {
     var child = parentElement.children[0];

@@ -1321,7 +1321,9 @@ WebInspector.CSSStyleSheetHeader = function(payload)
     this.isInline = payload.isInline;
     this.startLine = payload.startLine;
     this.startColumn = payload.startColumn;
+    /** @type {!Set.<!WebInspector.CSSStyleModel.LiveLocation>} */
     this._locations = new Set();
+    /** @type {!Array.<!WebInspector.SourceMapping>} */
     this._sourceMappings = [];
 }
 
@@ -1377,7 +1379,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
     },
 
     /**
-     * @param {WebInspector.SourceMapping} sourceMapping
+     * @param {!WebInspector.SourceMapping} sourceMapping
      */
     pushSourceMapping: function(sourceMapping)
     {
