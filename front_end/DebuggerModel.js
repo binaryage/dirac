@@ -209,15 +209,7 @@ WebInspector.DebuggerModel.prototype = {
                 callback(error ? null : breakpointId, rawLocations);
             }
         }
-        var isAntiBreakpoint;
-        if (condition && condition.trim() === "false") {
-            isAntiBreakpoint = true;
-            condition = "";
-            columnNumber = undefined;
-        } else {
-            isAntiBreakpoint = false;
-        }
-        DebuggerAgent.setBreakpointByUrl(lineNumber, url, undefined, columnNumber, condition, isAntiBreakpoint, didSetBreakpoint.bind(this));
+        DebuggerAgent.setBreakpointByUrl(lineNumber, url, undefined, columnNumber, condition, undefined, didSetBreakpoint.bind(this));
         WebInspector.userMetrics.ScriptsBreakpointSet.record();
     },
 

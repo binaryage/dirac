@@ -121,16 +121,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             else
                 contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Enable breakpoint" : "Enable Breakpoint"), breakpoint.setEnabled.bind(breakpoint, true));
         }
-
-        var debuggerPausedDetails = WebInspector.debuggerModel.debuggerPausedDetails();
-        if (debuggerPausedDetails && debuggerPausedDetails.callFrames.length) {
-            var topCallFrame = debuggerPausedDetails.callFrames[0];
-            var uiLocation = WebInspector.debuggerModel.rawLocationToUILocation(topCallFrame.location);
-            if (uiLocation.uiSourceCode === this._uiSourceCode && uiLocation.lineNumber === lineNumber) {
-                if (debuggerPausedDetails.reason === WebInspector.DebuggerModel.BreakReason.Exception)
-                    contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Do not pause on exceptions here" : "Do Not Pause on Exceptions Here"), this._setAntiBreakpoint.bind(this, lineNumber, breakpoint));
-            }
-        }
     },
 
     populateTextAreaContextMenu: function(contextMenu, lineNumber)
@@ -627,19 +617,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             line: lineNumber,
             enabled: enabled
         });
-    },
-
-    /**
-     * @param {number} lineNumber
-     * @param {WebInspector.BreakpointManager.Breakpoint} anotherBreakpoint
-     */
-    _setAntiBreakpoint: function(lineNumber, anotherBreakpoint)
-    {
-        if (anotherBreakpoint)
-            anotherBreakpoint.remove();
-
-        var magicCondition = "false";
-        this._setBreakpoint(lineNumber, magicCondition, true);
     },
 
     /**
