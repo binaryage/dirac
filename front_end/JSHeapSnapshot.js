@@ -85,10 +85,9 @@ WebInspector.JSHeapSnapshot.prototype = {
     retainingEdgesFilter: function(showHiddenData)
     {
         var containmentEdgesFilter = this.containmentEdgesFilter(showHiddenData);
-        function filter(edge) {
-            if (!containmentEdgesFilter(edge))
-                return false;
-            return edge.node().id() !== 1 && !edge.node().isSynthetic() && !edge.isWeak();
+        function filter(edge)
+        {
+            return containmentEdgesFilter(edge) && !edge.node().isRoot() && !edge.isWeak();
         }
         return filter;
     },
