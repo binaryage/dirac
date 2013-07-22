@@ -167,25 +167,23 @@ WebInspector.RuntimeModel.prototype = {
     /**
      * @param {Element} proxyElement
      * @param {Range} wordRange
-     * @param {boolean} force
      * @param {function(!Array.<string>, number=)} completionsReadyCallback
      */
-    completionsForTextPrompt: function(proxyElement, wordRange, force, completionsReadyCallback)
+    completionsForTextPrompt: function(proxyElement, wordRange, completionsReadyCallback)
     {
         // Pass less stop characters to rangeOfWord so the range will be a more complete expression.
         var expressionRange = wordRange.startContainer.rangeOfWord(wordRange.startOffset, " =:[({;,!+-*/&|^<>", proxyElement, "backward");
         var expressionString = expressionRange.toString();
         var prefix = wordRange.toString();
-        this._completionsForExpression(expressionString, prefix, force, completionsReadyCallback);
+        this._completionsForExpression(expressionString, prefix, completionsReadyCallback);
     },
 
     /**
      * @param {string} expressionString
      * @param {string} prefix
-     * @param {boolean} force
      * @param {function(!Array.<string>, number=)} completionsReadyCallback
      */
-    _completionsForExpression: function(expressionString, prefix, force, completionsReadyCallback)
+    _completionsForExpression: function(expressionString, prefix, completionsReadyCallback)
     {
         var lastIndex = expressionString.length - 1;
 
@@ -197,11 +195,6 @@ WebInspector.RuntimeModel.prototype = {
 
         if (expressionString && parseInt(expressionString, 10) == expressionString) {
             // User is entering float value, do not suggest anything.
-            completionsReadyCallback([]);
-            return;
-        }
-
-        if (!prefix && !expressionString && !force) {
             completionsReadyCallback([]);
             return;
         }
