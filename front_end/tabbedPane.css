@@ -100,10 +100,9 @@
 .tabbed-pane-header-tabs-drop-down-container {
     float: left;
     position: relative;
-    font-size: 16px;
     vertical-align: bottom;
     top: 1px;
-    padding-left: 3px;
+    margin-left: 3px;
 }
 
 .tabbed-pane-header-tabs-drop-down-container.measuring {
@@ -114,6 +113,8 @@
     position: relative;
     opacity: 0.7;
     color: rgb(30, 30, 30);
+    font-size: 133%;
+    padding: 0 3px;
 }
 
 .tabbed-pane-header-tabs-drop-down:hover {
@@ -133,5 +134,6 @@ select.tabbed-pane-header-tabs-drop-down-select {
     opacity: 0;
     border: none;
     margin: 0;
+    font-size: 75%;
     -webkit-appearance: none;
 }
