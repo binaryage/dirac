@@ -369,6 +369,11 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             e.consume(true);
     },
 
+    _shouldProcessWordForAutocompletion: function(word)
+    {
+        return word.length && (word[0] < '0' || word[0] > '9');
+    },
+
     /**
      * @param {string} text
      */
@@ -376,7 +381,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         var words = WebInspector.TextUtils.textToWords(text);
         for(var i = 0; i < words.length; ++i) {
-            this._dictionary.addWord(words[i]);
+            if (this._shouldProcessWordForAutocompletion(words[i]))
+                this._dictionary.addWord(words[i]);
         }
     },
 
@@ -387,7 +393,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         var words = WebInspector.TextUtils.textToWords(text);
         for(var i = 0; i < words.length; ++i) {
-            this._dictionary.removeWord(words[i]);
+            if (this._shouldProcessWordForAutocompletion(words[i]))
+                this._dictionary.removeWord(words[i]);
         }
     },
 
