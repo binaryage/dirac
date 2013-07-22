@@ -33,16 +33,26 @@
  */
 WebInspector.OverridesSupport = function()
 {
-    this._userAgentOverrideEnabled = false;
-    this._deviceMetricsOverrideEnabled = false;
-    this._geolocationPositionOverrideEnabled = false;
-    this._deviceOrientationOverrideEnabled = false;
+    this._overridesActive = WebInspector.settings.enableOverridesOnStartup.get();
+    this._updateAllOverrides();
 
+    WebInspector.settings.overrideUserAgent.addChangeListener(this._userAgentChanged, this);
     WebInspector.settings.userAgent.addChangeListener(this._userAgentChanged, this);
+
+    WebInspector.settings.overrideDeviceMetrics.addChangeListener(this._deviceMetricsChanged, this);
     WebInspector.settings.deviceMetrics.addChangeListener(this._deviceMetricsChanged, this);
     WebInspector.settings.deviceFitWindow.addChangeListener(this._deviceMetricsChanged, this);
+
+    WebInspector.settings.overrideGeolocation.addChangeListener(this._geolocationPositionChanged, this);
     WebInspector.settings.geolocationOverride.addChangeListener(this._geolocationPositionChanged, this);
+
+    WebInspector.settings.overrideDeviceOrientation.addChangeListener(this._deviceOrientationChanged, this);
     WebInspector.settings.deviceOrientationOverride.addChangeListener(this._deviceOrientationChanged, this);
+
+    WebInspector.settings.emulateTouchEvents.addChangeListener(this._emulateTouchEventsChanged, this);
+
+    WebInspector.settings.overrideCSSMedia.addChangeListener(this._cssMediaChanged, this);
+    WebInspector.settings.emulatedCSSMedia.addChangeListener(this._cssMediaChanged, this);
 }
 
 /**
@@ -309,53 +319,40 @@ WebInspector.OverridesSupport.DeviceOrientation.clearDeviceOrientationOverride =
 }
 
 WebInspector.OverridesSupport.prototype = {
-    toggleUserAgentOverride: function(enabled)
+    setOverridesActive: function(enabled)
     {
-        if (enabled === this._userAgentOverrideEnabled)
+        if (this._overridesActive === enabled)
             return;
-        this._userAgentOverrideEnabled = enabled;
+        this._overridesActive = enabled;
+
+        this._updateAllOverrides();
+    },
+
+    _updateAllOverrides: function()
+    {
         this._userAgentChanged();
-    },
-
-    toggleDeviceMetricsOverride: function(enabled)
-    {
-        if (enabled === this._deviceMetricsOverrideEnabled)
-            return;
-        this._deviceMetricsOverrideEnabled = enabled;
         this._deviceMetricsChanged();
-    },
-
-    toggleGeolocationPositionOverride: function(enabled)
-    {
-        if (enabled === this._geolocationPositionOverrideEnabled)
-            return;
-        this._geolocationPositionOverrideEnabled = enabled;
-        this._geolocationPositionChanged();
-    },
-
-    toggleDeviceOrientationOverride: function(enabled)
-    {
-        if (enabled === this._deviceOrientationOverrideEnabled)
-            return;
-        this._deviceOrientationOverrideEnabled = enabled;
         this._deviceOrientationChanged();
+        this._geolocationPositionChanged();
+        this._emulateTouchEventsChanged();
+        this._cssMediaChanged();
     },
 
     _userAgentChanged: function()
     {
-        NetworkAgent.setUserAgentOverride(this._userAgentOverrideEnabled ? WebInspector.settings.userAgent.get() : "");
+        NetworkAgent.setUserAgentOverride(this._overridesActive && WebInspector.settings.overrideUserAgent.get() ? WebInspector.settings.userAgent.get() : "");
     },
 
     _deviceMetricsChanged: function()
     {
-        var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(this._deviceMetricsOverrideEnabled ? WebInspector.settings.deviceMetrics.get() : "");
+        var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(this._overridesActive && WebInspector.settings.overrideDeviceMetrics.get() ? WebInspector.settings.deviceMetrics.get() : "");
         if (metrics.isValid())
             PageAgent.setDeviceMetricsOverride(metrics.width, metrics.height, metrics.fontScaleFactor, WebInspector.settings.deviceFitWindow.get());
     },
 
     _geolocationPositionChanged: function()
     {
-        if (!this._geolocationPositionOverrideEnabled) {
+        if (!this._overridesActive || !WebInspector.settings.overrideGeolocation.get()) {
             PageAgent.clearGeolocationOverride();
             return;
         }
@@ -368,12 +365,23 @@ WebInspector.OverridesSupport.prototype = {
 
     _deviceOrientationChanged: function()
     {
-        if (!this._deviceOrientationOverrideEnabled) {
+        if (!this._overridesActive || !WebInspector.settings.overrideDeviceOrientation.get()) {
             PageAgent.clearDeviceOrientationOverride();
             return;
         }
         var deviceOrientation = WebInspector.OverridesSupport.DeviceOrientation.parseSetting(WebInspector.settings.deviceOrientationOverride.get());
         PageAgent.setDeviceOrientationOverride(deviceOrientation.alpha, deviceOrientation.beta, deviceOrientation.gamma);
+    },
+
+    _emulateTouchEventsChanged: function()
+    {
+        WebInspector.domAgent.emulateTouchEventObjects(this._overridesActive && WebInspector.settings.emulateTouchEvents.get());
+    },
+
+    _cssMediaChanged: function()
+    {
+        PageAgent.setEmulatedMedia(this._overridesActive && WebInspector.settings.overrideCSSMedia.get() ? WebInspector.settings.emulatedCSSMedia.get() : "");
+        WebInspector.cssModel.mediaQueryResultChanged();
     }
 }
 

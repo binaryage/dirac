@@ -185,7 +185,7 @@ body.platform-mac .help-key {
     margin: 0 0.5em;
 }
 
-.help-content p {
+.help-content > fieldset {
     margin: 3px 0;
 }
 
@@ -203,7 +203,8 @@ body.platform-mac .settings-tab.help-content fieldset {
     margin-left: 10px;
 }
 
-.help-content fieldset p {
+.help-content fieldset p,
+.help-content fieldset fieldset {
     border-left: 1px solid rgb(128,128,128);
     margin: 0 0 0 6px;
     padding-left: 3px;
@@ -211,6 +212,11 @@ body.platform-mac .settings-tab.help-content fieldset {
 
 .help-content fieldset label {
     padding-right: 4px;
+}
+
+#enable-devtools-on-startup {
+    margin: 0 0 0 80px;
+    display: inline-block;
 }
 
 .help-content p.help-section {
@@ -420,11 +426,13 @@ body.platform-mac .help-content input[type=radio] {
     color: #222;
 }
 
-.settings-tab p {
+.settings-tab p,
+.settings-tab fieldset {
     margin: 10px 0;
 }
 
-.settings-tab fieldset p {
+.settings-tab fieldset p,
+.settings-tab fieldset fieldset {
     border-left: none transparent;
     padding: 2px 0 2px 3px;
 }
