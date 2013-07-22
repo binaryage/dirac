@@ -378,6 +378,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             this.textEditor.removeDecoration(lineNumber, this._conditionElement);
             delete this._conditionEditorElement;
             delete this._conditionElement;
+            if (!committed)
+                return;
+
             if (breakpoint)
                 breakpoint.setCondition(newText);
             else
