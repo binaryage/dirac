@@ -323,8 +323,7 @@ WebInspector.GenericSettingsTab = function()
     this._cssSourceMapSettings.appendChild(this._createCheckboxSetting(WebInspector.UIString("Auto-reload generated CSS"), WebInspector.settings.cssReloadEnabled, false, autoReloadCSSCheckbox));
     this._cssSourceMapsEnablementChanged();
 
-    var indentationElement = this._createSelectSetting(WebInspector.UIString("Indentation"), [
-            [ WebInspector.UIString("Auto-detect"), WebInspector.TextUtils.Indent.AutoDetect ],
+    var indentationElement = this._createSelectSetting(WebInspector.UIString("Default indentation"), [
             [ WebInspector.UIString("2 spaces"), WebInspector.TextUtils.Indent.TwoSpaces ],
             [ WebInspector.UIString("4 spaces"), WebInspector.TextUtils.Indent.FourSpaces ],
             [ WebInspector.UIString("8 spaces"), WebInspector.TextUtils.Indent.EightSpaces ],
@@ -332,6 +331,7 @@ WebInspector.GenericSettingsTab = function()
         ], WebInspector.settings.textEditorIndent);
     indentationElement.firstChild.className = "toplevel";
     p.appendChild(indentationElement);
+    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Detect indentation"), WebInspector.settings.textEditorAutoDetectIndent));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show whitespace characters"), WebInspector.settings.showWhitespacesInEditor));
 
     p = this._appendSection(WebInspector.UIString("Profiler"));

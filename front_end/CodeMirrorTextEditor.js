@@ -265,7 +265,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         var extraKeys = {};
         var indent = WebInspector.settings.textEditorIndent.get();
-        if (indent === WebInspector.TextUtils.Indent.AutoDetect)
+        if (WebInspector.settings.textEditorAutoDetectIndent.get())
             indent = this._guessIndentationLevel();
         if (indent === WebInspector.TextUtils.Indent.TabCharacter) {
             this._codeMirror.setOption("indentWithTabs", true);
@@ -863,7 +863,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._codeMirror.replaceRange(text, pos.start, pos.end);
         var newRange = this._toRange(pos.start, this._codeMirror.posFromIndex(this._codeMirror.indexFromPos(pos.start) + text.length));
         this._delegate.onTextChanged(range, newRange);
-        if (WebInspector.settings.textEditorIndent.get() === WebInspector.TextUtils.Indent.AutoDetect)
+        if (WebInspector.settings.textEditorAutoDetectIndent.get())
             this._updateEditorIndentation();
         return newRange;
     },

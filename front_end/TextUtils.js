@@ -127,6 +127,5 @@ WebInspector.TextUtils.Indent = {
     TwoSpaces: "  ",
     FourSpaces: "    ",
     EightSpaces: "        ",
-    TabCharacter: "\t",
-    AutoDetect: "AutoDetect"
+    TabCharacter: "\t"
 }

@@ -92,6 +92,7 @@ WebInspector.Settings = function()
     this.showAdvancedHeapSnapshotProperties = this.createSetting("showAdvancedHeapSnapshotProperties", false);
     this.searchInContentScripts = this.createSetting("searchInContentScripts", false);
     this.textEditorIndent = this.createSetting("textEditorIndent", "    ");
+    this.textEditorAutoDetectIndent = this.createSetting("textEditorAutoIndentIndent", true);
     this.lastDockState = this.createSetting("lastDockState", "");
     this.cssReloadEnabled = this.createSetting("cssReloadEnabled", false);
     this.showCpuOnTimelineRuler = this.createSetting("showCpuOnTimelineRuler", false);
