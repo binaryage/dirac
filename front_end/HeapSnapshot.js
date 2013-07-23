@@ -784,6 +784,19 @@ WebInspector.HeapSnapshot.prototype = {
         return true;
     },
 
+    /**
+     * @param {function(!WebInspector.HeapSnapshotNode)} action
+     * @param {boolean=} userRootsOnly
+     */
+    forEachRoot: function(action, userRootsOnly)
+    {
+        for (var iter = this.rootNode().edges(); iter.hasNext(); iter.next()) {
+            var node = iter.edge.node();
+            if (!userRootsOnly || this._isUserRoot(node))
+                action(node);
+        }
+    },
+
     _calculateDistances: function()
     {
         var nodeFieldCount = this._nodeFieldCount;
@@ -798,60 +811,22 @@ WebInspector.HeapSnapshot.prototype = {
 
         /**
          * @param {!WebInspector.HeapSnapshotNode} node
-         * @param {!number} distance
          */
-        function enqueueNode(node, distance)
+        function enqueueNode(node)
         {
+            var ordinal = node._ordinal();
+            if (distances[ordinal] !== noDistance)
+                return;
+            distances[ordinal] = 0;
             nodesToVisit[nodesToVisitLength++] = node.nodeIndex;
-            distances[node._ordinal()] = distance;
         }
 
-        /**
-         * @param {!WebInspector.HeapSnapshotNode} node
-         * @param {!string} name
-         * @return {!WebInspector.HeapSnapshotNode|null}
-         */
-        function getChildNodeByName(node, name)
-        {
-            for (var iter = node.edges(); iter.hasNext(); iter.next()) {
-                var child = iter.edge.node();
-                if (child.name() === name)
-                    return child;
-            }
-            return null;
-        }
-
-        // bfs for user roots
-        for (var iter = this.rootNode().edges(); iter.hasNext(); iter.next()) {
-            var node = iter.edge.node();
-            if (this._isUserRoot(node))
-                enqueueNode(node, 1);
-        }
+        this.forEachRoot(enqueueNode, true);
         this._bfs(nodesToVisit, nodesToVisitLength, distances);
 
         // bfs for the rest of objects
         nodesToVisitLength = 0;
-        distances[this._rootNodeIndex / nodeFieldCount] = 0;
-        var gcRoots = getChildNodeByName(this.rootNode(), "(GC roots)");
-        if (gcRoots) {
-            distances[gcRoots._ordinal()] = 0;
-            for (var iter = gcRoots.edges(); iter.hasNext(); iter.next()) {
-                var subroot = iter.edge.node();
-                distances[subroot._ordinal()] = 0;
-                for (var iter2 = subroot.edges(); iter2.hasNext(); iter2.next()) {
-                    var node = iter2.edge.node();
-                    if (distances[node._ordinal()] === noDistance)
-                        enqueueNode(node, 0);
-                    else
-                        distances[node._ordinal()] = 0;
-                }
-            }
-        }
-        for (var iter = this.rootNode().edges(); iter.hasNext(); iter.next()) {
-            var node = iter.edge.node();
-            if (distances[node._ordinal()] === noDistance)
-                enqueueNode(node, 0);
-        }
+        this.forEachRoot(enqueueNode);
         this._bfs(nodesToVisit, nodesToVisitLength, distances);
 
         this._nodeDistances = distances;
