@@ -456,9 +456,9 @@ body.show-toolbar-icons.dock-to-bottom #toolbar-panels-menu {
     border: 1px solid rgb(163, 163, 163);
     border-radius: 8px;
     margin: 0;
-    font-size: 11px;
     background-image: -webkit-linear-gradient(rgb(241, 241, 241), rgb(220, 220, 220));
     width: 100%;
+    height: 20px;
 }
 
 .toolbar-search button:active {
@@ -3113,7 +3113,6 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
     bottom: 0;
     left: 0;
     right: 0;
-    font-size: 11px;
     height: auto;
 }
 
