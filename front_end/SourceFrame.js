@@ -346,7 +346,7 @@ WebInspector.SourceFrame.prototype = {
         } else {
             var firstLine = this._textEditor.firstVisibleLine();
             var selection = this._textEditor.selection();
-            this._textEditor.editRange(this._textEditor.range(), content || "");
+            this._textEditor.setText(content || "");
             this._textEditor.scrollToLine(firstLine);
             this._textEditor.setSelection(selection);
         }
