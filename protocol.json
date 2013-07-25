@@ -3658,7 +3658,23 @@
     },
     {
         "domain": "Input",
-        "types": [],
+        "types": [
+            {
+                "id": "TouchPoint",
+                "type": "object",
+                "hidden": true,
+                "properties": [
+                    { "name": "state", "type": "string", "enum": ["touchPressed", "touchReleased", "touchMoved", "touchStationary", "touchCancelled"], "description": "State of the touch point." },
+                    { "name": "x", "type": "integer", "description": "X coordinate of the event relative to the main frame's viewport."},
+                    { "name": "y", "type": "integer", "description": "Y coordinate of the event relative to the main frame's viewport. 0 refers to the top of the viewport and Y increases as it proceeds towards the bottom of the viewport."},
+                    { "name": "radiusX", "type": "integer", "optional": true, "description": "X radius of the touch area (default: 1)."},
+                    { "name": "radiusY", "type": "integer", "optional": true, "description": "Y radius of the touch area (default: 1)."},
+                    { "name": "rotationAngle", "type": "number", "optional": true, "description": "Rotation angle (default: 0.0)."},
+                    { "name": "force", "type": "number", "optional": true, "description": "Force (default: 1.0)."},
+                    { "name": "id", "type": "number", "optional": true, "description": "Identifier used to track touch sources between events, must be unique within an event."}
+                ]
+            }
+        ],
         "commands": [
             {
                 "name": "dispatchKeyEvent",
@@ -3690,6 +3706,17 @@
                     { "name": "clickCount", "type": "integer", "optional": true, "description": "Number of times the mouse button was clicked (default: 0)." }
                 ],
                 "description": "Dispatches a mouse event to the page."
+            },
+            {
+                "name": "dispatchTouchEvent",
+                "hidden": true,
+                "parameters": [
+                    { "name": "type", "type": "string", "enum": ["touchStart", "touchEnd", "touchMove"], "description": "Type of the touch event." },
+                    { "name": "touchPoints", "type": "array", "items": { "$ref": "TouchPoint" }, "description": "Touch points." },
+                    { "name": "modifiers", "type": "integer", "optional": true, "description": "Bit field representing pressed modifier keys. Alt=1, Ctrl=2, Meta/Command=4, Shift=8 (default: 0)." },
+                    { "name": "timestamp", "type": "number", "optional": true, "description": "Time at which the event occurred. Measured in UTC time in seconds since January 1, 1970 (default: current time)." }
+                ],
+                "description": "Dispatches a touch event to the page."
             }
         ],
         "events": []
