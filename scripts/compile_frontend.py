@@ -115,6 +115,7 @@ modules = [
             "ResourceType.js",
             "ResourceUtils.js",
             "SourceMap.js",
+            "TracingAgent.js",
             "NetworkManager.js",
             "NetworkRequest.js",
             "UISourceCode.js",

@@ -179,6 +179,7 @@
             'front_end/TimelineManager.js',
             'front_end/TimelinePanelDescriptor.js',
             'front_end/Toolbar.js',
+            'front_end/TracingAgent.js',
             'front_end/treeoutline.js',
             'front_end/UISourceCode.js',
             'front_end/UIString.js',

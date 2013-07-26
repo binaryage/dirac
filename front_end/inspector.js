@@ -492,6 +492,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     this.cssModel = new WebInspector.CSSStyleModel(this.workspace);
     this.timelineManager = new WebInspector.TimelineManager();
+    this.tracingAgent = new WebInspector.TracingAgent();
     this.overridesSupport = new WebInspector.OverridesSupport();
 
     this.searchController = new WebInspector.SearchController();

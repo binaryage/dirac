@@ -3830,5 +3830,33 @@
                 "name": "layerTreeDidChange"
             }
         ]
+    },
+    {
+        "domain": "Tracing",
+        "hidden": true,
+        "commands": [
+            {
+                "name": "start",
+                "description": "Strart trace events collection.",
+                "parameters": [
+                    { "name": "categories", "type": "string", "description": "Category/tag filter" }
+                ]
+            },
+            {
+                "name": "end",
+                "description": "Stop trace events collection."
+            }
+        ],
+        "events": [
+            {
+                "name": "dataCollected",
+                "parameters": [
+                    { "name": "value", "type": "array", "items": { "type": "object" } }
+                ]
+            },
+            {
+                "name": "tracingComplete"
+            }
+        ]
     }]
 }
