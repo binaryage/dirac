@@ -463,11 +463,11 @@ WebInspector.TimelineMemoryOverview = function(model)
 WebInspector.TimelineMemoryOverview.prototype = {
     update: function()
     {
+        this._resetCanvas();
+
         var records = this._model.records;
         if (!records.length)
             return;
-
-        this._resetCanvas();
 
         const lowerOffset = 3;
         var maxUsedHeapSize = 0;
@@ -494,13 +494,11 @@ WebInspector.TimelineMemoryOverview.prototype = {
             histogram[x] = Math.max(histogram[x] || 0, y);
         });
 
-        var ctx = this._context;
-        this._clear(ctx);
-
         height++; // +1 so that the border always fit into the canvas area.
 
         var y = 0;
         var isFirstPoint = true;
+        var ctx = this._context;
         ctx.beginPath();
         ctx.moveTo(0, this._canvas.height);
         for (var x = 0; x < histogram.length; x++) {
@@ -529,12 +527,6 @@ WebInspector.TimelineMemoryOverview.prototype = {
 
         this._maxHeapSizeLabel.textContent = Number.bytesToString(maxUsedHeapSize);
         this._minHeapSizeLabel.textContent = Number.bytesToString(minUsedHeapSize);
-    },
-
-    _clear: function(ctx)
-    {
-        ctx.fillStyle = "rgba(255,255,255,0.8)";
-        ctx.fillRect(0, 0, this._canvas.width, this._canvas.height);
     },
 
     __proto__: WebInspector.TimelineOverviewBase.prototype
