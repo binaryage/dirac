@@ -109,13 +109,13 @@ WebInspector.View.prototype = {
     {
         this._loadCSSIfNeeded();
         this._callOnVisibleChildren(this._processWillShow);
+        this._isShowing = true;
     },
 
     _processWasShown: function()
     {
         if (this._inNotification())
             return;
-        this._isShowing = true;
         this.restoreScrollPositions();
         this._notify(this.wasShown);
         this._notify(this.onResize);
