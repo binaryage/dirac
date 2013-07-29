@@ -206,8 +206,7 @@ body.platform-mac .settings-tab.help-content fieldset {
 .help-content fieldset p,
 .help-content fieldset fieldset {
     border-left: 1px solid rgb(128,128,128);
-    margin: 0 0 0 6px;
-    padding-left: 3px;
+    padding-left: 30px;
 }
 
 .help-content fieldset label {
@@ -413,10 +412,6 @@ body.platform-mac .help-content input[type=radio] {
     color: #222;
 }
 
-.settings-tab .help-block fieldset.toplevel {
-    margin-left: 20px;
-}
-
 .settings-tab .help-block fieldset:disabled label:hover,
 .settings-tab .help-block fieldset.toplevel label:hover {
     color: inherit;
@@ -428,13 +423,12 @@ body.platform-mac .help-content input[type=radio] {
 
 .settings-tab p,
 .settings-tab fieldset {
-    margin: 10px 0;
+    margin: 12px 0;
 }
 
 .settings-tab fieldset p,
 .settings-tab fieldset fieldset {
     border-left: none transparent;
-    padding: 2px 0 2px 3px;
 }
 
 .settings-tab select {

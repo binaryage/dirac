@@ -42,12 +42,6 @@ WebInspector.OverridesView = function()
 
     var paneContent = this.element.createChild("div", "tabbed-pane-content");
 
-    function appendBlockTo(targetElement, contentElement)
-    {
-        var blockElement = targetElement.createChild("div", "help-block");
-        blockElement.appendChild(contentElement);
-    }
-
     var headerTitle = paneContent.createChild("header").createChild("h3");
     headerTitle.appendChild(document.createTextNode(WebInspector.UIString("Overrides")));
 
@@ -85,14 +79,23 @@ WebInspector.OverridesView = function()
     }
     WebInspector.settings.enableOverridesOnStartup.addChangeListener(enableOnStartupClicked, this);
 
-    this._mainContainer = topContainer.createChild("fieldset", "help-container");
+    var mainContainer = topContainer.createChild("div", "help-container");
+    this._mainContainer = mainContainer;
+
+    function appendBlock(contentElements)
+    {
+        var blockElement = mainContainer.createChild("div", "help-block");
+        for (var i = 0; i < contentElements.length; ++i)
+            blockElement.appendChild(contentElements[i]);
+    }
+
     this.containerElement = topContainer;
-    appendBlockTo(this._mainContainer, this._createUserAgentControl());
-    appendBlockTo(this._mainContainer, this._createDeviceMetricsControl());
-    appendBlockTo(this._mainContainer, this._createGeolocationOverrideControl());
-    appendBlockTo(this._mainContainer, this._createDeviceOrientationOverrideControl());
-    appendBlockTo(this._mainContainer, this._createCheckboxSetting(WebInspector.UIString("Emulate touch events"), WebInspector.settings.emulateTouchEvents));
-    appendBlockTo(this._mainContainer, this._createMediaEmulationElement());
+    appendBlock([this._createUserAgentControl()]);
+    appendBlock([this._createDeviceMetricsControl()]);
+    appendBlock([this._createGeolocationOverrideControl()]);
+    appendBlock([this._createDeviceOrientationOverrideControl()]);
+    appendBlock([this._createCheckboxSetting(WebInspector.UIString("Emulate touch events"), WebInspector.settings.emulateTouchEvents)]);
+    appendBlock([this._createMediaEmulationElement()]);
     boundEnableClicked(enableCheckbox.checked);
 
     this._statusElement = document.createElement("span");
