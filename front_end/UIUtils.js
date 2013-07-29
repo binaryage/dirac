@@ -576,6 +576,9 @@ WebInspector.startEditing = function(element, config)
             value: oldText
         });
         codeMirror.getWrapperElement().addStyleClass("source-code");
+        codeMirror.on("cursorActivity", function(cm) {
+            cm.display.cursor.scrollIntoViewIfNeeded(false);
+        });
     } else {
         element.addStyleClass("editing");
 

@@ -1557,7 +1557,7 @@ WebInspector.ElementsTreeElement.prototype = {
         }
 
         var config = new WebInspector.EditingConfig(commit.bind(this), dispose.bind(this));
-        config.setMultilineOptions(initialValue, { name: "xml", htmlMode: true }, "web-inspector-html", true, true);
+        config.setMultilineOptions(initialValue, { name: "xml", htmlMode: true }, "web-inspector-html", WebInspector.settings.domWordWrap.get(), true);
         this._editing = WebInspector.startEditing(this._htmlEditElement, config);
     },
 
