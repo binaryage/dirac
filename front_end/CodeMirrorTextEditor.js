@@ -711,10 +711,10 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var bottomLine = this._codeMirror.lineAtHeight(scrollInfo.top + scrollInfo.clientHeight, "local");
         var linesPerScreen = bottomLine - topLine + 1;
         if (lineNumber < topLine) {
-            var topLineToReveal = Math.max(lineNumber - (linesPerScreen / 2), 0) | 0;
+            var topLineToReveal = Math.max(lineNumber - (linesPerScreen / 2) + 1, 0) | 0;
             this._codeMirror.scrollIntoView(new CodeMirror.Pos(topLineToReveal, 0));
         } else if (lineNumber > bottomLine) {
-            var bottomLineToReveal = Math.min(lineNumber + (linesPerScreen / 2), this.linesCount - 1) | 0;
+            var bottomLineToReveal = Math.min(lineNumber + (linesPerScreen / 2) - 1, this.linesCount - 1) | 0;
             this._codeMirror.scrollIntoView(new CodeMirror.Pos(bottomLineToReveal, 0));
         }
     },
@@ -997,6 +997,15 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     firstVisibleLine: function()
     {
         return this._codeMirror.lineAtHeight(this._codeMirror.getScrollInfo().top, "local");
+    },
+
+    /**
+     * @return {number}
+     */
+    lastVisibleLine: function()
+    {
+        var scrollInfo = this._codeMirror.getScrollInfo();
+        return this._codeMirror.lineAtHeight(scrollInfo.top + scrollInfo.clientHeight, "local");
     },
 
     /**

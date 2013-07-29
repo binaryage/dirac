@@ -203,6 +203,11 @@ WebInspector.TextEditor.prototype = {
     firstVisibleLine: function() { },
 
     /**
+     * @return {number}
+     */
+    lastVisibleLine: function() { },
+
+    /**
      * @return {WebInspector.TextRange}
      */
     selection: function() { },
