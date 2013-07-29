@@ -57,8 +57,8 @@
   margin: 0px 0px 0px 3px !important;
   padding-right: 3px;
   padding-left: 1px;
-  height: 10px;
-  line-height: 11px !important;
+  height: 11px;
+  line-height: 12px !important;
 }
 
 .cm-breakpoint.cm-breakpoint-conditional .CodeMirror-linenumber {
