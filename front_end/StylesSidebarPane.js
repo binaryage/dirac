@@ -2873,9 +2873,10 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
     /**
      * @param {Element} proxyElement
      * @param {Range} wordRange
+     * @param {boolean} force
      * @param {function(!Array.<string>, number=)} completionsReadyCallback
      */
-    _buildPropertyCompletions: function(proxyElement, wordRange, completionsReadyCallback)
+    _buildPropertyCompletions: function(proxyElement, wordRange, force, completionsReadyCallback)
     {
         var results = this._cssCompletions.startsWith(wordRange.toString().toLowerCase());
         var selectedIndex = this._cssCompletions.mostUsedOf(results);

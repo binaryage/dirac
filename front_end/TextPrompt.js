@@ -31,7 +31,7 @@
  * @constructor
  * @extends WebInspector.Object
  * @implements {WebInspector.SuggestBoxDelegate}
- * @param {function(Element, Range, function(!Array.<string>, number=))} completions
+ * @param {function(Element, Range, boolean, function(!Array.<string>, number=))} completions
  * @param {string=} stopCharacters
  */
 WebInspector.TextPrompt = function(completions, stopCharacters)
@@ -423,7 +423,7 @@ WebInspector.TextPrompt.prototype = {
 
         var wordPrefixRange = selectionRange.startContainer.rangeOfWord(selectionRange.startOffset, this._completionStopCharacters, this._element, "backward");
         this._waitingForCompletions = true;
-        this._loadCompletions(this.proxyElement, wordPrefixRange, this._completionsReady.bind(this, selection, wordPrefixRange, !!reverse));
+        this._loadCompletions(this.proxyElement, wordPrefixRange, force, this._completionsReady.bind(this, selection, wordPrefixRange, !!reverse));
     },
 
     /**
@@ -750,7 +750,7 @@ WebInspector.TextPrompt.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.TextPrompt}
- * @param {function(Element, Range, function(!Array.<string>, number=))} completions
+ * @param {function(Element, Range, boolean, function(!Array.<string>, number=))} completions
  * @param {string=} stopCharacters
  */
 WebInspector.TextPromptWithHistory = function(completions, stopCharacters)
