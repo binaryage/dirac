@@ -580,7 +580,7 @@ WebInspector.ExtensionServer.prototype = {
         // and initKeyboardEvent methods and overriding these in externs.js does not have effect.
         var event = new window.KeyboardEvent(message.eventType, {
             keyIdentifier: message.keyIdentifier,
-            keyLocation: message.keyLocation,
+            location: message.location,
             ctrlKey: message.ctrlKey,
             altKey: message.altKey,
             shiftKey: message.shiftKey,

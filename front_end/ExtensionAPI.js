@@ -738,7 +738,7 @@ function forwardKeyboardEvent(event)
         altKey: event.altKey,
         metaKey: event.metaKey,
         keyIdentifier: event.keyIdentifier,
-        keyLocation: event.keyLocation
+        location: event.location
     };
     extensionServer.sendRequest(request);
 }
