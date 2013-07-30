@@ -444,7 +444,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             y >= gutterBox.y && y <= gutterBox.y + gutterBox.height)
             return null;
         var coords = this._codeMirror.coordsChar({left: x, top: y});
-        ++coords.ch;
         return this._toRange(coords, coords);
     },
 
