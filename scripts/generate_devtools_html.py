@@ -63,7 +63,7 @@ def main(argv):
         print('usage: %s inspector_html devtools_html debug' % argv[0])
         return 1
 
-    # The first argument is ignored. We put 'web.gyp' in the inputs list
+    # The first argument is ignored. We put 'webkit.gyp' in the inputs list
     # for this script, so every time the list of script gets changed, our html
     # file is rebuilt.
     inspector_html_name = argv[1]
