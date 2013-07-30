@@ -1285,7 +1285,8 @@ WebInspector.ScriptsPanel.prototype = {
             group1.addPane(this.sidebarPanes.domBreakpoints);
             group1.addPane(this.sidebarPanes.xhrBreakpoints);
             group1.addPane(this.sidebarPanes.eventListenerBreakpoints);
-            group1.addPane(this.sidebarPanes.workerList);
+            if (this.sidebarPanes.workerList)
+                group1.addPane(this.sidebarPanes.workerList);
 
             var group2 = new WebInspector.SidebarTabbedPane();
             group2.show(this.sidebarPaneView.secondElement());
