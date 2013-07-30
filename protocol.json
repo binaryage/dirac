@@ -2581,15 +2581,6 @@
                 "description": "Ensures that the given node will have specified pseudo-classes whenever its style is computed by the browser."
             },
             {
-                "name": "startSelectorProfiler"
-            },
-            {
-                "name": "stopSelectorProfiler",
-                "returns": [
-                    { "name": "profile", "$ref": "SelectorProfile" }
-                ]
-            },
-            {
                 "name": "getNamedFlowCollection",
                 "parameters": [
                     { "name": "documentNodeId", "$ref": "DOM.NodeId", "description": "The document node id for which to get the Named Flow Collection." }

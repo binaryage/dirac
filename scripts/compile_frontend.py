@@ -343,7 +343,6 @@ modules = [
         "sources": [
             "BottomUpProfileDataGridTree.js",
             "CPUProfileView.js",
-            "CSSSelectorProfileView.js",
             "FlameChart.js",
             "HeapSnapshot.js",
             "HeapSnapshotDataGrids.js",

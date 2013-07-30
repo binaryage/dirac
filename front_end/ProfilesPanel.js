@@ -421,8 +421,6 @@ WebInspector.ProfilesPanel = function(name, type)
         this._launcherView.addEventListener(WebInspector.MultiProfileLauncherView.EventTypes.ProfileTypeSelected, this._onProfileTypeSelected, this);
 
         this._registerProfileType(new WebInspector.CPUProfileType());
-        if (!WebInspector.WorkerManager.isWorkerFrontend())
-            this._registerProfileType(new WebInspector.CSSSelectorProfileType());
         this._registerProfileType(new WebInspector.HeapSnapshotProfileType());
         this._registerProfileType(new WebInspector.TrackingHeapSnapshotProfileType(this));
         if (!WebInspector.WorkerManager.isWorkerFrontend() && WebInspector.experimentsSettings.canvasInspection.isEnabled())
@@ -1354,20 +1352,6 @@ WebInspector.CPUProfilerPanel.prototype = {
  * @constructor
  * @extends {WebInspector.ProfilesPanel}
  */
-WebInspector.CSSSelectorProfilerPanel = function()
-{
-    WebInspector.ProfilesPanel.call(this, "css-profiler", new WebInspector.CSSSelectorProfileType());
-}
-
-WebInspector.CSSSelectorProfilerPanel.prototype = {
-    __proto__: WebInspector.ProfilesPanel.prototype
-}
-
-
-/**
- * @constructor
- * @extends {WebInspector.ProfilesPanel}
- */
 WebInspector.HeapProfilerPanel = function()
 {
     var heapSnapshotProfileType = new WebInspector.HeapSnapshotProfileType();
@@ -1405,7 +1389,6 @@ WebInspector.CanvasProfilerPanel.prototype = {
 importScript("ProfileDataGridTree.js");
 importScript("BottomUpProfileDataGridTree.js");
 importScript("CPUProfileView.js");
-importScript("CSSSelectorProfileView.js");
 importScript("FlameChart.js");
 importScript("HeapSnapshot.js");
 importScript("HeapSnapshotDataGrids.js");
