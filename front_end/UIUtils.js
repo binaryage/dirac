@@ -151,20 +151,12 @@ WebInspector.GlassPane.prototype = {
 
 WebInspector.animateStyle = function(animations, duration, callback)
 {
-    var interval;
-    var complete = 0;
+    var startTime = new Date().getTime();
     var hasCompleted = false;
 
-    const intervalDuration = (1000 / 30); // 30 frames per second.
     const animationsLength = animations.length;
     const propertyUnit = {opacity: ""};
     const defaultUnit = "px";
-
-    function cubicInOut(t, b, c, d)
-    {
-        if ((t/=d/2) < 1) return c/2*t*t*t + b;
-        return c/2*((t-=2)*t*t + 2) + b;
-    }
 
     // Pre-process animations.
     for (var i = 0; i < animationsLength; ++i) {
@@ -198,9 +190,7 @@ WebInspector.animateStyle = function(animations, duration, callback)
         if (hasCompleted)
             return;
 
-        // Advance forward.
-        complete += intervalDuration;
-        var next = complete + intervalDuration;
+        var complete = new Date().getTime() - startTime;
 
         // Make style changes.
         for (var i = 0; i < animationsLength; ++i) {
@@ -214,9 +204,10 @@ WebInspector.animateStyle = function(animations, duration, callback)
             var style = element.style;
             for (key in end) {
                 var endValue = end[key];
-                if (next < duration) {
+                if (complete < duration) {
                     var startValue = start[key];
-                    var newValue = cubicInOut(complete, startValue, endValue - startValue, duration);
+                    // Linear animation.
+                    var newValue = startValue + (endValue - startValue) * complete / duration;
                     style.setProperty(key, newValue + (key in propertyUnit ? propertyUnit[key] : defaultUnit));
                 } else
                     style.setProperty(key, endValue + (key in propertyUnit ? propertyUnit[key] : defaultUnit));
@@ -224,12 +215,12 @@ WebInspector.animateStyle = function(animations, duration, callback)
         }
 
         // End condition.
-        if (complete >= duration) {
+        if (complete >= duration)
             hasCompleted = true;
-            clearInterval(interval);
-            if (callback)
-                callback();
-        }
+        if (callback)
+            callback(hasCompleted);
+        if (!hasCompleted)
+            window.requestAnimationFrame(animateLoop);
     }
 
     function forceComplete()
@@ -237,19 +228,12 @@ WebInspector.animateStyle = function(animations, duration, callback)
         if (hasCompleted)
             return;
 
-        complete = duration;
+        duration = 0;
         animateLoop();
     }
 
-    function cancel()
-    {
-        hasCompleted = true;
-        clearInterval(interval);
-    }
-
-    interval = setInterval(animateLoop, intervalDuration);
+    window.requestAnimationFrame(animateLoop);
     return {
-        cancel: cancel,
         forceComplete: forceComplete
     };
 }

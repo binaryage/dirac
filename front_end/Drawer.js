@@ -115,16 +115,18 @@ WebInspector.Drawer.prototype = {
             {element: this._elementToAdjust, start: {bottom: 0}, end: {bottom: height}}
         ];
 
-        function animationFinished()
+        function animationCallback(finished)
         {
             if (WebInspector.inspectorView.currentPanel())
                 WebInspector.inspectorView.currentPanel().doResize();
+            if (!finished)
+                return;
             if (this._view && this._view.afterShow)
                 this._view.afterShow();
             delete this._currentAnimation;
         }
 
-        this._currentAnimation = WebInspector.animateStyle(animations, this._animationDuration(animationType), animationFinished.bind(this));
+        this._currentAnimation = WebInspector.animateStyle(animations, this._animationDuration(animationType), animationCallback.bind(this));
 
         if (animationType === WebInspector.Drawer.AnimationType.Immediately)
             this._currentAnimation.forceComplete();
@@ -154,10 +156,12 @@ WebInspector.Drawer.prototype = {
             {element: this._elementToAdjust, end: {bottom: 0}}
         ];
 
-        function animationFinished()
+        function animationCallback(finished)
         {
             if (WebInspector.inspectorView.currentPanel())
                 WebInspector.inspectorView.currentPanel().doResize();
+            if (!finished)
+                return;
             this._view.detach();
             delete this._view;
             this._bottomStatusBar.removeChildren();
@@ -168,7 +172,7 @@ WebInspector.Drawer.prototype = {
             this._elementToAdjust.style.bottom = 0;
         }
 
-        this._currentAnimation = WebInspector.animateStyle(animations, this._animationDuration(animationType), animationFinished.bind(this));
+        this._currentAnimation = WebInspector.animateStyle(animations, this._animationDuration(animationType), animationCallback.bind(this));
 
         if (animationType === WebInspector.Drawer.AnimationType.Immediately)
             this._currentAnimation.forceComplete();
@@ -196,11 +200,11 @@ WebInspector.Drawer.prototype = {
     {
         switch (animationType) {
         case WebInspector.Drawer.AnimationType.Slow:
-           return 2000;
+            return 2000;
         case WebInspector.Drawer.AnimationType.Normal:
-           return 250;
+            return 100;
         default:
-           return 0;
+            return 0;
         }
     },
 

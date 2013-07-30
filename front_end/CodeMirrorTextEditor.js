@@ -153,6 +153,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this));
 
     this.element.addStyleClass("fill");
+    this.element.style.overflow = "hidden";
     this.element.firstChild.addStyleClass("source-code");
     this.element.firstChild.addStyleClass("fill");
     this._elementToWidget = new Map();
@@ -848,7 +849,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     onResize: function()
     {
-        this._codeMirror.refresh();
+        var width = this.element.parentElement.offsetWidth;
+        var height = this.element.parentElement.offsetHeight;
+        this._codeMirror.setSize(width, height);
     },
 
     /**
