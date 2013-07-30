@@ -204,8 +204,8 @@ WebInspector.TextPrompt.prototype = {
         if (this._element.tabIndex < 0)
             this._element.tabIndex = 0;
         WebInspector.setCurrentFocusElement(this._element);
-        if (this._showSuggestForEmptyInput && !this.text)
-            this._updateAutoComplete(true);
+        if (!this.text)
+            this._updateAutoComplete();
     },
 
     _stopEditing: function()
@@ -399,14 +399,9 @@ WebInspector.TextPrompt.prototype = {
             return;
 
         var selectionRange = selection.getRangeAt(0);
-        var isEmptyInput = selectionRange.commonAncestorContainer === this._element; // this._element has no child Text nodes.
-
         var shouldExit;
 
-        // Do not attempt to auto-complete empty input in the auto mode (only on demand).
-        if (isEmptyInput && !this._showSuggestForEmptyInput && !force)
-            shouldExit = true;
-        else if (!force && !this.isCaretAtEndOfPrompt() && !this.isSuggestBoxVisible())
+        if (!force && !this.isCaretAtEndOfPrompt() && !this.isSuggestBoxVisible())
             shouldExit = true;
         else if (!selection.isCollapsed)
             shouldExit = true;

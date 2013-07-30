@@ -2425,7 +2425,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
             this._prompt.addEventListener(WebInspector.TextPrompt.Events.ItemApplied, applyItemCallback, this);
             this._prompt.addEventListener(WebInspector.TextPrompt.Events.ItemAccepted, applyItemCallback, this);
         }
-        this._prompt.setShowSuggestForEmptyInput(!isEditingName);
         var proxyElement = this._prompt.attachAndStartEditing(selectElement, blurListener.bind(this, context));
 
         proxyElement.addEventListener("keydown", this.editingNameValueKeyDown.bind(this, context), false);
@@ -2878,7 +2877,13 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
      */
     _buildPropertyCompletions: function(proxyElement, wordRange, force, completionsReadyCallback)
     {
-        var results = this._cssCompletions.startsWith(wordRange.toString().toLowerCase());
+        var prefix = wordRange.toString().toLowerCase();
+        if (!prefix && !force && (this._isEditingName || proxyElement.textContent.length)) {
+            completionsReadyCallback([]);
+            return;
+        }
+
+        var results = this._cssCompletions.startsWith(prefix);
         var selectedIndex = this._cssCompletions.mostUsedOf(results);
         completionsReadyCallback(results, selectedIndex);
     },
