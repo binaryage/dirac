@@ -492,7 +492,7 @@
                     'destination': '<(PRODUCT_DIR)/resources/inspector',
                     'files': [
                         '<@(devtools_files)',
-                        '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorBackendCommands.js',
+                        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
                     ],
                     'conditions': [
                         ['debug_devtools==0', {
@@ -615,7 +615,7 @@
                         'script_name': 'scripts/generate_devtools_grd.py',
                         'input_pages': [
                             '<@(devtools_files)',
-                            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorBackendCommands.js',
+                            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
                         ],
                         'images': [
@@ -649,13 +649,13 @@
                 'protocol.json',
               ],
               'outputs': [
-                '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorBackendCommands.js',
+                '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
               ],
               'action': [
                 'python',
                 'scripts/CodeGeneratorFrontend.py',
                 'protocol.json',
-                '--output_js_dir', '<(SHARED_INTERMEDIATE_DIR)/webkit',
+                '--output_js_dir', '<(SHARED_INTERMEDIATE_DIR)/blink',
               ],
               'message': 'Generating Inspector protocol frontend sources from protocol.json',
               'msvs_cygwin_shell': 1,
@@ -681,11 +681,11 @@
                             '<@(_script_name)',
                             '<@(_input_page)',
                             '<@(devtools_files)',
-                            '<(SHARED_INTERMEDIATE_DIR)/webkit/InspectorBackendCommands.js'
+                            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js'
                         ],
                         'search_path': [
                             'front_end',
-                            '<(SHARED_INTERMEDIATE_DIR)/webkit',
+                            '<(SHARED_INTERMEDIATE_DIR)/blink',
                         ],
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/inspector.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_search_path)', '<@(_outputs)'],
