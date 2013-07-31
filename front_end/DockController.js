@@ -41,7 +41,6 @@ WebInspector.DockController = function()
     this._dockToggleButton.makeLongClickOptionsEnabled(this._createDockOptions.bind(this));
 
     this.setDockSide(WebInspector.queryParamsObject["dockSide"] || "bottom");
-    WebInspector.settings.showToolbarIcons.addChangeListener(this._updateUI.bind(this));
 }
 
 WebInspector.DockController.State = {
@@ -120,11 +119,6 @@ WebInspector.DockController.prototype = {
             body.removeStyleClass("dock-to-bottom");
             break;
         }
-
-        if (WebInspector.settings.showToolbarIcons.get())
-            document.body.addStyleClass("show-toolbar-icons");
-        else
-            document.body.removeStyleClass("show-toolbar-icons");
 
         if (this._isDockingUnavailable && this._dockSide === WebInspector.DockController.State.Undocked) {
             this._dockToggleButton.state = "undock";

@@ -74,14 +74,6 @@ select {
   font-size: inherit;
 }
 
-body.show-toolbar-icons #toolbar {
-    height: 56px;
-}
-
-body.show-toolbar-icons.dock-to-bottom #toolbar {
-    height: 34px;
-}
-
 body.inactive #toolbar {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(233, 233, 233)), to(rgb(207, 207, 207)));
     border-bottom: 1px solid rgb(64%, 64%, 64%);
@@ -141,18 +133,8 @@ body.undocked.platform-mac-mountain-lion.inactive #toolbar {
     color: inherit;
 }
 
-body:not(.show-toolbar-icons) .toolbar-item {
+.toolbar-item {
     height: 24px;
-}
-
-body.show-toolbar-icons .toolbar-item.toggleable {
-    padding-top: 2px;
-    padding-bottom: 2px;
-}
-
-body.show-toolbar-icons.dock-to-bottom .toolbar-item.toggleable {
-    margin: 2px 0;
-    padding-bottom: 2px;
 }
 
 .toolbar-item.toggleable.toggled-on {
@@ -160,39 +142,6 @@ body.show-toolbar-icons.dock-to-bottom .toolbar-item.toggleable {
     padding-left: 4px;
     padding-right: 4px;
     -webkit-border-image: url(Images/toolbarItemSelected.png) 0 2 0 2;
-}
-
-.toolbar-icon {
-    display: none;
-    width: 32px;
-    height: 32px;
-    background-image: url(Images/toolbarIcons.png);
-    vertical-align: top;
-}
-
-body.show-toolbar-icons .toolbar-icon {
-    display: block;
-    margin: auto;
-}
-
-body.show-toolbar-icons.dock-to-bottom .toolbar-icon {
-    width: 24px;
-    height: 24px;
-    display: inline-block;
-    vertical-align: middle;
-    background-image: url(Images/toolbarIconsSmall.png);
-}
-
-body.dock-to-bottom .toolbar-icon.custom-toolbar-icon {
-    background-position-x: -32px;
-}
-
-.toolbar-item:active .toolbar-icon {
-    background-position-y: 32px;
-}
-
-body.dock-to-bottom .toolbar-item:active .toolbar-icon {
-    background-position-y: 24px;
 }
 
 .toolbar-label {
@@ -213,29 +162,14 @@ body.dock-to-bottom .toolbar-item:active .toolbar-icon {
     opacity: 1;
 }
 
-body.show-toolbar-icons.dock-to-bottom .toolbar-item.toggleable .close-button {
-    top: 3px;
-}
-
 #toolbar-dropdown .toolbar-items-separator {
     border-bottom: 1px solid #aaa;
     width: 100%;
     margin: 5px 0;
 }
 
-body.show-toolbar-icons .toolbar-label {
-    line-height: 15px;
-}
-
 .toolbar-item.toggleable:active .toolbar-label {
     text-shadow: none;
-}
-
-body.show-toolbar-icons.dock-to-bottom .toolbar-label {
-    display: inline-block;
-    margin-left: 3px;
-    top: 0;
-    vertical-align: middle;
 }
 
 body.dock-to-bottom #search-toolbar-label {
@@ -284,10 +218,6 @@ body.dock-to-bottom #search-toolbar-label {
     background-image: inherit;
 }
 
-body.show-toolbar-icons #toolbar-dropdown {
-    padding: 4px;
-}
-
 body.undocked.platform-mac-leopard #toolbar-dropdown,
 body.undocked.platform-mac-snowleopard #toolbar-dropdown {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(191, 191, 191)), to(rgb(151, 151, 151)));
@@ -308,13 +238,6 @@ body.undocked.platform-mac-snowleopard #toolbar-dropdown {
     border: 1px solid rgba(0, 0, 0, 0);
 }
 
-body.show-toolbar-icons #toolbar-dropdown .toolbar-item {
-    position: relative;
-    left: -2px;
-    margin: 0 2px;
-    padding: 4px;
-}
-
 #toolbar-dropdown .toolbar-item.toggleable.toggled-on {
     border: 1px solid rgba(100, 100, 120, 0.4);
     -webkit-border-image: none;
@@ -325,18 +248,9 @@ body.show-toolbar-icons #toolbar-dropdown .toolbar-item {
     background: -webkit-gradient(linear, left top, left bottom, from(rgba(128, 128, 128, 0.6)), to(rgba(128, 128, 128, 0.3)), color-stop(20%, rgba(158, 158, 158, 0.2)), color-stop(80%, rgba(158, 158, 158, 0.1)));
 }
 
-#toolbar-dropdown .toolbar-icon {
-    margin-left: 0;
-    margin-right: 0.5em;
-}
-
 #toolbar-dropdown .toolbar-label {
     line-height: 22px;
     top: 0;
-}
-
-body.show-toolbar-icons #toolbar-dropdown .toolbar-label {
-    line-height: 32px;
 }
 
 #toolbar-panels-menu {
@@ -349,14 +263,6 @@ body.show-toolbar-icons #toolbar-dropdown .toolbar-label {
     height: 22px;
     padding: 0 4px 0 4px;
     margin: 1px 3px;
-}
-
-body.show-toolbar-icons #toolbar-panels-menu {
-    margin: 16px 3px;
-}
-
-body.show-toolbar-icons.dock-to-bottom #toolbar-panels-menu {
-    margin: 6px 3px;
 }
 
 #toolbar-panels-menu:hover:not(.disabled) {
@@ -517,90 +423,6 @@ body.show-toolbar-icons.dock-to-bottom #toolbar-panels-menu {
     color: rgb(165, 165, 165);
 }
 
-.toolbar-item.elements .toolbar-icon {
-    background-position-x: 0;
-}
-
-.toolbar-item.resources .toolbar-icon {
-    background-position-x: -32px;
-}
-
-body.dock-to-bottom .toolbar-item.resources .toolbar-icon {
-    background-position-x: -24px;
-}
-
-.toolbar-item.network .toolbar-icon {
-    background-position-x: -64px;
-}
-
-body.dock-to-bottom .toolbar-item.network .toolbar-icon {
-    background-position-x: -48px;
-}
-
-.toolbar-item.scripts .toolbar-icon {
-    background-position-x: -96px;
-}
-
-body.dock-to-bottom .toolbar-item.scripts .toolbar-icon {
-    background-position-x: -72px;
-}
-
-.toolbar-item.timeline .toolbar-icon {
-    background-position-x: -128px;
-}
-
-body.dock-to-bottom .toolbar-item.timeline .toolbar-icon {
-    background-position-x: -96px;
-}
-
-.toolbar-item.profiles .toolbar-icon {
-    background-position-x: -160px;
-}
-
-.toolbar-item.cpu-profiler .toolbar-icon {
-    background-position-x: -160px;
-}
-
-.toolbar-item.css-profiler .toolbar-icon {
-    background-position-x: -160px;
-}
-
-.toolbar-item.heap-profiler .toolbar-icon {
-    background-position-x: -160px;
-}
-
-.toolbar-item.canvas-profiler .toolbar-icon {
-    background-position-x: -160px;
-}
-
-.toolbar-item.memory-chart-profiler .toolbar-icon {
-    background-position-x: -160px;
-}
-
-.toolbar-item.memory-snapshot-profiler .toolbar-icon {
-    background-position-x: -160px;
-}
-
-body.dock-to-bottom .toolbar-item.profiles .toolbar-icon {
-    background-position-x: -120px;
-}
-
-.toolbar-item.audits .toolbar-icon {
-    background-position-x: -192px;
-}
-
-body.dock-to-bottom .toolbar-item.audits .toolbar-icon {
-    background-position-x: -144px;
-}
-
-.toolbar-item.console .toolbar-icon {
-    background-position-x: -224px;
-}
-
-body.dock-to-bottom .toolbar-item.console .toolbar-icon {
-    background-position-x: -168px;
-}
-
 .close-button,
 .close-button-gray {
     background-image: url(Images/statusbarButtonGlyphs.png);
@@ -681,14 +503,6 @@ body:not(.platform-mac) .toolbar-item.close-left {
     bottom: 0;
     overflow: hidden;
     background-color: white;
-}
-
-body.show-toolbar-icons #main {
-    top: 56px;
-}
-
-body.show-toolbar-icons.dock-to-bottom #main {
-    top: 34px;
 }
 
 #main-panels {

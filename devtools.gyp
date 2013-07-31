@@ -451,8 +451,6 @@
             'front_end/Images/timelinePillPurple.png',
             'front_end/Images/timelinePillRed.png',
             'front_end/Images/timelinePillYellow.png',
-            'front_end/Images/toolbarIcons.png',
-            'front_end/Images/toolbarIconsSmall.png',
             'front_end/Images/toolbarItemSelected.png',
             'front_end/Images/trackHoriz.png',
             'front_end/Images/trackVert.png',

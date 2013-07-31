@@ -287,7 +287,6 @@ WebInspector.GenericSettingsTab = function()
     this._updateScriptDisabledCheckbox();
 
     p = this._appendSection(WebInspector.UIString("Appearance"));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show toolbar icons"), WebInspector.settings.showToolbarIcons));
     p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Split panels vertically when docked to right"), WebInspector.settings.splitVerticallyWhenDockedToRight));
 
     p = this._appendSection(WebInspector.UIString("Elements"));

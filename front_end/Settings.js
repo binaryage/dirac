@@ -101,7 +101,6 @@ WebInspector.Settings = function()
     this.showMetricsRulers = this.createSetting("showMetricsRulers", false);
     this.overrideCSSMedia = this.createSetting("overrideCSSMedia", false);
     this.emulatedCSSMedia = this.createSetting("emulatedCSSMedia", "print");
-    this.showToolbarIcons = this.createSetting("showToolbarIcons", false);
     this.workerInspectorWidth = this.createSetting("workerInspectorWidth", 600);
     this.workerInspectorHeight = this.createSetting("workerInspectorHeight", 600);
     this.messageURLFilters = this.createSetting("messageURLFilters", {});

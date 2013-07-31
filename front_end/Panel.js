@@ -330,22 +330,6 @@ WebInspector.PanelDescriptor.prototype = {
     },
 
     /**
-     * @return {string}
-     */
-    iconURL: function()
-    {
-        return this._iconURL;
-    },
-
-    /**
-     * @param {string} iconURL
-     */
-    setIconURL: function(iconURL)
-    {
-        this._iconURL = iconURL;
-    },
-
-    /**
      * @return {WebInspector.Panel}
      */
     panel: function()
