@@ -105,16 +105,15 @@ WebInspector.SearchController = function()
     this._replaceLabelElement.setAttribute("for", "search-replace-trigger");
 
     // Column 5
-    this._filterCheckboxContainer = this._firstRowElement.createChild("td").createChild("span");
+    this._filterCheckboxContainer = this._firstRowElement.createChild("td").createChild("label");
+    this._filterCheckboxContainer.setAttribute("for", "filter-trigger");
 
     this._filterCheckboxElement = this._filterCheckboxContainer.createChild("input");
     this._filterCheckboxElement.type = "checkbox";
     this._filterCheckboxElement.id = "filter-trigger";
     this._filterCheckboxElement.addEventListener("click", this._filterCheckboxClick.bind(this), false);
 
-    this._filterLabelElement = this._filterCheckboxContainer.createChild("label");
-    this._filterLabelElement.textContent = WebInspector.UIString("Filter");
-    this._filterLabelElement.setAttribute("for", "filter-trigger");
+    this._filterCheckboxContainer.createTextChild(WebInspector.UIString("Filter"));
 
     // Column 6
     var cancelButtonElement = this._firstRowElement.createChild("td").createChild("button");

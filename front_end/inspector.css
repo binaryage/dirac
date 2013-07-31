@@ -445,6 +445,10 @@ body.show-toolbar-icons.dock-to-bottom #toolbar-panels-menu {
     opacity: 1.0;
 }
 
+.toolbar-search label {
+    vertical-align: bottom;
+}
+
 .toolbar-search input[type="checkbox"] {
     position: relative;
     margin-top: -1px;
