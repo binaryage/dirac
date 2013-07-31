@@ -51,6 +51,8 @@ WebInspector.DebuggerModel = function()
     WebInspector.settings.pauseOnExceptionStateString.addChangeListener(this._pauseOnExceptionStateChanged, this);
 
     this.enableDebugger();
+
+    WebInspector.DebuggerModel.applySkipStackFrameSettings();
 }
 
 // Keep these in sync with WebCore::ScriptDebugServer
@@ -605,6 +607,15 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     __proto__: WebInspector.Object.prototype
+}
+
+WebInspector.DebuggerModel.applySkipStackFrameSettings = function()
+{
+    if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
+        return;
+    var settings = WebInspector.settings;
+    var patternParameter = settings.skipStackFramesSwitch.get() ? settings.skipStackFramesPattern.get() : undefined;
+    DebuggerAgent.skipStackFrames(patternParameter);
 }
 
 WebInspector.DebuggerEventTypes = {

@@ -3025,6 +3025,14 @@
                 ],
                 "hidden": true,
                 "description": "Returns call stack including variables changed since VM was paused. VM must be paused."
+            },
+            {
+                "name": "skipStackFrames",
+                "parameters": [
+                    { "name": "script", "optional": true, "type": "string", "description": "Regular expression defining the scripts to ignore while stepping." }
+                ],
+                "hidden": true,
+                "description": "Makes backend skip steps in the sources with names matching given pattern. VM will try leave blacklisted scripts by performing 'step in' several times, finally resorting to 'step out' if unsuccessful."
             }
         ],
         "events": [

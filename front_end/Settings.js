@@ -112,6 +112,8 @@ WebInspector.Settings = function()
     this.shortcutPanelSwitch = this.createSetting("shortcutPanelSwitch", false);
     this.portForwardings = this.createSetting("portForwardings", []);
     this.showWhitespacesInEditor = this.createSetting("showWhitespacesInEditor", false);
+    this.skipStackFramesSwitch = this.createSetting("skipStackFramesSwitch", false);
+    this.skipStackFramesPattern = this.createSetting("skipStackFramesPattern", "");
 }
 
 WebInspector.Settings.prototype = {
@@ -258,6 +260,7 @@ WebInspector.ExperimentsSettings = function()
     this.tethering = this._createExperiment("tethering", "Enable port forwarding");
     this.drawerOverlay = this._createExperiment("drawerOverlay", "Open console as overlay");
     this.textEditorAutocomplete = this._createExperiment("textEditorAutocomplete", "Enable text editor autocompletion");
+    this.frameworksDebuggingSupport = this._createExperiment("frameworksDebuggingSupport", "Enable frameworks debugging support");
 
     this._cleanUpSetting();
 }

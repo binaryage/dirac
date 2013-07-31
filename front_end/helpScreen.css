@@ -130,6 +130,10 @@ body.platform-mac .settings-tab .help-block {
     margin-left: 20px;
 }
 
+.settings-tab .field-error-message {
+    color: DarkRed;
+}
+
 .help-line {
     padding-bottom: 5px;
     margin-bottom: 5px;
