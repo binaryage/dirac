@@ -251,7 +251,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             return "\t";
         var minimumIndent = Infinity;
         for (var i in indents) {
-            if (indents[i] * 100 / this.linesCount < onePercentFilterThreshold)
+            if (indents[i] < onePercentFilterThreshold)
                 continue;
             var indent = parseInt(i, 10);
             if (minimumIndent > indent)
