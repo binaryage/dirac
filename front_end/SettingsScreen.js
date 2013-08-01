@@ -621,11 +621,11 @@ WebInspector.WorkspaceSettingsTab.prototype = {
         folderPath = folderPath.trimMiddle(maxTotalPathLength - Math.min(maxFolderNameLength, folderName.length));
         folderName = folderName.trimMiddle(maxFolderNameLength);
 
+        var folderPathElement = pathElement.createChild("span");
+        folderPathElement.textContent = folderPath + "/";
+
         var nameElement = pathElement.createChild("span", "file-system-path-name");
         nameElement.textContent = folderName;
-
-        var folderPathElement = pathElement.createChild("span");
-        folderPathElement.textContent = folderPath;
     },
 
     /**
