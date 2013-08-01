@@ -222,8 +222,6 @@ WebInspector.CPUProfileView.prototype = {
 
                 delete profileNode._searchMatchedSelfColumn;
                 delete profileNode._searchMatchedTotalColumn;
-                delete profileNode._searchMatchedAverageColumn;
-                delete profileNode._searchMatchedCallsColumn;
                 delete profileNode._searchMatchedFunctionColumn;
 
                 profileNode.refresh();
@@ -274,8 +272,6 @@ WebInspector.CPUProfileView.prototype = {
         {
             delete profileDataGridNode._searchMatchedSelfColumn;
             delete profileDataGridNode._searchMatchedTotalColumn;
-            delete profileDataGridNode._searchMatchedAverageColumn;
-            delete profileDataGridNode._searchMatchedCallsColumn;
             delete profileDataGridNode._searchMatchedFunctionColumn;
 
             if (percentUnits) {
@@ -284,15 +280,11 @@ WebInspector.CPUProfileView.prototype = {
                         profileDataGridNode._searchMatchedSelfColumn = true;
                     if (profileDataGridNode.totalPercent < queryNumber)
                         profileDataGridNode._searchMatchedTotalColumn = true;
-                    if (profileDataGridNode.averagePercent < queryNumberMilliseconds)
-                        profileDataGridNode._searchMatchedAverageColumn = true;
                 } else if (greaterThan) {
                     if (profileDataGridNode.selfPercent > queryNumber)
                         profileDataGridNode._searchMatchedSelfColumn = true;
                     if (profileDataGridNode.totalPercent > queryNumber)
                         profileDataGridNode._searchMatchedTotalColumn = true;
-                    if (profileDataGridNode.averagePercent < queryNumberMilliseconds)
-                        profileDataGridNode._searchMatchedAverageColumn = true;
                 }
 
                 if (equalTo) {
@@ -300,8 +292,6 @@ WebInspector.CPUProfileView.prototype = {
                         profileDataGridNode._searchMatchedSelfColumn = true;
                     if (profileDataGridNode.totalPercent == queryNumber)
                         profileDataGridNode._searchMatchedTotalColumn = true;
-                    if (profileDataGridNode.averagePercent < queryNumberMilliseconds)
-                        profileDataGridNode._searchMatchedAverageColumn = true;
                 }
             } else if (millisecondsUnits || secondsUnits) {
                 if (lessThan) {
@@ -309,15 +299,11 @@ WebInspector.CPUProfileView.prototype = {
                         profileDataGridNode._searchMatchedSelfColumn = true;
                     if (profileDataGridNode.totalTime < queryNumberMilliseconds)
                         profileDataGridNode._searchMatchedTotalColumn = true;
-                    if (profileDataGridNode.averageTime < queryNumberMilliseconds)
-                        profileDataGridNode._searchMatchedAverageColumn = true;
                 } else if (greaterThan) {
                     if (profileDataGridNode.selfTime > queryNumberMilliseconds)
                         profileDataGridNode._searchMatchedSelfColumn = true;
                     if (profileDataGridNode.totalTime > queryNumberMilliseconds)
                         profileDataGridNode._searchMatchedTotalColumn = true;
-                    if (profileDataGridNode.averageTime > queryNumberMilliseconds)
-                        profileDataGridNode._searchMatchedAverageColumn = true;
                 }
 
                 if (equalTo) {
@@ -325,16 +311,7 @@ WebInspector.CPUProfileView.prototype = {
                         profileDataGridNode._searchMatchedSelfColumn = true;
                     if (profileDataGridNode.totalTime == queryNumberMilliseconds)
                         profileDataGridNode._searchMatchedTotalColumn = true;
-                    if (profileDataGridNode.averageTime == queryNumberMilliseconds)
-                        profileDataGridNode._searchMatchedAverageColumn = true;
                 }
-            } else {
-                if (equalTo && profileDataGridNode.numberOfCalls == queryNumber)
-                    profileDataGridNode._searchMatchedCallsColumn = true;
-                if (greaterThan && profileDataGridNode.numberOfCalls > queryNumber)
-                    profileDataGridNode._searchMatchedCallsColumn = true;
-                if (lessThan && profileDataGridNode.numberOfCalls < queryNumber)
-                    profileDataGridNode._searchMatchedCallsColumn = true;
             }
 
             if (profileDataGridNode.functionName.match(matcher) || (profileDataGridNode.url && profileDataGridNode.url.match(matcher)))
@@ -342,8 +319,6 @@ WebInspector.CPUProfileView.prototype = {
 
             if (profileDataGridNode._searchMatchedSelfColumn ||
                 profileDataGridNode._searchMatchedTotalColumn ||
-                profileDataGridNode._searchMatchedAverageColumn ||
-                profileDataGridNode._searchMatchedCallsColumn ||
                 profileDataGridNode._searchMatchedFunctionColumn)
             {
                 profileDataGridNode.refresh();
@@ -558,10 +533,8 @@ WebInspector.CPUProfileView.prototype = {
         var sortAscending = this.dataGrid.isSortOrderAscending();
         var sortColumnIdentifier = this.dataGrid.sortColumnIdentifier();
         var sortProperty = {
-                "average": "averageTime",
                 "self": "selfTime",
                 "total": "totalTime",
-                "calls": "numberOfCalls",
                 "function": "functionName"
             }[sortColumnIdentifier];
 
@@ -659,7 +632,6 @@ WebInspector.CPUProfileView.prototype = {
             lineNumber: 0,
             totalTime: idleTime,
             selfTime: idleTime,
-            numberOfCalls: 0,
             visible: true,
             callUID: 0,
             children: []
