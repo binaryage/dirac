@@ -258,7 +258,6 @@ WebInspector.ExperimentsSettings = function()
     this.customizableToolbar = this._createExperiment("customizableToolbar", "Enable toolbar customization");
     this.tethering = this._createExperiment("tethering", "Enable port forwarding");
     this.drawerOverlay = this._createExperiment("drawerOverlay", "Open console as overlay");
-    this.textEditorAutocomplete = this._createExperiment("textEditorAutocomplete", "Enable text editor autocompletion");
     this.frameworksDebuggingSupport = this._createExperiment("frameworksDebuggingSupport", "Enable frameworks debugging support");
 
     this._cleanUpSetting();

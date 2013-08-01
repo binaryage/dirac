@@ -35,8 +35,7 @@ WebInspector.UISourceCodeFrame = function(uiSourceCode)
 {
     this._uiSourceCode = uiSourceCode;
     WebInspector.SourceFrame.call(this, this._uiSourceCode);
-    if (WebInspector.experimentsSettings.textEditorAutocomplete.isEnabled())
-        this.textEditor.setCompletionDictionary(new WebInspector.SampleCompletionDictionary());
+    this.textEditor.setCompletionDictionary(new WebInspector.SampleCompletionDictionary());
 
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.FormattedChanged, this._onFormattedChanged, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._onWorkingCopyChanged, this);
