@@ -472,4 +472,4 @@ if not process_recursively:
     os.system(check_injected_webgl_calls_command)
 
 shutil.rmtree(modules_dir)
-#os.system("rm " + protocol_externs_path)
+os.system("rm " + protocol_externs_path)
