@@ -1376,6 +1376,7 @@ WebInspector.ElementsTreeElement.prototype = {
             return false;
 
         var attributeName = attributeNameElement.textContent;
+        var attributeValueElement = attribute.getElementsByClassName("webkit-html-attribute-value")[0];
 
         function removeZeroWidthSpaceRecursive(node)
         {
@@ -1390,6 +1391,14 @@ WebInspector.ElementsTreeElement.prototype = {
             for (var child = node.firstChild; child; child = child.nextSibling)
                 removeZeroWidthSpaceRecursive(child);
         }
+
+        var domNode;
+        var listItemElement = attribute.enclosingNodeOrSelfWithNodeName("li");
+        if (attributeName && attributeValueElement && listItemElement && listItemElement.treeElement)
+            domNode = listItemElement.treeElement.representedObject;
+        var attributeValue = domNode ? domNode.getAttribute(attributeName) : undefined;
+        if (typeof attributeValue !== "undefined")
+            attributeValueElement.textContent = attributeValue;
 
         // Remove zero-width spaces that were added by nodeTitleInfo.
         removeZeroWidthSpaceRecursive(attribute);
@@ -1629,6 +1638,7 @@ WebInspector.ElementsTreeElement.prototype = {
             return;
         }
 
+        this.updateTitle();
         moveToNextAttributeIfNeeded.call(this);
     },
 
