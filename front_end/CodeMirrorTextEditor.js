@@ -223,6 +223,11 @@ WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 2000;
 WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
+    wasShown: function()
+    {
+        this._codeMirror.refresh();
+    },
+
     _guessIndentationLevel: function()
     {
         var tabRegex = /^\t+/;
