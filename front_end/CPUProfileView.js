@@ -632,7 +632,6 @@ WebInspector.CPUProfileView.prototype = {
             lineNumber: 0,
             totalTime: idleTime,
             selfTime: idleTime,
-            visible: true,
             callUID: 0,
             children: []
         };

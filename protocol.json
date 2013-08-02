@@ -3188,7 +3188,6 @@
                     { "name": "lineNumber", "type": "integer", "description": "Line number." },
                     { "name": "totalTime", "type": "number", "description": "Total execution time." },
                     { "name": "selfTime", "type": "number", "description": "Self time." },
-                    { "name": "visible", "type": "boolean", "description": "Visibility." },
                     { "name": "callUID", "type": "number", "description": "Call UID." },
                     { "name": "children", "type": "array", "items": { "$ref": "CPUProfileNode" }, "description": "Child nodes." },
                     { "name": "id", "optional": true, "type": "integer", "description": "Unique id of the node." }
