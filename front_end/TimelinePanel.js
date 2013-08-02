@@ -1320,8 +1320,7 @@ WebInspector.TimelineCalculator.prototype = {
         var width = (percentages.end - percentages.start) / 100 * this._workingArea;
         if (width < WebInspector.TimelineCalculator._minWidth) {
             widthAdjustment = WebInspector.TimelineCalculator._minWidth - width;
-            left -= widthAdjustment / 2;
-            width += widthAdjustment;
+            width = WebInspector.TimelineCalculator._minWidth;
         }
         var widthWithChildren = (percentages.endWithChildren - percentages.start) / 100 * this._workingArea + widthAdjustment;
         var cpuWidth = percentages.cpuWidth / 100 * this._workingArea + widthAdjustment;
