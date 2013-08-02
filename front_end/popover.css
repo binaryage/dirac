@@ -4,6 +4,10 @@
     border-width: 25px;
     z-index: 100;
     pointer-events: none;
+
+    transition: -webkit-transform 100ms ease-out, opacity 100ms ease-out;
+    -webkit-transform: translateY(-20px);
+    opacity: 0;
 }
 
 .popover .content {
@@ -20,7 +24,7 @@
 
 .popover .content.fixed-height {
     overflow: hidden;
-} 
+}
 
 .popover .arrow {
     position: absolute;
@@ -123,4 +127,9 @@
     padding-bottom: 5px;
     padding-top: 0;
     white-space: nowrap;
+}
+
+.popover.fx-appear {
+    opacity: 1;
+    -webkit-transform: translateY(0px);
 }

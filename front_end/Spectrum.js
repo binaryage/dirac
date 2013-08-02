@@ -366,6 +366,7 @@ WebInspector.SpectrumPopupHelper.prototype = {
         this.dispatchEventToListeners(WebInspector.SpectrumPopupHelper.Events.Hidden, !!commitEdit);
 
         WebInspector.setCurrentFocusElement(this._previousFocusElement);
+
         delete this._previousFocusElement;
 
         delete this._anchorElement;
