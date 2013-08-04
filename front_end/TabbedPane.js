@@ -89,11 +89,19 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @type {boolean} shrinkableTabs
+     * @type {boolean} closeableTabs
      */
     set closeableTabs(closeableTabs)
     {
         this._closeableTabs = closeableTabs;
+    },
+
+    /**
+     * @param {boolean} retainTabsOrder
+     */
+    setRetainTabsOrder: function(retainTabsOrder)
+    {
+        this._retainTabsOrder = retainTabsOrder;
     },
 
     defaultFocusedElement: function()
@@ -420,14 +428,17 @@ WebInspector.TabbedPane.prototype = {
         }
         tabsToShow.sort(compareFunction);
 
+        var selectedIndex = -1;
         for (var i = 0; i < tabsToShow.length; ++i) {
             var option = new Option(tabsToShow[i].title);
             option.tab = tabsToShow[i];
             this._tabsSelect.appendChild(option);
+            if (this._tabsHistory[0] === tabsToShow[i])
+                selectedIndex = i;
         }
         if (this._tabsSelect.options.length) {
             this._headerContentsElement.appendChild(this._dropDownButton);
-            this._tabsSelect.selectedIndex = -1;
+            this._tabsSelect.selectedIndex = selectedIndex;
         }
     },
 
@@ -531,18 +542,20 @@ WebInspector.TabbedPane.prototype = {
         var tabsToShowIndexes = [];
 
         var totalTabsWidth = 0;
-        for (var i = 0; i < tabsHistory.length; ++i) {
-            totalTabsWidth += tabsHistory[i].width();
+        var tabCount = tabsOrdered.length;
+        for (var i = 0; i < tabCount; ++i) {
+            var tab = this._retainTabsOrder ? tabsOrdered[i] : tabsHistory[i];
+            totalTabsWidth += tab.width();
             var minimalRequiredWidth = totalTabsWidth;
-            if (i !== tabsHistory.length - 1)
+            if (i !== tabCount - 1)
                 minimalRequiredWidth += measuredDropDownButtonWidth;
             if (!this._verticalTabLayout && minimalRequiredWidth > totalWidth)
                 break;
-            tabsToShowIndexes.push(tabsOrdered.indexOf(tabsHistory[i]));
+            tabsToShowIndexes.push(tabsOrdered.indexOf(tab));
         }
-        
+
         tabsToShowIndexes.sort(function(x, y) { return x - y });
-        
+
         return tabsToShowIndexes;
     },
     
