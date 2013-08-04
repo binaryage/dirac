@@ -375,10 +375,9 @@ WebInspector.DOMBreakpointsSidebarPane.Proxy.prototype = {
 
     onContentReady: function()
     {
-        if (!this._panel.isShowing())
-            return;
+        if (this._panel.isShowing())
+            this._reattachBody();
 
-        this._reattachBody();
         WebInspector.SidebarPane.prototype.onContentReady.call(this);
     },
 

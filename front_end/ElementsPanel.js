@@ -1129,11 +1129,20 @@ WebInspector.ElementsPanel.prototype = {
 
         this.splitView.setVertical(!vertically);
 
-        if (!vertically) {
-            this.sidebarPaneView = new WebInspector.SidebarPaneStack();
-            for (var pane in this.sidebarPanes)
-                this.sidebarPaneView.addPane(this.sidebarPanes[pane]);
-        } else {
+        var computedPane = new WebInspector.SidebarPane(WebInspector.UIString("Computed"));
+        computedPane.element.addStyleClass("composite");
+        computedPane.element.addStyleClass("fill");
+        var expandComputed = computedPane.expand.bind(computedPane);
+
+        this.sidebarPanes.metrics.show(computedPane.bodyElement);
+        this.sidebarPanes.metrics.setExpandCallback(expandComputed);
+
+        computedPane.bodyElement.appendChild(this.sidebarPanes.computedStyle.titleElement);
+        computedPane.bodyElement.addStyleClass("metrics-and-computed");
+        this.sidebarPanes.computedStyle.show(computedPane.bodyElement);
+        this.sidebarPanes.computedStyle.setExpandCallback(expandComputed);
+
+        if (vertically) {
             this.sidebarPaneView = new WebInspector.SidebarTabbedPane();
 
             var compositePane = new WebInspector.SidebarPane(this.sidebarPanes.styles.title());
@@ -1148,18 +1157,22 @@ WebInspector.ElementsPanel.prototype = {
             splitView.firstElement().appendChild(this.sidebarPanes.styles.titleElement);
             this.sidebarPanes.styles.setExpandCallback(expandComposite);
 
-            this.sidebarPanes.metrics.show(splitView.secondElement());
-            this.sidebarPanes.metrics.setExpandCallback(expandComposite);
-
-            splitView.secondElement().appendChild(this.sidebarPanes.computedStyle.titleElement);
-            splitView.secondElement().addStyleClass("metrics-and-computed");
-            this.sidebarPanes.computedStyle.show(splitView.secondElement());
-            this.sidebarPanes.computedStyle.setExpandCallback(expandComposite);
+            computedPane.show(splitView.secondElement());
+            computedPane.setExpandCallback(expandComposite);
 
             this.sidebarPaneView.addPane(compositePane);
             this.sidebarPaneView.addPane(this.sidebarPanes.properties);
             this.sidebarPaneView.addPane(this.sidebarPanes.domBreakpoints);
             this.sidebarPaneView.addPane(this.sidebarPanes.eventListeners);
+        } else {
+            this.sidebarPaneView = new WebInspector.SidebarTabbedPane();
+
+            this.sidebarPaneView.addPane(this.sidebarPanes.styles);
+            this.sidebarPaneView.addPane(computedPane);
+
+            this.sidebarPaneView.addPane(this.sidebarPanes.eventListeners);
+            this.sidebarPaneView.addPane(this.sidebarPanes.domBreakpoints);
+            this.sidebarPaneView.addPane(this.sidebarPanes.properties);
         }
         this.sidebarPaneView.show(this.splitView.sidebarElement);
         this.sidebarPanes.styles.expand();
