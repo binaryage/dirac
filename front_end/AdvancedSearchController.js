@@ -94,12 +94,41 @@ WebInspector.AdvancedSearchController.prototype = {
             this._searchView.focus();
         else
             WebInspector.showViewInDrawer(this._searchView._searchPanelElement, this._searchView, this.stopSearch.bind(this));
+        this.startIndexing();
     },
 
     close: function()
     {
         this.stopSearch();
         WebInspector.closeViewInDrawer();
+    },
+
+    /**
+     * @param {boolean} finished
+     */
+    _onIndexingFinished: function(finished)
+    {
+        delete this._isIndexing;
+        this._searchView.indexingFinished(finished);
+        if (!finished)
+            delete this._pendingSearchConfig;
+        if (!this._pendingSearchConfig)
+            return;
+        var searchConfig = this._pendingSearchConfig
+        delete this._pendingSearchConfig;
+        this._innerStartSearch(searchConfig);
+    },
+
+    startIndexing: function()
+    {
+        this._isIndexing = true;
+        // FIXME: this._currentSearchScope should be initialized based on searchConfig
+        this._currentSearchScope = this._searchScope;
+        if (this._progressIndicator)
+            this._progressIndicator.done();
+        this._progressIndicator = new WebInspector.ProgressIndicator();
+        this._searchView.indexingStarted(this._progressIndicator);
+        this._currentSearchScope.performIndexing(this._progressIndicator, this._onIndexingFinished.bind(this));
     },
 
     /**
@@ -110,13 +139,11 @@ WebInspector.AdvancedSearchController.prototype = {
     {
         if (searchId !== this._searchId)
             return;
-
         this._searchView.addSearchResult(searchResult);
         if (!searchResult.searchMatches.length)
             return;
-        
         if (!this._searchResultsPane) 
-            this._searchResultsPane = this._currentSearchScope.createSearchResultsPane(this._searchConfig);        
+            this._searchResultsPane = this._currentSearchScope.createSearchResultsPane(this._searchConfig);
         this._searchView.resultsPane = this._searchResultsPane; 
         this._searchResultsPane.addSearchResult(searchResult);
     },
@@ -129,11 +156,10 @@ WebInspector.AdvancedSearchController.prototype = {
     {
         if (searchId !== this._searchId)
             return;
-
         if (!this._searchResultsPane)
             this._searchView.nothingFound();
-        
         this._searchView.searchFinished(finished);
+        delete this._searchConfig;
     },
     
     /**
@@ -143,13 +169,25 @@ WebInspector.AdvancedSearchController.prototype = {
     {
         this.resetSearch();
         ++this._searchId;
+        if (!this._isIndexing)
+            this.startIndexing();
+        this._pendingSearchConfig = searchConfig;
+    },
 
+    /**
+     * @param {WebInspector.SearchConfig} searchConfig
+     */
+    _innerStartSearch: function(searchConfig)
+    {
         this._searchConfig = searchConfig;
         // FIXME: this._currentSearchScope should be initialized based on searchConfig
         this._currentSearchScope = this._searchScope;
 
-        var totalSearchResultsCount = this._currentSearchScope.performSearch(searchConfig, this._onSearchResult.bind(this, this._searchId), this._onSearchFinished.bind(this, this._searchId));
-        this._searchView.searchStarted(totalSearchResultsCount);
+        if (this._progressIndicator)
+            this._progressIndicator.done();
+        this._progressIndicator = new WebInspector.ProgressIndicator();
+        var totalSearchResultsCount = this._currentSearchScope.performSearch(searchConfig, this._progressIndicator, this._onSearchResult.bind(this, this._searchId), this._onSearchFinished.bind(this, this._searchId));
+        this._searchView.searchStarted(this._progressIndicator);
     },
     
     resetSearch: function()
@@ -164,8 +202,11 @@ WebInspector.AdvancedSearchController.prototype = {
     
     stopSearch: function()
     {
+        if (this._progressIndicator)
+            this._progressIndicator.cancel();
         if (this._currentSearchScope)
             this._currentSearchScope.stopSearch();
+        delete this._searchConfig;
     }
 }
 
@@ -259,25 +300,37 @@ WebInspector.SearchView.prototype = {
     },
     
     /**
-     * @param {number} totalSearchResultsCount
+     * @param {WebInspector.ProgressIndicator} progressIndicator
      */
-    searchStarted: function(totalSearchResultsCount)
+    searchStarted: function(progressIndicator)
     {
         this.resetResults();
         this._resetCounters();
 
         this._searchMessageElement.textContent = WebInspector.UIString("Searching...");
-        if (this._progressIndicator)
-            this._progressIndicator.done();
-        this._progressIndicator = new WebInspector.ProgressIndicator();
-        this._progressIndicator.setTotalWork(totalSearchResultsCount);
-        this._progressIndicator.show(this._searchStatusBarElement);
-        
+        progressIndicator.show(this._searchStatusBarElement);
         this._updateSearchResultsMessage();
-        
+
         if (!this._searchingView)
             this._searchingView = new WebInspector.EmptyView(WebInspector.UIString("Searching..."));
         this._searchingView.show(this._searchResultsElement);
+    },
+
+    /**
+     * @param {WebInspector.ProgressIndicator} progressIndicator
+     */
+    indexingStarted: function(progressIndicator)
+    {
+        this._searchMessageElement.textContent = WebInspector.UIString("Indexing...");
+        progressIndicator.show(this._searchStatusBarElement);
+    },
+
+    /**
+     * @param {boolean} finished
+     */
+    indexingFinished: function(finished)
+    {
+        this._searchMessageElement.textContent = finished ? WebInspector.UIString("Indexing finished.") : WebInspector.UIString("Indexing interrupted.");
     },
 
     _updateSearchResultsMessage: function()
@@ -324,10 +377,6 @@ WebInspector.SearchView.prototype = {
         if (searchResult.searchMatches.length)
             this._nonEmptySearchResultsCount++;
         this._updateSearchResultsMessage();
-        if (this._progressIndicator.isCanceled())
-            this._onCancel();
-        else
-            this._progressIndicator.setWorked(this._searchResultsCount);
     },
 
     /**
@@ -335,7 +384,6 @@ WebInspector.SearchView.prototype = {
      */
     searchFinished: function(finished)
     {
-        this._progressIndicator.done();
         this._searchMessageElement.textContent = finished ? WebInspector.UIString("Search finished.") : WebInspector.UIString("Search interrupted.");
     },
 
@@ -385,12 +433,6 @@ WebInspector.SearchView.prototype = {
         this._regexCheckbox.checked = searchConfig.isRegex;
     },
 
-    _onCancel: function()
-    {
-        this._controller.stopSearch();
-        this.focus();
-    },
-    
     _onAction: function()
     {
         if (!this.searchConfig.query || !this.searchConfig.query.length)
@@ -427,10 +469,11 @@ WebInspector.SearchScope = function()
 WebInspector.SearchScope.prototype = {
     /**
      * @param {WebInspector.SearchConfig} searchConfig
+     * @param {WebInspector.Progress} progress
      * @param {function(WebInspector.FileBasedSearchResultsPane.SearchResult)} searchResultCallback
      * @param {function(boolean)} searchFinishedCallback
      */
-    performSearch: function(searchConfig, searchResultCallback, searchFinishedCallback) { },
+    performSearch: function(searchConfig, progress, searchResultCallback, searchFinishedCallback) { },
 
     stopSearch: function() { },
     
@@ -525,9 +568,11 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
     {
         this._searchResults.push(searchResult);
         var uiSourceCode = searchResult.uiSourceCode;
+        if (!uiSourceCode)
+            return;
         var searchMatches = searchResult.searchMatches;
 
-        var fileTreeElement = this._addFileTreeElement(uiSourceCode.originURL(), searchMatches.length, this._searchResults.length - 1);
+        var fileTreeElement = this._addFileTreeElement(uiSourceCode.fullDisplayName(), searchMatches.length, this._searchResults.length - 1);
     },
 
     /**

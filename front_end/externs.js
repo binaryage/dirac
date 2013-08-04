@@ -231,6 +231,9 @@ InspectorFrontendHostAPI.prototype.requestFileSystems = function() {}
 InspectorFrontendHostAPI.prototype.addFileSystem = function() {}
 InspectorFrontendHostAPI.prototype.removeFileSystem = function(fileSystemPath) {}
 InspectorFrontendHostAPI.prototype.isolatedFileSystem = function(fileSystemId, registeredName) {}
+InspectorFrontendHostAPI.prototype.indexPath = function(requestId, fileSystemPath) {}
+InspectorFrontendHostAPI.prototype.stopIndexing = function(requestId) {}
+InspectorFrontendHostAPI.prototype.searchInPath = function(requestId, fileSystemPath, query) {}
 InspectorFrontendHostAPI.prototype.setZoomFactor = function(zoom) {}
 /** @type {InspectorFrontendHostAPI} */
 var InspectorFrontendHost;

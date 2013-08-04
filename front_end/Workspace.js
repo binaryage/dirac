@@ -139,7 +139,22 @@ WebInspector.ProjectDelegate.prototype = {
      * @param {boolean} isRegex
      * @param {function(Array.<WebInspector.ContentProvider.SearchMatch>)} callback
      */
-    searchInFileContent: function(path, query, caseSensitive, isRegex, callback) { }
+    searchInFileContent: function(path, query, caseSensitive, isRegex, callback) { },
+
+    /**
+     * @param {string} query
+     * @param {boolean} caseSensitive
+     * @param {boolean} isRegex
+     * @param {WebInspector.Progress} progress
+     * @param {function(StringMap)} callback
+     */
+    searchInContent: function(query, caseSensitive, isRegex, progress, callback) { },
+
+    /**
+     * @param {WebInspector.Progress} progress
+     * @param {function()} callback
+     */
+    indexContent: function(progress, callback) { }
 }
 
 /**
@@ -367,6 +382,27 @@ WebInspector.Project.prototype = {
     searchInFileContent: function(uiSourceCode, query, caseSensitive, isRegex, callback)
     {
         this._projectDelegate.searchInFileContent(uiSourceCode.path(), query, caseSensitive, isRegex, callback);
+    },
+
+    /**
+     * @param {string} query
+     * @param {boolean} caseSensitive
+     * @param {boolean} isRegex
+     * @param {WebInspector.Progress} progress
+     * @param {function(StringMap)} callback
+     */
+    searchInContent: function(query, caseSensitive, isRegex, progress, callback)
+    {
+        this._projectDelegate.searchInContent(query, caseSensitive, isRegex, progress, callback);
+    },
+
+    /**
+     * @param {WebInspector.Progress} progress
+     * @param {function()} callback
+     */
+    indexContent: function(progress, callback)
+    {
+        this._projectDelegate.indexContent(progress, callback);
     },
 
     dispose: function()

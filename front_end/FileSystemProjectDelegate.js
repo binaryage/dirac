@@ -39,6 +39,12 @@ WebInspector.FileSystemProjectDelegate = function(isolatedFileSystem, workspace)
 {
     this._fileSystem = isolatedFileSystem;
     this._workspace = workspace;
+    /** @type {Object.<number, function(Array.<string>)>} */
+    this._searchCallbacks = {};
+    /** @type {Object.<number, function()>} */
+    this._indexingCallbacks = {};
+    /** @type {Object.<number, WebInspector.Progress>} */
+    this._indexingProgresses = {};
 }
 
 WebInspector.FileSystemProjectDelegate._scriptExtensions = ["js", "java", "coffee", "ts", "dart"].keySet();
@@ -49,6 +55,8 @@ WebInspector.FileSystemProjectDelegate.projectId = function(fileSystemPath)
 {
     return "filesystem:" + fileSystemPath;
 }
+
+WebInspector.FileSystemProjectDelegate._lastRequestId = 0;
 
 WebInspector.FileSystemProjectDelegate.prototype = {
     /**
@@ -185,6 +193,163 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     },
 
     /**
+     * @param {string} query
+     * @param {boolean} caseSensitive
+     * @param {boolean} isRegex
+     * @param {WebInspector.Progress} progress
+     * @param {function(StringMap)} callback
+     */
+    searchInContent: function(query, caseSensitive, isRegex, progress, callback)
+    {
+        var requestId = ++WebInspector.FileSystemProjectDelegate._lastRequestId;
+        this._searchCallbacks[requestId] = innerCallback.bind(this);
+        progress.setTotalWork(1);
+        // FIXME: remove next line and uncomment InspectorFrontendHost call once the chromium counterpart patch is landed.
+        setTimeout(innerCallback.bind(this, []), 0);
+        // InspectorFrontendHost.searchInPath(requestId, this._fileSystem.path(), isRegex ? "" : query);
+
+        function innerCallback(files)
+        {
+            var compositeProgress = new WebInspector.CompositeProgress(progress);
+            var frontendHostSearchProgress = compositeProgress.createSubProgress();
+            var frontendSearchProgress = compositeProgress.createSubProgress();
+            frontendHostSearchProgress.setTotalWork(1);
+            frontendHostSearchProgress.done();
+
+            function trimFileSystemPath(fullPath)
+            {
+                return fullPath.substr(this._fileSystem.path().length + 1);
+            }
+
+            files = files.map(trimFileSystemPath.bind(this));
+            var result = new StringMap();
+            var totalCount = files.length;
+            if (totalCount === 0) {
+                frontendSearchProgress.done();
+                callback(result);
+                return;
+            }
+
+            var barrier = new CallbackBarrier();
+            frontendSearchProgress.setTotalWork(totalCount);
+            for (var i = 0; i < files.length; ++i) {
+                var filePath = this._filePathForPath(files[i]);
+                this._fileSystem.requestFileContent(filePath, barrier.createCallback(contentCallback.bind(this, files[i])));
+            }
+            barrier.callWhenDone(doneCallback);
+
+            /**
+             * @param {string} path
+             * @param {?string} content
+             */
+            function contentCallback(path, content)
+            {
+                var matches = [];
+                if (content !== null)
+                    matches = WebInspector.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex);
+                matchesCallback.call(this, path, matches);
+            }
+
+            /**
+             * @param {string} path
+             * @param {Array.<WebInspector.ContentProvider.SearchMatch>} matches
+             */
+            function matchesCallback(path, matches)
+            {
+                result.put(path, matches);
+                frontendSearchProgress.worked(1);
+            }
+
+            function doneCallback()
+            {
+                frontendSearchProgress.done();
+                callback(result);
+            }
+        }
+    },
+
+    /**
+     * @param {number} requestId
+     * @param {Array.<string>} files
+     */
+    searchCompleted: function(requestId, files)
+    {
+        if (!this._searchCallbacks[requestId])
+            return;
+        var callback = this._searchCallbacks[requestId];
+        delete this._searchCallbacks[requestId];
+        callback(files);
+    },
+
+    /**
+     * @param {WebInspector.Progress} progress
+     * @param {function()} callback
+     */
+    indexContent: function(progress, callback)
+    {
+        var requestId = ++WebInspector.FileSystemProjectDelegate._lastRequestId;
+        this._indexingCallbacks[requestId] = callback;
+        this._indexingProgresses[requestId] = progress;
+        progress.setTotalWork(1);
+        progress.addEventListener(WebInspector.Progress.Events.Canceled, this._indexingCanceled.bind(this, requestId));
+        // FIXME: remove next line and uncomment InspectorFrontendHost call once the chromium counterpart patch is landed.
+        setTimeout(this.indexingDone.bind(this, requestId), 0);
+        // InspectorFrontendHost.indexPath(requestId, this._fileSystem.path());
+    },
+
+    /**
+     * @param {number} requestId
+     */
+    _indexingCanceled: function(requestId)
+    {
+        if (!this._indexingProgresses[requestId])
+            return;
+        // FIXME: uncomment InspectorFrontendHost call once the chromium counterpart patch is landed.
+        // InspectorFrontendHost.stopIndexing(requestId);
+        delete this._indexingProgresses[requestId];
+        delete this._indexingCallbacks[requestId];
+    },
+
+    /**
+     * @param {number} requestId
+     * @param {number} totalWork
+     */
+    indexingTotalWorkCalculated: function(requestId, totalWork)
+    {
+        if (!this._indexingProgresses[requestId])
+            return;
+        var progress = this._indexingProgresses[requestId];
+        progress.setTotalWork(totalWork);
+    },
+
+    /**
+     * @param {number} requestId
+     * @param {number} worked
+     */
+    indexingWorked: function(requestId, worked)
+    {
+        if (!this._indexingProgresses[requestId])
+            return;
+        var progress = this._indexingProgresses[requestId];
+        progress.worked(worked);
+    },
+
+    /**
+     * @param {number} requestId
+     */
+    indexingDone: function(requestId)
+    {
+        if (!this._indexingProgresses[requestId])
+            return;
+        var progress = this._indexingProgresses[requestId];
+        var callback = this._indexingCallbacks[requestId];
+        delete this._indexingProgresses[requestId];
+        delete this._indexingCallbacks[requestId];
+        progress.done();
+        callback.call();
+    },
+
+    /**
      * @param {string} path
      * @return {string}
      */
@@ -269,7 +434,7 @@ WebInspector.FileSystemWorkspaceProvider = function(isolatedFileSystemManager, w
     this._workspace = workspace;
     this._isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, this._fileSystemAdded, this);
     this._isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemRemoved, this._fileSystemRemoved, this);
-    this._simpleProjectDelegates = {};
+    this._projectDelegates = {};
 }
 
 WebInspector.FileSystemWorkspaceProvider.prototype = {
@@ -281,7 +446,7 @@ WebInspector.FileSystemWorkspaceProvider.prototype = {
         var fileSystem = /** @type {WebInspector.IsolatedFileSystem} */ (event.data);
         var projectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystem.path());
         var projectDelegate = new WebInspector.FileSystemProjectDelegate(fileSystem, this._workspace)
-        this._simpleProjectDelegates[projectDelegate.id()] = projectDelegate;
+        this._projectDelegates[projectDelegate.id()] = projectDelegate;
         console.assert(!this._workspace.project(projectDelegate.id()));
         this._workspace.addProject(projectDelegate);
         projectDelegate.populate();
@@ -295,7 +460,7 @@ WebInspector.FileSystemWorkspaceProvider.prototype = {
         var fileSystem = /** @type {WebInspector.IsolatedFileSystem} */ (event.data);
         var projectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystem.path());
         this._workspace.removeProject(projectId);
-        delete this._simpleProjectDelegates[projectId];
+        delete this._projectDelegates[projectId];
     },
 
     /**
@@ -303,8 +468,17 @@ WebInspector.FileSystemWorkspaceProvider.prototype = {
      */
     fileSystemPath: function(uiSourceCode)
     {
-        var projectDelegate = this._simpleProjectDelegates[uiSourceCode.project().id()];
+        var projectDelegate = this._projectDelegates[uiSourceCode.project().id()];
         return projectDelegate.fileSystemPath();
+    },
+
+    /**
+     * @param {WebInspector.FileSystemProjectDelegate} fileSystemPath
+     */
+    delegate: function(fileSystemPath)
+    {
+        var projectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystemPath);
+        return this._projectDelegates[projectId];
     }
 }
 

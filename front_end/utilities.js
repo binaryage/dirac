@@ -1316,7 +1316,7 @@ function CallbackBarrier()
 
 CallbackBarrier.prototype = {
     /**
-     * @param {function(...)} userCallback
+     * @param {function(...)=} userCallback
      * @return {function()}
      */
     createCallback: function(userCallback)
@@ -1338,7 +1338,7 @@ CallbackBarrier.prototype = {
     },
 
     /**
-     * @param {function(...)} userCallback
+     * @param {function(...)=} userCallback
      */
     _incomingCallback: function(userCallback)
     {

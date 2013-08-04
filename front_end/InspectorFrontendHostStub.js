@@ -222,6 +222,18 @@ WebInspector.InspectorFrontendHostStub.prototype = {
         return null;
     },
 
+    indexPath: function(requestId, fileSystemPath)
+    {
+    },
+
+    stopIndexing: function(requestId)
+    {
+    },
+
+    searchInPath: function(requestId, fileSystemPath, query)
+    {
+    },
+
     setZoomFactor: function(zoom)
     {
     },

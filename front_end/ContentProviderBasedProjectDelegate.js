@@ -37,8 +37,10 @@
 WebInspector.ContentProviderBasedProjectDelegate = function(type)
 {
     this._type = type;
-    /** @type {Object.<string, WebInspector.ContentProvider>} */
+    /** @type {!Object.<string, !WebInspector.ContentProvider>} */
     this._contentProviders = {};
+    /** @type {Object.<string, boolean>} */
+    this._isContentScriptMap = {};
 }
 
 WebInspector.ContentProviderBasedProjectDelegate.prototype = {
@@ -172,6 +174,67 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     },
 
     /**
+     * @param {string} query
+     * @param {boolean} caseSensitive
+     * @param {boolean} isRegex
+     * @param {WebInspector.Progress} progress
+     * @param {function(StringMap)} callback
+     */
+    searchInContent: function(query, caseSensitive, isRegex, progress, callback)
+    {
+        var result = new StringMap();
+
+        var paths = Object.keys(this._contentProviders);
+        var totalCount = paths.length;
+        if (totalCount === 0) {
+            progress.done();
+            callback(result);
+            return;
+        }
+
+        function filterOutContentScripts(path)
+        {
+            return !this._isContentScriptMap[path];
+        }
+
+        if (!WebInspector.settings.searchInContentScripts.get())
+            paths = paths.filter(filterOutContentScripts.bind(this));
+
+        var barrier = new CallbackBarrier();
+        progress.setTotalWork(paths.length);
+        for (var i = 0; i < paths.length; ++i)
+            this._contentProviders[paths[i]].searchInContent(query, caseSensitive, isRegex, barrier.createCallback(contentCallback.bind(this, i)));
+        barrier.callWhenDone(doneCallback);
+
+        function contentCallback(i, searchMatches)
+        {
+            result.put(paths[i], searchMatches);
+            progress.worked(1);
+        }
+
+        function doneCallback()
+        {
+            callback(result);
+            progress.done();
+        }
+    },
+
+    /**
+     * @param {WebInspector.Progress} progress
+     * @param {function()} callback
+     */
+    indexContent: function(progress, callback)
+    {
+        setTimeout(innerCallback, 0);
+
+        function innerCallback()
+        {
+            progress.done();
+            callback();
+        }
+    },
+
+    /**
      * @param {string} parentPath
      * @param {string} name
      * @param {string} url
@@ -185,6 +248,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
         var path = parentPath ? parentPath + "/" + name : name;
         var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, url, url, contentProvider.contentType(), isEditable, isContentScript);
         this._contentProviders[path] = contentProvider;
+        this._isContentScriptMap[path] = isContentScript || false;
         this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.FileAdded, fileDescriptor);
         return path;
     },
@@ -195,6 +259,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     removeFile: function(path)
     {
         delete this._contentProviders[path];
+        delete this._isContentScriptMap[path];
         this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.FileRemoved, path);
     },
 
@@ -209,6 +274,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     reset: function()
     {
         this._contentProviders = {};
+        this._isContentScriptMap = {};
         this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.Reset, null);
     },
     
