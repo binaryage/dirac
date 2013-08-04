@@ -520,8 +520,6 @@ WebInspector.StylesSidebarPane.prototype = {
         }
 
         // Add rules in reverse order to match the cascade order.
-        if (styles.matchedCSSRules.length)
-            styleRules.push({ isStyleSeparator: true, text: WebInspector.UIString("Matched CSS Rules") });
         var addedAttributesStyle;
         for (var i = styles.matchedCSSRules.length - 1; i >= 0; --i) {
             var rule = styles.matchedCSSRules[i];
