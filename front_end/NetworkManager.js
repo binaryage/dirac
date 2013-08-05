@@ -75,7 +75,7 @@ WebInspector.NetworkManager._MIMETypes = {
     "font/woff2":                  {"font": true},
     "font/truetype":               {"font": true},
     "font/opentype":               {"font": true},
-    "application/octet-stream":    {"font": true},
+    "application/octet-stream":    {"font": true, "image": true},
     "application/font-woff":       {"font": true},
     "application/x-font-woff":     {"font": true},
     "application/x-font-type1":    {"font": true},
