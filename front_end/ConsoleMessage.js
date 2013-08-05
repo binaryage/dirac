@@ -508,10 +508,13 @@ WebInspector.ConsoleMessageImpl.prototype = {
 
             var rowValue = {};
             const maxColumnsToRender = 20;
-            for (var j = 0; j < rowPreview.properties.length && columnNames.length < maxColumnsToRender; ++j) {
+            for (var j = 0; j < rowPreview.properties.length && j < maxColumnsToRender; ++j) {
                 var cellProperty = rowPreview.properties[j];
-                if (columnNames.indexOf(cellProperty.name) === -1)
+                if (columnNames.indexOf(cellProperty.name) === -1) {
+                    if (columnNames.length === maxColumnsToRender)
+                        continue;
                     columnNames.push(cellProperty.name);
+                }
                 rowValue[cellProperty.name] = this._renderPropertyPreview(cellProperty);
             }
             rows.push([rowProperty.name, rowValue]);
