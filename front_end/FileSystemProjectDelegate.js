@@ -204,9 +204,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
         var requestId = ++WebInspector.FileSystemProjectDelegate._lastRequestId;
         this._searchCallbacks[requestId] = innerCallback.bind(this);
         progress.setTotalWork(1);
-        // FIXME: remove next line and uncomment InspectorFrontendHost call once the chromium counterpart patch is landed.
-        setTimeout(innerCallback.bind(this, []), 0);
-        // InspectorFrontendHost.searchInPath(requestId, this._fileSystem.path(), isRegex ? "" : query);
+        InspectorFrontendHost.searchInPath(requestId, this._fileSystem.path(), isRegex ? "" : query);
 
         function innerCallback(files)
         {
@@ -292,9 +290,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
         this._indexingProgresses[requestId] = progress;
         progress.setTotalWork(1);
         progress.addEventListener(WebInspector.Progress.Events.Canceled, this._indexingCanceled.bind(this, requestId));
-        // FIXME: remove next line and uncomment InspectorFrontendHost call once the chromium counterpart patch is landed.
-        setTimeout(this.indexingDone.bind(this, requestId), 0);
-        // InspectorFrontendHost.indexPath(requestId, this._fileSystem.path());
+        InspectorFrontendHost.indexPath(requestId, this._fileSystem.path());
     },
 
     /**
@@ -304,8 +300,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     {
         if (!this._indexingProgresses[requestId])
             return;
-        // FIXME: uncomment InspectorFrontendHost call once the chromium counterpart patch is landed.
-        // InspectorFrontendHost.stopIndexing(requestId);
+        InspectorFrontendHost.stopIndexing(requestId);
         delete this._indexingProgresses[requestId];
         delete this._indexingCallbacks[requestId];
     },
