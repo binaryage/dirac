@@ -36,7 +36,6 @@ if (!window.InspectorFrontendHost) {
  */
 WebInspector.InspectorFrontendHostStub = function()
 {
-    this._attachedWindowHeight = 0;
     this.isStub = true;
     this._fileBuffers = {};
     WebInspector.documentCopyEventFired = this.documentCopy.bind(this);
