@@ -767,7 +767,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
             break;
         }
 
-        if (this.type === WebInspector.ConsoleMessage.MessageType.StartGroup || this.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed)
+        if (this.isGroupStart())
             element.addStyleClass("console-group-title");
 
         element.appendChild(this.formattedMessage);
@@ -906,6 +906,14 @@ WebInspector.ConsoleMessageImpl.prototype = {
     get text()
     {
         return this._messageText;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isGroupStart: function()
+    {
+        return this.type === WebInspector.ConsoleMessage.MessageType.StartGroup || this.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed;
     },
 
     location: function()

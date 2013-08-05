@@ -461,7 +461,7 @@ WebInspector.SearchController.prototype = {
      */
     _performFilter: function(query)
     {
-        this._searchProvider.performFilter(query);
+        this._searchProvider.setRegexFilter(query);
     },
 
     _onInput: function(event)
