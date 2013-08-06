@@ -713,15 +713,13 @@ WebInspector.NetworkLogView.prototype = {
         for (var requestId in this._staleRequests) {
             var request = this._staleRequests[requestId];
             var node = this._requestGridNode(request);
-            if (node)
-                node.refreshRequest();
-            else {
+            if (!node) {
                 // Create the timeline tree element and graph.
                 node = this._createRequestGridNode(request);
                 this._dataGrid.rootNode().appendChild(node);
-                node.refreshRequest();
-                this._applyFilter(node);
             }
+            node.refreshRequest();
+            this._applyFilter(node);
 
             if (this.calculator.updateBoundaries(request))
                 boundariesChanged = true;
@@ -1293,7 +1291,9 @@ WebInspector.NetworkLogView.prototype = {
                 this._highlightMatchedRequest(request, false, filter);
         }
         node.element.enableStyleClass("filtered-out", !matches);
-        if (!matches)
+        if (matches)
+            this._filteredOutRequests.remove(request);
+        else
             this._filteredOutRequests.put(request, true);
     },
 
