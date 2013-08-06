@@ -1461,7 +1461,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
 
         function sortSuggestions(a, b)
         {
-            return a.length - b.length;
+            return dictionary.wordCount(b) - dictionary.wordCount(a) || a.length - b.length;
         }
 
         wordsWithPrefix.sort(sortSuggestions);

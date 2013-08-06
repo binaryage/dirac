@@ -54,7 +54,13 @@ WebInspector.CompletionDictionary.prototype = {
      * @param {string} prefix
      * @return {Array.<string>}
      */
-    wordsWithPrefix: function(prefix) { }
+    wordsWithPrefix: function(prefix) { },
+
+    /**
+     * @param {string} word
+     * @return {number}
+     */
+    wordCount: function(word) { }
 }
 
 /**
@@ -111,5 +117,14 @@ WebInspector.SampleCompletionDictionary.prototype = {
     hasWord: function(word)
     {
         return !!this._words[word];
+    },
+
+    /**
+     * @param {string} word
+     * @return {number}
+     */
+    wordCount: function(word)
+    {
+        return this._words[word] ? this._words[word] : 0;
     }
 }
