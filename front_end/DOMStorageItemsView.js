@@ -68,6 +68,26 @@ WebInspector.DOMStorageItemsView.prototype = {
     },
 
     /**
+     * @param {KeyboardEvent} event
+     */
+    handleShortcut: function(event)
+    {
+        if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) && !event.shiftKey && event.keyIdentifier === "U+005A") { // Z key
+            this.domStorage.undo();
+            event.handled = true;
+            return;
+        }
+
+        var isRedoKey = WebInspector.isMac() ? event.metaKey && event.shiftKey && event.keyIdentifier === "U+005A" : // Z key
+                                               event.ctrlKey && event.keyIdentifier === "U+0059"; // Y key
+        if (isRedoKey) {
+            this.domStorage.redo();
+            event.handled = true;
+            return;
+        }
+    },
+
+    /**
      * @param {WebInspector.Event} event
      */
     _domStorageItemsCleared: function(event)

@@ -36,6 +36,7 @@ WebInspector.DOMStorage = function(securityOrigin, isLocalStorage)
 {
     this._securityOrigin = securityOrigin;
     this._isLocalStorage = isLocalStorage;
+    this._storageHistory = new WebInspector.DOMStorageHistory(this);
 }
 
 /**
@@ -82,7 +83,7 @@ WebInspector.DOMStorage.prototype = {
      */
     setItem: function(key, value)
     {
-        DOMStorageAgent.setDOMStorageItem(this.id, key, value);
+        this._storageHistory.perform(new WebInspector.DOMStorageSetItemAction(this, key, value));
     },
 
     /**
@@ -90,7 +91,221 @@ WebInspector.DOMStorage.prototype = {
      */
     removeItem: function(key)
     {
-        DOMStorageAgent.removeDOMStorageItem(this.id, key);
+        this._storageHistory.perform(new WebInspector.DOMStorageRemoveItemAction(this, key));
+    },
+
+    undo: function()
+    {
+        this._storageHistory.undo();
+    },
+
+    redo: function()
+    {
+        this._storageHistory.redo();
+    }
+}
+
+/**
+ * @constructor
+ * @param {WebInspector.DOMStorage} domStorage
+ */
+WebInspector.DOMStorageAction = function(domStorage)
+{
+    this._domStorage = domStorage;
+}
+
+WebInspector.DOMStorageAction.prototype = {
+    /**
+     * @param {function()} callback
+     */
+    perform: function(callback)
+    {
+    },
+
+    undo: function()
+    {
+    },
+
+    redo: function()
+    {
+    }
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.DOMStorageAction}
+ * @param {WebInspector.DOMStorage} domStorage
+ * @param {string} key
+ */
+WebInspector.DOMStorageRemoveItemAction = function(domStorage, key)
+{
+    WebInspector.DOMStorageAction.call(this, domStorage);
+    this._key = key;
+}
+
+WebInspector.DOMStorageRemoveItemAction.prototype = {
+    /**
+     * @override
+     */
+    perform: function(callback)
+    {
+        DOMStorageAgent.getValue(this._domStorage.id, this._key, valueReceived.bind(this));
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {string=} value
+         */
+        function valueReceived(error, value)
+        {
+            if (error)
+                return;
+
+            this._value = value;
+            this.redo();
+            callback();
+        }
+    },
+
+    /**
+     * @override
+     */
+    undo: function()
+    {
+        DOMStorageAgent.setDOMStorageItem(this._domStorage.id, this._key, this._value);
+    },
+
+    /**
+     * @override
+     */
+    redo: function()
+    {
+        DOMStorageAgent.removeDOMStorageItem(this._domStorage.id, this._key);
+    },
+
+    __proto__: WebInspector.DOMStorageAction.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.DOMStorageAction}
+ * @param {WebInspector.DOMStorage} domStorage
+ * @param {string} key
+ * @param {string} value
+ */
+WebInspector.DOMStorageSetItemAction = function(domStorage, key, value)
+{
+    WebInspector.DOMStorageAction.call(this, domStorage);
+    this._key = key;
+    this._value = value;
+}
+
+WebInspector.DOMStorageSetItemAction.prototype = {
+    /**
+     * @override
+     */
+    perform: function(callback)
+    {
+        DOMStorageAgent.getValue(this._domStorage.id, this._key, valueReceived.bind(this));
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {string=} value
+         */
+        function valueReceived(error, value)
+        {
+            if (error)
+                return;
+
+            if (typeof value === "undefined")
+                delete this._exists;
+            else {
+                this._exists = true;
+                this._oldValue = value;
+            }
+            this.redo();
+            callback();
+        }
+    },
+
+    /**
+     * @override
+     */
+    undo: function()
+    {
+        if (!this._exists)
+            DOMStorageAgent.removeDOMStorageItem(this._domStorage.id, this._key);
+        else
+            DOMStorageAgent.setDOMStorageItem(this._domStorage.id, this._key, this._oldValue);
+    },
+
+    /**
+     * @override
+     */
+    redo: function()
+    {
+        DOMStorageAgent.setDOMStorageItem(this._domStorage.id, this._key, this._value);
+    },
+
+    __proto__: WebInspector.DOMStorageAction.prototype
+}
+
+/**
+ * @constructor
+ * @param {WebInspector.DOMStorage} domStorage
+ */
+WebInspector.DOMStorageHistory = function(domStorage)
+{
+    this._domStorage = domStorage;
+
+    /** @type {!Array.<!WebInspector.DOMStorageAction>} */
+    this._actions = [];
+    this._undoableActionIndex = -1;
+}
+
+WebInspector.DOMStorageHistory.MAX_UNDO_STACK_DEPTH = 256;
+
+WebInspector.DOMStorageHistory.prototype = {
+    /**
+     * @param {WebInspector.DOMStorageAction} action
+     */
+    perform: function(action)
+    {
+        if (!action)
+            return;
+
+        action.perform(actionCompleted.bind(this));
+        function actionCompleted()
+        {
+            if (this._undoableActionIndex + 1 === WebInspector.DOMStorageHistory.MAX_UNDO_STACK_DEPTH) {
+                this._actions.shift();
+                --this._undoableActionIndex;
+            } else if (this._undoableActionIndex + 1 < this._actions.length)
+                this._actions.splice(this._undoableActionIndex + 1);
+
+            this._actions.push(action);
+            ++this._undoableActionIndex;
+        }
+    },
+
+    undo: function()
+    {
+        if (this._undoableActionIndex < 0)
+            return;
+
+        var action = this._actions[this._undoableActionIndex];
+        console.assert(action);
+        action.undo();
+        --this._undoableActionIndex;
+    },
+
+    redo: function()
+    {
+        if (this._undoableActionIndex >= this._actions.length - 1)
+            return;
+
+        var action = this._actions[++this._undoableActionIndex];
+        console.assert(action);
+        action.redo();
     }
 }
 

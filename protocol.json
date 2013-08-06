@@ -1438,6 +1438,16 @@
                 "description": "Disables storage tracking, prevents storage events from being sent to the client."
             },
             {
+                "name": "getValue",
+                "parameters": [
+                    { "name": "storageId", "$ref": "StorageId" },
+                    { "name": "key", "type": "string" }
+                ],
+                "returns": [
+                    { "name": "value", "type": "string", "optional": true }
+                ]
+            },
+            {
                 "name": "getDOMStorageItems",
                 "parameters": [
                     { "name": "storageId", "$ref": "StorageId" }
