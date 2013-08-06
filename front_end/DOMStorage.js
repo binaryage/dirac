@@ -315,6 +315,7 @@ WebInspector.DOMStorageHistory.prototype = {
  */
 WebInspector.DOMStorageModel = function()
 {
+    /** @type {!Object.<string, !WebInspector.DOMStorage>} */
     this._storages = {};
     InspectorBackend.registerDOMStorageDispatcher(new WebInspector.DOMStorageDispatcher(this));
     DOMStorageAgent.enable();
@@ -431,7 +432,7 @@ WebInspector.DOMStorageModel.prototype = {
      */
     _domStorageItemUpdated: function(storageId, key, oldValue, newValue)
     {
-        var domStorage = this._storages[storageId];
+        var domStorage = this.storageForId(storageId);
         var storageData = {
             storage: domStorage,
             key: key,
