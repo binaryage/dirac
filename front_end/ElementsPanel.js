@@ -1044,6 +1044,10 @@ WebInspector.ElementsPanel.prototype = {
 
     handleCopyEvent: function(event)
     {
+        var currentFocusElement = WebInspector.currentFocusElement();
+        if (currentFocusElement && WebInspector.isBeingEdited(currentFocusElement))
+            return;
+
         // Don't prevent the normal copy if the user has a selection.
         if (!window.getSelection().isCollapsed)
             return;
