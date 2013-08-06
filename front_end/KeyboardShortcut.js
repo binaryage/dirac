@@ -140,7 +140,7 @@ WebInspector.KeyboardShortcut.eventHasCtrlOrMeta = function(event)
 }
 
 /**
- * @param {KeyboardEvent} event
+ * @param {Event} event
  * @return {boolean}
  */
 WebInspector.KeyboardShortcut.hasNoModifiers = function(event)

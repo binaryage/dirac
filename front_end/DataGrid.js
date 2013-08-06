@@ -202,8 +202,12 @@ WebInspector.DataGrid.createSortableDataGrid = function(columnNames, values)
         var columnIsNumeric = true;
 
         for (var i = 0; i < nodes.length; i++) {
-            if (isNaN(Number(nodes[i].data[sortColumnIdentifier])))
+            var value = nodes[i].data[sortColumnIdentifier];
+            value = value instanceof Node ? Number(value.textContent) : Number(value);
+            if (isNaN(value)) {
                 columnIsNumeric = false;
+                break;
+            }
         }
 
         function comparator(dataGridNode1, dataGridNode2)
@@ -913,7 +917,7 @@ WebInspector.DataGrid.prototype = {
     _clickInHeaderCell: function(event)
     {
         var cell = event.target.enclosingNodeOrSelfWithNodeName("th");
-        if (!cell || !cell.columnIdentifier || !cell.hasStyleClass("sortable"))
+        if (!cell || (typeof cell.columnIdentifier === "undefined") || !cell.hasStyleClass("sortable"))
             return;
 
         var sortOrder = WebInspector.DataGrid.Order.Ascending;
