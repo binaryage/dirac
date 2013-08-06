@@ -30,25 +30,6 @@
 
 /**
  * @constructor
- */
-WebInspector.WorkspaceController = function(workspace)
-{
-    this._workspace = workspace;
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._inspectedURLChanged, this);
-}
-
-WebInspector.WorkspaceController.prototype = {
-    /**
-     * @param {WebInspector.Event} event
-     */
-    _inspectedURLChanged: function(event)
-    {
-        WebInspector.Revision.filterOutStaleRevisions();
-    }
-}
-
-/**
- * @constructor
  * @param {string} parentPath
  * @param {string} name
  * @param {string} originURL
@@ -134,6 +115,11 @@ WebInspector.ProjectDelegate.prototype = {
 
     /**
      * @param {string} path
+     */
+    refresh: function(path) { },
+
+    /**
+     * @param {string} path
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
@@ -156,11 +142,6 @@ WebInspector.ProjectDelegate.prototype = {
      */
     indexContent: function(progress, callback) { }
 }
-
-/**
- * @type {?WebInspector.WorkspaceController}
- */
-WebInspector.workspaceController = null;
 
 /**
  * @param {WebInspector.Workspace} workspace
@@ -217,16 +198,15 @@ WebInspector.Project.prototype = {
     _fileAdded: function(event)
     {
         var fileDescriptor = /** @type {WebInspector.FileDescriptor} */ (event.data);
-        var uiSourceCode = this.uiSourceCode(fileDescriptor.path);
-        if (uiSourceCode) {
-            // FIXME: Implement
+        var path = fileDescriptor.parentPath ? fileDescriptor.parentPath + "/" + fileDescriptor.name : fileDescriptor.name;
+        var uiSourceCode = this.uiSourceCode(path);
+        if (uiSourceCode)
             return;
-        }
 
         uiSourceCode = new WebInspector.UISourceCode(this, fileDescriptor.parentPath, fileDescriptor.name, fileDescriptor.originURL, fileDescriptor.url, fileDescriptor.contentType, fileDescriptor.isEditable);
         uiSourceCode.isContentScript = fileDescriptor.isContentScript;
 
-        this._uiSourceCodesMap[uiSourceCode.path()] = {uiSourceCode: uiSourceCode, index: this._uiSourceCodesList.length};
+        this._uiSourceCodesMap[path] = {uiSourceCode: uiSourceCode, index: this._uiSourceCodesList.length};
         this._uiSourceCodesList.push(uiSourceCode);
         this._workspace.dispatchEventToListeners(WebInspector.Workspace.Events.UISourceCodeAdded, uiSourceCode);
     },
@@ -370,6 +350,14 @@ WebInspector.Project.prototype = {
             delete this._uiSourceCodesMap[oldPath];
             callback(true, newName);
         }
+    },
+
+    /**
+     * @param {string} path
+     */
+    refresh: function(path)
+    {
+        this._projectDelegate.refresh(path);
     },
 
     /**

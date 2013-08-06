@@ -115,7 +115,7 @@ WebInspector.NavigatorView.prototype = {
         var projectNode = this._rootNode.child(project.id());
         if (!projectNode) {
             var type = project.type() === WebInspector.projectTypes.FileSystem ? WebInspector.NavigatorTreeOutline.Types.FileSystem : WebInspector.NavigatorTreeOutline.Types.Domain;
-            projectNode = new WebInspector.NavigatorFolderTreeNode(this, project.id(), type, "", project.displayName());
+            projectNode = new WebInspector.NavigatorFolderTreeNode(this, project, project.id(), type, "", project.displayName());
             this._rootNode.appendChild(projectNode);
         }
         return projectNode;
@@ -147,7 +147,7 @@ WebInspector.NavigatorView.prototype = {
             parentNode = this._folderNode(projectNode, folderPath.substring(0, index));
 
         var name = folderPath.substring(index + 1);
-        folderNode = new WebInspector.NavigatorFolderTreeNode(this, name, WebInspector.NavigatorTreeOutline.Types.Folder, folderPath, name);
+        folderNode = new WebInspector.NavigatorFolderTreeNode(this, null, name, WebInspector.NavigatorTreeOutline.Types.Folder, folderPath, name);
         subfolderNodes.put(folderPath, folderNode);
         parentNode.appendChild(folderNode);
         return folderNode;
@@ -242,6 +242,24 @@ WebInspector.NavigatorView.prototype = {
     {
         var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendApplicableItems(uiSourceCode);
+        contextMenu.show();
+    },
+
+    handleFolderContextMenu: function(event, node)
+    {
+        var contextMenu = new WebInspector.ContextMenu(event);
+        var path = "/";
+        while (node.parent !== this._rootNode) {
+            path = "/" + node.id + path;
+            node = node.parent;
+        }
+
+        contextMenu.appendItem(WebInspector.UIString("Refresh"), refresh.bind(this));
+
+        function refresh()
+        {
+            node._project.refresh(path);
+        }
         contextMenu.show();
     },
 
@@ -416,13 +434,15 @@ WebInspector.BaseNavigatorTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.BaseNavigatorTreeElement}
+ * @param {WebInspector.NavigatorView} navigatorView
  * @param {string} type
  * @param {string} title
  */
-WebInspector.NavigatorFolderTreeElement = function(type, title)
+WebInspector.NavigatorFolderTreeElement = function(navigatorView, type, title)
 {
     var iconClass = WebInspector.NavigatorView.iconClassForType(type);
     WebInspector.BaseNavigatorTreeElement.call(this, type, title, [iconClass], true);
+    this._navigatorView = navigatorView;
 }
 
 WebInspector.NavigatorFolderTreeElement.prototype = {
@@ -435,6 +455,7 @@ WebInspector.NavigatorFolderTreeElement.prototype = {
     {
         WebInspector.BaseNavigatorTreeElement.prototype.onattach.call(this);
         this.collapse();
+        this.listItemElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), false);
     },
 
     /**
@@ -450,6 +471,17 @@ WebInspector.NavigatorFolderTreeElement.prototype = {
         }
         paths.reverse();
         this.tooltip = paths.join("/");
+    },
+
+    /**
+     * @param {Event} event
+     */
+    _handleContextMenuEvent: function(event)
+    {
+        if (!this._node)
+            return;
+        this.select();
+        this._navigatorView.handleFolderContextMenu(event, this._node);
     },
 
     __proto__: WebInspector.BaseNavigatorTreeElement.prototype
@@ -906,15 +938,17 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
  * @constructor
  * @extends {WebInspector.NavigatorTreeNode}
  * @param {WebInspector.NavigatorView} navigatorView
+ * @param {WebInspector.Project} project
  * @param {string} id
  * @param {string} type
  * @param {string} folderPath
  * @param {string} title
  */
-WebInspector.NavigatorFolderTreeNode = function(navigatorView, id, type, folderPath, title)
+WebInspector.NavigatorFolderTreeNode = function(navigatorView, project, id, type, folderPath, title)
 {
     WebInspector.NavigatorTreeNode.call(this, id);
     this._navigatorView = navigatorView;
+    this._project = project;
     this._type = type;
     this._folderPath = folderPath;
     this._title = title;
@@ -937,7 +971,7 @@ WebInspector.NavigatorFolderTreeNode.prototype = {
      */
     _createTreeElement: function(title, node)
     {
-        var treeElement = new WebInspector.NavigatorFolderTreeElement(this._type, title);
+        var treeElement = new WebInspector.NavigatorFolderTreeElement(this._navigatorView, this._type, title);
         treeElement.setNode(node);
         return treeElement;
     },

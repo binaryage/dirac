@@ -259,6 +259,7 @@ WebInspector.ExperimentsSettings = function()
     this.tethering = this._createExperiment("tethering", "Enable port forwarding");
     this.drawerOverlay = this._createExperiment("drawerOverlay", "Open console as overlay");
     this.frameworksDebuggingSupport = this._createExperiment("frameworksDebuggingSupport", "Enable frameworks debugging support");
+    this.refreshFileSystemsOnFocus = this._createExperiment("refreshFileSystemsOnFocus", "Refresh file system folders on window focus");
 
     this._cleanUpSetting();
 }

@@ -377,6 +377,14 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     },
 
     /**
+     * @param {string} path
+     */
+    refresh: function(path)
+    {
+        this._fileSystem.requestFilesRecursive(path, this._addFile.bind(this));
+    },
+
+    /**
      * @param {string} filePath
      */
     _addFile: function(filePath)
