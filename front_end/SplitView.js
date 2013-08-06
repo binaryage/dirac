@@ -249,7 +249,7 @@ WebInspector.SplitView.prototype = {
      */
     sidebarSize: function()
     {
-        return this._sidebarSize;
+        return Math.max(0, this._sidebarSize);
     },
 
     /**

@@ -41,8 +41,7 @@ WebInspector.SidebarView = function(sidebarPosition, sidebarWidthSettingName, de
     this.setSidebarElementConstraints(Preferences.minSidebarWidth, Preferences.minSidebarHeight);
     this.setMainElementConstraints(0.5, 0.5);
 
-    this._sidebarPosition = sidebarPosition || WebInspector.SidebarView.SidebarPosition.Start;
-    this.setSecondIsSidebar(this._sidebarPosition === WebInspector.SidebarView.SidebarPosition.End);
+    this.setSecondIsSidebar(sidebarPosition === WebInspector.SidebarView.SidebarPosition.End);
 }
 
 WebInspector.SidebarView.EventTypes = {
