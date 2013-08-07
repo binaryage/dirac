@@ -34,7 +34,7 @@
 
 from cStringIO import StringIO
 
-import jsmin
+import rjsmin
 import os.path
 import re
 import sys
@@ -77,7 +77,7 @@ def main(argv):
         os.remove(output_file_name)
     output_file = open(output_file_name, 'w')
     if not no_minify:
-        output_script = jsmin.jsmin(output_script)
+        output_script = rjsmin.jsmin(output_script)
     output_file.write(output_script)
     output_file.close()
 

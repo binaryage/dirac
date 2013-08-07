@@ -37,7 +37,7 @@ from __future__ import with_statement
 from HTMLParser import HTMLParser
 from cStringIO import StringIO
 
-import jsmin
+import rjsmin
 import os.path
 import sys
 
@@ -104,7 +104,7 @@ def main(argv):
     if os.path.exists(output_file_name):
         os.remove(output_file_name)
     output_file = open(output_file_name, 'w')
-    output_file.write(jsmin.jsmin(output.getvalue()))
+    output_file.write(rjsmin.jsmin(output.getvalue()))
     output_file.close()
     output.close()
 
