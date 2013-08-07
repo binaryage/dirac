@@ -286,8 +286,11 @@ WebInspector.SearchView.prototype = {
     syncToSelection: function()
     {
         var selection = window.getSelection();
-        if (selection.rangeCount)
-            this._search.value = selection.toString().replace(/\r?\n.*/, "");
+        if (selection.rangeCount) {
+            var queryCandidate = selection.toString().replace(/\r?\n.*/, "");
+            if (queryCandidate)
+                this._search.value = queryCandidate;
+        }
     },
     
     /**
