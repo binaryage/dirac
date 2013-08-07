@@ -120,6 +120,18 @@ WebInspector.ProjectDelegate.prototype = {
 
     /**
      * @param {string} path
+     * @param {?string} name
+     * @param {function(?string)} callback
+     */
+    createFile: function(path, name, callback) { },
+
+    /**
+     * @param {string} path
+     */
+    deleteFile: function(path) { },
+
+    /**
+     * @param {string} path
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
@@ -358,6 +370,29 @@ WebInspector.Project.prototype = {
     refresh: function(path)
     {
         this._projectDelegate.refresh(path);
+    },
+
+    /**
+     * @param {string} path
+     * @param {?string} name
+     * @param {function(?string)} callback
+     */
+    createFile: function(path, name, callback)
+    {
+        this._projectDelegate.createFile(path, name, innerCallback);
+
+        function innerCallback(filePath)
+        {
+            callback(filePath);
+        }
+    },
+
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     */
+    deleteFile: function(uiSourceCode)
+    {
+        this._projectDelegate.deleteFile(uiSourceCode.path());
     },
 
     /**

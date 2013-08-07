@@ -139,7 +139,24 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     /**
      * @param {string} path
      */
-    refresh: function(path) {
+    refresh: function(path)
+    {
+    },
+
+    /**
+     * @param {string} path
+     * @param {?string} name
+     * @param {function(?string)} callback
+     */
+    createFile: function(path, name, callback)
+    {
+    },
+
+    /**
+     * @param {string} path
+     */
+    deleteFile: function(path)
+    {
     },
 
     /**

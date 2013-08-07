@@ -63,7 +63,8 @@ WebInspector.NavigatorView = function()
 WebInspector.NavigatorView.Events = {
     ItemSelected: "ItemSelected",
     ItemSearchStarted: "ItemSearchStarted",
-    ItemRenamingRequested: "ItemRenamingRequested"
+    ItemRenamingRequested: "ItemRenamingRequested",
+    ItemCreationRequested: "ItemCreationRequested"
 }
 
 WebInspector.NavigatorView.iconClassForType = function(type)
@@ -254,12 +255,26 @@ WebInspector.NavigatorView.prototype = {
             node = node.parent;
         }
 
-        contextMenu.appendItem(WebInspector.UIString("Refresh"), refresh.bind(this));
+        var project = node._project;
 
-        function refresh()
-        {
-            node._project.refresh(path);
+        if (project.type() === WebInspector.projectTypes.FileSystem) {
+            function refresh()
+            {
+                project.refresh(path);
+            }
+
+            function create()
+            {
+                var data = {};
+                data.project = project;
+                data.path = path;
+                this.dispatchEventToListeners(WebInspector.NavigatorView.Events.ItemCreationRequested, data);
+            }
+
+            contextMenu.appendItem(WebInspector.UIString("Refresh"), refresh.bind(this));
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "New file" : "New File"), create.bind(this));
         }
+
         contextMenu.show();
     },
 

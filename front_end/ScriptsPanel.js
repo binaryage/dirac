@@ -99,7 +99,7 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
 
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.ScriptSelected, this._scriptSelected, this);
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.ItemSearchStarted, this._itemSearchStarted, this);
-    this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.SnippetCreationRequested, this._snippetCreationRequested, this);
+    this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.ItemCreationRequested, this._itemCreationRequested, this);
     this._navigator.addEventListener(WebInspector.ScriptsNavigator.Events.ItemRenamingRequested, this._itemRenamingRequested, this);
 
     this._editorContainer.addEventListener(WebInspector.TabbedEditorContainer.Events.EditorSelected, this._editorSelected, this);
@@ -1044,15 +1044,31 @@ WebInspector.ScriptsPanel.prototype = {
     /**
      * @param {WebInspector.Event} event
      */
-    _snippetCreationRequested: function(event)
+    _itemCreationRequested: function(event)
     {
-        var uiSourceCode = WebInspector.scriptSnippetModel.createScriptSnippet();
-        this._showSourceLocation(uiSourceCode);
+        var project = event.data.project;
+        var path = event.data.path;
+        var filePath;
+        var shouldHideNavigator;
+        var uiSourceCode;
+        project.createFile(path, null, fileCreated.bind(this));
         
-        var shouldHideNavigator = !this._navigatorController.isNavigatorPinned();
-        if (this._navigatorController.isNavigatorHidden())
-            this._navigatorController.showNavigatorOverlay();
-        this._navigator.rename(uiSourceCode, callback.bind(this));
+        /**
+         * @param {?string} path
+         */
+        function fileCreated(path)
+        {
+            if (!path)
+                return;
+            filePath = path;
+            uiSourceCode = project.uiSourceCode(filePath);
+            this._showSourceLocation(uiSourceCode);
+
+            shouldHideNavigator = !this._navigatorController.isNavigatorPinned();
+            if (this._navigatorController.isNavigatorHidden())
+                this._navigatorController.showNavigatorOverlay();
+            this._navigator.rename(uiSourceCode, callback.bind(this));
+        }
     
         /**
          * @param {boolean} committed
@@ -1063,7 +1079,7 @@ WebInspector.ScriptsPanel.prototype = {
                 this._navigatorController.hideNavigatorOverlay();
 
             if (!committed) {
-                WebInspector.scriptSnippetModel.deleteScriptSnippet(uiSourceCode);
+                project.deleteFile(uiSourceCode);
                 return;
             }
 

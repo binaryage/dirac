@@ -42,17 +42,19 @@ WebInspector.ScriptsNavigator = function()
     this._scriptsView.addEventListener(WebInspector.NavigatorView.Events.ItemSelected, this._scriptSelected, this);
     this._scriptsView.addEventListener(WebInspector.NavigatorView.Events.ItemSearchStarted, this._itemSearchStarted, this);
     this._scriptsView.addEventListener(WebInspector.NavigatorView.Events.ItemRenamingRequested, this._itemRenamingRequested, this);
+    this._scriptsView.addEventListener(WebInspector.NavigatorView.Events.ItemCreationRequested, this._itemCreationRequested, this);
 
     this._contentScriptsView = new WebInspector.NavigatorView();
     this._contentScriptsView.addEventListener(WebInspector.NavigatorView.Events.ItemSelected, this._scriptSelected, this);
     this._contentScriptsView.addEventListener(WebInspector.NavigatorView.Events.ItemSearchStarted, this._itemSearchStarted, this);
     this._contentScriptsView.addEventListener(WebInspector.NavigatorView.Events.ItemRenamingRequested, this._itemRenamingRequested, this);
+    this._contentScriptsView.addEventListener(WebInspector.NavigatorView.Events.ItemCreationRequested, this._itemCreationRequested, this);
 
     this._snippetsView = new WebInspector.SnippetsNavigatorView();
     this._snippetsView.addEventListener(WebInspector.NavigatorView.Events.ItemSelected, this._scriptSelected, this);
     this._snippetsView.addEventListener(WebInspector.NavigatorView.Events.ItemSearchStarted, this._itemSearchStarted, this);
     this._snippetsView.addEventListener(WebInspector.NavigatorView.Events.ItemRenamingRequested, this._itemRenamingRequested, this);
-    this._snippetsView.addEventListener(WebInspector.SnippetsNavigatorView.Events.SnippetCreationRequested, this._snippetCreationRequested, this);
+    this._snippetsView.addEventListener(WebInspector.NavigatorView.Events.ItemCreationRequested, this._itemCreationRequested, this);
 
     this._tabbedPane.appendTab(WebInspector.ScriptsNavigator.ScriptsTab, WebInspector.UIString("Sources"), this._scriptsView);
     this._tabbedPane.selectTab(WebInspector.ScriptsNavigator.ScriptsTab);
@@ -62,7 +64,7 @@ WebInspector.ScriptsNavigator = function()
 
 WebInspector.ScriptsNavigator.Events = {
     ScriptSelected: "ScriptSelected",
-    SnippetCreationRequested: "SnippetCreationRequested",
+    ItemCreationRequested: "ItemCreationRequested",
     ItemRenamingRequested: "ItemRenamingRequested",
     ItemSearchStarted: "ItemSearchStarted",
 }
@@ -158,9 +160,9 @@ WebInspector.ScriptsNavigator.prototype = {
     /**
      * @param {WebInspector.Event} event
      */
-    _snippetCreationRequested: function(event)
+    _itemCreationRequested: function(event)
     {    
-        this.dispatchEventToListeners(WebInspector.ScriptsNavigator.Events.SnippetCreationRequested, event.data);
+        this.dispatchEventToListeners(WebInspector.ScriptsNavigator.Events.ItemCreationRequested, event.data);
     },
 
     __proto__: WebInspector.Object.prototype
@@ -174,10 +176,6 @@ WebInspector.SnippetsNavigatorView = function()
 {
     WebInspector.NavigatorView.call(this);
     this.element.addEventListener("contextmenu", this.handleContextMenu.bind(this), false);
-}
-
-WebInspector.SnippetsNavigatorView.Events = {
-    SnippetCreationRequested: "SnippetCreationRequested"
 }
 
 WebInspector.SnippetsNavigatorView.prototype = {
@@ -215,17 +213,15 @@ WebInspector.SnippetsNavigatorView.prototype = {
     {
         if (uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets)
             return;
-        WebInspector.scriptSnippetModel.deleteScriptSnippet(uiSourceCode);
+        uiSourceCode.project().deleteFile(uiSourceCode);
     },
 
     _handleCreateSnippet: function()
     {
-        this._snippetCreationRequested();
-    },
-
-    _snippetCreationRequested: function()
-    {
-        this.dispatchEventToListeners(WebInspector.SnippetsNavigatorView.Events.SnippetCreationRequested, null);
+        var data = {};
+        data.project = WebInspector.scriptSnippetModel.project();
+        data.path = "";
+        this.dispatchEventToListeners(WebInspector.NavigatorView.Events.ItemCreationRequested, data);
     },
 
     __proto__: WebInspector.NavigatorView.prototype

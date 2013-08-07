@@ -136,6 +136,104 @@ WebInspector.IsolatedFileSystem.prototype = {
 
     /**
      * @param {string} path
+     * @param {?string} name
+     * @param {function(?string)} callback
+     */
+    createFile: function(path, name, callback)
+    {
+        this._requestFileSystem(fileSystemLoaded.bind(this));
+        var newFileIndex = 1;
+        if (!name)
+            name = "NewFile";
+        var nameCandidate;
+
+        /**
+         * @param {DOMFileSystem} domFileSystem
+         */
+        function fileSystemLoaded(domFileSystem)
+        {
+            domFileSystem.root.getDirectory(path, null, dirEntryLoaded.bind(this), errorHandler.bind(this));
+        }
+
+        /**
+         * @param {DirectoryEntry} dirEntry
+         */
+        function dirEntryLoaded(dirEntry)
+        {
+            var nameCandidate = name;
+            if (newFileIndex > 1)
+                nameCandidate += newFileIndex;
+            ++newFileIndex;
+            dirEntry.getFile(nameCandidate, { create: true, exclusive: true }, fileCreated, fileCreationError);
+
+            function fileCreated(entry)
+            {
+                callback(entry.fullPath.substr(1));
+            }
+
+            function fileCreationError(error)
+            {
+                if (error.code === FileError.INVALID_MODIFICATION_ERR) {
+                    dirEntryLoaded(dirEntry);
+                    return;
+                }
+
+                var errorMessage = WebInspector.IsolatedFileSystem.errorMessage(error);
+                console.error(errorMessage + " when testing if file exists '" + (this._path + "/" + path + "/" + nameCandidate) + "'");
+                callback(null);
+            }
+        }
+
+        function errorHandler(error)
+        {
+            var errorMessage = WebInspector.IsolatedFileSystem.errorMessage(error);
+            var filePath = this._path + "/" + path;
+            if (nameCandidate)
+                filePath += "/" + nameCandidate;
+            console.error(errorMessage + " when getting content for file '" + (filePath) + "'");
+            callback(null);
+        }
+    },
+
+    /**
+     * @param {string} path
+     */
+    deleteFile: function(path)
+    {
+        this._requestFileSystem(fileSystemLoaded.bind(this));
+
+        /**
+         * @param {DOMFileSystem} domFileSystem
+         */
+        function fileSystemLoaded(domFileSystem)
+        {
+            domFileSystem.root.getFile(path, null, fileEntryLoaded.bind(this), errorHandler.bind(this));
+        }
+
+        /**
+         * @param {FileEntry} fileEntry
+         */
+        function fileEntryLoaded(fileEntry)
+        {
+            fileEntry.remove(fileEntryRemoved.bind(this), errorHandler.bind(this));
+        }
+
+        function fileEntryRemoved()
+        {
+        }
+
+        /**
+         * @param {FileError} error
+         */
+        function errorHandler(error)
+        {
+            var errorMessage = WebInspector.IsolatedFileSystem.errorMessage(error);
+            console.error(errorMessage + " when deleting file '" + (this._path + "/" + path) + "'");
+        }
+    },
+
+    /**
+     * @param {string} path
      * @param {function(?Date, ?number)} callback
      */
     requestMetadata: function(path, callback)
