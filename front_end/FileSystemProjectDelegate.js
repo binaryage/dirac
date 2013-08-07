@@ -409,6 +409,11 @@ WebInspector.FileSystemProjectDelegate.prototype = {
         this._removeFile(path);
     },
 
+    remove: function()
+    {
+        WebInspector.isolatedFileSystemManager.removeFileSystem(this._fileSystem.path());
+    },
+
     /**
      * @param {string} filePath
      */

@@ -130,6 +130,8 @@ WebInspector.ProjectDelegate.prototype = {
      */
     deleteFile: function(path) { },
 
+    remove: function() { },
+
     /**
      * @param {string} path
      * @param {string} query
@@ -393,6 +395,11 @@ WebInspector.Project.prototype = {
     deleteFile: function(uiSourceCode)
     {
         this._projectDelegate.deleteFile(uiSourceCode.path());
+    },
+
+    remove: function()
+    {
+        this._projectDelegate.remove();
     },
 
     /**

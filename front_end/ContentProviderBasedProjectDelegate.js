@@ -159,6 +159,10 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     {
     },
 
+    remove: function()
+    {
+    },
+
     /**
      * @param {string} path
      * @param {string} newName
