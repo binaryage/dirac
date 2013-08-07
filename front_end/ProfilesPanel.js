@@ -427,6 +427,7 @@ WebInspector.ProfilesPanel = function(name, type)
             this._registerProfileType(new WebInspector.CanvasProfileType());
     }
 
+    this._profilesWereRequested = false;
     this._reset();
 
     this._createFileSelectorElement();
@@ -568,7 +569,6 @@ WebInspector.ProfilesPanel.prototype = {
         this.searchCanceled();
 
         this._profileGroups = {};
-        this._profilesWereRequested = false;
         this.recordButton.toggled = false;
         if (this._selectedProfileType)
             this.recordButton.title = this._selectedProfileType.buttonTooltip;
