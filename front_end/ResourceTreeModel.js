@@ -72,7 +72,7 @@ WebInspector.ResourceTreeModel.EventTypes = {
 WebInspector.ResourceTreeModel.prototype = {
     _fetchResourceTree: function()
     {
-        /** @type {!Object.<string, WebInspector.ResourceTreeFrame>} */
+        /** @type {!Object.<string, !WebInspector.ResourceTreeFrame>} */
         this._frames = {};
         delete this._cachedResourcesProcessed;
         PageAgent.getResourceTree(this._processCachedResources.bind(this));
@@ -415,7 +415,7 @@ WebInspector.ResourceTreeModel.prototype = {
      * @param {string} url
      * @param {WebInspector.ResourceType} type
      * @param {string} mimeType
-     * @return {WebInspector.Resource}
+     * @return {!WebInspector.Resource}
      */
     _createResourceFromFramePayload: function(frame, url, type, mimeType)
     {
@@ -444,12 +444,12 @@ WebInspector.ResourceTreeFrame = function(model, parentFrame, payload)
     this._mimeType = payload.mimeType;
 
     /**
-     * @type {Array.<WebInspector.ResourceTreeFrame>}
+     * @type {!Array.<!WebInspector.ResourceTreeFrame>}
      */
     this._childFrames = [];
 
     /**
-     * @type {Object.<string, WebInspector.Resource>}
+     * @type {!Object.<string, !WebInspector.Resource>}
      */
     this._resourcesMap = {};
 
@@ -507,7 +507,7 @@ WebInspector.ResourceTreeFrame.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.ResourceTreeFrame>}
+     * @return {!Array.<!WebInspector.ResourceTreeFrame>}
      */
     get childFrames()
     {
@@ -549,7 +549,7 @@ WebInspector.ResourceTreeFrame.prototype = {
     },
 
     /**
-     * @param {WebInspector.ResourceTreeFrame} frame
+     * @param {!WebInspector.ResourceTreeFrame} frame
      */
     _removeChildFrame: function(frame)
     {
@@ -559,9 +559,10 @@ WebInspector.ResourceTreeFrame.prototype = {
 
     _removeChildFrames: function()
     {
-        var copy = this._childFrames.slice();
-        for (var i = 0; i < copy.length; ++i)
-            this._removeChildFrame(copy[i]); 
+        var frames = this._childFrames;
+        this._childFrames = [];
+        for (var i = 0; i < frames.length; ++i)
+            frames[i]._remove();
     },
 
     _remove: function()
@@ -572,7 +573,7 @@ WebInspector.ResourceTreeFrame.prototype = {
     },
 
     /**
-     * @param {WebInspector.Resource} resource
+     * @param {!WebInspector.Resource} resource
      */
     addResource: function(resource)
     {
@@ -602,7 +603,7 @@ WebInspector.ResourceTreeFrame.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.Resource>}
+     * @return {!Array.<!WebInspector.Resource>}
      */
     resources: function()
     {
