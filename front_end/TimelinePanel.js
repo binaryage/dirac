@@ -58,14 +58,7 @@ WebInspector.TimelinePanel = function()
 
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), false);
 
-    this.element.addStyleClass("split-view-vertical");
-
-    this._sidebarBackgroundElement = document.createElement("div");
-    this._sidebarBackgroundElement.className = "sidebar split-view-sidebar split-view-contents-first timeline-sidebar-background";
-    this.element.appendChild(this._sidebarBackgroundElement);
-
     this.createSidebarViewWithTree();
-    this.element.appendChild(this.splitView.resizerElement());
 
     this._containerElement = this.splitView.element;
     this._containerElement.tabIndex = 0;
@@ -665,7 +658,6 @@ WebInspector.TimelinePanel.prototype = {
     {
         var width = event.data;
         this._resize(width);
-        this._sidebarBackgroundElement.style.width = width + "px";
         this._overviewPane.sidebarResized(width);
         this._memoryStatistics.setSidebarWidth(width);
         this._timelineGrid.gridHeaderElement.style.left = width + "px";
