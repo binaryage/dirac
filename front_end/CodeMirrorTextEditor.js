@@ -747,6 +747,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     addBreakpoint: function(lineNumber, disabled, conditional)
     {
+        if (lineNumber < 0 || lineNumber >= this._codeMirror.lineCount())
+            return;
         var className = "cm-breakpoint" + (conditional ? " cm-breakpoint-conditional" : "") + (disabled ? " cm-breakpoint-disabled" : "");
         this._codeMirror.addLineClass(lineNumber, "wrap", className);
     },
@@ -756,6 +758,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     removeBreakpoint: function(lineNumber)
     {
+        if (lineNumber < 0 || lineNumber >= this._codeMirror.lineCount())
+            return;
         var wrapClasses = this._codeMirror.getLineHandle(lineNumber).wrapClass;
         if (!wrapClasses)
             return;
@@ -1110,6 +1114,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     setAttribute: function(line, name, value)
     {
+        if (line < 0 || line >= this._codeMirror.lineCount())
+            return;
         var handle = this._codeMirror.getLineHandle(line);
         if (handle.attributes === undefined) handle.attributes = {};
         handle.attributes[name] = value;
@@ -1118,10 +1124,12 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     /**
      * @param {number} line
      * @param {string} name
-     * @return {Object|null} value
+     * @return {?Object} value
      */
     getAttribute: function(line, name)
     {
+        if (line < 0 || line >= this._codeMirror.lineCount())
+            return null;
         var handle = this._codeMirror.getLineHandle(line);
         return handle.attributes && handle.attributes[name] !== undefined ? handle.attributes[name] : null;
     },
@@ -1132,6 +1140,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     removeAttribute: function(line, name)
     {
+        if (line < 0 || line >= this._codeMirror.lineCount())
+            return;
         var handle = this._codeMirror.getLineHandle(line);
         if (handle && handle.attributes)
             delete handle.attributes[name];
