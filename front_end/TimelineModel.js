@@ -41,6 +41,7 @@ WebInspector.TimelineModel = function()
     this._collectionEnabled = false;
 
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, this._onRecordAdded, this);
+    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStartEvent, this._onTimelineStarted, this);
 }
 
 WebInspector.TimelineModel.TransferChunkLengthBytes = 5000000;
@@ -261,6 +262,14 @@ WebInspector.TimelineModel.prototype = {
             this._minimumRecordTime = startTime;
         if (this._maximumRecordTime === -1 || endTime > this._maximumRecordTime)
             this._maximumRecordTime = endTime;
+    },
+
+    _onTimelineStarted: function(event)
+    {
+        if (event.data.timestampsBase)
+            this._timestampsBase = event.data.timestampsBase;
+        if (event.data.startTime)
+            this._startTime = event.data.startTime;
     },
 
     /**

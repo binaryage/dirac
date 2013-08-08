@@ -2716,6 +2716,14 @@
                     { "name": "record", "$ref": "TimelineEvent", "description": "Timeline event record data." }
                 ],
                 "description": "Fired for every instrumentation event while timeline is started."
+            },
+            {
+                "name": "timelineStarted",
+                "parameters": [
+                    { "name": "timestampsBase", "type": "number", "description": "Timestamps base in milliseconds." },
+                    { "name": "startTime", "type": "number", "description": "Timeline recording start wall time in milliseconds." }
+                ],
+                "description": "Sent out on timeline start and provides general information on timeline."
             }
         ]
     },
