@@ -625,7 +625,7 @@ WebInspector.ConsoleView.prototype = {
      */
     performFilter: function(query)
     {
-        this.console.filter.setRegexFilter(query);
+        WebInspector.console.filter.setRegexFilter(query);
     },
 
     /**
