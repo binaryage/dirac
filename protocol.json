@@ -3196,8 +3196,7 @@
                     { "name": "scriptId", "$ref": "Debugger.ScriptId", "description": "Script identifier." },
                     { "name": "url", "type": "string", "description": "URL." },
                     { "name": "lineNumber", "type": "integer", "description": "Line number." },
-                    { "name": "totalTime", "type": "number", "description": "Total execution time." },
-                    { "name": "selfTime", "type": "number", "description": "Self time." },
+                    { "name": "hitCount", "type": "integer", "description": "Number of samples where this node was on top of the call stack." },
                     { "name": "callUID", "type": "number", "description": "Call UID." },
                     { "name": "children", "type": "array", "items": { "$ref": "CPUProfileNode" }, "description": "Child nodes." },
                     { "name": "id", "optional": true, "type": "integer", "description": "Unique id of the node." }
@@ -3209,7 +3208,9 @@
                 "description": "Profile.",
                 "properties": [
                     { "name": "head", "$ref": "CPUProfileNode" },
-                    { "name": "idleTime", "type": "number" },
+                    { "name": "idleTime", "type": "number", "description": "Idle time in seconds." },
+                    { "name": "startTime", "type": "number", "description": "Profiling start time in seconds." },
+                    { "name": "endTime", "type": "number", "description": "Profiling end time in seconds." },
                     { "name": "samples", "optional": true, "type": "array", "items": { "type": "integer" }, "description": "Ids of samples top nodes." }
                 ]
             },

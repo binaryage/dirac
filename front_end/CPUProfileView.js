@@ -141,6 +141,8 @@ WebInspector.CPUProfileView.prototype = {
         this.profileHead = profile.head;
         this.samples = profile.samples;
 
+        this._calculateTimes(profile);
+
         if (profile.idleTime)
             this._injectIdleTimeNode(profile);
 
@@ -562,6 +564,30 @@ WebInspector.CPUProfileView.prototype = {
         this.refreshShowAsPercents();
 
         event.consume(true);
+    },
+
+    _calculateTimes: function(profile)
+    {
+        function totalHitCount(node) {
+            var result = node.hitCount;
+            for (var i = 0; i < node.children.length; i++)
+                result += totalHitCount(node.children[i]);
+            return result;
+        }
+        profile.totalHitCount = totalHitCount(profile.head);
+
+        var durationMs = 1000 * profile.endTime - 1000 * profile.startTime;
+        var samplingRate = profile.totalHitCount / durationMs;
+
+        function calculateTimesForNode(node) {
+            node.selfTime = node.hitCount * samplingRate;
+            var totalTime = node.selfTime;
+            for (var i = 0; i < node.children.length; i++)
+                totalTime += calculateTimesForNode(node.children[i]);
+            node.totalTime = totalTime;
+            return totalTime;
+        }
+        calculateTimesForNode(profile.head);
     },
 
     _assignParentsInProfile: function()
