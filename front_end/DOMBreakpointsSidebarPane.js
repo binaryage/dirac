@@ -301,9 +301,13 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
     {
         var pathToBreakpoints = {};
 
+        /**
+         * @param {string} path
+         * @param {?DOMAgent.NodeId} nodeId
+         */
         function didPushNodeByPathToFrontend(path, nodeId)
         {
-            var node = WebInspector.domAgent.nodeForId(nodeId);
+            var node = nodeId ? WebInspector.domAgent.nodeForId(nodeId) : null;
             if (!node)
                 return;
 

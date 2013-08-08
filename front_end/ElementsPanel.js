@@ -269,6 +269,9 @@ WebInspector.ElementsPanel.prototype = {
                 this.treeOutline.selectedTreeElement.expand();
         }
 
+        /**
+         * @param {?DOMAgent.NodeId} nodeId
+         */
         function selectLastSelectedNode(nodeId)
         {
             if (this.selectedDOMNode()) {

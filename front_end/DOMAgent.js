@@ -904,18 +904,16 @@ WebInspector.DOMAgent.prototype = {
      */
     pushNodeToFrontend: function(objectId, callback)
     {
-        var callbackCast = /** @type {function(*)} */(callback);
-        this._dispatchWhenDocumentAvailable(DOMAgent.requestNode.bind(DOMAgent, objectId), callbackCast);
+        this._dispatchWhenDocumentAvailable(DOMAgent.requestNode.bind(DOMAgent, objectId), callback);
     },
 
     /**
      * @param {string} path
-     * @param {function(?WebInspector.DOMNode)=} callback
+     * @param {function(?number)=} callback
      */
     pushNodeByPathToFrontend: function(path, callback)
     {
-        var callbackCast = /** @type {function(*)} */(callback);
-        this._dispatchWhenDocumentAvailable(DOMAgent.pushNodeByPathToFrontend.bind(DOMAgent, path), callbackCast);
+        this._dispatchWhenDocumentAvailable(DOMAgent.pushNodeByPathToFrontend.bind(DOMAgent, path), callback);
     },
 
     /**
@@ -924,13 +922,13 @@ WebInspector.DOMAgent.prototype = {
      */
     pushNodeByBackendIdToFrontend: function(backendNodeId, callback)
     {
-        var callbackCast = /** @type {function(*)} */(callback);
-        this._dispatchWhenDocumentAvailable(DOMAgent.pushNodeByBackendIdToFrontend.bind(DOMAgent, backendNodeId), callbackCast);
+        this._dispatchWhenDocumentAvailable(DOMAgent.pushNodeByBackendIdToFrontend.bind(DOMAgent, backendNodeId), callback);
     },
 
     /**
-     * @param {function(*)=} callback
-     * @return {function(?Protocol.Error,*=)|undefined}
+     * @param {function(T)=} callback
+     * @return {function(?Protocol.Error, T=)|undefined}
+     * @template T
      */
     _wrapClientCallback: function(callback)
     {
@@ -948,12 +946,13 @@ WebInspector.DOMAgent.prototype = {
     },
 
     /**
-     * @param {function(function(?Protocol.Error, *=))} func
-     * @param {function(*)=} callback
+     * @param {function(function(?Protocol.Error, T=)=)} func
+     * @param {function(T)=} callback
+     * @template T
      */
     _dispatchWhenDocumentAvailable: function(func, callback)
     {
-        var callbackWrapper = /** @type {function(?Protocol.Error, *=)} */(this._wrapClientCallback(callback));
+        var callbackWrapper = this._wrapClientCallback(callback);
 
         function onDocumentAvailable()
         {
@@ -1268,8 +1267,7 @@ WebInspector.DOMAgent.prototype = {
      */
     querySelector: function(nodeId, selectors, callback)
     {
-        var callbackCast = /** @type {function(*)|undefined} */(callback);
-        DOMAgent.querySelector(nodeId, selectors, this._wrapClientCallback(callbackCast));
+        DOMAgent.querySelector(nodeId, selectors, this._wrapClientCallback(callback));
     },
 
     /**
@@ -1279,8 +1277,7 @@ WebInspector.DOMAgent.prototype = {
      */
     querySelectorAll: function(nodeId, selectors, callback)
     {
-        var callbackCast = /** @type {function(*)|undefined} */(callback);
-        DOMAgent.querySelectorAll(nodeId, selectors, this._wrapClientCallback(callbackCast));
+        DOMAgent.querySelectorAll(nodeId, selectors, this._wrapClientCallback(callback));
     },
 
     /**
@@ -1322,8 +1319,7 @@ WebInspector.DOMAgent.prototype = {
      */
     setInspectModeEnabled: function(enabled, inspectShadowDOM, callback)
     {
-        var callbackCast = /** @type {function(*)} */ (callback);
-        this._dispatchWhenDocumentAvailable(DOMAgent.setInspectModeEnabled.bind(DOMAgent, enabled, inspectShadowDOM, this._buildHighlightConfig()), callbackCast);
+        this._dispatchWhenDocumentAvailable(DOMAgent.setInspectModeEnabled.bind(DOMAgent, enabled, inspectShadowDOM, this._buildHighlightConfig()), callback);
     },
 
     /**

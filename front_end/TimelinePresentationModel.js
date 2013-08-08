@@ -995,7 +995,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @param {number} nodeId
+     * @param {?DOMAgent.NodeId} nodeId
      */
     _setRelatedNode: function(nodeId)
     {
