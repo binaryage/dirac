@@ -172,6 +172,7 @@
             'front_end/TestController.js',
             'front_end/TextEditor.js',
             'front_end/TextEditorHighlighter.js',
+            'front_end/TextRange.js',
             'front_end/TextEditorModel.js',
             'front_end/TextPrompt.js',
             'front_end/TextUtils.js',

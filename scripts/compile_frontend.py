@@ -164,6 +164,7 @@ modules = [
             "TabbedPane.js",
             "TextEditor.js",
             "TextEditorHighlighter.js",
+            "TextRange.js",
             "TextEditorModel.js",
             "TextPrompt.js",
             "TextUtils.js",
