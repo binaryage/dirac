@@ -1345,6 +1345,7 @@ WebInspector.ScriptsPanel.prototype = {
             this._editorFooterElement.removeChildren();
             this._editorContentsElement.style.bottom = 0;
         }
+        this.doResize();
     },
 
     __proto__: WebInspector.Panel.prototype
