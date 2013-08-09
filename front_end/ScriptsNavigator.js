@@ -175,23 +175,30 @@ WebInspector.ScriptsNavigator.prototype = {
 WebInspector.SnippetsNavigatorView = function()
 {
     WebInspector.NavigatorView.call(this);
-    this.element.addEventListener("contextmenu", this.handleContextMenu.bind(this), false);
 }
 
 WebInspector.SnippetsNavigatorView.prototype = {
     /**
      * @param {Event} event
-     * @param {WebInspector.UISourceCode=} uiSourceCode
      */
-    handleContextMenu: function(event, uiSourceCode)
+    handleContextMenu: function(event)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
-        if (uiSourceCode) {
-            contextMenu.appendItem(WebInspector.UIString("Run"), this._handleEvaluateSnippet.bind(this, uiSourceCode));
-            contextMenu.appendItem(WebInspector.UIString("Rename"), this.requestRename.bind(this, uiSourceCode));
-            contextMenu.appendItem(WebInspector.UIString("Remove"), this._handleRemoveSnippet.bind(this, uiSourceCode));
-            contextMenu.appendSeparator();
-        }
+        contextMenu.appendItem(WebInspector.UIString("New"), this._handleCreateSnippet.bind(this));
+        contextMenu.show();
+    },
+
+    /**
+     * @param {Event} event
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     */
+    handleFileContextMenu: function(event, uiSourceCode)
+    {
+        var contextMenu = new WebInspector.ContextMenu(event);
+        contextMenu.appendItem(WebInspector.UIString("Run"), this._handleEvaluateSnippet.bind(this, uiSourceCode));
+        contextMenu.appendItem(WebInspector.UIString("Rename"), this.requestRename.bind(this, uiSourceCode));
+        contextMenu.appendItem(WebInspector.UIString("Remove"), this._handleRemoveSnippet.bind(this, uiSourceCode));
+        contextMenu.appendSeparator();
         contextMenu.appendItem(WebInspector.UIString("New"), this._handleCreateSnippet.bind(this));
         contextMenu.show();
     },

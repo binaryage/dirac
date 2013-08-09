@@ -58,7 +58,7 @@ WebInspector.NavigatorView = function()
     this._rootNode.populate();
 
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._inspectedURLChanged, this);
-    this.element.addEventListener("contextmenu", this._handleContextMenu.bind(this), false);
+    this.element.addEventListener("contextmenu", this.handleContextMenu.bind(this), false);
 }
 
 WebInspector.NavigatorView.Events = {
@@ -240,13 +240,19 @@ WebInspector.NavigatorView.prototype = {
         this._rootNode.reset();
     },
 
-    _handleContextMenu: function(event)
+    /**
+     * @param {Event} event
+     */
+    handleContextMenu: function(event)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
         this._appendAddFolderItem(contextMenu);
         contextMenu.show();
     },
 
+    /**
+     * @param {WebInspector.ContextMenu} contextMenu
+     */
     _appendAddFolderItem: function(contextMenu)
     {
         function addFolder()
@@ -258,6 +264,10 @@ WebInspector.NavigatorView.prototype = {
         contextMenu.appendItem(addFolderLabel, addFolder);
     },
 
+    /**
+     * @param {Event} event
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     */
     handleFileContextMenu: function(event, uiSourceCode)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
@@ -267,6 +277,10 @@ WebInspector.NavigatorView.prototype = {
         contextMenu.show();
     },
 
+    /**
+     * @param {Event} event
+     * @param {WebInspector.NavigatorFolderTreeNode} node
+     */
     handleFolderContextMenu: function(event, node)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
@@ -313,6 +327,9 @@ WebInspector.NavigatorView.prototype = {
         contextMenu.show();
     },
 
+    /**
+     * @param {Event} event
+     */
    _treeKeyPress: function(event)
    {
         if (WebInspector.isBeingEdited(this._scriptsTree.childrenListElement))
