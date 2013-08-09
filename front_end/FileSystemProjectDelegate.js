@@ -38,6 +38,10 @@
 WebInspector.FileSystemProjectDelegate = function(isolatedFileSystem, workspace)
 {
     this._fileSystem = isolatedFileSystem;
+    this._normalizedFileSystemPath = this._fileSystem.path();
+    if (WebInspector.isWin())
+        this._normalizedFileSystemPath = this._normalizedFileSystemPath.replace(/\\/g, "/");
+    this._fileSystemURL = "file://" + this._normalizedFileSystemPath + "/";
     this._workspace = workspace;
     /** @type {Object.<number, function(Array.<string>)>} */
     this._searchCallbacks = {};
@@ -88,7 +92,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
      */
     displayName: function()
     {
-        return this._fileSystem.path().substr(this._fileSystem.path().lastIndexOf("/") + 1);
+        return this._normalizedFileSystemPath.substr(this._normalizedFileSystemPath.lastIndexOf("/") + 1);
     },
 
     /**
@@ -419,17 +423,16 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     {
         if (!filePath)
             console.assert(false);
-        var fullPath = this._fileSystem.path() + "/" + filePath;
 
         var slash = filePath.lastIndexOf("/");
         var parentPath = filePath.substring(0, slash);
         var name = filePath.substring(slash + 1);
 
         var url = this._workspace.urlForPath(this._fileSystem.path(), filePath);
-        var extension = this._extensionForPath(filePath);
+        var extension = this._extensionForPath(name);
         var contentType = this._contentTypeForExtension(extension);
 
-        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, "file://" + fullPath, url, contentType, true);
+        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, this._fileSystemURL + filePath, url, contentType, true);
         this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.FileAdded, fileDescriptor);
     },
 

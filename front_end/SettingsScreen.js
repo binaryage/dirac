@@ -615,14 +615,15 @@ WebInspector.WorkspaceSettingsTab.prototype = {
 
         const maxTotalPathLength = 60;
         const maxFolderNameLength = 30;
-        var lastIndexOfSlash = fileSystemPath.lastIndexOf("/");
+
+        var lastIndexOfSlash = fileSystemPath.lastIndexOf(WebInspector.isWin() ? "\\" : "/");
         var folderName = fileSystemPath.substr(lastIndexOfSlash + 1);
-        var folderPath = fileSystemPath.substr(0, lastIndexOfSlash);
+        var folderPath = fileSystemPath.substr(0, lastIndexOfSlash + 1);
         folderPath = folderPath.trimMiddle(maxTotalPathLength - Math.min(maxFolderNameLength, folderName.length));
         folderName = folderName.trimMiddle(maxFolderNameLength);
 
         var folderPathElement = pathElement.createChild("span");
-        folderPathElement.textContent = folderPath + "/";
+        folderPathElement.textContent = folderPath;
 
         var nameElement = pathElement.createChild("span", "file-system-path-name");
         nameElement.textContent = folderName;
