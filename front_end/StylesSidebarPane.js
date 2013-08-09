@@ -129,19 +129,6 @@ WebInspector.StylesSidebarPane.PseudoIdNames = [
 WebInspector.StylesSidebarPane._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
 
 /**
- * @param {string} name
- */
-WebInspector.StylesSidebarPane.canonicalPropertyName = function(name)
-{
-    if (!name || name.length < 9 || name.charAt(0) !== "-")
-        return name;
-    var match = name.match(/(?:-webkit-|-khtml-|-apple-)(.+)/);
-    if (!match)
-        return name;
-    return match[1];
-}
-
-/**
  * @param {WebInspector.CSSProperty} property
  */
 WebInspector.StylesSidebarPane.createExclamationMark = function(property)
@@ -600,11 +587,11 @@ WebInspector.StylesSidebarPane.prototype = {
                 if (!property.isLive || !property.parsedOk)
                     continue;
 
-                var canonicalName = WebInspector.StylesSidebarPane.canonicalPropertyName(property.name);
                 // Do not pick non-inherited properties from inherited styles.
-                if (styleRule.isInherited && !WebInspector.CSSMetadata.InheritedProperties[canonicalName])
+                if (styleRule.isInherited && !WebInspector.CSSMetadata.isPropertyInherited(property.name))
                     continue;
 
+                var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(property.name);
                 if (foundImportantProperties.hasOwnProperty(canonicalName))
                     continue;
 
@@ -709,7 +696,7 @@ WebInspector.StylesSidebarPane.prototype = {
         for (var i = 0; i < properties.length; ++i) {
             var property = properties[i];
             // Does this style contain non-overridden inherited property?
-            if (property.isLive && property.name in WebInspector.CSSMetadata.InheritedProperties)
+            if (property.isLive && WebInspector.CSSMetadata.isPropertyInherited(property.name))
                 return true;
         }
         return false;
@@ -1068,7 +1055,7 @@ WebInspector.StylePropertiesSection.prototype = {
         if (this.isInherited) {
             // While rendering inherited stylesheet, reverse meaning of this property.
             // Render truly inherited properties with black, i.e. return them as non-inherited.
-            return !(propertyName in WebInspector.CSSMetadata.InheritedProperties);
+            return !WebInspector.CSSMetadata.isPropertyInherited(propertyName);
         }
         return false;
     },
@@ -1082,12 +1069,12 @@ WebInspector.StylePropertiesSection.prototype = {
         if (!this._usedProperties || this.noAffect)
             return false;
 
-        if (this.isInherited && !(propertyName in WebInspector.CSSMetadata.InheritedProperties)) {
+        if (this.isInherited && !WebInspector.CSSMetadata.isPropertyInherited(propertyName)) {
             // In the inherited sections, only show overrides for the potentially inherited properties.
             return false;
         }
 
-        var canonicalName = WebInspector.StylesSidebarPane.canonicalPropertyName(propertyName);
+        var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(propertyName);
         var used = (canonicalName in this._usedProperties);
         if (used || !isShorthand)
             return !used;
@@ -1097,7 +1084,7 @@ WebInspector.StylePropertiesSection.prototype = {
         var longhandProperties = this.styleRule.style.longhandProperties(propertyName);
         for (var j = 0; j < longhandProperties.length; ++j) {
             var individualProperty = longhandProperties[j];
-            if (WebInspector.StylesSidebarPane.canonicalPropertyName(individualProperty.name) in this._usedProperties)
+            if (WebInspector.CSSMetadata.canonicalPropertyName(individualProperty.name) in this._usedProperties)
                 return false;
         }
 
@@ -1505,7 +1492,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
 
     _isPropertyInherited: function(propertyName)
     {
-        var canonicalName = WebInspector.StylesSidebarPane.canonicalPropertyName(propertyName);
+        var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(propertyName);
         return !(canonicalName in this._usedProperties) && !(canonicalName in this._alwaysShowComputedProperties);
     },
 
@@ -1559,10 +1546,10 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
                 var property = section.uniqueProperties[j];
                 if (property.disabled)
                     continue;
-                if (section.isInherited && !(property.name in WebInspector.CSSMetadata.InheritedProperties))
+                if (section.isInherited && !WebInspector.CSSMetadata.isPropertyInherited(property.name))
                     continue;
 
-                var treeElement = this._propertyTreeElements[property.name];
+                var treeElement = this._propertyTreeElements[property.name.toLowerCase()];
                 if (treeElement) {
                     var fragment = document.createDocumentFragment();
                     var selector = fragment.createChild("span");

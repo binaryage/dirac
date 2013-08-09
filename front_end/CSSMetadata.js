@@ -93,6 +93,35 @@ WebInspector.CSSMetadata.InheritedProperties = [
     "word-spacing", "zoom"
 ].keySet();
 
+// These non-standard Blink-specific properties augment the InheritedProperties.
+WebInspector.CSSMetadata.NonStandardInheritedProperties = [
+    "-webkit-font-smoothing"
+].keySet();
+
+/**
+ * @param {string} name
+ * @return {string}
+ */
+WebInspector.CSSMetadata.canonicalPropertyName = function(name)
+{
+    if (!name || name.length < 9 || name.charAt(0) !== "-")
+        return name.toLowerCase();
+    var match = name.match(/(?:-webkit-|-khtml-|-apple-)(.+)/);
+    if (!match)
+        return name.toLowerCase();
+    return match[1].toLowerCase();
+}
+
+/**
+ * @param {string} propertyName
+ * @return {boolean}
+ */
+WebInspector.CSSMetadata.isPropertyInherited = function(propertyName)
+{
+    return !!(WebInspector.CSSMetadata.InheritedProperties[WebInspector.CSSMetadata.canonicalPropertyName(propertyName)]
+            || WebInspector.CSSMetadata.NonStandardInheritedProperties[propertyName.toLowerCase()]);
+}
+
 WebInspector.CSSMetadata._colors = [
     "aqua", "black", "blue", "fuchsia", "gray", "green", "lime", "maroon", "navy", "olive", "orange", "purple", "red",
     "silver", "teal", "white", "yellow", "transparent", "currentcolor", "grey", "aliceblue", "antiquewhite",
