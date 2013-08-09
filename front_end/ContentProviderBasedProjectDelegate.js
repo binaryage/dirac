@@ -214,8 +214,8 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
         var paths = Object.keys(this._contentProviders);
         var totalCount = paths.length;
         if (totalCount === 0) {
-            progress.done();
-            callback(result);
+            // searchInContent should call back later.
+            setTimeout(doneCallback, 0);
             return;
         }
 
