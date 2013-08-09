@@ -333,7 +333,7 @@ WebInspector.SearchView.prototype = {
      */
     indexingFinished: function(finished)
     {
-        this._searchMessageElement.textContent = finished ? WebInspector.UIString("Indexing finished.") : WebInspector.UIString("Indexing interrupted.");
+        this._searchMessageElement.textContent = finished ? "" : WebInspector.UIString("Indexing interrupted.");
     },
 
     _updateSearchResultsMessage: function()

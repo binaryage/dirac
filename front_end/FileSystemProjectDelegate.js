@@ -203,17 +203,10 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     {
         var requestId = ++WebInspector.FileSystemProjectDelegate._lastRequestId;
         this._searchCallbacks[requestId] = innerCallback.bind(this);
-        progress.setTotalWork(1);
         InspectorFrontendHost.searchInPath(requestId, this._fileSystem.path(), isRegex ? "" : query);
 
         function innerCallback(files)
         {
-            var compositeProgress = new WebInspector.CompositeProgress(progress);
-            var frontendHostSearchProgress = compositeProgress.createSubProgress();
-            var frontendSearchProgress = compositeProgress.createSubProgress();
-            frontendHostSearchProgress.setTotalWork(1);
-            frontendHostSearchProgress.done();
-
             function trimFileSystemPath(fullPath)
             {
                 return fullPath.substr(this._fileSystem.path().length + 1);
@@ -221,20 +214,29 @@ WebInspector.FileSystemProjectDelegate.prototype = {
 
             files = files.map(trimFileSystemPath.bind(this));
             var result = new StringMap();
-            var totalCount = files.length;
-            if (totalCount === 0) {
-                frontendSearchProgress.done();
+            progress.setTotalWork(files.length);
+            if (files.length === 0) {
+                progress.done();
                 callback(result);
                 return;
             }
 
-            var barrier = new CallbackBarrier();
-            frontendSearchProgress.setTotalWork(totalCount);
-            for (var i = 0; i < files.length; ++i) {
-                var filePath = this._filePathForPath(files[i]);
-                this._fileSystem.requestFileContent(filePath, barrier.createCallback(contentCallback.bind(this, files[i])));
+            var fileIndex = 0;
+            var maxFileContentRequests = 20;
+            var callbacksLeft = 0;
+
+            function searchInNextFiles()
+            {
+                for (; callbacksLeft < maxFileContentRequests; ++callbacksLeft) {
+                    if (fileIndex >= files.length)
+                        break;
+                    var path = files[fileIndex++];
+                    var filePath = this._filePathForPath(path);
+                    this._fileSystem.requestFileContent(filePath, contentCallback.bind(this, path));
+                }
             }
-            barrier.callWhenDone(doneCallback);
+
+            searchInNextFiles.call(this);
 
             /**
              * @param {string} path
@@ -245,23 +247,19 @@ WebInspector.FileSystemProjectDelegate.prototype = {
                 var matches = [];
                 if (content !== null)
                     matches = WebInspector.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex);
-                matchesCallback.call(this, path, matches);
-            }
 
-            /**
-             * @param {string} path
-             * @param {Array.<WebInspector.ContentProvider.SearchMatch>} matches
-             */
-            function matchesCallback(path, matches)
-            {
                 result.put(path, matches);
-                frontendSearchProgress.worked(1);
-            }
+                progress.worked(1);
 
-            function doneCallback()
-            {
-                frontendSearchProgress.done();
-                callback(result);
+                --callbacksLeft;
+                if (fileIndex < files.length) {
+                    searchInNextFiles.call(this);
+                } else {
+                    if (callbacksLeft)
+                        return;
+                    progress.done();
+                    callback(result);
+                }
             }
         }
     },
