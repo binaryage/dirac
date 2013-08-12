@@ -66,6 +66,7 @@ WebInspector.SourceFrame = function(contentProvider)
 /**
  * @param {string} query
  * @param {string=} modifiers
+ * @return {!RegExp}
  */
 WebInspector.SourceFrame.createSearchRegex = function(query, modifiers)
 {
@@ -74,8 +75,10 @@ WebInspector.SourceFrame.createSearchRegex = function(query, modifiers)
 
     // First try creating regex if user knows the / / hint.
     try {
-        if (/^\/.*\/$/.test(query))
+        if (/^\/.+\/$/.test(query)) {
             regex = new RegExp(query.substring(1, query.length - 1), modifiers);
+            regex.__fromRegExpQuery = true;
+        }
     } catch (e) {
         // Silent catch.
     }
@@ -539,7 +542,11 @@ WebInspector.SourceFrame.prototype = {
 
         var text = this._textEditor.text();
         var range = this._textEditor.range();
-        text = text.replace(WebInspector.SourceFrame.createSearchRegex(query, "g"), replacement);
+        var regex = WebInspector.SourceFrame.createSearchRegex(query, "g");
+        if (regex.__fromRegExpQuery)
+            text = text.replace(regex, replacement);
+        else
+            text = text.replace(regex, function() { return replacement; });
 
         this._isReplacing = true;
         this._textEditor.editRange(range, text);

@@ -1232,7 +1232,8 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
             this._codeMirror.addLineClass(selectionStart.line, "wrap", "cm-line-with-selection");
         if (this._highlightRegex === oldRegex) {
             // Do not re-add overlay mode if regex did not change for better performance.
-            this._highlightDescriptor.selectionStart = selectionStart;
+            if (this._highlightDescriptor)
+                this._highlightDescriptor.selectionStart = selectionStart;
         } else {
             this._removeHighlight();
             this._setHighlighter(this._searchHighlighter.bind(this, this._highlightRegex, this._highlightRange), selectionStart);
