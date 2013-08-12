@@ -856,11 +856,40 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
     },
 
-    onResize: function()
+    _updatePaddingBottom: function(width, height)
     {
+        var scrollInfo = this._codeMirror.getScrollInfo();
+        var newPaddingBottom;
+        var linesElement = this.element.firstChild.querySelector(".CodeMirror-lines");
+        var lineCount = this._codeMirror.lineCount();
+        if (lineCount <= 1)
+            newPaddingBottom = 0;
+        else
+            newPaddingBottom = Math.max(scrollInfo.clientHeight - this._codeMirror.getLineHandle(this._codeMirror.lastLine()).height, 0);
+        newPaddingBottom += "px";
+        linesElement.style.paddingBottom = newPaddingBottom;
+        this._codeMirror.setSize(width, height);
+    },
+
+    _resizeEditor: function()
+    {
+        var scrollInfo = this._codeMirror.getScrollInfo();
         var width = this.element.parentElement.offsetWidth;
         var height = this.element.parentElement.offsetHeight;
         this._codeMirror.setSize(width, height);
+        this._updatePaddingBottom(width, height);
+        this._codeMirror.scrollTo(scrollInfo.left, scrollInfo.top);
+    },
+
+    onResize: function()
+    {
+        if (WebInspector.experimentsSettings.scrollBeyondEndOfFile.isEnabled())
+            this._resizeEditor();
+        else {
+            var width = this.element.parentElement.offsetWidth;
+            var height = this.element.parentElement.offsetHeight;
+            this._codeMirror.setSize(width, height);
+        }
     },
 
     /**
@@ -916,6 +945,12 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     _change: function(codeMirror, changeObject)
     {
+        if (WebInspector.experimentsSettings.scrollBeyondEndOfFile.isEnabled()) {
+            var hasOneLine = this._codeMirror.lineCount() === 1;
+            if (hasOneLine !== this._hasOneLine)
+                this._resizeEditor();
+            this._hasOneLine = hasOneLine;
+        }
         var widgets = this._elementToWidget.values();
         for (var i = 0; i < widgets.length; ++i)
             this._codeMirror.removeLineWidget(widgets[i]);
