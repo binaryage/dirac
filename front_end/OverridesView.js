@@ -49,37 +49,16 @@ WebInspector.OverridesView = function()
     var topContainer = wrapper.createChild("div", "settings-tab help-content");
     var enableOptionsContainer = topContainer.createChild("div", "help-block");
 
-    /**
-     * @param {boolean} enabled
-     */
-    function enableClicked(enabled)
-    {
-        WebInspector.overridesSupport.setOverridesActive(enabled);
-        this._mainContainer.disabled = !enabled;
-    }
-    var boundEnableClicked = enableClicked.bind(this);
-    var enableLabel = this._createNonPersistedCheckbox(WebInspector.UIString("Enable"), boundEnableClicked);
+    var enableOnStartupField = this._createCheckboxSetting(WebInspector.UIString("Enable on DevTools startup"), WebInspector.settings.enableOverridesOnStartup);
+    enableOnStartupField.id = "enable-devtools-on-startup";
+    this._enableOnStartupField = enableOnStartupField;
+    var enableLabel = this._createNonPersistedCheckbox(WebInspector.UIString("Enable"), this._setOverridesActive.bind(this));
     var enableCheckbox = enableLabel.getElementsByTagName("input")[0];
     enableCheckbox.checked = WebInspector.settings.enableOverridesOnStartup.get();
     enableOptionsContainer.appendChild(enableLabel);
-    var enableOnStartupPara = this._createCheckboxSetting(WebInspector.UIString("Enable on DevTools startup"), WebInspector.settings.enableOverridesOnStartup);
-    enableOnStartupPara.id = "enable-devtools-on-startup";
-    enableOptionsContainer.appendChild(enableOnStartupPara);
+    enableOptionsContainer.appendChild(enableOnStartupField);
 
-    /**
-     * @param {WebInspector.Event} event
-     */
-    function enableOnStartupClicked(event)
-    {
-        var enableOnStartup = /** @type {boolean} */ (event.data);
-        if (enableOnStartup) {
-            enableCheckbox.checked = true;
-            boundEnableClicked(true);
-        }
-    }
-    WebInspector.settings.enableOverridesOnStartup.addChangeListener(enableOnStartupClicked, this);
-
-    var mainContainer = topContainer.createChild("div", "help-container");
+    var mainContainer = topContainer.createChild("fieldset", "help-container");
     this._mainContainer = mainContainer;
 
     function appendBlock(contentElements)
@@ -96,7 +75,7 @@ WebInspector.OverridesView = function()
     appendBlock([this._createDeviceOrientationOverrideControl()]);
     appendBlock([this._createCheckboxSetting(WebInspector.UIString("Emulate touch events"), WebInspector.settings.emulateTouchEvents)]);
     appendBlock([this._createMediaEmulationElement()]);
-    boundEnableClicked(enableCheckbox.checked);
+    this._setOverridesActive(enableCheckbox.checked);
 
     this._statusElement = document.createElement("span");
     this._statusElement.textContent = WebInspector.UIString("Overrides");
@@ -111,6 +90,16 @@ WebInspector.OverridesView.showInDrawer = function()
 }
 
 WebInspector.OverridesView.prototype = {
+    /**
+     * @param {boolean} active
+     */
+    _setOverridesActive: function(active)
+    {
+        WebInspector.overridesSupport.setOverridesActive(active);
+        this._mainContainer.disabled = !active;
+        this._enableOnStartupField.disabled = !active;
+    },
+
     /**
      * @param {string} name
      * @param {!WebInspector.Setting} setting

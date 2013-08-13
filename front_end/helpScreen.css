@@ -189,31 +189,36 @@ body.platform-mac .help-key {
     margin: 0 0.5em;
 }
 
-.help-content > fieldset {
+.settings-tab fieldset {
+    margin: 0;
+    padding: 0;
+    border: none;
+}
+
+.help-block > fieldset {
     margin: 3px 0;
 }
 
-.help-content fieldset {
-    border: none;
+.help-block fieldset {
     margin-left: 7px;
     padding: 0 initial;
 }
 
-#general-tab-content .help-content fieldset legend {
+#general-tab-content .help-block fieldset legend {
     font-size: 14px;
 }
 
-body.platform-mac .settings-tab.help-content fieldset {
+body.platform-mac .settings-tab.help-block fieldset {
     margin-left: 10px;
 }
 
-.help-content fieldset p,
-.help-content fieldset fieldset {
+.help-block fieldset p,
+.help-block fieldset fieldset {
     border-left: 1px solid rgb(128,128,128);
     padding-left: 30px;
 }
 
-.help-content fieldset label {
+.help-block fieldset label {
     padding-right: 4px;
 }
 
@@ -426,12 +431,12 @@ body.platform-mac .help-content input[type=radio] {
 }
 
 .settings-tab p,
-.settings-tab fieldset {
+.settings-tab  .help-block fieldset {
     margin: 12px 0;
 }
 
-.settings-tab fieldset p,
-.settings-tab fieldset fieldset {
+.settings-tab .help-block fieldset p,
+.settings-tab .help-block fieldset fieldset {
     border-left: none transparent;
 }
 
