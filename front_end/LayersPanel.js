@@ -30,6 +30,7 @@
 
 importScript("LayerTreeModel.js");
 importScript("LayerTree.js");
+importScript("Layers3DView.js");
 
 /**
  * @constructor
@@ -49,6 +50,8 @@ WebInspector.LayersPanel = function()
     this._layerTree = new WebInspector.LayerTree(this._model, this.sidebarTree);
     this._layerDetailsSplitView = new WebInspector.SplitView(false, "layerDetailsSplitView");
     this._layerDetailsSplitView.show(this.splitView.mainElement);
+    this._layers3DView = new WebInspector.Layers3DView(this._model);
+    this._layers3DView.show(this._layerDetailsSplitView.mainElement);
     this._model.requestLayers();
 }
 

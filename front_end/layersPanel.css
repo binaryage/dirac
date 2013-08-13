@@ -39,3 +39,61 @@ div.outline-disclosure > ol {
 .layers.panel .outline-disclosure ol.children {
     padding-left: 12px;
 }
+
+.layers-3d-view {
+    overflow: hidden;
+}
+
+.layers-3d-view .rotating-container {
+    -webkit-transform-style: preserve-3d;
+}
+
+.layers-3d-view .layer-container {
+    position: absolute;
+    opacity: 0.8;
+    border: 1px solid rgba(40, 40, 40, 0.8);
+    -webkit-transform: translateZ(20px);
+    -webkit-transform-style: preserve-3d;
+}
+
+.layer-container .side-wall {
+    position: absolute;
+    background-color: inherit;
+    top: 0px;
+    right: 0px;
+    bottom: 0px;
+    left: 0px;
+    height: 4px;
+    width: 4px;
+    -webkit-transform-origin: 0 0;
+    border: solid black 1px;
+}
+
+.layer-container .back-wall {
+    -webkit-transform: translateZ(-4px);
+    background-color: inherit;
+}
+
+.layer-container .side-wall.top {
+    width: auto;
+    bottom: auto;
+    -webkit-transform: rotateX(-90deg);
+}
+
+.layer-container .side-wall.bottom {
+    width: auto;
+    top: auto;
+    -webkit-transform: translateY(4px) rotateX(-90deg);
+}
+
+.layer-container .side-wall.left {
+    height: auto;
+    right: auto;
+    -webkit-transform: rotateY(90deg);
+}
+
+.layer-container .side-wall.right {
+    height: auto;
+    left: auto;
+    -webkit-transform: translateX(4px) rotateY(90deg);
+}

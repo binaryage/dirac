@@ -109,6 +109,15 @@ WebInspector.LayerTreeModel.prototype = {
     },
 
     /**
+     * @param {string} id
+     * @return {WebInspector.Layer?}
+     */
+    layerById: function(id)
+    {
+        return this._layersById[id];
+    },
+
+    /**
      * @param{Array.<LayerTreeAgent.Layer>} payload
      */
     _repopulate: function(payload)
