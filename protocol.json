@@ -3498,8 +3498,10 @@
                 "description": "Resource state descriptor.",
                 "properties": [
                     { "name": "name", "type": "string", "description": "State name." },
+                    { "name": "enumValueForName", "type": "string", "optional": true, "description": "String representation of the enum value, if <code>name</code> stands for an enum." },
                     { "name": "value", "$ref": "CallArgument", "optional": true, "description": "The value associated with the particular state." },
-                    { "name": "values", "type": "array", "items": { "$ref": "ResourceStateDescriptor" }, "optional": true, "description": "Array of values associated with the particular state. Either <code>value</code> or <code>values</code> will be specified." }
+                    { "name": "values", "type": "array", "items": { "$ref": "ResourceStateDescriptor" }, "optional": true, "description": "Array of values associated with the particular state. Either <code>value</code> or <code>values</code> will be specified." },
+                    { "name": "isArray", "type": "boolean", "optional": true, "description": "True iff the given <code>values</code> items stand for an array rather than a list of grouped states." }
                 ]
             },
             {
@@ -3518,6 +3520,7 @@
                 "type": "object",
                 "properties": [
                     { "name": "description", "type": "string", "description": "String representation of the object." },
+                    { "name": "enumName", "type": "string", "optional": true, "description": "Enum name, if any, that stands for the value (for example, a WebGL enum name)." },
                     { "name": "resourceId", "$ref": "ResourceId", "optional": true, "description": "Resource identifier. Specified for <code>Resource</code> objects only." },
                     { "name": "type", "type": "string", "optional": true, "enum": ["object", "function", "undefined", "string", "number", "boolean"], "description": "Object type. Specified for non <code>Resource</code> objects only." },
                     { "name": "subtype", "type": "string", "optional": true, "enum": ["array", "null", "node", "regexp", "date"], "description": "Object subtype hint. Specified for <code>object</code> type values only." }
