@@ -261,6 +261,7 @@ WebInspector.ExperimentsSettings = function()
     this.frameworksDebuggingSupport = this._createExperiment("frameworksDebuggingSupport", "Enable frameworks debugging support");
     this.refreshFileSystemsOnFocus = this._createExperiment("refreshFileSystemsOnFocus", "Refresh file system folders on window focus");
     this.scrollBeyondEndOfFile = this._createExperiment("scrollBeyondEndOfFile", "Support scrolling beyond end of file");
+    this.layersPanel = this._createExperiment("layersPanel", "Show Layers panel");
 
     this._cleanUpSetting();
 }

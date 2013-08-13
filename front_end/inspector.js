@@ -46,6 +46,10 @@ var WebInspector = {
         var audits = new WebInspector.PanelDescriptor("audits", WebInspector.UIString("Audits"), "AuditsPanel", "AuditsPanel.js");
         var console = new WebInspector.PanelDescriptor("console", WebInspector.UIString("Console"), "ConsolePanel");
         var allDescriptors = [elements, resources, network, scripts, timeline, profiles, audits, console];
+        if (WebInspector.experimentsSettings.layersPanel.isEnabled()) {
+            var layers = new WebInspector.LayersPanelDescriptor();
+            allDescriptors.push(layers);
+        }
         var allProfilers = [profiles];
         if (WebInspector.experimentsSettings.customizableToolbar.isEnabled()) {
             allProfilers = [];
