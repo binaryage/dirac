@@ -167,6 +167,24 @@ WebInspector.DebuggerModel.prototype = {
 
     /**
      * @param {WebInspector.DebuggerModel.Location} rawLocation
+     */
+    stepIntoSelection: function(rawLocation)
+    {
+        /**
+         * @param {WebInspector.DebuggerModel.Location} requestedLocation
+         * @param {?string} error
+         */
+        function callback(requestedLocation, error)
+        {
+           if (error)
+               return;
+           this._pendingStepIntoLocation = requestedLocation;
+        };
+        DebuggerAgent.continueToLocation(rawLocation, true, callback.bind(this, rawLocation));
+    },
+
+    /**
+     * @param {WebInspector.DebuggerModel.Location} rawLocation
      * @param {string} condition
      * @param {function(?DebuggerAgent.BreakpointId, Array.<WebInspector.DebuggerModel.Location>):void=} callback
      */
@@ -365,6 +383,19 @@ WebInspector.DebuggerModel.prototype = {
      */
     _pausedScript: function(callFrames, reason, auxData, breakpointIds)
     {
+        if (this._pendingStepIntoLocation) {
+            var requestedLocation = this._pendingStepIntoLocation;
+            delete this._pendingStepIntoLocation;
+
+            if (callFrames.length > 0) {
+                var topLocation = callFrames[0].location;
+                if (topLocation.lineNumber == requestedLocation.lineNumber && topLocation.columnNumber == requestedLocation.columnNumber && topLocation.scriptId == requestedLocation.scriptId) {
+                    DebuggerAgent.stepInto();
+                    return;
+                }
+            }
+        }
+
         this._setDebuggerPausedDetails(new WebInspector.DebuggerPausedDetails(this, callFrames, reason, auxData, breakpointIds));
     },
 
@@ -474,7 +505,11 @@ WebInspector.DebuggerModel.prototype = {
 
         function updateExecutionLine(uiLocation)
         {
-            this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ExecutionLineChanged, uiLocation);
+            var data = {
+                uiLocation: uiLocation,
+                callFrame: callFrame
+            };
+            this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ExecutionLineChanged, data);
         }
         this._executionLineLiveLocation = callFrame.script.createLiveLocation(callFrame.location, updateExecutionLine.bind(this));
     },
@@ -811,6 +846,29 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
                 callback(error);
         }
         DebuggerAgent.restartFrame(this._payload.callFrameId, protocolCallback);
+    },
+
+    /**
+     * @param {function(Array.<DebuggerAgent.Location>)} callback
+     */
+    getStepIntoLocations: function(callback)
+    {
+        if (this._stepInLocations) {
+            callback(this._stepInLocations.slice(0));
+            return;
+        }
+        /**
+         * @param {?string} error
+         * @param {Array.<DebuggerAgent.Location>=} stepInPositions
+         */
+        function getStepInPositionsCallback(error, stepInPositions) {
+            if (error) {
+                return;
+            }
+            this._stepInLocations = stepInPositions;
+            callback(this._stepInLocations.slice(0));
+        }
+        DebuggerAgent.getStepInPositions(this.id, getStepInPositionsCallback.bind(this));
     },
 
     /**

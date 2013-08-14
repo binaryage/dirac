@@ -62,6 +62,7 @@ WebInspector.ScriptsPanelDescriptor.prototype = {
         section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.PauseContinue, WebInspector.UIString("Pause/Continue"));
         section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepOver, WebInspector.UIString("Step over"));
         section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepInto, WebInspector.UIString("Step into"));
+        section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepIntoSelection, WebInspector.UIString("Step into selection"));
         section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepOut, WebInspector.UIString("Step out"));
 
         var nextAndPrevFrameKeys = WebInspector.ScriptsPanelDescriptor.ShortcutKeys.NextCallFrame.concat(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.PrevCallFrame);
@@ -93,6 +94,11 @@ WebInspector.ScriptsPanelDescriptor.ShortcutKeys = {
     StepInto: [
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F11),
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Semicolon, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
+    StepIntoSelection: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F11, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F11, WebInspector.KeyboardShortcut.Modifiers.Shift | WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
     ],
 
     StepOut: [

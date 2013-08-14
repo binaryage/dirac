@@ -2429,6 +2429,16 @@ body.inactive li.selected .bubble.search-matches {
     background-color: rgb(255, 255, 194);
 }
 
+.source-frame-stepin-mark {
+    text-decoration: underline;
+    background-color: #bfccfe;
+}
+
+.source-frame-stepin-mark-highlighted {
+    text-decoration: underline;
+    background-color: #698cfe;
+}
+
 .workers-list {
     list-style: none;
     margin: 0;
