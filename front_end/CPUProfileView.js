@@ -143,9 +143,6 @@ WebInspector.CPUProfileView.prototype = {
 
         this._calculateTimes(profile);
 
-        if (profile.idleTime)
-            this._injectIdleTimeNode(profile);
-
         this._assignParentsInProfile();
         if (this.samples)
             this._buildIdToNodeMap();
@@ -629,39 +626,6 @@ WebInspector.CPUProfileView.prototype = {
                 break;
             }
         }
-    },
-
-    /**
-     * @param {ProfilerAgent.CPUProfile} profile
-     */
-    _injectIdleTimeNode: function(profile)
-    {
-        var idleTime = profile.idleTime;
-        var nodes = profile.head.children;
-
-        var programNode = {selfTime: 0};
-        for (var i = nodes.length - 1; i >= 0; --i) {
-            if (nodes[i].functionName === "(program)") {
-                programNode = nodes[i];
-                break;
-            }
-        }
-        var programTime = programNode.selfTime;
-        if (idleTime > programTime)
-            idleTime = programTime;
-        programTime = programTime - idleTime;
-        programNode.selfTime = programTime;
-        programNode.totalTime = programTime;
-        var idleNode = {
-            functionName: "(idle)",
-            url: null,
-            lineNumber: 0,
-            totalTime: idleTime,
-            selfTime: idleTime,
-            callUID: 0,
-            children: []
-        };
-        nodes.push(idleNode);
     },
 
     __proto__: WebInspector.View.prototype

@@ -3216,7 +3216,6 @@
                 "description": "Profile.",
                 "properties": [
                     { "name": "head", "$ref": "CPUProfileNode" },
-                    { "name": "idleTime", "type": "number", "description": "Idle time in seconds." },
                     { "name": "startTime", "type": "number", "description": "Profiling start time in seconds." },
                     { "name": "endTime", "type": "number", "description": "Profiling end time in seconds." },
                     { "name": "samples", "optional": true, "type": "array", "items": { "type": "integer" }, "description": "Ids of samples top nodes." }
