@@ -1400,7 +1400,7 @@ WebInspector.NetworkLogView.prototype = {
                 return "'" + str + "'";
             }
         }
-        command.push(escape(request.url));
+        command.push(escape(request.url).replace(/[[{}\]]/g, "\\$&"));
 
         var inferredMethod = "GET";
         var data = [];
