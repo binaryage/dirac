@@ -586,6 +586,17 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     if (WebInspector.experimentsSettings.tethering.isEnabled())
         this._setupTethering();
 
+    if (WebInspector.experimentsSettings.screencast.isEnabled()) {
+        var splitView = new WebInspector.SplitView(true, "screencastSplitView");
+        splitView.markAsRoot();
+        splitView.setSecondIsSidebar(false);
+        splitView.show(document.body);
+
+        var screencastView = new WebInspector.ScreencastView();
+        screencastView.show(splitView.firstElement());
+        splitView.secondElement().appendChild(document.getElementById("root"));
+    }
+
     WebInspector.notifications.dispatchEventToListeners(WebInspector.Events.InspectorLoaded);
 }
 

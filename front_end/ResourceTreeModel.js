@@ -66,7 +66,8 @@ WebInspector.ResourceTreeModel.EventTypes = {
     Load: "Load",
     InspectedURLChanged: "InspectedURLChanged",
     SecurityOriginAdded: "SecurityOriginAdded",
-    SecurityOriginRemoved: "SecurityOriginRemoved"
+    SecurityOriginRemoved: "SecurityOriginRemoved",
+    ScreencastFrame: "ScreencastFrame",
 }
 
 WebInspector.ResourceTreeModel.prototype = {
@@ -707,6 +708,14 @@ WebInspector.PageDispatcher.prototype = {
     scriptsEnabled: function(isEnabled)
     {
         WebInspector.settings.javaScriptDisabled.set(!isEnabled);
+    },
+
+    /**
+     * @param {string} data
+     */
+    screencastFrame: function(data)
+    {
+        this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, data);
     }
 }
 

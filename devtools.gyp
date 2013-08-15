@@ -139,6 +139,7 @@
             'front_end/ResourceView.js',
             'front_end/RuntimeModel.js',
             'front_end/SASSSourceMapping.js',
+            'front_end/ScreencastView.js',
             'front_end/Script.js',
             'front_end/ScriptFormatter.js',
             'front_end/ScriptFormatterWorker.js',

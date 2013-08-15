@@ -414,9 +414,29 @@
             {
                 "name": "captureScreenshot",
                 "description": "Capture page screenshot.",
+                "parameters": [
+                    { "name": "format", "type": "string", "optional": true, "enum": ["jpeg", "png"], "description": "Image compression format." },
+                    { "name": "quality", "type": "integer", "optional": true, "description": "Compression quality from range [0..100]." },
+                    { "name": "scale", "type": "number", "optional": true, "description": "Image scale from range [0..1]." }
+                ],
                 "returns": [
                     { "name": "data", "type": "string", "description": "Base64-encoded image data (PNG)." }
                 ]
+            },
+            {
+                "name": "startScreencast",
+                "description": "Starts sending each frame using the <code>screencastFrame</code> event.",
+                "parameters": [
+                    { "name": "format", "type": "string", "optional": true, "enum": ["jpeg", "png"], "description": "Image compression format." },
+                    { "name": "quality", "type": "integer", "optional": true, "description": "Compression quality from range [0..100]." },
+                    { "name": "scale", "type": "number", "optional": true, "description": "Image scale from range [0..1]." }
+                ],
+                "hidden": true
+            },
+            {
+                "name": "stopScreencast",
+                "description": "Stops sending each frame in the <code>screencastFrame</code>.",
+                "hidden": true
             },
             {
                 "name": "handleJavaScriptDialog",
@@ -525,6 +545,14 @@
                 "description": "Fired when the JavaScript is enabled/disabled on the page",
                 "parameters": [
                     { "name": "isEnabled", "type": "boolean", "description": "Whether script execution is enabled or disabled on the page." }
+                ],
+                "hidden": true
+            },
+            {
+                "name": "screencastFrame",
+                "description": "Compressed image data requested by the <code>startScreencast</code>.",
+                "parameters": [
+                    { "name": "data", "type": "string", "description": "Base64-encoded compressed image." }
                 ],
                 "hidden": true
             }

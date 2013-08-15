@@ -193,6 +193,7 @@ modules = [
             "InspectElementModeController.js",
             "ObjectPopoverHelper.js",
             "ObjectPropertiesSection.js",
+            "ScreencastView.js",
             "SourceFrame.js",
             "ResourceView.js",
         ]

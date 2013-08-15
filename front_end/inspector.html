@@ -188,29 +188,32 @@ THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     <script type="text/javascript" src="LayersPanelDescriptor.js"></script>
     <script type="text/javascript" src="DockController.js"></script>
     <script type="text/javascript" src="TracingAgent.js"></script>
+    <script type="text/javascript" src="ScreencastView.js"></script>
     <script type="text/javascript" src="DevToolsExtensionAPI.js"></script>
     <script type="text/javascript" src="Tests.js"></script>
 </head>
 <body class="undocked" id="-webkit-web-inspector">
-    <div id="toolbar">
-        <div class="toolbar-item close-left"><div class="close-button" id="close-button-left"></div></div>
-        <div id="toolbar-controls">
-            <div class="toolbar-item"><div id="toolbar-panels-menu" class="hidden">&hellip;</div></div>
-            <div class="toolbar-item"><div id="toolbar-dropdown-arrow" class="hidden">&raquo;</div></div>
-            <div class="toolbar-item close-right"><div class="close-button" id="close-button-right"></div></div>
-        </div>
-    </div>
-    <div id="main">
-        <div id="floating-status-bar-container" class="status-bar"><div id="floating-status-bar-resizer"></div></div>
-    </div>
-    <div id="drawer"></div>
-    <div id="main-status-bar" class="status-bar">
-        <div id="bottom-status-bar-container">
-            <div id="panel-status-bar">
-                <div id="drawer-view-anchor"></div>
+    <div id="root">
+        <div id="toolbar">
+            <div class="toolbar-item close-left"><div class="close-button" id="close-button-left"></div></div>
+            <div id="toolbar-controls">
+                <div class="toolbar-item"><div id="toolbar-panels-menu" class="hidden">&hellip;</div></div>
+                <div class="toolbar-item"><div id="toolbar-dropdown-arrow" class="hidden">&raquo;</div></div>
+                <div class="toolbar-item close-right"><div class="close-button" id="close-button-right"></div></div>
             </div>
         </div>
-        <div id="error-warning-count" class="hidden"></div>
+        <div id="main">
+            <div id="floating-status-bar-container" class="status-bar"><div id="floating-status-bar-resizer"></div></div>
+        </div>
+        <div id="drawer"></div>
+        <div id="main-status-bar" class="status-bar">
+            <div id="bottom-status-bar-container">
+                <div id="panel-status-bar">
+                    <div id="drawer-view-anchor"></div>
+                </div>
+            </div>
+            <div id="error-warning-count" class="hidden"></div>
+        </div>
     </div>
 </body>
 </html>
