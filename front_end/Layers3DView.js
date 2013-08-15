@@ -46,6 +46,8 @@ WebInspector.Layers3DView = function(model)
     this._elementsByLayerId = {};
     this._rotateX = 0;
     this._rotateY = 0;
+    this._scaleAdjustmentStylesheet = this.element.ownerDocument.head.createChild("style");
+    this._scaleAdjustmentStylesheet.disabled = true;
 }
 
 WebInspector.Layers3DView.prototype = {
@@ -54,8 +56,14 @@ WebInspector.Layers3DView.prototype = {
         this._scale();
     },
 
+    willHide: function()
+    {
+        this._scaleAdjustmentStylesheet.disabled = true;
+    },
+
     wasShown: function()
     {
+        this._scaleAdjustmentStylesheet.disabled = false;
         if (this._needsUpdate)
             this._update();
     },
@@ -71,8 +79,15 @@ WebInspector.Layers3DView.prototype = {
         var scaleY = this.element.clientHeight / (root.height() + 2 * padding);
         scale = Math.min(scaleX, scaleY);
         var element = this._elementForLayer(root);
-        element.style.webkitTransform = "scale(" + scale + "," + scale +")";
+        element.style.webkitTransform = "scale3d(" + scale + "," + scale + "," + scale  +")";
         element.style.webkitTransformOrigin = padding + "px " + padding + "px";
+        const screenLayerThickness = 4;
+        const screenLayerSpacing = 20;
+        var layerThickness = Math.ceil(screenLayerThickness / scale) + "px";
+        var layerSpacing = Math.ceil(screenLayerSpacing / scale) + "px";
+        this._scaleAdjustmentStylesheet.textContent = ".layer-container .side-wall { height: " + layerThickness + "; width: " + layerThickness + "; } " +
+            ".layer-container .back-wall { -webkit-transform: translateZ(-" + layerThickness + "); } " +
+            ".layer-container { -webkit-transform: translateZ(" + layerSpacing + "); }";
     },
 
     _update: function()
@@ -128,6 +143,20 @@ WebInspector.Layers3DView.prototype = {
         style.top  = layer.offsetY() + "px";
         style.width  = layer.width() + "px";
         style.height  = layer.height() + "px";
+        var transform = layer.transform();
+        if (transform) {
+            function toFixed5(x)
+            {
+                return x.toFixed(5);
+            }
+            // Avoid exponential notation in CSS.
+            style.webkitTransform = "matrix3d(" + transform.map(toFixed5).join(",") + ")";
+            var anchor = layer.anchorPoint();
+            style.webkitTransformOrigin = Math.round(anchor[0] * 100) + "% " + Math.round(anchor[1] * 100) + "% " + anchor[2];
+        } else {
+            style.webkitTransform = "";
+            style.webkitTransformOrigin = "";
+        }
         if (parentElement !== element.parentElement)
             parentElement.appendChild(element);
     },

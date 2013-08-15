@@ -250,6 +250,26 @@ WebInspector.Layer.prototype = {
     },
 
     /**
+     * @return {Array.<number>}
+     */
+    transform: function()
+    {
+        return this._layerPayload.transform;
+    },
+
+    /**
+     * @return {Array.<number>}
+     */
+    anchorPoint: function()
+    {
+        return [
+            this._layerPayload.anchorX || 0,
+            this._layerPayload.anchorY || 0,
+            this._layerPayload.anchorZ || 0,
+        ];
+    },
+
+    /**
      * @param {LayerTreeAgent.Layer} layerPayload
      */
     _reset: function(layerPayload)
