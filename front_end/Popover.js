@@ -109,7 +109,7 @@ WebInspector.Popover.prototype = {
         this.element.classList.add("fx-appear");
 
         if (this._popoverHelper) {
-            contentElement.addEventListener("mousemove", this._popoverHelper._killHidePopoverTimer.bind(this._popoverHelper), true);
+            this._contentDiv.addEventListener("mousemove", this._popoverHelper._killHidePopoverTimer.bind(this._popoverHelper), true);
             this.element.addEventListener("mouseout", this._popoverHelper._popoverMouseOut.bind(this._popoverHelper), true);
         }
     },
