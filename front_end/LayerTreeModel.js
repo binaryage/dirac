@@ -37,6 +37,7 @@ WebInspector.LayerTreeModel = function()
     this._layersById = {};
     InspectorBackend.registerLayerTreeDispatcher(new WebInspector.LayerTreeDispatcher(this));
     LayerTreeAgent.enable();
+    this._needsRefresh = true;
 }
 
 WebInspector.LayerTreeModel.Events = {
@@ -77,9 +78,10 @@ WebInspector.LayerTreeModel.prototype = {
      */
     requestLayers: function(callback)
     {
+        delete this._delayedRequestLayersTimer;
         if (!callback)
             callback = function() {}
-        if (typeof this._root !== "undefined") {
+        if (!this._needsRefresh) {
             callback();
             return;
         }
@@ -145,8 +147,10 @@ WebInspector.LayerTreeModel.prototype = {
 
     _layerTreeChanged: function()
     {
-        delete this._root;
-        this.requestLayers();
+        if (this._delayedRequestLayersTimer)
+            return;
+        this._needsRefresh = true;
+        this._delayedRequestLayersTimer = setTimeout(this.requestLayers.bind(this), 100);
     },
 
     __proto__: WebInspector.Object.prototype
