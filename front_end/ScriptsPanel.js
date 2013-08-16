@@ -1002,7 +1002,7 @@ WebInspector.ScriptsPanel.prototype = {
             return;
         var stepIntoMarkup = this._executionSourceFrame.stepIntoMarkup();
         if (stepIntoMarkup)
-            stepIntoMarkup.moveSelectionTo(-1);
+            stepIntoMarkup.startIteratingSelection();
     },
 
     _onKeyUp: function(event)
@@ -1016,7 +1016,7 @@ WebInspector.ScriptsPanel.prototype = {
             return;
         var currentPosition = stepIntoMarkup.getSelectedItemIndex();
         if (typeof currentPosition === "undefined") {
-            stepIntoMarkup.selectFirstToExecute();
+            stepIntoMarkup.stopIteratingSelection();
         } else {
             var rawLocation = stepIntoMarkup.getRawPosition(currentPosition);
             this.doStepIntoSelection(rawLocation);

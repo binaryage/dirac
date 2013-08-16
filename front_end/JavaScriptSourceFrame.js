@@ -367,7 +367,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
                 return;
             }
             if (this._stepIntoMarkup && WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
-                this._stepIntoMarkup.moveSelectionTo(-1);
+                this._stepIntoMarkup.stoptIteratingSelection();
                 event.consume();
                 return;
             }
@@ -716,16 +716,31 @@ WebInspector.JavaScriptSourceFrame.StepIntoMarkup = function(rawPositions, edito
     this._positions = rawPositions;
     this._editorRanges = editorRanges;
     this._highlightDescriptors = new Array(rawPositions.length);
+    this._currentHighlight = undefined;
     this._firstToExecute = firstToExecute;
-    this._currentSelection = firstToExecute;
+    this._currentSelection = undefined;
     this._sourceFrame = sourceFrame;
 };
 
 WebInspector.JavaScriptSourceFrame.StepIntoMarkup.prototype = {
     show: function()
     {
+        var highlight = this._getVisibleHighlight();
         for (var i = 0; i < this._positions.length; ++i)
-            this._highlightItem(i, i == this._currentSelection);
+            this._highlightItem(i, i === highlight);
+        this._shownVisibleHighlight = highlight;
+    },
+
+    startIteratingSelection: function()
+    {
+        this._currentSelection = this._positions.length
+        this._redrawHighlight();
+    },
+
+    stoptIteratingSelection: function()
+    {
+        this._currentSelection = undefined;
+        this._redrawHighlight();
     },
 
     /**
@@ -734,26 +749,30 @@ WebInspector.JavaScriptSourceFrame.StepIntoMarkup.prototype = {
     iterateSelection: function(backward)
     {
         var nextSelection = backward ? this._currentSelection - 1 : this._currentSelection + 1;
-        this.moveSelectionTo(nextSelection);
+        var modulo = this._positions.length + 1;
+        nextSelection = (nextSelection + modulo) % modulo;
+        this._currentSelection = nextSelection;
+        this._redrawHighlight();
     },
 
-    selectFirstToExecute: function()
+    _redrawHighlight: function()
     {
-        this.moveSelectionTo(this._firstToExecute);
+        var visibleHighlight = this._getVisibleHighlight();
+        if (this._shownVisibleHighlight === visibleHighlight)
+            return;
+        this._hideItemHighlight(this._shownVisibleHighlight);
+        this._hideItemHighlight(visibleHighlight);
+        this._highlightItem(this._shownVisibleHighlight, false);
+        this._highlightItem(visibleHighlight, true);
+        this._shownVisibleHighlight = visibleHighlight;
     },
 
     /**
-     * @param {number} nextSelection
+     * @return {number}
      */
-    moveSelectionTo: function(nextSelection)
+    _getVisibleHighlight: function()
     {
-        var modulo = this._positions.length + 1;
-        nextSelection = (nextSelection + modulo) % modulo;
-        this._hideItemHighlight(this._currentSelection);
-        this._hideItemHighlight(nextSelection);
-        this._highlightItem(this._currentSelection, false);
-        this._highlightItem(nextSelection, true);
-        this._currentSelection = nextSelection;
+        return typeof this._currentSelection === "undefined" ? this._firstToExecute : this._currentSelection;
     },
 
     /**
