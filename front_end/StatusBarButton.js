@@ -337,6 +337,14 @@ WebInspector.StatusBarComboBox = function(changeHandler, className)
 
 WebInspector.StatusBarComboBox.prototype = {
     /**
+     * @return {!Element}
+     */
+    selectElement: function()
+    {
+        return this._selectElement;
+    },
+
+    /**
      * @return {number}
      */
     size: function()

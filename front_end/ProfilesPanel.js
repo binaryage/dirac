@@ -1401,3 +1401,4 @@ importScript("JSHeapSnapshot.js");
 importScript("ProfileLauncherView.js");
 importScript("TopDownProfileDataGridTree.js");
 importScript("CanvasProfileView.js");
+importScript("CanvasReplayStateView.js");

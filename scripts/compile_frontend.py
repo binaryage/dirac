@@ -369,6 +369,7 @@ modules = [
             "ProfileLauncherView.js",
             "TopDownProfileDataGridTree.js",
             "CanvasProfileView.js",
+            "CanvasReplayStateView.js",
         ]
     },
     {
