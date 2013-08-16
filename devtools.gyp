@@ -313,6 +313,7 @@
             'front_end/ProfileLauncherView.js',
             'front_end/TopDownProfileDataGridTree.js',
             'front_end/CanvasProfileView.js',
+            'front_end/CanvasReplayStateView.js',
         ],
 
         'devtools_audits_js_files': [

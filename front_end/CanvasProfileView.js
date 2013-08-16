@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,6 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+importScript("CanvasReplayStateView.js");
+
 /**
  * @constructor
  * @extends {WebInspector.View}
@@ -37,22 +39,29 @@ WebInspector.CanvasProfileView = function(profile)
 {
     WebInspector.View.call(this);
     this.registerRequiredCSS("canvasProfiler.css");
+    this.element.addStyleClass("canvas-profile-view");
     this._profile = profile;
     this._traceLogId = profile.traceLogId();
-    this.element.addStyleClass("canvas-profile-view");
-
+    this._traceLogPlayer = profile.traceLogPlayer();
     this._linkifier = new WebInspector.Linkifier();
-    this._splitView = new WebInspector.SplitView(false, "canvasProfileViewSplitLocation", 300);
 
-    var replayImageContainer = this._splitView.firstElement();
+    const defaultReplayLogWidthPercent = 0.34;
+    this._replayInfoSplitView = new WebInspector.SplitView(true, "canvasProfileViewReplaySplitLocation", defaultReplayLogWidthPercent);
+    this._replayInfoSplitView.setMainElementConstraints(defaultReplayLogWidthPercent, defaultReplayLogWidthPercent);
+    this._replayInfoSplitView.show(this.element);
+
+    this._imageSplitView = new WebInspector.SplitView(false, "canvasProfileViewSplitLocation", 300);
+    this._imageSplitView.show(this._replayInfoSplitView.firstElement());
+
+    var replayImageContainer = this._imageSplitView.firstElement();
     replayImageContainer.id = "canvas-replay-image-container";
     this._replayImageElement = replayImageContainer.createChild("image", "canvas-replay-image");
     this._debugInfoElement = replayImageContainer.createChild("div", "canvas-debug-info hidden");
     this._spinnerIcon = replayImageContainer.createChild("img", "canvas-spinner-icon hidden");
 
-    var replayInfoContainer = this._splitView.secondElement();
-    var controlsContainer = replayInfoContainer.createChild("div", "status-bar");
-    var logGridContainer = replayInfoContainer.createChild("div", "canvas-replay-log");
+    var replayLogContainer = this._imageSplitView.secondElement();
+    var controlsContainer = replayLogContainer.createChild("div", "status-bar");
+    var logGridContainer = replayLogContainer.createChild("div", "canvas-replay-log");
 
     this._createControlButton(controlsContainer, "canvas-replay-first-step", WebInspector.UIString("First call."), this._onReplayFirstStepClick.bind(this));
     this._createControlButton(controlsContainer, "canvas-replay-prev-step", WebInspector.UIString("Previous call."), this._onReplayStepClick.bind(this, false));
@@ -62,28 +71,33 @@ WebInspector.CanvasProfileView = function(profile)
     this._createControlButton(controlsContainer, "canvas-replay-last-step", WebInspector.UIString("Last call."), this._onReplayLastStepClick.bind(this));
 
     this._replayContextSelector = new WebInspector.StatusBarComboBox(this._onReplayContextChanged.bind(this));
-    this._replayContextSelector.createOption("<screenshot auto>", WebInspector.UIString("Show screenshot of the last replayed resource."), "");
+    this._replayContextSelector.createOption(WebInspector.UIString("<screenshot auto>"), WebInspector.UIString("Show screenshot of the last replayed resource."), "");
     controlsContainer.appendChild(this._replayContextSelector.element);
+
+    this._installReplayInfoSidebarWidgets(controlsContainer);
+
+    this._replayStateView = new WebInspector.CanvasReplayStateView(this._traceLogPlayer);
+    this._replayStateView.show(this._replayInfoSplitView.secondElement());
 
     /** @type {!Object.<string, boolean>} */
     this._replayContexts = {};
-    /** @type {!Object.<string, CanvasAgent.ResourceState>} */
-    this._currentResourceStates = {};
 
     var columns = [
-        {title: "#", sortable: true, width: "5%"},
-        {title: WebInspector.UIString("Call"), sortable: true, width: "75%", disclosure: true},
-        {title: WebInspector.UIString("Location"), sortable: true, width: "20%"}
+        {title: "#", sortable: false, width: "5%"},
+        {title: WebInspector.UIString("Call"), sortable: false, width: "75%", disclosure: true},
+        {title: WebInspector.UIString("Location"), sortable: false, width: "20%"}
     ];
 
     this._logGrid = new WebInspector.DataGrid(columns);
     this._logGrid.element.addStyleClass("fill");
     this._logGrid.show(logGridContainer);
-    this._logGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._replayTraceLog.bind(this));
+    this._logGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._replayTraceLog, this);
+
+    this.element.addEventListener("mousedown", this._onMouseClick.bind(this), true);
 
     this._popoverHelper = new WebInspector.ObjectPopoverHelper(this.element, this._popoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), this._onHidePopover.bind(this), true);
+    this._popoverHelper.setRemoteObjectFormatter(this._hexNumbersFormatter.bind(this));
 
-    this._splitView.show(this.element);
     this._requestTraceLog(0);
 }
 
@@ -119,6 +133,58 @@ WebInspector.CanvasProfileView.prototype = {
     },
 
     /**
+     * @param {!Element} controlsContainer
+     */
+    _installReplayInfoSidebarWidgets: function(controlsContainer)
+    {
+        this._replayInfoResizeWidgetElement = controlsContainer.createChild("div", "resizer-widget");
+        this._replayInfoSplitView.installResizer(this._replayInfoResizeWidgetElement);
+
+        this._toggleReplayStateSidebarButton = new WebInspector.StatusBarButton("", "right-sidebar-show-hide-button canvas-sidebar-show-hide-button", 3);
+        this._toggleReplayStateSidebarButton.addEventListener("click", clickHandler, this);
+        controlsContainer.appendChild(this._toggleReplayStateSidebarButton.element);
+        this._enableReplayInfoSidebar(false);
+
+        function clickHandler()
+        {
+            this._enableReplayInfoSidebar(this._toggleReplayStateSidebarButton.state === "left");
+        }
+    },
+
+    /**
+     * @param {boolean} show
+     */
+    _enableReplayInfoSidebar: function(show)
+    {
+        if (show) {
+            this._toggleReplayStateSidebarButton.state = "right";
+            this._toggleReplayStateSidebarButton.title = WebInspector.UIString("Hide sidebar.");
+            this._replayInfoSplitView.showBoth();
+        } else {
+            this._toggleReplayStateSidebarButton.state = "left";
+            this._toggleReplayStateSidebarButton.title = WebInspector.UIString("Show sidebar.");
+            this._replayInfoSplitView.showOnlyFirst();
+        }
+        this._replayInfoResizeWidgetElement.enableStyleClass("hidden", !show);
+    },
+
+    /**
+     * @param {Event} event
+     */
+    _onMouseClick: function(event)
+    {
+        var resourceLinkElement = event.target.enclosingNodeOrSelfWithClass("canvas-formatted-resource");
+        if (resourceLinkElement) {
+            this._enableReplayInfoSidebar(true);
+            this._replayStateView.selectResource(resourceLinkElement.__resourceId);
+            event.consume(true);
+            return;
+        }
+        if (event.target.enclosingNodeOrSelfWithClass("webkit-html-resource-link"))
+            event.consume(false);
+    },
+
+    /**
      * @param {Element} parent
      * @param {string} className
      * @param {string} title
@@ -126,7 +192,7 @@ WebInspector.CanvasProfileView.prototype = {
      */
     _createControlButton: function(parent, className, title, clickCallback)
     {
-        var button = new WebInspector.StatusBarButton(title, className);
+        var button = new WebInspector.StatusBarButton(title, className + " canvas-replay-button");
         parent.appendChild(button.element);
 
         button.makeLongClickEnabled();
@@ -137,32 +203,23 @@ WebInspector.CanvasProfileView.prototype = {
 
     _onReplayContextChanged: function()
     {
+        var selectedContextId = this._replayContextSelector.selectedOption().value;
+
         /**
-         * @param {?Protocol.Error} error
-         * @param {CanvasAgent.ResourceState} resourceState
+         * @param {?CanvasAgent.ResourceState} resourceState
          */
-        function didReceiveResourceState(error, resourceState)
+        function didReceiveResourceState(resourceState)
         {
-            const emptyTransparentImageURL = "data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==";
             this._enableWaitIcon(false);
-            if (error)
+            if (selectedContextId !== this._replayContextSelector.selectedOption().value)
                 return;
-
-            this._currentResourceStates[resourceState.id] = resourceState;
-
-            var selectedContextId = this._replayContextSelector.selectedOption().value;
-            if (selectedContextId === resourceState.id)
-                this._replayImageElement.src = resourceState.imageURL || emptyTransparentImageURL;
+            var imageURL = (resourceState && resourceState.imageURL) || "";
+            this._replayImageElement.src = imageURL;
+            this._replayImageElement.style.visibility = imageURL ? "" : "hidden";
         }
 
-        var selectedContextId = this._replayContextSelector.selectedOption().value || "auto";
-        var resourceState = this._currentResourceStates[selectedContextId];
-        if (resourceState)
-            this._replayImageElement.src = resourceState.imageURL;
-        else {
-            this._enableWaitIcon(true);
-            CanvasAgent.getResourceState(this._traceLogId, selectedContextId, didReceiveResourceState.bind(this));
-        }
+        this._enableWaitIcon(true);
+        this._traceLogPlayer.getResourceState(selectedContextId, didReceiveResourceState.bind(this));
     },
 
     /**
@@ -247,62 +304,22 @@ WebInspector.CanvasProfileView.prototype = {
         this._lastReplayCallIndex = index;
         this._pendingReplayTraceLogEvent = true;
         /**
-         * @param {?Protocol.Error} error
          * @param {CanvasAgent.ResourceState} resourceState
          * @param {number} replayTime
          */
-        function didReplayTraceLog(error, resourceState, replayTime)
+        function didReplayTraceLog(resourceState, replayTime)
         {
             delete this._pendingReplayTraceLogEvent;
-
             this._enableWaitIcon(false);
 
-            if (!error) {
-                this._currentResourceStates = {};
-                this._currentResourceStates["auto"] = resourceState;
-                this._currentResourceStates[resourceState.id] = resourceState;
-
-                this._debugInfoElement.textContent = "Replay time: " + Number(replayTime).toFixed() + "ms";
-                this._onReplayContextChanged();
-            }
+            this._debugInfoElement.textContent = "Replay time: " + Number.secondsToString(replayTime / 1000, true);
+            this._onReplayContextChanged();
 
             if (index !== this._selectedCallIndex())
                 this._replayTraceLog();
         }
         this._enableWaitIcon(true);
-        CanvasAgent.replayTraceLog(this._traceLogId, index, didReplayTraceLog.bind(this));
-    },
-
-    /**
-     * @param {?Protocol.Error} error
-     * @param {CanvasAgent.TraceLog} traceLog
-     */
-    _didReceiveTraceLog: function(error, traceLog)
-    {
-        this._enableWaitIcon(false);
-        if (error || !traceLog)
-            return;
-        var callNodes = [];
-        var calls = traceLog.calls;
-        var index = traceLog.startOffset;
-        for (var i = 0, n = calls.length; i < n; ++i)
-            callNodes.push(this._createCallNode(index++, calls[i]));
-        var contexts = traceLog.contexts;
-        for (var i = 0, n = contexts.length; i < n; ++i) {
-            var contextId = contexts[i].resourceId || "";
-            var description = contexts[i].description || "";
-            if (this._replayContexts[contextId])
-                continue;
-            this._replayContexts[contextId] = true;
-            this._replayContextSelector.createOption(description, WebInspector.UIString("Show screenshot of this context's canvas."), contextId);
-        }
-        this._appendCallNodes(callNodes);
-        if (traceLog.alive)
-            setTimeout(this._requestTraceLog.bind(this, index), WebInspector.CanvasProfileView.TraceLogPollingInterval);
-        else
-            this._flattenSingleFrameNode();
-        this._profile._updateCapturingStatus(traceLog);
-        this._onReplayLastStepClick(); // Automatically replay the last step.
+        this._traceLogPlayer.replayTraceLog(index, didReplayTraceLog.bind(this));
     },
 
     /**
@@ -310,8 +327,38 @@ WebInspector.CanvasProfileView.prototype = {
      */
     _requestTraceLog: function(offset)
     {
+        /**
+         * @param {?CanvasAgent.TraceLog} traceLog
+         */
+        function didReceiveTraceLog(traceLog)
+        {
+            this._enableWaitIcon(false);
+            if (!traceLog)
+                return;
+            var callNodes = [];
+            var calls = traceLog.calls;
+            var index = traceLog.startOffset;
+            for (var i = 0, n = calls.length; i < n; ++i)
+                callNodes.push(this._createCallNode(index++, calls[i]));
+            var contexts = traceLog.contexts;
+            for (var i = 0, n = contexts.length; i < n; ++i) {
+                var contextId = contexts[i].resourceId || "";
+                var description = contexts[i].description || "";
+                if (this._replayContexts[contextId])
+                    continue;
+                this._replayContexts[contextId] = true;
+                this._replayContextSelector.createOption(description, WebInspector.UIString("Show screenshot of this context's canvas."), contextId);
+            }
+            this._appendCallNodes(callNodes);
+            if (traceLog.alive)
+                setTimeout(this._requestTraceLog.bind(this, index), WebInspector.CanvasProfileView.TraceLogPollingInterval);
+            else
+                this._flattenSingleFrameNode();
+            this._profile._updateCapturingStatus(traceLog);
+            this._onReplayLastStepClick(); // Automatically replay the last step.
+        }
         this._enableWaitIcon(true);
-        CanvasAgent.getTraceLog(this._traceLogId, offset, undefined, this._didReceiveTraceLog.bind(this));
+        this._traceLogPlayer.getTraceLog(offset, undefined, didReceiveTraceLog.bind(this));
     },
 
     /**
@@ -452,20 +499,22 @@ WebInspector.CanvasProfileView.prototype = {
         if (call.arguments) {
             callViewElement.createTextChild("(");
             for (var i = 0, n = call.arguments.length; i < n; ++i) {
-                var argument = call.arguments[i];
+                var argument = /** @type {!CanvasAgent.CallArgument} */ (call.arguments[i]);
                 if (i)
                     callViewElement.createTextChild(", ");
-                this._createCallArgumentChild(callViewElement, argument)._argumentIndex = i;
+                var element = WebInspector.CanvasProfileDataGridHelper.createCallArgumentElement(argument);
+                element.__argumentIndex = i;
+                callViewElement.appendChild(element);
             }
             callViewElement.createTextChild(")");
-        } else if (typeof call.value !== "undefined") {
+        } else if (call.value) {
             callViewElement.createTextChild(" = ");
-            this._createCallArgumentChild(callViewElement, call.value);
+            callViewElement.appendChild(WebInspector.CanvasProfileDataGridHelper.createCallArgumentElement(call.value));
         }
 
-        if (typeof call.result !== "undefined") {
+        if (call.result) {
             callViewElement.createTextChild(" => ");
-            this._createCallArgumentChild(callViewElement, call.result);
+            callViewElement.appendChild(WebInspector.CanvasProfileDataGridHelper.createCallArgumentElement(call.result));
         }
 
         var node = new WebInspector.DataGridNode(data);
@@ -475,64 +524,16 @@ WebInspector.CanvasProfileView.prototype = {
         return node;
     },
 
-    /**
-     * @param {!Element} parentElement
-     * @param {CanvasAgent.CallArgument} callArgument
-     * @return {!Element}
-     */
-    _createCallArgumentChild: function(parentElement, callArgument)
-    {
-        var element = parentElement.createChild("span", "canvas-call-argument");
-        element._argumentIndex = -1;
-        var description = callArgument.enumName || callArgument.description;
-        if (callArgument.type === "string") {
-            const maxStringLength = 150;
-            element.createTextChild("\"");
-            element.createChild("span", "canvas-formatted-string").textContent = description.trimMiddle(maxStringLength);
-            element.createTextChild("\"");
-            element._suppressPopover = (description.length <= maxStringLength && !/[\r\n]/.test(description));
-        } else {
-            var type = callArgument.subtype || callArgument.type;
-            if (type) {
-                element.addStyleClass("canvas-formatted-" + type);
-                switch (type) {
-                case "null":
-                case "undefined":
-                case "boolean":
-                    element._suppressPopover = true;
-                    break;
-                case "number":
-                    element._suppressPopover = !isNaN(description);
-                    break;
-                }
-            }
-            element.textContent = description;
-        }
-        if (callArgument.resourceId) {
-            element.addStyleClass("canvas-formatted-resource");
-            element.resourceId = callArgument.resourceId;
-        }
-        return element;
-    },
-
     _popoverAnchor: function(element, event)
     {
         var argumentElement = element.enclosingNodeOrSelfWithClass("canvas-call-argument");
-        if (!argumentElement || argumentElement._suppressPopover)
+        if (!argumentElement || argumentElement.__suppressPopover)
             return null;
         return argumentElement;
     },
 
     _resolveObjectForPopover: function(argumentElement, showCallback, objectGroupName)
     {
-        var dataGridNode = this._logGrid.dataGridNodeFromNode(argumentElement);
-        if (!dataGridNode) {
-            this._popoverHelper.hidePopover();
-            return;
-        }
-        var callIndex = dataGridNode.index;
-        var argumentIndex = argumentElement._argumentIndex;
-
         /**
          * @param {?Protocol.Error} error
          * @param {RuntimeAgent.RemoteObject=} result
@@ -547,13 +548,6 @@ WebInspector.CanvasProfileView.prototype = {
             if (!result)
                 return;
 
-            if (result && result.type === "number") {
-                // Show numbers in hex with min length of 4 (e.g. 0x0012).
-                var str = "0000" + Number(result.description).toString(16).toUpperCase();
-                str = str.replace(/^0+(.{4,})$/, "$1");
-                result.description = "0x" + str;
-            }
-
             this._popoverAnchorElement = argumentElement.cloneNode(true);
             this._popoverAnchorElement.addStyleClass("canvas-popover-anchor");
             this._popoverAnchorElement.addStyleClass("source-frame-eval-expression");
@@ -564,7 +558,37 @@ WebInspector.CanvasProfileView.prototype = {
 
             showCallback(WebInspector.RemoteObject.fromPayload(result), false, this._popoverAnchorElement);
         }
-        CanvasAgent.evaluateTraceLogCallArgument(this._traceLogId, callIndex, argumentIndex, objectGroupName, showObjectPopover.bind(this));
+
+        var evalResult = argumentElement.__evalResult;
+        if (evalResult)
+            showObjectPopover.call(this, null, evalResult);
+        else {
+            var dataGridNode = this._logGrid.dataGridNodeFromNode(argumentElement);
+            if (!dataGridNode || typeof dataGridNode.index !== "number") {
+                this._popoverHelper.hidePopover();
+                return;
+            }
+            var callIndex = dataGridNode.index;
+            var argumentIndex = argumentElement.__argumentIndex;
+            if (typeof argumentIndex !== "number")
+                argumentIndex = -1;
+            CanvasAgent.evaluateTraceLogCallArgument(this._traceLogId, callIndex, argumentIndex, objectGroupName, showObjectPopover.bind(this));
+        }
+    },
+
+    /**
+     * @param {WebInspector.RemoteObject} object
+     * @return {string}
+     */
+    _hexNumbersFormatter: function(object)
+    {
+        if (object.type === "number") {
+            // Show enum values in hex with min length of 4 (e.g. 0x0012).
+            var str = "0000" + Number(object.description).toString(16).toUpperCase();
+            str = str.replace(/^0+(.{4,})$/, "$1");
+            return "0x" + str;
+        }
+        return object.description || "";
     },
 
     _onHidePopover: function()
@@ -1002,6 +1026,7 @@ WebInspector.CanvasProfileHeader = function(type, title, uid, traceLogId, frameI
     this._frameId = frameId;
     this._alive = true;
     this._traceLogSize = 0;
+    this._traceLogPlayer = traceLogId ? new WebInspector.CanvasTraceLogPlayerProxy(traceLogId) : null;
 }
 
 WebInspector.CanvasProfileHeader.prototype = {
@@ -1011,6 +1036,14 @@ WebInspector.CanvasProfileHeader.prototype = {
     traceLogId: function()
     {
         return this._traceLogId;
+    },
+
+    /**
+     * @return {WebInspector.CanvasTraceLogPlayerProxy}
+     */
+    traceLogPlayer: function()
+    {
+        return this._traceLogPlayer;
     },
 
     /**
@@ -1044,11 +1077,10 @@ WebInspector.CanvasProfileHeader.prototype = {
      */
     dispose: function()
     {
-        if (this._traceLogId) {
-            CanvasAgent.dropTraceLog(this._traceLogId);
-            clearTimeout(this._requestStatusTimer);
-            this._alive = false;
-        }
+        if (this._traceLogPlayer)
+            this._traceLogPlayer.dispose();
+        clearTimeout(this._requestStatusTimer);
+        this._alive = false;
     },
 
     /**
@@ -1076,19 +1108,183 @@ WebInspector.CanvasProfileHeader.prototype = {
     _requestCapturingStatus: function()
     {
         /**
-         * @param {?Protocol.Error} error
-         * @param {CanvasAgent.TraceLog} traceLog
+         * @param {?CanvasAgent.TraceLog} traceLog
          */
-        function didReceiveTraceLog(error, traceLog)
+        function didReceiveTraceLog(traceLog)
         {
-            if (error)
+            if (!traceLog)
                 return;
             this._alive = traceLog.alive;
             this._traceLogSize = traceLog.totalAvailableCalls;
             this._updateCapturingStatus();
         }
-        CanvasAgent.getTraceLog(this._traceLogId, 0, 0, didReceiveTraceLog.bind(this));
+        this._traceLogPlayer.getTraceLog(0, 0, didReceiveTraceLog.bind(this));
     },
 
     __proto__: WebInspector.ProfileHeader.prototype
+}
+
+WebInspector.CanvasProfileDataGridHelper = {
+    /**
+     * @param {!CanvasAgent.CallArgument} callArgument
+     * @return {!Element}
+     */
+    createCallArgumentElement: function(callArgument)
+    {
+        if (callArgument.enumName)
+            return WebInspector.CanvasProfileDataGridHelper.createEnumValueElement(callArgument.enumName, +callArgument.description);
+        var element = document.createElement("span");
+        element.className = "canvas-call-argument";
+        var description = callArgument.description;
+        if (callArgument.type === "string") {
+            const maxStringLength = 150;
+            element.createTextChild("\"");
+            element.createChild("span", "canvas-formatted-string").textContent = description.trimMiddle(maxStringLength);
+            element.createTextChild("\"");
+            element.__suppressPopover = (description.length <= maxStringLength && !/[\r\n]/.test(description));
+            if (!element.__suppressPopover)
+                element.__evalResult = WebInspector.RemoteObject.fromPrimitiveValue(description);
+        } else {
+            var type = callArgument.subtype || callArgument.type;
+            if (type) {
+                element.addStyleClass("canvas-formatted-" + type);
+                if (["null", "undefined", "boolean", "number"].indexOf(type) >= 0)
+                    element.__suppressPopover = true;
+            }
+            element.textContent = description;
+        }
+        if (callArgument.resourceId) {
+            element.addStyleClass("canvas-formatted-resource");
+            element.__resourceId = callArgument.resourceId;
+        }
+        return element;
+    },
+
+    /**
+     * @param {string} enumName
+     * @param {number} enumValue
+     * @return {!Element}
+     */
+    createEnumValueElement: function(enumName, enumValue)
+    {
+        var element = document.createElement("span");
+        element.className = "canvas-call-argument canvas-formatted-number";
+        element.textContent = enumName;
+        element.__evalResult = WebInspector.RemoteObject.fromPrimitiveValue(enumValue);
+        return element;
+    }
+}
+
+/**
+ * @extends {WebInspector.Object}
+ * @constructor
+ * @param {CanvasAgent.TraceLogId} traceLogId
+ */
+WebInspector.CanvasTraceLogPlayerProxy = function(traceLogId)
+{
+    this._traceLogId = traceLogId;
+    /** @type {!Object.<string, !CanvasAgent.ResourceState>} */
+    this._currentResourceStates = {};
+}
+
+/** @enum {string} */
+WebInspector.CanvasTraceLogPlayerProxy.Events = {
+    CanvasTraceLogReceived: "CanvasTraceLogReceived",
+    CanvasReplayStateChanged: "CanvasReplayStateChanged",
+    CanvasResourceStateReceived: "CanvasResourceStateReceived",
+}
+
+WebInspector.CanvasTraceLogPlayerProxy.prototype = {
+    /**
+     * @param {number|undefined} startOffset
+     * @param {number|undefined} maxLength
+     * @param {function(?CanvasAgent.TraceLog):void} userCallback
+     */
+    getTraceLog: function(startOffset, maxLength, userCallback)
+    {
+        /**
+         * @param {?Protocol.Error} error
+         * @param {CanvasAgent.TraceLog} traceLog
+         */
+        function callback(error, traceLog)
+        {
+            if (error || !traceLog) {
+                userCallback(null);
+                return;
+            }
+            userCallback(traceLog);
+            this.dispatchEventToListeners(WebInspector.CanvasTraceLogPlayerProxy.Events.CanvasTraceLogReceived, traceLog);
+        }
+        CanvasAgent.getTraceLog(this._traceLogId, startOffset, maxLength, callback.bind(this));
+    },
+
+    dispose: function()
+    {
+        this._currentResourceStates = {};
+        CanvasAgent.dropTraceLog(this._traceLogId);
+        this.dispatchEventToListeners(WebInspector.CanvasTraceLogPlayerProxy.Events.CanvasReplayStateChanged);
+    },
+
+    /**
+     * @param {CanvasAgent.ResourceId} resourceId
+     * @param {function(?CanvasAgent.ResourceState):void} userCallback
+     */
+    getResourceState: function(resourceId, userCallback)
+    {
+        resourceId = resourceId || "auto";
+        if (this._currentResourceStates[resourceId]) {
+            userCallback(this._currentResourceStates[resourceId]);
+            return;
+        }
+        if (resourceId === "auto") {
+            userCallback(null); // Has not been replayed yet.
+            return;
+        }
+        /**
+         * @param {?Protocol.Error} error
+         * @param {CanvasAgent.ResourceState} resourceState
+         */
+        function callback(error, resourceState)
+        {
+            if (error || !resourceState) {
+                userCallback(null);
+                return;
+            }
+            this._currentResourceStates[resourceId] = resourceState;
+            userCallback(resourceState);
+            this.dispatchEventToListeners(WebInspector.CanvasTraceLogPlayerProxy.Events.CanvasResourceStateReceived, resourceState);
+        }
+        CanvasAgent.getResourceState(this._traceLogId, resourceId, callback.bind(this));
+    },
+
+    /**
+     * @param {number} index
+     * @param {function(?CanvasAgent.ResourceState, number):void} userCallback
+     */
+    replayTraceLog: function(index, userCallback)
+    {
+        /**
+         * @param {?Protocol.Error} error
+         * @param {CanvasAgent.ResourceState} resourceState
+         * @param {number} replayTime
+         */
+        function callback(error, resourceState, replayTime)
+        {
+            this._currentResourceStates = {};
+            if (error || !resourceState) {
+                resourceState = null;
+                userCallback(null, replayTime);
+            } else {
+                this._currentResourceStates["auto"] = resourceState;
+                this._currentResourceStates[resourceState.id] = resourceState;
+                userCallback(resourceState, replayTime);
+            }
+            this.dispatchEventToListeners(WebInspector.CanvasTraceLogPlayerProxy.Events.CanvasReplayStateChanged);
+            if (resourceState)
+                this.dispatchEventToListeners(WebInspector.CanvasTraceLogPlayerProxy.Events.CanvasResourceStateReceived, resourceState);
+        }
+        CanvasAgent.replayTraceLog(this._traceLogId, index, callback.bind(this));
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
