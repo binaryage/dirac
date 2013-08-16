@@ -332,11 +332,14 @@ WebInspector.DebuggerModel.prototype = {
      * @param {?Protocol.Error} error
      * @param {DebuggerAgent.SetScriptSourceError=} errorData
      * @param {Array.<DebuggerAgent.CallFrame>=} callFrames
+     * @param {boolean=} needsStepIn
      */
-    _didEditScriptSource: function(scriptId, newSource, callback, error, errorData, callFrames)
+    _didEditScriptSource: function(scriptId, newSource, callback, error, errorData, callFrames, needsStepIn)
     {
         callback(error, errorData);
-        if (!error && callFrames && callFrames.length)
+        if (needsStepIn)
+            DebuggerAgent.stepInto();
+        else if (!error && callFrames && callFrames.length)
             this._pausedScript(callFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData, this._debuggerPausedDetails.breakpointIds);
     },
 

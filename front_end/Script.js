@@ -138,7 +138,7 @@ WebInspector.Script.prototype = {
 
     /**
      * @param {string} newSource
-     * @param {function(?Protocol.Error, DebuggerAgent.SetScriptSourceError=, Array.<DebuggerAgent.CallFrame>=)} callback
+     * @param {function(?Protocol.Error, DebuggerAgent.SetScriptSourceError=, Array.<DebuggerAgent.CallFrame>=, boolean=)} callback
      */
     editSource: function(newSource, callback)
     {
@@ -154,7 +154,8 @@ WebInspector.Script.prototype = {
             // FIXME: support debugData.stack_update_needs_step_in flag by calling WebInspector.debugger_model.callStackModified
             if (!error)
                 this._source = newSource;
-            callback(error, errorData, callFrames);
+            var needsStepIn = !!debugData && debugData["stack_update_needs_step_in"] === true;
+            callback(error, errorData, callFrames, needsStepIn);
             if (!error)
                 this.dispatchEventToListeners(WebInspector.Script.Events.ScriptEdited, newSource);
         }
