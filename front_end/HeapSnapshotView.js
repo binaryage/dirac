@@ -131,9 +131,6 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.filterSelect = new WebInspector.StatusBarComboBox(this._changeFilter.bind(this));
     this._updateFilterOptions();
 
-    this.helpButton = new WebInspector.StatusBarButton("", "heap-snapshot-help-status-bar-item status-bar-item");
-    this.helpButton.addEventListener("click", this._helpClicked, this);
-
     this.selectedSizeText = new WebInspector.StatusBarText("");
 
     this._popoverHelper = new WebInspector.ObjectPopoverHelper(this.element, this._getHoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), undefined, true);
@@ -184,7 +181,7 @@ WebInspector.HeapSnapshotView.prototype = {
 
     get statusBarItems()
     {
-        return [this.viewSelect.element, this.baseSelect.element, this.filterSelect.element, this.helpButton.element, this.selectedSizeText.element];
+        return [this.viewSelect.element, this.baseSelect.element, this.filterSelect.element, this.selectedSizeText.element];
     },
 
     get profile()
@@ -601,68 +598,6 @@ WebInspector.HeapSnapshotView.prototype = {
         if (this.profile.fromFile())
             return;
         element.node.queryObjectContent(showCallback, objectGroupName);
-    },
-
-    _helpClicked: function(event)
-    {
-        if (!this._helpPopoverContentElement) {
-            var refTypes = ["a:", "console-formatted-name", WebInspector.UIString("property"),
-                            "0:", "console-formatted-name", WebInspector.UIString("element"),
-                            "a:", "console-formatted-number", WebInspector.UIString("context var"),
-                            "a:", "console-formatted-null", WebInspector.UIString("system prop")];
-            var objTypes = [" a ", "console-formatted-object", "Object",
-                            "\"a\"", "console-formatted-string", "String",
-                            "/a/", "console-formatted-string", "RegExp",
-                            "a()", "console-formatted-function", "Function",
-                            "a[]", "console-formatted-object", "Array",
-                            "num", "console-formatted-number", "Number",
-                            " a ", "console-formatted-null", "System"];
-
-            var contentElement = document.createElement("table");
-            contentElement.className = "heap-snapshot-help";
-            var headerRow = document.createElement("tr");
-            var propsHeader = document.createElement("th");
-            propsHeader.textContent = WebInspector.UIString("Property types:");
-            headerRow.appendChild(propsHeader);
-            var objsHeader = document.createElement("th");
-            objsHeader.textContent = WebInspector.UIString("Object types:");
-            headerRow.appendChild(objsHeader);
-            contentElement.appendChild(headerRow);
-
-            function appendHelp(help, index, cell)
-            {
-                var div = document.createElement("div");
-                div.className = "source-code event-properties";
-                var name = document.createElement("span");
-                name.textContent = help[index];
-                name.className = help[index + 1];
-                div.appendChild(name);
-                var desc = document.createElement("span");
-                desc.textContent = " " + help[index + 2];
-                div.appendChild(desc);
-                cell.appendChild(div);
-            }
-
-            var len = Math.max(refTypes.length, objTypes.length);
-            for (var i = 0; i < len; i += 3) {
-                var row = document.createElement("tr");
-                var refCell = document.createElement("td");
-                if (refTypes[i])
-                    appendHelp(refTypes, i, refCell);
-                row.appendChild(refCell);
-                var objCell = document.createElement("td");
-                if (objTypes[i])
-                    appendHelp(objTypes, i, objCell);
-                row.appendChild(objCell);
-                contentElement.appendChild(row);
-            }
-            this._helpPopoverContentElement = contentElement;
-            this.helpPopover = new WebInspector.Popover();
-        }
-        if (this.helpPopover.isShowing())
-            this.helpPopover.hide();
-        else
-            this.helpPopover.show(this._helpPopoverContentElement, this.helpButton.element);
     },
 
     /**
