@@ -195,31 +195,16 @@ body.platform-mac .help-key {
     border: none;
 }
 
-.help-block > fieldset {
-    margin: 3px 0;
-}
-
-.help-block fieldset {
-    margin-left: 7px;
-    padding: 0 initial;
+.settings-tab label {
+    padding-right: 4px;
 }
 
 #general-tab-content .help-block fieldset legend {
     font-size: 14px;
 }
 
-body.platform-mac .settings-tab.help-block fieldset {
-    margin-left: 10px;
-}
-
-.help-block fieldset p,
-.help-block fieldset fieldset {
-    border-left: 1px solid rgb(128,128,128);
+.help-block p p {
     padding-left: 30px;
-}
-
-.help-block fieldset label {
-    padding-right: 4px;
 }
 
 #enable-devtools-on-startup {
@@ -421,8 +406,7 @@ body.platform-mac .help-content input[type=radio] {
     color: #222;
 }
 
-.settings-tab .help-block fieldset:disabled label:hover,
-.settings-tab .help-block fieldset.toplevel label:hover {
+.settings-tab .help-block fieldset:disabled label:hover {
     color: inherit;
 }
 
@@ -430,14 +414,8 @@ body.platform-mac .help-content input[type=radio] {
     color: #222;
 }
 
-.settings-tab p,
-.settings-tab  .help-block fieldset {
+.settings-tab p {
     margin: 12px 0;
-}
-
-.settings-tab .help-block fieldset p,
-.settings-tab .help-block fieldset fieldset {
-    border-left: none transparent;
 }
 
 .settings-tab select {

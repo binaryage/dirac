@@ -65,6 +65,20 @@ WebInspector.SettingsScreen = function(onHide)
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
 }
 
+/**
+ * @param {string} text
+ * @return {?string}
+ */
+WebInspector.SettingsScreen.regexValidator = function(text)
+{
+    var regex;
+    try {
+        regex = new RegExp(text);
+    } catch (e) {
+    }
+    return regex ? null : "Invalid pattern";
+}
+
 WebInspector.SettingsScreen.Tabs = {
     General: "general",
     Overrides: "overrides",
@@ -140,6 +154,72 @@ WebInspector.SettingsTab = function(name, id)
     this.containerElement = this.element.createChild("div", "help-container-wrapper").createChild("div", "settings-tab help-content help-container");
 }
 
+/**
+ * @param {string} name
+ * @param {function(): *} getter
+ * @param {function(*)} setter
+ * @param {boolean=} omitParagraphElement
+ * @param {Element=} inputElement
+ * @param {string=} tooltip
+ * @return {Element}
+ */
+WebInspector.SettingsTab.createCheckbox = function(name, getter, setter, omitParagraphElement, inputElement, tooltip)
+{
+    var input = inputElement || document.createElement("input");
+    input.type = "checkbox";
+    input.name = name;
+    input.checked = getter();
+
+    function listener()
+    {
+        setter(input.checked);
+    }
+    input.addEventListener("click", listener, false);
+
+    var label = document.createElement("label");
+    label.appendChild(input);
+    label.appendChild(document.createTextNode(name));
+    if (tooltip)
+        label.title = tooltip;
+
+    if (omitParagraphElement)
+        return label;
+
+    var p = document.createElement("p");
+    p.appendChild(label);
+    return p;
+}
+
+/**
+ * @param {string} name
+ * @param {WebInspector.Setting} setting
+ * @param {boolean=} omitParagraphElement
+ * @param {Element=} inputElement
+ * @param {string=} tooltip
+ * @return {Element}
+ */
+WebInspector.SettingsTab.createSettingCheckbox = function(name, setting, omitParagraphElement, inputElement, tooltip)
+{
+    return WebInspector.SettingsTab.createCheckbox(name, setting.get.bind(setting), setting.set.bind(setting), omitParagraphElement, inputElement, tooltip);
+}
+
+/**
+ * @param {WebInspector.Setting} setting
+ * @return {Element}
+ */
+WebInspector.SettingsTab.createSettingFieldset = function(setting)
+{
+    var fieldset = document.createElement("fieldset");
+    fieldset.disabled = !setting.get();
+    setting.addChangeListener(settingChanged);
+    return fieldset;
+
+    function settingChanged()
+    {
+        fieldset.disabled = !setting.get();
+    }
+}
+
 WebInspector.SettingsTab.prototype = {
     /**
      *  @param {string=} name
@@ -153,44 +233,13 @@ WebInspector.SettingsTab.prototype = {
         return block;
     },
 
-    /**
-     * @param {boolean=} omitParagraphElement
-     * @param {Element=} inputElement
-     * @param {string=} tooltip
-     */
-    _createCheckboxSetting: function(name, setting, omitParagraphElement, inputElement, tooltip)
-    {
-        var input = inputElement || document.createElement("input");
-        input.type = "checkbox";
-        input.name = name;
-        input.checked = setting.get();
-
-        function listener()
-        {
-            setting.set(input.checked);
-        }
-        input.addEventListener("click", listener, false);
-
-        var label = document.createElement("label");
-        label.appendChild(input);
-        label.appendChild(document.createTextNode(name));
-        if (tooltip)
-            label.title = tooltip;
-
-        if (omitParagraphElement)
-            return label;
-
-        var p = document.createElement("p");
-        p.appendChild(label);
-        return p;
-    },
-
     _createSelectSetting: function(name, options, setting)
     {
-        var fieldsetElement = document.createElement("fieldset");
-        fieldsetElement.createChild("label").textContent = name;
+        var p = document.createElement("p");
+        var labelElement = p.createChild("label");
+        labelElement.textContent = name;
 
-        var select = document.createElement("select");
+        var select = p.createChild("select");
         var settingValue = setting.get();
 
         for (var i = 0; i < options.length; ++i) {
@@ -206,10 +255,6 @@ WebInspector.SettingsTab.prototype = {
         }
 
         select.addEventListener("change", changeListener, false);
-        fieldsetElement.appendChild(select);
-
-        var p = document.createElement("p");
-        p.appendChild(fieldsetElement);
         return p;
     },
 
@@ -223,11 +268,10 @@ WebInspector.SettingsTab.prototype = {
      */
     _createInputSetting: function(label, setting, numeric, maxLength, width, validatorCallback)
     {
-        var fieldset = document.createElement("fieldset");
-        var p = fieldset.createChild("p");
+        var p = document.createElement("p");
         var labelElement = p.createChild("label");
-        labelElement.textContent = label + " ";
-        var inputElement = labelElement.createChild("input");
+        labelElement.textContent = label;
+        var inputElement = p.createChild("input");
         inputElement.value = setting.get();
         inputElement.type = "text";
         if (numeric)
@@ -237,7 +281,7 @@ WebInspector.SettingsTab.prototype = {
         if (width)
             inputElement.style.width = width;
         if (validatorCallback) {
-            var errorMessageLabel = labelElement.createChild("div");
+            var errorMessageLabel = p.createChild("div");
             errorMessageLabel.addStyleClass("field-error-message");
             errorMessageLabel.style.color = "DarkRed";
             inputElement.oninput = function()
@@ -254,7 +298,8 @@ WebInspector.SettingsTab.prototype = {
             setting.set(numeric ? Number(inputElement.value) : inputElement.value);
         }
         inputElement.addEventListener("blur", onBlur, false);
-        return fieldset;
+
+        return p;
     },
 
     _createCustomSetting: function(name, element)
@@ -279,15 +324,15 @@ WebInspector.GenericSettingsTab = function()
     WebInspector.SettingsTab.call(this, WebInspector.UIString("General"), "general-tab-content");
 
     var p = this._appendSection();
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Disable cache (while DevTools is open)"), WebInspector.settings.cacheDisabled));
-    var disableJSElement = this._createCheckboxSetting(WebInspector.UIString("Disable JavaScript"), WebInspector.settings.javaScriptDisabled);
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Disable cache (while DevTools is open)"), WebInspector.settings.cacheDisabled));
+    var disableJSElement = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Disable JavaScript"), WebInspector.settings.javaScriptDisabled);
     p.appendChild(disableJSElement);
     WebInspector.settings.javaScriptDisabled.addChangeListener(this._javaScriptDisabledChanged, this);
     this._disableJSCheckbox = disableJSElement.getElementsByTagName("input")[0];
     this._updateScriptDisabledCheckbox();
 
     p = this._appendSection(WebInspector.UIString("Appearance"));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Split panels vertically when docked to right"), WebInspector.settings.splitVerticallyWhenDockedToRight));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Split panels vertically when docked to right"), WebInspector.settings.splitVerticallyWhenDockedToRight));
 
     p = this._appendSection(WebInspector.UIString("Elements"));
     var colorFormatElement = this._createSelectSetting(WebInspector.UIString("Color format"), [
@@ -297,38 +342,41 @@ WebInspector.GenericSettingsTab = function()
             [ "HSL: hsl(300, 80%, 90%)", WebInspector.Color.Format.HSL ]
         ], WebInspector.settings.colorFormat);
     p.appendChild(colorFormatElement);
-    colorFormatElement.firstChild.className = "toplevel";
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show user agent styles"), WebInspector.settings.showUserAgentStyles));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Word wrap"), WebInspector.settings.domWordWrap));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show Shadow DOM"), WebInspector.settings.showShadowDOM));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show rulers"), WebInspector.settings.showMetricsRulers));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show user agent styles"), WebInspector.settings.showUserAgentStyles));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Word wrap"), WebInspector.settings.domWordWrap));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show Shadow DOM"), WebInspector.settings.showShadowDOM));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show rulers"), WebInspector.settings.showMetricsRulers));
 
     p = this._appendSection(WebInspector.UIString("Rendering"));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show paint rectangles"), WebInspector.settings.showPaintRects));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show paint rectangles"), WebInspector.settings.showPaintRects));
     this._forceCompositingModeCheckbox = document.createElement("input");
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Force accelerated compositing"), WebInspector.settings.forceCompositingMode, false, this._forceCompositingModeCheckbox));
+
+    var checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Force accelerated compositing"), WebInspector.settings.forceCompositingMode, false, this._forceCompositingModeCheckbox);
+    p.appendChild(checkbox);
     WebInspector.settings.forceCompositingMode.addChangeListener(this._forceCompositingModeChanged, this);
-    this._compositingModeSettings = p.createChild("fieldset");
+    var fieldset = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.forceCompositingMode);
     this._showCompositedLayersBordersCheckbox = document.createElement("input");
-    this._compositingModeSettings.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show composited layer borders"), WebInspector.settings.showDebugBorders, false, this._showCompositedLayersBordersCheckbox));
+    fieldset.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show composited layer borders"), WebInspector.settings.showDebugBorders, false, this._showCompositedLayersBordersCheckbox));
     this._showFPSCheckbox = document.createElement("input");
-    this._compositingModeSettings.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show FPS meter"), WebInspector.settings.showFPSCounter, false, this._showFPSCheckbox));
+    fieldset.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show FPS meter"), WebInspector.settings.showFPSCounter, false, this._showFPSCheckbox));
     this._continousPaintingCheckbox = document.createElement("input");
-    this._compositingModeSettings.appendChild(this._createCheckboxSetting(WebInspector.UIString("Enable continuous page repainting"), WebInspector.settings.continuousPainting, false, this._continousPaintingCheckbox));
+    fieldset.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Enable continuous page repainting"), WebInspector.settings.continuousPainting, false, this._continousPaintingCheckbox));
     this._showScrollBottleneckRectsCheckbox = document.createElement("input");
     var tooltip = WebInspector.UIString("Shows areas of the page that slow down scrolling:\nTouch and mousewheel event listeners can delay scrolling.\nSome areas need to repaint their content when scrolled.");
-    this._compositingModeSettings.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show potential scroll bottlenecks"), WebInspector.settings.showScrollBottleneckRects, false, this._showScrollBottleneckRectsCheckbox, tooltip));
+    fieldset.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show potential scroll bottlenecks"), WebInspector.settings.showScrollBottleneckRects, false, this._showScrollBottleneckRectsCheckbox, tooltip));
+    checkbox.appendChild(fieldset);
     this._forceCompositingModeChanged();
 
     p = this._appendSection(WebInspector.UIString("Sources"));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Search in content scripts"), WebInspector.settings.searchInContentScripts));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Enable JS source maps"), WebInspector.settings.jsSourceMapsEnabled));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Enable CSS source maps"), WebInspector.settings.cssSourceMapsEnabled));
-    WebInspector.settings.cssSourceMapsEnabled.addChangeListener(this._cssSourceMapsEnablementChanged, this);
-    this._cssSourceMapSettings = p.createChild("fieldset");
-    var autoReloadCSSCheckbox = this._cssSourceMapSettings.createChild("input");
-    this._cssSourceMapSettings.appendChild(this._createCheckboxSetting(WebInspector.UIString("Auto-reload generated CSS"), WebInspector.settings.cssReloadEnabled, false, autoReloadCSSCheckbox));
-    this._cssSourceMapsEnablementChanged();
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Search in content scripts"), WebInspector.settings.searchInContentScripts));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Enable JS source maps"), WebInspector.settings.jsSourceMapsEnabled));
+
+    checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Enable CSS source maps"), WebInspector.settings.cssSourceMapsEnabled);
+    p.appendChild(checkbox);
+    fieldset = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.cssSourceMapsEnabled);
+    var autoReloadCSSCheckbox = fieldset.createChild("input");
+    fieldset.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Auto-reload generated CSS"), WebInspector.settings.cssReloadEnabled, false, autoReloadCSSCheckbox));
+    checkbox.appendChild(fieldset);
 
     var indentationElement = this._createSelectSetting(WebInspector.UIString("Default indentation"), [
             [ WebInspector.UIString("2 spaces"), WebInspector.TextUtils.Indent.TwoSpaces ],
@@ -336,31 +384,35 @@ WebInspector.GenericSettingsTab = function()
             [ WebInspector.UIString("8 spaces"), WebInspector.TextUtils.Indent.EightSpaces ],
             [ WebInspector.UIString("Tab character"), WebInspector.TextUtils.Indent.TabCharacter ]
         ], WebInspector.settings.textEditorIndent);
-    indentationElement.firstChild.className = "toplevel";
     p.appendChild(indentationElement);
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Detect indentation"), WebInspector.settings.textEditorAutoDetectIndent));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show whitespace characters"), WebInspector.settings.showWhitespacesInEditor));
-    if (WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
-        p.appendChild(this._createSkipStackFrameSetting());
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Detect indentation"), WebInspector.settings.textEditorAutoDetectIndent));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show whitespace characters"), WebInspector.settings.showWhitespacesInEditor));
+    if (WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled()) {
+        checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Skip stepping through sources with particular names"), WebInspector.settings.skipStackFramesSwitch);
+        fieldset = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.skipStackFramesSwitch);
+        fieldset.appendChild(this._createInputSetting(WebInspector.UIString("Pattern"), WebInspector.settings.skipStackFramesPattern, false, 1000, "100px", WebInspector.SettingsScreen.regexValidator));
+        checkbox.appendChild(fieldset);
+        p.appendChild(checkbox);
+    }
     WebInspector.settings.skipStackFramesSwitch.addChangeListener(this._skipStackFramesSwitchOrPatternChanged, this);
     WebInspector.settings.skipStackFramesPattern.addChangeListener(this._skipStackFramesSwitchOrPatternChanged, this);
 
     p = this._appendSection(WebInspector.UIString("Profiler"));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show advanced heap snapshot properties"), WebInspector.settings.showAdvancedHeapSnapshotProperties));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show advanced heap snapshot properties"), WebInspector.settings.showAdvancedHeapSnapshotProperties));
 
     p = this._appendSection(WebInspector.UIString("Timeline"));
-    var checkbox = this._createCheckboxSetting(WebInspector.UIString("Limit number of captured JS stack frames"), WebInspector.settings.timelineLimitStackFramesFlag);
+    checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Limit number of captured JS stack frames"), WebInspector.settings.timelineLimitStackFramesFlag);
     p.appendChild(checkbox);
-    var fieldset = this._createInputSetting(WebInspector.UIString("Frames to capture"), WebInspector.settings.timelineStackFramesToCapture, true, 2, "2em");
-    fieldset.disabled = !WebInspector.settings.timelineLimitStackFramesFlag.get();
-    WebInspector.settings.timelineLimitStackFramesFlag.addChangeListener(this._timelineLimitStackFramesChanged.bind(this, fieldset));
+
+    fieldset = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.timelineLimitStackFramesFlag);
+    fieldset.appendChild(this._createInputSetting(WebInspector.UIString("Frames to capture"), WebInspector.settings.timelineStackFramesToCapture, true, 2, "2em"));
     checkbox.appendChild(fieldset);
 
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Show CPU activity on the ruler"), WebInspector.settings.showCpuOnTimelineRuler));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show CPU activity on the ruler"), WebInspector.settings.showCpuOnTimelineRuler));
 
     p = this._appendSection(WebInspector.UIString("Console"));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Log XMLHttpRequests"), WebInspector.settings.monitoringXHREnabled));
-    p.appendChild(this._createCheckboxSetting(WebInspector.UIString("Preserve log upon navigation"), WebInspector.settings.preserveConsoleLog));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Log XMLHttpRequests"), WebInspector.settings.monitoringXHREnabled));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Preserve log upon navigation"), WebInspector.settings.preserveConsoleLog));
 
     if (WebInspector.extensionServer.hasExtensions()) {
         var handlerSelector = new WebInspector.HandlerSelector(WebInspector.openAnchorLocationRegistry);
@@ -370,7 +422,7 @@ WebInspector.GenericSettingsTab = function()
 
     p = this._appendSection();
     var panelShortcutTitle = WebInspector.UIString("Enable %s + 1-9 shortcut to switch panels", WebInspector.isMac() ? "Cmd" : "Ctrl");
-    p.appendChild(this._createCheckboxSetting(panelShortcutTitle, WebInspector.settings.shortcutPanelSwitch));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(panelShortcutTitle, WebInspector.settings.shortcutPanelSwitch));
 }
 
 WebInspector.GenericSettingsTab.prototype = {
@@ -380,7 +432,6 @@ WebInspector.GenericSettingsTab.prototype = {
     _forceCompositingModeChanged: function(event)
     {
         var compositing = event ? !!event.data : WebInspector.settings.forceCompositingMode.get();
-        this._compositingModeSettings.disabled = !compositing
         if (!compositing) {
             this._showFPSCheckbox.checked = false;
             this._continousPaintingCheckbox.checked = false;
@@ -392,23 +443,6 @@ WebInspector.GenericSettingsTab.prototype = {
             WebInspector.settings.showScrollBottleneckRects.set(false);
         }
         this._forceCompositingModeCheckbox.checked = compositing;
-    },
-
-    /**
-     * @param {WebInspector.Event=} event
-     */
-    _cssSourceMapsEnablementChanged: function(event)
-    {
-        var cssSourceMapsEnabled = event ? /** @type {boolean} */ (event.data) : WebInspector.settings.cssSourceMapsEnabled.get();
-        this._cssSourceMapSettings.disabled = !cssSourceMapsEnabled;
-    },
-
-    /**
-     * @param {HTMLFieldSetElement} fieldset
-     */
-    _timelineLimitStackFramesChanged: function(fieldset)
-    {
-        fieldset.disabled = !WebInspector.settings.timelineLimitStackFramesFlag.get();
     },
 
     _updateScriptDisabledCheckbox: function()
@@ -444,44 +478,6 @@ WebInspector.GenericSettingsTab.prototype = {
     _skipStackFramesSwitchOrPatternChanged: function()
     {
         WebInspector.DebuggerModel.applySkipStackFrameSettings();
-    },
-
-    _createSkipStackFrameSetting: function()
-    {
-        var fragment = document.createDocumentFragment();
-        var labelElement = fragment.createChild("label");
-        var checkboxElement = labelElement.createChild("input");
-        checkboxElement.type = "checkbox";
-        checkboxElement.checked = WebInspector.settings.skipStackFramesSwitch.get();
-        checkboxElement.addEventListener("click", checkboxClicked, false);
-        labelElement.appendChild(document.createTextNode(WebInspector.UIString("Skip stepping through sources with particular names")));
-        var fieldsetElement = this._createInputSetting(WebInspector.UIString("Pattern"), WebInspector.settings.skipStackFramesPattern, false, 1000, "100px", regExpValidator);
-        fieldsetElement.disabled = !checkboxElement.checked;
-        fragment.appendChild(fieldsetElement);
-        return fragment;
-
-        /**
-         * @param {string} text
-         * @return {?string}
-         */
-        function regExpValidator(text)
-        {
-            try {
-                var unused = new RegExp(text);
-                // Keep closure compiler happy.
-                unused.unused = unused;
-                return null;
-            } catch (e) {
-                return "Invalid pattern";
-            }
-        }
-
-        function checkboxClicked()
-        {
-            var enabled = checkboxElement.checked;
-            fieldsetElement.disabled = !checkboxElement.checked;
-            WebInspector.settings.skipStackFramesSwitch.set(enabled);
-        }
     },
 
     __proto__: WebInspector.SettingsTab.prototype
@@ -686,7 +682,6 @@ WebInspector.WorkspaceSettingsTab.prototype = {
 
     _resetFileMappings: function()
     {
-
         if (this._fileMappingsSection) {
             this._fileMappingsSection.remove();
             delete this._fileMappingsSection;

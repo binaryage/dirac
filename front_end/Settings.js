@@ -158,11 +158,19 @@ WebInspector.Setting = function(name, defaultValue, eventSupport, storage)
 }
 
 WebInspector.Setting.prototype = {
+    /**
+     * @param {function(WebInspector.Event)} listener
+     * @param {Object=} thisObject
+     */
     addChangeListener: function(listener, thisObject)
     {
         this._eventSupport.addEventListener(this._name, listener, thisObject);
     },
 
+    /**
+     * @param {function(WebInspector.Event)} listener
+     * @param {Object=} thisObject
+     */
     removeChangeListener: function(listener, thisObject)
     {
         this._eventSupport.removeEventListener(this._name, listener, thisObject);
