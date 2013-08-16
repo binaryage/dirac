@@ -48,14 +48,6 @@ WebInspector.ObjectPopoverHelper = function(panelElement, getAnchor, queryObject
 
 WebInspector.ObjectPopoverHelper.prototype = {
     /**
-     * @param {function(WebInspector.RemoteObject):string} formatter
-     */
-    setRemoteObjectFormatter: function(formatter)
-    {
-        this._remoteObjectFormatter = formatter;
-    },
-
-    /**
      * @param {Element} element
      * @param {WebInspector.Popover} popover
      */
@@ -76,14 +68,13 @@ WebInspector.ObjectPopoverHelper.prototype = {
             }
 
             var anchorElement = anchorOverride || element;
-            var description = (this._remoteObjectFormatter && this._remoteObjectFormatter(result)) || result.description;
 
             var popoverContentElement = null;
             if (result.type !== "object") {
                 popoverContentElement = document.createElement("span");
                 popoverContentElement.className = "monospace console-formatted-" + result.type;
                 popoverContentElement.style.whiteSpace = "pre";
-                popoverContentElement.textContent = description;
+                popoverContentElement.textContent = result.description;
                 if (result.type === "function") {
                     function didGetDetails(error, response)
                     {
@@ -120,12 +111,12 @@ WebInspector.ObjectPopoverHelper.prototype = {
                 popoverContentElement = document.createElement("div");
                 this._titleElement = document.createElement("div");
                 this._titleElement.className = "source-frame-popover-title monospace";
-                this._titleElement.textContent = description;
+                this._titleElement.textContent = result.description;
                 popoverContentElement.appendChild(this._titleElement);
 
                 var section = new WebInspector.ObjectPropertiesSection(result);
                 // For HTML DOM wrappers, append "#id" to title, if not empty.
-                if (description.substr(0, 4) === "HTML") {
+                if (result.description.substr(0, 4) === "HTML") {
                     this._sectionUpdateProperties = section.updateProperties.bind(section);
                     section.updateProperties = this._updateHTMLId.bind(this);
                 }
