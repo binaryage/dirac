@@ -83,7 +83,8 @@ WebInspector.ScriptsPanelDescriptor.ShortcutKeys = {
     ],
 
     PauseContinue: [
-        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F8)
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F8),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Backslash, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
     ],
 
     StepOver: [
