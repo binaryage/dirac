@@ -737,7 +737,7 @@ WebInspector.JavaScriptSourceFrame.StepIntoMarkup.prototype = {
         this._redrawHighlight();
     },
 
-    stoptIteratingSelection: function()
+    stopIteratingSelection: function()
     {
         this._currentSelection = undefined;
         this._redrawHighlight();
