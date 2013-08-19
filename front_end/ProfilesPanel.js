@@ -651,14 +651,15 @@ WebInspector.ProfilesPanel.prototype = {
             element.treeElement.handleContextMenuEvent(event, this);
             return;
         }
-        if (element !== this.element || event.srcElement === this.sidebarElement) {
-            var contextMenu = new WebInspector.ContextMenu(event);
-            if (this.visibleView instanceof WebInspector.HeapSnapshotView)
-                this.visibleView.populateContextMenu(contextMenu, event);
-            contextMenu.appendItem(WebInspector.UIString("Load\u2026"), this._fileSelectorElement.click.bind(this._fileSelectorElement));
-            contextMenu.show();
-        }
 
+        var contextMenu = new WebInspector.ContextMenu(event);
+        if (this.visibleView instanceof WebInspector.HeapSnapshotView) {
+            this.visibleView.populateContextMenu(contextMenu, event);
+        }
+        if (element !== this.element || event.srcElement === this.sidebarElement) {
+            contextMenu.appendItem(WebInspector.UIString("Load\u2026"), this._fileSelectorElement.click.bind(this._fileSelectorElement));
+        }
+        contextMenu.show();
     },
 
     /**
