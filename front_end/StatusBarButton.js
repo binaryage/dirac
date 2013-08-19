@@ -129,8 +129,22 @@ WebInspector.StatusBarButton.prototype = {
     _clicked: function()
     {
         this.dispatchEventToListeners("click");
-        if (this._longClickInterval)
+        if (this._longClickInterval) {
             clearInterval(this._longClickInterval);
+            delete this._longClickInterval;
+        }
+    },
+
+    /**
+     * @override
+     */
+    _applyEnabledState: function()
+    {
+        this.element.disabled = !this._enabled;
+        if (this._longClickInterval) {
+            clearInterval(this._longClickInterval);
+            delete this._longClickInterval;
+        }
     },
 
     /**
@@ -227,8 +241,10 @@ WebInspector.StatusBarButton.prototype = {
         {
             if (e.which !== 1)
                 return;
-            if (this._longClickInterval)
+            if (this._longClickInterval) {
                 clearInterval(this._longClickInterval);
+                delete this._longClickInterval;
+            }
         }
 
         function longClicked()
