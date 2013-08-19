@@ -27,14 +27,6 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-importScripts("utilities.js");
-importScripts("cm/headlesscodemirror.js");
-importScripts("cm/css.js");
-importScripts("cm/javascript.js");
-importScripts("cm/xml.js");
-importScripts("cm/htmlmixed.js");
-WebInspector = {};
-importScripts("CodeMirrorUtils.js");
 
 onmessage = function(event) {
     if (!event.data.method)
@@ -85,12 +77,17 @@ function outline(params)
     var isReadingArguments = false;
     var argumentsText = "";
     var currentFunction = null;
-    var tokenizer = WebInspector.CodeMirrorUtils.createTokenizer("text/javascript");
+    var scriptTokenizer = new WebInspector.SourceJavaScriptTokenizer();
+    scriptTokenizer.condition = scriptTokenizer.createInitialCondition();
+
     for (var i = 0; i < lines.length; ++i) {
         var line = lines[i];
-        function processToken(tokenValue, tokenType, column, newColumn)
-        {
-            tokenType = tokenType ? WebInspector.CodeMirrorUtils.convertTokenType(tokenType) : null;
+        var column = 0;
+        scriptTokenizer.line = line;
+        do {
+            var newColumn = scriptTokenizer.nextToken(column);
+            var tokenType = scriptTokenizer.tokenType;
+            var tokenValue = line.substring(column, newColumn);
             if (tokenType === "javascript-ident") {
                 previousIdentifier = tokenValue;
                 if (tokenValue && previousToken === "function") {
@@ -130,14 +127,14 @@ function outline(params)
                 previousTokenType = tokenType;
             }
             processedChunkCharacters += newColumn - column;
+            column = newColumn;
 
             if (processedChunkCharacters >= chunkSize) {
                 postMessage({ chunk: outlineChunk, total: chunkCount, index: currentChunk++ });
                 outlineChunk = [];
                 processedChunkCharacters = 0;
             }
-        }
-        tokenizer(line, processToken);
+        } while (column < line.length);
     }
     postMessage({ chunk: outlineChunk, total: chunkCount, index: chunkCount });
 }
@@ -157,6 +154,8 @@ function formatScript(content, mapping, offset, formattedOffset, indentString)
     return formattedContent;
 }
 
+WebInspector = {};
+
 Array.prototype.keySet = function()
 {
     var keys = {};
@@ -165,8 +164,13 @@ Array.prototype.keySet = function()
     return keys;
 };
 
+importScripts("SourceTokenizer.js");
+importScripts("SourceHTMLTokenizer.js");
+importScripts("SourceJavaScriptTokenizer.js");
+
 HTMLScriptFormatter = function(indentString)
 {
+    WebInspector.SourceHTMLTokenizer.call(this);
     this._indentString = indentString;
 }
 
@@ -179,19 +183,9 @@ HTMLScriptFormatter.prototype = {
         this._mapping = { original: [0], formatted: [0] };
         this._position = 0;
 
-        var scriptOpened = false;
-        var tokenizer = WebInspector.CodeMirrorUtils.createTokenizer("text/html");
-        function processToken(tokenValue, tokenType, tokenStart, tokenEnd) {
-            if (tokenValue === "<script" && tokenType === "xml-tag") {
-                scriptOpened = true;
-            } else if (scriptOpened && tokenValue === ">" && tokenType === "xml-tag") {
-                scriptOpened = false;
-                this.scriptStarted(tokenEnd);
-            } else if (tokenValue === "</script" && tokenType === "xml-tag") {
-                this.scriptEnded(tokenStart);
-            }
-        }
-        tokenizer(content, processToken.bind(this));
+        var cursor = 0;
+        while (cursor < this._content.length)
+            cursor = this.nextToken(cursor);
 
         this._formattedContent += this._content.substring(this._position);
         return { content: this._formattedContent, mapping: this._mapping };
@@ -217,6 +211,16 @@ HTMLScriptFormatter.prototype = {
         this._formattedContent += formattedScriptContent;
         this._position = cursor;
     },
+
+    styleSheetStarted: function(cursor)
+    {
+    },
+
+    styleSheetEnded: function(cursor)
+    {
+    },
+
+    __proto__: WebInspector.SourceHTMLTokenizer.prototype
 }
 
 function require()

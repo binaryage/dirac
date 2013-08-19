@@ -46,7 +46,6 @@ importScript("cm/coffeescript.js");
 importScript("cm/php.js");
 importScript("cm/python.js");
 importScript("cm/shell.js");
-importScript("CodeMirrorUtils.js");
 
 /**
  * @constructor
@@ -163,6 +162,10 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this.element.addEventListener("focus", this._handleElementFocus.bind(this), false);
     this.element.addEventListener("keydown", this._handleKeyDown.bind(this), true);
     this.element.tabIndex = 0;
+
+    this._overrideModeWithPrefixedTokens("css-base", "css-");
+    this._overrideModeWithPrefixedTokens("javascript", "js-");
+    this._overrideModeWithPrefixedTokens("xml", "xml-");
 
     this._setupSelectionColor();
     this._setupWhitespaceHighlight();
@@ -450,6 +453,17 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         return this._toRange(coords, coords);
     },
 
+    _convertTokenType: function(tokenType)
+    {
+        if (tokenType.startsWith("js-variable") || tokenType.startsWith("js-property") || tokenType === "js-def")
+            return "javascript-ident";
+        if (tokenType === "js-string-2")
+            return "javascript-regexp";
+        if (tokenType === "js-number" || tokenType === "js-comment" || tokenType === "js-string" || tokenType === "js-keyword")
+            return "javascript-" + tokenType.substring("js-".length);
+        return null;
+    },
+
     /**
      * @param {number} lineNumber
      * @param {number} column
@@ -462,7 +476,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var token = this._codeMirror.getTokenAt(new CodeMirror.Pos(lineNumber, (column || 0) + 1));
         if (!token || !token.type)
             return null;
-        var convertedType = WebInspector.CodeMirrorUtils.convertTokenType(token.type);
+        var convertedType = this._convertTokenType(token.type);
         if (!convertedType)
             return null;
         return {
@@ -541,6 +555,38 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         }
         CodeMirror.defineMode(modeName, modeConstructor);
         return modeName;
+    },
+
+    /**
+     * @param {string} modeName
+     * @param {string} tokenPrefix
+     */
+    _overrideModeWithPrefixedTokens: function(modeName, tokenPrefix)
+    {
+        var oldModeName = modeName + "-old";
+        if (CodeMirror.modes[oldModeName])
+            return;
+
+        CodeMirror.defineMode(oldModeName, CodeMirror.modes[modeName]);
+        CodeMirror.defineMode(modeName, modeConstructor);
+
+        function modeConstructor(config, parserConfig)
+        {
+            var innerConfig = {};
+            for (var i in parserConfig)
+                innerConfig[i] = parserConfig[i];
+            innerConfig.name = oldModeName;
+            var codeMirrorMode = CodeMirror.getMode(config, innerConfig);
+            codeMirrorMode.name = modeName;
+            codeMirrorMode.token = tokenOverride.bind(this, codeMirrorMode.token);
+            return codeMirrorMode;
+        }
+
+        function tokenOverride(superToken, stream, state)
+        {
+            var token = superToken(stream, state);
+            return token ? tokenPrefix + token : token;
+        }
     },
 
     _enableLongLinesMode: function()

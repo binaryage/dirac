@@ -501,7 +501,6 @@ CodeMirror.mimeModes = {};
 CodeMirror.getMode = function(options, spec) { };
 CodeMirror.overlayMode = function(mode1, mode2, squashSpans) { };
 CodeMirror.defineMode = function(modeName, modeConstructor) { };
-CodeMirror.startState = function(mode) { };
 
 /** @constructor */
 CodeMirror.Pos = function(line, ch) { }
@@ -511,11 +510,7 @@ CodeMirror.Pos.prototype.line;
 CodeMirror.Pos.prototype.ch;
 
 /** @constructor */
-CodeMirror.StringStream = function(line)
-{
-    this.pos = 0;
-    this.start = 0;
-}
+CodeMirror.StringStream = function() { }
 CodeMirror.StringStream.prototype = {
     backUp: function (n) { },
     column: function () { },
