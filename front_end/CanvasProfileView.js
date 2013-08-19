@@ -1150,6 +1150,8 @@ WebInspector.CanvasProfileDataGridHelper = {
                     element.__suppressPopover = true;
             }
             element.textContent = description;
+            if (callArgument.remoteObject)
+                element.__evalResult = WebInspector.RemoteObject.fromPayload(callArgument.remoteObject);
         }
         if (callArgument.resourceId) {
             element.addStyleClass("canvas-formatted-resource");
@@ -1183,6 +1185,8 @@ WebInspector.CanvasTraceLogPlayerProxy = function(traceLogId)
     this._traceLogId = traceLogId;
     /** @type {!Object.<string, !CanvasAgent.ResourceState>} */
     this._currentResourceStates = {};
+    /** @type {?CanvasAgent.ResourceId} */
+    this._defaultResourceId = null;
 }
 
 /** @enum {string} */
@@ -1224,18 +1228,18 @@ WebInspector.CanvasTraceLogPlayerProxy.prototype = {
     },
 
     /**
-     * @param {CanvasAgent.ResourceId} resourceId
+     * @param {?CanvasAgent.ResourceId} resourceId
      * @param {function(?CanvasAgent.ResourceState):void} userCallback
      */
     getResourceState: function(resourceId, userCallback)
     {
-        resourceId = resourceId || "auto";
-        if (this._currentResourceStates[resourceId]) {
-            userCallback(this._currentResourceStates[resourceId]);
+        resourceId = resourceId || this._defaultResourceId;
+        if (!resourceId) {
+            userCallback(null); // Has not been replayed yet.
             return;
         }
-        if (resourceId === "auto") {
-            userCallback(null); // Has not been replayed yet.
+        if (this._currentResourceStates[resourceId]) {
+            userCallback(this._currentResourceStates[resourceId]);
             return;
         }
         /**
@@ -1273,7 +1277,7 @@ WebInspector.CanvasTraceLogPlayerProxy.prototype = {
                 resourceState = null;
                 userCallback(null, replayTime);
             } else {
-                this._currentResourceStates["auto"] = resourceState;
+                this._defaultResourceId = resourceState.id;
                 this._currentResourceStates[resourceState.id] = resourceState;
                 userCallback(resourceState, replayTime);
             }
@@ -1282,6 +1286,12 @@ WebInspector.CanvasTraceLogPlayerProxy.prototype = {
                 this.dispatchEventToListeners(WebInspector.CanvasTraceLogPlayerProxy.Events.CanvasResourceStateReceived, resourceState);
         }
         CanvasAgent.replayTraceLog(this._traceLogId, index, callback.bind(this));
+    },
+
+    clearResourceStates: function()
+    {
+        this._currentResourceStates = {};
+        this.dispatchEventToListeners(WebInspector.CanvasTraceLogPlayerProxy.Events.CanvasReplayStateChanged);
     },
 
     __proto__: WebInspector.Object.prototype

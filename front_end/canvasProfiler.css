@@ -113,6 +113,16 @@ button.status-bar-item.canvas-sidebar-show-hide-button.toggled-left {
 .canvas-replay-next-draw .glyph {
     -webkit-mask-position: -128px -72px;
 }
+.canvas-replay-state-prev .glyph {
+    -webkit-mask-position: -64px -48px;
+    -webkit-transform: scaleX(-1);
+}
+.canvas-replay-state-next .glyph {
+    -webkit-mask-position: -64px -48px;
+}
+.canvas-replay-state-refresh .glyph {
+    -webkit-mask-position: 0 0;
+}
 
 .canvas-popover-anchor {
     position: absolute;
@@ -161,4 +171,24 @@ button.status-bar-item.canvas-sidebar-show-hide-button.toggled-left {
 
 .canvas-replay-state-view .data-grid {
     top: 23px;
+}
+
+.canvas-replay-state-view .data-grid .data-container tr:nth-child(odd).canvas-grid-node-highlighted {
+    -webkit-animation: "fadeout-odd" 2s 0s;
+    background-color: rgb(255, 255, 175);
+}
+
+.canvas-replay-state-view .data-grid .data-container tr:nth-child(even).canvas-grid-node-highlighted {
+    -webkit-animation: "fadeout-even" 2s 0s;
+    background-color: rgb(235, 235, 120);
+}
+
+@-webkit-keyframes fadeout-odd {
+    from { background-color: rgb(255, 255, 25); }
+    to { background-color: rgb(255, 255, 175); }
+}
+
+@-webkit-keyframes fadeout-even {
+    from { background-color: rgb(255, 255, 25); }
+    to { background-color: rgb(235, 235, 120); }
 }

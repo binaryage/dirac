@@ -41,13 +41,31 @@ WebInspector.CanvasReplayStateView = function(traceLogPlayer)
     this._traceLogPlayer = traceLogPlayer;
 
     var controlsContainer = this.element.createChild("div", "status-bar");
+    this._prevButton = this._createControlButton(controlsContainer, "canvas-replay-state-prev", WebInspector.UIString("Previous resource."), this._onResourceNavigationClick.bind(this, false));
+    this._nextButton = this._createControlButton(controlsContainer, "canvas-replay-state-next", WebInspector.UIString("Next resource."), this._onResourceNavigationClick.bind(this, true));
+    this._createControlButton(controlsContainer, "canvas-replay-state-refresh", WebInspector.UIString("Refresh."), this._onStateRefreshClick.bind(this));
 
     this._resourceSelector = new WebInspector.StatusBarComboBox(this._onReplayResourceChanged.bind(this));
-    this._resourceSelector.createOption(WebInspector.UIString("<auto>"), WebInspector.UIString("Show state of the last replayed resource."), "");
+    this._currentOption = this._resourceSelector.createOption(WebInspector.UIString("<auto>"), WebInspector.UIString("Show state of the last replayed resource."), "");
     controlsContainer.appendChild(this._resourceSelector.element);
 
-    /** @type {!Object.<string, boolean>} */
-    this._resources = {};
+    /** @type {!Object.<string, string>} */
+    this._resourceIdToDescription = {};
+
+    /** @type {!Object.<string, !Object.<string, boolean>>} */
+    this._gridNodesExpandedState = {};
+    /** @type {!Object.<string, {scrollTop:number, scrollLeft:number}>} */
+    this._gridScrollPositions = {};
+
+    /** @type {?CanvasAgent.ResourceId} */
+    this._currentResourceId = null;
+    /** @type {!Array.<!Element>} */
+    this._prevOptionsStack = [];
+    /** @type {!Array.<!Element>} */
+    this._nextOptionsStack = [];
+
+    /** @type {!Array.<!WebInspector.DataGridNode>} */
+    this._highlightedGridNodes = [];
 
     var columns = [
         {title: WebInspector.UIString("Name"), sortable: false, width: "50%", disclosure: true},
@@ -61,6 +79,8 @@ WebInspector.CanvasReplayStateView = function(traceLogPlayer)
     this._traceLogPlayer.addEventListener(WebInspector.CanvasTraceLogPlayerProxy.Events.CanvasReplayStateChanged, this._onReplayResourceChanged, this);
     this._traceLogPlayer.addEventListener(WebInspector.CanvasTraceLogPlayerProxy.Events.CanvasTraceLogReceived, this._onCanvasTraceLogReceived, this);
     this._traceLogPlayer.addEventListener(WebInspector.CanvasTraceLogPlayerProxy.Events.CanvasResourceStateReceived, this._onCanvasResourceStateReceived, this);
+
+    this._updateButtonsEnabledState();
 }
 
 WebInspector.CanvasReplayStateView.prototype = {
@@ -79,6 +99,67 @@ WebInspector.CanvasReplayStateView.prototype = {
                 break;
             }
         }
+    },
+
+    /**
+     * @param {Element} parent
+     * @param {string} className
+     * @param {string} title
+     * @param {function(this:WebInspector.CanvasProfileView)} clickCallback
+     * @return {!WebInspector.StatusBarButton}
+     */
+    _createControlButton: function(parent, className, title, clickCallback)
+    {
+        var button = new WebInspector.StatusBarButton(title, className + " canvas-replay-button");
+        parent.appendChild(button.element);
+
+        button.makeLongClickEnabled();
+        button.addEventListener("click", clickCallback, this);
+        button.addEventListener("longClickDown", clickCallback, this);
+        button.addEventListener("longClickPress", clickCallback, this);
+        return button;
+    },
+
+    /**
+     * @param {boolean} forward
+     */
+    _onResourceNavigationClick: function(forward)
+    {
+        var newOption = forward ? this._nextOptionsStack.pop() : this._prevOptionsStack.pop();
+        if (!newOption)
+            return;
+        (forward ? this._prevOptionsStack : this._nextOptionsStack).push(this._currentOption);
+        this._isNavigationButton = true;
+        this.selectResource(newOption.value);
+        delete this._isNavigationButton;
+        this._updateButtonsEnabledState();
+    },
+
+    _onStateRefreshClick: function()
+    {
+        this._traceLogPlayer.clearResourceStates();
+    },
+
+    _updateButtonsEnabledState: function()
+    {
+        this._prevButton.setEnabled(this._prevOptionsStack.length > 0);
+        this._nextButton.setEnabled(this._nextOptionsStack.length > 0);
+    },
+
+    _updateCurrentOption: function()
+    {
+        const maxStackSize = 256;
+        var selectedOption = this._resourceSelector.selectedOption();
+        if (this._currentOption === selectedOption)
+            return;
+        if (!this._isNavigationButton) {
+            this._prevOptionsStack.push(this._currentOption);
+            this._nextOptionsStack = [];
+            if (this._prevOptionsStack.length > maxStackSize)
+                this._prevOptionsStack.shift();
+            this._updateButtonsEnabledState();
+        }
+        this._currentOption = selectedOption;
     },
 
     /**
@@ -138,9 +219,9 @@ WebInspector.CanvasReplayStateView.prototype = {
         if (!argument)
             return;
         var resourceId = argument.resourceId;
-        if (!resourceId || this._resources[resourceId])
+        if (!resourceId || this._resourceIdToDescription[resourceId])
             return;
-        this._resources[resourceId] = true;
+        this._resourceIdToDescription[resourceId] = argument.description;
         output.push(argument);
     },
 
@@ -179,6 +260,7 @@ WebInspector.CanvasReplayStateView.prototype = {
 
     _onReplayResourceChanged: function()
     {
+        this._updateCurrentOption();
         var selectedResourceId = this._resourceSelector.selectedOption().value;
         /**
          * @param {?CanvasAgent.ResourceState} resourceState
@@ -217,10 +299,40 @@ WebInspector.CanvasReplayStateView.prototype = {
      */
     _showResourceState: function(resourceState)
     {
+        this._saveExpandedState();
+        this._saveScrollState();
+
         var rootNode = this._stateGrid.rootNode();
-        rootNode.removeChildren();
-        if (!resourceState)
+        if (!resourceState) {
+            this._currentResourceId = null;
+            this._updateDataGridHighlights([]);
+            rootNode.removeChildren();
             return;
+        }
+
+        var nodesToHighlight = [];
+        var nameToOldGridNodes = {};
+
+        /**
+         * @param {!Object} map
+         * @param {WebInspector.DataGridNode=} node
+         */
+        function populateNameToNodesMap(map, node)
+        {
+            if (!node)
+                return;
+            for (var i = 0, child; child = node.children[i]; ++i) {
+                var item = {
+                    node: child,
+                    children: {}
+                };
+                map[child.name] = item;
+                populateNameToNodesMap(item.children, child);
+            }
+        }
+        populateNameToNodesMap(nameToOldGridNodes, rootNode);
+        rootNode.removeChildren();
+
         /**
          * @param {!CanvasAgent.ResourceStateDescriptor} d1
          * @param {!CanvasAgent.ResourceStateDescriptor} d2
@@ -236,21 +348,143 @@ WebInspector.CanvasReplayStateView.prototype = {
         }
         /**
          * @param {Array.<!CanvasAgent.ResourceStateDescriptor>|undefined} descriptors
-         * @param {!WebInspector.DataGridNode} node
+         * @param {!WebInspector.DataGridNode} parent
+         * @param {Object=} nameToOldChildren
          */
-        function appendResourceStateDescriptors(descriptors, node)
+        function appendResourceStateDescriptors(descriptors, parent, nameToOldChildren)
         {
-            if (!descriptors || !descriptors.length)
-                return;
+            descriptors = descriptors || [];
             descriptors.sort(comparator);
+            var oldChildren = nameToOldChildren || {};
             for (var i = 0, n = descriptors.length; i < n; ++i) {
                 var descriptor = descriptors[i];
                 var childNode = this._createDataGridNode(descriptor);
-                node.appendChild(childNode);
-                appendResourceStateDescriptors.call(this, descriptor.values, childNode);
+                parent.appendChild(childNode);
+                var oldChildrenItem = oldChildren[childNode.name] || {};
+                var oldChildNode = oldChildrenItem.node;
+                if (!oldChildNode || oldChildNode.element.textContent !== childNode.element.textContent)
+                    nodesToHighlight.push(childNode);
+                appendResourceStateDescriptors.call(this, descriptor.values, childNode, oldChildrenItem.children);
             }
         }
-        appendResourceStateDescriptors.call(this, resourceState.descriptors, rootNode);
+        appendResourceStateDescriptors.call(this, resourceState.descriptors, rootNode, nameToOldGridNodes);
+
+        var shouldHighlightChanges = (this._resourceKindId(this._currentResourceId) === this._resourceKindId(resourceState.id));
+        this._currentResourceId = resourceState.id;
+        this._restoreExpandedState();
+        this._updateDataGridHighlights(shouldHighlightChanges ? nodesToHighlight : []);
+        this._restoreScrollState();
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.DataGridNode>} nodes
+     */
+    _updateDataGridHighlights: function(nodes)
+    {
+        for (var i = 0, n = this._highlightedGridNodes.length; i < n; ++i) {
+            var node = this._highlightedGridNodes[i];
+            node.element.removeStyleClass("canvas-grid-node-highlighted");
+        }
+
+        this._highlightedGridNodes = nodes;
+
+        for (var i = 0, n = this._highlightedGridNodes.length; i < n; ++i) {
+            var node = this._highlightedGridNodes[i];
+            node.element.addStyleClass("canvas-grid-node-highlighted");
+            node.reveal();
+        }
+    },
+
+    /**
+     * @param {?CanvasAgent.ResourceId} resourceId
+     * @return {string}
+     */
+    _resourceKindId: function(resourceId)
+    {
+        var description = (resourceId && this._resourceIdToDescription[resourceId]) || "";
+        return description.replace(/\d+/g, "");
+    },
+
+    /**
+     * @param {function(!WebInspector.DataGridNode, string):void} callback
+     */
+    _forEachGridNode: function(callback)
+    {
+        /**
+         * @param {!WebInspector.DataGridNode} node
+         * @param {string} key
+         */
+        function processRecursively(node, key)
+        {
+            for (var i = 0, child; child = node.children[i]; ++i) {
+                var childKey = key + "#" + child.name;
+                callback(child, childKey);
+                processRecursively(child, childKey);
+            }
+        }
+        processRecursively(this._stateGrid.rootNode(), "");
+    },
+
+    _saveExpandedState: function()
+    {
+        if (!this._currentResourceId)
+            return;
+        var expandedState = {};
+        var key = this._resourceKindId(this._currentResourceId);
+        this._gridNodesExpandedState[key] = expandedState;
+        /**
+         * @param {!WebInspector.DataGridNode} node
+         * @param {string} key
+         */
+        function callback(node, key)
+        {
+            if (node.expanded)
+                expandedState[key] = true;
+        }
+        this._forEachGridNode(callback);
+    },
+
+    _restoreExpandedState: function()
+    {
+        if (!this._currentResourceId)
+            return;
+        var key = this._resourceKindId(this._currentResourceId);
+        var expandedState = this._gridNodesExpandedState[key];
+        if (!expandedState)
+            return;
+        /**
+         * @param {!WebInspector.DataGridNode} node
+         * @param {string} key
+         */
+        function callback(node, key)
+        {
+            if (expandedState[key])
+                node.expand();
+        }
+        this._forEachGridNode(callback);
+    },
+
+    _saveScrollState: function()
+    {
+        if (!this._currentResourceId)
+            return;
+        var key = this._resourceKindId(this._currentResourceId);
+        this._gridScrollPositions[key] = {
+            scrollTop: this._stateGrid.scrollContainer.scrollTop,
+            scrollLeft: this._stateGrid.scrollContainer.scrollLeft
+        };
+    },
+
+    _restoreScrollState: function()
+    {
+        if (!this._currentResourceId)
+            return;
+        var key = this._resourceKindId(this._currentResourceId);
+        var scrollState = this._gridScrollPositions[key];
+        if (!scrollState)
+            return;
+        this._stateGrid.scrollContainer.scrollTop = scrollState.scrollTop;
+        this._stateGrid.scrollContainer.scrollLeft = scrollState.scrollLeft;
     },
 
     /**
@@ -286,6 +520,7 @@ WebInspector.CanvasReplayStateView.prototype = {
         data[1] = valueElement;
         var node = new WebInspector.DataGridNode(data);
         node.selectable = false;
+        node.name = name;
         return node;
     },
 

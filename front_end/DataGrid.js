@@ -1124,7 +1124,7 @@ WebInspector.DataGrid.ResizeMethod = {
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {*=} data
+ * @param {Object.<string, *>=} data
  * @param {boolean=} hasChildren
  */
 WebInspector.DataGridNode = function(data, hasChildren)
@@ -1132,9 +1132,11 @@ WebInspector.DataGridNode = function(data, hasChildren)
     this._expanded = false;
     this._selected = false;
     this._shouldRefreshChildren = true;
+    /** @type {!Object.<string, *>} */
     this._data = data || {};
+    /** @type {boolean} */
     this.hasChildren = hasChildren || false;
-    /** @type {!Array.<WebInspector.DataGridNode>} */
+    /** @type {!Array.<!WebInspector.DataGridNode>} */
     this.children = [];
     this.dataGrid = null;
     this.parent = null;
@@ -1300,6 +1302,9 @@ WebInspector.DataGridNode.prototype = {
         return this._expanded;
     },
 
+    /**
+     * @param {boolean} x
+     */
     set expanded(x)
     {
         if (x)
@@ -1475,6 +1480,9 @@ WebInspector.DataGridNode.prototype = {
         this.hasChildren = false;
     },
 
+    /**
+     * @param {number} myIndex
+     */
     _recalculateSiblings: function(myIndex)
     {
         if (!this.parent)
