@@ -32,13 +32,26 @@
  * @constructor
  * @param {WebInspector.LayerTreeModel} model
  * @param {TreeOutline} treeOutline
+ * @extends {WebInspector.Object}
  */
 WebInspector.LayerTree = function(model, treeOutline)
 {
+    WebInspector.Object.call(this);
     this._model = model;
     this._treeOutline = treeOutline;
+    this._treeOutline.childrenListElement.addEventListener("mousemove", this._onMouseMove.bind(this), false);
+    this._treeOutline.childrenListElement.addEventListener("mouseout", this._onMouseMove.bind(this), false);
     this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._update.bind(this));
+    this._lastHoveredNode = null;
     this._needsUpdate = true;
+}
+
+/**
+ * @enum {string}
+ */
+WebInspector.LayerTree.Events = {
+    LayerHovered: "LayerHovered",
+    LayerSelected: "LayerSelected"
 }
 
 WebInspector.LayerTree.prototype = {
@@ -54,6 +67,32 @@ WebInspector.LayerTree.prototype = {
             this._update();
     },
 
+    /**
+     * @param {WebInspector.Layer} layer
+     */
+    selectLayer: function(layer)
+    {
+        this.hoverLayer(null);
+        var node = layer && this._treeOutline.getCachedTreeElement(layer);
+        if (node)
+            node.revealAndSelect(true);
+    },
+
+    /**
+     * @param {WebInspector.Layer} layer
+     */
+    hoverLayer: function(layer)
+    {
+        var node = layer && this._treeOutline.getCachedTreeElement(layer);
+        if (node === this._lastHoveredNode)
+            return;
+        if (this._lastHoveredNode)
+            this._lastHoveredNode.setHovered(false);
+        if (node)
+            node.setHovered(true);
+        this._lastHoveredNode = node;
+    },
+
     _update: function()
     {
         if (!this._isVisible) {
@@ -61,7 +100,6 @@ WebInspector.LayerTree.prototype = {
             return;
         }
         this._needsUpdate = false;
-
         var seenLayers = {};
 
         /**
@@ -78,7 +116,7 @@ WebInspector.LayerTree.prototype = {
             if (!parent)
                 console.assert(false, "Parent is not in the tree");
             if (!node) {
-                node = new WebInspector.LayerTreeElement(layer);
+                node = new WebInspector.LayerTreeElement(this, layer);
                 parent.appendChild(node);
             } else {
                 var oldParentId = node.parent.representedObject && node.parent.representedObject.id();
@@ -98,21 +136,47 @@ WebInspector.LayerTree.prototype = {
                 } else {
                     var nextNode = node.nextSibling || node.parent;
                     node.parent.removeChild(node);
+                    if (node === this._lastHoveredNode)
+                        this._lastHoveredNode = null;
                     node = nextNode;
                 }
             }
         }
-    }
- }
+    },
+
+    /**
+     * @param {Event} event
+     */
+    _onMouseMove: function(event)
+    {
+        var node = this._treeOutline.treeElementFromPoint(event.pageX, event.pageY);
+        if (node === this._lastHoveredNode)
+            return;
+        this.dispatchEventToListeners(WebInspector.LayerTree.Events.LayerHovered, node && node.representedObject);
+    },
+
+    /**
+     * @param {WebInspector.LayerTreeElement} node
+     */
+    _selectedNodeChanged: function(node)
+    {
+        var layer = /** @type {WebInspector.Layer} */ (node.representedObject);
+        this.dispatchEventToListeners(WebInspector.LayerTree.Events.LayerSelected, layer);
+    },
+
+    __proto__: WebInspector.Object.prototype
+}
 
 /**
   * @constructor
+  * @param {WebInspector.LayerTree} tree
   * @param {WebInspector.Layer} layer
   * @extends {TreeElement}
   */
-WebInspector.LayerTreeElement = function(layer)
+WebInspector.LayerTreeElement = function(tree, layer)
 {
     TreeElement.call(this, "#" + layer.id(), layer);
+    this._layerTree = tree;
 }
 
 WebInspector.LayerTreeElement.prototype = {
@@ -125,6 +189,19 @@ WebInspector.LayerTreeElement.prototype = {
 
     _update: function()
     {
+    },
+
+    onselect: function()
+    {
+        this._layerTree._selectedNodeChanged(this);
+    },
+
+    /**
+     * @param {boolean} hovered
+     */
+    setHovered: function(hovered)
+    {
+        this.listItemElement.enableStyleClass("hovered", hovered);
     },
 
     __proto__: TreeElement.prototype

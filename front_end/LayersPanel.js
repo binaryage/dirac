@@ -46,12 +46,23 @@ WebInspector.LayersPanel = function()
     this.createSidebarViewWithTree();
     this.sidebarElement.addStyleClass("outline-disclosure");
     this.sidebarTreeElement.removeStyleClass("sidebar-tree");
+
     this._model = new WebInspector.LayerTreeModel();
+    this._currentlySelectedLayer = null;
+    this._currentlyHoveredLayer = null;
+
     this._layerTree = new WebInspector.LayerTree(this._model, this.sidebarTree);
+    this._layerTree.addEventListener(WebInspector.LayerTree.Events.LayerSelected, this._onLayerSelected, this);
+    this._layerTree.addEventListener(WebInspector.LayerTree.Events.LayerHovered, this._onLayerHovered, this);
+
     this._layerDetailsSplitView = new WebInspector.SplitView(false, "layerDetailsSplitView");
     this._layerDetailsSplitView.show(this.splitView.mainElement);
+
     this._layers3DView = new WebInspector.Layers3DView(this._model);
     this._layers3DView.show(this._layerDetailsSplitView.mainElement);
+    this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.LayerSelected, this._onLayerSelected, this);
+    this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.LayerHovered, this._onLayerHovered, this);
+
     this._model.requestLayers();
 }
 
@@ -68,6 +79,43 @@ WebInspector.LayersPanel.prototype = {
         this._layerTree.setVisible(false);
         WebInspector.Panel.prototype.willHide.call(this);
     },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _onLayerSelected: function(event)
+    {
+        var layer = /** @type WebInspector.Layer */ (event.data);
+        if (this._currentlySelectedLayer === layer)
+            return;
+        this._currentlySelectedLayer = layer;
+        var nodeId = layer && layer.nodeIdForSelfOrAncestor();
+        if (nodeId)
+            WebInspector.domAgent.highlightDOMNodeForTwoSeconds(nodeId);
+        else
+            WebInspector.domAgent.hideDOMNodeHighlight();
+        this._layerTree.selectLayer(layer);
+        this._layers3DView.selectLayer(layer);
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _onLayerHovered: function(event)
+    {
+        var layer = /** @type WebInspector.Layer */ (event.data);
+        if (this._currentlyHoveredLayer === layer)
+            return;
+        this._currentlyHoveredLayer = layer;
+        var nodeId = layer && layer.nodeIdForSelfOrAncestor();
+        if (nodeId)
+            WebInspector.domAgent.highlightDOMNode(nodeId);
+        else
+            WebInspector.domAgent.hideDOMNodeHighlight();
+        this._layerTree.hoverLayer(layer);
+        this._layers3DView.hoverLayer(layer);
+    },
+
 
     __proto__: WebInspector.Panel.prototype
 }

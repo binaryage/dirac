@@ -42,12 +42,31 @@ WebInspector.Layers3DView = function(model)
     this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._update, this);
     this._rotatingContainerElement = this.element.createChild("div", "fill rotating-container");
     this.element.addEventListener("mousemove", this._onMouseMove.bind(this), false);
+    this.element.addEventListener("mouseout", this._onMouseMove.bind(this), false);
     this.element.addEventListener("mousedown", this._onMouseDown.bind(this), false);
+    this.element.addEventListener("click", this._onClick.bind(this), false);
     this._elementsByLayerId = {};
     this._rotateX = 0;
     this._rotateY = 0;
     this._scaleAdjustmentStylesheet = this.element.ownerDocument.head.createChild("style");
     this._scaleAdjustmentStylesheet.disabled = true;
+    this._lastOutlinedElement = {};
+}
+
+/**
+ * @enum {string}
+ */
+WebInspector.Layers3DView.OutlineType = {
+    Hovered: "hovered",
+    Selected: "selected"
+}
+
+/**
+ * @enum {string}
+ */
+WebInspector.Layers3DView.Events = {
+    LayerHovered: "LayerHovered",
+    LayerSelected: "LayerSelected"
 }
 
 WebInspector.Layers3DView.prototype = {
@@ -68,6 +87,44 @@ WebInspector.Layers3DView.prototype = {
             this._update();
     },
 
+    /**
+     * @param {WebInspector.Layers3DView.OutlineType} type
+     * @param {WebInspector.Layer?} layer
+     */
+    _setOutline: function(type, layer)
+    {
+        var element = layer ? this._elementForLayer(layer) : null;
+        var previousElement = this._lastOutlinedElement[type];
+        if (previousElement === element)
+            return;
+        this._lastOutlinedElement[type] = element;
+        if (previousElement) {
+            previousElement.removeStyleClass(type);
+            this._updateElementColor(previousElement);
+        }
+        if (element) {
+            element.addStyleClass(type);
+            this._updateElementColor(element);
+        }
+    },
+
+    /**
+     * @param {WebInspector.Layer} layer
+     */
+    hoverLayer: function(layer)
+    {
+        this._setOutline(WebInspector.Layers3DView.OutlineType.Hovered, layer);
+    },
+
+    /**
+     * @param {WebInspector.Layer} layer
+     */
+    selectLayer: function(layer)
+    {
+        this._setOutline(WebInspector.Layers3DView.OutlineType.Hovered, null);
+        this._setOutline(WebInspector.Layers3DView.OutlineType.Selected, layer);
+    },
+
     _scale: function()
     {
         const padding = 40;
@@ -78,9 +135,11 @@ WebInspector.Layers3DView.prototype = {
         var scaleX = this.element.clientWidth / (root.width() + 2 * padding);
         var scaleY = this.element.clientHeight / (root.height() + 2 * padding);
         scale = Math.min(scaleX, scaleY);
+        this._lastScale = scale;
         var element = this._elementForLayer(root);
-        element.style.webkitTransform = "scale3d(" + scale + "," + scale + "," + scale  +")";
-        element.style.webkitTransformOrigin = padding + "px " + padding + "px";
+        element.style.webkitTransform = "scale3d(" + scale + "," + scale + "," + scale + ")";
+        element.style.left = ((this.element.clientWidth - root.width() * scale) >> 1) + "px";
+        element.style.top = ((this.element.clientHeight - root.height() * scale) >> 1) + "px";
         const screenLayerThickness = 4;
         const screenLayerSpacing = 20;
         var layerThickness = Math.ceil(screenLayerThickness / scale) + "px";
@@ -138,7 +197,6 @@ WebInspector.Layers3DView.prototype = {
         var style = element.style;
         var parentElement = layer.parent() ? this._elementForLayer(layer.parent()) : this._rotatingContainerElement;
         element.__depth = (parentElement.__depth || 0) + 1;
-        style.backgroundColor = this._colorForLayer(layer, element.__depth);
         style.left  = layer.offsetX() + "px";
         style.top  = layer.offsetY() + "px";
         style.width  = layer.width() + "px";
@@ -157,20 +215,25 @@ WebInspector.Layers3DView.prototype = {
             style.webkitTransform = "";
             style.webkitTransformOrigin = "";
         }
+        this._updateElementColor(element);
         if (parentElement !== element.parentElement)
             parentElement.appendChild(element);
     },
 
     /**
-     * @param {WebInspector.Layer} layer
-     * @param {number} depth
-     * @return {string}
+     * @param {Element} element
      */
-    _colorForLayer: function(layer, depth)
+    _updateElementColor: function(element)
     {
-        const base = 144;
-        var component = base + 20 * ((depth - 1) % 5);
-        return "rgb(" + component + "," + component + "," + component + ")";
+        var color;
+        if (element === this._lastOutlinedElement[WebInspector.Layers3DView.OutlineType.Selected])
+            color = WebInspector.Color.PageHighlight.Content.toString(WebInspector.Color.Format.RGBA) || "";
+        else {
+            const base = 144;
+            var component = base + 20 * ((element.__depth - 1) % 5);
+            color = "rgba(" + component + "," + component + "," + component + ", 0.8)";
+        }
+        element.style.backgroundColor = color;
     },
 
     /**
@@ -188,14 +251,36 @@ WebInspector.Layers3DView.prototype = {
 
     /**
      * @param {Event} event
+     * @return {WebInspector.Layer?}
+     */
+    _layerFromEventPoint: function(event)
+    {
+        var element = this.element.ownerDocument.elementFromPoint(event.pageX, event.pageY);
+        if (!element)
+            return null;
+        element = element.enclosingNodeOrSelfWithClass("layer-container");
+        return element && element.__layer;
+    },
+
+    /**
+     * @param {Event} event
      */
     _onMouseMove: function(event)
     {
-        if (event.which !== 1)
+        if (!event.which) {
+            this.dispatchEventToListeners(WebInspector.Layers3DView.Events.LayerHovered, this._layerFromEventPoint(event));
             return;
-        this._rotateX = this._oldRotateX + (this._originY - event.clientY) / 2;
-        this._rotateY = this._oldRotateY - (this._originX - event.clientX) / 4;
-        this._rotatingContainerElement.style.webkitTransform = "rotateX(" + this._rotateX + "deg) rotateY(" + this._rotateY + "deg)";
+        }
+        if (event.which === 1) {
+            this._rotateX = this._oldRotateX + (this._originY - event.clientY) / 2;
+            this._rotateY = this._oldRotateY - (this._originX - event.clientX) / 4;
+            this._rotatingContainerElement.style.webkitTransform = "rotateX(" + this._rotateX + "deg) rotateY(" + this._rotateY + "deg)";
+        }
+    },
+
+    _onClick: function(event)
+    {
+        this.dispatchEventToListeners(WebInspector.Layers3DView.Events.LayerSelected, this._layerFromEventPoint(event));
     },
 
     __proto__: WebInspector.View.prototype

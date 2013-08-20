@@ -34,6 +34,7 @@
   */
 WebInspector.LayerTreeModel = function()
 {
+    WebInspector.Object.call(this);
     this._layersById = {};
     InspectorBackend.registerLayerTreeDispatcher(new WebInspector.LayerTreeDispatcher(this));
     LayerTreeAgent.enable();
@@ -41,7 +42,7 @@ WebInspector.LayerTreeModel = function()
 }
 
 WebInspector.LayerTreeModel.Events = {
-    LayerTreeChanged: "LayerTreeChanged"
+    LayerTreeChanged: "LayerTreeChanged",
 }
 
 WebInspector.LayerTreeModel.prototype = {
@@ -190,11 +191,17 @@ WebInspector.Layer.prototype = {
         return this._parent;
     },
 
+    /**
+     * @return {boolean}
+     */
     isRoot: function()
     {
         return !!this.parentId();
     },
 
+    /**
+     * @return {Array.<WebInspector.Layer>}
+     */
     children: function()
     {
         return this._children;
@@ -211,10 +218,21 @@ WebInspector.Layer.prototype = {
         child._parent = this;
     },
 
+    /**
+     * @return {DOMAgent.NodeId?}
+     */
+    nodeId: function()
+    {
+        return this._layerPayload.nodeId;
+    },
+
+    /**
+     * @return {DOMAgent.NodeId?}
+     */
     nodeIdForSelfOrAncestor: function()
     {
         for (var layer = this; layer; layer = layer._parent) {
-            var nodeId = layer._layerPayload["nodeId"];
+            var nodeId = layer._layerPayload.nodeId;
             if (nodeId)
                 return nodeId;
         }
