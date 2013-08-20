@@ -54,6 +54,7 @@ WebInspector.ElementsPanel = function()
     this.createSidebarView(this.element, WebInspector.SidebarView.SidebarPosition.End, initialSidebarWidth, initialSidebarHeight);
     this.splitView.setSidebarElementConstraints(Preferences.minElementsSidebarWidth, Preferences.minElementsSidebarHeight);
     this.splitView.setMainElementConstraints(minimumContentWidthPercent, minimumContentHeightPercent);
+    this.splitView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._updateTreeOutlineVisibleWidth.bind(this));
 
     this.contentElement = this.splitView.mainElement;
     this.contentElement.id = "elements-content";
@@ -111,6 +112,17 @@ WebInspector.ElementsPanel = function()
 }
 
 WebInspector.ElementsPanel.prototype = {
+    _updateTreeOutlineVisibleWidth: function()
+    {
+        if (!this.treeOutline)
+            return;
+
+        var width = this.splitView.element.offsetWidth;
+        if (this.splitView.isVertical())
+            width -= this.splitView.sidebarWidth();
+        this.treeOutline.setVisibleWidth(width);
+    },
+
     get statusBarItems()
     {
         return [this.crumbsElement];

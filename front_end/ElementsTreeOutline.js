@@ -91,6 +91,16 @@ WebInspector.ElementsTreeOutline.MappedCharToEntity = {
 }
 
 WebInspector.ElementsTreeOutline.prototype = {
+    /**
+     * @param {number} width
+     */
+    setVisibleWidth: function(width)
+    {
+        this._visibleWidth = width;
+        if (this._multilineEditing)
+            this._multilineEditing.setWidth(this._visibleWidth);
+    },
+
     _createNodeDecorators: function()
     {
         this._nodeDecorators = [];
@@ -1547,6 +1557,7 @@ WebInspector.ElementsTreeElement.prototype = {
         function dispose()
         {
             delete this._editing;
+            delete this.treeOutline._multilineEditing;
 
             // Remove editor.
             this.listItemElement.removeChild(this._htmlEditElement);
@@ -1568,6 +1579,8 @@ WebInspector.ElementsTreeElement.prototype = {
         var config = new WebInspector.EditingConfig(commit.bind(this), dispose.bind(this));
         config.setMultilineOptions(initialValue, { name: "xml", htmlMode: true }, "web-inspector-html", WebInspector.settings.domWordWrap.get(), true);
         this._editing = WebInspector.startEditing(this._htmlEditElement, config);
+        this._editing.setWidth(this.treeOutline._visibleWidth);
+        this.treeOutline._multilineEditing = this._editing;
     },
 
     _attributeEditingCommitted: function(element, newText, oldText, attributeName, moveDirection)
