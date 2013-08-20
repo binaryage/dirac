@@ -58,7 +58,6 @@ WebInspector.Dialog = function(relativeToElement, delegate)
     this._windowResizeHandler = this._position.bind(this);
     window.addEventListener("resize", this._windowResizeHandler, true);
     this._delegate.focus();
-    this._element.classList.add("fx-appear");
 }
 
 /**

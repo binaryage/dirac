@@ -1,22 +1,18 @@
 .dialog {
     position: absolute;
-
+    
     padding: 10px;
     border-radius: 10px;
     border: 1px solid gray;
 
     box-shadow: rgb(40,40,40) 0 0 50px;
-
+    
     display: -webkit-flex;
     -webkit-flex-direction: column;
-
+    
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#E9E9E9), to(#CFCFCF));
     font-size: 11px;
     font-family: 'Lucida Grande', sans-serif;
-
-    transition: -webkit-transform 100ms ease-out, opacity 100ms ease-out;
-    -webkit-transform: translateY(-20px);
-    opacity: 0;
 }
 
 .dialog-contents {
@@ -45,8 +41,4 @@
 .go-to-line-dialog button:active {
     background-color: rgb(215, 215, 215);
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(194, 194, 194)), to(rgb(239, 239, 239)));
-}
-.dialog.fx-appear {
-    opacity: 1;
-    -webkit-transform: translateY(0px);
 }
