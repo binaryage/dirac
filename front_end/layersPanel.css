@@ -44,6 +44,13 @@
     margin-top: 0;
     margin-bottom: 0;
     padding: 1 1 1 14px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.layers.panel .outline-disclosure .dimmed {
+    opacity: 0.6;
 }
 
 .layers-3d-view {
