@@ -35,18 +35,23 @@
 WebInspector.ScreencastView = function()
 {
     WebInspector.View.call(this);
+    this.registerRequiredCSS("screencastView.css");
+
     this.element.addStyleClass("fill");
-    this.element.tabIndex = 1;
+    this.element.addStyleClass("screencast");
+
     this._isCasting = false;
-    this._imageElement = this.element.createChild("img");
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
-    this.element.addEventListener("mousedown", this._handleMouseEvent.bind(this), false);
-    this.element.addEventListener("mouseup", this._handleMouseEvent.bind(this), false);
-    this.element.addEventListener("mousemove", this._handleMouseEvent.bind(this), false);
-    this.element.addEventListener("keydown", this._handleKeyEvent.bind(this), false);
-    this.element.addEventListener("keyup", this._handleKeyEvent.bind(this), false);
-    this.element.addEventListener("keypress", this._handleKeyEvent.bind(this), false);
+    this._imageElement = this.element.createChild("img", "screencast-frame");
+    this._imageElement.tabIndex = 1;
+    this._imageElement.addEventListener("mousedown", this._handleMouseEvent.bind(this), false);
+    this._imageElement.addEventListener("mouseup", this._handleMouseEvent.bind(this), false);
+    this._imageElement.addEventListener("mousemove", this._handleMouseEvent.bind(this), false);
+    this._imageElement.addEventListener("keydown", this._handleKeyEvent.bind(this), false);
+    this._imageElement.addEventListener("keyup", this._handleKeyEvent.bind(this), false);
+    this._imageElement.addEventListener("keypress", this._handleKeyEvent.bind(this), false);
     this._scale = 0.7;
+
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
 }
 
 WebInspector.ScreencastView.prototype = {
@@ -82,7 +87,11 @@ WebInspector.ScreencastView.prototype = {
     _screencastFrame: function(event)
     {
         var base64Data = /** type {string} */(event.data);
+        var previousWidth = this._imageElement.naturalWidth;
+        var previousHeight = this._imageElement.naturalHeight;
         this._imageElement.src = "data:image/jpg;base64," + base64Data;
+        if (previousWidth !== this._imageElement.naturalWidth || previousHeight !== this._imageElement.naturalHeight)
+            this.onResize();
     },
 
     /**
@@ -115,7 +124,10 @@ WebInspector.ScreencastView.prototype = {
         if (event.shiftKey)
             modifiers += 8;
 
-        InputAgent.dispatchMouseEvent(type, Math.round(event.x / this._scale), Math.round(event.y / this._scale), modifiers, event.timeStamp / 1000, button, event.detail, true);
+        const gutterSize = 40;
+        var x = Math.round((event.x - gutterSize) / this._scale / this._zoom);
+        var y = Math.round((event.y - gutterSize) / this._scale / this._zoom);
+        InputAgent.dispatchMouseEvent(type, x, y, modifiers, event.timeStamp / 1000, button, event.detail, true);
         this.element.focus();
         event.consume();
     },
@@ -148,6 +160,26 @@ WebInspector.ScreencastView.prototype = {
                                     event.keyIdentifier, event.keyCode /* windowsVirtualKeyCode */, event.keyCode /* nativeVirtualKeyCode */, undefined /* macCharCode */, false, false, false);
         this.element.focus();
         event.consume();
+    },
+
+    onResize: function()
+    {
+        if (!this._imageElement.naturalWidth)
+            return;
+
+        const gutterSize = 30;
+        const bordersSize = 60;
+        var ratio = this._imageElement.naturalWidth / this._imageElement.naturalHeight;
+        var maxWidth = this.element.offsetWidth - bordersSize - gutterSize;
+        var maxHeight = this.element.offsetHeight - bordersSize - gutterSize;
+        if (maxWidth > ratio * maxHeight) {
+            this._imageElement.style.width = (ratio * maxHeight) + bordersSize + "px";
+            this._imageElement.style.height = (maxHeight + bordersSize) + "px";
+        } else {
+            this._imageElement.style.width = (maxWidth + bordersSize) + "px";
+            this._imageElement.style.height = maxWidth / ratio + bordersSize + "px";
+        }
+        this._zoom = (this._imageElement.offsetWidth - bordersSize) / this._imageElement.naturalWidth;
     },
 
     __proto__: WebInspector.View.prototype

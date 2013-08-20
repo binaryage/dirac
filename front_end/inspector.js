@@ -587,14 +587,13 @@ WebInspector._doLoadedDoneWithCapabilities = function()
         this._setupTethering();
 
     if (WebInspector.experimentsSettings.screencast.isEnabled()) {
-        var splitView = new WebInspector.SplitView(true, "screencastSplitView");
-        splitView.markAsRoot();
-        splitView.setSecondIsSidebar(false);
-        splitView.show(document.body);
+        WebInspector._splitView = new WebInspector.SplitView(true, "screencastSplitView");
+        WebInspector._splitView.markAsRoot();
+        WebInspector._splitView.show(document.body);
 
         var screencastView = new WebInspector.ScreencastView();
-        screencastView.show(splitView.firstElement());
-        splitView.secondElement().appendChild(document.getElementById("root"));
+        screencastView.show(WebInspector._splitView.firstElement());
+        WebInspector._splitView.secondElement().appendChild(document.getElementById("root"));
     }
 
     WebInspector.notifications.dispatchEventToListeners(WebInspector.Events.InspectorLoaded);
@@ -638,6 +637,8 @@ WebInspector.windowResize = function(event)
         WebInspector.toolbar.resize();
     if (WebInspector.settingsController)
         WebInspector.settingsController.resize();
+    if (WebInspector._splitView)
+        WebInspector._splitView.doResize();
 }
 
 WebInspector.setDockingUnavailable = function(unavailable)

@@ -225,6 +225,7 @@
             'front_end/resourceView.css',
             'front_end/resourcesPanel.css',
             'front_end/revisionHistory.css',
+            'front_end/screencastView.css',
             'front_end/scriptsPanel.css',
             'front_end/sidebarPane.css',
             'front_end/spectrum.css',
