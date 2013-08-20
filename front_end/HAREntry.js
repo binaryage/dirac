@@ -57,6 +57,8 @@ WebInspector.HAREntry.prototype = {
             cache: { }, // Not supported yet.
             timings: this._buildTimings()
         };
+        if (this._request.connectionId)
+            entry.connection = String(this._request.connectionId);
         var page = WebInspector.networkLog.pageLoadForRequest(this._request);
         if (page)
             entry.pageref = "page_" + page.id;
