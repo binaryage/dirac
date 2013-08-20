@@ -384,6 +384,37 @@ modules = [
     }
 ]
 
+# `importScript` function must not be used in any files
+# except module headers. Refer to devtools.gyp file for
+# the module header list.
+allowed_import_statements_files = [
+    "utilities.js",
+    "ElementsPanel.js",
+    "ResourcesPanel.js",
+    "NetworkPanel.js",
+    "ScriptsPanel.js",
+    "TimelinePanel.js",
+    "ProfilesPanel.js",
+    "AuditsPanel.js",
+    "LayersPanel.js",
+    "CodeMirrorTextEditor.js",
+]
+
+
+def verify_importScript_usage():
+    for module in modules:
+        for file_name in module['sources']:
+            if file_name in allowed_import_statements_files:
+                continue
+            sourceFile = open(devtools_frontend_path + "/" + file_name, "r")
+            source = sourceFile.read()
+            sourceFile.close()
+            if "importScript(" in source:
+                print "ERROR: importScript function is allowed in module header files only (found in %s)" % file_name
+
+print "Verifying 'importScript' function usage..."
+verify_importScript_usage()
+
 if os.system("which java") != 0:
     print "Cannot find java ('which java' returns non-zero error code)"
     sys.exit(1)
