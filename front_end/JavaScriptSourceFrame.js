@@ -435,18 +435,20 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this.loaded) {
             this.textEditor.setExecutionLine(lineNumber);
 
-            /**
-             * @param {Array.<DebuggerAgent.Location>} locations
-             */
-            function locationsCallback(locations)
-            {
-                if (this._executionCallFrame !== callFrame || this._stepIntoMarkup)
-                    return;
-                this._stepIntoMarkup = WebInspector.JavaScriptSourceFrame.StepIntoMarkup.create(this, locations);
-                if (this._stepIntoMarkup)
-                    this._stepIntoMarkup.show();
+            if (WebInspector.experimentsSettings.stepIntoSelection.isEnabled()) {
+                /**
+                 * @param {Array.<DebuggerAgent.Location>} locations
+                 */
+                function locationsCallback(locations)
+                {
+                    if (this._executionCallFrame !== callFrame || this._stepIntoMarkup)
+                        return;
+                    this._stepIntoMarkup = WebInspector.JavaScriptSourceFrame.StepIntoMarkup.create(this, locations);
+                    if (this._stepIntoMarkup)
+                        this._stepIntoMarkup.show();
+                }
+                callFrame.getStepIntoLocations(locationsCallback.bind(this));
             }
-            callFrame.getStepIntoLocations(locationsCallback.bind(this));
         }
     },
 
@@ -745,6 +747,8 @@ WebInspector.JavaScriptSourceFrame.StepIntoMarkup.prototype = {
      */
     iterateSelection: function(backward)
     {
+        if (typeof this._currentSelection === "undefined")
+            return;
         var nextSelection = backward ? this._currentSelection - 1 : this._currentSelection + 1;
         var modulo = this._positions.length + 1;
         nextSelection = (nextSelection + modulo) % modulo;

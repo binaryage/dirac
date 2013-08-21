@@ -271,6 +271,7 @@ WebInspector.ExperimentsSettings = function()
     this.scrollBeyondEndOfFile = this._createExperiment("scrollBeyondEndOfFile", "Support scrolling beyond end of file");
     this.layersPanel = this._createExperiment("layersPanel", "Show Layers panel");
     this.screencast = this._createExperiment("screencast", "Enable screencast");
+    this.stepIntoSelection = this._createExperiment("stepIntoSelection", "Show step-in candidates while debugging.");
 
     this._cleanUpSetting();
 }
