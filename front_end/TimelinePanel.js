@@ -674,9 +674,9 @@ WebInspector.TimelinePanel.prototype = {
     _resize: function(sidebarWidth)
     {
         this._closeRecordDetails();
-        this._scheduleRefresh(false, true);
         this._graphRowsElementWidth = this._graphRowsElement.offsetWidth;
         this._containerElementHeight = this._containerElement.clientHeight;
+        this._scheduleRefresh(false, true);
         var lastItemElement = this._statusBarItems[this._statusBarItems.length - 1].element;
         var minFloatingStatusBarItemsOffset = lastItemElement.totalOffsetLeft() + lastItemElement.offsetWidth;
         this._timelineGrid.gridHeaderElement.style.width = this._itemsGraphsElement.offsetWidth + "px";
