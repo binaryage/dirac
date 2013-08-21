@@ -2464,6 +2464,15 @@
                 ],
                 "description": "This object represents a Named Flow.",
                 "hidden": true
+            },
+            {
+                "id": "PlatformFontUsage",
+                "type": "object",
+                "properties": [
+                    { "name": "familyName", "type": "string", "description": "Font's family name reported by platform."},
+                    { "name": "glyphCount", "type": "number", "description": "Amount of glyphs that were rendered with this font."}
+                ],
+                "description": "Information about amount of glyphs that were rendered with given font."
             }
         ],
         "commands": [
@@ -2509,6 +2518,17 @@
                     { "name": "computedStyle", "type": "array", "items": { "$ref": "CSSComputedStyleProperty" }, "description": "Computed style for the specified DOM node." }
                 ],
                 "description": "Returns the computed style for a DOM node identified by <code>nodeId</code>."
+            },
+            {
+                "name": "getPlatformFontsForNode",
+                "parameters": [
+                    { "name": "nodeId", "$ref": "DOM.NodeId" }
+                ],
+                "returns": [
+                    { "name": "fonts", "type": "array", "items": { "$ref": "PlatformFontUsage"}, "description": "Usage statistics for every employed platform font." }
+                ],
+                "description": "Requests information about platform fonts which we used to render child TextNodes in the given node.",
+                "hidden": true
             },
             {
                 "name": "getAllStyleSheets",
