@@ -434,9 +434,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         this._executionCallFrame = callFrame;
         if (this.loaded) {
             this.textEditor.setExecutionLine(lineNumber);
-            this.revealLine(this._executionLineNumber);
-            if (this.canEditSource())
-                this.setSelection(WebInspector.TextRange.createFromLocation(lineNumber, 0));
 
             /**
              * @param {Array.<DebuggerAgent.Location>} locations

@@ -86,7 +86,6 @@ WebInspector.DebuggerModel.Events = {
     BreakpointResolved: "BreakpointResolved",
     GlobalObjectCleared: "GlobalObjectCleared",
     CallFrameSelected: "CallFrameSelected",
-    ExecutionLineChanged: "ExecutionLineChanged",
     ConsoleCommandEvaluatedInSelectedCallFrame: "ConsoleCommandEvaluatedInSelectedCallFrame",
     BreakpointsActiveStateChanged: "BreakpointsActiveStateChanged"
 }
@@ -405,9 +404,6 @@ WebInspector.DebuggerModel.prototype = {
     _resumedScript: function()
     {
         this._setDebuggerPausedDetails(null);
-        if (this._executionLineLiveLocation)
-            this._executionLineLiveLocation.dispose();
-        this._executionLineLiveLocation = null;
         this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerResumed);
     },
 
@@ -496,25 +492,11 @@ WebInspector.DebuggerModel.prototype = {
      */
     setSelectedCallFrame: function(callFrame)
     {
-        if (this._executionLineLiveLocation)
-            this._executionLineLiveLocation.dispose();
-        delete this._executionLineLiveLocation;
-
         this._selectedCallFrame = callFrame;
         if (!this._selectedCallFrame)
             return;
 
         this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.CallFrameSelected, callFrame);
-
-        function updateExecutionLine(uiLocation)
-        {
-            var data = {
-                uiLocation: uiLocation,
-                callFrame: callFrame
-            };
-            this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ExecutionLineChanged, data);
-        }
-        this._executionLineLiveLocation = callFrame.script.createLiveLocation(callFrame.location, updateExecutionLine.bind(this));
     },
 
     /**

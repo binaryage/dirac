@@ -160,7 +160,6 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerResumed, this._debuggerResumed, this);
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.CallFrameSelected, this._callFrameSelected, this);
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ConsoleCommandEvaluatedInSelectedCallFrame, this._consoleCommandEvaluatedInSelectedCallFrame, this);
-    WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ExecutionLineChanged, this._executionLineChanged, this);
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.BreakpointsActiveStateChanged, this._breakpointsActiveStateChanged, this);
 
     WebInspector.startBatchUpdate();
@@ -519,29 +518,28 @@ WebInspector.ScriptsPanel.prototype = {
         delete this._executionSourceFrame;
     },
 
-    _executionLineChanged: function(event)
+    _setExecutionLine: function(uiLocation)
     {
-        var uiLocation = event.data.uiLocation;
-        var callFrame = event.data.callFrame;
-
-        this._clearCurrentExecutionLine();
-        if (!uiLocation)
-            return;
+        var callFrame = WebInspector.debuggerModel.selectedCallFrame()
         var sourceFrame = this._getOrCreateSourceFrame(uiLocation.uiSourceCode);
         sourceFrame.setExecutionLine(uiLocation.lineNumber, callFrame);
         this._executionSourceFrame = sourceFrame;
     },
 
-    _revealExecutionLine: function(uiLocation)
+    _executionLineChanged: function(uiLocation)
     {
+        this._clearCurrentExecutionLine();
+        this._setExecutionLine(uiLocation);
+
         var uiSourceCode = uiLocation.uiSourceCode;
-        // Some scripts (anonymous and snippets evaluations) are not added to files select by default.
-        if (this._currentUISourceCode && this._currentUISourceCode.scriptFile() && this._currentUISourceCode.scriptFile().isDivergingFromVM())
+        var scriptFile = this._currentUISourceCode ? this._currentUISourceCode.scriptFile() : null;
+        if (scriptFile && (scriptFile.isDivergingFromVM() || scriptFile.isMergingToVM()))
             return;
-        if (this._toggleFormatSourceButton.toggled && !uiSourceCode.formatted())
-            uiSourceCode.setFormatted(true);
+
         var sourceFrame = this._showFile(uiSourceCode);
         sourceFrame.revealLine(uiLocation.lineNumber);
+        if (sourceFrame.canEditSource())
+            sourceFrame.setSelection(WebInspector.TextRange.createFromLocation(uiLocation.lineNumber, 0));
         sourceFrame.focus();
     },
 
@@ -555,7 +553,7 @@ WebInspector.ScriptsPanel.prototype = {
         this.sidebarPanes.scopechain.update(callFrame);
         this.sidebarPanes.watchExpressions.refreshExpressions();
         this.sidebarPanes.callstack.setSelectedCallFrame(callFrame);
-        callFrame.createLiveLocation(this._revealExecutionLine.bind(this));
+        callFrame.createLiveLocation(this._executionLineChanged.bind(this));
     },
 
     _editorClosed: function(event)
