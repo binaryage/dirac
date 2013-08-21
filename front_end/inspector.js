@@ -594,6 +594,8 @@ WebInspector._doLoadedDoneWithCapabilities = function()
         var screencastView = new WebInspector.ScreencastView();
         screencastView.show(WebInspector._splitView.firstElement());
         WebInspector._splitView.secondElement().appendChild(document.getElementById("root"));
+        WebInspector.inspectorView.element.remove();
+        WebInspector.inspectorView.show(document.getElementById("main"));
     }
 
     WebInspector.notifications.dispatchEventToListeners(WebInspector.Events.InspectorLoaded);

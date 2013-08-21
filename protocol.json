@@ -3764,6 +3764,20 @@
                     { "name": "timestamp", "type": "number", "optional": true, "description": "Time at which the event occurred. Measured in UTC time in seconds since January 1, 1970 (default: current time)." }
                 ],
                 "description": "Dispatches a touch event to the page."
+            },
+            {
+                "name": "dispatchGestureEvent",
+                "hidden": true,
+                "parameters": [
+                    { "name": "type", "type": "string", "enum": ["scrollBegin", "scrollEnd", "scrollUpdate", "tapDown", "tap", "pinchBegin", "pinchEnd", "pinchUpdate"], "description": "Type of the gesture event." },
+                    { "name": "x", "type": "integer", "description": "X coordinate relative to the screen's viewport."},
+                    { "name": "y", "type": "integer", "description": "Y coordinate relative to the screen's viewport."},
+                    { "name": "timestamp", "type": "number", "optional": true, "description": "Time at which the event occurred. Measured in UTC time in seconds since January 1, 1970 (default: current time)." },
+                    { "name": "deltaX", "type": "integer", "optional": true, "description": "Delta X where apllies."},
+                    { "name": "deltaY", "type": "integer", "optional": true, "description": "Delta Y where apllies."},
+                    { "name": "pinchScale", "type": "number", "optional": true, "description": "Pinch scale." }
+                ],
+                "description": "Dispatches a gesture event to the page."
             }
         ],
         "events": []
