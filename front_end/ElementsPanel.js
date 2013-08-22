@@ -71,6 +71,7 @@ WebInspector.ElementsPanel = function()
     this.treeOutline.wireToDomAgent();
 
     this.treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, this._selectedNodeChanged, this);
+    this.treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.ElementsTreeUpdated, this._updateBreadcrumbIfNeeded, this);
 
     this.crumbsElement = document.createElement("div");
     this.crumbsElement.className = "crumbs";
@@ -101,9 +102,6 @@ WebInspector.ElementsPanel = function()
     this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
     this._popoverHelper.setTimeout(0);
 
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrModified, this._updateBreadcrumbIfNeeded, this);
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrRemoved, this._updateBreadcrumbIfNeeded, this);
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.NodeRemoved, this._nodeRemoved, this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.DocumentUpdated, this._documentUpdatedEvent, this);
     WebInspector.settings.showShadowDOM.addChangeListener(this._showShadowDOMChanged.bind(this));
 
@@ -549,6 +547,9 @@ WebInspector.ElementsPanel.prototype = {
             treeElement.hideSearchHighlights();
     },
 
+    /**
+     * @return {WebInspector.DOMNode}
+     */
     selectedDOMNode: function()
     {
         return this.treeOutline.selectedDOMNode();
@@ -562,14 +563,18 @@ WebInspector.ElementsPanel.prototype = {
         this.treeOutline.selectDOMNode(node, focus);
     },
 
-    _nodeRemoved: function(event)
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _updateBreadcrumbIfNeeded: function(event)
     {
-        if (!this.isShowing())
+        var nodes = /** @type {!Array.<!WebInspector.DOMNode>} */ (event.data || []);
+        if (!nodes.length)
             return;
 
         var crumbs = this.crumbsElement;
         for (var crumb = crumbs.firstChild; crumb; crumb = crumb.nextSibling) {
-            if (crumb.representedObject === event.data.node) {
+            if (nodes.indexOf(crumb.representedObject) !== -1) {
                 this.updateBreadcrumb(true);
                 return;
             }
@@ -612,24 +617,6 @@ WebInspector.ElementsPanel.prototype = {
         WebInspector.domAgent.hideDOMNodeHighlight();
 
         this._mouseOutOfCrumbsTimeout = setTimeout(this.updateBreadcrumbSizes.bind(this), 1000);
-    },
-
-    _updateBreadcrumbIfNeeded: function(event)
-    {
-        var name = event.data.name;
-        if (name !== "class" && name !== "id")
-            return;
-
-        var node = /** @type {WebInspector.DOMNode} */ (event.data.node);
-        var crumbs = this.crumbsElement;
-        var crumb = crumbs.firstChild;
-        while (crumb) {
-            if (crumb.representedObject === node) {
-                this.updateBreadcrumb(true);
-                break;
-            }
-            crumb = crumb.nextSibling;
-        }
     },
 
     /**
@@ -701,7 +688,7 @@ WebInspector.ElementsPanel.prototype = {
             crumb.representedObject = current;
             crumb.addEventListener("mousedown", selectCrumbFunction, false);
 
-            var crumbTitle;
+            var crumbTitle = "";
             switch (current.nodeType()) {
                 case Node.ELEMENT_NODE:
                     WebInspector.DOMPresentationUtils.decorateNodeLabel(current, crumb);
@@ -709,7 +696,7 @@ WebInspector.ElementsPanel.prototype = {
 
                 case Node.TEXT_NODE:
                     crumbTitle = WebInspector.UIString("(text)");
-                    break
+                    break;
 
                 case Node.COMMENT_NODE:
                     crumbTitle = "<!-->";
