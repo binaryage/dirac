@@ -272,6 +272,7 @@ WebInspector.ExperimentsSettings = function()
     this.layersPanel = this._createExperiment("layersPanel", "Show Layers panel");
     this.screencast = this._createExperiment("screencast", "Enable screencast");
     this.stepIntoSelection = this._createExperiment("stepIntoSelection", "Show step-in candidates while debugging.");
+    this.openConsoleWithCtrlTilde = this._createExperiment("openConsoleWithCtrlTilde", "Open console with Ctrl/Cmd+Tilde, not Esc");
 
     this._cleanUpSetting();
 }

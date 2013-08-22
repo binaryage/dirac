@@ -95,6 +95,7 @@ WebInspector.KeyboardShortcut.Keys = {
     H: { code: 72, name: "H" },
     Ctrl: { code: 17, name: "Ctrl" },
     Meta: { code: 91, name: "Meta" },
+    Tilde: { code: 192, name: "Tilde" },
     get CtrlOrMeta()
     {
         // "default" command/ctrl key for platform, Command on Mac, Ctrl on other platforms

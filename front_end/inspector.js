@@ -167,7 +167,7 @@ var WebInspector = {
     {
         animationType = animationType || WebInspector.Drawer.AnimationType.Normal;
 
-        if (this.consoleView.isShowing())
+        if (this.consoleView.isShowing() && !WebInspector.drawer.isHiding())
             return;
 
         if (WebInspector.drawer.visible)
@@ -734,7 +734,11 @@ WebInspector._registerShortcuts = function()
     ];
     section.addRelatedKeys(keys, WebInspector.UIString("Go back/forward in panel history"));
 
-    section.addKey(shortcut.makeDescriptor(shortcut.Keys.Esc), WebInspector.UIString("Toggle console"));
+    var toggleConsoleLabel = WebInspector.UIString("Toggle console");
+    if (WebInspector.experimentsSettings.openConsoleWithCtrlTilde.isEnabled())
+        section.addKey(shortcut.makeDescriptor(shortcut.Keys.Esc), toggleConsoleLabel);
+    else
+        section.addKey(shortcut.makeDescriptor(shortcut.Keys.Tilde, shortcut.Modifiers.CtrlOrMeta), toggleConsoleLabel);
     section.addKey(shortcut.makeDescriptor("f", shortcut.Modifiers.CtrlOrMeta), WebInspector.UIString("Search"));
 
     var advancedSearchShortcut = WebInspector.AdvancedSearchController.createShortcut();
@@ -862,6 +866,7 @@ WebInspector.postDocumentKeyDown = function(event)
     if (event.handled)
         return;
 
+    var openConsoleWithCtrlTildeEnabled = WebInspector.experimentsSettings.openConsoleWithCtrlTilde.isEnabled();
     if (event.keyIdentifier === Esc) {
         if (WebInspector.searchController.isSearchVisible()) {
             WebInspector.searchController.closeSearch();
@@ -870,7 +875,12 @@ WebInspector.postDocumentKeyDown = function(event)
         // If drawer is open with some view other than console then close it.
         if (!this._toggleConsoleButton.toggled && WebInspector.drawer.visible)
             this.closeViewInDrawer();
-        else
+        else if (this._toggleConsoleButton.toggled || !openConsoleWithCtrlTildeEnabled)
+            this._toggleConsoleButtonClicked();
+    }
+
+    if (WebInspector.experimentsSettings.openConsoleWithCtrlTilde.isEnabled()) {
+        if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Tilde.code && WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event))
             this._toggleConsoleButtonClicked();
     }
 }

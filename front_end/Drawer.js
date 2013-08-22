@@ -78,6 +78,11 @@ WebInspector.Drawer.prototype = {
         return Number.constrain(height, Preferences.minConsoleHeight, window.innerHeight - this._mainElement.totalOffsetTop() - Preferences.minConsoleHeight);
     },
 
+    isHiding: function()
+    {
+        return this._isHiding;
+    },
+
     show: function(view, animationType)
     {
         WebInspector.searchController.cancelSearch();
@@ -139,6 +144,7 @@ WebInspector.Drawer.prototype = {
         if (!this.visible)
             return;
 
+        this._isHiding = true;
         this._savedHeight = this.element.offsetHeight;
 
         WebInspector.restoreFocusFromElement(this.element);
@@ -170,6 +176,7 @@ WebInspector.Drawer.prototype = {
             document.body.removeStyleClass("drawer-visible");
             delete this._currentAnimation;
             this._elementToAdjust.style.bottom = 0;
+            delete this._isHiding;
         }
 
         this._currentAnimation = WebInspector.animateStyle(animations, this._animationDuration(animationType), animationCallback.bind(this));
