@@ -76,9 +76,6 @@ WebInspector.AuditLauncherView.prototype = {
         this._totalResources = 0;
     },
 
-    /**
-     * @param {WebInspector.Event} event
-     */
     _onRequestStarted: function(event)
     {
         var request = /** @type {WebInspector.NetworkRequest} */ (event.data);
@@ -89,9 +86,6 @@ WebInspector.AuditLauncherView.prototype = {
         this._updateResourceProgress();
     },
 
-    /**
-     * @param {WebInspector.Event} event
-     */
     _onRequestFinished: function(event)
     {
         var request = /** @type {WebInspector.NetworkRequest} */ (event.data);
@@ -113,8 +107,10 @@ WebInspector.AuditLauncherView.prototype = {
         var selectedCategories = this._selectedCategoriesSetting.get();
         var categoryElement = this._createCategoryElement(category.displayName, category.id);
         category._checkboxElement = categoryElement.firstChild;
-        if (this._selectAllCheckboxElement.checked || selectedCategories[category.displayName])
+        if (this._selectAllCheckboxElement.checked || selectedCategories[category.displayName]) {
             category._checkboxElement.checked = true;
+            ++this._currentCategoriesCount;
+        }
 
         /**
          * @param {!WebInspector.AuditCategory} a
@@ -188,7 +184,7 @@ WebInspector.AuditLauncherView.prototype = {
         this._auditReloadedStateElement.disabled = disable;
     },
 
-    _launchButtonClicked: function()
+    _launchButtonClicked: function(event)
     {
         this._setAuditRunning(!this._auditRunning);
     },
@@ -202,23 +198,15 @@ WebInspector.AuditLauncherView.prototype = {
         var childNodes = this._categoriesElement.childNodes;
         for (var i = 0, length = childNodes.length; i < length; ++i)
             childNodes[i].firstChild.checked = checkCategories;
+        this._currentCategoriesCount = checkCategories ? this._sortedCategories.length : 0;
         this._selectedCategoriesUpdated(userGesture);
     },
 
-    _categoryClicked: function()
+    _categoryClicked: function(event)
     {
+        this._currentCategoriesCount += event.target.checked ? 1 : -1;
+        this._selectAllCheckboxElement.checked = this._currentCategoriesCount === this._sortedCategories.length;
         this._selectedCategoriesUpdated(true);
-        this._selectAllCheckboxElement.checked = this._checkedCategoriesCount === this._sortedCategories.length;
-    },
-
-    _updateCheckedCategoriesCount: function()
-    {
-        this._checkedCategoriesCount = 0;
-        var checkboxes = this._categoriesElement.getElementsByTagName("input");
-        for (var i = 0; i < checkboxes.length; ++i) {
-            if (checkboxes[i].checked)
-                this._checkedCategoriesCount += 1;
-        }
     },
 
     /**
@@ -263,7 +251,7 @@ WebInspector.AuditLauncherView.prototype = {
         this._contentElement.appendChild(categoryElement);
 
         this._categoriesElement = this._contentElement.createChild("fieldset", "audit-categories-container");
-        this._checkedCategoriesCount = 0;
+        this._currentCategoriesCount = 0;
 
         this._contentElement.createChild("div", "flexible-space");
 
@@ -301,8 +289,6 @@ WebInspector.AuditLauncherView.prototype = {
      */
     _selectedCategoriesUpdated: function(userGesture)
     {
-        this._updateCheckedCategoriesCount();
-
         // Save present categories only upon user gesture to clean up junk from past versions and removed extensions.
         // Do not remove old categories if not handling a user gesture, as there's chance categories will be added
         // later during start-up.
@@ -318,7 +304,7 @@ WebInspector.AuditLauncherView.prototype = {
     _updateButton: function()
     {
         this._launchButton.textContent = this._auditRunning ? WebInspector.UIString("Stop") : WebInspector.UIString("Run");
-        this._launchButton.disabled = !this._checkedCategoriesCount;
+        this._launchButton.disabled = !this._currentCategoriesCount;
     },
 
     __proto__: WebInspector.View.prototype
