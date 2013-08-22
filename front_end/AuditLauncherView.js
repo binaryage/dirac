@@ -141,7 +141,7 @@ WebInspector.AuditLauncherView.prototype = {
         if (this._auditRunning === auditRunning)
             return;
         this._auditRunning = auditRunning;
-        this._launchButton.textContent = this._auditRunning ? WebInspector.UIString("Stop") : WebInspector.UIString("Run");
+        this._updateButton();
         this._toggleUIComponents(this._auditRunning);
         if (this._auditRunning)
             this._startAudit();
@@ -208,6 +208,17 @@ WebInspector.AuditLauncherView.prototype = {
     _categoryClicked: function()
     {
         this._selectedCategoriesUpdated(true);
+        this._selectAllCheckboxElement.checked = this._checkedCategoriesCount === this._sortedCategories.length;
+    },
+
+    _updateCheckedCategoriesCount: function()
+    {
+        this._checkedCategoriesCount = 0;
+        var checkboxes = this._categoriesElement.getElementsByTagName("input");
+        for (var i = 0; i < checkboxes.length; ++i) {
+            if (checkboxes[i].checked)
+                this._checkedCategoriesCount += 1;
+        }
     },
 
     /**
@@ -252,6 +263,7 @@ WebInspector.AuditLauncherView.prototype = {
         this._contentElement.appendChild(categoryElement);
 
         this._categoriesElement = this._contentElement.createChild("fieldset", "audit-categories-container");
+        this._checkedCategoriesCount = 0;
 
         this._contentElement.createChild("div", "flexible-space");
 
@@ -289,14 +301,7 @@ WebInspector.AuditLauncherView.prototype = {
      */
     _selectedCategoriesUpdated: function(userGesture)
     {
-        var checkedCategoriesCount = 0;
-        var checkboxes = this._categoriesElement.getElementsByTagName("input");
-        for (var i = 0; i < checkboxes.length; ++i) {
-            if (checkboxes[i].checked)
-                ++checkedCategoriesCount;
-        }
-        this._launchButton.disabled = checkedCategoriesCount === 0;
-        this._selectAllCheckboxElement.checked = checkedCategoriesCount === this._sortedCategories.length;
+        this._updateCheckedCategoriesCount();
 
         // Save present categories only upon user gesture to clean up junk from past versions and removed extensions.
         // Do not remove old categories if not handling a user gesture, as there's chance categories will be added
@@ -307,6 +312,13 @@ WebInspector.AuditLauncherView.prototype = {
             selectedCategories[childNodes[i].__displayName] = childNodes[i].firstChild.checked;
         selectedCategories[WebInspector.AuditLauncherView.AllCategoriesKey] = this._selectAllCheckboxElement.checked;
         this._selectedCategoriesSetting.set(selectedCategories);
+        this._updateButton();
+    },
+
+    _updateButton: function()
+    {
+        this._launchButton.textContent = this._auditRunning ? WebInspector.UIString("Stop") : WebInspector.UIString("Run");
+        this._launchButton.disabled = !this._checkedCategoriesCount;
     },
 
     __proto__: WebInspector.View.prototype
