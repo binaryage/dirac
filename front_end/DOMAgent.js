@@ -364,7 +364,7 @@ WebInspector.DOMNode.prototype = {
     },
 
     /**
-     * @param {function(?Protocol.Error, DOMAgent.NodeId=)=} callback
+     * @param {function(?Protocol.Error)=} callback
      */
     removeNode: function(callback)
     {
@@ -596,7 +596,7 @@ WebInspector.DOMNode.prototype = {
     /**
      * @param {WebInspector.DOMNode} targetNode
      * @param {?WebInspector.DOMNode} anchorNode
-     * @param {function(?Protocol.Error, DOMAgent.NodeId=)=} callback
+     * @param {function(?Protocol.Error)=} callback
      */
     moveTo: function(targetNode, anchorNode, callback)
     {
@@ -830,11 +830,9 @@ WebInspector.DOMDocument.prototype = {
  * @constructor
  */
 WebInspector.DOMAgent = function() {
-    /** @type {!Object.<number, !WebInspector.DOMNode>} */
+    /** @type {Object|undefined} */
     this._idToDOMNode = {};
-    /** @type {?WebInspector.DOMDocument} */
     this._document = null;
-    /** @type {!Object.<number, boolean>} */
     this._attributeLoadNodeIds = {};
     InspectorBackend.registerDOMDispatcher(new WebInspector.DOMDispatcher(this));
 }
@@ -1351,9 +1349,8 @@ WebInspector.DOMAgent.prototype = {
 
     /**
      * @param {WebInspector.DOMNode} node
-     * @param {function(?Protocol.Error, A=, B=)=} callback
-     * @return {function(?Protocol.Error, A=, B=)}
-     * @template A,B
+     * @param {function(?Protocol.Error)=} callback
+     * @return {function(?Protocol.Error)}
      */
     _markRevision: function(node, callback)
     {

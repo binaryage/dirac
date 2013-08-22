@@ -51,9 +51,9 @@ function TreeOutline(listNode, nonFocusable)
     this.setFocusable(!nonFocusable);
     this._childrenListNode.addEventListener("keydown", this._treeKeyDown.bind(this), true);
 
-    /** @type {!Map.<!Object, !Array.<!TreeElement>>} */
+    /** @type {!Map.<Object, !Array.<!TreeElement>>} */
     this._treeElementsMap = new Map();
-    /** @type {!Map.<!Object, boolean>} */
+    /** @type {!Map.<Object, boolean>} */
     this._expandedStateMap = new Map();
 }
 
@@ -265,10 +265,6 @@ TreeOutline.prototype._forgetChildrenRecursive = function(parentElement)
     }
 }
 
-/**
- * @param {Object} representedObject
- * @return {TreeElement}
- */
 TreeOutline.prototype.getCachedTreeElement = function(representedObject)
 {
     if (!representedObject)
@@ -280,10 +276,6 @@ TreeOutline.prototype.getCachedTreeElement = function(representedObject)
     return null;
 }
 
-/**
- * @param {Object} representedObject
- * @return {TreeElement}
- */
 TreeOutline.prototype.findTreeElement = function(representedObject, isAncestor, getParent)
 {
     if (!representedObject)
@@ -314,11 +306,6 @@ TreeOutline.prototype.findTreeElement = function(representedObject, isAncestor, 
     return this.getCachedTreeElement(representedObject);
 }
 
-/**
- * @param {number} x
- * @param {number} y
- * @return {TreeElement}
- */
 TreeOutline.prototype.treeElementFromPoint = function(x, y)
 {
     var node = this._childrenListNode.ownerDocument.elementFromPoint(x, y);
