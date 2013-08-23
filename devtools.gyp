@@ -73,6 +73,7 @@
             'front_end/DefaultScriptMapping.js',
             'front_end/DockController.js',
             'front_end/Drawer.js',
+            'front_end/EditFileSystemDialog.js',
             'front_end/ElementsPanelDescriptor.js',
             'front_end/ElementsTreeOutline.js',
             'front_end/EmptyView.js',

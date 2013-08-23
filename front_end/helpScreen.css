@@ -38,7 +38,6 @@
 .help-content {
     overflow-y: auto;
     overflow-x: hidden;
-    scrollbar-width: 11px;
     margin: 8px;
     padding: 0 4px;
 }
@@ -49,27 +48,27 @@
     padding: 12px;
 }
 
-.help-window-main ::-webkit-scrollbar {
+.help-window-main .help-container-wrapper::-webkit-scrollbar {
     width: 11px;
 }
 
-.help-window-main ::-webkit-scrollbar-corner,
-.help-window-main ::-webkit-resizer {
+.help-window-main .help-container-wrapper::-webkit-scrollbar-corner,
+.help-window-main .help-container-wrapper::-webkit-resizer {
     display: none;
 }
 
-.help-window-main ::-webkit-scrollbar-thumb:vertical {
+.help-window-main .help-container-wrapper::-webkit-scrollbar-thumb:vertical {
     background: -webkit-gradient(linear, left top, right top, from(rgb(128, 128, 128)), to(rgb(128, 128, 128)), color-stop(40%, rgb(96, 96, 96)));
     border-radius: 5px;
     min-height: 20px;
 }
 
-.help-window-main ::-webkit-scrollbar-thumb:vertical:hover,
-.help-window-main ::-webkit-scrollbar-thumb:vertical:active {
+.help-window-main .help-container-wrapper::-webkit-scrollbar-thumb:vertical:hover,
+.help-window-main .help-container-wrapper::-webkit-scrollbar-thumb:vertical:active {
     background: -webkit-gradient(linear, left top, right top, from(rgb(176, 176, 176)), to(rgb(176, 176, 176)), color-stop(40%, rgb(144, 144, 144)));
 }
 
-.help-window-main ::-webkit-scrollbar-track:vertical {
+.help-window-main .help-container-wrapper::-webkit-scrollbar-track:vertical {
     background: -webkit-gradient(linear, left top, right top, from(rgb(10, 10, 10)), to(rgb(32, 32, 32)), color-stop(25%, rgb(32, 32, 32)));
     border-radius: 5px;
 }
@@ -434,10 +433,6 @@ body.platform-mac .help-content input[type=radio] {
     width: 190px;
 }
 
-.settings-tab .file-mappings-list .workspace-settings-row input.file-mapping-url {
-    margin-right: 3px;
-}
-
 #workspace-tab-content .button:hover {
     opacity: 1.0 !important;
 }
@@ -505,6 +500,13 @@ body.platform-mac .help-content input[type=radio] {
     padding-right: 10px;
 }
 
+.settings-tab .text-button:disabled {
+    background-image: -webkit-linear-gradient(#f1f1f1, #f1f1f1 38%, #e6e6e6);
+    border-color: rgba(80, 80, 80, 0.2);
+    box-shadow: 0 1px 0 rgba(80, 80, 80, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.75);
+    color: #aaa;
+}
+
 .settings-tab .text-button:hover {
     background-image: -webkit-linear-gradient(hsl(0, 0%, 94%), hsl(0, 0%, 94%) 38%, hsl(0, 0%, 88%));
     border-color: hsla(0, 0%, 0%, 0.3);
@@ -519,7 +521,8 @@ body.platform-mac .help-content input[type=radio] {
 }
 
 .settings-tab .settings-list-container {
-    margin-bottom: 5px;
+    background-color: white;
+    margin-bottom: 10px;
 }
 
 .settings-tab .settings-list {
@@ -527,7 +530,7 @@ body.platform-mac .help-content input[type=radio] {
     border-radius: 2px;
 }
 
-#workspace-tab-content .settings-list .settings-list-item .settings-list-item-contents {
+.settings-tab .settings-list .settings-list-item .settings-list-item-contents {
     width: 100%;
     height: 40px;
     -webkit-box-align: center;
@@ -536,7 +539,7 @@ body.platform-mac .help-content input[type=radio] {
     padding-right: 3px;
 }
 
-#workspace-tab-content .settings-list .settings-list-item .settings-list-item-contents > :first-child {
+.settings-tab .settings-list .settings-list-item .settings-list-item-contents > :first-child {
     -webkit-box-align: center;
     -webkit-box-flex: 1;
     -webkit-padding-end: 5px;
@@ -584,28 +587,6 @@ body.platform-mac .help-content input[type=radio] {
     background-position-x: -16px;
 }
 
-#workspace-tab-content .settings-list .settings-list-item .file-system-path {
-    white-space: nowrap;
-    font-size: 12px;
-    padding-left: 6px;
-    padding-right: 5px;
-    -webkit-box-flex: 1;
-    color: hsl(210, 16%, 22%);
-}
-
-#workspace-tab-content .settings-list .settings-list-item .file-system-path-name {
-    padding-right: 6px;
-    font-weight: bold;
-}
-
-.file-mappings-section {
-    padding: 0 10px 10px 10px;
-}
-
-.file-mappings-list-container {
-    background-color: white;
-}
-
 .settings-list-item-columns {
     height: 100%;
 }
@@ -629,26 +610,95 @@ body.platform-mac .help-content input[type=radio] {
     visibility: hidden;
 }
 
-.settings-tab .settings-list .settings-list-item .list-column.file-mapping-url {
-    width: 50%;
-}
-
-.settings-tab .settings-list .settings-list-item .list-column.file-mapping-path {
-    width: 50%;
-}
-
-.settings-tab .file-mappings-list .settings-list-item.editable .list-column .list-column-editor {
+.settings-tab .settings-list .settings-list-item.editable .list-column .list-column-editor {
     display: none;
 }
 
-.settings-tab .file-mappings-list .settings-list-item.editable.item-editing .list-column .list-column-editor {
-    display: inline;
+.settings-tab .settings-list .settings-list-item.editable.item-editing .list-column .list-column-editor {
+    display: block;
 }
 
-.settings-tab .file-mappings-list .settings-list-item.editable.item-editing .list-column .list-column-text {
+.settings-tab .settings-list .settings-list-item.editable.item-editing .list-column .list-column-text {
     display: none;
 }
 
-.settings-tab .file-mappings-list .settings-list-item.editable.item-editing .list-column .list-column-editor.editable-item-error {
+.settings-tab .settings-list .settings-list-item.editable.item-editing .list-column .list-column-editor.editable-item-error {
     background-color: pink;
+}
+
+.list-column-editor {
+    border: 1px solid rgb(213, 213, 213);
+    border-radius: 2px;
+    color: #444444;
+    padding: 3px;
+}
+
+.settings-tab .settings-list .settings-list-item .file-system-path {
+    white-space: nowrap;
+    font-size: 12px;
+    padding-left: 6px;
+    padding-right: 5px;
+    -webkit-box-flex: 1;
+    color: hsl(210, 16%, 22%);
+}
+
+.settings-tab .settings-list .settings-list-item .file-system-path-name {
+    padding-right: 6px;
+    font-weight: bold;
+}
+
+.file-mappings-list .settings-list-item .list-column.settings-list-column-url {
+    width: 50%;
+}
+
+.file-mappings-list .settings-list-item .list-column.settings-list-column-path {
+    width: 50%;
+}
+
+.settings-dialog {
+    border-radius: 3px;
+    box-shadow: 0 4px 23px 5px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(0,0,0,0.15);
+    display: -webkit-flex;
+    -webkit-flex-direction: column;
+    background: white;
+}
+
+.settings-dialog .dialog-contents {
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-dialog .header {
+    flex: 0 0 auto;
+    color: #333;
+    font-size: 14px;
+    margin: 0;
+    padding: 14px 17px 14px;
+}
+
+.settings-dialog .contents {
+    flex: 1 1 auto;
+    padding: 0 17px;
+    overflow: auto;
+    margin-bottom: 10px;
+}
+
+.settings-dialog .block-header {
+    color: black;
+    font-size: 1.2em;
+    margin-bottom: 0.8em;
+}
+
+.settings-dialog .done-button {
+    float: right;
+}
+
+.settings-glass-pane {
+    -webkit-box-align: center;
+    -webkit-box-orient: vertical;
+    -webkit-box-pack: center;
+    display: -webkit-box;
+    z-index: 2000 !important;
+    padding: 5px;
+    background-color: rgba(255, 255, 255, 0.4) !important;
 }

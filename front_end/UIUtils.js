@@ -135,7 +135,7 @@ WebInspector.GlassPane = function()
 {
     this.element = document.createElement("div");
     this.element.style.cssText = "position:absolute;top:0;bottom:0;left:0;right:0;background-color:transparent;z-index:1000;";
-    this.element.id = "glass-pane-for-drag";
+    this.element.id = "glass-pane";
     document.body.appendChild(this.element);
     WebInspector._glassPane = this;
 }
@@ -144,7 +144,10 @@ WebInspector.GlassPane.prototype = {
     dispose: function()
     {
         delete WebInspector._glassPane;
-        WebInspector.inspectorView.focus();
+        if (WebInspector.HelpScreen.isVisible())
+            WebInspector.HelpScreen.focus();
+        else
+            WebInspector.inspectorView.focus();
         this.element.remove();
     }
 }

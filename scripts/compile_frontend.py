@@ -339,6 +339,7 @@ modules = [
         "dependencies": ["components", "extensions"],
         "sources": [
             "SettingsScreen.js",
+            "EditFileSystemDialog.js",
             "OverridesView.js",
         ]
     },

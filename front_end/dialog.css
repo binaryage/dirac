@@ -11,12 +11,13 @@
     -webkit-flex-direction: column;
     
     background-image: -webkit-gradient(linear, 0% 0%, 0% 100%, from(#E9E9E9), to(#CFCFCF));
-    font-size: 11px;
-    font-family: 'Lucida Grande', sans-serif;
 }
 
 .dialog-contents {
     width: 100%;
+}
+
+.go-to-line-dialog {
     font-size: 11px;
     font-family: 'Lucida Grande', sans-serif;
 }
@@ -42,3 +43,4 @@
     background-color: rgb(215, 215, 215);
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(194, 194, 194)), to(rgb(239, 239, 239)));
 }
+
