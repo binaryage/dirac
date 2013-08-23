@@ -445,6 +445,14 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
+     * @return {string}
+     */
+    get scheme()
+    {
+        return this._parsedURL.scheme;
+    },
+
+    /**
      * @return {?WebInspector.NetworkRequest}
      */
     get redirectSource()
