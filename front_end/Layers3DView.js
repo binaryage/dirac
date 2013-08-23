@@ -305,7 +305,7 @@ WebInspector.Layers3DView.prototype = {
             return;
         }
         if (event.which === 1) {
-            // See reference point it we missed mouesedown
+            // Set reference point if we missed mousedown.
             if (typeof this._originX !== "number")
                 this._setReferencePoint(event);
             this._rotateX = this._oldRotateX + (this._originY - event.clientY) / 2;
