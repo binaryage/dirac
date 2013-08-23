@@ -74,7 +74,7 @@ WebInspector.Layers3DView.Events = {
 WebInspector.Layers3DView.prototype = {
     onResize: function()
     {
-        this._scale();
+        this._update();
     },
 
     willHide: function()
@@ -127,28 +127,33 @@ WebInspector.Layers3DView.prototype = {
         this._setOutline(WebInspector.Layers3DView.OutlineType.Selected, layer);
     },
 
-    _scale: function()
+    _computeScale: function()
     {
-        const padding = 40;
-        var scale = 1;
         var root = this._model.root();
         if (!root)
             return;
+        const padding = 40;
         var scaleX = this.element.clientWidth / (root.width() + 2 * padding);
         var scaleY = this.element.clientHeight / (root.height() + 2 * padding);
-        scale = Math.min(scaleX, scaleY);
-        this._lastScale = scale;
-        var element = this._elementForLayer(root);
-        element.style.webkitTransform = "scale3d(" + scale + "," + scale + "," + scale + ")";
-        element.style.left = ((this.element.clientWidth - root.width() * scale) >> 1) + "px";
-        element.style.top = ((this.element.clientHeight - root.height() * scale) >> 1) + "px";
-        const screenLayerThickness = 4;
+        this._scale = Math.min(scaleX, scaleY);
         const screenLayerSpacing = 20;
-        var layerThickness = Math.ceil(screenLayerThickness / scale) + "px";
-        var layerSpacing = Math.ceil(screenLayerSpacing / scale) + "px";
+        this._layerSpacing = Math.ceil(screenLayerSpacing / this._scale) + "px";
+    },
+
+    _applyScale: function()
+    {
+        var root = this._model.root();
+        if (!root)
+            return;
+        var element = this._elementForLayer(root);
+        element.style.webkitTransform = "scale3d(" + this._scale + "," + this._scale + "," + this._scale + ")";
+        element.style.left = ((this.element.clientWidth - root.width() * this._scale) >> 1) + "px";
+        element.style.top = ((this.element.clientHeight - root.height() * this._scale) >> 1) + "px";
+        const screenLayerThickness = 4;
+        var layerThickness = Math.ceil(screenLayerThickness / this._scale) + "px";
         this._scaleAdjustmentStylesheet.textContent = ".layer-container .side-wall { height: " + layerThickness + "; width: " + layerThickness + "; } " +
             ".layer-container .back-wall { -webkit-transform: translateZ(-" + layerThickness + "); } " +
-            ".layer-container { -webkit-transform: translateZ(" + layerSpacing + "); }";
+            ".layer-container { -webkit-transform: translateZ(" + this._layerSpacing + "); }";
     },
 
     _update: function()
@@ -173,9 +178,10 @@ WebInspector.Layers3DView.prototype = {
                 childElement = nextElement;
             }
         }
+        this._computeScale();
         this._model.forEachLayer(updateLayer.bind(this));
+        this._applyScale();
         this._needsUpdate = false;
-        this._scale();
     },
 
     /**
@@ -215,7 +221,7 @@ WebInspector.Layers3DView.prototype = {
                 return x.toFixed(5);
             }
             // Avoid exponential notation in CSS.
-            style.webkitTransform = "matrix3d(" + transform.map(toFixed5).join(",") + ")";
+            style.webkitTransform = "matrix3d(" + transform.map(toFixed5).join(",") + ") translateZ(" + this._layerSpacing + ")";
             var anchor = layer.anchorPoint();
             style.webkitTransformOrigin = Math.round(anchor[0] * 100) + "% " + Math.round(anchor[1] * 100) + "% " + anchor[2];
         } else {
