@@ -2525,6 +2525,7 @@
                     { "name": "nodeId", "$ref": "DOM.NodeId" }
                 ],
                 "returns": [
+                    { "name": "cssFamilyName", "type": "string", "description": "Font family name which is determined by computed style." },
                     { "name": "fonts", "type": "array", "items": { "$ref": "PlatformFontUsage"}, "description": "Usage statistics for every employed platform font." }
                 ],
                 "description": "Requests information about platform fonts which we used to render child TextNodes in the given node.",
