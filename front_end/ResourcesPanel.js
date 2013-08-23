@@ -515,7 +515,7 @@ WebInspector.ResourcesPanel.prototype = {
         var view;
         view = this._domStorageViews.get(domStorage);
         if (!view) {
-            view = new WebInspector.DOMStorageItemsView(domStorage, WebInspector.domStorageModel);
+            view = new WebInspector.DOMStorageItemsView(domStorage);
             this._domStorageViews.put(domStorage, view);
         }
 
