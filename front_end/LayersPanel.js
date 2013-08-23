@@ -48,6 +48,7 @@ WebInspector.LayersPanel = function()
     this.sidebarTreeElement.removeStyleClass("sidebar-tree");
 
     this._model = new WebInspector.LayerTreeModel();
+    this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._onLayerTreeUpdated, this);
     this._currentlySelectedLayer = null;
     this._currentlyHoveredLayer = null;
 
@@ -80,12 +81,37 @@ WebInspector.LayersPanel.prototype = {
         WebInspector.Panel.prototype.willHide.call(this);
     },
 
+    _onLayerTreeUpdated: function()
+    {
+        if (this._currentlySelectedLayer && !this._model.layerById(this._currentlySelectedLayer.id()))
+            this._selectLayer(null);
+        if (this._currentlyHoveredLayer && !this._model.layerById(this._currentlyHoveredLayer.id()))
+            this._hoverLayer(null);
+    },
+
     /**
      * @param {WebInspector.Event} event
      */
     _onLayerSelected: function(event)
     {
         var layer = /** @type WebInspector.Layer */ (event.data);
+        this._selectLayer(layer);
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _onLayerHovered: function(event)
+    {
+        var layer = /** @type WebInspector.Layer */ (event.data);
+        this._hoverLayer(layer);
+    },
+
+    /**
+     * @param {WebInspector.Layer?} layer
+     */
+    _selectLayer: function(layer)
+    {
         if (this._currentlySelectedLayer === layer)
             return;
         this._currentlySelectedLayer = layer;
@@ -99,11 +125,10 @@ WebInspector.LayersPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {WebInspector.Layer?} layer
      */
-    _onLayerHovered: function(event)
+    _hoverLayer: function(layer)
     {
-        var layer = /** @type WebInspector.Layer */ (event.data);
         if (this._currentlyHoveredLayer === layer)
             return;
         this._currentlyHoveredLayer = layer;
@@ -115,7 +140,6 @@ WebInspector.LayersPanel.prototype = {
         this._layerTree.hoverLayer(layer);
         this._layers3DView.hoverLayer(layer);
     },
-
 
     __proto__: WebInspector.Panel.prototype
 }

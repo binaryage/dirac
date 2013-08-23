@@ -76,6 +76,8 @@ WebInspector.LayerTree.prototype = {
         var node = layer && this._treeOutline.getCachedTreeElement(layer);
         if (node)
             node.revealAndSelect(true);
+        else if (this._treeOutline.selectedTreeElement)
+            this._treeOutline.selectedTreeElement.deselect();
     },
 
     /**
