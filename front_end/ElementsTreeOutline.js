@@ -33,11 +33,10 @@
  * @extends {TreeOutline}
  * @param {boolean=} omitRootDOMNode
  * @param {boolean=} selectEnabled
- * @param {boolean=} showInElementsPanelEnabled
  * @param {function(WebInspector.ContextMenu, WebInspector.DOMNode)=} contextMenuCallback
  * @param {function(DOMAgent.NodeId, string, boolean)=} setPseudoClassCallback
  */
-WebInspector.ElementsTreeOutline = function(omitRootDOMNode, selectEnabled, showInElementsPanelEnabled, contextMenuCallback, setPseudoClassCallback)
+WebInspector.ElementsTreeOutline = function(omitRootDOMNode, selectEnabled, contextMenuCallback, setPseudoClassCallback)
 {
     this.element = document.createElement("ol");
     this.element.className = "elements-tree-outline";
@@ -55,7 +54,6 @@ WebInspector.ElementsTreeOutline = function(omitRootDOMNode, selectEnabled, show
 
     this._includeRootDOMNode = !omitRootDOMNode;
     this._selectEnabled = selectEnabled;
-    this._showInElementsPanelEnabled = showInElementsPanelEnabled;
     /** @type {WebInspector.DOMNode} */
     this._rootDOMNode = null;
     /** @type {WebInspector.DOMNode} */
@@ -562,21 +560,12 @@ WebInspector.ElementsTreeOutline.prototype = {
 
     _contextMenuEventFired: function(event)
     {
-        if (!this._showInElementsPanelEnabled)
-            return;
-
         var treeElement = this._treeElementFromEvent(event);
         if (!treeElement)
             return;
 
-        function focusElement()
-        {
-            // Force elements module load.
-            WebInspector.showPanel("elements");
-            WebInspector.domAgent.inspectElement(treeElement._node.id);
-        }
         var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Elements panel" : "Reveal in Elements Panel"), focusElement.bind(this));
+        contextMenu.appendApplicableItems(treeElement._node);
         contextMenu.show();
     },
 

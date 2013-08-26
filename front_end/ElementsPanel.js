@@ -68,7 +68,7 @@ WebInspector.ElementsPanel = function()
     this.contentElement.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
     this.splitView.sidebarElement.addEventListener("contextmenu", this._sidebarContextMenuEventFired.bind(this), false);
 
-    this.treeOutline = new WebInspector.ElementsTreeOutline(true, true, false, this._populateContextMenu.bind(this), this._setPseudoClassForNodeId.bind(this));
+    this.treeOutline = new WebInspector.ElementsTreeOutline(true, true, this._populateContextMenu.bind(this), this._setPseudoClassForNodeId.bind(this));
     this.treeOutline.wireToDomAgent();
 
     this.treeOutline.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, this._selectedNodeChanged, this);
@@ -1100,24 +1100,39 @@ WebInspector.ElementsPanel.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
-        if (!(target instanceof WebInspector.RemoteObject))
-            return;
-        var remoteObject = /** @type {WebInspector.RemoteObject} */ (target);
-        if (remoteObject.subtype !== "node")
-            return;
-
+        /**
+         * @param {?DOMAgent.NodeId} nodeId
+         */
         function selectNode(nodeId)
         {
             if (nodeId)
                 WebInspector.domAgent.inspectElement(nodeId);
         }
-  
-        function revealElement()
+
+        /**
+         * @param {WebInspector.RemoteObject} remoteObject
+         */
+        function revealElement(remoteObject)
         {
             remoteObject.pushNodeToFrontend(selectNode);
         }
 
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Elements panel" : "Reveal in Elements Panel"), revealElement.bind(this));
+        var commandCallback;
+        if (target instanceof WebInspector.RemoteObject) {
+            var remoteObject = /** @type {WebInspector.RemoteObject} */ (target);
+            if (remoteObject.subtype === "node")
+                commandCallback = revealElement.bind(this, remoteObject);
+        } else if (target instanceof WebInspector.DOMNode) {
+            var domNode = /** @type {WebInspector.DOMNode} */ (target);
+            if (domNode.id)
+                commandCallback = WebInspector.domAgent.inspectElement.bind(WebInspector.domAgent, domNode.id);
+        }
+        if (!commandCallback)
+            return;
+        // Skip adding "Reveal..." menu item for our own tree outline.
+        if (this.treeOutline.element.isAncestor(event.target))
+            return;
+        contextMenu.appendItem(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Elements panel" : "Reveal in Elements Panel", commandCallback);
     },
 
     _sidebarContextMenuEventFired: function(event)
