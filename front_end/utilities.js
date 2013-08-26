@@ -1294,8 +1294,6 @@ function importScript(scriptName)
         return;
     var xhr = new XMLHttpRequest();
     _importedScripts[scriptName] = true;
-    if (window.flattenImports)
-        scriptName = scriptName.split("/").reverse()[0];
     xhr.open("GET", scriptName, false);
     xhr.send(null);
     if (!xhr.responseText)

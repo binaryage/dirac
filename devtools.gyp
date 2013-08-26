@@ -330,6 +330,8 @@
 
         'devtools_codemirror_js_files': [
             'front_end/CodeMirrorTextEditor.js',
+        ],
+        'devtools_cm_files': [
             'front_end/cm/clike.js',
             'front_end/cm/closebrackets.js',
             'front_end/cm/codemirror.js',
@@ -347,7 +349,6 @@
             'front_end/cm/shell.js',
             'front_end/cm/xml.js',
         ],
-
         'devtools_modules_js_files': [
             '<@(devtools_elements_js_files)',
             '<@(devtools_resources_js_files)',
@@ -359,7 +360,7 @@
             '<@(devtools_layers_js_files)',
             '<@(devtools_codemirror_js_files)',
         ],
-        'devtools_uglifyjs_files': [
+        'devtools_uglify_files': [
             'front_end/UglifyJS/parse-js.js',
         ],
         'devtools_image_files': [
@@ -518,7 +519,18 @@
                 {
                     'destination': '<(PRODUCT_DIR)/resources/inspector/UglifyJS',
                     'files': [
-                        '<@(devtools_uglifyjs_files)',
+                        '<@(devtools_uglify_files)',
+                    ],
+                    'conditions': [
+                        ['debug_devtools==0', {
+                            'files/': [['exclude', '\\.(js|css|html)$']],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/cm',
+                    'files': [
+                        '<@(devtools_cm_files)',
                     ],
                     'conditions': [
                         ['debug_devtools==0', {
@@ -830,6 +842,7 @@
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_codemirror_js_files)',
+                            '<@(devtools_cm_files)',
                         ],
                         'search_path': 'front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/CodeMirrorTextEditor.js'],
@@ -867,7 +880,7 @@
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_file)',
-                            '<@(devtools_uglifyjs_files)'
+                            '<@(devtools_uglify_files)'
                         ],
                         'search_path': 'front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/ScriptFormatterWorker.js'],
