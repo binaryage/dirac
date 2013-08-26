@@ -159,6 +159,22 @@ WebInspector.CSSStyleModel.prototype = {
     },
 
     /**
+     * @param {number} nodeId
+     * @param {function(?String, ?Array.<CSSAgent.PlatformFontUsage>)} callback
+     */
+    getPlatformFontsForNode: function(nodeId, callback)
+    {
+        function platformFontsCallback(error, cssFamilyName, fonts)
+        {
+            if (error)
+                callback(null, null);
+            else
+                callback(cssFamilyName, fonts);
+        }
+        CSSAgent.getPlatformFontsForNode(nodeId, platformFontsCallback);
+    },
+
+    /**
      * @param {DOMAgent.NodeId} nodeId
      * @param {function(?WebInspector.CSSStyleDeclaration, ?WebInspector.CSSStyleDeclaration)} userCallback
      */

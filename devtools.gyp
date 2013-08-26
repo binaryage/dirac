@@ -243,6 +243,7 @@
             'front_end/ElementsPanel.js',
             'front_end/EventListenersSidebarPane.js',
             'front_end/MetricsSidebarPane.js',
+            'front_end/PlatformFontsSidebarPane.js',
             'front_end/PropertiesSidebarPane.js',
             'front_end/StylesSidebarPane.js',
         ],

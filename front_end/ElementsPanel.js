@@ -32,6 +32,7 @@ importScript("CSSNamedFlowCollectionsView.js");
 importScript("CSSNamedFlowView.js");
 importScript("EventListenersSidebarPane.js");
 importScript("MetricsSidebarPane.js");
+importScript("PlatformFontsSidebarPane.js");
 importScript("PropertiesSidebarPane.js");
 importScript("StylesSidebarPane.js");
 
@@ -79,6 +80,7 @@ WebInspector.ElementsPanel = function()
     this.crumbsElement.addEventListener("mouseout", this._mouseMovedOutOfCrumbs.bind(this), false);
 
     this.sidebarPanes = {};
+    this.sidebarPanes.platformFonts = new WebInspector.PlatformFontsSidebarPane();
     this.sidebarPanes.computedStyle = new WebInspector.ComputedStyleSidebarPane();
     this.sidebarPanes.styles = new WebInspector.StylesSidebarPane(this.sidebarPanes.computedStyle, this._setPseudoClassForNodeId.bind(this));
     this.sidebarPanes.metrics = new WebInspector.MetricsSidebarPane();
@@ -88,6 +90,7 @@ WebInspector.ElementsPanel = function()
 
     this.sidebarPanes.styles.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateStyles.bind(this, false));
     this.sidebarPanes.metrics.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateMetrics.bind(this));
+    this.sidebarPanes.platformFonts.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updatePlatformFonts.bind(this));
     this.sidebarPanes.properties.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateProperties.bind(this));
     this.sidebarPanes.eventListeners.addEventListener(WebInspector.SidebarPane.EventTypes.wasShown, this.updateEventListeners.bind(this));
 
@@ -233,6 +236,7 @@ WebInspector.ElementsPanel.prototype = {
 
         this.updateStyles(true);
         this.updateMetrics();
+        this.updatePlatformFonts();
         this.updateProperties();
         this.updateEventListeners();
     },
@@ -586,6 +590,8 @@ WebInspector.ElementsPanel.prototype = {
         // Once styles are edited, the Metrics pane should be updated.
         this.sidebarPanes.metrics.needsUpdate = true;
         this.updateMetrics();
+        this.sidebarPanes.platformFonts.needsUpdate = true;
+        this.updatePlatformFonts();
     },
 
     _metricsPaneEdited: function()
@@ -997,6 +1003,16 @@ WebInspector.ElementsPanel.prototype = {
         metricsSidebarPane.needsUpdate = false;
     },
 
+    updatePlatformFonts: function()
+    {
+        var platformFontsSidebar = this.sidebarPanes.platformFonts;
+        if (!platformFontsSidebar.isShowing() || !platformFontsSidebar.needsUpdate)
+            return;
+
+        platformFontsSidebar.update(this.selectedDOMNode());
+        platformFontsSidebar.needsUpdate = false;
+    },
+
     updateProperties: function()
     {
         var propertiesSidebarPane = this.sidebarPanes.properties;
@@ -1147,6 +1163,8 @@ WebInspector.ElementsPanel.prototype = {
         computedPane.bodyElement.addStyleClass("metrics-and-computed");
         this.sidebarPanes.computedStyle.show(computedPane.bodyElement);
         this.sidebarPanes.computedStyle.setExpandCallback(expandComputed);
+
+        this.sidebarPanes.platformFonts.show(computedPane.bodyElement);
 
         if (vertically) {
             this.sidebarPaneView = new WebInspector.SidebarTabbedPane();

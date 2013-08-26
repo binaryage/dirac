@@ -541,7 +541,6 @@
     -webkit-user-drag: auto;
 }
 
-
 .sidebar-pane.composite {
     overflow: hidden;
     position: absolute;
@@ -560,10 +559,35 @@
     -webkit-justify-content: center;
 }
 
+.sidebar-pane.composite .computed-style {
+    border-bottom: 1px solid rgb(64%, 64%, 64%);
+}
+
 .sidebar-pane.composite .metrics-and-computed .sidebar-pane-toolbar {
     margin-top: 4px;
     margin-bottom: -4px;
     position: relative;
+}
+
+.sidebar-pane.composite .platform-fonts {
+    padding: 1ex;
+    -webkit-user-select: text;
+}
+
+.sidebar-pane.composite .platform-fonts .stats-section {
+    margin-bottom: 5px;
+}
+
+.sidebar-pane.composite .platform-fonts .css-font-value {
+    margin-left: 1ex;
+}
+
+.sidebar-pane.composite .platform-fonts .font-stats-item {
+    padding-left: 1em;
+}
+
+.sidebar-pane.composite .platform-fonts .font-stats-item .delimeter {
+    margin: 0 1ex 0 1ex;
 }
 
 .sidebar-pane.composite .sidebar-pane-toolbar > .sidebar-pane-subtitle {
