@@ -586,7 +586,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     if (WebInspector.experimentsSettings.tethering.isEnabled())
         this._setupTethering();
 
-    if (WebInspector.experimentsSettings.screencast.isEnabled()) {
+    if (WebInspector.queryParamsObject["remoteFrontend"] && WebInspector.experimentsSettings.screencast.isEnabled()) {
         WebInspector._splitView = new WebInspector.SplitView(true, "screencastSplitView");
         WebInspector._splitView.markAsRoot();
         WebInspector._splitView.show(document.body);
