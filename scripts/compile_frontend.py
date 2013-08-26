@@ -208,7 +208,7 @@ modules = [
             "ElementsPanelDescriptor.js",
             "EventListenersSidebarPane.js",
             "MetricsSidebarPane.js",
-            "PlatformFontsSidebarPane.js"
+            "PlatformFontsSidebarPane.js",
             "PropertiesSidebarPane.js",
             "StylesSidebarPane.js",
         ]
