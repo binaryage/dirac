@@ -97,7 +97,7 @@ WebInspector.LayerTreeModel.prototype = {
             this._root = null;
             if (error) {
                 console.error("LayerTreeAgent.getLayers(): " + error);
-                return;
+                layers = [];
             }
             this._repopulate(layers);
             for (var i = 0; i < this._pendingRequestLayersCallbacks.length; ++i)
@@ -168,7 +168,7 @@ WebInspector.Layer = function(layerPayload)
 
 WebInspector.Layer.prototype = {
     /**
-     * @return {string?}
+     * @return {string}
      */
     id: function()
     {
@@ -289,6 +289,35 @@ WebInspector.Layer.prototype = {
             this._layerPayload.anchorY || 0,
             this._layerPayload.anchorZ || 0,
         ];
+    },
+
+    /**
+     * @return {number}
+     */
+    paintCount: function()
+    {
+        return this._layerPayload.paintCount;
+    },
+
+    /**
+     * @param {function(Array.<string>?)} callback
+     */
+    requestCompositingReasons: function(callback)
+    {
+        /**
+         * @param {?string} error
+         * @param {?Array.<string>} compositingReasons
+         */
+        function callbackWrapper(error, compositingReasons)
+        {
+            if (error) {
+                console.error("LayerTreeAgent.reasonsForCompositingLayer(): " + error);
+                callback(null);
+                return;
+            }
+            callback(compositingReasons);
+        }
+        LayerTreeAgent.compositingReasons(this.id(), callbackWrapper.bind(this));
     },
 
     /**

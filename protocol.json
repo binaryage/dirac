@@ -3850,6 +3850,16 @@
                 "returns": [
                     { "name": "layers", "type": "array", "items": { "$ref": "Layer" }, "description": "Child layers." }
                 ]
+            },
+            {
+                "name": "compositingReasons",
+                "parameters": [
+                    { "name": "layerId", "$ref": "LayerId", "description": "The id of the layer for which we want to get the reasons it was composited." }
+                ],
+                "description": "Provides the reasons why the given layer was composited.",
+                "returns": [
+                    { "name": "compositingReasons", "type": "array", "items": { "type": "string" }, "description": "A list of strings specifying reasons for the given layer to become composited." }
+                ]
             }
         ],
         "events": [
