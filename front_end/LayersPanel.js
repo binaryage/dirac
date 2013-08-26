@@ -31,6 +31,7 @@
 importScript("LayerTreeModel.js");
 importScript("LayerTree.js");
 importScript("Layers3DView.js");
+importScript("LayerDetailsView.js");
 
 /**
  * @constructor
@@ -60,9 +61,12 @@ WebInspector.LayersPanel = function()
     this._layerDetailsSplitView.show(this.splitView.mainElement);
 
     this._layers3DView = new WebInspector.Layers3DView(this._model);
-    this._layers3DView.show(this._layerDetailsSplitView.mainElement);
+    this._layers3DView.show(this._layerDetailsSplitView.firstElement());
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.LayerSelected, this._onLayerSelected, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.LayerHovered, this._onLayerHovered, this);
+
+    this._layerDetailsView = new WebInspector.LayerDetailsView();
+    this._layerDetailsView.show(this._layerDetailsSplitView.secondElement());
 
     this._model.requestLayers();
 }
@@ -122,6 +126,7 @@ WebInspector.LayersPanel.prototype = {
             WebInspector.domAgent.hideDOMNodeHighlight();
         this._layerTree.selectLayer(layer);
         this._layers3DView.selectLayer(layer);
+        this._layerDetailsView.showLayer(layer);
     },
 
     /**

@@ -321,6 +321,7 @@ modules = [
             "LayersPanel.js",
             "LayerTree.js",
             "Layers3DView.js",
+            "LayerDetailsView.js",
         ]
     },
     {

@@ -71,6 +71,11 @@
     -webkit-transform-style: preserve-3d;
 }
 
+.layers-3d-view .layer-container.invisible {
+    opacity: 0.4;
+    border-type: dashed;
+}
+
 .layer-container .side-wall {
     position: absolute;
     background-color: inherit;
@@ -119,4 +124,18 @@
 
 .layer-container.hovered:not(.selected) {
     border-color: rgb(150, 150, 255);
+}
+
+.layer-details-view .empty-view {
+    font-size: 16px;
+}
+
+.layer-details-view table td {
+    padding-left: 8px;
+}
+
+.layer-details-view table td:first-child {
+    font-weight: bold;
+}
+
 }

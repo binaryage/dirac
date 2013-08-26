@@ -2793,7 +2793,7 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
     background-color: rgb(216, 0, 0) !important;
 }
 
-.storage-empty-view,
+.empty-view,
 .storage-view .storage-table-error {
     position: absolute;
     top: 0;

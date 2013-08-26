@@ -472,6 +472,7 @@
             'front_end/LayerTreeModel.js',
             'front_end/LayerTree.js',
             'front_end/Layers3DView.js',
+            'front_end/LayerDetailsView.js',
         ],
 
         'devtools_extension_api_files': [

@@ -292,6 +292,14 @@ WebInspector.Layer.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    invisible: function()
+    {
+        return this._layerPayload.invisible;
+    },
+
+    /**
      * @return {number}
      */
     paintCount: function()

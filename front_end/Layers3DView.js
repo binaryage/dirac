@@ -210,6 +210,7 @@ WebInspector.Layers3DView.prototype = {
         var style = element.style;
         var parentElement = layer.parent() ? this._elementForLayer(layer.parent()) : this._rotatingContainerElement;
         element.__depth = (parentElement.__depth || 0) + 1;
+        element.enableStyleClass("invisible", layer.invisible());
         style.left  = layer.offsetX() + "px";
         style.top  = layer.offsetY() + "px";
         style.width  = layer.width() + "px";
