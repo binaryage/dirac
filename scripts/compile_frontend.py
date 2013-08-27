@@ -128,7 +128,6 @@ modules = [
         "dependencies": ["common"],
         "sources": [
             "Checkbox.js",
-            "CodeMirrorTextEditor.js",
             "ContextMenu.js",
             "CompletionDictionary.js",
             "DOMSyntaxHighlighter.js",
@@ -155,7 +154,6 @@ modules = [
             "ShowMoreDataGridNode.js",
             "SidebarOverlay.js",
             "SoftContextMenu.js",
-            "SourceTokenizer.js",
             "Spectrum.js",
             "SplitView.js",
             "SidebarView.js",
@@ -163,9 +161,7 @@ modules = [
             "SuggestBox.js",
             "TabbedPane.js",
             "TextEditor.js",
-            "TextEditorHighlighter.js",
             "TextRange.js",
-            "TextEditorModel.js",
             "TextPrompt.js",
             "TextUtils.js",
             "TimelineGrid.js",
@@ -311,6 +307,14 @@ modules = [
             "AuditResultView.js",
             "AuditRules.js",
             "AuditsPanel.js",
+        ]
+    },
+    {
+        "name": "codemirror",
+        "dependencies": ["components"],
+        "sources": [
+            "CodeMirrorTextEditor.js",
+            "CodeMirrorUtils.js",
         ]
     },
     {
