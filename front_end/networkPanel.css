@@ -302,7 +302,7 @@
 }
 
 .resource-websocket-row-outcoming:not(.selected) td {
-    border-right-color: rgb(177, 209, 165);
+    border-left-color: rgb(177, 209, 165);
 }
 
 .resource-websocket-row-outcoming:not(.selected) td, .resource-websocket-row-outcoming:not(.selected) + tr td {

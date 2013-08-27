@@ -1731,7 +1731,7 @@ WebInspector.NetworkPanel.prototype = {
             hideSelectors.push("#network-container .hide-" + columnId + "-column ." + columnId + "-column");
             bgSelectors.push(".network-log-grid.data-grid td." + columnId + "-column");
         }
-        rules.push(hideSelectors.join(", ") + "{border-right: 0 none transparent;}");
+        rules.push(hideSelectors.join(", ") + "{border-left: 0 none transparent;}");
         rules.push(bgSelectors.join(", ") + "{background-color: rgba(0, 0, 0, 0.07);}");
 
         style.textContent = rules.join("\n");

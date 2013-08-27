@@ -31,7 +31,7 @@
 }
 
 .data-grid.inline {
-    border-right: none;
+    border-left: none;
 }
 
 .data-grid.inline .data-container {
@@ -47,7 +47,7 @@
     text-align: left;
     background-image: url(Images/glossyHeader.png);
     background-repeat: repeat-x;
-    border-right: 1px solid rgb(179, 179, 179);
+    border-left: 1px solid rgb(179, 179, 179);
     border-bottom: 1px solid rgb(179, 179, 179);
     height: 15px;
     font-weight: normal;
@@ -62,7 +62,7 @@
     width: 14px;
     padding-right: 0;
     padding-left: 0;
-    border-right: 0 none transparent !important;
+    border-left: 0 none transparent !important;
 }
 
 .data-grid tr.filler {
@@ -107,7 +107,7 @@
     padding: 1px 4px;
     white-space: nowrap;
     overflow: hidden;
-    border-right: 1px solid #aaa;
+    border-left: 1px solid #aaa;
     -webkit-user-select: text;
 }
 
@@ -139,7 +139,7 @@
 }
 .data-grid th.sort-ascending,
 .data-grid th.sort-descending {
-    border-right: 1px solid rgb(107, 140, 196);
+    border-left: 1px solid rgb(107, 140, 196);
     border-bottom: 1px solid rgb(107, 140, 196);
     background-image: url(Images/glossyHeaderSelected.png);
     background-repeat: repeat-x;
@@ -186,7 +186,7 @@
 body.inactive .data-grid th.sort-ascending,
 body.inactive .data-grid th.sort-descending {
     background-image: url(Images/glossyHeader.png);
-    border-right: 1px solid rgb(179, 179, 179);
+    border-left: 1px solid rgb(179, 179, 179);
     border-bottom: 1px solid rgb(179, 179, 179);
 }
 
