@@ -510,8 +510,13 @@ WebInspector.WorkspaceSettingsTab = function()
     WebInspector.isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, this._fileSystemAdded, this);
     WebInspector.isolatedFileSystemManager.addEventListener(WebInspector.IsolatedFileSystemManager.Events.FileSystemRemoved, this._fileSystemRemoved, this);
 
+    this._commonSection = this._appendSection(WebInspector.UIString("Common"));
+    var folderExcludePatternInput = this._createInputSetting(WebInspector.UIString("Folder exclude pattern"), WebInspector.settings.workspaceFolderExcludePattern, false, 0, "270px", WebInspector.SettingsScreen.regexValidator);
+    this._commonSection.appendChild(folderExcludePatternInput);
+
     this._fileSystemsSection = this._appendSection(WebInspector.UIString("Folders"));
     this._fileSystemsListContainer = this._fileSystemsSection.createChild("p", "settings-list-container");
+
     this._addFileSystemRowElement = this._fileSystemsSection.createChild("div");
     var addFileSystemButton = this._addFileSystemRowElement.createChild("input", "text-button");
     addFileSystemButton.type = "button";
@@ -552,6 +557,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
         }
 
         this._fileSystemsList = new WebInspector.SettingsList(["path"], this._renderFileSystem.bind(this));
+        this._fileSystemsList.element.addStyleClass("file-systems-list");
         this._fileSystemsList.addEventListener(WebInspector.SettingsList.Events.Selected, this._fileSystemSelected.bind(this));
         this._fileSystemsList.addEventListener(WebInspector.SettingsList.Events.Removed, this._fileSystemRemovedfromList.bind(this));
         this._fileSystemsList.addEventListener(WebInspector.SettingsList.Events.DoubleClicked, this._fileSystemDoubleClicked.bind(this));
@@ -623,12 +629,14 @@ WebInspector.WorkspaceSettingsTab.prototype = {
      */
     _renderFileSystem: function(columnElement, column, id)
     {
+        if (!id)
+            return "";
         var fileSystemPath = id;
         var textElement = columnElement.createChild("span", "list-column-text");
         var pathElement = textElement.createChild("span", "file-system-path");
         pathElement.title = fileSystemPath;
 
-        const maxTotalPathLength = 60;
+        const maxTotalPathLength = 55;
         const maxFolderNameLength = 30;
 
         var lastIndexOfSlash = fileSystemPath.lastIndexOf(WebInspector.isWin() ? "\\" : "/");

@@ -299,6 +299,8 @@ WebInspector.NavigatorView.prototype = {
                 project.refresh(path);
             }
 
+            contextMenu.appendItem(WebInspector.UIString("Refresh"), refresh.bind(this));
+
             function create()
             {
                 var data = {};
@@ -307,8 +309,19 @@ WebInspector.NavigatorView.prototype = {
                 this.dispatchEventToListeners(WebInspector.NavigatorView.Events.ItemCreationRequested, data);
             }
 
-            contextMenu.appendItem(WebInspector.UIString("Refresh"), refresh.bind(this));
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "New file" : "New File"), create.bind(this));
+
+            function exclude()
+            {
+                var shouldExclude = window.confirm(WebInspector.UIString("Are you sure you want to exclude this folder?"));
+                if (shouldExclude) {
+                    WebInspector.startBatchUpdate();
+                    project.excludeFolder(path);
+                    WebInspector.endBatchUpdate();
+                }
+            }
+
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Exclude folder" : "Exclude Folder"), exclude.bind(this));
         }
         contextMenu.appendSeparator();
         this._appendAddFolderItem(contextMenu);

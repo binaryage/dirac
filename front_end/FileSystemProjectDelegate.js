@@ -391,6 +391,14 @@ WebInspector.FileSystemProjectDelegate.prototype = {
 
     /**
      * @param {string} path
+     */
+    excludeFolder: function(path)
+    {
+        WebInspector.isolatedFileSystemManager.mapping().addExcludedFolder(this._fileSystem.path(), path);
+    },
+
+    /**
+     * @param {string} path
      * @param {?string} name
      * @param {function(?string)} callback
      */

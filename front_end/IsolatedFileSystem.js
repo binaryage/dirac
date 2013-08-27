@@ -126,10 +126,16 @@ WebInspector.IsolatedFileSystem.prototype = {
         {
             for (var i = 0; i < entries.length; ++i) {
                 var entry = entries[i];
-                if (!entry.isDirectory)
+                if (!entry.isDirectory) {
+                    if (this._manager.mapping().isFileExcluded(this._path, entry.fullPath))
+                        continue;
                     callback(entry.fullPath.substr(1));
-                else
+                }
+                else {
+                    if (this._manager.mapping().isFileExcluded(this._path, entry.fullPath + "/"))
+                        continue;
                     this._requestEntries(domFileSystem, entry.fullPath, innerCallback.bind(this));
+                }
             }
         }
     },

@@ -433,6 +433,11 @@ body.platform-mac .help-content input[type=radio] {
     width: 190px;
 }
 
+#workspace-tab-content .settings-tab.help-content.help-container {
+    -webkit-column-width: initial;
+}
+
+
 #workspace-tab-content .button:hover {
     opacity: 1.0 !important;
 }
@@ -653,6 +658,10 @@ body.platform-mac .help-content input[type=radio] {
 
 .file-mappings-list .settings-list-item .list-column.settings-list-column-path {
     width: 50%;
+}
+
+.excluded-folders-list .settings-list-item .list-column.settings-list-column-path {
+    width: 100%;
 }
 
 .settings-dialog {

@@ -145,6 +145,13 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
 
     /**
      * @param {string} path
+     */
+    excludeFolder: function(path)
+    {
+    },
+
+    /**
+     * @param {string} path
      * @param {?string} name
      * @param {function(?string)} callback
      */

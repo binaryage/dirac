@@ -52,12 +52,13 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
 
     WebInspector.isolatedFileSystemManager.mapping().addEventListener(WebInspector.FileSystemMapping.Events.FileMappingAdded, this._fileMappingAdded, this);
     WebInspector.isolatedFileSystemManager.mapping().addEventListener(WebInspector.FileSystemMapping.Events.FileMappingRemoved, this._fileMappingRemoved, this);
+    WebInspector.isolatedFileSystemManager.mapping().addEventListener(WebInspector.FileSystemMapping.Events.ExcludedFolderAdded, this._excludedFolderAdded, this);
+    WebInspector.isolatedFileSystemManager.mapping().addEventListener(WebInspector.FileSystemMapping.Events.ExcludedFolderRemoved, this._excludedFolderRemoved, this);
 
     var blockHeader = contents.createChild("div", "block-header");
     blockHeader.textContent = "Mappings";
     this._fileMappingsSection = contents.createChild("div", "file-mappings-section");
     this._fileMappingsListContainer = this._fileMappingsSection.createChild("div", "settings-list-container");
-
     var entries = WebInspector.isolatedFileSystemManager.mapping().mappingEntries(this._fileSystemPath);
 
     this._fileMappingsList = new WebInspector.EditableSettingsList(["url", "path"], this._fileMappingValuesProvider.bind(this), this._fileMappingValidate.bind(this), this._fileMappingEdit.bind(this));
@@ -69,6 +70,20 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
     this._entries = {};
     for (var i = 0; i < entries.length; ++i)
         this._addMappingRow(entries[i]);
+
+    blockHeader = contents.createChild("div", "block-header");
+    blockHeader.textContent = "Excluded folders";
+    this._excludedFolderListSection = contents.createChild("div", "excluded-folders-section");
+    this._excludedFolderListContainer = this._excludedFolderListSection.createChild("div", "settings-list-container");
+    var excludedFolderEntries = WebInspector.isolatedFileSystemManager.mapping().excludedFolders(fileSystemPath);
+
+    this._excludedFolderList = new WebInspector.EditableSettingsList(["path"], this._excludedFolderValueProvider.bind(this), this._excludedFolderValidate.bind(this), this._excludedFolderEdit.bind(this));
+    this._excludedFolderList.addEventListener(WebInspector.SettingsList.Events.Removed, this._excludedFolderRemovedfromList.bind(this));
+    this._excludedFolderList.element.addStyleClass("excluded-folders-list");
+    this._excludedFolderListContainer.appendChild(this._excludedFolderList.element);
+    this._excludedFolderEntries = new StringMap();
+    for (var i = 0; i < excludedFolderEntries.length; ++i)
+        this._addExcludedFolderRow(excludedFolderEntries[i]);
 
     this.element.tabIndex = 0;
 }
@@ -241,6 +256,88 @@ WebInspector.EditFileSystemDialog.prototype = {
         this._entries[urlPrefix] = entry;
         var fileMappingListItem = this._fileMappingsList.addItem(urlPrefix, null);
         this._resize();
+    },
+
+    _excludedFolderAdded: function(event)
+    {
+        var entry = /** @type {WebInspector.FileSystemMapping.ExcludedFolderEntry} */ (event.data);
+        this._addExcludedFolderRow(entry);
+    },
+
+    _excludedFolderRemoved: function(event)
+    {
+        var entry = /** @type {WebInspector.FileSystemMapping.ExcludedFolderEntry} */ (event.data);
+        var fileSystemPath = entry.fileSystemPath;
+        if (!fileSystemPath || this._fileSystemPath !== fileSystemPath)
+            return;
+        delete this._excludedFolderEntries[entry.path];
+        if (this._excludedFolderList.itemForId(entry.path))
+            this._excludedFolderList.removeItem(entry.path);
+    },
+
+    _excludedFolderValueProvider: function(itemId, columnId)
+    {
+        return itemId;
+    },
+
+    /**
+     * @param {?string} itemId
+     * @param {Object} data
+     */
+    _excludedFolderValidate: function(itemId, data)
+    {
+        var fileSystemPath = this._fileSystemPath;
+        var columns = [];
+        if (!this._validateExcludedFolder(data["path"], itemId))
+            columns.push("path");
+        return columns;
+    },
+
+    /**
+     * @param {string} path
+     * @param {?string} allowedPath
+     * @return {boolean}
+     */
+    _validateExcludedFolder: function(path, allowedPath)
+    {
+        return !!path && (path === allowedPath || !this._excludedFolderEntries.contains(path));
+    },
+
+    /**
+     * @param {?string} itemId
+     * @param {Object} data
+     */
+    _excludedFolderEdit: function(itemId, data)
+    {
+        var fileSystemPath = this._fileSystemPath;
+        if (itemId)
+            WebInspector.isolatedFileSystemManager.mapping().removeExcludedFolder(fileSystemPath, itemId);
+        var excludedFolderPath = data["path"];
+        WebInspector.isolatedFileSystemManager.mapping().addExcludedFolder(fileSystemPath, excludedFolderPath);
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _excludedFolderRemovedfromList: function(event)
+    {
+        var itemId = /** @type{?string} */ (event.data);
+        if (!itemId)
+            return;
+        WebInspector.isolatedFileSystemManager.mapping().removeExcludedFolder(this._fileSystemPath, itemId);
+    },
+
+    /**
+     * @param {WebInspector.FileSystemMapping.ExcludedFolderEntry} entry
+     */
+    _addExcludedFolderRow: function(entry)
+    {
+        var fileSystemPath = entry.fileSystemPath;
+        if (!fileSystemPath || this._fileSystemPath !== fileSystemPath)
+            return;
+        var path = entry.path;
+        this._excludedFolderEntries.put(path, entry);
+        this._excludedFolderList.addItem(path, null);
     },
 
     /**

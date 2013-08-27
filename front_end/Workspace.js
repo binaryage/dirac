@@ -120,6 +120,11 @@ WebInspector.ProjectDelegate.prototype = {
 
     /**
      * @param {string} path
+     */
+    excludeFolder: function(path) { },
+
+    /**
+     * @param {string} path
      * @param {?string} name
      * @param {function(?string)} callback
      */
@@ -228,6 +233,14 @@ WebInspector.Project.prototype = {
     _fileRemoved: function(event)
     {
         var path = /** @type {string} */ (event.data);
+        this._removeFile(path);
+    },
+
+    /**
+     * @param {string} path
+     */
+    _removeFile: function(path)
+    {
         var uiSourceCode = this.uiSourceCode(path);
         if (!uiSourceCode)
             return;
@@ -372,6 +385,20 @@ WebInspector.Project.prototype = {
     refresh: function(path)
     {
         this._projectDelegate.refresh(path);
+    },
+
+    /**
+     * @param {string} path
+     */
+    excludeFolder: function(path)
+    {
+        this._projectDelegate.excludeFolder(path);
+        var uiSourceCodes = this._uiSourceCodesList.slice();
+        for (var i = 0; i < uiSourceCodes.length; ++i) {
+            var uiSourceCode = uiSourceCodes[i];
+            if (uiSourceCode.path().startsWith(path.substr(1)))
+                this._removeFile(uiSourceCode.path());
+        }
     },
 
     /**
