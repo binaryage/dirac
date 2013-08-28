@@ -46,6 +46,7 @@ WebInspector.Layers3DView = function(model)
     this.element.addEventListener("mouseout", this._onMouseMove.bind(this), false);
     this.element.addEventListener("mousedown", this._onMouseDown.bind(this), false);
     this.element.addEventListener("mouseup", this._onMouseUp.bind(this), false);
+    this.element.addEventListener("contextmenu", this._onContextMenu.bind(this), false);
     this.element.addEventListener("click", this._onClick.bind(this), false);
     this._elementsByLayerId = {};
     this._rotateX = 0;
@@ -321,6 +322,23 @@ WebInspector.Layers3DView.prototype = {
             // This makes sure mouse events go to proper layers, not straight to the parent.
             this._rotatingContainerElement.style.webkitTransform = "translateZ(10000px) rotateX(" + this._rotateX + "deg) rotateY(" + this._rotateY + "deg)";
         }
+    },
+
+    /**
+     * @param {Event} event
+     */
+    _onContextMenu: function(event)
+    {
+        var layer = this._layerFromEventPoint(event);
+        var nodeId = layer && layer.nodeId();
+        if (!nodeId)
+            return;
+        var domNode = WebInspector.domAgent.nodeForId(nodeId);
+        if (!domNode)
+            return;
+        var contextMenu = new WebInspector.ContextMenu(event);
+        contextMenu.appendApplicableItems(domNode);
+        contextMenu.show();
     },
 
     _onClick: function(event)

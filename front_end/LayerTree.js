@@ -41,6 +41,7 @@ WebInspector.LayerTree = function(model, treeOutline)
     this._treeOutline = treeOutline;
     this._treeOutline.childrenListElement.addEventListener("mousemove", this._onMouseMove.bind(this), false);
     this._treeOutline.childrenListElement.addEventListener("mouseout", this._onMouseMove.bind(this), false);
+    this._treeOutline.childrenListElement.addEventListener("contextmenu", this._onContextMenu.bind(this), true);
     this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._update.bind(this));
     this._lastHoveredNode = null;
     this._needsUpdate = true;
@@ -164,6 +165,28 @@ WebInspector.LayerTree.prototype = {
     {
         var layer = /** @type {WebInspector.Layer} */ (node.representedObject);
         this.dispatchEventToListeners(WebInspector.LayerTree.Events.LayerSelected, layer);
+    },
+
+    /**
+     * @param {Event} event
+     */
+    _onContextMenu: function(event)
+    {
+        var node = this._treeOutline.treeElementFromPoint(event.pageX, event.pageY);
+        if (!node || !node.representedObject)
+            return;
+        var layer = /** @type {WebInspector.Layer} */ (node.representedObject);
+        if (!layer)
+            return;
+        var nodeId = layer.nodeId();
+        if (!nodeId)
+            return;
+        var domNode = WebInspector.domAgent.nodeForId(nodeId);
+        if (!domNode)
+            return;
+        var contextMenu = new WebInspector.ContextMenu(event);
+        contextMenu.appendApplicableItems(domNode);
+        contextMenu.show();
     },
 
     __proto__: WebInspector.Object.prototype
