@@ -69,15 +69,6 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
         var script = /** @type {WebInspector.Script} */ (event.data);
         if (!script.sourceURL || script.isInlineScript() || script.isSnippet())
             return;
-        // Only add uiSourceCodes for
-        // - content scripts;
-        // - scripts with explicit sourceURL comment;
-        // - dynamic scripts (script elements with src attribute) when inspector is opened after the script was loaded.
-        if (!script.hasSourceURL && !script.isContentScript) {
-            var requestURL = script.sourceURL.replace(/#.*/, "");
-            if (WebInspector.resourceForURL(requestURL) || WebInspector.networkLog.requestForURL(requestURL))
-                return;
-        }
         // Filter out embedder injected content scripts.
         if (script.isContentScript && !script.hasSourceURL) {
             var parsedURL = new WebInspector.ParsedURL(script.sourceURL);

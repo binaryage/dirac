@@ -194,8 +194,10 @@ WebInspector.ResourceScriptMapping.prototype = {
     {
         console.assert(scripts.length);
         var scriptFile = /** @type {WebInspector.ResourceScriptFile} */ (uiSourceCode.scriptFile());
-        scriptFile.dispose();
-        uiSourceCode.setScriptFile(null);
+        if (scriptFile) {
+            scriptFile.dispose();
+            uiSourceCode.setScriptFile(null);
+        }
         uiSourceCode.setSourceMapping(null);
     },
 
