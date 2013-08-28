@@ -1210,11 +1210,11 @@ WebInspector.ElementsPanel.prototype = {
             stylesPane.element.addStyleClass("composite");
             stylesPane.element.addStyleClass("fill");
             var expandStyles = stylesPane.expand.bind(stylesPane);
-            stylesPane.bodyElement.appendChild(this.sidebarPanes.styles.titleElement);
             stylesPane.bodyElement.addStyleClass("metrics-and-styles");
             this.sidebarPanes.styles.show(stylesPane.bodyElement);
             this.sidebarPanes.styles.setExpandCallback(expandStyles);
             this.sidebarPanes.metrics.setExpandCallback(expandStyles);
+            stylesPane.bodyElement.appendChild(this.sidebarPanes.styles.titleElement);
 
             /**
              * @param {WebInspector.SidebarPane} pane
