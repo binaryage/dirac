@@ -837,6 +837,9 @@ WebInspector.DOMAgent = function() {
     /** @type {!Object.<number, boolean>} */
     this._attributeLoadNodeIds = {};
     InspectorBackend.registerDOMDispatcher(new WebInspector.DOMDispatcher(this));
+
+    this._defaultHighlighter = new WebInspector.DefaultDOMNodeHighlighter();
+    this._highlighter = this._defaultHighlighter;
 }
 
 WebInspector.DOMAgent.Events = {
@@ -1293,11 +1296,7 @@ WebInspector.DOMAgent.prototype = {
             clearTimeout(this._hideDOMNodeHighlightTimeout);
             delete this._hideDOMNodeHighlightTimeout;
         }
-
-        if (objectId || nodeId)
-            DOMAgent.highlightNode(this._buildHighlightConfig(mode), objectId ? undefined : nodeId, objectId);
-        else
-            DOMAgent.hideHighlight();
+        this._highlighter.highlightDOMNode(nodeId || 0, this._buildHighlightConfig(mode), objectId);
     },
 
     hideDOMNodeHighlight: function()
@@ -1326,6 +1325,7 @@ WebInspector.DOMAgent.prototype = {
 
     /**
      * @param {string=} mode
+     * @return {DOMAgent.HighlightConfig}
      */
     _buildHighlightConfig: function(mode)
     {
@@ -1438,6 +1438,14 @@ WebInspector.DOMAgent.prototype = {
 
         this.dispatchEventToListeners(WebInspector.DOMAgent.Events.UndoRedoRequested);
         DOMAgent.redo(callback);
+    },
+
+    /**
+     * @param {WebInspector.DOMNodeHighlighter} highlighter
+     */
+    setHighlighter: function(highlighter)
+    {
+        this._highlighter = highlighter || this._defaultHighlighter;
     },
 
     __proto__: WebInspector.Object.prototype
@@ -1556,6 +1564,43 @@ WebInspector.DOMDispatcher.prototype = {
     shadowRootPopped: function(hostId, rootId)
     {
         this._domAgent._shadowRootPopped(hostId, rootId);
+    }
+}
+
+/**
+ * @interface
+ */
+WebInspector.DOMNodeHighlighter = function() {
+}
+
+WebInspector.DOMNodeHighlighter.prototype = {
+    /**
+     * @param {DOMAgent.NodeId} nodeId
+     * @param {?DOMAgent.HighlightConfig} config
+     * @param {RuntimeAgent.RemoteObjectId=} objectId
+     */
+    highlightDOMNode: function(nodeId, config, objectId) {}
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.DOMNodeHighlighter}
+ */
+WebInspector.DefaultDOMNodeHighlighter = function() {
+}
+
+WebInspector.DefaultDOMNodeHighlighter.prototype = {
+    /**
+     * @param {DOMAgent.NodeId} nodeId
+     * @param {?DOMAgent.HighlightConfig} config
+     * @param {RuntimeAgent.RemoteObjectId=} objectId
+     */
+    highlightDOMNode: function(nodeId, config, objectId)
+    {
+        if (objectId || nodeId)
+            DOMAgent.highlightNode(config, objectId ? undefined : nodeId, objectId);
+        else
+            DOMAgent.hideHighlight();
     }
 }
 
