@@ -239,13 +239,11 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TimelinePresentationModel.Filter} filter
+     * @param {?WebInspector.TimelinePresentationModel.Filter} filter
      */
-    removeFilter: function(filter)
+    setSearchFilter: function(filter)
     {
-        var index = this._filters.indexOf(filter);
-        if (index !== -1)
-            this._filters.splice(index, 1);
+        this._searchFilter = filter;
     },
 
     rootRecord: function()
@@ -501,32 +499,52 @@ WebInspector.TimelinePresentationModel.prototype = {
             return this._filteredRecords;
 
         var recordsInWindow = [];
+        var stack = [{children: this._rootRecord.children, index: 0, parentIsCollapsed: false, parentRecord: {}}];
+        var revealedDepth = 0;
 
-        var stack = [{children: this._rootRecord.children, index: 0, parentIsCollapsed: false}];
+        function revealRecordsInStack() {
+            for (var depth = revealedDepth + 1; depth < stack.length; ++depth) {
+                if (stack[depth - 1].parentIsCollapsed) {
+                    stack[depth].parentRecord.parent._expandable = true;
+                    return;
+                }
+                stack[depth - 1].parentRecord.collapsed = false;
+                recordsInWindow.push(stack[depth].parentRecord);
+                stack[depth].windowLengthBeforeChildrenTraversal = recordsInWindow.length;
+                stack[depth].parentIsRevealed = true;
+                revealedDepth = depth;
+            }
+        }
+
         while (stack.length) {
             var entry = stack[stack.length - 1];
             var records = entry.children;
             if (records && entry.index < records.length) {
-                 var record = records[entry.index];
-                 ++entry.index;
+                var record = records[entry.index];
+                ++entry.index;
 
-                 if (this.isVisible(record)) {
-                     ++record.parent._invisibleChildrenCount;
-                     if (!entry.parentIsCollapsed)
-                         recordsInWindow.push(record);
-                 }
+                if (this.isVisible(record)) {
+                    record.parent._expandable = true;
+                    if (this._searchFilter)
+                        revealRecordsInStack();
+                    if (!entry.parentIsCollapsed) {
+                        recordsInWindow.push(record);
+                        revealedDepth = stack.length;
+                        entry.parentRecord.collapsed = false;
+                    }
+                }
 
-                 record._invisibleChildrenCount = 0;
+                record._expandable = false;
 
-                 stack.push({children: record.children,
-                             index: 0,
-                             parentIsCollapsed: (entry.parentIsCollapsed || record.collapsed),
-                             parentRecord: record,
-                             windowLengthBeforeChildrenTraversal: recordsInWindow.length});
+                stack.push({children: record.children,
+                            index: 0,
+                            parentIsCollapsed: (entry.parentIsCollapsed || (record.collapsed && (!this._searchFilter || record.clicked))),
+                            parentRecord: record,
+                            windowLengthBeforeChildrenTraversal: recordsInWindow.length});
             } else {
                 stack.pop();
-                if (entry.parentRecord)
-                    entry.parentRecord._visibleChildrenCount = recordsInWindow.length - entry.windowLengthBeforeChildrenTraversal;
+                revealedDepth = Math.min(revealedDepth, stack.length - 1);
+                entry.parentRecord._visibleChildrenCount = recordsInWindow.length - entry.windowLengthBeforeChildrenTraversal;
             }
         }
 
@@ -562,7 +580,7 @@ WebInspector.TimelinePresentationModel.prototype = {
             if (!this._filters[i].accept(record))
                 return false;
         }
-        return true;
+        return !this._searchFilter || this._searchFilter.accept(record);
     },
 
     /**
@@ -865,11 +883,11 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @return {number}
+     * @return {boolean}
      */
-    get invisibleChildrenCount()
+    get expandable()
     {
-        return this._invisibleChildrenCount || 0;
+        return !!this._expandable;
     },
 
     /**

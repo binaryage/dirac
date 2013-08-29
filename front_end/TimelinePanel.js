@@ -1249,12 +1249,19 @@ WebInspector.TimelinePanel.prototype = {
 
     performFilter: function(searchQuery)
     {
-        this._presentationModel.removeFilter(this._searchFilter);
+        this._presentationModel.setSearchFilter(null);
         delete this._searchFilter;
+
+        function cleanRecord(record)
+        {
+            delete record.clicked;
+        }
+        WebInspector.TimelinePresentationModel.forAllRecords(this._presentationModel.rootRecord().children, cleanRecord);
+
         this.searchCanceled();
         if (searchQuery) {
             this._searchFilter = new WebInspector.TimelineSearchFilter(createPlainTextSearchRegex(searchQuery, "i"));
-            this._presentationModel.addFilter(this._searchFilter);
+            this._presentationModel.setSearchFilter(this._searchFilter);
         }
         this._invalidateAndScheduleRefresh(true, true);
     },
@@ -1496,6 +1503,7 @@ WebInspector.TimelineRecordGraphRow.prototype = {
     _onClick: function(event)
     {
         this._record.collapsed = !this._record.collapsed;
+        this._record.clicked = true;
         this._scheduleRefresh(false, true);
     },
 
@@ -1520,7 +1528,7 @@ WebInspector.TimelineExpandableElement.prototype = {
     _update: function(record, index, left, width)
     {
         const rowHeight = WebInspector.TimelinePanel.rowHeight;
-        if (record.visibleChildrenCount || record.invisibleChildrenCount) {
+        if (record.visibleChildrenCount || record.expandable) {
             this._element.style.top = index * rowHeight + "px";
             this._element.style.left = left + "px";
             this._element.style.width = Math.max(12, width + 25) + "px";
