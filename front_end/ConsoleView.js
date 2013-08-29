@@ -551,6 +551,10 @@ WebInspector.ConsoleView.prototype = {
         }
     },
 
+    /**
+     * @param {string} expression
+     * @param {boolean} showResultOnly
+     */
     evaluateUsingTextPrompt: function(expression, showResultOnly)
     {
         this._appendCommand(expression, this.prompt.text, false, showResultOnly);
@@ -571,14 +575,66 @@ WebInspector.ConsoleView.prototype = {
         this._appendCommand(str, "", true, false);
     },
 
+    /**
+     * @param {WebInspector.RemoteObject} result
+     * @param {boolean} wasThrown
+     * @param {WebInspector.ConsoleCommand} originatingCommand
+     */
     _printResult: function(result, wasThrown, originatingCommand)
     {
         if (!result)
             return;
-        var message = new WebInspector.ConsoleCommandResult(result, wasThrown, originatingCommand, this._linkifier);
-        WebInspector.console.addMessage(message);
+
+        /**
+         * @param {string=} url
+         * @param {number=} lineNumber
+         * @param {number=} columnNumber
+         */
+        function addMessage(url, lineNumber, columnNumber)
+        {
+            var message = new WebInspector.ConsoleCommandResult(result, wasThrown, originatingCommand, this._linkifier, url, lineNumber, columnNumber);
+            WebInspector.console.addMessage(message);
+        }
+
+        if (result.type !== "function") {
+            addMessage.call(this);
+            return;
+        }
+
+        DebuggerAgent.getFunctionDetails(result.objectId, didGetDetails.bind(this));
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {DebuggerAgent.FunctionDetails} response
+         */
+        function didGetDetails(error, response)
+        {
+            if (error) {
+                console.error(error);
+                addMessage.call(this);
+                return;
+            }
+
+            var url;
+            var lineNumber;
+            var columnNumber;
+            var script = WebInspector.debuggerModel.scriptForId(response.location.scriptId);
+            console.assert(script);
+            if (script.sourceURL) {
+                url = script.sourceURL;
+                lineNumber = response.location.lineNumber + 1;
+                columnNumber = response.location.columnNumber + 1;
+            }
+            addMessage.call(this, url, lineNumber, columnNumber);
+        }
     },
 
+    /**
+     * @param {string} text
+     * @param {string} newPromptText
+     * @param {boolean} useCommandLineAPI
+     * @param {boolean} showResultOnly
+     */
     _appendCommand: function(text, newPromptText, useCommandLineAPI, showResultOnly)
     {
         if (!showResultOnly) {
@@ -587,7 +643,12 @@ WebInspector.ConsoleView.prototype = {
         }
         this.prompt.text = newPromptText;
 
-        function printResult(result, wasThrown)
+        /**
+         * @param {WebInspector.RemoteObject} result
+         * @param {boolean} wasThrown
+         * @param {RuntimeAgent.RemoteObject=} valueResult
+         */
+        function printResult(result, wasThrown, valueResult)
         {
             if (!result)
                 return;
@@ -596,7 +657,7 @@ WebInspector.ConsoleView.prototype = {
                 this.prompt.pushHistoryItem(text);
                 WebInspector.settings.consoleHistory.set(this.prompt.historyData.slice(-30));
             }
-            
+
             this._printResult(result, wasThrown, commandMessage);
         }
         WebInspector.runtimeModel.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult.bind(this));
@@ -1016,6 +1077,9 @@ WebInspector.ConsoleCommand.prototype = {
         this._element.replaceChild(this._formattedCommand, highlightedMessage);
     },
 
+    /**
+     * @param {RegExp} regexObject
+     */
     highlightSearchResults: function(regexObject)
     {
         regexObject.lastIndex = 0;
@@ -1029,6 +1093,9 @@ WebInspector.ConsoleCommand.prototype = {
         this._element.scrollIntoViewIfNeeded();
     },
 
+    /**
+     * @param {RegExp} regexObject
+     */
     matchesRegex: function(regexObject)
     {
         regexObject.lastIndex = 0;
@@ -1061,16 +1128,19 @@ WebInspector.ConsoleCommand.prototype = {
 /**
  * @extends {WebInspector.ConsoleMessageImpl}
  * @constructor
- * @param {boolean} result
+ * @param {WebInspector.RemoteObject} result
  * @param {boolean} wasThrown
  * @param {WebInspector.ConsoleCommand} originatingCommand
  * @param {WebInspector.Linkifier} linkifier
+ * @param {string=} url
+ * @param {number=} lineNumber
+ * @param {number=} columnNumber
  */
-WebInspector.ConsoleCommandResult = function(result, wasThrown, originatingCommand, linkifier)
+WebInspector.ConsoleCommandResult = function(result, wasThrown, originatingCommand, linkifier, url, lineNumber, columnNumber)
 {
     var level = (wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log);
     this.originatingCommand = originatingCommand;
-    WebInspector.ConsoleMessageImpl.call(this, WebInspector.ConsoleMessage.MessageSource.JS, level, "", linkifier, WebInspector.ConsoleMessage.MessageType.Result, undefined, undefined, undefined, undefined, [result]);
+    WebInspector.ConsoleMessageImpl.call(this, WebInspector.ConsoleMessage.MessageSource.JS, level, "", linkifier, WebInspector.ConsoleMessage.MessageType.Result, url, lineNumber, columnNumber, undefined, [result]);
 }
 
 WebInspector.ConsoleCommandResult.prototype = {

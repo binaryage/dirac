@@ -1017,6 +1017,26 @@ WebInspector.inspect = function(payload, hints)
         return;
     }
 
+    if (object.type === "function") {
+        function didGetDetails(error, response)
+        {
+            object.release();
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            var uiLocation = WebInspector.debuggerModel.rawLocationToUILocation(response.location);
+            if (!uiLocation)
+                return;
+
+            WebInspector.showPanel("scripts").showUILocation(uiLocation);
+        }
+        DebuggerAgent.getFunctionDetails(object.objectId, didGetDetails.bind(this));
+        return;
+    }
+
     if (hints.databaseId)
         WebInspector.showPanel("resources").selectDatabase(WebInspector.databaseModel.databaseForId(hints.databaseId));
     else if (hints.domStorageId)

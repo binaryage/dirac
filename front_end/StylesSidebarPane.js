@@ -2283,7 +2283,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         var uiLocation = this.property.uiLocation(propertyNameClicked);
         if (!uiLocation)
             return;
-        WebInspector.showPanel("scripts").showUISourceCode(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
+        WebInspector.showPanel("scripts").showUILocation(uiLocation);
     },
 
     _isNameElement: function(element)

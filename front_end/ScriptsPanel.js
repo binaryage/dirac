@@ -419,6 +419,14 @@ WebInspector.ScriptsPanel.prototype = {
     },
 
     /**
+     * @param {WebInspector.UILocation} uiLocation
+     */
+    showUILocation: function(uiLocation)
+    {
+        this._showSourceLocation(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
+    },
+
+    /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber
      * @param {number=} columnNumber
