@@ -712,10 +712,13 @@ WebInspector.PageDispatcher.prototype = {
 
     /**
      * @param {string} data
+     * @param {number=} deviceScaleFactor
+     * @param {number=} pageScaleFactor
+     * @param {DOMAgent.Rect=} viewport
      */
-    screencastFrame: function(data)
+    screencastFrame: function(data, deviceScaleFactor, pageScaleFactor, viewport)
     {
-        this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, data);
+        this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, {data:data, deviceScaleFactor: deviceScaleFactor, pageScaleFactor: pageScaleFactor, viewport:viewport});
     }
 }
 

@@ -35,15 +35,8 @@
     position: relative;
 }
 
-.screencast img {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-}
-
 .screencast canvas {
     position: absolute;
-    pointer-events: none;
     width: 100%;
     height: 100%;
 }

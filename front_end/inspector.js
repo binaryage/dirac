@@ -773,15 +773,6 @@ WebInspector._registerShortcuts = function()
  */
 WebInspector.documentKeyDown = function(event)
 {
-    const helpKey = WebInspector.isMac() ? "U+003F" : "U+00BF"; // "?" for both platforms
-
-    if (event.keyIdentifier === "F1" ||
-        (event.keyIdentifier === helpKey && event.shiftKey && (!WebInspector.isBeingEdited(event.target) || event.metaKey))) {
-        this.settingsController.showSettingsScreen(WebInspector.SettingsScreen.Tabs.General);
-        event.consume(true);
-        return;
-    }
-
     if (WebInspector.currentFocusElement() && WebInspector.currentFocusElement().handleKeyEvent) {
         WebInspector.currentFocusElement().handleKeyEvent(event);
         if (event.handled) {
@@ -861,7 +852,16 @@ WebInspector.documentKeyDown = function(event)
 
 WebInspector.postDocumentKeyDown = function(event)
 {
-    var Esc = "U+001B";
+    const helpKey = WebInspector.isMac() ? "U+003F" : "U+00BF"; // "?" for both platforms
+
+    if (event.keyIdentifier === "F1" ||
+        (event.keyIdentifier === helpKey && event.shiftKey && (!WebInspector.isBeingEdited(event.target) || event.metaKey))) {
+        this.settingsController.showSettingsScreen(WebInspector.SettingsScreen.Tabs.General);
+        event.consume(true);
+        return;
+    }
+
+    const Esc = "U+001B";
 
     if (event.handled)
         return;

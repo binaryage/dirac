@@ -41,19 +41,17 @@ WebInspector.ScreencastView = function()
     this.element.addStyleClass("fill");
     this.element.addStyleClass("screencast");
     this._viewportElement = this.element.createChild("div", "screencast-viewport");
-
-    this._isCasting = false;
-    this._imageElement = this._viewportElement.createChild("img");
-    this._imageElement.tabIndex = 1;
-    this._imageElement.addEventListener("mousedown", this._handleMouseEvent.bind(this), false);
-    this._imageElement.addEventListener("mouseup", this._handleMouseEvent.bind(this), false);
-    this._imageElement.addEventListener("mousemove", this._handleMouseEvent.bind(this), false);
-    this._imageElement.addEventListener("mousewheel", this._handleMouseEvent.bind(this), false);
-    this._imageElement.addEventListener("click", this._handleMouseEvent.bind(this), false);
-    this._imageElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), false);
-    this._imageElement.addEventListener("keydown", this._handleKeyEvent.bind(this), false);
-    this._imageElement.addEventListener("keyup", this._handleKeyEvent.bind(this), false);
-    this._imageElement.addEventListener("keypress", this._handleKeyEvent.bind(this), false);
+    this._canvasElement = this._viewportElement.createChild("canvas");
+    this._canvasElement.tabIndex = 1;
+    this._canvasElement.addEventListener("mousedown", this._handleMouseEvent.bind(this), false);
+    this._canvasElement.addEventListener("mouseup", this._handleMouseEvent.bind(this), false);
+    this._canvasElement.addEventListener("mousemove", this._handleMouseEvent.bind(this), false);
+    this._canvasElement.addEventListener("mousewheel", this._handleMouseEvent.bind(this), false);
+    this._canvasElement.addEventListener("click", this._handleMouseEvent.bind(this), false);
+    this._canvasElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), false);
+    this._canvasElement.addEventListener("keydown", this._handleKeyEvent.bind(this), false);
+    this._canvasElement.addEventListener("keyup", this._handleKeyEvent.bind(this), false);
+    this._canvasElement.addEventListener("keypress", this._handleKeyEvent.bind(this), false);
 
     this._titleElement = this._viewportElement.createChild("div", "screencast-element-title monospace hidden");
     this._tagNameElement = this._titleElement.createChild("span", "screencast-tag-name");
@@ -66,10 +64,10 @@ WebInspector.ScreencastView = function()
     this._nodeHeightElement = this._titleElement.createChild("span");
     this._titleElement.createChild("span", "screencast-px").textContent = "px";
 
-    this._canvasElement = this._viewportElement.createChild("canvas");
-    this._context = this._canvasElement.getContext("2d");
-
+    this._imageElement = new Image();
     this._scale = 0.7;
+    this._isCasting = false;
+    this._context = this._canvasElement.getContext("2d");
 
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
 }
@@ -108,10 +106,14 @@ WebInspector.ScreencastView.prototype = {
      */
     _screencastFrame: function(event)
     {
-        var base64Data = /** type {string} */(event.data);
+        var base64Data = /** type {string} */(event.data.data);
         var previousWidth = this._imageElement.naturalWidth;
         var previousHeight = this._imageElement.naturalHeight;
         this._imageElement.src = "data:image/jpg;base64," + base64Data;
+        this._deviceScaleFactor = /** type {number} */(event.data.deviceScaleFactor);
+        this._pageScaleFactor = /** type {number} */(event.data.pageScaleFactor);
+        this._viewport = /** type {DOMAgent.Rect} */(event.data.viewport);
+
         if (previousWidth !== this._imageElement.naturalWidth || previousHeight !== this._imageElement.naturalHeight)
             this.onResize();
         this.highlightDOMNode(this._highlightNodeId, this._highlightConfig);
@@ -124,6 +126,7 @@ WebInspector.ScreencastView.prototype = {
     {
         if (!WebInspector.inspectElementModeController.enabled()) {
             this._simulateTouchGestureForMouseEvent(event);
+            this._canvasElement.focus();
             event.consume(true);
             return;
         }
@@ -145,7 +148,7 @@ WebInspector.ScreencastView.prototype = {
 
         var position = this._convertIntoScreenSpace(event);
         InputAgent.dispatchMouseEvent(type, position.x, position.y, this._modifiersForEvent(event), event.timeStamp / 1000, button, event.detail, true);
-        this.element.focus();
+        this._canvasElement.focus();
         event.consume(true);
     },
 
@@ -165,8 +168,8 @@ WebInspector.ScreencastView.prototype = {
         var text = event.type === "keypress" ? String.fromCharCode(event.charCode) : undefined;
         InputAgent.dispatchKeyEvent(type, this._modifiersForEvent(event), event.timeStamp / 1000, text, text ? text.toLowerCase() : undefined,
                                     event.keyIdentifier, event.keyCode /* windowsVirtualKeyCode */, event.keyCode /* nativeVirtualKeyCode */, undefined /* macCharCode */, false, false, false);
-        this.element.focus();
-        event.consume(true);
+        event.consume();
+        this._canvasElement.focus();
     },
 
     /**
@@ -289,8 +292,8 @@ WebInspector.ScreencastView.prototype = {
         }
         this._viewportElement.style.width = width + bordersSize + "px";
         this._viewportElement.style.height = height + bordersSize + "px";
-        this._repaintHighlight();
-        this._zoom = this._imageElement.offsetWidth / this._imageElement.naturalWidth;
+        this._repaint();
+        this._zoom = this._canvasElement.offsetWidth / this._imageElement.naturalWidth;
     },
 
     /**
@@ -307,7 +310,7 @@ WebInspector.ScreencastView.prototype = {
             this._config = null;
             this._node = null;
             this._titleElement.addStyleClass("hidden");
-            this._repaintHighlight();
+            this._repaint();
             return;
         }
 
@@ -320,11 +323,13 @@ WebInspector.ScreencastView.prototype = {
          */
         function callback(error, model)
         {
-            if (error)
+            if (error) {
+                this._repaint();
                 return;
+            }
             this._model = this._scaleModel(model);
             this._config = config;
-            this._repaintHighlight();
+            this._repaint();
         }
     },
 
@@ -334,25 +339,25 @@ WebInspector.ScreencastView.prototype = {
      */
     _scaleModel: function(model)
     {
-        var scale = this._canvasElement.offsetWidth / model.visibleContentRect.width;
+        var scale = this._canvasElement.offsetWidth / this._viewport.width;
         /**
          * @param {DOMAgent.Quad} quad
          */
         function scaleQuad(quad)
         {
             for (var i = 0; i < quad.length; i += 2) {
-                quad[i] = (quad[i] - model.visibleContentRect.x) * scale;
-                quad[i + 1] = (quad[i + 1] - model.visibleContentRect.y) * scale;
+                quad[i] = (quad[i] - this._viewport.x) * scale;
+                quad[i + 1] = (quad[i + 1] - this._viewport.y) * scale;
             }
         }
-        scaleQuad(model.content);
-        scaleQuad(model.padding);
-        scaleQuad(model.border);
-        scaleQuad(model.margin);
+        scaleQuad.call(this, model.content);
+        scaleQuad.call(this, model.padding);
+        scaleQuad.call(this, model.border);
+        scaleQuad.call(this, model.margin);
         return model;
     },
 
-    _repaintHighlight: function()
+    _repaint: function()
     {
         var model = this._model;
         var config = this._config;
@@ -360,36 +365,41 @@ WebInspector.ScreencastView.prototype = {
         this._canvasElement.width = window.devicePixelRatio * this._canvasElement.offsetWidth;
         this._canvasElement.height = window.devicePixelRatio * this._canvasElement.offsetHeight;
 
-        if (!model || !config)
-            return;
-
+        this._context.save();
         this._context.scale(window.devicePixelRatio, window.devicePixelRatio);
 
-        this._context.save();
-        const transparentColor = "rgba(0, 0, 0, 0)";
-        var hasContent = model.content && config.contentColor !== transparentColor;
-        var hasPadding = model.padding && config.paddingColor !== transparentColor;
-        var hasBorder = model.border && config.borderColor !== transparentColor;
-        var hasMargin = model.margin && config.marginColor !== transparentColor;
+        if (model && config) {
+            this._context.save();
+            const transparentColor = "rgba(0, 0, 0, 0)";
+            var hasContent = model.content && config.contentColor !== transparentColor;
+            var hasPadding = model.padding && config.paddingColor !== transparentColor;
+            var hasBorder = model.border && config.borderColor !== transparentColor;
+            var hasMargin = model.margin && config.marginColor !== transparentColor;
 
-        var clipQuad;
-        if (hasMargin && (!hasBorder || !this._quadsAreEqual(model.margin, model.border))) {
-            this._drawOutlinedQuadWithClip(model.margin, model.border, config.marginColor);
-            clipQuad = model.border;
+            var clipQuad;
+            if (hasMargin && (!hasBorder || !this._quadsAreEqual(model.margin, model.border))) {
+                this._drawOutlinedQuadWithClip(model.margin, model.border, config.marginColor);
+                clipQuad = model.border;
+            }
+            if (hasBorder && (!hasPadding || !this._quadsAreEqual(model.border, model.padding))) {
+                this._drawOutlinedQuadWithClip(model.border, model.padding, config.borderColor);
+                clipQuad = model.padding;
+            }
+            if (hasPadding && (!hasContent || !this._quadsAreEqual(model.padding, model.content))) {
+                this._drawOutlinedQuadWithClip(model.padding, model.content, config.paddingColor);
+                clipQuad = model.content;
+            }
+            if (hasContent)
+                this._drawOutlinedQuad(model.content, config.contentColor);
+            this._context.restore();
+
+            this._drawElementTitle();
+
+            this._context.globalCompositeOperation = "destination-over";
         }
-        if (hasBorder && (!hasPadding || !this._quadsAreEqual(model.border, model.padding))) {
-            this._drawOutlinedQuadWithClip(model.border, model.padding, config.borderColor);
-            clipQuad = model.padding;
-        }
-        if (hasPadding && (!hasContent || !this._quadsAreEqual(model.padding, model.content))) {
-            this._drawOutlinedQuadWithClip(model.padding, model.content, config.paddingColor);
-            clipQuad = model.content;
-        }
-        if (hasContent)
-            this._drawOutlinedQuad(model.content, config.contentColor);
+
+        this._context.drawImage(this._imageElement, 0, 0, this._canvasElement.offsetWidth, this._canvasElement.offsetHeight);
         this._context.restore();
-
-        this._drawElementTitle();
     },
 
 
@@ -413,6 +423,8 @@ WebInspector.ScreencastView.prototype = {
      */
     _cssColor: function(color)
     {
+        if (!color)
+            return "transparent";
         return WebInspector.Color.fromRGBA([color.r, color.g, color.b, color.a]).toString(WebInspector.Color.Format.RGBA) || "";
     },
 

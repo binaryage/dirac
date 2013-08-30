@@ -420,7 +420,10 @@
                     { "name": "scale", "type": "number", "optional": true, "description": "Image scale from range [0..1]." }
                 ],
                 "returns": [
-                    { "name": "data", "type": "string", "description": "Base64-encoded image data (PNG)." }
+                    { "name": "data", "type": "string", "description": "Base64-encoded image data (PNG)." },
+                    { "name": "deviceScaleFactor", "type": "number", "hidden": true, "description": "Device scale factor." },
+                    { "name": "pageScaleFactor", "type": "number", "hidden": true, "description": "Page scale factor." },
+                    { "name": "viewport", "$ref": "DOM.Rect", "hidden": true, "description": "Viewport in CSS pixels." }
                 ]
             },
             {
@@ -552,7 +555,10 @@
                 "name": "screencastFrame",
                 "description": "Compressed image data requested by the <code>startScreencast</code>.",
                 "parameters": [
-                    { "name": "data", "type": "string", "description": "Base64-encoded compressed image." }
+                    { "name": "data", "type": "string", "description": "Base64-encoded compressed image." },
+                    { "name": "deviceScaleFactor", "type": "number", "hidden": true, "optional": true, "description": "Device scale factor." },
+                    { "name": "pageScaleFactor", "type": "number", "hidden": true, "optional": true, "description": "Page scale factor." },
+                    { "name": "viewport", "$ref": "DOM.Rect", "hidden": true, "optional": true, "description": "Viewport in CSS pixels." }
                 ],
                 "hidden": true
             }
@@ -1796,12 +1802,11 @@
                 "hidden": true,
                 "properties": [
                     { "name": "content", "$ref": "Quad", "description": "Content box" },
-                    { "name": "width", "type": "integer", "description": "Node width" },
-                    { "name": "height", "type": "integer", "description": "Node height" },
                     { "name": "padding", "$ref": "Quad", "description": "Padding box" },
                     { "name": "border", "$ref": "Quad", "description": "Border box" },
                     { "name": "margin", "$ref": "Quad", "description": "Margin box" },
-                    { "name": "visibleContentRect", "$ref": "Rect", "description": "Visible content rectangle" }
+                    { "name": "width", "type": "integer", "description": "Node width" },
+                    { "name": "height", "type": "integer", "description": "Node height" }
                 ],
                 "description": "Box model."
             },
@@ -1810,10 +1815,10 @@
                 "type": "object",
                 "hidden": true,
                 "properties": [
-                    { "name": "x", "type": "integer", "description": "X coordinate" },
-                    { "name": "y", "type": "integer", "description": "Y coordinate" },
-                    { "name": "width", "type": "integer", "description": "Rectangle width" },
-                    { "name": "height", "type": "integer", "description": "Rectangle height" }
+                    { "name": "x", "type": "number", "description": "X coordinate" },
+                    { "name": "y", "type": "number", "description": "Y coordinate" },
+                    { "name": "width", "type": "number", "description": "Rectangle width" },
+                    { "name": "height", "type": "number", "description": "Rectangle height" }
                 ],
                 "description": "Rectangle."
             },
