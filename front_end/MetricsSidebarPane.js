@@ -162,7 +162,7 @@ WebInspector.MetricsSidebarPane.prototype = {
         function getContentAreaWidthPx(style)
         {
             var width = style.getPropertyValue("width").replace(/px$/, "");
-            if (style.getPropertyValue("box-sizing") === "border-box") {
+            if (!isNaN(width) && style.getPropertyValue("box-sizing") === "border-box") {
                 var borderBox = self._getBox(style, "border");
                 var paddingBox = self._getBox(style, "padding");
 
@@ -175,7 +175,7 @@ WebInspector.MetricsSidebarPane.prototype = {
         function getContentAreaHeightPx(style)
         {
             var height = style.getPropertyValue("height").replace(/px$/, "");
-            if (style.getPropertyValue("box-sizing") === "border-box") {
+            if (!isNaN(height) && style.getPropertyValue("box-sizing") === "border-box") {
                 var borderBox = self._getBox(style, "border");
                 var paddingBox = self._getBox(style, "padding");
 
