@@ -1615,6 +1615,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
             this.treeOutline.childrenListElement.parentElement.removeEventListener("mousedown", consume, false);
             this.updateSelection();
+            this.treeOutline.element.focus();
         }
 
         var config = new WebInspector.EditingConfig(commit.bind(this), dispose.bind(this));
