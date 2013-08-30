@@ -384,10 +384,15 @@ WebInspector.HeapSnapshotLoaderProxy.prototype = {
         this.callMethod(callback, "write", chunk);
     },
 
-    close: function()
+    /**
+     * @param {function()=} callback
+     */
+    close: function(callback)
     {
         function buildSnapshot()
         {
+            if (callback)
+                callback();
             this.callFactoryMethod(updateStaticData.bind(this), "buildSnapshot", this._proxyConstructor, this._snapshotConstructorName);
         }
         function updateStaticData(snapshotProxy)
