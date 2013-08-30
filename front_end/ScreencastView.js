@@ -86,14 +86,11 @@ WebInspector.ScreencastView.prototype = {
     {
         if (this._isCasting)
             return;
-
-        const gutterSize = 30;
-        const bordersSize = 60;
-        var maxWidth = this.element.offsetWidth - bordersSize - gutterSize;
-        var maxHeight = this.element.offsetHeight - bordersSize - gutterSize;
-
         this._isCasting = true;
-        PageAgent.startScreencast("jpeg", 80, maxWidth, maxHeight);
+
+        const maxImageDimension = 800;
+        var dimentions = this._viewportDimensions();
+        PageAgent.startScreencast("jpeg", 80, Math.min(maxImageDimension, dimentions.width), Math.min(maxImageDimension, dimentions.height));
         WebInspector.domAgent.setHighlighter(this);
     },
 
@@ -118,8 +115,10 @@ WebInspector.ScreencastView.prototype = {
         this._viewport = /** type {DOMAgent.Rect} */(event.data.viewport);
 
         const bordersSize = 60;
-        this._viewportElement.style.width = this._imageElement.naturalWidth + bordersSize + "px";
-        this._viewportElement.style.height = this._imageElement.naturalHeight + bordersSize + "px";
+        var dimentions = this._viewportDimensions();
+        this._zoom = Math.min(dimentions.width / this._imageElement.naturalWidth, dimentions.height / this._imageElement.naturalHeight);
+        this._viewportElement.style.width = this._imageElement.naturalWidth * this._zoom + bordersSize + "px";
+        this._viewportElement.style.height = this._imageElement.naturalHeight * this._zoom + bordersSize + "px";
 
         this.highlightDOMNode(this._highlightNodeId, this._highlightConfig);
     },
@@ -255,7 +254,7 @@ WebInspector.ScreencastView.prototype = {
         const gutterSize = 40;
         var canvasX = event.x - gutterSize;
         var canvasY = event.y - gutterSize;
-        var zoom = this._imageElement.naturalWidth / this._viewport.width / this._pageScaleFactor;
+        var zoom = this._canvasElement.offsetWidth / this._viewport.width / this._pageScaleFactor;
 
         position.x = Math.round(canvasX / zoom);
         position.y = Math.round(canvasY / zoom);
@@ -393,7 +392,7 @@ WebInspector.ScreencastView.prototype = {
             this._context.globalCompositeOperation = "destination-over";
         }
 
-        this._context.drawImage(this._imageElement, 0, 0);
+        this._context.drawImage(this._imageElement, 0, 0, this._canvasElement.width, this._canvasElement.height);
         this._context.restore();
     },
 
@@ -546,6 +545,17 @@ WebInspector.ScreencastView.prototype = {
         this._titleElement.removeStyleClass("hidden");
         this._titleElement.style.top = (boxY + 3) + "px";
         this._titleElement.style.left = (boxX + 3) + "px";
+    },
+
+    /**
+     * @return {{width: number, height: number}}
+     */
+    _viewportDimensions: function()
+    {
+        const gutterSize = 30;
+        const bordersSize = 60;
+        return { width: this.element.offsetWidth - bordersSize - gutterSize,
+                 height: this.element.offsetHeight - bordersSize - gutterSize };
     },
 
     __proto__: WebInspector.View.prototype
