@@ -65,7 +65,6 @@ WebInspector.ScreencastView = function()
     this._titleElement.createChild("span", "screencast-px").textContent = "px";
 
     this._imageElement = new Image();
-    this._scale = 0.7;
     this._isCasting = false;
     this._context = this._canvasElement.getContext("2d");
 
@@ -75,24 +74,30 @@ WebInspector.ScreencastView = function()
 WebInspector.ScreencastView.prototype = {
     wasShown: function()
     {
-        this.startCasting();
+        this._startCasting();
     },
 
     willHide: function()
     {
-        this.stopCasting();
+        this._stopCasting();
     },
 
-    startCasting: function()
+    _startCasting: function()
     {
         if (this._isCasting)
             return;
+
+        const gutterSize = 30;
+        const bordersSize = 60;
+        var maxWidth = this.element.offsetWidth - bordersSize - gutterSize;
+        var maxHeight = this.element.offsetHeight - bordersSize - gutterSize;
+
         this._isCasting = true;
-        PageAgent.startScreencast("jpeg", 80, this._scale);
+        PageAgent.startScreencast("jpeg", 80, maxWidth, maxHeight);
         WebInspector.domAgent.setHighlighter(this);
     },
 
-    stopCasting: function()
+    _stopCasting: function()
     {
         if (!this._isCasting)
             return;
@@ -107,15 +112,15 @@ WebInspector.ScreencastView.prototype = {
     _screencastFrame: function(event)
     {
         var base64Data = /** type {string} */(event.data.data);
-        var previousWidth = this._imageElement.naturalWidth;
-        var previousHeight = this._imageElement.naturalHeight;
         this._imageElement.src = "data:image/jpg;base64," + base64Data;
         this._deviceScaleFactor = /** type {number} */(event.data.deviceScaleFactor);
         this._pageScaleFactor = /** type {number} */(event.data.pageScaleFactor);
         this._viewport = /** type {DOMAgent.Rect} */(event.data.viewport);
 
-        if (previousWidth !== this._imageElement.naturalWidth || previousHeight !== this._imageElement.naturalHeight)
-            this.onResize();
+        const bordersSize = 60;
+        this._viewportElement.style.width = this._imageElement.naturalWidth + bordersSize + "px";
+        this._viewportElement.style.height = this._imageElement.naturalHeight + bordersSize + "px";
+
         this.highlightDOMNode(this._highlightNodeId, this._highlightConfig);
     },
 
@@ -248,8 +253,12 @@ WebInspector.ScreencastView.prototype = {
     {
         var position  = {};
         const gutterSize = 40;
-        position.x = Math.round((event.x - gutterSize) / this._scale / this._zoom);
-        position.y = Math.round((event.y - gutterSize) / this._scale / this._zoom);
+        var canvasX = event.x - gutterSize;
+        var canvasY = event.y - gutterSize;
+        var zoom = this._imageElement.naturalWidth / this._viewport.width / this._pageScaleFactor;
+
+        position.x = Math.round(canvasX / zoom);
+        position.y = Math.round(canvasY / zoom);
         return position;
     },
 
@@ -273,27 +282,13 @@ WebInspector.ScreencastView.prototype = {
 
     onResize: function()
     {
-        if (!this._imageElement.naturalWidth)
-            return;
-
-        const gutterSize = 30;
-        const bordersSize = 60;
-        var ratio = this._imageElement.naturalWidth / this._imageElement.naturalHeight;
-        var maxWidth = this.element.offsetWidth - bordersSize - gutterSize;
-        var maxHeight = this.element.offsetHeight - bordersSize - gutterSize;
-        var width;
-        var height;
-        if (maxWidth > ratio * maxHeight) {
-            width = ratio * maxHeight;
-            height = maxHeight;
-        } else {
-            width = maxWidth;
-            height = maxWidth / ratio;
+        if (this._deferredCasting) {
+            clearTimeout(this._deferredCasting);
+            delete this._deferredCasting;
         }
-        this._viewportElement.style.width = width + bordersSize + "px";
-        this._viewportElement.style.height = height + bordersSize + "px";
-        this._repaint();
-        this._zoom = this._canvasElement.offsetWidth / this._imageElement.naturalWidth;
+
+        this._stopCasting();
+        this._deferredCasting = setTimeout(this._startCasting.bind(this), 100);
     },
 
     /**
@@ -398,7 +393,7 @@ WebInspector.ScreencastView.prototype = {
             this._context.globalCompositeOperation = "destination-over";
         }
 
-        this._context.drawImage(this._imageElement, 0, 0, this._canvasElement.offsetWidth, this._canvasElement.offsetHeight);
+        this._context.drawImage(this._imageElement, 0, 0);
         this._context.restore();
     },
 

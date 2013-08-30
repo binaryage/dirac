@@ -417,7 +417,8 @@
                 "parameters": [
                     { "name": "format", "type": "string", "optional": true, "enum": ["jpeg", "png"], "description": "Image compression format." },
                     { "name": "quality", "type": "integer", "optional": true, "description": "Compression quality from range [0..100]." },
-                    { "name": "scale", "type": "number", "optional": true, "description": "Image scale from range [0..1]." }
+                    { "name": "maxWidth", "type": "integer", "optional": true, "description": "Maximum screenshot width." },
+                    { "name": "maxHeight", "type": "integer", "optional": true, "description": "Maximum screenshot height." }
                 ],
                 "returns": [
                     { "name": "data", "type": "string", "description": "Base64-encoded image data (PNG)." },
@@ -432,7 +433,8 @@
                 "parameters": [
                     { "name": "format", "type": "string", "optional": true, "enum": ["jpeg", "png"], "description": "Image compression format." },
                     { "name": "quality", "type": "integer", "optional": true, "description": "Compression quality from range [0..100]." },
-                    { "name": "scale", "type": "number", "optional": true, "description": "Image scale from range [0..1]." }
+                    { "name": "maxWidth", "type": "integer", "optional": true, "description": "Maximum screenshot width." },
+                    { "name": "maxHeight", "type": "integer", "optional": true, "description": "Maximum screenshot height." }
                 ],
                 "hidden": true
             },
@@ -3804,7 +3806,7 @@
                     { "name": "timestamp", "type": "number", "optional": true, "description": "Time at which the event occurred. Measured in UTC time in seconds since January 1, 1970 (default: current time)." },
                     { "name": "button", "type": "string", "enum": ["none", "left", "middle", "right"], "optional": true, "description": "Mouse button (default: \"none\")." },
                     { "name": "clickCount", "type": "integer", "optional": true, "description": "Number of times the mouse button was clicked (default: 0)." },
-                    { "name": "deviceSpace", "type": "boolean", "optional": true, "hidden": true, "description": "If true, x and y are given in device pixels wrt current viewport." }
+                    { "name": "deviceSpace", "type": "boolean", "optional": true, "hidden": true, "description": "If true, x and y are given in dip wrt current viewport." }
                 ],
                 "description": "Dispatches a mouse event to the page."
             },
