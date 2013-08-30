@@ -478,7 +478,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     copyRange: function(textRange)
     {
-        var pos = this._toPos(textRange);
+        var pos = this._toPos(textRange.normalize());
         return this._codeMirror.getRange(pos.start, pos.end);
     },
 

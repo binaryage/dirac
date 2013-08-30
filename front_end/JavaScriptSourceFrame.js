@@ -247,7 +247,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             return null;
         var mouseLine = textPosition.startLine;
         var mouseColumn = textPosition.startColumn;
-        var textSelection = this.textEditor.selection();
+        var textSelection = this.textEditor.selection().normalize();
         if (textSelection && !textSelection.isEmpty()) {
             if (textSelection.startLine !== textSelection.endLine || textSelection.startLine !== mouseLine || mouseColumn < textSelection.startColumn || mouseColumn > textSelection.endColumn)
                 return null;
