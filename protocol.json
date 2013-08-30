@@ -560,7 +560,9 @@
                     { "name": "data", "type": "string", "description": "Base64-encoded compressed image." },
                     { "name": "deviceScaleFactor", "type": "number", "hidden": true, "optional": true, "description": "Device scale factor." },
                     { "name": "pageScaleFactor", "type": "number", "hidden": true, "optional": true, "description": "Page scale factor." },
-                    { "name": "viewport", "$ref": "DOM.Rect", "hidden": true, "optional": true, "description": "Viewport in CSS pixels." }
+                    { "name": "viewport", "$ref": "DOM.Rect", "hidden": true, "optional": true, "description": "Viewport in CSS pixels." },
+                    { "name": "offsetTop", "type": "number", "hidden": true, "optional": true, "description": "Top offset in DIP." },
+                    { "name": "offsetBottom", "type": "number", "hidden": true, "optional": true, "description": "Bottom offset in DIP." }
                 ],
                 "hidden": true
             }

@@ -113,12 +113,21 @@ WebInspector.ScreencastView.prototype = {
         this._deviceScaleFactor = /** type {number} */(event.data.deviceScaleFactor);
         this._pageScaleFactor = /** type {number} */(event.data.pageScaleFactor);
         this._viewport = /** type {DOMAgent.Rect} */(event.data.viewport);
+        var offsetTop = /** type {number} */(event.data.offsetTop) || 0;
+        var offsetBottom = /** type {number} */(event.data.offsetBottom) || 0;
 
         const bordersSize = 60;
+
+        var screenWidthDIP = this._viewport.width * this._pageScaleFactor;
+        var screenHeightDIP = this._viewport.height * this._pageScaleFactor + offsetTop + offsetBottom;
+
         var dimentions = this._viewportDimensions();
-        this._zoom = Math.min(dimentions.width / this._imageElement.naturalWidth, dimentions.height / this._imageElement.naturalHeight);
-        this._viewportElement.style.width = this._imageElement.naturalWidth * this._zoom + bordersSize + "px";
-        this._viewportElement.style.height = this._imageElement.naturalHeight * this._zoom + bordersSize + "px";
+
+        this._screenZoom = Math.min(dimentions.width / screenWidthDIP, dimentions.height / screenHeightDIP);
+        this._screenOffsetTop = offsetTop;
+        this._viewportElement.style.width = screenWidthDIP * this._screenZoom + bordersSize + "px";
+        this._viewportElement.style.height = screenHeightDIP * this._screenZoom + bordersSize + "px";
+        this._imageZoom = dimentions.width / this._imageElement.naturalWidth;
 
         this.highlightDOMNode(this._highlightNodeId, this._highlightConfig);
     },
@@ -257,7 +266,7 @@ WebInspector.ScreencastView.prototype = {
         var zoom = this._canvasElement.offsetWidth / this._viewport.width / this._pageScaleFactor;
 
         position.x = Math.round(canvasX / zoom);
-        position.y = Math.round(canvasY / zoom);
+        position.y = Math.round(canvasY / zoom - this._screenOffsetTop);
         return position;
     },
 
@@ -341,7 +350,7 @@ WebInspector.ScreencastView.prototype = {
         {
             for (var i = 0; i < quad.length; i += 2) {
                 quad[i] = (quad[i] - this._viewport.x) * scale;
-                quad[i + 1] = (quad[i + 1] - this._viewport.y) * scale;
+                quad[i + 1] = (quad[i + 1] - this._viewport.y) * scale + this._screenOffsetTop * this._screenZoom;
             }
         }
         scaleQuad.call(this, model.content);
@@ -361,6 +370,13 @@ WebInspector.ScreencastView.prototype = {
 
         this._context.save();
         this._context.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+        // Paint top and bottom gutter.
+        this._context.save();
+        this._context.fillStyle = "rgb(150, 150, 150)";
+        this._context.fillRect(0, 0, this._canvasElement.offsetWidth, this._screenOffsetTop * this._screenZoom);
+        this._context.fillRect(0, this._screenOffsetTop * this._screenZoom + this._imageElement.naturalHeight * this._imageZoom, this._canvasElement.offsetWidth, this._canvasElement.offsetHeight);
+        this._context.restore();
 
         if (model && config) {
             this._context.save();
@@ -392,7 +408,8 @@ WebInspector.ScreencastView.prototype = {
             this._context.globalCompositeOperation = "destination-over";
         }
 
-        this._context.drawImage(this._imageElement, 0, 0, this._canvasElement.width, this._canvasElement.height);
+        this._context.drawImage(this._imageElement, 0, this._screenOffsetTop * this._screenZoom, this._imageElement.naturalWidth * this._imageZoom, this._imageElement.naturalHeight * this._imageZoom);
+
         this._context.restore();
     },
 
