@@ -222,6 +222,7 @@ InspectorFrontendHostAPI.prototype.save = function(url, content, forceSaveAs) {}
 InspectorFrontendHostAPI.prototype.close = function(url) {}
 InspectorFrontendHostAPI.prototype.append = function(url, content) {}
 InspectorFrontendHostAPI.prototype.sendMessageToBackend = function(message) {}
+InspectorFrontendHostAPI.prototype.sendMessageToEmbedder = function(message) {}
 InspectorFrontendHostAPI.prototype.recordActionTaken = function(actionCode) {}
 InspectorFrontendHostAPI.prototype.recordPanelShown = function(panelCode) {}
 InspectorFrontendHostAPI.prototype.recordSettingChanged = function(settingCode) {}

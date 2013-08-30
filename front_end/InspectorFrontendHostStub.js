@@ -182,6 +182,10 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     {
     },
 
+    sendMessageToEmbedder: function(message)
+    {
+    },
+
     recordActionTaken: function(actionCode)
     {
     },
