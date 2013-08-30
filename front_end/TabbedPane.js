@@ -819,8 +819,12 @@ WebInspector.TabbedPaneTab.prototype = {
      */
     _tabClicked: function(event)
     {
-        if (this._closeable && (event.button === 1 || event.target.hasStyleClass("close-button-gray")))
-            this._closeTabs([this.id]);
+        var middleButton = event.button === 1;
+        var shouldClose = this._closeable && (middleButton || event.target.hasStyleClass("close-button-gray"));
+        if (!shouldClose)
+            return;
+        this._closeTabs([this.id]);
+        event.consume(true);
     },
 
     /**
