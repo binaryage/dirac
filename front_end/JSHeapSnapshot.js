@@ -30,9 +30,10 @@
 
 /**
  * @constructor
+ * @param{WebInspector.HeapSnapshotProgress} progress
  * @extends {WebInspector.HeapSnapshot}
  */
-WebInspector.JSHeapSnapshot = function(profile)
+WebInspector.JSHeapSnapshot = function(profile, progress)
 {
     this._nodeFlags = { // bit flags
         canBeQueried: 1,
@@ -42,7 +43,7 @@ WebInspector.JSHeapSnapshot = function(profile)
         visitedMarkerMask: 0x0ffff, // bits: 0,1111,1111,1111,1111
         visitedMarker:     0x10000  // bits: 1,0000,0000,0000,0000
     };
-    WebInspector.HeapSnapshot.call(this, profile);
+    WebInspector.HeapSnapshot.call(this, profile, progress);
 }
 
 WebInspector.JSHeapSnapshot.prototype = {
