@@ -89,8 +89,8 @@ WebInspector.ScreencastView.prototype = {
         this._isCasting = true;
 
         const maxImageDimension = 800;
-        var dimentions = this._viewportDimensions();
-        PageAgent.startScreencast("jpeg", 80, Math.min(maxImageDimension, dimentions.width), Math.min(maxImageDimension, dimentions.height));
+        var dimensions = this._viewportDimensions();
+        PageAgent.startScreencast("jpeg", 80, Math.min(maxImageDimension, dimensions.width), Math.min(maxImageDimension, dimensions.height));
         WebInspector.domAgent.setHighlighter(this);
     },
 
@@ -121,13 +121,12 @@ WebInspector.ScreencastView.prototype = {
         var screenWidthDIP = this._viewport.width * this._pageScaleFactor;
         var screenHeightDIP = this._viewport.height * this._pageScaleFactor + offsetTop + offsetBottom;
 
-        var dimentions = this._viewportDimensions();
-
-        this._screenZoom = Math.min(dimentions.width / screenWidthDIP, dimentions.height / screenHeightDIP);
+        var dimensions = this._viewportDimensions();
+        this._screenZoom = Math.min(dimensions.width / screenWidthDIP, dimensions.height / screenHeightDIP);
         this._screenOffsetTop = offsetTop;
         this._viewportElement.style.width = screenWidthDIP * this._screenZoom + bordersSize + "px";
         this._viewportElement.style.height = screenHeightDIP * this._screenZoom + bordersSize + "px";
-        this._imageZoom = dimentions.width / this._imageElement.naturalWidth;
+        this._imageZoom = this._canvasElement.offsetWidth / this._imageElement.naturalWidth;
 
         this.highlightDOMNode(this._highlightNodeId, this._highlightConfig);
     },
@@ -137,32 +136,27 @@ WebInspector.ScreencastView.prototype = {
      */
     _handleMouseEvent: function(event)
     {
-        if (!WebInspector.inspectElementModeController.enabled()) {
+        if (!this._inspectModeConfig) {
             this._simulateTouchGestureForMouseEvent(event);
-            this._canvasElement.focus();
-            event.consume(true);
             return;
-        }
-        var type;
-        switch (event.type) {
-        case "mousedown": type = "mousePressed"; break;
-        case "mouseup": type = "mouseReleased"; break;
-        case "mousemove": type = "mouseMoved"; break;
-        default: return;
-        }
-        var button;
-        switch (event.which) {
-        case 0: button = "none"; break;
-        case 1: button = "left"; break;
-        case 2: button = "middle"; break;
-        case 3: button = "right"; break;
-        default: return;
         }
 
         var position = this._convertIntoScreenSpace(event);
-        InputAgent.dispatchMouseEvent(type, position.x, position.y, this._modifiersForEvent(event), event.timeStamp / 1000, button, event.detail, true);
-        this._canvasElement.focus();
-        event.consume(true);
+        DOMAgent.getNodeForLocation(position.x / this._pageScaleFactor, position.y / this._pageScaleFactor, callback.bind(this));
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {number} nodeId
+         */
+        function callback(error, nodeId)
+        {
+            if (error)
+                return;
+            if (event.type === "mousemove")
+                this.highlightDOMNode(nodeId, this._inspectModeConfig);
+            else if (event.type === "click")
+                WebInspector.domAgent.dispatchEventToListeners(WebInspector.DOMAgent.Events.InspectNodeRequested, nodeId);
+        }
     },
 
     /**
@@ -573,6 +567,19 @@ WebInspector.ScreencastView.prototype = {
         const bordersSize = 60;
         return { width: this.element.offsetWidth - bordersSize - gutterSize,
                  height: this.element.offsetHeight - bordersSize - gutterSize };
+    },
+
+
+    /**
+     * @param {boolean} enabled
+     * @param {boolean} inspectShadowDOM
+     * @param {DOMAgent.HighlightConfig} config
+     * @param {function(?Protocol.Error)} callback
+     */
+    setInspectModeEnabled: function(enabled, inspectShadowDOM, config, callback)
+    {
+        this._inspectModeConfig = enabled ? config : null;
+        callback(null);
     },
 
     __proto__: WebInspector.View.prototype

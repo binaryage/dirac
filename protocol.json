@@ -2162,6 +2162,18 @@
                 ],
                 "description": "Returns boxes for the currently selected nodes.",
                 "hidden": true
+            },
+            {
+                "name": "getNodeForLocation",
+                "parameters": [
+                    { "name": "x", "type": "integer", "description": "X coordinate." },
+                    { "name": "y", "type": "integer", "description": "Y coordinate." }
+                ],
+                "returns": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node at given coordinates." }
+                ],
+                "description": "Returns node id at given location.",
+                "hidden": true
             }
         ],
         "events": [

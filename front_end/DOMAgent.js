@@ -1320,7 +1320,11 @@ WebInspector.DOMAgent.prototype = {
      */
     setInspectModeEnabled: function(enabled, inspectShadowDOM, callback)
     {
-        this._dispatchWhenDocumentAvailable(DOMAgent.setInspectModeEnabled.bind(DOMAgent, enabled, inspectShadowDOM, this._buildHighlightConfig()), callback);
+        function onDocumentAvailable()
+        {
+            this._highlighter.setInspectModeEnabled(enabled, inspectShadowDOM, this._buildHighlightConfig(), callback);
+        }
+        this.requestDocument(onDocumentAvailable.bind(this));
     },
 
     /**
@@ -1579,7 +1583,15 @@ WebInspector.DOMNodeHighlighter.prototype = {
      * @param {?DOMAgent.HighlightConfig} config
      * @param {RuntimeAgent.RemoteObjectId=} objectId
      */
-    highlightDOMNode: function(nodeId, config, objectId) {}
+    highlightDOMNode: function(nodeId, config, objectId) {},
+
+    /**
+     * @param {boolean} enabled
+     * @param {boolean} inspectShadowDOM
+     * @param {DOMAgent.HighlightConfig} config
+     * @param {function(?Protocol.Error)} callback
+     */
+    setInspectModeEnabled: function(enabled, inspectShadowDOM, config, callback) {}
 }
 
 /**
@@ -1601,6 +1613,17 @@ WebInspector.DefaultDOMNodeHighlighter.prototype = {
             DOMAgent.highlightNode(config, objectId ? undefined : nodeId, objectId);
         else
             DOMAgent.hideHighlight();
+    },
+
+    /**
+     * @param {boolean} enabled
+     * @param {boolean} inspectShadowDOM
+     * @param {DOMAgent.HighlightConfig} config
+     * @param {function(?Protocol.Error)} callback
+     */
+    setInspectModeEnabled: function(enabled, inspectShadowDOM, config, callback)
+    {
+        DOMAgent.setInspectModeEnabled(enabled, inspectShadowDOM, config, callback);
     }
 }
 
