@@ -304,51 +304,6 @@ var WebInspector = {
     {
         // Create scripts panel upon demand.
         WebInspector.panel("scripts");
-    },
-
-    _setupTethering: function()
-    {
-        if (!this._portForwardings) {
-            this._portForwardings = {};
-            WebInspector.settings.portForwardings.addChangeListener(this._setupTethering.bind(this));
-        }
-        var entries = WebInspector.settings.portForwardings.get();
-        var newForwardings = {};
-        for (var i = 0; i < entries.length; ++i)
-            newForwardings[entries[i].port] = entries[i].location;
-
-        for (var port in this._portForwardings) {
-            if (!newForwardings[port])
-                unbind(port);
-        }
-
-        for (var port in newForwardings) {
-            if (this._portForwardings[port] && newForwardings[port] === this._portForwardings[port])
-                continue;
-            if (this._portForwardings[port])
-              unbind(port);
-            bind(port, newForwardings[port]);
-        }
-        this._portForwardings = newForwardings;
-
-        /**
-         * @param {string} port
-         * @param {string} location
-         */
-        function bind(port, location)
-        {
-            var command = { method: "Tethering.bind", params: { port: parseInt(port, 10), location: location }, id: InspectorBackend.nextCallbackId() };
-            InspectorBackend.sendMessageObjectToBackend(command);
-        }
-
-        /**
-         * @param {string} port
-         */
-        function unbind(port)
-        {
-            var command = { method: "Tethering.unbind", params: { port: parseInt(port, 10) }, id: InspectorBackend.nextCallbackId() };
-            InspectorBackend.sendMessageObjectToBackend(command);
-        }
     }
 }
 
@@ -582,9 +537,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     WebInspector.WorkerManager.loadCompleted();
     InspectorFrontendAPI.loadCompleted();
-
-    if (WebInspector.experimentsSettings.tethering.isEnabled())
-        this._setupTethering();
 
     if (WebInspector.queryParamsObject["remoteFrontend"] && WebInspector.experimentsSettings.screencast.isEnabled()) {
         WebInspector._splitView = new WebInspector.SplitView(true, "screencastSplitView");

@@ -470,27 +470,6 @@ body.platform-mac .help-content input[type=radio] {
     color: red;
 }
 
-.tethering-help-info {
-    padding-bottom: 5px;
-}
-
-.tethering-help-title-left {
-    padding-top: 20px;
-    display: inline-block;
-    width: 100px;
-}
-
-
-.tethering-help-title-right {
-    padding-top: 20px;
-    display: inline-block;
-}
-
-.settings-tab .workspace-settings-row input.tethering-port-input {
-    width: 80px;
-    margin-right: 20px;
-}
-
 .settings-tab .text-button {
     background-image: -webkit-linear-gradient(hsl(0, 0%, 93%), hsl(0, 0%, 93%) 38%, hsl(0, 0%, 87%));
     border: 1px solid hsla(0, 0%, 0%, 0.25);
