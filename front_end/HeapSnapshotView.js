@@ -1237,22 +1237,11 @@ WebInspector.HeapProfileHeader.prototype = {
         {
             this.sidebarElement.wait = event.data;
         }
-        var worker = new WebInspector.HeapSnapshotWorkerProxy(this._handleWorkerEvent.bind(this));
+        var worker = new WebInspector.HeapSnapshotWorker();
         worker.addEventListener("wait", setProfileWait, this);
         var loaderProxy = worker.createLoader(this.snapshotConstructorName(), this.snapshotProxyConstructor());
         loaderProxy.addConsumer(this._snapshotReceived.bind(this));
         this._receiver = loaderProxy;
-    },
-
-    /**
-     * @param{string} eventName
-     * @param{*} data
-     */
-    _handleWorkerEvent: function(eventName, data)
-    {
-        if (WebInspector.HeapSnapshotProgress.Event.Update !== eventName)
-            return;
-        this._updateSubtitle(data);
     },
 
     /**
@@ -1296,7 +1285,7 @@ WebInspector.HeapProfileHeader.prototype = {
         if (snapshotProxy)
             this._snapshotProxy = snapshotProxy;
         this._didCompleteSnapshotTransfer();
-        var worker = /** @type {WebInspector.HeapSnapshotWorkerProxy} */ (this._snapshotProxy.worker);
+        var worker = /** @type {WebInspector.HeapSnapshotWorker} */ (this._snapshotProxy.worker);
         this.isTemporary = false;
         worker.startCheckingForLongRunningCalls();
         this.notifySnapshotReceived();
@@ -1412,6 +1401,8 @@ WebInspector.SnapshotTransferHandler.prototype = {
 
     _updateProgress: function(value, total)
     {
+        var percentValue = ((total ? (value / total) : 0) * 100).toFixed(0);
+        this._header._updateSubtitle(WebInspector.UIString(this._title, percentValue));
     }
 }
 
@@ -1432,8 +1423,7 @@ WebInspector.SaveSnapshotHandler = function(header)
 WebInspector.SaveSnapshotHandler.prototype = {
     _updateProgress: function(value, total)
     {
-        var percentValue = ((total ? (value / total) : 0) * 100).toFixed(0);
-        this._header._updateSubtitle(WebInspector.UIString(this._title, percentValue));
+        WebInspector.SnapshotTransferHandler.prototype._updateProgress.call(this, value, total);
         if (value === total) {
             this._header._receiver.close();
             this._header._didCompleteSnapshotTransfer();
@@ -1465,6 +1455,7 @@ WebInspector.BackendSnapshotLoader.prototype = {
     _didFinishTransfer: function()
     {
         console.assert(this._totalNumberOfChunks === this._savedChunks, "Not all chunks were transfered.");
+        this._header._updateSubtitle(WebInspector.UIString("Parsing\u2026"));
     },
 
     __proto__: WebInspector.SnapshotTransferHandler.prototype
@@ -1490,10 +1481,13 @@ WebInspector.HeapSnapshotLoadFromFileDelegate.prototype = {
      */
     onChunkTransferred: function(reader)
     {
+        var percentValue = ((reader.loadedSize() / reader.fileSize()) * 100).toFixed(0);
+        this._snapshotHeader._updateSubtitle(WebInspector.UIString("Loading\u2026 %d\%", percentValue));
     },
 
     onTransferFinished: function()
     {
+        this._snapshotHeader._updateSubtitle(WebInspector.UIString("Parsing\u2026"));
     },
 
     /**
@@ -1503,15 +1497,15 @@ WebInspector.HeapSnapshotLoadFromFileDelegate.prototype = {
     {
         switch(e.target.error.code) {
         case e.target.error.NOT_FOUND_ERR:
-            this._snapshotHeader._updateSubtitle(WebInspector.UIString("'%s' not found.", reader.fileName()));
+            this._snapshotHeader.sidebarElement.subtitle = WebInspector.UIString("'%s' not found.", reader.fileName());
         break;
         case e.target.error.NOT_READABLE_ERR:
-            this._snapshotHeader._updateSubtitle(WebInspector.UIString("'%s' is not readable", reader.fileName()));
+            this._snapshotHeader.sidebarElement.subtitle = WebInspector.UIString("'%s' is not readable", reader.fileName());
         break;
         case e.target.error.ABORT_ERR:
             break;
         default:
-            this._snapshotHeader._updateSubtitle(WebInspector.UIString("'%s' error %d", reader.fileName(), e.target.error.code));
+            this._snapshotHeader.sidebarElement.subtitle = WebInspector.UIString("'%s' error %d", reader.fileName(), e.target.error.code);
         }
     }
 }

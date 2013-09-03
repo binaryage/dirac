@@ -162,12 +162,10 @@ WebInspector.HeapSnapshotFakeWorker.prototype = {
 
 /**
  * @constructor
- * @param {function(string, *)} eventHandler
  * @extends {WebInspector.Object}
  */
-WebInspector.HeapSnapshotWorkerProxy = function(eventHandler)
+WebInspector.HeapSnapshotWorker = function()
 {
-    this._eventHandler = eventHandler;
     this._nextObjectId = 1;
     this._nextCallId = 1;
     this._callbacks = [];
@@ -177,7 +175,7 @@ WebInspector.HeapSnapshotWorkerProxy = function(eventHandler)
     this._worker.addEventListener("message", this._messageReceived, this);
 }
 
-WebInspector.HeapSnapshotWorkerProxy.prototype = {
+WebInspector.HeapSnapshotWorker.prototype = {
     createLoader: function(snapshotConstructorName, proxyConstructor)
     {
         var objectId = this._nextObjectId++;
@@ -268,15 +266,10 @@ WebInspector.HeapSnapshotWorkerProxy.prototype = {
     _messageReceived: function(event)
     {
         var data = event.data;
-        if (data.eventName) {
-            if (this._eventHandler)
-                this._eventHandler(data.eventName, data.data);
-            return;
-        }
-        if (data.error) {
-            if (data.errorMethodName)
-                WebInspector.log(WebInspector.UIString("An error happened when a call for method '%s' was requested", data.errorMethodName));
-            WebInspector.log(data.errorCallStack);
+        if (event.data.error) {
+            if (event.data.errorMethodName)
+                WebInspector.log(WebInspector.UIString("An error happened when a call for method '%s' was requested", event.data.errorMethodName));
+            WebInspector.log(event.data.errorCallStack);
             delete this._callbacks[data.callId];
             return;
         }
@@ -516,6 +509,24 @@ WebInspector.HeapSnapshotProxy.prototype = {
     __proto__: WebInspector.HeapSnapshotProxyObject.prototype
 }
 
+
+/**
+ * @constructor
+ * @extends {WebInspector.HeapSnapshotProxy}
+ */
+WebInspector.NativeHeapSnapshotProxy = function(worker, objectId)
+{
+    WebInspector.HeapSnapshotProxy.call(this, worker, objectId);
+}
+
+WebInspector.NativeHeapSnapshotProxy.prototype = {
+    images: function(callback)
+    {
+        this.callMethod(callback, "images");
+    },
+
+    __proto__: WebInspector.HeapSnapshotProxy.prototype
+}
 
 /**
  * @constructor
