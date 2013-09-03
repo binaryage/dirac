@@ -75,6 +75,9 @@ WebInspector.ConsoleModel.prototype = {
      */
     addMessage: function(msg, isFromBackend)
     {
+        if (isFromBackend && WebInspector.SourceMap.hasSourceMapRequestHeader(msg.request()))
+            return;
+
         msg.index = this.messages.length;
         this.messages.push(msg);
         this._incrementErrorWarningCount(msg);
