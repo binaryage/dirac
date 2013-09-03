@@ -40,7 +40,7 @@ WebInspector.ScreencastView = function()
 
     this.element.addStyleClass("fill");
     this.element.addStyleClass("screencast");
-    this._viewportElement = this.element.createChild("div", "screencast-viewport");
+    this._viewportElement = this.element.createChild("div", "screencast-viewport hidden");
     this._canvasElement = this._viewportElement.createChild("canvas");
     this._canvasElement.tabIndex = 1;
     this._canvasElement.addEventListener("mousedown", this._handleMouseEvent.bind(this), false);
@@ -67,9 +67,12 @@ WebInspector.ScreencastView = function()
     this._imageElement = new Image();
     this._isCasting = false;
     this._context = this._canvasElement.getContext("2d");
+    this._checkerboardPattern = this._createCheckerboardPattern(this._context);
 
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
 }
+
+WebInspector.ScreencastView._bordersSize = 40;
 
 WebInspector.ScreencastView.prototype = {
     wasShown: function()
@@ -113,22 +116,34 @@ WebInspector.ScreencastView.prototype = {
         this._deviceScaleFactor = /** type {number} */(event.data.deviceScaleFactor);
         this._pageScaleFactor = /** type {number} */(event.data.pageScaleFactor);
         this._viewport = /** type {DOMAgent.Rect} */(event.data.viewport);
+        if (!this._viewport)
+            return;
         var offsetTop = /** type {number} */(event.data.offsetTop) || 0;
         var offsetBottom = /** type {number} */(event.data.offsetBottom) || 0;
 
-        const bordersSize = 60;
 
         var screenWidthDIP = this._viewport.width * this._pageScaleFactor;
         var screenHeightDIP = this._viewport.height * this._pageScaleFactor + offsetTop + offsetBottom;
+        this._screenOffsetTop = offsetTop;
+        this._resizeViewport(screenWidthDIP, screenHeightDIP);
 
+        this._imageZoom = this._imageElement.naturalWidth ? this._canvasElement.offsetWidth / this._imageElement.naturalWidth : 1;
+        this.highlightDOMNode(this._highlightNodeId, this._highlightConfig);
+    },
+
+    /**
+     * @param {number} screenWidthDIP
+     * @param {number} screenHeightDIP
+     */
+    _resizeViewport: function(screenWidthDIP, screenHeightDIP)
+    {
         var dimensions = this._viewportDimensions();
         this._screenZoom = Math.min(dimensions.width / screenWidthDIP, dimensions.height / screenHeightDIP);
-        this._screenOffsetTop = offsetTop;
+
+        var bordersSize = WebInspector.ScreencastView._bordersSize;
+        this._viewportElement.removeStyleClass("hidden");
         this._viewportElement.style.width = screenWidthDIP * this._screenZoom + bordersSize + "px";
         this._viewportElement.style.height = screenHeightDIP * this._screenZoom + bordersSize + "px";
-        this._imageZoom = this._canvasElement.offsetWidth / this._imageElement.naturalWidth;
-
-        this.highlightDOMNode(this._highlightNodeId, this._highlightConfig);
     },
 
     /**
@@ -136,7 +151,10 @@ WebInspector.ScreencastView.prototype = {
      */
     _handleMouseEvent: function(event)
     {
-        if (!this._inspectModeConfig) {
+        if (!this._viewport)
+            return;
+
+        if (!this._inspectModeConfig || event.type === "mousewheel") {
             this._simulateTouchGestureForMouseEvent(event);
             return;
         }
@@ -253,14 +271,10 @@ WebInspector.ScreencastView.prototype = {
      */
     _convertIntoScreenSpace: function(event)
     {
-        var position  = {};
-        const gutterSize = 40;
-        var canvasX = event.x - gutterSize;
-        var canvasY = event.y - gutterSize;
         var zoom = this._canvasElement.offsetWidth / this._viewport.width / this._pageScaleFactor;
-
-        position.x = Math.round(canvasX / zoom);
-        position.y = Math.round(canvasY / zoom - this._screenOffsetTop);
+        var position  = {};
+        position.x = Math.round(event.offsetX / zoom);
+        position.y = Math.round(event.offsetY / zoom - this._screenOffsetTop);
         return position;
     },
 
@@ -367,7 +381,7 @@ WebInspector.ScreencastView.prototype = {
 
         // Paint top and bottom gutter.
         this._context.save();
-        this._context.fillStyle = "rgb(150, 150, 150)";
+        this._context.fillStyle = this._checkerboardPattern;
         this._context.fillRect(0, 0, this._canvasElement.offsetWidth, this._screenOffsetTop * this._screenZoom);
         this._context.fillRect(0, this._screenOffsetTop * this._screenZoom + this._imageElement.naturalHeight * this._imageZoom, this._canvasElement.offsetWidth, this._canvasElement.offsetHeight);
         this._context.restore();
@@ -564,11 +578,10 @@ WebInspector.ScreencastView.prototype = {
     _viewportDimensions: function()
     {
         const gutterSize = 30;
-        const bordersSize = 60;
+        const bordersSize = WebInspector.ScreencastView._bordersSize;
         return { width: this.element.offsetWidth - bordersSize - gutterSize,
                  height: this.element.offsetHeight - bordersSize - gutterSize };
     },
-
 
     /**
      * @param {boolean} enabled
@@ -580,6 +593,26 @@ WebInspector.ScreencastView.prototype = {
     {
         this._inspectModeConfig = enabled ? config : null;
         callback(null);
+    },
+
+    /**
+     * @param {CanvasRenderingContext2D} context
+     */
+    _createCheckerboardPattern: function(context)
+    {
+        var pattern = /** @type {HTMLCanvasElement} */(document.createElement("canvas"));
+        const size = 32;
+        pattern.width = size * 2;
+        pattern.height = size * 2;
+        var pctx = pattern.getContext("2d");
+
+        pctx.fillStyle = "rgb(195, 195, 195)";
+        pctx.fillRect(0, 0, size * 2, size * 2);
+
+        pctx.fillStyle = "rgb(225, 225, 225)";
+        pctx.fillRect(0, 0, size, size);
+        pctx.fillRect(size, size, size, size);
+        return context.createPattern(pattern, "repeat");
     },
 
     __proto__: WebInspector.View.prototype

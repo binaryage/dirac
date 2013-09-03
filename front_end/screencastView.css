@@ -30,7 +30,7 @@
 
 .screencast-viewport {
     margin: 10px;
-    border: 30px solid black;
+    border: 20px solid #333;
     border-radius: 20px;
     position: relative;
 }
