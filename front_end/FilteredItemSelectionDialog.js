@@ -65,6 +65,8 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
     this._delegate = delegate;
     this._delegate.setRefreshCallback(this._itemsLoaded.bind(this));
     this._itemsLoaded();
+
+    this._shouldShowMatchingItems = true;
 }
 
 WebInspector.FilteredItemSelectionDialog.prototype = {
@@ -80,12 +82,14 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         var height = Math.max(relativeToElement.offsetHeight * 2 / 3, minHeight);
 
         this.element.style.width = width + "px";
-        this.element.style.height = height + "px";
 
         const shadowPadding = 20; // shadow + padding
         element.positionAt(
             relativeToElement.totalOffsetLeft() + Math.max((relativeToElement.offsetWidth - width - 2 * shadowPadding) / 2, shadowPadding),
             relativeToElement.totalOffsetTop() + Math.max((relativeToElement.offsetHeight - height - 2 * shadowPadding) / 2, shadowPadding));
+        this._dialogHeight = height;
+
+        this._updateShowMatchingItems();
     },
 
     focus: function()
@@ -245,7 +249,15 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
 
     _onInput: function(event)
     {
+        this._shouldShowMatchingItems = this._delegate.shouldShowMatchingItems(this._promptElement.value);
+        this._updateShowMatchingItems();
         this._scheduleFilter();
+    },
+
+    _updateShowMatchingItems: function()
+    {
+        this._itemElementsContainer.enableStyleClass("hidden", !this._shouldShowMatchingItems);
+        this.element.style.height = this._shouldShowMatchingItems ? this._dialogHeight + "px" : "auto";
     },
 
     _onKeyDown: function(event)
@@ -349,6 +361,15 @@ WebInspector.SelectionDialogContentProvider.prototype = {
     setRefreshCallback: function(refreshCallback)
     {
         this._refreshCallback = refreshCallback;
+    },
+
+    /**
+     * @param {string} query
+     * @return {boolean}
+     */
+    shouldShowMatchingItems: function(query)
+    {
+        return true;
     },
 
     /**
@@ -686,6 +707,12 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
      */
     selectItem: function(itemIndex, promptValue)
     {
+        if (/^:\d+$/.test(promptValue.trimRight())) {
+            var lineNumber = parseInt(promptValue.trimRight().substring(1), 10) - 1;
+            if (!isNaN(lineNumber) && lineNumber >= 0)
+                this.uiSourceCodeSelected(null, lineNumber);
+            return;
+        }
         var lineNumberMatch = promptValue.match(/[^:]+\:([\d]*)$/);
         var lineNumber = lineNumberMatch ? Math.max(parseInt(lineNumberMatch[1], 10) - 1, 0) : undefined;
         this.uiSourceCodeSelected(this._uiSourceCodes[itemIndex], lineNumber);
@@ -740,12 +767,25 @@ WebInspector.OpenResourceDialog = function(panel, defaultScores)
 WebInspector.OpenResourceDialog.prototype = {
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {?WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber
      */
     uiSourceCodeSelected: function(uiSourceCode, lineNumber)
     {
+        if (!uiSourceCode)
+            uiSourceCode = this._panel.currentUISourceCode();
+        if (!uiSourceCode)
+            return;
         this._panel.showUISourceCode(uiSourceCode, lineNumber);
+    },
+
+    /**
+     * @param {string} query
+     * @return {boolean}
+     */
+    shouldShowMatchingItems: function(query)
+    {
+        return !query.startsWith(":");
     },
 
     /**

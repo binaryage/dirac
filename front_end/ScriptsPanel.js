@@ -419,6 +419,14 @@ WebInspector.ScriptsPanel.prototype = {
     },
 
     /**
+     * @return {?WebInspector.UISourceCode}
+     */
+    currentUISourceCode: function()
+    {
+        return this._currentUISourceCode;
+    },
+
+    /**
      * @param {WebInspector.UILocation} uiLocation
      */
     showUILocation: function(uiLocation)
