@@ -793,6 +793,7 @@
                 "description": "Stack entry for console errors and assertions.",
                 "properties": [
                     { "name": "functionName", "type": "string", "description": "JavaScript function name." },
+                    { "name": "scriptId", "type": "string", "description": "JavaScript script id." },
                     { "name": "url", "type": "string", "description": "JavaScript script name or url." },
                     { "name": "lineNumber", "type": "integer", "description": "JavaScript script line number." },
                     { "name": "columnNumber", "type": "integer", "description": "JavaScript script column number." }

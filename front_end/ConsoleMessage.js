@@ -163,7 +163,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
         }
 
         if (this.source !== WebInspector.ConsoleMessage.MessageSource.Network || this._request) {
-            if (this._stackTrace && this._stackTrace.length && this._stackTrace[0].url) {
+            if (this._stackTrace && this._stackTrace.length && this._stackTrace[0].scriptId) {
                 this._anchorElement = this._linkifyCallFrame(this._stackTrace[0]);
             } else if (this.url && this.url !== "undefined") {
                 this._anchorElement = this._linkifyLocation(this.url, this.line, this.column);
@@ -245,7 +245,11 @@ WebInspector.ConsoleMessageImpl.prototype = {
      */
     _linkifyCallFrame: function(callFrame)
     {
-        return this._linkifyLocation(callFrame.url, callFrame.lineNumber, callFrame.columnNumber);
+        // FIXME(62725): stack trace line/column numbers are one-based.
+        var lineNumber = callFrame.lineNumber ? callFrame.lineNumber - 1 : 0;
+        var columnNumber = callFrame.columnNumber ? callFrame.columnNumber - 1 : 0;
+        var rawLocation = new WebInspector.DebuggerModel.Location(callFrame.scriptId, lineNumber, columnNumber);
+        return this._linkifier.linkifyRawLocation(rawLocation, "console-message-url");
     },
 
     /**
@@ -794,7 +798,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
             messageTextElement.appendChild(document.createTextNode(functionName));
             content.appendChild(messageTextElement);
 
-            if (frame.url) {
+            if (frame.scriptId) {
                 content.appendChild(document.createTextNode(" "));
                 var urlElement = this._linkifyCallFrame(frame);
                 content.appendChild(urlElement);
