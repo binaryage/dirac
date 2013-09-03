@@ -1203,8 +1203,6 @@ WebInspector.HeapProfileHeader.prototype = {
         }
 
         this._numberOfChunks = 0;
-        this._savedChunks = 0;
-        this._savingToFile = false;
         if (!this._receiver) {
             this._setupWorker();
             this._transferHandler = new WebInspector.BackendSnapshotLoader(this);
@@ -1334,17 +1332,13 @@ WebInspector.HeapProfileHeader.prototype = {
      */
     saveToFile: function()
     {
-        this._numberOfChunks = 0;
-
         var fileOutputStream = new WebInspector.FileOutputStream();
         function onOpen()
         {
             this._receiver = fileOutputStream;
-            this._savedChunks = 0;
+            this._transferHandler = new WebInspector.SaveSnapshotHandler(this);
             HeapProfilerAgent.getHeapSnapshot(this.uid);
         }
-        this._transferHandler = new WebInspector.SaveSnapshotHandler(this);
-        this._savingToFile = true;
         this._fileName = this._fileName || "Heap-" + new Date().toISO8601Compact() + this._profileType.fileExtension();
         fileOutputStream.open(this._fileName, onOpen.bind(this));
     },
@@ -1359,8 +1353,6 @@ WebInspector.HeapProfileHeader.prototype = {
         this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026");
         this.sidebarElement.wait = true;
         this._setupWorker();
-        this._numberOfChunks = 0;
-        this._savingToFile = false;
 
         var delegate = new WebInspector.HeapSnapshotLoadFromFileDelegate(this);
         var fileReader = this._createFileReader(file, delegate);
