@@ -197,11 +197,11 @@ String.prototype.compareTo = function(other)
 
 /**
  * @param {string} href
- * @return {string}
+ * @return {?string}
  */
 function sanitizeHref(href)
 {
-    return href && href.trim().toLowerCase().startsWith("javascript:") ? "" : href;
+    return href && href.trim().toLowerCase().startsWith("javascript:") ? null : href;
 }
 
 /**
