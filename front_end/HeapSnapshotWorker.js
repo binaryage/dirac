@@ -36,6 +36,7 @@ importScripts("HeapSnapshotLoader.js");
 importScripts("HeapSnapshotWorkerDispatcher.js");
 importScripts("JSHeapSnapshot.js");
 importScripts("FileUtils.js");
+importScripts("UIString.js");
 importScripts("utilities.js");
 
 function postMessageWrapper(message)
