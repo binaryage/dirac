@@ -254,7 +254,7 @@ WebInspector.NetworkDispatcher.prototype = {
 
     /**
      * @param {NetworkAgent.RequestId} requestId
-     * @param {NetworkAgent.FrameId} frameId
+     * @param {PageAgent.FrameId} frameId
      * @param {NetworkAgent.LoaderId} loaderId
      * @param {string} documentURL
      * @param {NetworkAgent.Request} request
@@ -294,7 +294,7 @@ WebInspector.NetworkDispatcher.prototype = {
 
     /**
      * @param {NetworkAgent.RequestId} requestId
-     * @param {NetworkAgent.FrameId} frameId
+     * @param {PageAgent.FrameId} frameId
      * @param {NetworkAgent.LoaderId} loaderId
      * @param {NetworkAgent.Timestamp} time
      * @param {PageAgent.ResourceType} resourceType
@@ -379,7 +379,7 @@ WebInspector.NetworkDispatcher.prototype = {
 
     /**
      * @param {NetworkAgent.RequestId} requestId
-     * @param {NetworkAgent.FrameId} frameId
+     * @param {PageAgent.FrameId} frameId
      * @param {NetworkAgent.LoaderId} loaderId
      * @param {string} documentURL
      * @param {NetworkAgent.Timestamp} time

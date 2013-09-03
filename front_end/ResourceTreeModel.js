@@ -223,7 +223,7 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {NetworkAgent.FrameId} frameId
+     * @param {PageAgent.FrameId} frameId
      */
     _frameDetached: function(frameId)
     {
@@ -283,7 +283,7 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {NetworkAgent.FrameId} frameId
+     * @param {PageAgent.FrameId} frameId
      * @return {WebInspector.ResourceTreeFrame}
      */
     frameForId: function(frameId)

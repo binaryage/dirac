@@ -35,7 +35,7 @@
  * @param {NetworkAgent.RequestId} requestId
  * @param {string} url
  * @param {string} documentURL
- * @param {NetworkAgent.FrameId} frameId
+ * @param {PageAgent.FrameId} frameId
  * @param {NetworkAgent.LoaderId} loaderId
  */
 WebInspector.NetworkRequest = function(requestId, url, documentURL, frameId, loaderId)
@@ -128,7 +128,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {NetworkAgent.FrameId}
+     * @return {PageAgent.FrameId}
      */
     get frameId()
     {

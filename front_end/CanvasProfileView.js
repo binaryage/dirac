@@ -920,7 +920,7 @@ WebInspector.CanvasProfileType.prototype = {
     },
 
     /**
-     * @param {NetworkAgent.FrameId=} frameId
+     * @param {PageAgent.FrameId=} frameId
      * @param {CanvasAgent.TraceLogId=} traceLogId
      */
     _traceLogsRemoved: function(frameId, traceLogId)
@@ -998,7 +998,7 @@ WebInspector.CanvasDispatcher.prototype = {
     },
 
     /**
-     * @param {NetworkAgent.FrameId=} frameId
+     * @param {PageAgent.FrameId=} frameId
      * @param {CanvasAgent.TraceLogId=} traceLogId
      */
     traceLogsRemoved: function(frameId, traceLogId)
@@ -1014,7 +1014,7 @@ WebInspector.CanvasDispatcher.prototype = {
  * @param {string} title
  * @param {number=} uid
  * @param {CanvasAgent.TraceLogId=} traceLogId
- * @param {NetworkAgent.FrameId=} frameId
+ * @param {PageAgent.FrameId=} frameId
  */
 WebInspector.CanvasProfileHeader = function(type, title, uid, traceLogId, frameId)
 {
@@ -1045,7 +1045,7 @@ WebInspector.CanvasProfileHeader.prototype = {
     },
 
     /**
-     * @return {NetworkAgent.FrameId|undefined}
+     * @return {PageAgent.FrameId|undefined}
      */
     frameId: function()
     {

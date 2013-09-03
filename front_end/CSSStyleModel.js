@@ -475,7 +475,7 @@ WebInspector.CSSStyleModel.prototype = {
 
     /**
      * @param {string} url
-     * @return {Object.<NetworkAgent.FrameId, Array.<CSSAgent.StyleSheetId>>}
+     * @return {Object.<PageAgent.FrameId, Array.<CSSAgent.StyleSheetId>>}
      */
     styleSheetIdsByFrameIdForURL: function(url)
     {
@@ -583,7 +583,7 @@ WebInspector.CSSStyleModel.prototype = {
 
     _resetStyleSheets: function()
     {
-        /** @type {!Object.<string, !Object.<NetworkAgent.FrameId, !Array.<!CSSAgent.StyleSheetId>>>} */
+        /** @type {!Object.<string, !Object.<PageAgent.FrameId, !Array.<!CSSAgent.StyleSheetId>>>} */
         this._styleSheetIdsForURL = {};
         /** @type {!Object.<CSSAgent.StyleSheetId, !WebInspector.CSSStyleSheetHeader>} */
         this._styleSheetIdToHeader = {};

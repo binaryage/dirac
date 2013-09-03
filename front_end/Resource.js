@@ -33,7 +33,7 @@
  * @param {?WebInspector.NetworkRequest} request
  * @param {string} url
  * @param {string} documentURL
- * @param {NetworkAgent.FrameId} frameId
+ * @param {PageAgent.FrameId} frameId
  * @param {NetworkAgent.LoaderId} loaderId
  * @param {WebInspector.ResourceType} type
  * @param {string} mimeType
@@ -99,7 +99,7 @@ WebInspector.Resource.prototype = {
     },
 
     /**
-     * @return {NetworkAgent.FrameId}
+     * @return {PageAgent.FrameId}
      */
     get frameId()
     {
