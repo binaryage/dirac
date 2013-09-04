@@ -52,11 +52,19 @@ WebInspector.LayerTreeModel.prototype = {
     },
 
     /**
-     * @return {WebInspector.Layer}
+     * @return {?WebInspector.Layer}
      */
     root: function()
     {
         return this._root;
+    },
+
+    /**
+     * @return {?WebInspector.Layer}
+     */
+    contentRoot: function()
+    {
+        return this._contentRoot;
     },
 
     /**
@@ -95,6 +103,7 @@ WebInspector.LayerTreeModel.prototype = {
         function onGetLayers(error, layers)
         {
             this._root = null;
+            this._contentRoot = null;
             if (error) {
                 console.error("LayerTreeAgent.getLayers(): " + error);
                 layers = [];
@@ -135,9 +144,14 @@ WebInspector.LayerTreeModel.prototype = {
                 layer = new WebInspector.Layer(payload[i]);
             this._layersById[layer.id()] = layer;
             var parentId = layer.parentId();
-            if (parentId)
-                this._layersById[parentId].addChild(layer);
-            else {
+            if (!this._contentRoot && layer.nodeId())
+                this._contentRoot = layer;
+            if (parentId) {
+                var parent = this._layersById[parentId];
+                if (!parent)
+                    console.assert(parent, "missing parent " + parentId + " for layer " + layer.id());
+                parent.addChild(layer);
+            } else {
                 if (this._root)
                     console.assert(false, "Multiple root layers");
                 this._root = layer;

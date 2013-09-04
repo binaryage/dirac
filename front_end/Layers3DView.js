@@ -130,7 +130,7 @@ WebInspector.Layers3DView.prototype = {
 
     _scaleToFit: function()
     {
-        var root = this._model.root();
+        var root = this._model.contentRoot();
         if (!root)
             return;
         const padding = 40;
@@ -163,7 +163,7 @@ WebInspector.Layers3DView.prototype = {
             this._needsUpdate = true;
             return;
         }
-        if (!this._model.root()) {
+        if (!this._model.contentRoot()) {
             this._emptyView.show(this.element);
             return;
         }
@@ -182,7 +182,7 @@ WebInspector.Layers3DView.prototype = {
         this._clientWidth = this.element.clientWidth;
         this._clientHeight = this.element.clientHeight;
         this._scaleToFit();
-        this._model.forEachLayer(updateLayer.bind(this));
+        this._model.forEachLayer(updateLayer.bind(this), this._model.contentRoot());
         this._needsUpdate = false;
     },
 
@@ -210,15 +210,17 @@ WebInspector.Layers3DView.prototype = {
     {
         var layer = element.__layer;
         var style = element.style;
-        var parentElement = layer.parent() ? this._elementForLayer(layer.parent()) : this._rotatingContainerElement;
+        var isContentRoot = layer === this._model.contentRoot();
+        var parentElement = isContentRoot ? this._rotatingContainerElement : this._elementForLayer(layer.parent());
         element.__depth = (parentElement.__depth || 0) + 1;
         element.enableStyleClass("invisible", layer.invisible());
         this._updateElementColor(element);
         if (parentElement !== element.parentElement)
             parentElement.appendChild(element);
+
         style.width  = layer.width() + "px";
         style.height  = layer.height() + "px";
-        if (layer.isRoot())
+        if (isContentRoot)
             return;
 
         style.left  = layer.offsetX() + "px";

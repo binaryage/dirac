@@ -3868,7 +3868,7 @@
                 "properties": [
                     { "name": "layerId", "$ref": "LayerId", "description": "The unique id for this layer." },
                     { "name": "parentLayerId", "$ref": "LayerId", "optional": true, "description": "The id of parent (not present for root)." },
-                    { "name": "nodeId", "$ref": "DOM.NodeId", "description": "The id for the node associated with this layer." },
+                    { "name": "nodeId", "$ref": "DOM.NodeId", "optional": true, "description": "The id for the node associated with this layer." },
                     { "name": "offsetX", "type": "number", "description": "Offset from parent layer, X coordinate." },
                     { "name": "offsetY", "type": "number", "description": "Offset from parent layer, X coordinate." },
                     { "name": "width", "type": "number", "description": "Layer width." },
