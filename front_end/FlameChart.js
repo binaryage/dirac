@@ -63,7 +63,7 @@ WebInspector.FlameChart = function(cpuProfileView)
     this._minWidth = 2;
     this._paddingLeft = 15;
     this._canvas.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
-    this.element.addEventListener("click", this._onClick.bind(this), false);
+    this._canvas.addEventListener("click", this._onClick.bind(this), false);
     this._linkifier = new WebInspector.Linkifier();
     this._highlightedEntryIndex = -1;
 
@@ -259,9 +259,11 @@ WebInspector.FlameChart.prototype = {
         if (!this._timelineData)
             return false;
         this._isDragging = true;
+        this._wasDragged = false;
         this._dragStartPoint = event.pageX;
         this._dragStartWindowLeft = this._windowLeft;
         this._dragStartWindowRight = this._windowRight;
+
         return true;
     },
 
@@ -280,6 +282,7 @@ WebInspector.FlameChart.prototype = {
             return;
         windowShift = windowRight - this._dragStartWindowRight;
         this._overviewGrid.setWindow(this._dragStartWindowLeft + windowShift, this._dragStartWindowRight + windowShift);
+        this._wasDragged = true;
     },
 
     _endCanvasDragging: function()
@@ -479,6 +482,11 @@ WebInspector.FlameChart.prototype = {
 
     _onClick: function(e)
     {
+        // onClick comes after dragStart and dragEnd events.
+        // So if there was drag (mouse move) in the middle of that events
+        // we skip the click. Otherwise we jump to the sources.
+        if (this._wasDragged)
+            return;
         if (this._highlightedEntryIndex === -1)
             return;
         var node = this._timelineData.entries[this._highlightedEntryIndex].node;
