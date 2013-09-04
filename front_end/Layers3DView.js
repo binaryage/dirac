@@ -128,33 +128,33 @@ WebInspector.Layers3DView.prototype = {
         this._setOutline(WebInspector.Layers3DView.OutlineType.Selected, layer);
     },
 
-    _computeScale: function()
+    _scaleToFit: function()
     {
         var root = this._model.root();
         if (!root)
             return;
         const padding = 40;
-        var scaleX = this.element.clientWidth / (root.width() + 2 * padding);
-        var scaleY = this.element.clientHeight / (root.height() + 2 * padding);
+        var scaleX = this._clientWidth / (root.width() + 2 * padding);
+        var scaleY = this._clientHeight / (root.height() + 2 * padding);
         this._scale = Math.min(scaleX, scaleY);
+
         const screenLayerSpacing = 20;
         this._layerSpacing = Math.ceil(screenLayerSpacing / this._scale) + "px";
-    },
-
-    _applyScale: function()
-    {
-        var root = this._model.root();
-        if (!root)
-            return;
-        var element = this._elementForLayer(root);
-        element.style.webkitTransform = "scale3d(" + this._scale + "," + this._scale + "," + this._scale + ")";
-        element.style.left = ((this.element.clientWidth - root.width() * this._scale) >> 1) + "px";
-        element.style.top = ((this.element.clientHeight - root.height() * this._scale) >> 1) + "px";
         const screenLayerThickness = 4;
         var layerThickness = Math.ceil(screenLayerThickness / this._scale) + "px";
-        this._scaleAdjustmentStylesheet.textContent = ".layer-container .side-wall { height: " + layerThickness + "; width: " + layerThickness + "; } " +
+        var stylesheetContent = ".layer-container .side-wall { height: " + layerThickness + "; width: " + layerThickness + "; } " +
             ".layer-container .back-wall { -webkit-transform: translateZ(-" + layerThickness + "); } " +
             ".layer-container { -webkit-transform: translateZ(" + this._layerSpacing + "); }";
+        // Workaround for double style recalculation upon assignment to style sheet's text content.
+        var stylesheetTextNode = this._scaleAdjustmentStylesheet.firstChild;
+        if (!stylesheetTextNode || stylesheetTextNode.nodeType !== Node.TEXT_NODE || stylesheetTextNode.nextSibling)
+            this._scaleAdjustmentStylesheet.textContent = stylesheetContent;
+        else
+            stylesheetTextNode.nodeValue = stylesheetContent;
+        var element = this._elementForLayer(root);
+        element.style.webkitTransform = "scale3d(" + this._scale + "," + this._scale + "," + this._scale + ")";
+        element.style.left = ((this._clientWidth - root.width() * this._scale) >> 1) + "px";
+        element.style.top = ((this._clientHeight - root.height() * this._scale) >> 1) + "px";
     },
 
     _update: function()
@@ -179,9 +179,10 @@ WebInspector.Layers3DView.prototype = {
                 childElement = nextElement;
             }
         }
-        this._computeScale();
+        this._clientWidth = this.element.clientWidth;
+        this._clientHeight = this.element.clientHeight;
+        this._scaleToFit();
         this._model.forEachLayer(updateLayer.bind(this));
-        this._applyScale();
         this._needsUpdate = false;
     },
 
@@ -212,10 +213,16 @@ WebInspector.Layers3DView.prototype = {
         var parentElement = layer.parent() ? this._elementForLayer(layer.parent()) : this._rotatingContainerElement;
         element.__depth = (parentElement.__depth || 0) + 1;
         element.enableStyleClass("invisible", layer.invisible());
-        style.left  = layer.offsetX() + "px";
-        style.top  = layer.offsetY() + "px";
+        this._updateElementColor(element);
+        if (parentElement !== element.parentElement)
+            parentElement.appendChild(element);
         style.width  = layer.width() + "px";
         style.height  = layer.height() + "px";
+        if (layer.isRoot())
+            return;
+
+        style.left  = layer.offsetX() + "px";
+        style.top  = layer.offsetY() + "px";
         var transform = layer.transform();
         if (transform) {
             function toFixed5(x)
@@ -230,9 +237,6 @@ WebInspector.Layers3DView.prototype = {
             style.webkitTransform = "";
             style.webkitTransformOrigin = "";
         }
-        this._updateElementColor(element);
-        if (parentElement !== element.parentElement)
-            parentElement.appendChild(element);
     },
 
     /**

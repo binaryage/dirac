@@ -196,7 +196,7 @@ WebInspector.Layer.prototype = {
      */
     isRoot: function()
     {
-        return !!this.parentId();
+        return !this.parentId();
     },
 
     /**
