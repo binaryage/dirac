@@ -432,6 +432,7 @@ WebInspector.UISourceCode.prototype = {
             this.history.push(revision);
         }
         this._content = this.history[this.history.length - 1].content;
+        this._hasCommittedChanges = true;
         this._contentLoaded = true;
         this._mimeType = this.canonicalMimeType();
     },

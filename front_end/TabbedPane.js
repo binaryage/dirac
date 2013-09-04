@@ -698,7 +698,7 @@ WebInspector.TabbedPaneTab.prototype = {
         this._iconTooltip = iconTooltip;
         if (this._iconElement)
             this._iconElement.remove();
-        if (this._iconClass)
+        if (this._iconClass && this._tabElement)
             this._iconElement = this._createIconElement(this._tabElement, this._titleElement);
         delete this._measuredWidth;
     },

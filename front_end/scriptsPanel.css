@@ -234,6 +234,10 @@ a.worker-item:hover {
     background-color: rgba(255, 255, 194, 0.5);
 }
 
+.source-frame-unsaved-committed-changes {
+    background-color: rgba(255, 225, 205, 0.40);
+}
+
 .tabbed-pane-placeholder {
     font-size: 14px;
     text-align: center;

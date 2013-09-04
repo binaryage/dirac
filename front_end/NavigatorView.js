@@ -900,7 +900,7 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
             return;
 
         var titleText = this._uiSourceCode.displayName();
-        if (!ignoreIsDirty && this._uiSourceCode.isDirty())
+        if (!ignoreIsDirty && (this._uiSourceCode.isDirty() || this._uiSourceCode.hasUnsavedCommittedChanges()))
             titleText = "*" + titleText;
         this._treeElement.titleText = titleText;
     },
