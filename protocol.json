@@ -116,8 +116,7 @@
                     { "name": "url", "type": "string", "description": "Frame document's URL." },
                     { "name": "securityOrigin", "type": "string", "description": "Frame document's security origin." },
                     { "name": "mimeType", "type": "string", "description": "Frame document's mimeType as determined by the browser." }
-                ],
-                "hidden": true
+                ]
             },
             {
                 "id": "FrameResourceTree",
@@ -489,20 +488,25 @@
                 ]
             },
             {
+                "name": "frameAttached",
+                "description": "Fired when frame has been attached to its parent.",
+                "parameters": [
+                    { "name": "frameId", "$ref": "FrameId", "description": "Id of the frame that has been attached." }
+                ]
+            },
+            {
                 "name": "frameNavigated",
                 "description": "Fired once navigation of the frame has completed. Frame is now associated with the new loader.",
                 "parameters": [
                     { "name": "frame", "$ref": "Frame", "description": "Frame object." }
-                ],
-                "hidden": true
+                ]
             },
             {
                 "name": "frameDetached",
                 "description": "Fired when frame has been detached from its parent.",
                 "parameters": [
                     { "name": "frameId", "$ref": "FrameId", "description": "Id of the frame that has been detached." }
-                ],
-                "hidden": true
+                ]
             },
             {
                 "name": "frameStartedLoading",

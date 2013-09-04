@@ -671,6 +671,10 @@ WebInspector.PageDispatcher.prototype = {
         this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.Load, time);
     },
 
+    frameAttached: function(frameId)
+    {
+    },
+
     frameNavigated: function(frame)
     {
         this._resourceTreeModel._frameNavigated(frame);
