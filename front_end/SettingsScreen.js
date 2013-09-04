@@ -77,6 +77,22 @@ WebInspector.SettingsScreen.regexValidator = function(text)
     return regex ? null : "Invalid pattern";
 }
 
+/**
+ * @param {number} min
+ * @param {number} max
+ * @param {string} text
+ * @return {?string}
+ */
+WebInspector.SettingsScreen.integerValidator = function(min, max, text)
+{
+    var value = parseInt(text, 10);
+    if (isNaN(value))
+        return "Invalid number format";
+    if (value < min || value > max)
+        return "Value is out of range [" + min + ", " + max + "]";
+    return null;
+}
+
 WebInspector.SettingsScreen.Tabs = {
     General: "general",
     Overrides: "overrides",
@@ -402,7 +418,8 @@ WebInspector.GenericSettingsTab = function()
     p.appendChild(checkbox);
 
     fieldset = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.timelineLimitStackFramesFlag);
-    fieldset.appendChild(this._createInputSetting(WebInspector.UIString("Frames to capture"), WebInspector.settings.timelineStackFramesToCapture, true, 2, "2em"));
+    var frameCountValidator = WebInspector.SettingsScreen.integerValidator.bind(this, 0, 99);
+    fieldset.appendChild(this._createInputSetting(WebInspector.UIString("Frames to capture"), WebInspector.settings.timelineStackFramesToCapture, true, 2, "2em", frameCountValidator));
     checkbox.appendChild(fieldset);
 
     p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show CPU activity on the ruler"), WebInspector.settings.showCpuOnTimelineRuler));
