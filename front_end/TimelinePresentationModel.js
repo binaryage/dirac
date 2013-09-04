@@ -650,6 +650,8 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
             this.url = record.data["url"];
         if (record.data["layerRootNode"])
             this._relatedBackendNodeId = record.data["layerRootNode"];
+        else if (record.data["elementId"])
+            this._relatedBackendNodeId = record.data["elementId"];
     }
     if (scriptDetails) {
         this.scriptName = scriptDetails.scriptName;
@@ -1114,6 +1116,13 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                 if (this._relatedNode)
                     contentHelper.appendElementRow(WebInspector.UIString("Layer root"), this._createNodeAnchor(this._relatedNode));
                 break;
+            case recordTypes.DecodeImage:
+            case recordTypes.ResizeImage:
+                if (this._relatedNode)
+                    contentHelper.appendElementRow(WebInspector.UIString("Image element"), this._createNodeAnchor(this._relatedNode));
+                if (this.url)
+                    contentHelper.appendElementRow(WebInspector.UIString("Image URL"), WebInspector.linkifyResourceAsNode(this.url));
+                break;
             case recordTypes.RecalculateStyles: // We don't want to see default details.
                 if (this.data["elementCount"])
                     contentHelper.appendTextRow(WebInspector.UIString("Elements affected"), this.data["elementCount"]);
@@ -1255,12 +1264,6 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             if (width && height)
                 details = WebInspector.UIString("%d\u2009\u00d7\u2009%d", width, height);
             break;
-        case WebInspector.TimelineModel.RecordType.DecodeImage:
-            details = this.data["imageType"];
-            break;
-        case WebInspector.TimelineModel.RecordType.ResizeImage:
-            details = this.data["cached"] ? WebInspector.UIString("cached") : WebInspector.UIString("non-cached");
-            break;
         case WebInspector.TimelineModel.RecordType.TimerInstall:
         case WebInspector.TimelineModel.RecordType.TimerRemove:
             details = this._linkifyTopCallFrame(this.data["timerId"]);
@@ -1283,6 +1286,8 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         case WebInspector.TimelineModel.RecordType.ResourceReceivedData:
         case WebInspector.TimelineModel.RecordType.ResourceReceiveResponse:
         case WebInspector.TimelineModel.RecordType.ResourceFinish:
+        case WebInspector.TimelineModel.RecordType.DecodeImage:
+        case WebInspector.TimelineModel.RecordType.ResizeImage:
             details = WebInspector.displayNameForURL(this.url);
             break;
         case WebInspector.TimelineModel.RecordType.Time:
