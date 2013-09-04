@@ -631,7 +631,8 @@ WebInspector.FlameChart.prototype = {
         var visibleTimeLeft = this._timeWindowLeft - this._paddingLeftTime;
         var timeWindowRight = this._timeWindowRight;
 
-        function forEachEntry(flameChart, callback) {
+        function forEachEntry(flameChart, callback)
+        {
             var anchorBox = new AnchorBox();
             for (var i = 0; i < timelineEntries.length; ++i) {
                 var entry = timelineEntries[i];
@@ -646,7 +647,8 @@ WebInspector.FlameChart.prototype = {
             }
         }
 
-        function drawBar(flameChart, context, entry, anchorBox, highlighted) {
+        function drawBar(flameChart, context, entry, anchorBox, highlighted)
+        {
             context.beginPath();
             context.rect(anchorBox.x, anchorBox.y, anchorBox.width - 1, anchorBox.height - 1);
             var colorPair = entry.colorPair;
@@ -662,7 +664,8 @@ WebInspector.FlameChart.prototype = {
         this._dotsWidth = context.measureText("\u2026").width;
         var textPaddingLeft = 2;
 
-        function drawText(flameChart, context, entry, anchorBox, highlighted) {
+        function drawText(flameChart, context, entry, anchorBox, highlighted)
+        {
             var xText = Math.max(0, anchorBox.x);
             var widthText = anchorBox.width - textPaddingLeft + anchorBox.x - xText;
             var title = flameChart._prepareText(context, entry.node.functionName, widthText);
