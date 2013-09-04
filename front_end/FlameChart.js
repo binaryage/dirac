@@ -619,43 +619,50 @@ WebInspector.FlameChart.prototype = {
         var barHeight = this._barHeight;
 
         var context = this._canvas.getContext("2d");
-        var textPaddingLeft = 2;
         context.scale(ratio, ratio);
-        context.font = (barHeight - 4) + "px " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
-        context.textBaseline = "alphabetic";
-        this._dotsWidth = context.measureText("\u2026").width;
         var visibleTimeLeft = this._timeWindowLeft - this._paddingLeftTime;
+        var timeWindowRight = this._timeWindowRight;
 
-        var anchorBox = new AnchorBox();
-        for (var i = 0; i < timelineEntries.length; ++i) {
-            var entry = timelineEntries[i];
-            var startTime = entry.startTime;
-            if (startTime > this._timeWindowRight)
-                break;
-            if ((startTime + entry.duration) < visibleTimeLeft)
-                continue;
-            this._entryToAnchorBox(entry, anchorBox);
+        function forEachEntry(flameChart, callback) {
+            var anchorBox = new AnchorBox();
+            for (var i = 0; i < timelineEntries.length; ++i) {
+                var entry = timelineEntries[i];
+                var startTime = entry.startTime;
+                if (startTime > timeWindowRight)
+                    break;
+                if ((startTime + entry.duration) < visibleTimeLeft)
+                    continue;
+                flameChart._entryToAnchorBox(entry, anchorBox);
 
-            var colorPair = entry.colorPair;
-            var color;
-            if (this._highlightedEntryIndex === i)
-                color =  colorPair.highlighted;
-            else
-                color = colorPair.normal;
-
-            context.beginPath();
-            context.rect(anchorBox.x, anchorBox.y, anchorBox.width - 1, anchorBox.height - 1);
-            context.fillStyle = color;
-            context.fill();
-
-            var xText = Math.max(0, anchorBox.x);
-            var widthText = anchorBox.width - textPaddingLeft + anchorBox.x - xText;
-            var title = this._prepareText(context, entry.node.functionName, widthText);
-            if (title) {
-                context.fillStyle = "#333";
-                context.fillText(title, xText + textPaddingLeft, anchorBox.y + barHeight - 4);
+                callback(flameChart, context, entry, anchorBox, flameChart._highlightedEntryIndex === i);
             }
         }
+
+        function drawBar(flameChart, context, entry, anchorBox, highlighted) {
+            context.beginPath();
+            context.rect(anchorBox.x, anchorBox.y, anchorBox.width - 1, anchorBox.height - 1);
+            var colorPair = entry.colorPair;
+            context.fillStyle = highlighted ? colorPair.highlighted : colorPair.normal;
+            context.fill();
+        }
+
+        forEachEntry(this, drawBar);
+
+        context.font = (barHeight - 4) + "px " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
+        context.textBaseline = "alphabetic";
+        context.fillStyle = "#333";
+        this._dotsWidth = context.measureText("\u2026").width;
+        var textPaddingLeft = 2;
+
+        function drawText(flameChart, context, entry, anchorBox, highlighted) {
+            var xText = Math.max(0, anchorBox.x);
+            var widthText = anchorBox.width - textPaddingLeft + anchorBox.x - xText;
+            var title = flameChart._prepareText(context, entry.node.functionName, widthText);
+            if (title)
+                context.fillText(title, xText + textPaddingLeft, anchorBox.y + barHeight - 4);
+        }
+
+        forEachEntry(this, drawText);
 
         var entryInfo = this._prepareHighlightedEntryInfo();
         if (entryInfo)
