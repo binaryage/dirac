@@ -799,19 +799,6 @@
                 ]
             },
             {
-                "name": "requestServedFromMemoryCache",
-                "description": "Fired when HTTP request has been served from memory cache.",
-                "parameters": [
-                    { "name": "requestId", "$ref": "RequestId", "description": "Request identifier." },
-                    { "name": "frameId", "$ref": "FrameId", "description": "Frame identifier.", "hidden": true },
-                    { "name": "loaderId", "$ref": "LoaderId", "description": "Loader identifier." },
-                    { "name": "documentURL", "type": "string", "description": "URL of the document this request is loaded for." },
-                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." },
-                    { "name": "initiator", "$ref": "Initiator", "description": "Request initiator." },
-                    { "name": "resource", "$ref": "CachedResource", "description": "Cached resource data." }
-                ]
-            },
-            {
                 "name": "webSocketWillSendHandshakeRequest",
                 "description": "Fired when WebSocket is about to initiate handshake.",
                 "parameters": [
