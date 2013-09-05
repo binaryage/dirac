@@ -95,6 +95,12 @@ var WebInspector = {
         if (this.inspectElementModeController)
             mainStatusBar.insertBefore(this.inspectElementModeController.toggleSearchButton.element, bottomStatusBarContainer);
 
+        if (WebInspector.queryParamsObject["remoteFrontend"] && WebInspector.experimentsSettings.screencast.isEnabled()) {
+            this._toggleScreencastButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle screencast."), "screencast-status-bar-item");
+            this._toggleScreencastButton.addEventListener("click", this._toggleScreencastButtonClicked.bind(this), false);
+            mainStatusBar.insertBefore(this._toggleScreencastButton.element, bottomStatusBarContainer);
+        }
+
         mainStatusBar.appendChild(this.settingsController.statusBarItem);
     },
 
@@ -109,6 +115,29 @@ var WebInspector = {
             this.closeConsole(animationType);
         else
             this.showConsole(animationType);
+    },
+
+    _toggleScreencastButtonClicked: function()
+    {
+        this._toggleScreencastButton.toggled = !this._toggleScreencastButton.toggled;
+
+        if (!this._screencastView) {
+            // Rebuild the UI upon first invocation.
+            this._screencastView = new WebInspector.ScreencastView();
+            this._screencastSplitView = new WebInspector.SplitView(true, "screencastSplitView");
+            this._screencastSplitView.markAsRoot();
+            this._screencastSplitView.show(document.body);
+
+            this._screencastView.show(this._screencastSplitView.firstElement());
+            this._screencastSplitView.secondElement().appendChild(document.getElementById("root"));
+            this.inspectorView.element.remove();
+            this.inspectorView.show(document.getElementById("main"));
+        }
+
+        if (this._toggleScreencastButton.toggled)
+            this._screencastSplitView.showBoth();
+        else
+            this._screencastSplitView.showOnlySecond();
     },
 
     /**
@@ -538,18 +567,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     WebInspector.WorkerManager.loadCompleted();
     InspectorFrontendAPI.loadCompleted();
 
-    if (WebInspector.queryParamsObject["remoteFrontend"] && WebInspector.experimentsSettings.screencast.isEnabled()) {
-        WebInspector._splitView = new WebInspector.SplitView(true, "screencastSplitView");
-        WebInspector._splitView.markAsRoot();
-        WebInspector._splitView.show(document.body);
-
-        var screencastView = new WebInspector.ScreencastView();
-        screencastView.show(WebInspector._splitView.firstElement());
-        WebInspector._splitView.secondElement().appendChild(document.getElementById("root"));
-        WebInspector.inspectorView.element.remove();
-        WebInspector.inspectorView.show(document.getElementById("main"));
-    }
-
     WebInspector.notifications.dispatchEventToListeners(WebInspector.Events.InspectorLoaded);
 }
 
@@ -591,8 +608,8 @@ WebInspector.windowResize = function(event)
         WebInspector.toolbar.resize();
     if (WebInspector.settingsController)
         WebInspector.settingsController.resize();
-    if (WebInspector._splitView)
-        WebInspector._splitView.doResize();
+    if (WebInspector._screencastSplitView)
+        WebInspector._screencastSplitView.doResize();
 }
 
 WebInspector.setDockingUnavailable = function(unavailable)
