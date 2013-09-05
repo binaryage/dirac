@@ -52,8 +52,6 @@ WebInspector.WorkspaceController.prototype = {
      */
     _windowFocused: function(event)
     {
-        if (!WebInspector.experimentsSettings.refreshFileSystemsOnFocus.isEnabled())
-            return;
         if (this._fileSystemRefreshTimeout)
             return;
         this._fileSystemRefreshTimeout = setTimeout(refreshFileSystems.bind(this), 1000);
