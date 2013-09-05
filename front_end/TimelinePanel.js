@@ -268,17 +268,12 @@ WebInspector.TimelinePanel.prototype = {
             var category = categories[categoryName];
             if (category.overviewStripGroupIndex < 0)
                 continue;
-            this._statusBarFilters.appendChild(this._createTimelineCategoryStatusBarCheckbox(category, this._onCategoryCheckboxClicked.bind(this, category)));
+            this._statusBarFilters.appendChild(this._createTimelineCategoryStatusBarCheckbox(category));
         }
 
-        var statsContainer = this._statusBarFilters.createChild("div");
-        statsContainer.className = "timeline-records-stats-container";
-
-        this.recordsCounter = statsContainer.createChild("div");
-        this.recordsCounter.className = "timeline-records-stats";
-
-        this.frameStatistics = statsContainer.createChild("div");
-        this.frameStatistics.className = "timeline-records-stats hidden";
+        var statsContainer = this._statusBarFilters.createChild("div", "timeline-records-stats-container");
+        this.recordsCounter = statsContainer.createChild("div", "timeline-records-stats");
+        this.frameStatistics = statsContainer.createChild("div", "timeline-records-stats hidden");
 
         function getAnchor()
         {
@@ -287,40 +282,36 @@ WebInspector.TimelinePanel.prototype = {
         this._frameStatisticsPopoverHelper = new WebInspector.PopoverHelper(this.frameStatistics, getAnchor.bind(this), this._showFrameStatistics.bind(this));
     },
 
-    _createTimelineCategoryStatusBarCheckbox: function(category, onCheckboxClicked)
+    /**
+     * @param {WebInspector.TimelineCategory} category
+     */
+    _createTimelineCategoryStatusBarCheckbox: function(category)
     {
         var labelContainer = document.createElement("div");
         labelContainer.addStyleClass("timeline-category-statusbar-item");
         labelContainer.addStyleClass("timeline-category-" + category.name);
         labelContainer.addStyleClass("status-bar-item");
 
-        var label = document.createElement("label");
+        var label = labelContainer.createChild("label");
         var checkBorder = label.createChild("div", "timeline-category-checkbox");
         var checkElement = checkBorder.createChild("div", "timeline-category-checkbox-check timeline-category-checkbox-checked");
         checkElement.type = "checkbox";
         checkElement.checked = true;
-        checkElement.addEventListener("click", listener, false);
+        labelContainer.addEventListener("click", listener.bind(this), false);
 
         function listener(event)
         {
-            checkElement.checked = !checkElement.checked;
+            var checked = !checkElement.checked;
+            checkElement.checked = checked;
+            category.hidden = !checked;
             checkElement.enableStyleClass("timeline-category-checkbox-checked", checkElement.checked);
-            onCheckboxClicked(event);
+            this._invalidateAndScheduleRefresh(true, true);
         }
 
-        var typeElement = document.createElement("span");
-        typeElement.className = "type";
+        var typeElement = label.createChild("span", "type");
         typeElement.textContent = category.title;
-        label.appendChild(typeElement);
 
-        labelContainer.appendChild(label);
         return labelContainer;
-    },
-
-    _onCategoryCheckboxClicked: function(category, event)
-    {
-        category.hidden = !event.target.checked;
-        this._invalidateAndScheduleRefresh(true, true);
     },
 
     /**
