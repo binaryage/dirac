@@ -353,6 +353,7 @@ WebInspector.ScriptsPanel.prototype = {
     {
         this._debuggerResumed();
         this.sidebarPanes.watchExpressions.reset();
+        delete this._skipExecutionLineRevealing;
     },
 
     _projectWillReset: function(event)
@@ -1068,6 +1069,7 @@ WebInspector.ScriptsPanel.prototype = {
 
     _toggleFormatSource: function()
     {
+        delete this._skipExecutionLineRevealing;
         this._toggleFormatSourceButton.toggled = !this._toggleFormatSourceButton.toggled;
         var uiSourceCodes = this._workspace.uiSourceCodes();
         for (var i = 0; i < uiSourceCodes.length; ++i)
