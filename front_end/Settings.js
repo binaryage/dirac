@@ -266,7 +266,6 @@ WebInspector.ExperimentsSettings = function()
     this.drawerOverlay = this._createExperiment("drawerOverlay", "Open console as overlay");
     this.frameworksDebuggingSupport = this._createExperiment("frameworksDebuggingSupport", "Enable frameworks debugging support");
     this.refreshFileSystemsOnFocus = this._createExperiment("refreshFileSystemsOnFocus", "Refresh file system folders on window focus");
-    this.scrollBeyondEndOfFile = this._createExperiment("scrollBeyondEndOfFile", "Support scrolling beyond end of file");
     this.layersPanel = this._createExperiment("layersPanel", "Show Layers panel");
     this.screencast = this._createExperiment("screencast", "Enable screencast");
     this.stepIntoSelection = this._createExperiment("stepIntoSelection", "Show step-in candidates while debugging.");
