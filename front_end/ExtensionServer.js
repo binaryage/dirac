@@ -325,7 +325,8 @@ WebInspector.ExtensionServer.prototype = {
         var injectedScript;
         if (options.injectedScript)
             injectedScript = "(function(){" + options.injectedScript + "})()";
-        PageAgent.reload(!!options.ignoreCache, injectedScript);
+        var preprocessingScript = options.preprocessingScript;
+        PageAgent.reload(!!options.ignoreCache, injectedScript, preprocessingScript);
         return this._status.OK();
     },
 
