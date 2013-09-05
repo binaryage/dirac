@@ -42,7 +42,6 @@ WebInspector.TimelineManager = function()
 WebInspector.TimelineManager.EventTypes = {
     TimelineStarted: "TimelineStarted",
     TimelineStopped: "TimelineStopped",
-    TimelineStartEvent: "TimelineStartEvent",
     TimelineEventRecorded: "TimelineEventRecorded"
 }
 
@@ -94,15 +93,6 @@ WebInspector.TimelineDispatcher = function(manager)
 }
 
 WebInspector.TimelineDispatcher.prototype = {
-    timelineStarted: function(timestampsBase, startTime)
-    {
-        var event = {
-            timestampsBase: timestampsBase,
-            startTime: startTime
-        };
-        this._manager.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineStartEvent, event);
-    },
-
     eventRecorded: function(record)
     {
         this._manager.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, record);
