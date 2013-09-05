@@ -96,9 +96,6 @@ WebInspector.HandlerRegistry.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
-        if (event.hasBeenHandledByHandlerRegistry)
-            return;
-        event.hasBeenHandledByHandlerRegistry = true;
         this._appendContentProviderItems(contextMenu, target);
         this._appendHrefItems(contextMenu, target);
     },

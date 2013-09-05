@@ -1705,17 +1705,39 @@ WebInspector.NetworkPanel.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
-        if (!(target instanceof WebInspector.NetworkRequest))
-            return;
-        if (this.visibleView && this.visibleView.isShowing() && this.visibleView.request() === target)
-            return;
-
-        function reveal()
+        function reveal(request)
         {
             WebInspector.inspectorView.setCurrentPanel(this);
-            this.revealAndHighlightRequest(/** @type {WebInspector.NetworkRequest} */ (target));
+            this.revealAndHighlightRequest(request);
         }
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Network panel" : "Reveal in Network Panel"), reveal.bind(this));
+
+        function appendRevealItem(request)
+        {
+            var revealText = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Network panel" : "Reveal in Network Panel");
+            contextMenu.appendItem(revealText, reveal.bind(this, request));
+        }
+
+        if (target instanceof WebInspector.Resource) {
+            var resource = /** @type {WebInspector.Resource} */ (target);
+            if (resource.request)
+                appendRevealItem.call(this, resource.request);
+            return;
+        }
+        if (target instanceof WebInspector.UISourceCode) {
+            var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (target);
+            var resource = WebInspector.resourceForURL(uiSourceCode.url);
+            if (resource && resource.request)
+                appendRevealItem.call(this, resource.request);
+            return;
+        }
+
+        if (!(target instanceof WebInspector.NetworkRequest))
+            return;
+        var request = /** @type {WebInspector.NetworkRequest} */ (target);
+        if (this.visibleView && this.visibleView.isShowing() && this.visibleView.request() === request)
+            return;
+
+        appendRevealItem.call(this, request);
     },
 
     _injectStyles: function()

@@ -1329,10 +1329,6 @@ WebInspector.ScriptsPanel.prototype = {
 
         if (WebInspector.isolatedFileSystemManager.supportsFileSystems())
             this._appendUISourceCodeMappingItems(contextMenu, uiSourceCode);
-
-        var resource = WebInspector.resourceForURL(uiSourceCode.url);
-        if (resource && resource.request)
-            contextMenu.appendApplicableItems(resource.request);
     },
 
     /** 

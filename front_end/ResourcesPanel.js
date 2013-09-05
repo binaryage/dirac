@@ -1301,8 +1301,6 @@ WebInspector.FrameResourceTreeElement.prototype = {
     {
         var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendApplicableItems(this._resource);
-        if (this._resource.request)
-            contextMenu.appendApplicableItems(this._resource.request);
         contextMenu.show();
     },
 
