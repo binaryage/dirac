@@ -505,7 +505,8 @@ WebInspector.ScreencastView.prototype = {
         var canvasWidth = this._canvasElement.offsetWidth;
         var canvasHeight = this._canvasElement.offsetHeight;
 
-        this._tagNameElement.textContent = this._node.nodeName().toLowerCase();
+        var lowerCaseName = this._node.localName() || this._node.nodeName().toLowerCase();
+        this._tagNameElement.textContent = lowerCaseName;
         this._nodeIdElement.textContent = this._node.getAttribute("id") ? "#" + this._node.getAttribute("id") : "";
         this._nodeIdElement.textContent = this._node.getAttribute("id") ? "#" + this._node.getAttribute("id") : "";
         var className = this._node.getAttribute("class");
