@@ -267,7 +267,7 @@ WebInspector.StatusBarButton.prototype = {
     /**
      * @param {?function():Array.<WebInspector.StatusBarButton>} buttonsProvider
      */
-    makeLongClickOptionsEnabled: function(buttonsProvider)
+    setLongClickOptionsEnabled: function(buttonsProvider)
     {
         if (buttonsProvider) {
             if (!this._longClickOptionsData) {
@@ -340,7 +340,8 @@ WebInspector.StatusBarButton.prototype = {
             buttons[i].element.addEventListener("mouseout", boundMouseOut, false);
             optionsBarElement.appendChild(buttons[i].element);
         }
-        buttons[buttons.length - 1].element.addStyleClass("emulate-active");
+        var hostButtonIndex = topNotBottom ? 0 : buttons.length - 1;
+        buttons[hostButtonIndex].element.addStyleClass("emulate-active");
 
         function mouseOver(e)
         {

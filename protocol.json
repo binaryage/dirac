@@ -2903,6 +2903,15 @@
                 "description": "Activates / deactivates all breakpoints on the page."
             },
             {
+                "name": "setSkipAllPauses",
+                "hidden": true,
+                "parameters": [
+                    { "name": "skipped", "type": "boolean", "description": "New value for skip pauses state." },
+                    { "name": "untilReload", "type": "boolean", "optional": true, "description": "Whether page reload should set skipped to false." }
+                ],
+                "description": "Makes page not interrupt on any pauses (breakpoint, exception, dom exception etc)."
+            },
+            {
                 "name": "setBreakpointByUrl",
                 "parameters": [
                     { "name": "lineNumber", "type": "integer", "description": "Line number to set breakpoint at." },
