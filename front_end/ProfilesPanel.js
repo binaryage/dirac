@@ -435,6 +435,9 @@ WebInspector.ProfilesPanel = function(name, type)
     this._registerShortcuts();
 
     WebInspector.ContextMenu.registerProvider(this);
+
+    this._configureCpuProfilerSamplingInterval();
+    WebInspector.settings.highResolutionCpuProfiling.addChangeListener(this._configureCpuProfilerSamplingInterval, this);
 }
 
 WebInspector.ProfilesPanel.prototype = {
@@ -470,6 +473,17 @@ WebInspector.ProfilesPanel.prototype = {
     _registerShortcuts: function()
     {
         this.registerShortcuts(WebInspector.ProfilesPanelDescriptor.ShortcutKeys.StartStopRecording, this.toggleRecordButton.bind(this));
+    },
+
+    _configureCpuProfilerSamplingInterval: function()
+    {
+        var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
+        ProfilerAgent.setSamplingInterval(intervalUs, didChangeInterval.bind(this));
+        function didChangeInterval(error)
+        {
+            if (error)
+                WebInspector.showErrorMessage(error)
+        }
     },
 
     /**
