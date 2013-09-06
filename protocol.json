@@ -3325,13 +3325,6 @@
                 "name": "disable"
             },
             {
-                "name": "setSamplingInterval",
-                "parameters": [
-                    { "name": "interval", "type": "integer", "description": "New sampling interval in microseconds." }
-                ],
-                "description": "Changes CPU profiler sampling interval. Must be called before CPU profiles recording started."
-            },
-            {
                 "name": "start"
             },
             {

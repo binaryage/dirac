@@ -264,8 +264,7 @@ WebInspector.SettingsTab.prototype = {
 
         function changeListener(e)
         {
-            // Don't use e.target.value to avoid conversion of the value to string.
-            setting.set(options[select.selectedIndex][1]);
+            setting.set(e.target.value);
         }
 
         select.addEventListener("change", changeListener, false);
@@ -413,7 +412,6 @@ WebInspector.GenericSettingsTab = function()
 
     p = this._appendSection(WebInspector.UIString("Profiler"));
     p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show advanced heap snapshot properties"), WebInspector.settings.showAdvancedHeapSnapshotProperties));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("High resolution CPU profiling"), WebInspector.settings.highResolutionCpuProfiling));
 
     p = this._appendSection(WebInspector.UIString("Timeline"));
     checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Limit number of captured JS stack frames"), WebInspector.settings.timelineLimitStackFramesFlag);
