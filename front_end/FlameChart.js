@@ -448,6 +448,15 @@ WebInspector.FlameChart.prototype = {
         this._scheduleUpdate();
     },
 
+    _millisecondsToString: function(ms)
+    {
+        if (ms === 0)
+            return "0";
+        if (ms < 1000)
+            return WebInspector.UIString("%.1f\u2009ms", ms);
+        return Number.secondsToString(ms / 1000, true);
+    },
+
     _prepareHighlightedEntryInfo: function()
     {
         if (this._isDragging)
@@ -470,8 +479,11 @@ WebInspector.FlameChart.prototype = {
 
         pushEntryInfoRow(WebInspector.UIString("Name"), node.functionName);
         if (this._cpuProfileView.samples) {
-            pushEntryInfoRow(WebInspector.UIString("Self time"), Number.secondsToString(entry.selfTime / 1000, true));
-            pushEntryInfoRow(WebInspector.UIString("Total time"), Number.secondsToString(entry.duration / 1000, true));
+            var rate = this._cpuProfileView.samplesPerMs;
+            var selfTime = this._millisecondsToString(entry.selfTime / rate);
+            var totalTime = this._millisecondsToString(entry.duration / rate);
+            pushEntryInfoRow(WebInspector.UIString("Self time"), selfTime);
+            pushEntryInfoRow(WebInspector.UIString("Total time"), totalTime);
         }
         if (node.url)
             pushEntryInfoRow(WebInspector.UIString("URL"), node.url + ":" + node.lineNumber);

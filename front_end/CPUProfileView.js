@@ -575,6 +575,7 @@ WebInspector.CPUProfileView.prototype = {
 
         var durationMs = 1000 * profile.endTime - 1000 * profile.startTime;
         var samplingRate = profile.totalHitCount / durationMs;
+        this.samplesPerMs = samplingRate;
 
         function calculateTimesForNode(node) {
             node.selfTime = node.hitCount * samplingRate;
