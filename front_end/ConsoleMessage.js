@@ -806,6 +806,8 @@ WebInspector.ConsoleMessageImpl.prototype = {
             if (frame.scriptId) {
                 content.appendChild(document.createTextNode(" "));
                 var urlElement = this._linkifyCallFrame(frame);
+                if (!urlElement)
+                    continue;
                 content.appendChild(urlElement);
             }
 
