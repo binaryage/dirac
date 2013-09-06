@@ -619,8 +619,7 @@ WebInspector.ConsoleView.prototype = {
             var lineNumber;
             var columnNumber;
             var script = WebInspector.debuggerModel.scriptForId(response.location.scriptId);
-            console.assert(script);
-            if (script.sourceURL) {
+            if (script && script.sourceURL) {
                 url = script.sourceURL;
                 lineNumber = response.location.lineNumber + 1;
                 columnNumber = response.location.columnNumber + 1;
