@@ -190,9 +190,9 @@ WebInspector.FlameChart.ColorGenerator = function()
 {
     this._colorPairs = {};
     this._currentColorIndex = 0;
-    this._colorPairs["(idle)::0"] = this._createPair(0, 50);
-    this._colorPairs["(program)::0"] = this._createPair(5, 50);
-    this._colorPairs["(garbage collector)::0"] = this._createPair(10, 50);
+    this._colorPairs["(idle)::0"] = this._createPair(this._currentColorIndex++, 50);
+    this._colorPairs["(program)::0"] = this._createPair(this._currentColorIndex++, 50);
+    this._colorPairs["(garbage collector)::0"] = this._createPair(this._currentColorIndex++, 50);
 }
 
 WebInspector.FlameChart.ColorGenerator.prototype = {
@@ -204,7 +204,7 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
         var colorPairs = this._colorPairs;
         var colorPair = colorPairs[id];
         if (!colorPair)
-            colorPairs[id] = colorPair = this._createPair(++this._currentColorIndex);
+            colorPairs[id] = colorPair = this._createPair(this._currentColorIndex++);
         return colorPair;
     },
 
@@ -217,7 +217,7 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
         var hue = (index * 7 + 12 * (index % 2)) % 360;
         if (typeof sat !== "number")
             sat = 100;
-        return {highlighted: "hsla(" + hue + ", " + sat + "%, 33%, 0.7)", normal: "hsla(" + hue + ", " + sat + "%, 66%, 0.7)"}
+        return {index: index, highlighted: "hsla(" + hue + ", " + sat + "%, 33%, 0.7)", normal: "hsla(" + hue + ", " + sat + "%, 66%, 0.7)"}
     }
 }
 
@@ -316,15 +316,22 @@ WebInspector.FlameChart.prototype = {
         var levelOffsets = /** @type {Array.<!number>} */ ([0]);
         var levelExitIndexes = /** @type {Array.<!number>} */ ([0]);
         var colorGenerator = WebInspector.FlameChart._colorGenerator;
+        var colorIndexEntryChains = [[], [], []];
 
         while (stack.length) {
             var level = levelOffsets.length - 1;
             var node = stack.pop();
             var offset = levelOffsets[level];
 
-            var colorPair = colorGenerator._colorPairForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
+            var id = node.functionName + ":" + node.url + ":" + node.lineNumber;
+            var colorPair = colorGenerator._colorPairForID(id);
+            var colorIndexEntries = colorIndexEntryChains[colorPair.index];
+            if (!colorIndexEntries)
+                colorIndexEntries = colorIndexEntryChains[colorPair.index] = [];
 
-            entries.push(new WebInspector.FlameChart.Entry(colorPair, level, node.totalTime, offset, node));
+            var entry = new WebInspector.FlameChart.Entry(colorPair, level, node.totalTime, offset, node);
+            entries.push(entry);
+            colorIndexEntries.push(entry);
 
             ++index;
 
@@ -343,6 +350,7 @@ WebInspector.FlameChart.prototype = {
 
         this._timelineData = {
             entries: entries,
+            colorIndexEntryChains: colorIndexEntryChains,
             totalTime: this._cpuProfileView.profileHead.totalTime,
         }
 
@@ -368,6 +376,7 @@ WebInspector.FlameChart.prototype = {
         var openIntervals = [];
         var stackTrace = [];
         var colorGenerator = WebInspector.FlameChart._colorGenerator;
+        var colorIndexEntryChains = [[], [], []];
         for (var sampleIndex = 0; sampleIndex < samplesCount; sampleIndex++) {
             var node = idToNode[samples[sampleIndex]];
             stackTrace.length = 0;
@@ -410,8 +419,13 @@ WebInspector.FlameChart.prototype = {
 
             while (node) {
                 var colorPair = colorGenerator._colorPairForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
+                var colorIndexEntries = colorIndexEntryChains[colorPair.index];
+                if (!colorIndexEntries)
+                    colorIndexEntries = colorIndexEntryChains[colorPair.index] = [];
 
-                entries.push(new WebInspector.FlameChart.Entry(colorPair, depth, 1, sampleIndex, node));
+                var entry = new WebInspector.FlameChart.Entry(colorPair, depth, 1, sampleIndex, node);
+                entries.push(entry);
+                colorIndexEntries.push(entry);
                 openIntervals.push({node: node, index: index});
                 ++index;
 
@@ -423,6 +437,7 @@ WebInspector.FlameChart.prototype = {
 
         this._timelineData = {
             entries: entries,
+            colorIndexEntryChains: colorIndexEntryChains,
             totalTime: samplesCount,
         };
 
@@ -626,7 +641,7 @@ WebInspector.FlameChart.prototype = {
         var timelineData = this._calculateTimelineData();
         if (!timelineData)
             return;
-        var timelineEntries = timelineData.entries;
+        var colorIndexEntryChains = timelineData.colorIndexEntryChains;
 
         var ratio = window.devicePixelRatio;
         var canvasWidth = width * ratio;
@@ -642,20 +657,26 @@ WebInspector.FlameChart.prototype = {
         context.scale(ratio, ratio);
         var visibleTimeLeft = this._timeWindowLeft - this._paddingLeftTime;
         var timeWindowRight = this._timeWindowRight;
+        var lastUsedColor = "";
 
         function forEachEntry(flameChart, callback)
         {
             var anchorBox = new AnchorBox();
-            for (var i = 0; i < timelineEntries.length; ++i) {
-                var entry = timelineEntries[i];
-                var startTime = entry.startTime;
-                if (startTime > timeWindowRight)
-                    break;
-                if ((startTime + entry.duration) < visibleTimeLeft)
+            for (var j = 0; j < colorIndexEntryChains.length; ++j) {
+                var entries = colorIndexEntryChains[j];
+                if (!entries)
                     continue;
-                flameChart._entryToAnchorBox(entry, anchorBox);
+                for (var i = 0; i < entries.length; ++i) {
+                    var entry = entries[i];
+                    var startTime = entry.startTime;
+                    if (startTime > timeWindowRight)
+                        break;
+                    if ((startTime + entry.duration) < visibleTimeLeft)
+                        continue;
+                    flameChart._entryToAnchorBox(entry, anchorBox);
 
-                callback(flameChart, context, entry, anchorBox, flameChart._highlightedEntryIndex === i);
+                    callback(flameChart, context, entry, anchorBox, flameChart._highlightedEntryIndex === i);
+                }
             }
         }
 
@@ -663,8 +684,11 @@ WebInspector.FlameChart.prototype = {
         {
             context.beginPath();
             context.rect(anchorBox.x, anchorBox.y, anchorBox.width - 1, anchorBox.height - 1);
-            var colorPair = entry.colorPair;
-            context.fillStyle = highlighted ? colorPair.highlighted : colorPair.normal;
+            var color = highlighted ? entry.colorPair.highlighted : entry.colorPair.normal;
+            if (lastUsedColor !== color) {
+                lastUsedColor = color;
+                context.fillStyle = color;
+            }
             context.fill();
         }
 
