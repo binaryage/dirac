@@ -40,6 +40,9 @@ WebInspector.ScreencastView = function()
 
     this.element.addStyleClass("fill");
     this.element.addStyleClass("screencast");
+
+    this._createNavigationBar();
+
     this._viewportElement = this.element.createChild("div", "screencast-viewport hidden");
     this._canvasElement = this._viewportElement.createChild("canvas");
     this._canvasElement.tabIndex = 1;
@@ -73,6 +76,8 @@ WebInspector.ScreencastView = function()
 }
 
 WebInspector.ScreencastView._bordersSize = 40;
+
+WebInspector.ScreencastView._HttpRegex = /^https?:\/\/(.+)/;
 
 WebInspector.ScreencastView.prototype = {
     wasShown: function()
@@ -618,6 +623,78 @@ WebInspector.ScreencastView.prototype = {
         pctx.fillRect(0, 0, size, size);
         pctx.fillRect(size, size, size, size);
         return context.createPattern(pattern, "repeat");
+    },
+
+    _createNavigationBar: function()
+    {
+        this._navigationBar = this.element.createChild("div", "screencast-navigation");
+
+        this._navigationBack = this._navigationBar.createChild("button", "back");
+        this._navigationBack.disabled = true;
+        this._navigationBack.addEventListener("click", this._navigateToHistoryEntry.bind(this, -1), false);
+
+        this._navigationForward = this._navigationBar.createChild("button", "forward");
+        this._navigationForward.disabled = true;
+        this._navigationForward.addEventListener("click", this._navigateToHistoryEntry.bind(this, 1), false);
+
+        this._navigationReload = this._navigationBar.createChild("button", "reload");
+        this._navigationReload.addEventListener("click", this._navigateReload.bind(this), false);
+
+        this._navigationUrl = this._navigationBar.createChild("input");
+        this._navigationUrl.type = "text";
+        this._navigationUrl.addEventListener('keyup', this._navigationUrlKeyUp.bind(this), true);
+
+        this._requestNavigationHistory();
+        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._requestNavigationHistory, this);
+    },
+
+    _navigateToHistoryEntry: function(offset)
+    {
+        var newIndex = this._historyIndex + offset;
+        if (newIndex < 0 || newIndex >= this._historyEntries.length)
+          return;
+        PageAgent.navigateToHistoryEntry(this._historyEntries[newIndex].id);
+        this._requestNavigationHistory();
+    },
+
+    _navigateReload: function()
+    {
+        PageAgent.reload();
+    },
+
+    _navigationUrlKeyUp: function(event)
+    {
+        if (event.keyIdentifier != 'Enter')
+            return;
+        var url = this._navigationUrl.value;
+        if (!url)
+            return;
+        if (!url.match(WebInspector.ScreencastView._HttpRegex))
+            url = "http://" + url;
+        PageAgent.navigate(url);
+    },
+
+    _requestNavigationHistory: function()
+    {
+        PageAgent.getNavigationHistory(this._onNavigationHistory.bind(this));
+    },
+
+    _onNavigationHistory: function(error, currentIndex, entries)
+    {
+        if (error)
+          return;
+
+        this._historyIndex = currentIndex;
+        this._historyEntries = entries;
+
+        this._navigationBack.disabled = currentIndex == 0;
+        this._navigationForward.disabled = currentIndex == (entries.length - 1);
+
+        var url = entries[currentIndex].url;
+        var match = url.match(WebInspector.ScreencastView._HttpRegex);
+        if (match)
+            url = match[1];
+        this._navigationUrl.value = url;
     },
 
     __proto__: WebInspector.View.prototype

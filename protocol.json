@@ -184,6 +184,17 @@
                 "type": "string",
                 "description": "Unique script identifier.",
                 "hidden": true
+            },
+            {
+                "id": "NavigationEntry",
+                "type": "object",
+                "description": "Navigation history entry.",
+                "properties": [
+                  { "name": "id", "type": "integer", "description": "Unique id of the navigation history entry." },
+                  { "name": "url", "type": "string", "description": "URL of the navigation history entry." },
+                  { "name": "title", "type": "string", "description": "Title of the navigation history entry." }
+                ],
+                "hidden": true
             }
         ],
         "commands": [
@@ -227,6 +238,24 @@
                     { "name": "url", "type": "string", "description": "URL to navigate the page to." }
                 ],
                 "description": "Navigates current page to the given URL."
+            },
+            {
+              "name": "getNavigationHistory",
+              "parameters": [],
+              "returns": [
+                { "name": "currentIndex", "type": "integer", "description": "Index of the current navigation history entry." },
+                { "name": "entries", "type": "array", "items": { "$ref": "NavigationEntry"}, "description": "Array of navigation history entries." }
+              ],
+              "description": "Returns navigation history for the current page.",
+              "hidden": true
+            },
+            {
+              "name": "navigateToHistoryEntry",
+              "parameters": [
+                  { "name": "entryId", "type": "integer", "description": "Unique id of the entry to navigate to." }
+              ],
+              "description": "Navigates current page to the given history entry.",
+              "hidden": true
             },
             {
                 "name": "getCookies",

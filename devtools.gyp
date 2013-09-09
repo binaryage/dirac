@@ -392,6 +392,8 @@
             'front_end/Images/indexedDBObjectStore.png',
             'front_end/Images/indexedDBIndex.png',
             'front_end/Images/localStorage.png',
+            'front_end/Images/navigationControls.png',
+            'front_end/Images/navigationControls_2x.png',
             'front_end/Images/paneAddButtons.png',
             'front_end/Images/paneElementStateButtons.png',
             'front_end/Images/paneFilterButtons.png',

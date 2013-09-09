@@ -28,6 +28,67 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+.screencast-navigation {
+    -webkit-flex-direction: row;
+    background-color: #eee;
+    border-bottom: 1px solid #ccc;
+    display: -webkit-flex;
+    padding-left: 2px;
+}
+
+.screencast-navigation button {
+    -webkit-border-radius: 2px;
+    background-color: transparent;
+    background-image: -webkit-image-set(
+        url(Images/navigationControls.png) 1x,
+        url(Images/navigationControls_2x.png) 2x);
+    background-clip: content-box;
+    background-origin: content-box;
+    background-repeat: no-repeat;
+    border: 1px solid transparent;
+    height: 23px;
+    margin: 3px 1px 2px 1px;
+    padding: 2px;
+    width: 23px;
+}
+
+.screencast-navigation button:hover {
+    border-color: #ccc;
+}
+
+.screencast-navigation button:active {
+    border-color: #aaa;
+}
+
+.screencast-navigation button[disabled] {
+    opacity: 0.5;
+}
+
+.screencast-navigation button.back {
+    background-position-x: -1px;
+}
+
+.screencast-navigation button.forward {
+    background-position-x: -18px;
+}
+
+.screencast-navigation button.reload {
+    background-position-x: -37px;
+}
+
+.screencast-navigation input {
+    -webkit-flex: 1;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    margin: 3px;
+    padding-left: 5px;
+}
+
+.screencast-navigation input:focus {
+    border: 1px solid #aaa;
+    outline: none !important;
+}
+
 .screencast-viewport {
     margin: 10px;
     border: 20px solid #333;
