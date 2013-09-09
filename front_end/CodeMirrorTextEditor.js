@@ -135,6 +135,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._codeMirror.setOption("flattenSpans", false);
     this._codeMirror.setOption("maxHighlightLength", 1000);
     this._codeMirror.setOption("mode", null);
+    this._codeMirror.setOption("crudeMeasuringFrom", 1000);
 
     this._shouldClearHistory = true;
     this._lineSeparator = "\n";
