@@ -812,7 +812,7 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
         var sortColumnIdentifier = this._dataGrid.sortColumnIdentifier();
         var sortFields = {
             object: ["id", sortAscending, "retainedSize", false],
-            distance: ["distance", true, "retainedSize", false],
+            distance: ["distance", sortAscending, "retainedSize", false],
             count: ["id", true, "retainedSize", false],
             shallowSize: ["selfSize", sortAscending, "id", true],
             retainedSize: ["retainedSize", sortAscending, "id", true]
