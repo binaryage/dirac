@@ -2442,13 +2442,14 @@ body.inactive li.selected .bubble.search-matches {
 }
 
 .source-frame-stepin-mark {
+    cursor: pointer;
     text-decoration: underline;
-    background-color: #bfccfe;
 }
 
 .source-frame-stepin-mark-highlighted {
+    font-weight: 800;
+    cursor: pointer;
     text-decoration: underline;
-    background-color: #698cfe;
 }
 
 .workers-list {
