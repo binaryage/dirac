@@ -504,6 +504,9 @@ WebInspector.FlameChart.prototype = {
             pushEntryInfoRow(WebInspector.UIString("URL"), node.url + ":" + node.lineNumber);
         pushEntryInfoRow(WebInspector.UIString("Aggregated self time"), Number.secondsToString(node.selfTime / 1000, true));
         pushEntryInfoRow(WebInspector.UIString("Aggregated total time"), Number.secondsToString(node.totalTime / 1000, true));
+        if (node.deoptReason && node.deoptReason !== "no reason")
+            pushEntryInfoRow(WebInspector.UIString("Deoptimize reason"), node.deoptReason);
+
         return entryInfo;
     },
 
@@ -694,7 +697,10 @@ WebInspector.FlameChart.prototype = {
 
         forEachEntry(this, drawBar);
 
-        context.font = (barHeight - 4) + "px " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
+        var font = (barHeight - 4) + "px " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
+        var boldFont = "bold " + font;
+        var isBoldFontSelected = false;
+        context.font = font;
         context.textBaseline = "alphabetic";
         context.fillStyle = "#333";
         this._dotsWidth = context.measureText("\u2026").width;
@@ -702,6 +708,19 @@ WebInspector.FlameChart.prototype = {
 
         function drawText(flameChart, context, entry, anchorBox, highlighted)
         {
+            var deoptReason = entry.node.deoptReason;
+            if (isBoldFontSelected) {
+                if (!deoptReason || deoptReason === "no reason") {
+                    context.font = font;
+                    isBoldFontSelected = false;
+                }
+            } else {
+                if (deoptReason && deoptReason !== "no reason") {
+                    context.font = boldFont;
+                    isBoldFontSelected = true;
+                }
+            }
+
             var xText = Math.max(0, anchorBox.x);
             var widthText = anchorBox.width - textPaddingLeft + anchorBox.x - xText;
             var title = flameChart._prepareText(context, entry.node.functionName, widthText);
