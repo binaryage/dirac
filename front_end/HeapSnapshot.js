@@ -1537,6 +1537,7 @@ WebInspector.HeapSnapshotFilteredOrderedIterator = function(iterator, filter, un
     this._position = 0;
     this._currentComparator = null;
     this._sortedPrefixLength = 0;
+    this._sortedSuffixLength = 0;
 }
 
 WebInspector.HeapSnapshotFilteredOrderedIterator.prototype = {
@@ -1633,11 +1634,14 @@ WebInspector.HeapSnapshotFilteredOrderedIterator.prototype = {
         this._createIterationOrder();
         if (begin > end)
             throw new Error("Start position > end position: " + begin + " > " + end);
-        if (end >= this._iterationOrder.length)
+        if (end > this._iterationOrder.length)
             end = this._iterationOrder.length;
-        if (this._sortedPrefixLength < end) {
-            this.sort(this._currentComparator, this._sortedPrefixLength, this._iterationOrder.length - 1, end - this._sortedPrefixLength);
-            this._sortedPrefixLength = end;
+        if (this._sortedPrefixLength < end && begin < this._iterationOrder.length - this._sortedSuffixLength) {
+            this.sort(this._currentComparator, this._sortedPrefixLength, this._iterationOrder.length - 1 - this._sortedSuffixLength, begin, end - 1);
+            if (begin <= this._sortedPrefixLength)
+                this._sortedPrefixLength = end;
+            if (end >= this._iterationOrder.length - this._sortedSuffixLength)
+                this._sortedSuffixLength = this._iterationOrder.length - begin;
         }
 
         this._position = begin;
@@ -1657,16 +1661,19 @@ WebInspector.HeapSnapshotFilteredOrderedIterator.prototype = {
     sortAll: function()
     {
         this._createIterationOrder();
-        if (this._sortedPrefixLength === this._iterationOrder.length)
+        if (this._sortedPrefixLength + this._sortedSuffixLength >= this._iterationOrder.length)
             return;
-        this.sort(this._currentComparator, this._sortedPrefixLength, this._iterationOrder.length - 1, this._iterationOrder.length);
+        this.sort(this._currentComparator, this._sortedPrefixLength, this._iterationOrder.length - 1 - this._sortedSuffixLength,
+                  this._sortedPrefixLength, this._iterationOrder.length - 1 - this._sortedSuffixLength);
         this._sortedPrefixLength = this._iterationOrder.length;
+        this._sortedSuffixLength = 0;
     },
 
     sortAndRewind: function(comparator)
     {
         this._currentComparator = comparator;
         this._sortedPrefixLength = 0;
+        this._sortedSuffixLength = 0;
         this.rewind();
     }
 }
@@ -1687,7 +1694,7 @@ WebInspector.HeapSnapshotEdgesProvider = function(snapshot, filter, edgesIter)
 }
 
 WebInspector.HeapSnapshotEdgesProvider.prototype = {
-    sort: function(comparator, leftBound, rightBound, count)
+    sort: function(comparator, leftBound, rightBound, windowLeft, windowRight)
     {
         var fieldName1 = comparator.fieldName1;
         var fieldName2 = comparator.fieldName2;
@@ -1748,11 +1755,11 @@ WebInspector.HeapSnapshotEdgesProvider.prototype = {
         }
 
         if (fieldName1 === "!edgeName")
-            this._iterationOrder.sortRange(compareEdgeAndNode, leftBound, rightBound, count);
+            this._iterationOrder.sortRange(compareEdgeAndNode, leftBound, rightBound, windowLeft, windowRight);
         else if (fieldName2 === "!edgeName")
-            this._iterationOrder.sortRange(compareNodeAndEdge, leftBound, rightBound, count);
+            this._iterationOrder.sortRange(compareNodeAndEdge, leftBound, rightBound, windowLeft, windowRight);
         else
-            this._iterationOrder.sortRange(compareNodeAndNode, leftBound, rightBound, count);
+            this._iterationOrder.sortRange(compareNodeAndNode, leftBound, rightBound, windowLeft, windowRight);
     },
 
     __proto__: WebInspector.HeapSnapshotFilteredOrderedIterator.prototype
@@ -1787,7 +1794,7 @@ WebInspector.HeapSnapshotNodesProvider.prototype = {
         return -1;
     },
 
-    sort: function(comparator, leftBound, rightBound, count)
+    sort: function(comparator, leftBound, rightBound, windowLeft, windowRight)
     {
         var fieldName1 = comparator.fieldName1;
         var fieldName2 = comparator.fieldName2;
@@ -1816,7 +1823,7 @@ WebInspector.HeapSnapshotNodesProvider.prototype = {
             return result;
         }
 
-        this._iterationOrder.sortRange(sortByComparator, leftBound, rightBound, count);
+        this._iterationOrder.sortRange(sortByComparator, leftBound, rightBound, windowLeft, windowRight);
     },
 
     __proto__: WebInspector.HeapSnapshotFilteredOrderedIterator.prototype

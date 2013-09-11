@@ -137,11 +137,12 @@ Array.prototype.binaryIndexOf = function(value, comparator) {}
  * @param {function(number, number): number} comparator
  * @param {number} leftBound
  * @param {number} rightBound
- * @param {number} k
+ * @param {number} sortWindowLeft
+ * @param {number} sortWindowRight
  * @return {!Array.<number>}
  * @this {Array.<number>}
  */
-Array.prototype.sortRange = function(comparator, leftBound, rightBound, k) {}
+Array.prototype.sortRange = function(comparator, leftBound, rightBound, sortWindowLeft, sortWindowRight) {}
 
 /**
  * @this {Array.<number>}
