@@ -165,6 +165,7 @@ WebInspector.ScreencastView.prototype = {
 
         if (!this._inspectModeConfig || event.type === "mousewheel") {
             this._simulateTouchGestureForMouseEvent(event);
+            event.preventDefault();
             return;
         }
 
@@ -236,9 +237,17 @@ WebInspector.ScreencastView.prototype = {
             } else if (event.type === "mouseup") {
                 InputAgent.dispatchGestureEvent("scrollEnd", x, y, timeStamp);
             } else if (event.type === "mousewheel") {
-                InputAgent.dispatchGestureEvent("scrollBegin", x, y, timeStamp);
-                InputAgent.dispatchGestureEvent("scrollUpdate", x, y, timeStamp, event.wheelDeltaX, event.wheelDeltaY);
-                InputAgent.dispatchGestureEvent("scrollEnd", x, y, timeStamp);
+                if (event.altKey) {
+                    var factor = 1.1;
+                    var scale = event.wheelDeltaY < 0 ? 1 / factor : factor;
+                    InputAgent.dispatchGestureEvent("pinchBegin", x, y, timeStamp);
+                    InputAgent.dispatchGestureEvent("pinchUpdate", x, y, timeStamp, 0, 0, scale);
+                    InputAgent.dispatchGestureEvent("pinchEnd", x, y, timeStamp);
+                } else {
+                    InputAgent.dispatchGestureEvent("scrollBegin", x, y, timeStamp);
+                    InputAgent.dispatchGestureEvent("scrollUpdate", x, y, timeStamp, event.wheelDeltaX, event.wheelDeltaY);
+                    InputAgent.dispatchGestureEvent("scrollEnd", x, y, timeStamp);
+                }
             } else if (event.type === "click") {
                 InputAgent.dispatchGestureEvent("tapDown", x, y, timeStamp);
                 InputAgent.dispatchGestureEvent("tap", x, y, timeStamp);
