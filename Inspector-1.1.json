@@ -799,7 +799,8 @@
             {
                 "id": "Timestamp",
                 "type": "number",
-                "description": "Number of seconds since epoch."
+                "description": "Number of seconds since epoch.",
+                "hidden": true
             },
             {
                 "id": "ConsoleMessage",
@@ -1818,7 +1819,8 @@
                 "items": { "type": "number" },
                 "minItems": 8,
                 "maxItems": 8,
-                "description": "An array of quad vertices, x immediately followed by y for each point, points clock-wise."
+                "description": "An array of quad vertices, x immediately followed by y for each point, points clock-wise.",
+                "hidden": true
             },
             {
                 "id": "BoxModel",
@@ -2914,7 +2916,8 @@
                         ]
                     }
                 ],
-                "description": "Error data for setScriptSource command. compileError is a case type for uncompilable script source error."
+                "description": "Error data for setScriptSource command. compileError is a case type for uncompilable script source error.",
+                "hidden": true
             }
         ],
         "commands": [
