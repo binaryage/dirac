@@ -77,6 +77,8 @@ WebInspector.ScreencastView = function()
 
 WebInspector.ScreencastView._bordersSize = 40;
 
+WebInspector.ScreencastView._navBarHeight = 29;
+
 WebInspector.ScreencastView._HttpRegex = /^https?:\/\/(.+)/;
 
 WebInspector.ScreencastView.prototype = {
@@ -599,7 +601,7 @@ WebInspector.ScreencastView.prototype = {
         const gutterSize = 30;
         const bordersSize = WebInspector.ScreencastView._bordersSize;
         return { width: this.element.offsetWidth - bordersSize - gutterSize,
-                 height: this.element.offsetHeight - bordersSize - gutterSize };
+                 height: this.element.offsetHeight - bordersSize - gutterSize - WebInspector.ScreencastView._navBarHeight};
     },
 
     /**
