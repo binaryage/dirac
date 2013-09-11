@@ -2286,16 +2286,25 @@ WebInspector.StylePropertyTreeElement.prototype = {
         WebInspector.showPanel("scripts").showUILocation(uiLocation);
     },
 
+    /**
+     * @param {Element} element
+     */
     _isNameElement: function(element)
     {
         return element.enclosingNodeOrSelfWithClass("webkit-css-property") === this.nameElement;
     },
 
+    /**
+     * @param {Element} element
+     */
     _isValueElement: function(element)
     {
         return !!element.enclosingNodeOrSelfWithClass("value");
     },
 
+    /**
+     * @param {Element=} selectElement
+     */
     startEditing: function(selectElement)
     {
         // FIXME: we don't allow editing of longhand properties under a shorthand right now.
@@ -2314,15 +2323,12 @@ WebInspector.StylePropertyTreeElement.prototype = {
         else
             selectElement = selectElement.enclosingNodeOrSelfWithClass("webkit-css-property") || selectElement.enclosingNodeOrSelfWithClass("value");
 
-        var isEditingName = selectElement === this.nameElement;
-        if (!isEditingName) {
-            if (selectElement !== this.valueElement) {
-                // Click in the LI - start editing value.
-                selectElement = this.valueElement;
-            }
+        if (WebInspector.isBeingEdited(selectElement))
+            return;
 
+        var isEditingName = selectElement === this.nameElement;
+        if (!isEditingName)
             this.valueElement.textContent = (!this._newProperty && WebInspector.CSSMetadata.isColorAwareProperty(this.name)) ? formatColors(this.value) : this.value;
-        }
 
         /**
          * @param {string} value
@@ -2340,9 +2346,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
             }
             return result.join("");
         }
-
-        if (WebInspector.isBeingEdited(selectElement))
-            return;
 
         var context = {
             expanded: this.expanded,
