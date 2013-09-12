@@ -72,6 +72,9 @@ WebInspector.ScreencastView = function()
     this._context = this._canvasElement.getContext("2d");
     this._checkerboardPattern = this._createCheckerboardPattern(this._context);
 
+    this._shortcuts = /** !Object.<number, function(Event=):boolean> */ ({});
+    this._shortcuts[WebInspector.KeyboardShortcut.makeKey("l", WebInspector.KeyboardShortcut.Modifiers.Ctrl)] = this._focusNavigationBar.bind(this);
+
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
 }
 
@@ -168,6 +171,8 @@ WebInspector.ScreencastView.prototype = {
         if (!this._inspectModeConfig || event.type === "mousewheel") {
             this._simulateTouchGestureForMouseEvent(event);
             event.preventDefault();
+            if (event.type === "mousedown")
+                this._canvasElement.focus();
             return;
         }
 
@@ -190,10 +195,17 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {KeyboardEvent} event
      */
     _handleKeyEvent: function(event)
     {
+        var shortcutKey = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
+        var handler = this._shortcuts[shortcutKey];
+        if (handler && handler(event)) {
+            event.consume();
+            return;
+        }
+
         var type;
         switch (event.type) {
         case "keydown": type = "keyDown"; break;
@@ -683,6 +695,7 @@ WebInspector.ScreencastView.prototype = {
         if (!url.match(WebInspector.ScreencastView._HttpRegex))
             url = "http://" + url;
         PageAgent.navigate(url);
+        this._canvasElement.focus();
     },
 
     _requestNavigationHistory: function()
@@ -708,5 +721,12 @@ WebInspector.ScreencastView.prototype = {
         this._navigationUrl.value = url;
     },
 
-    __proto__: WebInspector.View.prototype
+    _focusNavigationBar: function()
+    {
+        this._navigationUrl.focus();
+        this._navigationUrl.select();
+        return true;
+    },
+
+  __proto__: WebInspector.View.prototype
 }
