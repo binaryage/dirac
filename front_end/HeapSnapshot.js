@@ -1737,6 +1737,8 @@ WebInspector.HeapSnapshotEdgesProvider.prototype = {
             var result = compareEdgeFieldName(ascending1, indexA, indexB);
             if (result === 0)
                 result = compareNodeField(fieldName2, ascending2, indexA, indexB);
+            if (result === 0)
+                return indexA - indexB;
             return result;
         }
 
@@ -1744,6 +1746,8 @@ WebInspector.HeapSnapshotEdgesProvider.prototype = {
             var result = compareNodeField(fieldName1, ascending1, indexA, indexB);
             if (result === 0)
                 result = compareEdgeFieldName(ascending2, indexA, indexB);
+            if (result === 0)
+                return indexA - indexB;
             return result;
         }
 
@@ -1751,6 +1755,8 @@ WebInspector.HeapSnapshotEdgesProvider.prototype = {
             var result = compareNodeField(fieldName1, ascending1, indexA, indexB);
             if (result === 0)
                 result = compareNodeField(fieldName2, ascending2, indexA, indexB);
+            if (result === 0)
+                return indexA - indexB;
             return result;
         }
 
@@ -1820,6 +1826,8 @@ WebInspector.HeapSnapshotNodesProvider.prototype = {
             var result = sortByNodeField(fieldName1, ascending1);
             if (result === 0)
                 result = sortByNodeField(fieldName2, ascending2);
+            if (result === 0)
+                return indexA - indexB;
             return result;
         }
 
