@@ -43,6 +43,7 @@ WebInspector.JSHeapSnapshot = function(profile, progress)
         visitedMarkerMask: 0x0ffff, // bits: 0,1111,1111,1111,1111
         visitedMarker:     0x10000  // bits: 1,0000,0000,0000,0000
     };
+    this._lazyStringCache = { };
     WebInspector.HeapSnapshot.call(this, profile, progress);
 }
 
@@ -393,6 +394,52 @@ WebInspector.JSHeapSnapshotNode.prototype = {
     {
         var flags = this._snapshot._flagsOfNode(this);
         return !!(flags & this._snapshot._nodeFlags.pageObject);
+    },
+
+
+    name: function() {
+        var snapshot = this._snapshot;
+        if (this._type() === snapshot._nodeConsStringType) {
+            var string = snapshot._lazyStringCache[this.nodeIndex];
+            if (typeof string === "undefined") {
+                string = this._consStringName();
+                snapshot._lazyStringCache[this.nodeIndex] = string;
+            }
+            return string;
+        }
+        return WebInspector.HeapSnapshotNode.prototype.name.call(this);
+    },
+
+    _consStringName: function()
+    {
+        var snapshot = this._snapshot;
+        var consStringType = snapshot._nodeConsStringType;
+        var edgeInternalType = snapshot._edgeInternalType;
+        var nodesStack = [];
+        nodesStack.push(this.nodeIndex);
+        var currentNode = snapshot.createNode();
+        var name = "";
+        while (nodesStack.length && name.length < 1024) {
+            currentNode.nodeIndex = nodesStack.pop();
+            if (currentNode._type() !== consStringType) {
+                name += currentNode.name();
+                continue;
+            }
+            var firstNodeIndex = 0;
+            var secondNodeIndex = 0;
+            for (var iterator = currentNode.edges(); iterator.hasNext() && (!firstNodeIndex || !secondNodeIndex); iterator.next()) {
+                var edge = iterator.item();
+                if (edge._type() === edgeInternalType) {
+                    if (edge.name() === "first")
+                        firstNodeIndex = edge.nodeIndex();
+                    else if (edge.name() === "second")
+                        secondNodeIndex = edge.nodeIndex();
+                }
+            }
+            nodesStack.push(secondNodeIndex);
+            nodesStack.push(firstNodeIndex);
+        }
+        return name;
     },
 
     className: function()

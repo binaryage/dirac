@@ -593,6 +593,8 @@ WebInspector.HeapSnapshot.prototype = {
         this._nodeHiddenType = this._nodeTypes.indexOf("hidden");
         this._nodeObjectType = this._nodeTypes.indexOf("object");
         this._nodeNativeType = this._nodeTypes.indexOf("native");
+        this._nodeConsStringType = this._nodeTypes.indexOf("concatenated string");
+        this._nodeSlicedStringType = this._nodeTypes.indexOf("sliced string");
         this._nodeCodeType = this._nodeTypes.indexOf("code");
         this._nodeSyntheticType = this._nodeTypes.indexOf("synthetic");
 

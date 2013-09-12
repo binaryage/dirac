@@ -431,6 +431,7 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
         var value = this._name;
         var valueStyle = "object";
         switch (this._type) {
+        case "concatenated string":
         case "string":
             value = "\"" + value + "\"";
             valueStyle = "string";
