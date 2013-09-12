@@ -111,6 +111,7 @@
 
 .script-view-fallback {
     word-wrap: break-word;
+    white-space: pre-wrap;
     -webkit-user-select: text;
     background-color: inherit;
 }
