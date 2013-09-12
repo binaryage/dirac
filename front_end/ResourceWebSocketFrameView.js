@@ -28,10 +28,10 @@ WebInspector.ResourceWebSocketFrameView = function(resource)
     this.element.removeChildren();
 
     this._dataGrid = new WebInspector.DataGrid([
-        {id: "data", title: WebInspector.UIString("Data"), sortable: false, weight: 88},
+        {id: "data", title: WebInspector.UIString("Data"), sortable: false, weight: 88, longText: true},
         {id: "length", title: WebInspector.UIString("Length"), sortable: false, alig: WebInspector.DataGrid.Align.Right, weight: 5},
         {id: "time", title: WebInspector.UIString("Time"), weight: 7}
-    ]);
+    ], undefined, undefined, undefined, this._onContextMenu.bind(this));
 
     this.refresh();
     this._dataGrid.setName("ResourceWebSocketFrameView");
@@ -48,7 +48,7 @@ WebInspector.ResourceWebSocketFrameView.OpCodes = {
 };
 
 WebInspector.ResourceWebSocketFrameView.prototype = {
-    appendFrame: function (frame)
+    appendFrame: function(frame)
     {
         var payload = frame;
 
@@ -98,7 +98,7 @@ WebInspector.ResourceWebSocketFrameView.prototype = {
             node.element.classList.add("resource-websocket-row-" + rowClass);
     },
 
-    refresh: function ()
+    refresh: function()
     {
         this._dataGrid.rootNode().removeChildren();
         var frames = this.resource.frames();
@@ -107,10 +107,27 @@ WebInspector.ResourceWebSocketFrameView.prototype = {
         }
     },
 
-    show: function (parentElement, insertBefore)
+    show: function(parentElement, insertBefore)
     {
         this.refresh();
         WebInspector.View.prototype.show.call(this, parentElement, insertBefore);
+    },
+
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {WebInspector.DataGridNode} node
+     */
+    _onContextMenu: function(contextMenu, node)
+    {
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy message" : "Copy Message"), this._copyMessage.bind(this, node.data));
+    },
+
+    /**
+     * @param {!Object} row
+     */
+    _copyMessage: function(row)
+    {
+        InspectorFrontendHost.copyText(row.data);
     },
 
     __proto__: WebInspector.View.prototype
