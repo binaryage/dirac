@@ -41,6 +41,7 @@ def write_devtools_extension_api(output, input_names):
     output.write("""
         var tabId;
         var extensionInfo = {};
+        var extensionServer;
         platformExtensionAPI(injectedExtensionAPI("remote-" + window.parent.frames.length));
     })();""")
 
