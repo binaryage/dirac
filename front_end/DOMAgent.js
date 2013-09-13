@@ -1177,6 +1177,24 @@ WebInspector.DOMAgent.prototype = {
     },
 
     /**
+     * @param {DOMAgent.NodeId} parentId
+     * @param {DOMAgent.Node} pseudoElement
+     */
+    _pseudoElementAdded: function(parentId, pseudoElement)
+    {
+        // FIXME: Implement.
+    },
+
+    /**
+     * @param {DOMAgent.NodeId} parentId
+     * @param {DOMAgent.NodeId} pseudoElementId
+     */
+    _pseudoElementRemoved: function(parentId, pseudoElementId)
+    {
+        // FIXME: Implement.
+    },
+
+    /**
      * @param {WebInspector.DOMNode} node
      */
     _unbind: function(node)
@@ -1568,6 +1586,24 @@ WebInspector.DOMDispatcher.prototype = {
     shadowRootPopped: function(hostId, rootId)
     {
         this._domAgent._shadowRootPopped(hostId, rootId);
+    },
+
+    /**
+     * @param {DOMAgent.NodeId} parentId
+     * @param {DOMAgent.Node} pseudoElement
+     */
+    pseudoElementAdded: function(parentId, pseudoElement)
+    {
+        this._domAgent._pseudoElementAdded(parentId, pseudoElement);
+    },
+
+    /**
+     * @param {DOMAgent.NodeId} parentId
+     * @param {DOMAgent.NodeId} pseudoElementId
+     */
+    pseudoElementRemoved: function(parentId, pseudoElementId)
+    {
+        this._domAgent._pseudoElementRemoved(parentId, pseudoElementId);
     }
 }
 

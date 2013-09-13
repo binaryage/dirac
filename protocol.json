@@ -1760,6 +1760,12 @@
                 "hidden": true
             },
             {
+                "id": "PseudoType",
+                "type": "string",
+                "enum": ["before", "after"],
+                "description": "Pseudo element type."
+            },
+            {
                 "id": "Node",
                 "type": "object",
                 "properties": [
@@ -1779,10 +1785,12 @@
                     { "name": "xmlVersion", "type": "string", "optional": true, "description": "<code>Document</code>'s XML version in case of XML documents." },
                     { "name": "name", "type": "string", "optional": true, "description": "<code>Attr</code>'s name." },
                     { "name": "value", "type": "string", "optional": true, "description": "<code>Attr</code>'s value." },
+                    { "name": "pseudoType", "$ref": "PseudoType", "optional": true, "description": "Pseudo element type for this node." },
                     { "name": "frameId", "$ref": "Page.FrameId", "optional": true, "description": "Frame ID for frame owner elements.", "hidden": true },
                     { "name": "contentDocument", "$ref": "Node", "optional": true, "description": "Content document for frame owner elements." },
                     { "name": "shadowRoots", "type": "array", "optional": true, "items": { "$ref": "Node" }, "description": "Shadow root list for given element host.", "hidden": true },
-                    { "name": "templateContent", "$ref": "Node", "optional": true, "description": "Content document fragment for template elements", "hidden": true }
+                    { "name": "templateContent", "$ref": "Node", "optional": true, "description": "Content document fragment for template elements.", "hidden": true },
+                    { "name": "pseudoElements", "type": "array", "items": { "$ref": "Node" }, "optional": true, "description": "Pseudo elements associated with this node.", "hidden": true }
                 ],
                 "description": "DOM interaction is implemented in terms of mirror objects that represent the actual DOM nodes. DOMNode is a base node mirror type."
             },
@@ -2294,6 +2302,24 @@
                     { "name": "rootId", "$ref": "NodeId", "description": "Shadow root id." }
                 ],
                 "description": "Called when shadow root is popped from the element.",
+                "hidden": true
+            },
+            {
+                "name": "pseudoElementAdded",
+                "parameters": [
+                    { "name": "parentId", "$ref": "NodeId", "description": "Pseudo element's parent element id." },
+                    { "name": "pseudoElement", "$ref": "Node", "description": "The added pseudo element." }
+                ],
+                "description": "Called when a pseudo element is added to an element.",
+                "hidden": true
+            },
+            {
+                "name": "pseudoElementRemoved",
+                "parameters": [
+                    { "name": "parentId", "$ref": "NodeId", "description": "Pseudo element's parent element id." },
+                    { "name": "pseudoElementId", "$ref": "NodeId", "description": "The removed pseudo element id." }
+                ],
+                "description": "Called when a pseudo element is removed from an element.",
                 "hidden": true
             }
         ]
