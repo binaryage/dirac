@@ -264,18 +264,10 @@ WebInspector.BreakpointManager.prototype = {
             breakpoints[i].remove();
     },
 
-    reset: function()
+    removeProvisionalBreakpoints: function()
     {
-        // Remove all breakpoints from UI and debugger, do not update storage.
-        this._storage._muted = true;
-        this.removeAllBreakpoints();
-        delete this._storage._muted;
-
-        // Remove all provisional breakpoints from the debugger.
         for (var debuggerId in this._breakpointForDebuggerId)
             this._debuggerModel.removeBreakpoint(debuggerId);
-        this._breakpointForDebuggerId = {};
-        this._sourceFilesWithRestoredBreakpoints = {};
     },
 
     _projectWillReset: function(event)
