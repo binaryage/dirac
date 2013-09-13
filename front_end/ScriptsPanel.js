@@ -129,9 +129,6 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
     this.registerShortcuts(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.GoToMember, this._showOutlineDialog.bind(this));
     this.registerShortcuts(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.ToggleBreakpoint, this._toggleBreakpoint.bind(this));
 
-    this._pauseOnExceptionButton = new WebInspector.StatusBarButton("", "scripts-pause-on-exceptions-status-bar-item", 3);
-    this._pauseOnExceptionButton.addEventListener("click", this._togglePauseOnExceptions, this);
-
     this._toggleFormatSourceButton = new WebInspector.StatusBarButton(WebInspector.UIString("Pretty print"), "scripts-toggle-pretty-print-status-bar-item");
     this._toggleFormatSourceButton.toggled = false;
     this._toggleFormatSourceButton.addEventListener("click", this._toggleFormatSource, this);
@@ -182,7 +179,7 @@ WebInspector.ScriptsPanel = function(workspaceForTest)
 WebInspector.ScriptsPanel.prototype = {
     get statusBarItems()
     {
-        return [this._pauseOnExceptionButton.element, this._toggleFormatSourceButton.element, this._scriptViewStatusBarItemsContainer];
+        return [this._toggleFormatSourceButton.element, this._scriptViewStatusBarItemsContainer];
     },
 
     /**
@@ -317,7 +314,7 @@ WebInspector.ScriptsPanel.prototype = {
                 this.sidebarPanes.jsBreakpoints.highlightBreakpoint(breakpoint);
                 this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a JavaScript breakpoint."));
             }
-            if (details.callFrames.length) 
+            if (details.callFrames.length)
                 details.callFrames[0].createLiveLocation(didGetUILocation.bind(this));
             else
                 console.warn("ScriptsPanel paused, but callFrames.length is zero."); // TODO remove this once we understand this case better
@@ -632,12 +629,6 @@ WebInspector.ScriptsPanel.prototype = {
 
     _updateDebuggerButtons: function()
     {
-        if (WebInspector.debuggerModel.debuggerEnabled()) {
-            this._pauseOnExceptionButton.visible = true;
-        } else {
-            this._pauseOnExceptionButton.visible = false;
-        }
-
         if (this._paused) {
             this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Resume script execution (%s)."))
             this._pauseButton.state = true;
@@ -920,10 +911,16 @@ WebInspector.ScriptsPanel.prototype = {
         this._stepOutButton = this._createButtonAndRegisterShortcuts("scripts-step-out", title, handler, WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepOut);
         debugToolbar.appendChild(this._stepOutButton.element);
 
+        // Toggle Breakpoints
         this._toggleBreakpointsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Deactivate breakpoints."), "scripts-toggle-breakpoints");
         this._toggleBreakpointsButton.toggled = false;
         this._toggleBreakpointsButton.addEventListener("click", this._toggleBreakpointsClicked, this);
         debugToolbar.appendChild(this._toggleBreakpointsButton.element);
+
+        // Pause on Exception
+        this._pauseOnExceptionButton = new WebInspector.StatusBarButton("", "scripts-pause-on-exceptions-status-bar-item", 3);
+        this._pauseOnExceptionButton.addEventListener("click", this._togglePauseOnExceptions, this);
+        debugToolbar.appendChild(this._pauseOnExceptionButton.element);
 
         this.debuggerStatusElement = document.createElement("div");
         this.debuggerStatusElement.id = "scripts-debugger-status";
@@ -1195,7 +1192,7 @@ WebInspector.ScriptsPanel.prototype = {
         var shouldHideNavigator;
         var uiSourceCode;
         project.createFile(path, null, fileCreated.bind(this));
-        
+
         /**
          * @param {?string} path
          */
@@ -1212,7 +1209,7 @@ WebInspector.ScriptsPanel.prototype = {
                 this._navigatorController.showNavigatorOverlay();
             this._navigator.rename(uiSourceCode, callback.bind(this));
         }
-    
+
         /**
          * @param {boolean} committed
          */
@@ -1236,12 +1233,12 @@ WebInspector.ScriptsPanel.prototype = {
     _itemRenamingRequested: function(event)
     {
         var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
-        
+
         var shouldHideNavigator = !this._navigatorController.isNavigatorPinned();
         if (this._navigatorController.isNavigatorHidden())
             this._navigatorController.showNavigatorOverlay();
         this._navigator.rename(uiSourceCode, callback.bind(this));
-    
+
         /**
          * @param {boolean} committed
          */
@@ -1272,14 +1269,14 @@ WebInspector.ScriptsPanel.prototype = {
         this._appendFunctionItems(contextMenu, target);
     },
 
-    /** 
+    /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      */
     _mapFileSystemToNetwork: function(uiSourceCode)
     {
-        WebInspector.SelectUISourceCodeForProjectTypeDialog.show(uiSourceCode.name(), WebInspector.projectTypes.Network, mapFileSystemToNetwork.bind(this), this.editorView.mainElement)                
+        WebInspector.SelectUISourceCodeForProjectTypeDialog.show(uiSourceCode.name(), WebInspector.projectTypes.Network, mapFileSystemToNetwork.bind(this), this.editorView.mainElement)
 
-        /** 
+        /**
          * @param {WebInspector.UISourceCode} networkUISourceCode
          */
         function mapFileSystemToNetwork(networkUISourceCode)
@@ -1288,7 +1285,7 @@ WebInspector.ScriptsPanel.prototype = {
         }
     },
 
-    /** 
+    /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      */
     _removeNetworkMapping: function(uiSourceCode)
@@ -1297,14 +1294,14 @@ WebInspector.ScriptsPanel.prototype = {
             this._workspace.removeMapping(uiSourceCode);
     },
 
-    /** 
+    /**
      * @param {WebInspector.UISourceCode} networkUISourceCode
      */
     _mapNetworkToFileSystem: function(networkUISourceCode)
     {
-        WebInspector.SelectUISourceCodeForProjectTypeDialog.show(networkUISourceCode.name(), WebInspector.projectTypes.FileSystem, mapNetworkToFileSystem.bind(this), this.editorView.mainElement)                
+        WebInspector.SelectUISourceCodeForProjectTypeDialog.show(networkUISourceCode.name(), WebInspector.projectTypes.FileSystem, mapNetworkToFileSystem.bind(this), this.editorView.mainElement)
 
-        /** 
+        /**
          * @param {WebInspector.UISourceCode} uiSourceCode
          */
         function mapNetworkToFileSystem(uiSourceCode)
@@ -1313,7 +1310,7 @@ WebInspector.ScriptsPanel.prototype = {
         }
     },
 
-    /** 
+    /**
      * @param {WebInspector.ContextMenu} contextMenu
      * @param {WebInspector.UISourceCode} uiSourceCode
      */
@@ -1328,7 +1325,7 @@ WebInspector.ScriptsPanel.prototype = {
         }
 
         if (uiSourceCode.project().type() === WebInspector.projectTypes.Network) {
-            /** 
+            /**
              * @param {WebInspector.Project} project
              */
             function filterProject(project)
@@ -1343,7 +1340,7 @@ WebInspector.ScriptsPanel.prototype = {
         }
     },
 
-    /** 
+    /**
      * @param {WebInspector.ContextMenu} contextMenu
      * @param {Object} target
      */
@@ -1359,7 +1356,7 @@ WebInspector.ScriptsPanel.prototype = {
             this._appendUISourceCodeMappingItems(contextMenu, uiSourceCode);
     },
 
-    /** 
+    /**
      * @param {WebInspector.ContextMenu} contextMenu
      * @param {Object} target
      */
