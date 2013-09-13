@@ -120,7 +120,6 @@ modules = [
             "NetworkRequest.js",
             "UISourceCode.js",
             "Workspace.js",
-            "protocol_externs.js",
         ]
     },
     {
@@ -467,13 +466,15 @@ if process_recursively:
             modules.append(modules_by_name[sys.argv[i]])
     for module in modules:
         command = compiler_command
-        command += "    --externs " + devtools_frontend_path + "/externs.js"
+        command += "    --externs " + devtools_frontend_path + "/externs.js" + " \\\n"
+        command += "    --externs " + protocol_externs_path
         command += dump_module(module["name"], True, {})
-        print "Compiling \"" + module["name"] + "\""
+        print "Compiling \"" + module["name"] + "\"..."
         os.system(command)
 else:
     command = compiler_command
-    command += "    --externs " + devtools_frontend_path + "/externs.js"
+    command += "    --externs " + devtools_frontend_path + "/externs.js" + " \\\n"
+    command += "    --externs " + protocol_externs_path
     for module in modules:
         command += dump_module(module["name"], False, {})
     print "Compiling front_end..."

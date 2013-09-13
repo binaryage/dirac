@@ -391,7 +391,7 @@ WebInspector.Cookies.getCookiesAsync = function(callback)
 }
 
 /**
- * @param {!PageAgent.Cookie} protocolCookie
+ * @param {PageAgent.Cookie} protocolCookie
  * @return {!WebInspector.Cookie}
  */
 WebInspector.Cookies.buildCookieProtocolObject = function(protocolCookie)

@@ -418,7 +418,7 @@ WebInspector.CSSStyleModel.prototype = {
     },
 
     /**
-     * @param {!CSSAgent.CSSStyleSheetHeader} header
+     * @param {CSSAgent.CSSStyleSheetHeader} header
      */
     _styleSheetAdded: function(header)
     {
