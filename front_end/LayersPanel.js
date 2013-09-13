@@ -91,6 +91,8 @@ WebInspector.LayersPanel.prototype = {
             this._selectLayer(null);
         if (this._currentlyHoveredLayer && !this._model.layerById(this._currentlyHoveredLayer.id()))
             this._hoverLayer(null);
+        if (this._currentlySelectedLayer)
+            this._layerDetailsView.showLayer(this._currentlySelectedLayer);
     },
 
     /**

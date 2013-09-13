@@ -131,18 +131,16 @@ WebInspector.LayerTree.prototype = {
             }
         }
         this._model.forEachLayer(updateLayer.bind(this), this._model.contentRoot());
-        // Cleanup layers that don't exist anymore from tree
-        for (var i = 0; i < this._treeOutline.children.length; ++i) {
-            for (var node = this._treeOutline.children[i]; node;) {
-                if (seenLayers[node.representedObject.id()]) {
-                    node = node.traverseNextTreeElement(false);
-                } else {
-                    var nextNode = node.nextSibling || node.parent;
-                    node.parent.removeChild(node);
-                    if (node === this._lastHoveredNode)
-                        this._lastHoveredNode = null;
-                    node = nextNode;
-                }
+        // Cleanup layers that don't exist anymore from tree.
+        for (var node = /** @type {TreeElement|TreeOutline} */(this._treeOutline.children[0]); node && !node.root;) {
+            if (seenLayers[node.representedObject.id()]) {
+                node = node.traverseNextTreeElement(false);
+            } else {
+                var nextNode = node.nextSibling || node.parent;
+                node.parent.removeChild(node);
+                if (node === this._lastHoveredNode)
+                    this._lastHoveredNode = null;
+                node = nextNode;
             }
         }
     },

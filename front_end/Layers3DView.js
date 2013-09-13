@@ -165,22 +165,22 @@ WebInspector.Layers3DView.prototype = {
         }
         if (!this._model.contentRoot()) {
             this._emptyView.show(this.element);
+            this._rotatingContainerElement.removeChildren();
             return;
         }
         this._emptyView.detach();
         function updateLayer(layer)
         {
-            var element = this._elementForLayer(layer);
-            this._updateLayerElement(element);
-            for (var childElement = element.firstElementChild; childElement;) {
-                var nextElement = childElement.nextSibling;
-                if (childElement.__layer && !this._model.layerById(childElement.__layer.id()))
-                    childElement.remove();
-                childElement = nextElement;
-            }
+            this._updateLayerElement(this._elementForLayer(layer));
         }
         this._clientWidth = this.element.clientWidth;
         this._clientHeight = this.element.clientHeight;
+        for (var layerId in this._elementsByLayerId) {
+            if (this._model.layerById(layerId))
+                continue;
+            this._elementsByLayerId[layerId].remove();
+            delete this._elementsByLayerId[layerId];
+        }
         this._scaleToFit();
         this._model.forEachLayer(updateLayer.bind(this), this._model.contentRoot());
         this._needsUpdate = false;
@@ -193,8 +193,12 @@ WebInspector.Layers3DView.prototype = {
     _elementForLayer: function(layer)
     {
         var element = this._elementsByLayerId[layer.id()];
-        if (element)
+        if (element) {
+            // We might have missed an update were a layer with given id was gone and re-created,
+            // so update reference to point to proper layer object.
+            element.__layer = layer;
             return element;
+        }
         element = document.createElement("div");
         element.className = "layer-container";
         element.__layer = layer;
