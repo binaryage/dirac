@@ -1383,19 +1383,41 @@ WebInspector.NetworkLogView.prototype = {
         var command = ["curl"];
         var ignoredHeaders = {};
 
-        function escapeCharacter(x)
+        function escapeStringWin(str)
         {
-           var code = x.charCodeAt(0);
-           if (code < 256) {
-             // Add leading zero when needed to not care about the next character.
-             return code < 16 ? "\\x0" + code.toString(16) : "\\x" + code.toString(16);
-           }
-           code = code.toString(16);
-           return "\\u" + ("0000" + code).substr(code.length, 4);
+            /* Replace quote by double quote (but not by \") because it is
+               recognized by both cmd.exe and MS Crt arguments parser.
+
+               Replace % by "%" because it could be expanded to an environment
+               variable value. So %% becomes "%""%". Even if an env variable ""
+               (2 doublequotes) is declared, the cmd.exe will not
+               substitute it with its value.
+
+               Replace each backslash with double backslash to make sure
+               MS Crt arguments parser won't collapse them.
+
+               Replace new line outside of quotes since cmd.exe doesn't let
+               to do it inside.
+            */
+            return "\"" + str.replace(/"/g, "\"\"")
+                             .replace(/%/g, "\"%\"")
+                             .replace(/\\/g, "\\\\")
+                             .replace(/[\r\n]+/g, "\"^$&\"") + "\"";
         }
 
-        function escape(str)
+        function escapeStringPosix(str)
         {
+            function escapeCharacter(x)
+            {
+                var code = x.charCodeAt(0);
+                if (code < 256) {
+                    // Add leading zero when needed to not care about the next character.
+                    return code < 16 ? "\\x0" + code.toString(16) : "\\x" + code.toString(16);
+                 }
+                 code = code.toString(16);
+                 return "\\u" + ("0000" + code).substr(code.length, 4);
+             }
+
             if (/[^\x20-\x7E]|\'/.test(str)) {
                 // Use ANSI-C quoting syntax.
                 return "$\'" + str.replace(/\\/g, "\\\\")
@@ -1408,19 +1430,24 @@ WebInspector.NetworkLogView.prototype = {
                 return "'" + str + "'";
             }
         }
-        command.push(escape(request.url).replace(/[[{}\]]/g, "\\$&"));
+
+        // cURL command expected to run on the same platform that DevTools run
+        // (it may be different from the inspected page platform).
+        var escapeString = WebInspector.isWin() ? escapeStringWin : escapeStringPosix;
+
+        command.push(escapeString(request.url).replace(/[[{}\]]/g, "\\$&"));
 
         var inferredMethod = "GET";
         var data = [];
         var requestContentType = request.requestContentType();
         if (requestContentType && requestContentType.startsWith("application/x-www-form-urlencoded") && request.requestFormData) {
            data.push("--data");
-           data.push(escape(request.requestFormData));
+           data.push(escapeString(request.requestFormData));
            ignoredHeaders["Content-Length"] = true;
            inferredMethod = "POST";
         } else if (request.requestFormData) {
            data.push("--data-binary");
-           data.push(escape(request.requestFormData));
+           data.push(escapeString(request.requestFormData));
            ignoredHeaders["Content-Length"] = true;
            inferredMethod = "POST";
         }
@@ -1435,7 +1462,7 @@ WebInspector.NetworkLogView.prototype = {
             if (header.name in ignoredHeaders)
                 continue;
             command.push("-H");
-            command.push(escape(header.name + ": " + header.value));
+            command.push(escapeString(header.name + ": " + header.value));
         }
         command = command.concat(data);
         command.push("--compressed");
