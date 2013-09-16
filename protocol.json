@@ -810,7 +810,7 @@
                     { "name": "source", "type": "string", "enum": ["xml", "javascript", "network", "console-api", "storage", "appcache", "rendering", "css", "security", "other", "deprecation"], "description": "Message source." },
                     { "name": "level", "type": "string", "enum": ["log", "warning", "error", "debug"], "description": "Message severity." },
                     { "name": "text", "type": "string", "description": "Message text." },
-                    { "name": "type", "type": "string", "optional": true, "enum": ["log", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "timing", "profile", "profileEnd"], "description": "Console message type." },
+                    { "name": "type", "type": "string", "optional": true, "enum": ["log", "dir", "dirxml", "table", "trace", "clear", "startGroup", "startGroupCollapsed", "endGroup", "assert", "profile", "profileEnd"], "description": "Console message type." },
                     { "name": "url", "type": "string", "optional": true, "description": "URL of the message origin." },
                     { "name": "line", "type": "integer", "optional": true, "description": "Line number in the resource that generated this message." },
                     { "name": "column", "type": "integer", "optional": true, "description": "Column number in the resource that generated this message." },
@@ -2843,6 +2843,14 @@
         ],
         "commands": [
             {
+                "name": "enable",
+                "description": "Enables timeline. After this call, timeline can be started from within the page (for example upon console.timeline)."
+            },
+            {
+                "name": "disable",
+                "description": "Disables timeline."
+            },
+            {
                 "name": "start",
                 "parameters": [
                     { "name": "maxCallStackDepth", "optional": true, "type": "integer", "description": "Samples JavaScript stack traces up to <code>maxCallStackDepth</code>, defaults to 5." },
@@ -2864,6 +2872,22 @@
                     { "name": "record", "$ref": "TimelineEvent", "description": "Timeline event record data." }
                 ],
                 "description": "Fired for every instrumentation event while timeline is started."
+            },
+            {
+                "name": "started",
+                "parameters": [
+                    { "name": "consoleTimeline", "type": "boolean", "optional": true, "description": "If specified, identifies that timeline was started using console.timeline() call." }
+                ],
+                "description": "Fired when timeline is started.",
+                "hidden": true
+            },
+            {
+                "name": "stopped",
+                "parameters": [
+                    { "name": "consoleTimeline", "type": "boolean", "optional": true, "description": "If specified, identifies that timeline was started using console.timeline() call." }
+                ],
+                "description": "Fired when timeline is stopped.",
+                "hidden": true
             }
         ]
     },

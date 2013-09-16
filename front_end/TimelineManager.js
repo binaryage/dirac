@@ -37,6 +37,7 @@ WebInspector.TimelineManager = function()
     WebInspector.Object.call(this);
     this._dispatcher = new WebInspector.TimelineDispatcher(this);
     this._enablementCount = 0;
+    TimelineAgent.enable();
 }
 
 WebInspector.TimelineManager.EventTypes = {
@@ -50,33 +51,31 @@ WebInspector.TimelineManager.prototype = {
      * @param {number=} maxCallStackDepth
      * @param {boolean=} includeDomCounters
      * @param {boolean=} includeNativeMemoryStatistics
+     * @param {function(?Protocol.Error)=} callback
      */
-    start: function(maxCallStackDepth, includeDomCounters, includeNativeMemoryStatistics)
+    start: function(maxCallStackDepth, includeDomCounters, includeNativeMemoryStatistics, callback)
     {
         this._enablementCount++;
         if (this._enablementCount === 1)
-            TimelineAgent.start(maxCallStackDepth, includeDomCounters, includeNativeMemoryStatistics, this._started.bind(this));
+            TimelineAgent.start(maxCallStackDepth, includeDomCounters, includeNativeMemoryStatistics, callback);
+        else if (callback)
+            callback(null);
     },
 
-    stop: function()
+    /**
+     * @param {function(?Protocol.Error)=} callback
+     */
+    stop: function(callback)
     {
-        if (!this._enablementCount) {
-            console.error("WebInspector.TimelineManager start/stop calls are unbalanced");
+        this._enablementCount--;
+        if (this._enablementCount < 0) {
+            console.error("WebInspector.TimelineManager start/stop calls are unbalanced " + new Error().stack);
             return;
         }
-        this._enablementCount--;
         if (!this._enablementCount)
-            TimelineAgent.stop(this._stopped.bind(this));
-    },
-
-    _started: function()
-    {
-        this.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineStarted);
-    },
-
-    _stopped: function()
-    {
-        this.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineStopped);
+            TimelineAgent.stop(callback);
+        else if (callback)
+            callback(null);
     },
 
     __proto__: WebInspector.Object.prototype
@@ -93,9 +92,32 @@ WebInspector.TimelineDispatcher = function(manager)
 }
 
 WebInspector.TimelineDispatcher.prototype = {
+    /**
+     * @param {TimelineAgent.TimelineEvent} record
+     */
     eventRecorded: function(record)
     {
         this._manager.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, record);
+    },
+
+    /**
+     * @param {boolean=} consoleTimeline
+     */
+    started: function(consoleTimeline)
+    {
+        if (consoleTimeline) {
+            // Wake up timeline panel module.
+            WebInspector.panel("timeline");
+        }
+        this._manager.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineStarted, consoleTimeline);
+    },
+
+    /**
+     * @param {boolean=} consoleTimeline
+     */
+    stopped: function(consoleTimeline)
+    {
+        this._manager.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineStopped, consoleTimeline);
     }
 }
 

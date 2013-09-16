@@ -135,6 +135,8 @@ WebInspector.TimelinePanel = function()
 
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onTimelineEventRecorded, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
+    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
+    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
 
     this._registerShortcuts();
 
@@ -404,7 +406,7 @@ WebInspector.TimelinePanel.prototype = {
             return null;
         if (this.toggleTimelineButton.toggled) {
             this.toggleTimelineButton.toggled = false;
-            this._model.stopRecord();
+            this._model.stopRecording();
         }
         var progressIndicator = new WebInspector.ProgressIndicator();
         progressIndicator.addEventListener(WebInspector.ProgressIndicator.Events.Done, this._setOperationInProgress.bind(this, null));
@@ -568,14 +570,11 @@ WebInspector.TimelinePanel.prototype = {
         if (this._operationInProgress)
             return true;
         if (this.toggleTimelineButton.toggled) {
-            this._model.stopRecord();
-            this.toggleTimelineButton.title = WebInspector.UIString("Record");
+            this._model.stopRecording();
         } else {
-            this._model.startRecord(this._includeDomCounters);
-            this.toggleTimelineButton.title = WebInspector.UIString("Stop");
+            this._model.startRecording(this._includeDomCounters);
             WebInspector.userMetrics.TimelineStarted.record();
         }
-        this.toggleTimelineButton.toggled = !this.toggleTimelineButton.toggled;
         return true;
     },
 
@@ -614,10 +613,13 @@ WebInspector.TimelinePanel.prototype = {
 
     _onTimelineEventRecorded: function(event)
     {
-        if (this._innerAddRecordToTimeline(event.data))
+        if (this._innerAddRecordToTimeline(/** @type {TimelineAgent.TimelineEvent} */(event.data)))
             this._invalidateAndScheduleRefresh(false, false);
     },
 
+    /**
+     * @param {TimelineAgent.TimelineEvent} record
+     */
     _innerAddRecordToTimeline: function(record)
     {
         if (record.type === WebInspector.TimelineModel.RecordType.Program) {
@@ -683,6 +685,18 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._resetPanel();
         this._invalidateAndScheduleRefresh(true, true);
+    },
+
+    _onRecordingStarted: function()
+    {
+        this.toggleTimelineButton.title = WebInspector.UIString("Stop");
+        this.toggleTimelineButton.toggled = true;
+    },
+
+    _onRecordingStopped: function()
+    {
+        this.toggleTimelineButton.title = WebInspector.UIString("Record");
+        this.toggleTimelineButton.toggled = false;
     },
 
     _resetPanel: function()
