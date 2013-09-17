@@ -319,7 +319,7 @@ WebInspector.NetworkRequest.prototype = {
      */
     get cached()
     {
-        return this._cached && !this._transferSize;
+        return !!this._cached && !this._transferSize;
     },
 
     set cached(x)
