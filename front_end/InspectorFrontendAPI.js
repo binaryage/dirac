@@ -69,6 +69,35 @@ var InspectorFrontendAPI = {
             WebInspector.inspectElementModeController.toggleSearch();
     },
 
+    /**
+     * Focus on a particular line in the specified resource.
+     * @param {string} url The url to the resource.
+     * @param {number} lineNumber The line number to focus on.
+     * @param {number} columnNumber The column number to focus on.
+     */
+    revealSourceLine: function(url, lineNumber, columnNumber)
+    {
+        var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(url);
+        if (uiSourceCode) {
+            WebInspector.showPanel("scripts").showUISourceCode(uiSourceCode, lineNumber, columnNumber);
+            return;
+        }
+
+        /**
+         * @param {WebInspector.Event} event
+         */
+        function listener(event)
+        {
+            var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
+            if (uiSourceCode.url === url) {
+                WebInspector.showPanel("scripts").showUISourceCode(uiSourceCode, lineNumber, columnNumber);
+                WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener);
+            }
+        }
+
+        WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener);
+    },
+
     fileSystemsLoaded: function(fileSystems)
     {
         WebInspector.isolatedFileSystemDispatcher.fileSystemsLoaded(fileSystems);
