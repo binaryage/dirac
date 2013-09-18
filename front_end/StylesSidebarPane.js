@@ -2310,23 +2310,26 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
         var isEditingName = selectElement === this.nameElement;
         if (!isEditingName)
-            this.valueElement.textContent = (!this._newProperty && WebInspector.CSSMetadata.isColorAwareProperty(this.name)) ? formatColors(this.value) : this.value;
+            this.valueElement.textContent = restoreURLs(this.valueElement.textContent, this.value);
 
         /**
-         * @param {string} value
+         * @param {string} fieldValue
+         * @param {string} modelValue
          * @return {string}
          */
-        function formatColors(value)
+        function restoreURLs(fieldValue, modelValue)
         {
-            var result = [];
-            var items = value.replace(WebInspector.StylesSidebarPane._colorRegex, "\0$1\0").split("\0");
-            for (var i = 0; i < items.length; ++i) {
-                var color = WebInspector.Color.parse(items[i]);
-
-                // We can be called with valid non-color values of |text| (like 'none' from border style).
-                result.push(color ? color.toString(WebInspector.StylesSidebarPane._colorFormat(color)) : items[i]);
+            const urlRegex = /\b(url\([^)]*\))/g;
+            var splitFieldValue = fieldValue.split(urlRegex);
+            if (splitFieldValue.length === 1)
+                return fieldValue;
+            var modelUrlRegex = new RegExp(urlRegex);
+            for (var i = 1; i < splitFieldValue.length; i += 2) {
+                var match = modelUrlRegex.exec(modelValue);
+                if (match)
+                    splitFieldValue[i] = match[0];
             }
-            return result.join("");
+            return splitFieldValue.join("");
         }
 
         var context = {
