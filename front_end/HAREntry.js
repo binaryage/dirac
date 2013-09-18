@@ -49,14 +49,15 @@ WebInspector.HAREntry.prototype = {
      */
     build: function()
     {
-        var entry =  {
+        var entry = {
             startedDateTime: new Date(this._request.startTime * 1000),
-            time: WebInspector.HAREntry._toMilliseconds(this._request.duration),
+            time: this._request.timing ? WebInspector.HAREntry._toMilliseconds(this._request.duration) : 0,
             request: this._buildRequest(),
             response: this._buildResponse(),
             cache: { }, // Not supported yet.
             timings: this._buildTimings()
         };
+
         if (this._request.connectionId)
             entry.connection = String(this._request.connectionId);
         var page = WebInspector.networkLog.pageLoadForRequest(this._request);
@@ -125,24 +126,41 @@ WebInspector.HAREntry.prototype = {
      */
     _buildTimings: function()
     {
-        var waitForConnection = this._interval("connectStart", "connectEnd");
-        var blocked = 0;
+        // Order of events: request_start = 0, [proxy], [dns], [connect [ssl]], [send], receive_headers_end
+        // HAR 'blocked' time is time before first network activity.
+
+        var timing = this._request.timing;
+        if (!timing)
+            return {blocked: -1, dns: -1, connect: -1, send: 0, wait: 0, receive: 0, ssl: -1};
+
+        function firstNonNegative(values)
+        {
+            for (var i = 0; i < values.length; ++i) {
+                if (values[i] >= 0)
+                    return values[i];
+            }
+            console.assert(false, "Incomplete requet timing information.");
+        }
+
+        var blocked = firstNonNegative([timing.dnsStart, timing.connectStart, timing.sendStart]);
+
+        var dns = -1;
+        if (timing.dnsStart >= 0)
+            dns = firstNonNegative([timing.connectStart, timing.sendStart]) - timing.dnsStart;
+
         var connect = -1;
+        if (timing.connectStart >= 0)
+            connect = timing.sendStart - timing.connectStart;
 
-        if (this._request.connectionReused)
-            blocked = waitForConnection;
-        else
-            connect = waitForConnection;
+        var send = timing.sendEnd - timing.sendStart;
+        var wait = timing.receiveHeadersEnd - timing.sendEnd;
+        var receive = WebInspector.HAREntry._toMilliseconds(this._request.duration) - timing.receiveHeadersEnd;
 
-        return {
-            blocked: blocked,
-            dns: this._interval("dnsStart", "dnsEnd"),
-            connect: connect,
-            send: this._interval("sendStart", "sendEnd"),
-            wait: this._interval("sendEnd", "receiveHeadersEnd"),
-            receive: WebInspector.HAREntry._toMilliseconds(this._request.receiveDuration),
-            ssl: this._interval("sslStart", "sslEnd")
-        };
+        var ssl = -1;
+        if (timing.sslStart >= 0 && timing.sslEnd >= 0)
+            ssl = timing.sslEnd - timing.sslStart;
+
+        return {blocked: blocked, dns: dns, connect: connect, send: send, wait: wait, receive: receive, ssl: ssl};
     },
 
     /**
@@ -204,20 +222,6 @@ WebInspector.HAREntry.prototype = {
     },
 
     /**
-     * @param {string} start
-     * @param {string} end
-     * @return {number}
-     */
-    _interval: function(start, end)
-    {
-        var timing = this._request.timing;
-        if (!timing)
-            return -1;
-        var startTime = timing[start];
-        return typeof startTime !== "number" || startTime === -1 ? -1 : Math.round(timing[end] - startTime);
-    },
-
-    /**
      * @return {number}
      */
     get requestBodySize()
@@ -252,7 +256,7 @@ WebInspector.HAREntry.prototype = {
  */
 WebInspector.HAREntry._toMilliseconds = function(time)
 {
-    return time === -1 ? -1 : Math.round(time * 1000);
+    return time === -1 ? -1 : time * 1000;
 }
 
 /**

@@ -52,7 +52,6 @@ WebInspector.NetworkRequest = function(requestId, url, documentURL, frameId, loa
     this.statusText = "";
     this.requestMethod = "";
     this.requestTime = 0;
-    this.receiveHeadersEnd = 0;
 
     this._type = WebInspector.resourceTypes.Other;
     this._contentEncoded = false;
@@ -208,16 +207,6 @@ WebInspector.NetworkRequest.prototype = {
         if (this._responseReceivedTime === -1 || this._startTime === -1)
             return -1;
         return this._responseReceivedTime - this._startTime;
-    },
-
-    /**
-     * @return {number}
-     */
-    get receiveDuration()
-    {
-        if (this._endTime === -1 || this._responseReceivedTime === -1)
-            return -1;
-        return this._endTime - this._responseReceivedTime;
     },
 
     /**
