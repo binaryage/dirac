@@ -141,6 +141,9 @@ WebInspector.ResourcesPanel.prototype = {
             this._populateResourceTree();
             this._populateDOMStorageTree();
             this._populateApplicationCacheTree();
+            this.indexedDBListTreeElement._initialize();
+            if (WebInspector.experimentsSettings.fileSystemInspection.isEnabled())
+                this.fileSystemListTreeElement._initialize();
             this._initDefaultSelection();
             this._initialized = true;
         }
@@ -1076,7 +1079,7 @@ WebInspector.BaseStorageTreeElement.prototype = {
  */
 WebInspector.StorageCategoryTreeElement = function(storagePanel, categoryName, settingsKey, iconClasses, noIcon)
 {
-    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, categoryName, iconClasses, true, noIcon);
+    WebInspector.BaseStorageTreeElement.call(this, storagePanel, null, categoryName, iconClasses, false, noIcon);
     this._expandedSettingKey = "resources" + settingsKey + "Expanded";
     WebInspector.settings[this._expandedSettingKey] = WebInspector.settings.createSetting(this._expandedSettingKey, settingsKey === "Frames");
     this._categoryName = categoryName;
@@ -1483,11 +1486,9 @@ WebInspector.IndexedDBTreeElement = function(storagePanel)
 }
 
 WebInspector.IndexedDBTreeElement.prototype = {
-    onexpand: function()
+    _initialize: function()
     {
-        WebInspector.StorageCategoryTreeElement.prototype.onexpand.call(this);
-        if (!this._indexedDBModel)
-            this._createIndexedDBModel();
+        this._createIndexedDBModel();
     },
 
     onattach: function()
@@ -1598,9 +1599,8 @@ WebInspector.FileSystemListTreeElement = function(storagePanel)
 }
 
 WebInspector.FileSystemListTreeElement.prototype = {
-    onexpand: function()
+    _initialize: function()
     {
-        WebInspector.StorageCategoryTreeElement.prototype.onexpand.call(this);
         this._refreshFileSystem();
     },
 
