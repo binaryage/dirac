@@ -432,7 +432,7 @@ WebInspector.StylesSidebarPane.prototype = {
         var styleRules = this._rebuildStyleRules(node, styles);
         var usedProperties = {};
         this._markUsedProperties(styleRules, usedProperties);
-        this.sections[0] = this._rebuildSectionsForStyleRules(styleRules, usedProperties, 0, null);
+        this.sections[0] = this._rebuildSectionsForStyleRules(styleRules, usedProperties, null);
         var anchorElement = this.sections[0].inheritedPropertiesSeparatorElement;
 
         if (styles.computedStyle)
@@ -454,7 +454,7 @@ WebInspector.StylesSidebarPane.prototype = {
             }
             usedProperties = {};
             this._markUsedProperties(styleRules, usedProperties);
-            this.sections[pseudoId] = this._rebuildSectionsForStyleRules(styleRules, usedProperties, pseudoId, anchorElement);
+            this.sections[pseudoId] = this._rebuildSectionsForStyleRules(styleRules, usedProperties, anchorElement);
         }
 
         this._nodeStylesUpdatedForTest(node, true);
@@ -635,7 +635,12 @@ WebInspector.StylesSidebarPane.prototype = {
         }
     },
 
-    _rebuildSectionsForStyleRules: function(styleRules, usedProperties, pseudoId, anchorElement)
+    /**
+     * @param {!Array.<Object>} styleRules
+     * @param {!Object.<string, boolean>} usedProperties
+     * @param {Element} anchorElement
+     */
+    _rebuildSectionsForStyleRules: function(styleRules, usedProperties, anchorElement)
     {
         // Make a property section for each style rule.
         var sections = [];
@@ -885,7 +890,7 @@ WebInspector.ComputedStyleSidebarPane = function()
         showInheritedCheckbox.checked = true;
     }
 
-    function showInheritedToggleFunction(event)
+    function showInheritedToggleFunction()
     {
         WebInspector.settings.showInheritedComputedStyleProperties.set(showInheritedCheckbox.checked);
         if (WebInspector.settings.showInheritedComputedStyleProperties.get())
@@ -1045,7 +1050,7 @@ WebInspector.StylePropertiesSection.prototype = {
         return this._parentPane;
     },
 
-    collapse: function(dontRememberState)
+    collapse: function()
     {
         // Overriding with empty body.
     },
@@ -1215,17 +1220,6 @@ WebInspector.StylePropertiesSection.prototype = {
         }
     },
 
-    findTreeElementWithName: function(name)
-    {
-        var treeElement = this.propertiesTreeOutline.children[0];
-        while (treeElement) {
-            if (treeElement.name === name)
-                return treeElement;
-            treeElement = treeElement.traverseNextTreeElement(true, null, true);
-        }
-        return null;
-    },
-
     _markSelectorMatches: function()
     {
         var rule = this.styleRule.rule;
@@ -1324,7 +1318,7 @@ WebInspector.StylePropertiesSection.prototype = {
         return document.createTextNode("");
     },
 
-    _handleEmptySpaceMouseDown: function(event)
+    _handleEmptySpaceMouseDown: function()
     {
         this._willCauseCancelEditing = this._parentPane._isEditingStyle;
     },
@@ -2194,18 +2188,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
         }
     },
 
-    restoreNameElement: function()
-    {
-        // Restore <span class="webkit-css-property"> if it doesn't yet exist or was accidentally deleted.
-        if (this.nameElement === this.listItemElement.querySelector(".webkit-css-property"))
-            return;
-
-        this.nameElement = document.createElement("span");
-        this.nameElement.className = "webkit-css-property";
-        this.nameElement.textContent = "";
-        this.listItemElement.insertBefore(this.nameElement, this.listItemElement.firstChild);
-    },
-
     onattach: function()
     {
         WebInspector.StylePropertyTreeElementBase.prototype.onattach.call(this);
@@ -2385,7 +2367,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
             this.nameElement.normalize();
             this.valueElement.normalize();
 
-            this.editingCommitted(null, event.target.textContent, context.previousContent, context, "forward");
+            this.editingCommitted(event.target.textContent, context, "forward");
         }
 
         function blurListener(context, event)
@@ -2398,7 +2380,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
                 if (!isEditingName && this._parentPane._mouseDownTreeElementIsName)
                     moveDirection = "backward";
             }
-            this.editingCommitted(null, event.target.textContent, context.previousContent, context, moveDirection);
+            this.editingCommitted(event.target.textContent, context, moveDirection);
         }
 
         delete this.originalPropertyText;
@@ -2474,7 +2456,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
                 break;
             case "forward":
             case "backward":
-                this.editingCommitted(null, event.target.textContent, context.previousContent, context, result);
+                this.editingCommitted(event.target.textContent, context, result);
                 break;
             }
 
@@ -2556,7 +2538,12 @@ WebInspector.StylePropertyTreeElement.prototype = {
         return target;
     },
 
-    editingCommitted: function(element, userInput, previousContent, context, moveDirection)
+    /**
+     * @param {string} userInput
+     * @param {Object} context
+     * @param {string} moveDirection
+     */
+    editingCommitted: function(userInput, context, moveDirection)
     {
         this._removePrompt();
         this.editingEnded(context);
@@ -2585,7 +2572,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         var blankInput = /^\s*$/.test(userInput);
         var shouldCommitNewProperty = this._newProperty && (isPropertySplitPaste || moveToOther || (!moveDirection && !isEditingName) || (isEditingName && blankInput));
         var section = this.section();
-        if (((userInput !== previousContent || isDirtyViaPaste) && !this._newProperty) || shouldCommitNewProperty) {
+        if (((userInput !== context.previousContent || isDirtyViaPaste) && !this._newProperty) || shouldCommitNewProperty) {
             section._afterUpdate = moveToNextCallback.bind(this, this._newProperty, !blankInput, section);
             var propertyText;
             if (blankInput || (this._newProperty && /^\s*$/.test(this.valueElement.textContent)))
