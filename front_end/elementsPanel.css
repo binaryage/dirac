@@ -184,6 +184,10 @@
     border-top: 1px solid rgb(191, 191, 191);
 }
 
+.styles-sidebar-placeholder {
+    height: 16px;
+}
+
 .styles-section.read-only {
     background-color: rgb(240, 240, 240);
 }

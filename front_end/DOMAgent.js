@@ -47,6 +47,7 @@ WebInspector.DOMNode = function(domAgent, doc, isInShadowTree, payload) {
     this._nodeName = payload.nodeName;
     this._localName = payload.localName;
     this._nodeValue = payload.nodeValue;
+    this._pseudoType = payload.pseudoType;
 
     this._shadowRoots = [];
 
@@ -84,6 +85,8 @@ WebInspector.DOMNode = function(domAgent, doc, isInShadowTree, payload) {
     if (payload.children)
         this._setChildrenPayload(payload.children);
 
+    this._setPseudoElements(payload.pseudoElements);
+
     if (payload.contentDocument) {
         this._contentDocument = new WebInspector.DOMDocument(domAgent, payload.contentDocument);
         this._children = [this._contentDocument];
@@ -104,6 +107,11 @@ WebInspector.DOMNode = function(domAgent, doc, isInShadowTree, payload) {
         this.name = payload.name;
         this.value = payload.value;
     }
+}
+
+WebInspector.DOMNode.PseudoElementNames = {
+    Before: "before",
+    After: "after"
 }
 
 /**
@@ -187,6 +195,30 @@ WebInspector.DOMNode.prototype = {
     nodeName: function()
     {
         return this._nodeName;
+    },
+
+    /**
+     * @return {string|undefined}
+     */
+    pseudoType: function()
+    {
+        return this._pseudoType;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    hasPseudoElements: function()
+    {
+        return Object.keys(this._pseudoElements).length !== 0;
+    },
+
+    /**
+     * @return {Object.<string, WebInspector.DOMNode>}
+     */
+    pseudoElements: function()
+    {
+        return this._pseudoElements;
     },
 
     /**
@@ -320,8 +352,8 @@ WebInspector.DOMNode.prototype = {
          */
         function mycallback(error)
         {
-            if (!error && callback)
-                callback(this.children());
+            if (callback)
+                callback(error ? null : this.children());
         }
 
         DOMAgent.requestChildNodes(this.id, undefined, mycallback.bind(this));
@@ -510,7 +542,15 @@ WebInspector.DOMNode.prototype = {
      */
     _removeChild: function(node)
     {
-        this._children.splice(this._children.indexOf(node), 1);
+        if (node.pseudoType()) {
+            delete this._pseudoElements[node.pseudoType()];
+        } else {
+            var shadowRootIndex = this._shadowRoots.indexOf(node);
+            if (shadowRootIndex !== -1)
+                this._shadowRoots.splice(shadowRootIndex, 1);
+            else
+                this._children.splice(this._children.indexOf(node), 1);
+        }
         node.parentNode = null;
         node._updateChildUserPropertyCountsOnRemoval(this);
         this._renumber();
@@ -532,6 +572,22 @@ WebInspector.DOMNode.prototype = {
             this._children.push(node);
         }
         this._renumber();
+    },
+
+    /**
+     * @param {Array.<DOMAgent.Node>|undefined} payloads
+     */
+    _setPseudoElements: function(payloads)
+    {
+        this._pseudoElements = {};
+        if (!payloads)
+            return;
+
+        for (var i = 0; i < payloads.length; ++i) {
+            var node = new WebInspector.DOMNode(this._domAgent, this.ownerDocument, this._isInShadowTree, payloads[i]);
+            node.parentNode = this;
+            this._pseudoElements[node.pseudoType()] = node;
+        }
     },
 
     _renumber: function()
@@ -1171,7 +1227,7 @@ WebInspector.DOMAgent.prototype = {
         var root = this._idToDOMNode[rootId];
         if (!root)
             return;
-        host._shadowRoots.remove(root);
+        host._removeChild(root);
         this._unbind(root);
         this.dispatchEventToListeners(WebInspector.DOMAgent.Events.NodeRemoved, {node: root, parent: host});
     },
@@ -1182,7 +1238,15 @@ WebInspector.DOMAgent.prototype = {
      */
     _pseudoElementAdded: function(parentId, pseudoElement)
     {
-        // FIXME: Implement.
+        var parent = this._idToDOMNode[parentId];
+        if (!parent)
+            return;
+        var node = new WebInspector.DOMNode(this, parent.ownerDocument, false, pseudoElement);
+        node.parentNode = parent;
+        this._idToDOMNode[node.id] = node;
+        console.assert(!parent._pseudoElements[node.pseudoType()]);
+        parent._pseudoElements[node.pseudoType()] = node;
+        this.dispatchEventToListeners(WebInspector.DOMAgent.Events.NodeInserted, node);
     },
 
     /**
@@ -1191,7 +1255,15 @@ WebInspector.DOMAgent.prototype = {
      */
     _pseudoElementRemoved: function(parentId, pseudoElementId)
     {
-        // FIXME: Implement.
+        var parent = this._idToDOMNode[parentId];
+        if (!parent)
+            return;
+        var pseudoElement = this._idToDOMNode[pseudoElementId];
+        if (!pseudoElement)
+            return;
+        parent._removeChild(pseudoElement);
+        this._unbind(pseudoElement);
+        this.dispatchEventToListeners(WebInspector.DOMAgent.Events.NodeRemoved, {node: pseudoElement, parent: parent});
     },
 
     /**
@@ -1204,6 +1276,9 @@ WebInspector.DOMAgent.prototype = {
             this._unbind(node._children[i]);
         for (var i = 0; i < node._shadowRoots.length; ++i)
             this._unbind(node._shadowRoots[i]);
+        var pseudoElements = node.pseudoElements();
+        for (var id in pseudoElements)
+            this._unbind(pseudoElements[id]);
         if (node._templateContent)
             this._unbind(node._templateContent);
     },

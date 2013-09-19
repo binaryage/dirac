@@ -697,7 +697,10 @@ WebInspector.ElementsPanel.prototype = {
             var crumbTitle = "";
             switch (current.nodeType()) {
                 case Node.ELEMENT_NODE:
-                    WebInspector.DOMPresentationUtils.decorateNodeLabel(current, crumb);
+                    if (current.pseudoType())
+                        crumbTitle = ":" + current.pseudoType();
+                    else
+                        WebInspector.DOMPresentationUtils.decorateNodeLabel(current, crumb);
                     break;
 
                 case Node.TEXT_NODE:

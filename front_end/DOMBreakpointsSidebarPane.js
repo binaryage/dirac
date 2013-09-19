@@ -68,6 +68,9 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
 
     populateNodeContextMenu: function(node, contextMenu)
     {
+        if (node.pseudoType())
+            return;
+
         var nodeBreakpoints = {};
         for (var id in this._breakpointElements) {
             var element = this._breakpointElements[id];

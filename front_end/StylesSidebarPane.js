@@ -220,6 +220,10 @@ WebInspector.StylesSidebarPane.prototype = {
         if (!this.node)
             return;
 
+        var hasPseudoType = !!this.node.pseudoType();
+        this._elementStateButton.enableStyleClass("hidden", hasPseudoType);
+        this._elementStatePane.enableStyleClass("expanded", !hasPseudoType && this._elementStateButton.hasStyleClass("toggled"));
+
         var nodePseudoState = this._forcedPseudoClasses;
         if (!nodePseudoState)
             nodePseudoState = [];
@@ -498,7 +502,11 @@ WebInspector.StylesSidebarPane.prototype = {
             styleRules.push(attrStyle);
         }
 
+
         styleRules.push({ computedStyle: true, selectorText: "", style: nodeComputedStyle, editable: false });
+
+        if (!!node.pseudoType())
+            styleRules.push({ isStyleSeparator: true, isPlaceholder: true });
 
         // Inline style has the greatest specificity.
         if (styles.inlineStyle && node.nodeType() === Node.ELEMENT_NODE) {
@@ -649,6 +657,11 @@ WebInspector.StylesSidebarPane.prototype = {
             var styleRule = styleRules[i];
             if (styleRule.isStyleSeparator) {
                 var separatorElement = document.createElement("div");
+                if (styleRule.isPlaceholder) {
+                    separatorElement.className = "styles-sidebar-placeholder";
+                    this._sectionsContainer.insertBefore(separatorElement, anchorElement);
+                    continue;
+                }
                 separatorElement.className = "sidebar-separator";
                 if (styleRule.node) {
                     var link = WebInspector.DOMPresentationUtils.linkifyNodeReference(styleRule.node);
@@ -773,14 +786,12 @@ WebInspector.StylesSidebarPane.prototype = {
     _toggleElementStatePane: function(event)
     {
         event.consume();
-        if (!this._elementStateButton.hasStyleClass("toggled")) {
+
+        var buttonToggled = !this._elementStateButton.hasStyleClass("toggled");
+        if (buttonToggled)
             this.expand();
-            this._elementStateButton.addStyleClass("toggled");
-            this._elementStatePane.addStyleClass("expanded");
-        } else {
-            this._elementStateButton.removeStyleClass("toggled");
-            this._elementStatePane.removeStyleClass("expanded");
-        }
+        this._elementStateButton.enableStyleClass("toggled", buttonToggled);
+        this._elementStatePane.enableStyleClass("expanded", buttonToggled);
     },
 
     _createElementStatePane: function()
