@@ -45,6 +45,7 @@ WebInspector.ProfileDataGridNode = function(profileNode, owningTree, hasChildren
     this.selfTime = profileNode.selfTime;
     this.totalTime = profileNode.totalTime;
     this.functionName = profileNode.functionName;
+    this._deoptReason = (!profileNode.deoptReason || profileNode.deoptReason === "no reason") ? "" : profileNode.deoptReason;
     this.url = profileNode.url;
 }
 
@@ -58,7 +59,16 @@ WebInspector.ProfileDataGridNode.prototype = {
 
         var data = {};
 
-        data["function"] = this.functionName;
+        if (this._deoptReason) {
+            var div = document.createElement("div");
+            var marker = div.createChild("span");
+            marker.className = "profile-warn-marker";
+            marker.title = WebInspector.UIString("Not optimized: %s", this._deoptReason);
+            var functionName = div.createChild("span");
+            functionName.textContent = this.functionName;
+            data["function"] = div;
+        } else
+            data["function"] = this.functionName;
 
         if (this.tree.profileView.showSelfTimeAsPercent.get())
             data["self"] = WebInspector.UIString("%.2f%", this.selfPercent);
@@ -89,6 +99,9 @@ WebInspector.ProfileDataGridNode.prototype = {
 
         if (columnIdentifier !== "function")
             return cell;
+
+        if (this._deoptReason)
+            cell.addStyleClass("not-optimized");
 
         if (this.profileNode._searchMatchedFunctionColumn)
             cell.addStyleClass("highlight");

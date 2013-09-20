@@ -505,7 +505,7 @@ WebInspector.FlameChart.prototype = {
         pushEntryInfoRow(WebInspector.UIString("Aggregated self time"), Number.secondsToString(node.selfTime / 1000, true));
         pushEntryInfoRow(WebInspector.UIString("Aggregated total time"), Number.secondsToString(node.totalTime / 1000, true));
         if (node.deoptReason && node.deoptReason !== "no reason")
-            pushEntryInfoRow(WebInspector.UIString("Deoptimize reason"), node.deoptReason);
+            pushEntryInfoRow(WebInspector.UIString("Not optimized"), node.deoptReason);
 
         return entryInfo;
     },

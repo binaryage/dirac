@@ -117,6 +117,13 @@
     margin-top: -1px;
 }
 
+.profile-warn-marker {
+    background-image: url(Images/statusbarButtonGlyphs.png);
+    background-size: 320px 120px;
+    background-position: -201px -103px;
+    padding-left: 14px;
+}
+
 .data-grid tr.selected .profile-node-file {
     color: rgb(33%, 33%, 33%);
 }
