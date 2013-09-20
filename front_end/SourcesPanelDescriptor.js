@@ -31,14 +31,14 @@
  * @extends {WebInspector.PanelDescriptor}
  * @implements {WebInspector.ContextMenu.Provider}
  */
-WebInspector.ScriptsPanelDescriptor = function()
+WebInspector.SourcesPanelDescriptor = function()
 {
-    WebInspector.PanelDescriptor.call(this, "scripts", WebInspector.UIString("Sources"), "ScriptsPanel", "ScriptsPanel.js");
+    WebInspector.PanelDescriptor.call(this, "sources", WebInspector.UIString("Sources"), "SourcesPanel", "SourcesPanel.js");
     WebInspector.ContextMenu.registerProvider(this);
 }
 
-WebInspector.ScriptsPanelDescriptor.prototype = {
-    /** 
+WebInspector.SourcesPanelDescriptor.prototype = {
+    /**
      * @param {WebInspector.ContextMenu} contextMenu
      * @param {Object} target
      */
@@ -59,25 +59,25 @@ WebInspector.ScriptsPanelDescriptor.prototype = {
     {
         var section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Sources Panel"));
 
-        section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.PauseContinue, WebInspector.UIString("Pause/Continue"));
-        section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepOver, WebInspector.UIString("Step over"));
-        section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepInto, WebInspector.UIString("Step into"));
-        section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepIntoSelection, WebInspector.UIString("Step into selection"));
-        section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.StepOut, WebInspector.UIString("Step out"));
+        section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.PauseContinue, WebInspector.UIString("Pause/Continue"));
+        section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.StepOver, WebInspector.UIString("Step over"));
+        section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.StepInto, WebInspector.UIString("Step into"));
+        section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.StepIntoSelection, WebInspector.UIString("Step into selection"));
+        section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.StepOut, WebInspector.UIString("Step out"));
 
-        var nextAndPrevFrameKeys = WebInspector.ScriptsPanelDescriptor.ShortcutKeys.NextCallFrame.concat(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.PrevCallFrame);
+        var nextAndPrevFrameKeys = WebInspector.SourcesPanelDescriptor.ShortcutKeys.NextCallFrame.concat(WebInspector.SourcesPanelDescriptor.ShortcutKeys.PrevCallFrame);
         section.addRelatedKeys(nextAndPrevFrameKeys, WebInspector.UIString("Next/previous call frame"));
 
-        section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.EvaluateSelectionInConsole, WebInspector.UIString("Evaluate selection in console"));
-        section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.GoToMember, WebInspector.UIString("Go to member"));
-        section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.ToggleBreakpoint, WebInspector.UIString("Toggle breakpoint"));
-        section.addAlternateKeys(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.ToggleComment, WebInspector.UIString("Toggle comment"));
+        section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.EvaluateSelectionInConsole, WebInspector.UIString("Evaluate selection in console"));
+        section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.GoToMember, WebInspector.UIString("Go to member"));
+        section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.ToggleBreakpoint, WebInspector.UIString("Toggle breakpoint"));
+        section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.ToggleComment, WebInspector.UIString("Toggle comment"));
     },
 
     __proto__: WebInspector.PanelDescriptor.prototype
 }
 
-WebInspector.ScriptsPanelDescriptor.ShortcutKeys = {
+WebInspector.SourcesPanelDescriptor.ShortcutKeys = {
     RunSnippet: [
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Enter, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
     ],

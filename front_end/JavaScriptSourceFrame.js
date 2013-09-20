@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.UISourceCodeFrame}
- * @param {WebInspector.ScriptsPanel} scriptsPanel
+ * @param {WebInspector.SourcesPanel} scriptsPanel
  * @param {WebInspector.UISourceCode} uiSourceCode
  */
 WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)

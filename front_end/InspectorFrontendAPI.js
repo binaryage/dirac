@@ -79,7 +79,7 @@ var InspectorFrontendAPI = {
     {
         var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(url);
         if (uiSourceCode) {
-            WebInspector.showPanel("scripts").showUISourceCode(uiSourceCode, lineNumber, columnNumber);
+            WebInspector.showPanel("sources").showUISourceCode(uiSourceCode, lineNumber, columnNumber);
             return;
         }
 
@@ -90,7 +90,7 @@ var InspectorFrontendAPI = {
         {
             var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
             if (uiSourceCode.url === url) {
-                WebInspector.showPanel("scripts").showUISourceCode(uiSourceCode, lineNumber, columnNumber);
+                WebInspector.showPanel("sources").showUISourceCode(uiSourceCode, lineNumber, columnNumber);
                 WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener);
             }
         }

@@ -97,7 +97,7 @@ WebInspector.Toolbar.prototype = {
         var defaultPanels = {
             "elements": true,
             "resources": true,
-            "scripts": true,
+            "sources": true,
             "console": true,
             "network": true,
             "timeline": true,
@@ -115,7 +115,7 @@ WebInspector.Toolbar.prototype = {
             "elements": true,
             "console": true,
             "network": true,
-            "scripts": true,
+            "sources": true,
             "timeline": true,
             "profiles": true,
             "cpu-profiler": true,

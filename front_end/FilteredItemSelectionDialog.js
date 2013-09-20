@@ -755,7 +755,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.SelectUISourceCodeDialog}
- * @param {WebInspector.ScriptsPanel} panel
+ * @param {WebInspector.SourcesPanel} panel
  * @param {Map.<WebInspector.UISourceCode, number>=} defaultScores
  */
 WebInspector.OpenResourceDialog = function(panel, defaultScores)
@@ -800,7 +800,7 @@ WebInspector.OpenResourceDialog.prototype = {
 }
 
 /**
- * @param {WebInspector.ScriptsPanel} panel
+ * @param {WebInspector.SourcesPanel} panel
  * @param {Element} relativeToElement
  * @param {string=} name
  * @param {Map.<WebInspector.UISourceCode, number>=} defaultScores

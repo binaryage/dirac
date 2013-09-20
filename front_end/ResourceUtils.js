@@ -148,7 +148,7 @@ WebInspector.linkifyStringAsFragment = function(string)
         var urlNode = WebInspector.linkifyURLAsNode(url, title, undefined, isExternal);
         if (typeof lineNumber !== "undefined") {
             urlNode.lineNumber = lineNumber;
-            urlNode.preferredPanel = "scripts";
+            urlNode.preferredPanel = "sources";
             if (typeof columnNumber !== "undefined")
                 urlNode.columnNumber = columnNumber;
         }

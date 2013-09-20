@@ -59,7 +59,7 @@ WebInspector.AdvancedSearchController.prototype = {
     {
         if (WebInspector.KeyboardShortcut.makeKeyFromEvent(event) === this._shortcut.key) {
             if (!this._searchView || !this._searchView.isShowing() || this._searchView._search !== document.activeElement) {
-                WebInspector.showPanel("scripts");
+                WebInspector.showPanel("sources");
                 this.show();
             } else
                 this.close();
@@ -557,7 +557,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
     _createAnchor: function(uiSourceCode, lineNumber, columnNumber)
     {
         var anchor = document.createElement("a");
-        anchor.preferredPanel = "scripts";
+        anchor.preferredPanel = "sources";
         anchor.href = sanitizeHref(uiSourceCode.originURL());
         anchor.uiSourceCode = uiSourceCode;
         anchor.lineNumber = lineNumber;

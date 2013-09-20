@@ -244,7 +244,7 @@ TestSuite.prototype.testCompletionOnPause = function()
  */
 TestSuite.prototype.testShowScriptsTab = function()
 {
-    this.showPanel("scripts");
+    this.showPanel("sources");
     var test = this;
     // There should be at least main page script.
     this._waitUntilScriptsAreParsed(["debugger_test_page.html"],
@@ -274,7 +274,7 @@ TestSuite.prototype.testScriptsTabIsPopulatedOnInspectedPageRefresh = function()
     function waitUntilScriptIsParsed()
     {
         WebInspector.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, waitUntilScriptIsParsed);
-        test.showPanel("scripts");
+        test.showPanel("sources");
         test._waitUntilScriptsAreParsed(["debugger_test_page.html"],
             function() {
                 test.releaseControl();
@@ -291,7 +291,7 @@ TestSuite.prototype.testScriptsTabIsPopulatedOnInspectedPageRefresh = function()
  */
 TestSuite.prototype.testContentScriptIsPresent = function()
 {
-    this.showPanel("scripts");
+    this.showPanel("sources");
     var test = this;
 
     test._waitUntilScriptsAreParsed(
@@ -318,7 +318,7 @@ TestSuite.prototype.testNoScriptDuplicatesOnPanelSwitch = function()
     var expectedScriptsCount = 2;
     var parsedScripts = [];
 
-    this.showPanel("scripts");
+    this.showPanel("sources");
 
     function switchToElementsTab() {
         test.showPanel("elements");
@@ -326,7 +326,7 @@ TestSuite.prototype.testNoScriptDuplicatesOnPanelSwitch = function()
     }
 
     function switchToScriptsTab() {
-        test.showPanel("scripts");
+        test.showPanel("sources");
         setTimeout(checkScriptsPanel, 0);
     }
 
@@ -362,7 +362,7 @@ TestSuite.prototype.testNoScriptDuplicatesOnPanelSwitch = function()
 // frontend is being loaded.
 TestSuite.prototype.testPauseWhenLoadingDevTools = function()
 {
-    this.showPanel("scripts");
+    this.showPanel("sources");
 
     // Script execution can already be paused.
     if (WebInspector.debuggerModel.debuggerPausedDetails)
@@ -377,7 +377,7 @@ TestSuite.prototype.testPauseWhenLoadingDevTools = function()
 // is already running.
 TestSuite.prototype.testPauseWhenScriptIsRunning = function()
 {
-    this.showPanel("scripts");
+    this.showPanel("sources");
 
     this.evaluateInConsole_(
         'setTimeout("handleClick()" , 0)',
@@ -393,7 +393,7 @@ TestSuite.prototype.testPauseWhenScriptIsRunning = function()
     function testScriptPause() {
         // The script should be in infinite loop. Click "Pause" button to
         // pause it and wait for the result.
-        WebInspector.panels.scripts._pauseButton.element.click();
+        WebInspector.panels.sources._pauseButton.element.click();
 
         this._waitForScriptPause(this.releaseControl.bind(this));
     }
@@ -909,7 +909,7 @@ TestSuite.prototype._waitUntilScriptsAreParsed = function(expectedScripts, callb
         if (test._scriptsAreParsed(expectedScripts))
             callback();
         else
-            test.addSniffer(WebInspector.panels.scripts, "_addUISourceCode", waitForAllScripts);
+            test.addSniffer(WebInspector.panels.sources, "_addUISourceCode", waitForAllScripts);
     }
 
     waitForAllScripts();

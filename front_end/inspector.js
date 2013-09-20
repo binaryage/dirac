@@ -40,12 +40,12 @@ var WebInspector = {
         var elements = new WebInspector.ElementsPanelDescriptor();
         var resources = new WebInspector.PanelDescriptor("resources", WebInspector.UIString("Resources"), "ResourcesPanel", "ResourcesPanel.js");
         var network = new WebInspector.NetworkPanelDescriptor();
-        var scripts = new WebInspector.ScriptsPanelDescriptor();
+        var sources = new WebInspector.SourcesPanelDescriptor();
         var timeline = new WebInspector.TimelinePanelDescriptor();
         var profiles = new WebInspector.ProfilesPanelDescriptor();
         var audits = new WebInspector.PanelDescriptor("audits", WebInspector.UIString("Audits"), "AuditsPanel", "AuditsPanel.js");
         var console = new WebInspector.PanelDescriptor("console", WebInspector.UIString("Console"), "ConsolePanel");
-        var allDescriptors = [elements, resources, network, scripts, timeline, profiles, audits, console];
+        var allDescriptors = [elements, resources, network, sources, timeline, profiles, audits, console];
         if (WebInspector.experimentsSettings.layersPanel.isEnabled()) {
             var layers = new WebInspector.LayersPanelDescriptor();
             allDescriptors.push(layers);
@@ -64,7 +64,7 @@ var WebInspector = {
 
         var panelDescriptors = [];
         if (WebInspector.WorkerManager.isWorkerFrontend()) {
-            panelDescriptors.push(scripts);
+            panelDescriptors.push(sources);
             panelDescriptors.push(timeline);
             panelDescriptors = panelDescriptors.concat(allProfilers);
             panelDescriptors.push(console);
@@ -331,8 +331,8 @@ var WebInspector = {
 
     _debuggerPaused: function()
     {
-        // Create scripts panel upon demand.
-        WebInspector.panel("scripts");
+        // Create sources panel upon demand.
+        WebInspector.panel("sources");
     }
 }
 
@@ -769,7 +769,7 @@ WebInspector.documentKeyDown = function(event)
         case "U+004F": // O key
         case "U+0050": // P key
             if (!event.shiftKey && !event.altKey && WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
-                WebInspector.showPanel("scripts").showGoToSourceDialog();
+                WebInspector.showPanel("sources").showGoToSourceDialog();
                 event.consume(true);
             }
             break;
@@ -1001,7 +1001,7 @@ WebInspector.inspect = function(payload, hints)
             if (!uiLocation)
                 return;
 
-            WebInspector.showPanel("scripts").showUILocation(uiLocation);
+            WebInspector.showPanel("sources").showUILocation(uiLocation);
         }
         DebuggerAgent.getFunctionDetails(object.objectId, didGetDetails.bind(this));
         return;
@@ -1049,7 +1049,7 @@ WebInspector.showAnchorLocation = function(anchor)
     var preferredPanel = this.panels[anchor.preferredPanel];
     if (preferredPanel && WebInspector._showAnchorLocationInPanel(anchor, preferredPanel))
         return true;
-    if (WebInspector._showAnchorLocationInPanel(anchor, this.panel("scripts")))
+    if (WebInspector._showAnchorLocationInPanel(anchor, this.panel("sources")))
         return true;
     if (WebInspector._showAnchorLocationInPanel(anchor, this.panel("resources")))
         return true;

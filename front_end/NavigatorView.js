@@ -174,7 +174,7 @@ WebInspector.NavigatorView.prototype = {
      * @param {WebInspector.UISourceCode} uiSourceCode
      * @param {boolean} focusSource
      */
-    _scriptSelected: function(uiSourceCode, focusSource)
+    _sourceSelected: function(uiSourceCode, focusSource)
     {
         this._lastSelectedUISourceCode = uiSourceCode;
         var data = { uiSourceCode: uiSourceCode, focusSource: focusSource};
@@ -213,7 +213,7 @@ WebInspector.NavigatorView.prototype = {
      */
     requestRename: function(uiSourceCode)
     {
-        this.dispatchEventToListeners(WebInspector.ScriptsNavigator.Events.ItemRenamingRequested, uiSourceCode);
+        this.dispatchEventToListeners(WebInspector.SourcesNavigator.Events.ItemRenamingRequested, uiSourceCode);
     },
 
     /**
@@ -649,7 +649,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
 
     onspace: function()
     {
-        this._navigatorView._scriptSelected(this.uiSourceCode, true);
+        this._navigatorView._sourceSelected(this.uiSourceCode, true);
         return true;
     },
 
@@ -658,7 +658,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
      */
     _onclick: function(event)
     {
-        this._navigatorView._scriptSelected(this.uiSourceCode, false);
+        this._navigatorView._sourceSelected(this.uiSourceCode, false);
     },
 
     /**
@@ -667,12 +667,12 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
     ondblclick: function(event)
     {
         var middleClick = event.button === 1;
-        this._navigatorView._scriptSelected(this.uiSourceCode, !middleClick);
+        this._navigatorView._sourceSelected(this.uiSourceCode, !middleClick);
     },
 
     onenter: function()
     {
-        this._navigatorView._scriptSelected(this.uiSourceCode, true);
+        this._navigatorView._sourceSelected(this.uiSourceCode, true);
         return true;
     },
 

@@ -31,7 +31,7 @@
  * @implements {WebInspector.SearchScope}
  * @param {WebInspector.Workspace} workspace
  */
-WebInspector.ScriptsSearchScope = function(workspace)
+WebInspector.SourcesSearchScope = function(workspace)
 {
     // FIXME: Add title once it is used by search controller.
     WebInspector.SearchScope.call(this)
@@ -39,7 +39,7 @@ WebInspector.ScriptsSearchScope = function(workspace)
     this._workspace = workspace;
 }
 
-WebInspector.ScriptsSearchScope.prototype = {
+WebInspector.SourcesSearchScope.prototype = {
     /**
      * @param {WebInspector.Progress} progress
      * @param {function(boolean)} indexingFinishedCallback
@@ -88,7 +88,7 @@ WebInspector.ScriptsSearchScope.prototype = {
         {
             return !project.isServiceProject();
         }
-        
+
         var projects = this._workspace.projects().filter(filterOutServiceProjects);
         var barrier = new CallbackBarrier();
         var compositeProgress = new WebInspector.CompositeProgress(progress);

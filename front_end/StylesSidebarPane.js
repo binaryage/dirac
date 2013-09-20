@@ -994,7 +994,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
                     // The "linkedStylesheet" case.
                     anchor = WebInspector.linkifyResourceAsNode(media.sourceURL, undefined, "subtitle", media.sourceURL);
                 }
-                anchor.preferredPanel = "scripts";
+                anchor.preferredPanel = "sources";
                 anchor.style.float = "right";
                 refElement.appendChild(anchor);
             }
@@ -1307,7 +1307,7 @@ WebInspector.StylePropertiesSection.prototype = {
         function linkifyUncopyable(url, line)
         {
             var link = WebInspector.linkifyResourceAsNode(url, line, "", url + ":" + (line + 1));
-            link.preferredPanel = "scripts";
+            link.preferredPanel = "sources";
             link.classList.add("webkit-html-resource-link");
             link.setAttribute("data-uncopyable", link.textContent);
             link.textContent = "";
@@ -2276,7 +2276,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         var uiLocation = this.property.uiLocation(propertyNameClicked);
         if (!uiLocation)
             return;
-        WebInspector.showPanel("scripts").showUILocation(uiLocation);
+        WebInspector.showPanel("sources").showUILocation(uiLocation);
     },
 
     /**

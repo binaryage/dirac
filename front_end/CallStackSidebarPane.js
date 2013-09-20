@@ -141,8 +141,8 @@ WebInspector.CallStackSidebarPane.prototype = {
      */
     registerShortcuts: function(registerShortcutDelegate)
     {
-        registerShortcutDelegate(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.NextCallFrame, this._selectNextCallFrameOnStack.bind(this));
-        registerShortcutDelegate(WebInspector.ScriptsPanelDescriptor.ShortcutKeys.PrevCallFrame, this._selectPreviousCallFrameOnStack.bind(this));
+        registerShortcutDelegate(WebInspector.SourcesPanelDescriptor.ShortcutKeys.NextCallFrame, this._selectNextCallFrameOnStack.bind(this));
+        registerShortcutDelegate(WebInspector.SourcesPanelDescriptor.ShortcutKeys.PrevCallFrame, this._selectPreviousCallFrameOnStack.bind(this));
     },
 
     setStatus: function(status)
