@@ -126,3 +126,16 @@
     color: rgb(153, 69, 0);
 }
 
+.screencast-glasspane {
+  -webkit-box-orient: horizontal;
+  -webkit-box-align: center;
+  -webkit-box-pack: center;
+  background-color: rgba(255, 255, 255, 0.8);
+  bottom: 0;
+  display: -webkit-box;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 29px;
+  font-size: 30px;
+}

@@ -603,6 +603,14 @@
                     { "name": "offsetBottom", "type": "number", "hidden": true, "optional": true, "description": "Bottom offset in DIP." }
                 ],
                 "hidden": true
+            },
+            {
+                "name": "screencastVisibilityChanged",
+                "description": "Fired when the page with currently enabled screencast was shown or hidden </code>.",
+                "parameters": [
+                    { "name": "visible", "type": "boolean", "description": "True if the page is visible." }
+                ],
+                "hidden": true
             }
         ]
     },

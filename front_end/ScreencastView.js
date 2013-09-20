@@ -44,6 +44,9 @@ WebInspector.ScreencastView = function()
     this._createNavigationBar();
 
     this._viewportElement = this.element.createChild("div", "screencast-viewport hidden");
+    this._glassPaneElement = this.element.createChild("div", "screencast-glasspane hidden");
+    this._glassPaneElement.textContent = WebInspector.UIString("The tab is inactive");
+
     this._canvasElement = this._viewportElement.createChild("canvas");
     this._canvasElement.tabIndex = 1;
     this._canvasElement.addEventListener("mousedown", this._handleMouseEvent.bind(this), false);
@@ -76,6 +79,7 @@ WebInspector.ScreencastView = function()
     this._shortcuts[WebInspector.KeyboardShortcut.makeKey("l", WebInspector.KeyboardShortcut.Modifiers.Ctrl)] = this._focusNavigationBar.bind(this);
 
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastVisibilityChanged, this._screencastVisibilityChanged, this);
 }
 
 WebInspector.ScreencastView._bordersSize = 40;
@@ -125,6 +129,10 @@ WebInspector.ScreencastView.prototype = {
      */
     _screencastFrame: function(event)
     {
+        if (!event.data.deviceScaleFactor) {
+          console.log(event.data.data);
+          return;
+        }
         var base64Data = /** type {string} */(event.data.data);
         this._imageElement.src = "data:image/jpg;base64," + base64Data;
         this._deviceScaleFactor = /** type {number} */(event.data.deviceScaleFactor);
@@ -143,6 +151,22 @@ WebInspector.ScreencastView.prototype = {
 
         this._imageZoom = this._imageElement.naturalWidth ? this._canvasElement.offsetWidth / this._imageElement.naturalWidth : 1;
         this.highlightDOMNode(this._highlightNodeId, this._highlightConfig);
+    },
+
+    _isGlassPaneActive: function()
+    {
+        return !this._glassPaneElement.classList.contains("hidden");
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _screencastVisibilityChanged: function(event)
+    {
+        if (event.data.visible)
+          this._glassPaneElement.classList.add("hidden");
+        else
+          this._glassPaneElement.classList.remove("hidden");
     },
 
     /**
@@ -165,6 +189,11 @@ WebInspector.ScreencastView.prototype = {
      */
     _handleMouseEvent: function(event)
     {
+        if (this._isGlassPaneActive()) {
+          event.consume();
+          return;
+        }
+
         if (!this._viewport)
             return;
 
@@ -199,6 +228,11 @@ WebInspector.ScreencastView.prototype = {
      */
     _handleKeyEvent: function(event)
     {
+        if (this._isGlassPaneActive()) {
+            event.consume();
+            return;
+        }
+
         var shortcutKey = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
         var handler = this._shortcuts[shortcutKey];
         if (handler && handler(event)) {
