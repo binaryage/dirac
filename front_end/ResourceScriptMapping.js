@@ -91,8 +91,8 @@ WebInspector.ResourceScriptMapping.prototype = {
         script.pushSourceMapping(this);
         
         var scriptsForSourceURL = script.isInlineScript() ? this._inlineScriptsForSourceURL : this._nonInlineScriptsForSourceURL;
-        scriptsForSourceURL[script.sourceURL] = scriptsForSourceURL[script.sourceURL] || [];
-        scriptsForSourceURL[script.sourceURL].push(script);
+        scriptsForSourceURL.put(script.sourceURL, scriptsForSourceURL.get(script.sourceURL) || []);
+        scriptsForSourceURL.get(script.sourceURL).push(script);
 
         var uiSourceCode = this._workspaceUISourceCodeForScript(script);
         if (!uiSourceCode)
@@ -169,7 +169,7 @@ WebInspector.ResourceScriptMapping.prototype = {
         if (!uiSourceCode.url)
             return [];
         var scriptsForSourceURL = isInlineScript ? this._inlineScriptsForSourceURL : this._nonInlineScriptsForSourceURL;
-        return scriptsForSourceURL[uiSourceCode.url] || [];
+        return scriptsForSourceURL.get(uiSourceCode.url) || [];
     },
 
     /**
@@ -203,32 +203,29 @@ WebInspector.ResourceScriptMapping.prototype = {
 
     _initialize: function()
     {
-        /** @type {!Object.<string, !Array.<!WebInspector.Script>>} */
-        this._inlineScriptsForSourceURL = {};
-        /** @type {!Object.<string, !Array.<!WebInspector.Script>>} */
-        this._nonInlineScriptsForSourceURL = {};
+        /** @type {StringMap.<!Array.<!WebInspector.Script>>} */
+        this._inlineScriptsForSourceURL = new StringMap();
+        /** @type {StringMap.<!Array.<!WebInspector.Script>>} */
+        this._nonInlineScriptsForSourceURL = new StringMap();
     },
 
     _debuggerReset: function()
     {
         /**
-         * @param {!Object.<string, !Array.<!WebInspector.Script>>} scriptsForSourceURL
+         * @param {!Array.<!WebInspector.Script>} scripts
          */
-        function unbindUISourceCodes(scriptsForSourceURL)
+        function unbindUISourceCodesForScripts(scripts)
         {
-            for (var sourceURL in scriptsForSourceURL) {
-                var scripts = scriptsForSourceURL[sourceURL];
-                if (!scripts.length)
-                    continue;
-                var uiSourceCode = this._workspaceUISourceCodeForScript(scripts[0]);
-                if (!uiSourceCode)
-                    continue;
-                this._unbindUISourceCodeFromScripts(uiSourceCode, scripts);
-            }
+            if (!scripts.length)
+                return;
+            var uiSourceCode = this._workspaceUISourceCodeForScript(scripts[0]);
+            if (!uiSourceCode)
+                return;
+            this._unbindUISourceCodeFromScripts(uiSourceCode, scripts);
         }
 
-        unbindUISourceCodes.call(this, this._inlineScriptsForSourceURL);
-        unbindUISourceCodes.call(this, this._nonInlineScriptsForSourceURL);
+        this._inlineScriptsForSourceURL.values().forEach(unbindUISourceCodesForScripts.bind(this));
+        this._nonInlineScriptsForSourceURL.values().forEach(unbindUISourceCodesForScripts.bind(this));
         this._initialize();
     },
 }
