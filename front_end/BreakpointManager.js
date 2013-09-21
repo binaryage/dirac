@@ -82,7 +82,14 @@ WebInspector.BreakpointManager.prototype = {
                 continue;
             breakpoint.remove(true);
         }
-        this._storage._restoreBreakpoints(uiSourceCode);
+
+        this._storage.mute();
+        var breakpointItems = this._storage.breakpointItems(uiSourceCode);
+        for (var i = 0; i < breakpointItems.length; ++i) {
+            var breakpointItem = breakpointItems[i];
+            this._innerSetBreakpoint(uiSourceCode, breakpointItem.lineNumber, breakpointItem.condition, breakpointItem.enabled);
+        }
+        this._storage.unmute();
     },
 
     /**
@@ -622,19 +629,30 @@ WebInspector.BreakpointManager.Storage = function(breakpointManager, setting)
 }
 
 WebInspector.BreakpointManager.Storage.prototype = {
-    /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
-     */
-    _restoreBreakpoints: function(uiSourceCode)
+    mute: function()
     {
         this._muted = true;
+    },
+
+    unmute: function()
+    {
+        delete this._muted;
+    },
+
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @return {Array.<WebInspector.BreakpointManager.Storage.Item>}
+     */
+    breakpointItems: function(uiSourceCode)
+    {
+        var result = [];
         var sourceFileId = WebInspector.BreakpointManager.sourceFileId(uiSourceCode);
         for (var id in this._breakpoints) {
             var breakpoint = this._breakpoints[id];
             if (breakpoint.sourceFileId === sourceFileId)
-                this._breakpointManager._innerSetBreakpoint(uiSourceCode, breakpoint.lineNumber, breakpoint.condition, breakpoint.enabled);
+                result.push(breakpoint);
         }
-        delete this._muted;
+        return result;
     },
 
     /**
