@@ -545,7 +545,15 @@ WebInspector.HeapSnapshot = function(profile, progress)
     this._aggregatesForDiff = null;
 
     this._init();
+
+    if (WebInspector.HeapSnapshot.enableAllocationProfiler) {
+        this._progress.updateStatus("Buiding allocation statistics\u2026");
+        this._allocationProfile = new WebInspector.AllocationProfile(profile);
+        this._progress.updateStatus("Done");
+    }
 }
+
+WebInspector.HeapSnapshot.enableAllocationProfiler = false;
 
 /**
  * @constructor
@@ -804,6 +812,16 @@ WebInspector.HeapSnapshot.prototype = {
         this._aggregates[key] = aggregatesByClassName;
 
         return aggregatesByClassName;
+    },
+
+    allocationTracesTops: function()
+    {
+        return this._allocationProfile.serializeTraceTops();
+    },
+
+    allocationNodeCallers: function(nodeId)
+    {
+        return this._allocationProfile.serializeCallers(nodeId);
     },
 
     aggregatesForDiff: function()

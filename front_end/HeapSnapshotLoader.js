@@ -121,87 +121,146 @@ WebInspector.HeapSnapshotLoader.prototype = {
     write: function(chunk)
     {
         this._json += chunk;
-        switch (this._state) {
-        case "find-snapshot-info": {
-            var snapshotToken = "\"snapshot\"";
-            var snapshotTokenIndex = this._json.indexOf(snapshotToken);
-            if (snapshotTokenIndex === -1)
-                throw new Error("Snapshot token not found");
-            this._json = this._json.slice(snapshotTokenIndex + snapshotToken.length + 1);
-            this._state = "parse-snapshot-info";
-            this._progress.updateStatus("Loading snapshot info\u2026");
-        }
-        case "parse-snapshot-info": {
-            var closingBracketIndex = WebInspector.findBalancedCurlyBrackets(this._json);
-            if (closingBracketIndex === -1)
+        while (true) {
+            switch (this._state) {
+            case "find-snapshot-info": {
+                var snapshotToken = "\"snapshot\"";
+                var snapshotTokenIndex = this._json.indexOf(snapshotToken);
+                if (snapshotTokenIndex === -1)
+                    throw new Error("Snapshot token not found");
+                this._json = this._json.slice(snapshotTokenIndex + snapshotToken.length + 1);
+                this._state = "parse-snapshot-info";
+                this._progress.updateStatus("Loading snapshot info\u2026");
+                break;
+            }
+            case "parse-snapshot-info": {
+                var closingBracketIndex = WebInspector.findBalancedCurlyBrackets(this._json);
+                if (closingBracketIndex === -1)
+                    return;
+                this._snapshot.snapshot = /** @type {HeapSnapshotHeader} */ (JSON.parse(this._json.slice(0, closingBracketIndex)));
+                this._json = this._json.slice(closingBracketIndex);
+                this._state = "find-nodes";
+                break;
+            }
+            case "find-nodes": {
+                var nodesToken = "\"nodes\"";
+                var nodesTokenIndex = this._json.indexOf(nodesToken);
+                if (nodesTokenIndex === -1)
+                    return;
+                var bracketIndex = this._json.indexOf("[", nodesTokenIndex);
+                if (bracketIndex === -1)
+                    return;
+                this._json = this._json.slice(bracketIndex + 1);
+                var node_fields_count = this._snapshot.snapshot.meta.node_fields.length;
+                var nodes_length = this._snapshot.snapshot.node_count * node_fields_count;
+                this._array = new Uint32Array(nodes_length);
+                this._arrayIndex = 0;
+                this._state = "parse-nodes";
+                break;
+            }
+            case "parse-nodes": {
+                var hasMoreData = this._parseUintArray();
+                this._progress.updateProgress("Loading nodes\u2026 %d\%", this._arrayIndex, this._array.length);
+                if (hasMoreData)
+                    return;
+                this._snapshot.nodes = this._array;
+                this._state = "find-edges";
+                this._array = null;
+                break;
+            }
+            case "find-edges": {
+                var edgesToken = "\"edges\"";
+                var edgesTokenIndex = this._json.indexOf(edgesToken);
+                if (edgesTokenIndex === -1)
+                    return;
+                var bracketIndex = this._json.indexOf("[", edgesTokenIndex);
+                if (bracketIndex === -1)
+                    return;
+                this._json = this._json.slice(bracketIndex + 1);
+                var edge_fields_count = this._snapshot.snapshot.meta.edge_fields.length;
+                var edges_length = this._snapshot.snapshot.edge_count * edge_fields_count;
+                this._array = new Uint32Array(edges_length);
+                this._arrayIndex = 0;
+                this._state = "parse-edges";
+                break;
+            }
+            case "parse-edges": {
+                var hasMoreData = this._parseUintArray();
+                this._progress.updateProgress("Loading edges\u2026 %d\%", this._arrayIndex, this._array.length);
+                if (hasMoreData)
+                    return;
+                this._snapshot.edges = this._array;
+                this._array = null;
+                if (WebInspector.HeapSnapshot.enableAllocationProfiler)
+                    this._state = "find-trace-function-infos";
+                else
+                    this._state = "find-strings";
+                break;
+            }
+            case "find-trace-function-infos": {
+                var tracesToken = "\"trace_function_infos\"";
+                var tracesTokenIndex = this._json.indexOf(tracesToken);
+                if (tracesTokenIndex === -1)
+                    return;
+                var bracketIndex = this._json.indexOf("[", tracesTokenIndex);
+                if (bracketIndex === -1)
+                    return;
+                this._json = this._json.slice(bracketIndex + 1);
+
+                var trace_function_info_field_count = 3;
+                var trace_function_info_length = this._snapshot.snapshot.trace_function_count * trace_function_info_field_count;
+                this._array = new Uint32Array(trace_function_info_length);
+                this._arrayIndex = 0;
+                this._state = "parse-trace-function-infos";
+                break;
+            }
+            case "parse-trace-function-infos": {
+                if (this._parseUintArray())
+                    return;
+                this._snapshot.trace_function_infos = this._array;
+                this._array = null;
+                this._state = "find-trace-tree";
+                break;
+            }
+            case "find-trace-tree": {
+                var tracesToken = "\"trace_tree\"";
+                var tracesTokenIndex = this._json.indexOf(tracesToken);
+                if (tracesTokenIndex === -1)
+                    return;
+                var bracketIndex = this._json.indexOf("[", tracesTokenIndex);
+                if (bracketIndex === -1)
+                    return;
+                this._json = this._json.slice(bracketIndex);
+                this._state = "parse-trace-tree";
+                break;
+            }
+            case "parse-trace-tree": {
+                var stringsToken = "\"strings\"";
+                var stringsTokenIndex = this._json.indexOf(stringsToken);
+                if (stringsTokenIndex === -1)
+                    return;
+                var bracketIndex = this._json.lastIndexOf("]", stringsTokenIndex);
+                this._snapshot.trace_tree = JSON.parse(this._json.substring(0, bracketIndex + 1));
+                this._json = this._json.slice(bracketIndex);
+                this._state = "find-strings";
+                this._progress.updateStatus("Loading strings\u2026");
+                break;
+            }
+            case "find-strings": {
+                var stringsToken = "\"strings\"";
+                var stringsTokenIndex = this._json.indexOf(stringsToken);
+                if (stringsTokenIndex === -1)
+                    return;
+                var bracketIndex = this._json.indexOf("[", stringsTokenIndex);
+                if (bracketIndex === -1)
+                    return;
+                this._json = this._json.slice(bracketIndex);
+                this._state = "accumulate-strings";
+                break;
+            }
+            case "accumulate-strings":
                 return;
-            this._snapshot.snapshot = /** @type {HeapSnapshotHeader} */ (JSON.parse(this._json.slice(0, closingBracketIndex)));
-            this._json = this._json.slice(closingBracketIndex);
-            this._state = "find-nodes";
-        }
-        case "find-nodes": {
-            var nodesToken = "\"nodes\"";
-            var nodesTokenIndex = this._json.indexOf(nodesToken);
-            if (nodesTokenIndex === -1)
-                return;
-            var bracketIndex = this._json.indexOf("[", nodesTokenIndex);
-            if (bracketIndex === -1)
-                return;
-            this._json = this._json.slice(bracketIndex + 1);
-            var node_fields_count = this._snapshot.snapshot.meta.node_fields.length;
-            var nodes_length = this._snapshot.snapshot.node_count * node_fields_count;
-            this._array = new Uint32Array(nodes_length);
-            this._arrayIndex = 0;
-            this._state = "parse-nodes";
-        }
-        case "parse-nodes": {
-            var hasMoreData = this._parseUintArray();
-            this._progress.updateProgress("Loading nodes\u2026 %d\%", this._arrayIndex, this._array.length);
-            if (hasMoreData)
-                return;
-            this._snapshot.nodes = this._array;
-            this._state = "find-edges";
-            this._array = null;
-        }
-        case "find-edges": {
-            var edgesToken = "\"edges\"";
-            var edgesTokenIndex = this._json.indexOf(edgesToken);
-            if (edgesTokenIndex === -1)
-                return;
-            var bracketIndex = this._json.indexOf("[", edgesTokenIndex);
-            if (bracketIndex === -1)
-                return;
-            this._json = this._json.slice(bracketIndex + 1);
-            var edge_fields_count = this._snapshot.snapshot.meta.edge_fields.length;
-            var edges_length = this._snapshot.snapshot.edge_count * edge_fields_count;
-            this._array = new Uint32Array(edges_length);
-            this._arrayIndex = 0;
-            this._state = "parse-edges";
-        }
-        case "parse-edges": {
-            var hasMoreData = this._parseUintArray();
-            this._progress.updateProgress("Loading edges\u2026 %d\%", this._arrayIndex, this._array.length);
-            if (hasMoreData)
-                return;
-            this._snapshot.edges = this._array;
-            this._array = null;
-            this._state = "find-strings";
-            this._progress.updateStatus("Loading strings\u2026");
-        }
-        case "find-strings": {
-            var stringsToken = "\"strings\"";
-            var stringsTokenIndex = this._json.indexOf(stringsToken);
-            if (stringsTokenIndex === -1)
-                return;
-            var bracketIndex = this._json.indexOf("[", stringsTokenIndex);
-            if (bracketIndex === -1)
-                return;
-            this._json = this._json.slice(bracketIndex);
-            this._state = "accumulate-strings";
-            break;
-        }
-        case "accumulate-strings":
-            break;
+            }
         }
     }
 };

@@ -90,6 +90,15 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.dominatorDataGrid.show(this.dominatorView.element);
     this.dominatorDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
+    if (WebInspector.HeapSnapshot.enableAllocationProfiler) {
+        this.allocationView = new WebInspector.View();
+        this.allocationView.element.addStyleClass("view");
+        this.allocationDataGrid = new WebInspector.AllocationDataGrid();
+        this.allocationDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
+        this.allocationDataGrid.show(this.allocationView.element);
+        this.allocationDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
+    }
+
     this.retainmentViewHeader = document.createElement("div");
     this.retainmentViewHeader.addStyleClass("retainers-view-header");
     WebInspector.installDragHandle(this.retainmentViewHeader, this._startRetainersHeaderDragging.bind(this), this._retainersHeaderDragging.bind(this), this._endRetainersHeaderDragging.bind(this), "row-resize");
@@ -117,6 +126,8 @@ WebInspector.HeapSnapshotView = function(parent, profile)
                   {title: "Containment", view: this.containmentView, grid: this.containmentDataGrid}];
     if (WebInspector.settings.showAdvancedHeapSnapshotProperties.get())
         this.views.push({title: "Dominators", view: this.dominatorView, grid: this.dominatorDataGrid});
+    if (WebInspector.HeapSnapshot.enableAllocationProfiler)
+        this.views.push({title: "Allocation", view: this.allocationView, grid: this.allocationDataGrid});
     this.views.current = 0;
     for (var i = 0; i < this.views.length; ++i)
         this.viewSelect.createOption(WebInspector.UIString(this.views[i].title));

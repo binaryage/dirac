@@ -1388,6 +1388,7 @@ WebInspector.CanvasProfilerPanel.prototype = {
 
 
 importScript("ProfileDataGridTree.js");
+importScript("AllocationProfile.js");
 importScript("BottomUpProfileDataGridTree.js");
 importScript("CPUProfileView.js");
 importScript("FlameChart.js");

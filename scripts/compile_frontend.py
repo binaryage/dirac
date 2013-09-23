@@ -359,6 +359,7 @@ modules = [
         "name": "profiler",
         "dependencies": ["components", "workers"],
         "sources": [
+            "AllocationProfile.js",
             "BottomUpProfileDataGridTree.js",
             "CPUProfileView.js",
             "FlameChart.js",

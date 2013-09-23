@@ -31,6 +31,7 @@
 WebInspector = {};
 WebInspector.UIString = function(s) { return s; };
 
+importScripts("AllocationProfile.js");
 importScripts("HeapSnapshot.js");
 importScripts("HeapSnapshotLoader.js");
 importScripts("HeapSnapshotWorkerDispatcher.js");

@@ -294,6 +294,7 @@
         ],
 
         'devtools_profiles_js_files': [
+            'front_end/AllocationProfile.js',
             'front_end/BottomUpProfileDataGridTree.js',
             'front_end/CPUProfileView.js',
             'front_end/FlameChart.js',
@@ -859,6 +860,7 @@
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_file)',
+                            'front_end/AllocationProfile.js',
                             'front_end/HeapSnapshot.js',
                             'front_end/HeapSnapshotLoader.js',
                             'front_end/HeapSnapshotWorkerDispatcher.js',
