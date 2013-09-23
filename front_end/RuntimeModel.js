@@ -151,7 +151,6 @@ WebInspector.RuntimeModel.prototype = {
         function evalCallback(error, result, wasThrown)
         {
             if (error) {
-                console.error(error);
                 callback(null, false);
                 return;
             }
