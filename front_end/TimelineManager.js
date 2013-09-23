@@ -57,7 +57,7 @@ WebInspector.TimelineManager.prototype = {
     {
         this._enablementCount++;
         if (this._enablementCount === 1)
-            TimelineAgent.start(maxCallStackDepth, includeDomCounters, includeNativeMemoryStatistics, callback);
+            TimelineAgent.start(maxCallStackDepth, /* bufferEvents */false, includeDomCounters, includeNativeMemoryStatistics, callback);
         else if (callback)
             callback(null);
     },

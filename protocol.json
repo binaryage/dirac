@@ -2862,15 +2862,18 @@
                 "name": "start",
                 "parameters": [
                     { "name": "maxCallStackDepth", "optional": true, "type": "integer", "description": "Samples JavaScript stack traces up to <code>maxCallStackDepth</code>, defaults to 5." },
+                    { "name": "bufferEvents", "optional": true, "type": "boolean", "hidden": true, "description": "Whether instrumentation events should be buffered and returned upon <code>stop</code> call." },
                     { "name": "includeDomCounters", "optional": true, "type": "boolean", "hidden": true, "description": "Whether DOM counters data should be included into timeline events." },
                     { "name": "includeNativeMemoryStatistics", "optional": true, "type": "boolean", "hidden": true, "description": "Whether native memory usage statistics should be reported as part of timeline events." }
-
                 ],
                 "description": "Starts capturing instrumentation events."
             },
             {
                 "name": "stop",
-                "description": "Stops capturing instrumentation events."
+                "description": "Stops capturing instrumentation events.",
+                "returns": [
+                    { "name": "events", "type": "array", "items": { "$ref": "TimelineEvent" }, "optional": true, "hidden": true, "description": "Timeline event record data." }
+                ]
             }
         ],
         "events": [
