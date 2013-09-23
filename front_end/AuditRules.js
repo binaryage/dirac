@@ -967,9 +967,11 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
             var lateCssUrls = resultValue[0];
             var cssBeforeInlineCount = resultValue[1];
 
-            var entry = result.addChild("The following external CSS files were included after an external JavaScript file in the document head. To ensure CSS files are downloaded in parallel, always include external CSS before external JavaScript.", true);
-            entry.addURLs(lateCssUrls);
-            result.violationCount += lateCssUrls.length;
+            if (lateCssUrls.length) {
+                var entry = result.addChild("The following external CSS files were included after an external JavaScript file in the document head. To ensure CSS files are downloaded in parallel, always include external CSS before external JavaScript.", true);
+                entry.addURLs(lateCssUrls);
+                result.violationCount += lateCssUrls.length;
+            }
 
             if (cssBeforeInlineCount) {
                 result.addChild(String.sprintf(" %d inline script block%s found in the head between an external CSS file and another resource. To allow parallel downloading, move the inline script before the external CSS file, or after the next resource.", cssBeforeInlineCount, cssBeforeInlineCount > 1 ? "s were" : " was"));
