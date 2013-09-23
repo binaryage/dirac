@@ -90,6 +90,7 @@ WebInspector.Settings = function()
     this.overrideDeviceOrientation = this.createSetting("overrideDeviceOrientation", false);
     this.deviceOrientationOverride = this.createSetting("deviceOrientationOverride", "");
     this.showAdvancedHeapSnapshotProperties = this.createSetting("showAdvancedHeapSnapshotProperties", false);
+    this.highResolutionCpuProfiling = this.createSetting("highResolutionCpuProfiling", false);
     this.searchInContentScripts = this.createSetting("searchInContentScripts", false);
     this.textEditorIndent = this.createSetting("textEditorIndent", "    ");
     this.textEditorAutoDetectIndent = this.createSetting("textEditorAutoIndentIndent", true);
