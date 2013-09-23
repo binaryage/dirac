@@ -273,6 +273,8 @@ WebInspector.ProfileHeader = function(profileType, title, uid)
     this._fromFile = false;
 }
 
+WebInspector.ProfileHeader._nextProfileFromFileUid = 1;
+
 WebInspector.ProfileHeader.prototype = {
     /**
      * @return {!WebInspector.ProfileType}
@@ -362,7 +364,7 @@ WebInspector.ProfileHeader.prototype = {
     setFromFile: function()
     {
         this._fromFile = true;
-        this.uid = -2;
+        this.uid = "From file #" + WebInspector.ProfileHeader._nextProfileFromFileUid++;
     }
 }
 

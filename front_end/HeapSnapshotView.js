@@ -965,7 +965,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     removeProfile: function(profile)
     {
         WebInspector.ProfileType.prototype.removeProfile.call(this, profile);
-        if (!profile.isTemporary)
+        if (!profile.isTemporary && !profile.fromFile())
             HeapProfilerAgent.removeProfile(profile.uid);
     },
 
