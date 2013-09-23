@@ -43,7 +43,7 @@ WebInspector.CSSStyleModel = function(workspace)
     this._namedFlowCollections = {};
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.DocumentUpdated, this._resetNamedFlowCollections, this);
     InspectorBackend.registerCSSDispatcher(new WebInspector.CSSDispatcher(this));
-    CSSAgent.enable();
+    CSSAgent.enable(this._wasEnabled.bind(this));
     this._resetStyleSheets();
 }
 
@@ -62,6 +62,7 @@ WebInspector.CSSStyleModel.parseRuleMatchArrayPayload = function(matchArray)
 }
 
 WebInspector.CSSStyleModel.Events = {
+    ModelWasEnabled: "ModelWasEnabled",
     StyleSheetAdded: "StyleSheetAdded",
     StyleSheetChanged: "StyleSheetChanged",
     StyleSheetRemoved: "StyleSheetRemoved",
@@ -75,6 +76,20 @@ WebInspector.CSSStyleModel.Events = {
 WebInspector.CSSStyleModel.MediaTypes = ["all", "braille", "embossed", "handheld", "print", "projection", "screen", "speech", "tty", "tv"];
 
 WebInspector.CSSStyleModel.prototype = {
+    /**
+     * @return {boolean}
+     */
+    isEnabled: function()
+    {
+        return this._isEnabled;
+    },
+
+    _wasEnabled: function()
+    {
+        this._isEnabled = true;
+        this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.ModelWasEnabled);
+    },
+
     /**
      * @param {DOMAgent.NodeId} nodeId
      * @param {boolean} needPseudo

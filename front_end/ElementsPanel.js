@@ -110,6 +110,8 @@ WebInspector.ElementsPanel = function()
 
     if (WebInspector.domAgent.existingDocument())
         this._documentUpdated(WebInspector.domAgent.existingDocument());
+
+    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
 }
 
 WebInspector.ElementsPanel.prototype = {
@@ -987,6 +989,8 @@ WebInspector.ElementsPanel.prototype = {
      */
     updateStyles: function(forceUpdate)
     {
+        if (!WebInspector.cssModel.isEnabled())
+            return;
         var stylesSidebarPane = this.sidebarPanes.styles;
         var computedStylePane = this.sidebarPanes.computedStyle;
         if ((!stylesSidebarPane.isShowing() && !computedStylePane.isShowing()) || !stylesSidebarPane.needsUpdate)
@@ -998,6 +1002,8 @@ WebInspector.ElementsPanel.prototype = {
 
     updateMetrics: function()
     {
+        if (!WebInspector.cssModel.isEnabled())
+            return;
         var metricsSidebarPane = this.sidebarPanes.metrics;
         if (!metricsSidebarPane.isShowing() || !metricsSidebarPane.needsUpdate)
             return;
@@ -1008,6 +1014,8 @@ WebInspector.ElementsPanel.prototype = {
 
     updatePlatformFonts: function()
     {
+        if (!WebInspector.cssModel.isEnabled())
+            return;
         var platformFontsSidebar = this.sidebarPanes.platformFonts;
         if (!platformFontsSidebar.isShowing() || !platformFontsSidebar.needsUpdate)
             return;
