@@ -83,6 +83,12 @@ WebInspector.RequestPreviewView.prototype = {
     _createPreviewView: function()
     {
         if (this.request.content) {
+            if (this.request.mimeType === "application/json") {
+                var jsonView = this._jsonView();
+                if (jsonView)
+                    return jsonView;
+            }
+
             if (this.request.hasErrorStatusCode()) {
                 var htmlView = this._htmlView();
                 if (htmlView)
@@ -99,12 +105,6 @@ WebInspector.RequestPreviewView.prototype = {
                 var htmlView = this._htmlView();
                 if (htmlView)
                     return htmlView;
-            }
-
-            if (this.request.type === WebInspector.resourceTypes.Script && this.request.mimeType === "application/json") {
-                var jsonView = this._jsonView();
-                if (jsonView)
-                    return jsonView;
             }
         }
 
