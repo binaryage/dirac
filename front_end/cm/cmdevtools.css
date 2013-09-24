@@ -77,6 +77,14 @@
   opacity: 0.5;
 }
 
+.breakpoints-deactivated .cm-breakpoint .CodeMirror-linenumber {
+    opacity: 0.5;
+}
+
+.breakpoints-deactivated .cm-breakpoint-disabled .CodeMirror-linenumber {
+    opacity: 0.3;
+}
+
 .CodeMirror-matchingbracket {
   border-bottom: 1px solid black;
   color: #222 !important;
