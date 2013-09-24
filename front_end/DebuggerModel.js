@@ -343,7 +343,7 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
-     * @return {Array.<DebuggerAgent.CallFrame>}
+     * @return {Array.<WebInspector.DebuggerModel.CallFrame>}
      */
     get callFrames()
     {
