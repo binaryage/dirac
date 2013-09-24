@@ -126,6 +126,7 @@ WebInspector.RequestHeadersView.prototype = {
     /**
      * @param {string} name
      * @param {string} value
+     * @return {!DocumentFragment}
      */
     _formatHeader: function(name, value)
     {
@@ -140,6 +141,7 @@ WebInspector.RequestHeadersView.prototype = {
      * @param {string} value
      * @param {string} className
      * @param {boolean} decodeParameters
+     * @return {!Element}
      */
     _formatParameter: function(value, className, decodeParameters)
     {
@@ -215,13 +217,17 @@ WebInspector.RequestHeadersView.prototype = {
             this._requestPayloadTreeElement.hidden = false;
             try {
                 var json = JSON.parse(formData);
-                this._refreshRequestJSONPayload(json, formData, false);
+                this._refreshRequestJSONPayload(json, formData);
             } catch (e) {
                 this._populateTreeElementWithSourceText(this._requestPayloadTreeElement, formData);
             }
         }
     },
 
+    /**
+     * @param {!TreeElement} treeElement
+     * @param {?string} sourceText
+     */
     _populateTreeElementWithSourceText: function(treeElement, sourceText)
     {
         treeElement.removeChildren();
@@ -237,6 +243,12 @@ WebInspector.RequestHeadersView.prototype = {
         sourceTreeElement.listItemElement.appendChild(sourceTextElement);
     },
 
+    /**
+     * @param {string} title
+     * @param {?Array.<!WebInspector.NetworkRequest.NameValue>} params
+     * @param {?string} sourceText
+     * @param {!TreeElement} paramsTreeElement
+     */
     _refreshParams: function(title, params, sourceText, paramsTreeElement)
     {
         paramsTreeElement.removeChildren();
@@ -249,14 +261,17 @@ WebInspector.RequestHeadersView.prototype = {
         headerCount.textContent = WebInspector.UIString(" (%d)", params.length);
         paramsTreeElement.listItemElement.appendChild(headerCount);
 
-        function toggleViewSource()
+        /**
+         * @param {Event} event
+         */
+        function toggleViewSource(event)
         {
             paramsTreeElement._viewSource = !paramsTreeElement._viewSource;
             this._refreshParams(title, params, sourceText, paramsTreeElement);
         }
 
         paramsTreeElement.listItemElement.appendChild(this._createViewSourceToggle(paramsTreeElement._viewSource, toggleViewSource.bind(this)));
-        
+
         if (paramsTreeElement._viewSource) {
             this._populateTreeElementWithSourceText(paramsTreeElement, sourceText);
             return;
@@ -264,7 +279,7 @@ WebInspector.RequestHeadersView.prototype = {
 
         var toggleTitle = this._decodeRequestParameters ? WebInspector.UIString("view URL encoded") : WebInspector.UIString("view decoded");
         var toggleButton = this._createToggleButton(toggleTitle);
-        toggleButton.addEventListener("click", this._toggleURLDecoding.bind(this));
+        toggleButton.addEventListener("click", this._toggleURLDecoding.bind(this), false);
         paramsTreeElement.listItemElement.appendChild(toggleButton);
 
         for (var i = 0; i < params.length; ++i) {
@@ -283,23 +298,29 @@ WebInspector.RequestHeadersView.prototype = {
     /**
      * @param {*} parsedObject
      * @param {string} sourceText
-     * @param {boolean} viewSource
      */
-    _refreshRequestJSONPayload: function(parsedObject, sourceText, viewSource)
+    _refreshRequestJSONPayload: function(parsedObject, sourceText)
     {
-        this._requestPayloadTreeElement.removeChildren();
+        var treeElement = this._requestPayloadTreeElement;
+        treeElement.removeChildren();
 
         var listItem = this._requestPayloadTreeElement.listItemElement;
         listItem.removeChildren();
         listItem.appendChild(document.createTextNode(this._requestPayloadTreeElement.title));
 
-        var setViewSource = this._refreshRequestJSONPayload.bind(this, parsedObject, sourceText);
+        /**
+         * @param {Event} event
+         */
+        function toggleViewSource(event)
+        {
+            treeElement._viewSource = !treeElement._viewSource;
+            this._refreshRequestJSONPayload(parsedObject, sourceText);
+        }
 
-        if (viewSource) {
-            listItem.appendChild(this._createViewSourceToggle(true, setViewSource.bind(this, false)));
+        listItem.appendChild(this._createViewSourceToggle(treeElement._viewSource, toggleViewSource.bind(this)));
+        if (treeElement._viewSource) {
             this._populateTreeElementWithSourceText(this._requestPayloadTreeElement, sourceText);
         } else {
-            listItem.appendChild(this._createViewSourceToggle(false, setViewSource.bind(this, true)));
             var object = WebInspector.RemoteObject.fromLocalObject(parsedObject);
             var section = new WebInspector.ObjectPropertiesSection(object, object.description);
             section.expand();
@@ -310,16 +331,20 @@ WebInspector.RequestHeadersView.prototype = {
 
     /**
      * @param {boolean} viewSource
-     * @param {Function} handler
+     * @param {function(Event)} handler
+     * @return {!Element}
      */
     _createViewSourceToggle: function(viewSource, handler)
     {
         var viewSourceToggleTitle = viewSource ? WebInspector.UIString("view parsed") : WebInspector.UIString("view source");
         var viewSourceToggleButton = this._createToggleButton(viewSourceToggleTitle);
-        viewSourceToggleButton.addEventListener("click", handler);
+        viewSourceToggleButton.addEventListener("click", handler, false);
         return viewSourceToggleButton;
     },
 
+    /**
+     * @param {Event} event
+     */
     _toggleURLDecoding: function(event)
     {
         this._decodeRequestParameters = !this._decodeRequestParameters;
@@ -327,26 +352,21 @@ WebInspector.RequestHeadersView.prototype = {
         this._refreshFormData();
     },
 
-    _getHeaderValue: function(headers, key)
-    {
-        var lowerKey = key.toLowerCase();
-        for (var testKey in headers) {
-            if (testKey.toLowerCase() === lowerKey)
-                return headers[testKey];
-        }
-    },
-
     _refreshRequestHeaders: function()
     {
-        if (this._showRequestHeadersText)
-            this._refreshHeadersText(WebInspector.UIString("Request Headers"), this._request.sortedRequestHeaders, this._request.requestHeadersText, this._requestHeadersTreeElement);
-        else
-            this._refreshHeaders(WebInspector.UIString("Request Headers"), this._request.sortedRequestHeaders, this._requestHeadersTreeElement);
+        var treeElement = this._requestHeadersTreeElement;
+        var headers = this._request.sortedRequestHeaders;
+        var headersText = this._request.requestHeadersText;
 
-        if (this._request.requestHeadersText) {
+        if (this._showRequestHeadersText)
+            this._refreshHeadersText(WebInspector.UIString("Request Headers"), headers.length, headersText, treeElement);
+        else
+            this._refreshHeaders(WebInspector.UIString("Request Headers"), headers, treeElement);
+
+        if (headersText) {
             var toggleButton = this._createHeadersToggleButton(this._showRequestHeadersText);
-            toggleButton.addEventListener("click", this._toggleRequestHeadersText.bind(this));
-            this._requestHeadersTreeElement.listItemElement.appendChild(toggleButton);
+            toggleButton.addEventListener("click", this._toggleRequestHeadersText.bind(this), false);
+            treeElement.listItemElement.appendChild(toggleButton);
         }
 
         this._refreshFormData();
@@ -354,15 +374,19 @@ WebInspector.RequestHeadersView.prototype = {
 
     _refreshResponseHeaders: function()
     {
-        if (this._showResponseHeadersText)
-            this._refreshHeadersText(WebInspector.UIString("Response Headers"), this._request.sortedResponseHeaders, this._request.responseHeadersText, this._responseHeadersTreeElement);
-        else
-            this._refreshHeaders(WebInspector.UIString("Response Headers"), this._request.sortedResponseHeaders, this._responseHeadersTreeElement);
+        var treeElement = this._responseHeadersTreeElement;
+        var headers = this._request.sortedResponseHeaders;
+        var headersText = this._request.responseHeadersText;
 
-        if (this._request.responseHeadersText) {
+        if (this._showResponseHeadersText)
+            this._refreshHeadersText(WebInspector.UIString("Response Headers"), headers.length, headersText, treeElement);
+        else
+            this._refreshHeaders(WebInspector.UIString("Response Headers"), headers, treeElement);
+
+        if (headersText) {
             var toggleButton = this._createHeadersToggleButton(this._showResponseHeadersText);
-            toggleButton.addEventListener("click", this._toggleResponseHeadersText.bind(this));
-            this._responseHeadersTreeElement.listItemElement.appendChild(toggleButton);
+            toggleButton.addEventListener("click", this._toggleResponseHeadersText.bind(this), false);
+            treeElement.listItemElement.appendChild(toggleButton);
         }
     },
 
@@ -398,17 +422,25 @@ WebInspector.RequestHeadersView.prototype = {
         }
     },
 
+    /**
+     * @param {string} title
+     * @param {!TreeElement} headersTreeElement
+     * @param {number} headersLength
+     */
     _refreshHeadersTitle: function(title, headersTreeElement, headersLength)
     {
         headersTreeElement.listItemElement.removeChildren();
-        headersTreeElement.listItemElement.appendChild(document.createTextNode(title));
+        headersTreeElement.listItemElement.createTextChild(title);
 
-        var headerCount = document.createElement("span");
-        headerCount.addStyleClass("header-count");
-        headerCount.textContent = WebInspector.UIString(" (%d)", headersLength);
-        headersTreeElement.listItemElement.appendChild(headerCount);
+        var headerCount = WebInspector.UIString(" (%d)", headersLength);
+        headersTreeElement.listItemElement.createChild("span", "header-count").textContent = headerCount;
     },
 
+    /**
+     * @param {string} title
+     * @param {!Array.<!WebInspector.NetworkRequest.NameValue>} headers
+     * @param {!TreeElement} headersTreeElement
+     */
     _refreshHeaders: function(title, headers, headersTreeElement)
     {
         headersTreeElement.removeChildren();
@@ -424,24 +456,40 @@ WebInspector.RequestHeadersView.prototype = {
         }
     },
 
-    _refreshHeadersText: function(title, headers, headersText, headersTreeElement)
+    /**
+     * @param {string} title
+     * @param {number} count
+     * @param {string} headersText
+     * @param {!TreeElement} headersTreeElement
+     */
+    _refreshHeadersText: function(title, count, headersText, headersTreeElement)
     {
         this._populateTreeElementWithSourceText(headersTreeElement, headersText);
-        this._refreshHeadersTitle(title, headersTreeElement, headers.length);
+        this._refreshHeadersTitle(title, headersTreeElement, count);
     },
 
+    /**
+     * @param {Event} event
+     */
     _toggleRequestHeadersText: function(event)
     {
         this._showRequestHeadersText = !this._showRequestHeadersText;
         this._refreshRequestHeaders();
     },
 
+    /**
+     * @param {Event} event
+     */
     _toggleResponseHeadersText: function(event)
     {
         this._showResponseHeadersText = !this._showResponseHeadersText;
         this._refreshResponseHeaders();
     },
 
+    /**
+     * @param {string} title
+     * @return {!Element}
+     */
     _createToggleButton: function(title)
     {
         var button = document.createElement("span");
@@ -450,6 +498,10 @@ WebInspector.RequestHeadersView.prototype = {
         return button;
     },
 
+    /**
+     * @param {boolean} isHeadersTextShown
+     * @return {!Element}
+     */
     _createHeadersToggleButton: function(isHeadersTextShown)
     {
         var toggleTitle = isHeadersTextShown ? WebInspector.UIString("view parsed") : WebInspector.UIString("view source");
