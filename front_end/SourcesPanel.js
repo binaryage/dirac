@@ -638,8 +638,6 @@ WebInspector.SourcesPanel.prototype = {
             this._stepOverButton.setEnabled(true);
             this._stepIntoButton.setEnabled(true);
             this._stepOutButton.setEnabled(true);
-
-            this.debuggerStatusElement.textContent = WebInspector.UIString("Paused");
         } else {
             this._updateButtonTitle(this._pauseButton, WebInspector.UIString("Pause script execution (%s)."))
             this._pauseButton.state = false;
@@ -649,13 +647,6 @@ WebInspector.SourcesPanel.prototype = {
             this._stepOverButton.setEnabled(false);
             this._stepIntoButton.setEnabled(false);
             this._stepOutButton.setEnabled(false);
-
-            if (this._waitingToPause)
-                this.debuggerStatusElement.textContent = WebInspector.UIString("Pausing");
-            else if (this._stepping)
-                this.debuggerStatusElement.textContent = WebInspector.UIString("Stepping");
-            else
-                this.debuggerStatusElement.textContent = "";
         }
     },
 
@@ -921,10 +912,6 @@ WebInspector.SourcesPanel.prototype = {
         this._pauseOnExceptionButton = new WebInspector.StatusBarButton("", "scripts-pause-on-exceptions-status-bar-item", 3);
         this._pauseOnExceptionButton.addEventListener("click", this._togglePauseOnExceptions, this);
         debugToolbar.appendChild(this._pauseOnExceptionButton.element);
-
-        this.debuggerStatusElement = document.createElement("div");
-        this.debuggerStatusElement.id = "scripts-debugger-status";
-        debugToolbar.appendChild(this.debuggerStatusElement);
 
         return debugToolbar;
     },
