@@ -111,6 +111,11 @@
     -webkit-user-select: text;
 }
 
+.data-grid th:first-child,
+.data-grid td:first-child {
+    border-left: none !important;
+}
+
 .data-grid td > div,
 .data-grid th > div {
     white-space: nowrap;
