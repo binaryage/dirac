@@ -105,11 +105,12 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @param {AnchorBox} anchorBox
+     * @param {AnchorBox=} anchorBox
      */
     _updateBoxPosition: function(anchorBox)
     {
         this._anchorBox = anchorBox;
+        anchorBox = anchorBox || this._anchorElement.boxInWindow(window);
 
         // Measure the content element box.
         this.contentElement.style.display = "inline-block";

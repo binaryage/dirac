@@ -31,6 +31,7 @@
 
 /**
  * @constructor
+ * @implements {WebInspector.SuggestBoxDelegate}
  */
 WebInspector.SearchController = function()
 {
@@ -47,6 +48,8 @@ WebInspector.SearchController = function()
     this._searchInputElement = this._searchControlElement.createChild("input", "search-replace");
     this._searchInputElement.id = "search-input-field";
 
+    this._suggestBox = new WebInspector.SuggestBox(this, searchControlElementColumn);
+
     this._matchesElement = this._searchControlElement.createChild("label", "search-results-matches");
     this._matchesElement.setAttribute("for", "search-input-field");
 
@@ -62,11 +65,11 @@ WebInspector.SearchController = function()
     this._searchNavigationNextElement.title = WebInspector.UIString("Search Next");
 
     this._searchInputElement.addEventListener("mousedown", this._onSearchFieldManualFocus.bind(this), false); // when the search field is manually selected
-    this._searchInputElement.addEventListener("keydown", this._onKeyDown.bind(this), true);
+    this._searchInputElement.addEventListener("keydown", this._onSearchKeyDown.bind(this), true);
     this._searchInputElement.addEventListener("input", this._onInput.bind(this), false);
 
     this._replaceInputElement = this._secondRowElement.createChild("td").createChild("input", "search-replace toolbar-replace-control");
-    this._replaceInputElement.addEventListener("keydown", this._onKeyDown.bind(this), true);
+    this._replaceInputElement.addEventListener("keydown", this._onReplaceKeyDown.bind(this), true);
     this._replaceInputElement.placeholder = WebInspector.UIString("Replace");
 
     // Column 2
@@ -175,6 +178,7 @@ WebInspector.SearchController.prototype = {
 
     resetSearch: function()
     {
+        this._suggestBox.hide();
         this._clearSearch();
         this._updateReplaceVisibility();
         this._matchesElement.textContent = "";
@@ -329,18 +333,29 @@ WebInspector.SearchController.prototype = {
     /**
      * @param {KeyboardEvent} event
      */
-    _onKeyDown: function(event)
+    _onSearchKeyDown: function(event)
     {
-        if (isEnterKey(event)) {
-            if (event.target === this._searchInputElement) {
-                // FIXME: This won't start backwards search with Shift+Enter correctly.
-                if (!this._currentQuery)
-                    this._performSearch(true, true);
-                else
-                    this._jumpToNextSearchResult(event.shiftKey);
-            } else if (event.target === this._replaceInputElement)
-                this._replace();
+        if (this._suggestBox.visible()) {
+            this._suggestBox.keyPressed(event);
+            return;
         }
+
+        if (isEnterKey(event)) {
+            // FIXME: This won't start backwards search with Shift+Enter correctly.
+            if (!this._currentQuery)
+                this._performSearch(true, true);
+            else
+                this._jumpToNextSearchResult(event.shiftKey);
+        }
+    },
+
+    /**
+     * @param {KeyboardEvent} event
+     */
+    _onReplaceKeyDown: function(event)
+    {
+        if (isEnterKey(event))
+            this._replace();
     },
 
     /**
@@ -466,10 +481,43 @@ WebInspector.SearchController.prototype = {
 
     _onInput: function(event)
     {
+        this._onValueChanged();
+    },
+
+    _onValueChanged: function()
+    {
+        var suggestions = this._searchProvider.buildSuggestions(this._searchInputElement);
+        if (suggestions && suggestions.length)
+            this._suggestBox.updateSuggestions(null, suggestions, 0, true, "");
+        else
+            this._suggestBox.hide();
+
         if (this._filterCheckboxElement.checked)
-            this._performFilter(event.target.value);
+            this._performFilter(this._searchInputElement.value);
         else
             this._performSearch(false, true);
+    },
+
+    /**
+     * @override
+     * @param {string} suggestion
+     * @param {boolean=} isIntermediateSuggestion
+     */
+    applySuggestion: function(suggestion, isIntermediateSuggestion)
+    {
+        if (isIntermediateSuggestion)
+            return;
+
+        var text = this._searchInputElement.value;
+        text = text.substring(0, text.lastIndexOf(" ") + 1) + suggestion;
+        this._searchInputElement.value = text;
+    },
+
+    /** @override */
+    acceptSuggestion: function()
+    {
+        this._searchInputElement.scrollLeft = this._searchInputElement.scrollWidth;
+        this._onValueChanged();
     },
 
     resetFilter: function()
@@ -524,4 +572,10 @@ WebInspector.Searchable.prototype = {
      * @param {WebInspector.Searchable=} self
      */
     jumpToPreviousSearchResult: function(self) { },
+
+    /**
+     * @param {HTMLInputElement} input
+     * @return {?Array.<string>}
+     */
+    buildSuggestions: function(input) { }
 }
