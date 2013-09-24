@@ -2213,6 +2213,17 @@
                 ],
                 "description": "Returns node id at given location.",
                 "hidden": true
+            },
+            {
+                "name": "getRelayoutBoundary",
+                "parameters": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node." }
+                ],
+                "returns": [
+                    { "name": "nodeId", "$ref": "NodeId", "description": "Relayout boundary node id for the given node." }
+                ],
+                "description": "Returns the id of the nearest ancestor that is a relayout boundary.",
+                "hidden": true
             }
         ],
         "events": [
