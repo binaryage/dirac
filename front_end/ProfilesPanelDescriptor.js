@@ -53,39 +53,13 @@ WebInspector.ProfilesPanelDescriptor.ShortcutKeys = {
 
 WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp = /webkit-profile:\/\/(.+)\/(.+)/;
 
-WebInspector.ProfilesPanelDescriptor.UserInitiatedProfileName = "org.webkit.profiles.user-initiated";
-
-/**
- * @param {string} title
- * @return {boolean}
- */
-WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile = function(title)
-{
-    return title.startsWith(WebInspector.ProfilesPanelDescriptor.UserInitiatedProfileName);
-}
-
-/**
- * @param {string} title
- * @return {number}
- * @throws {string}
- */
-WebInspector.ProfilesPanelDescriptor.userInitiatedProfileIndex = function(title)
-{
-    if (!WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(title))
-        throw "Not user-initiated profile title.";
-    var suffix = title.substring(WebInspector.ProfilesPanelDescriptor.UserInitiatedProfileName.length + 1);
-    return parseInt(suffix, 10);
-}
-
 /**
  * @param {string} title
  * @return {string}
  */
 WebInspector.ProfilesPanelDescriptor.resolveProfileTitle = function(title)
 {
-    if (!WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(title))
-        return title;
-    return WebInspector.UIString("Profile %d", WebInspector.ProfilesPanelDescriptor.userInitiatedProfileIndex(title));
+    return title;
 }
 
 /**

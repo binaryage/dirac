@@ -658,8 +658,6 @@ WebInspector.HeapSnapshotView.prototype = {
 
         for (var i = this.baseSelect.size(), n = list.length; i < n; ++i) {
             var title = list[i].title;
-            if (WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(title))
-                title = WebInspector.UIString("Snapshot %d", WebInspector.ProfilesPanelDescriptor.userInitiatedProfileIndex(title));
             this.baseSelect.createOption(title);
         }
     },
@@ -674,18 +672,12 @@ WebInspector.HeapSnapshotView.prototype = {
         if (!this.filterSelect.size())
             this.filterSelect.createOption(WebInspector.UIString("All objects"));
 
-        if (this.profile.fromFile())
-            return;
         for (var i = this.filterSelect.size() - 1, n = list.length; i < n; ++i) {
-            var profile = list[i];
             var title = list[i].title;
-            if (WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(title)) {
-                var profileIndex = WebInspector.ProfilesPanelDescriptor.userInitiatedProfileIndex(title);
-                if (!i)
-                    title = WebInspector.UIString("Objects allocated before Snapshot %d", profileIndex);
-                else
-                    title = WebInspector.UIString("Objects allocated between Snapshots %d and %d", profileIndex - 1, profileIndex);
-            }
+            if (!i)
+                title = WebInspector.UIString("Objects allocated before %s", title);
+            else
+                title = WebInspector.UIString("Objects allocated between %s and %s", list[i - 1].title, title);
             this.filterSelect.createOption(title);
         }
     },
@@ -1309,6 +1301,14 @@ WebInspector.HeapProfileHeader.prototype = {
         this.isTemporary = false;
         worker.startCheckingForLongRunningCalls();
         this.notifySnapshotReceived();
+
+        if (this.fromFile()) {
+            function didGetMaxNodeId(id)
+            {
+               this.maxJSObjectId = id;
+            }
+            snapshotProxy.maxJsNodeId(didGetMaxNodeId.bind(this));
+        }
     },
 
     notifySnapshotReceived: function()
@@ -1360,7 +1360,6 @@ WebInspector.HeapProfileHeader.prototype = {
      */
     loadFromFile: function(file)
     {
-        this.title = file.name;
         this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026");
         this.sidebarElement.wait = true;
         this._setupWorker();

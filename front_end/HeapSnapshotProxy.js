@@ -478,6 +478,11 @@ WebInspector.HeapSnapshotProxy.prototype = {
         return this.callFactoryMethod(null, "createNodesProviderForDominator", WebInspector.HeapSnapshotProviderProxy, nodeIndex);
     },
 
+    maxJsNodeId: function(callback)
+    {
+        this.callMethod(callback, "maxJsNodeId");
+    },
+
     allocationTracesTops: function(callback)
     {
         this.callMethod(callback, "allocationTracesTops");

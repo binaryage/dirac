@@ -23,8 +23,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-const UserInitiatedProfileName = "org.webkit.profiles.user-initiated";
-
 /**
  * @constructor
  * @extends {WebInspector.Object}
@@ -513,7 +511,10 @@ WebInspector.ProfilesPanel.prototype = {
             return;
         }
 
-        var temporaryProfile = profileType.createTemporaryProfile(WebInspector.ProfilesPanelDescriptor.UserInitiatedProfileName + "." + file.name);
+        var name = file.name;
+        if (name.endsWith(profileType.fileExtension()))
+            name = name.substr(0, name.length - profileType.fileExtension().length);
+        var temporaryProfile = profileType.createTemporaryProfile(name);
         temporaryProfile.setFromFile();
         profileType.addProfile(temporaryProfile);
         temporaryProfile.loadFromFile(file);
@@ -701,7 +702,7 @@ WebInspector.ProfilesPanel.prototype = {
         var small = false;
         var alternateTitle;
 
-        if (!WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(profile.title) && !profile.isTemporary) {
+        if (!profile.fromFile() && !profile.isTemporary) {
             var profileTitleKey = this._makeTitleKey(profile.title, typeId);
             if (!(profileTitleKey in this._profileGroups))
                 this._profileGroups[profileTitleKey] = [];
@@ -1230,12 +1231,7 @@ WebInspector.ProfileSidebarTreeElement = function(profile, titleFormat, classNam
 {
     this.profile = profile;
     this._titleFormat = titleFormat;
-
-    if (WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(this.profile.title))
-        this._profileNumber = WebInspector.ProfilesPanelDescriptor.userInitiatedProfileIndex(this.profile.title);
-
     WebInspector.SidebarTreeElement.call(this, className, "", "", profile, false);
-
     this.refreshTitles();
 }
 
@@ -1256,8 +1252,6 @@ WebInspector.ProfileSidebarTreeElement.prototype = {
     {
         if (this._mainTitle)
             return this._mainTitle;
-        if (WebInspector.ProfilesPanelDescriptor.isUserInitiatedProfile(this.profile.title))
-            return WebInspector.UIString(this._titleFormat, this._profileNumber);
         return this.profile.title;
     },
 

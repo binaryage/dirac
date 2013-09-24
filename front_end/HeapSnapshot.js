@@ -672,7 +672,6 @@ WebInspector.HeapSnapshot.prototype = {
         var edgeFieldsCount = this._edgeFieldsCount;
         var nodeFieldCount = this._nodeFieldCount;
         var edgeToNodeOffset = this._edgeToNodeOffset;
-        var nodes = this._nodes;
         var firstEdgeIndexes = this._firstEdgeIndexes;
         var nodeCount = this.nodeCount;
 
@@ -924,7 +923,6 @@ WebInspector.HeapSnapshot.prototype = {
         var firstEdgeIndexes = this._firstEdgeIndexes;
         var edgeToNodeOffset = this._edgeToNodeOffset;
         var edgeTypeOffset = this._edgeTypeOffset;
-        var nodes = this._nodes;
         var nodeCount = this.nodeCount;
         var containmentEdgesLength = containmentEdges.length;
         var edgeWeakType = this._edgeWeakType;

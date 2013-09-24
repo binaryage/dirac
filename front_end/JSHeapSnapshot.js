@@ -48,6 +48,23 @@ WebInspector.JSHeapSnapshot = function(profile, progress)
 }
 
 WebInspector.JSHeapSnapshot.prototype = {
+    maxJsNodeId: function()
+    {
+        var nodeFieldCount = this._nodeFieldCount;
+        var nodes = this._nodes;
+        var nodesLength = nodes.length;
+        var id = 0;
+        for (var nodeIndex = this._nodeIdOffset; nodeIndex < nodesLength; nodeIndex += nodeFieldCount) {
+            var nextId = nodes[nodeIndex];
+            // JS objects have odd ids, skip native objects.
+            if (nextId % 2 === 0)
+                continue;
+            if (id < nodes[nodeIndex])
+                id = nodes[nodeIndex];
+        }
+        return id;
+    },
+
     createNode: function(nodeIndex)
     {
         return new WebInspector.JSHeapSnapshotNode(this, nodeIndex);
