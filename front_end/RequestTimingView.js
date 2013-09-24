@@ -96,16 +96,19 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
         rows.push(row);
     }
 
+    var timing = request.timing;
+    var blocking = timing.dnsStart > 0 ? timing.dnsStart : timing.connectStart > 0 ? timing.connectStart : timing.sendStart;
+    if (blocking > 0)
+        addRow(WebInspector.UIString("Blocking"), "blocking", 0, blocking);
+
     if (request.timing.proxyStart !== -1)
         addRow(WebInspector.UIString("Proxy"), "proxy", request.timing.proxyStart, request.timing.proxyEnd);
 
     if (request.timing.dnsStart !== -1)
         addRow(WebInspector.UIString("DNS Lookup"), "dns", request.timing.dnsStart, request.timing.dnsEnd);
 
-    if (request.timing.connectStart !== -1) {
-        var label = request.connectionReused ? WebInspector.UIString("Blocking") : WebInspector.UIString("Connecting");
-        addRow(label, "connecting", request.timing.connectStart, request.timing.connectEnd);
-    }
+    if (request.timing.connectStart !== -1)
+        addRow(WebInspector.UIString("Connecting"), "connecting", request.timing.connectStart, request.timing.connectEnd);
 
     if (request.timing.sslStart !== -1)
         addRow(WebInspector.UIString("SSL"), "ssl", request.timing.sslStart, request.timing.sslEnd);

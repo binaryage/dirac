@@ -228,6 +228,7 @@
     opacity: 1;
 }
 
+.resource-timing-view .network-timing-bar.blocking,
 .resource-timing-view .network-timing-bar.proxy {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(239, 228, 176)), to(rgb(139, 128, 76)));
     border-left: 1px solid rgb(139, 128, 76);
