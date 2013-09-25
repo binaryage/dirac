@@ -709,7 +709,7 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
-     * @param {string} text 
+     * @param {string} text
      */
     commitEditing: function(text)
     {
@@ -722,6 +722,7 @@ WebInspector.SourceFrame.prototype = {
     {
         this._updateSourcePosition(textRange);
         this.dispatchEventToListeners(WebInspector.SourceFrame.Events.SelectionChanged, textRange);
+        WebInspector.notifications.dispatchEventToListeners(WebInspector.SourceFrame.Events.SelectionChanged, textRange);
     },
 
     /**

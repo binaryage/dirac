@@ -1483,6 +1483,15 @@ WebInspector.SourcesPanel.prototype = {
     {
         this._extensionSidebarPanes.push(pane);
         this._extensionSidebarPanesContainer.addPane(pane);
+        this.setHideOnDetach();
+    },
+
+    /**
+     * @return {?WebInspector.TabbedEditorContainer}
+     */
+    get tabbedEditorContainer()
+    {
+        return this._editorContainer;
     },
 
     __proto__: WebInspector.Panel.prototype
