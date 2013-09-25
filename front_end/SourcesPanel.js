@@ -129,6 +129,8 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.registerShortcuts(WebInspector.SourcesPanelDescriptor.ShortcutKeys.GoToMember, this._showOutlineDialog.bind(this));
     this.registerShortcuts(WebInspector.SourcesPanelDescriptor.ShortcutKeys.ToggleBreakpoint, this._toggleBreakpoint.bind(this));
 
+    this._extensionSidebarPanes = [];
+
     this._toggleFormatSourceButton = new WebInspector.StatusBarButton(WebInspector.UIString("Pretty print"), "scripts-toggle-pretty-print-status-bar-item");
     this._toggleFormatSourceButton.toggled = false;
     this._toggleFormatSourceButton.addEventListener("click", this._toggleFormatSource, this);
@@ -1409,7 +1411,7 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPaneView = new WebInspector.SidebarPaneStack();
             for (var pane in this.sidebarPanes)
                 this.sidebarPaneView.addPane(this.sidebarPanes[pane]);
-
+            this._extensionSidebarPanesContainer = this.sidebarPaneView;
             this.sidebarElement.appendChild(this.debugToolbar);
         } else {
             this._enableDebuggerSidebar(true);
@@ -1431,9 +1433,11 @@ WebInspector.SourcesPanel.prototype = {
             group2.show(this.sidebarPaneView.secondElement());
             group2.addPane(this.sidebarPanes.scopechain);
             group2.addPane(this.sidebarPanes.watchExpressions);
-
+            this._extensionSidebarPanesContainer = group2;
             this.sidebarPaneView.firstElement().appendChild(this.debugToolbar);
         }
+        for (var i = 0; i < this._extensionSidebarPanes.length; ++i)
+            this._extensionSidebarPanesContainer.addPane(this._extensionSidebarPanes[i]);
 
         this.sidebarPaneView.element.id = "scripts-debug-sidebar-contents";
         this.sidebarPaneView.show(this.splitView.sidebarElement);
@@ -1469,6 +1473,16 @@ WebInspector.SourcesPanel.prototype = {
             this._editorContentsElement.style.bottom = 0;
         }
         this.doResize();
+    },
+
+    /**
+     * @param {string} id
+     * @param {WebInspector.SidebarPane} pane
+     */
+    addExtensionSidebarPane: function(id, pane)
+    {
+        this._extensionSidebarPanes.push(pane);
+        this._extensionSidebarPanesContainer.addPane(pane);
     },
 
     __proto__: WebInspector.Panel.prototype

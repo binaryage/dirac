@@ -244,7 +244,7 @@ WebInspector.ExtensionServer.prototype = {
         if (!panel.addExtensionSidebarPane)
             return this._status.E_NOTSUPPORTED();
         var id = message.id;
-        var sidebar = new WebInspector.ExtensionSidebarPane(message.title, message.id);
+        var sidebar = new WebInspector.ExtensionSidebarPane(message.title, id);
         this._clientObjects[id] = sidebar;
         panel.addExtensionSidebarPane(id, sidebar);
 

@@ -97,6 +97,7 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.styles.addEventListener("style edited", this._stylesPaneEdited, this);
     this.sidebarPanes.styles.addEventListener("style property toggled", this._stylesPaneEdited, this);
     this.sidebarPanes.metrics.addEventListener("metrics edited", this._metricsPaneEdited, this);
+    this._extensionSidebarPanes = [];
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
     WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
@@ -1214,6 +1215,7 @@ WebInspector.ElementsPanel.prototype = {
             this.sidebarPaneView.addPane(this.sidebarPanes.properties);
             this.sidebarPaneView.addPane(this.sidebarPanes.domBreakpoints);
             this.sidebarPaneView.addPane(this.sidebarPanes.eventListeners);
+            this._extensionSidebarPanesContainer = this.sidebarPaneView;
         } else {
             this.sidebarPaneView = new WebInspector.SidebarTabbedPane();
 
@@ -1257,7 +1259,10 @@ WebInspector.ElementsPanel.prototype = {
             this.sidebarPaneView.addPane(this.sidebarPanes.eventListeners);
             this.sidebarPaneView.addPane(this.sidebarPanes.domBreakpoints);
             this.sidebarPaneView.addPane(this.sidebarPanes.properties);
+            this._extensionSidebarPanesContainer = this.sidebarPaneView;
         }
+        for (var i = 0; i < this._extensionSidebarPanes.length; ++i)
+            this._extensionSidebarPanesContainer.addPane(this._extensionSidebarPanes[i]);
 
         this.sidebarPaneView.show(this.splitView.sidebarElement);
         this.sidebarPanes.styles.expand();
@@ -1269,8 +1274,8 @@ WebInspector.ElementsPanel.prototype = {
      */
     addExtensionSidebarPane: function(id, pane)
     {
-        this.sidebarPanes[id] = pane;
-        this.sidebarPaneView.addPane(pane);
+        this._extensionSidebarPanes.push(pane);
+        this._extensionSidebarPanesContainer.addPane(pane);
     },
 
     __proto__: WebInspector.Panel.prototype
