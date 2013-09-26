@@ -2276,9 +2276,11 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         var childCount = this._node.childNodeCount();
         if (this._node.templateContent())
-            childCount++;
+            ++childCount;
         if (WebInspector.ElementsTreeOutline.showShadowDOM())
             childCount += this._node.shadowRoots().length;
+        for (var pseudoType in this._node.pseudoElements())
+            ++childCount;
         return childCount;
     },
 
