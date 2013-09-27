@@ -158,7 +158,7 @@ WebInspector.TimelineModel.prototype = {
         this._clientInitiatedRecording = true;
         this.reset();
         var maxStackFrames = WebInspector.settings.timelineLimitStackFramesFlag.get() ? WebInspector.settings.timelineStackFramesToCapture.get() : 30;
-        WebInspector.timelineManager.start(maxStackFrames, includeDomCounters, false, this._fireRecordingStarted.bind(this));
+        WebInspector.timelineManager.start(maxStackFrames, includeDomCounters, this._fireRecordingStarted.bind(this));
     },
 
     stopRecording: function()
@@ -171,7 +171,7 @@ WebInspector.TimelineModel.prototype = {
                 WebInspector.timelineManager.stop(this._fireRecordingStopped.bind(this));
             }
 
-            WebInspector.timelineManager.start(undefined, undefined, undefined, stopTimeline.bind(this));
+            WebInspector.timelineManager.start(undefined, undefined, stopTimeline.bind(this));
             return;
         }
         this._clientInitiatedRecording = false;
