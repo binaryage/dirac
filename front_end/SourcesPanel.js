@@ -812,7 +812,7 @@ WebInspector.SourcesPanel.prototype = {
 
         this._clearInterface();
 
-        DebuggerAgent.stepOut();
+        DebuggerAgent.stepOut(WebInspector.debuggerModel.selectedCallFrame().id);
         return true;
     },
 

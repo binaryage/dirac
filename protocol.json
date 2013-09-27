@@ -3072,7 +3072,10 @@
             },
             {
                 "name": "stepOut",
-                "description": "Steps out of the function call."
+                "parameters": [
+                    { "name": "callFrameId", "optional": true, "$ref": "CallFrameId", "description": "A frame where the step must be performed." }
+                ],
+                "description": "Steps out of the top call frame or the specified one."
             },
             {
                 "name": "pause",
