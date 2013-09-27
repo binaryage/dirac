@@ -241,6 +241,12 @@ WebInspector.ConsoleMessageImpl.prototype = {
         // FIXME(62725): stack trace line/column numbers are one-based.
         lineNumber = lineNumber ? lineNumber - 1 : 0;
         columnNumber = columnNumber ? columnNumber - 1 : 0;
+        if (this.source === WebInspector.ConsoleMessage.MessageSource.CSS) {
+            var headerIds = WebInspector.cssModel.styleSheetIdsForURL(url);
+            var cssLocation = new WebInspector.CSSLocation(url, lineNumber, columnNumber);
+            return this._linkifier.linkifyCSSLocation(headerIds[0] || null, cssLocation, "console-message-url");
+        }
+
         return this._linkifier.linkifyLocation(url, lineNumber, columnNumber, "console-message-url");
     },
 
