@@ -176,12 +176,14 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     {
         this.nameElement = document.createElement("span");
         this.nameElement.className = "name";
-        this.nameElement.textContent = this.property.name;
+        var name = this.property.name;
+        if (/^\s|\s$|^$|\n/.test(name))
+            name = "\"" + name.replace(/\n/g, "\u21B5") + "\"";
+        this.nameElement.textContent = name;
         if (!this.property.enumerable)
             this.nameElement.addStyleClass("dimmed");
         if (this.property.isAccessorProperty())
             this.nameElement.addStyleClass("properties-accessor-property-name");
-
 
         var separatorElement = document.createElement("span");
         separatorElement.className = "separator";

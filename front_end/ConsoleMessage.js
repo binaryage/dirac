@@ -398,8 +398,11 @@ WebInspector.ConsoleMessageImpl.prototype = {
                 titleElement.createTextChild(", ");
 
             var property = preview.properties[i];
-            if (!isArray || property.name != i) {
-                titleElement.createChild("span", "name").textContent = property.name;
+            var name = property.name;
+            if (!isArray || name != i) {
+                if (/^\s|\s$|^$|\n/.test(name))
+                    name = "\"" + name.replace(/\n/g, "\u21B5") + "\"";
+                titleElement.createChild("span", "name").textContent = name;
                 titleElement.createTextChild(": ");
             }
 
@@ -438,7 +441,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
         }
 
         if (property.type === "string") {
-            span.textContent = "\"" + property.value + "\"";
+            span.textContent = "\"" + property.value.replace(/\n/g, "\u21B5") + "\"";
             return span;
         }
 
