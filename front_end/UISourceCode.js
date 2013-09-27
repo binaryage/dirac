@@ -602,6 +602,20 @@ WebInspector.UISourceCode.prototype = {
     /**
      * @return {string}
      */
+    highlighterType: function()
+    {
+        var lastIndexOfDot = this._name.lastIndexOf(".");
+        var extension = lastIndexOfDot !== -1 ? this._name.substr(lastIndexOfDot + 1) : "";
+        var indexOfQuestionMark = extension.indexOf("?");
+        if (indexOfQuestionMark !== -1)
+            extension = extension.substr(0, indexOfQuestionMark);
+        var mimeType = WebInspector.ResourceType.mimeTypesForExtensions[extension.toLowerCase()];
+        return mimeType || this.contentType().canonicalMimeType();
+    },
+
+    /**
+     * @return {string}
+     */
     canonicalMimeType: function()
     {
         return this.contentType().canonicalMimeType() || this._mimeType;

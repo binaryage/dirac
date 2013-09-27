@@ -124,7 +124,7 @@ WebInspector.ResourceSourceFrameFallback.prototype = {
         }
     },
 
- /**
+    /**
      * @param {?string} content
      * @param {boolean} contentEncoded
      * @param {string} mimeType

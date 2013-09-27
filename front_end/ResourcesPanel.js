@@ -1393,7 +1393,9 @@ WebInspector.FrameResourceTreeElement.prototype = {
     sourceView: function()
     {
         if (!this._sourceView) {
-            this._sourceView = new WebInspector.ResourceSourceFrame(this._resource);
+            var sourceFrame = new WebInspector.ResourceSourceFrame(this._resource);
+            sourceFrame.setHighlighterType(this._resource.canonicalMimeType());
+            this._sourceView = sourceFrame;
             if (this._resource.messages) {
                 for (var i = 0; i < this._resource.messages.length; i++)
                     this._sourceView.addMessage(this._resource.messages[i]);

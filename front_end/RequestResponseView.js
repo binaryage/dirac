@@ -43,8 +43,17 @@ WebInspector.RequestResponseView._maxFormattedResourceSize = 100000;
 WebInspector.RequestResponseView.prototype = {
     get sourceView()
     {
-        if (!this._sourceView && WebInspector.RequestView.hasTextContent(this.request))
-            this._sourceView = this.request.resourceSize < WebInspector.RequestResponseView._maxFormattedResourceSize ? new WebInspector.ResourceSourceFrame(this.request) : new WebInspector.ResourceSourceFrameFallback(this.request);
+        if (this._sourceView || !WebInspector.RequestView.hasTextContent(this.request))
+            return this._sourceView;
+
+        if (this.request.resourceSize >= WebInspector.RequestResponseView._maxFormattedResourceSize) {
+            this._sourceView = new WebInspector.ResourceSourceFrameFallback(this.request);
+            return this._sourceView;
+        }
+
+        var sourceFrame = new WebInspector.ResourceSourceFrame(this.request);
+        sourceFrame.setHighlighterType(this.request.type.canonicalMimeType() || this.request.mimeType);
+        this._sourceView = sourceFrame;
         return this._sourceView;
     },
 
