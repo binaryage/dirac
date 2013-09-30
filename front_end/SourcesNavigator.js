@@ -231,5 +231,13 @@ WebInspector.SnippetsNavigatorView.prototype = {
         this.dispatchEventToListeners(WebInspector.NavigatorView.Events.ItemCreationRequested, data);
     },
 
+    /**
+     * @override
+     */
+    sourceDeleted: function(uiSourceCode)
+    {
+        this._handleRemoveSnippet(uiSourceCode);
+    },
+
     __proto__: WebInspector.NavigatorView.prototype
 }

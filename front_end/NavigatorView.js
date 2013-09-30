@@ -184,6 +184,13 @@ WebInspector.NavigatorView.prototype = {
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      */
+    sourceDeleted: function(uiSourceCode)
+    {
+    },
+
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     */
     removeUISourceCode: function(uiSourceCode)
     {
         var node = this._uiSourceCodeNodes.get(uiSourceCode);
@@ -673,6 +680,12 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
     onenter: function()
     {
         this._navigatorView._sourceSelected(this.uiSourceCode, true);
+        return true;
+    },
+
+    ondelete: function()
+    {
+        this._navigatorView.sourceDeleted(this.uiSourceCode);
         return true;
     },
 
