@@ -369,6 +369,7 @@ WebInspector.FlameChart.prototype = {
         var idToNode = this._cpuProfileView._idToNode;
         var gcNode = this._cpuProfileView._gcNode;
         var samplesCount = samples.length;
+        var samplingInterval = this._cpuProfileView.samplingIntervalMs;
 
         var index = 0;
         var entries = /** @type {Array.<!WebInspector.FlameChart.Entry>} */ ([]);
@@ -394,26 +395,26 @@ WebInspector.FlameChart.prototype = {
             if (node === gcNode) {
                 while (depth < openIntervals.length) {
                     intervalIndex = openIntervals[depth].index;
-                    entries[intervalIndex].duration += 1;
+                    entries[intervalIndex].duration += samplingInterval;
                     ++depth;
                 }
                 // If previous stack is also GC then just continue.
                 if (openIntervals.length > 0 && openIntervals.peekLast().node === node) {
-                    entries[intervalIndex].selfTime += 1;
+                    entries[intervalIndex].selfTime += samplingInterval;
                     continue;
                 }
             }
 
             while (node && depth < openIntervals.length && node === openIntervals[depth].node) {
                 intervalIndex = openIntervals[depth].index;
-                entries[intervalIndex].duration += 1;
+                entries[intervalIndex].duration += samplingInterval;
                 node = stackTrace.pop();
                 ++depth;
             }
             if (depth < openIntervals.length)
                 openIntervals.length = depth;
             if (!node) {
-                entries[intervalIndex].selfTime += 1;
+                entries[intervalIndex].selfTime += samplingInterval;
                 continue;
             }
 
@@ -423,7 +424,7 @@ WebInspector.FlameChart.prototype = {
                 if (!colorIndexEntries)
                     colorIndexEntries = colorIndexEntryChains[colorPair.index] = [];
 
-                var entry = new WebInspector.FlameChart.Entry(colorPair, depth, 1, sampleIndex, node);
+                var entry = new WebInspector.FlameChart.Entry(colorPair, depth, samplingInterval, sampleIndex * samplingInterval, node);
                 entries.push(entry);
                 colorIndexEntries.push(entry);
                 openIntervals.push({node: node, index: index});
@@ -432,13 +433,13 @@ WebInspector.FlameChart.prototype = {
                 node = stackTrace.pop();
                 ++depth;
             }
-            entries[entries.length - 1].selfTime += 1;
+            entries[entries.length - 1].selfTime += samplingInterval;
         }
 
         this._timelineData = {
             entries: entries,
             colorIndexEntryChains: colorIndexEntryChains,
-            totalTime: samplesCount,
+            totalTime: this._cpuProfileView.profileHead.totalTime
         };
 
         return this._timelineData;
@@ -494,9 +495,8 @@ WebInspector.FlameChart.prototype = {
 
         pushEntryInfoRow(WebInspector.UIString("Name"), node.functionName);
         if (this._cpuProfileView.samples) {
-            var rate = this._cpuProfileView.samplesPerMs;
-            var selfTime = this._millisecondsToString(entry.selfTime / rate);
-            var totalTime = this._millisecondsToString(entry.duration / rate);
+            var selfTime = this._millisecondsToString(entry.selfTime);
+            var totalTime = this._millisecondsToString(entry.duration);
             pushEntryInfoRow(WebInspector.UIString("Self time"), selfTime);
             pushEntryInfoRow(WebInspector.UIString("Total time"), totalTime);
         }

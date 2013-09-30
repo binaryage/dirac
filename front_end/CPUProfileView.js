@@ -573,17 +573,17 @@ WebInspector.CPUProfileView.prototype = {
         }
         profile.totalHitCount = totalHitCount(profile.head);
 
-        var durationMs = 1000 * profile.endTime - 1000 * profile.startTime;
-        var samplingRate = profile.totalHitCount / durationMs;
-        this.samplesPerMs = samplingRate;
+        var durationMs = 1000 * (profile.endTime - profile.startTime);
+        var samplingInterval = durationMs / profile.totalHitCount;
+        this.samplingIntervalMs = samplingInterval;
 
         function calculateTimesForNode(node) {
-            node.selfTime = node.hitCount * samplingRate;
-            var totalTime = node.selfTime;
+            node.selfTime = node.hitCount * samplingInterval;
+            var totalHitCount = node.hitCount;
             for (var i = 0; i < node.children.length; i++)
-                totalTime += calculateTimesForNode(node.children[i]);
-            node.totalTime = totalTime;
-            return totalTime;
+                totalHitCount += calculateTimesForNode(node.children[i]);
+            node.totalTime = totalHitCount * samplingInterval;
+            return totalHitCount;
         }
         calculateTimesForNode(profile.head);
     },
