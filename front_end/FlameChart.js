@@ -661,6 +661,7 @@ WebInspector.FlameChart.prototype = {
         var visibleTimeLeft = this._timeWindowLeft - this._paddingLeftTime;
         var timeWindowRight = this._timeWindowRight;
         var lastUsedColor = "";
+        var highlightedEntry = this._timelineData.entries[this._highlightedEntryIndex];
 
         function forEachEntry(flameChart, callback)
         {
@@ -678,7 +679,7 @@ WebInspector.FlameChart.prototype = {
                         continue;
                     flameChart._entryToAnchorBox(entry, anchorBox);
 
-                    callback(flameChart, context, entry, anchorBox, flameChart._highlightedEntryIndex === i);
+                    callback(flameChart, context, entry, anchorBox, highlightedEntry === entry);
                 }
             }
         }
