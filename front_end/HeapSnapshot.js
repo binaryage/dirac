@@ -565,11 +565,9 @@ function HeapSnapshotMetainfo()
     this.node_types = [];
     this.edge_fields = [];
     this.edge_types = [];
+    this.trace_function_info_fields = [];
+    this.trace_node_fields = [];
     this.type_strings = {};
-
-    // Old format.
-    this.fields = [];
-    this.types = [];
 }
 
 /**

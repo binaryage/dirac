@@ -42,24 +42,27 @@ WebInspector.AllocationProfile = function(profile)
 
     this._traceTops = null;
 
-    this._buildAllocationFunctionInfos(profile.trace_function_infos);
-    this._traceTree = this._buildInvertedAllocationTree(profile.trace_tree);
+    this._buildAllocationFunctionInfos(profile);
+    this._traceTree = this._buildInvertedAllocationTree(profile);
 }
 
 WebInspector.AllocationProfile.prototype = {
-    _buildAllocationFunctionInfos: function(rawInfos)
+    _buildAllocationFunctionInfos: function(profile)
     {
         var strings = this._strings;
-        var functionIdOffset = 0;
-        var functionNameOffset = 1;
-        var scriptNameOffset = 2;
-        var functionInfoFieldCount = 3;
+
+        var functionInfoFields = profile.snapshot.meta.trace_function_info_fields;
+        var functionIdOffset = functionInfoFields.indexOf("function_id");
+        var functionNameOffset = functionInfoFields.indexOf("name");
+        var scriptNameOffset = functionInfoFields.indexOf("script_name");
+        var functionInfoFieldCount = functionInfoFields.length;
 
         var map = this._idToFunctionInfo;
 
         // Special case for the root node.
         map[0] = new WebInspector.FunctionAllocationInfo("(root)", "<unknown>");
 
+        var rawInfos = profile.trace_function_infos;
         var infoLength = rawInfos.length;
         for (var i = 0; i < infoLength; i += functionInfoFieldCount) {
             map[rawInfos[i + functionIdOffset]] = new WebInspector.FunctionAllocationInfo(
@@ -69,15 +72,18 @@ WebInspector.AllocationProfile.prototype = {
 
     },
 
-    _buildInvertedAllocationTree: function(traceTreeRaw)
+    _buildInvertedAllocationTree: function(profile)
     {
+        var traceTreeRaw = profile.trace_tree;
         var idToFunctionInfo = this._idToFunctionInfo;
-        var nodeIdOffset = 0;
-        var functionIdOffset = 1;
-        var allocationCountOffset = 2;
-        var allocationSizeOffset = 3;
-        var childrenOffset = 4;
-        var nodeFieldCount = 5;
+
+        var traceNodeFields = profile.snapshot.meta.trace_node_fields;
+        var nodeIdOffset = traceNodeFields.indexOf("id");
+        var functionIdOffset = traceNodeFields.indexOf("function_id");
+        var allocationCountOffset = traceNodeFields.indexOf("count");
+        var allocationSizeOffset = traceNodeFields.indexOf("size");
+        var childrenOffset = traceNodeFields.indexOf("children");
+        var nodeFieldCount = traceNodeFields.length;
 
         function traverseNode(rawNodeArray, nodeOffset, parent)
         {
