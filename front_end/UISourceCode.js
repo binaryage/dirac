@@ -811,8 +811,13 @@ WebInspector.UISourceCode.prototype = {
             {
                 this._content = content;
                 this._innerResetWorkingCopy();
+                var oldFormatter = this._formatterMapping;
                 this._formatterMapping = formatterMapping;
-                this.dispatchEventToListeners(WebInspector.UISourceCode.Events.FormattedChanged, {content: content});
+                this.dispatchEventToListeners(WebInspector.UISourceCode.Events.FormattedChanged, {
+                    content: content,
+                    oldFormatter: oldFormatter,
+                    newFormatter: this._formatterMapping,
+                });
                 this.updateLiveLocations();
             }
         }
