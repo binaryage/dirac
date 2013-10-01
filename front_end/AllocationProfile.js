@@ -119,6 +119,9 @@ WebInspector.AllocationProfile.prototype = {
                 true));
             this._collapsedTopNodeIdToFunctionInfo[nodeId] = info;
         }
+        result.sort(function(a, b) {
+            return b.size - a.size;
+        });
         return result;
     },
 

@@ -902,11 +902,15 @@ WebInspector.AllocationGridNode = function(dataGrid, data)
 {
     WebInspector.DataGridNode.call(this, data, data.hasChildren);
     this._dataGrid = dataGrid;
+    this._populated = false;
 }
 
 WebInspector.AllocationGridNode.prototype = {
     populate: function()
     {
+        if (this._populated)
+            return;
+        this._populated = true;
         this._dataGrid._snapshot.allocationNodeCallers(this.data.id, didReceiveCallers.bind(this));
         function didReceiveCallers(callers)
         {
