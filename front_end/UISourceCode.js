@@ -389,8 +389,9 @@ WebInspector.UISourceCode.prototype = {
      */
     hasUnsavedCommittedChanges: function()
     {
-        var mayHavePersistingExtensions = WebInspector.extensionServer.hasSubscribers(WebInspector.extensionAPI.Events.ResourceContentCommitted);
-        if (this._savedWithFileManager || this.project().canSetFileContent() || mayHavePersistingExtensions)
+        if (this._savedWithFileManager || this.project().canSetFileContent() || !this._isEditable)
+            return false;
+        if (WebInspector.extensionServer.hasSubscribers(WebInspector.extensionAPI.Events.ResourceContentCommitted))
             return false;
         return !!this._hasCommittedChanges;
     },
