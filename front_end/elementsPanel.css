@@ -178,10 +178,21 @@
     background-origin: padding;
     background-clip: padding;
     -webkit-user-select: text;
+    border-top: 1px solid rgb(191, 191, 191);
+    border-bottom: 1px solid rgb(191, 191, 191);
+    margin-top: -1px;
 }
 
-.styles-section:not(.first-styles-section) {
-    border-top: 1px solid rgb(191, 191, 191);
+.styles-pane .sidebar-separator {
+    border-top: 0px none;
+}
+
+.styles-section.user-rule {
+    display: none;
+}
+
+.show-user-styles .styles-section.user-rule {
+    display: block;
 }
 
 .styles-sidebar-placeholder {
@@ -595,7 +606,6 @@
 }
 
 .sidebar-pane.composite .metrics-and-styles .metrics {
-    border-top: 1px solid rgb(64%, 64%, 64%);
     border-bottom: none;
 }
 

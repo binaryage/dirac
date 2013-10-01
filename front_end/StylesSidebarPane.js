@@ -103,6 +103,8 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrModified, this._attributeChanged, this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrRemoved, this._attributeChanged, this);
     WebInspector.settings.showUserAgentStyles.addChangeListener(this._showUserAgentStylesSettingChanged.bind(this));
+    this.element.addStyleClass("styles-pane");
+    this.element.enableStyleClass("show-user-styles", WebInspector.settings.showUserAgentStyles.get());
     this.element.addEventListener("mousemove", this._mouseMovedOverElement.bind(this), false);
     document.body.addEventListener("keydown", this._keyDown.bind(this), false);
     document.body.addEventListener("keyup", this._keyUp.bind(this), false);
@@ -518,8 +520,6 @@ WebInspector.StylesSidebarPane.prototype = {
         var addedAttributesStyle;
         for (var i = styles.matchedCSSRules.length - 1; i >= 0; --i) {
             var rule = styles.matchedCSSRules[i];
-            if (!WebInspector.settings.showUserAgentStyles.get() && (rule.isUser || rule.isUserAgent))
-                continue;
             if ((rule.isUser || rule.isUserAgent) && !addedAttributesStyle) {
                 // Show element's Style Attributes after all author rules.
                 addedAttributesStyle = true;
@@ -560,8 +560,6 @@ WebInspector.StylesSidebarPane.prototype = {
                 if (!this._containsInherited(rulePayload.style))
                     continue;
                 var rule = rulePayload;
-                if (!WebInspector.settings.showUserAgentStyles.get() && (rule.isUser || rule.isUserAgent))
-                    continue;
 
                 if (!separatorInserted) {
                     insertInheritedNodeSeparator(parentNode);
@@ -652,7 +650,6 @@ WebInspector.StylesSidebarPane.prototype = {
     {
         // Make a property section for each style rule.
         var sections = [];
-        var lastWasSeparator = true;
         for (var i = 0; i < styleRules.length; ++i) {
             var styleRule = styleRules[i];
             if (styleRule.isStyleSeparator) {
@@ -678,7 +675,6 @@ WebInspector.StylesSidebarPane.prototype = {
                 } else
                     separatorElement.textContent = styleRule.text;
                 this._sectionsContainer.insertBefore(separatorElement, anchorElement);
-                lastWasSeparator = true;
                 continue;
             }
             var computedStyle = styleRule.computedStyle;
@@ -691,18 +687,15 @@ WebInspector.StylesSidebarPane.prototype = {
             if (computedStyle)
                 var section = new WebInspector.ComputedStylePropertiesSection(this, styleRule, usedProperties);
             else {
-                var section = new WebInspector.StylePropertiesSection(this, styleRule, editable, styleRule.isInherited, lastWasSeparator);
+                var section = new WebInspector.StylePropertiesSection(this, styleRule, editable, styleRule.isInherited);
                 section._markSelectorMatches();
             }
             section.expanded = true;
 
-            if (computedStyle) {
+            if (computedStyle)
                 this._computedStylePane.bodyElement.appendChild(section.element);
-                lastWasSeparator = true;
-            } else {
+            else
                 this._sectionsContainer.insertBefore(section.element, anchorElement);
-                lastWasSeparator = false;
-            }
             sections.push(section);
         }
         return sections;
@@ -839,9 +832,13 @@ WebInspector.StylesSidebarPane.prototype = {
         this._elementStatePane.appendChild(table);
     },
 
-    _showUserAgentStylesSettingChanged: function()
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _showUserAgentStylesSettingChanged: function(event)
     {
-        this._rebuildUpdate();
+        var showStyles = /** @type {boolean} */ (event.data);
+        this.element.enableStyleClass("show-user-styles", showStyles);
     },
 
     willHide: function()
@@ -942,18 +939,20 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
  * @constructor
  * @extends {WebInspector.PropertiesSection}
  */
-WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, isInherited, isFirstSection)
+WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, isInherited)
 {
     WebInspector.PropertiesSection.call(this, "");
-    this.element.className = "styles-section matched-styles monospace" + (isFirstSection ? " first-styles-section" : "");
-    // We don't really use properties' disclosure.
-    this.propertiesElement.removeStyleClass("properties-tree");
 
     this._parentPane = parentPane;
     this.styleRule = styleRule;
     this.rule = this.styleRule.rule;
     this.editable = editable;
     this.isInherited = isInherited;
+
+    var extraClasses = (this.rule && (this.rule.isUser || this.rule.isUserAgent) ? " user-rule" : "");
+    this.element.className = "styles-section matched-styles monospace" + extraClasses;
+    // We don't really use properties' disclosure.
+    this.propertiesElement.removeStyleClass("properties-tree");
 
     if (styleRule.media) {
         for (var i = styleRule.media.length - 1; i >= 0; --i) {
@@ -1479,7 +1478,7 @@ WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, us
 {
     WebInspector.PropertiesSection.call(this, "");
     this.headerElement.addStyleClass("hidden");
-    this.element.className = "styles-section monospace first-styles-section read-only computed-style";
+    this.element.className = "styles-section monospace read-only computed-style";
     this._stylesPane = stylesPane;
     this.styleRule = styleRule;
     this._usedProperties = usedProperties;
@@ -1596,7 +1595,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
  */
 WebInspector.BlankStylePropertiesSection = function(stylesPane, defaultSelectorText)
 {
-    WebInspector.StylePropertiesSection.call(this, stylesPane, {selectorText: defaultSelectorText, rule: {isViaInspector: true}}, true, false, false);
+    WebInspector.StylePropertiesSection.call(this, stylesPane, {selectorText: defaultSelectorText, rule: {isViaInspector: true}}, true, false);
     this.element.addStyleClass("blank-section");
 }
 
