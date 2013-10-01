@@ -1643,7 +1643,7 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
             // it has a form k*10^n*1024^m, where k=[1,5], n=[0..3], m is an integer,
             // e.g. a round value 10KB is 10240 bytes.
             gridValue = Math.pow(1024, Math.floor(Math.log(maxGridValue) / Math.log(1024)));
-            gridValue *= Math.pow(10, Math.floor(Math.log(maxGridValue / gridValue) / Math.log(10)));
+            gridValue *= Math.pow(10, Math.floor(Math.log(maxGridValue / gridValue) / Math.LN10));
             if (gridValue * 5 <= maxGridValue)
                 gridValue *= 5;
             gridY = Math.round(height - gridValue * yScaleFactor - 0.5) + 0.5;

@@ -85,6 +85,11 @@ WebInspector.FlameChart.Calculator.prototype = {
      */
     _updateBoundaries: function(flameChart)
     {
+        function log10(x)
+        {
+            return Math.log(x) / Math.LN10;
+        }
+        this._decimalDigits = Math.max(0, -Math.floor(log10(flameChart._timelineGrid.gridSliceTime * 1.01)));
         this._minimumBoundaries = flameChart._windowLeft * flameChart._timelineData.totalTime;
         this._maximumBoundaries = flameChart._windowRight * flameChart._timelineData.totalTime;
         this.paddingLeft = flameChart._paddingLeft;
@@ -102,7 +107,8 @@ WebInspector.FlameChart.Calculator.prototype = {
 
     formatTime: function(value)
     {
-        return WebInspector.UIString("%s\u2009ms", Number.withThousandsSeparator(Math.round(value + this._minimumBoundaries)));
+        var format = "%." + this._decimalDigits + "f\u2009ms";
+        return WebInspector.UIString(format, value + this._minimumBoundaries);
     },
 
     maximumBoundary: function()
@@ -276,7 +282,7 @@ WebInspector.FlameChart.prototype = {
         if (windowLeft === this._windowLeft)
             return;
         windowShift = windowLeft - this._dragStartWindowLeft;
-        
+
         var windowRight = Math.min(1, this._dragStartWindowRight + windowShift);
         if (windowRight === this._windowRight)
             return;
@@ -814,7 +820,7 @@ WebInspector.FlameChart.prototype = {
             return;
         this._updateTimerId = setTimeout(this.update.bind(this), 10);
     },
-    
+
     _updateBoundaries: function()
     {
         this._windowLeft = this._overviewGrid.windowLeft();
