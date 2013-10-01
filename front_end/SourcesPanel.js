@@ -703,7 +703,7 @@ WebInspector.SourcesPanel.prototype = {
             this._stepping = false;
             this._waitingToPause = true;
             // Make sure pauses didn't stick skipped.
-            DebuggerAgent.setSkipAllPauses(false);
+            WebInspector.debuggerModel.skipAllPauses(false);
             DebuggerAgent.pause();
         }
 
@@ -722,8 +722,7 @@ WebInspector.SourcesPanel.prototype = {
 
         this._paused = false;
         this._waitingToPause = false;
-        DebuggerAgent.setSkipAllPauses(true, true);
-        setTimeout(DebuggerAgent.setSkipAllPauses.bind(DebuggerAgent, false), 500);
+        WebInspector.debuggerModel.skipAllPausesUntilReloadOrTimeout(500);
         DebuggerAgent.resume();
 
         this._clearInterface();

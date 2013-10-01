@@ -131,6 +131,31 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
+     * @param {boolean} skip
+     * @param {boolean=} untilReload
+     */
+    skipAllPauses: function(skip, untilReload)
+    {
+        if (this._skipAllPausesTimeout) {
+            clearTimeout(this._skipAllPausesTimeout);
+            delete this._skipAllPausesTimeout;
+        }
+        DebuggerAgent.setSkipAllPauses(skip, untilReload);
+    },
+
+    /**
+     * @param {number} timeout
+     */
+    skipAllPausesUntilReloadOrTimeout: function(timeout)
+    {
+        if (this._skipAllPausesTimeout)
+            clearTimeout(this._skipAllPausesTimeout);
+        DebuggerAgent.setSkipAllPauses(true, true);
+        // If reload happens before the timeout, the flag will be already unset and the timeout callback won't change anything.
+        this._skipAllPausesTimeout = setTimeout(this.skipAllPauses.bind(this, false), timeout);
+    },
+
+    /**
      * @return {boolean}
      */
     canSetScriptSource: function()

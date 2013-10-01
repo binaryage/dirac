@@ -775,7 +775,7 @@ WebInspector.documentKeyDown = function(event)
             break;
         case "U+0052": // R key
             if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
-                DebuggerAgent.setSkipAllPauses(true, true);
+                WebInspector.debuggerModel.skipAllPauses(true, true);
                 PageAgent.reload(event.shiftKey);
                 event.consume(true);
             }
