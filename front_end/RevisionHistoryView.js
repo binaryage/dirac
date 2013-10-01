@@ -223,11 +223,18 @@ WebInspector.RevisionHistoryTreeElement.prototype = {
         else
             this._revision.uiSourceCode.requestOriginalContent(step1.bind(this));
 
+        /**
+         * @param {?string} baseContent
+         */
         function step1(baseContent)
         {
             this._revision.requestContent(step2.bind(this, baseContent));
         }
 
+        /**
+         * @param {?string} baseContent
+         * @param {?string} newContent
+         */
         function step2(baseContent, newContent)
         {
             var baseLines = difflib.stringAsLines(baseContent);

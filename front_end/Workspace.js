@@ -85,7 +85,7 @@ WebInspector.ProjectDelegate.prototype = {
 
     /**
      * @param {string} path
-     * @param {function(?string,boolean,string)} callback
+     * @param {function(?string)} callback
      */
     requestFileContent: function(path, callback) { },
 
@@ -305,7 +305,7 @@ WebInspector.Project.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @param {function(?string,boolean,string)} callback
+     * @param {function(?string)} callback
      */
     requestFileContent: function(uiSourceCode, callback)
     {

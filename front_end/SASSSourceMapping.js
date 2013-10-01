@@ -346,6 +346,10 @@ WebInspector.SASSSourceMapping.prototype = {
             }
 
             cssUISourceCode.requestOriginalContent(contentCallback.bind(this));
+
+            /**
+             * @param {?string} content
+             */
             function contentCallback(content)
             {
                 // Empty string is a valid value, null means error.

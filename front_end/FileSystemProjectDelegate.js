@@ -106,22 +106,12 @@ WebInspector.FileSystemProjectDelegate.prototype = {
 
     /**
      * @param {string} path
-     * @param {function(?string,boolean,string)} callback
+     * @param {function(?string)} callback
      */
     requestFileContent: function(path, callback)
     {
         var filePath = this._filePathForPath(path);
-        this._fileSystem.requestFileContent(filePath, innerCallback.bind(this));
-        
-        /**
-         * @param {?string} content
-         */
-        function innerCallback(content)
-        {
-            var extension = this._extensionForPath(path);
-            var mimeType = WebInspector.ResourceType.mimeTypesForExtensions[extension];
-            callback(content, false, mimeType);
-        }
+        this._fileSystem.requestFileContent(filePath, callback);
     },
 
     /**

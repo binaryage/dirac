@@ -258,7 +258,7 @@ WebInspector.UISourceCode.prototype = {
     requestContent: function(callback)
     {
         if (this._content || this._contentLoaded) {
-            callback(this._content, false, this._mimeType);
+            callback(this._content, false, this._mimeType());
             return;
         }
         this._requestContentCallbacks.push(callback);
@@ -278,6 +278,9 @@ WebInspector.UISourceCode.prototype = {
         this._checkingContent = true;
         this._project.requestFileContent(this, contentLoaded.bind(this));
 
+        /**
+         * @param {?string} updatedContent
+         */
         function contentLoaded(updatedContent)
         {
             if (updatedContent === null) {
@@ -323,7 +326,7 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @param {function(?string,boolean,string)} callback
+     * @param {function(?string)} callback
      */
     requestOriginalContent: function(callback)
     {
@@ -435,7 +438,6 @@ WebInspector.UISourceCode.prototype = {
         this._content = this.history[this.history.length - 1].content;
         this._hasCommittedChanges = true;
         this._contentLoaded = true;
-        this._mimeType = this.canonicalMimeType();
     },
 
     _clearRevisionHistory: function()
@@ -456,10 +458,8 @@ WebInspector.UISourceCode.prototype = {
         /**
          * @this {WebInspector.UISourceCode}
          * @param {?string} content
-         * @param {boolean} contentEncoded
-         * @param {string} mimeType
          */
-        function callback(content, contentEncoded, mimeType)
+        function callback(content)
         {
             if (typeof content !== "string")
                 return;
@@ -483,10 +483,8 @@ WebInspector.UISourceCode.prototype = {
         /**
          * @this {WebInspector.UISourceCode}
          * @param {?string} content
-         * @param {boolean} contentEncoded
-         * @param {string} mimeType
          */
-        function revert(content, contentEncoded, mimeType)
+        function revert(content)
         {
             if (typeof content !== "string")
                 return;
@@ -544,8 +542,6 @@ WebInspector.UISourceCode.prototype = {
      */
     setWorkingCopy: function(newWorkingCopy)
     {
-        if (!this._mimeType)
-            this._mimeType = this.canonicalMimeType();
         this._workingCopy = newWorkingCopy;
         delete this._workingCopyGetter;
         this.dispatchEventToListeners(WebInspector.UISourceCode.Events.WorkingCopyChanged);
@@ -595,9 +591,9 @@ WebInspector.UISourceCode.prototype = {
     /**
      * @return {string}
      */
-    mimeType: function()
+    _mimeType: function()
     {
-        return this._mimeType;
+        return this.contentType().canonicalMimeType();
     },
 
     /**
@@ -612,14 +608,6 @@ WebInspector.UISourceCode.prototype = {
             extension = extension.substr(0, indexOfQuestionMark);
         var mimeType = WebInspector.ResourceType.mimeTypesForExtensions[extension.toLowerCase()];
         return mimeType || this.contentType().canonicalMimeType();
-    },
-
-    /**
-     * @return {string}
-     */
-    canonicalMimeType: function()
-    {
-        return this.contentType().canonicalMimeType() || this._mimeType;
     },
 
     /**
@@ -650,19 +638,16 @@ WebInspector.UISourceCode.prototype = {
 
     /**
      * @param {?string} content
-     * @param {boolean} contentEncoded
-     * @param {string} mimeType
      */
-    _fireContentAvailable: function(content, contentEncoded, mimeType)
+    _fireContentAvailable: function(content)
     {
         this._contentLoaded = true;
-        this._mimeType = mimeType;
         this._content = content;
 
         var callbacks = this._requestContentCallbacks.slice();
         this._requestContentCallbacks = [];
         for (var i = 0; i < callbacks.length; ++i)
-            callbacks[i](content, contentEncoded, mimeType);
+            callbacks[i](content, false, this._mimeType());
 
         if (this._formatOnLoad) {
             delete this._formatOnLoad;
@@ -786,7 +771,7 @@ WebInspector.UISourceCode.prototype = {
         // Re-request content
         this._contentLoaded = false;
         this._content = false;
-        WebInspector.UISourceCode.prototype.requestContent.call(this, didGetContent.bind(this));
+        this.requestContent(didGetContent.bind(this));
   
         /**
          * @this {WebInspector.UISourceCode}
@@ -1066,7 +1051,7 @@ WebInspector.Revision.prototype = {
      */
     requestContent: function(callback)
     {
-        callback(this._content || "", false, this.uiSourceCode.canonicalMimeType());
+        callback(this._content || "", false, this.uiSourceCode._mimeType());
     },
 
     /**

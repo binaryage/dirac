@@ -81,12 +81,22 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
 
     /**
      * @param {string} path
-     * @param {function(?string,boolean,string)} callback
+     * @param {function(?string)} callback
      */
     requestFileContent: function(path, callback)
     {
         var contentProvider = this._contentProviders[path];
         contentProvider.requestContent(callback);
+
+        /**
+         * @param {?string} content
+         * @param {boolean} encoded
+         * @param {string} mimeType
+         */
+        function innerCallback(content, encoded, mimeType)
+        {
+            callback(content);
+        }
     },
 
     /**
