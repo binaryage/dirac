@@ -1928,7 +1928,7 @@ WebInspector.ElementsTreeElement.prototype = {
     _buildPseudoElementDOM: function(parentElement, pseudoElementName)
     {
         var pseudoElement = parentElement.createChild("span", "webkit-html-pseudo-element");
-        pseudoElement.textContent = ":" + pseudoElementName;
+        pseudoElement.textContent = "::" + pseudoElementName;
         parentElement.appendChild(document.createTextNode("\u200B"));
     },
 
