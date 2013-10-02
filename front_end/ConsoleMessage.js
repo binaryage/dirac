@@ -325,6 +325,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
      * @param {Object} output
      * @param {boolean=} forceObjectFormat
      * @param {boolean=} includePreview
+     * @return {!Element}
      */
     _formatParameter: function(output, forceObjectFormat, includePreview)
     {
@@ -353,9 +354,14 @@ WebInspector.ConsoleMessageImpl.prototype = {
         elem.appendChild(document.createTextNode(val));
     },
 
+    /**
+     * @param {WebInspector.RemoteObject} obj
+     * @param {Element} elem
+     * @param {boolean} includePreview
+     */
     _formatParameterAsObject: function(obj, elem, includePreview)
     {
-        this._formatParameterAsArrayOrObject(obj, obj.description, elem, includePreview);
+        this._formatParameterAsArrayOrObject(obj, obj.description || "", elem, includePreview);
     },
 
     /**
@@ -574,6 +580,11 @@ WebInspector.ConsoleMessageImpl.prototype = {
         elem.appendChild(document.createTextNode("\""));
     },
 
+    /**
+     * @param {!WebInspector.RemoteObject} array
+     * @param {Element} elem
+     * @param {Array.<WebInspector.RemoteObjectProperty>} properties
+     */
     _printArray: function(array, elem, properties)
     {
         if (!properties)
@@ -583,7 +594,11 @@ WebInspector.ConsoleMessageImpl.prototype = {
         for (var i = 0; i < properties.length; ++i) {
             var property = properties[i];
             var name = property.name;
-            if (!isNaN(name))
+            if (isNaN(name))
+                continue;
+            if (property.getter)
+                elements[name] = this._formatAsAccessorProperty(array, property);
+            else if (property.value)
                 elements[name] = this._formatAsArrayEntry(property.value);
         }
 
@@ -619,10 +634,42 @@ WebInspector.ConsoleMessageImpl.prototype = {
         elem.appendChild(document.createTextNode("]"));
     },
 
+    /**
+     * @param {!WebInspector.RemoteObject} output
+     * @return {!Element}
+     */
     _formatAsArrayEntry: function(output)
     {
         // Prevent infinite expansion of cross-referencing arrays.
-        return this._formatParameter(output, output.subtype && output.subtype === "array", false);
+        return this._formatParameter(output, output.subtype === "array", false);
+    },
+
+    /**
+     * @param {!WebInspector.RemoteObject} object
+     * @param {!WebInspector.RemoteObjectProperty} property
+     * @return {!Element}
+     */
+    _formatAsAccessorProperty: function(object, property)
+    {
+        var rootElement = WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(object, property, onInvokeGetterClick.bind(this));
+
+        /**
+         * @param {!WebInspector.RemoteObject} result
+         * @param {boolean=} wasThrown
+         */
+        function onInvokeGetterClick(result, wasThrown)
+        {
+            rootElement.removeChildren();
+            if (wasThrown) {
+                var element = rootElement.createChild("span", "error");
+                element.textContent = WebInspector.UIString("<exception>");
+                element.title = result.description;
+            } else {
+                rootElement.appendChild(this._formatAsArrayEntry(result));
+            }
+        }
+
+        return rootElement;
     },
 
     _formatWithSubstitutionString: function(format, parameters, formattedResult)

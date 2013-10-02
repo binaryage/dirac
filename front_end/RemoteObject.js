@@ -100,7 +100,7 @@ WebInspector.RemoteObject.resolveNode = function(node, objectGroup, callback)
 
 /**
  * @param {RuntimeAgent.RemoteObject=} payload
- * @return {WebInspector.RemoteObject}
+ * @return {!WebInspector.RemoteObject}
  */
 WebInspector.RemoteObject.fromPayload = function(payload)
 {

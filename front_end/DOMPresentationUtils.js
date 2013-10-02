@@ -77,7 +77,7 @@ WebInspector.DOMPresentationUtils.decorateNodeLabel = function(node, parentEleme
 }
 
 /**
- * @param {Element} container
+ * @param {!Element} container
  * @param {string} nodeTitle
  */
 WebInspector.DOMPresentationUtils.createSpansForNodeTitle = function(container, nodeTitle)
