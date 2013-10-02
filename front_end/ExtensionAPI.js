@@ -344,7 +344,10 @@ function ExtensionViewImpl(id)
     function dispatchShowEvent(message)
     {
         var frameIndex = message.arguments[0];
-        this._fire(window.parent.frames[frameIndex]);
+        if (typeof frameIndex === "number")
+            this._fire(window.parent.frames[frameIndex]);
+        else
+            this._fire();
     }
     this.onShown = new EventSink(events.ViewShown + id, dispatchShowEvent);
     this.onHidden = new EventSink(events.ViewHidden + id);
