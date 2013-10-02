@@ -56,6 +56,8 @@ WebInspector.FlameChart = function(cpuProfileView)
     this._canvas.addEventListener("mousemove", this._onMouseMove.bind(this));
     WebInspector.installDragHandle(this._canvas, this._startCanvasDragging.bind(this), this._canvasDragging.bind(this), this._endCanvasDragging.bind(this), "col-resize");
 
+    this._entryInfo = this._chartContainer.createChild("div", "entry-info");
+
     this._cpuProfileView = cpuProfileView;
     this._windowLeft = 0.0;
     this._windowRight = 1.0;
@@ -752,42 +754,23 @@ WebInspector.FlameChart.prototype = {
 
         var entryInfo = this._prepareHighlightedEntryInfo();
         if (entryInfo)
-            this._printEntryInfo(context, entryInfo, 0, 25, width);
+            this._printEntryInfo(entryInfo);
     },
 
-    _printEntryInfo: function(context, entryInfo, x, y, width)
+    _printEntryInfo: function(entryInfo)
     {
-        const lineHeight = 18;
-        const paddingLeft = 10;
-        const paddingTop = 5;
-        var maxTitleWidth = 0;
-        var basicFont = "100% " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
-        context.font = "bold " + basicFont;
-        context.textBaseline = "top";
-        for (var i = 0; i < entryInfo.length; ++i)
-            maxTitleWidth = Math.max(maxTitleWidth, context.measureText(entryInfo[i].title).width);
-
-        var maxTextWidth = 0;
-        for (var i = 0; i < entryInfo.length; ++i)
-            maxTextWidth = Math.max(maxTextWidth, context.measureText(entryInfo[i].text).width);
-        maxTextWidth = Math.min(maxTextWidth, width - 2 * paddingLeft - maxTitleWidth);
-
-        context.beginPath();
-        context.rect(x, y, maxTitleWidth + maxTextWidth + 5, lineHeight * entryInfo.length + 5);
-        context.strokeStyle = "rgba(0,0,0,0)";
-        context.fillStyle = "rgba(254,254,254,0.8)";
-        context.fill();
-        context.stroke();
-
-        context.fillStyle = "#333";
-        for (var i = 0; i < entryInfo.length; ++i)
-            context.fillText(entryInfo[i].title, x + paddingLeft, y + lineHeight * i);
-
-        context.font = basicFont;
+        this._entryInfo.removeChildren();
+        var infoTable = document.createElement("table");
+        infoTable.className = "info-table";
         for (var i = 0; i < entryInfo.length; ++i) {
-            var text = this._prepareText(context, entryInfo[i].text, maxTextWidth);
-            context.fillText(text, x + paddingLeft + maxTitleWidth + paddingLeft, y + lineHeight * i);
+            var row = infoTable.createChild("tr");
+            var titleCell = row.createChild("td");
+            titleCell.textContent = entryInfo[i].title;
+            titleCell.className = "title";
+            var textCell = row.createChild("td");
+            textCell.textContent = entryInfo[i].text;
         }
+        this._entryInfo.appendChild(infoTable);
     },
 
     _prepareText: function(context, title, maxSize)
