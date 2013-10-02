@@ -323,6 +323,7 @@ WebInspector.FlameChart.prototype = {
         var levelExitIndexes = /** @type {Array.<!number>} */ ([0]);
         var colorGenerator = WebInspector.FlameChart._colorGenerator;
         var colorIndexEntryChains = [[], [], []];
+        var maxDepth = 5; // minimum stack depth for the case when we see no activity.
 
         while (stack.length) {
             var level = levelOffsets.length - 1;
@@ -345,6 +346,7 @@ WebInspector.FlameChart.prototype = {
             if (node.children.length) {
                 levelExitIndexes.push(stack.length);
                 levelOffsets.push(offset + node.selfTime / 2);
+                maxDepth = Math.max(maxDepth, levelOffsets.length);
                 appendReversedArray(stack, node.children);
             }
 
@@ -354,6 +356,7 @@ WebInspector.FlameChart.prototype = {
             }
         }
 
+        this._maxStackDepth = maxDepth;
         this._timelineData = {
             entries: entries,
             colorIndexEntryChains: colorIndexEntryChains,
@@ -384,6 +387,8 @@ WebInspector.FlameChart.prototype = {
         var stackTrace = [];
         var colorGenerator = WebInspector.FlameChart._colorGenerator;
         var colorIndexEntryChains = [[], [], []];
+        var maxDepth = 5; // minimum stack depth for the case when we see no activity.
+        var depth = 0;
         for (var sampleIndex = 0; sampleIndex < samplesCount; sampleIndex++) {
             var node = idToNode[samples[sampleIndex]];
             stackTrace.length = 0;
@@ -393,7 +398,8 @@ WebInspector.FlameChart.prototype = {
             }
             stackTrace.pop(); // Remove (root) node
 
-            var depth = 0;
+            maxDepth = Math.max(maxDepth, depth);
+            depth = 0;
             node = stackTrace.pop();
             var intervalIndex;
 
@@ -441,6 +447,8 @@ WebInspector.FlameChart.prototype = {
             }
             entries[entries.length - 1].selfTime += samplingInterval;
         }
+
+        this._maxStackDepth = Math.max(maxDepth, depth);
 
         this._timelineData = {
             entries: entries,
@@ -582,16 +590,13 @@ WebInspector.FlameChart.prototype = {
 
         var drawData = new Uint8Array(width);
         var scaleFactor = width / this._totalTime;
-        var maxStackDepth = 5; // minimum stack depth for the case when we see no activity.
 
         for (var entryIndex = 0; entryIndex < timelineEntries.length; ++entryIndex) {
             var entry = timelineEntries[entryIndex];
             var start = Math.floor(entry.startTime * scaleFactor);
             var finish = Math.floor((entry.startTime + entry.duration) * scaleFactor);
-            for (var x = start; x < finish; ++x) {
+            for (var x = start; x < finish; ++x)
                 drawData[x] = Math.max(drawData[x], entry.depth + 1);
-                maxStackDepth = Math.max(maxStackDepth, entry.depth + 1);
-            }
         }
 
         var ratio = window.devicePixelRatio;
@@ -604,7 +609,7 @@ WebInspector.FlameChart.prototype = {
 
         var context = this._overviewCanvas.getContext("2d");
 
-        var yScaleFactor = canvasHeight / (maxStackDepth * 1.1);
+        var yScaleFactor = canvasHeight / (this._maxStackDepth * 1.1);
         context.lineWidth = 1;
         context.translate(0.5, 0.5);
         context.strokeStyle = "rgba(20,0,0,0.4)";
