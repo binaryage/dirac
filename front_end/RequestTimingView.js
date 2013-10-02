@@ -84,6 +84,7 @@ WebInspector.RequestTimingView.prototype = {
 WebInspector.RequestTimingView.createTimingTable = function(request)
 {
     var tableElement = document.createElement("table");
+    tableElement.className = "network-timing-table";
     var rows = [];
 
     function addRow(title, className, start, end)
@@ -101,24 +102,24 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
     if (blocking > 0)
         addRow(WebInspector.UIString("Blocking"), "blocking", 0, blocking);
 
-    if (request.timing.proxyStart !== -1)
-        addRow(WebInspector.UIString("Proxy"), "proxy", request.timing.proxyStart, request.timing.proxyEnd);
+    if (timing.proxyStart !== -1)
+        addRow(WebInspector.UIString("Proxy"), "proxy", timing.proxyStart, timing.proxyEnd);
 
-    if (request.timing.dnsStart !== -1)
-        addRow(WebInspector.UIString("DNS Lookup"), "dns", request.timing.dnsStart, request.timing.dnsEnd);
+    if (timing.dnsStart !== -1)
+        addRow(WebInspector.UIString("DNS Lookup"), "dns", timing.dnsStart, timing.dnsEnd);
 
-    if (request.timing.connectStart !== -1)
-        addRow(WebInspector.UIString("Connecting"), "connecting", request.timing.connectStart, request.timing.connectEnd);
+    if (timing.connectStart !== -1)
+        addRow(WebInspector.UIString("Connecting"), "connecting", timing.connectStart, timing.connectEnd);
 
-    if (request.timing.sslStart !== -1)
-        addRow(WebInspector.UIString("SSL"), "ssl", request.timing.sslStart, request.timing.sslEnd);
+    if (timing.sslStart !== -1)
+        addRow(WebInspector.UIString("SSL"), "ssl", timing.sslStart, timing.sslEnd);
 
-    addRow(WebInspector.UIString("Sending"), "sending", request.timing.sendStart, request.timing.sendEnd);
-    addRow(WebInspector.UIString("Waiting"), "waiting", request.timing.sendEnd, request.timing.receiveHeadersEnd);
-    addRow(WebInspector.UIString("Receiving"), "receiving", (request.responseReceivedTime - request.timing.requestTime) * 1000, (request.endTime - request.timing.requestTime) * 1000);
+    addRow(WebInspector.UIString("Sending"), "sending", timing.sendStart, timing.sendEnd);
+    addRow(WebInspector.UIString("Waiting"), "waiting", timing.sendEnd, timing.receiveHeadersEnd);
+    addRow(WebInspector.UIString("Receiving"), "receiving", (request.responseReceivedTime - timing.requestTime) * 1000, (request.endTime - timing.requestTime) * 1000);
 
     const chartWidth = 200;
-    var total = (request.endTime - request.timing.requestTime) * 1000;
+    var total = (request.endTime - timing.requestTime) * 1000;
     var scale = chartWidth / total;
 
     for (var i = 0; i < rows.length; ++i) {
@@ -138,8 +139,8 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
 
         var bar = document.createElement("span");
         bar.className = "network-timing-bar " + rows[i].className;
-        bar.style.left = scale * rows[i].start + "px";
-        bar.style.right = scale * (total - rows[i].end) + "px";
+        bar.style.left = Math.floor(scale * rows[i].start) + "px";
+        bar.style.right = Math.floor(scale * (total - rows[i].end)) + "px";
         bar.style.backgroundColor = rows[i].color;
         bar.textContent = "\u200B"; // Important for 0-time items to have 0 width.
         row.appendChild(bar);
@@ -150,7 +151,7 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
             title.style.right = (scale * (total - rows[i].end) + 3) + "px";
         else
             title.style.left = (scale * rows[i].start + 3) + "px";
-        title.textContent = Number.secondsToString((rows[i].end - rows[i].start) / 1000);
+        title.textContent = Number.secondsToString((rows[i].end - rows[i].start) / 1000, true);
         row.appendChild(title);
 
         tr.appendChild(td);

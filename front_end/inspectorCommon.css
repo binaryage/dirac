@@ -208,6 +208,10 @@ iframe.view {
 
 /* Network timing is shared between popover and network item view pane */
 
+.network-timing-table td {
+    padding: 0;
+}
+
 .network-timing-row {
     position: relative;
     height: 16px;
