@@ -266,6 +266,7 @@ SourceMapV3.Offset = function()
 }
 
 // FIXME: remove everything below.
+var FormatterWorker = {}
 var WebInspector = {}
 
 WebInspector.queryParamsObject = {}

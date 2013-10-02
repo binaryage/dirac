@@ -53,6 +53,7 @@
             'front_end/CookieItemsView.js',
             'front_end/CookieParser.js',
             'front_end/CookiesTable.js',
+            'front_end/CSSFormatter.js',
             'front_end/CSSMetadata.js',
             'front_end/CSSStyleModel.js',
             'front_end/CSSStyleSheetMapping.js',

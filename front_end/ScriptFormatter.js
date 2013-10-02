@@ -41,7 +41,7 @@ WebInspector.Formatter = function()
  */
 WebInspector.Formatter.createFormatter = function(contentType)
 {
-    if (contentType === WebInspector.resourceTypes.Script || contentType === WebInspector.resourceTypes.Document)
+    if (contentType === WebInspector.resourceTypes.Script || contentType === WebInspector.resourceTypes.Document || contentType === WebInspector.resourceTypes.Stylesheet)
         return new WebInspector.ScriptFormatter();
     return new WebInspector.IdentityFormatter();
 }
