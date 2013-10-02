@@ -630,23 +630,6 @@ WebInspector.FlameChart.prototype = {
     },
 
     /**
-     * @param {WebInspector.FlameChart.Entry} entry
-     * @param {AnchorBox} anchorBox
-     */
-    _entryToAnchorBox: function(entry, anchorBox)
-    {
-        anchorBox.x = Math.floor(entry.startTime * this._timeToPixel) - this._pixelWindowLeft + this._paddingLeft;
-        anchorBox.y = this._canvas.height / window.devicePixelRatio - (entry.depth + 1) * this._barHeight;
-        anchorBox.width = Math.max(Math.ceil(entry.duration * this._timeToPixel), this._minWidth);
-        anchorBox.height = this._barHeight;
-        if (anchorBox.x < 0) {
-            anchorBox.width += anchorBox.x;
-            anchorBox.x = 0;
-        }
-        anchorBox.width = Number.constrain(anchorBox.width, 0, this._canvas.width - anchorBox.x);
-    },
-
-    /**
      * @param {!number} height
      * @param {!number} width
      */
@@ -671,31 +654,55 @@ WebInspector.FlameChart.prototype = {
         context.scale(ratio, ratio);
         var visibleTimeLeft = this._timeWindowLeft - this._paddingLeftTime;
         var timeWindowRight = this._timeWindowRight;
+        var timeToPixel = this._timeToPixel;
+        var pixelWindowLeft = this._pixelWindowLeft;
+        var paddingLeft = this._paddingLeft;
+        var minWidth = this._minWidth;
         var lastUsedColor = "";
         var highlightedEntry = this._timelineData.entries[this._highlightedEntryIndex];
 
-        function forEachEntry(flameChart, callback)
+        /**
+         * @param {WebInspector.FlameChart.Entry} entry
+         * @param {AnchorBox} anchorBox
+         */
+        function entryToAnchorBox(entry, anchorBox)
+        {
+            anchorBox.x = Math.floor(entry.startTime * timeToPixel) - pixelWindowLeft + paddingLeft;
+            anchorBox.y = height - (entry.depth + 1) * barHeight;
+            anchorBox.width = Math.max(Math.ceil(entry.duration * timeToPixel), minWidth);
+            anchorBox.height = barHeight;
+            if (anchorBox.x < 0) {
+                anchorBox.width += anchorBox.x;
+                anchorBox.x = 0;
+            }
+            anchorBox.width = Number.constrain(anchorBox.width, 0, canvasWidth - anchorBox.x);
+        }
+
+        function forEachEntry(callback)
         {
             var anchorBox = new AnchorBox();
+            var entries = null;
+            var entry = null;
+            var startTime = 0;
             for (var j = 0; j < colorIndexEntryChains.length; ++j) {
-                var entries = colorIndexEntryChains[j];
+                entries = colorIndexEntryChains[j];
                 if (!entries)
                     continue;
                 for (var i = 0; i < entries.length; ++i) {
-                    var entry = entries[i];
-                    var startTime = entry.startTime;
+                    entry = entries[i];
+                    startTime = entry.startTime;
                     if (startTime > timeWindowRight)
                         break;
                     if ((startTime + entry.duration) < visibleTimeLeft)
                         continue;
-                    flameChart._entryToAnchorBox(entry, anchorBox);
+                    entryToAnchorBox(entry, anchorBox);
 
-                    callback(flameChart, context, entry, anchorBox, highlightedEntry === entry);
+                    callback(entry, anchorBox, highlightedEntry === entry);
                 }
             }
         }
 
-        function drawBar(flameChart, context, entry, anchorBox, highlighted)
+        function drawBar(entry, anchorBox, highlighted)
         {
             context.beginPath();
             context.rect(anchorBox.x, anchorBox.y, anchorBox.width - 1, anchorBox.height - 1);
@@ -707,7 +714,7 @@ WebInspector.FlameChart.prototype = {
             context.fill();
         }
 
-        forEachEntry(this, drawBar);
+        forEachEntry(drawBar);
 
         var font = (barHeight - 4) + "px " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
         var boldFont = "bold " + font;
@@ -718,7 +725,8 @@ WebInspector.FlameChart.prototype = {
         this._dotsWidth = context.measureText("\u2026").width;
         var textPaddingLeft = 2;
 
-        function drawText(flameChart, context, entry, anchorBox, highlighted)
+        var flameChart = this;
+        function drawText(entry, anchorBox, highlighted)
         {
             var deoptReason = entry.node.deoptReason;
             if (isBoldFontSelected) {
@@ -740,7 +748,7 @@ WebInspector.FlameChart.prototype = {
                 context.fillText(title, xText + textPaddingLeft, anchorBox.y + barHeight - 4);
         }
 
-        forEachEntry(this, drawText);
+        forEachEntry(drawText);
 
         var entryInfo = this._prepareHighlightedEntryInfo();
         if (entryInfo)
