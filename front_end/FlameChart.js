@@ -753,13 +753,13 @@ WebInspector.FlameChart.prototype = {
         forEachEntry(drawText);
 
         var entryInfo = this._prepareHighlightedEntryInfo();
+        this._entryInfo.removeChildren();
         if (entryInfo)
-            this._printEntryInfo(entryInfo);
+            this._entryInfo.appendChild(this._buildEntryInfo(entryInfo));
     },
 
-    _printEntryInfo: function(entryInfo)
+    _buildEntryInfo: function(entryInfo)
     {
-        this._entryInfo.removeChildren();
         var infoTable = document.createElement("table");
         infoTable.className = "info-table";
         for (var i = 0; i < entryInfo.length; ++i) {
@@ -770,7 +770,7 @@ WebInspector.FlameChart.prototype = {
             var textCell = row.createChild("td");
             textCell.textContent = entryInfo[i].text;
         }
-        this._entryInfo.appendChild(infoTable);
+        return infoTable;
     },
 
     _prepareText: function(context, title, maxSize)
