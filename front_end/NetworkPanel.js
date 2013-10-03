@@ -2305,12 +2305,9 @@ WebInspector.NetworkDataGridNode.prototype = {
         if (this._request.mimeType) {
             this._typeCell.removeStyleClass("network-dim-cell");
             this._typeCell.setTextAndTitle(this._request.mimeType);
-        } else if (this._request.isPingRequest()) {
-            this._typeCell.removeStyleClass("network-dim-cell");
-            this._typeCell.setTextAndTitle(this._request.requestContentType() || "");
         } else {
-            this._typeCell.addStyleClass("network-dim-cell");
-            this._typeCell.setTextAndTitle(WebInspector.UIString("Pending"));
+            this._typeCell.enableStyleClass("network-dim-cell", !this._request.isPingRequest());
+            this._typeCell.setTextAndTitle(this._request.requestContentType() || "");
         }
     },
 
