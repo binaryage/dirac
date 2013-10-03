@@ -93,14 +93,6 @@ WebInspector.CompilerScriptMapping.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    isIdentity: function()
-    {
-        return false;
-    },
-
-    /**
      * @param {WebInspector.Script} script
      */
     addScript: function(script)

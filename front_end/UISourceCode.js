@@ -818,16 +818,22 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    hasSourceMapping: function()
+    {
+        return !!this._sourceMapping;
+    },
+
+    /**
      * @param {WebInspector.SourceMapping} sourceMapping
      */
     setSourceMapping: function(sourceMapping)
     {
-        var wasIdentity = this._sourceMapping ? this._sourceMapping.isIdentity() : true;
+        if (this._sourceMapping === sourceMapping)
+            return;
         this._sourceMapping = sourceMapping;
-        var data = {}
-        data.isIdentity = sourceMapping ? sourceMapping.isIdentity() : true;
-        data.identityHasChanged = data.isIdentity !== wasIdentity;
-        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.SourceMappingChanged, data);
+        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.SourceMappingChanged);
     },
 
     __proto__: WebInspector.Object.prototype

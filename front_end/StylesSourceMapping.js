@@ -71,14 +71,6 @@ WebInspector.StylesSourceMapping.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    isIdentity: function()
-    {
-        return true;
-    },
-
-    /**
      * @param {WebInspector.CSSStyleSheetHeader} header
      */
     addHeader: function(header)
@@ -135,11 +127,10 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     _unbindUISourceCode: function(uiSourceCode)
     {
-        if (uiSourceCode.styleFile()) {
-            uiSourceCode.styleFile().dispose();
-            uiSourceCode.setStyleFile(null);
-        }
-        uiSourceCode.setSourceMapping(null);
+        if (!uiSourceCode.styleFile())
+            return;
+        uiSourceCode.styleFile().dispose();
+        uiSourceCode.setStyleFile(null);
     },
 
     /**
@@ -163,7 +154,6 @@ WebInspector.StylesSourceMapping.prototype = {
         if (uiSourceCode.styleFile() || header.isInline)
             return;
         var url = uiSourceCode.url;
-        uiSourceCode.setSourceMapping(this);
         uiSourceCode.setStyleFile(new WebInspector.StyleFile(uiSourceCode));
         header.updateLocations();
     },
