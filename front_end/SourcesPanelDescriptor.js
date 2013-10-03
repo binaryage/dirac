@@ -69,6 +69,7 @@ WebInspector.SourcesPanelDescriptor.prototype = {
         section.addRelatedKeys(nextAndPrevFrameKeys, WebInspector.UIString("Next/previous call frame"));
 
         section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.EvaluateSelectionInConsole, WebInspector.UIString("Evaluate selection in console"));
+        section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.AddSelectionToWatch, WebInspector.UIString("Add selection to watch"));
         section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.GoToMember, WebInspector.UIString("Go to member"));
         section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.ToggleBreakpoint, WebInspector.UIString("Toggle breakpoint"));
         section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.ToggleComment, WebInspector.UIString("Toggle comment"));
@@ -109,6 +110,10 @@ WebInspector.SourcesPanelDescriptor.ShortcutKeys = {
 
     EvaluateSelectionInConsole: [
         WebInspector.KeyboardShortcut.makeDescriptor("e", WebInspector.KeyboardShortcut.Modifiers.Shift | WebInspector.KeyboardShortcut.Modifiers.Ctrl)
+    ],
+
+    AddSelectionToWatch: [
+        WebInspector.KeyboardShortcut.makeDescriptor("a", WebInspector.KeyboardShortcut.Modifiers.Shift | WebInspector.KeyboardShortcut.Modifiers.Ctrl)
     ],
 
     GoToMember: [

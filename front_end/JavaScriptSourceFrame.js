@@ -72,8 +72,30 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
 WebInspector.JavaScriptSourceFrame.prototype = {
     _registerShortcuts: function()
     {
-        var modifiers = WebInspector.KeyboardShortcut.Modifiers;
-        this.addShortcut(WebInspector.KeyboardShortcut.makeKey("e", modifiers.Shift | modifiers.Ctrl), this._evaluateSelectionInConsole.bind(this));
+        var shortcutKeys = WebInspector.SourcesPanelDescriptor.ShortcutKeys;
+        for (var i = 0; i < shortcutKeys.EvaluateSelectionInConsole.length; ++i) {
+            var keyDescriptor = shortcutKeys.EvaluateSelectionInConsole[i];
+            this.addShortcut(keyDescriptor.key, this._evaluateSelectionInConsole.bind(this));
+        }
+        for (var i = 0; i < shortcutKeys.AddSelectionToWatch.length; ++i) {
+            var keyDescriptor = shortcutKeys.AddSelectionToWatch[i];
+            this.addShortcut(keyDescriptor.key, this._addCurrentSelectionToWatch.bind(this));
+        }
+    },
+
+    _addCurrentSelectionToWatch: function()
+    {
+        var textSelection = this.textEditor.selection();
+        if (textSelection && !textSelection.isEmpty())
+            this._innerAddToWatch(this.textEditor.copyRange(textSelection));
+    },
+
+    /**
+     * @param {string} expression
+     */
+    _innerAddToWatch: function(expression)
+    {
+        this._scriptsPanel.addToWatch(expression);
     },
 
     /**
@@ -133,7 +155,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (textSelection && !textSelection.isEmpty()) {
             var selection = this.textEditor.copyRange(textSelection);
             var addToWatchLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add to watch" : "Add to Watch");
-            contextMenu.appendItem(addToWatchLabel, this._scriptsPanel.addToWatch.bind(this._scriptsPanel, selection));
+            contextMenu.appendItem(addToWatchLabel, this._innerAddToWatch.bind(this, selection));
             var evaluateLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Evaluate in console" : "Evaluate in Console");
             contextMenu.appendItem(evaluateLabel, WebInspector.evaluateInConsole.bind(WebInspector, selection));
             contextMenu.appendSeparator();
