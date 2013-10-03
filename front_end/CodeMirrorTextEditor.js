@@ -133,7 +133,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 
     this._codeMirror.setOption("keyMap", WebInspector.isMac() ? "devtools-mac" : "devtools-pc");
     this._codeMirror.setOption("flattenSpans", false);
-    this._codeMirror.setOption("maxHighlightLength", 1000);
+
+    this._codeMirror.setOption("maxHighlightLength", WebInspector.CodeMirrorTextEditor.maxHighlightLength);
     this._codeMirror.setOption("mode", null);
     this._codeMirror.setOption("crudeMeasuringFrom", 1000);
 
@@ -168,6 +169,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._setupSelectionColor();
     this._setupWhitespaceHighlight();
 }
+
+WebInspector.CodeMirrorTextEditor.maxHighlightLength = 1000;
 
 WebInspector.CodeMirrorTextEditor.autocompleteCommand = function(codeMirror)
 {
@@ -307,14 +310,16 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         {
             if (range) {
                 this.revealLine(range.startLine);
-                this.setSelection(WebInspector.TextRange.createFromLocation(range.startLine, range.startColumn));
+                if (range.endColumn > WebInspector.CodeMirrorTextEditor.maxHighlightLength)
+                    this.setSelection(range);
+                else
+                    this.setSelection(WebInspector.TextRange.createFromLocation(range.startLine, range.startColumn));
             } else {
                 // Collapse selection to end on search start so that we jump to next occurence on the first enter press.
                 this.setSelection(this.selection().collapseToEnd());
             }
             this._tokenHighlighter.highlightSearchResults(regex, range);
         }
-
         this._codeMirror.operation(innerHighlightRegex.bind(this));
     },
 
