@@ -204,39 +204,46 @@ InspectorBackend.runAfterPendingDispatches = function(message) {}
 
 /** @interface */
 function InspectorFrontendHostAPI() {}
-InspectorFrontendHostAPI.prototype.platform = function() {}
-InspectorFrontendHostAPI.prototype.port = function() {}
+/** @param {Function=} callback callback */
+InspectorFrontendHostAPI.prototype.addFileSystem = function(callback) {}
+/** @param {Function=} callback callback */
+InspectorFrontendHostAPI.prototype.append = function(url, content, callback) {}
+/** @param {Function=} callback callback */
+InspectorFrontendHostAPI.prototype.indexPath = function(requestId, fileSystemPath, callback) {}
+/** @param {Function=} callback callback */
+InspectorFrontendHostAPI.prototype.moveWindowBy = function(x, y, callback) {}
+/** @param {Function=} callback callback */
+InspectorFrontendHostAPI.prototype.openInNewTab = function(url, callback) {}
+/** @param {Function=} callback callback */
+InspectorFrontendHostAPI.prototype.removeFileSystem = function(fileSystemPath, callback) {}
+/** @param {Function=} callback callback */
+InspectorFrontendHostAPI.prototype.requestFileSystems = function(callback) {}
+/** @param {Function=} callback callback */
+InspectorFrontendHostAPI.prototype.save = function(url, content, forceSaveAs, callback) {}
+/** @param {Function=} callback callback */
+InspectorFrontendHostAPI.prototype.searchInPath = function(requestId, fileSystemPath, query, callback) {}
+/** @param {Function=} callback callback */
+InspectorFrontendHostAPI.prototype.stopIndexing = function(requestId, callback) {}
+
 InspectorFrontendHostAPI.prototype.bringToFront = function() {}
+InspectorFrontendHostAPI.prototype.close = function(url) {}
 InspectorFrontendHostAPI.prototype.closeWindow = function() {}
-InspectorFrontendHostAPI.prototype.requestSetDockSide = function(dockSide) {}
-InspectorFrontendHostAPI.prototype.setAttachedWindowHeight = function(height) {}
-InspectorFrontendHostAPI.prototype.moveWindowBy = function(x, y) {}
-InspectorFrontendHostAPI.prototype.setInjectedScriptForOrigin = function(origin, script) {}
+InspectorFrontendHostAPI.prototype.copyText = function(text) {}
+InspectorFrontendHostAPI.prototype.inspectedURLChanged = function(url) {}
+InspectorFrontendHostAPI.prototype.isolatedFileSystem = function(fileSystemId, registeredName) {}
 InspectorFrontendHostAPI.prototype.loaded = function() {}
 InspectorFrontendHostAPI.prototype.localizedStringsURL = function() {}
-InspectorFrontendHostAPI.prototype.inspectedURLChanged = function(url) {}
-InspectorFrontendHostAPI.prototype.documentCopy = function(event) {}
-InspectorFrontendHostAPI.prototype.copyText = function(text) {}
-InspectorFrontendHostAPI.prototype.openInNewTab = function(url) {}
-InspectorFrontendHostAPI.prototype.canSave = function() {}
-InspectorFrontendHostAPI.prototype.save = function(url, content, forceSaveAs) {}
-InspectorFrontendHostAPI.prototype.close = function(url) {}
-InspectorFrontendHostAPI.prototype.append = function(url, content) {}
-InspectorFrontendHostAPI.prototype.sendMessageToBackend = function(message) {}
-InspectorFrontendHostAPI.prototype.sendMessageToEmbedder = function(message) {}
+InspectorFrontendHostAPI.prototype.platform = function() {}
+InspectorFrontendHostAPI.prototype.port = function() {}
 InspectorFrontendHostAPI.prototype.recordActionTaken = function(actionCode) {}
 InspectorFrontendHostAPI.prototype.recordPanelShown = function(panelCode) {}
 InspectorFrontendHostAPI.prototype.recordSettingChanged = function(settingCode) {}
-InspectorFrontendHostAPI.prototype.loadResourceSynchronously = function(url) {}
-InspectorFrontendHostAPI.prototype.supportsFileSystems = function() {}
-InspectorFrontendHostAPI.prototype.requestFileSystems = function() {}
-InspectorFrontendHostAPI.prototype.addFileSystem = function() {}
-InspectorFrontendHostAPI.prototype.removeFileSystem = function(fileSystemPath) {}
-InspectorFrontendHostAPI.prototype.isolatedFileSystem = function(fileSystemId, registeredName) {}
-InspectorFrontendHostAPI.prototype.indexPath = function(requestId, fileSystemPath) {}
-InspectorFrontendHostAPI.prototype.stopIndexing = function(requestId) {}
-InspectorFrontendHostAPI.prototype.searchInPath = function(requestId, fileSystemPath, query) {}
+InspectorFrontendHostAPI.prototype.requestSetDockSide = function(dockSide) {}
+InspectorFrontendHostAPI.prototype.sendMessageToBackend = function(message) {}
+InspectorFrontendHostAPI.prototype.sendMessageToEmbedder = function(message) {}
+InspectorFrontendHostAPI.prototype.setInjectedScriptForOrigin = function(origin, script) {}
 InspectorFrontendHostAPI.prototype.setZoomFactor = function(zoom) {}
+InspectorFrontendHostAPI.prototype.supportsFileSystems = function() {}
 /** @type {InspectorFrontendHostAPI} */
 var InspectorFrontendHost;
 

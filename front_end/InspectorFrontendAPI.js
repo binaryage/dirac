@@ -208,6 +208,15 @@ var InspectorFrontendAPI = {
     dispatchMessage: function(messageObject)
     {
         InspectorBackend.dispatch(messageObject);
+    },
+
+    /**
+     * @param {number} id
+     * @param {?string} error
+     */
+    embedderMessageAck: function(id, error)
+    {
+        InspectorFrontendHost.embedderMessageAck(id, error);
     }
 }
 
