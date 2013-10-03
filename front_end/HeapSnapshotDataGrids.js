@@ -869,11 +869,12 @@ WebInspector.HeapSnapshotDominatorsDataGrid.prototype = {
 WebInspector.AllocationDataGrid = function()
 {
     var columns = [
-        {id: "name", title: WebInspector.UIString("Function"), width: "200px", disclosure: true, sortable: true},
-        {id: "count", title: WebInspector.UIString("Count"), sortable: true, sort: WebInspector.DataGrid.Order.Descending},
-        {id: "size", title: WebInspector.UIString("Size"), sortable: true, sort: WebInspector.DataGrid.Order.Descending},
+        {id: "count", title: WebInspector.UIString("Count"), width: "72px", sortable: true, sort: WebInspector.DataGrid.Order.Descending},
+        {id: "size", title: WebInspector.UIString("Size"), width: "72px", sortable: true, sort: WebInspector.DataGrid.Order.Descending},
+        {id: "name", title: WebInspector.UIString("Function"), disclosure: true, sortable: true},
     ];
     WebInspector.DataGrid.call(this, columns);
+    this._linkifier = new WebInspector.Linkifier();
 }
 
 WebInspector.AllocationDataGrid.prototype = {
@@ -917,6 +918,28 @@ WebInspector.AllocationGridNode.prototype = {
             for (var i = 0; i < callers.length; i++)
                 this.appendChild(new WebInspector.AllocationGridNode(this._dataGrid, callers[i]));
         }
+    },
+
+    /**
+     * @override
+     * @param {string} columnIdentifier
+     * @return {!Element}
+     */
+    createCell: function(columnIdentifier)
+    {
+        var cell = WebInspector.DataGridNode.prototype.createCell.call(this, columnIdentifier);
+
+        if (columnIdentifier !== "name")
+            return cell;
+
+        var functionInfo = this.data;
+        if (functionInfo.scriptName) {
+            var urlElement = this._dataGrid._linkifier.linkifyLocation(functionInfo.scriptName, functionInfo.line, functionInfo.column, "profile-node-file");
+            urlElement.style.maxWidth = "75%";
+            cell.insertBefore(urlElement, cell.firstChild);
+        }
+
+        return cell;
     },
 
     __proto__: WebInspector.DataGridNode.prototype

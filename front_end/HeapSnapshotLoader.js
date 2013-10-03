@@ -207,7 +207,7 @@ WebInspector.HeapSnapshotLoader.prototype = {
                     return;
                 this._json = this._json.slice(bracketIndex + 1);
 
-                var trace_function_info_field_count = 3;
+                var trace_function_info_field_count = this._snapshot.snapshot.meta.trace_function_info_fields.length;
                 var trace_function_info_length = this._snapshot.snapshot.trace_function_count * trace_function_info_field_count;
                 this._array = new Uint32Array(trace_function_info_length);
                 this._arrayIndex = 0;

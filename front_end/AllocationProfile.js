@@ -55,21 +55,26 @@ WebInspector.AllocationProfile.prototype = {
         var functionIdOffset = functionInfoFields.indexOf("function_id");
         var functionNameOffset = functionInfoFields.indexOf("name");
         var scriptNameOffset = functionInfoFields.indexOf("script_name");
+        var scriptIdOffset = functionInfoFields.indexOf("script_id");
+        var lineOffset = functionInfoFields.indexOf("line");
+        var columnOffset = functionInfoFields.indexOf("column");
         var functionInfoFieldCount = functionInfoFields.length;
 
         var map = this._idToFunctionInfo;
 
         // Special case for the root node.
-        map[0] = new WebInspector.FunctionAllocationInfo("(root)", "<unknown>");
+        map[0] = new WebInspector.FunctionAllocationInfo("(root)", "<unknown>", 0, -1, -1);
 
         var rawInfos = profile.trace_function_infos;
         var infoLength = rawInfos.length;
         for (var i = 0; i < infoLength; i += functionInfoFieldCount) {
             map[rawInfos[i + functionIdOffset]] = new WebInspector.FunctionAllocationInfo(
                 strings[rawInfos[i + functionNameOffset]],
-                strings[rawInfos[i + scriptNameOffset]]);
+                strings[rawInfos[i + scriptNameOffset]],
+                rawInfos[i + scriptIdOffset],
+                rawInfos[i + lineOffset],
+                rawInfos[i + columnOffset]);
         }
-
     },
 
     _buildInvertedAllocationTree: function(profile)
@@ -119,7 +124,7 @@ WebInspector.AllocationProfile.prototype = {
             var nodeId = this._nextNodeId++;
             result.push(this._serializeNode(
                 nodeId,
-                info.functionName,
+                info,
                 info.totalCount,
                 info.totalSize,
                 true));
@@ -148,7 +153,7 @@ WebInspector.AllocationProfile.prototype = {
             this._idToNode[callerId] = callerNode;
             result.push(this._serializeNode(
                 callerId,
-                callerNode.functionInfo.functionName,
+                callerNode.functionInfo,
                 callerNode.allocationCount,
                 callerNode.allocationSize,
                 callerNode.hasCallers()));
@@ -156,11 +161,14 @@ WebInspector.AllocationProfile.prototype = {
         return result;
     },
 
-    _serializeNode: function(nodeId, functionName, count, size, hasChildren)
+    _serializeNode: function(nodeId, functionInfo, count, size, hasChildren)
     {
         return {
             id: nodeId,
-            name: functionName,
+            name: functionInfo.functionName,
+            scriptName: functionInfo.scriptName,
+            line: functionInfo.line,
+            column: functionInfo.column,
             count: count,
             size: size,
             hasChildren: hasChildren
@@ -234,10 +242,13 @@ WebInspector.AllocationBackTraceNode.prototype = {
 /**
  * @constructor
  */
-WebInspector.FunctionAllocationInfo = function(functionName, scriptName)
+WebInspector.FunctionAllocationInfo = function(functionName, scriptName, scriptId, line, column)
 {
     this.functionName = functionName;
     this.scriptName = scriptName;
+    this.scriptId = scriptId;
+    this.line = line;
+    this.column = column;
     this.totalCount = 0;
     this.totalSize = 0;
     this._traceTops = [];
