@@ -389,10 +389,8 @@ WebInspector.HARWriter.prototype = {
     /**
      * @param {Object} entry
      * @param {string|null} content
-     * @param {boolean} contentEncoded
-     * @param {string=} mimeType
      */
-    _onContentAvailable: function(entry, content, contentEncoded, mimeType)
+    _onContentAvailable: function(entry, content)
     {
         if (content !== null)
             entry.response.content.text = content;

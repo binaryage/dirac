@@ -614,10 +614,8 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
             this._uiSourceCode.requestContent(callback.bind(this));
         /**
          * @param {?string} content
-         * @param {boolean} contentEncoded
-         * @param {string} mimeType
          */
-        function callback(content, contentEncoded, mimeType)
+        function callback(content)
         {
             this._warmedUpContent = content;
         }

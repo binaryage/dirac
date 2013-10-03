@@ -35,7 +35,6 @@
  */
 WebInspector.ConcatenatedScriptsContentProvider = function(scripts)
 {
-    this._mimeType = "text/html";
     this._scripts = scripts;
 }
 
@@ -89,17 +88,21 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
     },
     
     /**
-     * @param {function(?string,boolean,string)} callback
+     * @param {function(?string)} callback
      */
     requestContent: function(callback)
     {
         var scripts = this._sortedScripts();
         var sources = [];
-        function didRequestSource(content, contentEncoded, mimeType)
+
+        /**
+         * @param {?string} content
+         */
+        function didRequestSource(content)
         {
             sources.push(content);
             if (sources.length == scripts.length)
-                callback(this._concatenateScriptsContent(scripts, sources), false, this._mimeType);
+                callback(this._concatenateScriptsContent(scripts, sources));
         }
         for (var i = 0; i < scripts.length; ++i)
             scripts[i].requestContent(didRequestSource.bind(this));
@@ -186,14 +189,12 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
  * @constructor
  * @param {string} sourceURL
  * @param {WebInspector.ResourceType} contentType
- * @param {string} mimeType
  * @implements {WebInspector.ContentProvider}
  */
-WebInspector.CompilerSourceMappingContentProvider = function(sourceURL, contentType, mimeType)
+WebInspector.CompilerSourceMappingContentProvider = function(sourceURL, contentType)
 {
     this._sourceURL = sourceURL;
     this._contentType = contentType;
-    this._mimeType = mimeType;
 }
 
 WebInspector.CompilerSourceMappingContentProvider.prototype = {
@@ -214,7 +215,7 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
     },
     
     /**
-     * @param {function(?string,boolean,string)} callback
+     * @param {function(?string)} callback
      */
     requestContent: function(callback)
     {
@@ -230,11 +231,11 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
         {
             if (error || statusCode >= 400) {
                 console.error("Could not load content for " + this._sourceURL + " : " + (error || ("HTTP status code: " + statusCode)));
-                callback(null, false, this._mimeType);
+                callback(null);
                 return;
             }
 
-            callback(content, false, this._mimeType);
+            callback(content);
         }
     },
 
@@ -250,10 +251,8 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
 
         /**
          * @param {?string} content
-         * @param {boolean} base64Encoded
-         * @param {string} mimeType
          */
-        function contentLoaded(content, base64Encoded, mimeType)
+        function contentLoaded(content)
         {
             if (typeof content !== "string") {
                 callback([]);
@@ -272,13 +271,11 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
  * @implements {WebInspector.ContentProvider}
  * @param {WebInspector.ResourceType} contentType 
  * @param {string} content
- * @param {string=} mimeType
  */
-WebInspector.StaticContentProvider = function(contentType, content, mimeType)
+WebInspector.StaticContentProvider = function(contentType, content)
 {
     this._content = content;
     this._contentType = contentType;
-    this._mimeType = mimeType;
 }
 
 WebInspector.StaticContentProvider.prototype = {
@@ -299,11 +296,11 @@ WebInspector.StaticContentProvider.prototype = {
     },
 
     /**
-     * @param {function(?string,boolean,string)} callback
+     * @param {function(?string)} callback
      */
     requestContent: function(callback)
     {
-        callback(this._content, false, this._mimeType || this._contentType.canonicalMimeType());
+        callback(this._content);
     },
 
     /**
@@ -321,62 +318,6 @@ WebInspector.StaticContentProvider.prototype = {
 
         // searchInContent should call back later.
         window.setTimeout(performSearch.bind(this), 0);
-    },
-
-    __proto__: WebInspector.ContentProvider.prototype
-}
-
-/**
- * @constructor
- * @implements {WebInspector.ContentProvider}
- * @param {WebInspector.ContentProvider} contentProvider
- * @param {string} mimeType
- */
-WebInspector.ContentProviderOverridingMimeType = function(contentProvider, mimeType)
-{
-    this._contentProvider = contentProvider;
-    this._mimeType = mimeType;
-}
-
-WebInspector.ContentProviderOverridingMimeType.prototype = {
-    /**
-     * @return {string}
-     */
-    contentURL: function()
-    {
-        return this._contentProvider.contentURL();
-    },
-
-    /**
-     * @return {WebInspector.ResourceType}
-     */
-    contentType: function()
-    {
-        return this._contentProvider.contentType();
-    },
-
-    /**
-     * @param {function(?string,boolean,string)} callback
-     */
-    requestContent: function(callback)
-    {
-        this._contentProvider.requestContent(innerCallback.bind(this));
-
-        function innerCallback(content, contentEncoded, mimeType)
-        {
-            callback(content, contentEncoded, this._mimeType);
-        }
-    },
-
-    /**
-     * @param {string} query
-     * @param {boolean} caseSensitive
-     * @param {boolean} isRegex
-     * @param {function(Array.<WebInspector.ContentProvider.SearchMatch>)} callback
-     */
-    searchInContent: function(query, caseSensitive, isRegex, callback)
-    {
-        this._contentProvider.searchInContent(query, caseSensitive, isRegex, callback);
     },
 
     __proto__: WebInspector.ContentProvider.prototype

@@ -122,7 +122,7 @@ WebInspector.FileContentView.FileContentProvider.prototype = {
     },
 
     /**
-     * @param {function(?string, boolean, string)} callback
+     * @param {function(?string)} callback
      */
     requestContent: function(callback)
     {
@@ -131,7 +131,7 @@ WebInspector.FileContentView.FileContentProvider.prototype = {
     },
 
     /**
-     * @param {function(?string, boolean, string)} callback
+     * @param {function(?string)} callback
      * @param {number} errorCode
      * @param {string=} content
      * @param {boolean=} base64Encoded
@@ -140,12 +140,12 @@ WebInspector.FileContentView.FileContentProvider.prototype = {
     _fileContentReceived: function(callback, errorCode, content, base64Encoded, charset)
     {
         if (errorCode || !content) {
-            callback(null, false, "");
+            callback(null);
             return;
         }
 
         this._charset = charset;
-        callback(content, false, this.contentType().canonicalMimeType());
+        callback(content);
     },
 
     /**

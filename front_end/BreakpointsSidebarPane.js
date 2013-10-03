@@ -108,10 +108,8 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
 
         /**
          * @param {?string} content
-         * @param {boolean} contentEncoded
-         * @param {string} mimeType
          */
-        function didRequestContent(content, contentEncoded, mimeType)
+        function didRequestContent(content)
         {
             var lineEndings = content.lineEndings();
             if (uiLocation.lineNumber < lineEndings.length)

@@ -354,10 +354,8 @@ WebInspector.SourceFrame.prototype = {
 
     /**
      * @param {?string} content
-     * @param {boolean} contentEncoded
-     * @param {string} mimeType
      */
-    setContent: function(content, contentEncoded, mimeType)
+    setContent: function(content)
     {
         if (!this._loaded) {
             this._loaded = true;

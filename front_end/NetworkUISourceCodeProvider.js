@@ -122,11 +122,9 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
             return;
         if (this._processedURLs[url])
             return;
-        var mimeType = type.canonicalMimeType();
-        var overridingContentProvider = new WebInspector.ContentProviderOverridingMimeType(contentProvider, mimeType);
         this._processedURLs[url] = true;
         var isEditable = type !== WebInspector.resourceTypes.Document;
-        this._networkWorkspaceProvider.addFileForURL(url, overridingContentProvider, isEditable, isContentScript);
+        this._networkWorkspaceProvider.addFileForURL(url, contentProvider, isEditable, isContentScript);
     },
 
     _reset: function()

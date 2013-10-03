@@ -176,7 +176,7 @@ WebInspector.UISourceCodeFrame.prototype = {
     _innerSetContent: function(content)
     {
         this._isSettingContent = true;
-        this.setContent(content, false, "");
+        this.setContent(content);
         delete this._isSettingContent;
     },
 

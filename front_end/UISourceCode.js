@@ -49,7 +49,7 @@ WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, 
     this._url = url;
     this._contentType = contentType;
     this._isEditable = isEditable;
-    /** @type {!Array.<function(?string,boolean,string)>} */
+    /** @type {!Array.<function(?string)>} */
     this._requestContentCallbacks = [];
     /** @type {!Set.<!WebInspector.LiveLocation>} */
     this._liveLocations = new Set();
@@ -253,12 +253,12 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @param {function(?string,boolean,string)} callback
+     * @param {function(?string)} callback
      */
     requestContent: function(callback)
     {
         if (this._content || this._contentLoaded) {
-            callback(this._content, false, this._mimeType());
+            callback(this._content);
             return;
         }
         this._requestContentCallbacks.push(callback);
@@ -361,6 +361,7 @@ WebInspector.UISourceCode.prototype = {
 
     /**
      * @param {boolean} forceSaveAs
+     * @param {?string} content
      */
     _saveURLWithFileManager: function(forceSaveAs, content)
     {
@@ -647,7 +648,7 @@ WebInspector.UISourceCode.prototype = {
         var callbacks = this._requestContentCallbacks.slice();
         this._requestContentCallbacks = [];
         for (var i = 0; i < callbacks.length; ++i)
-            callbacks[i](content, false, this._mimeType());
+            callbacks[i](content);
 
         if (this._formatOnLoad) {
             delete this._formatOnLoad;
@@ -776,17 +777,15 @@ WebInspector.UISourceCode.prototype = {
         /**
          * @this {WebInspector.UISourceCode}
          * @param {?string} content
-         * @param {boolean} contentEncoded
-         * @param {string} mimeType
          */
-        function didGetContent(content, contentEncoded, mimeType)
+        function didGetContent(content)
         {
             var formatter;
             if (!formatted)
                 formatter = new WebInspector.IdentityFormatter();
             else
                 formatter = WebInspector.Formatter.createFormatter(this.contentType());
-            formatter.formatContent(mimeType, content || "", formattedChanged.bind(this));
+            formatter.formatContent(this.highlighterType(), content || "", formattedChanged.bind(this));
   
             /**
              * @this {WebInspector.UISourceCode}
@@ -1022,6 +1021,9 @@ WebInspector.Revision.prototype = {
 
     revertToThis: function()
     {
+        /**
+         * @param {?string} content
+         */
         function revert(content)
         {
             if (this._uiSourceCode._content !== content)
@@ -1047,11 +1049,11 @@ WebInspector.Revision.prototype = {
     },
 
     /**
-     * @param {function(?string, boolean, string)} callback
+     * @param {function(?string)} callback
      */
     requestContent: function(callback)
     {
-        callback(this._content || "", false, this.uiSourceCode._mimeType());
+        callback(this._content || "");
     },
 
     /**

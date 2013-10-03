@@ -461,17 +461,16 @@ WebInspector.ExtensionServer.prototype = {
     {
         /**
          * @param {?string} content
-         * @param {boolean} contentEncoded
-         * @param {string} mimeType
          */
-        function onContentAvailable(content, contentEncoded, mimeType)
+        function onContentAvailable(content)
         {
             var response = {
-                encoding: contentEncoded ? "base64" : "",
+                encoding: (content === null) || contentProvider.contentType().isTextType() ? "" : "base64",
                 content: content
             };
             this._dispatchCallback(message.requestId, port, response);
         }
+
         contentProvider.requestContent(onContentAvailable.bind(this));
     },
 

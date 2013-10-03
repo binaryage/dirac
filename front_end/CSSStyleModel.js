@@ -1529,7 +1529,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
                 text = "";
                 // Fall through.
             }
-            callback(text, false, "text/css");
+            callback(text);
         }
     },
 

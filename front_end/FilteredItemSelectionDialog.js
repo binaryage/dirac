@@ -508,10 +508,8 @@ WebInspector.JavaScriptOutlineDialog.show = function(view, contentProvider)
 WebInspector.JavaScriptOutlineDialog.prototype = {
     /**
      * @param {?string} content
-     * @param {boolean} contentEncoded
-     * @param {string} mimeType
      */
-    _contentAvailable: function(content, contentEncoded, mimeType)
+    _contentAvailable: function(content)
     {
         this._outlineWorker = new Worker("ScriptFormatterWorker.js");
         this._outlineWorker.onmessage = this._didBuildOutlineChunk.bind(this);

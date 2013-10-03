@@ -765,7 +765,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @param {function(?string, boolean, string)} callback
+     * @param {function(?string)} callback
      */
     requestContent: function(callback)
     {
@@ -773,11 +773,11 @@ WebInspector.NetworkRequest.prototype = {
         // Since WebSockets are potentially long-living, fail requests immediately
         // to prevent caller blocking until resource is marked as finished.
         if (this.type === WebInspector.resourceTypes.WebSocket) {
-            callback(null, false, this._mimeType);
+            callback(null);
             return;
         }
         if (typeof this._content !== "undefined") {
-            callback(this.content || null, this._contentEncoded, this.type.canonicalMimeType() || this._mimeType);
+            callback(this.content || null);
             return;
         }
         this._pendingContentCallbacks.push(callback);
@@ -836,10 +836,8 @@ WebInspector.NetworkRequest.prototype = {
         /**
          * @this {WebInspector.NetworkRequest}
          * @param {?string} content
-         * @param {boolean} contentEncoded
-         * @param {string} mimeType
          */
-        function onResourceContent(content, contentEncoded, mimeType)
+        function onResourceContent(content)
         {
             var imageSrc = this.asDataURL();
             if (imageSrc === null)
@@ -875,7 +873,7 @@ WebInspector.NetworkRequest.prototype = {
             this._contentEncoded = contentEncoded;
             var callbacks = this._pendingContentCallbacks.slice();
             for (var i = 0; i < callbacks.length; ++i)
-                callbacks[i](this._content, this._contentEncoded, this._mimeType);
+                callbacks[i](this._content);
             this._pendingContentCallbacks.length = 0;
             delete this._contentRequested;
         }

@@ -78,12 +78,12 @@ WebInspector.Script.prototype = {
     },
 
     /**
-     * @param {function(?string,boolean,string)} callback
+     * @param {function(?string)} callback
      */
     requestContent: function(callback)
     {
         if (this._source) {
-            callback(this._source, false, "text/javascript");
+            callback(this._source);
             return;
         }
 
@@ -95,13 +95,13 @@ WebInspector.Script.prototype = {
         function didGetScriptSource(error, source)
         {
             this._source = error ? "" : source;
-            callback(this._source, false, "text/javascript");
+            callback(this._source);
         }
         if (this.scriptId) {
             // Script failed to parse.
             DebuggerAgent.getScriptSource(this.scriptId, didGetScriptSource.bind(this));
         } else
-            callback("", false, "text/javascript");
+            callback("");
     },
 
     /**

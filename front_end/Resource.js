@@ -227,12 +227,12 @@ WebInspector.Resource.prototype = {
     },
 
     /**
-     * @param {function(?string, boolean, string)} callback
+     * @param {function(?string)} callback
      */
     requestContent: function(callback)
     {
         if (typeof this._content !== "undefined") {
-            callback(this._content, !!this._contentEncoded, this.canonicalMimeType());
+            callback(this._content);
             return;
         }
 
@@ -266,10 +266,8 @@ WebInspector.Resource.prototype = {
         if (this.type === WebInspector.resourceTypes.Document) {
             /**
              * @param {?string} content
-             * @param {boolean} contentEncoded
-             * @param {string} mimeType
              */
-            function documentContentLoaded(content, contentEncoded, mimeType)
+            function documentContentLoaded(content)
             {
                 if (content === null) {
                     callback([]);
@@ -295,7 +293,10 @@ WebInspector.Resource.prototype = {
      */
     populateImageSource: function(image)
     {
-        function onResourceContent()
+        /**
+         * @param {?string} content
+         */
+        function onResourceContent(content)
         {
             var imageSrc = WebInspector.contentAsDataURL(this._content, this.mimeType, this._contentEncoded);
             if (imageSrc === null)
@@ -344,7 +345,7 @@ WebInspector.Resource.prototype = {
             this._contentEncoded = contentEncoded;
             var callbacks = this._pendingContentCallbacks.slice();
             for (var i = 0; i < callbacks.length; ++i)
-                callbacks[i](this._content, this._contentEncoded, this.canonicalMimeType());
+                callbacks[i](this._content);
             this._pendingContentCallbacks.length = 0;
             delete this._contentRequested;
         }
@@ -388,23 +389,19 @@ WebInspector.Resource.prototype = {
 
         /**
          * @param {?string} content
-         * @param {boolean} contentEncoded
-         * @param {string} mimeType
          */
-        function fallbackContentLoaded(content, contentEncoded, mimeType)
+        function fallbackContentLoaded(content)
         {
-            replyWithContent.call(this, content, contentEncoded);
+            replyWithContent.call(this, content, false);
         }
 
         if (this.request) {
             /**
              * @param {?string} content
-             * @param {boolean} contentEncoded
-             * @param {string} mimeType
              */
-            function requestContentLoaded(content, contentEncoded, mimeType)
+            function requestContentLoaded(content)
             {
-                contentLoaded.call(this, null, content, contentEncoded);
+                contentLoaded.call(this, null, content, this.request.contentEncoded);
             }
             
             this.request.requestContent(requestContentLoaded.bind(this));

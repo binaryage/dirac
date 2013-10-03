@@ -417,10 +417,8 @@ WebInspector.ResourceScriptFile.prototype = {
 
         /**
          * @param {?string} source
-         * @param {boolean} encoded
-         * @param {string} contentType
          */
-        function callback(source, encoded, contentType)
+        function callback(source)
         {
             this._scriptSource = source;
             this._update();

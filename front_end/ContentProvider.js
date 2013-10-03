@@ -45,7 +45,7 @@ WebInspector.ContentProvider.prototype = {
     contentType: function() { },
 
     /**
-     * @param {function(?string,boolean,string)} callback
+     * @param {function(?string)} callback
      */
     requestContent: function(callback) { },
 
