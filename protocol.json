@@ -4027,6 +4027,13 @@
         "events": [
             {
                 "name": "layerTreeDidChange"
+            },
+            {
+                "name": "layerPainted",
+                "parameters": [
+                    { "name": "layerId", "$ref": "LayerId", "description": "The id of the painted layer." },
+                    { "name": "clip", "$ref": "DOM.Rect", "description": "Clip rectangle." }
+                ]
             }
         ]
     },

@@ -126,6 +126,11 @@
     border-color: rgb(150, 150, 255);
 }
 
+.layer-container .paint-rect {
+    position: absolute;
+    border-style: solid;
+}
+
 .layer-details-view .empty-view {
     font-size: 16px;
 }
