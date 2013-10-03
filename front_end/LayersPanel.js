@@ -67,21 +67,19 @@ WebInspector.LayersPanel = function()
 
     this._layerDetailsView = new WebInspector.LayerDetailsView();
     this._layerDetailsView.show(this._layerDetailsSplitView.secondElement());
-
-    this._model.requestLayers();
 }
 
 WebInspector.LayersPanel.prototype = {
     wasShown: function()
     {
         WebInspector.Panel.prototype.wasShown.call(this);
-        this._layerTree.setVisible(true);
         this.sidebarTreeElement.focus();
+        this._model.requestLayers();
     },
 
     willHide: function()
     {
-        this._layerTree.setVisible(false);
+        this._model.disable();
         WebInspector.Panel.prototype.willHide.call(this);
     },
 

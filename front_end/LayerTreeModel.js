@@ -40,8 +40,6 @@ WebInspector.LayerTreeModel = function()
     // rect separate from layer so we can get it after refreshing the tree.
     this._lastPaintRectByLayerId = {};
     InspectorBackend.registerLayerTreeDispatcher(new WebInspector.LayerTreeDispatcher(this));
-    LayerTreeAgent.enable();
-    this._needsRefresh = true;
 }
 
 WebInspector.LayerTreeModel.Events = {
@@ -50,9 +48,26 @@ WebInspector.LayerTreeModel.Events = {
 }
 
 WebInspector.LayerTreeModel.prototype = {
-    dispose: function()
+    disable: function()
     {
+        if (!this._enabled)
+            return;
+        this._enabled = false;
+        this._needsRefresh = false;
         LayerTreeAgent.disable();
+        if (this._delayedRequestLayersTimer) {
+            window.clearTimeout(this._delayedRequestLayersTimer);
+            delete this._delayedRequestLayersTimer;
+        }
+    },
+
+    _enable: function()
+    {
+        if (this._enabled)
+            return;
+        this._needsRefresh = true;
+        this._enabled = true;
+        LayerTreeAgent.enable();
     },
 
     /**
@@ -94,6 +109,7 @@ WebInspector.LayerTreeModel.prototype = {
         delete this._delayedRequestLayersTimer;
         if (!callback)
             callback = function() {}
+        this._enable();
         if (!this._needsRefresh) {
             callback();
             return;

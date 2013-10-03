@@ -44,7 +44,6 @@ WebInspector.LayerTree = function(model, treeOutline)
     this._treeOutline.childrenListElement.addEventListener("contextmenu", this._onContextMenu.bind(this), true);
     this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._update.bind(this));
     this._lastHoveredNode = null;
-    this._needsUpdate = true;
 }
 
 /**
@@ -56,18 +55,6 @@ WebInspector.LayerTree.Events = {
 }
 
 WebInspector.LayerTree.prototype = {
-    /**
-     * @param {boolean} visible
-     */
-    setVisible: function(visible)
-    {
-        if (this._isVisible === visible)
-            return;
-        this._isVisible = visible;
-        if (visible && this._needsUpdate)
-            this._update();
-    },
-
     /**
      * @param {WebInspector.Layer} layer
      */
@@ -98,11 +85,6 @@ WebInspector.LayerTree.prototype = {
 
     _update: function()
     {
-        if (!this._isVisible) {
-            this._needsUpdate = true;
-            return;
-        }
-        this._needsUpdate = false;
         var seenLayers = {};
 
         /**
