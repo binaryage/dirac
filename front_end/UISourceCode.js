@@ -221,22 +221,6 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @return {WebInspector.StyleFile}
-     */
-    styleFile: function()
-    {
-        return this._styleFile;
-    },
-
-    /**
-     * @param {WebInspector.StyleFile} styleFile
-     */
-    setStyleFile: function(styleFile)
-    {
-        this._styleFile = styleFile;
-    },
-
-    /**
      * @return {WebInspector.Project}
      */
     project: function()

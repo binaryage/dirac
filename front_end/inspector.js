@@ -514,7 +514,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     new WebInspector.DebuggerScriptMapping(this.workspace, this.networkWorkspaceProvider);
     this.liveEditSupport = new WebInspector.LiveEditSupport(this.workspace);
-    this.styleContentBinding = new WebInspector.StyleContentBinding(this.cssModel, this.workspace);
     new WebInspector.CSSStyleSheetMapping(this.cssModel, this.workspace, this.networkWorkspaceProvider);
     new WebInspector.PresentationConsoleMessageHelper(this.workspace);
 

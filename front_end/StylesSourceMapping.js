@@ -40,8 +40,11 @@ WebInspector.StylesSourceMapping = function(cssModel, workspace)
     this._workspace = workspace;
     this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._projectWillReset, this);
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
+    this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
 
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameCreatedOrNavigated, this._mainFrameCreatedOrNavigated, this);
+
+    this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetChanged, this);
     this._initialize();
 }
 
@@ -127,10 +130,11 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     _unbindUISourceCode: function(uiSourceCode)
     {
-        if (!uiSourceCode.styleFile())
+        var styleFile = this._styleFiles.get(uiSourceCode);
+        if (!styleFile)
             return;
-        uiSourceCode.styleFile().dispose();
-        uiSourceCode.setStyleFile(null);
+        styleFile.dispose();
+        this._styleFiles.remove(uiSourceCode);
     },
 
     /**
@@ -151,10 +155,10 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     _bindUISourceCode: function(uiSourceCode, header)
     {
-        if (uiSourceCode.styleFile() || header.isInline)
+        if (this._styleFiles.get(uiSourceCode) || header.isInline)
             return;
         var url = uiSourceCode.url;
-        uiSourceCode.setStyleFile(new WebInspector.StyleFile(uiSourceCode));
+        this._styleFiles.put(uiSourceCode, new WebInspector.StyleFile(uiSourceCode, this));
         header.updateLocations();
     },
 
@@ -166,13 +170,24 @@ WebInspector.StylesSourceMapping.prototype = {
         var project = /** @type {WebInspector.Project} */ (event.data);
         var uiSourceCodes = project.uiSourceCodes();
         for (var i = 0; i < uiSourceCodes; ++i)
-            delete this._urlToHeadersByFrameId[uiSourceCodes[i].url];
+            this._unbindUISourceCode(uiSourceCodes[i]);
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _uiSourceCodeRemoved: function(event)
+    {
+        var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
+        this._unbindUISourceCode(uiSourceCode);
     },
 
     _initialize: function()
     {
         /** @type {!Object.<string, !StringMap.<!StringMap.<!WebInspector.CSSStyleSheetHeader>>>} */
         this._urlToHeadersByFrameId = {};
+        /** @type {!Map.<WebInspector.UISourceCode, WebInspector.StyleFile>} */
+        this._styleFiles = new Map();
     },
 
     /**
@@ -187,109 +202,15 @@ WebInspector.StylesSourceMapping.prototype = {
             this._unbindUISourceCode(uiSourceCode);
         }
         this._initialize();
-    }
-}
-
-/**
- * @constructor
- * @param {WebInspector.UISourceCode} uiSourceCode
- */
-WebInspector.StyleFile = function(uiSourceCode)
-{
-    this._uiSourceCode = uiSourceCode;
-    this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
-    this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
-}
-
-WebInspector.StyleFile.updateTimeout = 200;
-
-WebInspector.StyleFile.sourceURLRegex = /\n[\040\t]*\/\*#[\040\t]sourceURL=[\040\t]*([^\s]*)[\040\t]*\*\/[\040\t]*$/m;
-
-WebInspector.StyleFile.prototype = {
-    _workingCopyCommitted: function(event)
-    {
-        if (this._isAddingRevision)
-            return;
-
-        this._commitIncrementalEdit(true);
     },
 
-    _workingCopyChanged: function(event)
-    {
-        if (this._isAddingRevision)
-            return;
-
-        // FIXME: Extensions tests override updateTimeout because extensions don't have any control over applying changes to domain specific bindings.
-        if (WebInspector.StyleFile.updateTimeout >= 0) {
-            this._incrementalUpdateTimer = setTimeout(this._commitIncrementalEdit.bind(this, false), WebInspector.StyleFile.updateTimeout)
-        } else
-            this._commitIncrementalEdit(false);
-    },
-
-    /**
-     * @param {boolean} majorChange
-     */
-    _commitIncrementalEdit: function(majorChange)
-    {
-        this._clearIncrementalUpdateTimer();
-        WebInspector.styleContentBinding.setStyleContent(this._uiSourceCode, this._uiSourceCode.workingCopy(), majorChange, this._styleContentSet.bind(this));
-    },
-
-    /**
-     * @param {?string} error
-     */
-    _styleContentSet: function(error)
-    {
-        if (error)
-            WebInspector.showErrorMessage(error);
-    },
-
-    _clearIncrementalUpdateTimer: function()
-    {
-        if (!this._incrementalUpdateTimer)
-            return;
-        clearTimeout(this._incrementalUpdateTimer);
-        delete this._incrementalUpdateTimer;
-    },
-
-    /**
-     * @param {string} content
-     */
-    addRevision: function(content)
-    {
-        this._isAddingRevision = true;
-        if (this._uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem)
-            content = content.replace(WebInspector.StyleFile.sourceURLRegex, "");
-        this._uiSourceCode.addRevision(content);
-        delete this._isAddingRevision;
-    },
-
-    dispose: function()
-    {
-        this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
-        this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
-    }
-}
-
-/**
- * @constructor
- * @param {WebInspector.CSSStyleModel} cssModel
- */
-WebInspector.StyleContentBinding = function(cssModel, workspace)
-{
-    this._cssModel = cssModel;
-    this._workspace = workspace;
-    this._cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetChanged, this);
-}
-
-WebInspector.StyleContentBinding.prototype = {
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      * @param {string} content
      * @param {boolean} majorChange
      * @param {function(?string)} userCallback
      */
-    setStyleContent: function(uiSourceCode, content, majorChange, userCallback)
+    _setStyleContent: function(uiSourceCode, content, majorChange, userCallback)
     {
         var styleSheetIds = this._cssModel.styleSheetIdsForURL(uiSourceCode.url);
         if (!styleSheetIds.length) {
@@ -346,12 +267,91 @@ WebInspector.StyleContentBinding.prototype = {
         if (!uiSourceCode)
             return;
 
-        if (uiSourceCode.styleFile())
-            uiSourceCode.styleFile().addRevision(content);
+        var styleFile = this._styleFiles.get(uiSourceCode);
+        if (styleFile)
+            styleFile.addRevision(content);
     }
 }
 
 /**
- * @type {?WebInspector.StyleContentBinding}
+ * @constructor
+ * @param {WebInspector.UISourceCode} uiSourceCode
+ * @param {WebInspector.StylesSourceMapping} mapping
  */
-WebInspector.styleContentBinding = null;
+WebInspector.StyleFile = function(uiSourceCode, mapping)
+{
+    this._uiSourceCode = uiSourceCode;
+    this._mapping = mapping;
+    this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
+    this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
+}
+
+WebInspector.StyleFile.updateTimeout = 200;
+
+WebInspector.StyleFile.sourceURLRegex = /\n[\040\t]*\/\*#[\040\t]sourceURL=[\040\t]*([^\s]*)[\040\t]*\*\/[\040\t]*$/m;
+
+WebInspector.StyleFile.prototype = {
+    _workingCopyCommitted: function(event)
+    {
+        if (this._isAddingRevision)
+            return;
+
+        this._commitIncrementalEdit(true);
+    },
+
+    _workingCopyChanged: function(event)
+    {
+        if (this._isAddingRevision)
+            return;
+
+        // FIXME: Extensions tests override updateTimeout because extensions don't have any control over applying changes to domain specific bindings.
+        if (WebInspector.StyleFile.updateTimeout >= 0) {
+            this._incrementalUpdateTimer = setTimeout(this._commitIncrementalEdit.bind(this, false), WebInspector.StyleFile.updateTimeout)
+        } else
+            this._commitIncrementalEdit(false);
+    },
+
+    /**
+     * @param {boolean} majorChange
+     */
+    _commitIncrementalEdit: function(majorChange)
+    {
+        this._clearIncrementalUpdateTimer();
+        this._mapping._setStyleContent(this._uiSourceCode, this._uiSourceCode.workingCopy(), majorChange, this._styleContentSet.bind(this));
+    },
+
+    /**
+     * @param {?string} error
+     */
+    _styleContentSet: function(error)
+    {
+        if (error)
+            WebInspector.showErrorMessage(error);
+    },
+
+    _clearIncrementalUpdateTimer: function()
+    {
+        if (!this._incrementalUpdateTimer)
+            return;
+        clearTimeout(this._incrementalUpdateTimer);
+        delete this._incrementalUpdateTimer;
+    },
+
+    /**
+     * @param {string} content
+     */
+    addRevision: function(content)
+    {
+        this._isAddingRevision = true;
+        if (this._uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem)
+            content = content.replace(WebInspector.StyleFile.sourceURLRegex, "");
+        this._uiSourceCode.addRevision(content);
+        delete this._isAddingRevision;
+    },
+
+    dispose: function()
+    {
+        this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
+        this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
+    }
+}
