@@ -170,7 +170,6 @@
     display: inline-block;
 }
 
-
 .styles-section {
     padding: 2px 2px 4px 4px;
     min-height: 18px;
@@ -178,9 +177,7 @@
     background-origin: padding;
     background-clip: padding;
     -webkit-user-select: text;
-    border-top: 1px solid rgb(191, 191, 191);
     border-bottom: 1px solid rgb(191, 191, 191);
-    margin-top: -1px;
 }
 
 .styles-pane .sidebar-separator {
