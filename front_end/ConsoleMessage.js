@@ -392,7 +392,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
     },
 
     /**
-     * @param {WebInspector.RemoteObject} obj
+     * @param {!WebInspector.RemoteObject} obj
      * @param {string} description
      * @param {Element} titleElement
      * @return {boolean} true iff preview captured all information.
@@ -418,7 +418,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
                 titleElement.createTextChild(": ");
             }
 
-            titleElement.appendChild(this._renderPropertyPreview(property));
+            titleElement.appendChild(this._renderPropertyPreview(obj, [property]));
         }
         if (preview.overflow)
             titleElement.createChild("span").textContent = "\u2026";
@@ -427,11 +427,16 @@ WebInspector.ConsoleMessageImpl.prototype = {
     },
 
     /**
-     * @param {RuntimeAgent.PropertyPreview} property
+     * @param {!WebInspector.RemoteObject} object
+     * @param {!Array.<RuntimeAgent.PropertyPreview>} propertyPath
      * @return {Element}
      */
-    _renderPropertyPreview: function(property)
+    _renderPropertyPreview: function(object, propertyPath)
     {
+        var property = propertyPath.peekLast();
+        if (property.type === "accessor")
+            return this._formatAsAccessorProperty(object, propertyPath.select("name"));
+
         var span = document.createElement("span");
         span.className = "console-formatted-" + property.type;
 
@@ -543,7 +548,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
                 }
 
                 if (columnRendered)
-                    rowValue[cellProperty.name] = this._renderPropertyPreview(cellProperty);
+                    rowValue[cellProperty.name] = this._renderPropertyPreview(table, [rowProperty, cellProperty]);
             }
             rows.push([rowProperty.name, rowValue]);
         }
@@ -597,7 +602,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
             if (isNaN(name))
                 continue;
             if (property.getter)
-                elements[name] = this._formatAsAccessorProperty(array, property);
+                elements[name] = this._formatAsAccessorProperty(array, [name]);
             else if (property.value)
                 elements[name] = this._formatAsArrayEntry(property.value);
         }
@@ -646,12 +651,12 @@ WebInspector.ConsoleMessageImpl.prototype = {
 
     /**
      * @param {!WebInspector.RemoteObject} object
-     * @param {!WebInspector.RemoteObjectProperty} property
+     * @param {!Array.<string>} propertyPath
      * @return {!Element}
      */
-    _formatAsAccessorProperty: function(object, property)
+    _formatAsAccessorProperty: function(object, propertyPath)
     {
-        var rootElement = WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(object, property, onInvokeGetterClick.bind(this));
+        var rootElement = WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(object, propertyPath, onInvokeGetterClick.bind(this));
 
         /**
          * @param {!WebInspector.RemoteObject} result

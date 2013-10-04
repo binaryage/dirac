@@ -226,7 +226,14 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
             this.hasChildren = this.property.value.hasChildren && !this.property.wasThrown;
         } else {
-            this.valueElement = WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(this.property.parentObject, this.property, this._onInvokeGetterClick.bind(this));
+            if (this.property.getter) {
+                this.valueElement = WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(this.property.parentObject, [this.property.name], this._onInvokeGetterClick.bind(this));
+            } else {
+                this.valueElement = document.createElement("span");
+                this.valueElement.className = "console-formatted-undefined";
+                this.valueElement.textContent = WebInspector.UIString("<unreadable>");
+                this.valueElement.title = WebInspector.UIString("No property getter");
+            }
         }
 
         this.listItemElement.appendChild(this.nameElement);
@@ -518,23 +525,17 @@ WebInspector.ObjectPropertyTreeElement.populateWithProperties = function(treeEle
 
 /**
  * @param {!WebInspector.RemoteObject} object
- * @param {!WebInspector.RemoteObjectProperty} property
+ * @param {!Array.<string>} propertyPath
  * @param {function(!WebInspector.RemoteObject, boolean=)} callback
  * @return {!Element}
  */
-WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan = function(object, property, callback)
+WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan = function(object, propertyPath, callback)
 {
     var rootElement = document.createElement("span");
-    var element = rootElement.createChild("span");
-    if (property.getter) {
-        element.addStyleClass("properties-calculate-value-button");
-        element.textContent = "(...)";
-        element.title = WebInspector.UIString("Invoke property getter");
-        element.addEventListener("click", onInvokeGetterClick, false);
-    } else {
-        element.textContent = WebInspector.UIString("<unreadable>");
-        element.title = WebInspector.UIString("No property getter");
-    }
+    var element = rootElement.createChild("span", "properties-calculate-value-button");
+    element.textContent = WebInspector.UIString("(...)");
+    element.title = WebInspector.UIString("Invoke property getter");
+    element.addEventListener("click", onInvokeGetterClick, false);
 
     function onInvokeGetterClick(event)
     {
@@ -550,14 +551,19 @@ WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan = 
             callback(WebInspector.RemoteObject.fromPayload(result), wasThrown);
         }
 
+        function remoteFunction(arrayStr)
+        {
+            var result = this;
+            var properties = JSON.parse(arrayStr);
+            for (var i = 0, n = properties.length; i < n; ++i)
+                result = result[properties[i]];
+            return result;
+        }
+
         event.consume();
 
-        if (!property.getter)
-            return;
-
-        var functionText = "function(t){return this.call(t);}"
-        var functionArguments = [ {objectId: object.objectId} ]
-        RuntimeAgent.callFunctionOn(property.getter.objectId, functionText, functionArguments, undefined, false, undefined, evaluateCallback);
+        var functionArguments = [ {value: JSON.stringify(propertyPath)} ]
+        RuntimeAgent.callFunctionOn(object.objectId, String(remoteFunction), functionArguments, undefined, false, undefined, evaluateCallback);
     }
 
     return rootElement;

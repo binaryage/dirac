@@ -655,7 +655,7 @@
                 "hidden": true,
                 "properties": [
                     { "name": "name", "type": "string", "description": "Property name." },
-	                { "name": "type", "type": "string", "enum": ["object", "function", "undefined", "string", "number", "boolean"], "description": "Object type." },
+	                { "name": "type", "type": "string", "enum": ["object", "function", "undefined", "string", "number", "boolean", "accessor"], "description": "Object type. Accessor means that the property itself is an accessor property." },
 	                { "name": "value", "type": "string", "optional": true, "description": "User-friendly property value string." },
 	                { "name": "valuePreview", "$ref": "ObjectPreview", "optional": true, "description": "Nested value preview." },
 	                { "name": "subtype", "type": "string", "optional": true, "enum": ["array", "null", "node", "regexp", "date"], "description": "Object subtype hint. Specified for <code>object</code> type values only." }
