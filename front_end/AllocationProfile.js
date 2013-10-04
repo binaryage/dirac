@@ -145,20 +145,34 @@ WebInspector.AllocationProfile.prototype = {
             delete this._collapsedTopNodeIdToFunctionInfo[nodeId];
             this._idToNode[nodeId] = node;
         }
-        var result = [];
+
+        var nodesWithSingleCaller = [];
+        while (node.callers().length === 1) {
+            node = node.callers()[0];
+            nodesWithSingleCaller.push(this._serializeCaller(node));
+        }
+
+        var branchingCallers = [];
         var callers = node.callers();
         for (var i = 0; i < callers.length; i++) {
-            var callerNode = callers[i];
-            var callerId = this._nextNodeId++;
-            this._idToNode[callerId] = callerNode;
-            result.push(this._serializeNode(
-                callerId,
-                callerNode.functionInfo,
-                callerNode.allocationCount,
-                callerNode.allocationSize,
-                callerNode.hasCallers()));
+            branchingCallers.push(this._serializeCaller(callers[i]));
         }
-        return result;
+        return {
+            nodesWithSingleCaller: nodesWithSingleCaller,
+            branchingCallers: branchingCallers
+        };
+    },
+
+    _serializeCaller: function(node)
+    {
+        var callerId = this._nextNodeId++;
+        this._idToNode[callerId] = node;
+        return this._serializeNode(
+            callerId,
+            node.functionInfo,
+            node.allocationCount,
+            node.allocationSize,
+            node.hasCallers());
     },
 
     _serializeNode: function(nodeId, functionInfo, count, size, hasChildren)

@@ -915,8 +915,19 @@ WebInspector.AllocationGridNode.prototype = {
         this._dataGrid._snapshot.allocationNodeCallers(this.data.id, didReceiveCallers.bind(this));
         function didReceiveCallers(callers)
         {
-            for (var i = 0; i < callers.length; i++)
-                this.appendChild(new WebInspector.AllocationGridNode(this._dataGrid, callers[i]));
+            var callersChain = callers.nodesWithSingleCaller;
+            var parentNode = this;
+            for (var i = 0; i < callersChain.length; i++) {
+                var child = new WebInspector.AllocationGridNode(this._dataGrid, callersChain[i]);
+                parentNode.appendChild(child);
+                parentNode = child;
+                parentNode._populated = true;
+                parentNode.expand();
+            }
+
+            var callersBranch = callers.branchingCallers;
+            for (var i = 0; i < callersBranch.length; i++)
+                parentNode.appendChild(new WebInspector.AllocationGridNode(this._dataGrid, callersBranch[i]));
         }
     },
 
