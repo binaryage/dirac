@@ -72,7 +72,7 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
         // Filter out embedder injected content scripts.
         if (script.isContentScript && !script.hasSourceURL) {
             var parsedURL = new WebInspector.ParsedURL(script.sourceURL);
-            if (!parsedURL.host)
+            if (!parsedURL.isValid)
                 return;
         }
         this._addFile(script.sourceURL, script, script.isContentScript);
