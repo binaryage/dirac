@@ -113,6 +113,8 @@ WebInspector.Settings = function()
     this.showWhitespacesInEditor = this.createSetting("showWhitespacesInEditor", false);
     this.skipStackFramesSwitch = this.createSetting("skipStackFramesSwitch", false);
     this.skipStackFramesPattern = this.createSetting("skipStackFramesPattern", "");
+    this.screencastEnabled = this.createSetting("screencastEnabled", false);
+    this.screencastSidebarWidth = this.createSetting("screencastSidebarWidth", 300);
 }
 
 WebInspector.Settings.prototype = {

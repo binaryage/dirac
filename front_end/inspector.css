@@ -52,7 +52,7 @@ input[type="text"]:focus {
     white-space: nowrap !important;
 }
 
-#toolbar {
+.toolbar-background {
     position: absolute;
     top: 0;
     left: 0;
@@ -62,9 +62,12 @@ input[type="text"]:focus {
     padding-top: 1px;
     padding-left: 5px;
     border-bottom: 1px solid rgb(80, 80, 80);
-    -webkit-flex-direction: row;
     background-origin: padding-box;
     background-clip: padding-box;
+}
+
+#toolbar {
+    -webkit-flex-direction: row;
 }
 
 button,
@@ -74,51 +77,51 @@ select {
   font-size: inherit;
 }
 
-body.inactive #toolbar {
+body.inactive .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(233, 233, 233)), to(rgb(207, 207, 207)));
     border-bottom: 1px solid rgb(64%, 64%, 64%);
 }
 
-body.dock-to-bottom #toolbar {
+body.dock-to-bottom .toolbar-background {
     padding-top: 0;
     border-top: 1px solid rgb(100, 100, 100);
     cursor: default;
 }
 
-body.dock-to-bottom.platform-mac #toolbar {
+body.dock-to-bottom.platform-mac .toolbar-background {
     border-top-color: white;
 }
 
-body.dock-to-bottom.inactive #toolbar {
+body.dock-to-bottom.inactive .toolbar-background {
     border-top: 1px solid rgb(64%, 64%, 64%);
 }
 
-body.platform-windows #toolbar,
-body.platform-windows.inactive #toolbar {
+body.platform-windows .toolbar-background,
+body.platform-windows.inactive .toolbar-background {
     background-image: none;
 }
 
-body.undocked.platform-mac-leopard #toolbar {
+body.undocked.platform-mac-leopard .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(175, 175, 175)), to(rgb(151, 151, 151))) !important;
 }
 
-body.undocked.platform-mac-leopard.inactive #toolbar {
+body.undocked.platform-mac-leopard.inactive .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(221, 221, 221)), to(rgb(207, 207, 207))) !important;
 }
 
-body.undocked.platform-mac-snowleopard #toolbar {
+body.undocked.platform-mac-snowleopard .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(189, 189, 189)), to(rgb(167, 167, 167))) !important;
 }
 
-body.undocked.platform-mac-snowleopard.inactive #toolbar {
+body.undocked.platform-mac-snowleopard.inactive .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(228, 228, 228)), to(rgb(216, 216, 216))) !important;
 }
 
-body.undocked.platform-mac-mountain-lion #toolbar {
+body.undocked.platform-mac-mountain-lion .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(208, 208, 208)), to(rgb(200, 200, 200))) !important;
 }
 
-body.undocked.platform-mac-mountain-lion.inactive #toolbar {
+body.undocked.platform-mac-mountain-lion.inactive .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(238, 238, 238)), to(rgb(224, 224, 224))) !important;
 }
 

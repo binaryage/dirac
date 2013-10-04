@@ -1147,7 +1147,7 @@ WebInspector.ProfilesPanel.prototype = {
     _resize: function(sidebarWidth)
     {
         var lastItemElement = this._statusBarButtons[this._statusBarButtons.length - 1].element;
-        var left = lastItemElement.totalOffsetLeft() + lastItemElement.offsetWidth;
+        var left = lastItemElement.offsetLeft + lastItemElement.offsetWidth;
         this._profileTypeStatusBarItemsContainer.style.left = left + "px";
         left += this._profileTypeStatusBarItemsContainer.offsetWidth - 1;
         this._profileViewStatusBarItemsContainer.style.left = Math.max(left, sidebarWidth) + "px";

@@ -82,6 +82,10 @@ WebInspector.InspectorFrontendHostStub.prototype = {
         InspectorFrontendAPI.setDockSide(side);
     },
 
+    setWindowBounds: function(x, y, width, height, callback)
+    {
+    },
+
     moveWindowBy: function(x, y)
     {
     },
@@ -231,7 +235,7 @@ InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
 
     var methodList = [ "addFileSystem", "append", "bringToFront", "indexPath", "moveWindowBy", "openInNewTab",
                        "removeFileSystem", "requestFileSystems", "requestSetDockSide", "save", "searchInPath",
-                       "stopIndexing" ];
+                       "setWindowBounds", "stopIndexing" ];
 
     for (var i = 0; i < methodList.length; ++i)
         InspectorFrontendHost[methodList[i]] = dispatch.bind(null, methodList[i]);

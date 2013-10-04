@@ -671,7 +671,7 @@ WebInspector.TimelinePanel.prototype = {
         this._containerElementHeight = this._containerElement.clientHeight;
         this._scheduleRefresh(false, true);
         var lastItemElement = this._statusBarItems[this._statusBarItems.length - 1].element;
-        var minFloatingStatusBarItemsOffset = lastItemElement.totalOffsetLeft() + lastItemElement.offsetWidth;
+        var minFloatingStatusBarItemsOffset = lastItemElement.offsetLeft + lastItemElement.offsetWidth;
         this._timelineGrid.gridHeaderElement.style.width = this._itemsGraphsElement.offsetWidth + "px";
         this._miscStatusBarItems.style.left = Math.max(minFloatingStatusBarItemsOffset, sidebarWidth) + "px";
     },

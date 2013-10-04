@@ -90,15 +90,6 @@ WebInspector.DockController.prototype = {
         this.dispatchEventToListeners(WebInspector.DockController.Events.DockSideChanged, this._dockSide);
     },
 
-    /**
-     * @param {boolean} unavailable
-     */
-    setDockingUnavailable: function(unavailable)
-    {
-        this._isDockingUnavailable = unavailable;
-        this._updateUI();
-    },
-
     _updateUI: function()
     {
         var body = document.body;
@@ -118,12 +109,6 @@ WebInspector.DockController.prototype = {
             body.removeStyleClass("dock-to-right");
             body.removeStyleClass("dock-to-bottom");
             break;
-        }
-
-        if (this._isDockingUnavailable && this._dockSide === WebInspector.DockController.State.Undocked) {
-            this._dockToggleButton.state = "undock";
-            this._dockToggleButton.setEnabled(false);
-            return;
         }
 
         this._dockToggleButton.setEnabled(true);

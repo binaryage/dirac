@@ -80,13 +80,22 @@ var WebInspector = {
         this._toggleConsoleButton.setEnabled(WebInspector.inspectorView.currentPanel().name !== "console");
     },
 
+    /**
+     * @return {boolean}
+     */
+    _screencastAvailable: function()
+    {
+        return WebInspector.queryParamsObject["remoteFrontend"] && WebInspector.experimentsSettings.screencast.isEnabled();
+    },
+
     _createGlobalStatusBarItems: function()
     {
         var bottomStatusBarContainer = document.getElementById("bottom-status-bar-container");
 
         // Create main dock button and options.
         var mainStatusBar = document.getElementById("main-status-bar");
-        mainStatusBar.insertBefore(this.dockController.element, bottomStatusBarContainer);
+        if (!WebInspector.queryParamsObject["remoteFrontend"])
+            mainStatusBar.insertBefore(this.dockController.element, bottomStatusBarContainer);
 
         this._toggleConsoleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show console."), "console-status-bar-item");
         this._toggleConsoleButton.addEventListener("click", this._toggleConsoleButtonClicked.bind(this), false);
@@ -95,9 +104,9 @@ var WebInspector = {
         if (this.inspectElementModeController)
             mainStatusBar.insertBefore(this.inspectElementModeController.toggleSearchButton.element, bottomStatusBarContainer);
 
-        if (WebInspector.queryParamsObject["remoteFrontend"] && WebInspector.experimentsSettings.screencast.isEnabled()) {
+        if (this._screencastAvailable()) {
             this._toggleScreencastButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle screencast."), "screencast-status-bar-item");
-            this._toggleScreencastButton.addEventListener("click", this._toggleScreencastButtonClicked.bind(this), false);
+            this._toggleScreencastButton.addEventListener("click", this._toggleScreencastButtonClicked.bind(this, true), false);
             mainStatusBar.insertBefore(this._toggleScreencastButton.element, bottomStatusBarContainer);
         }
 
@@ -117,27 +126,60 @@ var WebInspector = {
             this.showConsole(animationType);
     },
 
-    _toggleScreencastButtonClicked: function()
+    /**
+     * @param {boolean} resizeWindow
+     */
+    _toggleScreencastButtonClicked: function(resizeWindow)
     {
         this._toggleScreencastButton.toggled = !this._toggleScreencastButton.toggled;
+        WebInspector.settings.screencastEnabled.set(this._toggleScreencastButton.toggled);
 
-        if (!this._screencastView) {
-            // Rebuild the UI upon first invocation.
-            this._screencastView = new WebInspector.ScreencastView();
-            this._screencastSplitView = new WebInspector.SplitView(true, "screencastSplitView");
-            this._screencastSplitView.markAsRoot();
-            this._screencastSplitView.show(document.body);
+        if (this._toggleScreencastButton.toggled) {
+            if (!this._screencastView) {
+                // Rebuild the UI upon first invocation.
+                this._screencastView = new WebInspector.ScreencastView();
+                this._screencastSplitView = new WebInspector.SplitView(true);
+                this._screencastSplitView.markAsRoot();
+                this._screencastSplitView.show(document.body);
 
-            this._screencastView.show(this._screencastSplitView.firstElement());
-            this._screencastSplitView.secondElement().appendChild(document.getElementById("root"));
-            this.inspectorView.element.remove();
-            this.inspectorView.show(document.getElementById("main"));
+                this._screencastView.show(this._screencastSplitView.firstElement());
+                this._screencastSplitView.secondElement().appendChild(document.getElementById("root"));
+                this.inspectorView.element.remove();
+                this.inspectorView.show(document.getElementById("main"));
+            }
+
+            var sidebarWidth = WebInspector.settings.screencastSidebarWidth.get();
+            var currentWidth = document.body.offsetWidth;
+            if (resizeWindow) {
+                document.body.addStyleClass("hidden");
+                InspectorFrontendHost.setWindowBounds(window.screenX - sidebarWidth, window.screenY, window.outerWidth + sidebarWidth, window.outerHeight, callback1.bind(this));
+                function callback1(error)
+                {
+                    if (WebInspector.isMac() || WebInspector.isWin())
+                        updateScreen.call(this);
+                    else
+                        setTimeout(updateScreen.bind(this), 100);  // callback from the browser is not enough.
+                }
+
+                function updateScreen()
+                {
+                    this._screencastSplitView.showBoth();
+                    document.body.removeStyleClass("hidden");
+                    this._screencastSplitView.setSidebarSize(currentWidth);
+                }
+            } else {
+                this._screencastSplitView.setSidebarSize(currentWidth - sidebarWidth || 300);
+            }
+        } else {
+            WebInspector.settings.screencastSidebarWidth.set(this._screencastView.element.offsetWidth);
+            var delta = this._screencastSplitView.element.offsetWidth - this.inspectorView.element.offsetWidth;
+            InspectorFrontendHost.setWindowBounds(window.screenX + delta, window.screenY, window.outerWidth - delta, window.outerHeight, callback2.bind(this));
+            function callback2(error)
+            {
+                this._screencastSplitView.showOnlySecond();
+                document.body.removeStyleClass("hidden");
+            }
         }
-
-        if (this._toggleScreencastButton.toggled)
-            this._screencastSplitView.showBoth();
-        else
-            this._screencastSplitView.showOnlySecond();
     },
 
     /**
@@ -566,6 +608,9 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     WebInspector.WorkerManager.loadCompleted();
     InspectorFrontendAPI.loadCompleted();
 
+    if (this._screencastAvailable() && WebInspector.settings.screencastEnabled.get())
+        this._toggleScreencastButtonClicked(false);
+
     WebInspector.notifications.dispatchEventToListeners(WebInspector.Events.InspectorLoaded);
 }
 
@@ -609,12 +654,6 @@ WebInspector.windowResize = function(event)
         WebInspector.settingsController.resize();
     if (WebInspector._screencastSplitView)
         WebInspector._screencastSplitView.doResize();
-}
-
-WebInspector.setDockingUnavailable = function(unavailable)
-{
-    if (this.dockController)
-        this.dockController.setDockingUnavailable(unavailable);
 }
 
 WebInspector.close = function(event)
@@ -864,11 +903,6 @@ WebInspector.documentCopy = function(event)
 {
     if (WebInspector.inspectorView.currentPanel() && WebInspector.inspectorView.currentPanel().handleCopyEvent)
         WebInspector.inspectorView.currentPanel().handleCopyEvent(event);
-    WebInspector.documentCopyEventFired(event);
-}
-
-WebInspector.documentCopyEventFired = function(event)
-{
 }
 
 WebInspector.contextMenuEventFired = function(event)
