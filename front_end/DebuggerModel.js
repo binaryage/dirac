@@ -208,6 +208,46 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
+     * @param {boolean=} forceTopCallFrame
+     */
+    stepInto: function(forceTopCallFrame)
+    {
+        function callback()
+        {
+            // FIXME: Step into on the selected call frame unless forceTopCallFrame is true.
+            DebuggerAgent.stepInto();
+        }
+        DebuggerAgent.setOverlayMessage(undefined, callback.bind(this));
+    },
+
+    stepOver: function()
+    {
+        function callback()
+        {
+            DebuggerAgent.stepOver(this._selectedCallFrameId());
+        }
+        DebuggerAgent.setOverlayMessage(undefined, callback.bind(this));
+    },
+
+    stepOut: function()
+    {
+        function callback()
+        {
+            DebuggerAgent.stepOut(this._selectedCallFrameId());
+        }
+        DebuggerAgent.setOverlayMessage(undefined, callback.bind(this));
+    },
+
+    resume: function()
+    {
+        function callback()
+        {
+            DebuggerAgent.resume();
+        }
+        DebuggerAgent.setOverlayMessage(undefined, callback.bind(this));
+    },
+
+    /**
      * @param {WebInspector.DebuggerModel.Location} rawLocation
      * @param {string} condition
      * @param {function(?DebuggerAgent.BreakpointId, Array.<WebInspector.DebuggerModel.Location>):void=} callback
@@ -362,7 +402,7 @@ WebInspector.DebuggerModel.prototype = {
     {
         callback(error, errorData);
         if (needsStepIn)
-            DebuggerAgent.stepInto();
+            this.stepInto(true);
         else if (!error && callFrames && callFrames.length)
             this._pausedScript(callFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData, this._debuggerPausedDetails.breakpointIds);
     },
@@ -417,7 +457,7 @@ WebInspector.DebuggerModel.prototype = {
             if (callFrames.length > 0) {
                 var topLocation = callFrames[0].location;
                 if (topLocation.lineNumber == requestedLocation.lineNumber && topLocation.columnNumber == requestedLocation.columnNumber && topLocation.scriptId == requestedLocation.scriptId) {
-                    DebuggerAgent.stepInto();
+                    this.stepInto(true);
                     return;
                 }
             }
@@ -533,6 +573,15 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
+     * @return {DebuggerAgent.CallFrameId|undefined}
+     */
+    _selectedCallFrameId: function()
+    {
+        var callFrame = this.selectedCallFrame();
+        return callFrame ? callFrame.id : undefined;
+    },
+
+    /**
      * @param {string} code
      * @param {string} objectGroup
      * @param {boolean} includeCommandLineAPI
@@ -643,7 +692,7 @@ WebInspector.DebuggerModel.prototype = {
     {
         // FIXME: declare this property in protocol and in JavaScript.
         if (details && details["stack_update_needs_step_in"])
-            DebuggerAgent.stepInto();
+            this.stepInto(true);
         else {
             if (newCallFrames && newCallFrames.length)
                 this._pausedScript(newCallFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData, this._debuggerPausedDetails.breakpointIds);

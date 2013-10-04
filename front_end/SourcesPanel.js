@@ -698,7 +698,7 @@ WebInspector.SourcesPanel.prototype = {
             delete this._skipExecutionLineRevealing;
             this._paused = false;
             this._waitingToPause = false;
-            DebuggerAgent.resume();
+            WebInspector.debuggerModel.resume();
         } else {
             this._stepping = false;
             this._waitingToPause = true;
@@ -723,7 +723,7 @@ WebInspector.SourcesPanel.prototype = {
         this._paused = false;
         this._waitingToPause = false;
         WebInspector.debuggerModel.skipAllPausesUntilReloadOrTimeout(500);
-        DebuggerAgent.resume();
+        WebInspector.debuggerModel.resume();
 
         this._clearInterface();
         return true;
@@ -744,7 +744,7 @@ WebInspector.SourcesPanel.prototype = {
 
         this._clearInterface();
 
-        DebuggerAgent.stepOver(WebInspector.debuggerModel.selectedCallFrame().id);
+        WebInspector.debuggerModel.stepOver();
         return true;
     },
 
@@ -763,7 +763,7 @@ WebInspector.SourcesPanel.prototype = {
 
         this._clearInterface();
 
-        DebuggerAgent.stepInto();
+        WebInspector.debuggerModel.stepInto();
         return true;
     },
 
@@ -811,7 +811,7 @@ WebInspector.SourcesPanel.prototype = {
 
         this._clearInterface();
 
-        DebuggerAgent.stepOut(WebInspector.debuggerModel.selectedCallFrame().id);
+        WebInspector.debuggerModel.stepOut();
         return true;
     },
 
