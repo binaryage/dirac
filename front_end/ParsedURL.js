@@ -117,6 +117,40 @@ WebInspector.ParsedURL.splitURL = function(url)
     return result;
 }
 
+
+/**
+ * http://tools.ietf.org/html/rfc3986#section-5.2.4
+ * @param {string} path
+ * @return {string}
+ */
+
+WebInspector.ParsedURL.normalizePath = function(path)
+{
+    if (path.indexOf("..") === -1 && path.indexOf('.') === -1)
+        return path;
+
+    var normalizedSegments = [];
+    var segments = path.split("/");
+    for (var i = 0; i < segments.length; i++) {
+        var segment = segments[i];
+        if (segment === ".")
+            continue;
+        else if (segment === "..")
+            normalizedSegments.pop();
+        else if (segment)
+            normalizedSegments.push(segment);
+    }
+    var normalizedPath = normalizedSegments.join("/");
+    if (normalizedPath[normalizedPath.length - 1] === "/")
+        return normalizedPath;
+    if (path[0] === "/" && normalizedPath)
+        normalizedPath = "/" + normalizedPath;
+    if ((path[path.length - 1] === "/") || (segments[segments.length - 1] === ".") || (segments[segments.length - 1] === ".."))
+        normalizedPath = normalizedPath + "/";
+
+    return normalizedPath;
+}
+
 /**
  * @param {string} baseURL
  * @param {string} href
@@ -134,39 +168,51 @@ WebInspector.ParsedURL.completeURL = function(baseURL, href)
         var parsedHref = trimmedHref.asParsedURL();
         if (parsedHref && parsedHref.scheme)
             return trimmedHref;
-    } else
+    } else {
         return baseURL;
+    }
 
     var parsedURL = baseURL.asParsedURL();
     if (parsedURL) {
         if (parsedURL.isDataURL())
             return href;
         var path = href;
-        if (path.charAt(0) !== "/") {
+
+        var query = path.indexOf("?");
+        var postfix = "";
+        if (query !== -1) {
+            postfix = path.substring(query);
+            path = path.substring(0, query);
+        } else {
+            var fragment = path.indexOf("#");
+            if (fragment !== -1) {
+                postfix = path.substring(fragment);
+                path = path.substring(0, fragment);
+            }
+        }
+
+        if (!path) {  // empty path, must be postfix
             var basePath = parsedURL.path;
-
-            // Trim off the query part of the basePath.
-            var questionMarkIndex = basePath.indexOf("?");
-            if (questionMarkIndex > 0)
-                basePath = basePath.substring(0, questionMarkIndex);
-            // A href of "?foo=bar" implies "basePath?foo=bar".
-            // With "basePath?a=b" and "?foo=bar" we should get "basePath?foo=bar".
-            var prefix;
-            if (path.charAt(0) === "?") {
-                var basePathCutIndex = basePath.indexOf("?");
-                if (basePathCutIndex !== -1)
-                    prefix = basePath.substring(0, basePathCutIndex);
-                else
-                    prefix = basePath;
-            } else
-                prefix = basePath.substring(0, basePath.lastIndexOf("/")) + "/";
-
+            if (postfix.charAt(0) === "?") {
+                // A href of "?foo=bar" implies "basePath?foo=bar".
+                // With "basePath?a=b" and "?foo=bar" we should get "basePath?foo=bar".
+                var baseQuery = parsedURL.path.indexOf("?");
+                if (baseQuery !== -1)
+                    basePath = basePath.substring(0, baseQuery);
+            } // else it must be a fragment
+            return parsedURL.scheme + "://" + parsedURL.host + (parsedURL.port ? (":" + parsedURL.port) : "") + basePath + postfix;
+        } else if (path.charAt(0) !== "/") {  // relative path
+            var prefix = parsedURL.path;
+            var prefixQuery = prefix.indexOf("?");
+            if (prefixQuery !== -1)
+                prefix = prefix.substring(0, prefixQuery);
+            prefix = prefix.substring(0, prefix.lastIndexOf("/")) + "/";
             path = prefix + path;
         } else if (path.length > 1 && path.charAt(1) === "/") {
             // href starts with "//" which is a full URL with the protocol dropped (use the baseURL protocol).
-            return parsedURL.scheme + ":" + path;
-        }
-        return parsedURL.scheme + "://" + parsedURL.host + (parsedURL.port ? (":" + parsedURL.port) : "") + path;
+            return parsedURL.scheme + ":" + path + postfix;
+        }  // else absolute path
+        return parsedURL.scheme + "://" + parsedURL.host + (parsedURL.port ? (":" + parsedURL.port) : "") + WebInspector.ParsedURL.normalizePath(path) + postfix;
     }
     return null;
 }
