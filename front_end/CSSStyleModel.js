@@ -37,6 +37,7 @@ WebInspector.CSSStyleModel = function(workspace)
 {
     this._workspace = workspace;
     this._pendingCommandsMajorState = [];
+    this._styleLoader = new WebInspector.CSSStyleModel.ComputedStyleLoader(this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.UndoRedoRequested, this._undoRedoRequested, this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.UndoRedoCompleted, this._undoRedoCompleted, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameCreatedOrNavigated, this._mainFrameCreatedOrNavigated, this);
@@ -150,18 +151,7 @@ WebInspector.CSSStyleModel.prototype = {
      */
     getComputedStyleAsync: function(nodeId, userCallback)
     {
-        /**
-         * @param {function(?WebInspector.CSSStyleDeclaration)} userCallback
-         */
-        function callback(userCallback, error, computedPayload)
-        {
-            if (error || !computedPayload)
-                userCallback(null);
-            else
-                userCallback(WebInspector.CSSStyleDeclaration.parseComputedStylePayload(computedPayload));
-        }
-
-        CSSAgent.getComputedStyleForNode(nodeId, callback.bind(null, userCallback));
+        this._styleLoader.getComputedStyle(nodeId, userCallback);
     },
 
     /**
@@ -376,6 +366,7 @@ WebInspector.CSSStyleModel.prototype = {
 
     mediaQueryResultChanged: function()
     {
+        this._styleLoader.reset();
         this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged);
     },
 
@@ -412,6 +403,7 @@ WebInspector.CSSStyleModel.prototype = {
      */
     _fireStyleSheetChanged: function(styleSheetId)
     {
+        this._styleLoader.reset();
         if (!this._pendingCommandsMajorState.length)
             return;
 
@@ -441,6 +433,7 @@ WebInspector.CSSStyleModel.prototype = {
             frameIdToStyleSheetIds[styleSheetHeader.frameId] = styleSheetIds;
         }
         styleSheetIds.push(styleSheetHeader.id);
+        this._styleLoader.reset();
         this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.StyleSheetAdded, styleSheetHeader);
     },
 
@@ -460,6 +453,7 @@ WebInspector.CSSStyleModel.prototype = {
             if (!Object.keys(this._styleSheetIdsForURL[url]).length)
                 delete this._styleSheetIdsForURL[url];
         }
+        this._styleLoader.reset();
         this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, header);
     },
 
@@ -1762,6 +1756,65 @@ WebInspector.NamedFlowCollection.prototype = {
         return namedFlow;
     }
 }
+
+/**
+ * @constructor
+ * @param {WebInspector.CSSStyleModel} cssModel
+ */
+WebInspector.CSSStyleModel.ComputedStyleLoader = function(cssModel)
+{
+    this._cssModel = cssModel;
+    /** @type {Object.<*, Array.<function(?WebInspector.CSSStyleDeclaration)>>} */
+    this._nodeIdToCallbackData = {};
+}
+
+WebInspector.CSSStyleModel.ComputedStyleLoader.prototype = {
+    reset: function()
+    {
+        for (var nodeId in this._nodeIdToCallbackData) {
+            var callbacks = this._nodeIdToCallbackData[nodeId];
+            for (var i = 0; i < callbacks.length; ++i)
+                callbacks[i](null);
+        }
+        this._nodeIdToCallbackData = {};
+    },
+
+    /**
+     * @param {DOMAgent.NodeId} nodeId
+     * @param {function(?WebInspector.CSSStyleDeclaration)} userCallback
+     */
+    getComputedStyle: function(nodeId, userCallback)
+    {
+        if (this._nodeIdToCallbackData[nodeId]) {
+            this._nodeIdToCallbackData[nodeId].push(userCallback);
+            return;
+        }
+
+        this._nodeIdToCallbackData[nodeId] = [userCallback];
+
+        CSSAgent.getComputedStyleForNode(nodeId, resultCallback.bind(this, nodeId));
+
+        /**
+         * @param {!DOMAgent.NodeId} nodeId
+         * @param {?Protocol.Error} error
+         * @param {Array.<CSSAgent.CSSComputedStyleProperty>} computedPayload
+         */
+        function resultCallback(nodeId, error, computedPayload)
+        {
+            var computedStyle = (error || !computedPayload) ? null : WebInspector.CSSStyleDeclaration.parseComputedStylePayload(computedPayload);
+            var callbacks = this._nodeIdToCallbackData[nodeId];
+
+            // The loader has been reset.
+            if (!callbacks)
+                return;
+
+            delete this._nodeIdToCallbackData[nodeId];
+            for (var i = 0; i < callbacks.length; ++i)
+                callbacks[i](computedStyle);
+        }
+    }
+}
+
 /**
  * @type {WebInspector.CSSStyleModel}
  */
