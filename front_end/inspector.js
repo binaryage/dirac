@@ -131,6 +131,8 @@ var WebInspector = {
      */
     _toggleScreencastButtonClicked: function(resizeWindow)
     {
+        if (!this._screencastAvailable())
+            return;
         this._toggleScreencastButton.toggled = !this._toggleScreencastButton.toggled;
         WebInspector.settings.screencastEnabled.set(this._toggleScreencastButton.toggled);
 
