@@ -34,6 +34,7 @@
 WebInspector.OverridesSupport = function()
 {
     this._overridesActive = WebInspector.settings.enableOverridesOnStartup.get();
+    this._deviceMetricsOverridesActive = false;
     this._updateAllOverrides();
 
     WebInspector.settings.overrideUserAgent.addChangeListener(this._userAgentChanged, this);
@@ -346,8 +347,14 @@ WebInspector.OverridesSupport.prototype = {
     _deviceMetricsChanged: function()
     {
         var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(this._overridesActive && WebInspector.settings.overrideDeviceMetrics.get() ? WebInspector.settings.deviceMetrics.get() : "");
-        if (metrics.isValid())
+        if (metrics.isValid()) {
+            var active = metrics.width > 0 && metrics.height > 0;
             PageAgent.setDeviceMetricsOverride(metrics.width, metrics.height, metrics.fontScaleFactor, WebInspector.settings.deviceFitWindow.get());
+            if (active != this._deviceMetricsOverridesActive) {
+                PageAgent.reload(false);
+                this._deviceMetricsOverridesActive = active;
+            }
+        }
     },
 
     _geolocationPositionChanged: function()
