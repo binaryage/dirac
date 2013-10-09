@@ -1315,11 +1315,6 @@ ol.watch-expressions > li.hovered {
     position: static;
 }
 
-.console-formatted-object .error,
-.console-formatted-array .error {
-    color: red;
-}
-
 .console-formatted-object .section > .header::before {
     margin-top: 0;
 }

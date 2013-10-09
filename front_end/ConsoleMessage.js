@@ -666,7 +666,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
         {
             rootElement.removeChildren();
             if (wasThrown) {
-                var element = rootElement.createChild("span", "error");
+                var element = rootElement.createChild("span", "error-message");
                 element.textContent = WebInspector.UIString("<exception>");
                 element.title = result.description;
             } else {
