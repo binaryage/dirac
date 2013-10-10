@@ -128,7 +128,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     /**
      * @param {string} path
      * @param {string} newName
-     * @param {function(boolean, string=)} callback
+     * @param {function(boolean, string=, string=, string=, WebInspector.ResourceType=)} callback
      */
     rename: function(path, newName, callback)
     {

@@ -166,25 +166,34 @@ WebInspector.UISourceCode.prototype = {
         /**
          * @param {boolean} success
          * @param {string=} newName
+         * @param {string=} newURL
+         * @param {string=} newOriginURL
+         * @param {WebInspector.ResourceType=} newContentType
          */
-        function innerCallback(success, newName)
+        function innerCallback(success, newName, newURL, newOriginURL, newContentType)
         {
             if (success)
-                this._updateName(newName);
+                this._updateName(newName, newURL, newOriginURL, newContentType);
             callback(success);
         }
     },
 
     /**
      * @param {string} name
+     * @param {string} url
+     * @param {string} originURL
+     * @param {WebInspector.ResourceType=} contentType
      */
-    _updateName: function(name)
+    _updateName: function(name, url, originURL, contentType)
     {
         var oldURI = this.uri();
         this._name = name;
-        // FIXME: why?
-        this._url = name;
-        this._originURL = name;
+        if (url)
+            this._url = url;
+        if (originURL)
+            this._originURL = originURL;
+        if (contentType)
+            this._contentType = contentType;
         this.dispatchEventToListeners(WebInspector.UISourceCode.Events.TitleChanged, oldURI);
     },
 

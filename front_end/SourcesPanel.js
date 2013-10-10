@@ -510,6 +510,38 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
+     * @param {WebInspector.SourceFrame} sourceFrame
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     */
+    _sourceFrameMatchesUISourceCode: function(sourceFrame, uiSourceCode)
+    {
+        switch (uiSourceCode.contentType()) {
+        case WebInspector.resourceTypes.Script:
+        case WebInspector.resourceTypes.Document:
+            return sourceFrame instanceof WebInspector.JavaScriptSourceFrame;
+        case WebInspector.resourceTypes.Stylesheet:
+        default:
+            return !(sourceFrame instanceof WebInspector.JavaScriptSourceFrame);
+        }
+    },
+
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     */
+    _recreateSourceFrameIfNeeded: function(uiSourceCode)
+    {
+        var oldSourceFrame = this._sourceFramesByUISourceCode.get(uiSourceCode);
+        if (!oldSourceFrame)
+            return;
+        if (this._sourceFrameMatchesUISourceCode(oldSourceFrame, uiSourceCode)) {
+            oldSourceFrame.setHighlighterType(uiSourceCode.highlighterType());
+        } else {
+            this._editorContainer.removeUISourceCode(uiSourceCode);
+            this._removeSourceFrame(uiSourceCode);
+        }
+    },
+
+    /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      * @return {WebInspector.SourceFrame}
      */
@@ -1212,6 +1244,7 @@ WebInspector.SourcesPanel.prototype = {
                 return;
             }
 
+            this._recreateSourceFrameIfNeeded(uiSourceCode);
             this._showSourceLocation(uiSourceCode);
         }
     },
@@ -1233,10 +1266,10 @@ WebInspector.SourcesPanel.prototype = {
          */
         function callback(committed)
         {
-            if (shouldHideNavigator && committed) {
+            if (shouldHideNavigator && committed)
                 this._navigatorController.hideNavigatorOverlay();
-                this._showSourceLocation(uiSourceCode);
-            }
+            this._recreateSourceFrameIfNeeded(uiSourceCode);
+            this._showSourceLocation(uiSourceCode);
         }
     },
 
