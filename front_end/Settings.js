@@ -316,7 +316,7 @@ WebInspector.ExperimentsSettings.prototype = {
 
         if (!this.experimentsEnabled)
             return false;
-        
+
         var experimentsSetting = this._setting.get();
         return experimentsSetting[experimentName];
     },
@@ -453,7 +453,8 @@ WebInspector.VersionController.prototype = {
     {
         var fileSystemMappingSetting = WebInspector.settings.createSetting("fileSystemMapping", {});
         fileSystemMappingSetting.set({});
-        delete window.localStorage["fileMappingEntries"];
+        if (window.localStorage)
+            delete window.localStorage["fileMappingEntries"];
     },
 
     _updateVersionFrom3To4: function()
