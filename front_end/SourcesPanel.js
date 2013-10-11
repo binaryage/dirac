@@ -1245,6 +1245,7 @@ WebInspector.SourcesPanel.prototype = {
             }
 
             this._recreateSourceFrameIfNeeded(uiSourceCode);
+            this._navigator.updateIcon(uiSourceCode);
             this._showSourceLocation(uiSourceCode);
         }
     },
@@ -1269,6 +1270,7 @@ WebInspector.SourcesPanel.prototype = {
             if (shouldHideNavigator && committed)
                 this._navigatorController.hideNavigatorOverlay();
             this._recreateSourceFrameIfNeeded(uiSourceCode);
+            this._navigator.updateIcon(uiSourceCode);
             this._showSourceLocation(uiSourceCode);
         }
     },

@@ -218,6 +218,15 @@ WebInspector.NavigatorView.prototype = {
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
      */
+    updateIcon: function(uiSourceCode)
+    {
+        var node = this._uiSourceCodeNodes.get(uiSourceCode);
+        node.updateIcon();
+    },
+
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
+     */
     requestRename: function(uiSourceCode)
     {
         this.dispatchEventToListeners(WebInspector.SourcesNavigator.Events.ItemRenamingRequested, uiSourceCode);
@@ -484,6 +493,15 @@ WebInspector.BaseNavigatorTreeElement.prototype = {
         this.listItemElement.appendChild(this.titleElement);
     },
 
+    updateIconClasses: function(iconClasses)
+    {
+        for (var i = 0; i < this._iconClasses.length; ++i)
+            this.listItemElement.removeStyleClass(this._iconClasses[i]);
+        this._iconClasses = iconClasses;
+        for (var i = 0; i < this._iconClasses.length; ++i)
+            this.listItemElement.addStyleClass(this._iconClasses[i]);
+    },
+
     onreveal: function()
     {
         if (this.listItemElement)
@@ -583,9 +601,9 @@ WebInspector.NavigatorFolderTreeElement.prototype = {
  */
 WebInspector.NavigatorSourceTreeElement = function(navigatorView, uiSourceCode, title)
 {
-    WebInspector.BaseNavigatorTreeElement.call(this, WebInspector.NavigatorTreeOutline.Types.UISourceCode, title, ["navigator-" + uiSourceCode.contentType().name() + "-tree-item"], false);
     this._navigatorView = navigatorView;
     this._uiSourceCode = uiSourceCode;
+    WebInspector.BaseNavigatorTreeElement.call(this, WebInspector.NavigatorTreeOutline.Types.UISourceCode, title, this._calculateIconClasses(), false);
     this.tooltip = uiSourceCode.originURL();
 }
 
@@ -596,6 +614,19 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
     get uiSourceCode()
     {
         return this._uiSourceCode;
+    },
+
+    /**
+     * @return {Array.<string>}
+     */
+    _calculateIconClasses: function()
+    {
+        return ["navigator-" + this._uiSourceCode.contentType().name() + "-tree-item"];
+    },
+
+    updateIcon: function()
+    {
+        this.updateIconClasses(this._calculateIconClasses());
     },
 
     onattach: function()
@@ -881,6 +912,12 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
     uiSourceCode: function()
     {
         return this._uiSourceCode;
+    },
+
+    updateIcon: function()
+    {
+        if (this._treeElement)
+            this._treeElement.updateIcon();
     },
 
     /**

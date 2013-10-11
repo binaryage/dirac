@@ -126,6 +126,14 @@ WebInspector.SourcesNavigator.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
+     */
+    updateIcon: function(uiSourceCode)
+    {
+        this._navigatorViewForUISourceCode(uiSourceCode).updateIcon(uiSourceCode);
+    },
+
+    /**
+     * @param {WebInspector.UISourceCode} uiSourceCode
      * @param {function(boolean)=} callback
      */
     rename: function(uiSourceCode, callback)
