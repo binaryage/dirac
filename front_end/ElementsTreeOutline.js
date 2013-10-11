@@ -1205,9 +1205,9 @@ WebInspector.ElementsTreeElement.prototype = {
         if (this.listItemElement) {
             var tagSpans = this.listItemElement.getElementsByClassName("webkit-html-tag-name");
             if (tagSpans.length)
-                tagSpans[0].scrollIntoViewIfNeeded(false);
+                tagSpans[0].scrollIntoViewIfNeeded(true);
             else
-                this.listItemElement.scrollIntoViewIfNeeded(false);
+                this.listItemElement.scrollIntoViewIfNeeded(true);
         }
     },
 
