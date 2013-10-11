@@ -106,10 +106,13 @@ WebInspector.ProfileDataGridNode.prototype = {
         if (this.profileNode._searchMatchedFunctionColumn)
             cell.addStyleClass("highlight");
 
-        if (this.profileNode.url) {
-            // FIXME(62725): profileNode should reference a debugger location.
+        if (this.profileNode.scriptId !== "0") {
             var lineNumber = this.profileNode.lineNumber ? this.profileNode.lineNumber - 1 : 0;
-            var urlElement = this.tree.profileView._linkifier.linkifyLocation(this.profileNode.url, lineNumber, 0, "profile-node-file");
+            var columnNumber = this.profileNode.columnNumber ? this.profileNode.columnNumber - 1 : 0;
+            var location = new WebInspector.DebuggerModel.Location(this.profileNode.scriptId, lineNumber, columnNumber);
+            var urlElement = this.tree.profileView._linkifier.linkifyRawLocation(location, "profile-node-file");
+            if (!urlElement)
+                urlElement = this.tree.profileView._linkifier.linkifyLocation(this.profileNode.url, lineNumber, columnNumber, "profile-node-file");
             urlElement.style.maxWidth = "75%";
             cell.insertBefore(urlElement, cell.firstChild);
         }
