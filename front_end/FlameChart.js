@@ -312,69 +312,6 @@ WebInspector.FlameChart.prototype = {
 
     _calculateTimelineData: function()
     {
-        if (this._cpuProfileView.samples)
-            return this._calculateTimelineDataForSamples();
-
-        if (this._timelineData)
-            return this._timelineData;
-
-        if (!this._cpuProfileView.profileHead)
-            return null;
-
-        var index = 0;
-        var entries = [];
-
-        function appendReversedArray(toArray, fromArray)
-        {
-            for (var i = fromArray.length - 1; i >= 0; --i)
-                toArray.push(fromArray[i]);
-        }
-
-        var stack = [];
-        appendReversedArray(stack, this._cpuProfileView.profileHead.children);
-
-        var levelOffsets = /** @type {Array.<!number>} */ ([0]);
-        var levelExitIndexes = /** @type {Array.<!number>} */ ([0]);
-        var colorGenerator = WebInspector.FlameChart._colorGenerator;
-        var maxDepth = 5; // minimum stack depth for the case when we see no activity.
-
-        while (stack.length) {
-            var level = levelOffsets.length - 1;
-            var node = stack.pop();
-            var offset = levelOffsets[level];
-
-            var id = node.functionName + ":" + node.url + ":" + node.lineNumber;
-            var colorPair = colorGenerator._colorPairForID(id);
-            var entry = new WebInspector.FlameChart.Entry(colorPair, level, node.totalTime, offset, node);
-            entries.push(entry);
-
-            ++index;
-
-            levelOffsets[level] += node.totalTime;
-            if (node.children.length) {
-                levelExitIndexes.push(stack.length);
-                levelOffsets.push(offset + node.selfTime / 2);
-                maxDepth = Math.max(maxDepth, levelOffsets.length);
-                appendReversedArray(stack, node.children);
-            }
-
-            while (stack.length === levelExitIndexes[levelExitIndexes.length - 1]) {
-                levelOffsets.pop();
-                levelExitIndexes.pop();
-            }
-        }
-
-        this._maxStackDepth = maxDepth;
-        this._timelineData = {
-            entries: entries,
-            totalTime: this._cpuProfileView.profileHead.totalTime,
-        }
-
-        return this._timelineData;
-    },
-
-    _calculateTimelineDataForSamples: function()
-    {
         if (this._timelineData)
             return this._timelineData;
 
