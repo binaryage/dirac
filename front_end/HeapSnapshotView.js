@@ -961,15 +961,6 @@ WebInspector.HeapSnapshotProfileType.prototype = {
             HeapProfilerAgent.removeProfile(profile.uid);
     },
 
-    /**
-     * @override
-     * @param {function(this:WebInspector.ProfileType, ?string, Array.<HeapProfilerAgent.ProfileHeader>)} populateCallback
-     */
-    _requestProfilesFromBackend: function(populateCallback)
-    {
-        HeapProfilerAgent.getProfileHeaders(populateCallback);
-    },
-
     _snapshotReceived: function(profile)
     {
         this.dispatchEventToListeners(WebInspector.HeapSnapshotProfileType.SnapshotReceived, profile);
@@ -1137,14 +1128,6 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
     {
         title = title || WebInspector.UIString("Recording\u2026");
         return new WebInspector.HeapProfileHeader(this, title);
-    },
-
-    /**
-     * @override
-     * @param {function(this:WebInspector.ProfileType, ?string, Array.<HeapProfilerAgent.ProfileHeader>)} populateCallback
-     */
-    _requestProfilesFromBackend: function(populateCallback)
-    {
     },
 
     __proto__: WebInspector.HeapSnapshotProfileType.prototype

@@ -755,15 +755,6 @@ WebInspector.CPUProfileType.prototype = {
 
     /**
      * @override
-     * @param {function(this:WebInspector.ProfileType, ?string, Array.<ProfilerAgent.ProfileHeader>)} populateCallback
-     */
-    _requestProfilesFromBackend: function(populateCallback)
-    {
-        ProfilerAgent.getProfileHeaders(populateCallback);
-    },
-
-    /**
-     * @override
      */
     resetProfiles: function()
     {

@@ -592,6 +592,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.domStorageModel = new WebInspector.DOMStorageModel();
 
     ProfilerAgent.enable();
+    HeapProfilerAgent.enable();
 
     WebInspector.settings.forceCompositingMode = WebInspector.settings.createBackendSetting("forceCompositingMode", false, PageAgent.setForceCompositingMode.bind(PageAgent));
     WebInspector.settings.showPaintRects = WebInspector.settings.createBackendSetting("showPaintRects", false, PageAgent.setShowPaintRects.bind(PageAgent));

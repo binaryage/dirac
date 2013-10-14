@@ -3454,12 +3454,6 @@
                 ]
             },
             {
-                "name": "getProfileHeaders",
-                "returns": [
-                    { "name": "headers", "type": "array", "items": { "$ref": "ProfileHeader"} }
-                ]
-            },
-            {
                 "name": "getCPUProfile",
                 "parameters": [
                     { "name": "uid", "type": "integer" }
@@ -3519,10 +3513,10 @@
         ],
         "commands": [
             {
-                "name": "getProfileHeaders",
-                "returns": [
-                    { "name": "headers", "type": "array", "items": { "$ref": "ProfileHeader"} }
-                ]
+                "name": "enable"
+            },
+            {
+                "name": "disable"
             },
             {
                 "name": "startTrackingHeapObjects"
