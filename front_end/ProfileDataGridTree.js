@@ -233,12 +233,10 @@ WebInspector.ProfileDataGridNode.prototype = {
 
         this._sharedPopulate();
 
-        if (this._parent) {
-            var currentComparator = this._parent.lastComparator;
+        var currentComparator = this.tree.lastComparator;
 
-            if (currentComparator)
-                this.sort(currentComparator, true);
-        }
+        if (currentComparator)
+            this.sort(currentComparator, true);
     },
 
     // When focusing and collapsing we modify lots of nodes in the tree.
