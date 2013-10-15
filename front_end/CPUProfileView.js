@@ -768,12 +768,6 @@ WebInspector.CPUProfileType.prototype = {
     },
 
     /** @deprecated To be removed from the protocol */
-    finishHeapSnapshot: function(uid)
-    {
-        throw new Error("Never called");
-    },
-
-    /** @deprecated To be removed from the protocol */
     reportHeapSnapshotProgress: function(done, total)
     {
         throw new Error("Never called");

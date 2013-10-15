@@ -761,15 +761,6 @@ WebInspector.HeapProfilerDispatcher.prototype = {
 
     /**
      * @override
-     * @param {number} uid
-     */
-    finishHeapSnapshot: function(uid)
-    {
-        this._genericCaller("finishHeapSnapshot");
-    },
-
-    /**
-     * @override
      * @param {number} done
      * @param {number} total
      */
@@ -917,17 +908,6 @@ WebInspector.HeapSnapshotProfileType.prototype = {
         var profile = this._profilesIdMap[this._makeKey(uid)];
         if (profile)
             profile.transferChunk(chunk);
-    },
-
-    /**
-     * @override
-     * @param {number} uid
-     */
-    finishHeapSnapshot: function(uid)
-    {
-        var profile = this._profilesIdMap[this._makeKey(uid)];
-        if (profile)
-            profile.finishHeapSnapshot();
     },
 
     /**
@@ -1194,15 +1174,22 @@ WebInspector.HeapProfileHeader.prototype = {
             this._transferHandler = new WebInspector.BackendSnapshotLoader(this);
             this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026");
             this.sidebarElement.wait = true;
-            this.startSnapshotTransfer();
+            this._transferSnapshot();
         }
         var loaderProxy = /** @type {WebInspector.HeapSnapshotLoaderProxy} */ (this._receiver);
         loaderProxy.addConsumer(callback);
     },
 
-    startSnapshotTransfer: function()
+    _transferSnapshot: function()
     {
-        HeapProfilerAgent.getHeapSnapshot(this.uid);
+        function finishTransfer()
+        {
+            if (this._transferHandler) {
+                this._transferHandler.finishTransfer();
+                this._totalNumberOfChunks = this._transferHandler._totalNumberOfChunks;
+            }
+        }
+        HeapProfilerAgent.getHeapSnapshot(this.uid, finishTransfer.bind(this));
     },
 
     snapshotConstructorName: function()
@@ -1299,14 +1286,6 @@ WebInspector.HeapProfileHeader.prototype = {
         this._profileType._snapshotReceived(this);
     },
 
-    finishHeapSnapshot: function()
-    {
-        if (this._transferHandler) {
-            this._transferHandler.finishTransfer();
-            this._totalNumberOfChunks = this._transferHandler._totalNumberOfChunks;
-        }
-    },
-
     // Hook point for tests.
     _wasShown: function()
     {
@@ -1331,7 +1310,7 @@ WebInspector.HeapProfileHeader.prototype = {
         {
             this._receiver = fileOutputStream;
             this._transferHandler = new WebInspector.SaveSnapshotHandler(this);
-            HeapProfilerAgent.getHeapSnapshot(this.uid);
+            this._transferSnapshot();
         }
         this._fileName = this._fileName || "Heap-" + new Date().toISO8601Compact() + this._profileType.fileExtension();
         fileOutputStream.open(this._fileName, onOpen.bind(this));

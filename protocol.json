@@ -3583,12 +3583,6 @@
                 ]
             },
             {
-                "name": "finishHeapSnapshot",
-                "parameters": [
-                    { "name": "uid", "type": "integer" }
-                ]
-            },
-            {
                 "name": "resetProfiles"
             },
             {
