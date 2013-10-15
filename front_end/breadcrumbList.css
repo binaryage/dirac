@@ -41,6 +41,7 @@
 }
 
 .crumbs .crumb {
+    display: inline-block;
     height: 24px;
     border-width: 0 12px 0 2px;
     -webkit-border-image: url(Images/segment.png) 0 12 0 2;
@@ -49,7 +50,6 @@
     padding-right: 2px;
     white-space: nowrap;
     line-height: 23px;
-    float: right;
 }
 
 .crumbs .crumb.collapsed > * {
@@ -92,7 +92,6 @@
 
 .crumbs .crumb:hover {
     -webkit-border-image: url(Images/segmentHover.png) 0 12 0 2;
-    color: #222;
 }
 
 .crumbs .crumb.end:hover {

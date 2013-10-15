@@ -734,7 +734,7 @@ WebInspector.ElementsPanel.prototype = {
             if (!crumbs.childNodes.length)
                 crumb.addStyleClass("end");
 
-            crumbs.appendChild(crumb);
+            crumbs.insertBefore(crumb, crumbs.firstChild);
         }
 
         if (crumbs.hasChildNodes())

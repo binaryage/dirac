@@ -37,17 +37,16 @@ WebInspector.Toolbar = function()
     this.element = document.getElementById("toolbar");
     WebInspector.installDragHandle(this.element, this._toolbarDragStart.bind(this), this._toolbarDrag.bind(this), this._toolbarDragEnd.bind(this), "default");
 
-    this._dropdownButton = document.getElementById("toolbar-dropdown-arrow");
+    this._leftToolbarElement = this.element.createChild("div", "toolbar-controls-left");
+    this._rightControlsElement = this.element.createChild("div", "toolbar-controls-right");
+    this._dropdownButton = this._rightControlsElement.createChild("div", "toolbar-item").createChild("div", "toolbar-dropdown-arrow hidden");
+    this._dropdownButton.textContent = "\u00bb"; // &raquo;
     this._dropdownButton.addEventListener("click", this._toggleDropdown.bind(this), false);
-
-    this._panelsMenuButton = document.getElementById("toolbar-panels-menu");
-    if (this._isToolbarCustomizable()) {
-        this._panelsMenuButton.addEventListener("mousedown", this._togglePanelsMenu.bind(this), false);
-        this._panelsMenuButton.removeStyleClass("hidden");
-    }
-
-    document.getElementById("close-button-left").addEventListener("click", this._onClose, true);
-    document.getElementById("close-button-right").addEventListener("click", this._onClose, true);
+    this._errorWarningCountElement = this._rightControlsElement.createChild("div", "hidden");
+    this._errorWarningCountElement.id = "error-warning-count";
+    this._rightToolbarElement = this._rightControlsElement.createChild("div");
+    var closeButtonElement = this._rightControlsElement.createChild("div", "toolbar-item").createChild("div", "close-button");
+    closeButtonElement.addEventListener("click", this._onClose, true);
 
     this._panelDescriptors = [];
 }
@@ -65,131 +64,24 @@ WebInspector.Toolbar.prototype = {
     {
         this._panelDescriptors.push(panelDescriptor);
         panelDescriptor._toolbarElement = this._createPanelToolbarItem(panelDescriptor);
-        if (!this._isToolbarCustomizable() || this._isPanelVisible(panelDescriptor.name()))
-            this.element.insertBefore(panelDescriptor._toolbarElement, this._panelInsertLocation(panelDescriptor));
-        this._updatePanelsMenuState();
+        this.element.appendChild(panelDescriptor._toolbarElement);
         this.resize();
     },
 
     /**
-     * @param {!WebInspector.PanelDescriptor} panelDescriptor
      * @return {Element}
      */
-    _panelInsertLocation: function(panelDescriptor)
+    leftToolbarElement: function()
     {
-        if (!this._isToolbarCustomizable())
-            return null;
-
-        if (this._isDefaultPanel(panelDescriptor.name()))
-            return this._firstNonDefaultPanel || null;
-
-        if (!this._firstNonDefaultPanel)
-            this._firstNonDefaultPanel = panelDescriptor._toolbarElement;
-        return null;
+        return this._leftToolbarElement;
     },
 
     /**
-     * @param {!string} name
-     * @return {boolean}
+     * @return {Element}
      */
-    _isDefaultPanel: function(name)
+    rightToolbarElement: function()
     {
-        var defaultPanels = {
-            "elements": true,
-            "resources": true,
-            "sources": true,
-            "console": true,
-            "network": true,
-            "timeline": true,
-        };
-        return !!defaultPanels[name];
-    },
-
-    /**
-     * @param {!string} name
-     * @return {boolean}
-     */
-    _isPanelVisibleByDefault: function(name)
-    {
-        var visible = {
-            "elements": true,
-            "console": true,
-            "network": true,
-            "sources": true,
-            "timeline": true,
-            "profiles": true,
-            "cpu-profiler": true,
-            "heap-profiler": true,
-            "audits": true,
-            "resources": true,
-        };
-        return !!visible[name];
-    },
-
-    /**
-     * @return {boolean}
-     */
-    _isToolbarCustomizable: function()
-    {
-        return WebInspector.experimentsSettings.customizableToolbar.isEnabled();
-    },
-
-    /**
-     * @param {!string} name
-     * @return {boolean}
-     */
-    _isPanelVisible: function(name)
-    {
-        if (!this._isToolbarCustomizable())
-            return true;
-        var visiblePanels = WebInspector.settings.visiblePanels.get();
-        return visiblePanels.hasOwnProperty(name) ? visiblePanels[name] : this._isPanelVisibleByDefault(name);
-    },
-
-    /**
-     * @param {!string} name
-     * @param {boolean} visible
-     */
-    _setPanelVisible: function(name, visible)
-    {
-        var visiblePanels = WebInspector.settings.visiblePanels.get();
-        visiblePanels[name] = visible;
-        WebInspector.settings.visiblePanels.set(visiblePanels);
-    },
-
-    /**
-     * @param {!WebInspector.PanelDescriptor} panelDescriptor
-     */
-    _hidePanel: function(panelDescriptor)
-    {
-        if (!this._isPanelVisible(panelDescriptor.name()))
-            return;
-        var switchToSibling = panelDescriptor._toolbarElement.nextSibling;
-        if (!switchToSibling || !switchToSibling.classList.contains("toggleable"))
-            switchToSibling = panelDescriptor._toolbarElement.previousSibling;
-        if (!switchToSibling || !switchToSibling.classList || !switchToSibling.classList.contains("toggleable"))
-            return;
-        this._setPanelVisible(panelDescriptor.name(), false);
-        this.element.removeChild(panelDescriptor._toolbarElement);
-        if (WebInspector.inspectorView.currentPanel().name === panelDescriptor.name()) {
-            for (var i = 0; i < this._panelDescriptors.length; ++i) {
-                var descr = this._panelDescriptors[i];
-                if (descr._toolbarElement === switchToSibling) {
-                    WebInspector.showPanel(descr.name());
-                    break;
-                }
-            }
-        }
-        this._updatePanelsMenuState();
-        this.resize();
-    },
-
-    _updatePanelsMenuState: function()
-    {
-        if (this._panelDescriptors.every(function (descr) { return this._isPanelVisible(descr.name()); }, this) && this._allItemsFitOntoToolbar())
-            document.getElementById("toolbar-panels-menu").addStyleClass("disabled");
-        else
-            document.getElementById("toolbar-panels-menu").removeStyleClass("disabled");
+        return this._rightToolbarElement;
     },
 
     /**
@@ -199,20 +91,6 @@ WebInspector.Toolbar.prototype = {
     {
         var toolbarItems = this.element.querySelectorAll(".toolbar-item.toggleable");
         return toolbarItems.length === 0 || this.element.scrollHeight < toolbarItems[0].offsetHeight * 2;
-    },
-
-    /**
-     * @param {!WebInspector.PanelDescriptor} panelDescriptor
-     */
-    _showPanel: function(panelDescriptor)
-    {
-        if (this._isPanelVisible(panelDescriptor.name()))
-            return;
-        this.element.appendChild(panelDescriptor._toolbarElement);
-        panelDescriptor._toolbarElement.removeStyleClass("hidden");
-        this._setPanelVisible(panelDescriptor.name(), true);
-        this._updatePanelsMenuState();
-        this.resize();
     },
 
     /**
@@ -227,31 +105,12 @@ WebInspector.Toolbar.prototype = {
         toolbarItem.panelDescriptor = panelDescriptor;
         toolbarItem.addStyleClass(panelDescriptor.name());
 
-        /**
-         * @param {Event} event
-         */
-        function onContextMenuEvent(event)
-        {
-            var contextMenu = new WebInspector.ContextMenu(event);
-            contextMenu.appendItem(WebInspector.UIString("Close"), this._hidePanel.bind(this, panelDescriptor));
-            contextMenu.show();
-        }
-        if (!this._isDefaultPanel(panelDescriptor.name()))
-            toolbarItem.addEventListener("contextmenu", onContextMenuEvent.bind(this), true);
-
         function onToolbarItemClicked()
         {
-            this._showPanel(panelDescriptor);
             this._updateDropdownButtonAndHideDropdown();
             WebInspector.inspectorView.setCurrentPanel(panelDescriptor.panel());
         }
         toolbarItem.addEventListener("click", onToolbarItemClicked.bind(this), false);
-
-        function onToolbarItemCloseButtonClicked(event)
-        {
-            event.stopPropagation();
-            this._hidePanel(panelDescriptor);
-        }
 
         function panelSelected()
         {
@@ -263,10 +122,6 @@ WebInspector.Toolbar.prototype = {
         WebInspector.inspectorView.addEventListener(WebInspector.InspectorView.Events.PanelSelected, panelSelected);
 
         toolbarItem.createChild("div", "toolbar-label").textContent = panelDescriptor.title();
-        if (this._isToolbarCustomizable() && !this._isDefaultPanel(panelDescriptor.name()) && !noCloseButton) {
-            var closeButton = toolbarItem.createChild("div", "close-button");
-            closeButton.addEventListener("click", onToolbarItemCloseButtonClicked.bind(this), false);
-        }
         panelSelected();
         return toolbarItem;
     },
@@ -385,7 +240,6 @@ WebInspector.Toolbar.prototype = {
     {
         function activatePanel(panelDescriptor)
         {
-            this._showPanel(panelDescriptor);
             WebInspector.showPanel(panelDescriptor.name());
         }
 
@@ -401,13 +255,6 @@ WebInspector.Toolbar.prototype = {
                     contextMenu.appendItem(descr.title(), activatePanel.bind(this, descr));
             }
         }
-        contextMenu.appendSeparator();
-        for (var i = 0; i < this._panelDescriptors.length; ++i) {
-            var descr = this._panelDescriptors[i];
-            if (this._isPanelVisible(descr.name()))
-                continue;
-            contextMenu.appendItem(descr.title(), activatePanel.bind(this, descr));
-        }
 
         contextMenu.showSoftMenu();
     },
@@ -419,12 +266,7 @@ WebInspector.Toolbar.prototype = {
 
     _innerUpdateDropdownButtonAndHideDropdown: function()
     {
-        if (this._isToolbarCustomizable()) {
-            this._updatePanelsMenuState();
-            return;
-        }
         this._setDropdownVisible(false);
-
         if (this.element.scrollHeight > this.element.offsetHeight)
             this._dropdownButton.removeStyleClass("hidden");
         else
@@ -439,10 +281,9 @@ WebInspector.Toolbar.prototype = {
 WebInspector.ToolbarDropdown = function(toolbar)
 {
     this._toolbar = toolbar;
-    this._arrow = document.getElementById("toolbar-dropdown-arrow");
+    this._arrow = toolbar._dropdownButton;
     this.element = document.createElement("div");
-    this.element.id = "toolbar-dropdown";
-    this.element.className = "toolbar-small";
+    this.element.className = "toolbar-dropdown toolbar-small";
     this._contentElement = this.element.createChild("div", "scrollable-content");
     this._contentElement.tabIndex = 0;
     this._contentElement.addEventListener("keydown", this._onKeyDown.bind(this), true);
@@ -480,25 +321,10 @@ WebInspector.ToolbarDropdown.prototype = {
     _populate: function()
     {
         var toolbarItems = this._toolbar.element.querySelectorAll(".toolbar-item.toggleable");
-
-        var needsSeparator = false;
         for (var i = 0; i < toolbarItems.length; ++i) {
             if (toolbarItems[i].offsetTop >= toolbarItems[0].offsetHeight) {
                 this._contentElement.appendChild(this._toolbar._createPanelToolbarItem(toolbarItems[i].panelDescriptor, true));
-                needsSeparator = true;
             }
-        }
-
-        var panelDescriptors = this._toolbar._panelDescriptors;
-        for (var i = 0; i < panelDescriptors.length; ++i) {
-            var descr = panelDescriptors[i];
-            if (this._toolbar._isPanelVisible(descr.name()))
-                continue;
-            if (needsSeparator) {
-                this._contentElement.createChild("div", "toolbar-items-separator");
-                needsSeparator = false;
-            }
-            this._contentElement.appendChild(this._toolbar._createPanelToolbarItem(descr, true));
         }
     },
 

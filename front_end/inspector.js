@@ -50,23 +50,10 @@ var WebInspector = {
             var layers = new WebInspector.LayersPanelDescriptor();
             allDescriptors.push(layers);
         }
-        var allProfilers = [profiles];
-        if (WebInspector.experimentsSettings.customizableToolbar.isEnabled()) {
-            allProfilers = [];
-            allProfilers.push(new WebInspector.PanelDescriptor("cpu-profiler", WebInspector.UIString("CPU Profiler"), "CPUProfilerPanel", "ProfilesPanel.js"));
-            if (!WebInspector.WorkerManager.isWorkerFrontend())
-                allProfilers.push(new WebInspector.PanelDescriptor("css-profiler", WebInspector.UIString("CSS Profiler"), "CSSSelectorProfilerPanel", "ProfilesPanel.js"));
-            allProfilers.push(new WebInspector.PanelDescriptor("heap-profiler", WebInspector.UIString("Heap Profiler"), "HeapProfilerPanel", "ProfilesPanel.js"));
-            if (!WebInspector.WorkerManager.isWorkerFrontend() && WebInspector.experimentsSettings.canvasInspection.isEnabled())
-                allProfilers.push(new WebInspector.PanelDescriptor("canvas-profiler", WebInspector.UIString("Canvas Profiler"), "CanvasProfilerPanel", "ProfilesPanel.js"));
-            Array.prototype.splice.bind(allDescriptors, allDescriptors.indexOf(profiles), 1).apply(null, allProfilers);
-        }
-
         var panelDescriptors = [];
         if (WebInspector.WorkerManager.isWorkerFrontend()) {
             panelDescriptors.push(sources);
             panelDescriptors.push(timeline);
-            panelDescriptors = panelDescriptors.concat(allProfilers);
             panelDescriptors.push(console);
             return panelDescriptors;
         }
@@ -90,27 +77,22 @@ var WebInspector = {
 
     _createGlobalStatusBarItems: function()
     {
-        var bottomStatusBarContainer = document.getElementById("bottom-status-bar-container");
-
-        // Create main dock button and options.
-        var mainStatusBar = document.getElementById("main-status-bar");
-        if (!WebInspector.queryParamsObject["remoteFrontend"])
-            mainStatusBar.insertBefore(this.dockController.element, bottomStatusBarContainer);
-
-        this._toggleConsoleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show console."), "console-status-bar-item");
-        this._toggleConsoleButton.addEventListener("click", this._toggleConsoleButtonClicked.bind(this), false);
-        mainStatusBar.insertBefore(this._toggleConsoleButton.element, bottomStatusBarContainer);
-
         if (this.inspectElementModeController)
-            mainStatusBar.insertBefore(this.inspectElementModeController.toggleSearchButton.element, bottomStatusBarContainer);
+            this.toolbar.leftToolbarElement().appendChild(this.inspectElementModeController.toggleSearchButton.element);
 
         if (this._screencastAvailable()) {
             this._toggleScreencastButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle screencast."), "screencast-status-bar-item");
             this._toggleScreencastButton.addEventListener("click", this._toggleScreencastButtonClicked.bind(this, true), false);
-            mainStatusBar.insertBefore(this._toggleScreencastButton.element, bottomStatusBarContainer);
+            this.toolbar.leftToolbarElement().appendChild(this._toggleScreencastButton.element, bottomStatusBarContainer);
         }
 
-        mainStatusBar.appendChild(this.settingsController.statusBarItem);
+        this._toggleConsoleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show console."), "console-status-bar-item");
+        this._toggleConsoleButton.addEventListener("click", this._toggleConsoleButtonClicked.bind(this), false);
+        this.toolbar.rightToolbarElement().appendChild(this._toggleConsoleButton.element);
+
+        this.toolbar.rightToolbarElement().appendChild(this.settingsController.statusBarItem);
+        if (!WebInspector.queryParamsObject["remoteFrontend"])
+            this.toolbar.rightToolbarElement().appendChild(this.dockController.element);
     },
 
     _toggleConsoleButtonClicked: function()
@@ -292,7 +274,6 @@ var WebInspector = {
             return;
 
         errorWarningElement.removeStyleClass("hidden");
-
         errorWarningElement.removeChildren();
 
         if (errors) {
@@ -561,9 +542,9 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     new WebInspector.CSSStyleSheetMapping(this.cssModel, this.workspace, this.networkWorkspaceProvider);
     new WebInspector.PresentationConsoleMessageHelper(this.workspace);
 
+    this.toolbar = new WebInspector.Toolbar();
     this._createGlobalStatusBarItems();
 
-    this.toolbar = new WebInspector.Toolbar();
     WebInspector.startBatchUpdate();
     for (var i = 0; i < panelDescriptors.length; ++i)
         WebInspector.inspectorView.addPanel(panelDescriptors[i]);

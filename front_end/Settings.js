@@ -265,7 +265,6 @@ WebInspector.ExperimentsSettings = function()
     this.canvasInspection = this._createExperiment("canvasInspection ", "Canvas inspection");
     this.cssRegions = this._createExperiment("cssRegions", "CSS Regions Support");
     this.showOverridesInDrawer = this._createExperiment("showOverridesInDrawer", "Show Overrides in drawer");
-    this.customizableToolbar = this._createExperiment("customizableToolbar", "Enable toolbar customization");
     this.drawerOverlay = this._createExperiment("drawerOverlay", "Open console as overlay");
     this.frameworksDebuggingSupport = this._createExperiment("frameworksDebuggingSupport", "Enable frameworks debugging support");
     this.layersPanel = this._createExperiment("layersPanel", "Show Layers panel");
