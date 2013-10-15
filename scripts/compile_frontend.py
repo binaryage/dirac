@@ -257,6 +257,7 @@ modules = [
         "dependencies": ["components", "workers"],
         "sources": [
             "BreakpointsSidebarPane.js",
+            "CSSSourceFrame.js",
             "CallStackSidebarPane.js",
             "FilePathScoreFunction.js",
             "FilteredItemSelectionDialog.js",

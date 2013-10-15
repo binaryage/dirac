@@ -30,6 +30,7 @@ importScript("FilePathScoreFunction.js");
 importScript("FilteredItemSelectionDialog.js");
 importScript("UISourceCodeFrame.js");
 importScript("JavaScriptSourceFrame.js");
+importScript("CSSSourceFrame.js");
 importScript("NavigatorOverlayController.js");
 importScript("NavigatorView.js");
 importScript("RevisionHistoryView.js");
@@ -491,6 +492,8 @@ WebInspector.SourcesPanel.prototype = {
             sourceFrame = new WebInspector.JavaScriptSourceFrame(this, uiSourceCode);
             break;
         case WebInspector.resourceTypes.Stylesheet:
+            sourceFrame = new WebInspector.CSSSourceFrame(uiSourceCode);
+            break;
         default:
             sourceFrame = new WebInspector.UISourceCodeFrame(uiSourceCode);
         break;
@@ -512,6 +515,7 @@ WebInspector.SourcesPanel.prototype = {
     /**
      * @param {WebInspector.SourceFrame} sourceFrame
      * @param {WebInspector.UISourceCode} uiSourceCode
+     * @return {boolean}
      */
     _sourceFrameMatchesUISourceCode: function(sourceFrame, uiSourceCode)
     {
@@ -520,6 +524,7 @@ WebInspector.SourcesPanel.prototype = {
         case WebInspector.resourceTypes.Document:
             return sourceFrame instanceof WebInspector.JavaScriptSourceFrame;
         case WebInspector.resourceTypes.Stylesheet:
+            return sourceFrame instanceof WebInspector.CSSSourceFrame;
         default:
             return !(sourceFrame instanceof WebInspector.JavaScriptSourceFrame);
         }
