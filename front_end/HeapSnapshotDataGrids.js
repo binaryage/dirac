@@ -922,13 +922,24 @@ WebInspector.AllocationGridNode.prototype = {
                 parentNode.appendChild(child);
                 parentNode = child;
                 parentNode._populated = true;
-                parentNode.expand();
+                if (this.expanded)
+                    parentNode.expand();
             }
 
             var callersBranch = callers.branchingCallers;
             for (var i = 0; i < callersBranch.length; i++)
                 parentNode.appendChild(new WebInspector.AllocationGridNode(this._dataGrid, callersBranch[i]));
         }
+    },
+
+    /**
+     * @override
+     */
+    expand: function()
+    {
+        WebInspector.DataGridNode.prototype.expand.call(this);
+        if (this.children.length === 1)
+            this.children[0].expand();
     },
 
     /**
