@@ -35,7 +35,8 @@ WebInspector.OverridesSupport = function()
 {
     this._overridesActive = WebInspector.settings.enableOverridesOnStartup.get();
     this._deviceMetricsOverridesActive = false;
-    this._updateAllOverrides();
+    if (this._overridesActive)
+        this._updateAllOverrides();
 
     WebInspector.settings.overrideUserAgent.addChangeListener(this._userAgentChanged, this);
     WebInspector.settings.userAgent.addChangeListener(this._userAgentChanged, this);
