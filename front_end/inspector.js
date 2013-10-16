@@ -83,7 +83,7 @@ var WebInspector = {
         if (this._screencastAvailable()) {
             this._toggleScreencastButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle screencast."), "screencast-status-bar-item");
             this._toggleScreencastButton.addEventListener("click", this._toggleScreencastButtonClicked.bind(this, true), false);
-            this.toolbar.leftToolbarElement().appendChild(this._toggleScreencastButton.element, bottomStatusBarContainer);
+            this.toolbar.leftToolbarElement().appendChild(this._toggleScreencastButton.element);
         }
 
         this._toggleConsoleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show console."), "console-status-bar-item");
