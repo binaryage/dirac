@@ -54,7 +54,7 @@ WebInspector.ProfileDataGridNode.prototype = {
     {
         function formatMilliseconds(time)
         {
-            return WebInspector.UIString("%.0f\u2009ms", time);
+            return WebInspector.UIString("%.1f\u2009ms", time);
         }
 
         var data = {};
