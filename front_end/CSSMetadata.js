@@ -595,7 +595,7 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "-webkit-perspective-origin": { values: [
         "left", "center", "right", "top", "bottom"
     ] },
-    "-webkit-text-align-last": { values: [
+    "text-align-last": { values: [
         "auto", "start", "end", "left", "right", "center", "justify"
     ] },
     "-webkit-text-decoration-line": { values: [
