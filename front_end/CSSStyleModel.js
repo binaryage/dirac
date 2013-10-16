@@ -996,8 +996,13 @@ WebInspector.CSSRule = function(payload, matchingSelectors)
     if (matchingSelectors)
         this.matchingSelectors = matchingSelectors;
     this.selectors = payload.selectorList.selectors;
-    this.selectorText = this.selectors.join(", ");
-    this.selectorRange = payload.selectorList.range;
+    this.selectorText = this.selectors.select("value").join(", ");
+
+    var firstRange = this.selectors[0].range;
+    if (firstRange) {
+        var lastRange = this.selectors.peekLast().range;
+        this.selectorRange = { startLine: firstRange.startLine, startColumn: firstRange.startColumn, endLine: lastRange.endLine, endColumn: lastRange.endColumn };
+    }
     this.sourceURL = payload.sourceURL;
     this.origin = payload.origin;
     this.style = WebInspector.CSSStyleDeclaration.parsePayload(payload.style);

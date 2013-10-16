@@ -2405,12 +2405,20 @@
                 "description": "Match data for a CSS rule."
             },
             {
+                "id": "Selector",
+                "type": "object",
+                "properties": [
+                    { "name": "value", "type": "string", "description": "Selector text." },
+                    { "name": "range", "$ref": "SourceRange", "optional": true, "description": "Selector range in the underlying resource (if available)." }
+                ],
+                "description": "Data for a simple selector (these are delimited by commas in a selector list)."
+            },
+            {
                 "id": "SelectorList",
                 "type": "object",
                 "properties": [
-                    { "name": "selectors", "type": "array", "items": { "type": "string" }, "description": "Selectors in the list." },
-                    { "name": "text", "type": "string", "description": "Rule selector text." },
-                    { "name": "range", "$ref": "SourceRange", "optional": true, "description": "Rule selector range in the underlying resource (if available)." }
+                    { "name": "selectors", "type": "array", "items": { "$ref": "Selector" }, "description": "Selectors in the list." },
+                    { "name": "text", "type": "string", "description": "Rule selector text." }
                 ],
                 "description": "Selector list data."
             },

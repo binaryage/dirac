@@ -1248,7 +1248,7 @@ WebInspector.StylePropertiesSection.prototype = {
         var currentMatch = 0;
         for (var i = 0, lastSelectorIndex = selectors.length - 1; i <= lastSelectorIndex ; ++i) {
             var selectorNode;
-            var textNode = document.createTextNode(selectors[i]);
+            var textNode = document.createTextNode(selectors[i].value);
             if (matchingSelectors[currentMatch] === i) {
                 ++currentMatch;
                 selectorNode = document.createElement("span");
