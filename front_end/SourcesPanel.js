@@ -91,7 +91,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     var tabbedEditorPlaceholderText = WebInspector.isMac() ? WebInspector.UIString("Hit Cmd+O to open a file") : WebInspector.UIString("Hit Ctrl+O to open a file");
 
-    this._editorContentsElement = this.editorView.mainElement.createChild("div", "fill");
+    this._editorContentsElement = this.editorView.mainElement.createChild("div", "editor-contents fill");
     this._editorFooterElement = this.editorView.mainElement.createChild("div", "inspector-footer status-bar hidden");
     this._editorContainer = new WebInspector.TabbedEditorContainer(this, "previouslyViewedFiles", tabbedEditorPlaceholderText);
     this._editorContainer.show(this._editorContentsElement);
@@ -142,6 +142,11 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._scriptViewStatusBarTextContainer = document.createElement("div");
     this._scriptViewStatusBarTextContainer.className = "inline-block";
 
+    var statusBarContainerElement = this._editorContentsElement.createChild("div", "scripts-status-bar");
+    statusBarContainerElement.appendChild(this._toggleFormatSourceButton.element);
+    statusBarContainerElement.appendChild(this._scriptViewStatusBarItemsContainer);
+    statusBarContainerElement.appendChild(this._scriptViewStatusBarTextContainer);
+
     this._installDebuggerSidebarController();
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
@@ -180,19 +185,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 }
 
 WebInspector.SourcesPanel.prototype = {
-    get statusBarItems()
-    {
-        return [this._toggleFormatSourceButton.element, this._scriptViewStatusBarItemsContainer];
-    },
-
-    /**
-     * @return {?Element}
-     */
-    statusBarText: function()
-    {
-        return this._scriptViewStatusBarTextContainer;
-    },
-
     defaultFocusedElement: function()
     {
         return this._editorContainer.view.defaultFocusedElement() || this._navigator.view.defaultFocusedElement();

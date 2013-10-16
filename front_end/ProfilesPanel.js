@@ -371,21 +371,22 @@ WebInspector.ProfilesPanel = function(name, type)
     this.profileViews.id = "profile-views";
     this.splitView.mainElement.appendChild(this.profileViews);
 
-    this._statusBarButtons = [];
+    var statusBarContainer = this.splitView.mainElement.createChild("div", "profiles-status-bar");
+    this._statusBarElement = statusBarContainer.createChild("div", "status-bar");
+
+    var statusBarContainerLeft = this.sidebarElement.createChild("div", "profiles-status-bar");
+    this._statusBarButtons = statusBarContainerLeft.createChild("div", "status-bar");
 
     this.recordButton = new WebInspector.StatusBarButton("", "record-profile-status-bar-item");
     this.recordButton.addEventListener("click", this.toggleRecordButton, this);
-    this._statusBarButtons.push(this.recordButton);
+    this._statusBarButtons.appendChild(this.recordButton.element);
 
     this.clearResultsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear all profiles."), "clear-status-bar-item");
     this.clearResultsButton.addEventListener("click", this._clearProfiles, this);
-    this._statusBarButtons.push(this.clearResultsButton);
+    this._statusBarButtons.appendChild(this.clearResultsButton.element);
 
-    this._profileTypeStatusBarItemsContainer = document.createElement("div");
-    this._profileTypeStatusBarItemsContainer.className = "status-bar-items";
-
-    this._profileViewStatusBarItemsContainer = document.createElement("div");
-    this._profileViewStatusBarItemsContainer.className = "status-bar-items";
+    this._profileTypeStatusBarItemsContainer = this._statusBarElement.createChild("div", "status-bar-items");
+    this._profileViewStatusBarItemsContainer = this._statusBarElement.createChild("div", "status-bar-items");
 
     if (singleProfileMode) {
         this._launcherView = this._createLauncherView();
@@ -495,11 +496,6 @@ WebInspector.ProfilesPanel.prototype = {
         temporaryProfile.loadFromFile(file);
     },
 
-    get statusBarItems()
-    {
-        return this._statusBarButtons.select("element").concat(this._profileTypeStatusBarItemsContainer, this._profileViewStatusBarItemsContainer);
-    },
-
     /**
      * @param {WebInspector.Event|Event=} event
      * @return {boolean}
@@ -531,7 +527,6 @@ WebInspector.ProfilesPanel.prototype = {
             for (var i = 0; i < statusBarItems.length; ++i)
                 this._profileTypeStatusBarItemsContainer.appendChild(statusBarItems[i]);
         }
-        this._resize(this.splitView.sidebarWidth());
     },
 
     _reset: function()
@@ -1085,32 +1080,6 @@ WebInspector.ProfilesPanel.prototype = {
         var profiles = this._getAllProfiles();
         for (var i = 0; i < profiles.length; ++i)
             profiles[i]._profilesTreeElement.searchMatches = 0;
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    sidebarResized: function(event)
-    {
-        var sidebarWidth = /** @type {number} */ (event.data);
-        this._resize(sidebarWidth);
-    },
-
-    onResize: function()
-    {
-        this._resize(this.splitView.sidebarWidth());
-    },
-
-    /**
-     * @param {number} sidebarWidth
-     */
-    _resize: function(sidebarWidth)
-    {
-        var lastItemElement = this._statusBarButtons[this._statusBarButtons.length - 1].element;
-        var left = lastItemElement.offsetLeft + lastItemElement.offsetWidth;
-        this._profileTypeStatusBarItemsContainer.style.left = left + "px";
-        left += this._profileTypeStatusBarItemsContainer.offsetWidth - 1;
-        this._profileViewStatusBarItemsContainer.style.left = Math.max(left, sidebarWidth) + "px";
     },
 
     /**

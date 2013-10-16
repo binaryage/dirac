@@ -177,7 +177,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     _splitterDragging: function(event)
     {
-        var top = event.pageY + this._dragOffset
+        var top = event.pageY + this._dragOffset;
         this._setSplitterPosition(top);
         event.preventDefault();
     },
@@ -194,7 +194,7 @@ WebInspector.TimelinePanel.prototype = {
 
     _setSplitterPosition: function(top)
     {
-        const overviewHeight = 90;
+        const overviewHeight = 81;
         const sectionMinHeight = 100;
         top = Number.constrain(top, overviewHeight + sectionMinHeight, this.element.offsetHeight - sectionMinHeight);
 

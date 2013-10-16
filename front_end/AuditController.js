@@ -141,5 +141,10 @@ WebInspector.AuditController.prototype = {
             delete this._pageReloadCallback;
             callback();
         }
+    },
+
+    clearResults: function()
+    {
+        this._auditsPanel.clearResults();
     }
 }

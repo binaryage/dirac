@@ -104,9 +104,20 @@ WebInspector.TabbedPane.prototype = {
         this._retainTabsOrder = retainTabsOrder;
     },
 
+    /**
+     * @return {Element}
+     */
     defaultFocusedElement: function()
     {
         return this.visibleView ? this.visibleView.defaultFocusedElement() : null;
+    },
+
+    /**
+     * @return {Element}
+     */
+    headerElement: function()
+    {
+        return this._headerElement;
     },
 
     /**
@@ -247,16 +258,11 @@ WebInspector.TabbedPane.prototype = {
         var tab = this._tabsById[id];
         if (!tab)
             return;
-        if (this._currentTab && this._currentTab.id === id) {
-            if (userGesture)
-                tab.view.focus();
+        if (this._currentTab && this._currentTab.id === id)
             return;
-        }
 
         this._hideCurrentTab();
         this._showTab(tab);
-        if (userGesture)
-            tab.view.focus();
         this._currentTab = tab;
         
         this._tabsHistory.splice(this._tabsHistory.indexOf(tab), 1);
@@ -314,10 +320,9 @@ WebInspector.TabbedPane.prototype = {
     changeTabView: function(id, view)
     {
         var tab = this._tabsById[id];
-        if (tab.view === view)
-            return;
         if (this._currentTab && this._currentTab.id === tab.id) {
-            this._hideTab(tab);
+            if (tab.view !== view)
+                this._hideTab(tab);
             tab.view = view;
             this._showTab(tab);
         } else
@@ -508,8 +513,6 @@ WebInspector.TabbedPane.prototype = {
             measuringTabElements.push(measuringTabElement);
             this._tabsElement.appendChild(measuringTabElement);
         }
-
-debugger;
 
         // Perform measurement
         for (var i = 0; i < measuringTabElements.length; ++i)

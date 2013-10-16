@@ -34,7 +34,16 @@
     top: 0;
     right: 0;
     left: 0;
+    bottom: 23px;
+}
+
+.profiles-status-bar {
+    position: absolute;
     bottom: 0;
+    left: 0;
+    right: 0;
+    height: 23px;
+    background-color: rgb(236, 236, 236);
 }
 
 .status-bar-items {

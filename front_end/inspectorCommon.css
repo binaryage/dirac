@@ -102,7 +102,6 @@ iframe.view {
     right: 0;
     background-color: rgba(255, 255, 255, 0.8);
     background-clip: padding-box;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.3);
     height: 20px;
     z-index: 200;
     pointer-events: none;

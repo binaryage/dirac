@@ -64,20 +64,21 @@ WebInspector.Panel.prototype = {
     wasShown: function()
     {
         var panelStatusBar = document.getElementById("panel-status-bar")
-        var drawerViewAnchor = document.getElementById("drawer-view-anchor");
         var statusBarItems = this.statusBarItems;
         if (statusBarItems) {
             this._statusBarItemContainer = document.createElement("div");
             for (var i = 0; i < statusBarItems.length; ++i)
                 this._statusBarItemContainer.appendChild(statusBarItems[i]);
-            panelStatusBar.insertBefore(this._statusBarItemContainer, drawerViewAnchor);
+            panelStatusBar.appendChild(this._statusBarItemContainer);
         }
         var statusBarText = this.statusBarText();
         if (statusBarText) {
             this._statusBarTextElement = statusBarText;
             panelStatusBar.appendChild(statusBarText);
         }
-
+        panelStatusBar.enableStyleClass("hidden", !statusBarText && !statusBarItems);
+        // FIXME: remove this hack when panels stop returning status bar buttons.
+        document.getElementById("main").style.top = (!statusBarText && !statusBarItems ? 26 : 49) + "px";
         this.focus();
     },
 

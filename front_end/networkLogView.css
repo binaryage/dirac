@@ -4,7 +4,23 @@
     top: 0;
     left: 0;
     right: 0;
+    bottom: 19px;
+}
+
+.network-summary-bar {
+    position: absolute;
+    right: 0;
     bottom: 0;
+    left: 0;
+    padding-left: 5px;
+    height: 19px;
+    line-height: 18px;
+    background-color: rgb(236, 236, 236);
+    border-top: 1px solid #ccc;
+}
+
+.network-summary-bar .warning-icon-small {
+    margin-right: 6px;
 }
 
 .network-log-grid.data-grid table.data {
@@ -28,7 +44,8 @@
 }
 
 .network-log-grid.data-grid th {
-    border-bottom: 1px solid rgb(64%, 64%, 64%);
+    border-bottom: 1px solid rgb(205, 205, 205);
+    border-left: 1px solid rgb(205, 205, 205);
     height: 30px;
 }
 
@@ -39,7 +56,7 @@
 .network-log-grid.data-grid th,
 .network-log-grid.data-grid th.sort-descending,
 .network-log-grid.data-grid th.sort-ascending {
-    background: -webkit-gradient(linear, left top, left bottom, from(rgb(236, 236, 236)), to(rgb(217, 217, 217)));
+    background: white;
 }
 
 .network-log-grid.data-grid .data-container {
@@ -466,29 +483,6 @@
 
 .network-log-grid.data-grid tr.filler td {
     padding-bottom: 20px !important;
-}
-
-.network-log-grid.data-grid .network-summary-bar {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgb(101, 111, 130);
-}
-
-.network-log-grid.data-grid .network-summary-bar td {
-    color: white;
-    height: 20px !important;
-    border: none;
-    font-size: 110%;
-    padding: 0 0 0 8px;
-    white-space: pre;
-    overflow : hidden;
-    text-overflow : ellipsis;
-}
-
-.network-log-grid.data-grid .network-summary-bar .warning-icon-small {
-    margin-right: 8px;
 }
 
 #network-container {

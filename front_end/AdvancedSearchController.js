@@ -89,7 +89,10 @@ WebInspector.AdvancedSearchController.prototype = {
             this._searchView = new WebInspector.SearchView(this);
         
         this._searchView.syncToSelection();
-        WebInspector.showViewInDrawer("search", WebInspector.UIString("Search"), this._searchView);
+        if (this._searchView.isShowing())
+            this._searchView.focus();
+        else
+            WebInspector.showViewInDrawer("search", WebInspector.UIString("Search"), this._searchView);
         this.startIndexing();
     },
 
@@ -246,13 +249,9 @@ WebInspector.SearchView = function(controller)
     this._regexCheckbox.addStyleClass("search-config-checkbox");
     this._regexLabel.appendChild(document.createTextNode(WebInspector.UIString("Regular expression")));
     
-    this._searchStatusBarElement = document.createElement("div");
-    this._searchStatusBarElement.className = "search-status-bar-item";
-    this._searchMessageElement = this._searchStatusBarElement.createChild("div");
-    this._searchMessageElement.className = "search-status-bar-message";
-
+    this._searchStatusBarElement = this.element.createChild("div", "search-status-bar-summary");
+    this._searchMessageElement = this._searchStatusBarElement.createChild("span");
     this._searchResultsMessageElement = document.createElement("span");
-    this._searchResultsMessageElement.className = "search-results-status-bar-message";
 
     this._load();
 }
@@ -261,14 +260,6 @@ WebInspector.SearchView = function(controller)
 WebInspector.SearchView.maxQueriesCount = 20;
 
 WebInspector.SearchView.prototype = {
-    /**
-     * @return {Array.<Element>}
-     */
-    get statusBarItems()
-    {
-        return [this._searchStatusBarElement, this._searchResultsMessageElement];
-    },
-
     /**
      * @return {WebInspector.SearchConfig}
      */

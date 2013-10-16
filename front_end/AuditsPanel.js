@@ -50,9 +50,6 @@ WebInspector.AuditsPanel = function()
     this.sidebarTree.appendChild(this.auditResultsTreeElement);
     this.auditResultsTreeElement.expand();
 
-    this.clearResultsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear audit results."), "clear-status-bar-item");
-    this.clearResultsButton.addEventListener("click", this._clearButtonClicked, this);
-
     this.viewsContainerElement = this.splitView.mainElement;
 
     this._constructCategories();
@@ -64,11 +61,6 @@ WebInspector.AuditsPanel = function()
 }
 
 WebInspector.AuditsPanel.prototype = {
-    get statusBarItems()
-    {
-        return [this.clearResultsButton.element];
-    },
-
     /**
      * @return {!Object.<string, !WebInspector.AuditCategory>}
      */
@@ -165,7 +157,7 @@ WebInspector.AuditsPanel.prototype = {
             this.auditsItemTreeElement.select();
     },
 
-    _clearButtonClicked: function()
+    clearResults: function()
     {
         this.auditsItemTreeElement.revealAndSelect();
         this.auditResultsTreeElement.removeChildren();

@@ -189,6 +189,11 @@ WebInspector.AuditLauncherView.prototype = {
         this._setAuditRunning(!this._auditRunning);
     },
 
+    _clearButtonClicked: function()
+    {
+        this._auditController.clearResults();
+    },
+
     /**
      * @param {boolean} checkCategories
      * @param {boolean=} userGesture
@@ -274,6 +279,10 @@ WebInspector.AuditLauncherView.prototype = {
         this._launchButton = this._buttonContainerElement.createChild("button");
         this._launchButton.textContent = WebInspector.UIString("Run");
         this._launchButton.addEventListener("click", this._launchButtonClicked.bind(this), false);
+
+        this._clearButton = this._buttonContainerElement.createChild("button");
+        this._clearButton.textContent = WebInspector.UIString("Clear");
+        this._clearButton.addEventListener("click", this._clearButtonClicked.bind(this), false);
 
         this._selectAllClicked(this._selectAllCheckboxElement.checked);
     },

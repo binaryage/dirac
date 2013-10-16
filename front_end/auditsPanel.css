@@ -88,6 +88,7 @@
 
 .audit-launcher-view div.button-container > button {
     -webkit-align-self: flex-start;
+    margin: 5px;
 }
 
 .audit-launcher-view fieldset.audit-categories-container {

@@ -60,7 +60,6 @@
 }
 
 .sidebar-tabbed-pane .tabbed-pane-header {
-    background-image: -webkit-linear-gradient(rgb(243,243,243), rgb(235,235,235));
     border-bottom: 1px solid rgb(202, 202, 202);
 }
 
@@ -70,7 +69,7 @@
 
 .sidebar-pane-title {
     position: relative;
-    background: rgb(230, 230, 230);
+    background: rgb(240, 240, 240);
     height: 20px;
     padding: 0 5px;
     border-top: 1px solid rgb(189, 189, 189);

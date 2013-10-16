@@ -102,7 +102,7 @@ WebInspector.NetworkLogView.prototype = {
         this._createSortingFunctions();
         this._createTable();
         this._createTimelineGrid();
-        this._createSummaryBar();
+        this._summaryBarElement = this.element.createChild("div", "network-summary-bar");
 
         if (!this.useLargeRows)
             this._setLargerRequests(this.useLargeRows);
@@ -120,7 +120,7 @@ WebInspector.NetworkLogView.prototype = {
 
     get statusBarItems()
     {
-        return [this._largerRequestsButton.element, this._preserveLogToggle.element, this._clearButton.element, this._filterBarElement, this._progressBarContainer];
+        return [this._preserveLogToggle.element, this._clearButton.element, this._filterBarElement, this._largerRequestsButton.element, this._progressBarContainer];
     },
 
     get useLargeRows()
@@ -437,17 +437,6 @@ WebInspector.NetworkLogView.prototype = {
 
         this._progressBarContainer = document.createElement("div");
         this._progressBarContainer.className = "status-bar-item";
-    },
-
-    _createSummaryBar: function()
-    {
-        var tbody = this._dataGrid.dataTableBody;
-        var tfoot = document.createElement("tfoot");
-        var tr = tfoot.createChild("tr", "revealed network-summary-bar");
-        var td = tr.createChild("td");
-        td.setAttribute("colspan", 7);
-        tbody.parentNode.insertBefore(tfoot, tbody);
-        this._summaryBarElement = td;
     },
 
     _updateSummaryBar: function()

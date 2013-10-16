@@ -520,19 +520,19 @@ body.remote .toolbar-item .close-button {
     top: 0;
     left: 0;
     right: 0;
-    bottom: 23px;
+    bottom: 0;
     overflow: hidden;
 }
 
-body.drawer-visible #main-panels {
-    bottom: 24px;
-}
-
-#main-status-bar {
+#panel-status-bar {
     position: absolute;
-    bottom: 0;
+    top: 26px;
     left: 0;
     right: 0;
+    border-top: none;
+    -webkit-flex: 1 0;
+    display: -webkit-flex;
+    pointer-events: none;
 }
 
 .status-bar {
@@ -542,7 +542,6 @@ body.drawer-visible #main-panels {
     overflow: hidden;
     width: 100%;
     z-index: 12;
-    background-image: -webkit-linear-gradient(rgb(243,243,243), rgb(235,235,235));
     border-top: 1px solid rgb(202, 202, 202);
     display: -webkit-flex;
 }
@@ -570,38 +569,6 @@ body.drawer-visible #main-panels {
     padding-left: 5px;
     padding-right: 15px;
     padding-top: 3px;
-}
-
-#floating-status-bar-container {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    display: none;
-    border-bottom: 1px solid rgb(202, 202, 202);
-    cursor: ns-resize;
-    height: 24px;
-}
-
-body.drawer-overlay #floating-status-bar-container {
-    box-shadow: 1px 1px 5px 2px rgba(128, 128, 128, 0.7);
-}
-
-body.drawer-visible #floating-status-bar-container {
-    display: -webkit-flex;
-}
-
-#floating-status-bar-resizer {
-    content: url(Images/statusbarResizerVertical.png);
-    margin-top: 7px;
-    pointer-events: none;
-    height: 8px;
-}
-
-#panel-status-bar {
-    -webkit-flex: 1 0;
-    display: -webkit-flex;
-    pointer-events: none;
 }
 
 #drawer-view-anchor {
@@ -653,18 +620,10 @@ body.drawer-visible #floating-status-bar-container {
 button.status-bar-item {
     position: relative;
     width: 32px;
-    border-left: 1px solid rgb(202, 202, 202);
-    border-right: 1px solid rgb(202, 202, 202);
 }
 
 .status-bar button.status-bar-item .glyph {
     margin: 0 -1px;
-}
-
-.status-bar select.status-bar-item:active,
-.status-bar button.status-bar-item:active {
-    border-left: 1px solid rgb(120, 120, 120);
-    border-right: 1px solid rgb(120, 120, 120);
 }
 
 button.status-bar-item .glyph.shadow {
@@ -719,12 +678,6 @@ select.status-bar-item {
     margin-right: -10px;
     position: relative;
     line-height: 20px;
-}
-
-select.status-bar-item,
-select.status-bar-item:hover {
-    border-left: 1px solid rgb(202, 202, 202);
-    border-right: 1px solid rgb(202, 202, 202);
 }
 
 .status-bar-item > .glyph {
@@ -895,7 +848,7 @@ body.remote .dock-status-bar-item {
 }
 
 #error-warning-count {
-    padding: 1px 6px 6px 0;
+    padding: 2px 6px 6px 0;
     font-size: 11px;
     height: 19px;
     cursor: pointer;
@@ -927,20 +880,36 @@ body.remote .dock-status-bar-item {
     z-index: 1;
 }
 
-#drawer-body {
-    position: absolute;
-    top: 0;
-    bottom: 24px;
-    left: 0;
-    right: 0;
-}
-
 #drawer-contents {
     position: absolute;
     top: 0;
     bottom: 0;
     left: 0;
     right: 0;
+}
+
+#drawer-contents .tabbed-pane-header {
+    background-color: rgb(236, 236, 236);
+    cursor: ns-resize;
+    border-top: 1px solid rgb(124, 124, 124);
+    border-bottom: 1px solid rgb(203, 203, 203);
+}
+
+body.inactive #drawer-contents .tabbed-pane-header {
+    border-top: 1px solid rgb(64%, 64%, 64%);
+}
+
+#drawer-contents .tabbed-pane-header .tabbed-pane-header-tab {
+    cursor: default;
+}
+
+.drawer-resizer {
+    position: absolute;
+    right: 0;
+    top: 8px;
+    content: url(Images/statusbarResizerVertical.png);
+    height: 8px;
+    pointer-events: none;
 }
 
 #drawer-footer {
@@ -950,6 +919,7 @@ body.remote .dock-status-bar-item {
     right: 0;
     font-size: 11px;
     height: 23px;
+    background-color: rgb(236, 236, 236);
 }
 
 body.drawer-visible #drawer {
@@ -989,10 +959,20 @@ body.platform-linux .source-code {
     overflow-y: auto;
 }
 
+.console-status-bar {
+    position: absolute;
+    top: 0;
+    height: 24px;
+    left: 0;
+    right: 0;
+    overflow-y: auto;
+    border-bottom: 1px solid rgb(230,230,230);
+}
+
 #console-messages {
     position: absolute;
     z-index: 0;
-    top: 0;
+    top: 24px;
     left: 0;
     right: 0;
     bottom: 0;
@@ -2248,21 +2228,18 @@ body.inactive li.selected .status .bubble {
 
 .sidebar-tree-item.selected {
     color: white;
-    border-top: 1px solid rgb(145, 160, 192);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(162, 177, 207)), to(rgb(120, 138, 177)));
     text-shadow: rgba(0, 0, 0, 0.33) 1px 1px 0;
     background-origin: padding-box;
     background-clip: padding-box;
+    background-color: rgb(56, 121, 217);
 }
 
 :focus .sidebar-tree-item.selected {
-    border-top: 1px solid rgb(68, 128, 200);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(92, 147, 213)), to(rgb(21, 83, 170)));
+    background-color: rgb(56, 121, 217);
 }
 
 body.inactive .sidebar-tree-item.selected {
-    border-top: 1px solid rgb(151, 151, 151);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(180, 180, 180)), to(rgb(138, 138, 138)));
+    background-color: rgb(180,180,180);
 }
 
 .sidebar-tree-item .titles {
@@ -2361,7 +2338,7 @@ body.inactive li.selected .bubble.search-matches {
     position: absolute;
     top: 0;
     bottom: 0;
-    left: 200px;
+    left: 0;
     overflow: hidden;
     border-left: 1px solid rgb(184, 184, 184);
     margin-left: -1px;
@@ -2594,6 +2571,12 @@ body.platform-mac .soft-context-menu-item-mouse-over {
     color: #303030;
     position: relative;
     height: 19px;
+    border: 1px solid rgb(205, 205, 205);
+}
+
+.search-drawer-header input[type="search"].search-config-search:focus {
+    border: 1px solid rgb(190, 190, 190);
+    outline: none;
 }
 
 body.platform-mac .search-drawer-header input[type="search"].search-config-search {
@@ -2623,18 +2606,19 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
     overflow: hidden;
 }
 
-.search-status-bar-item {
-    display: inline-block;
-    cursor: pointer;
-    font-size: 11px;
-    height: 23px;
+.search-status-bar-summary {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 19px;
+    background-color: rgb(236, 236, 236);
+    border-top: 1px solid #ccc;
+    padding-left: 5px;
 }
 
-.search-status-bar-message {
-    margin-left:5px;
-    margin-right:5px;
-    margin-top:5px;
-    float:left;
+.search-status-bar-summary .progress-bar-container {
+    margin-top: -4px;
 }
 
 .progress-bar-stop-button-item {
@@ -2648,18 +2632,10 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
     background-color: rgb(216, 0, 0) !important;
 }
 
-.search-results-status-bar-message {
-    margin-right: 10px;
-    cursor: default;
-    font-size: 11px;
-    float: right;
-    margin-top: 5px;
-}
-
 .search-view .search-results {
     position: absolute;
     top: 26px;
-    bottom: 0;
+    bottom: 19px;
     left: 0;
     right: 0;
     overflow-y: auto;
@@ -2947,10 +2923,11 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
     left: 0;
     right: 0;
     height: auto;
+    background-color: rgb(236, 236, 236);
 }
 
 .progress-bar-container {
-    display: -webkit-flex;
+    display: inline-flex;
     margin: 0 8px;
     -webkit-flex: 1 0;
 }
@@ -2971,17 +2948,6 @@ body.platform-mac .progress-bar-container progress {
 .progress-bar-container button.status-bar-item {
     border-left: none;
     margin-top: 1px;
-}
-
-.source-frame-cursor-position {
-    padding-left: 6px;
-    padding-top: 4px;
-    display: inline-block;
-    pointer-events: auto;
-    -webkit-user-select: text;
-    font-size: 11px;
-    cursor: text;
-    line-height: 14px;
 }
 
 .elements-tree-outline li.parent::before {

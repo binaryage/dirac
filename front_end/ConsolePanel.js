@@ -38,11 +38,6 @@ WebInspector.ConsolePanel = function()
 }
 
 WebInspector.ConsolePanel.prototype = {
-    get statusBarItems()
-    {
-        return this._view.statusBarItems;
-    },
-
     wasShown: function()
     {
         WebInspector.Panel.prototype.wasShown.call(this);

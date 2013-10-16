@@ -82,11 +82,11 @@ WebInspector.ResourcesPanel = function(database)
         this.sidebarTree.appendChild(this.fileSystemListTreeElement);
     }
 
-    this.storageViews = this.splitView.mainElement;
+    var mainElement = this.splitView.mainElement;
+    this.storageViews = mainElement.createChild("div", "resources-main");
+    var statusBarContainer = mainElement.createChild("div", "resources-status-bar");
+    this.storageViewStatusBarItemsContainer = statusBarContainer.createChild("div", "status-bar");
     this.storageViews.addStyleClass("diff-container");
-
-    this.storageViewStatusBarItemsContainer = document.createElement("div");
-    this.storageViewStatusBarItemsContainer.className = "status-bar-items";
 
     /** @type {!Map.<!WebInspector.Database, !Object.<string, !WebInspector.DatabaseTableView>>} */
     this._databaseTableViews = new Map();
@@ -124,11 +124,6 @@ WebInspector.ResourcesPanel = function(database)
 }
 
 WebInspector.ResourcesPanel.prototype = {
-    get statusBarItems()
-    {
-        return [this.storageViewStatusBarItemsContainer];
-    },
-
     wasShown: function()
     {
         WebInspector.Panel.prototype.wasShown.call(this);
@@ -700,12 +695,6 @@ WebInspector.ResourcesPanel.prototype = {
 
         for (var manifestURL in this._applicationCacheViews)
             this._applicationCacheViews[manifestURL].updateNetworkState(isNowOnline);
-    },
-
-    sidebarResized: function(event)
-    {
-        var width = event.data;
-        this.storageViewStatusBarItemsContainer.style.left = width + "px";
     },
 
     /**
