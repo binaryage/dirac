@@ -57,10 +57,6 @@ WebInspector.RevisionHistoryView = function()
     WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, this._revisionAdded, this);
     WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
     WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._projectWillReset, this);
-
-    this._statusElement = document.createElement("span");
-    this._statusElement.textContent = WebInspector.UIString("Local modifications");
-
 }
 
 /**
@@ -71,7 +67,7 @@ WebInspector.RevisionHistoryView.showHistory = function(uiSourceCode)
     if (!WebInspector.RevisionHistoryView._view) 
         WebInspector.RevisionHistoryView._view = new WebInspector.RevisionHistoryView();
     var view = WebInspector.RevisionHistoryView._view;
-    WebInspector.showViewInDrawer(view._statusElement, view);
+    WebInspector.showViewInDrawer("history", WebInspector.UIString("History"), view);
     view._revealUISourceCode(uiSourceCode);
 }
 

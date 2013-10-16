@@ -76,9 +76,6 @@ WebInspector.OverridesView = function()
     appendBlock([WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Emulate touch events"), WebInspector.settings.emulateTouchEvents)]);
     appendBlock([this._createMediaEmulationElement()]);
     this._setOverridesActive(enableCheckbox.checked);
-
-    this._statusElement = document.createElement("span");
-    this._statusElement.textContent = WebInspector.UIString("Overrides");
 }
 
 WebInspector.OverridesView.showInDrawer = function()
@@ -86,7 +83,7 @@ WebInspector.OverridesView.showInDrawer = function()
     if (!WebInspector.OverridesView._view)
         WebInspector.OverridesView._view = new WebInspector.OverridesView();
     var view = WebInspector.OverridesView._view;
-    WebInspector.showViewInDrawer(view._statusElement, view);
+    WebInspector.showViewInDrawer("overrides", WebInspector.UIString("Overrides"), view);
 }
 
 WebInspector.OverridesView.prototype = {

@@ -283,12 +283,17 @@ WebInspector.toggleSearchingForNode = function() {}
 WebInspector.panels = {};
 
 /**
- * @param {Element} element
+ * @param {string} id
+ * @param {string} title
+ * @param {WebInspector.View} view
  * @param {function()=} onclose
  */
-WebInspector.showViewInDrawer = function(element, view, onclose) {}
+WebInspector.showViewInDrawer = function(id, title, view, onclose) {}
 
-WebInspector.closeViewInDrawer = function() {}
+/**
+ * @param {string} id
+ */
+WebInspector.closeViewInDrawer = function(id) {}
 
 /**
  * @param {string=} messageLevel

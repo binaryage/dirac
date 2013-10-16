@@ -218,7 +218,6 @@ WebInspector.SourcesPanel.prototype = {
         this.element.removeEventListener("keyup", this._boundOnKeyUp, false);
 
         WebInspector.Panel.prototype.willHide.call(this);
-        WebInspector.closeViewInDrawer();
     },
 
     /**

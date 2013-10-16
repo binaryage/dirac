@@ -89,18 +89,13 @@ WebInspector.AdvancedSearchController.prototype = {
             this._searchView = new WebInspector.SearchView(this);
         
         this._searchView.syncToSelection();
-
-        if (this._searchView.isShowing())
-            this._searchView.focus();
-        else
-            WebInspector.showViewInDrawer(this._searchView._searchPanelElement, this._searchView, this.stopSearch.bind(this));
+        WebInspector.showViewInDrawer("search", WebInspector.UIString("Search"), this._searchView);
         this.startIndexing();
     },
 
     close: function()
     {
-        this.stopSearch();
-        WebInspector.closeViewInDrawer();
+        WebInspector.drawer.closeView("search");
     },
 
     /**
@@ -223,8 +218,7 @@ WebInspector.SearchView = function(controller)
 
     this.element.className = "search-view";
 
-    this._searchPanelElement = document.createElement("span");
-    this._searchPanelElement.className = "search-drawer-header";
+    this._searchPanelElement = this.element.createChild("div", "search-drawer-header");
     this._searchPanelElement.addEventListener("keydown", this._onKeyDown.bind(this), false);
     
     this._searchResultsElement = this.element.createChild("div");
@@ -414,10 +408,6 @@ WebInspector.SearchView.prototype = {
         switch (event.keyCode) {
         case WebInspector.KeyboardShortcut.Keys.Enter.code:
             this._onAction();
-            break;
-        case WebInspector.KeyboardShortcut.Keys.Esc.code:
-            this._controller.close();
-            event.consume(true);
             break;
         }        
     },

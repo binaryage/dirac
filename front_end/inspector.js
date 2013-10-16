@@ -64,7 +64,7 @@ var WebInspector = {
 
     _panelSelected: function()
     {
-        this._toggleConsoleButton.setEnabled(WebInspector.inspectorView.currentPanel().name !== "console");
+        this.drawer.setEnabled(WebInspector.inspectorView.currentPanel().name !== "console");
     },
 
     /**
@@ -86,26 +86,11 @@ var WebInspector = {
             this.toolbar.leftToolbarElement().appendChild(this._toggleScreencastButton.element);
         }
 
-        this._toggleConsoleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show console."), "console-status-bar-item");
-        this._toggleConsoleButton.addEventListener("click", this._toggleConsoleButtonClicked.bind(this), false);
-        this.toolbar.rightToolbarElement().appendChild(this._toggleConsoleButton.element);
+        this.toolbar.rightToolbarElement().appendChild(this.drawer.toggleButtonElement());
 
         this.toolbar.rightToolbarElement().appendChild(this.settingsController.statusBarItem);
         if (!WebInspector.queryParamsObject["remoteFrontend"])
             this.toolbar.rightToolbarElement().appendChild(this.dockController.element);
-    },
-
-    _toggleConsoleButtonClicked: function()
-    {
-        if (!this._toggleConsoleButton.enabled())
-            return;
-
-        var animationType = window.event && window.event.shiftKey ? WebInspector.Drawer.AnimationType.Slow : WebInspector.Drawer.AnimationType.Normal;
-
-        if (this._toggleConsoleButton.toggled)
-            this.closeConsole(animationType);
-        else
-            this.showConsole(animationType);
     },
 
     /**
@@ -166,88 +151,30 @@ var WebInspector = {
         }
     },
 
+
     /**
-     * @param {Element} statusBarElement
+     * @param {string} id
+     * @param {string} title
      * @param {WebInspector.View} view
-     * @param {function()=} onclose
      */
-    showViewInDrawer: function(statusBarElement, view, onclose)
+    showViewInDrawer: function(id, title, view)
     {
-        this._toggleConsoleButton.title = WebInspector.UIString("Show console.");
-        this._toggleConsoleButton.toggled = false;
-        this._removeDrawerView();
-
-        var drawerStatusBarHeader = document.createElement("div");
-        drawerStatusBarHeader.className = "drawer-header status-bar-item";
-        drawerStatusBarHeader.appendChild(statusBarElement);
-        drawerStatusBarHeader.onclose = onclose;
-
-        var closeButton = drawerStatusBarHeader.createChild("div", "close-button");
-        closeButton.addEventListener("click", this.closeViewInDrawer.bind(this), false);
-
-        var panelStatusBar = document.getElementById("panel-status-bar");
-        var drawerViewAnchor = document.getElementById("drawer-view-anchor");
-        panelStatusBar.insertBefore(drawerStatusBarHeader, drawerViewAnchor);
-        this._drawerStatusBarHeader = drawerStatusBarHeader;
-        this.drawer.show(view, WebInspector.Drawer.AnimationType.Immediately);
-    },
-
-    closeViewInDrawer: function()
-    {
-        if (this._drawerStatusBarHeader) {
-            this._removeDrawerView();
-
-            // Once drawer is closed console should be shown if it was shown before current view replaced it in drawer. 
-            if (this._consoleWasShown)
-                this.showConsole();
-            else
-                this.drawer.hide(WebInspector.Drawer.AnimationType.Immediately);
-        }
-    },
-
-    _removeDrawerView: function()
-    {
-        if (this._drawerStatusBarHeader) {
-            this._drawerStatusBarHeader.remove();
-            if (this._drawerStatusBarHeader.onclose)
-                this._drawerStatusBarHeader.onclose();
-            delete this._drawerStatusBarHeader;
-        }
+        this.drawer.showView(id, title, view);
     },
 
     /**
-     * @param {WebInspector.Drawer.AnimationType=} animationType
+     * @param {string} id
      */
-    showConsole: function(animationType)
+    closeViewInDrawer: function(id)
     {
-        animationType = animationType || WebInspector.Drawer.AnimationType.Normal;
+        this.drawer.closeView(id);
+    },
 
+    showConsole: function()
+    {
         if (this.consoleView.isShowing() && !WebInspector.drawer.isHiding())
             return;
-
-        if (WebInspector.drawer.visible)
-            this._removeDrawerView();
-
-        this._toggleConsoleButton.toggled = true;
-        this._toggleConsoleButton.title = WebInspector.UIString("Hide console.");
-        this.drawer.show(this.consoleView, animationType);
-        this._consoleWasShown = true;
-    },
-
-    /**
-     * @param {WebInspector.Drawer.AnimationType=} animationType
-     */
-    closeConsole: function(animationType)
-    {
-        animationType = animationType || WebInspector.Drawer.AnimationType.Normal;
-
-        if (!this.consoleView.isShowing() || !WebInspector.drawer.visible)
-            return;
-
-        this._toggleConsoleButton.toggled = false;
-        this._toggleConsoleButton.title = WebInspector.UIString("Show console.");
-        this.drawer.hide(animationType);
-        this._consoleWasShown = false;
+        this.showViewInDrawer("console", WebInspector.UIString("Console"), this.consoleView);
     },
 
     _resetErrorAndWarningCounts: function()
@@ -484,8 +411,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     WebInspector.CSSMetadata.requestCSSShorthandData();
 
-    this.drawer = new WebInspector.Drawer();
-
     this.networkManager = new WebInspector.NetworkManager();
     this.resourceTreeModel = new WebInspector.ResourceTreeModel(this.networkManager);
     this.debuggerModel = new WebInspector.DebuggerModel();
@@ -496,6 +421,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.runtimeModel = new WebInspector.RuntimeModel(this.resourceTreeModel);
 
     this.consoleView = new WebInspector.ConsoleView(WebInspector.WorkerManager.isWorkerFrontend());
+    this.drawer = new WebInspector.Drawer();
 
     InspectorBackend.registerInspectorDispatcher(this);
 
@@ -864,16 +790,19 @@ WebInspector.postDocumentKeyDown = function(event)
             WebInspector.searchController.closeSearch();
             return;
         }
-        // If drawer is open with some view other than console then close it.
-        if (!this._toggleConsoleButton.toggled && WebInspector.drawer.visible)
-            this.closeViewInDrawer();
-        else if (this._toggleConsoleButton.toggled || !openConsoleWithCtrlTildeEnabled)
-            this._toggleConsoleButtonClicked();
+        if (this.drawer.visible())
+            this.drawer.hide();
+        else if (!openConsoleWithCtrlTildeEnabled)
+            this.showConsole();
     }
 
-    if (WebInspector.experimentsSettings.openConsoleWithCtrlTilde.isEnabled()) {
-        if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Tilde.code && WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event))
-            this._toggleConsoleButtonClicked();
+    if (openConsoleWithCtrlTildeEnabled) {
+        if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Tilde.code && WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
+            if (this.drawer.visible())
+                this.drawer.hide();
+            else
+                this.showConsole();
+        }
     }
 }
 
