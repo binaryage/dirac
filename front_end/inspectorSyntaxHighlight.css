@@ -96,3 +96,9 @@
     /* Keep this in sync with view-source.css (.webkit-html-external-link:hover) */
     text-decoration: underline;
 }
+
+.webkit-html-end-of-file {
+    /* Keep this in sync with view-source.css (.webkit-html-end-of-file) */
+    color: rgb(255, 0, 0);
+    font-weight: bold;
+}
