@@ -956,7 +956,7 @@ WebInspector.AllocationGridNode.prototype = {
 
         var functionInfo = this.data;
         if (functionInfo.scriptName) {
-            var urlElement = this._dataGrid._linkifier.linkifyLocation(functionInfo.scriptName, functionInfo.line, functionInfo.column, "profile-node-file");
+            var urlElement = this._dataGrid._linkifier.linkifyLocation(functionInfo.scriptName, functionInfo.line - 1, functionInfo.column - 1, "profile-node-file");
             urlElement.style.maxWidth = "75%";
             cell.insertBefore(urlElement, cell.firstChild);
         }
