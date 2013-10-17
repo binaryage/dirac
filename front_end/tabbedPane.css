@@ -82,9 +82,13 @@
 }
 
 .tabbed-pane-header-tab.selected {
-    background-color: white;
     border: 1px solid rgb(163, 163, 163);
     border-bottom: none;
+}
+
+.tabbed-pane-header-tab.selected {
+    background: white;
+    border-top-color: #bbb;
 }
 
 .tabbed-pane-header-tab .close-button-gray {

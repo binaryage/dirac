@@ -60,6 +60,7 @@
     margin-top: -1px;
     height: 24px;
     border-bottom: 1px solid rgb(202, 202, 202);
+    background-color: rgb(236, 236, 236);
 }
 
 #scripts-editor-toolbar {
@@ -70,10 +71,6 @@
 
 #scripts-status-bar .status-bar-item img {
     margin-top: 2px;
-}
-
-#scripts-debug-toolbar .glyph {
-    opacity: 0.8;
 }
 
 .scripts-run-snippet .glyph {
@@ -114,7 +111,11 @@
 
 .status-bar-item.scripts-navigator-show-hide-button,
 .status-bar-item.scripts-debugger-show-hide-button {
-    opacity: 0.7;
+    opacity: 0.9;
+}
+
+.panel.sources .tabbed-pane-header {
+    background-color: rgb(236, 236, 236);
 }
 
 button.status-bar-item.scripts-navigator-show-hide-button {

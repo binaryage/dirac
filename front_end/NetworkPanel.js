@@ -449,8 +449,9 @@ WebInspector.NetworkLogView.prototype = {
             this._summaryBarElement._isDisplayingWarning = true;
             this._summaryBarElement.removeChildren();
             this._summaryBarElement.createChild("div", "warning-icon-small");
-            this._summaryBarElement.appendChild(document.createTextNode(
-                WebInspector.UIString("No requests captured. Reload the page to see detailed information on the network activity.")));
+            var text = WebInspector.UIString("No requests captured. Reload the page to see detailed information on the network activity.");
+            this._summaryBarElement.appendChild(document.createTextNode(text));
+            this._summaryBarElement.title = text;
             return;
         }
         delete this._summaryBarElement._isDisplayingWarning;
@@ -488,6 +489,7 @@ WebInspector.NetworkLogView.prototype = {
                         Number.secondsToString(this._mainRequestDOMContentLoadedTime - baseTime));
         }
         this._summaryBarElement.textContent = text;
+        this._summaryBarElement.title = text;
     },
 
     /**

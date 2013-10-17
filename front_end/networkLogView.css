@@ -17,6 +17,9 @@
     line-height: 18px;
     background-color: rgb(236, 236, 236);
     border-top: 1px solid #ccc;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
 }
 
 .network-summary-bar .warning-icon-small {

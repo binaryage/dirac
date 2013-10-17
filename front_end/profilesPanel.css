@@ -61,6 +61,11 @@
     visibility: hidden;
 }
 
+.profiles-sidebar-tree-box {
+    bottom: 23px !important;
+    overflow: auto;
+}
+
 .profile-sidebar-tree-item .icon {
     content: url(Images/profileIcon.png);
 }

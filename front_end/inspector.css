@@ -536,6 +536,7 @@ body.remote .toolbar-item .close-button {
     -webkit-flex: 1 0;
     display: -webkit-flex;
     pointer-events: none;
+    background-color: white;
 }
 
 .status-bar {
@@ -637,9 +638,16 @@ button.status-bar-item.toggled-on .glyph {
     background-color: rgb(66, 129, 235);
 }
 
+button.status-bar-item:hover .glyph {
+    opacity: 1;
+}
+
 button.status-bar-item:disabled {
-    opacity: 0.5;
     background-position: 0 0 !important;
+}
+
+button.status-bar-item:disabled .glyph {
+    opacity: 0.5 !important;
 }
 
 button.status-bar-item.extension {
@@ -686,6 +694,7 @@ select.status-bar-item {
 .status-bar-item > .glyph {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
     -webkit-mask-size: 320px 120px;
+    opacity: 0.8;
 }
 
 .console-filter > .glyph {

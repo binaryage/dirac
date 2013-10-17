@@ -374,6 +374,8 @@ WebInspector.ProfilesPanel = function(name, type)
     var statusBarContainer = this.splitView.mainElement.createChild("div", "profiles-status-bar");
     this._statusBarElement = statusBarContainer.createChild("div", "status-bar");
 
+    var sidebarTreeBox = this.sidebarElement.createChild("div", "fill profiles-sidebar-tree-box");
+    sidebarTreeBox.appendChild(this.sidebarTreeElement);
     var statusBarContainerLeft = this.sidebarElement.createChild("div", "profiles-status-bar");
     this._statusBarButtons = statusBarContainerLeft.createChild("div", "status-bar");
 
