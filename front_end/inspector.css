@@ -48,7 +48,10 @@ input[type="text"]:focus {
     display: none;
 }
 
-.nowrap {
+.nowrap,
+.nowrap-below,
+.nowrap-below div,
+.nowrap-below span {
     white-space: nowrap !important;
 }
 

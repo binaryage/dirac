@@ -547,8 +547,11 @@ WebInspector.ConsoleMessageImpl.prototype = {
                     columnNames.push(cellProperty.name);
                 }
 
-                if (columnRendered)
-                    rowValue[cellProperty.name] = this._renderPropertyPreview(table, [rowProperty, cellProperty]);
+                if (columnRendered) {
+                    var cellElement = this._renderPropertyPreview(table, [rowProperty, cellProperty]);
+                    cellElement.addStyleClass("nowrap-below");
+                    rowValue[cellProperty.name] = cellElement;
+                }
             }
             rows.push([rowProperty.name, rowValue]);
         }
