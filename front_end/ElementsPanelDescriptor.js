@@ -30,11 +30,14 @@
  * @constructor
  * @extends {WebInspector.PanelDescriptor}
  * @implements {WebInspector.ContextMenu.Provider}
+ * @implements {WebInspector.ViewFactory}
  */
 WebInspector.ElementsPanelDescriptor = function()
 {
     WebInspector.PanelDescriptor.call(this, "elements", WebInspector.UIString("Elements"), "ElementsPanel", "ElementsPanel.js");
     WebInspector.ContextMenu.registerProvider(this);
+
+    WebInspector.registerViewInDrawer("overrides", WebInspector.UIString("Overrides"), this);
 }
 
 WebInspector.ElementsPanelDescriptor.prototype = {
@@ -83,6 +86,15 @@ WebInspector.ElementsPanelDescriptor.prototype = {
 
         stylesPaneSection.addAlternateKeys(WebInspector.ElementsPanelDescriptor.ShortcutKeys.IncrementBy01, WebInspector.UIString("Increment by %f", 0.1));
         stylesPaneSection.addAlternateKeys(WebInspector.ElementsPanelDescriptor.ShortcutKeys.DecrementBy01, WebInspector.UIString("Decrement by %f", 0.1));
+    },
+
+    /**
+     * @param {string=} id
+     * @return {WebInspector.View}
+     */
+    createView: function(id)
+    {
+        return this.panel().createView(id);
     },
 
     __proto__: WebInspector.PanelDescriptor.prototype

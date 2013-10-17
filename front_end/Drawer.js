@@ -29,6 +29,7 @@
 
 /**
  * @constructor
+ * @implements {WebInspector.ViewFactory}
  */
 WebInspector.Drawer = function()
 {
@@ -48,12 +49,14 @@ WebInspector.Drawer = function()
     this._toggleDrawerButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show drawer."), "console-status-bar-item");
     this._toggleDrawerButton.addEventListener("click", this.toggle, this);
 
+    this._viewFactories = [];
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.closeableTabs = false;
     this._tabbedPane.markAsRoot();
-    this._addView("console", WebInspector.UIString("Console"), WebInspector.consoleView, false);
+    this.registerView("console", WebInspector.UIString("Console"), this);
 
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabClosed, this._updateTabStrip, this);
+    this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     WebInspector.installDragHandle(this._tabbedPane.headerElement(), this._startStatusBarDragging.bind(this), this._statusBarDragging.bind(this), this._endStatusBarDragging.bind(this), "row-resize");
     this._tabbedPane.element.createChild("div", "drawer-resizer");
 }
@@ -89,12 +92,11 @@ WebInspector.Drawer.prototype = {
      * @param {string} tabId
      * @param {string} title
      * @param {WebInspector.View} view
-     * @param {boolean=} closeable
      */
-    _addView: function(tabId, title, view, closeable)
+    _addView: function(tabId, title, view)
     {
         if (!this._tabbedPane.hasTab(tabId)) {
-            this._tabbedPane.appendTab(tabId, title, view,  undefined, false, closeable);
+            this._tabbedPane.appendTab(tabId, title, view,  undefined, false);
         } else {
             this._tabbedPane.changeTabTitle(tabId, title);
             this._tabbedPane.changeTabView(tabId, view);
@@ -102,24 +104,47 @@ WebInspector.Drawer.prototype = {
     },
 
     /**
-     * @param {string} tabId
+     * @param {string} id
      * @param {string} title
-     * @param {WebInspector.View} view
+     * @param {WebInspector.ViewFactory} factory
      */
-    showView: function(tabId, title, view)
+    registerView: function(id, title, factory)
     {
-        this._addView(tabId, title, view, true);
-        this.show();
-        this._tabbedPane.selectTab(tabId, true);
-        this._updateTabStrip();
+        this._viewFactories[id] = factory;
+        this._tabbedPane.appendTab(id, title, new WebInspector.View());
+    },
+
+    /**
+     * @param {string=} id
+     * @return {WebInspector.View}
+     */
+    createView: function(id)
+    {
+        return WebInspector.consoleView;
     },
 
     /**
      * @param {string} tabId
      */
-    closeView: function(tabId)
+    showView: function(tabId)
     {
-        this._tabbedPane.closeTab(tabId);
+        this._tabbedPane.changeTabView(tabId, this._viewFactories[tabId].createView(tabId));
+        this._innerShow();
+        this._tabbedPane.selectTab(tabId, true);
+        this._updateTabStrip();
+    },
+
+    /**
+     * @param {string} id
+     * @param {string} title
+     * @param {WebInspector.View} view
+     */
+    showCloseableView: function(id, title, view)
+    {
+        if (!this._tabbedPane.hasTab(id))
+            this._tabbedPane.appendTab(id, title, view, undefined, false, true);
+        this._innerShow();
+        this._tabbedPane.selectTab(id, true);
         this._updateTabStrip();
     },
 
@@ -127,6 +152,14 @@ WebInspector.Drawer.prototype = {
      * @param {boolean=} immediately
      */
     show: function(immediately)
+    {
+        this.showView(this._tabbedPane.selectedTabId);
+    },
+
+    /**
+     * @param {boolean=} immediately
+     */
+    _innerShow: function(immediately)
     {
         WebInspector.searchController.cancelSearch();
         this.immediatelyFinishAnimation();
@@ -248,7 +281,7 @@ WebInspector.Drawer.prototype = {
      */
     _startStatusBarDragging: function(event)
     {
-        if (!this._toggleDrawerButton.toggled)
+        if (!this._toggleDrawerButton.toggled || event.target !== this._tabbedPane.headerElement())
             return false;
 
         this._visibleView().storeScrollPositions();
@@ -316,6 +349,13 @@ WebInspector.Drawer.prototype = {
     {
         this._tabbedPane.onResize();
         this._tabbedPane.doResize();
+    },
+
+    _tabSelected: function()
+    {
+        var tabId = this._tabbedPane.selectedTabId;
+        if (this._viewFactories[tabId])
+            this._tabbedPane.changeTabView(tabId, this._viewFactories[tabId].createView(tabId));
     },
 
     toggle: function()

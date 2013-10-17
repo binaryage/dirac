@@ -151,30 +151,44 @@ var WebInspector = {
         }
     },
 
+    /**
+     * @param {string} id
+     * @param {string} title
+     * @param {WebInspector.ViewFactory} factory
+     */
+    registerViewInDrawer: function(id, title, factory)
+    {
+        this.drawer.registerView(id, title, factory);
+    },
 
     /**
      * @param {string} id
      * @param {string} title
      * @param {WebInspector.View} view
      */
-    showViewInDrawer: function(id, title, view)
+    showCloseableViewInDrawer: function(id, title, view)
     {
-        this.drawer.showView(id, title, view);
+        this.drawer.showCloseableView(id, title, view);
     },
 
     /**
      * @param {string} id
      */
-    closeViewInDrawer: function(id)
+    showViewInDrawer: function(id)
     {
-        this.drawer.closeView(id);
+        this.drawer.showView(id);
+    },
+
+    closeDrawer: function()
+    {
+        this.drawer.hide();
     },
 
     showConsole: function()
     {
         if (this.consoleView.isShowing() && !WebInspector.drawer.isHiding())
             return;
-        this.showViewInDrawer("console", WebInspector.UIString("Console"), this.consoleView);
+        this.showViewInDrawer("console");
     },
 
     _resetErrorAndWarningCounts: function()
@@ -400,17 +414,10 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     WebInspector.shortcutsScreen.section(WebInspector.UIString("Console"));
     WebInspector.shortcutsScreen.section(WebInspector.UIString("Elements Panel"));
 
-    var panelDescriptors = this._panelDescriptors();
-    for (var i = 0; i < panelDescriptors.length; ++i)
-        panelDescriptors[i].registerShortcuts();
-
     this.console = new WebInspector.ConsoleModel();
     this.console.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._resetErrorAndWarningCounts, this);
     this.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
     this.console.addEventListener(WebInspector.ConsoleModel.Events.RepeatCountUpdated, this._updateErrorAndWarningCounts, this);
-
-    WebInspector.CSSMetadata.requestCSSShorthandData();
-
     this.networkManager = new WebInspector.NetworkManager();
     this.resourceTreeModel = new WebInspector.ResourceTreeModel(this.networkManager);
     this.debuggerModel = new WebInspector.DebuggerModel();
@@ -420,8 +427,15 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.domAgent.addEventListener(WebInspector.DOMAgent.Events.InspectNodeRequested, this._inspectNodeRequested, this);
     this.runtimeModel = new WebInspector.RuntimeModel(this.resourceTreeModel);
 
-    this.consoleView = new WebInspector.ConsoleView(WebInspector.WorkerManager.isWorkerFrontend());
     this.drawer = new WebInspector.Drawer();
+    this.advancedSearchController = new WebInspector.AdvancedSearchController();
+    var panelDescriptors = this._panelDescriptors();
+    for (var i = 0; i < panelDescriptors.length; ++i)
+        panelDescriptors[i].registerShortcuts();
+
+    WebInspector.CSSMetadata.requestCSSShorthandData();
+
+    this.consoleView = new WebInspector.ConsoleView(WebInspector.WorkerManager.isWorkerFrontend());
 
     InspectorBackend.registerInspectorDispatcher(this);
 
@@ -435,7 +449,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.overridesSupport = new WebInspector.OverridesSupport();
 
     this.searchController = new WebInspector.SearchController();
-    this.advancedSearchController = new WebInspector.AdvancedSearchController();
     if (!WebInspector.WorkerManager.isWorkerFrontend())
         this.inspectElementModeController = new WebInspector.InspectElementModeController();
 
@@ -793,7 +806,7 @@ WebInspector.postDocumentKeyDown = function(event)
         if (this.drawer.visible())
             this.drawer.hide();
         else if (!openConsoleWithCtrlTildeEnabled)
-            this.showConsole();
+            this.drawer.show();
     }
 
     if (openConsoleWithCtrlTildeEnabled) {

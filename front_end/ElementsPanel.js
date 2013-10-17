@@ -39,6 +39,7 @@ importScript("StylesSidebarPane.js");
 /**
  * @constructor
  * @extends {WebInspector.Panel}
+ * @implements {WebInspector.ViewFactory}
  */
 WebInspector.ElementsPanel = function()
 {
@@ -173,6 +174,17 @@ WebInspector.ElementsPanel.prototype = {
     {
         this.treeOutline.updateSelection();
         this.updateBreadcrumbSizes();
+    },
+
+    /**
+     * @param {string=} id
+     * @return {WebInspector.View}
+     */
+    createView: function(id)
+    {
+        if (!this._overridesView)
+            this._overridesView = new WebInspector.OverridesView();
+        return this._overridesView;
     },
 
     /**

@@ -116,10 +116,6 @@ body.platform-mac .settings-tab .help-block {
     width: 430px;
 }
 
-#drawer-contents .settings-tab {
-    padding-left: 12px;
-}
-
 .settings-tab.help-container {
     -webkit-column-width: 410px;
 }
@@ -263,8 +259,7 @@ body.platform-mac .help-content input[type=radio] {
     color: #222;
 }
 
-#settings-screen .help-window-main,
-#drawer-contents .help-window-main {
+#settings-screen .help-window-main{
     color: rgb(48, 57, 66);
     background-color: white;
     border-radius: 0;
@@ -285,10 +280,6 @@ body.platform-mac .help-content input[type=radio] {
     font-size: 18px;
     color: inherit;
     padding-top: 1px;
-}
-
-#drawer-contents .help-container-wrapper {
-    top: 32px;
 }
 
 .help-container-wrapper {
@@ -334,8 +325,7 @@ body.platform-mac .help-content input[type=radio] {
     color: inherit;
 }
 
-#settings-screen .tabbed-pane-content,
-#drawer-contents .tabbed-pane-content {
+#settings-screen .tabbed-pane-content {
     position: absolute;
     top: 0;
     right: 0;
@@ -343,16 +333,8 @@ body.platform-mac .help-content input[type=radio] {
     margin: 8px;
 }
 
-#drawer-contents .tabbed-pane-content {
-    padding: 0 4px;
-}
-
 #settings-screen .tabbed-pane-content {
     left: 120px;
-}
-
-#drawer-contents .tabbed-pane-content {
-    left: 0;
 }
 
 .settings-tab.help-content {
@@ -375,10 +357,6 @@ body.platform-mac .help-content input[type=radio] {
 .settings-tab-container header {
     padding: 14px 0;
     border-bottom: 1px solid #EEEEEE;
-}
-
-#drawer-contents .settings-tab-container header {
-    padding: 0;
 }
 
 #tab-shortcuts {
@@ -689,4 +667,17 @@ body.platform-mac .help-content input[type=radio] {
     z-index: 2000 !important;
     padding: 5px;
     background-color: rgba(255, 255, 255, 0.4) !important;
+}
+
+.overrides-view {
+    padding-top: 8px;
+}
+
+.overrides-view .help-block {
+    width: 450px;
+    margin-left: 10px;
+}
+
+.overrides-view .settings-tab p {
+    margin: 6px 0;
 }

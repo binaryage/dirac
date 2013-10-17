@@ -285,15 +285,23 @@ WebInspector.panels = {};
 /**
  * @param {string} id
  * @param {string} title
- * @param {WebInspector.View} view
- * @param {function()=} onclose
+ * @param {WebInspector.ViewFactory} viewFactory
  */
-WebInspector.showViewInDrawer = function(id, title, view, onclose) {}
+WebInspector.registerViewInDrawer = function(id, title, viewFactory) {}
 
 /**
  * @param {string} id
  */
-WebInspector.closeViewInDrawer = function(id) {}
+WebInspector.showViewInDrawer = function(id) {}
+
+/**
+ * @param {string} id
+ * @param {string} title
+ * @param {WebInspector.View} view
+ */
+WebInspector.showCloseableViewInDrawer = function(id, title, view) {}
+
+WebInspector.closeDrawer = function() {}
 
 /**
  * @param {string=} messageLevel

@@ -37,15 +37,8 @@ WebInspector.OverridesView = function()
     WebInspector.View.call(this);
     this.registerRequiredCSS("helpScreen.css");
     this.element.addStyleClass("fill");
-    this.element.addStyleClass("help-window-main");
-    this.element.addStyleClass("settings-tab-container");
 
-    var paneContent = this.element.createChild("div", "tabbed-pane-content");
-
-    var headerTitle = paneContent.createChild("header").createChild("h3");
-    headerTitle.appendChild(document.createTextNode(WebInspector.UIString("Overrides")));
-
-    var wrapper = paneContent.createChild("div", "help-container-wrapper overrides-view");
+    var wrapper = this.element.createChild("div", "overrides-view");
     var topContainer = wrapper.createChild("div", "settings-tab help-content");
     var enableOptionsContainer = topContainer.createChild("div", "help-block");
 
@@ -76,14 +69,6 @@ WebInspector.OverridesView = function()
     appendBlock([WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Emulate touch events"), WebInspector.settings.emulateTouchEvents)]);
     appendBlock([this._createMediaEmulationElement()]);
     this._setOverridesActive(enableCheckbox.checked);
-}
-
-WebInspector.OverridesView.showInDrawer = function()
-{
-    if (!WebInspector.OverridesView._view)
-        WebInspector.OverridesView._view = new WebInspector.OverridesView();
-    var view = WebInspector.OverridesView._view;
-    WebInspector.showViewInDrawer("overrides", WebInspector.UIString("Overrides"), view);
 }
 
 WebInspector.OverridesView.prototype = {

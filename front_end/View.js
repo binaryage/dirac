@@ -489,6 +489,21 @@ WebInspector.View._assert = function(condition, message)
     }
 }
 
+/**
+ * @interface
+ */
+WebInspector.ViewFactory = function()
+{
+}
+
+WebInspector.ViewFactory.prototype = {
+    /**
+     * @param {string=} id
+     * @return {WebInspector.View}
+     */
+    createView: function(id) {}
+}
+
 Element.prototype.appendChild = function(child)
 {
     WebInspector.View._assert(!child.__view, "Attempt to add view via regular DOM operation.");
