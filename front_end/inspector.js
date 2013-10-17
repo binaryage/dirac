@@ -107,7 +107,7 @@ var WebInspector = {
             if (!this._screencastView) {
                 // Rebuild the UI upon first invocation.
                 this._screencastView = new WebInspector.ScreencastView();
-                this._screencastSplitView = new WebInspector.SplitView(true);
+                this._screencastSplitView = new WebInspector.SplitView(true, WebInspector.settings.screencastSidebarWidth.name);
                 this._screencastSplitView.markAsRoot();
                 this._screencastSplitView.show(document.body);
 
@@ -137,7 +137,7 @@ var WebInspector = {
                     this._screencastSplitView.setSidebarSize(currentWidth);
                 }
             } else {
-                this._screencastSplitView.setSidebarSize(currentWidth - sidebarWidth || 300);
+                this._screencastSplitView.setSidebarSize(sidebarWidth);
             }
         } else {
             WebInspector.settings.screencastSidebarWidth.set(this._screencastView.element.offsetWidth);
