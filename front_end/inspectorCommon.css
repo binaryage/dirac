@@ -151,6 +151,7 @@ iframe.view {
     bottom: 0;
     background-color: rgba(125, 173, 217, 0.5);
     z-index: 250;
+    pointer-events: none;
 }
 
 .overview-grid-window {
