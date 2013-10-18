@@ -75,6 +75,7 @@ WebInspector.TimelinePresentationModel._initRecordStyles = function()
     recordStyles[recordTypes.RecalculateStyles] = { title: WebInspector.UIString("Recalculate Style"), category: categories["rendering"] };
     recordStyles[recordTypes.InvalidateLayout] = { title: WebInspector.UIString("Invalidate Layout"), category: categories["rendering"] };
     recordStyles[recordTypes.Layout] = { title: WebInspector.UIString("Layout"), category: categories["rendering"] };
+    recordStyles[recordTypes.AutosizeText] = { title: WebInspector.UIString("Autosize Text"), category: categories["rendering"] };
     recordStyles[recordTypes.PaintSetup] = { title: WebInspector.UIString("Paint Setup"), category: categories["painting"] };
     recordStyles[recordTypes.Paint] = { title: WebInspector.UIString("Paint"), category: categories["painting"] };
     recordStyles[recordTypes.Rasterize] = { title: WebInspector.UIString("Rasterize"), category: categories["painting"] };
@@ -648,8 +649,8 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
     if (record.data) {
         if (record.data["url"])
             this.url = record.data["url"];
-        if (record.data["layerRootNode"])
-            this._relatedBackendNodeId = record.data["layerRootNode"];
+        if (record.data["rootNode"])
+            this._relatedBackendNodeId = record.data["rootNode"];
         else if (record.data["elementId"])
             this._relatedBackendNodeId = record.data["elementId"];
     }
@@ -1049,6 +1050,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         // The messages may vary per record type;
         var callSiteStackTraceLabel;
         var callStackLabel;
+        var relatedNodeLabel;
 
         switch (this.type) {
             case recordTypes.GCEvent:
@@ -1113,13 +1115,14 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             case recordTypes.PaintSetup:
             case recordTypes.Rasterize:
             case recordTypes.ScrollLayer:
-                if (this._relatedNode)
-                    contentHelper.appendElementRow(WebInspector.UIString("Layer root"), this._createNodeAnchor(this._relatedNode));
+                relatedNodeLabel = WebInspector.UIString("Layer root");
+                break;
+            case recordTypes.AutosizeText:
+                relatedNodeLabel = WebInspector.UIString("Root node");
                 break;
             case recordTypes.DecodeImage:
             case recordTypes.ResizeImage:
-                if (this._relatedNode)
-                    contentHelper.appendElementRow(WebInspector.UIString("Image element"), this._createNodeAnchor(this._relatedNode));
+                relatedNodeLabel = WebInspector.UIString("Image element");
                 if (this.url)
                     contentHelper.appendElementRow(WebInspector.UIString("Image URL"), WebInspector.linkifyResourceAsNode(this.url));
                 break;
@@ -1142,8 +1145,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                     callStackLabel = WebInspector.UIString("Layout forced");
                     contentHelper.appendTextRow(WebInspector.UIString("Note"), WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
                 }
-                if (this._relatedNode)
-                    contentHelper.appendElementRow(WebInspector.UIString("Layout root"), this._createNodeAnchor(this._relatedNode));
+                relatedNodeLabel = WebInspector.UIString("Layout root");
                 break;
             case recordTypes.Time:
             case recordTypes.TimeEnd:
@@ -1167,6 +1169,9 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                     contentHelper.appendElementRow(WebInspector.UIString("Details"), this.detailsNode().childNodes[1].cloneNode());
                 break;
         }
+
+        if (this._relatedNode)
+            contentHelper.appendElementRow(relatedNodeLabel || WebInspector.UIString("Related node"), this._createNodeAnchor(this._relatedNode));
 
         if (this.scriptName && this.type !== recordTypes.FunctionCall)
             contentHelper.appendElementRow(WebInspector.UIString("Function Call"), this._linkifyScriptLocation());
