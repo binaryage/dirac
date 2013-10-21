@@ -297,8 +297,11 @@ WebInspector.ScreencastView.prototype = {
                     InputAgent.dispatchGestureEvent("scrollEnd", x, y, timeStamp);
                 }
             } else if (event.type === "click") {
-                InputAgent.dispatchGestureEvent("tapDown", x, y, timeStamp);
-                InputAgent.dispatchGestureEvent("tap", x, y, timeStamp);
+                InputAgent.dispatchMouseEvent("mousePressed", x, y, 0, timeStamp, "left", 1, true);
+                InputAgent.dispatchMouseEvent("mouseReleased", x, y, 0, timeStamp, "left", 1, true);
+                // FIXME: migrate to tap once it dispatches clicks again.
+                // InputAgent.dispatchGestureEvent("tapDown", x, y, timeStamp);
+                // InputAgent.dispatchGestureEvent("tap", x, y, timeStamp);
             }
             this._lastScrollPosition = position;
             break;
