@@ -28,11 +28,9 @@
  */
 
 #timeline-overview-panel {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 80px;
+    flex-basis: 81px;
+    position: relative;
+    border-bottom: 1px solid rgb(140, 140, 140);
 }
 
 #timeline-overview-panel .timeline-graph-bar {
@@ -47,15 +45,6 @@
 
 .timeline.split-view-vertical .split-view-resizer {
     top: 20px;
-}
-
-#timeline-overview-separator {
-    position: absolute;
-    top: 80px;
-    left: 0;
-    right: 0;
-    border-top: 1px solid rgb(140, 140, 140);
-    height: 1px;
 }
 
 #timeline-overview-sidebar {
@@ -96,14 +85,10 @@
 }
 
 #timeline-container {
-    position: absolute;
-    top: 81px;
-    left: 0;
-    bottom: 0;
-    right: 0;
     border-right: 0 none transparent;
     overflow-y: scroll;
     overflow-x: hidden;
+    position: relative;
 }
 
 #timeline-container .split-view-sidebar {
@@ -518,6 +503,7 @@
 
 #memory-graphs-container {
     border-top: 1px solid #AAA;
+    position: relative;
 }
 
 #memory-graphs-canvas-container {
@@ -614,11 +600,6 @@
 }
 
 #timeline-grid-header {
-    position: absolute;
-    left: 200px;
-    right: 0;
-    top: 81px;
-    bottom: 0;
     pointer-events: none;
 }
 

@@ -37,6 +37,7 @@ WebInspector.TimelineOverviewPane = function(model)
 {
     WebInspector.View.call(this);
     this.element.id = "timeline-overview-panel";
+    this.element.addStyleClass("box-item-fixed");
 
     this._windowStartTime = 0;
     this._windowEndTime = Infinity;
@@ -70,10 +71,6 @@ WebInspector.TimelineOverviewPane = function(model)
     
     this._overviewGrid = new WebInspector.OverviewGrid("timeline");
     this.element.appendChild(this._overviewGrid.element);
-
-    var separatorElement = document.createElement("div");
-    separatorElement.id = "timeline-overview-separator";
-    this.element.appendChild(separatorElement);
 
     this._innerSetMode(WebInspector.TimelineOverviewPane.Mode.Events);
 

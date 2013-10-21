@@ -46,6 +46,7 @@ WebInspector.MemoryStatistics = function(timelinePanel, model, sidebarWidth)
     this._memorySidebarView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Start, undefined, sidebarWidth);
     this._memorySidebarView.sidebarElement.addStyleClass("sidebar");
     this._memorySidebarView.element.id = "memory-graphs-container";
+    this._memorySidebarView.element.addStyleClass("box-item-fixed");
 
     this._memorySidebarView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._sidebarResized.bind(this));
 
@@ -191,11 +192,19 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {number} top
+     * @return {number}
      */
-     setTopPosition: function(top)
+    height: function()
     {
-        this._memorySidebarView.element.style.top = top + "px";
+        return this._memorySidebarView.element.offsetHeight;
+    },
+
+    /**
+     * @param {number} height
+     */
+    setHeight: function(height)
+    {
+        this._memorySidebarView.element.style.flexBasis = height + "px";
         this._updateSize();
     },
 

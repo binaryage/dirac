@@ -40,6 +40,24 @@ input[type="text"]:focus {
     bottom: 0;
 }
 
+.hbox {
+    display: flex !important;
+    flex-direction: row;
+}
+
+.vbox {
+    display: flex !important;
+    flex-direction: column;
+}
+
+.box-item-fixed {
+    flex: 0 0;
+}
+
+.box-item-fill {
+    flex: 1 1;
+}
+
 .inline-block {
     display: inline-block;
 }

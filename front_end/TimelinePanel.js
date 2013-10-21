@@ -44,6 +44,7 @@ WebInspector.TimelinePanel = function()
 {
     WebInspector.Panel.call(this, "timeline");
     this.registerRequiredCSS("timelinePanel.css");
+    this.element.addStyleClass("vbox");
 
     this._model = new WebInspector.TimelineModel();
     this._presentationModel = new WebInspector.TimelinePresentationModel();
@@ -63,12 +64,13 @@ WebInspector.TimelinePanel = function()
     this._containerElement = this.splitView.element;
     this._containerElement.tabIndex = 0;
     this._containerElement.id = "timeline-container";
+    this._containerElement.removeStyleClass("fill");
+    this._containerElement.addStyleClass("box-item-fill");
     this._containerElement.addEventListener("scroll", this._onScroll.bind(this), false);
 
-    this._timelineMemorySplitter = this.element.createChild("div");
+    this._timelineMemorySplitter = this.element.createChild("div", "hidden");
     this._timelineMemorySplitter.id = "timeline-memory-splitter";
     WebInspector.installDragHandle(this._timelineMemorySplitter, this._startSplitterDragging.bind(this), this._splitterDragging.bind(this), this._endSplitterDragging.bind(this), "ns-resize");
-    this._timelineMemorySplitter.addStyleClass("hidden");
     this._includeDomCounters = false;
     this._memoryStatistics = new WebInspector.DOMCountersGraph(this, this._model, this.splitView.sidebarWidth());
     this._includeDomCounters = true;
@@ -89,8 +91,9 @@ WebInspector.TimelinePanel = function()
     this._itemsGraphsElement.id = "timeline-graphs";
     this._containerContentElement.appendChild(this._timelineGrid.element);
     this._timelineGrid.gridHeaderElement.id = "timeline-grid-header";
+    this._timelineGrid.gridHeaderElement.addStyleClass("fill");
     this._memoryStatistics.setMainTimelineGrid(this._timelineGrid);
-    this.element.appendChild(this._timelineGrid.gridHeaderElement);
+    this._containerContentElement.appendChild(this._timelineGrid.gridHeaderElement);
 
     this._topGapElement = document.createElement("div");
     this._topGapElement.className = "timeline-gap";
@@ -168,7 +171,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     _startSplitterDragging: function(event)
     {
-        this._dragOffset = this._timelineMemorySplitter.offsetTop + 2 - event.pageY;
+        this._dragOffset = this.element.offsetHeight - this._timelineMemorySplitter.offsetTop - 2 + event.pageY;
         return true;
     },
 
@@ -177,8 +180,9 @@ WebInspector.TimelinePanel.prototype = {
      */
     _splitterDragging: function(event)
     {
-        var top = event.pageY + this._dragOffset;
-        this._setSplitterPosition(top);
+        var height = this._dragOffset - event.pageY;
+        this._setMemoryCountersHeight(height);
+        this._resize(this.splitView.sidebarWidth());
         event.preventDefault();
     },
 
@@ -189,20 +193,16 @@ WebInspector.TimelinePanel.prototype = {
     {
         delete this._dragOffset;
         this._memoryStatistics.show();
-        WebInspector.settings.memoryCounterGraphsHeight.set(this.splitView.element.offsetHeight);
+        WebInspector.settings.memoryCounterGraphsHeight.set(this._memoryStatistics.height());
     },
 
-    _setSplitterPosition: function(top)
+    _setMemoryCountersHeight: function(height)
     {
         const overviewHeight = 81;
         const sectionMinHeight = 100;
-        top = Number.constrain(top, overviewHeight + sectionMinHeight, this.element.offsetHeight - sectionMinHeight);
-
-        this.splitView.element.style.height = (top - overviewHeight) + "px";
-        this._timelineMemorySplitter.style.top = (top - 2) + "px";
-        this._memoryStatistics.setTopPosition(top);
-        this._containerElementHeight = this._containerElement.clientHeight;
-        this.onResize();
+        height = Number.constrain(height, sectionMinHeight, this.element.offsetHeight - sectionMinHeight - overviewHeight);
+        this._timelineMemorySplitter.style.bottom = (height - 3) + "px";
+        this._memoryStatistics.setHeight(height);
     },
 
     get calculator()
@@ -548,17 +548,14 @@ WebInspector.TimelinePanel.prototype = {
         }
         if (shouldShowMemory === this._memoryStatistics.visible())
             return;
+        this._timelineMemorySplitter.enableStyleClass("hidden", !shouldShowMemory);
         if (!shouldShowMemory) {
-            this._timelineMemorySplitter.addStyleClass("hidden");
             this._memoryStatistics.hide();
-            this.splitView.element.style.height = "auto";
-            this.splitView.element.style.bottom = "0";
-            this.onResize();
+            this._resize(this.splitView.sidebarWidth());
         } else {
-            this._timelineMemorySplitter.removeStyleClass("hidden");
             this._memoryStatistics.show();
-            this.splitView.element.style.bottom = "auto";
-            this._setSplitterPosition(WebInspector.settings.memoryCounterGraphsHeight.get());
+            this._setMemoryCountersHeight(WebInspector.settings.memoryCounterGraphsHeight.get());
+            this._resize(this.splitView.sidebarWidth());
         }
     },
 
@@ -653,11 +650,12 @@ WebInspector.TimelinePanel.prototype = {
         this._resize(width);
         this._overviewPane.sidebarResized(width);
         this._memoryStatistics.setSidebarWidth(width);
-        this._timelineGrid.gridHeaderElement.style.left = width + "px";
     },
 
     onResize: function()
     {
+        if (this._memoryStatistics.visible())
+            this._setMemoryCountersHeight(this._memoryStatistics.height());
         this._resize(this.splitView.sidebarWidth());
     },
 
@@ -672,7 +670,6 @@ WebInspector.TimelinePanel.prototype = {
         this._scheduleRefresh(false, true);
         var lastItemElement = this._statusBarItems[this._statusBarItems.length - 1].element;
         var minFloatingStatusBarItemsOffset = lastItemElement.offsetLeft + lastItemElement.offsetWidth;
-        this._timelineGrid.gridHeaderElement.style.width = this._itemsGraphsElement.offsetWidth + "px";
         this._miscStatusBarItems.style.left = Math.max(minFloatingStatusBarItemsOffset, sidebarWidth) + "px";
     },
 
