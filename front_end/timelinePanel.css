@@ -505,7 +505,7 @@
 #memory-graphs-container {
     border-top: 1px solid #AAA;
     position: relative;
-    flex: 0 0;
+    flex: 0 0 auto;
 }
 
 #memory-graphs-canvas-container {

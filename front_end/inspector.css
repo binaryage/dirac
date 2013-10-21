@@ -2912,7 +2912,7 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
 }
 
 .inspector-footer {
-    flex: 0 0;
+    flex: 0 0 auto;
     background-color: rgb(236, 236, 236);
 }
 
