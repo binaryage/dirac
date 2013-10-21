@@ -978,7 +978,6 @@ body.platform-linux .source-code {
 #console-prompt {
     clear: right;
     position: relative;
-    border-top: 1px solid rgb(240, 240, 240);
     padding: 1px 22px 1px 0;
     margin-left: 24px;
     min-height: 16px;
@@ -998,7 +997,7 @@ body.platform-linux .source-code {
 .console-user-command {
     clear: right;
     position: relative;
-    border-top: 1px solid rgb(240, 240, 240);
+    border-bottom: 1px solid rgb(240, 240, 240);
     padding: 1px 22px 1px 0;
     margin-left: 24px;
     min-height: 16px;

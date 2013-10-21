@@ -326,7 +326,7 @@ WebInspector.InspectorView.prototype = {
         this.doResize();
     },
 
-    resize: function()
+    onResize: function()
     {
         // FIXME: make toolbar and drawer views.
         this._toolbar.resize();

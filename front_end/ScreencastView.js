@@ -143,7 +143,6 @@ WebInspector.ScreencastView.prototype = {
         var offsetTop = /** type {number} */(event.data.offsetTop) || 0;
         var offsetBottom = /** type {number} */(event.data.offsetBottom) || 0;
 
-
         var screenWidthDIP = this._viewport.width * this._pageScaleFactor;
         var screenHeightDIP = this._viewport.height * this._pageScaleFactor + offsetTop + offsetBottom;
         this._screenOffsetTop = offsetTop;
