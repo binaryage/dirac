@@ -28,7 +28,7 @@
  */
 
 #timeline-overview-panel {
-    flex-basis: 81px;
+    flex: 0 0 81px;
     position: relative;
     border-bottom: 1px solid rgb(140, 140, 140);
 }
@@ -89,6 +89,7 @@
     overflow-y: scroll;
     overflow-x: hidden;
     position: relative;
+    flex: 1 1;
 }
 
 #timeline-container .split-view-sidebar {
@@ -504,6 +505,7 @@
 #memory-graphs-container {
     border-top: 1px solid #AAA;
     position: relative;
+    flex: 0 0;
 }
 
 #memory-graphs-canvas-container {

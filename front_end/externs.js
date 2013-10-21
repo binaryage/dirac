@@ -283,27 +283,6 @@ WebInspector.toggleSearchingForNode = function() {}
 WebInspector.panels = {};
 
 /**
- * @param {string} id
- * @param {string} title
- * @param {WebInspector.ViewFactory} viewFactory
- */
-WebInspector.registerViewInDrawer = function(id, title, viewFactory) {}
-
-/**
- * @param {string} id
- */
-WebInspector.showViewInDrawer = function(id) {}
-
-/**
- * @param {string} id
- * @param {string} title
- * @param {WebInspector.View} view
- */
-WebInspector.showCloseableViewInDrawer = function(id, title, view) {}
-
-WebInspector.closeDrawer = function() {}
-
-/**
  * @param {string=} messageLevel
  * @param {boolean=} showConsole
  */

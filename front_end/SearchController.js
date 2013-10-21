@@ -266,8 +266,9 @@ WebInspector.SearchController.prototype = {
         if (this._searchIsVisible)
             this.cancelSearch();
 
-        if (WebInspector.drawer.element.isAncestor(document.activeElement) && WebInspector.drawer.getSearchProvider())
-            this._searchHost = WebInspector.drawer;
+        // FIXME: fix this mess.
+        if (WebInspector.inspectorView.drawer().element.isAncestor(document.activeElement) && WebInspector.inspectorView.drawer().getSearchProvider())
+            this._searchHost = WebInspector.inspectorView.drawer();
         else
             this._searchHost = WebInspector.inspectorView;
 

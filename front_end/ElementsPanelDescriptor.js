@@ -37,7 +37,7 @@ WebInspector.ElementsPanelDescriptor = function()
     WebInspector.PanelDescriptor.call(this, "elements", WebInspector.UIString("Elements"), "ElementsPanel", "ElementsPanel.js");
     WebInspector.ContextMenu.registerProvider(this);
 
-    WebInspector.registerViewInDrawer("overrides", WebInspector.UIString("Overrides"), this);
+    WebInspector.inspectorView.registerViewInDrawer("overrides", WebInspector.UIString("Overrides"), this);
 }
 
 WebInspector.ElementsPanelDescriptor.prototype = {

@@ -31,10 +31,13 @@
 
 /**
  * @constructor
+ * @param {WebInspector.InspectorView} inspectorView
  */
-WebInspector.Toolbar = function()
+WebInspector.Toolbar = function(inspectorView)
 {
-    this.element = document.getElementById("toolbar");
+    this._inspectorView = inspectorView;
+
+    this.element = inspectorView.element.createChild("div", "toolbar toolbar-background");
     WebInspector.installDragHandle(this.element, this._toolbarDragStart.bind(this), this._toolbarDrag.bind(this), this._toolbarDragEnd.bind(this), "default");
 
     this._leftToolbarElement = this.element.createChild("div", "toolbar-controls-left");
@@ -108,22 +111,23 @@ WebInspector.Toolbar.prototype = {
         function onToolbarItemClicked()
         {
             this._updateDropdownButtonAndHideDropdown();
-            WebInspector.inspectorView.setCurrentPanel(panelDescriptor.panel());
+            this._inspectorView.setCurrentPanel(panelDescriptor.panel());
         }
         toolbarItem.addEventListener("click", onToolbarItemClicked.bind(this), false);
-
-        function panelSelected()
-        {
-            if (WebInspector.inspectorView.currentPanel() && panelDescriptor.name() === WebInspector.inspectorView.currentPanel().name)
-                toolbarItem.addStyleClass("toggled-on");
-            else
-                toolbarItem.removeStyleClass("toggled-on");
-        }
-        WebInspector.inspectorView.addEventListener(WebInspector.InspectorView.Events.PanelSelected, panelSelected);
-
         toolbarItem.createChild("div", "toolbar-label").textContent = panelDescriptor.title();
-        panelSelected();
         return toolbarItem;
+    },
+
+    /**
+     * @param {WebInspector.Panel} panel
+     */
+    panelSelected: function(panel)
+    {
+        var toolbarItems = this.element.children;
+        for (var i = 0; i < toolbarItems.length; ++i) {
+            if (toolbarItems[i].panelDescriptor)
+                toolbarItems[i].enableStyleClass("toggled-on", toolbarItems[i].panelDescriptor.name() === panel.name);
+        }
     },
 
     /**
@@ -244,7 +248,7 @@ WebInspector.Toolbar.prototype = {
         }
 
         var contextMenu = new WebInspector.ContextMenu(event);
-        var currentPanelName = WebInspector.inspectorView.currentPanel().name;
+        var currentPanelName = this._inspectorView.currentPanel().name;
         var toolbarItems = this.element.querySelectorAll(".toolbar-item.toggleable");
         for (var i = 0; i < toolbarItems.length; ++i) {
             if (toolbarItems[i].offsetTop >= toolbarItems[0].offsetHeight) {
@@ -336,8 +340,3 @@ WebInspector.ToolbarDropdown.prototype = {
         this.hide();
     }
 }
-
-/**
- * @type {?WebInspector.Toolbar}
- */
-WebInspector.toolbar = null;

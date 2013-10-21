@@ -30,15 +30,16 @@
 /**
  * @constructor
  * @implements {WebInspector.ViewFactory}
+ * @param {WebInspector.InspectorView} inspectorView
  */
-WebInspector.Drawer = function()
+WebInspector.Drawer = function(inspectorView)
 {
-    this.element = document.getElementById("drawer");
-    this.element.style.height = 0;
+    this._inspectorView = inspectorView;
+
+    this.element = this._inspectorView.element.createChild("div", "drawer");
+    this.element.style.flexBasis = 0;
 
     this._savedHeight = 200; // Default.
-    this._mainElement = document.getElementById("main");
-    this._toolbarElement = document.getElementById("toolbar");
 
     this._drawerContentsElement = this.element.createChild("div");
     this._drawerContentsElement.id = "drawer-contents";
@@ -63,11 +64,11 @@ WebInspector.Drawer = function()
 
 WebInspector.Drawer.prototype = {
     /**
-     * @param {boolean} enabled
+     * @param {WebInspector.Panel} panel
      */
-    setEnabled: function(enabled)
+    panelSelected: function(panel)
     {
-        this._toggleDrawerButton.setEnabled(enabled);
+        this._toggleDrawerButton.setEnabled(panel.name !== "console");
     },
 
     /**
@@ -80,7 +81,7 @@ WebInspector.Drawer.prototype = {
 
     _constrainHeight: function(height)
     {
-        return Number.constrain(height, Preferences.minConsoleHeight, window.innerHeight - this._mainElement.totalOffsetTop() - Preferences.minConsoleHeight);
+        return Number.constrain(height, Preferences.minConsoleHeight, this._inspectorView.element.offsetHeight - Preferences.minConsoleHeight);
     },
 
     isHiding: function()
@@ -162,7 +163,7 @@ WebInspector.Drawer.prototype = {
     _innerShow: function(immediately)
     {
         WebInspector.searchController.cancelSearch();
-        this.immediatelyFinishAnimation();
+        this._immediatelyFinishAnimation();
 
         if (this._toggleDrawerButton.toggled)
             return;
@@ -172,16 +173,15 @@ WebInspector.Drawer.prototype = {
         document.body.addStyleClass("drawer-visible");
         this._tabbedPane.show(this._drawerContentsElement);
 
-        var height = this._constrainHeight(this._savedHeight || this.element.offsetHeight);
+        var height = this._constrainHeight(this._savedHeight);
         var animations = [
-            {element: this.element, end: {height: height}},
-            {element: this._mainElement, start: {bottom: 0}, end: {bottom: height}}
+            {element: this.element, start: {"flex-basis": 0}, end: {"flex-basis": height}},
         ];
 
         function animationCallback(finished)
         {
-            if (WebInspector.inspectorView.currentPanel())
-                WebInspector.inspectorView.currentPanel().doResize();
+            if (this._inspectorView.currentPanel())
+                this._inspectorView.currentPanel().doResize();
             if (!finished)
                 return;
             this._updateTabStrip();
@@ -206,7 +206,7 @@ WebInspector.Drawer.prototype = {
     hide: function(immediately)
     {
         WebInspector.searchController.cancelSearch();
-        this.immediatelyFinishAnimation();
+        this._immediatelyFinishAnimation();
 
         if (!this._toggleDrawerButton.toggled)
             return;
@@ -221,25 +221,23 @@ WebInspector.Drawer.prototype = {
         // Temporarily set properties and classes to mimic the post-animation values so panels
         // like Elements in their updateStatusBarItems call will size things to fit the final location.
         document.body.removeStyleClass("drawer-visible");
-        WebInspector.inspectorView.currentPanel().statusBarResized();
+        this._inspectorView.currentPanel().statusBarResized();
         document.body.addStyleClass("drawer-visible");
 
         var animations = [
-            {element: this.element, end: {height: 0}},
-            {element: this._mainElement, end: {bottom: 0}}
+            {element: this.element, start: {"flex-basis": this.element.offsetHeight }, end: {"flex-basis": 0}},
         ];
 
         function animationCallback(finished)
         {
-            if (WebInspector.inspectorView.currentPanel())
-                WebInspector.inspectorView.currentPanel().doResize();
+            if (this._inspectorView.currentPanel())
+                this._inspectorView.currentPanel().doResize();
             if (!finished)
                 return;
             this._tabbedPane.detach();
             this._drawerContentsElement.removeChildren();
             document.body.removeStyleClass("drawer-visible");
             delete this._currentAnimation;
-            this._mainElement.style.bottom = 0;
             delete this._isHiding;
         }
 
@@ -255,13 +253,12 @@ WebInspector.Drawer.prototype = {
             return;
 
         this._visibleView().storeScrollPositions();
-        var height = this._constrainHeight(parseInt(this.element.style.height, 10));
-        this._mainElement.style.bottom = height + "px";
-        this.element.style.height = height + "px";
+        var height = this._constrainHeight(this.element.offsetHeight);
+        this.element.style.flexBasis = height + "px";
         this._tabbedPane.doResize();
     },
 
-    immediatelyFinishAnimation: function()
+    _immediatelyFinishAnimation: function()
     {
         if (this._currentAnimation)
             this._currentAnimation.forceComplete();
@@ -292,12 +289,11 @@ WebInspector.Drawer.prototype = {
     _statusBarDragging: function(event)
     {
         var height = window.innerHeight - event.pageY + this._statusBarDragOffset;
-        height = Number.constrain(height, Preferences.minConsoleHeight, window.innerHeight - this._mainElement.totalOffsetTop() - Preferences.minConsoleHeight);
+        height = Number.constrain(height, Preferences.minConsoleHeight, this._inspectorView.element.offsetHeight - Preferences.minConsoleHeight);
 
-        this._mainElement.style.bottom = height + "px";
-        this.element.style.height = height + "px";
-        if (WebInspector.inspectorView.currentPanel())
-            WebInspector.inspectorView.currentPanel().doResize();
+        this.element.style.flexBasis = height + "px";
+        if (this._inspectorView.currentPanel())
+            this._inspectorView.currentPanel().doResize();
         this._tabbedPane.doResize();
 
         event.consume(true);
@@ -374,8 +370,3 @@ WebInspector.Drawer.prototype = {
         return this._toggleDrawerButton.toggled;
     }
 }
-
-/**
- * @type {WebInspector.Drawer}
- */
-WebInspector.drawer = null;

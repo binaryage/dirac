@@ -59,7 +59,7 @@ WebInspector.ElementsPanel = function()
     this.splitView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._updateTreeOutlineVisibleWidth.bind(this));
 
     var stackElement = this.splitView.mainElement;
-    stackElement.id = "elements-stack";
+    stackElement.addStyleClass("vbox");
     this.contentElement = stackElement.createChild("div");
     this.contentElement.id = "elements-content";
     this.contentElement.addStyleClass("outline-disclosure");

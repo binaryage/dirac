@@ -38,7 +38,7 @@ WebInspector.AdvancedSearchController = function()
     WebInspector.settings.advancedSearchConfig = WebInspector.settings.createSetting("advancedSearchConfig", new WebInspector.SearchConfig("", true, false));
     
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, this._frameNavigated, this);
-    WebInspector.registerViewInDrawer("search", WebInspector.UIString("Search"), this);
+    WebInspector.inspectorView.registerViewInDrawer("search", WebInspector.UIString("Search"), this);
 }
 
 /**
@@ -75,7 +75,7 @@ WebInspector.AdvancedSearchController.prototype = {
                 WebInspector.showPanel("sources");
                 this.show();
             } else
-                WebInspector.closeDrawer();
+                WebInspector.inspectorView.closeDrawer();
             event.consume(true);
             return true;
         }
@@ -106,7 +106,7 @@ WebInspector.AdvancedSearchController.prototype = {
         if (this._searchView && this._searchView.isShowing())
             this._searchView.focus();
         else
-            WebInspector.showViewInDrawer("search");
+            WebInspector.inspectorView.showViewInDrawer("search");
         if (queryCandidate)
             this._searchView._search.value = queryCandidate;
         this.startIndexing();

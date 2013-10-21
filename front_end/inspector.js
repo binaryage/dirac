@@ -33,9 +33,7 @@ var WebInspector = {
     {
         this.panels = {};
         WebInspector.inspectorView = new WebInspector.InspectorView();
-        var parentElement = document.getElementById("main");
-        WebInspector.inspectorView.show(parentElement);
-        WebInspector.inspectorView.addEventListener(WebInspector.InspectorView.Events.PanelSelected, this._panelSelected, this);
+        WebInspector.inspectorView.show(document.body);
 
         var elements = new WebInspector.ElementsPanelDescriptor();
         var resources = new WebInspector.PanelDescriptor("resources", WebInspector.UIString("Resources"), "ResourcesPanel", "ResourcesPanel.js");
@@ -62,11 +60,6 @@ var WebInspector = {
         return panelDescriptors;
     },
 
-    _panelSelected: function()
-    {
-        this.drawer.setEnabled(WebInspector.inspectorView.currentPanel().name !== "console");
-    },
-
     /**
      * @return {boolean}
      */
@@ -78,19 +71,19 @@ var WebInspector = {
     _createGlobalStatusBarItems: function()
     {
         if (this.inspectElementModeController)
-            this.toolbar.leftToolbarElement().appendChild(this.inspectElementModeController.toggleSearchButton.element);
+            this.inspectorView.toolbar().leftToolbarElement().appendChild(this.inspectElementModeController.toggleSearchButton.element);
 
         if (this._screencastAvailable()) {
             this._toggleScreencastButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle screencast."), "screencast-status-bar-item");
             this._toggleScreencastButton.addEventListener("click", this._toggleScreencastButtonClicked.bind(this, true), false);
-            this.toolbar.leftToolbarElement().appendChild(this._toggleScreencastButton.element);
+            this.inspectorView.toolbar().leftToolbarElement().appendChild(this._toggleScreencastButton.element);
         }
 
-        this.toolbar.rightToolbarElement().appendChild(this.drawer.toggleButtonElement());
+        this.inspectorView.toolbar().rightToolbarElement().appendChild(this.inspectorView.drawer().toggleButtonElement());
 
-        this.toolbar.rightToolbarElement().appendChild(this.settingsController.statusBarItem);
+        this.inspectorView.toolbar().rightToolbarElement().appendChild(this.settingsController.statusBarItem);
         if (!WebInspector.queryParamsObject["remoteFrontend"])
-            this.toolbar.rightToolbarElement().appendChild(this.dockController.element);
+            this.inspectorView.toolbar().rightToolbarElement().appendChild(this.dockController.element);
     },
 
     /**
@@ -112,9 +105,8 @@ var WebInspector = {
                 this._screencastSplitView.show(document.body);
 
                 this._screencastView.show(this._screencastSplitView.firstElement());
-                this._screencastSplitView.secondElement().appendChild(document.getElementById("root"));
                 this.inspectorView.element.remove();
-                this.inspectorView.show(document.getElementById("main"));
+                this.inspectorView.show(this._screencastSplitView.secondElement());
             }
 
             var sidebarWidth = WebInspector.settings.screencastSidebarWidth.get();
@@ -151,44 +143,12 @@ var WebInspector = {
         }
     },
 
-    /**
-     * @param {string} id
-     * @param {string} title
-     * @param {WebInspector.ViewFactory} factory
-     */
-    registerViewInDrawer: function(id, title, factory)
-    {
-        this.drawer.registerView(id, title, factory);
-    },
-
-    /**
-     * @param {string} id
-     * @param {string} title
-     * @param {WebInspector.View} view
-     */
-    showCloseableViewInDrawer: function(id, title, view)
-    {
-        this.drawer.showCloseableView(id, title, view);
-    },
-
-    /**
-     * @param {string} id
-     */
-    showViewInDrawer: function(id)
-    {
-        this.drawer.showView(id);
-    },
-
-    closeDrawer: function()
-    {
-        this.drawer.hide();
-    },
 
     showConsole: function()
     {
-        if (this.consoleView.isShowing() && !WebInspector.drawer.isHiding())
+        if (this.consoleView.isShowing() && !WebInspector.inspectorView.drawer().isHiding())
             return;
-        this.showViewInDrawer("console");
+        this.inspectorView.showViewInDrawer("console");
     },
 
     _resetErrorAndWarningCounts: function()
@@ -427,11 +387,10 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.domAgent.addEventListener(WebInspector.DOMAgent.Events.InspectNodeRequested, this._inspectNodeRequested, this);
     this.runtimeModel = new WebInspector.RuntimeModel(this.resourceTreeModel);
 
-    this.drawer = new WebInspector.Drawer();
-    this.advancedSearchController = new WebInspector.AdvancedSearchController();
     var panelDescriptors = this._panelDescriptors();
     for (var i = 0; i < panelDescriptors.length; ++i)
         panelDescriptors[i].registerShortcuts();
+    this.advancedSearchController = new WebInspector.AdvancedSearchController();
 
     WebInspector.CSSMetadata.requestCSSShorthandData();
 
@@ -481,7 +440,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     new WebInspector.CSSStyleSheetMapping(this.cssModel, this.workspace, this.networkWorkspaceProvider);
     new WebInspector.PresentationConsoleMessageHelper(this.workspace);
 
-    this.toolbar = new WebInspector.Toolbar();
     this._createGlobalStatusBarItems();
 
     WebInspector.startBatchUpdate();
@@ -568,11 +526,7 @@ WebInspector.dispatch = function(message) {
 WebInspector.windowResize = function(event)
 {
     if (WebInspector.inspectorView)
-        WebInspector.inspectorView.doResize();
-    if (WebInspector.drawer)
-        WebInspector.drawer.resize();
-    if (WebInspector.toolbar)
-        WebInspector.toolbar.resize();
+        WebInspector.inspectorView.resize();
     if (WebInspector.settingsController)
         WebInspector.settingsController.resize();
     if (WebInspector._screencastSplitView)
@@ -803,16 +757,16 @@ WebInspector.postDocumentKeyDown = function(event)
             WebInspector.searchController.closeSearch();
             return;
         }
-        if (this.drawer.visible())
-            this.drawer.hide();
+        if (this.inspectorView.drawer().visible())
+            this.inspectorView.drawer().hide();
         else if (!openConsoleWithCtrlTildeEnabled)
-            this.drawer.show();
+            this.inspectorView.drawer().show();
     }
 
     if (openConsoleWithCtrlTildeEnabled) {
         if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Tilde.code && WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
-            if (this.drawer.visible())
-                this.drawer.hide();
+            if (this.inspectorView.drawer().visible())
+                this.inspectorView.drawer().hide();
             else
                 this.showConsole();
         }

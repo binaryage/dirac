@@ -84,6 +84,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
 
     setWindowBounds: function(x, y, width, height, callback)
     {
+        callback();
     },
 
     moveWindowBy: function(x, y)

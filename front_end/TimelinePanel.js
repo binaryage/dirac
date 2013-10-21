@@ -65,7 +65,6 @@ WebInspector.TimelinePanel = function()
     this._containerElement.tabIndex = 0;
     this._containerElement.id = "timeline-container";
     this._containerElement.removeStyleClass("fill");
-    this._containerElement.addStyleClass("box-item-fill");
     this._containerElement.addEventListener("scroll", this._onScroll.bind(this), false);
 
     this._timelineMemorySplitter = this.element.createChild("div", "hidden");

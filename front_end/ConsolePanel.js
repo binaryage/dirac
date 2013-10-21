@@ -41,8 +41,8 @@ WebInspector.ConsolePanel.prototype = {
     wasShown: function()
     {
         WebInspector.Panel.prototype.wasShown.call(this);
-        if (WebInspector.drawer.visible()) {
-            WebInspector.drawer.hide(true);
+        if (WebInspector.inspectorView.drawer().visible()) {
+            WebInspector.inspectorView.drawer().hide(true);
             this._drawerWasVisible = true;
         }
         this._view.show(this.element);
@@ -51,7 +51,7 @@ WebInspector.ConsolePanel.prototype = {
     willHide: function()
     {
         if (this._drawerWasVisible) {
-            WebInspector.drawer.show(true);
+            WebInspector.inspectorView.drawer().show(true);
             delete this._drawerWasVisible;
         }
         WebInspector.Panel.prototype.willHide.call(this);

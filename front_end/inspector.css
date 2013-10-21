@@ -50,14 +50,6 @@ input[type="text"]:focus {
     flex-direction: column;
 }
 
-.box-item-fixed {
-    flex: 0 0;
-}
-
-.box-item-fill {
-    flex: 1 1;
-}
-
 .inline-block {
     display: inline-block;
 }
@@ -74,23 +66,26 @@ input[type="text"]:focus {
 }
 
 .toolbar-background {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 26px;
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(191, 191, 191)), to(rgb(151, 151, 151)));
-    padding-top: 1px 0 0 1px;
+    padding: 1px 0 0 1px;
     border-bottom: 1px solid rgb(80, 80, 80);
     background-origin: padding-box;
     background-clip: padding-box;
 }
 
-#toolbar {
+.toolbar {
     -webkit-flex-direction: row;
+    flex: 0 0 26px;
+    position: relative;
 }
 
-#toolbar button.status-bar-item {
+.main-panels {
+    flex: 1 1;
+    position: relative;
+    background-color: white;
+}
+
+.toolbar button.status-bar-item {
     border: none;
     margin: 0 -2px;
 }
@@ -162,7 +157,7 @@ body.undocked.platform-mac-mountain-lion.inactive .toolbar-background {
 }
 
 .toolbar-item {
-    height: 24px;
+    height: 23px;
 }
 
 .toolbar-item.toggleable.toggled-on {
@@ -210,6 +205,7 @@ body.dock-to-bottom #search-toolbar-label {
     -webkit-align-items: center;
     height: 100%;
     opacity: 0.8;
+    padding-top: 1px;
 }
 
 .toolbar-controls-right {
@@ -218,6 +214,7 @@ body.dock-to-bottom #search-toolbar-label {
     -webkit-align-items: center;
     height: 100%;
     opacity: 0.8;
+    padding-top: 1px;
 }
 
 .toolbar-dropdown-arrow {
@@ -517,44 +514,13 @@ body.remote .toolbar-item .close-button {
   margin-left: 6px;
 }
 
-#root {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-}
-
-#main {
-    position: absolute;
-    z-index: 1;
-    top: 26px;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: hidden;
-    background-color: white;
-}
-
-#main-panels {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow: hidden;
-}
-
-#panel-status-bar {
-    position: absolute;
-    top: 26px;
-    left: 0;
-    right: 0;
+.panel-status-bar {
     border-top: none;
-    -webkit-flex: 1 0;
     display: -webkit-flex;
     pointer-events: none;
     background-color: white;
+    flex: 0 0 23px;
+    position: relative;
 }
 
 .status-bar {
@@ -878,7 +844,7 @@ body.remote .dock-status-bar-item {
 }
 
 #error-warning-count {
-    padding: 2px 6px 6px 0;
+    padding: 3px 6px 6px 0;
     font-size: 11px;
     height: 19px;
     cursor: pointer;
@@ -899,13 +865,10 @@ body.remote .dock-status-bar-item {
     margin-left: 6px;
 }
 
-#drawer {
+.drawer {
     display: none;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 200px;
+    flex: 0 0 200px;
+    position: relative;
     background-color: white;
     z-index: 1;
 }
@@ -952,7 +915,7 @@ body.inactive #drawer-contents .tabbed-pane-header {
     background-color: rgb(236, 236, 236);
 }
 
-body.drawer-visible #drawer {
+body.drawer-visible .drawer {
     display: block;
 }
 
@@ -1399,6 +1362,7 @@ ol.watch-expressions > li.hovered {
     left: 0;
     right: 0;
     bottom: 0;
+    z-index: 0;
 }
 
 .panel.visible {
@@ -2948,11 +2912,7 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
 }
 
 .inspector-footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: auto;
+    flex: 0 0;
     background-color: rgb(236, 236, 236);
 }
 

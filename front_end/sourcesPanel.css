@@ -255,11 +255,7 @@ a.worker-item:hover {
 }
 
 .scripts-status-bar {
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    height: 20px;
+    flex: 0 0 20px;
     background-color: rgb(236, 236, 236);
     border-top: 1px solid rgb(196,196,196);
 }
@@ -269,14 +265,12 @@ a.worker-item:hover {
     height: 20px;
 }
 
-.editor-contents .tabbed-pane {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 20px;
-    left: 0;
-}
-
 .source-frame-cursor-position {
     -webkit-user-select: text;
+}
+
+.editor-contents .tabbed-pane {
+    flex: 1 1;
+    width: auto;
+    height: auto;
 }

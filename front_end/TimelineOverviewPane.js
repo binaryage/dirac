@@ -37,7 +37,6 @@ WebInspector.TimelineOverviewPane = function(model)
 {
     WebInspector.View.call(this);
     this.element.id = "timeline-overview-panel";
-    this.element.addStyleClass("box-item-fixed");
 
     this._windowStartTime = 0;
     this._windowEndTime = Infinity;

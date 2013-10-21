@@ -47,6 +47,7 @@ importScript("ResourceWebSocketFrameView.js");
 WebInspector.NetworkLogView = function(coulmnsVisibilitySetting)
 {
     WebInspector.View.call(this);
+    this.element.classList.add("vbox", "fill");
     this.registerRequiredCSS("networkLogView.css");
 
     this._coulmnsVisibilitySetting = coulmnsVisibilitySetting;

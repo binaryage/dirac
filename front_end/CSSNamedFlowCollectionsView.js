@@ -66,7 +66,7 @@ WebInspector.CSSNamedFlowCollectionsView = function()
 WebInspector.CSSNamedFlowCollectionsView.prototype = {
     showInDrawer: function()
     {
-        WebInspector.showCloseableViewInDrawer("css-flows", WebInspector.UIString("CSS Flows"), this);
+        WebInspector.inspectorView.showCloseableViewInDrawer("css-flows", WebInspector.UIString("CSS Flows"), this);
     },
 
     reset: function()

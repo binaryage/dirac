@@ -36,7 +36,7 @@ WebInspector.TabbedPane = function()
 {
     WebInspector.View.call(this);
     this.registerRequiredCSS("tabbedPane.css");
-    this.element.addStyleClass("tabbed-pane");
+    this.element.classList.add("tabbed-pane", "vbox");
     this._headerElement = this.element.createChild("div", "tabbed-pane-header");
     this._headerContentsElement = this._headerElement.createChild("div", "tabbed-pane-header-contents");
     this._tabsElement = this._headerContentsElement.createChild("div", "tabbed-pane-header-tabs");
