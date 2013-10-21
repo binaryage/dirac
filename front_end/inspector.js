@@ -105,7 +105,6 @@ var WebInspector = {
                 this._screencastSplitView.show(document.body);
 
                 this._screencastView.show(this._screencastSplitView.firstElement());
-
                 this.inspectorView.element.remove();
                 this.inspectorView.show(this._screencastSplitView.secondElement());
             }
@@ -527,7 +526,7 @@ WebInspector.dispatch = function(message) {
 WebInspector.windowResize = function(event)
 {
     if (WebInspector.inspectorView)
-        WebInspector.inspectorView.onResize();
+        WebInspector.inspectorView.resize();
     if (WebInspector.settingsController)
         WebInspector.settingsController.resize();
     if (WebInspector._screencastSplitView)
