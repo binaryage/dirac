@@ -279,7 +279,7 @@ WebInspector.TextEditor.prototype = {
     willHide: function() { },
 
     /**
-     * @param {WebInspector.CompletionDictionary} dictionary
+     * @param {?WebInspector.CompletionDictionary} dictionary
      */
     setCompletionDictionary: function(dictionary) { },
 }

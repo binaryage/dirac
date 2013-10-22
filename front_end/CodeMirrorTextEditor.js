@@ -71,7 +71,6 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         smartIndent: false,
         styleSelectedText: true,
         electricChars: false,
-        autoCloseBrackets: { explode: false }
     });
     this._codeMirror._codeMirrorTextEditor = this;
 
@@ -130,6 +129,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     WebInspector.settings.textEditorIndent.addChangeListener(this._updateEditorIndentation, this);
     this._updateEditorIndentation();
     WebInspector.settings.showWhitespacesInEditor.addChangeListener(this._updateCodeMirrorMode, this);
+    WebInspector.settings.textEditorBracketMatching.addChangeListener(this._enableBracketMatchingIfNeeded, this);
+    this._enableBracketMatchingIfNeeded();
 
     this._codeMirror.setOption("keyMap", WebInspector.isMac() ? "devtools-mac" : "devtools-pc");
     this._codeMirror.setOption("flattenSpans", false);
@@ -224,6 +225,11 @@ WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 2000;
 WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
+    _enableBracketMatchingIfNeeded: function()
+    {
+        this._codeMirror.setOption("autoCloseBrackets", WebInspector.settings.textEditorBracketMatching.get() ? { explode: false } : false);
+    },
+
     wasShown: function()
     {
         this._codeMirror.refresh();
@@ -411,10 +417,14 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @param {WebInspector.CompletionDictionary} dictionary
+     * @param {?WebInspector.CompletionDictionary} dictionary
      */
     setCompletionDictionary: function(dictionary)
     {
+        if (!dictionary) {
+            delete this._dictionary;
+            return;
+        }
         this._dictionary = dictionary;
         this._addTextToCompletionDictionary(this.text());
     },

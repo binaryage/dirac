@@ -397,6 +397,8 @@ WebInspector.GenericSettingsTab = function()
         ], WebInspector.settings.textEditorIndent);
     p.appendChild(indentationElement);
     p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Detect indentation"), WebInspector.settings.textEditorAutoDetectIndent));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Autocompletion"), WebInspector.settings.textEditorAutocompletion));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Bracket matching"), WebInspector.settings.textEditorBracketMatching));
     p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show whitespace characters"), WebInspector.settings.showWhitespacesInEditor));
     if (WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled()) {
         checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Skip stepping through sources with particular names"), WebInspector.settings.skipStackFramesSwitch);

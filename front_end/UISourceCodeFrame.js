@@ -35,7 +35,8 @@ WebInspector.UISourceCodeFrame = function(uiSourceCode)
 {
     this._uiSourceCode = uiSourceCode;
     WebInspector.SourceFrame.call(this, this._uiSourceCode);
-    this.textEditor.setCompletionDictionary(new WebInspector.SampleCompletionDictionary());
+    WebInspector.settings.textEditorAutocompletion.addChangeListener(this._enableAutocompletionIfNeeded, this);
+    this._enableAutocompletionIfNeeded();
 
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.FormattedChanged, this._onFormattedChanged, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._onWorkingCopyChanged, this);
@@ -44,6 +45,11 @@ WebInspector.UISourceCodeFrame = function(uiSourceCode)
 }
 
 WebInspector.UISourceCodeFrame.prototype = {
+    _enableAutocompletionIfNeeded: function()
+    {
+        this.textEditor.setCompletionDictionary(WebInspector.settings.textEditorAutocompletion.get() ? new WebInspector.SampleCompletionDictionary() : null);
+    },
+
     wasShown: function()
     {
         WebInspector.SourceFrame.prototype.wasShown.call(this);
