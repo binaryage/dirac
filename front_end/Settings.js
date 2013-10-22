@@ -42,7 +42,8 @@ var Preferences = {
 }
 
 var Capabilities = {
-    canInspectWorkers: false
+    canInspectWorkers: false,
+    canScreencast: false
 }
 
 /**
@@ -267,7 +268,6 @@ WebInspector.ExperimentsSettings = function()
     this.showOverridesInDrawer = this._createExperiment("showOverridesInDrawer", "Show Overrides in drawer");
     this.frameworksDebuggingSupport = this._createExperiment("frameworksDebuggingSupport", "Enable frameworks debugging support");
     this.layersPanel = this._createExperiment("layersPanel", "Show Layers panel");
-    this.screencast = this._createExperiment("screencast", "Enable screencast");
     this.stepIntoSelection = this._createExperiment("stepIntoSelection", "Show step-in candidates while debugging.");
     this.openConsoleWithCtrlTilde = this._createExperiment("openConsoleWithCtrlTilde", "Open console with Ctrl/Cmd+Tilde, not Esc");
 

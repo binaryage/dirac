@@ -60,20 +60,12 @@ var WebInspector = {
         return panelDescriptors;
     },
 
-    /**
-     * @return {boolean}
-     */
-    _screencastAvailable: function()
-    {
-        return WebInspector.queryParamsObject["remoteFrontend"] && WebInspector.experimentsSettings.screencast.isEnabled();
-    },
-
     _createGlobalStatusBarItems: function()
     {
         if (this.inspectElementModeController)
             this.inspectorView.toolbar().leftToolbarElement().appendChild(this.inspectElementModeController.toggleSearchButton.element);
 
-        if (this._screencastAvailable()) {
+        if (Capabilities.canScreencast) {
             this._toggleScreencastButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle screencast."), "screencast-status-bar-item");
             this._toggleScreencastButton.addEventListener("click", this._toggleScreencastButtonClicked.bind(this, true), false);
             this.inspectorView.toolbar().leftToolbarElement().appendChild(this._toggleScreencastButton.element);
@@ -91,8 +83,6 @@ var WebInspector = {
      */
     _toggleScreencastButtonClicked: function(resizeWindow)
     {
-        if (!this._screencastAvailable())
-            return;
         this._toggleScreencastButton.toggled = !this._toggleScreencastButton.toggled;
         WebInspector.settings.screencastEnabled.set(this._toggleScreencastButton.toggled);
 
@@ -360,6 +350,7 @@ WebInspector.doLoadedDone = function()
 
     WebInspector.WorkerManager.loaded();
 
+    PageAgent.canScreencast(WebInspector._initializeCapability.bind(WebInspector, "canScreencast", null));
     WorkerAgent.canInspectWorkers(WebInspector._initializeCapability.bind(WebInspector, "canInspectWorkers", WebInspector._doLoadedDoneWithCapabilities.bind(WebInspector)));
 }
 
@@ -489,7 +480,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     WebInspector.WorkerManager.loadCompleted();
     InspectorFrontendAPI.loadCompleted();
 
-    if (this._screencastAvailable() && WebInspector.settings.screencastEnabled.get())
+    if (Capabilities.canScreencast)
         this._toggleScreencastButtonClicked(false);
 
     WebInspector.notifications.dispatchEventToListeners(WebInspector.Events.InspectorLoaded);
