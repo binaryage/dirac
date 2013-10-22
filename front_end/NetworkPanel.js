@@ -1373,7 +1373,8 @@ WebInspector.NetworkLogView.prototype = {
     _generateCurlCommand: function(request)
     {
         var command = ["curl"];
-        var ignoredHeaders = {};
+        // These headers are derived from URL (except "version") and would be added by cURL anyway.
+        var ignoredHeaders = {"host": 1, "method": 1, "path": 1, "scheme": 1, "version": 1};
 
         function escapeStringWin(str)
         {
@@ -1435,12 +1436,12 @@ WebInspector.NetworkLogView.prototype = {
         if (requestContentType && requestContentType.startsWith("application/x-www-form-urlencoded") && request.requestFormData) {
            data.push("--data");
            data.push(escapeString(request.requestFormData));
-           ignoredHeaders["Content-Length"] = true;
+           ignoredHeaders["content-length"] = true;
            inferredMethod = "POST";
         } else if (request.requestFormData) {
            data.push("--data-binary");
            data.push(escapeString(request.requestFormData));
-           ignoredHeaders["Content-Length"] = true;
+           ignoredHeaders["content-length"] = true;
            inferredMethod = "POST";
         }
 
@@ -1451,10 +1452,11 @@ WebInspector.NetworkLogView.prototype = {
 
         for (var i = 0; i < request.requestHeaders.length; i++) {
             var header = request.requestHeaders[i];
-            if (header.name in ignoredHeaders)
+            var name = header.name.replace(/^:/, ""); // Translate SPDY v3 headers to HTTP headers.
+            if (name.toLowerCase() in ignoredHeaders)
                 continue;
             command.push("-H");
-            command.push(escapeString(header.name + ": " + header.value));
+            command.push(escapeString(name + ": " + header.value));
         }
         command = command.concat(data);
         command.push("--compressed");
