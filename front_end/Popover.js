@@ -445,6 +445,11 @@ WebInspector.PopoverContentHelper.prototype = {
         this._contentTable.appendChild(row);
     },
 
+    /**
+     * @param {string} title
+     * @param {!Array.<ConsoleAgent.CallFrame>} stackTrace
+     * @param {function(ConsoleAgent.CallFrame)} callFrameLinkifier
+     */
     appendStackTrace: function(title, stackTrace, callFrameLinkifier)
     {
         this.appendTextRow("", "");
@@ -453,7 +458,7 @@ WebInspector.PopoverContentHelper.prototype = {
             var stackFrame = stackTrace[i];
             var row = document.createElement("tr");
             row.className = "details";
-            row.appendChild(this._createCell(stackFrame.functionName ? stackFrame.functionName : WebInspector.UIString("(anonymous function)"), "function-name"));
+            row.appendChild(this._createCell(stackFrame.functionName || WebInspector.UIString("(anonymous function)"), "function-name"));
             row.appendChild(this._createCell(" @ "));
             var linkCell = document.createElement("td");
             var urlElement = callFrameLinkifier(stackFrame);
