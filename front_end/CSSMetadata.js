@@ -106,7 +106,7 @@ WebInspector.CSSMetadata.canonicalPropertyName = function(name)
 {
     if (!name || name.length < 9 || name.charAt(0) !== "-")
         return name.toLowerCase();
-    var match = name.match(/(?:-webkit-|-khtml-|-apple-)(.+)/);
+    var match = name.match(/(?:-webkit-)(.+)/);
     if (!match)
         return name.toLowerCase();
     return match[1].toLowerCase();
