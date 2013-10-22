@@ -975,7 +975,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @return {?Array.<ConsoleAgent.CallFrame>}
+     * @return {Array.<DebuggerAgent.CallFrame>?}
      */
     get stackTrace()
     {
@@ -1326,9 +1326,6 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         return this._linkifier.linkifyLocation(url, lineNumber - 1, columnNumber, "timeline-details");
     },
 
-    /**
-     * @param {ConsoleAgent.CallFrame} callFrame
-     */
     _linkifyCallFrame: function(callFrame)
     {
         return this._linkifyLocation(callFrame.url, callFrame.lineNumber, callFrame.columnNumber);
