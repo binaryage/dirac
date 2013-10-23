@@ -309,6 +309,12 @@
     margin-left: 0;
 }
 
+.popover ul {
+    margin: 0;
+    padding: 0;
+    list-style-type: none;
+}
+
 .garbage-collect-status-bar-item .glyph {
     -webkit-mask-position: -128px -24px;
 }

@@ -444,8 +444,8 @@ WebInspector.TimelinePresentationModel.prototype = {
         coalescedRecord._children.push(record);
         record.parent = coalescedRecord;
         coalescedRecord.calculateAggregatedStats();
-        if (record.hasWarning || record.childHasWarning)
-            coalescedRecord.childHasWarning = true;
+        if (record.hasWarnings() || record.childHasWarnings())
+            coalescedRecord._childHasWarnings = true;
 
         coalescedRecord.parent = parent;
         parent._children[parent._children.indexOf(record)] = coalescedRecord;
@@ -780,10 +780,16 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
         if (layoutInvalidateStack)
             this.callSiteStackTrace = layoutInvalidateStack;
         if (this.stackTrace)
-            this.setHasWarning();
+            this.addWarning(WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
+
         presentationModel._layoutInvalidateStack[this.frameId] = null;
         this.highlightQuad = record.data.root || WebInspector.TimelinePresentationModel.quadFromRectData(record.data);
         this._relatedBackendNodeId = record.data["rootNode"];
+        break;
+
+    case recordTypes.AutosizeText:
+        if (record.data.needsRelayout && parentRecord.type === recordTypes.Layout)
+            parentRecord.addWarning(WebInspector.UIString("Layout required two passes due to text autosizing, consider setting viewport."));
         break;
 
     case recordTypes.Paint:
@@ -1141,10 +1147,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                        this.data["partialLayout"] ? WebInspector.UIString("Partial") : WebInspector.UIString("Whole document"));
                 }
                 callSiteStackTraceLabel = WebInspector.UIString("Layout invalidated");
-                if (this.stackTrace) {
-                    callStackLabel = WebInspector.UIString("Layout forced");
-                    contentHelper.appendTextRow(WebInspector.UIString("Note"), WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
-                }
+                callStackLabel = WebInspector.UIString("Layout forced");
                 relatedNodeLabel = WebInspector.UIString("Layout root");
                 break;
             case recordTypes.Time:
@@ -1191,6 +1194,12 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         if (this.stackTrace)
             contentHelper.appendStackTrace(callStackLabel || WebInspector.UIString("Call Stack"), this.stackTrace, this._linkifyCallFrame.bind(this));
 
+        if (this._warnings) {
+            var ul = document.createElement("ul");
+            for (var i = 0; i < this._warnings.length; ++i)
+                ul.createChild("li").textContent = this._warnings[i];
+            contentHelper.appendElementRow(WebInspector.UIString("Warning"), ul);
+        }
         return contentHelper.contentTable();
     },
 
@@ -1378,11 +1387,33 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         return this._aggregatedStats;
     },
 
-    setHasWarning: function()
+    /**
+     * @param {string} message
+     */
+    addWarning: function(message)
     {
-        this.hasWarning = true;
-        for (var parent = this.parent; parent && !parent.childHasWarning; parent = parent.parent)
-            parent.childHasWarning = true;
+        if (this._warnings)
+            this._warnings.push(message);
+        else
+            this._warnings = [message];
+        for (var parent = this.parent; parent && !parent._childHasWarnings; parent = parent.parent)
+            parent._childHasWarnings = true;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    hasWarnings: function()
+    {
+        return !!this._warnings;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    childHasWarnings: function()
+    {
+        return this._childHasWarnings;
     }
 }
 

@@ -1409,9 +1409,9 @@ WebInspector.TimelineRecordListRow.prototype = {
         this.element.className = "timeline-tree-item timeline-category-" + record.category.name;
         if (isEven)
             this.element.addStyleClass("even");
-        if (record.hasWarning)
+        if (record.hasWarnings())
             this.element.addStyleClass("warning");
-        else if (record.childHasWarning)
+        else if (record.childHasWarnings())
             this.element.addStyleClass("child-warning");
         if (record.isBackground)
             this.element.addStyleClass("background");
