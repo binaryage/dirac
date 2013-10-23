@@ -81,7 +81,7 @@ WebInspector.ResourceScriptMapping.prototype = {
         if (script.isAnonymousScript())
             return;
         script.pushSourceMapping(this);
-        
+
         var scriptsForSourceURL = script.isInlineScript() ? this._inlineScriptsForSourceURL : this._nonInlineScriptsForSourceURL;
         scriptsForSourceURL.put(script.sourceURL, scriptsForSourceURL.get(script.sourceURL) || []);
         scriptsForSourceURL.get(script.sourceURL).push(script);
@@ -294,6 +294,7 @@ WebInspector.ResourceScriptFile.prototype = {
 
             this._scriptSource = source;
             this._update();
+            WebInspector.LiveEditSupport.logSuccess();
         }
         if (!this._script)
             return;

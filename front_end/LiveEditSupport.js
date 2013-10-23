@@ -83,19 +83,26 @@ WebInspector.LiveEditSupport.prototype = {
  */
 WebInspector.LiveEditSupport.logDetailedError = function(error, errorData, contextScript)
 {
+    var warningLevel = WebInspector.ConsoleMessage.MessageLevel.Warning;
     if (!errorData) {
-        WebInspector.showErrorMessage(error);
+        if (error)
+            WebInspector.log(WebInspector.UIString("LiveEdit failed: %s", error), warningLevel, false);
         return;
     }
     var compileError = errorData.compileError;
     if (compileError) {
-        var message = compileError.message;
+        var message = "LiveEdit compile failed: " + compileError.message;
         if (contextScript)
             message += " at " + contextScript.sourceURL + ":" + compileError.lineNumber + ":" + compileError.columnNumber;
-        WebInspector.showErrorMessage(message);
+        WebInspector.log(message, WebInspector.ConsoleMessage.MessageLevel.Error, false);
     } else {
-        WebInspector.showErrorMessage("Unknown LiveEdit error: " + JSON.stringify(errorData) + "; " + error);
+        WebInspector.log("Unknown LiveEdit error: " + JSON.stringify(errorData) + "; " + error, warningLevel, false);
     }
+}
+
+WebInspector.LiveEditSupport.logSuccess = function()
+{
+    WebInspector.log(WebInspector.UIString("Recompilation and update succeeded."), WebInspector.ConsoleMessage.MessageLevel.Debug, false);
 }
 
 /**
@@ -129,6 +136,7 @@ WebInspector.LiveEditScriptFile.prototype = {
                 WebInspector.LiveEditSupport.logDetailedError(error, errorData, script);
                 return;
             }
+            WebInspector.LiveEditSupport.logSuccess();
         }
 
         var script = WebInspector.debuggerModel.scriptForId(this._scriptId);
