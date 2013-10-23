@@ -133,21 +133,6 @@ WebInspector.Panel.prototype = {
     /**
      * @return {boolean}
      */
-    canFilter: function()
-    {
-        return false;
-    },
-
-    /**
-     * @param {string} query
-     */
-    performFilter: function(query)
-    {
-    },
-
-    /**
-     * @return {boolean}
-     */
     canSetFooterElement: function()
     {
         return false;

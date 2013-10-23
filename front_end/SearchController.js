@@ -54,7 +54,6 @@ WebInspector.SearchController = function()
     this._matchesElement.setAttribute("for", "search-input-field");
 
     this._searchNavigationElement = this._searchControlElement.createChild("div", "toolbar-search-navigation-controls");
-    this._toggleFilterUI(false);
 
     this._searchNavigationPrevElement = this._searchNavigationElement.createChild("div", "toolbar-search-navigation toolbar-search-navigation-prev");
     this._searchNavigationPrevElement.addEventListener("click", this._onPrevButtonSearch.bind(this), false);
@@ -107,17 +106,6 @@ WebInspector.SearchController = function()
     this._replaceLabelElement.textContent = WebInspector.UIString("Replace");
     this._replaceLabelElement.setAttribute("for", "search-replace-trigger");
 
-    // Column 5
-    this._filterCheckboxContainer = this._firstRowElement.createChild("td").createChild("label");
-    this._filterCheckboxContainer.setAttribute("for", "filter-trigger");
-
-    this._filterCheckboxElement = this._filterCheckboxContainer.createChild("input");
-    this._filterCheckboxElement.type = "checkbox";
-    this._filterCheckboxElement.id = "filter-trigger";
-    this._filterCheckboxElement.addEventListener("click", this._filterCheckboxClick.bind(this), false);
-
-    this._filterCheckboxContainer.createTextChild(WebInspector.UIString("Filter"));
-
     // Column 6
     var cancelButtonElement = this._firstRowElement.createChild("td").createChild("button");
     cancelButtonElement.textContent = WebInspector.UIString("Cancel");
@@ -163,12 +151,7 @@ WebInspector.SearchController.prototype = {
     {
         if (!this._searchIsVisible)
             return;
-        if (this._filterCheckboxElement.checked) {
-            this._filterCheckboxElement.checked = false;
-            this._toggleFilterUI(false);
-            this.resetFilter();
-        } else
-            this.resetSearch();
+        this.resetSearch();
         delete this._searchIsVisible;
         this._searchHost.setFooterElement(null);
         this.resetSearch();
@@ -276,7 +259,6 @@ WebInspector.SearchController.prototype = {
         this._searchHost.setFooterElement(this._element);
 
         this._updateReplaceVisibility();
-        this._updateFilterVisibility();
         if (WebInspector.currentFocusElement() !== this._searchInputElement) {
             var selection = window.getSelection();
             if (selection.rangeCount) {
@@ -289,24 +271,6 @@ WebInspector.SearchController.prototype = {
         this._searchInputElement.focus();
         this._searchInputElement.select();
         this._searchIsVisible = true;
-    },
-
-    /**
-     * @param {boolean} filter
-     */
-    _toggleFilterUI: function(filter)
-    {
-        this._matchesElement.enableStyleClass("hidden", filter);
-        this._searchNavigationElement.enableStyleClass("hidden", filter);
-        this._searchInputElement.placeholder = filter ? WebInspector.UIString("Filter") : WebInspector.UIString("Find");
-    },
-
-    _updateFilterVisibility: function()
-    {
-        if (this._searchProvider.canFilter())
-            this._filterCheckboxContainer.removeStyleClass("hidden");
-        else
-            this._filterCheckboxContainer.addStyleClass("hidden");
     },
 
     _updateReplaceVisibility: function()
@@ -456,29 +420,6 @@ WebInspector.SearchController.prototype = {
         this._searchProvider.replaceAllWith(this._searchInputElement.value, this._replaceInputElement.value);
     },
 
-    _filterCheckboxClick: function()
-    {
-        this._searchInputElement.focus();
-        this._searchInputElement.select();
-
-        if (this._filterCheckboxElement.checked) {
-            this._toggleFilterUI(true);
-            this.resetSearch();
-            this._performFilter(this._searchInputElement.value);
-        } else {
-            this._toggleFilterUI(false);
-            this.resetFilter();
-            this._performSearch(false, false);
-        }
-    },
-
-    /**
-     * @param {string} query
-     */
-    _performFilter: function(query)
-    {
-        this._searchProvider.performFilter(query);
-    },
 
     _onInput: function(event)
     {
@@ -492,11 +433,7 @@ WebInspector.SearchController.prototype = {
             this._suggestBox.updateSuggestions(null, suggestions, 0, true, "");
         else
             this._suggestBox.hide();
-
-        if (this._filterCheckboxElement.checked)
-            this._performFilter(this._searchInputElement.value);
-        else
-            this._performSearch(false, true);
+        this._performSearch(false, true);
     },
 
     /**
@@ -519,11 +456,6 @@ WebInspector.SearchController.prototype = {
     {
         this._searchInputElement.scrollLeft = this._searchInputElement.scrollWidth;
         this._onValueChanged();
-    },
-
-    resetFilter: function()
-    {
-        this._performFilter("");
     }
 }
 
@@ -544,11 +476,6 @@ WebInspector.Searchable.prototype = {
      * @return {boolean}
      */
     canSearchAndReplace: function() { },
-
-    /**
-     * @return {boolean}
-     */
-    canFilter: function() { },
 
     searchCanceled: function() { },
 

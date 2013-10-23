@@ -526,7 +526,7 @@ body.remote .toolbar-item .close-button {
 .status-bar {
     position: relative;
     white-space: nowrap;
-    height: 23px;
+    height: 46px;
     overflow: hidden;
     width: 100%;
     z-index: 12;

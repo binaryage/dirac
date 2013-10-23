@@ -62,11 +62,6 @@ WebInspector.ConsolePanel.prototype = {
         this._view.searchCanceled();
     },
 
-    canFilter: function()
-    {
-        return this._view.canFilter();
-    },
-
     /**
      * @param {string} query
      * @param {boolean} shouldJump
@@ -74,14 +69,6 @@ WebInspector.ConsolePanel.prototype = {
     performSearch: function(query, shouldJump)
     {
         this._view.performSearch(query, shouldJump, this);
-    },
-
-    /**
-     * @param {string} query
-     */
-    performFilter: function(query)
-    {
-        this._view.performFilter(query);
     },
 
     jumpToNextSearchResult: function()

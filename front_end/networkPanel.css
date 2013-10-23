@@ -66,11 +66,6 @@
     display: none;
 }
 
-.network.panel .scope-bar {
-    height: 23px;
-    padding-top: 5px;
-}
-
 .network.panel .data-grid th.sort-descending,
 .network.panel .data-grid th.sort-ascending {
     background: white;
@@ -104,11 +99,6 @@
 
 .network-item-view .tabbed-pane-header {
     border-bottom: 1px solid rgb(163, 163, 163);
-}
-
-.network-item-view .scope-bar li {
-    border-bottom-left-radius: 0;
-    border-bottom-right-radius: 0;
 }
 
 .resource-headers-view {
@@ -321,4 +311,13 @@
 .resource-websocket-row-error {
     background-color: rgb(255, 237, 237);
     color: rgb(182, 0, 0);
+}
+
+.panel.network .split-view {
+    flex: auto;
+    position: relative;
+}
+
+.network-filters-header {
+    flex: 0 0 23px;
 }

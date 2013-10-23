@@ -101,65 +101,9 @@
     color: inherit;
 }
 
-.timeline-misc-status-bar-items {
-    right: 64px;
+.status-bar-item.timeline-frame-statistics {
+    pointer-events: none;
 }
-
-.timeline-misc-status-bar-filters {
-    display: -webkit-flex;
-    -webkit-flex-orientation: row;
-}
-
-.timeline-category-statusbar-item {
-    height: 24px;
-    line-height: 22px;
-    padding-left: 6px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    text-shadow: white 0 1px 0;
-    overflow: hidden;
-    min-width: 20px;
-    -webkit-flex: auto 0 1;
-}
-
-.timeline-category-statusbar-item,
-.timeline-records-counter {
-    color: rgb(65, 65, 65);
-}
-
-.timeline-category-checkbox {
-    width: 10px;
-    height: 10px;
-    margin: 0 3px 0 9px;
-    padding: 0;
-    border-radius: 2px;
-    border: solid 1px;
-    display: inline-block;
-    overflow: visible;
-    opacity: 0.8;
-    vertical-align: -1px;
-}
-
-
-.timeline-category-checkbox-check {
-    -webkit-appearance: none;
-    width: 11px;
-    height: 11px;
-    margin-top: -2px;
-    margin-left: 1px;
-}
-
-.timeline-category-checkbox-checked {
-    background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 120px;
-    background-position: -129px -110px;
-}
-
-@media (-webkit-min-device-pixel-ratio: 1.5) {
-.timeline-category-checkbox-checked {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
-}
-} /* media */
 
 .timeline-tree-item {
     height: 18px;
@@ -379,22 +323,6 @@
 
 .timeline-frame-overview-status-bar-item.toggled-on .glyph {
     background-color: rgb(66, 129, 235) !important;
-}
-
-.timeline-records-stats, .storage-application-cache-status, .storage-application-cache-connectivity {
-    text-shadow: white 0 1px 0;
-}
-
-.timeline-records-stats {
-    margin-top: 3px;
-    margin-left: 6px;
-    -webkit-flex: 1;
-}
-
-.timeline-records-stats-container {
-    display: inline-block;
-    height: 24px;
-    margin-left: 6px;
 }
 
 .timeline-frames-stats {
@@ -666,4 +594,9 @@
 @-webkit-keyframes timeline_record_highlight {
     from {background-color: rgba(255, 255, 120, 1); }
     to { background-color: rgba(255, 255, 120, 0); }
+}
+
+.timeline-filters-header {
+    flex: 0 0 23px;
+    overflow: hidden;
 }

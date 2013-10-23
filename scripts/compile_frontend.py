@@ -138,6 +138,7 @@ modules = [
             "DockController.js",
             "Drawer.js",
             "EmptyView.js",
+            "FilterBar.js",
             "GoToLineDialog.js",
             "HelpScreen.js",
             "InspectorView.js",
