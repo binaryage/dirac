@@ -80,9 +80,9 @@ iframe.view {
     position: absolute;
     left: 0;
     right: 0;
-    height: 100%;
     top: 0;
     z-index: -100;
+    bottom: 0;
 }
 
 .resources-event-dividers {

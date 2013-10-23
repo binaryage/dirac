@@ -163,6 +163,10 @@ button.status-bar-item.scripts-navigator-show-hide-button.toggled-overlay {
     top: 2px;
 }
 
+#scripts-editor-container-tabbed-pane {
+    flex: auto;
+}
+
 #scripts-editor-container-tabbed-pane .tabbed-pane-header-contents {
     margin-left: 20px;
     margin-right: 36px;
@@ -191,8 +195,8 @@ button.status-bar-item.scripts-debugger-show-hide-button {
     right: 15px;
 }
 
-.split-view-horizontal button.status-bar-item.scripts-debugger-show-hide-button,
-.split-view-horizontal #scripts-debug-sidebar-resizer-widget {
+#scripts-split-view.vbox button.status-bar-item.scripts-debugger-show-hide-button,
+#scripts-split-view.vbox #scripts-debug-sidebar-resizer-widget {
     display: none;
 }
 

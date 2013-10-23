@@ -214,7 +214,6 @@ body.dock-to-bottom #search-toolbar-label {
     -webkit-align-items: center;
     height: 100%;
     opacity: 0.8;
-    padding-top: 1px;
 }
 
 .toolbar-dropdown-arrow {
@@ -526,7 +525,7 @@ body.remote .toolbar-item .close-button {
 .status-bar {
     position: relative;
     white-space: nowrap;
-    height: 46px;
+    height: 23px;
     overflow: hidden;
     width: 100%;
     z-index: 12;
@@ -879,6 +878,7 @@ body.remote .dock-status-bar-item {
     bottom: 0;
     left: 0;
     right: 0;
+    display: flex;
 }
 
 #drawer-contents .tabbed-pane-header {

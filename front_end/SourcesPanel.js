@@ -80,6 +80,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     const initialNavigatorWidth = 225;
     const minimumViewsContainerWidthPercent = 0.5;
     this.editorView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Start, "scriptsPanelNavigatorSidebarWidth", initialNavigatorWidth);
+    this.editorView.element.id = "scripts-editor-split-view";
     this.editorView.element.tabIndex = 0;
 
     this.editorView.setSidebarElementConstraints(Preferences.minScriptsSidebarWidth);
@@ -92,6 +93,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     var tabbedEditorPlaceholderText = WebInspector.isMac() ? WebInspector.UIString("Hit Cmd+O to open a file") : WebInspector.UIString("Hit Ctrl+O to open a file");
 
     this.editorView.mainElement.addStyleClass("vbox");
+    this.editorView.sidebarElement.addStyleClass("vbox");
     this._editorContainer = new WebInspector.TabbedEditorContainer(this, "previouslyViewedFiles", tabbedEditorPlaceholderText);
     this._editorContainer.show(this.editorView.mainElement);
     this._editorFooterElement = this.editorView.mainElement.createChild("div", "inspector-footer status-bar hidden");

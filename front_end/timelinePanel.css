@@ -43,10 +43,6 @@
     bottom: auto !important;
 }
 
-.timeline.split-view-vertical .split-view-resizer {
-    top: 20px;
-}
-
 #timeline-overview-sidebar {
     position: absolute;
     width: 200px;
@@ -89,7 +85,7 @@
     overflow-y: scroll;
     overflow-x: hidden;
     position: relative;
-    flex: 1 1;
+    flex: auto;
 }
 
 #timeline-container .split-view-sidebar {

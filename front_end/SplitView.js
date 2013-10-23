@@ -92,9 +92,9 @@ WebInspector.SplitView.prototype = {
      */
     _innerSetVertical: function(isVertical)
     {
-        this.element.removeStyleClass(this._isVertical ? "split-view-vertical" : "split-view-horizontal");
+        this.element.removeStyleClass(this._isVertical ? "hbox" : "vbox");
         this._isVertical = isVertical;
-        this.element.addStyleClass(this._isVertical ? "split-view-vertical" : "split-view-horizontal");
+        this.element.addStyleClass(this._isVertical ? "hbox" : "vbox");
         delete this._resizerElementSize;
         this._sidebarSize = -1;
     },
@@ -151,8 +151,10 @@ WebInspector.SplitView.prototype = {
     setSecondIsSidebar: function(secondIsSidebar)
     {
         this.sidebarElement.removeStyleClass("split-view-sidebar");
+        this.mainElement.removeStyleClass("split-view-main");
         this._secondIsSidebar = secondIsSidebar;
         this.sidebarElement.addStyleClass("split-view-sidebar");
+        this.mainElement.addStyleClass("split-view-main");
     },
 
     /**
@@ -193,15 +195,7 @@ WebInspector.SplitView.prototype = {
 
     _removeAllLayoutProperties: function()
     {
-        this._firstElement.style.removeProperty("right");
-        this._firstElement.style.removeProperty("bottom");
-        this._firstElement.style.removeProperty("width");
-        this._firstElement.style.removeProperty("height");
-
-        this._secondElement.style.removeProperty("left");
-        this._secondElement.style.removeProperty("top");
-        this._secondElement.style.removeProperty("width");
-        this._secondElement.style.removeProperty("height");
+        this.sidebarElement.style.removeProperty("flexBasis");
 
         this._resizerElement.style.removeProperty("left");
         this._resizerElement.style.removeProperty("right");
@@ -293,27 +287,20 @@ WebInspector.SplitView.prototype = {
         if (!this._resizerElementSize)
             this._resizerElementSize = this._isVertical ? this._resizerElement.offsetWidth : this._resizerElement.offsetHeight;
 
+        this.sidebarElement.style.flexBasis = sizeValue;
         if (this._isVertical) {
             if (this._secondIsSidebar) {
-                this._firstElement.style.right = sizeValue;
-                this._secondElement.style.width = sizeValue;
                 this._resizerElement.style.right = sizeValue;
                 this._resizerElement.style.marginRight = -this._resizerElementSize / 2 + "px";
             } else {
-                this._firstElement.style.width = sizeValue;
-                this._secondElement.style.left = sizeValue;
                 this._resizerElement.style.left = sizeValue;
                 this._resizerElement.style.marginLeft = -this._resizerElementSize / 2 + "px";
             }
         } else {
             if (this._secondIsSidebar) {
-                this._firstElement.style.bottom = sizeValue;
-                this._secondElement.style.height = sizeValue;
                 this._resizerElement.style.bottom = sizeValue;
                 this._resizerElement.style.marginBottom = -this._resizerElementSize / 2 + "px";
             } else {
-                this._firstElement.style.height = sizeValue;
-                this._secondElement.style.top = sizeValue;
                 this._resizerElement.style.top = sizeValue;
                 this._resizerElement.style.marginTop = -this._resizerElementSize / 2 + "px";
             }

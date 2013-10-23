@@ -297,6 +297,7 @@ body.platform-mac .help-content input[type=radio] {
     width: 110px;
     position: relative;
     top: 14px;
+    flex: auto;
 }
 
 #settings-screen .tabbed-pane-header-contents {

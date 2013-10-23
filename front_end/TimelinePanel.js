@@ -152,8 +152,9 @@ WebInspector.TimelinePanel = function()
     this._presentationModel.addFilter(this._durationFilter);
 }
 
-// Define row height, should be in sync with styles for timeline graphs.
+// Define row and header height, should be in sync with styles for timeline graphs.
 WebInspector.TimelinePanel.rowHeight = 18;
+WebInspector.TimelinePanel.headerHeight = 19;
 
 WebInspector.TimelinePanel.durationFilterPresetsMs = [0, 1, 15];
 
@@ -886,6 +887,7 @@ WebInspector.TimelinePanel.prototype = {
         var visibleBottom = visibleTop + this._containerElementHeight;
 
         const rowHeight = WebInspector.TimelinePanel.rowHeight;
+        const headerHeight = WebInspector.TimelinePanel.headerHeight;
 
         // Convert visible area to visible indexes. Always include top-level record for a visible nested record.
         var startIndex = Math.max(0, Math.min(Math.floor(visibleTop / rowHeight) - this._headerLineCount, recordsInWindow.length - 1));
@@ -904,6 +906,11 @@ WebInspector.TimelinePanel.prototype = {
         this._topGapElement.style.height = (startIndex * rowHeight) + "px";
         this.sidebarTreeElement.style.height = ((startIndex + this._headerLineCount) * rowHeight) + "px";
         this._bottomGapElement.style.height = (recordsInWindow.length - endIndex) * rowHeight + "px";
+        var rowsHeight = headerHeight + recordsInWindow.length * rowHeight;
+        var totalHeight = Math.max(this._containerElementHeight, rowsHeight);
+        this.splitView.firstElement().style.height = totalHeight + "px";
+        this.splitView.secondElement().style.height = totalHeight + "px";
+        this.splitView.resizerElement().style.height = totalHeight + "px";
 
         // Update visible rows.
         var listRowElement = this._sidebarListElement.firstChild;
