@@ -418,7 +418,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
                 titleElement.createTextChild(": ");
             }
 
-            titleElement.appendChild(this._renderPropertyPreview(obj, [property]));
+            titleElement.appendChild(this._renderPropertyPreviewOrAccessor(obj, [property]));
         }
         if (preview.overflow)
             titleElement.createChild("span").textContent = "\u2026";
@@ -431,38 +431,48 @@ WebInspector.ConsoleMessageImpl.prototype = {
      * @param {!Array.<RuntimeAgent.PropertyPreview>} propertyPath
      * @return {Element}
      */
-    _renderPropertyPreview: function(object, propertyPath)
+    _renderPropertyPreviewOrAccessor: function(object, propertyPath)
     {
         var property = propertyPath.peekLast();
         if (property.type === "accessor")
             return this._formatAsAccessorProperty(object, propertyPath.select("name"));
+        return this._renderPropertyPreview(property.type, /** @type {string} */ (property.subtype), property.value);
+    },
 
+    /**
+     * @param {string} type
+     * @param {string} subtype
+     * @param {string=} description
+     * @return {Element}
+     */
+    _renderPropertyPreview: function(type, subtype, description)
+    {
         var span = document.createElement("span");
-        span.className = "console-formatted-" + property.type;
+        span.className = "console-formatted-" + type;
 
-        if (property.type === "function") {
+        if (type === "function") {
             span.textContent = "function";
             return span;
         }
 
-        if (property.type === "object" && property.subtype === "regexp") {
+        if (type === "object" && subtype === "regexp") {
             span.addStyleClass("console-formatted-string");
-            span.textContent = property.value;
+            span.textContent = description;
             return span;
         }
 
-        if (property.type === "object" && property.subtype === "node" && property.value) {
+        if (type === "object" && subtype === "node" && description) {
             span.addStyleClass("console-formatted-preview-node");
-            WebInspector.DOMPresentationUtils.createSpansForNodeTitle(span, property.value);
+            WebInspector.DOMPresentationUtils.createSpansForNodeTitle(span, description);
             return span;
         }
 
-        if (property.type === "string") {
-            span.textContent = "\"" + property.value.replace(/\n/g, "\u21B5") + "\"";
+        if (type === "string") {
+            span.textContent = "\"" + description.replace(/\n/g, "\u21B5") + "\"";
             return span;
         }
 
-        span.textContent = property.value;
+        span.textContent = description;
         return span;
     },
 
@@ -548,7 +558,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
                 }
 
                 if (columnRendered) {
-                    var cellElement = this._renderPropertyPreview(table, [rowProperty, cellProperty]);
+                    var cellElement = this._renderPropertyPreviewOrAccessor(table, [rowProperty, cellProperty]);
                     cellElement.addStyleClass("nowrap-below");
                     rowValue[cellProperty.name] = cellElement;
                 }
@@ -673,7 +683,18 @@ WebInspector.ConsoleMessageImpl.prototype = {
                 element.textContent = WebInspector.UIString("<exception>");
                 element.title = result.description;
             } else {
-                rootElement.appendChild(this._formatAsArrayEntry(result));
+                // Make a PropertyPreview from the RemoteObject similar to the backend logic.
+                const maxLength = 100;
+                var type = result.type;
+                var subtype = result.subtype;
+                var description = "";
+                if (type !== "function" && result.description) {
+                    if (type === "string" || subtype === "regexp")
+                        description = result.description.trimMiddle(maxLength);
+                    else
+                        description = result.description.trimEnd(maxLength);
+                }
+                rootElement.appendChild(this._renderPropertyPreview(type, subtype, description));
             }
         }
 
