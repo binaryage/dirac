@@ -79,11 +79,13 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
+     * @param {string} content
      * @return {string}
      */
-    createScriptSnippet: function()
+    createScriptSnippet: function(content)
     {
         var snippet = this._snippetStorage.createSnippet();
+        snippet.content = content;
         return this._addScriptSnippet(snippet);
     },
 
@@ -656,11 +658,12 @@ WebInspector.SnippetsProjectDelegate.prototype = {
     /**
      * @param {string} path
      * @param {?string} name
+     * @param {string} content
      * @param {function(?string)} callback
      */
-    createFile: function(path, name, callback)
+    createFile: function(path, name, content, callback)
     {
-        var filePath = this._model.createScriptSnippet();
+        var filePath = this._model.createScriptSnippet(content);
         callback(filePath);
     },
 

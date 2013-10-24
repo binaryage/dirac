@@ -126,9 +126,10 @@ WebInspector.ProjectDelegate.prototype = {
     /**
      * @param {string} path
      * @param {?string} name
+     * @param {string} content
      * @param {function(?string)} callback
      */
-    createFile: function(path, name, callback) { },
+    createFile: function(path, name, content, callback) { },
 
     /**
      * @param {string} path
@@ -407,11 +408,12 @@ WebInspector.Project.prototype = {
     /**
      * @param {string} path
      * @param {?string} name
+     * @param {string} content
      * @param {function(?string)} callback
      */
-    createFile: function(path, name, callback)
+    createFile: function(path, name, content, callback)
     {
-        this._projectDelegate.createFile(path, name, innerCallback);
+        this._projectDelegate.createFile(path, name, content, innerCallback);
 
         function innerCallback(filePath)
         {
@@ -420,11 +422,11 @@ WebInspector.Project.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {string} path
      */
-    deleteFile: function(uiSourceCode)
+    deleteFile: function(path)
     {
-        this._projectDelegate.deleteFile(uiSourceCode.path());
+        this._projectDelegate.deleteFile(path);
     },
 
     remove: function()

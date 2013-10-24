@@ -1207,10 +1207,31 @@ WebInspector.SourcesPanel.prototype = {
     {
         var project = event.data.project;
         var path = event.data.path;
+        var uiSourceCodeToCopy = event.data.uiSourceCode;
         var filePath;
         var shouldHideNavigator;
         var uiSourceCode;
-        project.createFile(path, null, fileCreated.bind(this));
+        if (uiSourceCodeToCopy) {
+            /**
+             * @param {?string} content
+             */
+            function contentLoaded(content)
+            {
+                createFile.call(this, content || "");
+            }
+
+            uiSourceCodeToCopy.requestContent(contentLoaded.bind(this));
+        } else {
+            createFile.call(this);
+        }
+
+        /**
+         * @param {string=} content
+         */
+        function createFile(content)
+        {
+            project.createFile(path, null, content || "", fileCreated.bind(this));
+        }
 
         /**
          * @param {?string} path

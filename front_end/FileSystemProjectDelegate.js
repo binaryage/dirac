@@ -410,16 +410,31 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     /**
      * @param {string} path
      * @param {?string} name
+     * @param {string} content
      * @param {function(?string)} callback
      */
-    createFile: function(path, name, callback)
+    createFile: function(path, name, content, callback)
     {
         this._fileSystem.createFile(path, name, innerCallback.bind(this));
+        var createFilePath;
 
+        /**
+         * @param {?string} filePath
+         */
         function innerCallback(filePath)
         {
-            this._addFile(filePath);
-            callback(filePath);
+            createFilePath = filePath;
+            if (!filePath || !content) {
+                contentSet.call(this);
+                return;
+            }
+            this._fileSystem.setFileContent(filePath, content, contentSet.bind(this));
+        }
+
+        function contentSet()
+        {
+            this._addFile(createFilePath);
+            callback(createFilePath);
         }
     },
 
