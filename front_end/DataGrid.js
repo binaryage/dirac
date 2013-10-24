@@ -473,9 +473,10 @@ WebInspector.DataGrid.prototype = {
     },
 
     /**
-     * @param {Array.<number>} widths
+     * @param {!Array.<number>} widths
      * @param {number} minPercent
      * @param {number=} maxPercent
+     * @return {!Array.<number>}
      */
     _autoSizeWidths: function(widths, minPercent, maxPercent)
     {
@@ -592,7 +593,7 @@ WebInspector.DataGrid.prototype = {
             // for their widths.
             for (var i = 0; i < numColumns; i++) {
                 var columnWidth = this.headerTableBody.rows[0].cells[i].offsetWidth;
-                var percentWidth = ((columnWidth / tableWidth) * 100) + "%";
+                var percentWidth = (100 * columnWidth / tableWidth) + "%";
                 this._headerTableColumnGroup.children[i].style.width = percentWidth;
                 this._dataTableColumnGroup.children[i].style.width = percentWidth;
             }
@@ -650,11 +651,10 @@ WebInspector.DataGrid.prototype = {
             if (this.isColumnVisible(column))
                 sumOfWeights += column.weight;
         }
-        var factor = 100 / sumOfWeights;
 
         for (var i = 0; i < this._columnsArray.length; ++i) {
             var column = this._columnsArray[i];
-            var width = this.isColumnVisible(column) ? ((factor * column.weight) + "%"): "0%";
+            var width = this.isColumnVisible(column) ? (100 * column.weight / sumOfWeights) + "%" : "0%";
             this._headerTableColumnGroup.children[i].style.width = width;
             this._dataTableColumnGroup.children[i].style.width = width;
         }
@@ -1036,7 +1036,7 @@ WebInspector.DataGrid.prototype = {
     _startResizerDragging: function(event)
     {
         this._currentResizer = event.target;
-        return !!this._currentResizer.rightNeighboringColumnIndex
+        return !!this._currentResizer.rightNeighboringColumnIndex;
     },
 
     _resizerDragging: function(event)
@@ -1079,11 +1079,11 @@ WebInspector.DataGrid.prototype = {
 
         resizer.style.left = (dragPoint - this.CenterResizerOverBorderAdjustment) + "px";
 
-        var percentLeftColumn = (((dragPoint - leftEdgeOfPreviousColumn) / tableWidth) * 100) + "%";
+        var percentLeftColumn = (100 * (dragPoint - leftEdgeOfPreviousColumn) / tableWidth) + "%";
         this._headerTableColumnGroup.children[leftCellIndex].style.width = percentLeftColumn;
         this._dataTableColumnGroup.children[leftCellIndex].style.width = percentLeftColumn;
 
-        var percentRightColumn = (((rightEdgeOfNextColumn - dragPoint) / tableWidth) * 100) + "%";
+        var percentRightColumn = (100 * (rightEdgeOfNextColumn - dragPoint) / tableWidth) + "%";
         this._headerTableColumnGroup.children[rightCellIndex].style.width =  percentRightColumn;
         this._dataTableColumnGroup.children[rightCellIndex].style.width = percentRightColumn;
 

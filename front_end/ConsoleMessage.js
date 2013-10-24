@@ -82,6 +82,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
             var dataGrid = this._dataGrids[i];
             var parentElement = this._dataGridParents.get(dataGrid) || null;
             dataGrid.show(parentElement);
+            dataGrid.updateWidths();
         }
     },
 

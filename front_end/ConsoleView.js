@@ -1118,15 +1118,28 @@ WebInspector.ConsoleGroup.prototype = {
         var groupTitleElement = event.target.enclosingNodeOrSelfWithClass("console-group-title");
         if (groupTitleElement) {
             var groupElement = groupTitleElement.enclosingNodeOrSelfWithClass("console-group");
-            if (groupElement)
-                if (groupElement.hasStyleClass("collapsed"))
-                    groupElement.removeStyleClass("collapsed");
-                else
-                    groupElement.addStyleClass("collapsed");
+            if (groupElement && !groupElement.classList.toggle("collapsed")) {
+                if (groupElement.group) {
+                    groupElement.group.wasShown();
+                }
+            }
             groupTitleElement.scrollIntoViewIfNeeded(true);
         }
-
         event.consume(true);
+    },
+
+    wasShown: function()
+    {
+        if (this.element.hasStyleClass("collapsed"))
+            return;
+        var node = this.messagesElement.firstChild;
+        while (node) {
+            if (node.hasStyleClass("console-message") && node.message)
+                node.message.wasShown();
+            if (node.hasStyleClass("console-group") && node.group)
+                node.group.wasShown();
+            node = node.nextSibling;
+        }
     }
 }
 
