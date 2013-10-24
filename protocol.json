@@ -152,17 +152,6 @@
                 "hidden": true
             },
             {
-                "id": "SearchResult",
-                "type": "object",
-                "description": "Search result for resource.",
-                "properties": [
-                    { "name": "url", "type": "string", "description": "Resource URL." },
-                    { "name": "frameId", "$ref": "FrameId", "description": "Resource frame id." },
-                    { "name": "matchesCount", "type": "number", "description": "Number of matches in the resource content." }
-                ],
-                "hidden": true
-            },
-            {
                 "id": "Cookie",
                 "type": "object",
                 "description": "Cookie object",
@@ -308,19 +297,6 @@
                 ],
                 "returns": [
                     { "name": "result", "type": "array", "items": { "$ref": "SearchMatch" }, "description": "List of search matches." }
-                ],
-                "hidden": true
-            },
-            {
-                "name": "searchInResources",
-                "description": "Searches for given string in frame / resource tree structure.",
-                "parameters": [
-                    { "name": "text", "type": "string", "description": "String to search for."  },
-                    { "name": "caseSensitive", "type": "boolean", "optional": true, "description": "If true, search is case sensitive." },
-                    { "name": "isRegex", "type": "boolean", "optional": true, "description": "If true, treats string parameter as regex." }
-                ],
-                "returns": [
-                    { "name": "result", "type": "array", "items": { "$ref": "SearchResult" }, "description": "List of search results." }
                 ],
                 "hidden": true
             },

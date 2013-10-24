@@ -200,6 +200,10 @@ WebInspector.SearchController.prototype = {
 
             case "U+0047": // G key
                 if (isMac && event.metaKey && !event.ctrlKey && !event.altKey && this._searchHost) {
+                    if (!this._searchProvider) {
+                        event.consume(true);
+                        return true;
+                    }
                     if (event.shiftKey)
                         this._searchProvider.jumpToPreviousSearchResult();
                     else
@@ -257,6 +261,9 @@ WebInspector.SearchController.prototype = {
             this._searchHost = WebInspector.inspectorView;
 
         this._searchProvider = this._searchHost.getSearchProvider();
+        if (!this._searchProvider)
+            return;
+
         this._searchHost.setFooterElement(this._element);
 
         this._updateReplaceVisibility();

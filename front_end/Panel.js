@@ -72,6 +72,14 @@ WebInspector.Panel.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    canSearch: function()
+    {
+        return true;
+    },
+
+    /**
      * @param {string} query
      * @param {boolean} shouldJump
      */

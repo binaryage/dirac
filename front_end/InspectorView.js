@@ -121,7 +121,7 @@ WebInspector.InspectorView.prototype = {
      */
     getSearchProvider: function()
     {
-        return this._currentPanel;
+        return this._currentPanel && this._currentPanel.canSearch() ? this._currentPanel : null;
     },
     
     /**
