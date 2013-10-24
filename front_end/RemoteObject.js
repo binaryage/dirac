@@ -180,6 +180,25 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
+     * @param {!Array.<string>} propertyPath
+     * @param {function(?WebInspector.RemoteObject, boolean=)} callback
+     */
+    getProperty: function(propertyPath, callback)
+    {
+        function remoteFunction(arrayStr)
+        {
+            var result = this;
+            var properties = JSON.parse(arrayStr);
+            for (var i = 0, n = properties.length; i < n; ++i)
+                result = result[properties[i]];
+            return result;
+        }
+
+        var args = [{ value: JSON.stringify(propertyPath) }];
+        this.callFunction(remoteFunction, args, callback);
+    },
+
+    /**
      * @param {boolean} ownProperties
      * @param {boolean} accessorPropertiesOnly
      * @param {?function(Array.<WebInspector.RemoteObjectProperty>, ?Array.<WebInspector.RemoteObjectProperty>)} callback
@@ -310,9 +329,9 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
-     * @param {function(this:Object)} functionDeclaration
+     * @param {function(this:Object, ...)} functionDeclaration
      * @param {Array.<RuntimeAgent.CallArgument>=} args
-     * @param {function(?WebInspector.RemoteObject)=} callback
+     * @param {function(?WebInspector.RemoteObject, boolean=)=} callback
      */
     callFunction: function(functionDeclaration, args, callback)
     {
@@ -325,8 +344,10 @@ WebInspector.RemoteObject.prototype = {
         {
             if (!callback)
                 return;
-
-            callback((error || wasThrown) ? null : WebInspector.RemoteObject.fromPayload(result));
+            if (error)
+                callback(null, false);
+            else
+                callback(WebInspector.RemoteObject.fromPayload(result), wasThrown);
         }
 
         RuntimeAgent.callFunctionOn(this._objectId, functionDeclaration.toString(), args, true, undefined, undefined, mycallback);

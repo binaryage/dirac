@@ -684,7 +684,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      * ancestors.
      *
      * @param {WebInspector.DOMNode} node
-     * @param {function(?WebInspector.RemoteObject)=} userCallback
+     * @param {function(?WebInspector.RemoteObject, boolean=)=} userCallback
      */
     _toggleHideShortcut: function(node, userCallback)
     {

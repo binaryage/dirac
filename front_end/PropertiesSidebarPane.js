@@ -69,9 +69,9 @@ WebInspector.PropertiesSidebarPane.prototype = {
             object.release();
         }
 
-        function nodePrototypesReady(object)
+        function nodePrototypesReady(object, wasThrown)
         {
-            if (!object)
+            if (!object || wasThrown)
                 return;
             object.getOwnProperties(fillSection.bind(this));
         }

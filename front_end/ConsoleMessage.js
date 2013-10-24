@@ -674,11 +674,13 @@ WebInspector.ConsoleMessageImpl.prototype = {
         var rootElement = WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(object, propertyPath, onInvokeGetterClick.bind(this));
 
         /**
-         * @param {!WebInspector.RemoteObject} result
+         * @param {?WebInspector.RemoteObject} result
          * @param {boolean=} wasThrown
          */
         function onInvokeGetterClick(result, wasThrown)
         {
+            if (!result)
+                return;
             rootElement.removeChildren();
             if (wasThrown) {
                 var element = rootElement.createChild("span", "error-message");
