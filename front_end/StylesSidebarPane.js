@@ -1428,8 +1428,9 @@ WebInspector.StylePropertiesSection.prototype = {
 
         var selectedNode = this._parentPane.node;
 
-        function successCallback(newRule, doesAffectSelectedNode)
+        function successCallback(newRule)
         {
+            var doesAffectSelectedNode = newRule.matchingSelectors.length > 0;
             if (!doesAffectSelectedNode) {
                 this.noAffect = true;
                 this.element.addStyleClass("no-affect");
@@ -1618,8 +1619,9 @@ WebInspector.BlankStylePropertiesSection.prototype = {
             return;
         }
 
-        function successCallback(newRule, doesSelectorAffectSelectedNode)
+        function successCallback(newRule)
         {
+            var doesSelectorAffectSelectedNode = newRule.matchingSelectors.length > 0;
             var styleRule = { section: this, style: newRule.style, selectorText: newRule.selectorText, sourceURL: newRule.resourceURL(), rule: newRule };
             this.makeNormal(styleRule);
 

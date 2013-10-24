@@ -266,29 +266,14 @@ WebInspector.CSSStyleModel.prototype = {
      * @param {CSSAgent.CSSRuleId} ruleId
      * @param {DOMAgent.NodeId} nodeId
      * @param {string} newSelector
-     * @param {function(WebInspector.CSSRule, boolean)} successCallback
+     * @param {function(WebInspector.CSSRule)} successCallback
      * @param {function()} failureCallback
      */
     setRuleSelector: function(ruleId, nodeId, newSelector, successCallback, failureCallback)
     {
         /**
          * @param {DOMAgent.NodeId} nodeId
-         * @param {function(WebInspector.CSSRule, boolean)} successCallback
-         * @param {CSSAgent.CSSRule} rulePayload
-         * @param {?Array.<DOMAgent.NodeId>} selectedNodeIds
-         */
-        function checkAffectsCallback(nodeId, successCallback, rulePayload, selectedNodeIds)
-        {
-            if (!selectedNodeIds)
-                return;
-            var doesAffectSelectedNode = (selectedNodeIds.indexOf(nodeId) >= 0);
-            var rule = WebInspector.CSSRule.parsePayload(rulePayload);
-            successCallback(rule, doesAffectSelectedNode);
-        }
-
-        /**
-         * @param {DOMAgent.NodeId} nodeId
-         * @param {function(WebInspector.CSSRule, boolean)} successCallback
+         * @param {function(WebInspector.CSSRule)} successCallback
          * @param {function()} failureCallback
          * @param {?Protocol.Error} error
          * @param {string} newSelector
@@ -297,46 +282,68 @@ WebInspector.CSSStyleModel.prototype = {
         function callback(nodeId, successCallback, failureCallback, newSelector, error, rulePayload)
         {
             this._pendingCommandsMajorState.pop();
-            if (error)
+            if (error) {
                 failureCallback();
-            else {
-                WebInspector.domAgent.markUndoableState();
-                var ownerDocumentId = this._ownerDocumentId(nodeId);
-                if (ownerDocumentId)
-                    WebInspector.domAgent.querySelectorAll(ownerDocumentId, newSelector, checkAffectsCallback.bind(this, nodeId, successCallback, rulePayload));
-                else
-                    failureCallback();
+                return;
             }
+            WebInspector.domAgent.markUndoableState();
+            this._computeMatchingSelectors(rulePayload, nodeId, successCallback, failureCallback);
         }
+
 
         this._pendingCommandsMajorState.push(true);
         CSSAgent.setRuleSelector(ruleId, newSelector, callback.bind(this, nodeId, successCallback, failureCallback, newSelector));
     },
 
     /**
+     * @param {CSSAgent.CSSRule} rulePayload
+     * @param {DOMAgent.NodeId} nodeId
+     * @param {function(WebInspector.CSSRule)} successCallback
+     * @param {function()} failureCallback
+     */
+    _computeMatchingSelectors: function(rulePayload, nodeId, successCallback, failureCallback)
+    {
+        var ownerDocumentId = this._ownerDocumentId(nodeId);
+        if (!ownerDocumentId) {
+            failureCallback();
+            return;
+        }
+        var rule = WebInspector.CSSRule.parsePayload(rulePayload);
+        var matchingSelectors = [];
+        var allSelectorsBarrier = new CallbackBarrier();
+        for (var i = 0; i < rule.selectors.length; ++i) {
+            var selector = rule.selectors[i];
+            var boundCallback = allSelectorsBarrier.createCallback(selectorQueried.bind(this, i, nodeId, matchingSelectors));
+            WebInspector.domAgent.querySelectorAll(ownerDocumentId, selector.value, boundCallback);
+        }
+        allSelectorsBarrier.callWhenDone(function() {
+            rule.matchingSelectors = matchingSelectors;
+            successCallback(rule);
+        });
+
+        /**
+         * @param {number} index
+         * @param {DOMAgent.NodeId} nodeId
+         * @param {Array.<number>} matchingSelectors
+         * @param {Array.<DOMAgent.NodeId>} matchingNodeIds
+         */
+        function selectorQueried(index, nodeId, matchingSelectors, matchingNodeIds)
+        {
+            if (!matchingNodeIds)
+                return;
+            if (matchingNodeIds.indexOf(nodeId) !== -1)
+                matchingSelectors.push(index);
+        }
+    },
+
+    /**
      * @param {DOMAgent.NodeId} nodeId
      * @param {string} selector
-     * @param {function(WebInspector.CSSRule, boolean)} successCallback
+     * @param {function(WebInspector.CSSRule)} successCallback
      * @param {function()} failureCallback
      */
     addRule: function(nodeId, selector, successCallback, failureCallback)
     {
-        /**
-         * @param {DOMAgent.NodeId} nodeId
-         * @param {function(WebInspector.CSSRule, boolean)} successCallback
-         * @param {CSSAgent.CSSRule} rulePayload
-         * @param {?Array.<DOMAgent.NodeId>} selectedNodeIds
-         */
-        function checkAffectsCallback(nodeId, successCallback, rulePayload, selectedNodeIds)
-        {
-            if (!selectedNodeIds)
-                return;
-
-            var doesAffectSelectedNode = (selectedNodeIds.indexOf(nodeId) >= 0);
-            var rule = WebInspector.CSSRule.parsePayload(rulePayload);
-            successCallback(rule, doesAffectSelectedNode);
-        }
-
         /**
          * @param {function(WebInspector.CSSRule, boolean)} successCallback
          * @param {function()} failureCallback
@@ -352,11 +359,7 @@ WebInspector.CSSStyleModel.prototype = {
                 failureCallback();
             } else {
                 WebInspector.domAgent.markUndoableState();
-                var ownerDocumentId = this._ownerDocumentId(nodeId);
-                if (ownerDocumentId)
-                    WebInspector.domAgent.querySelectorAll(ownerDocumentId, selector, checkAffectsCallback.bind(this, nodeId, successCallback, rulePayload));
-                else
-                    failureCallback();
+                this._computeMatchingSelectors(rulePayload, nodeId, successCallback, failureCallback);
             }
         }
 
