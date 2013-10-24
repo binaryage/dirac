@@ -75,7 +75,6 @@ WebInspector.Settings = function()
     this.jsSourceMapsEnabled = this.createSetting("sourceMapsEnabled", true);
     this.cssSourceMapsEnabled = this.createSetting("cssSourceMapsEnabled", true);
     this.cacheDisabled = this.createSetting("cacheDisabled", false);
-    this.enableOverridesOnStartup = this.createSetting("enableOverridesOnStartup", false);
     this.overrideUserAgent = this.createSetting("overrideUserAgent", false);
     this.userAgent = this.createSetting("userAgent", "");
     this.overrideDeviceMetrics = this.createSetting("overrideDeviceMetrics", false);

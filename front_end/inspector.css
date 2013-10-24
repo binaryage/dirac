@@ -74,7 +74,6 @@ input[type="text"]:focus {
 }
 
 .toolbar {
-    -webkit-flex-direction: row;
     flex: 0 0 26px;
     position: relative;
 }
@@ -881,7 +880,7 @@ body.remote .dock-status-bar-item {
     display: flex;
 }
 
-#drawer-contents .tabbed-pane-header {
+#drawer-contents > .tabbed-pane > .tabbed-pane-header {
     background-color: rgb(236, 236, 236);
     cursor: ns-resize;
     border-top: 1px solid rgb(124, 124, 124);

@@ -36,8 +36,6 @@ WebInspector.ElementsPanelDescriptor = function()
 {
     WebInspector.PanelDescriptor.call(this, "elements", WebInspector.UIString("Elements"), "ElementsPanel", "ElementsPanel.js");
     WebInspector.ContextMenu.registerProvider(this);
-
-    WebInspector.inspectorView.registerViewInDrawer("overrides", WebInspector.UIString("Overrides"), this);
 }
 
 WebInspector.ElementsPanelDescriptor.prototype = {
@@ -86,6 +84,8 @@ WebInspector.ElementsPanelDescriptor.prototype = {
 
         stylesPaneSection.addAlternateKeys(WebInspector.ElementsPanelDescriptor.ShortcutKeys.IncrementBy01, WebInspector.UIString("Increment by %f", 0.1));
         stylesPaneSection.addAlternateKeys(WebInspector.ElementsPanelDescriptor.ShortcutKeys.DecrementBy01, WebInspector.UIString("Decrement by %f", 0.1));
+
+        WebInspector.inspectorView.registerViewInDrawer("emulation", WebInspector.UIString("Emulation"), this);
     },
 
     /**

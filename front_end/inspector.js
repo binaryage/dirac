@@ -380,9 +380,9 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.runtimeModel = new WebInspector.RuntimeModel(this.resourceTreeModel);
 
     var panelDescriptors = this._panelDescriptors();
+    this.advancedSearchController = new WebInspector.AdvancedSearchController();
     for (var i = 0; i < panelDescriptors.length; ++i)
         panelDescriptors[i].registerShortcuts();
-    this.advancedSearchController = new WebInspector.AdvancedSearchController();
 
     WebInspector.CSSMetadata.requestCSSShorthandData();
 

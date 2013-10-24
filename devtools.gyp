@@ -218,6 +218,7 @@
             'front_end/navigatorView.css',
             'front_end/networkLogView.css',
             'front_end/networkPanel.css',
+            'front_end/overrides.css',
             'front_end/panelEnablerView.css',
             'front_end/profilesPanel.css',
             'front_end/resourceView.css',

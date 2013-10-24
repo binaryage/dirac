@@ -33,10 +33,7 @@
  */
 WebInspector.OverridesSupport = function()
 {
-    this._overridesActive = WebInspector.settings.enableOverridesOnStartup.get();
-    this._deviceMetricsOverridesActive = false;
-    if (this._overridesActive)
-        this._updateAllOverrides();
+    this._updateAllOverrides();
 
     WebInspector.settings.overrideUserAgent.addChangeListener(this._userAgentChanged, this);
     WebInspector.settings.userAgent.addChangeListener(this._userAgentChanged, this);
@@ -339,15 +336,6 @@ WebInspector.OverridesSupport.DeviceOrientation.clearDeviceOrientationOverride =
 }
 
 WebInspector.OverridesSupport.prototype = {
-    setOverridesActive: function(enabled)
-    {
-        if (this._overridesActive === enabled)
-            return;
-        this._overridesActive = enabled;
-
-        this._updateAllOverrides();
-    },
-
     _updateAllOverrides: function()
     {
         this._userAgentChanged();
@@ -360,27 +348,23 @@ WebInspector.OverridesSupport.prototype = {
 
     _userAgentChanged: function()
     {
-        NetworkAgent.setUserAgentOverride(this._overridesActive && WebInspector.settings.overrideUserAgent.get() ? WebInspector.settings.userAgent.get() : "");
+        NetworkAgent.setUserAgentOverride(WebInspector.settings.overrideUserAgent.get() ? WebInspector.settings.userAgent.get() : "");
     },
 
     _deviceMetricsChanged: function()
     {
-        var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(this._overridesActive && WebInspector.settings.overrideDeviceMetrics.get() ? WebInspector.settings.deviceMetrics.get() : "");
+        var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(WebInspector.settings.overrideDeviceMetrics.get() ? WebInspector.settings.deviceMetrics.get() : "");
         if (metrics.isValid()) {
             var active = metrics.width > 0 && metrics.height > 0;
             var dipWidth = Math.round(metrics.width / metrics.deviceScaleFactor);
             var dipHeight = Math.round(metrics.height / metrics.deviceScaleFactor);
             PageAgent.setDeviceMetricsOverride(dipWidth, dipHeight, metrics.deviceScaleFactor, WebInspector.settings.deviceFitWindow.get(), metrics.textAutosizing);
-            if (active != this._deviceMetricsOverridesActive) {
-                PageAgent.reload(false);
-                this._deviceMetricsOverridesActive = active;
-            }
         }
     },
 
     _geolocationPositionChanged: function()
     {
-        if (!this._overridesActive || !WebInspector.settings.overrideGeolocation.get()) {
+        if (!WebInspector.settings.overrideGeolocation.get()) {
             PageAgent.clearGeolocationOverride();
             return;
         }
@@ -393,7 +377,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _deviceOrientationChanged: function()
     {
-        if (!this._overridesActive || !WebInspector.settings.overrideDeviceOrientation.get()) {
+        if (!WebInspector.settings.overrideDeviceOrientation.get()) {
             PageAgent.clearDeviceOrientationOverride();
             return;
         }
@@ -403,12 +387,12 @@ WebInspector.OverridesSupport.prototype = {
 
     _emulateTouchEventsChanged: function()
     {
-        WebInspector.domAgent.emulateTouchEventObjects(this._overridesActive && WebInspector.settings.emulateTouchEvents.get());
+        WebInspector.domAgent.emulateTouchEventObjects(WebInspector.settings.emulateTouchEvents.get());
     },
 
     _cssMediaChanged: function()
     {
-        PageAgent.setEmulatedMedia(this._overridesActive && WebInspector.settings.overrideCSSMedia.get() ? WebInspector.settings.emulatedCSSMedia.get() : "");
+        PageAgent.setEmulatedMedia(WebInspector.settings.overrideCSSMedia.get() ? WebInspector.settings.emulatedCSSMedia.get() : "");
         WebInspector.cssModel.mediaQueryResultChanged();
     }
 }
