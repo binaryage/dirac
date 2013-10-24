@@ -2227,7 +2227,7 @@ WebInspector.NetworkDataGridNode.prototype = {
 
     _refreshDomainCell: function()
     {
-        this._typeCell.setTextAndTitle(this._request.domain);
+        this._domainCell.setTextAndTitle(this._request.domain);
     },
 
     _refreshTypeCell: function()
