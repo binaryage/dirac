@@ -436,7 +436,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
     {
         var property = propertyPath.peekLast();
         if (property.type === "accessor")
-            return this._formatAsAccessorProperty(object, propertyPath.select("name"));
+            return this._formatAsAccessorProperty(object, propertyPath.select("name"), false);
         return this._renderPropertyPreview(property.type, /** @type {string} */ (property.subtype), property.value);
     },
 
@@ -616,7 +616,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
             if (isNaN(name))
                 continue;
             if (property.getter)
-                elements[name] = this._formatAsAccessorProperty(array, [name]);
+                elements[name] = this._formatAsAccessorProperty(array, [name], true);
             else if (property.value)
                 elements[name] = this._formatAsArrayEntry(property.value);
         }
@@ -666,9 +666,10 @@ WebInspector.ConsoleMessageImpl.prototype = {
     /**
      * @param {!WebInspector.RemoteObject} object
      * @param {!Array.<string>} propertyPath
+     * @param {boolean} isArrayEntry
      * @return {!Element}
      */
-    _formatAsAccessorProperty: function(object, propertyPath)
+    _formatAsAccessorProperty: function(object, propertyPath, isArrayEntry)
     {
         var rootElement = WebInspector.ObjectPropertyTreeElement.createRemoteObjectAccessorPropertySpan(object, propertyPath, onInvokeGetterClick.bind(this));
 
@@ -683,6 +684,8 @@ WebInspector.ConsoleMessageImpl.prototype = {
                 var element = rootElement.createChild("span", "error-message");
                 element.textContent = WebInspector.UIString("<exception>");
                 element.title = result.description;
+            } else if (isArrayEntry) {
+                rootElement.appendChild(this._formatAsArrayEntry(result));
             } else {
                 // Make a PropertyPreview from the RemoteObject similar to the backend logic.
                 const maxLength = 100;
