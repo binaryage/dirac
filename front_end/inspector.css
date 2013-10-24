@@ -945,7 +945,6 @@ body.platform-linux .source-code {
 
 .console-status-bar {
     flex: 0 0 24px;
-    border-bottom: 1px solid rgb(230,230,230);
     overflow: hidden;
 }
 
@@ -955,6 +954,7 @@ body.platform-linux .source-code {
     overflow-y: auto;
     word-wrap: break-word;
     -webkit-user-select: text;
+    border-top: 1px solid rgb(230, 230, 230);
 }
 
 #console-prompt {
