@@ -47,6 +47,7 @@ WebInspector.SearchController = function()
     this._searchControlElement = searchControlElementColumn.createChild("span", "toolbar-search-control");
     this._searchInputElement = this._searchControlElement.createChild("input", "search-replace");
     this._searchInputElement.id = "search-input-field";
+    this._searchInputElement.placeholder = WebInspector.UIString("Find");
 
     this._suggestBox = new WebInspector.SuggestBox(this, searchControlElementColumn);
 
