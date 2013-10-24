@@ -361,6 +361,9 @@ WebInspector.ProfilesPanel = function(name, type)
 
     this.createSidebarViewWithTree();
 
+    this.splitView.mainElement.addStyleClass("vbox");
+    this.splitView.sidebarElement.addStyleClass("vbox");
+
     this.profilesItemTreeElement = new WebInspector.ProfilesSidebarTreeElement(this);
     this.sidebarTree.appendChild(this.profilesItemTreeElement);
 
@@ -369,12 +372,13 @@ WebInspector.ProfilesPanel = function(name, type)
 
     this.profileViews = document.createElement("div");
     this.profileViews.id = "profile-views";
+    this.profileViews.addStyleClass("vbox");
     this.splitView.mainElement.appendChild(this.profileViews);
 
     var statusBarContainer = this.splitView.mainElement.createChild("div", "profiles-status-bar");
     this._statusBarElement = statusBarContainer.createChild("div", "status-bar");
 
-    var sidebarTreeBox = this.sidebarElement.createChild("div", "fill profiles-sidebar-tree-box");
+    var sidebarTreeBox = this.sidebarElement.createChild("div", "profiles-sidebar-tree-box");
     sidebarTreeBox.appendChild(this.sidebarTreeElement);
     var statusBarContainerLeft = this.sidebarElement.createChild("div", "profiles-status-bar");
     this._statusBarButtons = statusBarContainerLeft.createChild("div", "status-bar");
@@ -387,8 +391,8 @@ WebInspector.ProfilesPanel = function(name, type)
     this.clearResultsButton.addEventListener("click", this._clearProfiles, this);
     this._statusBarButtons.appendChild(this.clearResultsButton.element);
 
-    this._profileTypeStatusBarItemsContainer = this._statusBarElement.createChild("div", "status-bar-items");
-    this._profileViewStatusBarItemsContainer = this._statusBarElement.createChild("div", "status-bar-items");
+    this._profileTypeStatusBarItemsContainer = this._statusBarElement.createChild("div");
+    this._profileViewStatusBarItemsContainer = this._statusBarElement.createChild("div");
 
     if (singleProfileMode) {
         this._launcherView = this._createLauncherView();
@@ -521,7 +525,6 @@ WebInspector.ProfilesPanel.prototype = {
     _updateProfileTypeSpecificUI: function()
     {
         this.recordButton.title = this._selectedProfileType.buttonTooltip;
-
         this._launcherView.updateProfileType(this._selectedProfileType);
         this._profileTypeStatusBarItemsContainer.removeChildren();
         var statusBarItems = this._selectedProfileType.statusBarItems;
@@ -550,6 +553,7 @@ WebInspector.ProfilesPanel.prototype = {
 
         this.sidebarTreeElement.removeStyleClass("some-expandable");
 
+        this._launcherView.detach();
         this.profileViews.removeChildren();
         this._profileViewStatusBarItemsContainer.removeChildren();
 
@@ -566,7 +570,7 @@ WebInspector.ProfilesPanel.prototype = {
     {
         this.closeVisibleView();
         this._profileViewStatusBarItemsContainer.removeChildren();
-        this._launcherView.show(this.splitView.mainElement);
+        this._launcherView.show(this.profileViews);
         this.visibleView = this._launcherView;
     },
 

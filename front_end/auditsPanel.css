@@ -37,35 +37,13 @@
     content: url(Images/resourceDocumentIcon.png);
 }
 
-.audit-launcher-view {
-    z-index: 1000;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: white;
-    font-size: 13px;
-    overflow-x: hidden;
-    overflow-y: overlay;
-    display: none;
-}
-
-.audit-launcher-view.visible {
-    display: block;
-}
-
 .audit-launcher-view .audit-launcher-view-content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     padding: 0 0 0 16px;
     white-space: nowrap;
     display: -webkit-flex;
     text-align: left;
     -webkit-flex-direction: column;
+    flex: auto;
 }
 
 .audit-launcher-view h1 {

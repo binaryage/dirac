@@ -30,30 +30,13 @@
 /* Profiler Style */
 
 #profile-views {
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    bottom: 23px;
+    flex: auto;
+    position: relative;
 }
 
 .profiles-status-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 23px;
     background-color: rgb(236, 236, 236);
-}
-
-.status-bar-items {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    overflow: hidden;
-    border-left: 1px solid rgb(184, 184, 184);
-    margin-left: -1px;
+    flex: 0 0 23px;
 }
 
 .profile-launcher-view-tree-item > .icon {
@@ -62,8 +45,8 @@
 }
 
 .profiles-sidebar-tree-box {
-    bottom: 23px !important;
     overflow: auto;
+    flex: auto;
 }
 
 .profile-sidebar-tree-item .icon {

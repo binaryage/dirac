@@ -28,33 +28,13 @@
  */
 
 .panel-enabler-view {
-    z-index: 1000;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
     background-color: white;
     font-size: 13px;
     text-align: center;
     overflow-x: hidden;
     overflow-y: overlay;
-    display: none;
-}
-
-.panel-enabler-view.visible {
-    display: block;
-}
-
-.panel-enabler-view .panel-enabler-view-content {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    max-height: 390px;
-    margin: auto;
-    white-space: nowrap;
+    flex: auto;
+    display: flex;
 }
 
 .panel-enabler-view h1 {
@@ -63,17 +43,6 @@
     line-height: 20px;
     font-weight: normal;
     margin-top: 0;
-}
-
-.panel-enabler-disclaimer {
-    font-size: 10px;
-    color: rgb(110, 116, 128);
-    margin-bottom: 12px;
-    margin-left: 20px;
-}
-
-.panel-enabler-disclaimer:empty {
-    display: none;
 }
 
 .panel-enabler-view img {
