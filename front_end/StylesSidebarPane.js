@@ -1039,7 +1039,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
 
     this._selectorRefElement = document.createElement("div");
     this._selectorRefElement.className = "subtitle";
-    this._selectorRefElement.appendChild(this._createRuleOriginNode());
+    this._updateRuleOrigin();
     selectorContainer.insertBefore(this._selectorRefElement, selectorContainer.firstChild);
     this.titleElement.appendChild(selectorContainer);
     this._selectorContainer = selectorContainer;
@@ -1246,20 +1246,21 @@ WebInspector.StylePropertiesSection.prototype = {
         var selectors = rule.selectors;
         var fragment = document.createDocumentFragment();
         var currentMatch = 0;
-        for (var i = 0, lastSelectorIndex = selectors.length - 1; i <= lastSelectorIndex ; ++i) {
-            var selectorNode;
-            var textNode = document.createTextNode(selectors[i].value);
-            if (matchingSelectors[currentMatch] === i) {
-                ++currentMatch;
-                selectorNode = document.createElement("span");
-                selectorNode.className = "selector-matches";
-                selectorNode.appendChild(textNode);
-            } else
-                selectorNode = textNode;
-
-            fragment.appendChild(selectorNode);
-            if (i !== lastSelectorIndex)
+        for (var i = 0; i < selectors.length ; ++i) {
+            if (i)
                 fragment.appendChild(document.createTextNode(", "));
+            var isSelectorMatching = matchingSelectors[currentMatch] === i;
+            if (isSelectorMatching)
+                ++currentMatch;
+            var rawLocation = new WebInspector.CSSLocation(rule.sourceURL, rule.lineNumberInSource(i), rule.columnNumberInSource(i));
+            var matchingSelectorClass = isSelectorMatching ? " selector-matches" : "";
+            var selectorElement = document.createElement("span");
+            selectorElement.className = "simple-selector" + matchingSelectorClass;
+            if (rule.id)
+                selectorElement._selectorIndex = i;
+            selectorElement.textContent = selectors[i].value;
+
+            fragment.appendChild(selectorElement);
         }
 
         this._selectorElement.removeChildren();
@@ -1313,8 +1314,11 @@ WebInspector.StylePropertiesSection.prototype = {
             return link;
         }
 
-        if (this.styleRule.sourceURL)
-            return this._parentPane._linkifier.linkifyCSSLocation(this.rule.id.styleSheetId, this.rule.rawLocation) || linkifyUncopyable(this.styleRule.sourceURL, this.rule.lineNumberInSource());
+        if (this.styleRule.sourceURL) {
+            var firstMatchingIndex = this.styleRule.rule.matchingSelectors && this.rule.matchingSelectors.length ? this.rule.matchingSelectors[0] : 0;
+            var matchingSelectorLocation = new WebInspector.CSSLocation(this.styleRule.sourceURL, this.rule.lineNumberInSource(firstMatchingIndex), this.rule.columnNumberInSource(firstMatchingIndex));
+            return this._parentPane._linkifier.linkifyCSSLocation(this.rule.id.styleSheetId, matchingSelectorLocation) || linkifyUncopyable(this.styleRule.sourceURL, this.rule.lineNumberInSource());
+        }
 
         if (!this.rule)
             return document.createTextNode("");
@@ -1354,6 +1358,15 @@ WebInspector.StylePropertiesSection.prototype = {
 
     _handleSelectorClick: function(event)
     {
+        if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) && this.navigable && event.target.hasStyleClass("simple-selector")) {
+            var index = event.target._selectorIndex;
+            var range = this.rule.selectors[index].range;
+            var styleSheetHeader = WebInspector.cssModel.styleSheetHeaderForId(this.rule.id.styleSheetId);
+            var uiLocation = styleSheetHeader.rawLocationToUILocation(this.rule.lineNumberInSource(index), this.rule.columnNumberInSource(index));
+            if (uiLocation)
+                WebInspector.showPanel("sources").showUILocation(uiLocation);
+            return;
+        }
         this._startEditingOnMouseEvent();
         event.consume(true);
     },
@@ -1443,6 +1456,7 @@ WebInspector.StylePropertiesSection.prototype = {
             this.styleRule = { section: this, style: newRule.style, selectorText: newRule.selectorText, media: newRule.media, sourceURL: newRule.resourceURL(), rule: newRule };
 
             this._parentPane.update(selectedNode);
+            this._updateRuleOrigin();
 
             finishOperationAndMoveEditor.call(this, moveDirection);
         }
@@ -1456,6 +1470,12 @@ WebInspector.StylePropertiesSection.prototype = {
         // This gets deleted in finishOperationAndMoveEditor(), which is called both on success and failure.
         this._parentPane._userOperation = true;
         WebInspector.cssModel.setRuleSelector(this.rule.id, selectedNode ? selectedNode.id : 0, newContent, successCallback.bind(this), finishOperationAndMoveEditor.bind(this, moveDirection));
+    },
+
+    _updateRuleOrigin: function()
+    {
+        this._selectorRefElement.removeChildren();
+        this._selectorRefElement.appendChild(this._createRuleOriginNode());
     },
 
     editingSelectorCancelled: function()
@@ -1630,8 +1650,7 @@ WebInspector.BlankStylePropertiesSection.prototype = {
                 this.element.addStyleClass("no-affect");
             }
 
-            this._selectorRefElement.removeChildren();
-            this._selectorRefElement.appendChild(this._createRuleOriginNode());
+            this._updateRuleOrigin();
             this.expand();
             if (this.element.parentElement) // Might have been detached already.
                 this._moveEditorFromSelector(moveDirection);

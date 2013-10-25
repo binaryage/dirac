@@ -1035,7 +1035,7 @@ WebInspector.CSSRule.prototype = {
         var url = styleSheetHeader.resourceURL();
         if (!url)
             return;
-        this.rawLocation = new WebInspector.CSSLocation(url, this.lineNumberInSource(), this.columnNumberInSource());
+        this.rawLocation = new WebInspector.CSSLocation(url, this.lineNumberInSource(0), this.columnNumberInSource(0));
     },
 
     /**
@@ -1050,26 +1050,30 @@ WebInspector.CSSRule.prototype = {
     },
 
     /**
+     * @param {number} selectorIndex
      * @return {number}
      */
-    lineNumberInSource: function()
+    lineNumberInSource: function(selectorIndex)
     {
-        if (!this.selectorRange)
+        var selector = this.selectors[selectorIndex];
+        if (!selector || !selector.range)
             return 0;
         var styleSheetHeader = WebInspector.cssModel.styleSheetHeaderForId(this.id.styleSheetId);
-        return styleSheetHeader.lineNumberInSource(this.selectorRange.startLine);
+        return styleSheetHeader.lineNumberInSource(selector.range.startLine);
     },
 
     /**
+     * @param {number} selectorIndex
      * @return {number|undefined}
      */
-    columnNumberInSource: function()
+    columnNumberInSource: function(selectorIndex)
     {
-        if (!this.selectorRange)
+        var selector = this.selectors[selectorIndex];
+        if (!selector || !selector.range)
             return undefined;
         var styleSheetHeader = WebInspector.cssModel.styleSheetHeaderForId(this.id.styleSheetId);
         console.assert(styleSheetHeader);
-        return styleSheetHeader.columnNumberInSource(this.selectorRange.startLine, this.selectorRange.startColumn);
+        return styleSheetHeader.columnNumberInSource(selector.range.startLine, selector.range.startColumn);
     },
 
     get isUserAgent()

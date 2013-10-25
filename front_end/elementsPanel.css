@@ -264,7 +264,7 @@
     color: #888;
 }
 
-.styles-section .selector-matches {
+.styles-section .simple-selector.selector-matches {
     color: #222;
 }
 
@@ -658,7 +658,8 @@
 
 .styles-section:not(.read-only) .properties .webkit-css-property.styles-panel-hovered,
 .styles-section:not(.read-only) .properties .value .styles-panel-hovered,
-.styles-section:not(.read-only) .properties .value.styles-panel-hovered {
+.styles-section:not(.read-only) .properties .value.styles-panel-hovered,
+.styles-section:not(.read-only) span.simple-selector.styles-panel-hovered {
     text-decoration: underline;
     cursor: default;
 }
