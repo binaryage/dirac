@@ -45,7 +45,6 @@ WebInspector.ScreencastView = function()
 
     this._viewportElement = this.element.createChild("div", "screencast-viewport hidden");
     this._glassPaneElement = this.element.createChild("div", "screencast-glasspane hidden");
-    this._glassPaneElement.textContent = WebInspector.UIString("The tab is inactive");
 
     this._canvasElement = this._viewportElement.createChild("canvas");
     this._canvasElement.tabIndex = 1;
@@ -80,6 +79,16 @@ WebInspector.ScreencastView = function()
 
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastVisibilityChanged, this._screencastVisibilityChanged, this);
+
+    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, this._onTimeline.bind(this, true), this);
+    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStopped, this._onTimeline.bind(this, false), this);
+    this._timelineActive = WebInspector.timelineManager.isStarted();
+
+    WebInspector.profileManager.addEventListener(WebInspector.ProfileManager.EventTypes.ProfileStarted, this._onProfiler.bind(this, true), this);
+    WebInspector.profileManager.addEventListener(WebInspector.ProfileManager.EventTypes.ProfileStopped, this._onProfiler.bind(this, false), this);
+    this._profilerActive = WebInspector.CPUProfileType && WebInspector.profileManager.isStarted(WebInspector.CPUProfileType.TypeId);
+
+    this._updateGlasspane();
 }
 
 WebInspector.ScreencastView._bordersSize = 40;
@@ -101,6 +110,8 @@ WebInspector.ScreencastView.prototype = {
 
     _startCasting: function()
     {
+        if (this._timelineActive || this._profilerActive)
+            return;
         if (this._isCasting)
             return;
         this._isCasting = true;
@@ -162,10 +173,53 @@ WebInspector.ScreencastView.prototype = {
      */
     _screencastVisibilityChanged: function(event)
     {
-        if (event.data.visible)
-          this._glassPaneElement.classList.add("hidden");
+        this._targetInactive = !event.data.visible;
+        this._updateGlasspane();
+    },
+
+    /**
+     * @param {boolean} on
+     * @private
+     */
+    _onTimeline: function(on)
+    {
+        this._timelineActive = on;
+        if (this._timelineActive)
+            this._stopCasting();
         else
-          this._glassPaneElement.classList.remove("hidden");
+            this._startCasting();
+        this._updateGlasspane();
+    },
+
+    /**
+     * @param {boolean} on
+     * @private
+     */
+    _onProfiler: function(on, event) {
+        if (!WebInspector.CPUProfileType || event.data != WebInspector.CPUProfileType.TypeId)
+           return;
+        this._profilerActive = on;
+        if (this._profilerActive)
+            this._stopCasting();
+        else
+            this._startCasting();
+        this._updateGlasspane();
+    },
+
+    _updateGlasspane: function()
+    {
+        if (this._targetInactive) {
+            this._glassPaneElement.textContent = WebInspector.UIString("The tab is inactive");
+            this._glassPaneElement.classList.remove("hidden");
+        } else if (this._timelineActive) {
+            this._glassPaneElement.textContent = WebInspector.UIString("Timeline is active");
+            this._glassPaneElement.classList.remove("hidden");
+        } else if (this._profilerActive) {
+            this._glassPaneElement.textContent = WebInspector.UIString("CPU profiler is active");
+            this._glassPaneElement.classList.remove("hidden");
+        } else {
+            this._glassPaneElement.classList.add("hidden");
+        }
     },
 
     /**

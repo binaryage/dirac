@@ -404,6 +404,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     this.cssModel = new WebInspector.CSSStyleModel(this.workspace);
     this.timelineManager = new WebInspector.TimelineManager();
+    this.profileManager = new WebInspector.ProfileManager();
     this.tracingAgent = new WebInspector.TracingAgent();
 
     this.searchController = new WebInspector.SearchController();
@@ -489,7 +490,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     WebInspector.WorkerManager.loadCompleted();
     InspectorFrontendAPI.loadCompleted();
 
-    if (Capabilities.canScreencast)
+    if (Capabilities.canScreencast && WebInspector.settings.screencastEnabled.get())
         this._toggleScreencastButtonClicked(false);
 
     WebInspector.notifications.dispatchEventToListeners(WebInspector.Events.InspectorLoaded);

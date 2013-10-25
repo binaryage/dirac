@@ -99,3 +99,53 @@ WebInspector.ProfilesPanelDescriptor.linkifyCPUProfile = function(uid, linkText,
     link.addEventListener("click", WebInspector.ProfilesPanelDescriptor._openCPUProfile, true);
     return link;
 }
+
+/**
+ * @constructor
+ * @extends {WebInspector.Object}
+ */
+WebInspector.ProfileManager = function()
+{
+   this._startedProfiles = {};
+};
+
+WebInspector.ProfileManager.EventTypes = {
+    ProfileStarted: "profile-started",
+    ProfileStopped: "profile-stopped"
+};
+
+WebInspector.ProfileManager.prototype = {
+    /**
+     * @param {string} profileTypeId
+     * @return {boolean}
+     */
+    isStarted: function(profileTypeId)
+    {
+        return profileTypeId in this._startedProfiles;
+    },
+
+    /**
+     * @param {string} profileTypeId
+     */
+    notifyStarted: function(profileTypeId)
+    {
+        this._startedProfiles[profileTypeId] = true;
+        this.dispatchEventToListeners(WebInspector.ProfileManager.EventTypes.ProfileStarted, profileTypeId);
+    },
+
+    /**
+     * @param {string} profileTypeId
+     */
+    notifyStoped: function(profileTypeId)
+    {
+        delete this._startedProfiles[profileTypeId];
+        this.dispatchEventToListeners(WebInspector.ProfileManager.EventTypes.ProfileStopped, profileTypeId);
+    },
+
+    __proto__: WebInspector.Object.prototype
+};
+
+/**
+ * @type {WebInspector.ProfileManager}
+ */
+WebInspector.profileManager;
