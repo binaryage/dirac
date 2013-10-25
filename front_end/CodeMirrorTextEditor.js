@@ -530,7 +530,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     _whitespaceOverlayMode: function(mimeType)
     {
-        var modeName = CodeMirror.mimeModes[mimeType] + "+whitespaces";
+        var modeName = CodeMirror.mimeModes[mimeType] ? (CodeMirror.mimeModes[mimeType].name || CodeMirror.mimeModes[mimeType]) : CodeMirror.mimeModes["text/plain"];
+        modeName += "+whitespaces";
         if (CodeMirror.modes[modeName])
             return modeName;
 
