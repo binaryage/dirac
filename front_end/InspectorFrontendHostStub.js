@@ -198,8 +198,8 @@ WebInspector.InspectorFrontendHostStub.prototype = {
 
 InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
 
-} else {
-    // Install message-based handlers with callbacks.
+} else if (InspectorFrontendHost.sendMessageToEmbedder) {
+  // Install message-based handlers with callbacks.
     var lastCallId = 0;
     InspectorFrontendHost._callbacks = [];
 

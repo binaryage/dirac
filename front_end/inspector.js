@@ -297,6 +297,14 @@ WebInspector.reload = function()
 
 WebInspector.loaded = function()
 {
+    if (!InspectorFrontendHost.sendMessageToEmbedder) {
+        var helpScreen = new WebInspector.HelpScreen(WebInspector.UIString("Incompatible Chrome version"));
+        var p = helpScreen.contentElement.createChild("p", "help-section");
+        p.textContent = WebInspector.UIString("Please upgrade to a newer Chrome version (you might need a Dev or Canary build).");
+        helpScreen.showModal();
+        return;
+    }
+
     InspectorBackend.loadFromJSONIfNeeded("../protocol.json");
     WebInspector.dockController = new WebInspector.DockController();
 
