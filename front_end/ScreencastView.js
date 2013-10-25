@@ -703,6 +703,8 @@ WebInspector.ScreencastView.prototype = {
         this._navigationUrl.type = "text";
         this._navigationUrl.addEventListener('keyup', this._navigationUrlKeyUp.bind(this), true);
 
+        this._navigationProgressBar = new WebInspector.ScreencastView.ProgressTracker(this._navigationBar.createChild("div", "progress"));
+
         this._requestNavigationHistory();
         WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._requestNavigationHistory, this);
     },
@@ -766,3 +768,83 @@ WebInspector.ScreencastView.prototype = {
 
   __proto__: WebInspector.View.prototype
 }
+
+/**
+ * @param {HTMLElement} element
+ * @constructor
+ */
+WebInspector.ScreencastView.ProgressTracker = function(element) {
+    this._element = element;
+
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated, this);
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._onLoad, this);
+
+    WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);
+    WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestFinished, this);
+};
+
+WebInspector.ScreencastView.ProgressTracker.prototype = {
+    _onMainFrameNavigated: function()
+    {
+        this._requestIds = {};
+        this._startedRequests = 0;
+        this._finishedRequests = 0;
+        this._maxDisplayedProgress = 0;
+        this._updateProgress(0.1);  // Display first 10% on navigation start.
+    },
+
+    _onLoad: function()
+    {
+        delete this._requestIds;
+        this._updateProgress(1);  // Display 100% progress on load, hide it in 0.5s.
+        setTimeout(function() {
+            if (!this._navigationProgressVisible())
+                this._displayProgress(0);
+        }.bind(this), 500);
+    },
+
+    _navigationProgressVisible: function()
+    {
+        return !!this._requestIds;
+    },
+
+    _onRequestStarted: function(event)
+    {
+      if (!this._navigationProgressVisible())
+          return;
+      var request = /** @type {WebInspector.NetworkRequest} */ (event.data);
+      // Ignore long-living WebSockets for the sake of progress indicator, as we won't be waiting them anyway.
+      if (request.type === WebInspector.resourceTypes.WebSocket)
+          return;
+      this._requestIds[request.requestId] = request;
+      ++this._startedRequests;
+    },
+
+    _onRequestFinished: function(event)
+    {
+        if (!this._navigationProgressVisible())
+            return;
+        var request = /** @type {WebInspector.NetworkRequest} */ (event.data);
+        if (!(request.requestId in this._requestIds))
+            return;
+        ++this._finishedRequests;
+        setTimeout(function() {
+            this._updateProgress(this._finishedRequests / this._startedRequests * 0.9);  // Finished requests drive the progress up to 90%.
+        }.bind(this), 500);  // Delay to give the new requests time to start. This makes the progress smoother.
+    },
+
+    _updateProgress: function(progress)
+    {
+        if (!this._navigationProgressVisible())
+          return;
+        if (this._maxDisplayedProgress >= progress)
+          return;
+        this._maxDisplayedProgress = progress;
+        this._displayProgress(progress);
+    },
+
+    _displayProgress: function(progress)
+    {
+        this._element.style.width = (100 * progress) + "%";
+    }
+};

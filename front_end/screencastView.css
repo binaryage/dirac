@@ -32,6 +32,7 @@
     -webkit-flex-direction: row;
     display: -webkit-flex;
     height: 26px;
+    position: relative;
 }
 
 .screencast-navigation button {
@@ -86,6 +87,16 @@
     outline: none !important;
 }
 
+.screencast-navigation .progress {
+    background-color: blue;
+    height: 3px;
+    left: 0;
+    position: absolute;
+    top: 100%;  /* Align with the bottom edge of the parent. */
+    width: 0;
+    z-index: 2;  /* Above .screencast-glasspane. */
+}
+
 .screencast-viewport {
     border: 20px solid #333;
     border-radius: 20px;
@@ -136,6 +147,6 @@
   left: 0;
   position: absolute;
   right: 0;
-  top: 29px;
+  top: 26px;  /* Align with the botton edge of .screencast .navigation. */
   font-size: 30px;
 }
