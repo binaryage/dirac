@@ -170,6 +170,7 @@ WebInspector.TextFilterUI = function()
     this._filterInputElement.id = "filter-input-field";
     this._filterInputElement.addEventListener("mousedown", this._onFilterFieldManualFocus.bind(this), false); // when the search field is manually selected
     this._filterInputElement.addEventListener("input", this._onInput.bind(this), false);
+    this._filterInputElement.addEventListener("change", this._onInput.bind(this), false);
 }
 
 WebInspector.TextFilterUI.prototype = {
@@ -203,16 +204,19 @@ WebInspector.TextFilterUI.prototype = {
     setValue: function(value)
     {
         this._filterInputElement.value = value;
-        this.dispatchEventToListeners(WebInspector.FilterUI.Events.FilterChanged, null);
+        this._valueChanged();
     },
 
     /**
-     * @return {RegExp}
+     * @return {?RegExp}
      */
     regex: function()
     {
-        var filterQuery = this._filterInputElement.value;
-        return filterQuery ? createPlainTextSearchRegex(filterQuery, "i") : null;
+        if (this._regex !== undefined)
+            return this._regex;
+        var filterQuery = this.value();
+        this._regex = filterQuery ? createPlainTextSearchRegex(filterQuery, "i") : null;
+        return this._regex;
     },
 
     /**
@@ -228,6 +232,11 @@ WebInspector.TextFilterUI.prototype = {
      */
     _onInput: function(event)
     {
+        this._valueChanged();
+    },
+
+    _valueChanged: function() {
+        delete this._regex;
         this.dispatchEventToListeners(WebInspector.FilterUI.Events.FilterChanged, null);
     },
 
