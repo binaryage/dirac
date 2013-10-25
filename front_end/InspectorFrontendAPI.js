@@ -31,42 +31,23 @@
 var InspectorFrontendAPI = {
     _pendingCommands: [],
 
-    setAttachedWindow: function(side)
-    {
-    },
-
-    setDockSide: function(side)
-    {
-        if (WebInspector.dockController)
-            WebInspector.dockController.setDockSide(side);
-    },
+    // Methods called by the embedder on load, potentially before front-end is initialized.
+    //////////////////////////////////////////////////////////////////////////////////////////////////
 
     showConsole: function()
     {
-        WebInspector.showPanel("console");
-    },
-
-    showMainResourceForFrame: function(frameId)
-    {
-        // FIXME: Implement this to show the source code for the main resource of a given frame.
-    },
-
-    showResources: function()
-    {
-        WebInspector.showPanel("resources");
-    },
-
-    setDockingUnavailable: function(unavailable)
-    {
-        WebInspector.setDockingUnavailable(unavailable);
+        InspectorFrontendAPI._runOnceLoaded(function() {
+            WebInspector.showPanel("console");
+        });
     },
 
     enterInspectElementMode: function()
     {
-        WebInspector.showPanel("elements");
-
-        if (WebInspector.inspectElementModeController)
-            WebInspector.inspectElementModeController.toggleSearch();
+        InspectorFrontendAPI._runOnceLoaded(function() {
+            WebInspector.showPanel("elements");
+            if (WebInspector.inspectElementModeController)
+                WebInspector.inspectElementModeController.toggleSearch();
+        });
     },
 
     /**
@@ -77,25 +58,75 @@ var InspectorFrontendAPI = {
      */
     revealSourceLine: function(url, lineNumber, columnNumber)
     {
-        var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(url);
-        if (uiSourceCode) {
-            WebInspector.showPanel("sources").showUISourceCode(uiSourceCode, lineNumber, columnNumber);
-            return;
-        }
-
-        /**
-         * @param {WebInspector.Event} event
-         */
-        function listener(event)
-        {
-            var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
-            if (uiSourceCode.url === url) {
+        InspectorFrontendAPI._runOnceLoaded(function() {
+            var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(url);
+            if (uiSourceCode) {
                 WebInspector.showPanel("sources").showUISourceCode(uiSourceCode, lineNumber, columnNumber);
-                WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener);
+                return;
             }
-        }
 
-        WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener);
+            /**
+             * @param {WebInspector.Event} event
+             */
+            function listener(event)
+            {
+                var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
+                if (uiSourceCode.url === url) {
+                    WebInspector.showPanel("sources").showUISourceCode(uiSourceCode, lineNumber, columnNumber);
+                    WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener);
+                }
+            }
+
+            WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener);
+        });
+    },
+
+    /**
+     * @param {string} backgroundColor
+     * @param {string} color
+     */
+    setToolbarColors: function(backgroundColor, color)
+    {
+        WebInspector.setToolbarColors(backgroundColor, color);
+    },
+
+    /**
+     * @param {string} url
+     */
+    loadTimelineFromURL: function(url)
+    {
+        InspectorFrontendAPI._runOnceLoaded(function() {
+            /** @type {WebInspector.TimelinePanel} */ (WebInspector.showPanel("timeline")).loadFromURL(url);
+        });
+    },
+
+    // FIXME: remove this legacy support.
+    setAttachedWindow: function(side)
+    {
+    },
+
+    // FIXME: remove this legacy support.
+    setDockSide: function(side)
+    {
+        WebInspector.dockController.setDockSide(side);
+    },
+
+    dispatchMessage: function(messageObject)
+    {
+        InspectorBackend.dispatch(messageObject);
+    },
+
+    // Callbacks to the methods called from within initialized front-end.
+    //////////////////////////////////////////////////////////////////////////////////////////////////
+
+    contextMenuItemSelected: function(id)
+    {
+        WebInspector.contextMenuItemSelected(id);
+    },
+
+    contextMenuCleared: function()
+    {
+        WebInspector.contextMenuCleared();
     },
 
     fileSystemsLoaded: function(fileSystems)
@@ -137,77 +168,20 @@ var InspectorFrontendAPI = {
         projectDelegate.searchCompleted(requestId, files);
     },
 
+    /**
+     * @param {string} url
+     */
     savedURL: function(url)
     {
         WebInspector.fileManager.savedURL(url);
     },
 
-    appendedToURL: function(url)
-    {
-        WebInspector.fileManager.appendedToURL(url);
-    },
-
-    setToolbarColors: function(backgroundColor, color)
-    {
-        WebInspector.setToolbarColors(backgroundColor, color);
-    },
-
-    evaluateForTest: function(callId, script)
-    {
-        WebInspector.evaluateForTestInFrontend(callId, script);
-    },
-
-    dispatch: function(signature)
-    {
-        if (InspectorFrontendAPI._isLoaded) {
-            var methodName = signature.shift();
-            return InspectorFrontendAPI[methodName].apply(InspectorFrontendAPI, signature);
-        }
-        InspectorFrontendAPI._pendingCommands.push(signature);
-    },
-
-    dispatchQueryParameters: function()
-    {
-        if ("dispatch" in WebInspector.queryParamsObject)
-            InspectorFrontendAPI.dispatch(JSON.parse(window.decodeURI(WebInspector.queryParamsObject["dispatch"])));
-    },
-
     /**
      * @param {string} url
      */
-    loadTimelineFromURL: function(url) 
+    appendedToURL: function(url)
     {
-        /** @type {WebInspector.TimelinePanel} */ (WebInspector.showPanel("timeline")).loadFromURL(url);
-    },
-
-    loadCompleted: function()
-    {
-        InspectorFrontendAPI._isLoaded = true;
-        for (var i = 0; i < InspectorFrontendAPI._pendingCommands.length; ++i)
-            InspectorFrontendAPI.dispatch(InspectorFrontendAPI._pendingCommands[i]);
-        InspectorFrontendAPI._pendingCommands = [];
-        if (window.opener)
-            window.opener.postMessage(["loadCompleted"], "*");
-    },
-
-    contextMenuItemSelected: function(id)
-    {
-        WebInspector.contextMenuItemSelected(id);
-    },
-
-    contextMenuCleared: function()
-    {
-        WebInspector.contextMenuCleared();
-    },
-
-    dispatchMessageAsync: function(messageObject)
-    {
-        WebInspector.dispatch(messageObject);
-    },
-
-    dispatchMessage: function(messageObject)
-    {
-        InspectorBackend.dispatch(messageObject);
+        WebInspector.fileManager.appendedToURL(url);
     },
 
     /**
@@ -217,6 +191,64 @@ var InspectorFrontendAPI = {
     embedderMessageAck: function(id, error)
     {
         InspectorFrontendHost.embedderMessageAck(id, error);
+    },
+
+    // Called from within front-end
+    ///////////////////////////////
+
+    loadCompleted: function()
+    {
+        InspectorFrontendAPI._isLoaded = true;
+        for (var i = 0; i < InspectorFrontendAPI._pendingCommands.length; ++i)
+            InspectorFrontendAPI._pendingCommands[i]();
+        InspectorFrontendAPI._pendingCommands = [];
+        if (window.opener)
+            window.opener.postMessage(["loadCompleted"], "*");
+    },
+
+    /**
+     * @param {Object} queryParamsObject
+     */
+    dispatchQueryParameters: function(queryParamsObject)
+    {
+        if ("dispatch" in queryParamsObject)
+            InspectorFrontendAPI._dispatch(JSON.parse(window.decodeURI(queryParamsObject["dispatch"])));
+    },
+
+    // Testing harness support
+    //////////////////////////
+
+    evaluateForTest: function(callId, script)
+    {
+        WebInspector.evaluateForTestInFrontend(callId, script);
+    },
+
+    dispatchMessageAsync: function(messageObject)
+    {
+        WebInspector.dispatch(messageObject);
+    },
+
+    // Implementation details
+    /////////////////////////
+
+    _dispatch: function(signature)
+    {
+        InspectorFrontendAPI._runOnceLoaded(function() {
+            var methodName = signature.shift();
+            return InspectorFrontendAPI[methodName].apply(InspectorFrontendAPI, signature);
+        });
+    },
+
+    /**
+     * @param {function()} command
+     */
+    _runOnceLoaded: function(command)
+    {
+        if (InspectorFrontendAPI._isLoaded) {
+            command();
+            return;
+        }
+        InspectorFrontendAPI._pendingCommands.push(command);
     }
 }
 
@@ -224,7 +256,7 @@ if (window.opener && window.dispatchStandaloneTestRunnerMessages) {
     function onMessageFromOpener(event)
     {
         if (event.source === window.opener)
-            InspectorFrontendAPI.dispatch(event.data);
+            InspectorFrontendAPI._dispatch(event.data);
     }
     window.addEventListener("message", onMessageFromOpener, true);
 }

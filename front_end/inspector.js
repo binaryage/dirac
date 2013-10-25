@@ -334,7 +334,7 @@ WebInspector.loaded = function()
 
     // In case of loading as a web page with no bindings / harness, kick off initialization manually.
     if (InspectorFrontendHost.isStub) {
-        InspectorFrontendAPI.dispatchQueryParameters();
+        InspectorFrontendAPI.dispatchQueryParameters(WebInspector.queryParamsObject);
         WebInspector._doLoadedDoneWithCapabilities();
     }
 }
