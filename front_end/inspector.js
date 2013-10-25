@@ -397,7 +397,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.cssModel = new WebInspector.CSSStyleModel(this.workspace);
     this.timelineManager = new WebInspector.TimelineManager();
     this.tracingAgent = new WebInspector.TracingAgent();
-    this.overridesSupport = new WebInspector.OverridesSupport();
 
     this.searchController = new WebInspector.SearchController();
     if (!WebInspector.WorkerManager.isWorkerFrontend())
@@ -477,6 +476,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
         PageAgent.setShowViewportSizeOnResize(true, WebInspector.settings.showMetricsRulers.get());
     }
     showRulersChanged();
+    this.overridesSupport = new WebInspector.OverridesSupport();
 
     WebInspector.WorkerManager.loadCompleted();
     InspectorFrontendAPI.loadCompleted();

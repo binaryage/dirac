@@ -360,6 +360,7 @@ WebInspector.OverridesSupport.prototype = {
             var dipHeight = Math.round(metrics.height / metrics.deviceScaleFactor);
             PageAgent.setDeviceMetricsOverride(dipWidth, dipHeight, metrics.deviceScaleFactor, WebInspector.settings.deviceFitWindow.get(), metrics.textAutosizing);
         }
+        this._revealOverridesTabIfNeeded();
     },
 
     _geolocationPositionChanged: function()
@@ -373,6 +374,7 @@ WebInspector.OverridesSupport.prototype = {
             PageAgent.setGeolocationOverride();
         else
             PageAgent.setGeolocationOverride(geolocation.latitude, geolocation.longitude, 150);
+        this._revealOverridesTabIfNeeded();
     },
 
     _deviceOrientationChanged: function()
@@ -383,6 +385,7 @@ WebInspector.OverridesSupport.prototype = {
         }
         var deviceOrientation = WebInspector.OverridesSupport.DeviceOrientation.parseSetting(WebInspector.settings.deviceOrientationOverride.get());
         PageAgent.setDeviceOrientationOverride(deviceOrientation.alpha, deviceOrientation.beta, deviceOrientation.gamma);
+        this._revealOverridesTabIfNeeded();
     },
 
     _emulateTouchEventsChanged: function()
@@ -394,6 +397,17 @@ WebInspector.OverridesSupport.prototype = {
     {
         PageAgent.setEmulatedMedia(WebInspector.settings.overrideCSSMedia.get() ? WebInspector.settings.emulatedCSSMedia.get() : "");
         WebInspector.cssModel.mediaQueryResultChanged();
+        this._revealOverridesTabIfNeeded();
+    },
+
+    _revealOverridesTabIfNeeded: function()
+    {
+        if (WebInspector.settings.overrideUserAgent.get() || WebInspector.settings.overrideDeviceMetrics.get() ||
+                WebInspector.settings.overrideGeolocation.get() || WebInspector.settings.overrideDeviceOrientation.get() ||
+                WebInspector.settings.emulateTouchEvents.get() || WebInspector.settings.overrideCSSMedia.get() ||
+                WebInspector.settings.overrideCSSMedia.get()) {
+            WebInspector.inspectorView.showViewInDrawer("emulation");
+        }
     }
 }
 

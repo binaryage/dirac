@@ -40,13 +40,13 @@ WebInspector.OverridesView = function()
 
     var bodyElement = this.element.createChild("div", "overrides-body");
     this._tabbedPane = new WebInspector.TabbedPane();
-
-    this._tabbedPane.appendTab("device", WebInspector.UIString("Device"), new WebInspector.OverridesView.DeviceTab());
-    this._tabbedPane.appendTab("viewport", WebInspector.UIString("Viewport"), new WebInspector.OverridesView.ViewportTab());
-    this._tabbedPane.appendTab("user agent", WebInspector.UIString("User Agent"), new WebInspector.OverridesView.UserAgentTab());
-    this._tabbedPane.appendTab("sensors", WebInspector.UIString("Sensors"), new WebInspector.OverridesView.SensorsTab());
     this._tabbedPane.shrinkableTabs = false;
     this._tabbedPane.verticalTabLayout = true;
+
+    new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
+    new WebInspector.OverridesView.ViewportTab().appendAsTab(this._tabbedPane);
+    new WebInspector.OverridesView.UserAgentTab().appendAsTab(this._tabbedPane);
+    new WebInspector.OverridesView.SensorsTab().appendAsTab(this._tabbedPane);
 
     this._lastSelectedTabSetting = WebInspector.settings.createSetting("lastSelectedEmulateTab", "device");
     this._tabbedPane.selectTab(this._lastSelectedTabSetting.get());
@@ -69,13 +69,40 @@ WebInspector.OverridesView.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.View}
+ * @param {string} id
+ * @param {string} name
+ * @param {Array.<WebInspector.Setting>} settings
  */
-WebInspector.OverridesView.Tab = function()
+WebInspector.OverridesView.Tab = function(id, name, settings)
 {
     WebInspector.View.call(this);
+    this._id = id;
+    this._name = name;
+    this._settings = settings;
+    for (var i = 0; i < settings.length; ++i)
+        settings[i].addChangeListener(this._updateActiveState, this);
 }
 
 WebInspector.OverridesView.Tab.prototype = {
+    /**
+     * @param {WebInspector.TabbedPane} tabbedPane
+     */
+    appendAsTab: function(tabbedPane)
+    {
+        this._tabbedPane = tabbedPane;
+        tabbedPane.appendTab(this._id, this._name, this);
+        this._updateActiveState();
+    },
+
+    _updateActiveState: function()
+    {
+        var active = false;
+        for (var i = 0; !active && i < this._settings.length; ++i)
+            active = this._settings[i].get();
+        this._tabbedPane.element.enableStyleClass("overrides-activate-" + this._id, active);
+        this._tabbedPane.changeTabTitle(this._id, active ? this._name + " *" : this._name);
+    },
+
     /**
      * Creates an input element under the parentElement with the given id and defaultText.
      * It also sets an onblur event listener.
@@ -159,7 +186,7 @@ WebInspector.OverridesView.Tab.prototype.__proto__ = WebInspector.View.prototype
  */
 WebInspector.OverridesView.DeviceTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this);
+    WebInspector.OverridesView.Tab.call(this, "device", WebInspector.UIString("Device"), [WebInspector.settings.emulateTouchEvents]);
     this.element.addStyleClass("overrides-device");
 
     this._emulatedDeviceSetting = WebInspector.settings.createSetting("emulatedDevice", "Google Nexus 4");
@@ -405,7 +432,7 @@ WebInspector.OverridesView.DeviceTab.prototype.__proto__ = WebInspector.Override
  */
 WebInspector.OverridesView.ViewportTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this);
+    WebInspector.OverridesView.Tab.call(this, "viewport", WebInspector.UIString("Viewport"), [WebInspector.settings.overrideDeviceMetrics]);
     this.element.addStyleClass("overrides-viewport");
 
     const metricsSetting = WebInspector.settings.deviceMetrics.get();
@@ -575,7 +602,7 @@ WebInspector.OverridesView.ViewportTab.prototype.__proto__ = WebInspector.Overri
  */
 WebInspector.OverridesView.UserAgentTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this);
+    WebInspector.OverridesView.Tab.call(this, "user-agent", WebInspector.UIString("User Agent"), [WebInspector.settings.overrideUserAgent]);
     this.element.addStyleClass("overrides-user-agent");
     var checkbox = this._createSettingCheckbox(WebInspector.UIString("Spoof user agent"), WebInspector.settings.overrideUserAgent);
     checkbox.appendChild(this._createUserAgentSelectRowElement());
@@ -721,7 +748,7 @@ WebInspector.OverridesView.UserAgentTab.prototype.__proto__ = WebInspector.Overr
  */
 WebInspector.OverridesView.SensorsTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this);
+    WebInspector.OverridesView.Tab.call(this, "sensors", WebInspector.UIString("Sensors"), [WebInspector.settings.overrideGeolocation, WebInspector.settings.overrideDeviceOrientation]);
     this.element.addStyleClass("overrides-sensors");
     this.element.appendChild(this._createGeolocationOverrideControl());
     this.element.appendChild(this._createDeviceOrientationOverrideControl());
