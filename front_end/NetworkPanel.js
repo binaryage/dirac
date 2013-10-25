@@ -977,7 +977,7 @@ WebInspector.NetworkLogView.prototype = {
             contextMenu.appendItem(WebInspector.openLinkExternallyLabel(), WebInspector.openResource.bind(WebInspector, request.url, false));
             contextMenu.appendSeparator();
             contextMenu.appendItem(WebInspector.copyLinkAddressLabel(), this._copyLocation.bind(this, request));
-            if (request.requestHeadersText)
+            if (request.requestHeadersText())
                 contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy request headers" : "Copy Request Headers"), this._copyRequestHeaders.bind(this, request));
             if (request.responseHeadersText)
                 contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy response headers" : "Copy Response Headers"), this._copyResponseHeaders.bind(this, request));
@@ -1021,7 +1021,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _copyRequestHeaders: function(request)
     {
-        InspectorFrontendHost.copyText(request.requestHeadersText);
+        InspectorFrontendHost.copyText(request.requestHeadersText());
     },
 
     _copyResponseHeaders: function(request)
@@ -1390,8 +1390,9 @@ WebInspector.NetworkLogView.prototype = {
             command.push(request.requestMethod);
         }
 
-        for (var i = 0; i < request.requestHeaders.length; i++) {
-            var header = request.requestHeaders[i];
+        var requestHeaders = request.requestHeaders();
+        for (var i = 0; i < requestHeaders.length; i++) {
+            var header = requestHeaders[i];
             var name = header.name.replace(/^:/, ""); // Translate SPDY v3 headers to HTTP headers.
             if (name.toLowerCase() in ignoredHeaders)
                 continue;

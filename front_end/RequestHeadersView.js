@@ -355,13 +355,21 @@ WebInspector.RequestHeadersView.prototype = {
     _refreshRequestHeaders: function()
     {
         var treeElement = this._requestHeadersTreeElement;
-        var headers = this._request.sortedRequestHeaders;
-        var headersText = this._request.requestHeadersText;
 
-        if (this._showRequestHeadersText)
+        var headers = this._request.requestHeaders();
+        headers = headers.slice();
+        headers.sort(function(a, b) { return a.name.toLowerCase().compareTo(b.name.toLowerCase()) });
+        var headersText = this._request.requestHeadersText();
+
+        if (this._showRequestHeadersText && headersText)
             this._refreshHeadersText(WebInspector.UIString("Request Headers"), headers.length, headersText, treeElement);
         else
             this._refreshHeaders(WebInspector.UIString("Request Headers"), headers, treeElement);
+
+        if (headersText === undefined) {
+            var caution = WebInspector.UIString(" CAUTION: Provisional headers are shown.");
+            treeElement.listItemElement.createChild("span", "caution").textContent = caution;
+        }
 
         if (headersText) {
             var toggleButton = this._createHeadersToggleButton(this._showRequestHeadersText);

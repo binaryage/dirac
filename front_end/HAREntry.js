@@ -71,14 +71,15 @@ WebInspector.HAREntry.prototype = {
      */
     _buildRequest: function()
     {
+        var headersText = this._request.requestHeadersText();
         var res = {
             method: this._request.requestMethod,
             url: this._buildRequestURL(this._request.url),
-            httpVersion: this._request.requestHttpVersion,
-            headers: this._request.requestHeaders,
+            httpVersion: this._request.requestHttpVersion(),
+            headers: this._request.requestHeaders(),
             queryString: this._buildParameters(this._request.queryParameters || []),
             cookies: this._buildCookies(this._request.requestCookies || []),
-            headersSize: this._request.requestHeadersSize,
+            headersSize: headersText ? headersText.length : -1,
             bodySize: this.requestBodySize
         };
         if (this._request.requestFormData)
@@ -169,7 +170,7 @@ WebInspector.HAREntry.prototype = {
     _buildPostData: function()
     {
         var res = {
-            mimeType: this._request.requestHeaderValue("Content-Type"),
+            mimeType: this._request.requestContentType(),
             text: this._request.requestFormData
         };
         if (this._request.formParameters)

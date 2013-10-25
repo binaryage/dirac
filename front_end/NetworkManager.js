@@ -151,7 +151,7 @@ WebInspector.NetworkDispatcher.prototype = {
     _updateNetworkRequestWithRequest: function(networkRequest, request)
     {
         networkRequest.requestMethod = request.method;
-        networkRequest.requestHeaders = this._headersMapToHeadersArray(request.headers);
+        networkRequest.setRequestHeaders(this._headersMapToHeadersArray(request.headers));
         networkRequest.requestFormData = request.postData;
     },
 
@@ -172,10 +172,10 @@ WebInspector.NetworkDispatcher.prototype = {
         networkRequest.responseHeaders = this._headersMapToHeadersArray(response.headers);
         if (response.headersText)
             networkRequest.responseHeadersText = response.headersText;
-        if (response.requestHeaders)
-            networkRequest.requestHeaders = this._headersMapToHeadersArray(response.requestHeaders);
-        if (response.requestHeadersText)
-            networkRequest.requestHeadersText = response.requestHeadersText;
+        if (response.requestHeaders) {
+            networkRequest.setRequestHeaders(this._headersMapToHeadersArray(response.requestHeaders));
+            networkRequest.setRequestHeadersText(response.requestHeadersText || "");
+        }
 
         networkRequest.connectionReused = response.connectionReused;
         networkRequest.connectionId = response.connectionId;
@@ -389,7 +389,7 @@ WebInspector.NetworkDispatcher.prototype = {
             return;
 
         networkRequest.requestMethod = "GET";
-        networkRequest.requestHeaders = this._headersMapToHeadersArray(request.headers);
+        networkRequest.setRequestHeaders(this._headersMapToHeadersArray(request.headers));
         networkRequest.startTime = time;
 
         this._updateNetworkRequest(networkRequest);

@@ -460,60 +460,38 @@ WebInspector.NetworkRequest.prototype = {
     /**
      * @return {!Array.<!WebInspector.NetworkRequest.NameValue>}
      */
-    get requestHeaders()
+    requestHeaders: function()
     {
         return this._requestHeaders || [];
     },
 
-    set requestHeaders(x)
+    /**
+     * @param {!Array.<!WebInspector.NetworkRequest.NameValue>} headers
+     */
+    setRequestHeaders: function(headers)
     {
-        this._requestHeaders = x;
-        delete this._sortedRequestHeaders;
+        this._requestHeaders = headers;
         delete this._requestCookies;
 
         this.dispatchEventToListeners(WebInspector.NetworkRequest.Events.RequestHeadersChanged);
     },
 
     /**
-     * @return {string}
+     * @return {string|undefined}
      */
-    get requestHeadersText()
+    requestHeadersText: function()
     {
-        if (typeof this._requestHeadersText === "undefined") {
-            this._requestHeadersText = this.requestMethod + " " + this.url + " HTTP/1.1\r\n";
-            for (var i = 0; i < this.requestHeaders.length; ++i)
-                this._requestHeadersText += this.requestHeaders[i].name + ": " + this.requestHeaders[i].value + "\r\n";
-        }
         return this._requestHeadersText;
     },
 
-    set requestHeadersText(x)
+    /**
+     * @param {string} text
+     */
+    setRequestHeadersText: function(text)
     {
-        this._requestHeadersText = x;
+        this._requestHeadersText = text;
 
         this.dispatchEventToListeners(WebInspector.NetworkRequest.Events.RequestHeadersChanged);
-    },
-
-    /**
-     * @return {number}
-     */
-    get requestHeadersSize()
-    {
-        return this.requestHeadersText.length;
-    },
-
-    /**
-     * @return {!Array.<!WebInspector.NetworkRequest.NameValue>}
-     */
-    get sortedRequestHeaders()
-    {
-        if (this._sortedRequestHeaders !== undefined)
-            return this._sortedRequestHeaders;
-
-        this._sortedRequestHeaders = [];
-        this._sortedRequestHeaders = this.requestHeaders.slice();
-        this._sortedRequestHeaders.sort(function(a,b) { return a.name.toLowerCase().compareTo(b.name.toLowerCase()) });
-        return this._sortedRequestHeaders;
     },
 
     /**
@@ -522,7 +500,7 @@ WebInspector.NetworkRequest.prototype = {
      */
     requestHeaderValue: function(headerName)
     {
-        return this._headerValue(this.requestHeaders, headerName);
+        return this._headerValue(this.requestHeaders(), headerName);
     },
 
     /**
@@ -552,9 +530,12 @@ WebInspector.NetworkRequest.prototype = {
     /**
      * @return {string|undefined}
      */
-    get requestHttpVersion()
+    requestHttpVersion: function()
     {
-        var firstLine = this.requestHeadersText.split(/\r\n/)[0];
+        var headersText = this.requestHeadersText();
+        if (!headersText)
+            return undefined;
+        var firstLine = headersText.split(/\r\n/)[0];
         var match = firstLine.match(/(HTTP\/\d+\.\d+)$/);
         return match ? match[1] : undefined;
     },
@@ -613,7 +594,6 @@ WebInspector.NetworkRequest.prototype = {
         if (this._sortedResponseHeaders !== undefined)
             return this._sortedResponseHeaders;
 
-        this._sortedResponseHeaders = [];
         this._sortedResponseHeaders = this.responseHeaders.slice();
         this._sortedResponseHeaders.sort(function(a, b) { return a.name.toLowerCase().compareTo(b.name.toLowerCase()); });
         return this._sortedResponseHeaders;
