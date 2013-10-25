@@ -2534,18 +2534,18 @@ body.platform-mac .soft-context-menu-item-mouse-over {
 }
 
 .search-drawer-header {
-    position: absolute;
-    top: 4px;
-    left: 10px;
+    flex: 0 0 22px;
+    padding-left: 1px;
 }
 
-.search-drawer-header input[type="search"].search-config-search {
-    font-size: 11px;
-    margin-left: 4px;
+.search-drawer-header input[type="text"].search-config-search {
+    -webkit-appearance: none;
+    padding: 0 2px;
+    margin: 0;
+    border: 1px solid rgb(163, 163, 163);
+    height: 20px;
+    border-radius: 2px;
     color: #303030;
-    position: relative;
-    height: 19px;
-    border: 1px solid rgb(205, 205, 205);
 }
 
 .search-drawer-header input[type="search"].search-config-search:focus {
@@ -2581,14 +2581,10 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
 }
 
 .search-status-bar-summary {
-    position: absolute;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    height: 19px;
     background-color: rgb(236, 236, 236);
     border-top: 1px solid #ccc;
     padding-left: 5px;
+    flex: 0 0 19px;
 }
 
 .search-status-bar-summary .progress-bar-container {
@@ -2607,12 +2603,8 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
 }
 
 .search-view .search-results {
-    position: absolute;
-    top: 26px;
-    bottom: 19px;
-    left: 0;
-    right: 0;
     overflow-y: auto;
+    flex: auto;
 }
 
 #search-results-pane-file-based li {
