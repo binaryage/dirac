@@ -869,6 +869,9 @@ WebInspector.ConsoleMessageImpl.prototype = {
         case WebInspector.ConsoleMessage.MessageLevel.Error:
             element.addStyleClass("console-error-level");
             break;
+        case WebInspector.ConsoleMessage.MessageLevel.Info:
+            element.addStyleClass("console-info-level");
+            break;
         }
 
         if (this.type === WebInspector.ConsoleMessage.MessageType.StartGroup || this.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed)
@@ -1003,6 +1006,9 @@ WebInspector.ConsoleMessageImpl.prototype = {
                 break;
             case WebInspector.ConsoleMessage.MessageLevel.Error:
                 levelString = "Error";
+                break;
+            case WebInspector.ConsoleMessage.MessageLevel.Info:
+                levelString = "Info";
                 break;
         }
 

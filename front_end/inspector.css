@@ -1051,7 +1051,8 @@ body.platform-linux .source-code {
 
 .repeated-message.console-error-level::before,
 .repeated-message.console-warning-level:before,
-.repeated-message.console-debug-level:before {
+.repeated-message.console-debug-level:before,
+.repeated-message.console-info-level:before {
     visibility: hidden;
 }
 
@@ -1135,7 +1136,8 @@ body.platform-linux .source-code {
 
 .console-error-level::before,
 .console-warning-level::before,
-.console-debug-level::before {
+.console-debug-level::before,
+.console-info-level::before {
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 120px;
     width: 10px;
@@ -1145,7 +1147,8 @@ body.platform-linux .source-code {
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .console-error-level::before,
 .console-warning-level::before,
-.console-debug-level::before {
+.console-debug-level::before,
+.console-info-level::before {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
 } /* media */
@@ -1156,6 +1159,10 @@ body.platform-linux .source-code {
 
 .console-error-level::before {
     background-position: -213px -96px;
+}
+
+.console-info-level::before {
+    background-position: -213px -107px;
 }
 
 .console-user-command .console-message {
@@ -1996,7 +2003,8 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
 .console-warning-level.repeated-message,
 .console-error-level.repeated-message,
 .console-log-level.repeated-message,
-.console-debug-level.repeated-message{
+.console-debug-level.repeated-message,
+.console-info-level.repeated-message {
     display: -webkit-flex;
 }
 

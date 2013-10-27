@@ -812,6 +812,7 @@ WebInspector.ConsoleViewFilter.prototype = {
         this._levelFilterUI = new WebInspector.NamedBitSetFilterUI();
         this._levelFilterUI.addBit("error", WebInspector.UIString("Errors"));
         this._levelFilterUI.addBit("warning", WebInspector.UIString("Warnings"));
+        this._levelFilterUI.addBit("info", WebInspector.UIString("Info"));
         this._levelFilterUI.addBit("log", WebInspector.UIString("Logs"));
         this._levelFilterUI.addBit("debug", WebInspector.UIString("Debug"));
         this._levelFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._levelFilterChanged, this);
