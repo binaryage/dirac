@@ -514,7 +514,7 @@ body.remote .toolbar-item .close-button {
 
 .panel-status-bar {
     border-top: none;
-    display: -webkit-flex;
+    display: flex;
     pointer-events: none;
     background-color: white;
     flex: 0 0 23px;
@@ -549,6 +549,7 @@ body.remote .toolbar-item .close-button {
     vertical-align: top;
     border: 0 transparent none;
     background-color: transparent;
+    flex: none;
 }
 
 .status-bar-text {
