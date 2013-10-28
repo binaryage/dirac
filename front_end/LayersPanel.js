@@ -50,6 +50,7 @@ WebInspector.LayersPanel = function()
 
     this._model = new WebInspector.LayerTreeModel();
     this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._onLayerTreeUpdated, this);
+    this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerPainted, this._onLayerPainted, this);
     this._currentlySelectedLayer = null;
     this._currentlyHoveredLayer = null;
 
@@ -91,6 +92,16 @@ WebInspector.LayersPanel.prototype = {
             this._hoverLayer(null);
         if (this._currentlySelectedLayer)
             this._layerDetailsView.showLayer(this._currentlySelectedLayer);
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _onLayerPainted: function(event)
+    {
+        var layer = /** @type {WebInspector.Layer} */ (event.data);
+        if (this._currentlySelectedLayer === layer)
+            this._layerDetailsView.updatePaintCount(this._currentlySelectedLayer.paintCount());
     },
 
     /**

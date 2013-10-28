@@ -145,5 +145,13 @@ WebInspector.LayerDetailsView.prototype = {
         this._compositingReasonsCell.appendChild(fragment);
     },
 
+    /**
+     * @param {number} paintCount
+     */
+    updatePaintCount: function(paintCount)
+    {
+        this._paintCountCell.textContent = paintCount;
+    },
+
     __proto__: WebInspector.View.prototype
 }
