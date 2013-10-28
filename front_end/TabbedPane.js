@@ -195,7 +195,7 @@ WebInspector.TabbedPane.prototype = {
     {
         if (!this._tabsById[id])
             return;
-        if (!this._tabsById[id]._closeable)
+        if (userGesture && !this._tabsById[id]._closeable)
             return;
         if (this._currentTab && this._currentTab.id === id)
             this._hideCurrentTab();

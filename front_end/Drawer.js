@@ -116,6 +116,16 @@ WebInspector.Drawer.prototype = {
     },
 
     /**
+     * @param {string} id
+     */
+    unregisterView: function(id)
+    {
+        if (this._tabbedPane.hasTab(id))
+            this._tabbedPane.closeTab(id);
+        delete this._viewFactories[id];
+    },
+
+    /**
      * @param {string=} id
      * @return {WebInspector.View}
      */

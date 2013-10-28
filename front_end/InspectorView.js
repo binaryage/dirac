@@ -178,6 +178,14 @@ WebInspector.InspectorView.prototype = {
     /**
      * @param {string} id
      */
+    unregisterViewInDrawer: function(id)
+    {
+        this._drawer.unregisterView(id);
+    },
+
+    /**
+     * @param {string} id
+     */
     showViewInDrawer: function(id)
     {
         this._drawer.showView(id);

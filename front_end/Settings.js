@@ -117,6 +117,7 @@ WebInspector.Settings = function()
     this.skipStackFramesPattern = this.createSetting("skipStackFramesPattern", "");
     this.screencastEnabled = this.createSetting("screencastEnabled", false);
     this.screencastSidebarWidth = this.createSetting("screencastSidebarWidth", 300);
+    this.showEmulationViewInDrawer = this.createSetting("showEmulationViewInDrawer", false);
 }
 
 WebInspector.Settings.prototype = {

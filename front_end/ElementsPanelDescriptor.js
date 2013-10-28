@@ -85,7 +85,15 @@ WebInspector.ElementsPanelDescriptor.prototype = {
         stylesPaneSection.addAlternateKeys(WebInspector.ElementsPanelDescriptor.ShortcutKeys.IncrementBy01, WebInspector.UIString("Increment by %f", 0.1));
         stylesPaneSection.addAlternateKeys(WebInspector.ElementsPanelDescriptor.ShortcutKeys.DecrementBy01, WebInspector.UIString("Decrement by %f", 0.1));
 
-        WebInspector.inspectorView.registerViewInDrawer("emulation", WebInspector.UIString("Emulation"), this);
+        function toggleEmulationView()
+        {
+            if (WebInspector.settings.showEmulationViewInDrawer.get())
+                WebInspector.inspectorView.registerViewInDrawer("emulation", WebInspector.UIString("Emulation"), this);
+            else
+                WebInspector.inspectorView.unregisterViewInDrawer("emulation");
+        }
+        WebInspector.settings.showEmulationViewInDrawer.addChangeListener(toggleEmulationView, this);
+        toggleEmulationView.call(this);
     },
 
     /**

@@ -49,6 +49,7 @@ WebInspector.SettingsScreen = function(onHide)
     this._tabbedPane.element.insertBefore(settingsLabelElement, this._tabbedPane.element.firstChild);
     this._tabbedPane.element.appendChild(this._createCloseButton());
     this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.General, WebInspector.UIString("General"), new WebInspector.GenericSettingsTab());
+    this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Overrides,WebInspector.UIString("Overrides"),new WebInspector.OverridesSettingsTab());
     this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Workspace, WebInspector.UIString("Workspace"), new WebInspector.WorkspaceSettingsTab());
     if (WebInspector.experimentsSettings.experimentsEnabled)
         this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Experiments, WebInspector.UIString("Experiments"), new WebInspector.ExperimentsSettingsTab());
@@ -93,6 +94,7 @@ WebInspector.SettingsScreen.integerValidator = function(min, max, text)
 
 WebInspector.SettingsScreen.Tabs = {
     General: "general",
+    Overrides: "overrides",
     Workspace: "workspace",
     Experiments: "experiments",
     Shortcuts: "shortcuts"
@@ -528,6 +530,20 @@ WebInspector.WorkspaceSettingsTab = function()
     this._updateEditFileSystemButtonState();
 
     this._reset();
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.SettingsTab}
+ */
+WebInspector.OverridesSettingsTab = function()
+{
+    WebInspector.SettingsTab.call(this, WebInspector.UIString("Overrides"), "overrides-tab-content");
+    this.containerElement.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show 'Emulation' view in console drawer"), WebInspector.settings.showEmulationViewInDrawer));
+}
+
+WebInspector.OverridesSettingsTab.prototype = {
+    __proto__: WebInspector.SettingsTab.prototype
 }
 
 WebInspector.WorkspaceSettingsTab.prototype = {
