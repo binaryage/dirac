@@ -59,7 +59,6 @@
 .overrides-view .tabbed-pane-header-tab {
     background-color: transparent;
     border: none transparent;
-    cursor: pointer;
     font-weight: normal;
     text-shadow: none;
     color: #999999;
@@ -67,6 +66,10 @@
     padding-left: 0;
     padding-left: 10px;
     border-left: 4px solid transparent;
+}
+
+.overrides-view .tabbed-pane-header-tab:not(.selected) {
+    cursor: pointer !important;
 }
 
 .overrides-view .tabbed-pane-header-tab.selected {
@@ -86,7 +89,14 @@
 
 .overrides-device > select {
     margin-bottom: 10px;
+    width: 400px;
+    max-width: 90%;
 }
+
+.overrides-device button {
+    margin-right: 10px;
+}
+
 .overrides-device > label {
     display: block;
     margin-bottom: 7px;
@@ -96,6 +106,13 @@
 .overrides-device-value {
     padding-left: 10px;
     color: gray;
+}
+
+.overrides-device-value-label {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    padding-top: 3px;
 }
 
 .overrides-viewport input {
@@ -142,4 +159,27 @@ button.overrides-swap {
 .overrides-activate-user-agent #tab-user-agent,
 .overrides-activate-sensors #tab-sensors {
     color: rgb(66, 129, 235);
+}
+
+.overrides-view input[type=text]:enabled:focus,
+.overrides-view select:enabled:focus {
+    -webkit-transition: border-color 200ms;
+    border-color: rgb(77, 144, 254);
+    outline: none;
+}
+
+.overrides-view input[type=text],
+.overrides-view select {
+    border: 1px solid #bfbfbf;
+    border-radius: 2px;
+    box-sizing: border-box;
+    color: #444;
+    font: inherit;
+    border-width: 1px;
+}
+
+.overrides-view input[type=text] {
+    margin: 0;
+    min-height: 2em;
+    padding: 3px;
 }

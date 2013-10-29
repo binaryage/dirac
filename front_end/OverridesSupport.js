@@ -336,6 +336,29 @@ WebInspector.OverridesSupport.DeviceOrientation.clearDeviceOrientationOverride =
 }
 
 WebInspector.OverridesSupport.prototype = {
+    /**
+     * @param {string} deviceMetrics
+     * @param {string} userAgent
+     */
+    emulateDevice: function(deviceMetrics, userAgent)
+    {
+        WebInspector.settings.deviceMetrics.set(deviceMetrics);
+        WebInspector.settings.userAgent.set(userAgent);
+        WebInspector.settings.overrideDeviceMetrics.set(true);
+        WebInspector.settings.overrideUserAgent.set(true);
+        WebInspector.settings.emulateTouchEvents.set(true);
+    },
+
+    reset: function()
+    {
+        WebInspector.settings.overrideDeviceMetrics.set(false);
+        WebInspector.settings.overrideUserAgent.set(false);
+        WebInspector.settings.emulateTouchEvents.set(false);
+        WebInspector.settings.overrideDeviceOrientation.set(false);
+        WebInspector.settings.overrideGeolocation.set(false);
+        WebInspector.settings.overrideCSSMedia.set(false);
+    },
+
     _updateAllOverrides: function()
     {
         this._userAgentChanged();
@@ -404,8 +427,7 @@ WebInspector.OverridesSupport.prototype = {
     {
         if (WebInspector.settings.overrideUserAgent.get() || WebInspector.settings.overrideDeviceMetrics.get() ||
                 WebInspector.settings.overrideGeolocation.get() || WebInspector.settings.overrideDeviceOrientation.get() ||
-                WebInspector.settings.emulateTouchEvents.get() || WebInspector.settings.overrideCSSMedia.get() ||
-                WebInspector.settings.overrideCSSMedia.get()) {
+                WebInspector.settings.emulateTouchEvents.get() || WebInspector.settings.overrideCSSMedia.get()) {
             if (!WebInspector.settings.showEmulationViewInDrawer.get())
                 WebInspector.settings.showEmulationViewInDrawer.set(true);
             WebInspector.inspectorView.showViewInDrawer("emulation");

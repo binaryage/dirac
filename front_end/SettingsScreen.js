@@ -518,12 +518,12 @@ WebInspector.WorkspaceSettingsTab = function()
     this._fileSystemsListContainer = this._fileSystemsSection.createChild("p", "settings-list-container");
 
     this._addFileSystemRowElement = this._fileSystemsSection.createChild("div");
-    var addFileSystemButton = this._addFileSystemRowElement.createChild("input", "text-button");
+    var addFileSystemButton = this._addFileSystemRowElement.createChild("input", "settings-tab-text-button");
     addFileSystemButton.type = "button";
     addFileSystemButton.value = WebInspector.UIString("Add folder\u2026");
     addFileSystemButton.addEventListener("click", this._addFileSystemClicked.bind(this));
 
-    this._editFileSystemButton = this._addFileSystemRowElement.createChild("input", "text-button");
+    this._editFileSystemButton = this._addFileSystemRowElement.createChild("input", "settings-tab-text-button");
     this._editFileSystemButton.type = "button";
     this._editFileSystemButton.value = WebInspector.UIString("Edit\u2026");
     this._editFileSystemButton.addEventListener("click", this._editFileSystemClicked.bind(this));
