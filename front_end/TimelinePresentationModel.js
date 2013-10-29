@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Google Inc. All rights reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  * Copyright (C) 2012 Intel Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -281,6 +281,10 @@ WebInspector.TimelinePresentationModel.prototype = {
         this._frames.push(frame);
     },
 
+    /**
+     * @param {TimelineAgent.TimelineEvent} record
+     * @return {Array.<WebInspector.TimelinePresentationModel.Record>}
+     */
     addRecord: function(record)
     {
         if (this._minimumRecordTime === -1 || record.startTime < this._minimumRecordTime)
@@ -288,18 +292,21 @@ WebInspector.TimelinePresentationModel.prototype = {
 
         var records;
         if (record.type === WebInspector.TimelineModel.RecordType.Program)
-            records = record.children;
+            records = this._foldSyncTimeRecords(record.children || []);
         else
             records = [record];
-
-        var formattedRecords = [];
-        var recordsCount = records.length;
-        for (var i = 0; i < recordsCount; ++i)
-            formattedRecords.push(this._innerAddRecord(records[i], this._rootRecord));
-        return formattedRecords;
+        var result = Array(records.length);
+        for (var i = 0; i < records.length; ++i)
+            result[i] = this._innerAddRecord(this._rootRecord, records[i]);
+        return result;
     },
 
-    _innerAddRecord: function(record, parentRecord)
+    /**
+     * @param {WebInspector.TimelinePresentationModel.Record} parentRecord
+     * @param {TimelineAgent.TimelineEvent} record
+     * @return {WebInspector.TimelinePresentationModel.Record}
+     */
+    _innerAddRecord: function(parentRecord, record)
     {
         const recordTypes = WebInspector.TimelineModel.RecordType;
         var isHiddenRecord = record.type in WebInspector.TimelinePresentationModel._hiddenRecords;
@@ -355,9 +362,11 @@ WebInspector.TimelinePresentationModel.prototype = {
         if (coalescingBucket)
             this._coalescingBuckets[coalescingBucket] = formattedRecord;
 
-        var childrenCount = children ? children.length : 0;
-        for (var i = 0; i < childrenCount; ++i)
-            this._innerAddRecord(children[i], formattedRecord);
+        if (children) {
+            children = this._foldSyncTimeRecords(children);
+            for (var i = 0; i < children.length; ++i)
+                this._innerAddRecord(formattedRecord, children[i]);
+        }
 
         formattedRecord.calculateAggregatedStats();
 
@@ -392,7 +401,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     /**
      * @param {Object} record
      * @param {Object} newParent
-     * @param {String} bucket
+     * @param {string=} bucket
      * @return {WebInspector.TimelinePresentationModel.Record?}
      */
     _findCoalescedParent: function(record, newParent, bucket)
@@ -452,6 +461,61 @@ WebInspector.TimelinePresentationModel.prototype = {
         return coalescedRecord;
     },
 
+    /**
+     * @param {Array.<TimelineAgent.TimelineEvent>} records
+     */
+    _foldSyncTimeRecords: function(records)
+    {
+        var recordTypes = WebInspector.TimelineModel.RecordType;
+        // Fast case -- if there are no Time records, return input as is.
+        for (var i = 0; i < records.length && records[i].type !== recordTypes.Time; ++i) {}
+        if (i === records.length)
+            return records;
+
+        var result = [];
+        var stack = [];
+        for (var i = 0; i < records.length; ++i) {
+            result.push(records[i]);
+            if (records[i].type === recordTypes.Time) {
+                stack.push(result.length - 1);
+                continue;
+            }
+            if (records[i].type !== recordTypes.TimeEnd)
+                continue;
+            while (stack.length) {
+                var begin = stack.pop();
+                if (result[begin].data.message !== records[i].data.message)
+                    continue;
+                var timeEndRecord = /** @type {TimelineAgent.TimelineEvent} */ (result.pop());
+                var children = result.splice(begin + 1, result.length - begin);
+                result[begin] = this._createSynchronousTimeRecord(result[begin], timeEndRecord, children);
+                break;
+            }
+        }
+        return result;
+    },
+
+    /**
+     * @param {TimelineAgent.TimelineEvent} beginRecord
+     * @param {TimelineAgent.TimelineEvent} endRecord
+     * @param {Array.<TimelineAgent.TimelineEvent>} children
+     * @return {TimelineAgent.TimelineEvent}
+     */
+    _createSynchronousTimeRecord: function(beginRecord, endRecord, children)
+    {
+        return {
+            type: beginRecord.type,
+            startTime: beginRecord.startTime,
+            endTime: endRecord.startTime,
+            stackTrace: beginRecord.stackTrace,
+            children: children,
+            data: {
+                message: beginRecord.data.message,
+                isSynchronous: true
+           },
+        };
+    },
+
     _findParentRecord: function(record)
     {
         if (!this._glueRecords)
@@ -475,12 +539,6 @@ WebInspector.TimelinePresentationModel.prototype = {
 
         case recordTypes.FireAnimationFrame:
             return this._requestAnimationFrameRecords[record.data["id"]];
-
-        case recordTypes.Time:
-            return this._rootRecord;
-
-        case recordTypes.TimeEnd:
-            return this._timeRecords[record.data["message"]];
         }
     },
 
@@ -716,6 +774,8 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
         break;
 
     case recordTypes.Time:
+        if (record.data.isSynchronous)
+            break;
         var message = record.data["message"];
         var oldReference = presentationModel._timeRecords[message];
         if (oldReference)
@@ -735,17 +795,6 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
             var intervalDuration = this.startTime - timeRecord.startTime;
             this.intervalDuration = intervalDuration;
             timeRecord.intervalDuration = intervalDuration;
-            if (!origin)
-                break;
-            var recordStack = presentationModel._timeRecordStack;
-            recordStack.splice(recordStack.indexOf(timeRecord), 1);
-            for (var index = recordStack.length; index; --index) {
-                var openRecord = recordStack[index - 1];
-                if (openRecord.startTime > timeRecord.startTime)
-                    continue;
-                WebInspector.TimelinePresentationModel.adoptRecord(openRecord, timeRecord);
-                break;
-            }
         }
         break;
 
@@ -1533,6 +1582,7 @@ WebInspector.TimelinePresentationModel.coalescingKeyForRecord = function(rawReco
     switch (rawRecord.type)
     {
     case recordTypes.EventDispatch: return rawRecord.data["type"];
+    case recordTypes.Time: return rawRecord.data["message"];
     case recordTypes.TimeStamp: return rawRecord.data["message"];
     default: return null;
     }
