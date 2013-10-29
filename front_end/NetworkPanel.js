@@ -1436,6 +1436,7 @@ WebInspector.NetworkPanel = function()
     this.registerRequiredCSS("networkPanel.css");
     this._injectStyles();
 
+    this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
     this._filterBar = new WebInspector.FilterBar();
     this._filtersContainer = this.element.createChild("div", "network-filters-header hidden");
     this._filtersContainer.appendChild(this._filterBar.filtersElement());
@@ -1474,6 +1475,9 @@ WebInspector.NetworkPanel = function()
     this._closeButtonElement.addEventListener("click", this._toggleGridMode.bind(this), false);
     this._viewsContainerElement.appendChild(this._closeButtonElement);
 
+    for (var i = 0; i < this._networkLogView.statusBarItems.length; ++i)
+        this._panelStatusBarElement.appendChild(this._networkLogView.statusBarItems[i]);
+
     function viewGetter()
     {
         return this.visibleView;
@@ -1482,11 +1486,6 @@ WebInspector.NetworkPanel = function()
 }
 
 WebInspector.NetworkPanel.prototype = {
-    get statusBarItems()
-    {
-        return this._networkLogView.statusBarItems;
-    },
-
     _onFiltersToggled: function(event)
     {
         var toggled = /** @type {boolean} */ (event.data);

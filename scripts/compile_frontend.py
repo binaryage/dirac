@@ -168,7 +168,6 @@ modules = [
             "TextPrompt.js",
             "TextUtils.js",
             "TimelineGrid.js",
-            "Toolbar.js",
             "UIUtils.js",
             "View.js",
             "ViewportControl.js",

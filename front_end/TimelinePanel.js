@@ -53,6 +53,8 @@ WebInspector.TimelinePanel = function()
     this._overviewModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", WebInspector.TimelineOverviewPane.Mode.Events);
     this._glueRecordsSetting = WebInspector.settings.createSetting("timelineGlueRecords", false);
 
+    this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
+
     this._createFilters();
 
     this._overviewPane = new WebInspector.TimelineOverviewPane(this._model);
@@ -213,11 +215,6 @@ WebInspector.TimelinePanel.prototype = {
         return this._calculator;
     },
 
-    get statusBarItems()
-    {
-        return this._statusBarItems;
-    },
-
     defaultFocusedElement: function()
     {
         return this.element;
@@ -269,34 +266,32 @@ WebInspector.TimelinePanel.prototype = {
     _createStatusBarItems: function()
     {
         this._statusBarButtons = /** @type {!Array.<!WebInspector.StatusBarItem>} */ ([]);
-        this._statusBarItems = /** @type {!Array.<!Element>} */ ([]);
 
         this.toggleTimelineButton = new WebInspector.StatusBarButton(WebInspector.UIString("Record"), "record-profile-status-bar-item");
         this.toggleTimelineButton.addEventListener("click", this._toggleTimelineButtonClicked, this);
         this._statusBarButtons.push(this.toggleTimelineButton);
-        this._statusBarItems.push(this.toggleTimelineButton.element);
+        this._panelStatusBarElement.appendChild(this.toggleTimelineButton.element);
 
-        this._statusBarItems.push(this._filterBar.filterButton());
+        this._panelStatusBarElement.appendChild(this._filterBar.filterButton());
 
         this.clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
         this.clearButton.addEventListener("click", this._clearPanel, this);
         this._statusBarButtons.push(this.clearButton);
-        this._statusBarItems.push(this.clearButton.element);
+        this._panelStatusBarElement.appendChild(this.clearButton.element);
 
         this.garbageCollectButton = new WebInspector.StatusBarButton(WebInspector.UIString("Collect Garbage"), "garbage-collect-status-bar-item");
         this.garbageCollectButton.addEventListener("click", this._garbageCollectButtonClicked, this);
         this._statusBarButtons.push(this.garbageCollectButton);
-        this._statusBarItems.push(this.garbageCollectButton.element);
+        this._panelStatusBarElement.appendChild(this.garbageCollectButton.element);
 
         this._glueParentButton = new WebInspector.StatusBarButton(WebInspector.UIString("Glue asynchronous events to causes"), "glue-async-status-bar-item");
         this._glueParentButton.toggled = this._glueRecordsSetting.get();
         this._presentationModel.setGlueRecords(this._glueParentButton.toggled);
         this._glueParentButton.addEventListener("click", this._glueParentButtonClicked, this);
         this._statusBarButtons.push(this._glueParentButton);
-        this._statusBarItems.push(this._glueParentButton.element);
+        this._panelStatusBarElement.appendChild(this._glueParentButton.element);
 
-        this._statusTextContainer = document.createElement("div");
-        this._statusBarItems.push(this._statusTextContainer);
+        this._statusTextContainer = this._panelStatusBarElement.createChild("div");
 
         this.recordsCounter = new WebInspector.StatusBarText("");
         this._statusTextContainer.appendChild(this.recordsCounter.element);
@@ -309,9 +304,7 @@ WebInspector.TimelinePanel.prototype = {
         }
         this._frameStatisticsPopoverHelper = new WebInspector.PopoverHelper(this.frameStatistics, getAnchor.bind(this), this._showFrameStatistics.bind(this));
 
-        this._miscStatusBarItems = document.createElement("div");
-        this._miscStatusBarItems.className = "status-bar-item";
-        this._statusBarItems.push(this._miscStatusBarItems);
+        this._miscStatusBarItems = this._panelStatusBarElement.createChild("div", "status-bar-item");
     },
 
     _textFilterChanged: function(event)

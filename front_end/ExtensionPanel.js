@@ -38,7 +38,9 @@ WebInspector.ExtensionPanel = function(id, pageURL)
 {
     WebInspector.Panel.call(this, id);
     this.setHideOnDetach();
-    this._statusBarItems = [];
+    this.element.addStyleClass("extension-panel");
+    this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar hidden");
+
     var extensionView = new WebInspector.ExtensionView(id, pageURL, "extension panel");
     extensionView.show(this.element);
     this.setDefaultFocusedElement(extensionView.defaultFocusedElement());
@@ -50,17 +52,13 @@ WebInspector.ExtensionPanel.prototype = {
         return WebInspector.View.prototype.defaultFocusedElement.call(this);
     },
 
-    get statusBarItems()
-    {
-        return this._statusBarItems;
-    },
-
     /**
      * @param {Element} element
      */
     addStatusBarItem: function(element)
     {
-        this._statusBarItems.push(element);
+        this._panelStatusBarElement.removeStyleClass("hidden");
+        this._panelStatusBarElement.appendChild(element);
     },
 
     searchCanceled: function(startingNewSearch)

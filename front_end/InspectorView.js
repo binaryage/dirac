@@ -39,31 +39,53 @@ WebInspector.InspectorView = function()
     this.element.classList.add("fill", "vbox");
     this.element.setAttribute("spellcheck", false);
 
-    this._toolbar = new WebInspector.Toolbar(this);
-    this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
-    this._panelsElement = this.element.createChild("div", "main-panels");
+    this._tabbedPane = new WebInspector.TabbedPane();
+    this._tabbedPane.setRetainTabsOrder(true);
+    this._tabbedPane.show(this.element);
+
+    var toolbarElement = document.createElement("div");
+    toolbarElement.className = "toolbar toolbar-background";
+    var headerElement = this._tabbedPane.headerElement();
+    headerElement.parentElement.insertBefore(toolbarElement, headerElement);
+
+    this._leftToolbarElement = toolbarElement.createChild("div", "toolbar-controls-left");
+    toolbarElement.appendChild(headerElement);
+    this._rightToolbarElement = toolbarElement.createChild("div", "toolbar-controls-right");
+
+    this._errorWarningCountElement = this._rightToolbarElement.createChild("div", "hidden");
+    this._errorWarningCountElement.id = "error-warning-count";
+
     this._drawer = new WebInspector.Drawer(this);
 
     this._history = [];
     this._historyIterator = -1;
     document.addEventListener("keydown", this._keyDown.bind(this), false);
     document.addEventListener("keypress", this._keyPress.bind(this), false);
-    this._panelOrder = [];
     this._panelDescriptors = {};
 
     // Windows and Mac have two different definitions of '[' and ']', so accept both of each.
     this._openBracketIdentifiers = ["U+005B", "U+00DB"].keySet();
     this._closeBracketIdentifiers = ["U+005D", "U+00DD"].keySet();
     this._footerElementContainer = this.element.createChild("div", "inspector-footer status-bar hidden");
+
+    this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
 }
 
 WebInspector.InspectorView.prototype = {
     /**
-     * @return {WebInspector.Toolbar}
+     * @param {Element} element
      */
-    toolbar: function()
+    appendToLeftToolbar: function(element)
     {
-        return this._toolbar;
+        this._leftToolbarElement.appendChild(element);
+    },
+
+    /**
+     * @param {Element} element
+     */
+    appendToRightToolbar: function(element)
+    {
+        this._rightToolbarElement.appendChild(element);
     },
 
     /**
@@ -79,9 +101,8 @@ WebInspector.InspectorView.prototype = {
      */
     addPanel: function(panelDescriptor)
     {
-        this._panelOrder.push(panelDescriptor.name());
         this._panelDescriptors[panelDescriptor.name()] = panelDescriptor;
-        this._toolbar.addPanel(panelDescriptor);
+        this._tabbedPane.appendTab(panelDescriptor.name(), panelDescriptor.title(), new WebInspector.View());
     },
 
     /**
@@ -91,8 +112,9 @@ WebInspector.InspectorView.prototype = {
     panel: function(panelName)
     {
         var panelDescriptor = this._panelDescriptors[panelName];
-        if (!panelDescriptor && this._panelOrder.length)
-            panelDescriptor = this._panelDescriptors[this._panelOrder[0]];
+        var panelOrder = this._tabbedPane.allTabs();
+        if (!panelDescriptor && panelOrder.length)
+            panelDescriptor = this._panelDescriptors[panelOrder[0]];
         return panelDescriptor ? panelDescriptor.panel() : null;
     },
 
@@ -123,7 +145,24 @@ WebInspector.InspectorView.prototype = {
     {
         return this._currentPanel && this._currentPanel.canSearch() ? this._currentPanel : null;
     },
-    
+
+    _tabSelected: function()
+    {
+        // FIXME: remove search controller.
+        WebInspector.searchController.cancelSearch();
+
+        var panelName = this._tabbedPane.selectedTabId;
+        var panel = this._panelDescriptors[this._tabbedPane.selectedTabId].panel();
+        this._tabbedPane.changeTabView(panelName, panel);
+
+        this._drawer.panelSelected(panel);
+        this._currentPanel = panel;
+        WebInspector.settings.lastActivePanel.set(panel.name);
+        this._pushToHistory(panel.name);
+        WebInspector.userMetrics.panelShown(panel.name);
+        panel.focus();
+    },
+
     /**
      * @param {WebInspector.Panel} x
      */
@@ -132,27 +171,8 @@ WebInspector.InspectorView.prototype = {
         if (this._currentPanel === x)
             return;
 
-        // FIXME: remove search controller.
-        WebInspector.searchController.cancelSearch();
-
-        if (this._currentPanel) {
-            this._panelWillHide();
-            this._currentPanel.detach();
-        }
-
-        this._currentPanel = x;
-
-        if (x) {
-            x.show(this._panelsElement);
-            this._panelWasShown(x);
-        }
-        for (var panelName in WebInspector.panels) {
-            if (WebInspector.panels[panelName] === x) {
-                WebInspector.settings.lastActivePanel.set(panelName);
-                this._pushToHistory(panelName);
-                WebInspector.userMetrics.panelShown(panelName);
-            }
-        }
+        this._tabbedPane.changeTabView(x.name, x);
+        this._tabbedPane.selectTab(x.name);
     },
 
     /**
@@ -222,7 +242,7 @@ WebInspector.InspectorView.prototype = {
         // Ctrl/Cmd + 1-9 should show corresponding panel.
         var panelShortcutEnabled = WebInspector.settings.shortcutPanelSwitch.get();
         if (panelShortcutEnabled && !event.shiftKey && !event.altKey && event.keyCode > 0x30 && event.keyCode < 0x3A) {
-            var panelName = this._panelOrder[event.keyCode - 0x31];
+            var panelName = this._tabbedPane.allTabs()[event.keyCode - 0x31];
             if (panelName) {
                 this.showPanel(panelName);
                 event.consume(true);
@@ -246,9 +266,10 @@ WebInspector.InspectorView.prototype = {
         if (this._openBracketIdentifiers[event.keyIdentifier]) {
             var isRotateLeft = !event.shiftKey && !event.altKey;
             if (isRotateLeft) {
-                var index = this._panelOrder.indexOf(this.currentPanel().name);
-                index = (index === 0) ? this._panelOrder.length - 1 : index - 1;
-                this.showPanel(this._panelOrder[index]);
+                var panelOrder = this._tabbedPane.allTabs();
+                var index = panelOrder.indexOf(this.currentPanel().name);
+                index = (index === 0) ? panelOrder.length - 1 : index - 1;
+                this.showPanel(panelOrder[index]);
                 event.consume(true);
                 return;
             }
@@ -264,9 +285,10 @@ WebInspector.InspectorView.prototype = {
         if (this._closeBracketIdentifiers[event.keyIdentifier]) {
             var isRotateRight = !event.shiftKey && !event.altKey;
             if (isRotateRight) {
-                var index = this._panelOrder.indexOf(this.currentPanel().name);
-                index = (index + 1) % this._panelOrder.length;
-                this.showPanel(this._panelOrder[index]);
+                var panelOrder = this._tabbedPane.allTabs();
+                var index = panelOrder.indexOf(this.currentPanel().name);
+                index = (index + 1) % panelOrder.length;
+                this.showPanel(panelOrder[index]);
                 event.consume(true);
                 return;
             }
@@ -336,32 +358,9 @@ WebInspector.InspectorView.prototype = {
 
     onResize: function()
     {
-        // FIXME: make toolbar and drawer views.
-        this._toolbar.resize();
+        // FIXME: make drawer a view.
         this.doResize();
         this._drawer.resize();
-    },
-
-    /**
-     * @param {WebInspector.Panel} panel
-     */
-    _panelWasShown: function(panel)
-    {
-        this._toolbar.panelSelected(panel);
-        this._drawer.panelSelected(panel);
-
-        var statusBarItems = panel.statusBarItems;
-        if (statusBarItems) {
-            for (var i = 0; i < statusBarItems.length; ++i)
-                this._panelStatusBarElement.appendChild(statusBarItems[i]);
-        }
-        this._panelStatusBarElement.enableStyleClass("hidden", !statusBarItems);
-        panel.focus();
-    },
-
-    _panelWillHide: function()
-    {
-        this._panelStatusBarElement.removeChildren();
     },
 
     __proto__: WebInspector.View.prototype

@@ -63,19 +63,19 @@ var WebInspector = {
     _createGlobalStatusBarItems: function()
     {
         if (this.inspectElementModeController)
-            this.inspectorView.toolbar().leftToolbarElement().appendChild(this.inspectElementModeController.toggleSearchButton.element);
+            this.inspectorView.appendToLeftToolbar(this.inspectElementModeController.toggleSearchButton.element);
 
         if (Capabilities.canScreencast) {
             this._toggleScreencastButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle screencast."), "screencast-status-bar-item");
             this._toggleScreencastButton.addEventListener("click", this._toggleScreencastButtonClicked.bind(this, true), false);
-            this.inspectorView.toolbar().leftToolbarElement().appendChild(this._toggleScreencastButton.element);
+            this.inspectorView.appendToLeftToolbar(this._toggleScreencastButton.element);
         }
 
-        this.inspectorView.toolbar().rightToolbarElement().appendChild(this.inspectorView.drawer().toggleButtonElement());
+        this.inspectorView.appendToRightToolbar(this.inspectorView.drawer().toggleButtonElement());
 
-        this.inspectorView.toolbar().rightToolbarElement().appendChild(this.settingsController.statusBarItem);
+        this.inspectorView.appendToRightToolbar(this.settingsController.statusBarItem);
         if (!WebInspector.queryParamsObject["remoteFrontend"])
-            this.inspectorView.toolbar().rightToolbarElement().appendChild(this.dockController.element);
+            this.inspectorView.appendToRightToolbar(this.dockController.element);
     },
 
     /**

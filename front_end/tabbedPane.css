@@ -138,4 +138,5 @@ select.tabbed-pane-header-tabs-drop-down-select {
     margin: 0;
     font-size: 75%;
     -webkit-appearance: none;
+    width: 20px;
 }

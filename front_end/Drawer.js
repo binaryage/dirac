@@ -141,6 +141,8 @@ WebInspector.Drawer.prototype = {
      */
     showView: function(tabId)
     {
+        if (!this._toggleDrawerButton.enabled())
+            return;
         this._tabbedPane.changeTabView(tabId, this._viewFactories[tabId].createView(tabId));
         this._innerShow();
         this._tabbedPane.selectTab(tabId, true);
@@ -154,6 +156,8 @@ WebInspector.Drawer.prototype = {
      */
     showCloseableView: function(id, title, view)
     {
+        if (!this._toggleDrawerButton.enabled())
+            return;
         if (!this._tabbedPane.hasTab(id))
             this._tabbedPane.appendTab(id, title, view, undefined, false, true);
         this._innerShow();

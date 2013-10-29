@@ -38,7 +38,7 @@
 WebInspector.ExtensionView = function(id, src, className)
 {
     WebInspector.View.call(this);
-    this.element.className = "fill";
+    this.element.className = "extension-view";
 
     this._id = id;
     this._iframe = document.createElement("iframe");
