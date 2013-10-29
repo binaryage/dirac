@@ -44,7 +44,6 @@ WebInspector.ResourceTreeModel = function(networkManager)
 
     PageAgent.enable();
 
-    NetworkAgent.enable();
     this._fetchResourceTree();
 
     InspectorBackend.registerPageDispatcher(new WebInspector.PageDispatcher(this));
