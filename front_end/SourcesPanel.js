@@ -381,25 +381,20 @@ WebInspector.SourcesPanel.prototype = {
 
     /**
      * @param {Element} anchor
-     */
-    canShowAnchorLocation: function(anchor)
-    {
-        if (WebInspector.debuggerModel.debuggerEnabled() && anchor.uiSourceCode)
-            return true;
-        var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(anchor.href);
-        if (uiSourceCode) {
-            anchor.uiSourceCode = uiSourceCode;
-            return true;
-        }
-        return false;
-    },
-
-    /**
-     * @param {Element} anchor
+     * @return {boolean}
      */
     showAnchorLocation: function(anchor)
     {
+        if (!anchor.uiSourceCode) {
+            var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(anchor.href);
+            if (uiSourceCode)
+                anchor.uiSourceCode = uiSourceCode;
+        }
+        if (!anchor.uiSourceCode)
+            return false;
         this._showSourceLocation(anchor.uiSourceCode, anchor.lineNumber, anchor.columnNumber);
+        WebInspector.inspectorView.setCurrentPanel(this);
+        return true;
     },
 
     /**

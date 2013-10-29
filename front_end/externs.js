@@ -306,6 +306,7 @@ WebInspector.queryParamsObject = {}
 
 /**
  * @param {Element} element
+ * @return {boolean}
  */
 WebInspector.showAnchorLocation = function(element) {}
 

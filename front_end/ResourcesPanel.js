@@ -407,15 +407,18 @@ WebInspector.ResourcesPanel.prototype = {
         }
     },
 
-    canShowAnchorLocation: function(anchor)
-    {
-        return !!WebInspector.resourceForURL(anchor.href);
-    },
-
+    /**
+     * @param {Element} anchor
+     * @return {boolean}
+     */
     showAnchorLocation: function(anchor)
     {
         var resource = WebInspector.resourceForURL(anchor.href);
+        if (!resource)
+            return false;
         this.showResource(resource, anchor.lineNumber);
+        WebInspector.inspectorView.setCurrentPanel(this);
+        return true;
     },
 
     /**

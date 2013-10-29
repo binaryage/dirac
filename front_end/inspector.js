@@ -974,18 +974,18 @@ WebInspector.showAnchorLocation = function(anchor)
 
 WebInspector._showAnchorLocationInPanel = function(anchor, panel)
 {
-    if (!panel || !panel.canShowAnchorLocation(anchor))
+    if (!panel)
         return false;
 
-    // FIXME: support webkit-html-external-link links here.
-    if (anchor.hasStyleClass("webkit-html-external-link")) {
-        anchor.removeStyleClass("webkit-html-external-link");
-        anchor.addStyleClass("webkit-html-resource-link");
+    var result = panel.showAnchorLocation(anchor);
+    if (result) {
+        // FIXME: support webkit-html-external-link links here.
+        if (anchor.hasStyleClass("webkit-html-external-link")) {
+            anchor.removeStyleClass("webkit-html-external-link");
+            anchor.addStyleClass("webkit-html-resource-link");
+        }
     }
-
-    WebInspector.inspectorView.setCurrentPanel(panel);
-    panel.showAnchorLocation(anchor);
-    return true;
+    return result;
 }
 
 WebInspector.evaluateInConsole = function(expression, showResultOnly)

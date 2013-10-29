@@ -1535,15 +1535,18 @@ WebInspector.NetworkPanel.prototype = {
         return anchor.requestId ? this.requestById(anchor.requestId) : this._networkLogView._requestsByURL[anchor.href];
     },
 
-    canShowAnchorLocation: function(anchor)
-    {
-        return !!this._requestByAnchor(anchor);
-    },
-
+    /**
+     * @param {Element} anchor
+     * @return {boolean}
+     */
     showAnchorLocation: function(anchor)
     {
         var request = this._requestByAnchor(anchor);
+        if (!request)
+            return false;
         this.revealAndHighlightRequest(request)
+        WebInspector.inspectorView.setCurrentPanel(this);
+        return true;
     },
 
     revealAndHighlightRequest: function(request)
