@@ -406,7 +406,8 @@ WebInspector.OverridesSupport.prototype = {
                 WebInspector.settings.overrideGeolocation.get() || WebInspector.settings.overrideDeviceOrientation.get() ||
                 WebInspector.settings.emulateTouchEvents.get() || WebInspector.settings.overrideCSSMedia.get() ||
                 WebInspector.settings.overrideCSSMedia.get()) {
-            WebInspector.settings.showEmulationViewInDrawer.set(true);
+            if (!WebInspector.settings.showEmulationViewInDrawer.get())
+                WebInspector.settings.showEmulationViewInDrawer.set(true);
             WebInspector.inspectorView.showViewInDrawer("emulation");
         }
     }

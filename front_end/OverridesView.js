@@ -186,7 +186,7 @@ WebInspector.OverridesView.Tab.prototype.__proto__ = WebInspector.View.prototype
  */
 WebInspector.OverridesView.DeviceTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this, "device", WebInspector.UIString("Device"), [WebInspector.settings.emulateTouchEvents]);
+    WebInspector.OverridesView.Tab.call(this, "device", WebInspector.UIString("Device preset"), [WebInspector.settings.emulateTouchEvents]);
     this.element.addStyleClass("overrides-device");
 
     this._emulatedDeviceSetting = WebInspector.settings.createSetting("emulatedDevice", "Google Nexus 4");

@@ -111,6 +111,8 @@ WebInspector.Drawer.prototype = {
      */
     registerView: function(id, title, factory)
     {
+        if (this._tabbedPane.hasTab(id))
+            this._tabbedPane.closeTab(id);
         this._viewFactories[id] = factory;
         this._tabbedPane.appendTab(id, title, new WebInspector.View());
     },
