@@ -161,6 +161,7 @@ WebInspector.Layers3DView.prototype = {
             stylesheetTextNode.nodeValue = stylesheetContent;
         var element = this._elementForLayer(root);
         element.style.webkitTransform = "scale3d(" + this._scale + "," + this._scale + "," + this._scale + ")";
+        element.style.webkitTransformOrigin = "";
         element.style.left = ((this._clientWidth - root.width() * this._scale) >> 1) + "px";
         element.style.top = ((this._clientHeight - root.height() * this._scale) >> 1) + "px";
     },

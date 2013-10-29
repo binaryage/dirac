@@ -75,7 +75,7 @@ WebInspector.LayersPanel.prototype = {
     {
         WebInspector.Panel.prototype.wasShown.call(this);
         this.sidebarTreeElement.focus();
-        this._model.requestLayers();
+        this._model.enable();
     },
 
     willHide: function()

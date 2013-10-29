@@ -40,6 +40,7 @@ WebInspector.LayerTreeModel = function()
     // rect separate from layer so we can get it after refreshing the tree.
     this._lastPaintRectByLayerId = {};
     InspectorBackend.registerLayerTreeDispatcher(new WebInspector.LayerTreeDispatcher(this));
+    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.DocumentUpdated, this._onDocumentUpdated, this);
 }
 
 WebInspector.LayerTreeModel.Events = {
@@ -53,21 +54,25 @@ WebInspector.LayerTreeModel.prototype = {
         if (!this._enabled)
             return;
         this._enabled = false;
-        this._needsRefresh = false;
         LayerTreeAgent.disable();
-        if (this._delayedRequestLayersTimer) {
-            window.clearTimeout(this._delayedRequestLayersTimer);
-            delete this._delayedRequestLayersTimer;
-        }
     },
 
-    _enable: function()
+    /**
+     * @param {function()=} callback
+     */
+    enable: function(callback)
     {
         if (this._enabled)
             return;
-        this._needsRefresh = true;
         this._enabled = true;
-        LayerTreeAgent.enable();
+        WebInspector.domAgent.requestDocument(onDocumentAvailable.bind(this));
+        function onDocumentAvailable()
+        {
+            // The agent might have been disabled while we were waiting for the document.
+            if (!this._enabled)
+                return;
+            LayerTreeAgent.enable();
+        }
     },
 
     /**
@@ -99,45 +104,6 @@ WebInspector.LayerTreeModel.prototype = {
                 return false;
         }
         return callback(root) || root.children().some(this.forEachLayer.bind(this, callback));
-    },
-
-    /**
-     * @param {function()=} callback
-     */
-    requestLayers: function(callback)
-    {
-        delete this._delayedRequestLayersTimer;
-        if (!callback)
-            callback = function() {}
-        this._enable();
-        if (!this._needsRefresh) {
-            callback();
-            return;
-        }
-        if (this._pendingRequestLayersCallbacks) {
-            this._pendingRequestLayersCallbacks.push(callback);
-            return;
-        }
-        this._pendingRequestLayersCallbacks = [];
-        this._pendingRequestLayersCallbacks.push(callback);
-        function onGetLayers(error, layers)
-        {
-            this._root = null;
-            this._contentRoot = null;
-            if (error) {
-                console.error("LayerTreeAgent.getLayers(): " + error);
-                layers = [];
-            }
-            this._repopulate(layers);
-            for (var i = 0; i < this._pendingRequestLayersCallbacks.length; ++i)
-                this._pendingRequestLayersCallbacks[i]();
-            delete this._pendingRequestLayersCallbacks;
-        }
-        function onDocumentAvailable()
-        {
-            LayerTreeAgent.getLayers(undefined, onGetLayers.bind(this))
-        }
-        WebInspector.domAgent.requestDocument(onDocumentAvailable.bind(this));
     },
 
     /**
@@ -182,15 +148,19 @@ WebInspector.LayerTreeModel.prototype = {
             }
         }
         this._lastPaintRectByLayerId = {};
-        this.dispatchEventToListeners(WebInspector.LayerTreeModel.Events.LayerTreeChanged);
     },
 
-    _layerTreeChanged: function()
+    /**
+     * @param {Array.<LayerTreeAgent.Layer>=} payload
+     */
+    _layerTreeChanged: function(payload)
     {
-        if (this._delayedRequestLayersTimer)
-            return;
-        this._needsRefresh = true;
-        this._delayedRequestLayersTimer = setTimeout(this.requestLayers.bind(this), 100);
+        this._root = null;
+        this._contentRoot = null;
+        // Payload will be null when not in the composited mode.
+        if (payload)
+            this._repopulate(payload);
+        this.dispatchEventToListeners(WebInspector.LayerTreeModel.Events.LayerTreeChanged);
     },
 
     /**
@@ -206,6 +176,12 @@ WebInspector.LayerTreeModel.prototype = {
         }
         layer._didPaint(clipRect);
         this.dispatchEventToListeners(WebInspector.LayerTreeModel.Events.LayerPainted, layer);
+    },
+
+    _onDocumentUpdated: function()
+    {
+        this.disable();
+        this.enable();
     },
 
     __proto__: WebInspector.Object.prototype
@@ -422,9 +398,12 @@ WebInspector.LayerTreeDispatcher = function(layerTreeModel)
 }
 
 WebInspector.LayerTreeDispatcher.prototype = {
-    layerTreeDidChange: function()
+    /**
+     * @param {Array.<LayerTreeAgent.Layer>=} payload
+     */
+    layerTreeDidChange: function(payload)
     {
-        this._layerTreeModel._layerTreeChanged();
+        this._layerTreeModel._layerTreeChanged(payload);
     },
 
     /**

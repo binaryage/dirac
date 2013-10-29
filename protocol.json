@@ -3986,16 +3986,6 @@
                 "description": "Disables compositing tree inspection."
             },
             {
-                "name": "getLayers",
-                "parameters": [
-                    { "name": "nodeId", "optional": true, "$ref": "DOM.NodeId", "description": "Root of the subtree for which we want to gather layers (return entire tree if not specified)" }
-                ],
-                "description": "Returns the layer tree structure of the current page.",
-                "returns": [
-                    { "name": "layers", "type": "array", "items": { "$ref": "Layer" }, "description": "Child layers." }
-                ]
-            },
-            {
                 "name": "compositingReasons",
                 "parameters": [
                     { "name": "layerId", "$ref": "LayerId", "description": "The id of the layer for which we want to get the reasons it was composited." }
@@ -4008,7 +3998,10 @@
         ],
         "events": [
             {
-                "name": "layerTreeDidChange"
+                "name": "layerTreeDidChange",
+                "parameters": [
+                    { "name": "layers", "type": "array", "items": { "$ref": "Layer" }, "optional": true, "description": "Layer tree, absent if not in the comspositing mode." }
+                ]
             },
             {
                 "name": "layerPainted",
