@@ -48,6 +48,8 @@ WebInspector.StylesSourceMapping = function(cssModel, workspace)
     this._initialize();
 }
 
+WebInspector.StylesSourceMapping.MinorChangeUpdateTimeoutMs = 1000;
+
 WebInspector.StylesSourceMapping.prototype = {
     /**
      * @param {WebInspector.RawLocation} rawLocation
@@ -235,8 +237,36 @@ WebInspector.StylesSourceMapping.prototype = {
         if (this._isSettingContent)
             return;
 
-        if (!event.data.majorChange)
+        if (event.data.majorChange) {
+            this._updateStyleSheetText(event.data.styleSheetId);
             return;
+        }
+
+        this._updateStyleSheetTextSoon(event.data.styleSheetId);
+    },
+
+    /**
+     * @param {CSSAgent.StyleSheetId} styleSheetId
+     */
+    _updateStyleSheetTextSoon: function(styleSheetId)
+    {
+        if (this._updateStyleSheetTextTimer)
+            clearTimeout(this._updateStyleSheetTextTimer);
+
+        this._updateStyleSheetTextTimer = setTimeout(this._updateStyleSheetText.bind(this, styleSheetId), WebInspector.StylesSourceMapping.MinorChangeUpdateTimeoutMs);
+    },
+
+    /**
+     * @param {CSSAgent.StyleSheetId} styleSheetId
+     */
+    _updateStyleSheetText: function(styleSheetId)
+    {
+        if (this._updateStyleSheetTextTimer) {
+            clearTimeout(this._updateStyleSheetTextTimer);
+            delete this._updateStyleSheetTextTimer;
+        }
+
+        CSSAgent.getStyleSheetText(styleSheetId, callback.bind(this));
 
         /**
          * @param {?string} error
@@ -245,9 +275,8 @@ WebInspector.StylesSourceMapping.prototype = {
         function callback(error, content)
         {
             if (!error)
-                this._innerStyleSheetChanged(event.data.styleSheetId, content);
+                this._innerStyleSheetChanged(styleSheetId, content);
         }
-        CSSAgent.getStyleSheetText(event.data.styleSheetId, callback.bind(this));
     },
 
     /**

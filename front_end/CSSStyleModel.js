@@ -412,7 +412,7 @@ WebInspector.CSSStyleModel.prototype = {
 
         var majorChange = this._pendingCommandsMajorState[this._pendingCommandsMajorState.length - 1];
 
-        if (!majorChange || !styleSheetId || !this.hasEventListeners(WebInspector.CSSStyleModel.Events.StyleSheetChanged))
+        if (!styleSheetId || !this.hasEventListeners(WebInspector.CSSStyleModel.Events.StyleSheetChanged))
             return;
 
         this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.StyleSheetChanged, { styleSheetId: styleSheetId, majorChange: majorChange });
