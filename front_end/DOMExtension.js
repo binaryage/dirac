@@ -297,13 +297,23 @@ Element.prototype.isInsertionCaretInside = function()
 }
 
 /**
+ * @param {string} elementName
+ * @param {string=} className
+ */
+Document.prototype.createElementWithClass = function(elementName, className)
+{
+    var element = this.createElement(elementName);
+    if (className)
+        element.className = className;
+    return element;
+}
+
+/**
  * @param {string=} className
  */
 Element.prototype.createChild = function(elementName, className)
 {
-    var element = this.ownerDocument.createElement(elementName);
-    if (className)
-        element.className = className;
+    var element = this.ownerDocument.createElementWithClass(elementName, className);
     this.appendChild(element);
     return element;
 }

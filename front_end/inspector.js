@@ -71,11 +71,14 @@ var WebInspector = {
             this.inspectorView.appendToLeftToolbar(this._toggleScreencastButton.element);
         }
 
-        this.inspectorView.appendToRightToolbar(this.inspectorView.drawer().toggleButtonElement());
-
         this.inspectorView.appendToRightToolbar(this.settingsController.statusBarItem);
         if (!WebInspector.queryParamsObject["remoteFrontend"])
             this.inspectorView.appendToRightToolbar(this.dockController.element);
+
+        var closeButtonToolbarItem = document.createElementWithClass("div", "toolbar-close-button-item");
+        var closeButtonElement = closeButtonToolbarItem.createChild("div", "close-button");
+        closeButtonElement.addEventListener("click", WebInspector.close.bind(WebInspector), true);
+        this.inspectorView.appendToRightToolbar(closeButtonToolbarItem);
     },
 
     /**

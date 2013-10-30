@@ -56,6 +56,7 @@ WebInspector.InspectorView = function()
     this._errorWarningCountElement.id = "error-warning-count";
 
     this._drawer = new WebInspector.Drawer(this);
+    this.appendToRightToolbar(this._drawer.toggleButtonElement());
 
     this._history = [];
     this._historyIterator = -1;
