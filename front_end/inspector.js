@@ -915,7 +915,7 @@ WebInspector.inspect = function(payload, hints)
             if (!uiLocation)
                 return;
 
-            WebInspector.showPanel("sources").showUILocation(uiLocation);
+            WebInspector.panel("sources").showUILocation(uiLocation, true);
         }
         DebuggerAgent.getFunctionDetails(object.objectId, didGetDetails.bind(this));
         return;

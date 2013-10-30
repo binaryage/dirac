@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
  
- .tabbed-pane {
+.tabbed-pane {
     flex: auto;
 }
 
@@ -36,6 +36,7 @@
     position: relative;
     overflow: auto;
     flex: auto;
+    display: flex;
 }
 
 .tabbed-pane-content.has-no-tabs {

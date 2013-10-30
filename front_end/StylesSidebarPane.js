@@ -1364,7 +1364,7 @@ WebInspector.StylePropertiesSection.prototype = {
             var styleSheetHeader = WebInspector.cssModel.styleSheetHeaderForId(this.rule.id.styleSheetId);
             var uiLocation = styleSheetHeader.rawLocationToUILocation(this.rule.lineNumberInSource(index), this.rule.columnNumberInSource(index));
             if (uiLocation)
-                WebInspector.showPanel("sources").showUILocation(uiLocation);
+                WebInspector.panel("sources").showUILocation(uiLocation);
             return;
         }
         this._startEditingOnMouseEvent();
@@ -2296,7 +2296,8 @@ WebInspector.StylePropertyTreeElement.prototype = {
         var uiLocation = this.property.uiLocation(propertyNameClicked);
         if (!uiLocation)
             return;
-        WebInspector.showPanel("sources").showUILocation(uiLocation);
+
+        WebInspector.panel("sources").showUILocation(uiLocation);
     },
 
     /**

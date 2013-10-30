@@ -39,14 +39,6 @@
     background-color: purple;
 }
 
-.scripts-toggle-pretty-print-status-bar-item .glyph {
-    -webkit-mask-position: -256px -24px;
-}
-
-.scripts-toggle-pretty-print-status-bar-item.toggled .glyph {
-    background-color: rgb(66, 129, 235);
-}
-
 .evaluate-snippet-status-bar-item .glyph {
     -webkit-mask-position: -64px -48px;
 }
@@ -67,10 +59,6 @@
     position: relative;
     margin-top: -1px;
     height: 24px;
-}
-
-#scripts-status-bar .status-bar-item img {
-    margin-top: 2px;
 }
 
 .scripts-run-snippet .glyph {
@@ -163,17 +151,9 @@ button.status-bar-item.scripts-navigator-show-hide-button.toggled-overlay {
     top: 2px;
 }
 
-#scripts-editor-container-tabbed-pane {
-    flex: auto;
-}
-
-#scripts-editor-container-tabbed-pane .tabbed-pane-header-contents {
+.panel.sources #sources-editor-container-tabbed-pane .tabbed-pane-header-contents {
     margin-left: 20px;
     margin-right: 36px;
-}
-
-#scripts-editor-container-tabbed-pane .tabbed-pane-header-tab {
-    border-bottom: 1px solid #BBB;
 }
 
 .function-location-link {
@@ -256,25 +236,4 @@ a.worker-item:hover {
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 120px;
     background-position: -202px -107px;
-}
-
-.scripts-status-bar {
-    flex: 0 0 20px;
-    background-color: rgb(236, 236, 236);
-    border-top: 1px solid rgb(196,196,196);
-}
-
-.scripts-status-bar .status-bar-item {
-    margin-top: -1px;
-    height: 20px;
-}
-
-.source-frame-cursor-position {
-    -webkit-user-select: text;
-}
-
-.editor-contents .tabbed-pane {
-    flex: 1 1;
-    width: auto;
-    height: auto;
 }

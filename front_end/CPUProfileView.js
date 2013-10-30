@@ -416,7 +416,7 @@ WebInspector.CPUProfileView.prototype = {
         var uiLocation = script.rawLocationToUILocation(node.lineNumber);
         if (!uiLocation)
             return;
-        WebInspector.showPanel("sources").showUILocation(uiLocation);
+        WebInspector.panel("sources").showUILocation(uiLocation);
     },
 
     _changeView: function()

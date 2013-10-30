@@ -2801,3 +2801,7 @@ body.platform-mac .progress-bar-container progress {
 .elements-tree-outline li.parent::before {
     top: 0 !important;
 }
+
+#drawer-editor-view {
+    flex: auto;
+}

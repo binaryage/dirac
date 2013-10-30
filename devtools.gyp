@@ -227,6 +227,7 @@
             'front_end/screencastView.css',
             'front_end/sidebarPane.css',
             'front_end/sourcesPanel.css',
+            'front_end/sourcesView.css',
             'front_end/spectrum.css',
             'front_end/splitView.css',
             'front_end/textPrompt.css',

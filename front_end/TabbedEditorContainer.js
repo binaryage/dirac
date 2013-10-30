@@ -56,7 +56,7 @@ WebInspector.TabbedEditorContainer = function(delegate, settingName, placeholder
     this._tabbedPane.setTabDelegate(new WebInspector.EditorContainerTabDelegate(this));
 
     this._tabbedPane.closeableTabs = true;
-    this._tabbedPane.element.id = "scripts-editor-container-tabbed-pane";
+    this._tabbedPane.element.id = "sources-editor-container-tabbed-pane";
 
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabClosed, this._tabClosed, this);
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
@@ -170,6 +170,7 @@ WebInspector.TabbedEditorContainer.prototype = {
     {
         if (this._currentFile === uiSourceCode)
             return;
+
         this._removeScrollAndSelectionListeners();
         this._currentFile = uiSourceCode;
 
@@ -181,7 +182,7 @@ WebInspector.TabbedEditorContainer.prototype = {
         
         this._currentView = this.visibleView;
         this._addScrollAndSelectionListeners();
-        
+
         this.dispatchEventToListeners(WebInspector.TabbedEditorContainer.Events.EditorSelected, this._currentFile);
     },
 

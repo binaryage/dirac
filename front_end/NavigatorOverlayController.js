@@ -44,7 +44,7 @@ WebInspector.NavigatorOverlayController = function(parentSidebarView, navigatorV
     this._navigatorShowHideButton = new WebInspector.StatusBarButton(WebInspector.UIString("Hide navigator"), "left-sidebar-show-hide-button scripts-navigator-show-hide-button", 3);
     this._navigatorShowHideButton.state = "left";
     this._navigatorShowHideButton.addEventListener("click", this._toggleNavigator, this);
-    this._editorView.element.appendChild(this._navigatorShowHideButton.element);
+    parentSidebarView.mainElement.appendChild(this._navigatorShowHideButton.element);
 
     WebInspector.settings.navigatorHidden = WebInspector.settings.createSetting("navigatorHidden", true);
     if (WebInspector.settings.navigatorHidden.get())

@@ -177,6 +177,14 @@ WebInspector.InspectorView.prototype = {
 
     /**
      * @param {string} id
+     */
+    closeViewInDrawer: function(id)
+    {
+        return this._drawer.closeView(id);
+    },
+
+    /**
+     * @param {string} id
      * @param {string} title
      * @param {WebInspector.View} view
      */
