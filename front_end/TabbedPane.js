@@ -43,7 +43,7 @@ WebInspector.TabbedPane = function()
     this._tabs = [];
     this._tabsHistory = [];
     this._tabsById = {};
-    this.element.addEventListener("click", this.focus.bind(this), true);
+    this._headerElement.addEventListener("click", this.focus.bind(this), true);
     this.element.addEventListener("mouseup", this.onMouseUp.bind(this), false);
 
     this._dropDownButton = this._createDropDownButton();
