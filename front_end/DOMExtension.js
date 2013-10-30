@@ -351,19 +351,8 @@ Element.prototype.totalOffsetTop = function()
 
 Element.prototype.totalOffset = function()
 {
-    var totalLeft = 0;
-    var totalTop = 0;
-
-    for (var element = this; element; element = element.offsetParent) {
-        totalLeft += element.offsetLeft;
-        totalTop += element.offsetTop;
-        if (this !== element) {
-            totalLeft += element.clientLeft - element.scrollLeft;
-            totalTop += element.clientTop - element.scrollTop;
-        }
-    }
-
-    return { left: totalLeft, top: totalTop };
+    var rect = this.getBoundingClientRect();
+    return { left: rect.left, top: rect.top };
 }
 
 Element.prototype.scrollOffset = function()
