@@ -346,6 +346,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         var toggled = /** @type {boolean} */ (event.data);
         this._filtersContainer.enableStyleClass("hidden", !toggled);
+        this.onResize();
     },
 
     /**
