@@ -120,7 +120,8 @@
 
 .filter-checkbox-filter .checkbox-filter-checkbox-checked {
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 120px;
+    background-repeat: no-repeat;
+    background-size: 320px 144px;
     background-position: -129px -110px;
 }
 
