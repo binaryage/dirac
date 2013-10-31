@@ -251,8 +251,8 @@ var WebInspector = {
 
     _debuggerPaused: function()
     {
-        // Create sources panel upon demand.
-        WebInspector.panel("sources");
+        this.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
+        WebInspector.showPanel("sources");
     }
 }
 

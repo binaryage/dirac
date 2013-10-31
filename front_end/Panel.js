@@ -286,9 +286,17 @@ WebInspector.PanelDescriptor.prototype = {
     {
         if (this._panel)
             return this._panel;
+        if (!this._isCreatingPanel) {
+            var oldStackTraceLimit = Error.stackTraceLimit;
+            Error.stackTraceLimit = 50;
+            console.assert(!this._isCreatingPanel, "PanelDescriptor.panel() is called from inside itself: " + new Error().stack);
+            Error.stackTraceLimit = oldStackTraceLimit;
+        }
         if (this._scriptName)
             loadScript(this._scriptName);
+        this._isCreatingPanel = true;
         this._panel = new WebInspector[this._className];
+        delete this._isCreatingPanel;
         return this._panel;
     },
 

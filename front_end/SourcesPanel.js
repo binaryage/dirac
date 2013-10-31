@@ -163,7 +163,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._updateDebuggerButtons();
     this._pauseOnExceptionStateChanged();
     if (WebInspector.debuggerModel.isPaused())
-        this._debuggerPaused();
+        this._showDebuggerPausedDetails();
 
     WebInspector.settings.pauseOnExceptionStateString.addChangeListener(this._pauseOnExceptionStateChanged, this);
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, this._debuggerWasEnabled, this);
@@ -272,6 +272,12 @@ WebInspector.SourcesPanel.prototype = {
 
     _debuggerPaused: function()
     {
+        WebInspector.inspectorView.setCurrentPanel(this);
+        this._showDebuggerPausedDetails();
+    },
+
+    _showDebuggerPausedDetails: function()
+    {
         var details = WebInspector.debuggerModel.debuggerPausedDetails();
 
         this._paused = true;
@@ -280,7 +286,6 @@ WebInspector.SourcesPanel.prototype = {
 
         this._updateDebuggerButtons();
 
-        WebInspector.inspectorView.setCurrentPanel(this);
         this.sidebarPanes.callstack.update(details.callFrames);
 
         if (details.reason === WebInspector.DebuggerModel.BreakReason.DOM) {
