@@ -195,7 +195,6 @@ WebInspector.OverridesView.DeviceTab = function()
     this._emulateDeviceUserAgentSetting = WebInspector.settings.overrideUserAgent;
 
     this._deviceSelectElement = this.element.createChild("select");
-    this._deviceSelectElement.size = 4;
 
     var devices = WebInspector.OverridesView.DeviceTab._phones.concat(WebInspector.OverridesView.DeviceTab._tablets);
     devices.sort();
