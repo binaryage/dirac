@@ -482,6 +482,14 @@
                 "hidden": true
             },
             {
+                "name": "canForceCompositingMode",
+                "description": "Returns whether page can be forced into compositing mode.",
+                "returns": [
+                    { "name": "result", "type": "boolean", "description": "Whether page can be forced into compositing mode." }
+                ],
+                "hidden": true
+            },
+            {
                 "name": "setForceCompositingMode",
                 "description": "Force accelerated compositing mode for inspected page.",
                 "parameters": [

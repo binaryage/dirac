@@ -30,10 +30,12 @@
 
 /**
  * @constructor
+ * @extends {WebInspector.Object}
  */
 WebInspector.OverridesSupport = function()
 {
-    this._updateAllOverrides();
+    this._canForceCompositingMode = true;
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this.updateCanForceCompositingMode.bind(this, null), this);
 
     WebInspector.settings.overrideUserAgent.addChangeListener(this._userAgentChanged, this);
     WebInspector.settings.userAgent.addChangeListener(this._userAgentChanged, this);
@@ -52,6 +54,10 @@ WebInspector.OverridesSupport = function()
 
     WebInspector.settings.overrideCSSMedia.addChangeListener(this._cssMediaChanged, this);
     WebInspector.settings.emulatedCSSMedia.addChangeListener(this._cssMediaChanged, this);
+}
+
+WebInspector.OverridesSupport.Events = {
+    CanForceCompositingModeChanged: "CanForceCompositingModeChanged",
 }
 
 /**
@@ -415,10 +421,13 @@ WebInspector.OverridesSupport.prototype = {
         WebInspector.settings.overrideCSSMedia.set(false);
     },
 
-    _updateAllOverrides: function()
+    applyInitialOverrides: function()
     {
         this._userAgentChanged();
-        this._deviceMetricsChanged();
+        if (WebInspector.settings.overrideDeviceMetrics.get())
+            this.updateCanForceCompositingMode(this._deviceMetricsChanged.bind(this));
+        else
+            this._deviceMetricsChanged();
         this._deviceOrientationChanged();
         this._geolocationPositionChanged();
         this._emulateTouchEventsChanged();
@@ -488,7 +497,33 @@ WebInspector.OverridesSupport.prototype = {
                 WebInspector.settings.showEmulationViewInDrawer.set(true);
             WebInspector.inspectorView.showViewInDrawer("emulation");
         }
-    }
+    },
+
+    updateCanForceCompositingMode: function(callback)
+    {
+        function apiCallback(error, result)
+        {
+            if (!error) {
+                if (!result && WebInspector.settings.overrideDeviceMetrics.get())
+                    WebInspector.settings.overrideDeviceMetrics.set(false);
+
+                if (this._canForceCompositingMode !== result) {
+                    this._canForceCompositingMode = result;
+                    this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.CanForceCompositingModeChanged);
+                }
+            }
+            if (callback)
+                callback();
+        }
+        PageAgent.canForceCompositingMode(apiCallback.bind(this));
+    },
+
+    canForceCompositingMode: function()
+    {
+        return this._canForceCompositingMode;
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
 
 

@@ -438,6 +438,9 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     this.scriptSnippetModel = new WebInspector.ScriptSnippetModel(this.workspace);
 
+    this.overridesSupport = new WebInspector.OverridesSupport();
+    this.overridesSupport.applyInitialOverrides();
+
     new WebInspector.DebuggerScriptMapping(this.workspace, this.networkWorkspaceProvider);
     this.liveEditSupport = new WebInspector.LiveEditSupport(this.workspace);
     new WebInspector.CSSStyleSheetMapping(this.cssModel, this.workspace, this.networkWorkspaceProvider);
@@ -482,7 +485,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
         PageAgent.setShowViewportSizeOnResize(true, WebInspector.settings.showMetricsRulers.get());
     }
     showRulersChanged();
-    this.overridesSupport = new WebInspector.OverridesSupport();
 
     WebInspector.WorkerManager.loadCompleted();
     InspectorFrontendAPI.loadCompleted();
