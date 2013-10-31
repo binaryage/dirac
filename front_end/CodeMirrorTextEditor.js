@@ -366,16 +366,15 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         if (WebInspector.CodeMirrorTextEditor._whitespaceStyleInjected || !WebInspector.settings.showWhitespacesInEditor.get())
             return;
         WebInspector.CodeMirrorTextEditor._whitespaceStyleInjected = true;
-        const classBase = ".cm-whitespace-";
+        const classBase = ".show-whitespaces .CodeMirror .cm-whitespace-";
         const spaceChar = "·";
         var spaceChars = "";
         var rules = "";
-        for(var i = 1; i <= WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan; ++i) {
+        for (var i = 1; i <= WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan; ++i) {
             spaceChars += spaceChar;
             var rule = classBase + i + "::before { content: '" + spaceChars + "';}\n";
             rules += rule;
         }
-        rules += ".cm-tab:before { display: block !important; }\n";
         var style = document.createElement("style");
         style.textContent = rules;
         document.head.appendChild(style);
@@ -575,6 +574,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     _updateCodeMirrorMode: function()
     {
         var showWhitespaces = WebInspector.settings.showWhitespacesInEditor.get();
+        this.element.enableStyleClass("show-whitespaces", showWhitespaces);
         this._codeMirror.setOption("mode", showWhitespaces ? this._whitespaceOverlayMode(this._mimeType) : this._mimeType);
     },
 

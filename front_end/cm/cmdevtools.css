@@ -115,6 +115,10 @@
     left: 5%;
 }
 
+.show-whitespaces .CodeMirror .cm-tab:before {
+    display: block !important;
+}
+
 .cm-execution-line {
     background-color: rgb(171, 191, 254) !important;
     outline: 1px solid rgb(64, 115, 244);
