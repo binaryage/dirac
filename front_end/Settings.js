@@ -58,7 +58,6 @@ WebInspector.Settings = function()
     this.consoleHistory = this.createSetting("consoleHistory", []);
     this.domWordWrap = this.createSetting("domWordWrap", true);
     this.eventListenersFilter = this.createSetting("eventListenersFilter", "all");
-    this.lastActivePanel = this.createSetting("lastActivePanel", "elements");
     this.lastViewedScriptFile = this.createSetting("lastViewedScriptFile", "application");
     this.monitoringXHREnabled = this.createSetting("monitoringXHREnabled", false);
     this.preserveConsoleLog = this.createSetting("preserveConsoleLog", false);

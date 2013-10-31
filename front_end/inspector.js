@@ -462,13 +462,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     this.console.enableAgent();
 
-    function showInitialPanel()
-    {
-        if (!WebInspector.inspectorView.currentPanel())
-            WebInspector.showPanel(WebInspector.settings.lastActivePanel.get());
-    }
-
-    InspectorAgent.enable(showInitialPanel);
+    InspectorAgent.enable(WebInspector.inspectorView.showInitialPanel.bind(WebInspector.inspectorView));
     this.databaseModel = new WebInspector.DatabaseModel();
     this.domStorageModel = new WebInspector.DOMStorageModel();
 
@@ -901,6 +895,7 @@ WebInspector.inspect = function(payload, hints)
             object.release();
         }
         object.pushNodeToFrontend(callback);
+        WebInspector.showPanel("elements");
         return;
     }
 
