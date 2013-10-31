@@ -59,14 +59,48 @@ WebInspector.OverridesSupport = function()
  * @param {number} width
  * @param {number} height
  * @param {number} deviceScaleFactor
+ * @param {number} fontScaleFactor
  * @param {boolean} textAutosizing
  */
-WebInspector.OverridesSupport.DeviceMetrics = function(width, height, deviceScaleFactor, textAutosizing)
+WebInspector.OverridesSupport.DeviceMetrics = function(width, height, deviceScaleFactor, fontScaleFactor, textAutosizing)
 {
     this.width = width;
     this.height = height;
     this.deviceScaleFactor = deviceScaleFactor;
+    this.fontScaleFactor = fontScaleFactor;
     this.textAutosizing = textAutosizing;
+}
+
+/**
+ * Android computes a font scale factor fudged for improved legibility. This value is
+ * not computed on non-Android builds so we duplicate the Android-specific logic here.
+ * For a description of this algorithm, see:
+ *     chrome/browser/chrome_content_browser_client.cc, GetFontScaleMultiplier(...)
+ *
+ * @param {number} width
+ * @param {number} height
+ * @param {number} deviceScaleFactor
+ * @return {number} fontScaleFactor for Android.
+ */
+// FIXME(crbug.com/313410): Unify this calculation with the c++ side so we don't duplicate this logic.
+WebInspector.OverridesSupport.DeviceMetrics._computeFontScaleFactorForAndroid = function(width, height, deviceScaleFactor)
+{
+    var minWidth = Math.min(width, height) / deviceScaleFactor;
+
+    var kMinFSM = 1.05;
+    var kWidthForMinFSM = 320;
+    var kMaxFSM = 1.3;
+    var kWidthForMaxFSM = 800;
+
+    if (minWidth <= kWidthForMinFSM)
+        return kMinFSM;
+    if (minWidth >= kWidthForMaxFSM)
+        return kMaxFSM;
+
+    // The font scale multiplier varies linearly between kMinFSM and kMaxFSM.
+    var ratio = (minWidth - kWidthForMinFSM) / (kWidthForMaxFSM - kWidthForMinFSM);
+    var fontScaleFactor = ratio * (kMaxFSM - kMinFSM) + kMinFSM;
+    return Math.round(fontScaleFactor * 1000) / 1000;
 }
 
 /**
@@ -77,23 +111,27 @@ WebInspector.OverridesSupport.DeviceMetrics.parseSetting = function(value)
     var width = 0;
     var height = 0;
     var deviceScaleFactor = 1;
+    var fontScaleFactor = 1;
     var textAutosizing = false;
     if (value) {
         var splitMetrics = value.split("x");
-        if (splitMetrics.length === 4) {
+        if (splitMetrics.length === 5) {
             width = parseInt(splitMetrics[0], 10);
             height = parseInt(splitMetrics[1], 10);
             deviceScaleFactor = parseFloat(splitMetrics[2]);
-            textAutosizing = splitMetrics[3] == 1;
+            fontScaleFactor = parseFloat(splitMetrics[3]);
+            if (fontScaleFactor == 0)
+                fontScaleFactor = WebInspector.OverridesSupport.DeviceMetrics._computeFontScaleFactorForAndroid(width, height, deviceScaleFactor);
+            textAutosizing = splitMetrics[4] == 1;
         }
     }
-    return new WebInspector.OverridesSupport.DeviceMetrics(width, height, deviceScaleFactor, textAutosizing);
+    return new WebInspector.OverridesSupport.DeviceMetrics(width, height, deviceScaleFactor, fontScaleFactor, textAutosizing);
 }
 
 /**
  * @return {?WebInspector.OverridesSupport.DeviceMetrics}
  */
-WebInspector.OverridesSupport.DeviceMetrics.parseUserInput = function(widthString, heightString, deviceScaleFactorString, textAutosizing)
+WebInspector.OverridesSupport.DeviceMetrics.parseUserInput = function(widthString, heightString, deviceScaleFactorString, fontScaleFactorString, textAutosizing)
 {
     function isUserInputValid(value, isInteger)
     {
@@ -108,15 +146,17 @@ WebInspector.OverridesSupport.DeviceMetrics.parseUserInput = function(widthStrin
     var isWidthValid = isUserInputValid(widthString, true);
     var isHeightValid = isUserInputValid(heightString, true);
     var isDeviceScaleFactorValid = isUserInputValid(deviceScaleFactorString, false);
+    var isFontScaleFactorValid = isUserInputValid(fontScaleFactorString, false);
 
-    if (!isWidthValid && !isHeightValid && !isDeviceScaleFactorValid)
+    if (!isWidthValid && !isHeightValid && !isDeviceScaleFactorValid && !isFontScaleFactorValid)
         return null;
 
     var width = isWidthValid ? parseInt(widthString || "0", 10) : -1;
     var height = isHeightValid ? parseInt(heightString || "0", 10) : -1;
     var deviceScaleFactor = isDeviceScaleFactorValid ? parseFloat(deviceScaleFactorString) : -1;
+    var fontScaleFactor = isFontScaleFactorValid ? parseFloat(fontScaleFactorString) : -1;
 
-    return new WebInspector.OverridesSupport.DeviceMetrics(width, height, deviceScaleFactor, textAutosizing);
+    return new WebInspector.OverridesSupport.DeviceMetrics(width, height, deviceScaleFactor, fontScaleFactor, textAutosizing);
 }
 
 WebInspector.OverridesSupport.DeviceMetrics.prototype = {
@@ -125,7 +165,7 @@ WebInspector.OverridesSupport.DeviceMetrics.prototype = {
      */
     isValid: function()
     {
-        return this.isWidthValid() && this.isHeightValid() && this.isDeviceScaleFactorValid();
+        return this.isWidthValid() && this.isHeightValid() && this.isDeviceScaleFactorValid() && this.isFontScaleFactorValid();
     },
 
     /**
@@ -155,6 +195,14 @@ WebInspector.OverridesSupport.DeviceMetrics.prototype = {
     /**
      * @return {boolean}
      */
+    isFontScaleFactorValid: function()
+    {
+        return this.fontScaleFactor > 0;
+    },
+
+    /**
+     * @return {boolean}
+     */
     isTextAutosizingValid: function()
     {
         return true;
@@ -168,7 +216,7 @@ WebInspector.OverridesSupport.DeviceMetrics.prototype = {
         if (!this.isValid())
             return "";
 
-        return this.width && this.height ? this.width + "x" + this.height + "x" + this.deviceScaleFactor + "x" + (this.textAutosizing ? "1" : "0") : "";
+        return this.width && this.height ? this.width + "x" + this.height + "x" + this.deviceScaleFactor + "x" + this.fontScaleFactor + "x" + (this.textAutosizing ? "1" : "0") : "";
     },
 
     /**
@@ -193,6 +241,14 @@ WebInspector.OverridesSupport.DeviceMetrics.prototype = {
     deviceScaleFactorToInput: function()
     {
         return this.isDeviceScaleFactorValid() && this.deviceScaleFactor ? String(this.deviceScaleFactor) : "";
+    },
+
+    /**
+     * @return {string}
+     */
+    fontScaleFactorToInput: function()
+    {
+        return this.isFontScaleFactorValid() && this.fontScaleFactor ? String(this.fontScaleFactor) : "";
     }
 }
 
@@ -381,7 +437,7 @@ WebInspector.OverridesSupport.prototype = {
             var active = metrics.width > 0 && metrics.height > 0;
             var dipWidth = Math.round(metrics.width / metrics.deviceScaleFactor);
             var dipHeight = Math.round(metrics.height / metrics.deviceScaleFactor);
-            PageAgent.setDeviceMetricsOverride(dipWidth, dipHeight, metrics.deviceScaleFactor, WebInspector.settings.deviceFitWindow.get(), metrics.textAutosizing);
+            PageAgent.setDeviceMetricsOverride(dipWidth, dipHeight, metrics.deviceScaleFactor, WebInspector.settings.deviceFitWindow.get(), metrics.textAutosizing, metrics.fontScaleFactor);
         }
         this._revealOverridesTabIfNeeded();
     },
