@@ -29,6 +29,7 @@
 
 .sidebar-pane {
     position: relative;
+    flex: auto;
 }
 
 .sidebar-pane > .body {
