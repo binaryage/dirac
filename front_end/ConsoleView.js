@@ -751,16 +751,6 @@ WebInspector.ConsoleView.prototype = {
         this._jumpToSearchResult(index, self);
     },
 
-    /**
-     * @override
-     * @param {HTMLInputElement} input
-     * @return {?Array.<string>}
-     */
-    buildSuggestions: function(input)
-    {
-        return null;
-    },
-
     _clearCurrentSearchResultHighlight: function()
     {
         if (!this._searchResultsIndices)

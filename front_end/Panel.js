@@ -106,16 +106,6 @@ WebInspector.Panel.prototype = {
     },
 
     /**
-     * @override
-     * @param {HTMLInputElement} input
-     * @return {?Array.<string>}
-     */
-    buildSuggestions: function(input)
-    {
-        return null;
-    },
-
-    /**
      * @return {boolean}
      */
     canSearchAndReplace: function()

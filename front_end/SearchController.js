@@ -31,7 +31,6 @@
 
 /**
  * @constructor
- * @implements {WebInspector.SuggestBoxDelegate}
  */
 WebInspector.SearchController = function()
 {
@@ -48,8 +47,6 @@ WebInspector.SearchController = function()
     this._searchInputElement = this._searchControlElement.createChild("input", "search-replace");
     this._searchInputElement.id = "search-input-field";
     this._searchInputElement.placeholder = WebInspector.UIString("Find");
-
-    this._suggestBox = new WebInspector.SuggestBox(this, searchControlElementColumn);
 
     this._matchesElement = this._searchControlElement.createChild("label", "search-results-matches");
     this._matchesElement.setAttribute("for", "search-input-field");
@@ -162,7 +159,6 @@ WebInspector.SearchController.prototype = {
 
     resetSearch: function()
     {
-        this._suggestBox.hide();
         this._clearSearch();
         this._updateReplaceVisibility();
         this._matchesElement.textContent = "";
@@ -308,11 +304,6 @@ WebInspector.SearchController.prototype = {
      */
     _onSearchKeyDown: function(event)
     {
-        if (this._suggestBox.visible()) {
-            this._suggestBox.keyPressed(event);
-            return;
-        }
-
         if (isEnterKey(event)) {
             // FIXME: This won't start backwards search with Shift+Enter correctly.
             if (!this._currentQuery)
@@ -428,7 +419,6 @@ WebInspector.SearchController.prototype = {
         this._searchProvider.replaceAllWith(this._searchInputElement.value, this._replaceInputElement.value);
     },
 
-
     _onInput: function(event)
     {
         this._onValueChanged();
@@ -436,34 +426,7 @@ WebInspector.SearchController.prototype = {
 
     _onValueChanged: function()
     {
-        var suggestions = this._searchProvider.buildSuggestions(this._searchInputElement);
-        if (suggestions && suggestions.length)
-            this._suggestBox.updateSuggestions(null, suggestions, 0, true, "");
-        else
-            this._suggestBox.hide();
         this._performSearch(false, true);
-    },
-
-    /**
-     * @override
-     * @param {string} suggestion
-     * @param {boolean=} isIntermediateSuggestion
-     */
-    applySuggestion: function(suggestion, isIntermediateSuggestion)
-    {
-        if (isIntermediateSuggestion)
-            return;
-
-        var text = this._searchInputElement.value;
-        text = text.substring(0, text.lastIndexOf(" ") + 1) + suggestion;
-        this._searchInputElement.value = text;
-    },
-
-    /** @override */
-    acceptSuggestion: function()
-    {
-        this._searchInputElement.scrollLeft = this._searchInputElement.scrollWidth;
-        this._onValueChanged();
     }
 }
 
@@ -508,10 +471,4 @@ WebInspector.Searchable.prototype = {
      * @param {WebInspector.Searchable=} self
      */
     jumpToPreviousSearchResult: function(self) { },
-
-    /**
-     * @param {HTMLInputElement} input
-     * @return {?Array.<string>}
-     */
-    buildSuggestions: function(input) { }
 }
