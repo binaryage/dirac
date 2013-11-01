@@ -203,8 +203,8 @@ WebInspector.TimelinePanel.prototype = {
 
     _setMemoryCountersHeight: function(height)
     {
-        const overviewHeight = 81;
-        const sectionMinHeight = 100;
+        const overviewHeight = this._containerElement.offsetTop - 20;
+        const sectionMinHeight = 20;
         height = Number.constrain(height, sectionMinHeight, this.element.offsetHeight - sectionMinHeight - overviewHeight);
         this._timelineMemorySplitter.style.bottom = (height - 3) + "px";
         this._memoryStatistics.setHeight(height);
