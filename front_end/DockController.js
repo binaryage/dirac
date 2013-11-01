@@ -40,7 +40,12 @@ WebInspector.DockController = function()
     this._dockToggleButtonOption.addEventListener("click", this._toggleDockState, this);
     this._dockToggleButton.setLongClickOptionsEnabled(this._createDockOptions.bind(this));
 
-    this.setDockSide(WebInspector.queryParamsObject["dockSide"] || "bottom");
+    this._buttonTitles = {};
+    this._buttonTitles[WebInspector.DockController.State.DockedToBottom] = WebInspector.UIString("Dock to main window.");
+    this._buttonTitles[WebInspector.DockController.State.DockedToRight] = WebInspector.UIString("Dock to main window.");
+    this._buttonTitles[WebInspector.DockController.State.Undocked] = WebInspector.UIString("Undock into separate window.");
+
+    this._lastStateSetting = WebInspector.settings.lastDockState;
 }
 
 WebInspector.DockController.State = {
@@ -62,6 +67,28 @@ WebInspector.DockController.prototype = {
         return this._dockToggleButton.element;
     },
 
+    enableLocalMode: function()
+    {
+      this._localMode = true;
+    },
+
+    /**
+     * @param {string} state
+     * @param {string} title
+     */
+    setButtonTitle: function(state, title)
+    {
+        this._buttonTitles[state] = title;
+    },
+
+    /**
+     * @param {WebInspector.Setting} setting
+     */
+    setLastStateSetting: function(setting)
+    {
+        this._lastStateSetting = setting;
+    },
+
     /**
      * @return {string}
      */
@@ -75,17 +102,22 @@ WebInspector.DockController.prototype = {
      */
     setDockSide: function(dockSide)
     {
-        if (this._dockSide === dockSide)
+        if (this._localMode)
             return;
+        this._innerSetDockSide(dockSide);
+    },
+
+    /**
+     * @param {string} dockSide
+     */
+    _innerSetDockSide: function(dockSide) {
+        if (this._dockSide === dockSide)
+          return;
 
         if (this._dockSide)
-            WebInspector.settings.lastDockState.set(this._dockSide);
+            this._lastStateSetting.set(this._dockSide);
 
         this._dockSide = dockSide;
-        if (dockSide === WebInspector.DockController.State.Undocked) 
-            WebInspector.userMetrics.WindowDocked.record();
-        else
-            WebInspector.userMetrics.WindowUndocked.record();
         this._updateUI();
         this.dispatchEventToListeners(WebInspector.DockController.Events.DockSideChanged, this._dockSide);
     },
@@ -116,7 +148,7 @@ WebInspector.DockController.prototype = {
         // Choose different last state based on the current one if missing or if is the same.
         var sides = [WebInspector.DockController.State.DockedToBottom, WebInspector.DockController.State.Undocked, WebInspector.DockController.State.DockedToRight];
         sides.remove(this._dockSide);
-        var lastState = WebInspector.settings.lastDockState.get();
+        var lastState = this._lastStateSetting.get();
 
         sides.remove(lastState);
         if (sides.length === 2) { // last state was not from the list of potential values
@@ -133,17 +165,15 @@ WebInspector.DockController.prototype = {
      */
     _decorateButtonForTargetState: function(button, state)
     {
+        button.title = this._buttonTitles[state];
         switch (state) {
         case WebInspector.DockController.State.DockedToBottom:
-            button.title = WebInspector.UIString("Dock to main window.");
             button.state = "bottom";
             break;
         case WebInspector.DockController.State.DockedToRight:
-            button.title = WebInspector.UIString("Dock to main window.");
             button.state = "right";
             break;
-        case WebInspector.DockController.State.Undocked: 
-            button.title = WebInspector.UIString("Undock into separate window.");
+        case WebInspector.DockController.State.Undocked:
             button.state = "undock";
             break;
         }
@@ -164,8 +194,12 @@ WebInspector.DockController.prototype = {
         case "bottom": action = "bottom"; break;
         case "right": action = "right"; break;
         case "undock": action = "undocked"; break;
+        default: return;
         }
-        InspectorFrontendHost.requestSetDockSide(action);
+        if (this._localMode)
+            this._innerSetDockSide(action);
+        else
+            InspectorFrontendHost.requestSetDockSide(action);
     },
 
     __proto__: WebInspector.Object.prototype

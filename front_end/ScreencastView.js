@@ -97,6 +97,41 @@ WebInspector.ScreencastView._navBarHeight = 29;
 
 WebInspector.ScreencastView._HttpRegex = /^https?:\/\/(.+)/;
 
+// FIXME: Make this file load lazily:
+// 1. Move configureDockController and _updateScreencastState into another class.
+// 2. Import ScreencastView.js before constructing ScreencastView.
+WebInspector.ScreencastView.configureDockController = function()
+{
+    document.body.addStyleClass("can-screencast");
+
+    WebInspector.dockController.setButtonTitle(WebInspector.DockController.State.DockedToBottom, WebInspector.UIString("Show screencast."));
+    WebInspector.dockController.setButtonTitle(WebInspector.DockController.State.DockedToRight, WebInspector.UIString("Show screencast."));
+    WebInspector.dockController.setButtonTitle(WebInspector.DockController.State.Undocked, WebInspector.UIString("Hide screencast."));
+
+    WebInspector.settings.screencastVisibilityState = WebInspector.settings.createSetting("screencastVisibilityState", WebInspector.DockController.State.Undocked);
+    WebInspector.settings.lastScreencastVisibilityState = WebInspector.settings.createSetting("lastScreencastVisibilityState", WebInspector.DockController.State.DockedToRight);
+    WebInspector.dockController.setLastStateSetting(WebInspector.settings.lastScreencastVisibilityState);
+
+    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, WebInspector.ScreencastView._updateScreencastState, WebInspector.ScreencastView);
+    WebInspector.dockController.setDockSide(WebInspector.settings.screencastVisibilityState.get());
+    WebInspector.dockController.enableLocalMode();
+};
+
+WebInspector.ScreencastView._updateScreencastState = function()
+{
+    var dockSide = WebInspector.dockController.dockSide();
+    WebInspector.settings.screencastVisibilityState.set(dockSide);
+
+    if (dockSide == WebInspector.DockController.State.Undocked) {
+        if (WebInspector.ScreencastView.instance)
+            WebInspector.ScreencastView.instance.collapse()
+    } else {
+        if (!WebInspector.ScreencastView.instance)
+            WebInspector.ScreencastView.instance = new WebInspector.ScreencastView();
+        WebInspector.ScreencastView.instance.expand(dockSide == WebInspector.DockController.State.DockedToRight);
+    }
+};
+
 WebInspector.ScreencastView.prototype = {
     wasShown: function()
     {
@@ -106,6 +141,34 @@ WebInspector.ScreencastView.prototype = {
     willHide: function()
     {
         this._stopCasting();
+    },
+
+    /**
+     * @param {boolean} vertical
+     */
+    expand: function(vertical)
+    {
+        if (this._splitView) {
+            this._splitView.setVertical(vertical);
+        } else {
+            // Rebuild the top level UI upon first invocation.
+            this._splitView = new WebInspector.SplitView(vertical, "screencastSidebarSize", 400, 400);
+            this._splitView.markAsRoot();
+            this._splitView.show(document.body);
+
+            this.show(this._splitView.firstElement());
+
+            WebInspector.inspectorView.element.remove();
+            WebInspector.inspectorView.show(this._splitView.secondElement());
+
+            window.addEventListener("resize", this._splitView.doResize.bind(this._splitView), true);
+        }
+        this._splitView.showBoth();
+    },
+
+    collapse: function()
+    {
+        this._splitView.showOnlySecond();
     },
 
     _startCasting: function()
