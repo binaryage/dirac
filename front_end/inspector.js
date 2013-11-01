@@ -43,20 +43,15 @@ var WebInspector = {
         var resources = new WebInspector.PanelDescriptor("resources", WebInspector.UIString("Resources"), "ResourcesPanel", "ResourcesPanel.js");
         var audits = new WebInspector.PanelDescriptor("audits", WebInspector.UIString("Audits"), "AuditsPanel", "AuditsPanel.js");
         var console = new WebInspector.PanelDescriptor("console", WebInspector.UIString("Console"), "ConsolePanel");
-        var allDescriptors = [elements, network, sources, timeline, profiles, resources, audits, console];
+
+        if (WebInspector.WorkerManager.isWorkerFrontend())
+            return [sources, timeline, profiles, console];
+
+        var panelDescriptors = [elements, network, sources, timeline, profiles, resources, audits, console];
         if (WebInspector.experimentsSettings.layersPanel.isEnabled()) {
             var layers = new WebInspector.LayersPanelDescriptor();
-            allDescriptors.push(layers);
+            panelDescriptors.push(layers);
         }
-        var panelDescriptors = [];
-        if (WebInspector.WorkerManager.isWorkerFrontend()) {
-            panelDescriptors.push(sources);
-            panelDescriptors.push(timeline);
-            panelDescriptors.push(console);
-            return panelDescriptors;
-        }
-        for (var i = 0; i < allDescriptors.length; ++i)
-            panelDescriptors.push(allDescriptors[i]);
         return panelDescriptors;
     },
 
