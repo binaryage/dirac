@@ -473,14 +473,14 @@ body.platform-mac .help-content input[type=radio] {
     color: #aaa;
 }
 
-.settings-tab-text-button:hover {
+.settings-tab-text-button:not(:disabled):hover {
     background-image: -webkit-linear-gradient(hsl(0, 0%, 94%), hsl(0, 0%, 94%) 38%, hsl(0, 0%, 88%));
     border-color: hsla(0, 0%, 0%, 0.3);
     box-shadow: 0 1px 0 hsla(0, 0%, 0%, 0.12), inset 0 1px 2px hsla(0, 100%, 100%, 0.95);
     color: hsl(0, 0%, 0%);
 }
 
-.settings-tab-text-button:active {
+.settings-tab-text-button:not(:disabled):active {
     background-image: -webkit-linear-gradient(hsl(0, 0%, 91%), hsl(0, 0%, 91%) 38%, hsl(0, 0%, 84%));
     box-shadow: none;
     text-shadow: none;
