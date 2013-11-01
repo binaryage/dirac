@@ -42,7 +42,7 @@
 .overrides-view .tabbed-pane-content {
     padding-top: 10px;
     padding-left: 10px;
-    overflow: hidden;
+    overflow-x: hidden;
 }
 
 .overrides-view .tabbed-pane-header-contents {
@@ -182,4 +182,16 @@ button.overrides-swap {
     margin: 0;
     min-height: 2em;
     padding: 3px;
+}
+
+.overrides-view .overrides-footer {
+    flex: none;
+    display: none;
+    padding: 0 0 1px 3px;
+    border-top: 1px solid rgb(203,203,203);
+    background-color: rgb(236,236,236);
+}
+
+.overrides-view .overrides-footer .warning-icon-small {
+    margin-right: 3px;
 }

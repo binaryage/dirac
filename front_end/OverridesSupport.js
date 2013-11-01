@@ -34,7 +34,7 @@
  */
 WebInspector.OverridesSupport = function()
 {
-    this._canForceCompositingMode = true;
+    this._canForceCompositingMode = null;
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this.updateCanForceCompositingMode.bind(this, null), this);
 
     WebInspector.settings.overrideUserAgent.addChangeListener(this._userAgentChanged, this);
@@ -57,7 +57,7 @@ WebInspector.OverridesSupport = function()
 }
 
 WebInspector.OverridesSupport.Events = {
-    CanForceCompositingModeChanged: "CanForceCompositingModeChanged",
+    OverridesEnabledButImpossibleChanged: "OverridesEnabledButImpossibleChanged",
 }
 
 /**
@@ -423,11 +423,16 @@ WebInspector.OverridesSupport.prototype = {
 
     applyInitialOverrides: function()
     {
-        this._userAgentChanged();
-        if (WebInspector.settings.overrideDeviceMetrics.get())
-            this.updateCanForceCompositingMode(this._deviceMetricsChanged.bind(this));
+        if (this._anyOverrideIsEnabled())
+            this.updateCanForceCompositingMode(this._updateAllOverrides.bind(this));
         else
-            this._deviceMetricsChanged();
+            this._updateAllOverrides();
+    },
+
+    _updateAllOverrides: function()
+    {
+        this._userAgentChanged();
+        this._deviceMetricsChanged();
         this._deviceOrientationChanged();
         this._geolocationPositionChanged();
         this._emulateTouchEventsChanged();
@@ -436,12 +441,13 @@ WebInspector.OverridesSupport.prototype = {
 
     _userAgentChanged: function()
     {
-        NetworkAgent.setUserAgentOverride(WebInspector.settings.overrideUserAgent.get() ? WebInspector.settings.userAgent.get() : "");
+        NetworkAgent.setUserAgentOverride(WebInspector.settings.overrideUserAgent.get() && this._canForceCompositingMode ? WebInspector.settings.userAgent.get() : "");
+        this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesEnabledButImpossibleChanged);
     },
 
     _deviceMetricsChanged: function()
     {
-        var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(WebInspector.settings.overrideDeviceMetrics.get() ? WebInspector.settings.deviceMetrics.get() : "");
+        var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(WebInspector.settings.overrideDeviceMetrics.get() && this._canForceCompositingMode ? WebInspector.settings.deviceMetrics.get() : "");
         if (metrics.isValid()) {
             var active = metrics.width > 0 && metrics.height > 0;
             var dipWidth = Math.round(metrics.width / metrics.deviceScaleFactor);
@@ -449,11 +455,12 @@ WebInspector.OverridesSupport.prototype = {
             PageAgent.setDeviceMetricsOverride(dipWidth, dipHeight, metrics.deviceScaleFactor, WebInspector.settings.deviceFitWindow.get(), metrics.textAutosizing, metrics.fontScaleFactor);
         }
         this._revealOverridesTabIfNeeded();
+        this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesEnabledButImpossibleChanged);
     },
 
     _geolocationPositionChanged: function()
     {
-        if (!WebInspector.settings.overrideGeolocation.get()) {
+        if (!WebInspector.settings.overrideGeolocation.get() || !this._canForceCompositingMode) {
             PageAgent.clearGeolocationOverride();
             return;
         }
@@ -463,36 +470,45 @@ WebInspector.OverridesSupport.prototype = {
         else
             PageAgent.setGeolocationOverride(geolocation.latitude, geolocation.longitude, 150);
         this._revealOverridesTabIfNeeded();
+        this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesEnabledButImpossibleChanged);
     },
 
     _deviceOrientationChanged: function()
     {
-        if (!WebInspector.settings.overrideDeviceOrientation.get()) {
+        if (!WebInspector.settings.overrideDeviceOrientation.get() || !this._canForceCompositingMode) {
             PageAgent.clearDeviceOrientationOverride();
             return;
         }
         var deviceOrientation = WebInspector.OverridesSupport.DeviceOrientation.parseSetting(WebInspector.settings.deviceOrientationOverride.get());
         PageAgent.setDeviceOrientationOverride(deviceOrientation.alpha, deviceOrientation.beta, deviceOrientation.gamma);
         this._revealOverridesTabIfNeeded();
+        this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesEnabledButImpossibleChanged);
     },
 
     _emulateTouchEventsChanged: function()
     {
-        WebInspector.domAgent.emulateTouchEventObjects(WebInspector.settings.emulateTouchEvents.get());
+        WebInspector.domAgent.emulateTouchEventObjects(WebInspector.settings.emulateTouchEvents.get() && this._canForceCompositingMode);
+        this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesEnabledButImpossibleChanged);
     },
 
     _cssMediaChanged: function()
     {
-        PageAgent.setEmulatedMedia(WebInspector.settings.overrideCSSMedia.get() ? WebInspector.settings.emulatedCSSMedia.get() : "");
+        PageAgent.setEmulatedMedia(WebInspector.settings.overrideCSSMedia.get() && this._canForceCompositingMode ? WebInspector.settings.emulatedCSSMedia.get() : "");
         WebInspector.cssModel.mediaQueryResultChanged();
         this._revealOverridesTabIfNeeded();
+        this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesEnabledButImpossibleChanged);
+    },
+
+    _anyOverrideIsEnabled: function()
+    {
+        return WebInspector.settings.overrideUserAgent.get() || WebInspector.settings.overrideDeviceMetrics.get() ||
+            WebInspector.settings.overrideGeolocation.get() || WebInspector.settings.overrideDeviceOrientation.get() ||
+            WebInspector.settings.emulateTouchEvents.get() || WebInspector.settings.overrideCSSMedia.get();
     },
 
     _revealOverridesTabIfNeeded: function()
     {
-        if (WebInspector.settings.overrideUserAgent.get() || WebInspector.settings.overrideDeviceMetrics.get() ||
-                WebInspector.settings.overrideGeolocation.get() || WebInspector.settings.overrideDeviceOrientation.get() ||
-                WebInspector.settings.emulateTouchEvents.get() || WebInspector.settings.overrideCSSMedia.get()) {
+        if (this._canForceCompositingMode && this._anyOverrideIsEnabled()) {
             if (!WebInspector.settings.showEmulationViewInDrawer.get())
                 WebInspector.settings.showEmulationViewInDrawer.set(true);
             WebInspector.inspectorView.showViewInDrawer("emulation");
@@ -503,14 +519,11 @@ WebInspector.OverridesSupport.prototype = {
     {
         function apiCallback(error, result)
         {
-            if (!error) {
-                if (!result && WebInspector.settings.overrideDeviceMetrics.get())
-                    WebInspector.settings.overrideDeviceMetrics.set(false);
-
-                if (this._canForceCompositingMode !== result) {
-                    this._canForceCompositingMode = result;
-                    this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.CanForceCompositingModeChanged);
-                }
+            if (!error && this._canForceCompositingMode !== result) {
+                this._canForceCompositingMode = result;
+                if (this._anyOverrideIsEnabled())
+                    this._updateAllOverrides();
+                this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesEnabledButImpossibleChanged);
             }
             if (callback)
                 callback();
@@ -518,9 +531,9 @@ WebInspector.OverridesSupport.prototype = {
         PageAgent.canForceCompositingMode(apiCallback.bind(this));
     },
 
-    canForceCompositingMode: function()
+    overridesEnabledButImpossible: function()
     {
-        return this._canForceCompositingMode;
+        return this._anyOverrideIsEnabled() && !this._canForceCompositingMode;
     },
 
     __proto__: WebInspector.Object.prototype

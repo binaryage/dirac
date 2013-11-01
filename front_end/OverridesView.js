@@ -39,7 +39,6 @@ WebInspector.OverridesView = function()
     this.registerRequiredCSS("helpScreen.css");
     this.element.classList.add("overrides-view", "fill", "vbox");
 
-    var bodyElement = this.element.createChild("div", "overrides-body");
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.shrinkableTabs = false;
     this._tabbedPane.verticalTabLayout = true;
@@ -52,7 +51,15 @@ WebInspector.OverridesView = function()
     this._lastSelectedTabSetting = WebInspector.settings.createSetting("lastSelectedEmulateTab", "device");
     this._tabbedPane.selectTab(this._lastSelectedTabSetting.get());
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
-    this._tabbedPane.show(bodyElement);
+    this._tabbedPane.show(this.element);
+
+    var footerElement = this.element.createChild("div", "overrides-footer");
+    footerElement.createChild("div", "warning-icon-small");
+    footerElement.createTextChild(WebInspector.UIString("Emulation is not available on system pages."));
+    this._warningFooter = footerElement;
+
+    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesEnabledButImpossibleChanged, this._overridesEnabledButImpossibleChanged, this);
+    WebInspector.overridesSupport.updateCanForceCompositingMode(this._overridesEnabledButImpossibleChanged.bind(this));
 }
 
 WebInspector.OverridesView.prototype = {
@@ -62,6 +69,11 @@ WebInspector.OverridesView.prototype = {
     _tabSelected: function(event)
     {
         this._lastSelectedTabSetting.set(this._tabbedPane.selectedTabId);
+    },
+
+    _overridesEnabledButImpossibleChanged: function()
+    {
+        this._warningFooter.style.display = WebInspector.overridesSupport.overridesEnabledButImpossible() ? "block" : "none";
     },
 
     __proto__: WebInspector.View.prototype
@@ -237,9 +249,6 @@ WebInspector.OverridesView.DeviceTab = function()
     this._userAgentValueElement = this._userAgentLabel.createChild("span", "overrides-device-value");
 
     this._updateValueLabels();
-
-    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.CanForceCompositingModeChanged, this._canForceCompositingModeChanged, this);
-    WebInspector.overridesSupport.updateCanForceCompositingMode(this._canForceCompositingModeChanged.bind(this));
 }
 
 // Third element lists device metrics separated by 'x':
@@ -386,8 +395,6 @@ WebInspector.OverridesView.DeviceTab.prototype = {
 
     _emulateButtonClicked: function()
     {
-        if (!WebInspector.overridesSupport.canForceCompositingMode())
-            return;
         var option = this._deviceSelectElement.options[this._deviceSelectElement.selectedIndex];
         WebInspector.overridesSupport.emulateDevice(option._metrics, option._userAgent);
     },
@@ -395,11 +402,6 @@ WebInspector.OverridesView.DeviceTab.prototype = {
     _resetButtonClicked: function()
     {
         WebInspector.overridesSupport.reset();
-    },
-
-    _canForceCompositingModeChanged: function()
-    {
-        this._emulateButton.disabled = !WebInspector.overridesSupport.canForceCompositingMode();
     },
 
     _deviceSelected: function()
@@ -436,16 +438,12 @@ WebInspector.OverridesView.ViewportTab = function()
     const metricsSetting = WebInspector.settings.deviceMetrics.get();
     var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(metricsSetting);
     var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate viewport"), WebInspector.settings.overrideDeviceMetrics, this._onMetricsCheckboxClicked.bind(this));
-    this._overrideDeviceMetricsCheckbox = checkbox.querySelector("input");
     WebInspector.settings.deviceMetrics.addChangeListener(this._updateDeviceMetricsElement, this);
 
     this.element.appendChild(checkbox);
     this.element.appendChild(this._createDeviceMetricsElement(metrics));
     this.element.appendChild(this._createMediaEmulationElement());
     this._onMetricsCheckboxClicked(WebInspector.settings.overrideDeviceMetrics.get());
-
-    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.CanForceCompositingModeChanged, this._canForceCompositingModeChanged, this);
-    WebInspector.overridesSupport.updateCanForceCompositingMode(this._canForceCompositingModeChanged.bind(this));
 }
 
 WebInspector.OverridesView.ViewportTab.prototype = {
@@ -507,7 +505,6 @@ WebInspector.OverridesView.ViewportTab.prototype = {
     _createDeviceMetricsElement: function(metrics)
     {
         var fieldsetElement = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.overrideDeviceMetrics);
-        this._overrideDeviceMetricsFieldset = fieldsetElement;
         fieldsetElement.id = "metrics-override-section";
 
         function swapDimensionsClicked(event)
@@ -569,12 +566,6 @@ WebInspector.OverridesView.ViewportTab.prototype = {
             this._fontScaleFactorOverrideElement.value = metrics.fontScaleFactor;
         if (this._textAutosizingOverrideCheckbox.checked !== metrics.textAutosizing)
             this._textAutosizingOverrideCheckbox.checked = metrics.textAutosizing;
-    },
-
-    _canForceCompositingModeChanged: function()
-    {
-        this._overrideDeviceMetricsFieldset.disabled = !WebInspector.overridesSupport.canForceCompositingMode();
-        this._overrideDeviceMetricsCheckbox.disabled = !WebInspector.overridesSupport.canForceCompositingMode();
     },
 
     _createMediaEmulationElement: function()
