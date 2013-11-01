@@ -186,9 +186,8 @@ TestSuite.prototype.runTest = function(testName)
 TestSuite.prototype.showPanel = function(panelName)
 {
     // Open Scripts panel.
-    var toolbar = document.querySelector(".toolbar");
-    var button = toolbar.getElementsByClassName(panelName)[0];
-    button.click();
+    var button = document.getElementById("tab-" + panelName);
+    button.selectTabForTest();
     this.assertEquals(WebInspector.panels[panelName], WebInspector.inspectorView.currentPanel());
 };
 
