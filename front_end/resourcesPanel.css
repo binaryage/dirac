@@ -171,8 +171,7 @@ li.selected .base-storage-tree-element-subtitle {
     margin-top: -7px;
     -webkit-user-select: none;
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {

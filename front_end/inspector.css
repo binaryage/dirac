@@ -330,21 +330,20 @@ body.undocked.platform-mac-mountain-lion.inactive .toolbar-background {
 .close-button,
 .close-button-gray {
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     display: inline-block;
 }
 
 .close-button {
     width: 14px;
     height: 14px;
-    background-position: -128px -96px;
+    background-position: -128px -216px;
 }
 
 .close-button-gray {
     width: 13px;
     height: 13px;
-    background-position: -175px -96px;
+    background-position: -175px -216px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
@@ -355,19 +354,19 @@ body.undocked.platform-mac-mountain-lion.inactive .toolbar-background {
 } /* media */
 
 .close-button:hover {
-    background-position: -96px -96px;
+    background-position: -96px -216px;
 }
 
 .close-button:active {
-    background-position: -111px -96px;
+    background-position: -111px -216px;
 }
 
 .close-button-gray:hover {
-    background-position: -143px -96px;
+    background-position: -143px -216px;
 }
 
 .close-button-gray:active {
-    background-position: -160px -96px;
+    background-position: -160px -216px;
 }
 
 
@@ -455,8 +454,7 @@ body.remote .toolbar-item .close-button {
     background-color: rgba(0, 0, 0, 0.75);
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
     -webkit-mask-position: -288px -48px;
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 320px 120px;
     z-index: 1;
 }
 
@@ -511,8 +509,7 @@ button.status-bar-item.extension {
 
 .status-bar-select-arrow {
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     opacity: 0.7;
     width: 10px;
     height: 10px;
@@ -545,8 +542,7 @@ select.status-bar-item {
 
 .status-bar-item > .glyph {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 320px 120px;
     opacity: 0.8;
 }
 
@@ -676,8 +672,7 @@ body.remote .dock-status-bar-item {
 .green-ball,
 .orange-ball {
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     width: 10px;
     height: 10px;
     display: inline-block;
@@ -883,8 +878,7 @@ body.platform-linux .source-code {
     margin-top: -6px;
     -webkit-user-select: none;
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
@@ -951,8 +945,7 @@ body.platform-linux .source-code {
 .console-group-title::before {
     -webkit-user-select: none;
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 320px 120px;
     float: left;
     width: 8px;
     content: "a";
@@ -1014,8 +1007,7 @@ body.platform-linux .source-code {
 .console-debug-level::before,
 .console-info-level::before {
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     width: 10px;
     height: 10px;
 }
@@ -1358,8 +1350,7 @@ iframe.panel.extension {
 .outline-disclosure li.parent::before {
     -webkit-user-select: none;
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 320px 120px;
     content: "a";
     color: transparent;
     text-shadow: none;
@@ -1466,8 +1457,7 @@ iframe.panel.extension {
 .section > .header::before {
     -webkit-user-select: none;
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     opacity: 0.5;
     content: "a";
     color: transparent;
@@ -1575,8 +1565,7 @@ iframe.panel.extension {
 .properties-tree li.parent::before {
     -webkit-user-select: none;
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     opacity: 0.5;
     content: "a";
     width: 8px;
@@ -1987,8 +1976,7 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
     height: 10px;
     border: 0;
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 320px 120px;
     -webkit-appearance: none;
     background-color: rgba(0, 0, 0, 0.75);
     position: relative;
@@ -2525,8 +2513,7 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
 #search-results-pane-file-based li.parent::before {
     -webkit-user-select: none;
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     opacity: 0.5;
     width: 8px;
     content: "a";

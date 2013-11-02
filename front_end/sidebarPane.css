@@ -90,8 +90,7 @@
 
 .sidebar-pane-title::before {
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     opacity: 0.5;
     float: left;
     width: 11px;

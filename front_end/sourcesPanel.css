@@ -234,7 +234,6 @@ a.worker-item:hover {
 
 .editor-container-unsaved-committed-changes-icon {
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     background-position: -202px -107px;
 }

@@ -160,8 +160,7 @@
     top: 1px;
     right: 0;
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     opacity: 0.5;
     width: 8px;
     height: 10px;
@@ -199,8 +198,7 @@ body.inactive .data-grid th.sort-descending {
 .data-grid tr.parent td.disclosure::before {
     -webkit-user-select: none;
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 320px 120px;
     float: left;
     width: 8px;
     margin-right: 2px;

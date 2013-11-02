@@ -129,8 +129,7 @@
 
 .timeline-expandable-arrow {
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     opacity: 0.5;
     width: 10px;
     height: 10px;
@@ -183,8 +182,7 @@
 .timeline-tree-item.warning::after,
 .timeline-tree-item.child-warning::after {
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     width: 10px;
     height: 10px;
     float: right;
@@ -383,8 +381,7 @@
     margin-left: 0;
     margin-right: 0;
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-repeat: no-repeat;
-    -webkit-mask-size: 320px 144px;
+    -webkit-mask-size: 320px 120px;
     background-color: black;
 }
 

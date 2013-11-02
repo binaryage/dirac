@@ -363,8 +363,7 @@
 .styles-section.matched-styles .properties li.parent .expand-element {
     -webkit-user-select: none;
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     margin-right: 2px;
     margin-left: -6px;
     opacity: 0.55;
@@ -523,8 +522,7 @@
 .event-bars .event-bar .header::before {
     -webkit-user-select: none;
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     opacity: 0.5;
     content: "a";
     color: transparent;

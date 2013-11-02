@@ -116,8 +116,7 @@
 
 .profile-warn-marker {
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-repeat: no-repeat;
-    background-size: 320px 144px;
+    background-size: 320px 120px;
     background-position: -201px -105px;
     padding-left: 14px;
     width: 10px;
