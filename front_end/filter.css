@@ -37,21 +37,21 @@
 
 .filter-bitset-filter {
     line-height: 19px;
-    padding-right: 10px;
+    padding-right: 10px !important;
     overflow: hidden;
 }
 
 .filter-bitset-filter li {
     display: inline-block;
-    margin: 0 2px;
-    padding: 2px 6px;
+    margin: 1px 2px;
+    padding: 0px 6px;
     background: transparent;
     text-shadow: rgba(255, 255, 255, 0.5) 0 1px 0;
     border-radius: 8px;
 }
 
 .filter-bitset-filter-divider {
-    background-color: rgba(0, 0, 0, 0.4);
+    background-color: #ccc;
     height: 16px;
     width: 1px;
     vertical-align: middle;
@@ -66,7 +66,7 @@
 }
 
 .filter-bitset-filter li.all {
-    margin: 0 8px;
+    margin: 1px 8px;
 }
 
 .filter-bitset-filter li:hover {

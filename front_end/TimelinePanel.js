@@ -272,12 +272,12 @@ WebInspector.TimelinePanel.prototype = {
         this._statusBarButtons.push(this.toggleTimelineButton);
         this._panelStatusBarElement.appendChild(this.toggleTimelineButton.element);
 
-        this._panelStatusBarElement.appendChild(this._filterBar.filterButton());
-
         this.clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
         this.clearButton.addEventListener("click", this._clearPanel, this);
         this._statusBarButtons.push(this.clearButton);
         this._panelStatusBarElement.appendChild(this.clearButton.element);
+
+        this._panelStatusBarElement.appendChild(this._filterBar.filterButton());
 
         this.garbageCollectButton = new WebInspector.StatusBarButton(WebInspector.UIString("Collect Garbage"), "garbage-collect-status-bar-item");
         this.garbageCollectButton.addEventListener("click", this._garbageCollectButtonClicked, this);

@@ -144,7 +144,7 @@ WebInspector.NetworkLogView.prototype = {
 
     get statusBarItems()
     {
-        return [this._preserveLogToggle.element, this._filterBar.filterButton(), this._clearButton.element, this._largerRequestsButton.element, this._progressBarContainer];
+        return [this._preserveLogToggle.element, this._clearButton.element, this._filterBar.filterButton(), this._largerRequestsButton.element, this._progressBarContainer];
     },
 
     get useLargeRows()

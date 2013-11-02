@@ -817,7 +817,7 @@ body.platform-linux .source-code {
 }
 
 .console-status-bar {
-    flex: 0 0 24px;
+    flex: 0 0 23px;
     overflow: hidden;
 }
 
@@ -2433,8 +2433,8 @@ body.platform-mac .soft-context-menu-item-mouse-over {
 }
 
 .search-drawer-header {
-    flex: 0 0 22px;
-    padding-left: 1px;
+    flex: none;
+    padding: 4px;
 }
 
 .search-drawer-header input[type="text"].search-config-search {

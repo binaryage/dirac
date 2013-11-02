@@ -59,8 +59,8 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._filterBar = new WebInspector.FilterBar();
 
     var statusBarElement = this.element.createChild("div", "console-status-bar");
-    statusBarElement.appendChild(this._filterBar.filterButton());
     statusBarElement.appendChild(this._clearConsoleButton.element);
+    statusBarElement.appendChild(this._filterBar.filterButton());
     statusBarElement.appendChild(this._frameSelector.element);
     statusBarElement.appendChild(this._contextSelector.element);
 
