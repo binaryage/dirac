@@ -72,6 +72,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this.messagesElement = document.createElement("div");
     this.messagesElement.id = "console-messages";
     this.messagesElement.className = "monospace";
+    this.messagesElement.addEventListener("click", this._messagesClicked.bind(this), true);
     this.element.appendChild(this.messagesElement);
     this._scrolledToBottom = true;
 
@@ -81,8 +82,6 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this.promptElement.spellcheck = false;
     this.messagesElement.appendChild(this.promptElement);
     this.messagesElement.appendChild(document.createElement("br"));
-
-    this.element.addEventListener("click", this.promptElement.focus.bind(this.promptElement), false);
 
     this.topGroup = new WebInspector.ConsoleGroup(null);
     this.messagesElement.insertBefore(this.topGroup.element, this.promptElement);
