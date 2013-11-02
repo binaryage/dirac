@@ -31,7 +31,7 @@
 .screencast-navigation {
     -webkit-flex-direction: row;
     display: -webkit-flex;
-    height: 26px;
+    height: 25px;
     position: relative;
 }
 
@@ -78,7 +78,7 @@
     -webkit-flex: 1;
     border: 1px solid #aaa;
     border-radius: 2px;
-    margin: 3px;
+    margin: 1px;
     padding-left: 5px;
 }
 
@@ -88,7 +88,7 @@
 }
 
 .screencast-navigation .progress {
-    background-color: blue;
+    background-color: rgb(66, 129, 235);
     height: 3px;
     left: 0;
     position: absolute;
@@ -147,6 +147,6 @@
   left: 0;
   position: absolute;
   right: 0;
-  top: 26px;  /* Align with the botton edge of .screencast .navigation. */
+  top: 25px;  /* Align with the botton edge of .screencast .navigation. */
   font-size: 30px;
 }

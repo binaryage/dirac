@@ -62,7 +62,7 @@ var WebInspector = {
 
         if (Capabilities.canScreencast) {
             this._toggleScreencastButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle screencast."), "screencast-status-bar-item");
-            this._toggleScreencastButton.addEventListener("click", this._toggleScreencastButtonClicked.bind(this, true), false);
+            this._toggleScreencastButton.addEventListener("click", this._toggleScreencastButtonClicked.bind(this), false);
             this.inspectorView.appendToLeftToolbar(this._toggleScreencastButton.element);
         }
 
@@ -76,10 +76,7 @@ var WebInspector = {
         this.inspectorView.appendToRightToolbar(closeButtonToolbarItem);
     },
 
-    /**
-     * @param {boolean} resizeWindow
-     */
-    _toggleScreencastButtonClicked: function(resizeWindow)
+    _toggleScreencastButtonClicked: function()
     {
         this._toggleScreencastButton.toggled = !this._toggleScreencastButton.toggled;
         WebInspector.settings.screencastEnabled.set(this._toggleScreencastButton.toggled);
@@ -97,38 +94,9 @@ var WebInspector = {
                 this.inspectorView.element.remove();
                 this.inspectorView.show(this._screencastSplitView.secondElement());
             }
-
-            var sidebarWidth = WebInspector.settings.screencastSidebarWidth.get();
-            var currentWidth = document.body.offsetWidth;
-            if (resizeWindow) {
-                document.body.addStyleClass("hidden");
-                InspectorFrontendHost.setWindowBounds(window.screenX - sidebarWidth, window.screenY, window.outerWidth + sidebarWidth, window.outerHeight, callback1.bind(this));
-                function callback1(error)
-                {
-                    if (WebInspector.isMac() || WebInspector.isWin())
-                        updateScreen.call(this);
-                    else
-                        setTimeout(updateScreen.bind(this), 100);  // callback from the browser is not enough.
-                }
-
-                function updateScreen()
-                {
-                    this._screencastSplitView.showBoth();
-                    document.body.removeStyleClass("hidden");
-                    this._screencastSplitView.setSidebarSize(currentWidth);
-                }
-            } else {
-                this._screencastSplitView.setSidebarSize(sidebarWidth);
-            }
+            this._screencastSplitView.showBoth();
         } else {
-            WebInspector.settings.screencastSidebarWidth.set(this._screencastView.element.offsetWidth);
-            var delta = this._screencastSplitView.element.offsetWidth - this.inspectorView.element.offsetWidth;
-            InspectorFrontendHost.setWindowBounds(window.screenX + delta, window.screenY, window.outerWidth - delta, window.outerHeight, callback2.bind(this));
-            function callback2(error)
-            {
-                this._screencastSplitView.showOnlySecond();
-                document.body.removeStyleClass("hidden");
-            }
+            this._screencastSplitView.showOnlySecond();
         }
     },
 
@@ -485,7 +453,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     InspectorFrontendAPI.loadCompleted();
 
     if (Capabilities.canScreencast && WebInspector.settings.screencastEnabled.get())
-        this._toggleScreencastButtonClicked(false);
+        this._toggleScreencastButtonClicked();
 
     WebInspector.notifications.dispatchEventToListeners(WebInspector.Events.InspectorLoaded);
 }

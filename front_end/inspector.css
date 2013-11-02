@@ -171,6 +171,7 @@ body.undocked.platform-mac-mountain-lion.inactive .toolbar-background {
 
 .toolbar-controls-right {
     flex: none;
+    margin-right: 2px;
     padding-top: 1px;
 }
 
