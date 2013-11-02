@@ -60,15 +60,14 @@ var WebInspector = {
         if (this.inspectElementModeController)
             this.inspectorView.appendToLeftToolbar(this.inspectElementModeController.toggleSearchButton.element);
 
+        if (Capabilities.canScreencast) {
+            this._toggleScreencastButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle screencast."), "screencast-status-bar-item");
+            this._toggleScreencastButton.addEventListener("click", this._toggleScreencastButtonClicked.bind(this, true), false);
+            this.inspectorView.appendToLeftToolbar(this._toggleScreencastButton.element);
+        }
+
         this.inspectorView.appendToRightToolbar(this.settingsController.statusBarItem);
-
-        this.dockController = new WebInspector.DockController();
-        if (this.isRemoteFrontend() && Capabilities.canScreencast)
-            WebInspector.ScreencastView.configureDockController();
-        else
-            WebInspector._configureDockController();
-
-        if (!this.isRemoteFrontend() || Capabilities.canScreencast)
+        if (!WebInspector.queryParamsObject["remoteFrontend"])
             this.inspectorView.appendToRightToolbar(this.dockController.element);
 
         var closeButtonToolbarItem = document.createElementWithClass("div", "toolbar-close-button-item");
@@ -77,16 +76,62 @@ var WebInspector = {
         this.inspectorView.appendToRightToolbar(closeButtonToolbarItem);
     },
 
-    _configureDockController: function()
+    /**
+     * @param {boolean} resizeWindow
+     */
+    _toggleScreencastButtonClicked: function(resizeWindow)
     {
-        this.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, function() {
-            if (this.dockController.dockSide() === WebInspector.DockController.State.Undocked)
-                WebInspector.userMetrics.WindowDocked.record();
-            else
-                WebInspector.userMetrics.WindowUndocked.record();
-        }.bind(this));
-        this.dockController.setDockSide(this.queryParamsObject["dockSide"] || WebInspector.DockController.State.DockedToBottom);
+        this._toggleScreencastButton.toggled = !this._toggleScreencastButton.toggled;
+        WebInspector.settings.screencastEnabled.set(this._toggleScreencastButton.toggled);
+
+        if (this._toggleScreencastButton.toggled) {
+            if (!this._screencastView) {
+                // Rebuild the UI upon first invocation.
+                this._screencastView = new WebInspector.ScreencastView();
+                this._screencastSplitView = new WebInspector.SplitView(true, WebInspector.settings.screencastSidebarWidth.name);
+                this._screencastSplitView.markAsRoot();
+                this._screencastSplitView.show(document.body);
+
+                this._screencastView.show(this._screencastSplitView.firstElement());
+
+                this.inspectorView.element.remove();
+                this.inspectorView.show(this._screencastSplitView.secondElement());
+            }
+
+            var sidebarWidth = WebInspector.settings.screencastSidebarWidth.get();
+            var currentWidth = document.body.offsetWidth;
+            if (resizeWindow) {
+                document.body.addStyleClass("hidden");
+                InspectorFrontendHost.setWindowBounds(window.screenX - sidebarWidth, window.screenY, window.outerWidth + sidebarWidth, window.outerHeight, callback1.bind(this));
+                function callback1(error)
+                {
+                    if (WebInspector.isMac() || WebInspector.isWin())
+                        updateScreen.call(this);
+                    else
+                        setTimeout(updateScreen.bind(this), 100);  // callback from the browser is not enough.
+                }
+
+                function updateScreen()
+                {
+                    this._screencastSplitView.showBoth();
+                    document.body.removeStyleClass("hidden");
+                    this._screencastSplitView.setSidebarSize(currentWidth);
+                }
+            } else {
+                this._screencastSplitView.setSidebarSize(sidebarWidth);
+            }
+        } else {
+            WebInspector.settings.screencastSidebarWidth.set(this._screencastView.element.offsetWidth);
+            var delta = this._screencastSplitView.element.offsetWidth - this.inspectorView.element.offsetWidth;
+            InspectorFrontendHost.setWindowBounds(window.screenX + delta, window.screenY, window.outerWidth - delta, window.outerHeight, callback2.bind(this));
+            function callback2(error)
+            {
+                this._screencastSplitView.showOnlySecond();
+                document.body.removeStyleClass("hidden");
+            }
+        }
     },
+
 
     showConsole: function()
     {
@@ -259,6 +304,7 @@ WebInspector.loaded = function()
     }
 
     InspectorBackend.loadFromJSONIfNeeded("../protocol.json");
+    WebInspector.dockController = new WebInspector.DockController();
 
     if (WebInspector.WorkerManager.isDedicatedWorkerFrontend()) {
         // Do not create socket for the worker front-end.
@@ -303,7 +349,7 @@ WebInspector.doLoadedDone = function()
 {
     // Install styles and themes
     WebInspector.installPortStyles();
-    if (WebInspector.isRemoteFrontend())
+    if (WebInspector.socket)
         document.body.addStyleClass("remote");
 
     if (WebInspector.queryParamsObject.toolbarColor && WebInspector.queryParamsObject.textColor)
@@ -313,14 +359,6 @@ WebInspector.doLoadedDone = function()
 
     PageAgent.canScreencast(WebInspector._initializeCapability.bind(WebInspector, "canScreencast", null));
     WorkerAgent.canInspectWorkers(WebInspector._initializeCapability.bind(WebInspector, "canInspectWorkers", WebInspector._doLoadedDoneWithCapabilities.bind(WebInspector)));
-}
-
-/**
- * @return {boolean}
- */
-WebInspector.isRemoteFrontend = function()
-{
-    return WebInspector.queryParamsObject["ws"] || WebInspector.queryParamsObject["remoteFrontend"];
 }
 
 WebInspector._doLoadedDoneWithCapabilities = function()
@@ -446,6 +484,9 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     WebInspector.WorkerManager.loadCompleted();
     InspectorFrontendAPI.loadCompleted();
 
+    if (Capabilities.canScreencast && WebInspector.settings.screencastEnabled.get())
+        this._toggleScreencastButtonClicked(false);
+
     WebInspector.notifications.dispatchEventToListeners(WebInspector.Events.InspectorLoaded);
 }
 
@@ -483,6 +524,8 @@ WebInspector.windowResize = function(event)
         WebInspector.inspectorView.onResize();
     if (WebInspector.settingsController)
         WebInspector.settingsController.resize();
+    if (WebInspector._screencastSplitView)
+        WebInspector._screencastSplitView.doResize();
 }
 
 WebInspector.close = function(event)

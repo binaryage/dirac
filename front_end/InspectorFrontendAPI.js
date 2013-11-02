@@ -108,8 +108,7 @@ var InspectorFrontendAPI = {
     // FIXME: remove this legacy support.
     setDockSide: function(side)
     {
-        if (WebInspector.dockController)
-            WebInspector.dockController.setDockSide(side);
+        WebInspector.dockController.setDockSide(side);
     },
 
     dispatchMessage: function(messageObject)
