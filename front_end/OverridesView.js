@@ -138,6 +138,12 @@ WebInspector.OverridesView.Tab.prototype = {
         if (numeric)
             element.className = "numeric";
         element.addEventListener("blur", eventListener, false);
+        element.addEventListener("keydown", keyDownListener, false);
+        function keyDownListener(event)
+        {
+            if (isEnterKey(event))
+                eventListener(event);
+        }
         return element;
     },
 
@@ -276,6 +282,9 @@ WebInspector.OverridesView.DeviceTab._phones = [
     ["Google Nexus 4",
      "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 4 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19",
      "768x1280x2x0x1"],
+    ["Google Nexus 5",
+     "Mozilla/5.0 (Linux; Android 4.2.1; en-us; Nexus 5 Build/JOP40D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166 Mobile Safari/535.19",
+     "1080x1920x3x0x1"],
     ["Google Nexus S",
      "Mozilla/5.0 (Linux; U; Android 2.3.4; en-us; Nexus S Build/GRJ22) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1",
      "480x800x1.5x0x1"],
@@ -432,12 +441,12 @@ WebInspector.OverridesView.DeviceTab.prototype.__proto__ = WebInspector.Override
  */
 WebInspector.OverridesView.ViewportTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this, "viewport", WebInspector.UIString("Viewport"), [WebInspector.settings.overrideDeviceMetrics, WebInspector.settings.overrideCSSMedia]);
+    WebInspector.OverridesView.Tab.call(this, "viewport", WebInspector.UIString("Screen"), [WebInspector.settings.overrideDeviceMetrics, WebInspector.settings.overrideCSSMedia]);
     this.element.addStyleClass("overrides-viewport");
 
     const metricsSetting = WebInspector.settings.deviceMetrics.get();
     var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(metricsSetting);
-    var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate viewport"), WebInspector.settings.overrideDeviceMetrics, this._onMetricsCheckboxClicked.bind(this));
+    var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate screen"), WebInspector.settings.overrideDeviceMetrics, this._onMetricsCheckboxClicked.bind(this));
     WebInspector.settings.deviceMetrics.addChangeListener(this._updateDeviceMetricsElement, this);
 
     this.element.appendChild(checkbox);
@@ -519,13 +528,14 @@ WebInspector.OverridesView.ViewportTab.prototype = {
 
         var rowElement = tableElement.createChild("tr");
         var cellElement = rowElement.createChild("td");
-        cellElement.appendChild(document.createTextNode(WebInspector.UIString("Screen:")));
+        cellElement.appendChild(document.createTextNode(WebInspector.UIString("Resolution:")));
         cellElement = rowElement.createChild("td");
         this._widthOverrideElement = this._createInput(cellElement, "metrics-override-width", String(metrics.width || screen.width), this._applyDeviceMetricsUserInput.bind(this), true);
         this._swapDimensionsElement = cellElement.createChild("button", "overrides-swap");
         this._swapDimensionsElement.appendChild(document.createTextNode(" \u21C4 ")); // RIGHTWARDS ARROW OVER LEFTWARDS ARROW.
         this._swapDimensionsElement.title = WebInspector.UIString("Swap dimensions");
         this._swapDimensionsElement.addEventListener("click", swapDimensionsClicked.bind(this), false);
+        this._swapDimensionsElement.tabIndex = -1;
         this._heightOverrideElement = this._createInput(cellElement, "metrics-override-height", String(metrics.height || screen.height), this._applyDeviceMetricsUserInput.bind(this), true);
 
         rowElement = tableElement.createChild("tr");
@@ -540,12 +550,15 @@ WebInspector.OverridesView.ViewportTab.prototype = {
         cellElement = rowElement.createChild("td");
         this._fontScaleFactorOverrideElement = this._createInput(cellElement, "metrics-override-font-scale", String(metrics.fontScaleFactor || 1), this._applyDeviceMetricsUserInput.bind(this), true);
 
+        var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate viewport"), WebInspector.settings.emulateViewport);
+        fieldsetElement.appendChild(checkbox);
+
         var textAutosizingOverrideElement = this._createNonPersistedCheckbox(WebInspector.UIString("Enable text autosizing"), this._applyDeviceMetricsUserInput.bind(this));
         this._textAutosizingOverrideCheckbox = textAutosizingOverrideElement.getElementsByTagName("input")[0];
         this._textAutosizingOverrideCheckbox.checked = metrics.textAutosizing;
         fieldsetElement.appendChild(textAutosizingOverrideElement);
 
-        var checkbox = this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.settings.deviceFitWindow);
+        checkbox = this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.settings.deviceFitWindow);
         fieldsetElement.appendChild(checkbox);
 
         return fieldsetElement;

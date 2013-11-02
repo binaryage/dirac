@@ -79,6 +79,7 @@ WebInspector.Settings = function()
     this.overrideDeviceMetrics = this.createSetting("overrideDeviceMetrics", false);
     this.deviceMetrics = this.createSetting("deviceMetrics", "");
     this.deviceFitWindow = this.createSetting("deviceFitWindow", true);
+    this.emulateViewport = this.createSetting("emulateViewport", false);
     this.emulateTouchEvents = this.createSetting("emulateTouchEvents", false);
     this.showShadowDOM = this.createSetting("showShadowDOM", false);
     this.zoomLevel = this.createSetting("zoomLevel", 0);

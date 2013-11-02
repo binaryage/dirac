@@ -61,7 +61,7 @@
     border: none transparent;
     font-weight: normal;
     text-shadow: none;
-    color: #555;
+    color: #777;
     height: 22px;
     padding-left: 0;
     padding-left: 10px;
@@ -158,8 +158,8 @@ button.overrides-swap {
 .overrides-activate-viewport #tab-viewport,
 .overrides-activate-user-agent #tab-user-agent,
 .overrides-activate-sensors #tab-sensors {
-    color: rgb(72, 132, 233);
-    opacity: 0.9;
+    color: rgb(25, 100, 228);
+    opacity: 0.8;
 }
 
 .overrides-activate-device #tab-device.selected,

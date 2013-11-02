@@ -42,6 +42,7 @@ WebInspector.OverridesSupport = function()
 
     WebInspector.settings.overrideDeviceMetrics.addChangeListener(this._deviceMetricsChanged, this);
     WebInspector.settings.deviceMetrics.addChangeListener(this._deviceMetricsChanged, this);
+    WebInspector.settings.emulateViewport.addChangeListener(this._deviceMetricsChanged, this);
     WebInspector.settings.deviceFitWindow.addChangeListener(this._deviceMetricsChanged, this);
 
     WebInspector.settings.overrideGeolocation.addChangeListener(this._geolocationPositionChanged, this);
@@ -409,6 +410,7 @@ WebInspector.OverridesSupport.prototype = {
         WebInspector.settings.overrideDeviceMetrics.set(true);
         WebInspector.settings.overrideUserAgent.set(true);
         WebInspector.settings.emulateTouchEvents.set(true);
+        WebInspector.settings.emulateViewport.set(true);
     },
 
     reset: function()
@@ -419,6 +421,7 @@ WebInspector.OverridesSupport.prototype = {
         WebInspector.settings.overrideDeviceOrientation.set(false);
         WebInspector.settings.overrideGeolocation.set(false);
         WebInspector.settings.overrideCSSMedia.set(false);
+        WebInspector.settings.emulateViewport.set(false);
     },
 
     applyInitialOverrides: function()
@@ -452,7 +455,7 @@ WebInspector.OverridesSupport.prototype = {
             var active = metrics.width > 0 && metrics.height > 0;
             var dipWidth = Math.round(metrics.width / metrics.deviceScaleFactor);
             var dipHeight = Math.round(metrics.height / metrics.deviceScaleFactor);
-            PageAgent.setDeviceMetricsOverride(dipWidth, dipHeight, metrics.deviceScaleFactor, WebInspector.settings.deviceFitWindow.get(), metrics.textAutosizing, metrics.fontScaleFactor);
+            PageAgent.setDeviceMetricsOverride(dipWidth, dipHeight, metrics.deviceScaleFactor, WebInspector.settings.emulateViewport.get(), WebInspector.settings.deviceFitWindow.get(), metrics.textAutosizing, metrics.fontScaleFactor);
         }
         this._revealOverridesTabIfNeeded();
         this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesEnabledButImpossibleChanged);
