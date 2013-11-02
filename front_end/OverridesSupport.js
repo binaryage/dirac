@@ -422,6 +422,7 @@ WebInspector.OverridesSupport.prototype = {
         WebInspector.settings.overrideGeolocation.set(false);
         WebInspector.settings.overrideCSSMedia.set(false);
         WebInspector.settings.emulateViewport.set(false);
+        WebInspector.settings.deviceMetrics.set("");
     },
 
     applyInitialOverrides: function()

@@ -467,6 +467,17 @@ WebInspector.OverridesView.ViewportTab.prototype = {
 
     _applyDeviceMetricsUserInput: function()
     {
+        this._muteRangeListener = true;
+        this._widthRangeInput.value = this._widthOverrideElement.value;
+        delete this._muteRangeListener;
+        if (this._applyDeviceMetricsTimer)
+            clearTimeout(this._applyDeviceMetricsTimer);
+        this._applyDeviceMetricsTimer = setTimeout(this._doApplyDeviceMetricsUserInput.bind(this), 50);
+    },
+
+    _doApplyDeviceMetricsUserInput: function()
+    {
+        delete this._applyDeviceMetricsTimer;
         this._setDeviceMetricsOverride(WebInspector.OverridesSupport.DeviceMetrics.parseUserInput(this._widthOverrideElement.value.trim(), this._heightOverrideElement.value.trim(), this._deviceScaleFactorOverrideElement.value.trim(), this._fontScaleFactorOverrideElement.value.trim(), this._textAutosizingOverrideCheckbox.checked), true);
     },
 
@@ -540,6 +551,16 @@ WebInspector.OverridesView.ViewportTab.prototype = {
 
         rowElement = tableElement.createChild("tr");
         cellElement = rowElement.createChild("td");
+        cellElement.colSpan = 4;
+        this._widthRangeInput = cellElement.createChild("input");
+        this._widthRangeInput.type = "range";
+        this._widthRangeInput.min = 100;
+        this._widthRangeInput.max = 2000;
+        this._widthRangeInput.addEventListener("change", this._rangeValueChanged.bind(this), false);
+        this._widthRangeInput.value = this._widthOverrideElement.value;
+
+        rowElement = tableElement.createChild("tr");
+        cellElement = rowElement.createChild("td");
         cellElement.appendChild(document.createTextNode(WebInspector.UIString("Device pixel ratio:")));
         cellElement = rowElement.createChild("td");
         this._deviceScaleFactorOverrideElement = this._createInput(cellElement, "metrics-override-device-scale", String(metrics.deviceScaleFactor || 1), this._applyDeviceMetricsUserInput.bind(this), true);
@@ -570,15 +591,19 @@ WebInspector.OverridesView.ViewportTab.prototype = {
         var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(metricsSetting);
 
         if (this._widthOverrideElement.value !== metrics.width)
-            this._widthOverrideElement.value  = metrics.width;
+            this._widthOverrideElement.value  = metrics.width || screen.width;
+        this._muteRangeListener = true;
+        if (this._widthRangeInput.value != metrics.width)
+            this._widthRangeInput.value = metrics.width || screen.width;
+        delete this._muteRangeListener;
         if (this._heightOverrideElement.value !== metrics.height)
-            this._heightOverrideElement.value = metrics.height;
+            this._heightOverrideElement.value = metrics.height || screen.height;
         if (this._deviceScaleFactorOverrideElement.value !== metrics.deviceScaleFactor)
-            this._deviceScaleFactorOverrideElement.value = metrics.deviceScaleFactor;
+            this._deviceScaleFactorOverrideElement.value = metrics.deviceScaleFactor || 1;
         if (this._fontScaleFactorOverrideElement.value !== metrics.fontScaleFactor)
-            this._fontScaleFactorOverrideElement.value = metrics.fontScaleFactor;
+            this._fontScaleFactorOverrideElement.value = metrics.fontScaleFactor || 1;
         if (this._textAutosizingOverrideCheckbox.checked !== metrics.textAutosizing)
-            this._textAutosizingOverrideCheckbox.checked = metrics.textAutosizing;
+            this._textAutosizingOverrideCheckbox.checked = metrics.textAutosizing || false;
     },
 
     _createMediaEmulationElement: function()
@@ -612,6 +637,14 @@ WebInspector.OverridesView.ViewportTab.prototype = {
     {
         var media = select.options[select.selectedIndex].value;
         WebInspector.settings.emulatedCSSMedia.set(media);
+    },
+
+    _rangeValueChanged: function()
+    {
+        if (this._muteRangeListener)
+            return;
+        this._widthOverrideElement.value = this._widthRangeInput.value;
+        this._applyDeviceMetricsUserInput();
     }
 }
 

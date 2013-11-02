@@ -119,6 +119,10 @@
     text-align: right;
 }
 
+.overrides-viewport input[type=range] {
+    width: 100%;
+}
+
 button.overrides-swap {
     height: 20px;
 }
