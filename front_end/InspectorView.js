@@ -55,6 +55,8 @@ WebInspector.InspectorView = function()
     this._errorWarningCountElement = this._rightToolbarElement.createChild("div", "hidden");
     this._errorWarningCountElement.id = "error-warning-count";
 
+    this._footerElementContainer = this.element.createChild("div", "inspector-footer status-bar hidden");
+
     this._drawer = new WebInspector.Drawer(this);
     this.appendToRightToolbar(this._drawer.toggleButtonElement());
 
@@ -67,7 +69,6 @@ WebInspector.InspectorView = function()
     // Windows and Mac have two different definitions of '[' and ']', so accept both of each.
     this._openBracketIdentifiers = ["U+005B", "U+00DB"].keySet();
     this._closeBracketIdentifiers = ["U+005D", "U+00DD"].keySet();
-    this._footerElementContainer = this.element.createChild("div", "inspector-footer status-bar hidden");
     this._lastActivePanelSetting = WebInspector.settings.createSetting("lastActivePanel", "elements");
 }
 
