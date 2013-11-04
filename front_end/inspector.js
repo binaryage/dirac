@@ -76,6 +76,14 @@ var WebInspector = {
         this.inspectorView.appendToRightToolbar(closeButtonToolbarItem);
     },
 
+    /**
+     * @return {boolean}
+     */
+    isInspectingDevice: function()
+    {
+        return !!WebInspector.queryParamsObject["remoteFrontend"];
+    },
+
     _toggleScreencastButtonClicked: function()
     {
         this._toggleScreencastButton.toggled = !this._toggleScreencastButton.toggled;

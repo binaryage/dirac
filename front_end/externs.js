@@ -380,6 +380,11 @@ WebInspector.inspectedPageDomain;
 WebInspector.SourceJavaScriptTokenizer = {}
 WebInspector.SourceJavaScriptTokenizer.Keywords = {}
 
+/**
+ * @return {boolean}
+ */
+WebInspector.isInspectingDevice = function() {}
+
 var InspectorTest = {}
 
 /* jsdifflib API */

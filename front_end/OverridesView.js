@@ -53,13 +53,9 @@ WebInspector.OverridesView = function()
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     this._tabbedPane.show(this.element);
 
-    var footerElement = this.element.createChild("div", "overrides-footer");
-    footerElement.createChild("div", "warning-icon-small");
-    footerElement.createTextChild(WebInspector.UIString("Emulation is not available on system pages."));
-    this._warningFooter = footerElement;
-
-    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesEnabledButImpossibleChanged, this._overridesEnabledButImpossibleChanged, this);
-    WebInspector.overridesSupport.updateCanForceCompositingMode(this._overridesEnabledButImpossibleChanged.bind(this));
+    this._warningFooter = this.element.createChild("div", "overrides-footer");
+    this._overridesWarningUpdated();
+    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.OverridesWarningUpdated, this._overridesWarningUpdated, this);
 }
 
 WebInspector.OverridesView.prototype = {
@@ -71,9 +67,11 @@ WebInspector.OverridesView.prototype = {
         this._lastSelectedTabSetting.set(this._tabbedPane.selectedTabId);
     },
 
-    _overridesEnabledButImpossibleChanged: function()
+    _overridesWarningUpdated: function()
     {
-        this._warningFooter.style.display = WebInspector.overridesSupport.overridesEnabledButImpossible() ? "block" : "none";
+        var message = WebInspector.overridesSupport.warningMessage();
+        this._warningFooter.enableStyleClass("hidden", !message);
+        this._warningFooter.textContent = message;
     },
 
     __proto__: WebInspector.View.prototype
@@ -235,11 +233,13 @@ WebInspector.OverridesView.DeviceTab = function()
     this._deviceSelectElement.addEventListener("change", this._deviceSelected.bind(this), false);
     this._deviceSelectElement.addEventListener("dblclick", this._emulateButtonClicked.bind(this), false);
     this._deviceSelectElement.addEventListener("keypress", this._keyPressed.bind(this), false);
+    this._deviceSelectElement.disabled = WebInspector.isInspectingDevice();
 
     var buttonsBar = this.element.createChild("div");
     var emulateButton = buttonsBar.createChild("button", "settings-tab-text-button");
     emulateButton.textContent = WebInspector.UIString("Emulate");
     emulateButton.addEventListener("click", this._emulateButtonClicked.bind(this), false);
+    emulateButton.disabled = WebInspector.isInspectingDevice();
     this._emulateButton = emulateButton;
 
     var resetButton = buttonsBar.createChild("button", "settings-tab-text-button");
@@ -447,6 +447,7 @@ WebInspector.OverridesView.ViewportTab = function()
     const metricsSetting = WebInspector.settings.deviceMetrics.get();
     var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(metricsSetting);
     var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate screen"), WebInspector.settings.overrideDeviceMetrics, this._onMetricsCheckboxClicked.bind(this));
+    checkbox.firstChild.disabled = WebInspector.isInspectingDevice();
     WebInspector.settings.deviceMetrics.addChangeListener(this._updateDeviceMetricsElement, this);
 
     this.element.appendChild(checkbox);
@@ -525,6 +526,7 @@ WebInspector.OverridesView.ViewportTab.prototype = {
     _createDeviceMetricsElement: function(metrics)
     {
         var fieldsetElement = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.overrideDeviceMetrics);
+        fieldsetElement.disabled = WebInspector.isInspectingDevice();
         fieldsetElement.id = "metrics-override-section";
 
         function swapDimensionsClicked(event)
@@ -610,6 +612,7 @@ WebInspector.OverridesView.ViewportTab.prototype = {
     {
         var checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("CSS media"), WebInspector.settings.overrideCSSMedia, true);
         var fieldsetElement = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.overrideCSSMedia);
+        fieldsetElement.disabled = WebInspector.isInspectingDevice();
         checkbox.appendChild(fieldsetElement);
 
         var mediaSelectElement = fieldsetElement.createChild("select");
@@ -660,6 +663,7 @@ WebInspector.OverridesView.UserAgentTab = function()
     WebInspector.OverridesView.Tab.call(this, "user-agent", WebInspector.UIString("User Agent"), [WebInspector.settings.overrideUserAgent]);
     this.element.addStyleClass("overrides-user-agent");
     var checkbox = this._createSettingCheckbox(WebInspector.UIString("Spoof user agent"), WebInspector.settings.overrideUserAgent);
+    checkbox.firstChild.disabled = WebInspector.isInspectingDevice();
     this.element.appendChild(checkbox);
     this.element.appendChild(this._createUserAgentSelectRowElement());
 }
@@ -705,6 +709,8 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
         var userAgents = WebInspector.OverridesView.UserAgentTab._userAgents.concat([[WebInspector.UIString("Other"), "Other"]]);
 
         var fieldsetElement = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.overrideUserAgent);
+        fieldsetElement.disabled = WebInspector.isInspectingDevice();
+
         this._selectElement = fieldsetElement.createChild("select");
         fieldsetElement.createChild("br");
         this._otherUserAgentElement = fieldsetElement.createChild("input");
@@ -805,9 +811,11 @@ WebInspector.OverridesView.SensorsTab = function()
 {
     WebInspector.OverridesView.Tab.call(this, "sensors", WebInspector.UIString("Sensors"), [WebInspector.settings.emulateTouchEvents, WebInspector.settings.overrideGeolocation, WebInspector.settings.overrideDeviceOrientation]);
     this.element.addStyleClass("overrides-sensors");
-    this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Emulate touch screen"), WebInspector.settings.emulateTouchEvents));
+    if (!WebInspector.isInspectingDevice())
+        this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Emulate touch screen"), WebInspector.settings.emulateTouchEvents));
     this._appendGeolocationOverrideControl();
-    this._apendDeviceOrientationOverrideControl();
+    if (!WebInspector.isInspectingDevice())
+        this._apendDeviceOrientationOverrideControl();
 }
 
 WebInspector.OverridesView.SensorsTab.prototype = {
