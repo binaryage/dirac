@@ -37,6 +37,9 @@ WebInspector.ScopeChainSidebarPane = function()
 }
 
 WebInspector.ScopeChainSidebarPane.prototype = {
+    /**
+     * @param {WebInspector.DebuggerModel.CallFrame} callFrame
+     */
     update: function(callFrame)
     {
         this.bodyElement.removeChildren();
@@ -68,66 +71,62 @@ WebInspector.ScopeChainSidebarPane.prototype = {
             var title = null;
             var subtitle = scope.object.description;
             var emptyPlaceholder = null;
-            var extraProperties = null;
+            var extraProperties = [];
             var declarativeScope;
-            
+
             switch (scope.type) {
-                case "local":
-                    foundLocalScope = true;
-                    title = WebInspector.UIString("Local");
-                    emptyPlaceholder = WebInspector.UIString("No Variables");
-                    subtitle = null;
-                    if (callFrame.this)
-                        extraProperties = [ new WebInspector.RemoteObjectProperty("this", WebInspector.RemoteObject.fromPayload(callFrame.this)) ];
-                    if (i == 0) {
-                        var details = WebInspector.debuggerModel.debuggerPausedDetails();
-                        var exception = details.reason === WebInspector.DebuggerModel.BreakReason.Exception ? details.auxData : 0;
-                        if (exception) {
-                            extraProperties = extraProperties || [];
-                            var exceptionObject = /** @type {RuntimeAgent.RemoteObject} */ (exception);
-                            extraProperties.push(new WebInspector.RemoteObjectProperty("<exception>", WebInspector.RemoteObject.fromPayload(exceptionObject)));
-                        }
+            case DebuggerAgent.ScopeType.Local:
+                foundLocalScope = true;
+                title = WebInspector.UIString("Local");
+                emptyPlaceholder = WebInspector.UIString("No Variables");
+                subtitle = undefined;
+                if (callFrame.this)
+                    extraProperties.push(new WebInspector.RemoteObjectProperty("this", WebInspector.RemoteObject.fromPayload(callFrame.this)));
+                if (i == 0) {
+                    var details = WebInspector.debuggerModel.debuggerPausedDetails();
+                    var exception = details.reason === WebInspector.DebuggerModel.BreakReason.Exception ? details.auxData : 0;
+                    if (exception) {
+                        var exceptionObject = /** @type {RuntimeAgent.RemoteObject} */ (exception);
+                        extraProperties.push(new WebInspector.RemoteObjectProperty("<exception>", WebInspector.RemoteObject.fromPayload(exceptionObject)));
                     }
-                    declarativeScope = true;
-                    break;
-                case "closure":
-                    title = WebInspector.UIString("Closure");
-                    emptyPlaceholder = WebInspector.UIString("No Variables");
-                    subtitle = null;
-                    declarativeScope = true;
-                    break;
-                case "catch":
-                    title = WebInspector.UIString("Catch");
-                    subtitle = null;
-                    declarativeScope = true;
-                    break;
-                case "with":
-                    title = WebInspector.UIString("With Block");
-                    declarativeScope = false;
-                    break;
-                case "global":
-                    title = WebInspector.UIString("Global");
-                    declarativeScope = false;
-                    break;
+                    if (callFrame.returnValue)
+                        extraProperties.push(new WebInspector.RemoteObjectProperty("<return>", WebInspector.RemoteObject.fromPayload(callFrame.returnValue)));
+                }
+                declarativeScope = true;
+                break;
+            case DebuggerAgent.ScopeType.Closure:
+                title = WebInspector.UIString("Closure");
+                emptyPlaceholder = WebInspector.UIString("No Variables");
+                subtitle = undefined;
+                declarativeScope = true;
+                break;
+            case DebuggerAgent.ScopeType.Catch:
+                title = WebInspector.UIString("Catch");
+                subtitle = undefined;
+                declarativeScope = true;
+                break;
+            case DebuggerAgent.ScopeType.With:
+                title = WebInspector.UIString("With Block");
+                declarativeScope = false;
+                break;
+            case DebuggerAgent.ScopeType.Global:
+                title = WebInspector.UIString("Global");
+                declarativeScope = false;
+                break;
             }
 
             if (!title || title === subtitle)
-                subtitle = null;
-            
-            var scopeRef;
-            if (declarativeScope)
-                scopeRef = new WebInspector.ScopeRef(i, callFrame.id, undefined);
-            else
-                scopeRef = undefined;
-            
+                subtitle = undefined;
 
-            var section = new WebInspector.ObjectPropertiesSection(WebInspector.ScopeRemoteObject.fromPayload(scope.object, scopeRef), title, subtitle, emptyPlaceholder, true, extraProperties, WebInspector.ScopeVariableTreeElement);
+            var scopeRef = declarativeScope ? new WebInspector.ScopeRef(i, callFrame.id, undefined) : undefined;
+            var scopeObject = WebInspector.ScopeRemoteObject.fromPayload(scope.object, scopeRef);
+            var section = new WebInspector.ObjectPropertiesSection(scopeObject, title, subtitle, emptyPlaceholder, true, extraProperties, WebInspector.ScopeVariableTreeElement);
             section.editInSelectedCallFrameWhenPaused = true;
             section.pane = this;
 
-            if (scope.type === "global")
+            if (scope.type === DebuggerAgent.ScopeType.Global)
                 section.expanded = false;
-            else if (!foundLocalScope || scope.type === "local" || title in this._expandedSections)
+            else if (!foundLocalScope || scope.type === DebuggerAgent.ScopeType.Local || title in this._expandedSections)
                 section.expanded = true;
 
             this._sections.push(section);

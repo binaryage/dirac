@@ -568,6 +568,10 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
         if (this.children.length && !this.shouldRefreshChildren)
             return;
 
+        /**
+         * @param {?Protocol.Error} error
+         * @param {DebuggerAgent.FunctionDetails} response
+         */
         function didGetDetails(error, response)
         {
             if (error) {
@@ -585,38 +589,33 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
                 var isTrueObject;
 
                 switch (scope.type) {
-                    case "local":
-                        // Not really expecting this scope type here.
-                        title = WebInspector.UIString("Local");
-                        isTrueObject = false;
-                        break;
-                    case "closure":
-                        title = WebInspector.UIString("Closure");
-                        isTrueObject = false;
-                        break;
-                    case "catch":
-                        title = WebInspector.UIString("Catch");
-                        isTrueObject = false;
-                        break;
-                    case "with":
-                        title = WebInspector.UIString("With Block");
-                        isTrueObject = true;
-                        break;
-                    case "global":
-                        title = WebInspector.UIString("Global");
-                        isTrueObject = true;
-                        break;
-                    default:
-                        console.error("Unknown scope type: " + scope.type);
-                        continue;
+                case DebuggerAgent.ScopeType.Local:
+                    // Not really expecting this scope type here.
+                    title = WebInspector.UIString("Local");
+                    isTrueObject = false;
+                    break;
+                case DebuggerAgent.ScopeType.Closure:
+                    title = WebInspector.UIString("Closure");
+                    isTrueObject = false;
+                    break;
+                case DebuggerAgent.ScopeType.Catch:
+                    title = WebInspector.UIString("Catch");
+                    isTrueObject = false;
+                    break;
+                case DebuggerAgent.ScopeType.With:
+                    title = WebInspector.UIString("With Block");
+                    isTrueObject = true;
+                    break;
+                case DebuggerAgent.ScopeType.Global:
+                    title = WebInspector.UIString("Global");
+                    isTrueObject = true;
+                    break;
+                default:
+                    console.error("Unknown scope type: " + scope.type);
+                    continue;
                 }
 
-                var scopeRef;
-                if (isTrueObject)
-                    scopeRef = undefined;
-                else
-                    scopeRef = new WebInspector.ScopeRef(i, undefined, this._remoteObject.objectId);
-
+                var scopeRef = isTrueObject ? undefined : new WebInspector.ScopeRef(i, undefined, this._remoteObject.objectId);
                 var remoteObject = WebInspector.ScopeRemoteObject.fromPayload(scope.object, scopeRef);
                 if (isTrueObject) {
                     var property = WebInspector.RemoteObjectProperty.fromScopeValue(title, remoteObject);

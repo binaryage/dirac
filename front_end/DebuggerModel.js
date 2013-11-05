@@ -837,6 +837,14 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
     },
 
     /**
+     * @return {RuntimeAgent.RemoteObject|undefined}
+     */
+    get returnValue()
+    {
+        return this._payload.returnValue;
+    },
+
+    /**
      * @return {string}
      */
     get functionName()
