@@ -96,7 +96,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
 
                         var title = container.createChild("div", "function-popover-title source-code");
                         var functionName = title.createChild("span", "function-name");
-                        functionName.textContent = response.name || response.inferredName || response.displayName || WebInspector.UIString("(anonymous function)");
+                        functionName.textContent = response.functionName || WebInspector.UIString("(anonymous function)");
 
                         this._linkifier = new WebInspector.Linkifier();
                         var rawLocation = /** @type {WebInspector.DebuggerModel.Location} */ (response.location);
