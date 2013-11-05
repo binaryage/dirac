@@ -284,7 +284,7 @@ body.platform-mac .help-content input[type=radio] {
 
 .help-container-wrapper {
     position: absolute;
-    top: 60px;
+    top: 54px;
     left: 15px;
     right: 0;
     bottom: 0;
@@ -358,8 +358,12 @@ body.platform-mac .help-content input[type=radio] {
     text-align: right;
 }
 
+.settings-tab-container {
+    flex: auto;
+}
+
 .settings-tab-container header {
-    padding: 14px 0;
+    padding: 14px 0 6px;
     border-bottom: 1px solid #EEEEEE;
 }
 
