@@ -64,12 +64,9 @@
     pointer-events: auto;
 }
 
-.timeline-frame-overview .overview-grid-window {
-    height: 80px;
-}
-
+.timeline-frame-overview .overview-grid-window,
 .timeline-frame-overview .overview-grid-dividers-background {
-    height: 80px;
+    height: 100%;
 }
 
 #timeline-overview-grid #resources-graphs {
@@ -364,22 +361,27 @@
     left: 9px;
 }
 
+#timeline-overview-sidebar .sidebar-tree {
+    height: 100%;
+    padding: 1px 0 1px 0;
+}
+
 #timeline-overview-sidebar .sidebar-tree-item {
-    line-height: 26px;
-    height: 24px;
-    margin-top: 0;
+    height: auto;
+    flex: auto;
+    margin: 1px 0 1px 0;
     border-top: none;
+    display: flex;
+    align-items: center;
 }
 
 #timeline-overview-sidebar .sidebar-tree-item .titles.no-subtitle {
-    top: 5px;
+    top: initial;
 }
 
 #timeline-overview-sidebar .icon {
     height: 24px;
-    margin-top: -1px;
-    margin-left: 0;
-    margin-right: 0;
+    margin: 0;
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
     -webkit-mask-size: 320px 120px;
     background-color: black;

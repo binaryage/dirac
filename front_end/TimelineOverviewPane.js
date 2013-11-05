@@ -48,7 +48,7 @@ WebInspector.TimelineOverviewPane = function(model)
     this._topPaneSidebarElement.id = "timeline-overview-sidebar";
 
     var overviewTreeElement = document.createElement("ol");
-    overviewTreeElement.className = "sidebar-tree";
+    overviewTreeElement.className = "sidebar-tree vbox";
     this._topPaneSidebarElement.appendChild(overviewTreeElement);
     this.element.appendChild(this._topPaneSidebarElement);
 
