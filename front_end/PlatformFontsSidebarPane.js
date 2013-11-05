@@ -40,13 +40,10 @@ WebInspector.PlatformFontsSidebarPane = function()
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrRemoved, this._onNodeChange.bind(this));
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.CharacterDataModified, this._onNodeChange.bind(this));
 
-    var cssFontSection = this.element.createChild("div", "stats-section monospace");
-    var cssFontPrefix = cssFontSection.createChild("span", "webkit-css-property");
-    cssFontPrefix.textContent = "font-family";
-    cssFontSection.createTextChild(":");
-    this._cssFontValue = cssFontSection.createChild("span", "css-font-value");
-
-    this._fontStatsSection = this.element.createChild("div", "stats-section");
+    this._sectionTitle = document.createElementWithClass("div", "sidebar-separator");
+    this.element.insertBefore(this._sectionTitle, this.bodyElement);
+    this._sectionTitle.textContent = WebInspector.UIString("Rendered Fonts");
+    this._fontStatsSection = this.bodyElement.createChild("div", "stats-section");
 }
 
 WebInspector.PlatformFontsSidebarPane.prototype = {
@@ -89,10 +86,12 @@ WebInspector.PlatformFontsSidebarPane.prototype = {
     {
         if (this._node !== node)
             return;
-        this._cssFontValue.textContent = cssFamilyName + ";";
+
         this._fontStatsSection.removeChildren();
 
-        if (!platformFonts || !platformFonts.length)
+        var isEmptySection = !platformFonts || !platformFonts.length;
+        this._sectionTitle.enableStyleClass("hidden", isEmptySection);
+        if (isEmptySection)
             return;
         platformFonts.sort(function (a, b) {
             return b.glyphCount - a.glyphCount;

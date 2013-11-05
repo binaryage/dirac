@@ -579,19 +579,19 @@
     -webkit-justify-content: center;
 }
 
-.sidebar-pane.composite .computed-style {
-    border-bottom: 1px solid rgb(64%, 64%, 64%);
-}
-
 .sidebar-pane.composite .metrics-and-computed .sidebar-pane-toolbar {
     margin-top: 4px;
     margin-bottom: -4px;
     position: relative;
 }
 
-.sidebar-pane.composite .platform-fonts {
+.sidebar-pane.composite .platform-fonts .body {
     padding: 1ex;
     -webkit-user-select: text;
+}
+
+.sidebar-pane.composite .platform-fonts .sidebar-separator {
+    border-top: none;
 }
 
 .sidebar-pane.composite .platform-fonts .stats-section {
