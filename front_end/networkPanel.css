@@ -79,7 +79,7 @@
 }
 
 #network-views.small .network-item-view .tabbed-pane-header {
-    height: 23px;
+    flex-basis: 23px;
     padding-top: 0;
 }
 
@@ -98,7 +98,7 @@
 }
 
 .network-item-view .tabbed-pane-header {
-    border-bottom: 1px solid rgb(163, 163, 163);
+    border-bottom: 1px solid rgb(205, 205, 205);
 }
 
 .resource-headers-view {

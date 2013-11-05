@@ -222,6 +222,10 @@
     margin-right: 3px;
 }
 
+.network-log-grid.data-grid th {
+    border-bottom: 1px solid rgb(205,205,205) !important;
+}
+
 .network-log-grid.data-grid.small .icon {
     width: 16px;
     height: 16px;
