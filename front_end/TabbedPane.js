@@ -454,7 +454,8 @@ WebInspector.TabbedPane.prototype = {
         {
             return tab1.title.localeCompare(tab2.title);
         }
-        tabsToShow.sort(compareFunction);
+        if (!this._retainTabsOrder)
+            tabsToShow.sort(compareFunction);
 
         var selectedIndex = -1;
         for (var i = 0; i < tabsToShow.length; ++i) {
