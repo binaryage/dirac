@@ -108,6 +108,7 @@ WebInspector.NetworkRequest.prototype = {
 
         this._url = x;
         this._parsedURL = new WebInspector.ParsedURL(x);
+        delete this._queryString;
         delete this._parsedQueryParameters;
         delete this._name;
         delete this._path;
@@ -628,12 +629,19 @@ WebInspector.NetworkRequest.prototype = {
      */
     queryString: function()
     {
-        if (this._queryString)
+        if (this._queryString !== undefined)
             return this._queryString;
-        var queryString = this.url.split("?", 2)[1];
-        if (!queryString)
-            return null;
-        this._queryString = queryString.split("#", 2)[0];
+
+        var queryString = null;
+        var url = this.url;
+        var questionMarkPosition = url.indexOf("?");
+        if (questionMarkPosition !== -1) {
+            queryString = url.substring(questionMarkPosition + 1);
+            var hashSignPosition = queryString.indexOf("#");
+            if (hashSignPosition !== -1)
+                queryString = queryString.substring(0, hashSignPosition);
+        }
+        this._queryString = queryString;
         return this._queryString;
     },
 
