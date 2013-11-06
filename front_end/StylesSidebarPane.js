@@ -2805,6 +2805,9 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt = function(cssCompletions, side
     this._cssCompletions = cssCompletions;
     this._sidebarPane = sidebarPane;
     this._isEditingName = isEditingName;
+
+    if (!isEditingName)
+        this.disableDefaultSuggestionForEmptyInput();
 }
 
 WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {

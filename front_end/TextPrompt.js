@@ -43,7 +43,6 @@ WebInspector.TextPrompt = function(completions, stopCharacters)
     this._proxyElementDisplay = "inline-block";
     this._loadCompletions = completions;
     this._completionStopCharacters = stopCharacters || " =:[({;,!+-*/&|^<>.";
-    this._suggestForceable = true;
 }
 
 WebInspector.TextPrompt.Events = {
@@ -55,22 +54,6 @@ WebInspector.TextPrompt.prototype = {
     get proxyElement()
     {
         return this._proxyElement;
-    },
-
-    /**
-     * @param {boolean} x
-     */
-    setSuggestForceable: function(x)
-    {
-        this._suggestForceable = x;
-    },
-
-    /**
-     * @param {boolean} x
-     */
-    setShowSuggestForEmptyInput: function(x)
-    {
-        this._showSuggestForEmptyInput = x;
     },
 
     /**
@@ -301,7 +284,7 @@ WebInspector.TextPrompt.prototype = {
             }
             break;
         case "U+0020": // Space
-            if (this._suggestForceable && event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) {
+            if (event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) {
                 this.defaultKeyHandler(event, true);
                 handled = true;
             }
@@ -421,6 +404,11 @@ WebInspector.TextPrompt.prototype = {
         this._loadCompletions(this.proxyElement, wordPrefixRange, force, this._completionsReady.bind(this, selection, wordPrefixRange, !!reverse));
     },
 
+    disableDefaultSuggestionForEmptyInput: function()
+    {
+        this._disableDefaultSuggestionForEmptyInput = true;
+    },
+
     /**
      * @param {Selection} selection
      * @param {Range} textRange
@@ -479,16 +467,19 @@ WebInspector.TextPrompt.prototype = {
         fullWordRange.setStart(originalWordPrefixRange.startContainer, originalWordPrefixRange.startOffset);
         fullWordRange.setEnd(selectionRange.endContainer, selectionRange.endOffset);
 
-        if (originalWordPrefixRange.toString() + selectionRange.toString() != fullWordRange.toString())
+        if (originalWordPrefixRange.toString() + selectionRange.toString() !== fullWordRange.toString())
             return;
 
-        selectedIndex = selectedIndex || 0;
+        selectedIndex = (this._disableDefaultSuggestionForEmptyInput && !this.text) ? -1 : (selectedIndex || 0);
 
         this._userEnteredRange = fullWordRange;
         this._userEnteredText = fullWordRange.toString();
 
         if (this._suggestBox)
             this._suggestBox.updateSuggestions(this._boxForAnchorAtStart(selection, fullWordRange), completions, selectedIndex, !this.isCaretAtEndOfPrompt(), this._userEnteredText);
+
+        if (selectedIndex === -1)
+            return;
 
         var wordPrefixLength = originalWordPrefixRange.toString().length;
         this._commonPrefix = this._buildCommonPrefix(completions, wordPrefixLength);

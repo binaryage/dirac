@@ -174,6 +174,7 @@ WebInspector.SuggestBox.prototype = {
 
         this._element.remove();
         delete this._selectedElement;
+        this._selectedIndex = -1;
     },
 
     removeFromElement: function()
@@ -224,6 +225,9 @@ WebInspector.SuggestBox.prototype = {
     {
         if (!this._length)
             return false;
+
+        if (this._selectedIndex === -1 && shift < 0)
+            shift += 1;
 
         var index = this._selectedIndex + shift;
 
@@ -299,6 +303,9 @@ WebInspector.SuggestBox.prototype = {
             this._selectedElement.classList.remove("selected");
 
         this._selectedIndex = index;
+        if (index < 0)
+            return;
+
         this._selectedElement = this.contentElement.children[index];
         this._selectedElement.classList.add("selected");
 
