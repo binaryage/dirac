@@ -1592,9 +1592,50 @@ WebInspector.SourcesView = function()
     this.registerRequiredCSS("sourcesView.css");
     this.element.id = "sources-panel-sources-view";
     this.element.addStyleClass("vbox");
+    this.element.addEventListener("dragenter", this._onDragEnter.bind(this), true);
+    this.element.addEventListener("dragover", this._onDragOver.bind(this), true);
 }
 
+WebInspector.SourcesView.dragAndDropFilesType = "Files";
+
 WebInspector.SourcesView.prototype = {
+    _onDragEnter: function (event)
+    {
+        if (event.dataTransfer.types.indexOf(WebInspector.SourcesView.dragAndDropFilesType) === -1)
+            return;
+        event.consume(true);
+    },
+
+    _onDragOver: function (event)
+    {
+        if (event.dataTransfer.types.indexOf(WebInspector.SourcesView.dragAndDropFilesType) === -1)
+            return;
+        event.consume(true);
+        if (this._dragMaskElement)
+            return;
+        this._dragMaskElement = this.element.createChild("div", "fill drag-mask");
+        this._dragMaskElement.addEventListener("drop", this._onDrop.bind(this), true);
+        this._dragMaskElement.addEventListener("dragleave", this._onDragLeave.bind(this), true);
+    },
+
+    _onDrop: function (event)
+    {
+        event.consume(true);
+        var items = event.dataTransfer.items;
+        var item = /** @type {DataTransferItem} */ (items.length ? items[0] : null);
+        var entry = item.webkitGetAsEntry();
+        if (!entry.isDirectory)
+            return;
+        InspectorFrontendHost.upgradeDraggedFileSystemPermissions(entry.filesystem);
+    },
+
+    _onDragLeave: function (event)
+    {
+        event.consume(true);
+        this._dragMaskElement.remove();
+        delete this._dragMaskElement;
+    },
+
     __proto__: WebInspector.View.prototype
 }
 

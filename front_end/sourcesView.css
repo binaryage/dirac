@@ -30,6 +30,7 @@
 
 #sources-panel-sources-view {
     flex: auto;
+    position: relative;
 }
 
 #sources-editor-container-tabbed-pane {
@@ -61,4 +62,9 @@
 
 #sources-panel-sources-view .sources-toggle-pretty-print-status-bar-item.toggled .glyph {
     background-color: rgb(66, 129, 235);
+}
+
+#sources-panel-sources-view .drag-mask
+    background-color: transparent;
+    z-index: 1000;
 }

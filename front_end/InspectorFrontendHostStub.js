@@ -174,6 +174,10 @@ WebInspector.InspectorFrontendHostStub.prototype = {
         return null;
     },
 
+    upgradeDraggedFileSystemPermissions: function(domFileSystem)
+    {
+    },
+
     indexPath: function(requestId, fileSystemPath)
     {
     },
