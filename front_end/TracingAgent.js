@@ -40,11 +40,12 @@ WebInspector.TracingAgent = function()
 WebInspector.TracingAgent.prototype = {
     /**
      * @param {string} categoryPatterns
+     * @param {string} options
      * @param {function(?string)=} callback
      */
-    start: function(categoryPatterns, callback)
+    start: function(categoryPatterns, options, callback)
     {
-        TracingAgent.start(categoryPatterns, callback);
+        TracingAgent.start(categoryPatterns, options, callback);
         this._active = true;
         this._events = [];
     },
@@ -62,6 +63,9 @@ WebInspector.TracingAgent.prototype = {
         TracingAgent.end();
     },
 
+    /**
+     * @return {!Array.<{cat: string, args: Object, ph: string, ts: number}>}
+     */
     events: function()
     {
         return this._events;
@@ -103,3 +107,8 @@ WebInspector.TracingDispatcher.prototype = {
         this._tracingAgent._tracingComplete();
     }
 }
+
+/**
+ * @type {WebInspector.TracingAgent}
+ */
+WebInspector.tracingAgent;

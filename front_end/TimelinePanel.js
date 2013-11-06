@@ -134,7 +134,11 @@ WebInspector.TimelinePanel = function()
     this._adjustHeaderHeight();
 
     this._mainThreadTasks = /** @type {!Array.<{startTime: number, endTime: number}>} */ ([]);
-    this._cpuBarsElement = this._timelineGrid.gridHeaderElement.createChild("div", "timeline-cpu-bars");
+    this._gpuTasks = /** @type {!Array.<{startTime: number, endTime: number, pid: number}>} */ ([]);
+    var utilizationStripsElement = this._timelineGrid.gridHeaderElement.createChild("div", "timeline-utilization-strips vbox");
+    this._cpuBarsElement = utilizationStripsElement.createChild("div", "timeline-utilization-strip");
+    if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
+        this._gpuBarsElement = utilizationStripsElement.createChild("div", "timeline-utilization-strip gpu");
     this._mainThreadMonitoringEnabled = WebInspector.settings.showCpuOnTimelineRuler.get();
     WebInspector.settings.showCpuOnTimelineRuler.addChangeListener(this._showCpuOnTimelineRulerChanged, this);
 
@@ -150,7 +154,7 @@ WebInspector.TimelinePanel = function()
     this._allRecordsCount = 0;
 
     this._presentationModel.addFilter(new WebInspector.TimelineWindowFilter(this._overviewPane));
-    this._presentationModel.addFilter(new WebInspector.TimelineCategoryFilter()); 
+    this._presentationModel.addFilter(new WebInspector.TimelineCategoryFilter());
     this._presentationModel.addFilter(this._durationFilter);
 }
 
@@ -166,7 +170,7 @@ WebInspector.TimelinePanel.prototype = {
         var mainThreadMonitoringEnabled = WebInspector.settings.showCpuOnTimelineRuler.get();
         if (this._mainThreadMonitoringEnabled !== mainThreadMonitoringEnabled) {
             this._mainThreadMonitoringEnabled = mainThreadMonitoringEnabled;
-            this._refreshMainThreadBars();
+            this._refreshAllUtilizationBars();
         }
     },
 
@@ -652,6 +656,15 @@ WebInspector.TimelinePanel.prototype = {
             });
         }
 
+        if (record.type === WebInspector.TimelineModel.RecordType.GPUTask) {
+            this._gpuTasks.push({
+                startTime: WebInspector.TimelineModel.startTimeInSeconds(record),
+                endTime: WebInspector.TimelineModel.endTimeInSeconds(record),
+                pid: record.data["ownerPID"]
+            });
+            return WebInspector.TimelineModel.startTimeInSeconds(record) < this._overviewPane.windowEndTime();
+        }
+
         var records = this._presentationModel.addRecord(record);
         this._allRecordsCount += records.length;
         var hasVisibleRecords = false;
@@ -728,6 +741,8 @@ WebInspector.TimelinePanel.prototype = {
         this._allRecordsCount = 0;
         this._automaticallySizeWindow = true;
         this._mainThreadTasks = [];
+        this._gpuTasks = [];
+        this._pidToHue = {};
     },
 
     elementsToRestoreScrollPositionsFor: function()
@@ -818,8 +833,7 @@ WebInspector.TimelinePanel.prototype = {
                     this._timelineGrid.updateDividers(this._calculator);
             } else
                 this._timelineGrid.updateDividers(this._calculator);
-            if (this._mainThreadMonitoringEnabled)
-                this._refreshMainThreadBars();
+            this._refreshAllUtilizationBars();
         }
         if (this._memoryStatistics.visible())
             this._memoryStatistics.refresh();
@@ -979,8 +993,23 @@ WebInspector.TimelinePanel.prototype = {
         return recordsInWindow.length;
     },
 
-    _refreshMainThreadBars: function()
+    _refreshAllUtilizationBars: function()
     {
+        this._refreshUtilizationBars(WebInspector.UIString("CPU"), this._mainThreadMonitoringEnabled ? this._mainThreadTasks : [], this._cpuBarsElement);
+        if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
+            this._refreshUtilizationBars(WebInspector.UIString("GPU"), this._gpuTasks, this._gpuBarsElement);
+    },
+
+    /**
+     * @param {string} name
+     * @param {!Array.<{startTime: number, endTime: number, pid: number}>} tasks
+     * @param {?Element} container
+     */
+    _refreshUtilizationBars: function(name, tasks, container)
+    {
+        if (!container)
+            return;
+
         const barOffset = 3;
         const minGap = 3;
 
@@ -992,8 +1021,6 @@ WebInspector.TimelinePanel.prototype = {
         var scale = boundarySpan / (width - minWidth - this._timelinePaddingLeft);
         var startTime = this._overviewPane.windowStartTime() - this._timelinePaddingLeft * scale;
         var endTime = startTime + width * scale;
-
-        var tasks = this._mainThreadMonitoringEnabled ? this._mainThreadTasks : [];
 
         /**
          * @param {number} value
@@ -1007,11 +1034,14 @@ WebInspector.TimelinePanel.prototype = {
 
         var taskIndex = insertionIndexForObjectInListSortedByFunction(startTime, tasks, compareEndTime);
 
-        var container = this._cpuBarsElement;
         var element = container.firstChild;
         var lastElement;
         var lastLeft;
         var lastRight;
+
+        if (!this._pidToHue)
+            this._pidToHue = {};
+        var pidToHue = this._pidToHue;
 
         for (; taskIndex < tasks.length; ++taskIndex) {
             var task = tasks[taskIndex];
@@ -1023,7 +1053,8 @@ WebInspector.TimelinePanel.prototype = {
 
             if (lastElement) {
                 var gap = Math.floor(left) - Math.ceil(lastRight);
-                if (gap < minGap) {
+                if (gap < minGap
+                    && (!task.pid || tasks[lastElement._tasksInfo.firstTaskIndex].pid === task.pid)) {
                     lastRight = right;
                     lastElement._tasksInfo.lastTaskIndex = taskIndex;
                     continue;
@@ -1034,8 +1065,14 @@ WebInspector.TimelinePanel.prototype = {
             if (!element)
                 element = container.createChild("div", "timeline-graph-bar");
 
+            if (task.pid) {
+                if (!(task.pid in pidToHue))
+                    pidToHue[task.pid] = (Object.keys(pidToHue).length * 101) % 360;
+                var hue = pidToHue[task.pid];
+                element.style.backgroundColor = "hsla(" + hue + ",50%,50%,0.2)";
+            }
             element.style.left = left + "px";
-            element._tasksInfo = {tasks: tasks, firstTaskIndex: taskIndex, lastTaskIndex: taskIndex};
+            element._tasksInfo = {name: name, tasks: tasks, firstTaskIndex: taskIndex, lastTaskIndex: taskIndex};
             lastLeft = left;
             lastRight = right;
 

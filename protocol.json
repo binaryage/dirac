@@ -2870,7 +2870,8 @@
                 "parameters": [
                     { "name": "maxCallStackDepth", "optional": true, "type": "integer", "description": "Samples JavaScript stack traces up to <code>maxCallStackDepth</code>, defaults to 5." },
                     { "name": "bufferEvents", "optional": true, "type": "boolean", "hidden": true, "description": "Whether instrumentation events should be buffered and returned upon <code>stop</code> call." },
-                    { "name": "includeDomCounters", "optional": true, "type": "boolean", "hidden": true, "description": "Whether DOM counters data should be included into timeline events." }
+                    { "name": "includeDomCounters", "optional": true, "type": "boolean", "hidden": true, "description": "Whether DOM counters data should be included into timeline events." },
+                    { "name": "includeGPUEvents", "optional": true, "type": "boolean", "hidden": true, "description": "Whether events from GPU process should be collected." }
                 ],
                 "description": "Starts capturing instrumentation events."
             },
@@ -4019,9 +4020,10 @@
         "commands": [
             {
                 "name": "start",
-                "description": "Strart trace events collection.",
+                "description": "Start trace events collection.",
                 "parameters": [
-                    { "name": "categories", "type": "string", "description": "Category/tag filter" }
+                    { "name": "categories", "type": "string", "description": "Category/tag filter" },
+                    { "name": "options", "type": "string", "description": "Tracing options" }
                 ]
             },
             {

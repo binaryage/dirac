@@ -51,6 +51,8 @@ WebInspector.TimelineModel.RecordType = {
     Program: "Program",
     EventDispatch: "EventDispatch",
 
+    GPUTask: "GPUTask",
+
     BeginFrame: "BeginFrame",
     ScheduleStyleRecalculation: "ScheduleStyleRecalculation",
     RecalculateStyles: "RecalculateStyles",
@@ -115,7 +117,7 @@ WebInspector.TimelineModel.startTimeInSeconds = function(record)
 
 WebInspector.TimelineModel.endTimeInSeconds = function(record)
 {
-    return (typeof record.endTime === "undefined" ? record.startTime : record.endTime) / 1000;
+    return (record.endTime || record.startTime) / 1000;
 }
 
 WebInspector.TimelineModel.durationInSeconds = function(record)
@@ -159,7 +161,8 @@ WebInspector.TimelineModel.prototype = {
         this._clientInitiatedRecording = true;
         this.reset();
         var maxStackFrames = WebInspector.settings.timelineLimitStackFramesFlag.get() ? WebInspector.settings.timelineStackFramesToCapture.get() : 30;
-        WebInspector.timelineManager.start(maxStackFrames, includeDomCounters, this._fireRecordingStarted.bind(this));
+        var includeGPUEvents = WebInspector.experimentsSettings.gpuTimeline.isEnabled();
+        WebInspector.timelineManager.start(maxStackFrames, includeDomCounters, includeGPUEvents, this._fireRecordingStarted.bind(this));
     },
 
     stopRecording: function()
@@ -172,7 +175,7 @@ WebInspector.TimelineModel.prototype = {
                 WebInspector.timelineManager.stop(this._fireRecordingStopped.bind(this));
             }
 
-            WebInspector.timelineManager.start(undefined, undefined, stopTimeline.bind(this));
+            WebInspector.timelineManager.start(undefined, undefined, undefined, stopTimeline.bind(this));
             return;
         }
         this._clientInitiatedRecording = false;

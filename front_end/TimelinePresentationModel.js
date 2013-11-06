@@ -229,6 +229,7 @@ WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.MarkLoad] = 1;
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.ScheduleStyleRecalculation] = 1;
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.InvalidateLayout] = 1;
+WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.GPUTask] = 1;
 
 WebInspector.TimelinePresentationModel.prototype = {
     /**
@@ -663,12 +664,14 @@ WebInspector.TimelinePresentationModel.prototype = {
         var duration = endTime - startTime;
         var offset = this._minimumRecordTime;
 
-        var contentHelper = new WebInspector.PopoverContentHelper(WebInspector.UIString("CPU"));
+        var contentHelper = new WebInspector.PopoverContentHelper(info.name);
         var durationText = WebInspector.UIString("%s (at %s)", Number.secondsToString(duration, true),
             Number.secondsToString(startTime - offset, true));
         contentHelper.appendTextRow(WebInspector.UIString("Duration"), durationText);
         contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.secondsToString(cpuTime, true));
         contentHelper.appendTextRow(WebInspector.UIString("Message Count"), messageCount);
+        if (tasks[firstTaskIndex].pid)
+            contentHelper.appendTextRow(WebInspector.UIString("PID"), tasks[firstTaskIndex].pid);
         return contentHelper.contentTable();
     },
 
@@ -878,7 +881,7 @@ WebInspector.TimelinePresentationModel.insertRetrospectiveRecord = function(pare
     {
         return value < record.startTime ? -1 : 1;
     }
-    
+
     parent.children.splice(insertionIndexForObjectInListSortedByFunction(record.startTime, parent.children, compareStartTime), 0, record);
 }
 
@@ -1214,8 +1217,8 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                 if (typeof this.webSocketProtocol !== "undefined")
                     contentHelper.appendTextRow(WebInspector.UIString("WebSocket Protocol"), this.webSocketProtocol);
                 if (typeof this.data["message"] !== "undefined")
-                    contentHelper.appendTextRow(WebInspector.UIString("Message"), this.data["message"])
-                    break;
+                    contentHelper.appendTextRow(WebInspector.UIString("Message"), this.data["message"]);
+                break;
             default:
                 if (this.detailsNode())
                     contentHelper.appendElementRow(WebInspector.UIString("Details"), this.detailsNode().childNodes[1].cloneNode());

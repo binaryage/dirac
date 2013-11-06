@@ -520,8 +520,8 @@
     height: 19px;
     overflow: hidden;
     background-color: rgb(220, 220, 220);
-    opacity: 0.6;
-    color: #222;
+    opacity: 0.8;
+    color: black;
     text-align: center;
     padding-top: 3px;
     z-index: 350;
@@ -537,21 +537,28 @@
     pointer-events: none;
 }
 
-.timeline-cpu-bars {
-    position: absolute;
-    top: 0;
+.timeline-utilization-strips {
     height: 19px;
-    z-index: 350;
-    width: 100%;
-    overflow: hidden;
+    padding: 1px 0;
 }
 
-.timeline-cpu-bars .timeline-graph-bar {
+.timeline-utilization-strip {
+    z-index: 350;
+    overflow: hidden;
+    flex: auto;
+    position: relative;
+}
+
+.timeline-utilization-strip .timeline-graph-bar {
     border-color: rgb(192, 192, 192);
     background-color: rgba(0, 0, 0, 0.1);
-    top: 4px;
-    bottom: 4px;
+    margin: 1.5px auto;
     height: auto;
+}
+
+.timeline-utilization-strip.gpu .timeline-graph-bar {
+    background-color: red;
+    border: none;
 }
 
 .timeline-cpu-curtain-left, .timeline-cpu-curtain-right {
