@@ -31,9 +31,9 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.CPUProfileView} cpuProfileView
+ * @param {WebInspector.FlameChartDataProvider} dataProvider
  */
-WebInspector.FlameChart = function(cpuProfileView)
+WebInspector.FlameChart = function(dataProvider)
 {
     WebInspector.View.call(this);
     this.registerRequiredCSS("flameChart.css");
@@ -58,7 +58,7 @@ WebInspector.FlameChart = function(cpuProfileView)
 
     this._entryInfo = this._chartContainer.createChild("div", "entry-info");
 
-    this._cpuProfileView = cpuProfileView;
+    this._dataProvider = dataProvider;
     this._windowLeft = 0.0;
     this._windowRight = 1.0;
     this._barHeight = 15;
@@ -71,6 +71,208 @@ WebInspector.FlameChart = function(cpuProfileView)
 
     if (!WebInspector.FlameChart._colorGenerator)
         WebInspector.FlameChart._colorGenerator = new WebInspector.FlameChart.ColorGenerator();
+}
+
+/**
+ * @constructor
+ */
+WebInspector.FlameChartDataProvider = function(cpuProfileView)
+{
+    this._cpuProfileView = cpuProfileView;
+}
+
+WebInspector.FlameChartDataProvider.prototype = {
+    /**
+     * @param {WebInspector.FlameChart.ColorGenerator} colorGenerator
+     * @return {Object}
+     */
+    timelineData: function(colorGenerator)
+    {
+        return this._timelineData || this._calculateTimelineData(colorGenerator);
+    },
+
+    /**
+     * @param {WebInspector.FlameChart.ColorGenerator} colorGenerator
+     * @return {Object}
+     */
+    _calculateTimelineData: function(colorGenerator)
+    {
+        if (!this._cpuProfileView.profileHead)
+            return null;
+
+        var samples = this._cpuProfileView.samples;
+        var idToNode = this._cpuProfileView._idToNode;
+        var gcNode = this._cpuProfileView._gcNode;
+        var samplesCount = samples.length;
+        var samplingInterval = this._cpuProfileView.samplingIntervalMs;
+
+        var index = 0;
+        var entries = /** @type {Array.<!WebInspector.FlameChart.Entry>} */ ([]);
+
+        var openIntervals = [];
+        var stackTrace = [];
+        var colorEntryIndexes = [];
+        var maxDepth = 5; // minimum stack depth for the case when we see no activity.
+        var depth = 0;
+
+        for (var sampleIndex = 0; sampleIndex < samplesCount; sampleIndex++) {
+            var node = idToNode[samples[sampleIndex]];
+            stackTrace.length = 0;
+            while (node) {
+                stackTrace.push(node);
+                node = node.parent;
+            }
+            stackTrace.pop(); // Remove (root) node
+
+            maxDepth = Math.max(maxDepth, depth);
+            depth = 0;
+            node = stackTrace.pop();
+            var intervalIndex;
+
+            // GC samples have no stack, so we just put GC node on top of the last recoreded sample.
+            if (node === gcNode) {
+                while (depth < openIntervals.length) {
+                    intervalIndex = openIntervals[depth].index;
+                    entries[intervalIndex].duration += samplingInterval;
+                    ++depth;
+                }
+                // If previous stack is also GC then just continue.
+                if (openIntervals.length > 0 && openIntervals.peekLast().node === node) {
+                    entries[intervalIndex].selfTime += samplingInterval;
+                    continue;
+                }
+            }
+
+            while (node && depth < openIntervals.length && node === openIntervals[depth].node) {
+                intervalIndex = openIntervals[depth].index;
+                entries[intervalIndex].duration += samplingInterval;
+                node = stackTrace.pop();
+                ++depth;
+            }
+            if (depth < openIntervals.length)
+                openIntervals.length = depth;
+            if (!node) {
+                entries[intervalIndex].selfTime += samplingInterval;
+                continue;
+            }
+
+            while (node) {
+                var colorPair = colorGenerator._colorPairForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
+                var indexesForColor = colorEntryIndexes[colorPair.index];
+                if (!indexesForColor)
+                    indexesForColor = colorEntryIndexes[colorPair.index] = [];
+
+                var entry = new WebInspector.FlameChart.Entry(colorPair, depth, samplingInterval, sampleIndex * samplingInterval, node);
+                indexesForColor.push(entries.length);
+                entries.push(entry);
+                openIntervals.push({node: node, index: index});
+                ++index;
+
+                node = stackTrace.pop();
+                ++depth;
+            }
+            entries[entries.length - 1].selfTime += samplingInterval;
+        }
+
+        var entryColorIndexes = new Uint16Array(entries.length);
+        var entryLevels = new Uint8Array(entries.length);
+        var entryTotalTimes = new Float32Array(entries.length);
+        var entryOffsets = new Float32Array(entries.length);
+        var entryTitles = new Array(entries.length);
+        var entryDeoptFlags = new Uint8Array(entries.length);
+
+        for (var i = 0; i < entries.length; ++i) {
+            var entry = entries[i];
+            entryColorIndexes[i] = colorPair.index;
+            entryLevels[i] = entry.depth;
+            entryTotalTimes[i] = entry.duration;
+            entryOffsets[i] = entry.startTime;
+            entryTitles[i] = entry.node.functionName;
+            var reason = entry.node.deoptReason;
+            entryDeoptFlags[i] = (reason && reason !== "no reason");
+        }
+
+        this._timelineData = {
+            maxStackDepth: Math.max(maxDepth, depth),
+            entries: entries,
+            totalTime: this._cpuProfileView.profileHead.totalTime,
+            entryColorIndexes: entryColorIndexes,
+            entryLevels: entryLevels,
+            entryTotalTimes: entryTotalTimes,
+            entryOffsets: entryOffsets,
+            colorEntryIndexes: colorEntryIndexes,
+            entryTitles: entryTitles,
+            entryDeoptFlags: entryDeoptFlags
+        };
+
+        return this._timelineData;
+    },
+
+    /**
+     * @param {number} ms
+     */
+    _millisecondsToString: function(ms)
+    {
+        if (ms === 0)
+            return "0";
+        if (ms < 1000)
+            return WebInspector.UIString("%.1f\u2009ms", ms);
+        return Number.secondsToString(ms / 1000, true);
+    },
+
+    /**
+     * @param {number} entryIndex
+     */
+    prepareHighlightedEntryInfo: function(entryIndex)
+    {
+        var entry = this._timelineData.entries[entryIndex];
+        if (!entry)
+            return null;
+        var node = entry.node;
+        if (!node)
+            return null;
+
+        var entryInfo = [];
+        function pushEntryInfoRow(title, text)
+        {
+            var row = {};
+            row.title = title;
+            row.text = text;
+            entryInfo.push(row);
+        }
+
+        pushEntryInfoRow(WebInspector.UIString("Name"), node.functionName);
+        var selfTime = this._millisecondsToString(entry.selfTime);
+        var totalTime = this._millisecondsToString(entry.duration);
+        pushEntryInfoRow(WebInspector.UIString("Self time"), selfTime);
+        pushEntryInfoRow(WebInspector.UIString("Total time"), totalTime);
+        if (node.url)
+            pushEntryInfoRow(WebInspector.UIString("URL"), node.url + ":" + node.lineNumber);
+        pushEntryInfoRow(WebInspector.UIString("Aggregated self time"), Number.secondsToString(node.selfTime / 1000, true));
+        pushEntryInfoRow(WebInspector.UIString("Aggregated total time"), Number.secondsToString(node.totalTime / 1000, true));
+        if (node.deoptReason && node.deoptReason !== "no reason")
+            pushEntryInfoRow(WebInspector.UIString("Not optimized"), node.deoptReason);
+
+        return entryInfo;
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {boolean}
+     */
+    canJumpToEntry: function(entryIndex)
+    {
+        return this._timelineData.entries[entryIndex].node.scriptId !== "0";
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {Object}
+     */
+    entryData: function(entryIndex)
+    {
+        return this._timelineData.entries[entryIndex].node;
+    }
 }
 
 /**
@@ -92,8 +294,9 @@ WebInspector.FlameChart.Calculator.prototype = {
             return Math.log(x) / Math.LN10;
         }
         this._decimalDigits = Math.max(0, -Math.floor(log10(flameChart._timelineGrid.gridSliceTime * 1.01)));
-        this._minimumBoundaries = flameChart._windowLeft * flameChart._timelineData.totalTime;
-        this._maximumBoundaries = flameChart._windowRight * flameChart._timelineData.totalTime;
+        var totalTime = flameChart._timelineData().totalTime;
+        this._minimumBoundaries = flameChart._windowLeft * totalTime;
+        this._maximumBoundaries = flameChart._windowRight * totalTime;
         this.paddingLeft = flameChart._paddingLeft;
         this._width = flameChart._canvas.width - this.paddingLeft;
         this._timeToPixel = this._width / this.boundarySpan();
@@ -101,33 +304,50 @@ WebInspector.FlameChart.Calculator.prototype = {
 
     /**
      * @param {number} time
+     * @return {number}
      */
     computePosition: function(time)
     {
         return (time - this._minimumBoundaries) * this._timeToPixel + this.paddingLeft;
     },
 
+    /**
+     * @param {number} value
+     * @return {string}
+     */
     formatTime: function(value)
     {
         var format = "%." + this._decimalDigits + "f\u2009ms";
         return WebInspector.UIString(format, value + this._minimumBoundaries);
     },
 
+    /**
+     * @return {number}
+     */
     maximumBoundary: function()
     {
         return this._maximumBoundaries;
     },
 
+    /**
+     * @return {number}
+     */
     minimumBoundary: function()
     {
         return this._minimumBoundaries;
     },
 
+    /**
+     * @return {number}
+     */
     zeroTime: function()
     {
         return 0;
     },
 
+    /**
+     * @return {number}
+     */
     boundarySpan: function()
     {
         return this._maximumBoundaries - this._minimumBoundaries;
@@ -149,38 +369,56 @@ WebInspector.FlameChart.OverviewCalculator.prototype = {
     _updateBoundaries: function(flameChart)
     {
         this._minimumBoundaries = 0;
-        this._maximumBoundaries = flameChart._timelineData.totalTime;
-        this._xScaleFactor = flameChart._canvas.width / flameChart._timelineData.totalTime;
+        var totalTime = flameChart._timelineData().totalTime;
+        this._maximumBoundaries = totalTime;
+        this._xScaleFactor = flameChart._canvas.width / totalTime;
     },
 
     /**
      * @param {number} time
+     * @return {number}
      */
     computePosition: function(time)
     {
         return (time - this._minimumBoundaries) * this._xScaleFactor;
     },
 
+    /**
+     * @param {number} value
+     * @return {string}
+     */
     formatTime: function(value)
     {
         return Number.secondsToString((value + this._minimumBoundaries) / 1000);
     },
 
+    /**
+     * @return {number}
+     */
     maximumBoundary: function()
     {
         return this._maximumBoundaries;
     },
 
+    /**
+     * @return {number}
+     */
     minimumBoundary: function()
     {
         return this._minimumBoundaries;
     },
 
+    /**
+     * @return {number}
+     */
     zeroTime: function()
     {
         return this._minimumBoundaries;
     },
 
+    /**
+     * @return {number}
+     */
     boundarySpan: function()
     {
         return this._maximumBoundaries - this._minimumBoundaries;
@@ -188,7 +426,7 @@ WebInspector.FlameChart.OverviewCalculator.prototype = {
 }
 
 WebInspector.FlameChart.Events = {
-    SelectedNode: "SelectedNode"
+    EntrySelected: "EntrySelected"
 }
 
 /**
@@ -260,6 +498,11 @@ WebInspector.FlameChart.Entry = function(colorPair, depth, duration, startTime, 
 }
 
 WebInspector.FlameChart.prototype = {
+    _timelineData: function()
+    {
+        return this._dataProvider.timelineData(WebInspector.FlameChart._colorGenerator);
+    },
+
     /**
      * @param {!number} timeLeft
      * @param {!number} timeRight
@@ -276,7 +519,7 @@ WebInspector.FlameChart.prototype = {
 
     _startCanvasDragging: function(event)
     {
-        if (!this._timelineData)
+        if (!this._timelineData())
             return false;
         this._isDragging = true;
         this._wasDragged = false;
@@ -310,124 +553,6 @@ WebInspector.FlameChart.prototype = {
         this._isDragging = false;
     },
 
-    _calculateTimelineData: function()
-    {
-        if (this._timelineData)
-            return this._timelineData;
-
-        if (!this._cpuProfileView.profileHead)
-            return null;
-
-        var samples = this._cpuProfileView.samples;
-        var idToNode = this._cpuProfileView._idToNode;
-        var gcNode = this._cpuProfileView._gcNode;
-        var samplesCount = samples.length;
-        var samplingInterval = this._cpuProfileView.samplingIntervalMs;
-
-        var index = 0;
-        var entries = /** @type {Array.<!WebInspector.FlameChart.Entry>} */ ([]);
-
-        var openIntervals = [];
-        var stackTrace = [];
-        var colorGenerator = WebInspector.FlameChart._colorGenerator;
-        var colorEntryIndexes = [];
-        var maxDepth = 5; // minimum stack depth for the case when we see no activity.
-        var depth = 0;
-
-        for (var sampleIndex = 0; sampleIndex < samplesCount; sampleIndex++) {
-            var node = idToNode[samples[sampleIndex]];
-            stackTrace.length = 0;
-            while (node) {
-                stackTrace.push(node);
-                node = node.parent;
-            }
-            stackTrace.pop(); // Remove (root) node
-
-            maxDepth = Math.max(maxDepth, depth);
-            depth = 0;
-            node = stackTrace.pop();
-            var intervalIndex;
-
-            // GC samples have no stack, so we just put GC node on top of the last recoreded sample.
-            if (node === gcNode) {
-                while (depth < openIntervals.length) {
-                    intervalIndex = openIntervals[depth].index;
-                    entries[intervalIndex].duration += samplingInterval;
-                    ++depth;
-                }
-                // If previous stack is also GC then just continue.
-                if (openIntervals.length > 0 && openIntervals.peekLast().node === node) {
-                    entries[intervalIndex].selfTime += samplingInterval;
-                    continue;
-                }
-            }
-
-            while (node && depth < openIntervals.length && node === openIntervals[depth].node) {
-                intervalIndex = openIntervals[depth].index;
-                entries[intervalIndex].duration += samplingInterval;
-                node = stackTrace.pop();
-                ++depth;
-            }
-            if (depth < openIntervals.length)
-                openIntervals.length = depth;
-            if (!node) {
-                entries[intervalIndex].selfTime += samplingInterval;
-                continue;
-            }
-
-            while (node) {
-                var colorPair = colorGenerator._colorPairForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
-                var indexesForColor = colorEntryIndexes[colorPair.index];
-                if (!indexesForColor)
-                    indexesForColor = colorEntryIndexes[colorPair.index] = [];
-
-                var entry = new WebInspector.FlameChart.Entry(colorPair, depth, samplingInterval, sampleIndex * samplingInterval, node);
-                indexesForColor.push(entries.length);
-                entries.push(entry);
-                openIntervals.push({node: node, index: index});
-                ++index;
-
-                node = stackTrace.pop();
-                ++depth;
-            }
-            entries[entries.length - 1].selfTime += samplingInterval;
-        }
-
-        this._maxStackDepth = Math.max(maxDepth, depth);
-
-        var entryColorIndexes = new Uint16Array(entries.length);
-        var entryLevels = new Uint8Array(entries.length);
-        var entryTotalTimes = new Float32Array(entries.length);
-        var entryOffsets = new Float32Array(entries.length);
-        var entryTitles = new Array(entries.length);
-        var entryDeoptFlags = new Uint8Array(entries.length);
-
-        for (var i = 0; i < entries.length; ++i) {
-            var entry = entries[i];
-            entryColorIndexes[i] = colorPair.index;
-            entryLevels[i] = entry.depth;
-            entryTotalTimes[i] = entry.duration;
-            entryOffsets[i] = entry.startTime;
-            entryTitles[i] = entry.node.functionName;
-            var reason = entry.node.deoptReason;
-            entryDeoptFlags[i] = (reason && reason !== "no reason");
-        }
-
-        this._timelineData = {
-            entries: entries,
-            totalTime: this._cpuProfileView.profileHead.totalTime,
-            entryColorIndexes: entryColorIndexes,
-            entryLevels: entryLevels,
-            entryTotalTimes: entryTotalTimes,
-            entryOffsets: entryOffsets,
-            colorEntryIndexes: colorEntryIndexes,
-            entryTitles: entryTitles,
-            entryDeoptFlags: entryDeoptFlags
-        };
-
-        return this._timelineData;
-    },
-
     _onMouseMove: function(event)
     {
         if (this._isDragging)
@@ -438,59 +563,13 @@ WebInspector.FlameChart.prototype = {
         if (this._highlightedEntryIndex === entryIndex)
             return;
 
-        if (entryIndex === -1 || this._timelineData.entries[entryIndex].node.scriptId === "0")
+        if (entryIndex === -1 || !this._dataProvider.canJumpToEntry(entryIndex))
             this._canvas.style.cursor = "default";
         else
             this._canvas.style.cursor = "pointer";
 
         this._highlightedEntryIndex = entryIndex;
         this._scheduleUpdate();
-    },
-
-    _millisecondsToString: function(ms)
-    {
-        if (ms === 0)
-            return "0";
-        if (ms < 1000)
-            return WebInspector.UIString("%.1f\u2009ms", ms);
-        return Number.secondsToString(ms / 1000, true);
-    },
-
-    _prepareHighlightedEntryInfo: function()
-    {
-        if (this._isDragging)
-            return null;
-        var entry = this._timelineData.entries[this._highlightedEntryIndex];
-        if (!entry)
-            return null;
-        var node = entry.node;
-        if (!node)
-            return null;
-
-        var entryInfo = [];
-        function pushEntryInfoRow(title, text)
-        {
-            var row = {};
-            row.title = title;
-            row.text = text;
-            entryInfo.push(row);
-        }
-
-        pushEntryInfoRow(WebInspector.UIString("Name"), node.functionName);
-        if (this._cpuProfileView.samples) {
-            var selfTime = this._millisecondsToString(entry.selfTime);
-            var totalTime = this._millisecondsToString(entry.duration);
-            pushEntryInfoRow(WebInspector.UIString("Self time"), selfTime);
-            pushEntryInfoRow(WebInspector.UIString("Total time"), totalTime);
-        }
-        if (node.url)
-            pushEntryInfoRow(WebInspector.UIString("URL"), node.url + ":" + node.lineNumber);
-        pushEntryInfoRow(WebInspector.UIString("Aggregated self time"), Number.secondsToString(node.selfTime / 1000, true));
-        pushEntryInfoRow(WebInspector.UIString("Aggregated total time"), Number.secondsToString(node.totalTime / 1000, true));
-        if (node.deoptReason && node.deoptReason !== "no reason")
-            pushEntryInfoRow(WebInspector.UIString("Not optimized"), node.deoptReason);
-
-        return entryInfo;
     },
 
     _onClick: function(e)
@@ -502,8 +581,8 @@ WebInspector.FlameChart.prototype = {
             return;
         if (this._highlightedEntryIndex === -1)
             return;
-        var node = this._timelineData.entries[this._highlightedEntryIndex].node;
-        this.dispatchEventToListeners(WebInspector.FlameChart.Events.SelectedNode, node);
+        var data = this._dataProvider.entryData(this._highlightedEntryIndex);
+        this.dispatchEventToListeners(WebInspector.FlameChart.Events.EntrySelected, data);
     },
 
     _onMouseWheel: function(e)
@@ -527,7 +606,7 @@ WebInspector.FlameChart.prototype = {
      */
     _coordinatesToEntryIndex: function(x, y)
     {
-        var timelineData = this._timelineData;
+        var timelineData = this._timelineData();
         if (!timelineData)
             return -1;
         var timelineEntries = timelineData.entries;
@@ -552,10 +631,10 @@ WebInspector.FlameChart.prototype = {
 
     _drawOverviewCanvas: function(width, height)
     {
-        if (!this._timelineData)
+        if (!this._timelineData())
             return;
 
-        var timelineEntries = this._timelineData.entries;
+        var timelineEntries = this._timelineData().entries;
 
         var drawData = new Uint8Array(width);
         var scaleFactor = width / this._totalTime;
@@ -578,7 +657,7 @@ WebInspector.FlameChart.prototype = {
 
         var context = this._overviewCanvas.getContext("2d");
 
-        var yScaleFactor = canvasHeight / (this._maxStackDepth * 1.1);
+        var yScaleFactor = canvasHeight / (this._timelineData().maxStackDepth * 1.1);
         context.lineWidth = 1;
         context.translate(0.5, 0.5);
         context.strokeStyle = "rgba(20,0,0,0.4)";
@@ -604,7 +683,7 @@ WebInspector.FlameChart.prototype = {
      */
     draw: function(width, height)
     {
-        var timelineData = this._calculateTimelineData();
+        var timelineData = this._timelineData();
         if (!timelineData)
             return;
 
@@ -621,16 +700,15 @@ WebInspector.FlameChart.prototype = {
         var pixelWindowLeft = this._pixelWindowLeft;
         var paddingLeft = this._paddingLeft;
         var minWidth = this._minWidth;
-
-        var entryTotalTimes = this._timelineData.entryTotalTimes;
-        var entryOffsets = this._timelineData.entryOffsets;
-        var entryLevels = this._timelineData.entryLevels;
-        var colorEntryIndexes = this._timelineData.colorEntryIndexes;
-        var entryTitles = this._timelineData.entryTitles;
-        var entryDeoptFlags = this._timelineData.entryDeoptFlags;
+        var entryTotalTimes = timelineData.entryTotalTimes;
+        var entryOffsets = timelineData.entryOffsets;
+        var entryLevels = timelineData.entryLevels;
+        var colorEntryIndexes = timelineData.colorEntryIndexes;
+        var entryTitles = timelineData.entryTitles;
+        var entryDeoptFlags = timelineData.entryDeoptFlags;
 
         var colorGenerator = WebInspector.FlameChart._colorGenerator;
-        var titleIndexes = new Uint32Array(this._timelineData.entryTotalTimes);
+        var titleIndexes = new Uint32Array(timelineData.entryTotalTimes);
         var lastTitleIndex = 0;
         var dotsWidth = context.measureText("\u2026").width;
         var textPaddingLeft = 2;
@@ -638,7 +716,7 @@ WebInspector.FlameChart.prototype = {
         var minTextWidth = this._minTextWidth;
 
         var marksField = [];
-        for (var i = 0; i < this._maxStackDepth; ++i)
+        for (var i = 0; i < timelineData.maxStackDepth; ++i)
             marksField.push(new Uint16Array(width));
 
         var barHeight = this._barHeight;
@@ -724,10 +802,12 @@ WebInspector.FlameChart.prototype = {
                 context.fillText(title, xText + textPaddingLeft, textBaseHeight - entryLevels[entryIndex] * barHeight);
         }
 
-        var entryInfo = this._prepareHighlightedEntryInfo();
         this._entryInfo.removeChildren();
-        if (entryInfo)
-            this._entryInfo.appendChild(this._buildEntryInfo(entryInfo));
+        if (!this._isDragging) {
+            var entryInfo = this._dataProvider.prepareHighlightedEntryInfo(this._highlightedEntryIndex);
+            if (entryInfo)
+                this._entryInfo.appendChild(this._buildEntryInfo(entryInfo));
+        }
     },
 
     _buildEntryInfo: function(entryInfo)
@@ -795,7 +875,7 @@ WebInspector.FlameChart.prototype = {
         this._windowRight = this._overviewGrid.windowRight();
         this._windowWidth = this._windowRight - this._windowLeft;
 
-        this._totalTime = this._timelineData.totalTime;
+        this._totalTime = this._timelineData().totalTime;
         this._timeWindowLeft = this._windowLeft * this._totalTime;
         this._timeWindowRight = this._windowRight * this._totalTime;
 
@@ -812,9 +892,7 @@ WebInspector.FlameChart.prototype = {
     update: function()
     {
         this._updateTimerId = 0;
-        if (!this._timelineData)
-            this._calculateTimelineData();
-        if (!this._timelineData)
+        if (!this._timelineData())
             return;
         this._updateBoundaries();
         this.draw(this._chartContainer.clientWidth, this._chartContainer.clientHeight);

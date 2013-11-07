@@ -398,14 +398,15 @@ WebInspector.CPUProfileView.prototype = {
     {
         if (this._flameChart)
             return;
-        this._flameChart = new WebInspector.FlameChart(this);
-        this._flameChart.addEventListener(WebInspector.FlameChart.Events.SelectedNode, this._onSelectedNode.bind(this));
+        var dataProvider = new WebInspector.FlameChartDataProvider(this);
+        this._flameChart = new WebInspector.FlameChart(dataProvider);
+        this._flameChart.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected.bind(this));
     },
 
     /**
      * @param {WebInspector.Event} event
      */
-    _onSelectedNode: function(event)
+    _onEntrySelected: function(event)
     {
         var node = event.data;
         if (!node || !node.scriptId)

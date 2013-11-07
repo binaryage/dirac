@@ -227,10 +227,16 @@ WebInspector.TimelineGrid.prototype = {
 WebInspector.TimelineGrid.Calculator = function() { }
 
 WebInspector.TimelineGrid.Calculator.prototype = {
-    /** @param {number} time */
-    computePosition: function(time) { },
+    /**
+     * @param {number} time
+     * @return {number}
+     */
+    computePosition: function(time) { return 0; },
 
-    /** @param {number} time */
+    /**
+     * @param {number} time
+     * @return {string}
+     */
     formatTime: function(time) { },
 
     /** @return {number} */
