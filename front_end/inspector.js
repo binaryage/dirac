@@ -873,6 +873,10 @@ WebInspector.inspect = function(payload, hints)
     }
 
     if (object.type === "function") {
+        /**
+         * @param {?Protocol.Error} error
+         * @param {DebuggerAgent.FunctionDetails} response
+         */
         function didGetDetails(error, response)
         {
             object.release();

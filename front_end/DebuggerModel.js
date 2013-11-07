@@ -667,7 +667,7 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.DebuggerModel.Location} rawLocation
+     * @param {WebInspector.DebuggerModel.Location|DebuggerAgent.Location} rawLocation
      * @return {?WebInspector.UILocation}
      */
     rawLocationToUILocation: function(rawLocation)

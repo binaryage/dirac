@@ -443,7 +443,7 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.UILocation} uiLocation
+     * @param {!WebInspector.UILocation} uiLocation
      * @param {boolean=} forceShowInPanel
      */
     showUILocation: function(uiLocation, forceShowInPanel)
@@ -1440,10 +1440,14 @@ WebInspector.SourcesPanel.prototype = {
     {
         if (!(target instanceof WebInspector.RemoteObject))
             return;
-        var remoteObject = /** @type {WebInspector.RemoteObject} */ (target);
+        var remoteObject = /** @type {!WebInspector.RemoteObject} */ (target);
         if (remoteObject.type !== "function")
             return;
 
+        /**
+         * @param {?Protocol.Error} error
+         * @param {DebuggerAgent.FunctionDetails} response
+         */
         function didGetDetails(error, response)
         {
             if (error) {
@@ -1451,9 +1455,11 @@ WebInspector.SourcesPanel.prototype = {
                 return;
             }
 
-            WebInspector.inspectorView.setCurrentPanel(this);
             var uiLocation = WebInspector.debuggerModel.rawLocationToUILocation(response.location);
-            this._showSourceLocation(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber);
+            if (!uiLocation)
+                return;
+
+            this.showUILocation(uiLocation, true);
         }
 
         function revealFunction()
