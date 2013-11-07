@@ -745,6 +745,9 @@ WebInspector.NetworkLogView.prototype = {
 
     _appendRequest: function(request)
     {
+        if (request.parsedURL.isDataURL())
+            return;
+
         this._requests.push(request);
 
         // In case of redirect request id is reassigned to a redirected
@@ -782,6 +785,8 @@ WebInspector.NetworkLogView.prototype = {
      */
     _refreshRequest: function(request)
     {
+        if (!this._requestsById[request.requestId])
+            return;
         this._staleRequests[request.requestId] = request;
         this._scheduleRefresh();
     },
