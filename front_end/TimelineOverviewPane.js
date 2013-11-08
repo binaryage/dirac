@@ -207,12 +207,8 @@ WebInspector.TimelineOverviewPane.prototype = {
      */
     zoomToFrame: function(frame)
     {
-        var frameOverview = /** @type WebInspector.TimelineFrameOverview */ (this._overviewControl);
-        var window = frameOverview.framePosition(frame);
-        if (!window)
-            return;
-
-        this._overviewGrid.setWindowPosition(window.start, window.end);
+        this.setWindowTimes(frame.startTime, frame.endTime);
+        this.dispatchEventToListeners(WebInspector.TimelineOverviewPane.Events.WindowChanged);
     },
 
     _onRecordAdded: function(event)
@@ -668,23 +664,18 @@ WebInspector.TimelineFrameOverview.prototype = {
 
     update: function()
     {
-        const minBarWidth = 4 * window.devicePixelRatio;
         this._resetCanvas();
-        this._framesPerBar = Math.max(1, this._frames.length * minBarWidth / this._canvas.width);
         this._barTimes = [];
-        var visibleFrames = this._aggregateFrames(this._framesPerBar);
 
+        const minBarWidth = 4 * window.devicePixelRatio;
+        var frameCount = this._frames.length;
+        var framesPerBar = Math.max(1, frameCount * minBarWidth / this._canvas.width);
+        var visibleFrames = this._aggregateFrames(this._frames, framesPerBar);
+        var windowHeight = this._canvas.height;
         const paddingTop = 4 * window.devicePixelRatio;
-
-        // Optimize appearance for 30fps. However, if at least half frames won't fit at this scale,
-        // fall back to using autoscale.
-        const targetFPS = 30;
-        var fullBarLength = 1.0 / targetFPS;
-        if (fullBarLength < this._medianFrameLength)
-            fullBarLength = Math.min(this._medianFrameLength * 2, this._maxFrameLength);
-
-        var scale = (this._canvas.height - paddingTop) / fullBarLength;
-        this._renderBars(visibleFrames, scale);
+        var scale = (windowHeight - paddingTop) / this._computeTargetFrameLength(visibleFrames);
+        this._renderBars(visibleFrames, scale, windowHeight);
+        this._drawFPSMarks(scale, windowHeight);
     },
 
     /**
@@ -695,56 +686,63 @@ WebInspector.TimelineFrameOverview.prototype = {
         this._frames.push(frame);
     },
 
-    framePosition: function(frame)
-    {
-        var frameNumber = this._frames.indexOf(frame);
-        if (frameNumber < 0)
-            return;
-        var barNumber = Math.floor(frameNumber / this._framesPerBar);
-        var firstBar = this._framesPerBar > 1 ? barNumber : Math.max(barNumber - 1, 0);
-        var lastBar = this._framesPerBar > 1 ? barNumber : Math.min(barNumber + 1, this._barTimes.length - 1);
-        return {
-            start: Math.ceil(this._barNumberToScreenPosition(firstBar) - this._actualPadding / 2),
-            end: Math.floor(this._barNumberToScreenPosition(lastBar + 1) - this._actualPadding / 2)
-        }
-    },
 
     /**
+     * @param {Array.<WebInspector.TimelineFrame>} frames
      * @param {number} framesPerBar
+     * @return {Array.<WebInspector.TimelineFrame>}
      */
-    _aggregateFrames: function(framesPerBar)
+    _aggregateFrames: function(frames, framesPerBar)
     {
         var visibleFrames = [];
-        var durations = [];
-
-        this._maxFrameLength = 0;
-
-        for (var barNumber = 0, currentFrame = 0; currentFrame < this._frames.length; ++barNumber) {
-            var barStartTime = this._frames[currentFrame].startTime;
+        for (var barNumber = 0, currentFrame = 0; currentFrame < frames.length; ++barNumber) {
+            var barStartTime = frames[currentFrame].startTime;
             var longestFrame = null;
+            var longestDuration = 0;
 
-            for (var lastFrame = Math.min(Math.floor((barNumber + 1) * framesPerBar), this._frames.length);
+            for (var lastFrame = Math.min(Math.floor((barNumber + 1) * framesPerBar), frames.length);
                  currentFrame < lastFrame; ++currentFrame) {
-                if (!longestFrame || longestFrame.duration < this._frames[currentFrame].duration)
-                    longestFrame = this._frames[currentFrame];
+                var duration = frames[currentFrame].duration;
+                if (!longestFrame || longestDuration < duration) {
+                    longestFrame = frames[currentFrame];
+                    longestDuration = duration;
+                }
             }
-            var barEndTime = this._frames[currentFrame - 1].endTime;
+            var barEndTime = frames[currentFrame - 1].endTime;
             if (longestFrame) {
-                this._maxFrameLength = Math.max(this._maxFrameLength, longestFrame.duration);
                 visibleFrames.push(longestFrame);
                 this._barTimes.push({ startTime: barStartTime, endTime: barEndTime });
-                durations.push(longestFrame.duration);
             }
         }
-        this._medianFrameLength = durations.qselect(Math.floor(durations.length / 2));
         return visibleFrames;
     },
 
     /**
      * @param {Array.<WebInspector.TimelineFrame>} frames
-     * @param {number} scale
+     * @return {number}
      */
-    _renderBars: function(frames, scale)
+    _computeTargetFrameLength: function(frames)
+    {
+        var durations = frames.select("duration");
+        var medianFrameLength = durations.qselect(Math.floor(durations.length / 2));
+
+        // Optimize appearance for 30fps. However, if at least half frames won't fit at this scale,
+        // fall back to using autoscale.
+        const targetFPS = 30;
+        var result = 1.0 / targetFPS;
+        if (result >= medianFrameLength)
+            return result;
+
+        var maxFrameLength = Math.max.apply(Math, durations);
+        return Math.min(medianFrameLength * 2, maxFrameLength);
+    },
+
+    /**
+     * @param {Array.<WebInspector.TimelineFrame>} frames
+     * @param {number} scale
+     * @param {number} windowHeight
+     */
+    _renderBars: function(frames, scale, windowHeight)
     {
         const maxPadding = 5 * window.devicePixelRatio;
         this._actualOuterBarWidth = Math.min((this._canvas.width - 2 * this._outerPadding) / frames.length, this._maxInnerBarWidth + maxPadding);
@@ -752,9 +750,7 @@ WebInspector.TimelineFrameOverview.prototype = {
 
         var barWidth = this._actualOuterBarWidth - this._actualPadding;
         for (var i = 0; i < frames.length; ++i)
-            this._renderBar(this._barNumberToScreenPosition(i), barWidth, frames[i], scale);
-
-        this._drawFPSMarks(scale);
+            this._renderBar(this._barNumberToScreenPosition(i), barWidth, windowHeight, frames[i], scale);
     },
 
     /**
@@ -767,8 +763,9 @@ WebInspector.TimelineFrameOverview.prototype = {
 
     /**
      * @param {number} scale
+     * @param {number} height
      */
-    _drawFPSMarks: function(scale)
+    _drawFPSMarks: function(scale, height)
     {
         const fpsMarks = [30, 60];
 
@@ -787,7 +784,7 @@ WebInspector.TimelineFrameOverview.prototype = {
         for (var i = 0; i < fpsMarks.length; ++i) {
             var fps = fpsMarks[i];
             // Draw lines one pixel above they need to be, so 60pfs line does not cross most of the frames tops.
-            var y = this._canvas.height - Math.floor(1.0 / fps * scale) - 0.5;
+            var y = height - Math.floor(1.0 / fps * scale) - 0.5;
             var label = WebInspector.UIString("%d\u2009fps", fps);
             var labelWidth = this._context.measureText(label).width + 2 * labelPadding;
             var labelX = this._canvas.width;
@@ -795,7 +792,7 @@ WebInspector.TimelineFrameOverview.prototype = {
             if (!i && labelTopMargin < y - lineHeight)
                 labelOffsetY = -lineHeight; // Labels are going to be over their grid lines.
             var labelY = y + labelOffsetY;
-            if (labelY < labelTopMargin || labelY + lineHeight > this._canvas.height)
+            if (labelY < labelTopMargin || labelY + lineHeight > height)
                 break; // No space for the label, so no line as well.
 
             this._context.moveTo(0, y);
@@ -812,7 +809,14 @@ WebInspector.TimelineFrameOverview.prototype = {
         this._context.restore();
     },
 
-    _renderBar: function(left, width, frame, scale)
+    /**
+     * @param {number} left
+     * @param {number} width
+     * @param {number} windowHeight
+     * @param {WebInspector.TimelineFrame} frame
+     * @param {number} scale
+     */
+    _renderBar: function(left, width, windowHeight, frame, scale)
     {
         var categories = Object.keys(WebInspector.TimelinePresentationModel.categories());
         if (!categories.length)
@@ -820,7 +824,7 @@ WebInspector.TimelineFrameOverview.prototype = {
         var x = Math.floor(left) + 0.5;
         width = Math.floor(width);
 
-        for (var i = 0, bottomOffset = this._canvas.height; i < categories.length; ++i) {
+        for (var i = 0, bottomOffset = windowHeight; i < categories.length; ++i) {
             var category = categories[i];
             var duration = frame.timeByCategory[category];
 
@@ -841,11 +845,11 @@ WebInspector.TimelineFrameOverview.prototype = {
             this._context.stroke();
             this._context.restore();
 
-            bottomOffset -= height - 1;
+            bottomOffset -= height;
         }
         // Draw a contour for the total frame time.
-        var y0 = Math.floor(this._canvas.height - frame.duration * scale) + 0.5;
-        var y1 = this._canvas.height + 0.5;
+        var y0 = Math.floor(windowHeight - frame.duration * scale) + 0.5;
+        var y1 = windowHeight + 0.5;
 
         this._context.strokeStyle = "rgba(90, 90, 90, 0.3)";
         this._context.beginPath();
