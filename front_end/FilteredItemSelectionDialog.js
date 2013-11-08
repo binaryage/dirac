@@ -51,6 +51,7 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
 
     this._promptElement = this.element.createChild("input", "monospace");
     this._promptElement.addEventListener("input", this._onInput.bind(this), false);
+    this._promptElement.addEventListener("blur", this._onBlur.bind(this), false);
     this._promptElement.type = "text";
     this._promptElement.setAttribute("spellcheck", "false");
 
@@ -245,6 +246,11 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
                 this._selectedIndexInFiltered = 0;
             this._updateSelection(this._selectedIndexInFiltered, false);
         }
+    },
+
+    _onBlur: function(event)
+    {
+        this.focus();
     },
 
     _onInput: function(event)
