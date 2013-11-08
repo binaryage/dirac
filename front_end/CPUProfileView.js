@@ -384,6 +384,10 @@ WebInspector.CPUProfileView.prototype = {
         return (this._searchResults && this._currentSearchResultIndex === (this._searchResults.length - 1));
     },
 
+    currentSearchResultIndex: function() {
+        return this._currentSearchResultIndex;
+    },
+
     _jumpToSearchResult: function(index)
     {
         var searchResult = this._searchResults[index];

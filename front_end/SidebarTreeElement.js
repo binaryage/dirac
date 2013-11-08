@@ -153,23 +153,6 @@ WebInspector.SidebarTreeElement.prototype = {
         this.refreshTitles();
     },
 
-    get bubbleText()
-    {
-        return this._bubbleText;
-    },
-
-    set bubbleText(x)
-    {
-        if (!this.bubbleElement) {
-            this.bubbleElement = document.createElement("div");
-            this.bubbleElement.className = "bubble";
-            this.statusElement.appendChild(this.bubbleElement);
-        }
-
-        this._bubbleText = x;
-        this.bubbleElement.textContent = x;
-    },
-
     set wait(x)
     {
         if (x)
