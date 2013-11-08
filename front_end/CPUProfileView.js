@@ -402,7 +402,7 @@ WebInspector.CPUProfileView.prototype = {
     {
         if (this._flameChart)
             return;
-        var dataProvider = new WebInspector.FlameChartDataProvider(this);
+        var dataProvider = new WebInspector.CPUFlameChartDataProvider(this);
         this._flameChart = new WebInspector.FlameChart(dataProvider);
         this._flameChart.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected.bind(this));
     },
@@ -922,3 +922,231 @@ WebInspector.CPUProfileHeader.prototype = {
 
     __proto__: WebInspector.ProfileHeader.prototype
 }
+
+/**
+ * @constructor
+ * @implements {WebInspector.FlameChartDataProvider}
+ */
+WebInspector.CPUFlameChartDataProvider = function(cpuProfileView)
+{
+    WebInspector.FlameChartDataProvider.call(this);
+    this._cpuProfileView = cpuProfileView;
+}
+
+WebInspector.CPUFlameChartDataProvider.prototype = {
+    /**
+     * @param {WebInspector.FlameChart.ColorGenerator} colorGenerator
+     * @return {Object}
+     */
+    timelineData: function(colorGenerator)
+    {
+        return this._timelineData || this._calculateTimelineData(colorGenerator);
+    },
+
+    /**
+     * @param {WebInspector.FlameChart.ColorGenerator} colorGenerator
+     * @return {Object}
+     */
+    _calculateTimelineData: function(colorGenerator)
+    {
+        if (!this._cpuProfileView.profileHead)
+            return null;
+
+        var samples = this._cpuProfileView.samples;
+        var idToNode = this._cpuProfileView._idToNode;
+        var gcNode = this._cpuProfileView._gcNode;
+        var samplesCount = samples.length;
+        var samplingInterval = this._cpuProfileView.samplingIntervalMs;
+
+        var index = 0;
+
+        var openIntervals = [];
+        var stackTrace = [];
+        var colorEntryIndexes = [];
+        var maxDepth = 5; // minimum stack depth for the case when we see no activity.
+        var depth = 0;
+
+        /**
+         * @constructor
+         * @param {!Object} colorPair
+         * @param {!number} depth
+         * @param {!number} duration
+         * @param {!number} startTime
+         * @param {Object} node
+         */
+        function ChartEntry(colorPair, depth, duration, startTime, node)
+        {
+            this.colorPair = colorPair;
+            this.depth = depth;
+            this.duration = duration;
+            this.startTime = startTime;
+            this.node = node;
+            this.selfTime = 0;
+        }
+        var entries = /** @type {Array.<!ChartEntry>} */ ([]);
+
+        for (var sampleIndex = 0; sampleIndex < samplesCount; sampleIndex++) {
+            var node = idToNode[samples[sampleIndex]];
+            stackTrace.length = 0;
+            while (node) {
+                stackTrace.push(node);
+                node = node.parent;
+            }
+            stackTrace.pop(); // Remove (root) node
+
+            maxDepth = Math.max(maxDepth, depth);
+            depth = 0;
+            node = stackTrace.pop();
+            var intervalIndex;
+
+            // GC samples have no stack, so we just put GC node on top of the last recoreded sample.
+            if (node === gcNode) {
+                while (depth < openIntervals.length) {
+                    intervalIndex = openIntervals[depth].index;
+                    entries[intervalIndex].duration += samplingInterval;
+                    ++depth;
+                }
+                // If previous stack is also GC then just continue.
+                if (openIntervals.length > 0 && openIntervals.peekLast().node === node) {
+                    entries[intervalIndex].selfTime += samplingInterval;
+                    continue;
+                }
+            }
+
+            while (node && depth < openIntervals.length && node === openIntervals[depth].node) {
+                intervalIndex = openIntervals[depth].index;
+                entries[intervalIndex].duration += samplingInterval;
+                node = stackTrace.pop();
+                ++depth;
+            }
+            if (depth < openIntervals.length)
+                openIntervals.length = depth;
+            if (!node) {
+                entries[intervalIndex].selfTime += samplingInterval;
+                continue;
+            }
+
+            while (node) {
+                var colorPair = colorGenerator._colorPairForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
+                var indexesForColor = colorEntryIndexes[colorPair.index];
+                if (!indexesForColor)
+                    indexesForColor = colorEntryIndexes[colorPair.index] = [];
+
+                var entry = new ChartEntry(colorPair, depth, samplingInterval, sampleIndex * samplingInterval, node);
+                indexesForColor.push(entries.length);
+                entries.push(entry);
+                openIntervals.push({node: node, index: index});
+                ++index;
+
+                node = stackTrace.pop();
+                ++depth;
+            }
+            entries[entries.length - 1].selfTime += samplingInterval;
+        }
+
+        var entryNodes = new Array(entries.length);
+        var entryColorIndexes = new Uint16Array(entries.length);
+        var entryLevels = new Uint8Array(entries.length);
+        var entryTotalTimes = new Float32Array(entries.length);
+        var entrySelfTimes = new Float32Array(entries.length);
+        var entryOffsets = new Float32Array(entries.length);
+        var entryTitles = new Array(entries.length);
+        var entryDeoptFlags = new Uint8Array(entries.length);
+
+        for (var i = 0; i < entries.length; ++i) {
+            var entry = entries[i];
+            entryNodes[i] = entry.node;
+            entryColorIndexes[i] = colorPair.index;
+            entryLevels[i] = entry.depth;
+            entryTotalTimes[i] = entry.duration;
+            entrySelfTimes[i] = entry.selfTime;
+            entryOffsets[i] = entry.startTime;
+            entryTitles[i] = entry.node.functionName;
+            var reason = entry.node.deoptReason;
+            entryDeoptFlags[i] = (reason && reason !== "no reason");
+        }
+
+        this._timelineData = {
+            maxStackDepth: Math.max(maxDepth, depth),
+            totalTime: this._cpuProfileView.profileHead.totalTime,
+            entryNodes: entryNodes,
+            entryColorIndexes: entryColorIndexes,
+            entryLevels: entryLevels,
+            entryTotalTimes: entryTotalTimes,
+            entrySelfTimes: entrySelfTimes,
+            entryOffsets: entryOffsets,
+            colorEntryIndexes: colorEntryIndexes,
+            entryTitles: entryTitles,
+            entryDeoptFlags: entryDeoptFlags
+        };
+
+        return this._timelineData;
+    },
+
+    /**
+     * @param {number} ms
+     */
+    _millisecondsToString: function(ms)
+    {
+        if (ms === 0)
+            return "0";
+        if (ms < 1000)
+            return WebInspector.UIString("%.1f\u2009ms", ms);
+        return Number.secondsToString(ms / 1000, true);
+    },
+
+    /**
+     * @param {number} entryIndex
+     */
+    prepareHighlightedEntryInfo: function(entryIndex)
+    {
+        var timelineData = this._timelineData;
+        var node = timelineData.entryNodes[entryIndex];
+        if (!node)
+            return null;
+
+        var entryInfo = [];
+        function pushEntryInfoRow(title, text)
+        {
+            var row = {};
+            row.title = title;
+            row.text = text;
+            entryInfo.push(row);
+        }
+
+        pushEntryInfoRow(WebInspector.UIString("Name"), timelineData.entryTitles[entryIndex]);
+        var selfTime = this._millisecondsToString(timelineData.entrySelfTimes[entryIndex]);
+        var totalTime = this._millisecondsToString(timelineData.entryTotalTimes[entryIndex]);
+        pushEntryInfoRow(WebInspector.UIString("Self time"), selfTime);
+        pushEntryInfoRow(WebInspector.UIString("Total time"), totalTime);
+        if (node.url)
+            pushEntryInfoRow(WebInspector.UIString("URL"), node.url + ":" + node.lineNumber);
+        pushEntryInfoRow(WebInspector.UIString("Aggregated self time"), Number.secondsToString(node.selfTime / 1000, true));
+        pushEntryInfoRow(WebInspector.UIString("Aggregated total time"), Number.secondsToString(node.totalTime / 1000, true));
+        if (node.deoptReason && node.deoptReason !== "no reason")
+            pushEntryInfoRow(WebInspector.UIString("Not optimized"), node.deoptReason);
+
+        return entryInfo;
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {boolean}
+     */
+    canJumpToEntry: function(entryIndex)
+    {
+        return this._timelineData.entryNodes[entryIndex].scriptId !== "0";
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {Object}
+     */
+    entryData: function(entryIndex)
+    {
+        return this._timelineData.entryNodes[entryIndex];
+    },
+
+    __proto__: WebInspector.FlameChartDataProvider
+}
+
