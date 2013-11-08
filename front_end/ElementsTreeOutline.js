@@ -2392,8 +2392,8 @@ WebInspector.ElementsTreeUpdater.prototype = {
         var hidePanelWhileUpdating = this._recentlyModifiedNodes.size() > 10;
         if (hidePanelWhileUpdating) {
             var treeOutlineContainerElement = this._treeOutline.element.parentNode;
-            this._treeOutline.element.addStyleClass("hidden");
             var originalScrollTop = treeOutlineContainerElement ? treeOutlineContainerElement.scrollTop : 0;
+            this._treeOutline.element.addStyleClass("hidden");
         }
 
         var nodes = this._recentlyModifiedNodes.keys();
