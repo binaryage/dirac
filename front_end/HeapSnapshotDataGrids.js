@@ -294,11 +294,6 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
     updateVisibleNodes: function()
     {
         var scrollTop = this.scrollContainer.scrollTop;
-
-        var viewPortHeight = this.scrollContainer.offsetHeight;
-
-        this._removePaddingRows();
-
         var children = this._topLevelNodes;
 
         var i = 0;
@@ -313,12 +308,22 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
             ++i;
         }
 
+        this._addVisibleNodes(i, scrollTop - topPadding, topPadding);
+    },
+
+    _addVisibleNodes: function(firstVisibleNodeIndex, firstNodeHiddenHeight, topPadding)
+    {
+        var viewPortHeight = this.scrollContainer.offsetHeight;
+        this._removePaddingRows();
+
+        var children = this._topLevelNodes;
         var selectedNode = this.selectedNode;
 
         this.rootNode().removeChildren();
         // The height of the view port + invisible top part.
-        var heightToFill = viewPortHeight + (scrollTop - topPadding);
+        var heightToFill = viewPortHeight + firstNodeHiddenHeight;
         var filledHeight = 0;
+        var i = firstVisibleNodeIndex;
         while (i < children.length && filledHeight < heightToFill) {
             if (children[i].revealed) {
                 this.rootNode().appendChild(children[i]);
@@ -343,6 +348,25 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
                 this.selectedNode = selectedNode;
             }
         }
+    },
+
+    _revealTopLevelNode: function(nodeToReveal)
+    {
+        var children = this._topLevelNodes;
+
+        var i = 0;
+        var topPadding = 0;
+        while (i < children.length) {
+            if (children[i] === nodeToReveal)
+                break;
+            if (children[i].revealed) {
+                var newTop = topPadding + children[i].nodeHeight();
+                topPadding = newTop;
+            }
+            ++i;
+        }
+
+        this._addVisibleNodes(i, 0, topPadding);
     },
 
     appendTopLevelNode: function(node)
@@ -608,6 +632,11 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
             for (var i = 0; i < constructorNodes.length; i++) {
                 var parent = constructorNodes[i];
                 if (parent._name === className) {
+                    if (!parent.dataGrid) {
+                        // Make sure Constructor node is within the view port and added
+                        // to the data grid
+                        this._revealTopLevelNode(parent);
+                    }
                     parent.revealNodeBySnapshotObjectId(parseInt(id, 10));
                     return;
                 }
