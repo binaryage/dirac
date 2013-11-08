@@ -107,13 +107,31 @@ WebInspector.FlameChartDataProvider.prototype = {
         var samplingInterval = this._cpuProfileView.samplingIntervalMs;
 
         var index = 0;
-        var entries = /** @type {Array.<!WebInspector.FlameChart.Entry>} */ ([]);
 
         var openIntervals = [];
         var stackTrace = [];
         var colorEntryIndexes = [];
         var maxDepth = 5; // minimum stack depth for the case when we see no activity.
         var depth = 0;
+
+        /**
+         * @constructor
+         * @param {!Object} colorPair
+         * @param {!number} depth
+         * @param {!number} duration
+         * @param {!number} startTime
+         * @param {Object} node
+         */
+        function ChartEntry(colorPair, depth, duration, startTime, node)
+        {
+            this.colorPair = colorPair;
+            this.depth = depth;
+            this.duration = duration;
+            this.startTime = startTime;
+            this.node = node;
+            this.selfTime = 0;
+        }
+        var entries = /** @type {Array.<!ChartEntry>} */ ([]);
 
         for (var sampleIndex = 0; sampleIndex < samplesCount; sampleIndex++) {
             var node = idToNode[samples[sampleIndex]];
@@ -162,7 +180,7 @@ WebInspector.FlameChartDataProvider.prototype = {
                 if (!indexesForColor)
                     indexesForColor = colorEntryIndexes[colorPair.index] = [];
 
-                var entry = new WebInspector.FlameChart.Entry(colorPair, depth, samplingInterval, sampleIndex * samplingInterval, node);
+                var entry = new ChartEntry(colorPair, depth, samplingInterval, sampleIndex * samplingInterval, node);
                 indexesForColor.push(entries.length);
                 entries.push(entry);
                 openIntervals.push({node: node, index: index});
@@ -174,18 +192,22 @@ WebInspector.FlameChartDataProvider.prototype = {
             entries[entries.length - 1].selfTime += samplingInterval;
         }
 
+        var entryNodes = new Array(entries.length);
         var entryColorIndexes = new Uint16Array(entries.length);
         var entryLevels = new Uint8Array(entries.length);
         var entryTotalTimes = new Float32Array(entries.length);
+        var entrySelfTimes = new Float32Array(entries.length);
         var entryOffsets = new Float32Array(entries.length);
         var entryTitles = new Array(entries.length);
         var entryDeoptFlags = new Uint8Array(entries.length);
 
         for (var i = 0; i < entries.length; ++i) {
             var entry = entries[i];
+            entryNodes[i] = entry.node;
             entryColorIndexes[i] = colorPair.index;
             entryLevels[i] = entry.depth;
             entryTotalTimes[i] = entry.duration;
+            entrySelfTimes[i] = entry.selfTime;
             entryOffsets[i] = entry.startTime;
             entryTitles[i] = entry.node.functionName;
             var reason = entry.node.deoptReason;
@@ -194,11 +216,12 @@ WebInspector.FlameChartDataProvider.prototype = {
 
         this._timelineData = {
             maxStackDepth: Math.max(maxDepth, depth),
-            entries: entries,
             totalTime: this._cpuProfileView.profileHead.totalTime,
+            entryNodes: entryNodes,
             entryColorIndexes: entryColorIndexes,
             entryLevels: entryLevels,
             entryTotalTimes: entryTotalTimes,
+            entrySelfTimes: entrySelfTimes,
             entryOffsets: entryOffsets,
             colorEntryIndexes: colorEntryIndexes,
             entryTitles: entryTitles,
@@ -225,10 +248,8 @@ WebInspector.FlameChartDataProvider.prototype = {
      */
     prepareHighlightedEntryInfo: function(entryIndex)
     {
-        var entry = this._timelineData.entries[entryIndex];
-        if (!entry)
-            return null;
-        var node = entry.node;
+        var timelineData = this._timelineData;
+        var node = timelineData.entryNodes[entryIndex];
         if (!node)
             return null;
 
@@ -241,9 +262,9 @@ WebInspector.FlameChartDataProvider.prototype = {
             entryInfo.push(row);
         }
 
-        pushEntryInfoRow(WebInspector.UIString("Name"), node.functionName);
-        var selfTime = this._millisecondsToString(entry.selfTime);
-        var totalTime = this._millisecondsToString(entry.duration);
+        pushEntryInfoRow(WebInspector.UIString("Name"), timelineData.entryTitles[entryIndex]);
+        var selfTime = this._millisecondsToString(timelineData.entrySelfTimes[entryIndex]);
+        var totalTime = this._millisecondsToString(timelineData.entryTotalTimes[entryIndex]);
         pushEntryInfoRow(WebInspector.UIString("Self time"), selfTime);
         pushEntryInfoRow(WebInspector.UIString("Total time"), totalTime);
         if (node.url)
@@ -262,7 +283,7 @@ WebInspector.FlameChartDataProvider.prototype = {
      */
     canJumpToEntry: function(entryIndex)
     {
-        return this._timelineData.entries[entryIndex].node.scriptId !== "0";
+        return this._timelineData.entryNodes[entryIndex].scriptId !== "0";
     },
 
     /**
@@ -271,7 +292,7 @@ WebInspector.FlameChartDataProvider.prototype = {
      */
     entryData: function(entryIndex)
     {
-        return this._timelineData.entries[entryIndex].node;
+        return this._timelineData.entryNodes[entryIndex];
     }
 }
 
@@ -479,24 +500,6 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
     }
 }
 
-/**
- * @constructor
- * @param {!Object} colorPair
- * @param {!number} depth
- * @param {!number} duration
- * @param {!number} startTime
- * @param {Object} node
- */
-WebInspector.FlameChart.Entry = function(colorPair, depth, duration, startTime, node)
-{
-    this.colorPair = colorPair;
-    this.depth = depth;
-    this.duration = duration;
-    this.startTime = startTime;
-    this.node = node;
-    this.selfTime = 0;
-}
-
 WebInspector.FlameChart.prototype = {
     _timelineData: function()
     {
@@ -609,15 +612,18 @@ WebInspector.FlameChart.prototype = {
         var timelineData = this._timelineData();
         if (!timelineData)
             return -1;
-        var timelineEntries = timelineData.entries;
         var cursorTime = (x + this._pixelWindowLeft - this._paddingLeft) * this._pixelToTime;
         var cursorLevel = Math.floor((this._canvas.height / window.devicePixelRatio - y) / this._barHeight);
 
-        for (var i = 0; i < timelineEntries.length; ++i) {
-            if (cursorTime < timelineEntries[i].startTime)
+        var entryOffsets = timelineData.entryOffsets;
+        var entryTotalTimes = timelineData.entryTotalTimes;
+        var entryLevels = timelineData.entryLevels;
+        var length = entryOffsets.length;
+        for (var i = 0; i < length; ++i) {
+            if (cursorTime < entryOffsets[i])
                 return -1;
-            if (cursorTime < (timelineEntries[i].startTime + timelineEntries[i].duration)
-                && cursorLevel === timelineEntries[i].depth)
+            if (cursorTime < (entryOffsets[i] + entryTotalTimes[i])
+                && cursorLevel === entryLevels[i])
                 return i;
         }
         return -1;
@@ -631,20 +637,23 @@ WebInspector.FlameChart.prototype = {
 
     _drawOverviewCanvas: function(width, height)
     {
-        if (!this._timelineData())
+        var timelineData = this._timelineData();
+        if (!timelineData)
             return;
 
-        var timelineEntries = this._timelineData().entries;
+        var entryOffsets = timelineData.entryOffsets;
+        var entryTotalTimes = timelineData.entryTotalTimes;
+        var entryLevels = timelineData.entryLevels;
+        var length = entryOffsets.length;
 
         var drawData = new Uint8Array(width);
         var scaleFactor = width / this._totalTime;
 
-        for (var entryIndex = 0; entryIndex < timelineEntries.length; ++entryIndex) {
-            var entry = timelineEntries[entryIndex];
-            var start = Math.floor(entry.startTime * scaleFactor);
-            var finish = Math.floor((entry.startTime + entry.duration) * scaleFactor);
+        for (var entryIndex = 0; entryIndex < length; ++entryIndex) {
+            var start = Math.floor(entryOffsets[i] * scaleFactor);
+            var finish = Math.floor((entryOffsets[i] + entryTotalTimes[i]) * scaleFactor);
             for (var x = start; x < finish; ++x)
-                drawData[x] = Math.max(drawData[x], entry.depth + 1);
+                drawData[x] = Math.max(drawData[x], entryLevels[i] + 1);
         }
 
         var ratio = window.devicePixelRatio;
