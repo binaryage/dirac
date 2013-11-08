@@ -44,9 +44,6 @@ WebInspector.Drawer = function(inspectorView)
     this._drawerContentsElement = this.element.createChild("div");
     this._drawerContentsElement.id = "drawer-contents";
 
-    this._footerElementContainer = this.element.createChild("div", "status-bar hidden");
-    this._footerElementContainer.id = "drawer-footer";
-
     this._toggleDrawerButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show drawer."), "console-status-bar-item");
     this._toggleDrawerButton.addEventListener("click", this.toggle, this);
 
@@ -191,7 +188,6 @@ WebInspector.Drawer.prototype = {
      */
     _innerShow: function(immediately)
     {
-        WebInspector.searchController.cancelSearch();
         this._immediatelyFinishAnimation();
 
         if (this._toggleDrawerButton.toggled)
@@ -234,7 +230,6 @@ WebInspector.Drawer.prototype = {
      */
     hide: function(immediately)
     {
-        WebInspector.searchController.cancelSearch();
         this._immediatelyFinishAnimation();
 
         if (!this._toggleDrawerButton.toggled)
@@ -334,32 +329,6 @@ WebInspector.Drawer.prototype = {
         delete this._statusBarDragOffset;
 
         event.consume();
-    },
-
-    /**
-     * @param {Element} element
-     */
-    setFooterElement: function(element)
-    {
-        if (element) {
-            this._footerElementContainer.removeStyleClass("hidden");
-            this._footerElementContainer.appendChild(element);
-            this._drawerContentsElement.style.bottom = this._footerElementContainer.offsetHeight + "px";
-        } else {
-            this._footerElementContainer.addStyleClass("hidden");
-            this._footerElementContainer.removeChildren();
-            this._drawerContentsElement.style.bottom = 0;
-        }
-        this._tabbedPane.doResize();
-    },
-
-    /**
-     * @returns {WebInspector.Searchable}
-     */
-    getSearchProvider: function()
-    {
-        var view = this._visibleView();
-        return /** @type {WebInspector.Searchable} */ (view && view.performSearch ? view : null);
     },
 
     /**

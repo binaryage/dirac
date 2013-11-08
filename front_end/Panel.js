@@ -28,7 +28,6 @@
 
 /**
  * @extends {WebInspector.View}
- * @implements {WebInspector.Searchable}
  * @constructor
  */
 WebInspector.Panel = function(name)
@@ -48,8 +47,6 @@ WebInspector.Panel = function(name)
 // Should by in sync with style declarations.
 WebInspector.Panel.counterRightMargin = 25;
 
-WebInspector.Panel._minimalSearchQuerySize = 3;
-
 WebInspector.Panel.prototype = {
     get name()
     {
@@ -58,7 +55,6 @@ WebInspector.Panel.prototype = {
 
     reset: function()
     {
-        this.searchCanceled();
     },
 
     defaultFocusedElement: function()
@@ -66,51 +62,12 @@ WebInspector.Panel.prototype = {
         return this.sidebarTreeElement || this.element;
     },
 
-    searchCanceled: function()
-    {
-        WebInspector.searchController.updateSearchMatchesCount(0, this);
-    },
-
     /**
-     * @return {boolean}
+     * @return {WebInspector.SearchableView}
      */
-    canSearch: function()
+    searchableView: function()
     {
-        return true;
-    },
-
-    /**
-     * @param {string} query
-     * @param {boolean} shouldJump
-     */
-    performSearch: function(query, shouldJump)
-    {
-        // Call searchCanceled since it will reset everything we need before doing a new search.
-        this.searchCanceled();
-    },
-
-    /**
-     * @return {number}
-     */
-    minimalSearchQuerySize: function()
-    {
-        return WebInspector.Panel._minimalSearchQuerySize;
-    },
-
-    jumpToNextSearchResult: function()
-    {
-    },
-
-    jumpToPreviousSearchResult: function()
-    {
-    },
-
-    /**
-     * @return {boolean}
-     */
-    canSearchAndReplace: function()
-    {
-        return false;
+        return null;
     },
 
     /**
@@ -125,21 +82,6 @@ WebInspector.Panel.prototype = {
      * @param {string} text
      */
     replaceAllWith: function(query, text)
-    {
-    },
-
-    /**
-     * @return {boolean}
-     */
-    canSetFooterElement: function()
-    {
-        return false;
-    },
-
-    /**
-     * @param {?Element} element
-     */
-    setFooterElement: function(element)
     {
     },
 
@@ -228,7 +170,28 @@ WebInspector.Panel.prototype = {
     {
         var shortcutKey = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
         var handler = this._shortcuts[shortcutKey];
-        if (handler && handler(event))
+        if (handler && handler(event)) {
+            event.handled = true;
+            return;
+        }
+
+        var searchableView = this.searchableView();
+        if (!searchableView)
+            return;
+
+        function handleSearchShortcuts(shortcuts, handler)
+        {
+            for (var i = 0; i < shortcuts.length; ++i) {
+                if (shortcuts[i].key !== shortcutKey)
+                    continue;
+                return handler.call(searchableView);
+            }
+            return false;
+        }
+
+        if (handleSearchShortcuts(WebInspector.SearchableView.findShortcuts(), searchableView.handleFindShortcut))
+            event.handled = true;
+        else if (handleSearchShortcuts(WebInspector.SearchableView.cancelSearchShortcuts(), searchableView.handleCancelSearchShortcut))
             event.handled = true;
     },
 

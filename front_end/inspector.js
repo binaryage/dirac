@@ -381,7 +381,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.profileManager = new WebInspector.ProfileManager();
     this.tracingAgent = new WebInspector.TracingAgent();
 
-    this.searchController = new WebInspector.SearchController();
     if (!WebInspector.WorkerManager.isWorkerFrontend())
         this.inspectElementModeController = new WebInspector.InspectElementModeController();
 
@@ -623,9 +622,6 @@ WebInspector._registerShortcuts = function()
     section.addAlternateKeys(keys, WebInspector.UIString("Show general settings"));
 }
 
-/**
- * @param {KeyboardEvent} event
- */
 WebInspector.documentKeyDown = function(event)
 {
     if (WebInspector.currentFocusElement() && WebInspector.currentFocusElement().handleKeyEvent) {
@@ -644,8 +640,6 @@ WebInspector.documentKeyDown = function(event)
         }
     }
 
-    if (WebInspector.searchController.handleShortcut(event))
-        return;
     if (WebInspector.advancedSearchController.handleShortcut(event))
         return;
     if (WebInspector.inspectElementModeController && WebInspector.inspectElementModeController.handleShortcut(event))
@@ -704,6 +698,7 @@ WebInspector.documentKeyDown = function(event)
             }
             break;
     }
+
 }
 
 WebInspector.postDocumentKeyDown = function(event)
@@ -724,10 +719,6 @@ WebInspector.postDocumentKeyDown = function(event)
 
     var openConsoleWithCtrlTildeEnabled = WebInspector.experimentsSettings.openConsoleWithCtrlTilde.isEnabled();
     if (event.keyIdentifier === Esc) {
-        if (WebInspector.searchController.isSearchVisible()) {
-            WebInspector.searchController.closeSearch();
-            return;
-        }
         if (this.inspectorView.drawer().visible())
             this.inspectorView.drawer().hide();
         else if (!openConsoleWithCtrlTildeEnabled)

@@ -38,8 +38,9 @@ importScript("StylesSidebarPane.js");
 
 /**
  * @constructor
- * @extends {WebInspector.Panel}
  * @implements {WebInspector.ViewFactory}
+ * @implements {WebInspector.Searchable}
+ * @extends {WebInspector.Panel}
  */
 WebInspector.ElementsPanel = function()
 {
@@ -59,8 +60,11 @@ WebInspector.ElementsPanel = function()
     this.splitView.setMainElementConstraints(minimumContentWidthPercent, minimumContentHeightPercent);
     this.splitView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._updateTreeOutlineVisibleWidth.bind(this));
 
-    var stackElement = this.splitView.mainElement;
-    stackElement.addStyleClass("vbox");
+    this._searchableView = new WebInspector.SearchableView(this);
+    this.splitView.mainElement.addStyleClass("vbox");
+    this._searchableView.show(this.splitView.mainElement);
+    var stackElement = this._searchableView.element;
+
     this.contentElement = stackElement.createChild("div");
     this.contentElement.id = "elements-content";
     this.contentElement.addStyleClass("outline-disclosure");
@@ -136,6 +140,14 @@ WebInspector.ElementsPanel.prototype = {
     defaultFocusedElement: function()
     {
         return this.treeOutline.element;
+    },
+
+    /**
+     * @return {WebInspector.SearchableView}
+     */
+    searchableView: function()
+    {
+        return this._searchableView;
     },
 
     statusBarResized: function()
@@ -323,7 +335,7 @@ WebInspector.ElementsPanel.prototype = {
         delete this._searchQuery;
         this._hideSearchHighlights();
 
-        WebInspector.searchController.updateSearchMatchesCount(0, this);
+        this._searchableView.updateSearchMatchesCount(0);
 
         delete this._currentSearchResultIndex;
         delete this._searchResults;
@@ -350,7 +362,7 @@ WebInspector.ElementsPanel.prototype = {
          */
         function resultCountCallback(resultCount)
         {
-            WebInspector.searchController.updateSearchMatchesCount(resultCount, this);
+            this._searchableView.updateSearchMatchesCount(resultCount);
             if (!resultCount)
                 return;
 
@@ -409,7 +421,7 @@ WebInspector.ElementsPanel.prototype = {
     switchToAndFocus: function(node)
     {
         // Reset search restore.
-        WebInspector.searchController.cancelSearch();
+        this._searchableView.cancelSearch();
         WebInspector.inspectorView.setCurrentPanel(this);
         this.selectDOMNode(node, true);
     },
@@ -527,7 +539,7 @@ WebInspector.ElementsPanel.prototype = {
         var searchResult = searchResults[index];
 
         if (searchResult === null) {
-            WebInspector.searchController.updateCurrentMatchIndex(index, this);
+            this._searchableView.updateCurrentMatchIndex(index);
             return;
         }
 
@@ -542,7 +554,7 @@ WebInspector.ElementsPanel.prototype = {
             return;
         }
 
-        WebInspector.searchController.updateCurrentMatchIndex(index, this);
+        this._searchableView.updateCurrentMatchIndex(index);
 
         var treeElement = this.treeOutline.findTreeElement(searchResult);
         if (treeElement) {

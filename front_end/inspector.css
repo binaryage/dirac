@@ -1222,7 +1222,7 @@ ol.watch-expressions > li.hovered {
 }
 
 .panel.visible {
-    display: block;
+    display: flex;
 }
 
 .panel.extension-panel.visible {

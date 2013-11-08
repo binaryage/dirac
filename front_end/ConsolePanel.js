@@ -38,6 +38,11 @@ WebInspector.ConsolePanel = function()
 }
 
 WebInspector.ConsolePanel.prototype = {
+    defaultFocusedElement: function()
+    {
+        return this._view.defaultFocusedElement();
+    },
+
     wasShown: function()
     {
         WebInspector.Panel.prototype.wasShown.call(this);
@@ -55,30 +60,6 @@ WebInspector.ConsolePanel.prototype = {
             delete this._drawerWasVisible;
         }
         WebInspector.Panel.prototype.willHide.call(this);
-    },
-
-    searchCanceled: function()
-    {
-        this._view.searchCanceled();
-    },
-
-    /**
-     * @param {string} query
-     * @param {boolean} shouldJump
-     */
-    performSearch: function(query, shouldJump)
-    {
-        this._view.performSearch(query, shouldJump, this);
-    },
-
-    jumpToNextSearchResult: function()
-    {
-        this._view.jumpToNextSearchResult(this);
-    },
-
-    jumpToPreviousSearchResult: function()
-    {
-        this._view.jumpToPreviousSearchResult(this);
     },
 
     __proto__: WebInspector.Panel.prototype

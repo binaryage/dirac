@@ -31,15 +31,27 @@
 
 /**
  * @constructor
+ * @extends {WebInspector.View}
+ * @param {WebInspector.Searchable} searchable
  */
-WebInspector.SearchController = function()
+WebInspector.SearchableView = function(searchable)
 {
-    this._element = document.createElement("table");
-    this._element.className = "toolbar-search";
-    this._element.cellSpacing = 0;
+    WebInspector.View.call(this);
 
-    this._firstRowElement = this._element.createChild("tr");
-    this._secondRowElement = this._element.createChild("tr", "hidden");
+    this._searchProvider = searchable;
+
+    this.element.addStyleClass("vbox");
+    this.element.style.flex = "auto";
+    this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
+
+    this._footerElementContainer = this.element.createChild("div", "inspector-footer status-bar hidden");
+    this._footerElementContainer.style.order = 100;
+
+    this._footerElement = this._footerElementContainer.createChild("table", "toolbar-search");
+    this._footerElement.cellSpacing = 0;
+
+    this._firstRowElement = this._footerElement.createChild("tr");
+    this._secondRowElement = this._footerElement.createChild("tr", "hidden");
 
     // Column 1
     var searchControlElementColumn = this._firstRowElement.createChild("td");
@@ -104,34 +116,113 @@ WebInspector.SearchController = function()
     this._replaceLabelElement.textContent = WebInspector.UIString("Replace");
     this._replaceLabelElement.setAttribute("for", "search-replace-trigger");
 
-    // Column 6
+    // Column 5
     var cancelButtonElement = this._firstRowElement.createChild("td").createChild("button");
     cancelButtonElement.textContent = WebInspector.UIString("Cancel");
     cancelButtonElement.tabIndex = -1;
     cancelButtonElement.addEventListener("click", this.closeSearch.bind(this), false);
+    this._minimalSearchQuerySize = 3;
+
+    this._registerShortcuts();
 }
 
-WebInspector.SearchController.prototype = {
+WebInspector.SearchableView.findShortcuts = function()
+{
+    if (WebInspector.SearchableView._findShortcuts)
+        return WebInspector.SearchableView._findShortcuts;
+    WebInspector.SearchableView._findShortcuts = [WebInspector.KeyboardShortcut.makeDescriptor("f", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)];
+    if (!WebInspector.isMac())
+        WebInspector.SearchableView._findShortcuts.push(WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F3));
+    return WebInspector.SearchableView._findShortcuts;
+}
+
+WebInspector.SearchableView.cancelSearchShortcuts = function()
+{
+    if (WebInspector.SearchableView._cancelSearchShortcuts)
+        return WebInspector.SearchableView._cancelSearchShortcuts;
+    WebInspector.SearchableView._cancelSearchShortcuts = [WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Esc)];
+    return WebInspector.SearchableView._cancelSearchShortcuts;
+}
+
+WebInspector.SearchableView.findNextShortcut = function()
+{
+    if (WebInspector.SearchableView._findNextShortcut)
+        return WebInspector.SearchableView._findNextShortcut;
+    WebInspector.SearchableView._findNextShortcut = [];
+    if (!WebInspector.isMac())
+        WebInspector.SearchableView._findNextShortcut.push(WebInspector.KeyboardShortcut.makeDescriptor("g", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta));
+    return WebInspector.SearchableView._findNextShortcut;
+}
+
+WebInspector.SearchableView.findPreviousShortcuts = function()
+{
+    if (WebInspector.SearchableView._findPreviousShortcuts)
+        return WebInspector.SearchableView._findPreviousShortcuts;
+    WebInspector.SearchableView._findPreviousShortcuts = [];
+    if (!WebInspector.isMac())
+        WebInspector.SearchableView._findPreviousShortcuts.push(WebInspector.KeyboardShortcut.makeDescriptor("g", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta | WebInspector.KeyboardShortcut.Modifiers.Shift));
+    return WebInspector.SearchableView._findPreviousShortcuts;
+}
+
+WebInspector.SearchableView.prototype = {
+    /**
+     * @param {KeyboardEvent} event
+     */
+    _onKeyDown: function(event)
+    {
+        var shortcutKey = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
+        var handler = this._shortcuts[shortcutKey];
+        if (handler && handler(event))
+            event.consume(true);
+    },
+
+    _registerShortcuts: function()
+    {
+        this._shortcuts = {};
+
+        function register(shortcuts, handler)
+        {
+            for (var i = 0; i < shortcuts.length; ++i)
+                this._shortcuts[shortcuts[i].key] = handler;
+        }
+
+        register.call(this, WebInspector.SearchableView.findShortcuts(), this.handleFindShortcut.bind(this));
+        register.call(this, WebInspector.SearchableView.cancelSearchShortcuts(), this.handleCancelSearchShortcut.bind(this));
+        register.call(this, WebInspector.SearchableView.findNextShortcut(), this.handleFindNextShortcut.bind(this));
+        register.call(this, WebInspector.SearchableView.findPreviousShortcuts(), this.handleFindPreviousShortcut.bind(this));
+    },
+
+    /**
+     * @param {number} minimalSearchQuerySize
+     */
+    setMinimalSearchQuerySize: function(minimalSearchQuerySize)
+    {
+        this._minimalSearchQuerySize = minimalSearchQuerySize;
+    },
+
+    /**
+     * @param {boolean} canReplace
+     */
+    setCanReplace: function(canReplace)
+    {
+        this._canReplace = canReplace;
+    },
+
     /**
      * @param {number} matches
-     * @param {WebInspector.Searchable} provider
      */
-    updateSearchMatchesCount: function(matches, provider)
+    updateSearchMatchesCount: function(matches)
     {
-        provider.currentSearchMatches = matches;
-
-        if (provider === this._searchProvider)
-            this._updateSearchMatchesCountAndCurrentMatchIndex(provider.currentQuery ? matches : 0, -1);
+        this._searchProvider.currentSearchMatches = matches;
+        this._updateSearchMatchesCountAndCurrentMatchIndex(this._searchProvider.currentQuery ? matches : 0, -1);
     },
 
     /**
      * @param {number} currentMatchIndex
-     * @param {WebInspector.Searchable} provider
      */
-    updateCurrentMatchIndex: function(currentMatchIndex, provider)
+    updateCurrentMatchIndex: function(currentMatchIndex)
     {
-        if (provider === this._searchProvider)
-            this._updateSearchMatchesCountAndCurrentMatchIndex(provider.currentSearchMatches, currentMatchIndex);
+        this._updateSearchMatchesCountAndCurrentMatchIndex(this._searchProvider.currentSearchMatches, currentMatchIndex);
     },
 
     isSearchVisible: function()
@@ -145,16 +236,20 @@ WebInspector.SearchController.prototype = {
         WebInspector.setCurrentFocusElement(WebInspector.previousFocusElement());
     },
 
+    _toggleSearchBar: function(toggled)
+    {
+        this._footerElementContainer.enableStyleClass("hidden", !toggled);
+        this.doResize();
+    },
+
     cancelSearch: function()
     {
         if (!this._searchIsVisible)
             return;
         this.resetSearch();
         delete this._searchIsVisible;
-        this._searchHost.setFooterElement(null);
+        this._toggleSearchBar(false);
         this.resetSearch();
-        delete this._searchHost;
-        delete this._searchProvider;
     },
 
     resetSearch: function()
@@ -165,51 +260,45 @@ WebInspector.SearchController.prototype = {
     },
 
     /**
-     * @param {Event} event
      * @return {boolean}
      */
-    handleShortcut: function(event)
+    handleFindNextShortcut: function()
     {
-        var isMac = WebInspector.isMac();
+        if (!this._searchIsVisible)
+            return true;
+        this._searchProvider.jumpToPreviousSearchResult();
+        return true;
+    },
 
-        switch (event.keyIdentifier) {
-            case "U+0046": // F key
-                if (isMac)
-                    var isFindKey = event.metaKey && !event.ctrlKey && !event.altKey && !event.shiftKey;
-                else
-                    var isFindKey = event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey;
+    /**
+     * @return {boolean}
+     */
+    handleFindPreviousShortcut: function()
+    {
+        if (!this._searchIsVisible)
+            return true;
+        this._searchProvider.jumpToNextSearchResult();
+        return true;
+    },
 
-                if (isFindKey) {
-                    this.showSearchField();
-                    event.consume(true);
-                    return true;
-                }
-                break;
+    /**
+     * @return {boolean}
+     */
+    handleFindShortcut: function()
+    {
+        this.showSearchField();
+        return true;
+    },
 
-            case "F3":
-                if (!isMac) {
-                    this.showSearchField();
-                    event.consume(true);
-                    return true;
-                }
-                break;
-
-            case "U+0047": // G key
-                if (isMac && event.metaKey && !event.ctrlKey && !event.altKey && this._searchHost) {
-                    if (!this._searchProvider) {
-                        event.consume(true);
-                        return true;
-                    }
-                    if (event.shiftKey)
-                        this._searchProvider.jumpToPreviousSearchResult();
-                    else
-                        this._searchProvider.jumpToNextSearchResult();
-                    event.consume(true);
-                    return true;
-                }
-                break;
-        }
-        return false;
+    /**
+     * @return {boolean}
+     */
+    handleCancelSearchShortcut: function()
+    {
+        if (!this._searchIsVisible)
+            return false;
+        this.closeSearch();
+        return true;
     },
 
     /**
@@ -250,17 +339,7 @@ WebInspector.SearchController.prototype = {
         if (this._searchIsVisible)
             this.cancelSearch();
 
-        // FIXME: fix this mess.
-        if (WebInspector.inspectorView.drawer().element.isAncestor(document.activeElement) && WebInspector.inspectorView.drawer().getSearchProvider())
-            this._searchHost = WebInspector.inspectorView.drawer();
-        else
-            this._searchHost = WebInspector.inspectorView;
-
-        this._searchProvider = this._searchHost.getSearchProvider();
-        if (!this._searchProvider)
-            return;
-
-        this._searchHost.setFooterElement(this._element);
+        this._toggleSearchBar(true);
 
         this._updateReplaceVisibility();
         if (WebInspector.currentFocusElement() !== this._searchInputElement) {
@@ -279,10 +358,10 @@ WebInspector.SearchController.prototype = {
 
     _updateReplaceVisibility: function()
     {
-        if (!this._searchProvider)
+        if (!this._searchIsVisible)
             return;
 
-        if (this._searchProvider.canSearchAndReplace())
+        if (this._canReplace)
             this._replaceElement.removeStyleClass("hidden");
         else {
             this._replaceElement.addStyleClass("hidden");
@@ -357,12 +436,9 @@ WebInspector.SearchController.prototype = {
     _clearSearch: function()
     {
         delete this._currentQuery;
-        if (this._searchHost){
-            var searchProvider = this._searchHost.getSearchProvider();
-            if (searchProvider && !!searchProvider.currentQuery) {
-                delete searchProvider.currentQuery;
-                searchProvider.searchCanceled();
-            }
+        if (!!this._searchProvider.currentQuery) {
+            delete this._searchProvider.currentQuery;
+            this._searchProvider.searchCanceled();
         }
         this._updateSearchMatchesCountAndCurrentMatchIndex(0, -1);
     },
@@ -374,8 +450,7 @@ WebInspector.SearchController.prototype = {
     _performSearch: function(forceSearch, shouldJump)
     {
         var query = this._searchInputElement.value;
-        var minimalSearchQuerySize = this._searchProvider.minimalSearchQuerySize();
-        if (!query || !this._searchProvider || (!forceSearch && query.length < minimalSearchQuerySize && !this._currentQuery)) {
+        if (!query || (!forceSearch && query.length < this._minimalSearchQuerySize && !this._currentQuery)) {
             this._clearSearch();
             return;
         }
@@ -387,24 +462,23 @@ WebInspector.SearchController.prototype = {
 
     _updateSecondRowVisibility: function()
     {
-        if (!this._searchIsVisible || !this._searchHost)
+        if (!this._searchIsVisible)
             return;
         if (this._replaceCheckboxElement.checked) {
-            this._element.addStyleClass("toolbar-search-replace");
+            this._footerElement.addStyleClass("toolbar-search-replace");
             this._secondRowElement.removeStyleClass("hidden");
             this._prevButtonElement.removeStyleClass("hidden");
             this._findButtonElement.removeStyleClass("hidden");
             this._replaceCheckboxElement.tabIndex = -1;
             this._replaceInputElement.focus();
         } else {
-            this._element.removeStyleClass("toolbar-search-replace");
+            this._footerElement.removeStyleClass("toolbar-search-replace");
             this._secondRowElement.addStyleClass("hidden");
             this._prevButtonElement.addStyleClass("hidden");
             this._findButtonElement.addStyleClass("hidden");
             this._replaceCheckboxElement.tabIndex = 0;
             this._searchInputElement.focus();
         }
-        this._searchHost.setFooterElement(this._element);
     },
 
     _replace: function()
@@ -427,13 +501,10 @@ WebInspector.SearchController.prototype = {
     _onValueChanged: function()
     {
         this._performSearch(false, true);
-    }
-}
+    },
 
-/**
- * @type {?WebInspector.SearchController}
- */
-WebInspector.searchController = null;
+    __proto__: WebInspector.View.prototype
+}
 
 /**
  * @interface
@@ -443,32 +514,15 @@ WebInspector.Searchable = function()
 }
 
 WebInspector.Searchable.prototype = {
-    /**
-     * @return {boolean}
-     */
-    canSearchAndReplace: function() { },
-
     searchCanceled: function() { },
 
     /**
      * @param {string} query
      * @param {boolean} shouldJump
-     * @param {WebInspector.Searchable=} self
      */
-    performSearch: function(query, shouldJump, self) { },
+    performSearch: function(query, shouldJump) { },
 
-    /**
-     * @return {number}
-     */
-    minimalSearchQuerySize: function() { },
+    jumpToNextSearchResult: function() { },
 
-    /**
-     * @param {WebInspector.Searchable=} self
-     */
-    jumpToNextSearchResult: function(self) { },
-
-    /**
-     * @param {WebInspector.Searchable=} self
-     */
-    jumpToPreviousSearchResult: function(self) { },
+    jumpToPreviousSearchResult: function() { },
 }

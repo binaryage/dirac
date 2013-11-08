@@ -30,6 +30,7 @@
 
 /**
  * @constructor
+ * @implements {WebInspector.Searchable}
  * @extends {WebInspector.Panel}
  * @param {string} id
  * @param {string} pageURL
@@ -41,8 +42,11 @@ WebInspector.ExtensionPanel = function(id, pageURL)
     this.element.addStyleClass("extension-panel");
     this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar hidden");
 
+    this._searchableView = new WebInspector.SearchableView(this);
+    this._searchableView.show(this.element);
+
     var extensionView = new WebInspector.ExtensionView(id, pageURL, "extension panel");
-    extensionView.show(this.element);
+    extensionView.show(this._searchableView.element);
     this.setDefaultFocusedElement(extensionView.defaultFocusedElement());
 }
 
@@ -61,10 +65,18 @@ WebInspector.ExtensionPanel.prototype = {
         this._panelStatusBarElement.appendChild(element);
     },
 
-    searchCanceled: function(startingNewSearch)
+    searchCanceled: function()
     {
         WebInspector.extensionServer.notifySearchAction(this.name, WebInspector.extensionAPI.panels.SearchAction.CancelSearch);
-        WebInspector.Panel.prototype.searchCanceled.apply(this, arguments);
+        this._searchableView.updateSearchMatchesCount(0);
+    },
+
+    /**
+     * @return {WebInspector.SearchableView}
+     */
+    searchableView: function()
+    {
+        return this._searchableView;
     },
 
     /**
@@ -79,13 +91,11 @@ WebInspector.ExtensionPanel.prototype = {
     jumpToNextSearchResult: function()
     {
         WebInspector.extensionServer.notifySearchAction(this.name, WebInspector.extensionAPI.panels.SearchAction.NextSearchResult);
-        WebInspector.Panel.prototype.jumpToNextSearchResult.call(this);
     },
 
     jumpToPreviousSearchResult: function()
     {
         WebInspector.extensionServer.notifySearchAction(this.name, WebInspector.extensionAPI.panels.SearchAction.PreviousSearchResult);
-        WebInspector.Panel.prototype.jumpToPreviousSearchResult.call(this);
     },
 
     __proto__: WebInspector.Panel.prototype

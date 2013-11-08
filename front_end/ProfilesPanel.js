@@ -344,8 +344,9 @@ WebInspector.ProfileHeader.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.Panel}
+ * @implements {WebInspector.Searchable}
  * @implements {WebInspector.ContextMenu.Provider}
+ * @extends {WebInspector.Panel}
  * @param {string=} name
  * @param {WebInspector.ProfileType=} type
  */
@@ -364,6 +365,9 @@ WebInspector.ProfilesPanel = function(name, type)
     this.splitView.mainElement.addStyleClass("vbox");
     this.splitView.sidebarElement.addStyleClass("vbox");
 
+    this._searchableView = new WebInspector.SearchableView(this);
+    this._searchableView.show(this.splitView.mainElement);
+
     this.profilesItemTreeElement = new WebInspector.ProfilesSidebarTreeElement(this);
     this.sidebarTree.appendChild(this.profilesItemTreeElement);
 
@@ -373,7 +377,7 @@ WebInspector.ProfilesPanel = function(name, type)
     this.profileViews = document.createElement("div");
     this.profileViews.id = "profile-views";
     this.profileViews.addStyleClass("vbox");
-    this.splitView.mainElement.appendChild(this.profileViews);
+    this._searchableView.element.appendChild(this.profileViews);
 
     var statusBarContainer = this.splitView.mainElement.createChild("div", "profiles-status-bar");
     this._statusBarElement = statusBarContainer.createChild("div", "status-bar");
@@ -423,6 +427,14 @@ WebInspector.ProfilesPanel = function(name, type)
 }
 
 WebInspector.ProfilesPanel.prototype = {
+    /**
+     * @return {WebInspector.SearchableView}
+     */
+    searchableView: function()
+    {
+        return this._searchableView;
+    },
+
     _createFileSelectorElement: function()
     {
         if (this._fileSelectorElement)
@@ -892,11 +904,11 @@ WebInspector.ProfilesPanel.prototype = {
         {
             if (!searchMatches)
                 return;
-            WebInspector.searchController.updateSearchMatchesCount(searchMatches, this);
+            this._searchableView.updateSearchMatchesCount(searchMatches);
             this._searchResultsView = view;
             if (shouldJump) {
                 view.jumpToFirstSearchResult();
-                WebInspector.searchController.updateCurrentMatchIndex(view.currentSearchResultIndex(), this);
+                this._searchableView.updateCurrentMatchIndex(view.currentSearchResultIndex());
             }
         }
 
@@ -911,7 +923,7 @@ WebInspector.ProfilesPanel.prototype = {
         if (this._searchResultsView !== this.visibleView)
             return;
         this._searchResultsView.jumpToNextSearchResult();
-        WebInspector.searchController.updateCurrentMatchIndex(this._searchResultsView.currentSearchResultIndex(), this);
+        this._searchableView.updateCurrentMatchIndex(this._searchResultsView.currentSearchResultIndex());
     },
 
     jumpToPreviousSearchResult: function()
@@ -921,7 +933,7 @@ WebInspector.ProfilesPanel.prototype = {
         if (this._searchResultsView !== this.visibleView)
             return;
         this._searchResultsView.jumpToPreviousSearchResult();
-        WebInspector.searchController.updateCurrentMatchIndex(this._searchResultsView.currentSearchResultIndex(), this);
+        this._searchableView.updateCurrentMatchIndex(this._searchResultsView.currentSearchResultIndex());
     },
 
     /**
@@ -943,7 +955,7 @@ WebInspector.ProfilesPanel.prototype = {
             this._searchResultsView.currentQuery = null;
             this._searchResultsView = null;
         }
-        WebInspector.Panel.prototype.searchCanceled.call(this);
+        this._searchableView.updateSearchMatchesCount(0);
     },
 
     /**

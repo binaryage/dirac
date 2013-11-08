@@ -149,7 +149,7 @@ modules = [
             "Popover.js",
             "ProgressIndicator.js",
             "PropertiesSection.js",
-            "SearchController.js",
+            "SearchableView.js",
             "Section.js",
             "SidebarPane.js",
             "SidebarTreeElement.js",

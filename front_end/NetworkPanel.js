@@ -41,6 +41,7 @@ importScript("ResourceWebSocketFrameView.js");
 
 /**
  * @constructor
+ * @implements {WebInspector.Searchable}
  * @extends {WebInspector.View}
  * @param {WebInspector.FilterBar} filterBar
  * @param {WebInspector.Setting} coulmnsVisibilitySetting
@@ -1432,8 +1433,9 @@ WebInspector.NetworkLogView.EventTypes = {
 
 /**
  * @constructor
- * @extends {WebInspector.Panel}
  * @implements {WebInspector.ContextMenu.Provider}
+ * @implements {WebInspector.Searchable}
+ * @extends {WebInspector.Panel}
  */
 WebInspector.NetworkPanel = function()
 {
@@ -1441,14 +1443,19 @@ WebInspector.NetworkPanel = function()
     this.registerRequiredCSS("networkPanel.css");
     this._injectStyles();
 
+    this.element.addStyleClass("vbox");
+
     this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
     this._filterBar = new WebInspector.FilterBar();
     this._filtersContainer = this.element.createChild("div", "network-filters-header hidden");
     this._filtersContainer.appendChild(this._filterBar.filtersElement());
     this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
 
-    this.element.addStyleClass("vbox");
-    this.createSidebarView();
+    this._searchableView = new WebInspector.SearchableView(this);
+    this._searchableView.show(this.element);
+    this._contentsElement = this._searchableView.element;
+
+    this.createSidebarView(this._contentsElement);
     this.splitView.element.removeStyleClass("fill");
     this.splitView.hideMainElement();
 
@@ -1501,6 +1508,14 @@ WebInspector.NetworkPanel.prototype = {
     elementsToRestoreScrollPositionsFor: function()
     {
         return this._networkLogView.elementsToRestoreScrollPositionsFor();
+    },
+
+    /**
+     * @return {WebInspector.SearchableView}
+     */
+    searchableView: function()
+    {
+        return this._searchableView;
     },
 
     // FIXME: only used by the layout tests, should not be exposed.
@@ -1576,12 +1591,12 @@ WebInspector.NetworkPanel.prototype = {
 
     _onSearchCountUpdated: function(event)
     {
-        WebInspector.searchController.updateSearchMatchesCount(event.data, this);
+        this._searchableView.updateSearchMatchesCount(event.data);
     },
 
     _onSearchIndexUpdated: function(event)
     {
-        WebInspector.searchController.updateCurrentMatchIndex(event.data, this);
+        this._searchableView.updateCurrentMatchIndex(event.data);
     },
 
     _onRequestSelected: function(event)

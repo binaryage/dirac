@@ -46,6 +46,7 @@ importScript("WorkersSidebarPane.js");
  * @constructor
  * @implements {WebInspector.TabbedEditorContainerDelegate}
  * @implements {WebInspector.ContextMenu.Provider}
+ * @implements {WebInspector.Searchable}
  * @extends {WebInspector.Panel}
  * @param {WebInspector.Workspace=} workspaceForTest
  */
@@ -97,9 +98,13 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.editorView.sidebarElement.addStyleClass("vbox");
 
     this.sourcesView = new WebInspector.SourcesView();
+
+    this._searchableView = new WebInspector.SearchableView(this);
+    this._searchableView.setMinimalSearchQuerySize(0);
+    this._searchableView.show(this.sourcesView.element);
+
     this._editorContainer = new WebInspector.TabbedEditorContainer(this, "previouslyViewedFiles", tabbedEditorPlaceholderText);
-    this._editorContainer.show(this.sourcesView.element);
-    this._editorFooterElement = this.sourcesView.element.createChild("div", "inspector-footer status-bar hidden");
+    this._editorContainer.show(this._searchableView.element);
 
     this._navigatorController = new WebInspector.NavigatorOverlayController(this.editorView, this._navigator.view, this._editorContainer.view);
 
@@ -217,6 +222,14 @@ WebInspector.SourcesPanel.prototype = {
         this.element.removeEventListener("keyup", this._boundOnKeyUp, false);
 
         WebInspector.Panel.prototype.willHide.call(this);
+    },
+
+    /**
+     * @return {WebInspector.SearchableView}
+     */
+    searchableView: function()
+    {
+        return this._searchableView;
     },
 
     /**
@@ -648,7 +661,7 @@ WebInspector.SourcesPanel.prototype = {
 
         // SourcesNavigator does not need to update on EditorClosed.
         this._updateScriptViewStatusBarItems();
-        WebInspector.searchController.resetSearch();
+        this._searchableView.resetSearch();
     },
 
     _editorSelected: function(event)
@@ -658,7 +671,8 @@ WebInspector.SourcesPanel.prototype = {
         this._navigatorController.hideNavigatorOverlay();
         if (!this._navigatorController.isNavigatorPinned())
             sourceFrame.focus();
-        WebInspector.searchController.resetSearch();
+        this._searchableView.setCanReplace(!!sourceFrame && sourceFrame.canEditSource());
+        this._searchableView.resetSearch();
     },
 
     _sourceSelected: function(event)
@@ -1026,7 +1040,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     performSearch: function(query, shouldJump)
     {
-        WebInspector.searchController.updateSearchMatchesCount(0, this);
+        this._searchableView.updateSearchMatchesCount(0);
 
         if (!this.visibleView)
             return;
@@ -1039,23 +1053,20 @@ WebInspector.SourcesPanel.prototype = {
             if (!searchMatches)
                 return;
 
-            WebInspector.searchController.updateSearchMatchesCount(searchMatches, this);
+            this._searchableView.updateSearchMatchesCount(searchMatches);
         }
 
         function currentMatchChanged(currentMatchIndex)
         {
-            WebInspector.searchController.updateCurrentMatchIndex(currentMatchIndex, this);
+            this._searchableView.updateCurrentMatchIndex(currentMatchIndex);
         }
 
-        this._searchView.performSearch(query, shouldJump, finishedCallback.bind(this), currentMatchChanged.bind(this));
-    },
+        function searchResultsChanged()
+        {
+            this._searchableView.cancelSearch();
+        }
 
-    /**
-     * @return {number}
-     */
-    minimalSearchQuerySize: function()
-    {
-        return 0;
+        this._searchView.performSearch(query, shouldJump, finishedCallback.bind(this), currentMatchChanged.bind(this), searchResultsChanged.bind(this));
     },
 
     jumpToNextSearchResult: function()
@@ -1085,15 +1096,6 @@ WebInspector.SourcesPanel.prototype = {
         }
 
         this._searchView.jumpToPreviousSearchResult();
-    },
-
-    /**
-     * @return {boolean}
-     */
-    canSearchAndReplace: function()
-    {
-        var view = /** @type {WebInspector.SourceFrame} */ (this.visibleView);
-        return !!view && view.canEditSource();
     },
 
     /**
@@ -1541,29 +1543,6 @@ WebInspector.SourcesPanel.prototype = {
 
         if (WebInspector.settings.watchExpressions.get().length > 0)
             this.sidebarPanes.watchExpressions.expand();
-    },
-
-    /**
-     * @return {boolean}
-     */
-    canSetFooterElement: function()
-    {
-        return true;
-    },
-
-    /**
-     * @param {Element?} element
-     */
-    setFooterElement: function(element)
-    {
-        if (element) {
-            this._editorFooterElement.removeStyleClass("hidden");
-            this._editorFooterElement.appendChild(element);
-        } else {
-            this._editorFooterElement.addStyleClass("hidden");
-            this._editorFooterElement.removeChildren();
-        }
-        this.doResize();
     },
 
     /**

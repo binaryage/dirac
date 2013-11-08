@@ -316,8 +316,8 @@ WebInspector.SourceFrame.prototype = {
 
     onTextChanged: function(oldRange, newRange)
     {
-        if (!this._isReplacing)
-            WebInspector.searchController.cancelSearch();
+        if (this._searchResultsChangedCallback && !this._isReplacing)
+            this._searchResultsChangedCallback();
         this.clearMessages();
     },
 
@@ -405,9 +405,10 @@ WebInspector.SourceFrame.prototype = {
      * @param {string} query
      * @param {boolean} shouldJump
      * @param {function(WebInspector.View, number)} callback
-     * @param {function(number)=} currentMatchChangedCallback
+     * @param {function(number)} currentMatchChangedCallback
+     * @param {function()} searchResultsChangedCallback
      */
-    performSearch: function(query, shouldJump, callback, currentMatchChangedCallback)
+    performSearch: function(query, shouldJump, callback, currentMatchChangedCallback, searchResultsChangedCallback)
     {
         function doFindSearchMatches(query)
         {
@@ -428,6 +429,7 @@ WebInspector.SourceFrame.prototype = {
 
         this._resetSearch();
         this._currentSearchMatchChangedCallback = currentMatchChangedCallback;
+        this._searchResultsChangedCallback = searchResultsChangedCallback;
         if (this.loaded)
             doFindSearchMatches.call(this, query);
         else
@@ -461,6 +463,7 @@ WebInspector.SourceFrame.prototype = {
     {
         delete this._delayedFindSearchMatches;
         delete this._currentSearchMatchChangedCallback;
+        delete this._searchResultsChangedCallback;
         this._currentSearchResultIndex = -1;
         this._searchResults = [];
         delete this._searchRegex;

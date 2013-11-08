@@ -42,7 +42,6 @@ WebInspector.MemoryStatistics = function(timelinePanel, model, sidebarWidth)
     model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
     model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
 
-    this._containerAnchor = timelinePanel.element.lastChild;
     this._memorySidebarView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Start, undefined, sidebarWidth);
     this._memorySidebarView.sidebarElement.addStyleClass("sidebar");
     this._memorySidebarView.element.id = "memory-graphs-container";
@@ -391,9 +390,9 @@ WebInspector.MemoryStatistics.prototype = {
 
     show: function()
     {
-        var anchor = /** @type {Element|null} */ (this._containerAnchor.nextSibling);
+        var anchor = /** @type {Element|null} */ (this._timelinePanel.contentsElement.lastChild);
         var savedSidebarSize = this._timelinePanel.splitView.sidebarWidth();
-        this._memorySidebarView.show(this._timelinePanel.element, anchor);
+        this._memorySidebarView.show(this._timelinePanel.contentsElement, anchor);
         if (savedSidebarSize > 0) {
             this.setSidebarWidth(savedSidebarSize);
             this._timelinePanel.splitView.setSidebarWidth(savedSidebarSize);

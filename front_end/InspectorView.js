@@ -55,8 +55,6 @@ WebInspector.InspectorView = function()
     this._errorWarningCountElement = this._rightToolbarElement.createChild("div", "hidden");
     this._errorWarningCountElement.id = "error-warning-count";
 
-    this._footerElementContainer = this.element.createChild("div", "inspector-footer status-bar hidden");
-
     this._drawer = new WebInspector.Drawer(this);
     this.appendToRightToolbar(this._drawer.toggleButtonElement());
 
@@ -142,14 +140,6 @@ WebInspector.InspectorView.prototype = {
         return this._currentPanel;
     },
 
-    /**
-     * @return {WebInspector.Searchable}
-     */
-    getSearchProvider: function()
-    {
-        return this._currentPanel && this._currentPanel.canSearch() ? this._currentPanel : null;
-    },
-
     showInitialPanel: function()
     {
         this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
@@ -158,9 +148,6 @@ WebInspector.InspectorView.prototype = {
 
     _tabSelected: function()
     {
-        // FIXME: remove search controller.
-        WebInspector.searchController.cancelSearch();
-
         var panelName = this._tabbedPane.selectedTabId;
         var panel = this._panelDescriptors[this._tabbedPane.selectedTabId].panel();
         this._tabbedPane.changeTabView(panelName, panel);
@@ -353,25 +340,6 @@ WebInspector.InspectorView.prototype = {
         if (!this._history.length || this._history[this._history.length - 1] !== panelName)
             this._history.push(panelName);
         this._historyIterator = this._history.length - 1;
-    },
-
-    /**
-     * @param {?Element} element
-     */
-    setFooterElement: function(element)
-    {
-        if (this._currentPanel && this._currentPanel.canSetFooterElement()) {
-            this._currentPanel.setFooterElement(element);
-            return;
-        }
-        if (element) {
-            this._footerElementContainer.removeStyleClass("hidden");
-            this._footerElementContainer.appendChild(element);
-        } else {
-            this._footerElementContainer.addStyleClass("hidden");
-            this._footerElementContainer.removeChildren();
-        }
-        this.doResize();
     },
 
     onResize: function()

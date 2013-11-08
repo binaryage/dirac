@@ -148,7 +148,7 @@
             'front_end/ScriptFormatter.js',
             'front_end/ScriptFormatterWorker.js',
             'front_end/ScriptSnippetModel.js',
-            'front_end/SearchController.js',
+            'front_end/SearchableView.js',
             'front_end/SettingsScreen.js',
             'front_end/Section.js',
             'front_end/Settings.js',

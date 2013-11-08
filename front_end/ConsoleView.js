@@ -38,7 +38,12 @@ WebInspector.ConsoleView = function(hideContextSelector)
     WebInspector.View.call(this);
     this.registerRequiredCSS("filter.css");
 
-    this.element.classList.add("fill", "vbox");
+    this._searchableView = new WebInspector.SearchableView(this);
+    this._searchableView.setMinimalSearchQuerySize(0);
+    this._searchableView.show(this.element);
+
+    this._contentsElement = this._searchableView.element;
+    this._contentsElement.classList.add("fill", "vbox");
     this._visibleMessagesIndices = [];
     this._urlToMessageCount = {};
 
@@ -58,13 +63,13 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
     this._filterBar = new WebInspector.FilterBar();
 
-    var statusBarElement = this.element.createChild("div", "console-status-bar");
+    var statusBarElement = this._contentsElement.createChild("div", "console-status-bar");
     statusBarElement.appendChild(this._clearConsoleButton.element);
     statusBarElement.appendChild(this._filterBar.filterButton());
     statusBarElement.appendChild(this._frameSelector.element);
     statusBarElement.appendChild(this._contextSelector.element);
 
-    this._filtersContainer = this.element.createChild("div", "console-filters-header hidden");
+    this._filtersContainer = this._contentsElement.createChild("div", "console-filters-header hidden");
     this._filtersContainer.appendChild(this._filterBar.filtersElement());
     this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
     this._filter.addFilters(this._filterBar);
@@ -73,7 +78,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this.messagesElement.id = "console-messages";
     this.messagesElement.className = "monospace";
     this.messagesElement.addEventListener("click", this._messagesClicked.bind(this), true);
-    this.element.appendChild(this.messagesElement);
+    this._contentsElement.appendChild(this.messagesElement);
     this._scrolledToBottom = true;
 
     this.promptElement = document.createElement("div");
@@ -367,7 +372,7 @@ WebInspector.ConsoleView.prototype = {
 
         if (this._searchRegex && message.matchesRegex(this._searchRegex)) {
             this._searchResultsIndices.push(index);
-            WebInspector.searchController.updateSearchMatchesCount(this._searchResultsIndices.length, this._searchProvider);
+            this._searchableView.updateSearchMatchesCount(this._searchResultsIndices.length);
         }
     },
 
@@ -380,7 +385,7 @@ WebInspector.ConsoleView.prototype = {
         this._searchResultsIndices = [];
 
         if (this._searchRegex)
-            WebInspector.searchController.updateSearchMatchesCount(0, this._searchProvider);
+            this._searchableView.updateSearchMatchesCount(0);
 
         this.currentGroup = this.topGroup;
         this.topGroup.messagesElement.removeChildren();
@@ -500,7 +505,7 @@ WebInspector.ConsoleView.prototype = {
         }
 
         if (this._searchRegex)
-            WebInspector.searchController.updateSearchMatchesCount(this._searchResultsIndices.length, this._searchProvider);
+            this._searchableView.updateSearchMatchesCount(this._searchResultsIndices.length);
 
         this._visibleMessagesIndices = newVisibleMessages;
         this._updateFilterStatus();
@@ -695,26 +700,18 @@ WebInspector.ConsoleView.prototype = {
     searchCanceled: function()
     {
         this._clearCurrentSearchResultHighlight();
-        delete this._searchProvider;
         delete this._searchResultsIndices;
         delete this._searchRegex;
-    },
-
-    canSearchAndReplace: function()
-    {
-        return false;
     },
 
     /**
      * @param {string} query
      * @param {boolean} shouldJump
-     * @param {WebInspector.Searchable=} self
      */
-    performSearch: function(query, shouldJump, self)
+    performSearch: function(query, shouldJump)
     {
         this.searchCanceled();
-        this._searchProvider = self || this;
-        WebInspector.searchController.updateSearchMatchesCount(0, this._searchProvider);
+        this._searchableView.updateSearchMatchesCount(0);
         this._searchRegex = createPlainTextSearchRegex(query, "gi");
 
         this._searchResultsIndices = [];
@@ -722,41 +719,27 @@ WebInspector.ConsoleView.prototype = {
             if (WebInspector.console.messages[this._visibleMessagesIndices[i]].matchesRegex(this._searchRegex))
                 this._searchResultsIndices.push(this._visibleMessagesIndices[i]);
         }
-        WebInspector.searchController.updateSearchMatchesCount(this._searchResultsIndices.length, this._searchProvider);
+        this._searchableView.updateSearchMatchesCount(this._searchResultsIndices.length);
         this._currentSearchResultIndex = -1;
         if (shouldJump && this._searchResultsIndices.length)
-            this._jumpToSearchResult(0, self);
+            this._jumpToSearchResult(0);
     },
 
-    /**
-     * @return {number}
-     */
-    minimalSearchQuerySize: function()
-    {
-        return 0;
-    },
-
-    /**
-     * @param {WebInspector.Searchable=} self
-     */
-    jumpToNextSearchResult: function(self)
+    jumpToNextSearchResult: function()
     {
         if (!this._searchResultsIndices || !this._searchResultsIndices.length)
             return;
-        this._jumpToSearchResult((this._currentSearchResultIndex + 1) % this._searchResultsIndices.length, self);
+        this._jumpToSearchResult((this._currentSearchResultIndex + 1) % this._searchResultsIndices.length);
     },
 
-    /**
-     * @param {WebInspector.Searchable=} self
-     */
-    jumpToPreviousSearchResult: function(self)
+    jumpToPreviousSearchResult: function()
     {
         if (!this._searchResultsIndices || !this._searchResultsIndices.length)
             return;
         var index = this._currentSearchResultIndex - 1;
         if (index === -1)
             index = this._searchResultsIndices.length - 1;
-        this._jumpToSearchResult(index, self);
+        this._jumpToSearchResult(index);
     },
 
     _clearCurrentSearchResultHighlight: function()
@@ -769,11 +752,11 @@ WebInspector.ConsoleView.prototype = {
         this._currentSearchResultIndex = -1;
     },
 
-    _jumpToSearchResult: function(index, self)
+    _jumpToSearchResult: function(index)
     {
         this._clearCurrentSearchResultHighlight();
         this._currentSearchResultIndex = index;
-        WebInspector.searchController.updateCurrentMatchIndex(this._currentSearchResultIndex, this._searchProvider);
+        this._searchableView.updateCurrentMatchIndex(this._currentSearchResultIndex);
         WebInspector.console.messages[this._searchResultsIndices[index]].highlightSearchResults(this._searchRegex);
     },
 
