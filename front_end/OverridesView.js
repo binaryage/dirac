@@ -566,12 +566,14 @@ WebInspector.OverridesView.ViewportTab.prototype = {
         cellElement.appendChild(document.createTextNode(WebInspector.UIString("Device pixel ratio:")));
         cellElement = rowElement.createChild("td");
         this._deviceScaleFactorOverrideElement = this._createInput(cellElement, "metrics-override-device-scale", String(metrics.deviceScaleFactor || 1), this._applyDeviceMetricsUserInput.bind(this), true);
+        this._deviceScaleFactorOverrideElement.title = WebInspector.UIString("Ratio between a device's physical pixels and device-independent pixels.");
 
         rowElement = tableElement.createChild("tr");
         cellElement = rowElement.createChild("td");
         cellElement.appendChild(document.createTextNode(WebInspector.UIString("Font scale factor:")));
         cellElement = rowElement.createChild("td");
         this._fontScaleFactorOverrideElement = this._createInput(cellElement, "metrics-override-font-scale", String(metrics.fontScaleFactor || 1), this._applyDeviceMetricsUserInput.bind(this), true);
+        this._fontScaleFactorOverrideElement.title = WebInspector.UIString("Scale factor used on Android. Computed from the physical screen dimensions and system font settings.");
 
         var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate viewport"), WebInspector.settings.emulateViewport);
         fieldsetElement.appendChild(checkbox);
