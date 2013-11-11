@@ -664,7 +664,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         var duration = endTime - startTime;
         var offset = this._minimumRecordTime;
 
-        var contentHelper = new WebInspector.PopoverContentHelper(info.name);
+        var contentHelper = new WebInspector.TimelinePropertiesContentHelper(info.name);
         var durationText = WebInspector.UIString("%s (at %s)", Number.secondsToString(duration, true),
             Number.secondsToString(startTime - offset, true));
         contentHelper.appendTextRow(WebInspector.UIString("Duration"), durationText);
@@ -1066,6 +1066,28 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
+     * @param {string} key
+     * @return {Object}
+     */
+    getUserObject: function(key)
+    {
+        if (!this._userObjects)
+            return null;
+        return this._userObjects.get(key);
+    },
+
+    /**
+     * @param {string} key
+     * @param {Object} value
+     */
+    setUserObject: function(key, value)
+    {
+        if (!this._userObjects)
+            this._userObjects = new StringMap();
+        this._userObjects.put(key, value);
+    },
+
+    /**
      * @param {Element} element
      */
     _setImagePreviewElement: function(element)
@@ -1087,7 +1109,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     _generatePopupContentSynchronously: function()
     {
-        var contentHelper = new WebInspector.PopoverContentHelper(this.title);
+        var contentHelper = new WebInspector.TimelinePropertiesContentHelper(this.title);
         var text = WebInspector.UIString("%s (at %s)", Number.secondsToString(this._lastChildEndTime - this.startTime, true),
             Number.secondsToString(this._startTimeOffset));
         contentHelper.appendTextRow(WebInspector.UIString("Duration"), text);
@@ -1489,7 +1511,7 @@ WebInspector.TimelinePresentationModel._generateAggregatedInfo = function(aggreg
 
 WebInspector.TimelinePresentationModel.generatePopupContentForFrame = function(frame)
 {
-    var contentHelper = new WebInspector.PopoverContentHelper(WebInspector.UIString("Frame"));
+    var contentHelper = new WebInspector.TimelinePropertiesContentHelper(WebInspector.UIString("Frame"));
     var durationInSeconds = frame.endTime - frame.startTime;
     var durationText = WebInspector.UIString("%s (at %s)", Number.secondsToString(frame.endTime - frame.startTime, true),
         Number.secondsToString(frame.startTimeOffset, true));
@@ -1515,7 +1537,7 @@ WebInspector.TimelinePresentationModel.generatePopupContentForFrameStatistics = 
         return WebInspector.UIString("%s (%.0f FPS)", Number.secondsToString(time, true), 1 / time);
     }
 
-    var contentHelper = new WebInspector.PopoverContentHelper(WebInspector.UIString("Selected Range"));
+    var contentHelper = new WebInspector.TimelinePropertiesContentHelper(WebInspector.UIString("Selected Range"));
 
     contentHelper.appendTextRow(WebInspector.UIString("Selected range"), WebInspector.UIString("%s\u2013%s (%d frames)",
         Number.secondsToString(statistics.startOffset, true), Number.secondsToString(statistics.endOffset, true), statistics.frameCount));
@@ -1680,4 +1702,89 @@ WebInspector.TimelineCategory.prototype = {
     },
 
     __proto__: WebInspector.Object.prototype
+}
+
+/**
+ * @constructor
+ * @param {string} title
+ */
+WebInspector.TimelinePropertiesContentHelper = function(title)
+{
+    this._contentTable = document.createElement("table");
+    var titleCell = this._createCell(WebInspector.UIString("%s - Details", title), "timeline-details-title");
+    titleCell.colSpan = 2;
+    var titleRow = document.createElement("tr");
+    titleRow.appendChild(titleCell);
+    this._contentTable.appendChild(titleRow);
+}
+
+WebInspector.TimelinePropertiesContentHelper.prototype = {
+    contentTable: function()
+    {
+        return this._contentTable;
+    },
+
+    /**
+     * @param {string=} styleName
+     */
+    _createCell: function(content, styleName)
+    {
+        var text = document.createElement("label");
+        text.appendChild(document.createTextNode(content));
+        var cell = document.createElement("td");
+        cell.className = "timeline-details";
+        if (styleName)
+            cell.className += " " + styleName;
+        cell.textContent = content;
+        return cell;
+    },
+
+    appendTextRow: function(title, content)
+    {
+        var row = document.createElement("tr");
+        row.appendChild(this._createCell(title, "timeline-details-row-title"));
+        row.appendChild(this._createCell(content, "timeline-details-row-data"));
+        this._contentTable.appendChild(row);
+    },
+
+    /**
+     * @param {string=} titleStyle
+     */
+    appendElementRow: function(title, content, titleStyle)
+    {
+        var row = document.createElement("tr");
+        var titleCell = this._createCell(title, "timeline-details-row-title");
+        if (titleStyle)
+            titleCell.addStyleClass(titleStyle);
+        row.appendChild(titleCell);
+        var cell = document.createElement("td");
+        cell.className = "details";
+        cell.appendChild(content);
+        row.appendChild(cell);
+        this._contentTable.appendChild(row);
+    },
+
+    /**
+     * @param {string} title
+     * @param {!Array.<ConsoleAgent.CallFrame>} stackTrace
+     * @param {function(ConsoleAgent.CallFrame)} callFrameLinkifier
+     */
+    appendStackTrace: function(title, stackTrace, callFrameLinkifier)
+    {
+        this.appendTextRow("", "");
+        var framesTable = document.createElement("table");
+        for (var i = 0; i < stackTrace.length; ++i) {
+            var stackFrame = stackTrace[i];
+            var row = document.createElement("tr");
+            row.className = "details";
+            row.appendChild(this._createCell(stackFrame.functionName || WebInspector.UIString("(anonymous function)"), "function-name"));
+            row.appendChild(this._createCell(" @ "));
+            var linkCell = document.createElement("td");
+            var urlElement = callFrameLinkifier(stackFrame);
+            linkCell.appendChild(urlElement);
+            row.appendChild(linkCell);
+            framesTable.appendChild(row);
+        }
+        this.appendElementRow(title, framesTable, "timeline-details-stacktrace-title");
+    }
 }

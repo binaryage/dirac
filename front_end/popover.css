@@ -93,34 +93,3 @@
     margin-right: -25px;
     background-position: 0 -57px;
 }
-
-.popover-details {
-    -webkit-user-select: text;
-    vertical-align: top;
-}
-
-.popover-function-name {
-    text-align: right;
-}
-
-.popover-stacktrace-title {
-    padding-top: 4px;
-}
-
-.popover-details-row-title {
-    font-weight: bold;
-    text-align: right;
-    white-space: nowrap;
-}
-
-.popover-details-row-data {
-    white-space: nowrap;
-}
-
-.popover-details-title {
-    border-bottom: 1px solid #B8B8B8;
-    font-weight: bold;
-    padding-bottom: 5px;
-    padding-top: 0;
-    white-space: nowrap;
-}

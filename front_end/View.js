@@ -496,6 +496,27 @@ WebInspector.ViewFactory.prototype = {
     createView: function(id) {}
 }
 
+/**
+ * @constructor
+ * @extends {WebInspector.View}
+ * @param {function()} resizeCallback
+ */
+WebInspector.ViewWithResizeCallback = function(resizeCallback)
+{
+    WebInspector.View.call(this);
+    this._resizeCallback = resizeCallback;
+}
+
+WebInspector.ViewWithResizeCallback.prototype = {
+    onResize: function()
+    {
+        this._resizeCallback();
+    },
+
+    __proto__: WebInspector.View.prototype
+}
+
+
 Element.prototype.appendChild = function(child)
 {
     WebInspector.View._assert(!child.__view, "Attempt to add view via regular DOM operation.");

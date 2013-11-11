@@ -98,7 +98,6 @@ WebInspector.Settings = function()
     this.textEditorBracketMatching = this.createSetting("textEditorBracketMatching", true);
     this.lastDockState = this.createSetting("lastDockState", "");
     this.cssReloadEnabled = this.createSetting("cssReloadEnabled", false);
-    this.showCpuOnTimelineRuler = this.createSetting("showCpuOnTimelineRuler", false);
     this.timelineStackFramesToCapture = this.createSetting("timelineStackFramesToCapture", 30);
     this.timelineLimitStackFramesFlag = this.createSetting("timelineLimitStackFramesFlag", false);
     this.showMetricsRulers = this.createSetting("showMetricsRulers", false);

@@ -33,11 +33,10 @@
  * @extends {WebInspector.MemoryStatistics}
  * @param {WebInspector.TimelinePanel} timelinePanel
  * @param {WebInspector.TimelineModel} model
- * @param {number} sidebarWidth
  */
-WebInspector.DOMCountersGraph = function(timelinePanel, model, sidebarWidth)
+WebInspector.DOMCountersGraph = function(timelinePanel, model)
 {
-    WebInspector.MemoryStatistics.call(this, timelinePanel, model, sidebarWidth);
+    WebInspector.MemoryStatistics.call(this, timelinePanel, model);
 }
 
 /**
@@ -86,7 +85,7 @@ WebInspector.DOMCounterUI.prototype = {
      */
     setRange: function(minValue, maxValue)
     {
-        this._range.textContent = WebInspector.UIString("[ %d - %d ]", minValue, maxValue);
+        this._range.textContent = WebInspector.UIString("[%d:%d]", minValue, maxValue);
     },
 
     updateCurrentValue: function(countersEntry)
@@ -164,9 +163,9 @@ WebInspector.DOMCountersGraph.prototype = {
             return entry.listenerCount;
         }
         return [
-            new WebInspector.DOMCounterUI(this, "Document Count", "Documents: %d", [100, 0, 0], getDocumentCount),
-            new WebInspector.DOMCounterUI(this, "DOM Node Count", "Nodes: %d", [0, 100, 0], getNodeCount),
-            new WebInspector.DOMCounterUI(this, "Event Listener Count", "Listeners: %d", [0, 0, 100], getListenerCount)
+            new WebInspector.DOMCounterUI(this, "Documents", "Documents: %d", [100, 0, 0], getDocumentCount),
+            new WebInspector.DOMCounterUI(this, "Nodes", "Nodes: %d", [0, 100, 0], getNodeCount),
+            new WebInspector.DOMCounterUI(this, "Listeners", "Listeners: %d", [0, 0, 100], getListenerCount)
         ];
     },
 
@@ -195,9 +194,9 @@ WebInspector.DOMCountersGraph.prototype = {
         WebInspector.TimelinePresentationModel.forAllRecords([event.data], null, addStatistics.bind(this));
     },
 
-    _draw: function()
+    draw: function()
     {
-        WebInspector.MemoryStatistics.prototype._draw.call(this);
+        WebInspector.MemoryStatistics.prototype.draw.call(this);
         for (var i = 0; i < this._counterUI.length; i++)
             this._drawGraph(this._counterUI[i]);
     },
@@ -247,7 +246,7 @@ WebInspector.DOMCountersGraph.prototype = {
                 continue;
             var y = counterUI.graphYValues[index];
             ctx.beginPath();
-            ctx.arc(x, y, radius, 0, Math.PI * 2, true);
+            ctx.arc(x + 0.5, y + 0.5, radius, 0, Math.PI * 2, true);
             ctx.lineWidth = 1;
             ctx.fillStyle = counterUI.graphColor;
             ctx.strokeStyle = counterUI.graphColor;
@@ -293,15 +292,16 @@ WebInspector.DOMCountersGraph.prototype = {
         var maxYRange = maxValue - minValue;
         var yFactor = maxYRange ? height / (maxYRange) : 1;
 
+        ctx.save();
+        ctx.translate(0.5, 0.5);
         ctx.beginPath();
-        var currentY = originY + (height - (valueGetter(this._counters[this._minimumIndex]) - minValue) * yFactor);
+        var currentY = Math.round(originY + (height - (valueGetter(this._counters[this._minimumIndex]) - minValue) * yFactor));
         ctx.moveTo(0, currentY);
         for (var i = this._minimumIndex; i <= this._maximumIndex; i++) {
-             var x = this._counters[i].x;
+             var x = Math.round(this._counters[i].x);
              ctx.lineTo(x, currentY);
-             currentY = originY + (height - (valueGetter(this._counters[i]) - minValue) * yFactor);
+             currentY = Math.round(originY + (height - (valueGetter(this._counters[i]) - minValue) * yFactor));
              ctx.lineTo(x, currentY);
-
              yValues[i] = currentY;
         }
         ctx.lineTo(width, currentY);
@@ -309,6 +309,7 @@ WebInspector.DOMCountersGraph.prototype = {
         ctx.strokeStyle = counterUI.graphColor;
         ctx.stroke();
         ctx.closePath();
+        ctx.restore();
     },
 
     _discardImageUnderMarker: function()
