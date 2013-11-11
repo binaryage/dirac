@@ -738,6 +738,11 @@ WebInspector.TimelinePanel.prototype = {
         this.toggleTimelineButton.toggled = true;
     },
 
+    _recordingInProgress: function()
+    {
+        return this.toggleTimelineButton.toggled;
+    },
+
     _onRecordingStopped: function()
     {
         this.toggleTimelineButton.title = WebInspector.UIString("Record");
@@ -1140,7 +1145,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         var anchor = this._getPopoverAnchor(e.target);
 
-        if (anchor && anchor.row && anchor.row._record.highlightQuad)
+        if (anchor && anchor.row && anchor.row._record.highlightQuad && !this._recordingInProgress())
             this._highlightQuad(anchor.row._record.highlightQuad);
         else
             this._hideQuadHighlight();
