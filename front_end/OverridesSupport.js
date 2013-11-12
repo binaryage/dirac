@@ -35,6 +35,7 @@
 WebInspector.OverridesSupport = function()
 {
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._deviceMetricsChanged.bind(this), this);
+    this._deviceMetricsOverrideEnabled = false;
 
     WebInspector.settings.overrideUserAgent.addChangeListener(this._userAgentChanged, this);
     WebInspector.settings.userAgent.addChangeListener(this._userAgentChanged, this);
@@ -478,7 +479,11 @@ WebInspector.OverridesSupport.prototype = {
                 this._updateWarningMessage(WebInspector.UIString("Screen emulation is not available on this page."));
                 return;
             }
-            this._updateWarningMessage("");
+
+            var enabled = !!(dipWidth && dipHeight);
+            this._updateWarningMessage(this._deviceMetricsOverrideEnabled !== enabled ?
+                WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering.") : "");
+            this._deviceMetricsOverrideEnabled = enabled;
         }
         this._revealOverridesTabIfNeeded();
     },
