@@ -1606,6 +1606,7 @@ WebInspector.SourcesView.prototype = {
     _onDrop: function (event)
     {
         event.consume(true);
+        this._removeMask();
         var items = event.dataTransfer.items;
         var item = /** @type {DataTransferItem} */ (items.length ? items[0] : null);
         var entry = item.webkitGetAsEntry();
@@ -1617,6 +1618,11 @@ WebInspector.SourcesView.prototype = {
     _onDragLeave: function (event)
     {
         event.consume(true);
+        this._removeMask();
+    },
+
+    _removeMask: function ()
+    {
         this._dragMaskElement.remove();
         delete this._dragMaskElement;
     },
