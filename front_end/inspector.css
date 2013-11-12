@@ -607,6 +607,7 @@ button.status-bar-item.right-sidebar-show-hide-button {
     width: 16px;
     margin: 4px 2px 2px 2px;
     border: none;
+    z-index: 10;
 }
 
 button.status-bar-item.left-sidebar-show-hide-button:active,
