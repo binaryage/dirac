@@ -139,8 +139,9 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
 
     /**
      * @param {HeapProfilerAgent.HeapSnapshotObjectId} heapSnapshotObjectId
+     * @param {function(boolean)} callback
      */
-    highlightObjectByHeapSnapshotId: function(heapSnapshotObjectId)
+    highlightObjectByHeapSnapshotId: function(heapSnapshotObjectId, callback)
     {
     },
 
@@ -618,8 +619,9 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
     /**
      * @override
      * @param {HeapProfilerAgent.HeapSnapshotObjectId} id
+     * @param {function(boolean)} callback
      */
-    highlightObjectByHeapSnapshotId: function(id)
+    highlightObjectByHeapSnapshotId: function(id, callback)
     {
         if (!this.snapshot) {
             this._objectIdToSelect = id;
@@ -628,6 +630,10 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
 
         function didGetClassName(className)
         {
+            if (!className) {
+                callback(false);
+                return;
+            }
             var constructorNodes = this.topLevelNodes();
             for (var i = 0; i < constructorNodes.length; i++) {
                 var parent = constructorNodes[i];
@@ -637,7 +643,7 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
                         // to the data grid
                         this._revealTopLevelNode(parent);
                     }
-                    parent.revealNodeBySnapshotObjectId(parseInt(id, 10));
+                    parent.revealNodeBySnapshotObjectId(parseInt(id, 10), callback);
                     return;
                 }
             }
@@ -652,7 +658,7 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
             this._populateChildren();
 
         if (this._objectIdToSelect) {
-            this.highlightObjectByHeapSnapshotId(this._objectIdToSelect);
+            this.highlightObjectByHeapSnapshotId(this._objectIdToSelect, function(found) {});
             this._objectIdToSelect = null;
         }
     },
@@ -838,7 +844,7 @@ WebInspector.HeapSnapshotDominatorsDataGrid.prototype = {
         this.rootNode().sort();
 
         if (this._objectIdToSelect) {
-            this.highlightObjectByHeapSnapshotId(this._objectIdToSelect);
+            this.highlightObjectByHeapSnapshotId(this._objectIdToSelect, function(found) {});
             this._objectIdToSelect = null;
         }
     },
@@ -851,11 +857,13 @@ WebInspector.HeapSnapshotDominatorsDataGrid.prototype = {
     /**
      * @override
      * @param {HeapProfilerAgent.HeapSnapshotObjectId} id
+     * @param {function(boolean)} callback
      */
-    highlightObjectByHeapSnapshotId: function(id)
+    highlightObjectByHeapSnapshotId: function(id, callback)
     {
         if (!this.snapshot) {
             this._objectIdToSelect = id;
+            callback(false);
             return;
         }
 
@@ -863,6 +871,7 @@ WebInspector.HeapSnapshotDominatorsDataGrid.prototype = {
         {
             if (!dominatorIds) {
                 WebInspector.log(WebInspector.UIString("Cannot find corresponding heap snapshot node"));
+                callback(false);
                 return;
             }
             var dominatorNode = this.rootNode();
@@ -873,11 +882,13 @@ WebInspector.HeapSnapshotDominatorsDataGrid.prototype = {
         {
             if (!dominatorNode) {
                 console.error("Cannot find dominator node");
+                callback(false);
                 return;
             }
             if (!dominatorIds.length) {
                 this.highlightNode(dominatorNode);
                 dominatorNode.element.scrollIntoViewIfNeeded(true);
+                callback(true);
                 return;
             }
             var snapshotObjectId = dominatorIds.pop();

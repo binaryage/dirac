@@ -751,8 +751,9 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
 
     /**
      * @param {number} snapshotObjectId
+     * @param {function(boolean)} callback
      */
-    revealNodeBySnapshotObjectId: function(snapshotObjectId)
+    revealNodeBySnapshotObjectId: function(snapshotObjectId, callback)
     {
         function didExpand()
         {
@@ -761,10 +762,12 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
 
         function didGetNodePosition(nodePosition)
         {
-            if (nodePosition === -1)
+            if (nodePosition === -1) {
                 this.collapse();
-            else
+                callback(false);
+            } else {
                 this._populateChildren(nodePosition, null, didPopulateChildren.bind(this, nodePosition));
+            }
         }
 
         function didPopulateChildren(nodePosition)
@@ -776,10 +779,12 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
                    var childIndex = indexOfFirsChildInRange + nodePosition - range.from;
                    var instanceNode = this.children[childIndex];
                    this._dataGrid.highlightNode(instanceNode);
+                   callback(true);
                    return;
                }
                indexOfFirsChildInRange += range.to - range.from + 1;
             }
+            callback(false);
         }
 
         this.expandWithoutPopulate(didExpand.bind(this));

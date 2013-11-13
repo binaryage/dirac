@@ -261,30 +261,30 @@ WebInspector.HeapSnapshotView.prototype = {
         if (this.currentView !== this.constructorsView && this.currentView !== this.diffView)
             return;
 
+        if (query.charAt(0) === "@") {
+            var snapshotNodeId = parseInt(query.substring(1), 10);
+            if (!isNaN(snapshotNodeId)) {
+                function didHighlight(found) {
+                    finishedCallback(this, found ? 1 : 0);
+                }
+                this.dataGrid.highlightObjectByHeapSnapshotId(String(snapshotNodeId), didHighlight.bind(this));
+            } else {
+                finishedCallback(this, 0);
+            }
+            return;
+        }
+
         this._searchFinishedCallback = finishedCallback;
         var nameRegExp = createPlainTextSearchRegex(query, "i");
-        var snapshotNodeId = null;
 
         function matchesByName(gridNode) {
             return ("_name" in gridNode) && nameRegExp.test(gridNode._name);
         }
 
-        function matchesById(gridNode) {
-            return ("snapshotNodeId" in gridNode) && gridNode.snapshotNodeId === snapshotNodeId;
-        }
-
-        var matchPredicate;
-        if (query.charAt(0) !== "@")
-            matchPredicate = matchesByName;
-        else {
-            snapshotNodeId = parseInt(query.substring(1), 10);
-            matchPredicate = matchesById;
-        }
-
         function matchesQuery(gridNode)
         {
             delete gridNode._searchMatched;
-            if (matchPredicate(gridNode)) {
+            if (matchesByName(gridNode)) {
                 gridNode._searchMatched = true;
                 gridNode.refresh();
                 return true;

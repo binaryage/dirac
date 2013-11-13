@@ -819,7 +819,11 @@ WebInspector.ProfilesPanel.prototype = {
                 this._showProfile(profile);
                 var view = profile.view(this);
                 view.changeView(viewName, function() {
-                    view.dataGrid.highlightObjectByHeapSnapshotId(snapshotObjectId);
+                    function didHighlightObject(found) {
+                        if (!found)
+                            WebInspector.log("Cannot find corresponding heap snapshot node", WebInspector.ConsoleMessage.MessageLevel.Error, true);
+                    }
+                    view.dataGrid.highlightObjectByHeapSnapshotId(snapshotObjectId, didHighlightObject.bind(this));
                 });
                 break;
             }
