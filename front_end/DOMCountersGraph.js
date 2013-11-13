@@ -169,11 +169,6 @@ WebInspector.DOMCountersGraph.prototype = {
         ];
     },
 
-    _canvasHeight: function()
-    {
-        return this._canvasContainer.offsetHeight - this._currentValuesBar.offsetHeight;
-    },
-
     /**
      * @param {WebInspector.Event} event
      */

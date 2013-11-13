@@ -115,7 +115,7 @@ WebInspector.TimelinePanel = function()
 
     this._timelineMemorySplitter = new WebInspector.SplitView(false, "timeline-memory");
     this._timelineMemorySplitter.element.removeStyleClass("fill");
-    this._timelineMemorySplitter.element.style.flex = "auto";
+    this._timelineMemorySplitter.element.addStyleClass("timeline-memory-split");
     this._timelineMemorySplitter.show(this._searchableView.element);
     if (this._overviewModeSetting.get() !== WebInspector.TimelineOverviewPane.Mode.Memory)
         this._timelineMemorySplitter.showOnlyFirst();
@@ -698,6 +698,7 @@ WebInspector.TimelinePanel.prototype = {
         this._closeRecordDetails();
         this._graphRowsElementWidth = this._graphRowsElement.offsetWidth;
         this._containerElementHeight = this._containerElement.clientHeight;
+        this._timelineGrid.gridHeaderElement.style.width = this._itemsGraphsElement.offsetWidth + "px";
         this._scheduleRefresh(false, true);
     },
 
@@ -755,6 +756,7 @@ WebInspector.TimelinePanel.prototype = {
             this._injectCategoryStyles();
         }
         this._overviewPane.setMode(this._overviewModeSetting.get());
+        this._onViewportResize();
         this._refresh();
     },
 
@@ -921,7 +923,7 @@ WebInspector.TimelinePanel.prototype = {
         var visibleTop = this._scrollTop - WebInspector.TimelinePanel.headerHeight;
         var visibleBottom = visibleTop + this._containerElementHeight - WebInspector.TimelinePanel.rowHeight;
         if (itemOffset < visibleTop)
-            this._containerElement.scrollTop = itemOffset + WebInspector.TimelinePanel.rowHeight;
+            this._containerElement.scrollTop = itemOffset;
         else if (itemOffset > visibleBottom)
             this._containerElement.scrollTop = itemOffset - this._containerElementHeight + WebInspector.TimelinePanel.headerHeight + WebInspector.TimelinePanel.rowHeight;
         else if (highlight)
@@ -1036,9 +1038,6 @@ WebInspector.TimelinePanel.prototype = {
             highlightedListRowElement.addStyleClass("highlighted-timeline-record");
             highlightedGraphRowElement.addStyleClass("highlighted-timeline-record");
         }
-
-        // Lastly update header width.
-        this._timelineGrid.gridHeaderElement.style.width = this._itemsGraphsElement.offsetWidth + "px";
 
         return recordsInWindow.length;
     },

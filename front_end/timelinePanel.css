@@ -485,6 +485,11 @@
 }
 
 #memory-counters-graph {
+    top: 15px;
+    border-right: 1px solid rgb(196, 196, 196);
+}
+
+#memory-graphs-canvas-container {
     overflow: hidden;
 }
 
@@ -492,8 +497,8 @@
     top: 15px;
 }
 
-#memory-graphs-container .split-view-contents {
-    overflow: hidden;
+#memory-graphs-container .split-view-contents-first {
+    background-color: rgb(236, 236, 236);
 }
 
 .memory-counter-sidebar-info {
@@ -519,7 +524,7 @@
 
 #counter-values-bar {
     border-bottom: solid 1px lightgray;
-    min-height: 15px;
+    height: 0 0 15px;
 }
 
 .timeline .resources-event-divider {
@@ -737,4 +742,12 @@
 .timeline-details-view-row-stack-trace .webkit-html-external-link,
 .timeline-details-view-row-stack-trace .webkit-html-resource-link {
     color: #333 !important;
+}
+
+.timeline-memory-split {
+    flex: auto;
+}
+
+.timeline-memory-split > .split-view-contents-first {
+    overflow: hidden;
 }

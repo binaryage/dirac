@@ -53,7 +53,7 @@ WebInspector.MemoryStatistics = function(timelinePanel, model)
     this._canvasContainer = this._memorySidebarView.mainElement;
     this._canvasContainer.id = "memory-graphs-canvas-container";
     this._createCurrentValuesBar();
-    this._canvas = this._canvasContainer.createChild("canvas");
+    this._canvas = this._canvasContainer.createChild("canvas", "fill");
     this._canvas.id = "memory-counters-graph";
     this._lastMarkerXPosition = 0;
 
@@ -231,18 +231,15 @@ WebInspector.MemoryStatistics.prototype = {
 
     onResize: function()
     {
-        this._updateSize();
-        this.draw();
-    },
-
-    _updateSize: function()
-    {
         var width = this._mainTimelineGrid.dividersElement.offsetWidth + 1;
-        this._canvasContainer.style.width = width + "px";
 
-        var height = this._canvasHeight();
+        this._canvas.style.width = width + "px";
+        this._timelineGrid.dividersElement.style.width = width + "px";
+        var parentElement = this._canvas.parentElement;
+
         this._canvas.width = width;
-        this._canvas.height = height;
+        this._canvas.height = parentElement.clientHeight - 15;
+        this.draw();
     },
 
     /**
