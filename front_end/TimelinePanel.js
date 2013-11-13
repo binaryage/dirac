@@ -89,23 +89,29 @@ WebInspector.TimelinePanel = function()
     // |-------------------------------|
     // |    |           |              |
     // |    |  Records  |              |
-    // |    |           |  Properties  |
+    // |    |           |    Details   |
     // |----------------|              |
     // |    |  Memory   |              |
     //  -------------------------------
 
     // Create top level properties splitter.
-    this._propertiesSplitView = new WebInspector.SplitView(true, "timeline-details");
-    this._propertiesSplitView.element.removeStyleClass("fill");
-    this._propertiesSplitView.element.addStyleClass("timeline-details-split");
-    this._propertiesSplitView.sidebarElement.addStyleClass("timeline-details");
-    this._propertiesSplitView.show(this.element);
-    this._propertiesSplitView.mainElement.addStyleClass("vbox");
-    this._propertiesSplitView.showOnlyFirst();
+    this._detailsSplitView = new WebInspector.SplitView(false, "timeline-details");
+    this._detailsSplitView.element.removeStyleClass("fill");
+    this._detailsSplitView.element.addStyleClass("timeline-details-split");
+    this._detailsSplitView.sidebarElement.addStyleClass("timeline-details");
+    this._detailsSplitView.show(this.element);
+    this._detailsSplitView.mainElement.addStyleClass("vbox");
+    this._detailsView = new WebInspector.TimelineDetailsView();
+    this._detailsView.show(this._detailsSplitView.sidebarElement);
+    this._detailsSplitView.installResizer(this._detailsView.titleElement());
+
+    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
+    WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
+    this._dockSideChanged();
 
     // Create memory splitter as a left child of properties.
     this._searchableView = new WebInspector.SearchableView(this);
-    this._searchableView.show(this._propertiesSplitView.mainElement);
+    this._searchableView.show(this._detailsSplitView.mainElement);
 
     this._timelineMemorySplitter = new WebInspector.SplitView(false, "timeline-memory");
     this._timelineMemorySplitter.element.removeStyleClass("fill");
@@ -158,11 +164,9 @@ WebInspector.TimelinePanel = function()
 
     this.element.addEventListener("mousemove", this._mouseMove.bind(this), false);
     this.element.addEventListener("mouseout", this._mouseOut.bind(this), false);
+    this.element.addEventListener("keydown", this._keyDown.bind(this), false);
 
     this._expandOffset = 15;
-
-    this._headerLineCount = 1;
-    this._adjustHeaderHeight();
 
     // Create gpu tasks containers.
     this._mainThreadTasks = /** @type {!Array.<{startTime: number, endTime: number}>} */ ([]);
@@ -179,7 +183,7 @@ WebInspector.TimelinePanel = function()
 
 // Define row and header height, should be in sync with styles for timeline graphs.
 WebInspector.TimelinePanel.rowHeight = 18;
-WebInspector.TimelinePanel.headerHeight = 19;
+WebInspector.TimelinePanel.headerHeight = 20;
 
 WebInspector.TimelinePanel.durationFilterPresetsMs = [0, 1, 15];
 
@@ -414,6 +418,13 @@ WebInspector.TimelinePanel.prototype = {
         this._model.loadFromURL(url, progressIndicator);
     },
 
+    _dockSideChanged: function()
+    {
+        var dockSide = WebInspector.dockController.dockSide();
+        var vertically = dockSide === WebInspector.DockController.State.DockedToRight && WebInspector.settings.splitVerticallyWhenDockedToRight.get();
+        this._detailsSplitView.setVertical(!vertically);
+    },
+
     /**
      * @return {?WebInspector.ProgressIndicator}
      */
@@ -496,7 +507,7 @@ WebInspector.TimelinePanel.prototype = {
             this._frameContainer = document.createElement("div");
             this._frameContainer.addStyleClass("fill");
             this._frameContainer.addStyleClass("timeline-frame-container");
-            this._frameContainer.style.height = this._headerLineCount * WebInspector.TimelinePanel.rowHeight + frameContainerBorderWidth + "px";
+            this._frameContainer.style.height = WebInspector.TimelinePanel.rowHeight + frameContainerBorderWidth + "px";
             this._frameContainer.addEventListener("dblclick", this._onFrameDoubleClicked.bind(this), false);
         }
 
@@ -776,15 +787,29 @@ WebInspector.TimelinePanel.prototype = {
     /**
      * @param {WebInspector.TimelinePresentationModel.Record} record
      */
-    _selectItem: function(record)
+    _selectRecord: function(record)
     {
+        if (record === this._lastSelectedRecord)
+            return;
+
+        // Remove selection rendering.
         if (this._lastSelectedRecord) {
             var listRow = /** @type {WebInspector.TimelineRecordListRow} */ (this._lastSelectedRecord.getUserObject("WebInspector.TimelineRecordListRow"));
-            listRow.renderAsSelected(false);
+            if (listRow)
+                listRow.renderAsSelected(false);
+            var graphRow = /** @type {WebInspector.TimelineRecordGraphRow} */ (this._lastSelectedRecord.getUserObject("WebInspector.TimelineRecordGraphRow"));
+            if (graphRow)
+                graphRow.renderAsSelected(false);
         }
+
+        var recordsInWindow = this._presentationModel.filteredRecords();
+        this._revealRecord(record);
+
         this._lastSelectedRecord = record;
         var listRow = /** @type {WebInspector.TimelineRecordListRow} */ (record.getUserObject("WebInspector.TimelineRecordListRow"));
         listRow.renderAsSelected(true);
+        var graphRow = /** @type {WebInspector.TimelineRecordListRow} */ (record.getUserObject("WebInspector.TimelineRecordGraphRow"));
+        graphRow.renderAsSelected(true);
 
         record.generatePopupContent(showCallback.bind(this));
 
@@ -793,8 +818,7 @@ WebInspector.TimelinePanel.prototype = {
          */
         function showCallback(element)
         {
-            this._propertiesSplitView.sidebarElement.removeChildren();
-            this._propertiesSplitView.sidebarElement.appendChild(element);
+            this._detailsView.setContent(record.title, element);
         }
     },
 
@@ -873,10 +897,13 @@ WebInspector.TimelinePanel.prototype = {
             return;
         }
 
-        this._revealRecord(recordToReveal);
+        this._revealRecord(recordToReveal, true);
     },
 
-    _revealRecord: function(recordToReveal)
+    /**
+     * @param {boolean=} highlight
+     */
+    _revealRecord: function(recordToReveal, highlight)
     {
         // Expand all ancestors.
         for (var parent = recordToReveal.parent; parent !== this._rootRecord(); parent = parent.parent) {
@@ -887,13 +914,17 @@ WebInspector.TimelinePanel.prototype = {
         }
         var recordsInWindow = this._presentationModel.filteredRecords();
         var index = recordsInWindow.indexOf(recordToReveal);
-        this._recordToHighlight = recordToReveal;
-        var oldScrollTop = this._containerElement.scrollTop;
-        this._containerElement.scrollTop = index * WebInspector.TimelinePanel.rowHeight;
-        // The record to highlight will be only kept for one refresh cycle, so make sure
-        // refresh is only called once, either via scroll event handler or directly, if
-        // we're not about to scroll.
-        if (this._containerElement.scrollTop === oldScrollTop)
+        if (highlight)
+            this._recordToHighlight = recordToReveal;
+
+        var itemOffset = index * WebInspector.TimelinePanel.rowHeight;
+        var visibleTop = this._scrollTop - WebInspector.TimelinePanel.headerHeight;
+        var visibleBottom = visibleTop + this._containerElementHeight - WebInspector.TimelinePanel.rowHeight;
+        if (itemOffset < visibleTop)
+            this._containerElement.scrollTop = itemOffset + WebInspector.TimelinePanel.rowHeight;
+        else if (itemOffset > visibleBottom)
+            this._containerElement.scrollTop = itemOffset - this._containerElementHeight + WebInspector.TimelinePanel.headerHeight + WebInspector.TimelinePanel.rowHeight;
+        else if (highlight)
             this._refresh();
     },
 
@@ -905,13 +936,13 @@ WebInspector.TimelinePanel.prototype = {
         var visibleTop = this._scrollTop;
         var visibleBottom = visibleTop + this._containerElementHeight;
 
-        const rowHeight = WebInspector.TimelinePanel.rowHeight;
-        const headerHeight = WebInspector.TimelinePanel.headerHeight;
+        var rowHeight = WebInspector.TimelinePanel.rowHeight;
+        var headerHeight = WebInspector.TimelinePanel.headerHeight;
 
         // Convert visible area to visible indexes. Always include top-level record for a visible nested record.
-        var startIndex = Math.max(0, Math.min(Math.floor(visibleTop / rowHeight) - this._headerLineCount, recordsInWindow.length - 1));
+        var startIndex = Math.max(0, Math.min(Math.floor((visibleTop - headerHeight) / rowHeight), recordsInWindow.length - 1));
         var endIndex = Math.min(recordsInWindow.length, Math.ceil(visibleBottom / rowHeight));
-        var lastVisibleLine = Math.max(0, Math.floor(visibleBottom / rowHeight) - this._headerLineCount);
+        var lastVisibleLine = Math.max(0, Math.floor((visibleBottom - headerHeight) / rowHeight));
         if (this._automaticallySizeWindow && recordsInWindow.length > lastVisibleLine) {
             this._automaticallySizeWindow = false;
             // If we're at the top, always use real timeline start as a left window bound so that expansion arrow padding logic works.
@@ -923,7 +954,7 @@ WebInspector.TimelinePanel.prototype = {
 
         // Resize gaps first.
         this._topGapElement.style.height = (startIndex * rowHeight) + "px";
-        this._sidebarView.sidebarElement.firstChild.style.flexBasis = ((startIndex + this._headerLineCount) * rowHeight) + "px";
+        this._sidebarView.sidebarElement.firstChild.style.flexBasis = (startIndex * rowHeight + headerHeight) + "px";
         this._bottomGapElement.style.height = (recordsInWindow.length - endIndex) * rowHeight + "px";
         var rowsHeight = headerHeight + recordsInWindow.length * rowHeight;
         var totalHeight = Math.max(this._containerElementHeight, rowsHeight);
@@ -938,7 +969,7 @@ WebInspector.TimelinePanel.prototype = {
         this._itemsGraphsElement.removeChild(this._graphRowsElement);
         var graphRowElement = this._graphRowsElement.firstChild;
         var scheduleRefreshCallback = this._invalidateAndScheduleRefresh.bind(this, true, true);
-        var selectItemCallback = this._selectItem.bind(this);
+        var selectRecordCallback = this._selectRecord.bind(this);
         this._itemsGraphsElement.removeChild(this._expandElements);
         this._expandElements.removeChildren();
 
@@ -959,11 +990,11 @@ WebInspector.TimelinePanel.prototype = {
                 }
             } else {
                 if (!listRowElement) {
-                    listRowElement = new WebInspector.TimelineRecordListRow(selectItemCallback, scheduleRefreshCallback).element;
+                    listRowElement = new WebInspector.TimelineRecordListRow(selectRecordCallback, scheduleRefreshCallback).element;
                     this._sidebarListElement.appendChild(listRowElement);
                 }
                 if (!graphRowElement) {
-                    graphRowElement = new WebInspector.TimelineRecordGraphRow(this._itemsGraphsElement, selectItemCallback, scheduleRefreshCallback).element;
+                    graphRowElement = new WebInspector.TimelineRecordGraphRow(this._itemsGraphsElement, selectRecordCallback, scheduleRefreshCallback).element;
                     this._graphRowsElement.appendChild(graphRowElement);
                 }
 
@@ -973,9 +1004,11 @@ WebInspector.TimelinePanel.prototype = {
                 }
 
                 listRowElement.row.update(record, visibleTop);
-                if (this._lastSelectedRecord === record)
-                    listRowElement.row.renderAsSelected(true);
                 graphRowElement.row.update(record, this._calculator, this._expandOffset, i);
+                if (this._lastSelectedRecord === record) {
+                    listRowElement.row.renderAsSelected(true);
+                    graphRowElement.row.renderAsSelected(true);
+                }
 
                 listRowElement = listRowElement.nextSibling;
                 graphRowElement = graphRowElement.nextSibling;
@@ -996,7 +1029,7 @@ WebInspector.TimelinePanel.prototype = {
 
         this._itemsGraphsElement.insertBefore(this._graphRowsElement, this._bottomGapElement);
         this._itemsGraphsElement.appendChild(this._expandElements);
-        this._adjustScrollPosition((recordsInWindow.length + this._headerLineCount) * rowHeight);
+        this._adjustScrollPosition(recordsInWindow.length * rowHeight + headerHeight);
         this._updateSearchHighlight(false, true);
 
         if (highlightedListRowElement) {
@@ -1108,17 +1141,6 @@ WebInspector.TimelinePanel.prototype = {
         }
     },
 
-    _adjustHeaderHeight: function()
-    {
-        const headerBorderWidth = 1;
-        const headerMargin = 2;
-
-        var headerHeight = this._headerLineCount * WebInspector.TimelinePanel.rowHeight;
-        this._sidebarView.sidebarElement.firstChild.style.flexBasis = headerHeight + "px";
-        this._timelineGrid.dividersLabelBarElement.style.height = headerHeight + headerMargin + "px";
-        this._itemsGraphsElement.style.top = headerHeight + headerBorderWidth + "px";
-    },
-
     _adjustScrollPosition: function(totalHeight)
     {
         // Prevent the container from being scrolled off the end.
@@ -1129,7 +1151,6 @@ WebInspector.TimelinePanel.prototype = {
     _getPopoverAnchor: function(element)
     {
         return element.enclosingNodeOrSelfWithClass("timeline-graph-bar") ||
-            element.enclosingNodeOrSelfWithClass("timeline-tree-item") ||
             element.enclosingNodeOrSelfWithClass("timeline-frame-strip");
     },
 
@@ -1155,6 +1176,60 @@ WebInspector.TimelinePanel.prototype = {
             this._timelineGrid.showCurtains(offset >= 0 ? offset : 0, anchor.offsetWidth);
         } else
             this._timelineGrid.hideCurtains();
+    },
+
+    /**
+     * @param {Event} event
+     */
+    _keyDown: function(event)
+    {
+        if (!this._lastSelectedRecord || event.shiftKey || event.metaKey || event.ctrlKey)
+            return;
+
+        var record = this._lastSelectedRecord;
+        var recordsInWindow = this._presentationModel.filteredRecords();
+        var index = recordsInWindow.indexOf(record);
+        if (index === -1)
+            index = 0;
+
+        switch (event.keyIdentifier) {
+        case "Left":
+            if (record.parent) {
+                if ((!record.expandable || record.collapsed) && record.parent !== this._presentationModel.rootRecord()) {
+                    this._selectRecord(record.parent);
+                } else {
+                    record.collapsed = true;
+                    record.clicked = true;
+                    this._invalidateAndScheduleRefresh(true, true);
+                }
+            }
+            event.consume(true);
+            break;
+        case "Up":
+            if (--index < 0)
+                break;
+            this._selectRecord(recordsInWindow[index]);
+            event.consume(true);
+            break;
+        case "Right":
+            if (record.expandable && record.collapsed) {
+                record.collapsed = false;
+                record.clicked = true;
+                this._invalidateAndScheduleRefresh(true, true);
+            } else {
+                if (++index >= recordsInWindow.length)
+                    break;
+                this._selectRecord(recordsInWindow[index]);
+            }
+            event.consume(true);
+            break;
+        case "Down":
+            if (++index >= recordsInWindow.length)
+                break;
+            this._selectRecord(recordsInWindow[index]);
+            event.consume(true);
+            break;
+        }
     },
 
     /**
@@ -1258,7 +1333,7 @@ WebInspector.TimelinePanel.prototype = {
         }
 
         if (revealRecord)
-            this._revealRecord(record);
+            this._revealRecord(record, true);
     },
 
     _clearHighlight: function()
@@ -1430,8 +1505,10 @@ WebInspector.TimelineCalculator.prototype = {
 
 /**
  * @constructor
+ * @param {function(WebInspector.TimelinePresentationModel.Record)} selectRecord
+ * @param {function()} scheduleRefresh
  */
-WebInspector.TimelineRecordListRow = function(selectItem, scheduleRefresh)
+WebInspector.TimelineRecordListRow = function(selectRecord, scheduleRefresh)
 {
     this.element = document.createElement("div");
     this.element.row = this;
@@ -1450,7 +1527,7 @@ WebInspector.TimelineRecordListRow = function(selectItem, scheduleRefresh)
 
     this._dataElement = this.element.createChild("span", "data dimmed");
     this._scheduleRefresh = scheduleRefresh;
-    this._selectItem = selectItem;
+    this._selectRecord = selectRecord;
 }
 
 WebInspector.TimelineRecordListRow.prototype = {
@@ -1512,7 +1589,7 @@ WebInspector.TimelineRecordListRow.prototype = {
      */
     _onClick: function(event)
     {
-        this._selectItem(this._record);
+        this._selectRecord(this._record);
     },
 
     /**
@@ -1558,8 +1635,10 @@ WebInspector.TimelineRecordListRow.testContentMatching = function(record, regExp
 
 /**
  * @constructor
+ * @param {function(WebInspector.TimelinePresentationModel.Record)} selectRecord
+ * @param {function()} scheduleRefresh
  */
-WebInspector.TimelineRecordGraphRow = function(graphContainer, selectItemCallback, scheduleRefresh)
+WebInspector.TimelineRecordGraphRow = function(graphContainer, selectRecord, scheduleRefresh)
 {
     this.element = document.createElement("div");
     this.element.row = this;
@@ -1589,7 +1668,7 @@ WebInspector.TimelineRecordGraphRow = function(graphContainer, selectItemCallbac
     this._expandElement = new WebInspector.TimelineExpandableElement(graphContainer);
     this._expandElement._element.addEventListener("click", this._onExpandClick.bind(this));
 
-    this._selectItem = selectItemCallback;
+    this._selectRecord = selectRecord;
     this._scheduleRefresh = scheduleRefresh;
 }
 
@@ -1618,7 +1697,15 @@ WebInspector.TimelineRecordGraphRow.prototype = {
      */
     _onClick: function(event)
     {
-        this._selectItem(this._record);
+        this._selectRecord(this._record);
+    },
+
+    /**
+     * @param {boolean} selected
+     */
+    renderAsSelected: function(selected)
+    {
+        this.element.enableStyleClass("selected", selected);
     },
 
     /**
@@ -1754,7 +1841,6 @@ WebInspector.TimelineSearchFilter = function(regExp)
 }
 
 WebInspector.TimelineSearchFilter.prototype = {
-
     /**
      * @param {!WebInspector.TimelinePresentationModel.Record} record
      * @return {boolean}
@@ -1763,4 +1849,41 @@ WebInspector.TimelineSearchFilter.prototype = {
     {
         return WebInspector.TimelineRecordListRow.testContentMatching(record, this._regExp);
     }
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.View}
+ */
+WebInspector.TimelineDetailsView = function()
+{
+    WebInspector.View.call(this);
+    this.element = document.createElement("div");
+    this.element.className = "timeline-details-view fill vbox";
+    this._titleElement = this.element.createChild("div", "timeline-details-view-title");
+    this._titleElement.textContent = WebInspector.UIString("Details");
+    this._contentElement = this.element.createChild("div", "timeline-details-view-body");
+}
+
+WebInspector.TimelineDetailsView.prototype = {
+    /**
+     * @return {Element}
+     */
+    titleElement: function()
+    {
+        return this._titleElement;
+    },
+
+    /**
+     * @param {string} title
+     * @param {Element} element
+     */
+    setContent: function(title, element)
+    {
+        this._titleElement.textContent = WebInspector.UIString("Details: %s", title);
+        this._contentElement.removeChildren();
+        this._contentElement.appendChild(element);
+    },
+
+    __proto__: WebInspector.View.prototype
 }

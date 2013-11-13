@@ -35,7 +35,6 @@
 WebInspector.OverviewGrid = function(prefix)
 {
     this.element = document.createElement("div");
-    this.element.className = "fill";
     this.element.id = prefix + "-overview-container";
 
     this._grid = new WebInspector.TimelineGrid();

@@ -37,6 +37,7 @@ WebInspector.TimelineOverviewPane = function(model)
 {
     WebInspector.View.call(this);
     this.element.id = "timeline-overview-panel";
+    this.element.addStyleClass("hbox");
 
     this._windowStartTime = 0;
     this._windowEndTime = Infinity;
@@ -69,6 +70,7 @@ WebInspector.TimelineOverviewPane = function(model)
     }
     
     this._overviewGrid = new WebInspector.OverviewGrid("timeline");
+
     this.element.appendChild(this._overviewGrid.element);
 
     this._innerSetMode(WebInspector.TimelineOverviewPane.Mode.Events);
@@ -188,8 +190,7 @@ WebInspector.TimelineOverviewPane.prototype = {
      */
     sidebarResized: function(width)
     {
-        this._overviewGrid.element.style.left = width + "px";
-        this._topPaneSidebarElement.style.width = width + "px";
+        this._topPaneSidebarElement.style.flexBasis = width + "px";
         this._update();
     },
 

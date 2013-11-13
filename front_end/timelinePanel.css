@@ -37,6 +37,10 @@
     pointer-events: none;
 }
 
+.timeline-records-title, .timeline-records-list {
+    background-color: rgb(236, 236, 236);
+}
+
 .timeline-records-title {
     padding: 3px;
     flex: 0 0 19px;
@@ -44,16 +48,12 @@
 
 .timeline-records-list {
     flex: auto;
-    padding-top: 1px;
 }
 
 #timeline-overview-sidebar {
-    position: absolute;
-    width: 200px;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    border-right: 1px solid rgb(163, 163, 163);
+    flex: none;
+    padding-right: 10px;
+    border-right: 1px solid rgb(64%, 64%, 64%);
 }
 
 #timeline-overview-grid {
@@ -83,7 +83,7 @@
 
 #timeline-container {
     border-right: 0 none transparent;
-    overflow-y: visible;
+    overflow-y: scroll;
     overflow-x: hidden;
 }
 
@@ -111,9 +111,14 @@
     overflow: hidden;
 }
 
-.timeline-tree-item.hovered,
+.timeline-tree-item.selected {
+    background-color: rgb(56, 121, 217) !important;
+    color: white;
+}
+
+.timeline-tree-item.hovered:not(.selected),
 .timeline-graph-side.hovered {
-    background-color: rgba(56, 121, 217, 0.1) !important;
+    background-color: rgba(0, 0, 0, 0.05) !important;
 }
 
 .timeline-expandable {
@@ -217,9 +222,10 @@
     height: 10px;
     float: right;
     content: "";
-    position: relative;
-    top: 2px;
+    /* position: absolute; */
+    /* top: 2px; */
     background-position: -202px -107px;
+    right: 2px;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
@@ -235,6 +241,16 @@
 
 .timeline-tree-item .data.dimmed {
     color: rgba(0, 0, 0, 0.7);
+    pointer-events: none;
+}
+
+.timeline-tree-item.selected .data.dimmed {
+    color: rgba(255, 255, 255, 0.8);
+    pointer-events: auto;
+}
+
+.timeline-tree-item.selected .timeline-tree-item-expand-arrow {
+    background-color: white;
 }
 
 #timeline-overview-events,
@@ -249,6 +265,11 @@
 
 #timeline-overview-memory  {
     top: 25px;
+}
+
+#timeline-overview-container {
+    flex: auto;
+    position: relative;
 }
 
 #timeline-overview-container canvas {
@@ -266,7 +287,7 @@
     left: 0;
     right: 0;
     max-height: 100%;
-    top: 19px;
+    top: 20px;
 }
 
 .timeline-graph-side {
@@ -277,6 +298,10 @@
     margin-top: 0;
     border-top: 1px solid transparent;
     overflow: hidden;
+}
+
+.timeline-graph-side.selected {
+    background-color: rgba(56, 121, 217, 0.1) !important;
 }
 
 .timeline-graph-bar-area {
@@ -576,10 +601,11 @@
 }
 
 .timeline-cpu-curtain-left, .timeline-cpu-curtain-right {
-    background-color: rgba(0, 0, 0, 0.15);
+    background-color: rgba(210, 210, 210, 0.5);
     position: absolute;
     top: 0;
     height: 100%;
+    z-index: 300;
 }
 
 .timeline-cpu-curtain-left {
@@ -631,12 +657,12 @@
     vertical-align: top;
 }
 
-.timeline-function-name {
-    text-align: right;
-}
-
-.timeline-details-stacktrace-title {
-    padding-top: 4px;
+.timeline-details-title {
+    border-bottom: 1px solid #B8B8B8;
+    font-weight: bold;
+    padding-bottom: 5px;
+    padding-top: 0;
+    white-space: nowrap;
 }
 
 .timeline-details-row-title {
@@ -649,10 +675,66 @@
     white-space: nowrap;
 }
 
-.timeline-details-title {
-    border-bottom: 1px solid #B8B8B8;
-    font-weight: bold;
-    padding-bottom: 5px;
-    padding-top: 0;
+.timeline-details-view {
+    color: #333;
+}
+
+.timeline-details-view-title {
+    padding: 1px 3px;
+    flex: 0 0 19px;
+    border-bottom: 1px solid rgb(202, 202, 202);
+    background-color: rgb(236, 236, 236);
+    cursor: ns-resize;
     white-space: nowrap;
+}
+
+.timeline-details-view-body {
+    flex: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    position: relative;
+}
+
+.timeline-details-view-title {
+    white-space: nowrap;
+    padding: 1px 3px;
+    flex: 0 0 19px;
+    border-bottom: 1px solid rgb(202, 202, 202);
+    background-color: rgb(236, 236, 236);
+    cursor: ns-resize;
+}
+
+.timeline-details-view-row {
+    padding: 2px 0 2px 6px;
+}
+
+.timeline-details-view-row-title {
+    font-weight: bold;
+    color: rgb(48, 57, 66);
+}
+
+.timeline-details-view-row-value {
+    padding-left: 10px;
+}
+
+.timeline-details-view-row-details {
+    padding-left: 10px;
+}
+
+.timeline-details-view-row-details .image-preview-container {
+    padding: 10px;
+}
+
+.timeline-details-view-row-stack-trace {
+    padding: 4px 0 4px 20px;
+}
+
+.timeline-details-view-row-stack-trace div {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.timeline-details-view-row-stack-trace .webkit-html-external-link,
+.timeline-details-view-row-stack-trace .webkit-html-resource-link {
+    color: #333 !important;
 }

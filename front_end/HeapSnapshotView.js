@@ -1497,6 +1497,8 @@ WebInspector.HeapTrackingOverviewGrid = function(heapProfileHeader)
 
     this._overviewContainer = this.element.createChild("div", "overview-container");
     this._overviewGrid = new WebInspector.OverviewGrid("heap-recording");
+    this._overviewGrid.element.addStyleClass("fill");
+
     this._overviewCanvas = this._overviewContainer.createChild("canvas", "heap-recording-overview-canvas");
     this._overviewContainer.appendChild(this._overviewGrid.element);
     this._overviewCalculator = new WebInspector.HeapTrackingOverviewGrid.OverviewCalculator();

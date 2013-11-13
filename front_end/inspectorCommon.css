@@ -100,7 +100,7 @@ iframe.view {
     top: 0;
     left: 0;
     right: 0;
-    background-color: rgba(255, 255, 255, 0.8);
+    background-color: rgba(255, 255, 255, 0.85);
     background-clip: padding-box;
     height: 20px;
     z-index: 200;
@@ -138,7 +138,7 @@ iframe.view {
 
 .resources-divider-label {
     position: absolute;
-    top: 4px;
+    top: 1px;
     right: 3px;
     font-size: 80%;
     white-space: nowrap;

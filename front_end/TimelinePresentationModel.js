@@ -664,7 +664,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         var duration = endTime - startTime;
         var offset = this._minimumRecordTime;
 
-        var contentHelper = new WebInspector.TimelinePropertiesContentHelper(info.name);
+        var contentHelper = new WebInspector.TimelinePopupContentHelper(info.name);
         var durationText = WebInspector.UIString("%s (at %s)", Number.secondsToString(duration, true),
             Number.secondsToString(startTime - offset, true));
         contentHelper.appendTextRow(WebInspector.UIString("Duration"), durationText);
@@ -1109,7 +1109,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     _generatePopupContentSynchronously: function()
     {
-        var contentHelper = new WebInspector.TimelinePropertiesContentHelper(this.title);
+        var contentHelper = new WebInspector.TimelineDetailsContentHelper();
         var text = WebInspector.UIString("%s (at %s)", Number.secondsToString(this._lastChildEndTime - this.startTime, true),
             Number.secondsToString(this._startTimeOffset));
         contentHelper.appendTextRow(WebInspector.UIString("Duration"), text);
@@ -1123,7 +1123,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         }
 
         if (this.coalesced)
-            return contentHelper.contentTable();
+            return contentHelper.element;
 
         const recordTypes = WebInspector.TimelineModel.RecordType;
 
@@ -1274,7 +1274,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                 ul.createChild("li").textContent = this._warnings[i];
             contentHelper.appendElementRow(WebInspector.UIString("Warning"), ul);
         }
-        return contentHelper.contentTable();
+        return contentHelper.element;
     },
 
     /**
@@ -1511,7 +1511,7 @@ WebInspector.TimelinePresentationModel._generateAggregatedInfo = function(aggreg
 
 WebInspector.TimelinePresentationModel.generatePopupContentForFrame = function(frame)
 {
-    var contentHelper = new WebInspector.TimelinePropertiesContentHelper(WebInspector.UIString("Frame"));
+    var contentHelper = new WebInspector.TimelinePopupContentHelper(WebInspector.UIString("Frame"));
     var durationInSeconds = frame.endTime - frame.startTime;
     var durationText = WebInspector.UIString("%s (at %s)", Number.secondsToString(frame.endTime - frame.startTime, true),
         Number.secondsToString(frame.startTimeOffset, true));
@@ -1537,7 +1537,7 @@ WebInspector.TimelinePresentationModel.generatePopupContentForFrameStatistics = 
         return WebInspector.UIString("%s (%.0f FPS)", Number.secondsToString(time, true), 1 / time);
     }
 
-    var contentHelper = new WebInspector.TimelinePropertiesContentHelper(WebInspector.UIString("Selected Range"));
+    var contentHelper = new WebInspector.TimelinePopupContentHelper(WebInspector.UIString("Selected Range"));
 
     contentHelper.appendTextRow(WebInspector.UIString("Selected range"), WebInspector.UIString("%s\u2013%s (%d frames)",
         Number.secondsToString(statistics.startOffset, true), Number.secondsToString(statistics.endOffset, true), statistics.frameCount));
@@ -1588,6 +1588,7 @@ WebInspector.TimelinePresentationModel.createStyleRuleForCategory = function(cat
     var selector = ".timeline-category-" + category.name + " .timeline-graph-bar, " +
         ".panel.timeline .timeline-filters-header .filter-checkbox-filter.filter-checkbox-filter-" + category.name + " .checkbox-filter-checkbox, " +
         ".popover .timeline-" + category.name + ", " +
+        ".timeline-details-view .timeline-" + category.name + ", " +
         ".timeline-category-" + category.name + " .timeline-tree-icon"
 
     return selector + " { background-image: -webkit-linear-gradient(" +
@@ -1708,7 +1709,7 @@ WebInspector.TimelineCategory.prototype = {
  * @constructor
  * @param {string} title
  */
-WebInspector.TimelinePropertiesContentHelper = function(title)
+WebInspector.TimelinePopupContentHelper = function(title)
 {
     this._contentTable = document.createElement("table");
     var titleCell = this._createCell(WebInspector.UIString("%s - Details", title), "timeline-details-title");
@@ -1718,7 +1719,7 @@ WebInspector.TimelinePropertiesContentHelper = function(title)
     this._contentTable.appendChild(titleRow);
 }
 
-WebInspector.TimelinePropertiesContentHelper.prototype = {
+WebInspector.TimelinePopupContentHelper.prototype = {
     contentTable: function()
     {
         return this._contentTable;
@@ -1739,6 +1740,10 @@ WebInspector.TimelinePropertiesContentHelper.prototype = {
         return cell;
     },
 
+    /**
+     * @param {string} title
+     * @param {string|number|boolean} content
+     */
     appendTextRow: function(title, content)
     {
         var row = document.createElement("tr");
@@ -1748,20 +1753,58 @@ WebInspector.TimelinePropertiesContentHelper.prototype = {
     },
 
     /**
-     * @param {string=} titleStyle
+     * @param {string} title
+     * @param {Element|string} content
      */
-    appendElementRow: function(title, content, titleStyle)
+    appendElementRow: function(title, content)
     {
         var row = document.createElement("tr");
         var titleCell = this._createCell(title, "timeline-details-row-title");
-        if (titleStyle)
-            titleCell.addStyleClass(titleStyle);
         row.appendChild(titleCell);
         var cell = document.createElement("td");
         cell.className = "details";
-        cell.appendChild(content);
+        if (content instanceof Element)
+            cell.appendChild(content);
+        else
+            cell.createTextChild(content || "");
         row.appendChild(cell);
         this._contentTable.appendChild(row);
+    }
+}
+
+/**
+ * @constructor
+ */
+WebInspector.TimelineDetailsContentHelper = function()
+{
+    this.element = document.createElement("div");
+}
+
+WebInspector.TimelineDetailsContentHelper.prototype = {
+    /**
+     * @param {string} title
+     * @param {string|number|boolean} value
+     */
+    appendTextRow: function(title, value)
+    {
+        var rowElement = this.element.createChild("div", "timeline-details-view-row");
+        rowElement.createChild("span", "timeline-details-view-row-title").textContent = WebInspector.UIString("%s: ", title);
+        rowElement.createChild("span", "timeline-details-view-row-value monospace").textContent = value;
+    },
+
+    /**
+     * @param {string} title
+     * @param {Element|string} content
+     */
+    appendElementRow: function(title, content)
+    {
+        var rowElement = this.element.createChild("div", "timeline-details-view-row");
+        rowElement.createChild("span", "timeline-details-view-row-title").textContent = WebInspector.UIString("%s: ", title);
+        var valueElement = rowElement.createChild("span", "timeline-details-view-row-details monospace");
+        if (content instanceof Element)
+            valueElement.appendChild(content);
+        else
+            valueElement.createTextChild(content || "");
     },
 
     /**
@@ -1771,20 +1814,17 @@ WebInspector.TimelinePropertiesContentHelper.prototype = {
      */
     appendStackTrace: function(title, stackTrace, callFrameLinkifier)
     {
-        this.appendTextRow("", "");
-        var framesTable = document.createElement("table");
+        var rowElement = this.element.createChild("div", "timeline-details-view-row");
+        rowElement.createChild("span", "timeline-details-view-row-title").textContent = WebInspector.UIString("%s: ", title);
+        var stackTraceElement = rowElement.createChild("div", "timeline-details-view-row-stack-trace monospace");
+
         for (var i = 0; i < stackTrace.length; ++i) {
             var stackFrame = stackTrace[i];
-            var row = document.createElement("tr");
-            row.className = "details";
-            row.appendChild(this._createCell(stackFrame.functionName || WebInspector.UIString("(anonymous function)"), "function-name"));
-            row.appendChild(this._createCell(" @ "));
-            var linkCell = document.createElement("td");
+            var row = stackTraceElement.createChild("div");
+            row.createTextChild(stackFrame.functionName || WebInspector.UIString("(anonymous function)"));
+            row.createTextChild(" @ ");
             var urlElement = callFrameLinkifier(stackFrame);
-            linkCell.appendChild(urlElement);
-            row.appendChild(linkCell);
-            framesTable.appendChild(row);
+            row.appendChild(urlElement);
         }
-        this.appendElementRow(title, framesTable, "timeline-details-stacktrace-title");
     }
 }
