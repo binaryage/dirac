@@ -116,12 +116,14 @@ WebInspector.ScreencastView.prototype = {
             return;
         this._isCasting = true;
 
-        const maxImageDimension = 800;
+        const maxImageDimension = 1024;
         var dimensions = this._viewportDimensions();
         if (dimensions.width < 0 || dimensions.height < 0) {
             this._isCasting = false;
             return;
         }
+        dimensions.width *= WebInspector.zoomFactor();
+        dimensions.height *= WebInspector.zoomFactor();
         PageAgent.startScreencast("jpeg", 80, Math.min(maxImageDimension, dimensions.width), Math.min(maxImageDimension, dimensions.height));
         WebInspector.domAgent.setHighlighter(this);
     },

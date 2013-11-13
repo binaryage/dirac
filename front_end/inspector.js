@@ -210,14 +210,22 @@ var WebInspector = {
         this._requestZoom();
     },
 
-    _requestZoom: function()
+    /**
+     * @return {number}
+     */
+    zoomFactor: function()
     {
-        WebInspector.settings.zoomLevel.set(this._zoomLevel);
         // For backwards compatibility, zoomLevel takes integers (with 0 being default zoom).
         var index = this._zoomLevel + WebInspector.Zoom.DefaultOffset;
         index = Math.min(WebInspector.Zoom.Table.length - 1, index);
         index = Math.max(0, index);
-        InspectorFrontendHost.setZoomFactor(WebInspector.Zoom.Table[index]);
+        return WebInspector.Zoom.Table[index];
+    },
+
+    _requestZoom: function()
+    {
+        WebInspector.settings.zoomLevel.set(this._zoomLevel);
+        InspectorFrontendHost.setZoomFactor(this.zoomFactor());
     },
 
     _debuggerPaused: function()

@@ -330,6 +330,12 @@ WebInspector.Events = {
 /** @type {WebInspector.SettingsController} */
 WebInspector.settingsController;
 
+
+/**
+ * @return {number}
+ */
+WebInspector.zoomFactor = function() {}
+
 /** Extensions API */
 
 /** @constructor */
