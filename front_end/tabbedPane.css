@@ -104,8 +104,8 @@
     float: left;
     position: relative;
     vertical-align: bottom;
-    top: 1px;
     padding-left: 3px;
+    line-height: 20px;
 }
 
 .tabbed-pane-header-tabs-drop-down-container.measuring {

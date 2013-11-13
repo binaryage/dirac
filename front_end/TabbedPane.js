@@ -43,8 +43,6 @@ WebInspector.TabbedPane = function()
     this._tabs = [];
     this._tabsHistory = [];
     this._tabsById = {};
-    this._headerElement.addEventListener("click", this.focus.bind(this), true);
-    this.element.addEventListener("mouseup", this.onMouseUp.bind(this), false);
 
     this._dropDownButton = this._createDropDownButton();
 }
@@ -128,16 +126,6 @@ WebInspector.TabbedPane.prototype = {
         for (var i = 0; i < tabs.length; ++i)
             tabs[i].setDelegate(delegate);
         this._delegate = delegate;
-    },
-
-    /**
-     * @param {Event} event
-     */
-    onMouseUp: function(event)
-    {
-        // This is needed to prevent middle-click pasting on linux when tabs are clicked.
-        if (event.button === 1)
-            event.consume(true);
     },
 
     /**
@@ -837,6 +825,8 @@ WebInspector.TabbedPaneTab.prototype = {
             this._tabElement = tabElement;
             tabElement.addEventListener("click", this._tabClicked.bind(this), false);
             tabElement.addEventListener("mousedown", this._tabMouseDown.bind(this), false);
+            tabElement.addEventListener("mouseup", this._tabMouseUp.bind(this), false);
+
             if (this._closeable) {
                 tabElement.addEventListener("contextmenu", this._tabContextMenu.bind(this), false);
                 WebInspector.installDragHandle(tabElement, this._startTabDragging.bind(this), this._tabDragging.bind(this), this._endTabDragging.bind(this), "pointer");
@@ -853,8 +843,10 @@ WebInspector.TabbedPaneTab.prototype = {
     {
         var middleButton = event.button === 1;
         var shouldClose = this._closeable && (middleButton || event.target.hasStyleClass("close-button-gray"));
-        if (!shouldClose)
+        if (!shouldClose) {
+            this._tabbedPane.focus();
             return;
+        }
         this._closeTabs([this.id]);
         event.consume(true);
     },
@@ -867,6 +859,16 @@ WebInspector.TabbedPaneTab.prototype = {
         if (event.target.hasStyleClass("close-button-gray") || event.button === 1)
             return;
         this._tabbedPane.selectTab(this.id, true);
+    },
+
+    /**
+     * @param {Event} event
+     */
+    _tabMouseUp: function(event)
+    {
+        // This is needed to prevent middle-click pasting on linux when tabs are clicked.
+        if (event.button === 1)
+            event.consume(true);
     },
 
     /**
