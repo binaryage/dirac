@@ -967,11 +967,7 @@ WebInspector.setToolbarColors = function(backgroundColor, color)
         ".toolbar-background {\
              background-image: none !important;\
              background-color: " + backgroundColor + " !important;\
-         }\
-         \
-         .toolbar-label {\
              color: " + color + " !important;\
-             text-shadow: none;\
          }";
 }
 
