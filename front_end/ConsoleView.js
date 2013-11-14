@@ -771,11 +771,7 @@ WebInspector.ConsoleViewFilter = function()
 {
     this._messageURLFilters = WebInspector.settings.messageURLFilters.get();
     this._hideCSSErrorsInConsole = WebInspector.settings.hideCSSErrorsInConsole.get();
-    this._messageLevelFilters = WebInspector.settings.messageLevelFilters.get();
-
     this._filterChanged = this.dispatchEventToListeners.bind(this, WebInspector.ConsoleViewFilter.Events.FilterChanged);
-
-    WebInspector.settings.messageLevelFilters.addChangeListener(this._updateLevelFilter.bind(this));
 };
 
 WebInspector.ConsoleViewFilter.Events = {
@@ -795,9 +791,9 @@ WebInspector.ConsoleViewFilter.prototype = {
         this._levelFilterUI.addBit("info", WebInspector.UIString("Info"));
         this._levelFilterUI.addBit("log", WebInspector.UIString("Logs"));
         this._levelFilterUI.addBit("debug", WebInspector.UIString("Debug"));
-        this._levelFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._levelFilterChanged, this);
+        this._levelFilterUI.bindSetting(WebInspector.settings.messageLevelFilters);
+        this._levelFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged, this);
         filterBar.addFilter(this._levelFilterUI);
-        this._updateLevelFilter();
     },
 
     _textFilterChanged: function(event)
@@ -808,18 +804,6 @@ WebInspector.ConsoleViewFilter.prototype = {
         else
             this._filterRegex = createPlainTextSearchRegex(query, "gi");
 
-        this._filterChanged();
-    },
-
-    _levelFilterChanged: function(event)
-    {
-        if (this._updatingLevelFilter)
-            return;
-        var filteredOutTypes = this._levelFilterUI.filteredOutTypes();
-        this._messageLevelFilters = {};
-        for (var i = 0; i < filteredOutTypes.length; ++i)
-            this._messageLevelFilters[filteredOutTypes[i]] = true;
-        WebInspector.settings.messageLevelFilters.set(this._messageLevelFilters);
         this._filterChanged();
     },
 
@@ -867,7 +851,7 @@ WebInspector.ConsoleViewFilter.prototype = {
         if (message.url && this._messageURLFilters[message.url])
             return false;
 
-        if (message.level && this._messageLevelFilters[message.level])
+        if (message.level && !this._levelFilterUI.accept(message.level))
             return false;
 
         if (this._filterRegex) {
@@ -888,20 +872,8 @@ WebInspector.ConsoleViewFilter.prototype = {
         WebInspector.settings.hideCSSErrorsInConsole.set(this._hideCSSErrorsInConsole);
         this._messageURLFilters = {};
         WebInspector.settings.messageURLFilters.set(this._messageURLFilters);
-        this._messageLevelFilters = {};
-        WebInspector.settings.messageLevelFilters.set(this._messageLevelFilters);
+        WebInspector.settings.messageLevelFilters.set({});
         this._filterChanged();
-    },
-
-    /**
-     * @private
-     */
-    _updateLevelFilter: function()
-    {
-        this._updatingLevelFilter = true;
-        var filteredOutTypes = Object.keys(this._messageLevelFilters);
-        this._levelFilterUI.setFilteredOutTypes(filteredOutTypes);
-        delete this._updatingLevelFilter;
     },
 
     __proto__: WebInspector.Object.prototype

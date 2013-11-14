@@ -254,10 +254,9 @@ WebInspector.NamedBitSetFilterUI = function()
     this._filtersElement.className = "filter-bitset-filter status-bar-item";
     this._filtersElement.title = WebInspector.UIString("Use %s Click to select multiple types.", WebInspector.KeyboardShortcut.shortcutToString("", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta));
 
-    this._names = [];
     this._allowedTypes = {};
     this._typeFilterElements = {};
-    this._addTypeFilter(WebInspector.NamedBitSetFilterUI.ALL_TYPES, WebInspector.UIString("All"));
+    this.addBit(WebInspector.NamedBitSetFilterUI.ALL_TYPES, WebInspector.UIString("All"));
     this._filtersElement.createChild("div", "filter-bitset-filter-divider");
     this._toggleTypeFilter(WebInspector.NamedBitSetFilterUI.ALL_TYPES, false);
 }
@@ -274,12 +273,14 @@ WebInspector.NamedBitSetFilterUI.prototype = {
     },
 
     /**
-     * @param {string} name
-     * @param {string} label
+     * @param {!WebInspector.Setting} setting
      */
-    addBit: function(name, label)
+    bindSetting: function(setting)
     {
-        this._addTypeFilter(name, label);
+        console.assert(!this._setting);
+        this._setting = setting;
+        setting.addChangeListener(this._settingChanged.bind(this));
+        this._settingChanged();
     },
 
     /**
@@ -299,37 +300,22 @@ WebInspector.NamedBitSetFilterUI.prototype = {
         return !!this._allowedTypes[WebInspector.NamedBitSetFilterUI.ALL_TYPES] || !!this._allowedTypes[typeName];
     },
 
-    /**
-     * @return {Array.<string>}
-     */
-    filteredOutTypes: function()
+    _settingChanged: function()
     {
-        if (this._allowedTypes[WebInspector.NamedBitSetFilterUI.ALL_TYPES])
-            return [];
-        var result = [];
-        for (var i = 0; i < this._names.length; ++i) {
-            var name = this._names[i];
-            if (!this._allowedTypes[name])
-                result.push(name);
+        var allowedTypes = this._setting.get();
+        this._allowedTypes = {};
+        for (var typeName in this._typeFilterElements) {
+            if (allowedTypes[typeName])
+                this._allowedTypes[typeName] = true;
         }
-        return result;
+        this._update();
     },
 
-    /**
-     * @param {Array.<string>} filteredOutTypes
-     */
-    setFilteredOutTypes: function(filteredOutTypes)
+    _update: function()
     {
-        this._allowedTypes = {};
-        if (filteredOutTypes.length === 0) {
+        if ((Object.keys(this._allowedTypes).length === 0) || this._allowedTypes[WebInspector.NamedBitSetFilterUI.ALL_TYPES]) {
+            this._allowedTypes = {};
             this._allowedTypes[WebInspector.NamedBitSetFilterUI.ALL_TYPES] = true;
-        } else {
-            for (var i = 0; i < this._names.length; ++i) {
-                var name = this._names[i];
-                this._allowedTypes[name] = true;
-            }
-            for (var i = 0; i < filteredOutTypes.length; ++i)
-                delete this._allowedTypes[filteredOutTypes[i]];
         }
         for (var typeName in this._typeFilterElements)
             this._typeFilterElements[typeName].enableStyleClass("selected", this._allowedTypes[typeName]);
@@ -337,46 +323,16 @@ WebInspector.NamedBitSetFilterUI.prototype = {
     },
 
     /**
-     * @return {Array.<string>}
-     */
-    acceptedTypes: function()
-    {
-        if (this._allowedTypes[WebInspector.NamedBitSetFilterUI.ALL_TYPES])
-            return [WebInspector.NamedBitSetFilterUI.ALL_TYPES];
-        var result = [];
-        for (var i = 0; i < this._names.length; ++i) {
-            var name = this._names[i];
-            if (this._allowedTypes[name])
-                result.push(name);
-        }
-        return result;
-    },
-
-    /**
-     * @param {Array.<string>} acceptedTypes
-     */
-    setAcceptedTypes: function(acceptedTypes)
-    {
-        this._allowedTypes = {};
-        for (var i = 0; i < acceptedTypes.length; ++i)
-            this._allowedTypes[acceptedTypes[i]] = true;
-        for (var typeName in this._typeFilterElements)
-            this._typeFilterElements[typeName].enableStyleClass("selected", this._allowedTypes[typeName]);
-        this.dispatchEventToListeners(WebInspector.FilterUI.Events.FilterChanged, null);
-    },
-
-    /**
-     * @param {string} typeName
+     * @param {string} name
      * @param {string} label
      */
-    _addTypeFilter: function(typeName, label)
+    addBit: function(name, label)
     {
-        var typeFilterElement = this._filtersElement.createChild("li", typeName);
-        typeFilterElement.typeName = typeName;
+        var typeFilterElement = this._filtersElement.createChild("li", name);
+        typeFilterElement.typeName = name;
         typeFilterElement.createTextChild(label);
         typeFilterElement.addEventListener("click", this._onTypeFilterClicked.bind(this), false);
-        this._typeFilterElements[typeName] = typeFilterElement;
-        this._names.push(typeName);
+        this._typeFilterElements[name] = typeFilterElement;
     },
 
     /**
@@ -399,21 +355,16 @@ WebInspector.NamedBitSetFilterUI.prototype = {
     _toggleTypeFilter: function(typeName, allowMultiSelect)
     {
         if (allowMultiSelect && typeName !== WebInspector.NamedBitSetFilterUI.ALL_TYPES)
-            this._typeFilterElements[WebInspector.NamedBitSetFilterUI.ALL_TYPES].removeStyleClass("selected");
-        else {
-            for (var key in this._typeFilterElements)
-                this._typeFilterElements[key].removeStyleClass("selected");
-        }
+            this._allowedTypes[WebInspector.NamedBitSetFilterUI.ALL_TYPES] = false;
+        else
+            this._allowedTypes = {};
 
-        var filterElement = this._typeFilterElements[typeName];
-        filterElement.enableStyleClass("selected", !filterElement.hasStyleClass("selected"));
+        this._allowedTypes[typeName] = !this._allowedTypes[typeName];
 
-        this._allowedTypes = {};
-        for (var key in this._typeFilterElements) {
-            if (this._typeFilterElements[key].hasStyleClass("selected"))
-                this._allowedTypes[key] = true;
-        }
-        this.dispatchEventToListeners(WebInspector.FilterUI.Events.FilterChanged, null);
+        if (this._setting)
+            this._setting.set(this._allowedTypes);
+        else
+            this._update();
     },
 
     __proto__: WebInspector.Object.prototype
