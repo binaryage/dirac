@@ -36,7 +36,7 @@ WebInspector.InspectorView = function()
 {
     WebInspector.View.call(this);
     this.markAsRoot();
-    this.element.classList.add("fill", "vbox");
+    this.element.classList.add("fill", "vbox", "inspector-view");
     this.element.setAttribute("spellcheck", false);
 
     this._tabbedPane = new WebInspector.TabbedPane();
@@ -152,7 +152,6 @@ WebInspector.InspectorView.prototype = {
         var panel = this._panelDescriptors[this._tabbedPane.selectedTabId].panel();
         this._tabbedPane.changeTabView(panelName, panel);
 
-        this._drawer.panelSelected(panel);
         this._currentPanel = panel;
         this._lastActivePanelSetting.set(panel.name);
         this._pushToHistory(panel.name);
@@ -214,6 +213,14 @@ WebInspector.InspectorView.prototype = {
     showViewInDrawer: function(id)
     {
         this._drawer.showView(id);
+    },
+
+    /**
+     * @return {string}
+     */
+    selectedViewInDrawer: function()
+    {
+        return this._drawer.selectedViewId();
     },
 
     closeDrawer: function()

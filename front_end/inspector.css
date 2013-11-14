@@ -812,6 +812,14 @@ body.platform-linux .source-code {
     font-family: dejavu sans mono, monospace;
 }
 
+.console-view {
+    background-color: white;
+}
+
+.console-view-wrapper {
+    background-color: rgb(236, 236, 236);
+}
+
 .console-status-bar {
     flex: 0 0 23px;
     overflow: hidden;
@@ -2750,6 +2758,10 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
 
 .console-context {
     max-width: 200px;
+}
+
+.inspector-view {
+    overflow: hidden;
 }
 
 .inspector-footer.status-bar {

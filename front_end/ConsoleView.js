@@ -43,7 +43,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._searchableView.show(this.element);
 
     this._contentsElement = this._searchableView.element;
-    this._contentsElement.classList.add("fill", "vbox");
+    this._contentsElement.classList.add("fill", "vbox", "console-view");
     this._visibleMessagesIndices = [];
     this._urlToMessageCount = {};
 
