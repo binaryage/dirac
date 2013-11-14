@@ -85,8 +85,6 @@ def main(argv):
     input_order_file_name = argv[1]
     with open(input_order_file_name, 'r') as order_html:
         extractor = OrderedCSSFilesExtractor(order_html.read())
-    # Unconditionally append inspector.css. It will contain concatenated files.
-    extractor.ordered_css_files.append('inspector.css')
 
     expander = PathExpander(argv[2:])
     output = StringIO()
