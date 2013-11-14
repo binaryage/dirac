@@ -101,6 +101,7 @@ WebInspector.TimelinePanel = function()
     this._detailsSplitView.sidebarElement.addStyleClass("timeline-details");
     this._detailsSplitView.show(this.element);
     this._detailsSplitView.mainElement.addStyleClass("vbox");
+    this._detailsSplitView.setMainElementConstraints(undefined, 40);
     this._detailsView = new WebInspector.TimelineDetailsView();
     this._detailsView.show(this._detailsSplitView.sidebarElement);
     this._detailsSplitView.installResizer(this._detailsView.titleElement());
@@ -133,6 +134,7 @@ WebInspector.TimelinePanel = function()
     // Create memory statistics as a bottom memory splitter child.
     this._memoryStatistics = new WebInspector.DOMCountersGraph(this, this._model);
     this._memoryStatistics.show(this._timelineMemorySplitter.sidebarElement);
+    this._timelineMemorySplitter.installResizer(this._memoryStatistics.resizeElement());
 
     // Create records list in the records sidebar.
     this._sidebarView.sidebarElement.addStyleClass("vbox");
@@ -421,8 +423,12 @@ WebInspector.TimelinePanel.prototype = {
     _dockSideChanged: function()
     {
         var dockSide = WebInspector.dockController.dockSide();
-        var vertically = dockSide === WebInspector.DockController.State.DockedToRight && WebInspector.settings.splitVerticallyWhenDockedToRight.get();
-        this._detailsSplitView.setVertical(!vertically);
+        var vertically = false;
+        if (dockSide === WebInspector.DockController.State.DockedToBottom)
+            vertically = true;
+        else
+            vertically = !WebInspector.settings.splitVerticallyWhenDockedToRight.get();
+        this._detailsSplitView.setVertical(vertically);
     },
 
     /**
@@ -1860,7 +1866,7 @@ WebInspector.TimelineDetailsView = function()
     this.element = document.createElement("div");
     this.element.className = "timeline-details-view fill vbox";
     this._titleElement = this.element.createChild("div", "timeline-details-view-title");
-    this._titleElement.textContent = WebInspector.UIString("Details");
+    this._titleElement.textContent = WebInspector.UIString("DETAILS");
     this._contentElement = this.element.createChild("div", "timeline-details-view-body");
 }
 
@@ -1879,7 +1885,7 @@ WebInspector.TimelineDetailsView.prototype = {
      */
     setContent: function(title, element)
     {
-        this._titleElement.textContent = WebInspector.UIString("Details: %s", title);
+        this._titleElement.textContent = WebInspector.UIString("DETAILS: %s", title);
         this._contentElement.removeChildren();
         this._contentElement.appendChild(element);
     },

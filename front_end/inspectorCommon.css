@@ -138,7 +138,7 @@ iframe.view {
 
 .resources-divider-label {
     position: absolute;
-    top: 1px;
+    top: 4px;
     right: 3px;
     font-size: 80%;
     white-space: nowrap;

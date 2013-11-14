@@ -146,6 +146,14 @@ WebInspector.DOMCountersGraph.prototype = {
     },
 
     /**
+     * @return {Element}
+     */
+    resizeElement: function()
+    {
+        return this._currentValuesBar;
+    },
+
+    /**
      * @return {Array.<WebInspector.DOMCounterUI>}
      */
     _createCounterUIList: function()
