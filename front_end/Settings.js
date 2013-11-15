@@ -106,6 +106,7 @@ WebInspector.Settings = function()
     this.workerInspectorWidth = this.createSetting("workerInspectorWidth", 600);
     this.workerInspectorHeight = this.createSetting("workerInspectorHeight", 600);
     this.messageURLFilters = this.createSetting("messageURLFilters", {});
+    this.networkHideDataURL = this.createSetting("networkHideDataURL", false);
     this.hideCSSErrorsInConsole = this.createSetting("hideCSSErrorsInConsole", true);
     this.messageLevelFilters = this.createSetting("messageLevelFilters", {});
     this.splitVerticallyWhenDockedToRight = this.createSetting("splitVerticallyWhenDockedToRight", true);

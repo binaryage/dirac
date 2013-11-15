@@ -438,15 +438,26 @@ WebInspector.ComboBoxFilterUI.prototype = {
  * @constructor
  * @implements {WebInspector.FilterUI}
  * @extends {WebInspector.Object}
- * @param {boolean} activeWhenChecked
+ * @param {string} className
+ * @param {string} title
+ * @param {boolean=} activeWhenChecked
+ * @param {WebInspector.Setting=} setting
  */
-WebInspector.CheckboxFilterUI = function(className, title, activeWhenChecked)
+WebInspector.CheckboxFilterUI = function(className, title, activeWhenChecked, setting)
 {
-    this._className = className;
     this._filterElement = document.createElement("div");
-    this._filterElement.classList.add("filter-checkbox-filter", "filter-checkbox-filter-" + this._className);
-    this._activeWhenChecked = activeWhenChecked;
+    this._filterElement.classList.add("filter-checkbox-filter", "filter-checkbox-filter-" + className);
+    this._activeWhenChecked = !!activeWhenChecked;
     this._createCheckbox(title);
+
+    if (setting) {
+        this._setting = setting;
+        setting.addChangeListener(this._settingChanged.bind(this));
+        this._settingChanged();
+    } else {
+        this._checked = !this._activeWhenChecked;
+        this._update();
+    }
 }
 
 WebInspector.CheckboxFilterUI.prototype = {
@@ -455,7 +466,7 @@ WebInspector.CheckboxFilterUI.prototype = {
      */
     isActive: function()
     {
-        return this._activeWhenChecked === this._checkElement.checked;
+        return this._activeWhenChecked === this._checked;
     },
 
     /**
@@ -471,33 +482,42 @@ WebInspector.CheckboxFilterUI.prototype = {
      */
     checked: function()
     {
-        return this._checkElement.checked;
+        return this._checked;
     },
 
-    /**
-     * @param {boolean} checked
-     */
-    setChecked: function(checked)
+    _update: function()
     {
-        this._checkElement.checked = checked;
-        this._checkElement.enableStyleClass("checkbox-filter-checkbox-checked", this._checkElement.checked);
+        this._checkElement.enableStyleClass("checkbox-filter-checkbox-checked", this._checked);
         this.dispatchEventToListeners(WebInspector.FilterUI.Events.FilterChanged, null);
     },
 
+    _settingChanged: function()
+    {
+        this._checked = this._setting.get();
+        this._update();
+    },
+
+    /**
+     * @param {Event} event
+     */
+    _onClick: function(event)
+    {
+        this._checked = !this._checked;
+        if (this._setting)
+            this._setting.set(this._checked);
+        else
+            this._update();
+    },
+
+    /**
+     * @param {string} title
+     */
     _createCheckbox: function(title)
     {
         var label = this._filterElement.createChild("label");
         var checkBorder = label.createChild("div", "checkbox-filter-checkbox");
-        this._checkElement = checkBorder.createChild("div", "checkbox-filter-checkbox-check checkbox-filter-checkbox-checked");
-        this._checkElement.type = "checkbox";
-        this._checkElement.checked = true;
-        this._filterElement.addEventListener("click", listener.bind(this), false);
-
-        function listener(event)
-        {
-            this.setChecked(!this._checkElement.checked);
-        }
-
+        this._checkElement = checkBorder.createChild("div", "checkbox-filter-checkbox-check");
+        this._filterElement.addEventListener("click", this._onClick.bind(this), false);
         var typeElement = label.createChild("span", "type");
         typeElement.textContent = title;
     },

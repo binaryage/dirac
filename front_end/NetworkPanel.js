@@ -112,6 +112,11 @@ WebInspector.NetworkLogView.prototype = {
         }
         this._resourceTypeFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
         this._filterBar.addFilter(this._resourceTypeFilterUI);
+
+        var dataURLSetting = WebInspector.settings.networkHideDataURL;
+        this._dataURLFilterUI = new WebInspector.CheckboxFilterUI("hide-data-url", WebInspector.UIString("Hide data URLs"), true, dataURLSetting);
+        this._dataURLFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
+        this._filterBar.addFilter(this._dataURLFilterUI);
     },
 
     _filterChanged: function(event)
@@ -746,9 +751,6 @@ WebInspector.NetworkLogView.prototype = {
 
     _appendRequest: function(request)
     {
-        if (request.parsedURL.isDataURL())
-            return;
-
         this._requests.push(request);
 
         // In case of redirect request id is reassigned to a redirected
@@ -1241,12 +1243,19 @@ WebInspector.NetworkLogView.prototype = {
     {
         var filter = this._textFilterUI.regex();
         var request = node._request;
-        var matches = false;
-        if (this._resourceTypeFilterUI.accept(request.type.name())) {
-            matches = !filter || filter.test(request.name()) || filter.test(request.path());
-            if (filter && matches)
+
+        var matches = true;
+        if (this._dataURLFilterUI.checked() && request.parsedURL.isDataURL())
+            matches = false;
+        if (matches && !this._resourceTypeFilterUI.accept(request.type.name()))
+            matches = false;
+
+        if (matches && filter) {
+            matches = filter.test(request.name()) || filter.test(request.path());
+            if (matches)
                 this._highlightMatchedRequest(request, false, filter);
         }
+
         node.element.enableStyleClass("filtered-out", !matches);
         if (matches)
             this._filteredOutRequests.remove(request);
@@ -2233,10 +2242,12 @@ WebInspector.NetworkDataGridNode.prototype = {
             if (this._request.cached)
                 this._statusCell.addStyleClass("network-dim-cell");
         } else {
-            if (!this._request.isHttpFamily() && this._request.finished)
-                this._statusCell.setTextAndTitle(WebInspector.UIString("Success"));
+            if (this._request.parsedURL.isDataURL())
+                this._statusCell.setTextAndTitle(WebInspector.UIString("(data)"));
             else if (this._request.isPingRequest())
                 this._statusCell.setTextAndTitle(WebInspector.UIString("(ping)"));
+            else if (this._request.finished)
+                this._statusCell.setTextAndTitle(WebInspector.UIString("Finished"));
             else
                 this._statusCell.setTextAndTitle(WebInspector.UIString("(pending)"));
             this._statusCell.addStyleClass("network-dim-cell");

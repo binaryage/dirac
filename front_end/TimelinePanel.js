@@ -244,7 +244,7 @@ WebInspector.TimelinePanel.prototype = {
             var category = categories[categoryName];
             if (category.overviewStripGroupIndex < 0)
                 continue;
-            var filter = new WebInspector.CheckboxFilterUI(category.name, category.title, false);
+            var filter = new WebInspector.CheckboxFilterUI(category.name, category.title);
             filter.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._categoriesFilterChanged.bind(this, category.name), this);
             this._filterBar.addFilter(filter);
             this._categoryFilters[category.name] = filter;
