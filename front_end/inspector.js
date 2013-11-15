@@ -236,8 +236,7 @@ var WebInspector = {
 }
 
 WebInspector.Events = {
-    InspectorLoaded: "InspectorLoaded",
-    InspectorClosing: "InspectorClosing"
+    InspectorLoaded: "InspectorLoaded"
 }
 
 {(function parseQueryParameters()
@@ -513,10 +512,6 @@ WebInspector.windowResize = function(event)
 
 WebInspector.close = function(event)
 {
-    if (this._isClosing)
-        return;
-    this._isClosing = true;
-    this.notifications.dispatchEventToListeners(WebInspector.Events.InspectorClosing);
     InspectorFrontendHost.closeWindow();
 }
 

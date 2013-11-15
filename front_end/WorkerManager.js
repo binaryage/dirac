@@ -175,8 +175,7 @@ WebInspector.WorkerManager.prototype = {
         workerInspectorWindow.addEventListener("beforeunload", this._workerInspectorClosing.bind(this, workerId), true);
 
         // Listen to beforeunload in detached state and to the InspectorClosing event in case of attached inspector.
-        window.addEventListener("beforeunload", this._pageInspectorClosing.bind(this), true);
-        WebInspector.notifications.addEventListener(WebInspector.Events.InspectorClosing, this._pageInspectorClosing, this);
+        window.addEventListener("unload", this._pageInspectorClosing.bind(this), true);
     },
 
     closeWorkerInspector: function(workerId)
