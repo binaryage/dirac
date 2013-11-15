@@ -1241,7 +1241,6 @@ ol.watch-expressions > li.hovered {
 
 .extension-view {
     flex: auto;
-    position: relative;
 }
 
 iframe.extension {
