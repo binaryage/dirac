@@ -1155,8 +1155,10 @@ WebInspector.TimelinePanel.prototype = {
 
     _getPopoverAnchor: function(element)
     {
-        return element.enclosingNodeOrSelfWithClass("timeline-graph-bar") ||
-            element.enclosingNodeOrSelfWithClass("timeline-frame-strip");
+        var anchor = element.enclosingNodeOrSelfWithClass("timeline-graph-bar");
+        if (anchor && anchor._tasksInfo)
+            return anchor;
+        return element.enclosingNodeOrSelfWithClass("timeline-frame-strip");
     },
 
     _mouseOut: function(e)
