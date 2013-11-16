@@ -250,6 +250,17 @@ Element.prototype.measurePreferredSize = function(containerElement)
     return result;
 }
 
+/**
+ * @param {Event} event
+ * @return {boolean}
+ */
+Element.prototype.containsEventPoint = function(event)
+{
+    var box = this.getBoundingClientRect();
+    return box.left < event.x  && event.x < box.right &&
+           box.top < event.y && event.y < box.bottom;
+}
+
 Node.prototype.enclosingNodeOrSelfWithNodeNameInArray = function(nameArray)
 {
     for (var node = this; node && node !== this.ownerDocument; node = node.parentNode)

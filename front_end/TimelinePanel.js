@@ -1673,7 +1673,6 @@ WebInspector.TimelineRecordGraphRow = function(graphContainer, selectRecord, sch
     this._barAreaElement.appendChild(this._barElement);
 
     this._expandElement = new WebInspector.TimelineExpandableElement(graphContainer);
-    this._expandElement._element.addEventListener("click", this._onExpandClick.bind(this));
 
     this._selectRecord = selectRecord;
     this._scheduleRefresh = scheduleRefresh;
@@ -1704,6 +1703,9 @@ WebInspector.TimelineRecordGraphRow.prototype = {
      */
     _onClick: function(event)
     {
+        // check if we click arrow and expand if yes.
+        if (this._expandElement._arrow.containsEventPoint(event))
+            this._expand();
         this._selectRecord(this._record);
     },
 
@@ -1715,10 +1717,7 @@ WebInspector.TimelineRecordGraphRow.prototype = {
         this.element.enableStyleClass("selected", selected);
     },
 
-    /**
-     * @param {Event} event
-     */
-    _onExpandClick: function(event)
+    _expand: function()
     {
         this._record.collapsed = !this._record.collapsed;
         this._record.clicked = true;
@@ -1759,7 +1758,7 @@ WebInspector.TimelineExpandableElement = function(container)
 {
     this._element = container.createChild("div", "timeline-expandable");
     this._element.createChild("div", "timeline-expandable-left");
-    this._element.createChild("div", "timeline-expandable-arrow");
+    this._arrow = this._element.createChild("div", "timeline-expandable-arrow");
 }
 
 WebInspector.TimelineExpandableElement.prototype = {
