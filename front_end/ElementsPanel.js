@@ -742,6 +742,10 @@ WebInspector.ElementsPanel.prototype = {
                     crumbTitle = "<!DOCTYPE>";
                     break;
 
+                case Node.DOCUMENT_FRAGMENT_NODE:
+                  crumbTitle = current.shadowRootType() ? "#shadow-root" : current.nodeNameInCorrectCase();
+                  break;
+
                 default:
                     crumbTitle = current.nodeNameInCorrectCase();
             }
