@@ -537,7 +537,15 @@ WebInspector.WorkspaceSettingsTab = function()
 WebInspector.OverridesSettingsTab = function()
 {
     WebInspector.SettingsTab.call(this, WebInspector.UIString("Overrides"), "overrides-tab-content");
-    this.containerElement.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show 'Emulation' view in console drawer"), WebInspector.settings.showEmulationViewInDrawer));
+
+    var labelElement = WebInspector.SettingsTab.createSettingCheckbox("", WebInspector.settings.showEmulationViewInDrawer, true /*omitParagraphElement*/);
+    labelElement.createTextChild(WebInspector.UIString("Show 'Emulation' view in console drawer. (Hit "));
+    labelElement.createChild("span", "help-key").textContent = "Esc";
+    labelElement.createTextChild(WebInspector.UIString(" or click the"));
+    labelElement.appendChild(new WebInspector.StatusBarButton(WebInspector.UIString("Drawer"), "console-status-bar-item").element);
+    labelElement.createTextChild(WebInspector.UIString("toolbar icon)"));
+
+    this.containerElement.appendChild(labelElement);
 }
 
 WebInspector.OverridesSettingsTab.prototype = {
