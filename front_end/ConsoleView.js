@@ -770,7 +770,6 @@ WebInspector.ConsoleView.prototype = {
 WebInspector.ConsoleViewFilter = function()
 {
     this._messageURLFilters = WebInspector.settings.messageURLFilters.get();
-    this._hideCSSErrorsInConsole = WebInspector.settings.hideCSSErrorsInConsole.get();
     this._filterChanged = this.dispatchEventToListeners.bind(this, WebInspector.ConsoleViewFilter.Events.FilterChanged);
 };
 
@@ -860,16 +859,11 @@ WebInspector.ConsoleViewFilter.prototype = {
                 return false;
         }
 
-        if (message.source && message.source === WebInspector.ConsoleMessage.MessageSource.CSS && this._hideCSSErrorsInConsole)
-            return false;
-
         return true;
     },
 
     reset: function()
     {
-        this._hideCSSErrorsInConsole = false;
-        WebInspector.settings.hideCSSErrorsInConsole.set(this._hideCSSErrorsInConsole);
         this._messageURLFilters = {};
         WebInspector.settings.messageURLFilters.set(this._messageURLFilters);
         WebInspector.settings.messageLevelFilters.set({});
