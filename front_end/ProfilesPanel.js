@@ -412,6 +412,7 @@ WebInspector.ProfilesPanel = function(name, type)
         this._registerProfileType(new WebInspector.TrackingHeapSnapshotProfileType(this));
         if (!WebInspector.WorkerManager.isWorkerFrontend() && WebInspector.experimentsSettings.canvasInspection.isEnabled())
             this._registerProfileType(new WebInspector.CanvasProfileType());
+        this._launcherView.restoreSelectedProfileType();
     }
 
     this._reset();

@@ -126,12 +126,16 @@ WebInspector.MultiProfileLauncherView = function(profilesPanel)
 {
     WebInspector.ProfileLauncherView.call(this, profilesPanel);
 
+    WebInspector.settings.selectedProfileType = WebInspector.settings.createSetting("selectedProfileType", "CPU");
+
     var header = this._innerContentElement.createChild("h1");
     header.textContent = WebInspector.UIString("Select profiling type");
 
     this._profileTypeSelectorForm = this._innerContentElement.createChild("form");
 
     this._innerContentElement.createChild("div", "flexible-space");
+
+    this._typeIdToOptionElement = {};
 }
 
 WebInspector.MultiProfileLauncherView.EventTypes = {
@@ -145,24 +149,31 @@ WebInspector.MultiProfileLauncherView.prototype = {
      */
     addProfileType: function(profileType)
     {
-        var checked = !this._profileTypeSelectorForm.children.length;
         var labelElement = this._profileTypeSelectorForm.createChild("label");
         labelElement.textContent = profileType.name;
         var optionElement = document.createElement("input");
         labelElement.insertBefore(optionElement, labelElement.firstChild);
+        this._typeIdToOptionElement[profileType.id] = optionElement;
         optionElement.type = "radio";
         optionElement.name = "profile-type";
         optionElement.style.hidden = true;
-        if (checked) {
-            optionElement.checked = checked;
-            this.dispatchEventToListeners(WebInspector.MultiProfileLauncherView.EventTypes.ProfileTypeSelected, profileType);
-        }
         optionElement.addEventListener("change", this._profileTypeChanged.bind(this, profileType), false);
         var descriptionElement = labelElement.createChild("p");
         descriptionElement.textContent = profileType.description;
         var decorationElement = profileType.decorationElement();
         if (decorationElement)
             labelElement.appendChild(decorationElement);
+    },
+
+    restoreSelectedProfileType: function()
+    {
+        var typeName = WebInspector.settings.selectedProfileType.get();
+        if (!(typeName in this._typeIdToOptionElement))
+            typeName = Object.keys(this._typeIdToOptionElement)[0];
+        this._typeIdToOptionElement[typeName].checked = true;
+        this.dispatchEventToListeners(
+            WebInspector.MultiProfileLauncherView.EventTypes.ProfileTypeSelected,
+            this._panel.getProfileType(typeName));
     },
 
     _controlButtonClicked: function()
@@ -190,6 +201,7 @@ WebInspector.MultiProfileLauncherView.prototype = {
         this._isEnabled = profileType.isEnabled();
         this._profileTypeId = profileType.id;
         this._updateControls();
+        WebInspector.settings.selectedProfileType.set(profileType.id);
     },
 
     profileStarted: function()
