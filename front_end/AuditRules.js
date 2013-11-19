@@ -93,8 +93,8 @@ WebInspector.AuditRules.GzipRule.prototype = {
         var summary = result.addChild("", true);
         for (var i = 0, length = requests.length; i < length; ++i) {
             var request = requests[i];
-            if (request.statusCode === 304)
-                continue; // Do not test 304 Not Modified requests as their contents are always empty.
+            if (request.cached || request.statusCode === 304)
+                continue; // Do not test cached resources.
             if (this._shouldCompress(request)) {
                 var size = request.resourceSize;
                 candidateSize += size;
