@@ -338,8 +338,14 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var endHighlight = anchorBox.highlight.endColumn;
         var line = this.textEditor.line(lineNumber);
         if (!anchorBox.forSelection) {
-            while (startHighlight > 1 && line.charAt(startHighlight - 1) === '.')
-                startHighlight = this.textEditor.tokenAtTextPosition(lineNumber, startHighlight - 2).startColumn;
+            while (startHighlight > 1 && line.charAt(startHighlight - 1) === '.') {
+                var token = this.textEditor.tokenAtTextPosition(lineNumber, startHighlight - 2);
+                if (!token) {
+                    this._popoverHelper.hidePopover();
+                    return;
+                }
+                startHighlight = token.startColumn;
+            }
         }
         var evaluationText = line.substring(startHighlight, endHighlight + 1);
         var selectedCallFrame = WebInspector.debuggerModel.selectedCallFrame();
