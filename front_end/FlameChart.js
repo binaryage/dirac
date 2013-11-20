@@ -445,11 +445,14 @@ WebInspector.FlameChart.prototype = {
         this._scheduleUpdate();
     },
 
-    _drawOverviewCanvas: function(width, height)
+    /*
+     * @param {!number} width
+     */
+    _calculateDrawData: function(width)
     {
         var timelineData = this._timelineData();
         if (!timelineData)
-            return;
+            return null;
 
         var entryOffsets = timelineData.entryOffsets;
         var entryTotalTimes = timelineData.entryTotalTimes;
@@ -457,14 +460,26 @@ WebInspector.FlameChart.prototype = {
         var length = entryOffsets.length;
 
         var drawData = new Uint8Array(width);
-        var scaleFactor = width / this._totalTime;
+        var scaleFactor = width / timelineData.totalTime;
 
         for (var entryIndex = 0; entryIndex < length; ++entryIndex) {
-            var start = Math.floor(entryOffsets[i] * scaleFactor);
-            var finish = Math.floor((entryOffsets[i] + entryTotalTimes[i]) * scaleFactor);
-            for (var x = start; x < finish; ++x)
-                drawData[x] = Math.max(drawData[x], entryLevels[i] + 1);
+            var start = Math.floor(entryOffsets[entryIndex] * scaleFactor);
+            var finish = Math.floor((entryOffsets[entryIndex] + entryTotalTimes[entryIndex]) * scaleFactor);
+            for (var x = start; x <= finish; ++x)
+                drawData[x] = Math.max(drawData[x], entryLevels[entryIndex] + 1);
         }
+        return drawData;
+    },
+
+    /*
+     * @param {!number} width
+     * @param {!number} height
+     */
+    _drawOverviewCanvas: function(width, height)
+    {
+        var drawData = this._calculateDrawData(width);
+        if (!drawData)
+            return;
 
         var ratio = window.devicePixelRatio;
         var canvasWidth = width * ratio;
