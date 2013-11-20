@@ -814,13 +814,13 @@ WebInspector.CanvasProfileType.prototype = {
                 function hasUninstrumentedCanvasesCallback(error, result)
                 {
                     if (error || result)
-                        PageAgent.reload();
+                        WebInspector.resourceTreeModel.reloadPage();
                 }
                 CanvasAgent.hasUninstrumentedCanvases(hasUninstrumentedCanvasesCallback.bind(this));
             } else {
                 for (var frameId in this._framesWithCanvases) {
                     if (this._framesWithCanvases.hasOwnProperty(frameId)) {
-                        PageAgent.reload();
+                        WebInspector.resourceTreeModel.reloadPage();
                         break;
                     }
                 }

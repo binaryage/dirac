@@ -776,7 +776,7 @@ WebInspector.ScreencastView.prototype = {
 
     _navigateReload: function()
     {
-        PageAgent.reload();
+        WebInspector.resourceTreeModel.reloadPage();
     },
 
     _navigationUrlKeyUp: function(event)

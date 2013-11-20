@@ -63,6 +63,7 @@ WebInspector.ResourceTreeModel.EventTypes = {
     CachedResourcesLoaded: "CachedResourcesLoaded",
     DOMContentLoaded: "DOMContentLoaded",
     Load: "Load",
+    WillReloadPage: "WillReloadPage",
     InspectedURLChanged: "InspectedURLChanged",
     SecurityOriginAdded: "SecurityOriginAdded",
     SecurityOriginRemoved: "SecurityOriginRemoved",
@@ -421,6 +422,17 @@ WebInspector.ResourceTreeModel.prototype = {
     _createResourceFromFramePayload: function(frame, url, type, mimeType)
     {
         return new WebInspector.Resource(null, url, frame.url, frame.id, frame.loaderId, type, mimeType);
+    },
+
+    /**
+     * @param {boolean=} ignoreCache
+     * @param {string=} scriptToEvaluateOnLoad
+     * @param {string=} scriptPreprocessor
+     */
+    reloadPage: function(ignoreCache, scriptToEvaluateOnLoad, scriptPreprocessor)
+    {
+        this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage);
+        PageAgent.reload(ignoreCache, scriptToEvaluateOnLoad, scriptPreprocessor);
     },
 
     __proto__: WebInspector.Object.prototype

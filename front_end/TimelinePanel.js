@@ -181,6 +181,9 @@ WebInspector.TimelinePanel = function()
     this._createFileSelector();
     this._registerShortcuts();
     this._allRecordsCount = 0;
+
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._willReloadPage, this);
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
 }
 
 // Define row and header height, should be in sync with styles for timeline graphs.
@@ -438,9 +441,9 @@ WebInspector.TimelinePanel.prototype = {
     {
         if (this._operationInProgress)
             return null;
-        if (this.toggleTimelineButton.toggled) {
+        if (this._recordingInProgress()) {
             this.toggleTimelineButton.toggled = false;
-            this._model.stopRecording();
+            this._stopRecording();
         }
         var progressIndicator = new WebInspector.ProgressIndicator();
         progressIndicator.addEventListener(WebInspector.ProgressIndicator.Events.Done, this._setOperationInProgress.bind(this, null));
@@ -589,18 +592,33 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @param {boolean} userInitiated
+     */
+    _startRecording: function(userInitiated)
+    {
+        this._userInitiatedRecording = userInitiated;
+        this._model.startRecording(true);
+        if (userInitiated)
+            WebInspector.userMetrics.TimelineStarted.record();
+    },
+
+    _stopRecording: function()
+    {
+        this._userInitiatedRecording = false;
+        this._model.stopRecording();
+    },
+
+    /**
      * @return {boolean}
      */
     _toggleTimelineButtonClicked: function()
     {
         if (this._operationInProgress)
             return true;
-        if (this.toggleTimelineButton.toggled) {
-            this._model.stopRecording();
-        } else {
-            this._model.startRecording(true);
-            WebInspector.userMetrics.TimelineStarted.record();
-        }
+        if (this._recordingInProgress())
+            this._stopRecording();
+        else
+            this._startRecording(true);
         return true;
     },
 
@@ -1415,6 +1433,26 @@ WebInspector.TimelinePanel.prototype = {
         this._searchRegExp = createPlainTextSearchRegex(query, "i");
         delete this._searchResults;
         this._updateSearchHighlight(true, shouldJump);
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _willReloadPage: function(event)
+    {
+        if (this._operationInProgress || this._userInitiatedRecording || !this.isShowing())
+            return;
+        this._startRecording(false);
+    },
+
+    /**
+     * @param {WebInspector.Event} event
+     */
+    _loadEventFired: function(event)
+    {
+        if (!this._recordingInProgress() || this._userInitiatedRecording)
+            return;
+        this._stopRecording();
     },
 
     __proto__: WebInspector.Panel.prototype

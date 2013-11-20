@@ -131,7 +131,7 @@ WebInspector.AuditController.prototype = {
     _reloadResources: function(callback)
     {
         this._pageReloadCallback = callback;
-        PageAgent.reload(false);
+        WebInspector.resourceTreeModel.reloadPage();
     },
 
     _didMainResourceLoad: function()
