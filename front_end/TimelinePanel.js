@@ -172,7 +172,7 @@ WebInspector.TimelinePanel = function()
 
     // Create gpu tasks containers.
     this._mainThreadTasks = /** @type {!Array.<{startTime: number, endTime: number}>} */ ([]);
-    this._gpuTasks = /** @type {!Array.<{startTime: number, endTime: number, pid: number}>} */ ([]);
+    this._gpuTasks = /** @type {!Array.<{startTime: number, endTime: number, foreign: boolean}>} */ ([]);
     var utilizationStripsElement = this._timelineGrid.gridHeaderElement.createChild("div", "timeline-utilization-strips vbox");
     this._cpuBarsElement = utilizationStripsElement.createChild("div", "timeline-utilization-strip");
     if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
@@ -668,7 +668,7 @@ WebInspector.TimelinePanel.prototype = {
             this._gpuTasks.push({
                 startTime: WebInspector.TimelineModel.startTimeInSeconds(record),
                 endTime: WebInspector.TimelineModel.endTimeInSeconds(record),
-                pid: record.data["ownerPID"]
+                foreign: record.data["foreign"]
             });
             return WebInspector.TimelineModel.startTimeInSeconds(record) < this._overviewPane.windowEndTime();
         }
@@ -764,7 +764,6 @@ WebInspector.TimelinePanel.prototype = {
         this._automaticallySizeWindow = true;
         this._mainThreadTasks = [];
         this._gpuTasks = [];
-        this._pidToHue = {};
     },
 
     elementsToRestoreScrollPositionsFor: function()
@@ -1075,7 +1074,7 @@ WebInspector.TimelinePanel.prototype = {
 
     /**
      * @param {string} name
-     * @param {!Array.<{startTime: number, endTime: number, pid: number}>} tasks
+     * @param {!Array.<{startTime: number, endTime: number, foreign: boolean}>} tasks
      * @param {?Element} container
      */
     _refreshUtilizationBars: function(name, tasks, container)
@@ -1107,14 +1106,11 @@ WebInspector.TimelinePanel.prototype = {
 
         var taskIndex = insertionIndexForObjectInListSortedByFunction(startTime, tasks, compareEndTime);
 
+        var foreignStyle = "gpu-task-foreign";
         var element = container.firstChild;
         var lastElement;
         var lastLeft;
         var lastRight;
-
-        if (!this._pidToHue)
-            this._pidToHue = {};
-        var pidToHue = this._pidToHue;
 
         for (; taskIndex < tasks.length; ++taskIndex) {
             var task = tasks[taskIndex];
@@ -1126,8 +1122,9 @@ WebInspector.TimelinePanel.prototype = {
 
             if (lastElement) {
                 var gap = Math.floor(left) - Math.ceil(lastRight);
-                if (gap < minGap
-                    && (!task.pid || tasks[lastElement._tasksInfo.firstTaskIndex].pid === task.pid)) {
+                if (gap < minGap) {
+                    if (!task.foreign)
+                        lastElement.removeStyleClass(foreignStyle);
                     lastRight = right;
                     lastElement._tasksInfo.lastTaskIndex = taskIndex;
                     continue;
@@ -1137,18 +1134,12 @@ WebInspector.TimelinePanel.prototype = {
 
             if (!element)
                 element = container.createChild("div", "timeline-graph-bar");
-
-            if (task.pid) {
-                if (!(task.pid in pidToHue))
-                    pidToHue[task.pid] = (Object.keys(pidToHue).length * 101) % 360;
-                var hue = pidToHue[task.pid];
-                element.style.backgroundColor = "hsla(" + hue + ",50%,50%,0.2)";
-            }
             element.style.left = left + "px";
             element._tasksInfo = {name: name, tasks: tasks, firstTaskIndex: taskIndex, lastTaskIndex: taskIndex};
+            if (task.foreign)
+                element.addStyleClass(foreignStyle);
             lastLeft = left;
             lastRight = right;
-
             lastElement = element;
             element = element.nextSibling;
         }

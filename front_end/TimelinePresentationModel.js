@@ -670,8 +670,6 @@ WebInspector.TimelinePresentationModel.prototype = {
         contentHelper.appendTextRow(WebInspector.UIString("Duration"), durationText);
         contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.secondsToString(cpuTime, true));
         contentHelper.appendTextRow(WebInspector.UIString("Message Count"), messageCount);
-        if (tasks[firstTaskIndex].pid)
-            contentHelper.appendTextRow(WebInspector.UIString("PID"), tasks[firstTaskIndex].pid);
         return contentHelper.contentTable();
     },
 

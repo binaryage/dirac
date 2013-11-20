@@ -606,8 +606,14 @@
 }
 
 .timeline-utilization-strip.gpu .timeline-graph-bar {
-    background-color: red;
+    background-color: #00a;
     border: none;
+    opacity: 0.3;
+    min-width: 0;
+}
+
+.timeline-utilization-strip.gpu .timeline-graph-bar.gpu-task-foreign {
+    background-color: #aaa;
 }
 
 .timeline-cpu-curtain-left, .timeline-cpu-curtain-right {
