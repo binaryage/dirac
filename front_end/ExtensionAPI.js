@@ -96,7 +96,6 @@ function defineCommonExtensionSymbols(apiPrivate)
         ShowPanel: "showPanel",
         StopAuditCategoryRun: "stopAuditCategoryRun",
         OpenResource: "openResource",
-        Reload: "Reload",
         Unsubscribe: "unsubscribe",
         UpdateAuditProgress: "updateAuditProgress",
         UpdateButton: "updateButton",

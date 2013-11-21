@@ -82,7 +82,6 @@ WebInspector.DefaultScriptMapping.prototype = {
         uiSourceCode.setSourceMapping(this);
         script.pushSourceMapping(this);
         script.addEventListener(WebInspector.Script.Events.ScriptEdited, this._scriptEdited.bind(this, script.scriptId));
-        return uiSourceCode;
     },
 
     /**

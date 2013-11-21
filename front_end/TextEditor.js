@@ -59,7 +59,7 @@ WebInspector.TextEditor.prototype = {
      */
     indent: function() { },
 
-    /*
+    /**
      * @param {number} lineNumber
      * @param {number} column
      * @return {?{x: number, y: number, height: number}}

@@ -783,7 +783,7 @@ TreeElement.prototype.reveal = function()
         currentAncestor = currentAncestor.parent;
     }
 
-    this.onreveal(this);
+    this.onreveal();
 }
 
 TreeElement.prototype.revealed = function()

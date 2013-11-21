@@ -203,6 +203,7 @@ WebInspector.SuggestBox.prototype = {
 
     /**
      * @param {string=} text
+     * @return {boolean}
      */
     acceptSuggestion: function(text)
     {

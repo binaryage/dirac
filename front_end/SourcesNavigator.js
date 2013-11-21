@@ -74,7 +74,7 @@ WebInspector.SourcesNavigator.ContentScriptsTab = "contentScripts";
 WebInspector.SourcesNavigator.SnippetsTab = "snippets";
 
 WebInspector.SourcesNavigator.prototype = {
-    /*
+    /**
      * @return {WebInspector.View}
      */
     get view()

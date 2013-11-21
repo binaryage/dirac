@@ -738,6 +738,7 @@ WebInspector.ElementsTreeOutline.ElementDecorator = function()
 WebInspector.ElementsTreeOutline.ElementDecorator.prototype = {
     /**
      * @param {WebInspector.DOMNode} node
+     * @return {?string}
      */
     decorate: function(node)
     {
@@ -745,6 +746,7 @@ WebInspector.ElementsTreeOutline.ElementDecorator.prototype = {
 
     /**
      * @param {WebInspector.DOMNode} node
+     * @return {?string}
      */
     decorateAncestor: function(node)
     {
