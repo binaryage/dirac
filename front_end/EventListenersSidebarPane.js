@@ -230,7 +230,7 @@ WebInspector.EventListenerBar.prototype = {
         }
 
         if (node.id === this._nodeId) {
-            this.titleElement.textContent = node.appropriateSelectorFor();
+            this.titleElement.textContent = WebInspector.DOMPresentationUtils.appropriateSelectorFor(node);
             return;
         }
 

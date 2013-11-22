@@ -460,32 +460,6 @@ WebInspector.DOMNode.prototype = {
     },
 
     /**
-     * @param {boolean} justSelector
-     * @return {string}
-     */
-    appropriateSelectorFor: function(justSelector)
-    {
-        var lowerCaseName = this.localName() || this.nodeName().toLowerCase();
-
-        var id = this.getAttribute("id");
-        if (id) {
-            var selector = "#" + id;
-            return (justSelector ? selector : lowerCaseName + selector);
-        }
-
-        var className = this.getAttribute("class");
-        if (className) {
-            var selector = "." + className.trim().replace(/\s+/g, ".");
-            return (justSelector ? selector : lowerCaseName + selector);
-        }
-
-        if (lowerCaseName === "input" && this.getAttribute("type"))
-            return lowerCaseName + "[type=\"" + this.getAttribute("type") + "\"]";
-
-        return lowerCaseName;
-    },
-
-    /**
      * @param {WebInspector.DOMNode} node
      * @return {boolean}
      */

@@ -158,3 +158,30 @@ WebInspector.DOMPresentationUtils.buildImagePreviewContents = function(imageURL,
         userCallback(container);
     }
 }
+
+/**
+ * @param {!WebInspector.DOMNode} node
+ * @param {boolean=} justSelector
+ * @return {string}
+ */
+WebInspector.DOMPresentationUtils.appropriateSelectorFor = function(node, justSelector)
+{
+    var lowerCaseName = node.localName() || node.nodeName().toLowerCase();
+
+    var id = node.getAttribute("id");
+    if (id) {
+        var selector = "#" + id;
+        return (justSelector ? selector : lowerCaseName + selector);
+    }
+
+    var className = node.getAttribute("class");
+    if (className) {
+        var selector = "." + className.trim().replace(/\s+/g, ".");
+        return (justSelector ? selector : lowerCaseName + selector);
+    }
+
+    if (lowerCaseName === "input" && node.getAttribute("type"))
+        return lowerCaseName + "[type=\"" + node.getAttribute("type") + "\"]";
+
+    return lowerCaseName;
+}

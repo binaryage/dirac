@@ -198,10 +198,10 @@ WebInspector.LayerTreeElement.prototype = {
     {
         var layer = /** @type {WebInspector.Layer} */ (this.representedObject);
         var nodeId = layer.nodeIdForSelfOrAncestor();
-        var node = nodeId && WebInspector.domAgent.nodeForId(nodeId);
+        var node = nodeId ? WebInspector.domAgent.nodeForId(nodeId) : null;
         var title = document.createDocumentFragment();
         title.createChild("div", "selection");
-        title.appendChild(document.createTextNode(node ? node.appropriateSelectorFor(false) :  "#" + layer.id()));
+        title.appendChild(document.createTextNode(node ? WebInspector.DOMPresentationUtils.appropriateSelectorFor(node, false) :  "#" + layer.id()));
         var details = title.createChild("span", "dimmed");
         details.textContent = WebInspector.UIString(" (%d × %d)", layer.width(), layer.height());
         this.title = title;
