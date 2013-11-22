@@ -79,14 +79,13 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdated, this._onRequestUpdated, this);
     WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestUpdated, this);
 
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._willReloadPage, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.DOMContentLoaded, this._domContentLoadedEventFired, this);
 
     this._addFilters();
     this._initializeView();
-
-    WebInspector.networkLog.requests.forEach(this._appendRequest.bind(this));
 }
 
 WebInspector.NetworkLogView.HTTPSchemas = {"http": true, "https": true, "ws": true, "wss": true};
@@ -96,7 +95,6 @@ WebInspector.NetworkLogView._defaultColumnsVisibility = {
     "Cache-Control": false, "Connection": false, "Content-Encoding": false, "Content-Length": false, "ETag": false, "Keep-Alive": false, "Last-Modified": false, "Server": false, "Vary": false
 };
 WebInspector.NetworkLogView._defaultRefreshDelay = 500;
-WebInspector.NetworkLogView.ALL_TYPES = "all";
 
 WebInspector.NetworkLogView.prototype = {
     _addFilters: function()
@@ -150,7 +148,7 @@ WebInspector.NetworkLogView.prototype = {
 
     get statusBarItems()
     {
-        return [this._preserveLogToggle.element, this._clearButton.element, this._filterBar.filterButton(), this._largerRequestsButton.element, this._progressBarContainer];
+        return [this._recordButton.element, this._clearButton.element, this._filterBar.filterButton(), this._largerRequestsButton.element, this._progressBarContainer];
     },
 
     get useLargeRows()
@@ -616,8 +614,8 @@ WebInspector.NetworkLogView.prototype = {
 
     _createStatusbarButtons: function()
     {
-        this._preserveLogToggle = new WebInspector.StatusBarButton(WebInspector.UIString("Preserve Log upon Navigation"), "record-profile-status-bar-item");
-        this._preserveLogToggle.addEventListener("click", this._onPreserveLogClicked, this);
+        this._recordButton = new WebInspector.StatusBarButton(WebInspector.UIString("Record Network Log"), "record-profile-status-bar-item");
+        this._recordButton.addEventListener("click", this._onRecordButtonClicked, this);
 
         this._clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
         this._clearButton.addEventListener("click", this._reset, this);
@@ -629,6 +627,11 @@ WebInspector.NetworkLogView.prototype = {
 
     _loadEventFired: function(event)
     {
+        if (!this._recordButton.toggled)
+            return;
+         if (!this._userInitiatedRecording)
+            this._recordButton.toggled = false;
+
         this._mainRequestLoadTime = event.data || -1;
         // Schedule refresh to update boundaries and draw the new line.
         this._scheduleRefresh();
@@ -636,6 +639,8 @@ WebInspector.NetworkLogView.prototype = {
 
     _domContentLoadedEventFired: function(event)
     {
+        if (!this._recordButton.toggled)
+            return;
         this._mainRequestDOMContentLoadedTime = event.data || -1;
         // Schedule refresh to update boundaries and draw the new line.
         this._scheduleRefresh();
@@ -702,9 +707,11 @@ WebInspector.NetworkLogView.prototype = {
             this._dataGrid.scrollToLastRow();
     },
 
-    _onPreserveLogClicked: function(e)
+    _onRecordButtonClicked: function(e)
     {
-        this._preserveLogToggle.toggled = !this._preserveLogToggle.toggled;
+        this._recordButton.toggled = !this._recordButton.toggled;
+        this._userInitiatedRecording = this._recordButton.toggled;
+        delete this._truncateLogAfterNavigation;
     },
 
     _reset: function()
@@ -746,7 +753,8 @@ WebInspector.NetworkLogView.prototype = {
 
     _onRequestStarted: function(event)
     {
-        this._appendRequest(event.data);
+        if (this._recordButton.toggled)
+            this._appendRequest(event.data);
     },
 
     _appendRequest: function(request)
@@ -794,34 +802,42 @@ WebInspector.NetworkLogView.prototype = {
         this._scheduleRefresh();
     },
 
-    clear: function()
+    _willReloadPage: function(event)
     {
-        if (this._preserveLogToggle.toggled)
+        if (this._userInitiatedRecording)
             return;
+        if (!this.isShowing())
+            return;
+        this._recordButton.toggled = true;
+        this._truncateLogAfterNavigation = true;
         this._reset();
     },
 
+    /**
+     * @param {WebInspector.Event} event
+     */
     _mainFrameNavigated: function(event)
     {
-        if (this._preserveLogToggle.toggled)
+        if (!this._truncateLogAfterNavigation)
             return;
+        delete this._truncateLogAfterNavigation;
 
         var frame = /** @type {WebInspector.ResourceTreeFrame} */ (event.data);
         var loaderId = frame.loaderId;
 
-        // Preserve provisional load requests.
-        var requestsToPreserve = [];
-        for (var i = 0; i < this._requests.length; ++i) {
-            var request = this._requests[i];
+        // Pick provisional load requests.
+        var requestsToPick = [];
+        var requests = WebInspector.networkLog.requests;
+        for (var i = 0; i < requests.length; ++i) {
+            var request = requests[i];
             if (request.loaderId === loaderId)
-                requestsToPreserve.push(request);
+                requestsToPick.push(request);
         }
 
         this._reset();
 
-        // Restore preserved items.
-        for (var i = 0; i < requestsToPreserve.length; ++i)
-            this._appendRequest(requestsToPreserve[i]);
+        for (var i = 0; i < requestsToPick.length; ++i)
+            this._appendRequest(requestsToPick[i]);
     },
 
     switchToDetailedView: function()
