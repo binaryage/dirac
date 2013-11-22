@@ -702,13 +702,14 @@
     background-color: rgb(236, 236, 236);
     cursor: ns-resize;
     white-space: nowrap;
+    display: flex;
+    flex-orientation
 }
 
 .timeline-details-view-body {
     padding-top: 2px;
     flex: auto;
-    overflow-y: auto;
-    overflow-x: hidden;
+    overflow: auto;
     position: relative;
 }
 
@@ -725,6 +726,7 @@
 
 .timeline-details-view-row {
     padding: 2px 0 2px 6px;
+    white-space: nowrap;
 }
 
 .timeline-details-view-row-title {
@@ -764,4 +766,59 @@
 
 .timeline-memory-split > .split-view-contents-first {
     overflow: hidden;
+}
+
+.pie-chart {
+    width: 100px;
+    height: 110px;
+}
+
+.pie-chart-background {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    background-color: rgb(248, 248, 248);
+    box-shadow: 0 1px 2px;
+}
+
+.pie-chart-foreground {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    text-align: center;
+    line-height: 100px;
+    z-index: 10;
+}
+
+.pie-chart-slice {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    clip: rect(0px, 100px, 100px, 50px);
+}
+
+.pie-chart-slice-inner {
+    position: absolute;
+    width: 100px;
+    height: 100px;
+    border-radius: 50px;
+    clip: rect(0px, 50px, 100px, 0px);
+}
+
+.timeline-aggregated-info {
+    position: relative;
+    margin: 8px 2px;
+    width: 160px;
+}
+
+.timeline-aggregated-info-legend > div {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.timeline-aggregated-info .pie-chart {
+    margin-left: 20px;
 }

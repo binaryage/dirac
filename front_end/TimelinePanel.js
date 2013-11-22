@@ -31,6 +31,7 @@
 
 importScript("MemoryStatistics.js");
 importScript("DOMCountersGraph.js");
+importScript("PieChart.js");
 importScript("TimelineModel.js");
 importScript("TimelineOverviewPane.js");
 importScript("TimelinePresentationModel.js");
@@ -67,7 +68,7 @@ WebInspector.TimelinePanel = function()
 
     // Create top overview component.
     this._overviewPane = new WebInspector.TimelineOverviewPane(this._model);
-    this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.WindowChanged, this._invalidateAndScheduleRefresh.bind(this, false, true));
+    this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.WindowChanged, this._windowChanged.bind(this));
     this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.ModeChanged, this._overviewModeChanged, this);
     this._overviewPane.show(this.element);
 
@@ -171,8 +172,8 @@ WebInspector.TimelinePanel = function()
     this._expandOffset = 15;
 
     // Create gpu tasks containers.
-    this._mainThreadTasks = /** @type {!Array.<{startTime: number, endTime: number}>} */ ([]);
-    this._gpuTasks = /** @type {!Array.<{startTime: number, endTime: number, foreign: boolean}>} */ ([]);
+    this._mainThreadTasks = /** @type {!Array.<TimelineAgent.TimelineEvent>} */ ([]);
+    this._gpuTasks = /** @type {!Array.<TimelineAgent.TimelineEvent>} */ ([]);
     var utilizationStripsElement = this._timelineGrid.gridHeaderElement.createChild("div", "timeline-utilization-strips vbox");
     this._cpuBarsElement = utilizationStripsElement.createChild("div", "timeline-utilization-strip");
     if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
@@ -432,6 +433,7 @@ WebInspector.TimelinePanel.prototype = {
         else
             vertically = !WebInspector.settings.splitVerticallyWhenDockedToRight.get();
         this._detailsSplitView.setVertical(vertically);
+        this._detailsView.setVertical(vertically);
     },
 
     /**
@@ -657,19 +659,11 @@ WebInspector.TimelinePanel.prototype = {
      */
     _innerAddRecordToTimeline: function(record)
     {
-        if (record.type === WebInspector.TimelineModel.RecordType.Program) {
-            this._mainThreadTasks.push({
-                startTime: WebInspector.TimelineModel.startTimeInSeconds(record),
-                endTime: WebInspector.TimelineModel.endTimeInSeconds(record)
-            });
-        }
+        if (record.type === WebInspector.TimelineModel.RecordType.Program)
+            this._mainThreadTasks.push(record);
 
         if (record.type === WebInspector.TimelineModel.RecordType.GPUTask) {
-            this._gpuTasks.push({
-                startTime: WebInspector.TimelineModel.startTimeInSeconds(record),
-                endTime: WebInspector.TimelineModel.endTimeInSeconds(record),
-                foreign: record.data["foreign"]
-            });
+            this._gpuTasks.push(record);
             return WebInspector.TimelineModel.startTimeInSeconds(record) < this._overviewPane.windowEndTime();
         }
 
@@ -810,7 +804,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.TimelinePresentationModel.Record} record
+     * @param {?WebInspector.TimelinePresentationModel.Record} record
      */
     _selectRecord: function(record)
     {
@@ -827,9 +821,12 @@ WebInspector.TimelinePanel.prototype = {
                 graphRow.renderAsSelected(false);
         }
 
-        var recordsInWindow = this._presentationModel.filteredRecords();
-        this._revealRecord(record);
+        if (!record) {
+            this._updateSelectionDetails();
+            return;
+        }
 
+        this._revealRecord(record);
         this._lastSelectedRecord = record;
         var listRow = /** @type {WebInspector.TimelineRecordListRow} */ (record.getUserObject("WebInspector.TimelineRecordListRow"));
         listRow.renderAsSelected(true);
@@ -839,12 +836,76 @@ WebInspector.TimelinePanel.prototype = {
         record.generatePopupContent(showCallback.bind(this));
 
         /**
-         * @param {Element} element
+         * @param {DocumentFragment} element
          */
         function showCallback(element)
         {
             this._detailsView.setContent(record.title, element);
         }
+    },
+
+    _updateSelectionDetails: function()
+    {
+        var startTime = this._overviewPane.windowStartTime() * 1000;
+        var endTime = this._overviewPane.windowEndTime() * 1000;
+        // Return early in case 0 selection window.
+        if (startTime < 0)
+            return;
+
+        var aggregatedStats = {};
+
+        /**
+         * @param {number} value
+         * @param {TimelineAgent.TimelineEvent} task
+         * @return {number}
+         */
+        function compareEndTime(value, task)
+        {
+            return value < task.endTime ? -1 : 1;
+        }
+
+        /**
+         * @param {TimelineAgent.TimelineEvent} rawRecord
+         */
+        function aggregateTimeForRecordWithinWindow(rawRecord)
+        {
+            if (!rawRecord.endTime || rawRecord.endTime < startTime || rawRecord.startTime > endTime)
+                return;
+
+            var childrenTime = 0;
+            var children = rawRecord.children || [];
+            for (var i = 0; i < children.length; ++i) {
+                var child = children[i];
+                if (!child.endTime || child.endTime < startTime || child.startTime > endTime)
+                    continue;
+                childrenTime += Math.min(endTime, child.endTime) - Math.max(startTime, child.startTime);
+                aggregateTimeForRecordWithinWindow(child);
+            }
+            var categoryName = WebInspector.TimelinePresentationModel.categoryForRecord(rawRecord).name;
+            var ownTime = Math.min(endTime, rawRecord.endTime) - Math.max(startTime, rawRecord.startTime) - childrenTime;
+            aggregatedStats[categoryName] = (aggregatedStats[categoryName] || 0) + ownTime / 1000;
+        }
+
+        var taskIndex = insertionIndexForObjectInListSortedByFunction(startTime, this._mainThreadTasks, compareEndTime);
+        for (; taskIndex < this._mainThreadTasks.length; ++taskIndex) {
+            var task = this._mainThreadTasks[taskIndex];
+            if (task.startTime > endTime)
+                break;
+            aggregateTimeForRecordWithinWindow(task);
+        }
+
+        var aggregatedTotal = 0;
+        for (var categoryName in aggregatedStats)
+            aggregatedTotal += aggregatedStats[categoryName];
+        aggregatedStats["idle"] = Math.max(0, (endTime - startTime) / 1000 - aggregatedTotal);
+        var pie = WebInspector.TimelinePresentationModel.generatePieChart(aggregatedStats);
+        this._detailsView.setContent("", pie.element);
+    },
+
+    _windowChanged: function()
+    {
+        this._invalidateAndScheduleRefresh(false, true);
+        this._selectRecord(null);
     },
 
     /**
@@ -1074,7 +1135,7 @@ WebInspector.TimelinePanel.prototype = {
 
     /**
      * @param {string} name
-     * @param {!Array.<{startTime: number, endTime: number, foreign: boolean}>} tasks
+     * @param {!Array.<TimelineAgent.TimelineEvent>} tasks
      * @param {?Element} container
      */
     _refreshUtilizationBars: function(name, tasks, container)
@@ -1091,12 +1152,12 @@ WebInspector.TimelinePanel.prototype = {
         var width = this._graphRowsElementWidth;
         var boundarySpan = this._overviewPane.windowEndTime() - this._overviewPane.windowStartTime();
         var scale = boundarySpan / (width - minWidth - this._timelinePaddingLeft);
-        var startTime = this._overviewPane.windowStartTime() - this._timelinePaddingLeft * scale;
-        var endTime = startTime + width * scale;
+        var startTime = (this._overviewPane.windowStartTime() - this._timelinePaddingLeft * scale) * 1000;
+        var endTime = startTime + width * scale * 1000;
 
         /**
          * @param {number} value
-         * @param {{startTime: number, endTime: number}} task
+         * @param {TimelineAgent.TimelineEvent} task
          * @return {number}
          */
         function compareEndTime(value, task)
@@ -1117,13 +1178,13 @@ WebInspector.TimelinePanel.prototype = {
             if (task.startTime > endTime)
                 break;
 
-            var left = Math.max(0, this._calculator.computePosition(task.startTime) + barOffset - widthAdjustment);
-            var right = Math.min(width, this._calculator.computePosition(task.endTime) + barOffset + widthAdjustment);
+            var left = Math.max(0, this._calculator.computePosition(WebInspector.TimelineModel.startTimeInSeconds(task)) + barOffset - widthAdjustment);
+            var right = Math.min(width, this._calculator.computePosition(WebInspector.TimelineModel.endTimeInSeconds(task)) + barOffset + widthAdjustment);
 
             if (lastElement) {
                 var gap = Math.floor(left) - Math.ceil(lastRight);
                 if (gap < minGap) {
-                    if (!task.foreign)
+                    if (!task.data["foreign"])
                         lastElement.removeStyleClass(foreignStyle);
                     lastRight = right;
                     lastElement._tasksInfo.lastTaskIndex = taskIndex;
@@ -1136,7 +1197,7 @@ WebInspector.TimelinePanel.prototype = {
                 element = container.createChild("div", "timeline-graph-bar");
             element.style.left = left + "px";
             element._tasksInfo = {name: name, tasks: tasks, firstTaskIndex: taskIndex, lastTaskIndex: taskIndex};
-            if (task.foreign)
+            if (task.data["foreign"])
                 element.addStyleClass(foreignStyle);
             lastLeft = left;
             lastRight = right;
@@ -1918,6 +1979,15 @@ WebInspector.TimelineDetailsView.prototype = {
         this._titleElement.textContent = WebInspector.UIString("DETAILS: %s", title);
         this._contentElement.removeChildren();
         this._contentElement.appendChild(element);
+    },
+
+    /**
+     * @param {boolean} vertical
+     */
+    setVertical: function(vertical)
+    {
+        this._contentElement.enableStyleClass("hbox", !vertical);
+        this._contentElement.enableStyleClass("vbox", vertical);
     },
 
     __proto__: WebInspector.View.prototype

@@ -291,6 +291,7 @@ modules = [
         "sources": [
             "DOMCountersGraph.js",
             "MemoryStatistics.js",
+            "PieChart.js",
             "TimelineModel.js",
             "TimelineOverviewPane.js",
             "TimelinePanel.js",
