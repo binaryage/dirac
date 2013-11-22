@@ -449,7 +449,9 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     ProfilerAgent.enable();
     HeapProfilerAgent.enable();
 
-    WebInspector.settings.forceCompositingMode = WebInspector.settings.createBackendSetting("forceCompositingMode", false, PageAgent.setForceCompositingMode.bind(PageAgent));
+    WebInspector.settings.forceCompositingMode = WebInspector.settings.createSetting("forceCompositingMode", false);
+    if (WebInspector.settings.forceCompositingMode.get())
+        PageAgent.setForceCompositingMode();
     WebInspector.settings.showPaintRects = WebInspector.settings.createBackendSetting("showPaintRects", false, PageAgent.setShowPaintRects.bind(PageAgent));
     WebInspector.settings.showDebugBorders = WebInspector.settings.createBackendSetting("showDebugBorders", false, PageAgent.setShowDebugBorders.bind(PageAgent));
     WebInspector.settings.continuousPainting = WebInspector.settings.createBackendSetting("continuousPainting", false, PageAgent.setContinuousPaintingEnabled.bind(PageAgent));

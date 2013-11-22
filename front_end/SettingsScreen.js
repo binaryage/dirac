@@ -362,8 +362,8 @@ WebInspector.GenericSettingsTab = function()
 
     p = this._appendSection(WebInspector.UIString("Rendering"));
     p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show paint rectangles"), WebInspector.settings.showPaintRects));
-    this._forceCompositingModeCheckbox = document.createElement("input");
 
+    this._forceCompositingModeCheckbox = document.createElement("input");
     var checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Force accelerated compositing"), WebInspector.settings.forceCompositingMode, false, this._forceCompositingModeCheckbox);
     p.appendChild(checkbox);
     WebInspector.settings.forceCompositingMode.addChangeListener(this._forceCompositingModeChanged, this);
@@ -456,6 +456,13 @@ WebInspector.GenericSettingsTab.prototype = {
             WebInspector.settings.continuousPainting.set(false);
             WebInspector.settings.showDebugBorders.set(false);
             WebInspector.settings.showScrollBottleneckRects.set(false);
+        } else {
+            function callback(error)
+            {
+                if (error)
+                    WebInspector.log("Error forcing compositing mode: " + error);
+            }
+            PageAgent.setForceCompositingMode(callback);
         }
         this._forceCompositingModeCheckbox.checked = compositing;
     },
