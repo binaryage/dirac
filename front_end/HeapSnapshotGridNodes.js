@@ -476,7 +476,7 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
                 if (!error && object.type)
                     callback(WebInspector.RemoteObject.fromPayload(object), !!error);
                 else
-                    callback(WebInspector.RemoteObject.fromPrimitiveValue(WebInspector.UIString("Not available")));
+                    callback(WebInspector.RemoteObject.fromPrimitiveValue(WebInspector.UIString("Preview is not available")));
             }
             HeapProfilerAgent.getObjectByHeapObjectId(String(this.snapshotNodeId), objectGroupName, formatResult);
         }
