@@ -167,21 +167,331 @@ WebInspector.DOMPresentationUtils.buildImagePreviewContents = function(imageURL,
 WebInspector.DOMPresentationUtils.appropriateSelectorFor = function(node, justSelector)
 {
     var lowerCaseName = node.localName() || node.nodeName().toLowerCase();
-
-    var id = node.getAttribute("id");
-    if (id) {
-        var selector = "#" + id;
-        return (justSelector ? selector : lowerCaseName + selector);
-    }
-
-    var className = node.getAttribute("class");
-    if (className) {
-        var selector = "." + className.trim().replace(/\s+/g, ".");
-        return (justSelector ? selector : lowerCaseName + selector);
-    }
-
-    if (lowerCaseName === "input" && node.getAttribute("type"))
+    if (node.nodeType() !== Node.ELEMENT_NODE)
+        return lowerCaseName;
+    if (lowerCaseName === "input" && node.getAttribute("type") && !node.getAttribute("id") && !node.getAttribute("class"))
         return lowerCaseName + "[type=\"" + node.getAttribute("type") + "\"]";
 
-    return lowerCaseName;
+    return WebInspector.DOMPresentationUtils.cssPath(node, justSelector);
+}
+
+/**
+ * @param {!WebInspector.DOMNode} node
+ * @param {boolean=} optimized
+ * @return {string}
+ */
+WebInspector.DOMPresentationUtils.cssPath = function(node, optimized)
+{
+    if (node.nodeType() !== Node.ELEMENT_NODE)
+        return "";
+
+    var steps = [];
+    var contextNode = node;
+    while (contextNode) {
+        var step = WebInspector.DOMPresentationUtils._cssPathValue(contextNode, optimized);
+        if (!step)
+            break; // Error - bail out early.
+        steps.push(step);
+        if (step.optimized)
+            break;
+        contextNode = contextNode.parentNode;
+    }
+
+    steps.reverse();
+    return steps.join(" > ");
+}
+
+/**
+ * @param {!WebInspector.DOMNode} node
+ * @param {boolean=} optimized
+ * @return {WebInspector.DOMNodePathStep}
+ */
+WebInspector.DOMPresentationUtils._cssPathValue = function(node, optimized)
+{
+    if (node.nodeType() !== Node.ELEMENT_NODE)
+        return null;
+
+    var id = node.getAttribute("id");
+    if (optimized) {
+        if (id)
+            return new WebInspector.DOMNodePathStep(idSelector(id), true);
+        var nodeNameLower = node.nodeName().toLowerCase();
+        if (nodeNameLower === "body" || nodeNameLower === "head" || nodeNameLower === "html")
+            return new WebInspector.DOMNodePathStep(node.nodeNameInCorrectCase(), true);
+    }
+    var nodeName = node.nodeNameInCorrectCase();
+
+    if (id)
+        return new WebInspector.DOMNodePathStep(nodeName + idSelector(id), true);
+    var parent = node.parentNode;
+    if (!parent || parent.nodeType() === Node.DOCUMENT_NODE)
+        return new WebInspector.DOMNodePathStep(nodeName, true);
+
+    /**
+     * @param {WebInspector.DOMNode} node
+     * @return {Array.<string>}
+     */
+    function prefixedElementClassNames(node)
+    {
+        var classAttribute = node.getAttribute("class");
+        if (!classAttribute)
+            return [];
+
+        return classAttribute.split(/\s+/g).filter(Boolean).map(function(name) {
+            // The prefix is required to store "__proto__" in a object-based map.
+            return "$" + name;
+        });
+    }
+
+    /**
+     * @param {string} id
+     * @return {string}
+     */
+    function idSelector(id)
+    {
+        return "#" + escapeIdentifierIfNeeded(id);
+    }
+
+    /**
+     * @param {string} ident
+     * @return {string}
+     */
+    function escapeIdentifierIfNeeded(ident)
+    {
+        if (isCSSIdentifier(ident))
+            return ident;
+        var shouldEscapeFirst = /^(?:[0-9]|-[0-9-]?)/.test(ident);
+        var lastIndex = ident.length - 1;
+        return ident.replace(/./g, function(c, i) {
+            return ((shouldEscapeFirst && i === 0) || !isCSSIdentChar(c)) ? escapeAsciiChar(c, i === lastIndex) : c;
+        });
+    }
+
+    /**
+     * @param {string} c
+     * @param {boolean} isLast
+     * @return {string}
+     */
+    function escapeAsciiChar(c, isLast)
+    {
+        return "\\" + toHexByte(c) + (isLast ? "" : " ");
+    }
+
+    /**
+     * @param {string} c
+     */
+    function toHexByte(c)
+    {
+        var hexByte = c.charCodeAt(0).toString(16);
+        if (hexByte.length === 1)
+          hexByte = "0" + hexByte;
+        return hexByte;
+    }
+
+    /**
+     * @param {string} c
+     * @return {boolean}
+     */
+    function isCSSIdentChar(c)
+    {
+        if (/[a-zA-Z0-9_-]/.test(c))
+            return true;
+        return c.charCodeAt(0) >= 0xA0;
+    }
+
+    /**
+     * @param {string} value
+     * @return {boolean}
+     */
+    function isCSSIdentifier(value)
+    {
+        return /^-?[a-zA-Z_][a-zA-Z0-9_-]*$/.test(value);
+    }
+
+    var prefixedOwnClassNamesArray = prefixedElementClassNames(node);
+    var needsClassNames = false;
+    var needsNthChild = false;
+    var ownIndex = -1;
+    var siblings = parent.children();
+    for (var i = 0; (ownIndex === -1 || !needsNthChild) && i < siblings.length; ++i) {
+        var sibling = siblings[i];
+        if (sibling === node) {
+            ownIndex = i;
+            continue;
+        }
+        if (needsNthChild)
+            continue;
+        if (sibling.nodeNameInCorrectCase() !== nodeName)
+            continue;
+
+        needsClassNames = true;
+        var ownClassNames = prefixedOwnClassNamesArray.keySet();
+        var ownClassNameCount = 0;
+        for (var name in ownClassNames)
+            ++ownClassNameCount;
+        if (ownClassNameCount === 0) {
+            needsNthChild = true;
+            continue;
+        }
+        var siblingClassNamesArray = prefixedElementClassNames(sibling);
+        for (var j = 0; j < siblingClassNamesArray.length; ++j) {
+            var siblingClass = siblingClassNamesArray[j];
+            if (!ownClassNames.hasOwnProperty(siblingClass))
+                continue;
+            delete ownClassNames[siblingClass];
+            if (!--ownClassNameCount) {
+                needsNthChild = true;
+                break;
+            }
+        }
+    }
+
+    var result = nodeName;
+    if (needsNthChild) {
+        result += ":nth-child(" + (ownIndex + 1) + ")";
+    } else if (needsClassNames) {
+        for (var prefixedName in prefixedOwnClassNamesArray.keySet())
+            result += "." + escapeIdentifierIfNeeded(prefixedName.substr(1));
+    }
+
+    return new WebInspector.DOMNodePathStep(result, false);
+}
+
+/**
+ * @param {!WebInspector.DOMNode} node
+ * @param {boolean=} optimized
+ * @return {string}
+ */
+WebInspector.DOMPresentationUtils.xPath = function(node, optimized)
+{
+    if (node.nodeType() === Node.DOCUMENT_NODE)
+        return "/";
+
+    var steps = [];
+    var contextNode = node;
+    while (contextNode) {
+        var step = WebInspector.DOMPresentationUtils._xPathValue(contextNode, optimized);
+        if (!step)
+            break; // Error - bail out early.
+        steps.push(step);
+        if (step.optimized)
+            break;
+        contextNode = contextNode.parentNode;
+    }
+
+    steps.reverse();
+    return (steps.length && steps[0].optimized ? "" : "/") + steps.join("/");
+}
+
+/**
+ * @param {!WebInspector.DOMNode} node
+ * @param {boolean=} optimized
+ * @return {WebInspector.DOMNodePathStep}
+ */
+WebInspector.DOMPresentationUtils._xPathValue = function(node, optimized)
+{
+    var ownValue;
+    var ownIndex = WebInspector.DOMPresentationUtils._xPathIndex(node);
+    if (ownIndex === -1)
+        return null; // Error.
+
+    switch (node.nodeType()) {
+    case Node.ELEMENT_NODE:
+        if (optimized && node.getAttribute("id"))
+            return new WebInspector.DOMNodePathStep("//*[@id=\"" + node.getAttribute("id") + "\"]", true);
+        ownValue = node.localName();
+        break;
+    case Node.ATTRIBUTE_NODE:
+        ownValue = "@" + node.nodeName();
+        break;
+    case Node.TEXT_NODE:
+    case Node.CDATA_SECTION_NODE:
+        ownValue = "text()";
+        break;
+    case Node.PROCESSING_INSTRUCTION_NODE:
+        ownValue = "processing-instruction()";
+        break;
+    case Node.COMMENT_NODE:
+        ownValue = "comment()";
+        break;
+    case Node.DOCUMENT_NODE:
+        ownValue = "";
+        break;
+    default:
+        ownValue = "";
+        break;
+    }
+
+    if (ownIndex > 0)
+        ownValue += "[" + ownIndex + "]";
+
+    return new WebInspector.DOMNodePathStep(ownValue, node.nodeType() === Node.DOCUMENT_NODE);
+},
+
+/**
+ * @param {!WebInspector.DOMNode} node
+ * @return {number}
+ */
+WebInspector.DOMPresentationUtils._xPathIndex = function(node)
+{
+    // Returns -1 in case of error, 0 if no siblings matching the same expression, <XPath index among the same expression-matching sibling nodes> otherwise.
+    function areNodesSimilar(left, right)
+    {
+        if (left === right)
+            return true;
+
+        if (left.nodeType() === Node.ELEMENT_NODE && right.nodeType() === Node.ELEMENT_NODE)
+            return left.localName() === right.localName();
+
+        if (left.nodeType() === right.nodeType())
+            return true;
+
+        // XPath treats CDATA as text nodes.
+        var leftType = left.nodeType() === Node.CDATA_SECTION_NODE ? Node.TEXT_NODE : left.nodeType();
+        var rightType = right.nodeType() === Node.CDATA_SECTION_NODE ? Node.TEXT_NODE : right.nodeType();
+        return leftType === rightType;
+    }
+
+    var siblings = node.parentNode ? node.parentNode.children() : null;
+    if (!siblings)
+        return 0; // Root node - no siblings.
+    var hasSameNamedElements;
+    for (var i = 0; i < siblings.length; ++i) {
+        if (areNodesSimilar(node, siblings[i]) && siblings[i] !== node) {
+            hasSameNamedElements = true;
+            break;
+        }
+    }
+    if (!hasSameNamedElements)
+        return 0;
+    var ownIndex = 1; // XPath indices start with 1.
+    for (var i = 0; i < siblings.length; ++i) {
+        if (areNodesSimilar(node, siblings[i])) {
+            if (siblings[i] === node)
+                return ownIndex;
+            ++ownIndex;
+        }
+    }
+    return -1; // An error occurred: |node| not found in parent's children.
+}
+
+/**
+ * @constructor
+ * @param {string} value
+ * @param {boolean} optimized
+ */
+WebInspector.DOMNodePathStep = function(value, optimized)
+{
+    this.value = value;
+    this.optimized = optimized || false;
+}
+
+WebInspector.DOMNodePathStep.prototype = {
+    /**
+     * @return {string}
+     */
+    toString: function()
+    {
+        return this.value;
+    }
 }
