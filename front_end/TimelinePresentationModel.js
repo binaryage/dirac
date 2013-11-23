@@ -330,9 +330,6 @@ WebInspector.TimelinePresentationModel.prototype = {
                 if (!origin)
                     origin = parentRecord;
                 parentRecord = coalescedRecord;
-            } else if (this._coalescingBuckets[coalescingBucket]) {
-                // FIXME(322155): this hack is here so that we did not lie terribly about the aggregated stats.
-                this._coalescingBuckets[coalescingBucket].parent.calculateAggregatedStats();
             }
         }
 
@@ -376,11 +373,12 @@ WebInspector.TimelinePresentationModel.prototype = {
 
         formattedRecord.calculateAggregatedStats();
 
-        if (origin)
+        if (parentRecord.coalesced) {
+            WebInspector.TimelineModel.aggregateTimeByCategory(parentRecord._aggregatedStats, formattedRecord._aggregatedStats);
+            if (parentRecord.startTime > formattedRecord.startTime)
+                parentRecord._record.startTime = record.startTime;
+        } else if (origin)
             this._updateAncestorStats(formattedRecord);
-
-        if (parentRecord.coalesced && parentRecord.startTime > formattedRecord.startTime)
-            parentRecord._record.startTime = record.startTime;
 
         origin = formattedRecord.origin();
         if (!origin.isRoot() && !origin.coalesced)
@@ -463,6 +461,8 @@ WebInspector.TimelinePresentationModel.prototype = {
 
         coalescedRecord.parent = parent;
         parent._children[parent._children.indexOf(record)] = coalescedRecord;
+        WebInspector.TimelineModel.aggregateTimeByCategory(coalescedRecord._aggregatedStats, record._aggregatedStats);
+
         return coalescedRecord;
     },
 
