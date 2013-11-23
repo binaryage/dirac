@@ -1198,10 +1198,10 @@ WebInspector.SourcesPanel.prototype = {
         switch (uiSourceCode.contentType()) {
         case WebInspector.resourceTypes.Document:
         case WebInspector.resourceTypes.Script:
-            WebInspector.JavaScriptOutlineDialog.show(this.visibleView, uiSourceCode);
+            WebInspector.JavaScriptOutlineDialog.show(this.visibleView, uiSourceCode, this.highlightPosition.bind(this));
             return true;
         case WebInspector.resourceTypes.Stylesheet:
-            WebInspector.StyleSheetOutlineDialog.show(this.visibleView, uiSourceCode);
+            WebInspector.StyleSheetOutlineDialog.show(this.visibleView, uiSourceCode, this.highlightPosition.bind(this));
             return true;
         }
         return false;
@@ -1543,6 +1543,22 @@ WebInspector.SourcesPanel.prototype = {
 
         if (WebInspector.settings.watchExpressions.get().length > 0)
             this.sidebarPanes.watchExpressions.expand();
+    },
+
+    canHighlightPosition: function()
+    {
+        return this.visibleView && this.visibleView.canHighlightPosition();
+    },
+
+    /**
+     * @param {number} line
+     * @param {number=} column
+     */
+    highlightPosition: function(line, column)
+    {
+        if (!this.canHighlightPosition())
+            return;
+        this.visibleView.highlightPosition(line, column);
     },
 
     /**

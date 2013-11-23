@@ -31,11 +31,12 @@
  * @extends {WebInspector.SelectionDialogContentProvider}
  * @param {WebInspector.View} view
  * @param {WebInspector.UISourceCode} uiSourceCode
+ * @param {function(number, number)} selectItemCallback
  */
-WebInspector.StyleSheetOutlineDialog = function(view, uiSourceCode)
+WebInspector.StyleSheetOutlineDialog = function(view, uiSourceCode, selectItemCallback)
 {
     WebInspector.SelectionDialogContentProvider.call(this);
-
+    this._selectItemCallback = selectItemCallback;
     this._rules = [];
     this._view = view;
     this._uiSourceCode = uiSourceCode;
@@ -45,12 +46,13 @@ WebInspector.StyleSheetOutlineDialog = function(view, uiSourceCode)
 /**
  * @param {WebInspector.View} view
  * @param {WebInspector.UISourceCode} uiSourceCode
+ * @param {function(number, number)} selectItemCallback
  */
-WebInspector.StyleSheetOutlineDialog.show = function(view, uiSourceCode)
+WebInspector.StyleSheetOutlineDialog.show = function(view, uiSourceCode, selectItemCallback)
 {
     if (WebInspector.Dialog.currentInstance())
         return null;
-    var delegate = new WebInspector.StyleSheetOutlineDialog(view, uiSourceCode);
+    var delegate = new WebInspector.StyleSheetOutlineDialog(view, uiSourceCode, selectItemCallback);
     var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(delegate);
     WebInspector.Dialog.show(view.element, filteredItemSelectionDialog);
 }
@@ -138,8 +140,7 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
         var rule = this._rules[itemIndex];
         var lineNumber = rule.rawLocation.lineNumber;
         if (!isNaN(lineNumber) && lineNumber >= 0)
-            this._view.highlightPosition(lineNumber, rule.rawLocation.columnNumber);
-        this._view.focus();
+            this._selectItemCallback(lineNumber, rule.rawLocation.columnNumber);
     },
 
     __proto__: WebInspector.SelectionDialogContentProvider.prototype

@@ -483,25 +483,28 @@ WebInspector.SelectionDialogContentProvider.prototype = {
  * @extends {WebInspector.SelectionDialogContentProvider}
  * @param {WebInspector.View} view
  * @param {WebInspector.ContentProvider} contentProvider
+ * @param {function(number, number)} selectItemCallback
  */
-WebInspector.JavaScriptOutlineDialog = function(view, contentProvider)
+WebInspector.JavaScriptOutlineDialog = function(view, contentProvider, selectItemCallback)
 {
     WebInspector.SelectionDialogContentProvider.call(this);
 
     this._functionItems = [];
     this._view = view;
+    this._selectItemCallback = selectItemCallback;
     contentProvider.requestContent(this._contentAvailable.bind(this));
 }
 
 /**
  * @param {WebInspector.View} view
  * @param {WebInspector.ContentProvider} contentProvider
+ * @param {function(number, number)} selectItemCallback
  */
-WebInspector.JavaScriptOutlineDialog.show = function(view, contentProvider)
+WebInspector.JavaScriptOutlineDialog.show = function(view, contentProvider, selectItemCallback)
 {
     if (WebInspector.Dialog.currentInstance())
         return null;
-    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.JavaScriptOutlineDialog(view, contentProvider));
+    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.JavaScriptOutlineDialog(view, contentProvider, selectItemCallback));
     WebInspector.Dialog.show(view.element, filteredItemSelectionDialog);
 }
 
@@ -580,8 +583,7 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
     {
         var lineNumber = this._functionItems[itemIndex].line;
         if (!isNaN(lineNumber) && lineNumber >= 0)
-            this._view.highlightPosition(lineNumber, this._functionItems[itemIndex].column);
-        this._view.focus();
+            this._selectItemCallback(lineNumber, this._functionItems[itemIndex].column);
     },
 
     dispose: function()
