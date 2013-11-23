@@ -283,8 +283,8 @@ WebInspector.TabbedPane.prototype = {
     setTabIcon: function(id, iconClass, iconTooltip)
     {
         var tab = this._tabsById[id];
-        tab._setIconClass(iconClass, iconTooltip);
-        this._updateTabElements();
+        if (tab._setIconClass(iconClass, iconTooltip))
+            this._updateTabElements();
     },
 
     /**
@@ -708,11 +708,12 @@ WebInspector.TabbedPaneTab.prototype = {
     /**
      * @param {string} iconClass
      * @param {string} iconTooltip
+     * @return {boolean}
      */
     _setIconClass: function(iconClass, iconTooltip)
     {
         if (iconClass === this._iconClass && iconTooltip === this._iconTooltip)
-            return;
+            return false;
         this._iconClass = iconClass;
         this._iconTooltip = iconTooltip;
         if (this._iconElement)
@@ -720,6 +721,7 @@ WebInspector.TabbedPaneTab.prototype = {
         if (this._iconClass && this._tabElement)
             this._iconElement = this._createIconElement(this._tabElement, this._titleElement);
         delete this._measuredWidth;
+        return true;
     },
 
     /**
