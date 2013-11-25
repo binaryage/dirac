@@ -142,19 +142,22 @@ WebInspector.ScreencastView.prototype = {
      */
     _screencastFrame: function(event)
     {
-        if (!event.data.deviceScaleFactor) {
+        var metadata = /** type {PageAgent.ScreencastFrameMetadata} */(event.data.metadata);
+
+        if (!metadata.deviceScaleFactor) {
           console.log(event.data.data);
           return;
         }
+
         var base64Data = /** type {string} */(event.data.data);
         this._imageElement.src = "data:image/jpg;base64," + base64Data;
-        this._deviceScaleFactor = /** type {number} */(event.data.deviceScaleFactor);
-        this._pageScaleFactor = /** type {number} */(event.data.pageScaleFactor);
-        this._viewport = /** type {DOMAgent.Rect} */(event.data.viewport);
+        this._deviceScaleFactor = metadata.deviceScaleFactor;
+        this._pageScaleFactor = metadata.pageScaleFactor;
+        this._viewport = metadata.viewport;
         if (!this._viewport)
             return;
-        var offsetTop = /** type {number} */(event.data.offsetTop) || 0;
-        var offsetBottom = /** type {number} */(event.data.offsetBottom) || 0;
+        var offsetTop = metadata.offsetTop || 0;
+        var offsetBottom = metadata.offsetBottom || 0;
 
         var screenWidthDIP = this._viewport.width * this._pageScaleFactor;
         var screenHeightDIP = this._viewport.height * this._pageScaleFactor + offsetTop + offsetBottom;

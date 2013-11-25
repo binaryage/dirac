@@ -184,6 +184,21 @@
                   { "name": "title", "type": "string", "description": "Title of the navigation history entry." }
                 ],
                 "hidden": true
+            },
+            {
+                "id": "ScreencastFrameMetadata",
+                "type": "object",
+                "description": "Screencast frame metadata",
+                "properties": [
+                    { "name": "deviceScaleFactor", "type": "number", "hidden": true, "description": "Device scale factor." },
+                    { "name": "viewport", "$ref": "DOM.Rect", "hidden": true, "description": "Viewport in CSS pixels." },
+                    { "name": "offsetTop", "type": "number", "hidden": true, "optional": true, "description": "Top offset in DIP." },
+                    { "name": "offsetBottom", "type": "number", "hidden": true, "optional": true, "description": "Bottom offset in DIP." },
+                    { "name": "pageScaleFactor", "type": "number", "hidden": true, "description": "Page scale factor." },
+                    { "name": "pageScaleFactorMin", "type": "number", "hidden": true, "description": "Page scale factor min." },
+                    { "name": "pageScaleFactorMax", "type": "number", "hidden": true, "description": "Page scale factor max." }
+                ],
+                "hidden": true
             }
         ],
         "commands": [
@@ -434,9 +449,7 @@
                 ],
                 "returns": [
                     { "name": "data", "type": "string", "description": "Base64-encoded image data (PNG)." },
-                    { "name": "deviceScaleFactor", "type": "number", "hidden": true, "description": "Device scale factor." },
-                    { "name": "pageScaleFactor", "type": "number", "hidden": true, "description": "Page scale factor." },
-                    { "name": "viewport", "$ref": "DOM.Rect", "hidden": true, "description": "Viewport in CSS pixels." }
+                    { "name": "metadata", "$ref": "ScreencastFrameMetadata", "description": "Screencast frame metadata"}
                 ],
                 "hidden": true
             },
@@ -581,11 +594,7 @@
                 "description": "Compressed image data requested by the <code>startScreencast</code>.",
                 "parameters": [
                     { "name": "data", "type": "string", "description": "Base64-encoded compressed image." },
-                    { "name": "deviceScaleFactor", "type": "number", "hidden": true, "optional": true, "description": "Device scale factor." },
-                    { "name": "pageScaleFactor", "type": "number", "hidden": true, "optional": true, "description": "Page scale factor." },
-                    { "name": "viewport", "$ref": "DOM.Rect", "hidden": true, "optional": true, "description": "Viewport in CSS pixels." },
-                    { "name": "offsetTop", "type": "number", "hidden": true, "optional": true, "description": "Top offset in DIP." },
-                    { "name": "offsetBottom", "type": "number", "hidden": true, "optional": true, "description": "Bottom offset in DIP." }
+                    { "name": "metadata", "$ref": "ScreencastFrameMetadata", "description": "Screencast frame metadata"}
                 ],
                 "hidden": true
             },
