@@ -338,6 +338,9 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
     {
         var self = this;
 
+        /**
+         * @param {Array.<WebInspector.CSSStyleSheet>} styleSheets
+         */
         function evalCallback(styleSheets) {
             if (progress.isCanceled())
                 return;
@@ -358,7 +361,12 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
                 }
             }
 
-            function selectorsCallback(callback, styleSheets, testedSelectors, foundSelectors)
+            var foundSelectors = {};
+
+            /**
+             * @param {Array.<WebInspector.CSSStyleSheet>} styleSheets
+             */
+            function selectorsCallback(styleSheets)
             {
                 if (progress.isCanceled())
                     return;
@@ -406,28 +414,46 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
                 callback(result);
             }
 
-            var foundSelectors = {};
-            function queryCallback(boundSelectorsCallback, selector, styleSheets, testedSelectors, nodeId)
+            /**
+             * @param {?function()} boundSelectorsCallback
+             * @param {string} selector
+             * @param {?DOMAgent.NodeId} nodeId
+             */
+            function queryCallback(boundSelectorsCallback, selector, nodeId)
             {
                 if (nodeId)
                     foundSelectors[selector] = true;
                 if (boundSelectorsCallback)
-                    boundSelectorsCallback(foundSelectors);
+                    boundSelectorsCallback();
             }
 
+            /**
+             * @param {Array.<string>} selectors
+             * @param {WebInspector.DOMDocument} document
+             */
             function documentLoaded(selectors, document) {
                 var pseudoSelectorRegexp = /::?(?:[\w-]+)(?:\(.*?\))?/g;
+                if (!selectors.length) {
+                    selectorsCallback([]);
+                    return;
+                }
                 for (var i = 0; i < selectors.length; ++i) {
                     if (progress.isCanceled())
                         return;
                     var effectiveSelector = selectors[i].replace(pseudoSelectorRegexp, "");
-                    WebInspector.domAgent.querySelector(document.id, effectiveSelector, queryCallback.bind(null, i === selectors.length - 1 ? selectorsCallback.bind(null, callback, styleSheets, testedSelectors) : null, selectors[i], styleSheets, testedSelectors));
+                    WebInspector.domAgent.querySelector(document.id, effectiveSelector, queryCallback.bind(null, i === selectors.length - 1 ? selectorsCallback.bind(null, styleSheets) : null, selectors[i]));
                 }
             }
 
             WebInspector.domAgent.requestDocument(documentLoaded.bind(null, selectors));
         }
 
+        /**
+         * @param {Array.<WebInspector.CSSStyleSheet>} styleSheets
+         * @param {string} sourceURL
+         * @param {?function(Array.<WebInspector.CSSStyleSheet>)} continuation
+         * @param {WebInspector.CSSStyleSheet} styleSheet
+         */
         function styleSheetCallback(styleSheets, sourceURL, continuation, styleSheet)
         {
             if (progress.isCanceled())
@@ -441,6 +467,10 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
                 continuation(styleSheets);
         }
 
+        /**
+         * @param {?Protocol.Error} error
+         * @param {Array.<CSSAgent.CSSStyleSheetHeader>} styleSheetInfos
+         */
         function allStylesCallback(error, styleSheetInfos)
         {
             if (progress.isCanceled())
