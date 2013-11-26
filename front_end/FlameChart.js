@@ -398,72 +398,6 @@ WebInspector.FlameChart.OverviewPane.prototype = {
         return this._dataProvider.timelineData(WebInspector.FlameChart._colorGenerator);
     },
 
-    /*
-     * @param {!number} width
-     */
-    _calculateDrawData: function(width)
-    {
-        var timelineData = this._timelineData();
-        if (!timelineData)
-            return null;
-
-        var entryOffsets = timelineData.entryOffsets;
-        var entryTotalTimes = timelineData.entryTotalTimes;
-        var entryLevels = timelineData.entryLevels;
-        var length = entryOffsets.length;
-
-        var drawData = new Uint8Array(width);
-        var scaleFactor = width / timelineData.totalTime;
-
-        for (var entryIndex = 0; entryIndex < length; ++entryIndex) {
-            var start = Math.floor(entryOffsets[entryIndex] * scaleFactor);
-            var finish = Math.floor((entryOffsets[entryIndex] + entryTotalTimes[entryIndex]) * scaleFactor);
-            for (var x = start; x <= finish; ++x)
-                drawData[x] = Math.max(drawData[x], entryLevels[entryIndex] + 1);
-        }
-        return drawData;
-    },
-
-    /*
-     * @param {!number} width
-     * @param {!number} height
-     */
-    _drawOverviewCanvas: function(width, height)
-    {
-        var drawData = this._calculateDrawData(width);
-        if (!drawData)
-            return;
-
-        var ratio = window.devicePixelRatio;
-        var canvasWidth = width * ratio;
-        var canvasHeight = height * ratio;
-        this._overviewCanvas.width = canvasWidth;
-        this._overviewCanvas.height = canvasHeight;
-        this._overviewCanvas.style.width = width + "px";
-        this._overviewCanvas.style.height = height + "px";
-
-        var context = this._overviewCanvas.getContext("2d");
-
-        var yScaleFactor = canvasHeight / (this._timelineData().maxStackDepth * 1.1);
-        context.lineWidth = 1;
-        context.translate(0.5, 0.5);
-        context.strokeStyle = "rgba(20,0,0,0.4)";
-        context.fillStyle = "rgba(214,225,254,0.8)";
-        context.moveTo(-1, canvasHeight - 1);
-        if (drawData)
-          context.lineTo(-1, Math.round(height - drawData[0] * yScaleFactor - 1));
-        var value;
-        for (var x = 0; x < width; ++x) {
-            value = Math.round(canvasHeight - drawData[x] * yScaleFactor - 1);
-            context.lineTo(x * ratio, value);
-        }
-        context.lineTo(canvasWidth + 1, value);
-        context.lineTo(canvasWidth + 1, canvasHeight - 1);
-        context.fill();
-        context.stroke();
-        context.closePath();
-    },
-
     onResize: function()
     {
         this._scheduleUpdate();
@@ -479,14 +413,91 @@ WebInspector.FlameChart.OverviewPane.prototype = {
     update: function()
     {
         this._updateTimerId = 0;
-        if (!this._timelineData())
+        var timelineData = this._timelineData();
+        if (!timelineData)
             return;
         this._overviewCalculator._updateBoundaries(this);
         this._overviewGrid.updateDividers(this._overviewCalculator);
-        this._drawOverviewCanvas(this._overviewContainer.clientWidth, this._overviewContainer.clientHeight - 20);
+        this._resetCanvas(this._overviewContainer.clientWidth, this._overviewContainer.clientHeight - 20);
+        WebInspector.FlameChart.OverviewPane.drawOverviewCanvas(
+            timelineData,
+            this._overviewCanvas.getContext("2d"),
+            this._overviewContainer.clientWidth,
+            this._overviewContainer.clientHeight - 20
+        );
+    },
+
+    /*
+     * @param {!number} width
+     * @param {!number} height
+     */
+    _resetCanvas: function(width, height)
+    {
+        var ratio = window.devicePixelRatio;
+        this._overviewCanvas.width = width * ratio;
+        this._overviewCanvas.height = height * ratio;
     },
 
     __proto__: WebInspector.View.prototype
+}
+
+/**
+ * @param {!Object} timelineData
+ * @param {!number} width
+ */
+WebInspector.FlameChart.OverviewPane.calculateDrawData = function(timelineData, width)
+{
+    var entryOffsets = timelineData.entryOffsets;
+    var entryTotalTimes = timelineData.entryTotalTimes;
+    var entryLevels = timelineData.entryLevels;
+    var length = entryOffsets.length;
+
+    var drawData = new Uint8Array(width);
+    var scaleFactor = width / timelineData.totalTime;
+
+    for (var entryIndex = 0; entryIndex < length; ++entryIndex) {
+        var start = Math.floor(entryOffsets[entryIndex] * scaleFactor);
+        var finish = Math.floor((entryOffsets[entryIndex] + entryTotalTimes[entryIndex]) * scaleFactor);
+        for (var x = start; x <= finish; ++x)
+            drawData[x] = Math.max(drawData[x], entryLevels[entryIndex] + 1);
+    }
+    return drawData;
+}
+
+/**
+ * @param {!Object} timelineData
+ * @param {!Object} context
+ * @param {!number} width
+ * @param {!number} height
+ */
+WebInspector.FlameChart.OverviewPane.drawOverviewCanvas = function(timelineData, context, width, height)
+{
+    var drawData = WebInspector.FlameChart.OverviewPane.calculateDrawData(timelineData, width);
+    if (!drawData)
+        return;
+
+    var ratio = window.devicePixelRatio;
+    var canvasWidth = width * ratio;
+    var canvasHeight = height * ratio;
+
+    var yScaleFactor = canvasHeight / (timelineData.maxStackDepth * 1.1);
+    context.lineWidth = 1;
+    context.translate(0.5, 0.5);
+    context.strokeStyle = "rgba(20,0,0,0.4)";
+    context.fillStyle = "rgba(214,225,254,0.8)";
+    context.moveTo(-1, canvasHeight - 1);
+    if (drawData)
+      context.lineTo(-1, Math.round(height - drawData[0] * yScaleFactor - 1));
+    var value;
+    for (var x = 0; x < width; ++x) {
+        value = Math.round(canvasHeight - drawData[x] * yScaleFactor - 1);
+        context.lineTo(x * ratio, value);
+    }
+    context.lineTo(canvasWidth + 1, value);
+    context.lineTo(canvasWidth + 1, canvasHeight - 1);
+    context.fill();
+    context.stroke();
+    context.closePath();
 }
 
 /**
