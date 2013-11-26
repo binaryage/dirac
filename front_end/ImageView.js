@@ -110,6 +110,7 @@ WebInspector.ImageView.prototype = {
             this._container.appendChild(infoListElement);
         }
         imagePreviewElement.addEventListener("load", onImageLoad.bind(this), false);
+        this._imagePreviewElement = imagePreviewElement;
     },
 
     _base64ToSize: function(content)
@@ -128,8 +129,15 @@ WebInspector.ImageView.prototype = {
     {
         var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy image URL" : "Copy Image URL"), this._copyImageURL.bind(this));
+        if (this._imagePreviewElement.src)
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy image as Data URL" : "Copy Image As Data URL"), this._copyImageAsDataURL.bind(this));
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Open image in new tab" : "Open Image in New Tab"), this._openInNewTab.bind(this));
         contextMenu.show();
+    },
+
+    _copyImageAsDataURL: function()
+    {
+        InspectorFrontendHost.copyText(this._imagePreviewElement.src);
     },
 
     _copyImageURL: function()
