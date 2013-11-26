@@ -725,6 +725,8 @@ WebInspector.FlameChart.MainPane.prototype = {
                 if (entryOffset > timeWindowRight)
                     break;
                 barX = Math.ceil(entryOffset * timeToPixel) - pixelWindowLeft + paddingLeft;
+                if (barX >= width)
+                    continue;
                 barRight = Math.floor((entryOffset + entryTotalTimes[entryIndex]) * timeToPixel) - pixelWindowLeft + paddingLeft;
                 if (barRight < 0)
                     continue;
@@ -851,7 +853,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         this._timeWindowLeft = this._windowLeft * this._totalTime;
         this._timeWindowRight = this._windowRight * this._totalTime;
 
-        this._pixelWindowWidth = this._chartContainer.clientWidth;
+        this._pixelWindowWidth = this._chartContainer.clientWidth - this._paddingLeft;
         this._totalPixels = Math.floor(this._pixelWindowWidth / this._windowWidth);
         this._pixelWindowLeft = Math.floor(this._totalPixels * this._windowLeft);
         this._pixelWindowRight = Math.floor(this._totalPixels * this._windowRight);
