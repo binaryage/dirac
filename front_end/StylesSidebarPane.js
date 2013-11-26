@@ -102,6 +102,7 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._styleSheetOrMediaQueryResultChanged, this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrModified, this._attributeChanged, this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrRemoved, this._attributeChanged, this);
+    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.PseudoStateChanged, this._pseudoStateChanged, this);
     WebInspector.settings.showUserAgentStyles.addChangeListener(this._showUserAgentStylesSettingChanged.bind(this));
     this.element.addStyleClass("styles-pane");
     this.element.enableStyleClass("show-user-styles", WebInspector.settings.showUserAgentStyles.get());
@@ -405,6 +406,18 @@ WebInspector.StylesSidebarPane.prototype = {
             return;
 
         if (!this._canAffectCurrentStyles(event.data.node))
+            return;
+
+        this._rebuildUpdate();
+    },
+
+    _pseudoStateChanged: function(event)
+    {
+        // Do not update edited element styles under our feet.
+        if (this._isEditingStyle || this._userOperation)
+            return;
+
+        if (!this._canAffectCurrentStyles(event.data))
             return;
 
         this._rebuildUpdate();
