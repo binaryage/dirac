@@ -808,6 +808,7 @@
 }
 
 .timeline-aggregated-info {
+    flex: none;
     position: relative;
     margin: 8px 2px;
     width: 160px;
