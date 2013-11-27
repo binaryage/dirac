@@ -1241,16 +1241,16 @@ WebInspector.TimelinePanel.prototype = {
      */
     _mouseMove: function(e)
     {
-        var anchor = this._getPopoverAnchor(e.target);
-
-        if (anchor && anchor.row && anchor.row._record.highlightQuad && !this._recordingInProgress())
-            this._highlightQuad(anchor.row._record.highlightQuad);
+        var rowElement = e.target.enclosingNodeOrSelfWithClass("timeline-tree-item");
+        if (rowElement && rowElement.row && rowElement.row._record.highlightQuad && !this._recordingInProgress())
+            this._highlightQuad(rowElement.row._record.highlightQuad);
         else
             this._hideQuadHighlight();
 
-        if (anchor && anchor._tasksInfo) {
-            var offset = anchor.offsetLeft;
-            this._timelineGrid.showCurtains(offset >= 0 ? offset : 0, anchor.offsetWidth);
+        var taskBarElement = e.target.enclosingNodeOrSelfWithClass("timeline-graph-bar");
+        if (taskBarElement && taskBarElement._tasksInfo) {
+            var offset = taskBarElement.offsetLeft;
+            this._timelineGrid.showCurtains(offset >= 0 ? offset : 0, taskBarElement.offsetWidth);
         } else
             this._timelineGrid.hideCurtains();
     },
