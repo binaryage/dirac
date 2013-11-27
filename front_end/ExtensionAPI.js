@@ -76,6 +76,7 @@ function defineCommonExtensionSymbols(apiPrivate)
         AddAuditResult: "addAuditResult",
         AddConsoleMessage: "addConsoleMessage",
         AddRequestHeaders: "addRequestHeaders",
+        ApplyStyleSheet: "applyStyleSheet",
         CreatePanel: "createPanel",
         CreateSidebarPane: "createSidebarPane",
         CreateStatusBarButton: "createStatusBarButton",
@@ -86,6 +87,8 @@ function defineCommonExtensionSymbols(apiPrivate)
         GetPageResources: "getPageResources",
         GetRequestContent: "getRequestContent",
         GetResourceContent: "getResourceContent",
+        InspectedURLChanged: "inspectedURLChanged",
+        OpenResource: "openResource",
         Reload: "Reload",
         Subscribe: "subscribe",
         SetOpenResourceHandler: "setOpenResourceHandler",
@@ -95,11 +98,9 @@ function defineCommonExtensionSymbols(apiPrivate)
         SetSidebarPage: "setSidebarPage",
         ShowPanel: "showPanel",
         StopAuditCategoryRun: "stopAuditCategoryRun",
-        OpenResource: "openResource",
         Unsubscribe: "unsubscribe",
         UpdateAuditProgress: "updateAuditProgress",
-        UpdateButton: "updateButton",
-        InspectedURLChanged: "inspectedURLChanged"
+        UpdateButton: "updateButton"
     };
 }
 
@@ -282,6 +283,7 @@ function Panels()
     }
     for (var panel in panels)
         this.__defineGetter__(panel, panelGetter.bind(null, panel));
+    this.applyStyleSheet = function(styleSheet) { extensionServer.sendRequest({ command: commands.ApplyStyleSheet, styleSheet: styleSheet }); };
 }
 
 Panels.prototype = {
