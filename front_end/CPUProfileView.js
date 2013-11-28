@@ -899,9 +899,13 @@ WebInspector.CPUProfileHeader.prototype = {
             fileOutputStream.write(JSON.stringify(profile), fileOutputStream.close.bind(fileOutputStream));
         }
 
-        function onOpen()
+        /**
+         * @param {boolean} accepted
+         */
+        function onOpen(accepted)
         {
-            ProfilerAgent.getCPUProfile(this.uid, getCPUProfileCallback.bind(this));
+            if (accepted)
+                ProfilerAgent.getCPUProfile(this.uid, getCPUProfileCallback.bind(this));
         }
 
         this._fileName = this._fileName || "CPU-" + new Date().toISO8601Compact() + this._profileType.fileExtension();

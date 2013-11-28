@@ -269,22 +269,28 @@ WebInspector.TimelineModel.prototype = {
         return new WebInspector.ChunkedFileReader(file, WebInspector.TimelineModel.TransferChunkLengthBytes, delegate);
     },
 
-    _createFileWriter: function(fileName, callback)
+    _createFileWriter: function()
     {
-        var stream = new WebInspector.FileOutputStream();
-        stream.open(fileName, callback);
+        return new WebInspector.FileOutputStream();
     },
 
     saveToFile: function()
     {
         var now = new Date();
         var fileName = "TimelineRawData-" + now.toISO8601Compact() + ".json";
-        function callback(stream)
+        var stream = this._createFileWriter();
+
+        /**
+         * @param {boolean} accepted
+         */
+        function callback(accepted)
         {
+            if (!accepted)
+                return;
             var saver = new WebInspector.TimelineSaver(stream);
             saver.save(this._records, window.navigator.appVersion);
         }
-        this._createFileWriter(fileName, callback.bind(this));
+        stream.open(fileName, callback.bind(this));
     },
 
     reset: function()

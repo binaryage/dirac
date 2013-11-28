@@ -179,6 +179,14 @@ var InspectorFrontendAPI = {
     /**
      * @param {string} url
      */
+    canceledSaveURL: function(url)
+    {
+        WebInspector.fileManager.canceledSaveURL(url);
+    },
+
+    /**
+     * @param {string} url
+     */
     appendedToURL: function(url)
     {
         WebInspector.fileManager.appendedToURL(url);

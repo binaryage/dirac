@@ -354,21 +354,24 @@ WebInspector.FileOutputStream = function()
 WebInspector.FileOutputStream.prototype = {
     /**
      * @param {string} fileName
-     * @param {function(WebInspector.FileOutputStream, string=)} callback
+     * @param {function(boolean)} callback
      */
     open: function(fileName, callback)
     {
         this._closed = false;
         this._writeCallbacks = [];
         this._fileName = fileName;
-        function callbackWrapper()
+
+        /**
+         * @param {boolean} accepted
+         */
+        function callbackWrapper(accepted)
         {
-            WebInspector.fileManager.removeEventListener(WebInspector.FileManager.EventTypes.SavedURL, callbackWrapper, this);
-            WebInspector.fileManager.addEventListener(WebInspector.FileManager.EventTypes.AppendedToURL, this._onAppendDone, this);
-            callback(this);
+            if (accepted)
+                WebInspector.fileManager.addEventListener(WebInspector.FileManager.EventTypes.AppendedToURL, this._onAppendDone, this);
+            callback(accepted);
         }
-        WebInspector.fileManager.addEventListener(WebInspector.FileManager.EventTypes.SavedURL, callbackWrapper, this);
-        WebInspector.fileManager.save(this._fileName, "", true);
+        WebInspector.fileManager.save(this._fileName, "", true, callbackWrapper.bind(this));
     },
 
     /**

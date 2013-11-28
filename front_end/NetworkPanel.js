@@ -1066,8 +1066,14 @@ WebInspector.NetworkLogView.prototype = {
         var filename = WebInspector.inspectedPageDomain + ".har";
         var stream = new WebInspector.FileOutputStream();
         stream.open(filename, openCallback.bind(this));
-        function openCallback()
+
+        /**
+         * @param {boolean} accepted
+         */
+        function openCallback(accepted)
         {
+            if (!accepted)
+                return;
             var progressIndicator = new WebInspector.ProgressIndicator();
             this._progressBarContainer.appendChild(progressIndicator.element);
             var harWriter = new WebInspector.HARWriter();

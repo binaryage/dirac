@@ -34,6 +34,7 @@
  */
 WebInspector.FileManager = function()
 {
+    /** @type {!Object.<string, ?function(boolean)>} */
     this._saveCallbacks = {};
 }
 
@@ -55,7 +56,7 @@ WebInspector.FileManager.prototype = {
      * @param {string} url
      * @param {string} content
      * @param {boolean} forceSaveAs
-     * @param {function()=} callback
+     * @param {function(boolean)=} callback
      */
     save: function(url, content, forceSaveAs, callback)
     {
@@ -63,8 +64,8 @@ WebInspector.FileManager.prototype = {
         var savedURLs = WebInspector.settings.savedURLs.get();
         delete savedURLs[url];
         WebInspector.settings.savedURLs.set(savedURLs);
+        this._saveCallbacks[url] = callback || null;
         InspectorFrontendHost.save(url, content, forceSaveAs);
-        this._saveCallbacks[url] = callback;
     },
 
     /**
@@ -76,10 +77,27 @@ WebInspector.FileManager.prototype = {
         savedURLs[url] = true;
         WebInspector.settings.savedURLs.set(savedURLs);
         this.dispatchEventToListeners(WebInspector.FileManager.EventTypes.SavedURL, url);
+        this._invokeSaveCallback(url, true);
+    },
+
+    /**
+     * @param {string} url
+     * @param {boolean} accepted
+     */
+    _invokeSaveCallback: function(url, accepted)
+    {
         var callback = this._saveCallbacks[url];
         delete this._saveCallbacks[url];
         if (callback)
-            callback();
+            callback(accepted);
+    },
+
+    /**
+     * @param {string} url
+     */
+    canceledSaveURL: function(url)
+    {
+        this._invokeSaveCallback(url, false);
     },
 
     /**

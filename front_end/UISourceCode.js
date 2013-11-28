@@ -361,8 +361,13 @@ WebInspector.UISourceCode.prototype = {
         WebInspector.fileManager.save(this._url, content, forceSaveAs, callback.bind(this));
         WebInspector.fileManager.close(this._url);
 
-        function callback()
+        /**
+         * @param {boolean} accepted
+         */
+        function callback(accepted)
         {
+            if (!accepted)
+                return;
             this._savedWithFileManager = true;
             this.dispatchEventToListeners(WebInspector.UISourceCode.Events.SavedStateUpdated);
         }

@@ -1310,8 +1310,14 @@ WebInspector.HeapProfileHeader.prototype = {
     saveToFile: function()
     {
         var fileOutputStream = new WebInspector.FileOutputStream();
-        function onOpen()
+
+        /**
+         * @param {boolean} accepted
+         */
+        function onOpen(accepted)
         {
+            if (!accepted)
+                return;
             this._receiver = fileOutputStream;
             this._transferHandler = new WebInspector.SaveSnapshotHandler(this);
             this._transferSnapshot();
