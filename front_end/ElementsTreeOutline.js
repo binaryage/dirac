@@ -1584,7 +1584,7 @@ WebInspector.ElementsTreeElement.prototype = {
                 event.consume(true);
         }
 
-        initialValue = this._convertWhitespaceToEntities(initialValue);
+        initialValue = this._convertWhitespaceToEntities(initialValue).text;
 
         this._htmlEditElement = document.createElement("div");
         this._htmlEditElement.className = "source-code elements-tree-editor";
@@ -1970,25 +1970,28 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @param {string} text
-     * @return {string}
+     * @return {{text: string, entityRanges: Array.<Object>}}
      */
     _convertWhitespaceToEntities: function(text)
     {
         var result = "";
+        var resultLength = 0;
         var lastIndexAfterEntity = 0;
+        var entityRanges = [];
         var charToEntity = WebInspector.ElementsTreeOutline.MappedCharToEntity;
         for (var i = 0, size = text.length; i < size; ++i) {
             var char = text.charAt(i);
             if (charToEntity[char]) {
-                result += text.substring(lastIndexAfterEntity, i) + "&" + charToEntity[char] + ";";
+                result += text.substring(lastIndexAfterEntity, i);
+                var entityValue = "&" + charToEntity[char] + ";";
+                entityRanges.push({offset: result.length, length: entityValue.length});
+                result += entityValue;
                 lastIndexAfterEntity = i + 1;
             }
         }
-        if (result) {
+        if (result)
             result += text.substring(lastIndexAfterEntity);
-            return result;
-        }
-        return text;
+        return {text: result || text, entityRanges: entityRanges};
     },
 
     /**
@@ -2036,7 +2039,9 @@ WebInspector.ElementsTreeElement.prototype = {
                 // create a subtree for them
                 if (showInlineText) {
                     var textNodeElement = info.titleDOM.createChild("span", "webkit-html-text-node");
-                    textNodeElement.textContent = this._convertWhitespaceToEntities(node.firstChild.nodeValue());
+                    var result = this._convertWhitespaceToEntities(node.firstChild.nodeValue());
+                    textNodeElement.textContent = result.text;
+                    WebInspector.highlightRangesWithStyleClass(textNodeElement, result.entityRanges, "webkit-html-entity-value");
                     info.titleDOM.appendChild(document.createTextNode("\u200B"));
                     this._buildTagDOM(info.titleDOM, tagName, true, false);
                     info.hasChildren = false;
@@ -2059,7 +2064,9 @@ WebInspector.ElementsTreeElement.prototype = {
                 } else {
                     info.titleDOM.appendChild(document.createTextNode("\""));
                     var textNodeElement = info.titleDOM.createChild("span", "webkit-html-text-node");
-                    textNodeElement.textContent = this._convertWhitespaceToEntities(node.nodeValue());
+                    var result = this._convertWhitespaceToEntities(node.nodeValue());
+                    textNodeElement.textContent = result.text;
+                    WebInspector.highlightRangesWithStyleClass(textNodeElement, result.entityRanges, "webkit-html-entity-value");
                     info.titleDOM.appendChild(document.createTextNode("\""));
                 }
                 break;

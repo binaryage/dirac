@@ -66,6 +66,11 @@
     color: brown;
 }
 
+.webkit-html-entity-value {
+    /* This one is non-standard. */
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
 .webkit-html-doctype {
     /* Keep this in sync with view-source.css (.webkit-html-doctype) */
     color: rgb(192, 192, 192);
