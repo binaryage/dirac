@@ -663,3 +663,9 @@
     text-decoration: underline;
     cursor: default;
 }
+
+.styles-clipboard-only {
+    display: inline-block;
+    width: 0;
+    opacity: 0;
+}

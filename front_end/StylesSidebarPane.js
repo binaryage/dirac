@@ -2039,11 +2039,15 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         if (!this.treeOutline)
             return;
 
+        if (this.disabled)
+            this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild("/* ");
         this.listItemElement.appendChild(nameElement);
         this.listItemElement.appendChild(document.createTextNode(": "));
         this.listItemElement.appendChild(this._expandElement);
         this.listItemElement.appendChild(valueElement);
         this.listItemElement.appendChild(document.createTextNode(";"));
+        if (this.disabled)
+            this.listItemElement.createChild("span", "styles-clipboard-only").createTextChild(" */");
 
         if (!this.parsedOk) {
             // Avoid having longhands under an invalid shorthand.
