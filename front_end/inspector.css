@@ -137,26 +137,32 @@ body.platform-windows.inactive .toolbar-background {
 
 body.undocked.platform-mac-leopard .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(175, 175, 175)), to(rgb(151, 151, 151))) !important;
+    color: #333 !important;
 }
 
 body.undocked.platform-mac-leopard.inactive .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(221, 221, 221)), to(rgb(207, 207, 207))) !important;
+    color: #555 !important;
 }
 
 body.undocked.platform-mac-snowleopard .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(189, 189, 189)), to(rgb(167, 167, 167))) !important;
+    color: #333 !important;
 }
 
 body.undocked.platform-mac-snowleopard.inactive .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(228, 228, 228)), to(rgb(216, 216, 216))) !important;
+    color: #555 !important;
 }
 
 body.undocked.platform-mac-mountain-lion .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(208, 208, 208)), to(rgb(200, 200, 200))) !important;
+    color: #333 !important;
 }
 
 body.undocked.platform-mac-mountain-lion.inactive .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(238, 238, 238)), to(rgb(224, 224, 224))) !important;
+    color: #555 !important;
 }
 
 .toolbar > .tabbed-pane-header {
@@ -447,7 +453,7 @@ body.remote .toolbar-item .close-button {
 .glyph.shadow {
     top: 0;
     bottom: 0;
-    background-color: white !important;
+    background-color: white;
     z-index: 0;
 }
 
@@ -481,11 +487,11 @@ button.status-bar-item {
 }
 
 button.status-bar-item .glyph.shadow {
-    background-color: rgba(255, 255, 255, 0.33) !important;
+    background-color: rgba(255, 255, 255, 0.33);
 }
 
-button.status-bar-item.toggled-on .glyph {
-    background-color: rgb(66, 129, 235);
+button.status-bar-item.toggled-on .glyph:not(.shadow) {
+    background-color: rgb(66, 129, 235) !important;
 }
 
 button.status-bar-item:hover .glyph {
@@ -563,12 +569,10 @@ button.status-bar-item.dock-status-bar-item.toggled-undock .glyph {
 
 button.status-bar-item.dock-status-bar-item.toggled-bottom .glyph {
     -webkit-mask-position: -32px -24px;
-    background-color: rgba(0, 0, 0, 0.75);
 }
 
 button.status-bar-item.dock-status-bar-item.toggled-right .glyph {
     -webkit-mask-position: -256px -48px;
-    background-color: rgba(0, 0, 0, 0.75);
 }
 
 body.undocked .alternate-status-bar-buttons-bar {
@@ -2602,8 +2606,8 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
     -webkit-mask-position: -288px 0;
 }
 
-.record-cpu-profile-status-bar-item.toggled-on .glyph,
-.record-profile-status-bar-item.toggled-on .glyph {
+button.record-cpu-profile-status-bar-item.toggled-on .glyph:not(.shadow),
+button.record-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
     -webkit-mask-position: -288px -24px;
     background-color: rgb(216, 0, 0) !important;
 }

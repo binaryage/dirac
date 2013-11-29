@@ -963,12 +963,24 @@ WebInspector.setToolbarColors = function(backgroundColor, color)
         WebInspector._themeStyleElement = document.createElement("style");
         document.head.appendChild(WebInspector._themeStyleElement);
     }
+    var parsedColor = WebInspector.Color.parse(color);
+    var shadowColor = parsedColor ? parsedColor.invert().setAlpha(0.33).toString(WebInspector.Color.Format.RGBA) : "white";
+    var prefix = WebInspector.isMac() ? "body:not(.undocked)" : "";
     WebInspector._themeStyleElement.textContent =
-        ".toolbar-background {\
-             background-image: none !important;\
-             background-color: " + backgroundColor + " !important;\
-             color: " + color + " !important;\
-         }";
+        String.sprintf(
+            "%s .toolbar-background {\
+                 background-image: none !important;\
+                 background-color: %s !important;\
+                 color: %s !important;\
+             }", prefix, backgroundColor, color) +
+        String.sprintf(
+             "%s .toolbar-background button.status-bar-item .glyph, %s .toolbar-background button.status-bar-item .long-click-glyph {\
+                 background-color: %s;\
+             }", prefix, prefix, color) +
+        String.sprintf(
+             "%s .toolbar-background button.status-bar-item .glyph.shadow, %s .toolbar-background button.status-bar-item .long-click-glyph.shadow {\
+                 background-color: %s;\
+             }", prefix, prefix, shadowColor);
 }
 
 WebInspector.resetToolbarColors = function()

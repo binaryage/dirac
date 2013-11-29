@@ -353,7 +353,31 @@ WebInspector.Color.prototype = {
         if (rgba[3] !== 1)
             result.a = rgba[3];
         return result;
-    }
+    },
+
+    /**
+     * @return {WebInspector.Color}
+     */
+    invert: function()
+    {
+        var rgba = [];
+        rgba[0] = 1 - this._rgba[0];
+        rgba[1] = 1 - this._rgba[1];
+        rgba[2] = 1 - this._rgba[2];
+        rgba[3] = this._rgba[3];
+        return new WebInspector.Color(rgba);
+    },
+
+    /**
+     * @param {number} alpha
+     * @return {WebInspector.Color}
+     */
+     setAlpha: function(alpha)
+     {
+         var rgba = this._rgba.slice();
+         rgba[3] = alpha;
+         return new WebInspector.Color(rgba);
+     }
 }
 
 /**
