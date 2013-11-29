@@ -494,11 +494,6 @@
                     { "name": "showGrid", "type": "boolean", "optional": true, "description": "Whether to paint grid as well." }
                 ],
                 "hidden": true
-            },
-            {
-                "name": "setForceCompositingMode",
-                "description": "Force accelerated compositing mode for inspected page.",
-                "hidden": true
             }
         ],
         "events": [

@@ -40,7 +40,7 @@ WebInspector.ConsolePanel = function()
 WebInspector.ConsolePanel.prototype = {
     /**
      * @param {string=} id
-     * @return {WebInspector.View}
+     * @return {?WebInspector.View}
      */
     createView: function(id)
     {

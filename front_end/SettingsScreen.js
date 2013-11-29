@@ -49,7 +49,6 @@ WebInspector.SettingsScreen = function(onHide)
     this._tabbedPane.element.insertBefore(settingsLabelElement, this._tabbedPane.element.firstChild);
     this._tabbedPane.element.appendChild(this._createCloseButton());
     this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.General, WebInspector.UIString("General"), new WebInspector.GenericSettingsTab());
-    this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Overrides,WebInspector.UIString("Overrides"),new WebInspector.OverridesSettingsTab());
     this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Workspace, WebInspector.UIString("Workspace"), new WebInspector.WorkspaceSettingsTab());
     if (WebInspector.experimentsSettings.experimentsEnabled)
         this._tabbedPane.appendTab(WebInspector.SettingsScreen.Tabs.Experiments, WebInspector.UIString("Experiments"), new WebInspector.ExperimentsSettingsTab());
@@ -345,6 +344,10 @@ WebInspector.GenericSettingsTab = function()
     this._updateScriptDisabledCheckbox();
 
     p = this._appendSection(WebInspector.UIString("Appearance"));
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show 'Emulation' view in console drawer."), WebInspector.settings.showEmulationViewInDrawer));
+    this._appendDrawerNote(p.lastElementChild);
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show 'Rendering' view in console drawer."), WebInspector.settings.showRenderingViewInDrawer));
+    this._appendDrawerNote(p.lastElementChild);
     p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Split panels vertically when docked to right"), WebInspector.settings.splitVerticallyWhenDockedToRight));
 
     p = this._appendSection(WebInspector.UIString("Elements"));
@@ -360,33 +363,13 @@ WebInspector.GenericSettingsTab = function()
     p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show Shadow DOM"), WebInspector.settings.showShadowDOM));
     p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show rulers"), WebInspector.settings.showMetricsRulers));
 
-    p = this._appendSection(WebInspector.UIString("Rendering"));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show paint rectangles"), WebInspector.settings.showPaintRects));
-
-    this._forceCompositingModeCheckbox = document.createElement("input");
-    var checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Force accelerated compositing"), WebInspector.settings.forceCompositingMode, false, this._forceCompositingModeCheckbox);
-    p.appendChild(checkbox);
-    WebInspector.settings.forceCompositingMode.addChangeListener(this._forceCompositingModeChanged, this);
-    var fieldset = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.forceCompositingMode);
-    this._showCompositedLayersBordersCheckbox = document.createElement("input");
-    fieldset.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show composited layer borders"), WebInspector.settings.showDebugBorders, false, this._showCompositedLayersBordersCheckbox));
-    this._showFPSCheckbox = document.createElement("input");
-    fieldset.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show FPS meter"), WebInspector.settings.showFPSCounter, false, this._showFPSCheckbox));
-    this._continousPaintingCheckbox = document.createElement("input");
-    fieldset.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Enable continuous page repainting"), WebInspector.settings.continuousPainting, false, this._continousPaintingCheckbox));
-    this._showScrollBottleneckRectsCheckbox = document.createElement("input");
-    var tooltip = WebInspector.UIString("Shows areas of the page that slow down scrolling:\nTouch and mousewheel event listeners can delay scrolling.\nSome areas need to repaint their content when scrolled.");
-    fieldset.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show potential scroll bottlenecks"), WebInspector.settings.showScrollBottleneckRects, false, this._showScrollBottleneckRectsCheckbox, tooltip));
-    checkbox.appendChild(fieldset);
-    this._forceCompositingModeChanged();
-
     p = this._appendSection(WebInspector.UIString("Sources"));
     p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Search in content scripts"), WebInspector.settings.searchInContentScripts));
     p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Enable JS source maps"), WebInspector.settings.jsSourceMapsEnabled));
 
-    checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Enable CSS source maps"), WebInspector.settings.cssSourceMapsEnabled);
+    var checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Enable CSS source maps"), WebInspector.settings.cssSourceMapsEnabled);
     p.appendChild(checkbox);
-    fieldset = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.cssSourceMapsEnabled);
+    var fieldset = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.cssSourceMapsEnabled);
     var autoReloadCSSCheckbox = fieldset.createChild("input");
     fieldset.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Auto-reload generated CSS"), WebInspector.settings.cssReloadEnabled, false, autoReloadCSSCheckbox));
     checkbox.appendChild(fieldset);
@@ -441,32 +424,6 @@ WebInspector.GenericSettingsTab = function()
 }
 
 WebInspector.GenericSettingsTab.prototype = {
-    /**
-     * @param {WebInspector.Event=} event
-     */
-    _forceCompositingModeChanged: function(event)
-    {
-        var compositing = event ? !!event.data : WebInspector.settings.forceCompositingMode.get();
-        if (!compositing) {
-            this._showFPSCheckbox.checked = false;
-            this._continousPaintingCheckbox.checked = false;
-            this._showCompositedLayersBordersCheckbox.checked = false;
-            this._showScrollBottleneckRectsCheckbox.checked = false;
-            WebInspector.settings.showFPSCounter.set(false);
-            WebInspector.settings.continuousPainting.set(false);
-            WebInspector.settings.showDebugBorders.set(false);
-            WebInspector.settings.showScrollBottleneckRects.set(false);
-        } else {
-            function callback(error)
-            {
-                if (error)
-                    WebInspector.log("Error forcing compositing mode: " + error);
-            }
-            PageAgent.setForceCompositingMode(callback);
-        }
-        this._forceCompositingModeCheckbox.checked = compositing;
-    },
-
     _updateScriptDisabledCheckbox: function()
     {
         function executionStatusCallback(error, status)
@@ -502,6 +459,19 @@ WebInspector.GenericSettingsTab.prototype = {
         WebInspector.DebuggerModel.applySkipStackFrameSettings();
     },
 
+    /**
+     * @param {Element} p
+     */
+    _appendDrawerNote: function(p)
+    {
+        var noteElement = p.createChild("div", "help-field-note");
+        noteElement.createTextChild("Hit ");
+        noteElement.createChild("span", "help-key").textContent = "Esc";
+        noteElement.createTextChild(WebInspector.UIString(" or click the"));
+        noteElement.appendChild(new WebInspector.StatusBarButton(WebInspector.UIString("Drawer"), "console-status-bar-item").element);
+        noteElement.createTextChild(WebInspector.UIString("toolbar icon)"));
+    },
+
     __proto__: WebInspector.SettingsTab.prototype
 }
 
@@ -535,28 +505,6 @@ WebInspector.WorkspaceSettingsTab = function()
     this._updateEditFileSystemButtonState();
 
     this._reset();
-}
-
-/**
- * @constructor
- * @extends {WebInspector.SettingsTab}
- */
-WebInspector.OverridesSettingsTab = function()
-{
-    WebInspector.SettingsTab.call(this, WebInspector.UIString("Overrides"), "overrides-tab-content");
-
-    var labelElement = WebInspector.SettingsTab.createSettingCheckbox("", WebInspector.settings.showEmulationViewInDrawer, true /*omitParagraphElement*/);
-    labelElement.createTextChild(WebInspector.UIString("Show 'Emulation' view in console drawer. (Hit "));
-    labelElement.createChild("span", "help-key").textContent = "Esc";
-    labelElement.createTextChild(WebInspector.UIString(" or click the"));
-    labelElement.appendChild(new WebInspector.StatusBarButton(WebInspector.UIString("Drawer"), "console-status-bar-item").element);
-    labelElement.createTextChild(WebInspector.UIString("toolbar icon)"));
-
-    this.containerElement.appendChild(labelElement);
-}
-
-WebInspector.OverridesSettingsTab.prototype = {
-    __proto__: WebInspector.SettingsTab.prototype
 }
 
 WebInspector.WorkspaceSettingsTab.prototype = {

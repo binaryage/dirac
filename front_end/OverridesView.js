@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @extends {WebInspector.HelpScreen}
+ * @extends {WebInspector.View}
  */
 WebInspector.OverridesView = function()
 {

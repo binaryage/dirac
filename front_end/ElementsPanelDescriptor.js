@@ -85,6 +85,7 @@ WebInspector.ElementsPanelDescriptor.prototype = {
         stylesPaneSection.addAlternateKeys(WebInspector.ElementsPanelDescriptor.ShortcutKeys.IncrementBy01, WebInspector.UIString("Increment by %f", 0.1));
         stylesPaneSection.addAlternateKeys(WebInspector.ElementsPanelDescriptor.ShortcutKeys.DecrementBy01, WebInspector.UIString("Decrement by %f", 0.1));
 
+        // Install emulation view
         function toggleEmulationView()
         {
             if (WebInspector.settings.showEmulationViewInDrawer.get())
@@ -94,11 +95,22 @@ WebInspector.ElementsPanelDescriptor.prototype = {
         }
         WebInspector.settings.showEmulationViewInDrawer.addChangeListener(toggleEmulationView, this);
         toggleEmulationView.call(this);
+
+        // Install rendering view
+        function toggleRenderingView()
+        {
+            if (WebInspector.settings.showRenderingViewInDrawer.get())
+                WebInspector.inspectorView.registerViewInDrawer("rendering", WebInspector.UIString("Rendering"), this);
+            else
+                WebInspector.inspectorView.unregisterViewInDrawer("rendering");
+        }
+        WebInspector.settings.showRenderingViewInDrawer.addChangeListener(toggleRenderingView, this);
+        toggleRenderingView.call(this);
     },
 
     /**
      * @param {string=} id
-     * @return {WebInspector.View}
+     * @return {?WebInspector.View}
      */
     createView: function(id)
     {

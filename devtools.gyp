@@ -123,7 +123,6 @@
             'front_end/ObjectPopoverHelper.js',
             'front_end/ObjectPropertiesSection.js',
             'front_end/OverridesSupport.js',
-            'front_end/OverridesView.js',
             'front_end/OverviewGrid.js',
             'front_end/Panel.js',
             'front_end/ParsedURL.js',
@@ -242,8 +241,10 @@
             'front_end/ElementsPanel.js',
             'front_end/EventListenersSidebarPane.js',
             'front_end/MetricsSidebarPane.js',
+            'front_end/OverridesView.js', 
             'front_end/PlatformFontsSidebarPane.js',
             'front_end/PropertiesSidebarPane.js',
+            'front_end/RenderingOptionsView.js',
             'front_end/StylesSidebarPane.js',
         ],
         'devtools_resources_js_files': [

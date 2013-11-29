@@ -206,9 +206,11 @@ modules = [
             "ElementsPanelDescriptor.js",
             "EventListenersSidebarPane.js",
             "MetricsSidebarPane.js",
+            "OverridesView.js",
             "PlatformFontsSidebarPane.js",
             "PropertiesSidebarPane.js",
             "StylesSidebarPane.js",
+            "RenderingOptionsView.js",
         ]
     },
     {
@@ -350,7 +352,6 @@ modules = [
         "sources": [
             "SettingsScreen.js",
             "EditFileSystemDialog.js",
-            "OverridesView.js",
         ]
     },
     {

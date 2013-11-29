@@ -32,8 +32,10 @@ importScript("CSSNamedFlowCollectionsView.js");
 importScript("CSSNamedFlowView.js");
 importScript("EventListenersSidebarPane.js");
 importScript("MetricsSidebarPane.js");
+importScript("OverridesView.js");
 importScript("PlatformFontsSidebarPane.js");
 importScript("PropertiesSidebarPane.js");
+importScript("RenderingOptionsView.js");
 importScript("StylesSidebarPane.js");
 
 /**
@@ -191,13 +193,21 @@ WebInspector.ElementsPanel.prototype = {
 
     /**
      * @param {string=} id
-     * @return {WebInspector.View}
+     * @return {?WebInspector.View}
      */
     createView: function(id)
     {
-        if (!this._overridesView)
-            this._overridesView = new WebInspector.OverridesView();
-        return this._overridesView;
+        if (id === "emulation") {
+            if (!this._overridesView)
+                this._overridesView = new WebInspector.OverridesView();
+            return this._overridesView;
+        }
+        if (id === "rendering") {
+            if (!this._renderingView)
+                this._renderingView = new WebInspector.RenderingOptionsView();
+            return this._renderingView;
+        }
+        return null;
     },
 
     /**

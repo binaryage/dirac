@@ -117,6 +117,7 @@ WebInspector.Settings = function()
     this.screencastEnabled = this.createSetting("screencastEnabled", false);
     this.screencastSidebarWidth = this.createSetting("screencastSidebarWidth", 300);
     this.showEmulationViewInDrawer = this.createSetting("showEmulationViewInDrawer", false);
+    this.showRenderingViewInDrawer = this.createSetting("showRenderingViewInDrawer", false);
 }
 
 WebInspector.Settings.prototype = {
@@ -229,10 +230,8 @@ WebInspector.BackendSetting = function(name, defaultValue, eventSupport, storage
     WebInspector.Setting.call(this, name, defaultValue, eventSupport, storage);
     this._setterCallback = setterCallback;
     var currentValue = this.get();
-    if (currentValue !== defaultValue) {
-        this._value = defaultValue; // Make sure we're in sync with backend, in case setting fails.
+    if (currentValue !== defaultValue)
         this.set(currentValue);
-    }
 }
 
 WebInspector.BackendSetting.prototype = {

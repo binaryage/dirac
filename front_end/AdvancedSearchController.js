@@ -55,7 +55,7 @@ WebInspector.AdvancedSearchController.createShortcut = function()
 WebInspector.AdvancedSearchController.prototype = {
     /**
      * @param {string=} id
-     * @return {WebInspector.View}
+     * @return {?WebInspector.View}
      */
     createView: function(id)
     {

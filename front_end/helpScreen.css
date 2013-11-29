@@ -184,7 +184,7 @@ body.platform-mac .help-key {
     margin: 0 0.5em;
 }
 
-.settings-tab fieldset {
+.help-window-outer fieldset {
     margin: 0;
     padding: 0;
     border: none;
@@ -677,6 +677,11 @@ body.platform-mac .help-content input[type=radio] {
     background-color: rgba(255, 255, 255, 0.4) !important;
 }
 
-#overrides-tab-content .help-container {
-    -webkit-column-width: auto !important;
+.help-indent-labels label {
+    padding-left: 10px;
+}
+
+.help-field-note {
+    opacity: 0.6;
+    padding-left: 19px;
 }
