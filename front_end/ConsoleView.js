@@ -909,7 +909,7 @@ WebInspector.ConsoleCommand.prototype = {
         var match = regexObject.exec(this.text);
         var matchRanges = [];
         while (match) {
-            matchRanges.push({ offset: match.index, length: match[0].length });
+            matchRanges.push(new WebInspector.SourceRange(match.index, match[0].length));
             match = regexObject.exec(this.text);
         }
         WebInspector.highlightSearchResults(this._formattedCommand, matchRanges);

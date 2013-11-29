@@ -1004,7 +1004,7 @@ WebInspector.CSSRule = function(payload, matchingSelectors)
     var firstRange = this.selectors[0].range;
     if (firstRange) {
         var lastRange = this.selectors.peekLast().range;
-        this.selectorRange = { startLine: firstRange.startLine, startColumn: firstRange.startColumn, endLine: lastRange.endLine, endColumn: lastRange.endColumn };
+        this.selectorRange = new WebInspector.TextRange(firstRange.startLine, firstRange.startColumn, lastRange.endLine, lastRange.endColumn);
     }
     this.sourceURL = payload.sourceURL;
     this.origin = payload.origin;
@@ -1315,7 +1315,7 @@ WebInspector.CSSMedia = function(payload)
     this.text = payload.text;
     this.source = payload.source;
     this.sourceURL = payload.sourceURL || "";
-    this.range = payload.range;
+    this.range = payload.range ? WebInspector.TextRange.fromObject(payload.range) : null;
     this.parentStyleSheetId = payload.parentStyleSheetId;
 }
 

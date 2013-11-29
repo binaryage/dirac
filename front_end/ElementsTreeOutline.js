@@ -1970,7 +1970,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @param {string} text
-     * @return {{text: string, entityRanges: Array.<Object>}}
+     * @return {{text: string, entityRanges: Array.<WebInspector.SourceRange>}}
      */
     _convertWhitespaceToEntities: function(text)
     {
@@ -2250,13 +2250,13 @@ WebInspector.ElementsTreeElement.prototype = {
         var match = regexObject.exec(text);
         var matchRanges = [];
         while (match) {
-            matchRanges.push({ offset: match.index, length: match[0].length });
+            matchRanges.push(new WebInspector.SourceRange(match.index, match[0].length));
             match = regexObject.exec(text);
         }
 
         // Fall back for XPath, etc. matches.
         if (!matchRanges.length)
-            matchRanges.push({ offset: 0, length: text.length });
+            matchRanges.push(new WebInspector.SourceRange(0, text.length));
 
         this._highlightResult = [];
         WebInspector.highlightSearchResults(this.listItemElement, matchRanges, this._highlightResult);

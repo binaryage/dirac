@@ -828,7 +828,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
         var match = regexObject.exec(text);
         var matchRanges = [];
         while (match) {
-            matchRanges.push({ offset: match.index, length: match[0].length });
+            matchRanges.push(new WebInspector.SourceRange(match.index, match[0].length));
             match = regexObject.exec(text);
         }
         WebInspector.highlightSearchResults(element, matchRanges);

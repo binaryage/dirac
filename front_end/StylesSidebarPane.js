@@ -1373,7 +1373,6 @@ WebInspector.StylePropertiesSection.prototype = {
     {
         if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) && this.navigable && event.target.hasStyleClass("simple-selector")) {
             var index = event.target._selectorIndex;
-            var range = this.rule.selectors[index].range;
             var styleSheetHeader = WebInspector.cssModel.styleSheetHeaderForId(this.rule.id.styleSheetId);
             var uiLocation = styleSheetHeader.rawLocationToUILocation(this.rule.lineNumberInSource(index), this.rule.columnNumberInSource(index));
             if (uiLocation)

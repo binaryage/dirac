@@ -422,7 +422,7 @@ WebInspector.SelectionDialogContentProvider.prototype = {
         /**
          * @param {string} text
          * @param {string} query
-         * @return {?Array.<{offset:number, length:number}>}
+         * @return {?Array.<WebInspector.SourceRange>}
          */
         function rangesForMatch(text, query)
         {
@@ -433,7 +433,7 @@ WebInspector.SelectionDialogContentProvider.prototype = {
             for (var i = 0; i < opcodes.length; ++i) {
                 var opcode = opcodes[i];
                 if (opcode[0] === "equal")
-                    ranges.push({offset: opcode[3], length: opcode[4] - opcode[3]});
+                    ranges.push(new WebInspector.SourceRange(opcode[3], opcode[4] - opcode[3]));
                 else if (opcode[0] !== "insert")
                     return null;
             }

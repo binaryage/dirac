@@ -470,17 +470,6 @@ WebInspector.SearchScope.prototype = {
 
 /**
  * @constructor
- * @param {number} offset
- * @param {number} length
- */
-WebInspector.SearchResult = function(offset, length)
-{
-    this.offset = offset;
-    this.length = length;    
-}
-
-/**
- * @constructor
  * @param {WebInspector.SearchConfig} searchConfig
  */
 WebInspector.SearchResultsPane = function(searchConfig)
@@ -683,7 +672,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
     /**
      * @param {string} lineContent
      * @param {RegExp} regex
-     * @return {Array.<WebInspector.SearchResult>}
+     * @return {Array.<WebInspector.SourceRange>}
      */
     _regexMatchRanges: function(lineContent, regex)
     {
@@ -692,14 +681,14 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
         var offset = 0;
         var matchRanges = [];
         while ((regex.lastIndex < lineContent.length) && (match = regex.exec(lineContent)))
-            matchRanges.push(new WebInspector.SearchResult(match.index, match[0].length));
+            matchRanges.push(new WebInspector.SourceRange(match.index, match[0].length));
 
         return matchRanges;
     },
     
     /**
      * @param {string} lineContent
-     * @param {Array.<WebInspector.SearchResult>} matchRanges
+     * @param {Array.<WebInspector.SourceRange>} matchRanges
      */
     _createContentSpan: function(lineContent, matchRanges)
     {

@@ -52,7 +52,7 @@ WebInspector.TextRange.createFromLocation = function(line, column)
  * @param {Object} serializedTextRange
  * @return {WebInspector.TextRange}
  */
-WebInspector.TextRange.fromObject = function (serializedTextRange)
+WebInspector.TextRange.fromObject = function(serializedTextRange)
 {
     return new WebInspector.TextRange(serializedTextRange.startLine, serializedTextRange.startColumn, serializedTextRange.endLine, serializedTextRange.endColumn);
 }
@@ -165,3 +165,13 @@ WebInspector.TextRange.prototype = {
     }
 }
 
+/**
+ * @constructor
+ * @param {number} offset
+ * @param {number} length
+ */
+WebInspector.SourceRange = function(offset, length)
+{
+    this.offset = offset;
+    this.length = length;
+}
