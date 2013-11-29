@@ -160,7 +160,7 @@ WebInspector.TimelineModel.prototype = {
     {
         this._clientInitiatedRecording = true;
         this.reset();
-        var maxStackFrames = WebInspector.settings.timelineLimitStackFramesFlag.get() ? WebInspector.settings.timelineStackFramesToCapture.get() : 30;
+        var maxStackFrames = WebInspector.settings.timelineCaptureStacks.get() ? 30 : 0;
         var includeGPUEvents = WebInspector.experimentsSettings.gpuTimeline.isEnabled();
         WebInspector.timelineManager.start(maxStackFrames, includeDomCounters, includeGPUEvents, this._fireRecordingStarted.bind(this));
     },

@@ -376,7 +376,6 @@ body.undocked.platform-mac-mountain-lion.inactive .toolbar-background {
     background-position: -160px -216px;
 }
 
-
 body.undocked .toolbar-item .close-button {
     display: none;
 }
@@ -388,10 +387,19 @@ body.remote .toolbar-item .close-button {
 .panel-status-bar {
     border-top: none;
     display: flex;
-    pointer-events: none;
     background-color: white;
     flex: 0 0 23px;
     position: relative;
+}
+
+.panel-status-bar label {
+    margin: 2px 20px 0 0;
+}
+
+.panel-status-bar label > input {
+    height: 13px;
+    width: 13px;
+    vertical-align: -2px;
 }
 
 .status-bar {
@@ -413,7 +421,6 @@ body.remote .toolbar-item .close-button {
 
 .status-bar-item {
     display: inline-block;
-    pointer-events: auto;
     cursor: default;
     height: 22px;
     padding: 0;
