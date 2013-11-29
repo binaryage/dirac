@@ -688,17 +688,25 @@ WebInspector.ElementsTreeOutline.prototype = {
      */
     _toggleHideShortcut: function(node, userCallback)
     {
+        var pseudoType = node.pseudoType();
+        if (pseudoType)
+            node = node.parentNode;
+        if (!node)
+            return;
+
         function resolvedNode(object)
         {
             if (!object)
                 return;
 
-            function toggleClassAndInjectStyleRule()
+            function toggleClassAndInjectStyleRule(pseudoType)
             {
-                const className = "__web-inspector-hide-shortcut__";
+                const classNamePrefix = "__web-inspector-hide";
+                const classNameSuffix = "-shortcut__";
                 const styleTagId = "__web-inspector-hide-shortcut-style__";
-                const styleRule = ".__web-inspector-hide-shortcut__, .__web-inspector-hide-shortcut__ * { visibility: hidden !important; }";
+                const styleRules = ".__web-inspector-hide-shortcut__, .__web-inspector-hide-shortcut__ * { visibility: hidden !important; } .__web-inspector-hidebefore-shortcut__::before { visibility: hidden !important; } .__web-inspector-hideafter-shortcut__::after { visibility: hidden !important; }";
 
+                var className = classNamePrefix + (pseudoType || "") + classNameSuffix;
                 this.classList.toggle(className);
 
                 var style = document.head.querySelector("style#" + styleTagId);
@@ -708,11 +716,11 @@ WebInspector.ElementsTreeOutline.prototype = {
                 style = document.createElement("style");
                 style.id = styleTagId;
                 style.type = "text/css";
-                style.innerHTML = styleRule;
+                style.textContent = styleRules;
                 document.head.appendChild(style);
             }
 
-            object.callFunction(toggleClassAndInjectStyleRule, undefined, userCallback);
+            object.callFunction(toggleClassAndInjectStyleRule, [{ value: pseudoType }], userCallback);
             object.release();
         }
 
