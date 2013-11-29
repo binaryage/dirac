@@ -214,34 +214,32 @@
     background: none !important;
 }
 
-.timeline-tree-item.warning::after,
-.timeline-tree-item.child-warning::after {
+.timeline-tree-item-warning {
+    display: block;
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 120px;
     width: 10px;
     height: 10px;
     float: right;
-    content: "";
-    /* position: absolute; */
-    /* top: 2px; */
     background-position: -202px -107px;
-    right: 2px;
+    position: relative;
+    top: 2px;
+}
+
+.timeline-tree-item-child-warning {
+    opacity: 0.6;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
-.timeline-tree-item.warning::after,
-.timeline-tree-item.child-warning::after {
+.timeline-tree-item-warning {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
 } /* media */
 
-.timeline-tree-item.child-warning::after {
-    opacity: 0.5;
-}
-
 .timeline-tree-item .data.dimmed {
     color: rgba(0, 0, 0, 0.7);
     pointer-events: none;
+    padding-left: 4px;
 }
 
 .timeline-tree-item.selected .data.dimmed {

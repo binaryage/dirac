@@ -1614,13 +1614,13 @@ WebInspector.TimelineRecordListRow = function(selectRecord, scheduleRefresh)
     this.element.addEventListener("mouseover", this._onMouseOver.bind(this), false);
     this.element.addEventListener("mouseout", this._onMouseOut.bind(this), false);
 
+    // Warning is float right block, it goes first.
+    this._warningElement = this.element.createChild("div", "timeline-tree-item-warning hidden");
+
     this._expandArrowElement = this.element.createChild("div", "timeline-tree-item-expand-arrow");
     this._expandArrowElement.addEventListener("click", this._onExpandClick.bind(this), false);
     var iconElement = this.element.createChild("span", "timeline-tree-icon");
     this._typeElement = this.element.createChild("span", "type");
-
-    var separatorElement = this.element.createChild("span", "separator");
-    separatorElement.textContent = " ";
 
     this._dataElement = this.element.createChild("span", "data dimmed");
     this._scheduleRefresh = scheduleRefresh;
@@ -1639,10 +1639,6 @@ WebInspector.TimelineRecordListRow.prototype = {
         for (var currentRecord = record.parent ? record.parent.parent : null; currentRecord; currentRecord = currentRecord.parent)
             paddingLeft += 12 / (Math.max(1, step++));
         this.element.style.paddingLeft = paddingLeft + "px";
-        if (record.hasWarnings())
-            this.element.addStyleClass("warning");
-        else if (record.childHasWarnings())
-            this.element.addStyleClass("child-warning");
         if (record.isBackground)
             this.element.addStyleClass("background");
 
@@ -1650,6 +1646,9 @@ WebInspector.TimelineRecordListRow.prototype = {
 
         if (this._dataElement.firstChild)
             this._dataElement.removeChildren();
+
+        this._warningElement.enableStyleClass("hidden", !record.hasWarnings() && !record.childHasWarnings());
+        this._warningElement.enableStyleClass("timeline-tree-item-child-warning", record.childHasWarnings() && !record.hasWarnings());
 
         if (record.detailsNode())
             this._dataElement.appendChild(record.detailsNode());
