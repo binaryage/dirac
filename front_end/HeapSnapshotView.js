@@ -1801,9 +1801,14 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
         return (time - this._minimumBoundaries) * this._xScaleFactor;
     },
 
-    formatTime: function(value)
+    /**
+     * @param {number} value
+     * @param {boolean=} hires
+     * @return {string}
+     */
+    formatTime: function(value, hires)
     {
-        return Number.secondsToString((value + this._minimumBoundaries) / 1000);
+        return Number.secondsToString((value + this._minimumBoundaries) / 1000, hires);
     },
 
     maximumBoundary: function()

@@ -1123,7 +1123,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         }
         fragment.appendChild(pie.element);
 
-        var contentHelper = new WebInspector.TimelineDetailsContentHelper();
+        var contentHelper = new WebInspector.TimelineDetailsContentHelper(true);
 
         if (this.coalesced)
             return fragment;
@@ -1577,18 +1577,13 @@ WebInspector.TimelinePresentationModel.generatePopupContentForFrameStatistics = 
         return WebInspector.UIString("%s (%.0f FPS)", Number.secondsToString(time, true), 1 / time);
     }
 
-    var contentHelper = new WebInspector.TimelinePopupContentHelper(WebInspector.UIString("Selected Range"));
-
-    contentHelper.appendTextRow(WebInspector.UIString("Selected range"), WebInspector.UIString("%s\u2013%s (%d frames)",
-        Number.secondsToString(statistics.startOffset, true), Number.secondsToString(statistics.endOffset, true), statistics.frameCount));
+    var contentHelper = new WebInspector.TimelineDetailsContentHelper(false);
     contentHelper.appendTextRow(WebInspector.UIString("Minimum Time"), formatTimeAndFPS(statistics.minDuration));
     contentHelper.appendTextRow(WebInspector.UIString("Average Time"), formatTimeAndFPS(statistics.average));
     contentHelper.appendTextRow(WebInspector.UIString("Maximum Time"), formatTimeAndFPS(statistics.maxDuration));
     contentHelper.appendTextRow(WebInspector.UIString("Standard Deviation"), Number.secondsToString(statistics.stddev, true));
-    contentHelper.appendElementRow(WebInspector.UIString("Time by category"),
-        WebInspector.TimelinePresentationModel._generateAggregatedInfo(statistics.timeByCategory));
 
-    return contentHelper.contentTable();
+    return contentHelper.element;
 }
 
 /**
@@ -1814,10 +1809,13 @@ WebInspector.TimelinePopupContentHelper.prototype = {
 
 /**
  * @constructor
+ * @param {boolean} monospaceValues
  */
-WebInspector.TimelineDetailsContentHelper = function()
+WebInspector.TimelineDetailsContentHelper = function(monospaceValues)
 {
     this.element = document.createElement("div");
+    this.element.className = "timeline-details-view-block";
+    this._monospaceValues = monospaceValues;
 }
 
 WebInspector.TimelineDetailsContentHelper.prototype = {
@@ -1829,7 +1827,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
     {
         var rowElement = this.element.createChild("div", "timeline-details-view-row");
         rowElement.createChild("span", "timeline-details-view-row-title").textContent = WebInspector.UIString("%s: ", title);
-        rowElement.createChild("span", "timeline-details-view-row-value monospace").textContent = value;
+        rowElement.createChild("span", "timeline-details-view-row-value" + (this._monospaceValues ? " monospace" : "")).textContent = value;
     },
 
     /**
@@ -1840,7 +1838,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
     {
         var rowElement = this.element.createChild("div", "timeline-details-view-row");
         rowElement.createChild("span", "timeline-details-view-row-title").textContent = WebInspector.UIString("%s: ", title);
-        var valueElement = rowElement.createChild("span", "timeline-details-view-row-details monospace");
+        var valueElement = rowElement.createChild("span", "timeline-details-view-row-details" + (this._monospaceValues ? " monospace" : ""));
         if (content instanceof Element)
             valueElement.appendChild(content);
         else

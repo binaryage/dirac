@@ -235,9 +235,10 @@ WebInspector.TimelineGrid.Calculator.prototype = {
 
     /**
      * @param {number} time
+     * @param {boolean=} hires
      * @return {string}
      */
-    formatTime: function(time) { },
+    formatTime: function(time, hires) { },
 
     /** @return {number} */
     minimumBoundary: function() { },

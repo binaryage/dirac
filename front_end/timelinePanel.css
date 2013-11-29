@@ -97,10 +97,6 @@
     color: inherit;
 }
 
-.status-bar-item.timeline-frame-statistics {
-    pointer-events: none;
-}
-
 .timeline-tree-item {
     height: 18px;
     line-height: 15px;
@@ -369,12 +365,6 @@
 
 .glue-async-status-bar-item.toggled-on:disabled .glyph {
     background-color: rgba(0, 0, 0, 0.75);
-}
-
-.timeline-frames-stats {
-    pointer-events: auto;
-    text-decoration: underline;
-    cursor: pointer;
 }
 
 #resources-container-content {
@@ -694,14 +684,15 @@
 }
 
 .timeline-details-view-title {
-    padding: 1px 3px;
+    padding: 2px 5px;
     flex: 0 0 19px;
     border-bottom: 1px solid rgb(202, 202, 202);
     background-color: rgb(236, 236, 236);
     cursor: ns-resize;
     white-space: nowrap;
     display: flex;
-    flex-orientation
+    color: rgb(92, 110, 129);
+    text-shadow: rgba(255, 255, 255, 0.75) 0 1px 0;
 }
 
 .timeline-details-view-body {
@@ -711,15 +702,8 @@
     position: relative;
 }
 
-.timeline-details-view-title {
-    white-space: nowrap;
-    padding: 2px 5px;
-    flex: 0 0 19px;
-    border-bottom: 1px solid rgb(202, 202, 202);
-    background-color: rgb(236, 236, 236);
-    cursor: ns-resize;
-    color: rgb(92, 110, 129);
-    text-shadow: rgba(255, 255, 255, 0.75) 0 1px 0;
+.timeline-details-view-block {
+    flex: none;
 }
 
 .timeline-details-view-row {

@@ -290,14 +290,6 @@ WebInspector.TimelinePanel.prototype = {
         this.recordsCounter = new WebInspector.StatusBarText("");
         this._statusTextContainer.appendChild(this.recordsCounter.element);
 
-        this.frameStatistics = this._statusTextContainer.createChild("div", "timeline-frame-statistics status-bar-item status-bar-text hidden");
-
-        function getAnchor()
-        {
-            return this.frameStatistics;
-        }
-        this._frameStatisticsPopoverHelper = new WebInspector.PopoverHelper(this.frameStatistics, getAnchor.bind(this), this._showFrameStatistics.bind(this));
-
         this._miscStatusBarItems = panelStatusBarElement.createChild("div", "status-bar-item");
     },
 
@@ -467,27 +459,7 @@ WebInspector.TimelinePanel.prototype = {
 
     _updateFrameStatistics: function(frames)
     {
-        if (frames.length) {
-            this._lastFrameStatistics = new WebInspector.FrameStatistics(frames);
-            var details = WebInspector.UIString("avg: %s, \u03c3: %s",
-                Number.secondsToString(this._lastFrameStatistics.average, true), Number.secondsToString(this._lastFrameStatistics.stddev, true));
-        } else
-            this._lastFrameStatistics = null;
-        this.frameStatistics.textContent = WebInspector.UIString("%d of %d frames shown", frames.length, this._presentationModel.frames().length);
-        if (details) {
-            this.frameStatistics.appendChild(document.createTextNode(" ("));
-            this.frameStatistics.createChild("span", "timeline-frames-stats").textContent = details;
-            this.frameStatistics.appendChild(document.createTextNode(")"));
-        }
-    },
-
-    /**
-     * @param {Element} anchor
-     * @param {WebInspector.Popover} popover
-     */
-    _showFrameStatistics: function(anchor, popover)
-    {
-        popover.show(WebInspector.TimelinePresentationModel.generatePopupContentForFrameStatistics(this._lastFrameStatistics), anchor);
+        this._lastFrameStatistics = frames.length ? new WebInspector.FrameStatistics(frames) : null;
     },
 
     _updateEventDividers: function()
@@ -577,14 +549,12 @@ WebInspector.TimelinePanel.prototype = {
             if (frameMode) {
                 this.element.addStyleClass("timeline-frame-overview");
                 this.recordsCounter.element.addStyleClass("hidden");
-                this.frameStatistics.removeStyleClass("hidden");
                 this._frameController = new WebInspector.TimelineFrameController(this._model, this._overviewPane, this._presentationModel);
             } else {
                 this._frameController.dispose();
                 this._frameController = null;
                 this.element.removeStyleClass("timeline-frame-overview");
                 this.recordsCounter.element.removeStyleClass("hidden");
-                this.frameStatistics.addStyleClass("hidden");
             }
         }
 
@@ -593,6 +563,7 @@ WebInspector.TimelinePanel.prototype = {
         else
             this._timelineMemorySplitter.showOnlyFirst();
         this.onResize();
+        this._updateSelectionDetails();
     },
 
     /**
@@ -900,8 +871,18 @@ WebInspector.TimelinePanel.prototype = {
         for (var categoryName in aggregatedStats)
             aggregatedTotal += aggregatedStats[categoryName];
         aggregatedStats["idle"] = Math.max(0, (endTime - startTime) / 1000 - aggregatedTotal);
+
+        var fragment = document.createDocumentFragment();
         var pie = WebInspector.TimelinePresentationModel.generatePieChart(aggregatedStats);
-        this._detailsView.setContent("", pie.element);
+        fragment.appendChild(pie.element);
+
+        if (this._frameMode && this._lastFrameStatistics) {
+            var title = WebInspector.UIString("%s \u2013 %s (%d frames)", Number.secondsToString(this._lastFrameStatistics.startOffset, true), Number.secondsToString(this._lastFrameStatistics.endOffset, true), this._lastFrameStatistics.frameCount);
+            fragment.appendChild(WebInspector.TimelinePresentationModel.generatePopupContentForFrameStatistics(this._lastFrameStatistics));
+        } else {
+            var title = WebInspector.UIString("%s \u2013 %s", this._calculator.formatTime(0, true), this._calculator.formatTime(this._calculator.boundarySpan(), true));
+        }
+        this._detailsView.setContent(title, fragment);
     },
 
     _windowChanged: function()
@@ -1576,9 +1557,14 @@ WebInspector.TimelineCalculator.prototype = {
         this.paddingLeft = paddingLeft;
     },
 
-    formatTime: function(value)
+    /**
+     * @param {number} value
+     * @param {boolean=} hires
+     * @return {string}
+     */
+    formatTime: function(value, hires)
     {
-        return Number.secondsToString(value + this._minimumBoundary - this._model.minimumRecordTime());
+        return Number.secondsToString(value + this._minimumBoundary - this._model.minimumRecordTime(), hires);
     },
 
     maximumBoundary: function()
@@ -1973,13 +1959,13 @@ WebInspector.TimelineDetailsView.prototype = {
 
     /**
      * @param {string} title
-     * @param {Element} element
+     * @param {Node} node
      */
-    setContent: function(title, element)
+    setContent: function(title, node)
     {
         this._titleElement.textContent = WebInspector.UIString("DETAILS: %s", title);
         this._contentElement.removeChildren();
-        this._contentElement.appendChild(element);
+        this._contentElement.appendChild(node);
     },
 
     /**

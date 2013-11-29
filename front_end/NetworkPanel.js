@@ -1844,7 +1844,12 @@ WebInspector.NetworkBaseCalculator.prototype = {
         return 0;
     },
 
-    formatTime: function(value)
+    /**
+     * @param {number} value
+     * @param {boolean=} hires
+     * @return {string}
+     */
+    formatTime: function(value, hires)
     {
         return value.toString();
     },

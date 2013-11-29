@@ -157,9 +157,10 @@ WebInspector.FlameChart.Calculator.prototype = {
 
     /**
      * @param {number} value
+     * @param {boolean=} hires
      * @return {string}
      */
-    formatTime: function(value)
+    formatTime: function(value, hires)
     {
         var format = "%." + this._decimalDigits + "f\u2009ms";
         return WebInspector.UIString(format, value + this._minimumBoundaries);
@@ -229,11 +230,12 @@ WebInspector.FlameChart.OverviewCalculator.prototype = {
 
     /**
      * @param {number} value
+     * @param {boolean=} hires
      * @return {string}
      */
-    formatTime: function(value)
+    formatTime: function(value, hires)
     {
-        return Number.secondsToString((value + this._minimumBoundaries) / 1000);
+        return Number.secondsToString((value + this._minimumBoundaries) / 1000, hires);
     },
 
     /**

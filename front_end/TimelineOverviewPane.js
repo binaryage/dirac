@@ -349,9 +349,14 @@ WebInspector.TimelineOverviewCalculator.prototype = {
         this.setWindow();
     },
 
-    formatTime: function(value)
+    /**
+     * @param {number} value
+     * @param {boolean=} hires
+     * @return {string}
+     */
+    formatTime: function(value, hires)
     {
-        return Number.secondsToString(value);
+        return Number.secondsToString(value, hires);
     },
 
     maximumBoundary: function()
