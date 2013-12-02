@@ -100,6 +100,14 @@ var InspectorFrontendAPI = {
         });
     },
 
+    /**
+     * @param {boolean} useSoftMenu
+     */
+    setUseSoftMenu: function(useSoftMenu)
+    {
+        WebInspector.ContextMenu.setUseSoftMenu(useSoftMenu);
+    },
+
     // FIXME: remove this legacy support.
     setAttachedWindow: function(side)
     {

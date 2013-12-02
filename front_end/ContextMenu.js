@@ -187,6 +187,14 @@ WebInspector.ContextMenu = function(event) {
     this._id = 0;
 }
 
+/**
+ * @param {boolean} useSoftMenu
+ */
+WebInspector.ContextMenu.setUseSoftMenu = function(useSoftMenu)
+{
+    WebInspector.ContextMenu._useSoftMenu = useSoftMenu;
+}
+
 WebInspector.ContextMenu.prototype = {
     nextId: function()
     {
@@ -199,21 +207,14 @@ WebInspector.ContextMenu.prototype = {
 
         if (menuObject.length) {
             WebInspector._contextMenu = this;
-            InspectorFrontendHost.showContextMenu(this._event, menuObject);
+            if (WebInspector.ContextMenu._useSoftMenu) {
+                var softMenu = new WebInspector.SoftContextMenu(menuObject);
+                softMenu.show(this._event);
+            } else {
+                InspectorFrontendHost.showContextMenu(this._event, menuObject);
+            }
             this._event.consume();
         }
-    },
-
-    showSoftMenu: function()
-    {
-        var menuObject = this._buildDescriptor();
-
-        if (menuObject.length) {
-            WebInspector._contextMenu = this;
-            var softMenu = new WebInspector.SoftContextMenu(menuObject);
-            softMenu.show(this._event, true);
-        }
-        this._event.consume();
     },
 
     _setHandler: function(id, handler)
