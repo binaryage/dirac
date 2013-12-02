@@ -232,6 +232,7 @@ WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.ScheduleStyleRecalculation] = 1;
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.InvalidateLayout] = 1;
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.GPUTask] = 1;
+WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.ActivateLayerTree] = 1;
 
 WebInspector.TimelinePresentationModel.prototype = {
     /**
@@ -281,7 +282,8 @@ WebInspector.TimelinePresentationModel.prototype = {
 
     addFrame: function(frame)
     {
-        this._frames.push(frame);
+        if (!frame.isBackground)
+            this._frames.push(frame);
     },
 
     /**
@@ -1558,9 +1560,9 @@ WebInspector.TimelinePresentationModel.generatePopupContentForFrame = function(f
     contentHelper.appendTextRow(WebInspector.UIString("Duration"), durationText);
     contentHelper.appendTextRow(WebInspector.UIString("FPS"), Math.floor(1 / durationInSeconds));
     contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.secondsToString(frame.cpuTime, true));
+    contentHelper.appendTextRow(WebInspector.UIString("Thread"), frame.isBackground ? WebInspector.UIString("background") : WebInspector.UIString("main"));
     contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"),
         WebInspector.TimelinePresentationModel._generateAggregatedInfo(frame.timeByCategory));
-
     return contentHelper.contentTable();
 }
 

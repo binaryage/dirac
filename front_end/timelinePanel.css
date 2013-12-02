@@ -70,8 +70,9 @@
 }
 
 .timeline-frame-overview .overview-grid-window,
-.timeline-frame-overview .overview-grid-dividers-background {
-    height: 100%;
+.timeline-frame-overview .overview-grid-dividers-background,
+.timeline-frame-overview .overview-grid-window-resizer {
+    height: 15px;
 }
 
 #timeline-overview-grid #resources-graphs {
