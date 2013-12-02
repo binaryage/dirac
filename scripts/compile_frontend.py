@@ -124,6 +124,7 @@ modules = [
             "NetworkRequest.js",
             "UISourceCode.js",
             "Workspace.js",
+            "WorkspaceController.js",
         ]
     },
     {
@@ -329,6 +330,7 @@ modules = [
         "sources": [
             "LayerTreeModel.js",
             "LayersPanel.js",
+            "LayersPanelDescriptor.js",
             "LayerTree.js",
             "Layers3DView.js",
             "LayerDetailsView.js",
