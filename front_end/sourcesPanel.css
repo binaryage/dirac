@@ -175,11 +175,6 @@ button.status-bar-item.scripts-debugger-show-hide-button {
     right: 15px;
 }
 
-#scripts-split-view.vbox button.status-bar-item.scripts-debugger-show-hide-button,
-#scripts-split-view.vbox #scripts-debug-sidebar-resizer-widget {
-    display: none;
-}
-
 button.status-bar-item.scripts-debugger-show-hide-button.toggled-left {
     right: 0;
 }
@@ -236,4 +231,20 @@ a.worker-item:hover {
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 120px;
     background-position: -202px -107px;
+}
+
+.sources-status-bar div.resizer-widget {
+    width: 18px;
+    height: 16px;
+    -webkit-transform: rotate(90deg);
+    cursor: ns-resize;
+    top: 2px;
+    right: 17px;
+}
+
+.sources-status-bar .scripts-debugger-show-hide-button {
+    margin-top: 1px !important;
+    height: 16px !important;
+    -webkit-transform: rotate(90deg);
+    right: 0 !important;
 }

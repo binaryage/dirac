@@ -116,7 +116,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._editorContainer.addEventListener(WebInspector.TabbedEditorContainer.Events.EditorSelected, this._editorSelected, this);
     this._editorContainer.addEventListener(WebInspector.TabbedEditorContainer.Events.EditorClosed, this._editorClosed, this);
 
-    this._debugSidebarResizeWidgetElement = this.splitView.mainElement.createChild("div", "resizer-widget");
+    this._debugSidebarResizeWidgetElement = document.createElementWithClass("div", "resizer-widget");
     this._debugSidebarResizeWidgetElement.id = "scripts-debug-sidebar-resizer-widget";
     this.splitView.installResizer(this._debugSidebarResizeWidgetElement);
 
@@ -152,10 +152,11 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._scriptViewStatusBarTextContainer = document.createElement("div");
     this._scriptViewStatusBarTextContainer.className = "inline-block";
 
-    var statusBarContainerElement = this.sourcesView.element.createChild("div", "sources-status-bar");
-    statusBarContainerElement.appendChild(this._toggleFormatSourceButton.element);
-    statusBarContainerElement.appendChild(this._scriptViewStatusBarItemsContainer);
-    statusBarContainerElement.appendChild(this._scriptViewStatusBarTextContainer);
+    this._statusBarContainerElement = this.sourcesView.element.createChild("div", "sources-status-bar");
+    this._statusBarContainerElement.appendChild(this._toggleFormatSourceButton.element);
+    this._statusBarContainerElement.appendChild(this._scriptViewStatusBarItemsContainer);
+    this._statusBarContainerElement.appendChild(this._scriptViewStatusBarTextContainer);
+    this.splitView.installResizer(this._statusBarContainerElement);
 
     this._installDebuggerSidebarController();
 
@@ -1211,7 +1212,15 @@ WebInspector.SourcesPanel.prototype = {
     {
         this._toggleDebuggerSidebarButton = new WebInspector.StatusBarButton("", "right-sidebar-show-hide-button scripts-debugger-show-hide-button", 3);
         this._toggleDebuggerSidebarButton.addEventListener("click", clickHandler, this);
-        this.editorView.element.appendChild(this._toggleDebuggerSidebarButton.element);
+
+        if (this.splitView.isVertical()) {
+            this.editorView.element.appendChild(this._toggleDebuggerSidebarButton.element);
+            this.splitView.mainElement.appendChild(this._debugSidebarResizeWidgetElement);
+        } else {
+            this._statusBarContainerElement.appendChild(this._debugSidebarResizeWidgetElement);
+            this._statusBarContainerElement.appendChild(this._toggleDebuggerSidebarButton.element);
+        }
+
         this._enableDebuggerSidebar(!WebInspector.settings.debuggerSidebarHidden.get());
 
         function clickHandler()
@@ -1508,9 +1517,9 @@ WebInspector.SourcesPanel.prototype = {
                 this.sidebarPaneView.addPane(this.sidebarPanes[pane]);
             this._extensionSidebarPanesContainer = this.sidebarPaneView;
             this.sidebarElement.appendChild(this.debugToolbar);
+            this.editorView.element.appendChild(this._toggleDebuggerSidebarButton.element);
+            this.splitView.mainElement.appendChild(this._debugSidebarResizeWidgetElement);
         } else {
-            this._enableDebuggerSidebar(true);
-
             this.sidebarPaneView = new WebInspector.SplitView(true, this.name + "PanelSplitSidebarRatio", 0.5);
 
             var group1 = new WebInspector.SidebarPaneStack();
@@ -1530,6 +1539,8 @@ WebInspector.SourcesPanel.prototype = {
             group2.addPane(this.sidebarPanes.watchExpressions);
             this._extensionSidebarPanesContainer = group2;
             this.sidebarPaneView.firstElement().appendChild(this.debugToolbar);
+            this._statusBarContainerElement.appendChild(this._debugSidebarResizeWidgetElement);
+            this._statusBarContainerElement.appendChild(this._toggleDebuggerSidebarButton.element)
         }
         for (var i = 0; i < this._extensionSidebarPanes.length; ++i)
             this._extensionSidebarPanesContainer.addPane(this._extensionSidebarPanes[i]);
