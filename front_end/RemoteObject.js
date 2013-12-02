@@ -285,8 +285,8 @@ WebInspector.RemoteObject.prototype = {
         // where property was defined; so do we.
         var setPropertyValueFunction = "function(a, b) { this[a] = b; }";
 
-        // Special case for NaN, Infinity and -Infinity
-        if (result.type === "number" && typeof result.value !== "number")
+        // Special case for NaN, Infinity, -Infinity, -0.
+        if (result.type === "number" && String(result.value) !== result.description)
             setPropertyValueFunction = "function(a) { this[a] = " + result.description + "; }";
 
         delete result.description; // Optimize on traffic.
