@@ -249,7 +249,6 @@ WebInspector.SearchableView.prototype = {
         this.resetSearch();
         delete this._searchIsVisible;
         this._toggleSearchBar(false);
-        this.resetSearch();
     },
 
     resetSearch: function()
