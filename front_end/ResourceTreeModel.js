@@ -56,6 +56,7 @@ WebInspector.ResourceTreeModel.EventTypes = {
     FrameAdded: "FrameAdded",
     FrameNavigated: "FrameNavigated",
     FrameDetached: "FrameDetached",
+    FrameResized: "FrameResized",
     MainFrameNavigated: "MainFrameNavigated",
     MainFrameCreatedOrNavigated: "MainFrameCreatedOrNavigated",
     ResourceAdded: "ResourceAdded",
@@ -711,6 +712,11 @@ WebInspector.PageDispatcher.prototype = {
 
     frameClearedScheduledNavigation: function(frameId)
     {
+    },
+
+    frameResized: function()
+    {
+        this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.FrameResized, null);
     },
 
     javascriptDialogOpening: function(message)

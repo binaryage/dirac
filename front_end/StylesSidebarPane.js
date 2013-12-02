@@ -104,6 +104,7 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrRemoved, this._attributeChanged, this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.PseudoStateChanged, this._pseudoStateChanged, this);
     WebInspector.settings.showUserAgentStyles.addChangeListener(this._showUserAgentStylesSettingChanged.bind(this));
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
     this.element.addStyleClass("styles-pane");
     this.element.enableStyleClass("show-user-styles", WebInspector.settings.showUserAgentStyles.get());
     this.element.addEventListener("mousemove", this._mouseMovedOverElement.bind(this), false);
@@ -396,6 +397,20 @@ WebInspector.StylesSidebarPane.prototype = {
             return;
 
         this._rebuildUpdate();
+    },
+
+    _frameResized: function()
+    {
+        function refreshContents()
+        {
+            this._rebuildUpdate();
+            delete this._activeTimer;
+        }
+
+        if (this._activeTimer)
+            clearTimeout(this._activeTimer);
+
+        this._activeTimer = setTimeout(refreshContents.bind(this), 100);
     },
 
     _attributeChanged: function(event)

@@ -564,6 +564,10 @@
                 "hidden": true
             },
             {
+                "name": "frameResized",
+                "hidden": true
+            },
+            {
                 "name": "javascriptDialogOpening",
                 "description": "Fired when a JavaScript initiated dialog (alert, confirm, prompt, or onbeforeunload) is about to open.",
                 "parameters": [

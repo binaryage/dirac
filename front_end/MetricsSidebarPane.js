@@ -38,6 +38,7 @@ WebInspector.MetricsSidebarPane = function()
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._styleSheetOrMediaQueryResultChanged, this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrModified, this._attributesUpdated, this);
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrRemoved, this._attributesUpdated, this);
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
 }
 
 WebInspector.MetricsSidebarPane.prototype = {
@@ -86,6 +87,20 @@ WebInspector.MetricsSidebarPane.prototype = {
     _styleSheetOrMediaQueryResultChanged: function()
     {
         this._innerUpdate();
+    },
+
+    _frameResized: function()
+    {
+        function refreshContents()
+        {
+            this._innerUpdate();
+            delete this._activeTimer;
+        }
+
+        if (this._activeTimer)
+            clearTimeout(this._activeTimer);
+
+        this._activeTimer = setTimeout(refreshContents.bind(this), 100);
     },
 
     _attributesUpdated: function(event)
