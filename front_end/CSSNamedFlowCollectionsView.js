@@ -193,14 +193,14 @@ WebInspector.CSSNamedFlowCollectionsView.prototype = {
     },
 
     /**
-     * @param {WebInspector.NamedFlowCollection} namedFlowCollection
+     * @param {?WebInspector.NamedFlowCollection} namedFlowCollection
      */
     _resetNamedFlows: function(namedFlowCollection)
     {
         for (var flowHash in this._namedFlows)
             this._removeNamedFlow(flowHash);
 
-        var namedFlows = namedFlowCollection.namedFlowMap;
+        var namedFlows = namedFlowCollection ? namedFlowCollection.namedFlowMap : {};
         for (var flowName in namedFlows)
             this._appendNamedFlow(namedFlows[flowName]);
 

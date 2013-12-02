@@ -76,8 +76,10 @@ WebInspector.SidebarSectionTreeElement.prototype = {
 /**
  * @constructor
  * @extends {TreeElement}
+ * @param {string} className
+ * @param {string} title
  * @param {string=} subtitle
- * @param {Object=} representedObject
+ * @param {?Object=} representedObject
  * @param {boolean=} hasChildren
  */
 WebInspector.SidebarTreeElement = function(className, title, subtitle, representedObject, hasChildren)

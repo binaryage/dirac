@@ -230,7 +230,7 @@ TreeOutline.prototype._rememberTreeElement = function(element)
 {
     if (!this._treeElementsMap.get(element.representedObject))
         this._treeElementsMap.put(element.representedObject, []);
-        
+
     // check if the element is already known
     var elements = this._treeElementsMap.get(element.representedObject);
     if (elements.indexOf(element) !== -1)
@@ -293,14 +293,14 @@ TreeOutline.prototype.findTreeElement = function(representedObject, isAncestor, 
     if (cachedElement)
         return cachedElement;
 
-    // Walk up the parent pointers from the desired representedObject 
+    // Walk up the parent pointers from the desired representedObject
     var ancestors = [];
     for (var currentObject = getParent(representedObject); currentObject;  currentObject = getParent(currentObject)) {
         ancestors.push(currentObject);
         if (this.getCachedTreeElement(currentObject))  // stop climbing as soon as we hit
             break;
     }
-        
+
     if (!currentObject)
         return null;
 
@@ -437,7 +437,8 @@ TreeOutline.prototype.revealAndSelect = function(omitFocus)
 
 /**
  * @constructor
- * @param {Object=} representedObject
+ * @param {string|!Node} title
+ * @param {?Object=} representedObject
  * @param {boolean=} hasChildren
  */
 function TreeElement(title, representedObject, hasChildren)
@@ -679,7 +680,7 @@ TreeElement.prototype.collapse = function()
         this._childrenListNode.classList.remove("expanded");
 
     this.expanded = false;
-    
+
     if (this.treeOutline)
         this.treeOutline._expandedStateMap.put(this.representedObject, false);
 
@@ -939,7 +940,7 @@ TreeElement.prototype.traversePreviousTreeElement = function(skipUnrevealed, don
 
 TreeElement.prototype.isEventWithinDisclosureTriangle = function(event)
 {
-    // FIXME: We should not use getComputedStyle(). For that we need to get rid of using ::before for disclosure triangle. (http://webk.it/74446) 
+    // FIXME: We should not use getComputedStyle(). For that we need to get rid of using ::before for disclosure triangle. (http://webk.it/74446)
     var paddingLeftValue = window.getComputedStyle(this._listItemNode).getPropertyCSSValue("padding-left");
     var computedLeftPadding = paddingLeftValue ? paddingLeftValue.getFloatValue(CSSPrimitiveValue.CSS_PX) : 0;
     var left = this._listItemNode.totalOffsetLeft() + computedLeftPadding;

@@ -104,8 +104,7 @@ WebInspector.AuditCategoryResultPane.prototype = {
                 title = String.sprintf("%s (%d)", title, result.violationCount);
         }
 
-        var treeElement = new TreeElement(null, null, !!result.children);
-        treeElement.title = title;
+        var treeElement = new TreeElement(title, null, !!result.children);
         parentTreeElement.appendChild(treeElement);
 
         if (result.className)

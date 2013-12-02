@@ -705,7 +705,7 @@ WebInspector.CSSMetadata.keywordsForProperty = function(propertyName)
 
 /**
  * @param {string} propertyName
- * @return {Object}
+ * @return {?Object}
  */
 WebInspector.CSSMetadata.descriptor = function(propertyName)
 {

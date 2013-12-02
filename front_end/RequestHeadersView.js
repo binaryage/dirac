@@ -76,12 +76,6 @@ WebInspector.RequestHeadersView = function(request)
     this._queryStringTreeElement.hidden = true;
     this._headersTreeOutline.appendChild(this._queryStringTreeElement);
 
-    this._urlFragmentTreeElement = new TreeElement("", null, true);
-    this._urlFragmentTreeElement.expanded = true;
-    this._urlFragmentTreeElement.selectable = false;
-    this._urlFragmentTreeElement.hidden = true;
-    this._headersTreeOutline.appendChild(this._urlFragmentTreeElement);
-
     this._formDataTreeElement = new TreeElement("", null, true);
     this._formDataTreeElement.expanded = true;
     this._formDataTreeElement.selectable = false;
@@ -110,7 +104,6 @@ WebInspector.RequestHeadersView.prototype = {
 
         this._refreshURL();
         this._refreshQueryString();
-        this._refreshUrlFragment();
         this._refreshRequestHeaders();
         this._refreshResponseHeaders();
         this._refreshHTTPInformation();
@@ -180,26 +173,6 @@ WebInspector.RequestHeadersView.prototype = {
             this._refreshParams(WebInspector.UIString("Query String Parameters"), queryParameters, queryString, this._queryStringTreeElement);
     },
 
-    _refreshUrlFragment: function()
-    {
-        var urlFragment = this._request.parsedURL.fragment;
-        this._urlFragmentTreeElement.hidden = !urlFragment;
-
-        if (!urlFragment)
-            return;
-
-        var sectionTitle = WebInspector.UIString("URL fragment");
-
-        this._urlFragmentTreeElement.removeChildren();
-        this._urlFragmentTreeElement.listItemElement.removeChildren();
-        this._urlFragmentTreeElement.listItemElement.appendChild(document.createTextNode(sectionTitle));
-
-        var fragmentTreeElement = new TreeElement(null, null, false);
-        fragmentTreeElement.title = this._formatHeader("#", urlFragment);
-        fragmentTreeElement.selectable = false;
-        this._urlFragmentTreeElement.appendChild(fragmentTreeElement);
-    },
-
     _refreshFormData: function()
     {
         this._formDataTreeElement.hidden = true;
@@ -230,17 +203,15 @@ WebInspector.RequestHeadersView.prototype = {
      */
     _populateTreeElementWithSourceText: function(treeElement, sourceText)
     {
-        treeElement.removeChildren();
-
-        var sourceTreeElement = new TreeElement(null, null, false);
-        sourceTreeElement.selectable = false;
-        treeElement.appendChild(sourceTreeElement);
-
         var sourceTextElement = document.createElement("span");
         sourceTextElement.addStyleClass("header-value");
         sourceTextElement.addStyleClass("source-code");
-        sourceTextElement.textContent = String(sourceText).trim();
-        sourceTreeElement.listItemElement.appendChild(sourceTextElement);
+        sourceTextElement.textContent = String(sourceText || "").trim();
+
+        var sourceTreeElement = new TreeElement(sourceTextElement);
+        sourceTreeElement.selectable = false;
+        treeElement.removeChildren();
+        treeElement.appendChild(sourceTreeElement);
     },
 
     /**
@@ -457,8 +428,7 @@ WebInspector.RequestHeadersView.prototype = {
         this._refreshHeadersTitle(title, headersTreeElement, length);
         headersTreeElement.hidden = !length;
         for (var i = 0; i < length; ++i) {
-            var headerTreeElement = new TreeElement(null, null, false);
-            headerTreeElement.title = this._formatHeader(headers[i].name, headers[i].value);
+            var headerTreeElement = new TreeElement(this._formatHeader(headers[i].name, headers[i].value));
             headerTreeElement.selectable = false;
             headersTreeElement.appendChild(headerTreeElement);
         }

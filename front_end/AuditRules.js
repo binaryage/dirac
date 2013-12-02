@@ -44,7 +44,7 @@ WebInspector.AuditRules.CacheableResponseCodes =
 
 /**
  * @param {!Array.<!WebInspector.NetworkRequest>} requests
- * @param {Array.<!WebInspector.resourceTypes>} types
+ * @param {?Array.<!WebInspector.resourceTypes>} types
  * @param {boolean} needFullResources
  * @return {(Object.<string, !Array.<!WebInspector.NetworkRequest>>|Object.<string, !Array.<string>>)}
  */
@@ -82,7 +82,7 @@ WebInspector.AuditRules.GzipRule.prototype = {
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
-     * @param {function(WebInspector.AuditRuleResult)} callback
+     * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     doRun: function(requests, result, callback, progress)
@@ -147,7 +147,7 @@ WebInspector.AuditRules.CombineExternalResourcesRule.prototype = {
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
-     * @param {function(WebInspector.AuditRuleResult)} callback
+     * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     doRun: function(requests, result, callback, progress)
@@ -212,7 +212,7 @@ WebInspector.AuditRules.MinimizeDnsLookupsRule.prototype = {
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
-     * @param {function(WebInspector.AuditRuleResult)} callback
+     * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     doRun: function(requests, result, callback, progress)
@@ -256,7 +256,7 @@ WebInspector.AuditRules.ParallelizeDownloadRule.prototype = {
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
-     * @param {function(WebInspector.AuditRuleResult)} callback
+     * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     doRun: function(requests, result, callback, progress)
@@ -331,7 +331,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
-     * @param {function(WebInspector.AuditRuleResult)} callback
+     * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     doRun: function(requests, result, callback, progress)
@@ -759,7 +759,7 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
-     * @param {function(WebInspector.AuditRuleResult)} callback
+     * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     doRun: function(requests, result, callback, progress)
@@ -891,7 +891,7 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
-     * @param {function(WebInspector.AuditRuleResult)} callback
+     * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     doRun: function(requests, result, callback, progress)
@@ -981,7 +981,7 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
-     * @param {function(WebInspector.AuditRuleResult)} callback
+     * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     doRun: function(requests, result, callback, progress)
@@ -1071,7 +1071,7 @@ WebInspector.AuditRules.CSSRuleBase.prototype = {
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
-     * @param {function(WebInspector.AuditRuleResult)} callback
+     * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     doRun: function(requests, result, callback, progress)

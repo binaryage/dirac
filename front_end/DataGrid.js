@@ -1637,7 +1637,7 @@ WebInspector.DataGridNode.prototype = {
 
     /**
      * @param {boolean} skipHidden
-     * @param {WebInspector.DataGridNode=} stayWithin
+     * @param {?WebInspector.DataGridNode=} stayWithin
      * @param {boolean=} dontPopulate
      * @param {Object=} info
      * @return {WebInspector.DataGridNode}

@@ -34,15 +34,15 @@ WebInspector.ApplicationCacheModel = function()
 {
     ApplicationCacheAgent.enable();
     InspectorBackend.registerApplicationCacheDispatcher(new WebInspector.ApplicationCacheDispatcher(this));
-    
+
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, this._frameNavigated, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameDetached, this);
-    
+
     this._statuses = {};
     this._manifestURLsByFrame = {};
 
     this._mainFrameNavigated();
-    
+
     this._onLine = true;
 }
 
@@ -64,7 +64,7 @@ WebInspector.ApplicationCacheModel.prototype = {
 
         ApplicationCacheAgent.getManifestForFrame(frame.id, this._manifestForFrameLoaded.bind(this, frame.id));
     },
-    
+
     /**
      * @param {WebInspector.Event} event
      */
@@ -73,7 +73,7 @@ WebInspector.ApplicationCacheModel.prototype = {
         var frame = /** @type {WebInspector.ResourceTreeFrame} */ (event.data);
         this._frameManifestRemoved(frame.id);
     },
-    
+
     _mainFrameNavigated: function()
     {
         ApplicationCacheAgent.getFramesWithManifests(this._framesWithManifestsLoaded.bind(this));
@@ -90,11 +90,11 @@ WebInspector.ApplicationCacheModel.prototype = {
             console.error(error);
             return;
         }
-        
+
         if (!manifestURL)
             this._frameManifestRemoved(frameId);
     },
-    
+
     /**
      * @param {?Protocol.Error} error
      * @param {Array.<ApplicationCacheAgent.FrameWithManifest>} framesWithManifests
@@ -109,7 +109,7 @@ WebInspector.ApplicationCacheModel.prototype = {
         for (var i = 0; i < framesWithManifests.length; ++i)
             this._frameManifestUpdated(framesWithManifests[i].frameId, framesWithManifests[i].manifestURL, framesWithManifests[i].status);
     },
-    
+
     /**
      * @param {string} frameId
      * @param {string} manifestURL
@@ -121,25 +121,25 @@ WebInspector.ApplicationCacheModel.prototype = {
             this._frameManifestRemoved(frameId);
             return;
         }
-            
+
         if (!manifestURL)
             return;
-            
+
         if (this._manifestURLsByFrame[frameId] && manifestURL !== this._manifestURLsByFrame[frameId])
             this._frameManifestRemoved(frameId);
-        
+
         var statusChanged = this._statuses[frameId] !== status;
         this._statuses[frameId] = status;
-        
+
         if (!this._manifestURLsByFrame[frameId]) {
             this._manifestURLsByFrame[frameId] = manifestURL;
             this.dispatchEventToListeners(WebInspector.ApplicationCacheModel.EventTypes.FrameManifestAdded, frameId);
         }
-            
+
         if (statusChanged)
             this.dispatchEventToListeners(WebInspector.ApplicationCacheModel.EventTypes.FrameManifestStatusUpdated, frameId);
     },
-    
+
     /**
      * @param {string} frameId
      */
@@ -151,10 +151,10 @@ WebInspector.ApplicationCacheModel.prototype = {
         var manifestURL = this._manifestURLsByFrame[frameId];
         delete this._manifestURLsByFrame[frameId];
         delete this._statuses[frameId];
-        
+
         this.dispatchEventToListeners(WebInspector.ApplicationCacheModel.EventTypes.FrameManifestRemoved, frameId);
     },
-    
+
     /**
      * @param {string} frameId
      * @return {string}
@@ -163,7 +163,7 @@ WebInspector.ApplicationCacheModel.prototype = {
     {
         return this._manifestURLsByFrame[frameId] || "";
     },
-    
+
     /**
      * @param {string} frameId
      * @return {number}
@@ -172,7 +172,7 @@ WebInspector.ApplicationCacheModel.prototype = {
     {
         return this._statuses[frameId] || applicationCache.UNCACHED;
     },
-    
+
     /**
      * @return {boolean}
      */
@@ -180,7 +180,7 @@ WebInspector.ApplicationCacheModel.prototype = {
     {
         return this._onLine;
     },
-    
+
     /**
      * @param {string} frameId
      * @param {string} manifestURL
@@ -190,10 +190,10 @@ WebInspector.ApplicationCacheModel.prototype = {
     {
         this._frameManifestUpdated(frameId, manifestURL, status);
     },
-    
+
     /**
      * @param {string} frameId
-     * @param {function(Object)} callback
+     * @param {function(?Object)} callback
      */
     requestApplicationCache: function(frameId, callback)
     {
@@ -204,13 +204,13 @@ WebInspector.ApplicationCacheModel.prototype = {
                 callback(null);
                 return;
             }
-            
+
             callback(applicationCache);
         }
-        
+
         ApplicationCacheAgent.getApplicationCacheForFrame(frameId, callbackWrapper.bind(this));
     },
-    
+
     /**
      * @param {boolean} isNowOnline
      */
@@ -242,7 +242,7 @@ WebInspector.ApplicationCacheDispatcher.prototype = {
     {
         this._applicationCacheModel._statusUpdated(frameId, manifestURL, status);
     },
-    
+
     /**
      * @param {boolean} isNowOnline
      */
