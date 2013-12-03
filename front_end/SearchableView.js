@@ -478,6 +478,7 @@ WebInspector.SearchableView.prototype = {
             this._replaceCheckboxElement.tabIndex = 0;
             this._searchInputElement.focus();
         }
+        this.doResize();
     },
 
     _replace: function()
