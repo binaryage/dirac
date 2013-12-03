@@ -465,6 +465,59 @@ Object.defineProperty(Array.prototype, "sortRange", sortRange);
 Object.defineProperty(Uint32Array.prototype, "sortRange", sortRange);
 })();
 
+Object.defineProperty(Array.prototype, "stableSort",
+{
+    /**
+     * @param {function(T,T): number=} comparator
+     * @return {!Array.<T>}
+     * @this {Array.<T>}
+     * @template T
+     */
+    value: function(comparator)
+    {
+        function defaultComparator(a, b)
+        {
+            return a < b ? -1 : (a > b ? 1 : 0);
+        }
+        comparator = comparator || defaultComparator;
+
+        var indices = new Array(this.length);
+        for (var i = 0; i < this.length; ++i)
+            indices[i] = i;
+        var self = this;
+        /**
+         * @param {number} a
+         * @param {number} b
+         * @return {number}
+         */
+        function indexComparator(a, b)
+        {
+            var result = comparator(self[a], self[b]);
+            return result ? result : a - b;
+        }
+        indices.sort(indexComparator);
+
+        for (var i = 0; i < this.length; ++i) {
+            if (indices[i] < 0 || i === indices[i])
+                continue;
+            var cyclical = i;
+            var saved = this[i];
+            while (true) {
+                var next = indices[cyclical];
+                indices[cyclical] = -1;
+                if (next === i) {
+                    this[cyclical] = saved;
+                    break;
+                } else {
+                    this[cyclical] = this[next];
+                    cyclical = next;
+                }
+            }
+        }
+        return this;
+    }
+});
+
 Object.defineProperty(Array.prototype, "qselect",
 {
     /**
