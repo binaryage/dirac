@@ -446,7 +446,6 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     *
      * @param {Event} event
      */
     _onDragStart: function(event)

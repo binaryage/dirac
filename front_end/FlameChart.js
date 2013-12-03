@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -53,7 +53,7 @@ WebInspector.FlameChart = function(dataProvider)
 }
 
 WebInspector.FlameChart.prototype = {
-    /*
+    /**
      * @param {WebInspector.Event} event
      */
     _onWindowChanged: function(event)
@@ -70,7 +70,7 @@ WebInspector.FlameChart.prototype = {
         this._overviewPane._selectRange(timeLeft, timeRight);
     },
 
-    /*
+    /**
      * @param {WebInspector.Event} event
      */
     _onEntrySelected: function(event)
@@ -333,13 +333,13 @@ WebInspector.FlameChart.OverviewPaneInterface = function()
 }
 
 WebInspector.FlameChart.OverviewPaneInterface.prototype = {
-    /*
+    /**
      * @param {number} zoom
      * @param {number} referencePoint
      */
     zoom: function(zoom, referencePoint) { },
 
-    /*
+    /**
      * @param {number} windowLeft
      * @param {number} windowRight
      */
@@ -365,7 +365,7 @@ WebInspector.FlameChart.OverviewPane = function(dataProvider)
 }
 
 WebInspector.FlameChart.OverviewPane.prototype = {
-    /*
+    /**
      * @param {number} zoom
      * @param {number} referencePoint
      */
@@ -374,7 +374,7 @@ WebInspector.FlameChart.OverviewPane.prototype = {
         this._overviewGrid.zoom(zoom, referencePoint);
     },
 
-    /*
+    /**
      * @param {number} windowLeft
      * @param {number} windowRight
      */
@@ -429,7 +429,7 @@ WebInspector.FlameChart.OverviewPane.prototype = {
         );
     },
 
-    /*
+    /**
      * @param {!number} width
      * @param {!number} height
      */
@@ -542,7 +542,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         return this._dataProvider.timelineData(WebInspector.FlameChart._colorGenerator);
     },
 
-    /*
+    /**
      * @param {!number} windowLeft
      * @param {!number} windowRight
      */
@@ -555,8 +555,8 @@ WebInspector.FlameChart.MainPane.prototype = {
         this._scheduleUpdate();
     },
 
-    /*
-     * @param {WebInspector.Event} event
+    /**
+     * @param {MouseEvent} event
      */
     _startCanvasDragging: function(event)
     {
@@ -571,8 +571,8 @@ WebInspector.FlameChart.MainPane.prototype = {
         return true;
     },
 
-    /*
-     * @param {WebInspector.Event} event
+    /**
+     * @param {MouseEvent} event
      */
     _canvasDragging: function(event)
     {
@@ -597,8 +597,8 @@ WebInspector.FlameChart.MainPane.prototype = {
         this._isDragging = false;
     },
 
-    /*
-     * @param {WebInspector.Event} event
+    /**
+     * @param {MouseEvent} event
      */
     _onMouseMove: function(event)
     {
@@ -619,7 +619,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         this._scheduleUpdate();
     },
 
-    _onClick: function(e)
+    _onClick: function()
     {
         // onClick comes after dragStart and dragEnd events.
         // So if there was drag (mouse move) in the middle of that events
@@ -632,6 +632,9 @@ WebInspector.FlameChart.MainPane.prototype = {
         this.dispatchEventToListeners(WebInspector.FlameChart.Events.EntrySelected, data);
     },
 
+    /**
+     * @param {MouseEvent} e
+     */
     _onMouseWheel: function(e)
     {
         if (e.wheelDeltaY) {

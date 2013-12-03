@@ -29,14 +29,6 @@
  */
 
 // WebKit Web Facing API
-var console = {}
-/** @param {...*} vararg */
-console.warn = function(vararg) {}
-/** @param {...*} vararg */
-console.assert = function(vararg) {}
-/** @param {...*} vararg */
-console.error = function(vararg) {}
-console.trace = function() {}
 
 /** @type {boolean} */
 Event.prototype.isMetaOrCtrlForTest = false;
@@ -194,17 +186,6 @@ function DOMFileSystem() {}
  * @type {DirectoryEntry}
  */
 DOMFileSystem.prototype.root = null;
-
-// Drag and drop API
-/**
- * @constructor
- */
-function DataTransferItem() {}
-
-/**
- * @return {Entry}
- */
-DataTransferItem.prototype.webkitGetAsEntry = function() {}
 
 /** @type {Node} */
 Range.prototype.startContainer;

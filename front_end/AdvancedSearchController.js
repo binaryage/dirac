@@ -622,12 +622,14 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
      * @param {WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
      * @param {number} startMatchIndex
      * @param {TreeElement} showMoreMatchesElement
+     * @return {boolean}
      */
     _showMoreMatchesElementSelected: function(searchResult, startMatchIndex, showMoreMatchesElement)
     {
         var fileTreeElement = showMoreMatchesElement.parent;
         fileTreeElement.removeChild(showMoreMatchesElement);
         this._appendSearchMatches(fileTreeElement, searchResult, startMatchIndex, searchResult.searchMatches.length);
+        return false;
     },
 
     /**

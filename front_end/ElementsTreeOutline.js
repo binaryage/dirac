@@ -1192,6 +1192,9 @@ WebInspector.ElementsTreeElement.prototype = {
         this._node.getSubtree(-1, callback.bind(this));
     },
 
+    /**
+     * @override
+     */
     onexpand: function()
     {
         if (this._elementCloseTag)
@@ -1210,6 +1213,9 @@ WebInspector.ElementsTreeElement.prototype = {
         this.treeOutline.updateSelection();
     },
 
+    /**
+     * @override
+     */
     onreveal: function()
     {
         if (this.listItemElement) {
@@ -1221,6 +1227,9 @@ WebInspector.ElementsTreeElement.prototype = {
         }
     },
 
+    /**
+     * @override
+     */
     onselect: function(selectedByUser)
     {
         this.treeOutline.suppressRevealAndSelect = true;
@@ -1232,6 +1241,9 @@ WebInspector.ElementsTreeElement.prototype = {
         return true;
     },
 
+    /**
+     * @override
+     */
     ondelete: function()
     {
         var startTagTreeElement = this.treeOutline.findTreeElement(this._node);
@@ -1239,6 +1251,9 @@ WebInspector.ElementsTreeElement.prototype = {
         return true;
     },
 
+    /**
+     * @override
+     */
     onenter: function()
     {
         // On Enter or Return start editing the first attribute
@@ -1269,16 +1284,20 @@ WebInspector.ElementsTreeElement.prototype = {
             event.preventDefault();
     },
 
+    /**
+     * @override
+     */
     ondblclick: function(event)
     {
         if (this._editing || this._elementCloseTag)
-            return;
+            return false;
 
         if (this._startEditingTarget(event.target))
-            return;
+            return false;
 
         if (this.hasChildren && !this.expanded)
             this.expand();
+        return false;
     },
 
     _insertInLastAttributePosition: function(tag, node)

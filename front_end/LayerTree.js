@@ -207,9 +207,13 @@ WebInspector.LayerTreeElement.prototype = {
         this.title = title;
     },
 
+    /**
+     * @override
+     */
     onselect: function()
     {
         this._layerTree._selectedNodeChanged(this);
+        return false;
     },
 
     /**

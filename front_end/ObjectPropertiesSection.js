@@ -161,12 +161,19 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         return WebInspector.ObjectPropertyTreeElement.populate(this, this.property.value);
     },
 
+    /**
+     * @override
+     */
     ondblclick: function(event)
     {
         if (this.property.writable || this.property.setter)
             this.startEditing(event);
+        return false;
     },
 
+    /**
+     * @override
+     */
     onattach: function()
     {
         this.update();

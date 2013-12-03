@@ -123,12 +123,18 @@ WebInspector.FileSystemView.EntryTreeElement = function(fileSystemView, entry)
 }
 
 WebInspector.FileSystemView.EntryTreeElement.prototype = {
+    /**
+     * @override
+     */
     onattach: function()
     {
         var selection = this.listItemElement.createChild("div", "selection");
         this.listItemElement.insertBefore(selection, this.listItemElement.firstChild);
     },
 
+    /**
+     * @override
+     */
     onselect: function()
     {
         if (!this._view) {
@@ -141,8 +147,12 @@ WebInspector.FileSystemView.EntryTreeElement.prototype = {
         }
         this._fileSystemView.showView(this._view);
         this.refresh();
+        return false;
     },
 
+    /**
+     * @override
+     */
     onpopulate: function()
     {
         this.refresh();

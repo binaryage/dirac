@@ -289,13 +289,14 @@ WebInspector.CSSNamedFlowCollectionsView.prototype = {
 
     /**
      * @param {string} flowHash
+     * @return {boolean}
      */
     _selectNamedFlowTab: function(flowHash)
     {
         var flowContainer = this._namedFlows[flowHash];
 
         if (this._tabbedPane.selectedTabId === flowHash)
-            return;
+            return false;
 
         if (!this._tabbedPane.selectTab(flowHash)) {
             if (!flowContainer.flowView)
@@ -304,6 +305,7 @@ WebInspector.CSSNamedFlowCollectionsView.prototype = {
             this._tabbedPane.appendTab(flowHash, flowContainer.flow.name, flowContainer.flowView);
             this._tabbedPane.selectTab(flowHash);
         }
+        return false;
     },
 
     /**

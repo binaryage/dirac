@@ -318,7 +318,7 @@ WebInspector.TextPrompt.prototype = {
         if (this.isSuggestBoxVisible())
             result = this._suggestBox.acceptSuggestion();
         if (!result)
-            result = this.acceptSuggestion();
+            result = this._acceptSuggestionInternal();
 
         return result;
     },
@@ -519,7 +519,7 @@ WebInspector.TextPrompt.prototype = {
         }
 
         this.autoCompleteElement.textContent = this._commonPrefix.substring(this._userEnteredText.length);
-        this.acceptSuggestion(true)
+        this._acceptSuggestionInternal(true);
     },
 
     /**
@@ -569,9 +569,18 @@ WebInspector.TextPrompt.prototype = {
     },
 
     /**
-     * @param {boolean=} prefixAccepted
+     * @override
      */
-    acceptSuggestion: function(prefixAccepted)
+    acceptSuggestion: function()
+    {
+        this._acceptSuggestionInternal();
+    },
+
+    /**
+     * @param {boolean=} prefixAccepted
+     * @return {boolean}
+     */
+    _acceptSuggestionInternal: function(prefixAccepted)
     {
         if (this._isAcceptingSuggestion)
             return false;

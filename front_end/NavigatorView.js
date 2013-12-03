@@ -728,20 +728,27 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @override
      */
     ondblclick: function(event)
     {
         var middleClick = event.button === 1;
         this._navigatorView._sourceSelected(this.uiSourceCode, !middleClick);
+        return false;
     },
 
+    /**
+     * @override
+     */
     onenter: function()
     {
         this._navigatorView._sourceSelected(this.uiSourceCode, true);
         return true;
     },
 
+    /**
+     * @override
+     */
     ondelete: function()
     {
         this._navigatorView.sourceDeleted(this.uiSourceCode);

@@ -446,6 +446,7 @@ function TreeElement(title, representedObject, hasChildren)
     this._title = title;
     this.representedObject = (representedObject || {});
 
+    this.root = false;
     this._hidden = false;
     this._selectable = true;
     this.expanded = false;
@@ -820,7 +821,7 @@ TreeElement.prototype.select = function(omitFocus, selectedByUser)
 
     this.selected = true;
 
-    if(!omitFocus)
+    if (!omitFocus)
         this.treeOutline._childrenListNode.focus();
 
     // Focusing on another node may detach "this" from tree.
@@ -859,16 +860,41 @@ TreeElement.prototype.deselect = function(supressOnDeselect)
 
 // Overridden by subclasses.
 TreeElement.prototype.onpopulate = function() { }
-TreeElement.prototype.onenter = function() { }
-TreeElement.prototype.ondelete = function() { }
-TreeElement.prototype.onspace = function() { }
+
+/**
+ * @return {boolean}
+ */
+TreeElement.prototype.onenter = function() { return false; }
+
+/**
+ * @return {boolean}
+ */
+TreeElement.prototype.ondelete = function() { return false; }
+
+/**
+ * @return {boolean}
+ */
+TreeElement.prototype.onspace = function() { return false; }
+
 TreeElement.prototype.onattach = function() { }
+
 TreeElement.prototype.onexpand = function() { }
+
 TreeElement.prototype.oncollapse = function() { }
-TreeElement.prototype.ondblclick = function() { }
+
+/**
+ * @param {!MouseEvent} e
+ * @return {boolean}
+ */
+TreeElement.prototype.ondblclick = function(e) { return false; }
+
 TreeElement.prototype.onreveal = function() { }
-/** @param {boolean=} selectedByUser */
-TreeElement.prototype.onselect = function(selectedByUser) { }
+
+/**
+ * @param {boolean=} selectedByUser
+ * @return {boolean}
+ */
+TreeElement.prototype.onselect = function(selectedByUser) { return false; }
 
 /**
  * @param {boolean} skipUnrevealed

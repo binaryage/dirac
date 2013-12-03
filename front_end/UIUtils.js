@@ -31,9 +31,9 @@
 
 /**
  * @param {Element} element
- * @param {?function(Event): boolean} elementDragStart
- * @param {function(Event)} elementDrag
- * @param {?function(Event)} elementDragEnd
+ * @param {?function(MouseEvent): boolean} elementDragStart
+ * @param {function(MouseEvent)} elementDrag
+ * @param {?function(MouseEvent)} elementDragEnd
  * @param {string} cursor
  */
 WebInspector.installDragHandle = function(element, elementDragStart, elementDrag, elementDragEnd, cursor)
@@ -42,9 +42,9 @@ WebInspector.installDragHandle = function(element, elementDragStart, elementDrag
 }
 
 /**
- * @param {?function(Event)} elementDragStart
- * @param {function(Event)} elementDrag
- * @param {?function(Event)} elementDragEnd
+ * @param {?function(MouseEvent):boolean} elementDragStart
+ * @param {function(MouseEvent)} elementDrag
+ * @param {?function(MouseEvent)} elementDragEnd
  * @param {string} cursor
  * @param {Event} event
  */
@@ -57,7 +57,7 @@ WebInspector._elementDragStart = function(elementDragStart, elementDrag, element
     if (WebInspector._elementDraggingEventListener)
         return;
 
-    if (elementDragStart && !elementDragStart(event))
+    if (elementDragStart && !elementDragStart(/** @type {MouseEvent} */ (event)))
         return;
 
     if (WebInspector._elementDraggingGlassPane) {
@@ -94,12 +94,18 @@ WebInspector._unregisterMouseOutWhileDragging = function()
     delete WebInspector._mouseOutWhileDraggingTargetDocument;
 }
 
+/**
+ * @param {Event} event
+ */
 WebInspector._elementDragMove = function(event)
 {
-    if (WebInspector._elementDraggingEventListener(event))
+    if (WebInspector._elementDraggingEventListener(/** @type {MouseEvent} */ (event)))
         WebInspector._cancelDragEvents(event);
 }
 
+/**
+ * @param {Event} event
+ */
 WebInspector._cancelDragEvents = function(event)
 {
     var targetDocument = event.target.ownerDocument;
@@ -117,15 +123,18 @@ WebInspector._cancelDragEvents = function(event)
     delete WebInspector._elementEndDraggingEventListener;
 }
 
+/**
+ * @param {Event} event
+ */
 WebInspector._elementDragEnd = function(event)
 {
     var elementDragEnd = WebInspector._elementEndDraggingEventListener;
 
-    WebInspector._cancelDragEvents(event);
+    WebInspector._cancelDragEvents(/** @type {MouseEvent} */ (event));
 
     event.preventDefault();
     if (elementDragEnd)
-        elementDragEnd(event);
+        elementDragEnd(/** @type {MouseEvent} */ (event));
 }
 
 /**
