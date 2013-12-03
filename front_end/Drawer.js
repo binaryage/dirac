@@ -59,6 +59,8 @@ WebInspector.Drawer = function(inspectorView)
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     WebInspector.installDragHandle(this._tabbedPane.headerElement(), this._startStatusBarDragging.bind(this), this._statusBarDragging.bind(this), this._endStatusBarDragging.bind(this), "row-resize");
     this._tabbedPane.element.createChild("div", "drawer-resizer");
+    this._showDrawerOnLoadSetting = WebInspector.settings.createSetting("WebInspector.Drawer.showOnLoad", false);
+    this._lastSelectedViewSetting = WebInspector.settings.createSetting("WebInspector.Drawer.lastSelectedView", "console");
 }
 
 WebInspector.Drawer.prototype = {
@@ -178,6 +180,12 @@ WebInspector.Drawer.prototype = {
         this.showView(this._tabbedPane.selectedTabId, immediately);
     },
 
+    showOnLoadIfNecessary: function()
+    {
+        if (this._showDrawerOnLoadSetting.get())
+            this.showView(this._lastSelectedViewSetting.get(), true);
+    },
+
     /**
      * @param {boolean=} immediately
      */
@@ -187,6 +195,7 @@ WebInspector.Drawer.prototype = {
 
         if (this._toggleDrawerButton.toggled)
             return;
+        this._showDrawerOnLoadSetting.set(true);
         this._toggleDrawerButton.toggled = true;
         this._toggleDrawerButton.title = WebInspector.UIString("Hide drawer.");
 
@@ -229,6 +238,7 @@ WebInspector.Drawer.prototype = {
 
         if (!this._toggleDrawerButton.toggled)
             return;
+        this._showDrawerOnLoadSetting.set(false);
         this._toggleDrawerButton.toggled = false;
         this._toggleDrawerButton.title = WebInspector.UIString("Show console.");
 
@@ -343,6 +353,7 @@ WebInspector.Drawer.prototype = {
     _tabSelected: function()
     {
         var tabId = this._tabbedPane.selectedTabId;
+        this._lastSelectedViewSetting.set(tabId);
         if (this._viewFactories[tabId])
             this._tabbedPane.changeTabView(tabId, this._viewFactories[tabId].createView(tabId));
     },

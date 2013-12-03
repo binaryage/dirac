@@ -144,6 +144,7 @@ WebInspector.InspectorView.prototype = {
     {
         this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
         this._tabSelected();
+        this._drawer.showOnLoadIfNecessary();
     },
 
     _tabSelected: function()
