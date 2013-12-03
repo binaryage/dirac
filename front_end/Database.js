@@ -80,7 +80,7 @@ WebInspector.Database.prototype = {
     },
 
     /**
-     * @param {function(Array.<string>)} callback
+     * @param {function(!Array.<string>)} callback
      */
     getTableNames: function(callback)
     {
@@ -94,15 +94,15 @@ WebInspector.Database.prototype = {
 
     /**
      * @param {string} query
-     * @param {function(Array.<string>=, Array.<*>=)} onSuccess
+     * @param {function(!Array.<string>=, !Array.<*>=)} onSuccess
      * @param {function(string)} onError
      */
     executeSql: function(query, onSuccess, onError)
     {
         /**
          * @param {?Protocol.Error} error
-         * @param {Array.<string>=} columnNames
-         * @param {Array.<*>=} values
+         * @param {!Array.<string>=} columnNames
+         * @param {!Array.<*>=} values
          * @param {DatabaseAgent.Error=} errorObj
          */
         function callback(error, columnNames, values, errorObj)
@@ -145,7 +145,7 @@ WebInspector.DatabaseModel.Events = {
 
 WebInspector.DatabaseModel.prototype = {
     /**
-     * @return {Array.<WebInspector.Database>}
+     * @return {!Array.<WebInspector.Database>}
      */
     databases: function()
     {

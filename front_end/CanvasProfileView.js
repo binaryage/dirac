@@ -123,7 +123,7 @@ WebInspector.CanvasProfileView.prototype = {
 
     /**
      * @override
-     * @return {Array.<Element>}
+     * @return {!Array.<Element>}
      */
     elementsToRestoreScrollPositionsFor: function()
     {

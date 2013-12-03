@@ -45,7 +45,7 @@ WebInspector.DOMCountersGraph = function(timelinePanel, model)
  * @param {WebInspector.DOMCountersGraph} memoryCountersPane
  * @param {string} title
  * @param {string} currentValueLabel
- * @param {Array.<number>} rgb
+ * @param {!Array.<number>} rgb
  * @param {function(WebInspector.DOMCountersGraph.Counter):number} valueGetter
  */
 WebInspector.DOMCounterUI = function(memoryCountersPane, title, currentValueLabel, rgb, valueGetter)
@@ -154,7 +154,7 @@ WebInspector.DOMCountersGraph.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.DOMCounterUI>}
+     * @return {!Array.<WebInspector.DOMCounterUI>}
      */
     _createCounterUIList: function()
     {

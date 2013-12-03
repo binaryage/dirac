@@ -148,8 +148,8 @@ WebInspector.CSSNamedFlowView.prototype = {
     },
 
     /**
-     * @param {Array.<DOMAgent.NodeId>} oldContent
-     * @param {Array.<DOMAgent.NodeId>} newContent
+     * @param {!Array.<DOMAgent.NodeId>} oldContent
+     * @param {!Array.<DOMAgent.NodeId>} newContent
      */
     _mergeContentNodes: function(oldContent, newContent)
     {
@@ -161,7 +161,7 @@ WebInspector.CSSNamedFlowView.prototype = {
         var newContentIndex = 0;
         var contentTreeChildIndex = 0;
 
-        while(oldContentIndex < oldContent.length || newContentIndex < newContent.length) {
+        while (oldContentIndex < oldContent.length || newContentIndex < newContent.length) {
             if (oldContentIndex === oldContent.length) {
                 this._insertContentNode(newContent[newContentIndex]);
                 ++newContentIndex;
@@ -194,8 +194,8 @@ WebInspector.CSSNamedFlowView.prototype = {
     },
 
     /**
-     * @param {Array.<CSSAgent.Region>} oldRegions
-     * @param {Array.<CSSAgent.Region>} newRegions
+     * @param {!Array.<CSSAgent.Region>} oldRegions
+     * @param {!Array.<CSSAgent.Region>} newRegions
      */
     _mergeRegions: function(oldRegions, newRegions)
     {
@@ -207,7 +207,7 @@ WebInspector.CSSNamedFlowView.prototype = {
         var newRegionsIndex = 0;
         var regionsTreeChildIndex = 0;
 
-        while(oldRegionsIndex < oldRegions.length || newRegionsIndex < newRegions.length) {
+        while (oldRegionsIndex < oldRegions.length || newRegionsIndex < newRegions.length) {
             if (oldRegionsIndex === oldRegions.length) {
                 this._insertRegion(newRegions[newRegionsIndex]);
                 ++newRegionsIndex;

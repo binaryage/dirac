@@ -672,7 +672,7 @@ TestSuite.prototype.testPageOverlayUpdate = function()
 
 /**
  * Records timeline till console.timeStamp("ready"), invokes callback with resulting records.
- * @param {function(Array.<Object>)} callback
+ * @param {function(!Array.<Object>)} callback
  */
 TestSuite.prototype.recordTimeline = function(callback)
 {
@@ -782,7 +782,7 @@ TestSuite.prototype.checkLogAndErrorMessages = function()
 
 /**
  * Serializes array of uiSourceCodes to string.
- * @param {Array.<WebInspectorUISourceCode>} uiSourceCodes
+ * @param {!Array.<WebInspectorUISourceCode>} uiSourceCodes
  * @return {string}
  */
 TestSuite.prototype.uiSourceCodesToString_ = function(uiSourceCodes)
@@ -796,7 +796,7 @@ TestSuite.prototype.uiSourceCodesToString_ = function(uiSourceCodes)
 
 /**
  * Returns all loaded non anonymous uiSourceCodes.
- * @return {Array.<WebInspectorUISourceCode>}
+ * @return {!Array.<WebInspectorUISourceCode>}
  */
 TestSuite.prototype.nonAnonymousUISourceCodes_ = function()
 {
@@ -839,7 +839,7 @@ TestSuite.prototype.evaluateInConsole_ = function(code, callback)
 /**
  * Checks that all expected scripts are present in the scripts list
  * in the Scripts panel.
- * @param {Array.<string>} expected Regular expressions describing
+ * @param {!Array.<string>} expected Regular expressions describing
  *     expected script names.
  * @return {boolean} Whether all the scripts are in "scripts-files" select
  *     box

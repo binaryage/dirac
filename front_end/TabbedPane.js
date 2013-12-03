@@ -162,7 +162,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
      /**
-      * @param {Array.<string>} ids
+      * @param {!Array.<string>} ids
       * @param {boolean=} userGesture
       */
      closeTabs: function(ids, userGesture)
@@ -210,7 +210,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     allTabs: function()
     {
@@ -223,7 +223,7 @@ WebInspector.TabbedPane.prototype = {
 
     /**
      * @param {string} id
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     otherTabs: function(id)
     {
@@ -264,7 +264,7 @@ WebInspector.TabbedPane.prototype = {
 
     /**
      * @param {number} tabsCount
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     lastOpenedTabIds: function(tabsCount)
     {
@@ -520,7 +520,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @param {Array.<number>} measuredWidths
+     * @param {!Array.<number>} measuredWidths
      * @param {number} totalWidth
      */
     _calculateMaxWidth: function(measuredWidths, totalWidth)
@@ -550,11 +550,11 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @param {Array.<WebInspector.TabbedPaneTab>} tabsOrdered
-     * @param {Array.<WebInspector.TabbedPaneTab>} tabsHistory
+     * @param {!Array.<WebInspector.TabbedPaneTab>} tabsOrdered
+     * @param {!Array.<WebInspector.TabbedPaneTab>} tabsHistory
      * @param {number} totalWidth
      * @param {number} measuredDropDownButtonWidth
-     * @return {Array.<number>}
+     * @return {!Array.<number>}
      */
     _tabsToShowIndexes: function(tabsOrdered, tabsHistory, totalWidth, measuredDropDownButtonWidth)
     {
@@ -623,7 +623,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @return {Array.<Element>}
+     * @return {!Array.<Element>}
      */
     elementsToRestoreScrollPositionsFor: function()
     {
@@ -874,7 +874,7 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @param {Array.<string>} ids
+     * @param {!Array.<string>} ids
      */
     _closeTabs: function(ids)
     {
@@ -985,7 +985,7 @@ WebInspector.TabbedPaneTabDelegate = function()
 WebInspector.TabbedPaneTabDelegate.prototype = {
     /**
      * @param {WebInspector.TabbedPane} tabbedPane
-     * @param {Array.<string>} ids
+     * @param {!Array.<string>} ids
      */
     closeTabs: function(tabbedPane, ids) { }
 }

@@ -505,7 +505,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.Cookie>}
+     * @return {!Array.<WebInspector.Cookie>}
      */
     get requestCookies()
     {
@@ -615,7 +615,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.Cookie>}
+     * @return {!Array.<WebInspector.Cookie>}
      */
     get responseCookies()
     {
@@ -777,7 +777,7 @@ WebInspector.NetworkRequest.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {

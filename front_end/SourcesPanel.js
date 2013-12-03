@@ -268,7 +268,7 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @param {Array.<WebInspector.UISourceCode>} uiSourceCodes
+     * @param {!Array.<WebInspector.UISourceCode>} uiSourceCodes
      */
     _removeUISourceCodes: function(uiSourceCodes)
     {

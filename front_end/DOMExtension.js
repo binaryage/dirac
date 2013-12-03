@@ -584,7 +584,7 @@ function consumeEvent(e)
  * Mutation observers leak memory. Keep track of them and disconnect
  * on unload.
  * @constructor
- * @param {function(Array.<WebKitMutation>)} handler
+ * @param {function(!Array.<WebKitMutation>)} handler
  */
 function NonLeakingMutationObserver(handler)
 {

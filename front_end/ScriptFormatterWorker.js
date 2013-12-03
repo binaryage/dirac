@@ -158,7 +158,7 @@ FormatterWorker.outline = function(params)
 
 /**
  * @param {string} content
- * @param {{original: Array.<number>, formatted: Array.<number>}} mapping
+ * @param {{original: !Array.<number>, formatted: !Array.<number>}} mapping
  * @param {number} offset
  * @param {number} formattedOffset
  * @param {string} indentString
@@ -181,7 +181,7 @@ FormatterWorker._formatScript = function(content, mapping, offset, formattedOffs
 
 /**
  * @param {string} content
- * @param {{original: Array.<number>, formatted: Array.<number>}} mapping
+ * @param {{original: !Array.<number>, formatted: !Array.<number>}} mapping
  * @param {number} offset
  * @param {number} formattedOffset
  * @param {string} indentString
@@ -293,7 +293,7 @@ FormatterWorker.HTMLFormatter.prototype = {
     },
 
     /**
-     * @param {function(string, {formatted: Array.<number>, original: Array.<number>}, number, number, string)} formatFunction
+     * @param {function(string, {formatted: !Array.<number>, original: !Array.<number>}, number, number, string)} formatFunction
      * @param {number} cursor
      */
     _handleSubFormatterEnd: function(formatFunction, cursor)

@@ -106,7 +106,7 @@ WebInspector.SidebarView.prototype = {
     },
 
     /**
-     * @return {Array.<Element>}
+     * @return {!Array.<Element>}
      */
     elementsToRestoreScrollPositionsFor: function()
     {

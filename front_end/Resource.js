@@ -139,7 +139,7 @@ WebInspector.Resource.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.ConsoleMessage>}
+     * @return {!Array.<WebInspector.ConsoleMessage>}
      */
     get messages()
     {
@@ -250,13 +250,13 @@ WebInspector.Resource.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {
         /**
          * @param {?Protocol.Error} error
-         * @param {Array.<PageAgent.SearchMatch>} searchMatches
+         * @param {!Array.<PageAgent.SearchMatch>} searchMatches
          */
         function callbackWrapper(error, searchMatches)
         {

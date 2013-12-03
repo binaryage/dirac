@@ -111,7 +111,7 @@ WebInspector.TabbedEditorContainer.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.UISourceCode>}
+     * @return {!Array.<WebInspector.UISourceCode>}
      */
     historyUISourceCodes: function()
     {
@@ -219,7 +219,7 @@ WebInspector.TabbedEditorContainer.prototype = {
     },
 
     /**
-     * @param {Array.<string>} ids
+     * @param {!Array.<string>} ids
      */
     _closeTabs: function(ids)
     {
@@ -283,7 +283,7 @@ WebInspector.TabbedEditorContainer.prototype = {
     },
 
     /**
-     * @param {Array.<WebInspector.UISourceCode>} uiSourceCodes
+     * @param {!Array.<WebInspector.UISourceCode>} uiSourceCodes
      */
     removeUISourceCodes: function(uiSourceCodes)
     {
@@ -542,7 +542,7 @@ WebInspector.TabbedEditorContainer.HistoryItem.prototype = {
 
 /**
  * @constructor
- * @param {Array.<WebInspector.TabbedEditorContainer.HistoryItem>} items
+ * @param {!Array.<WebInspector.TabbedEditorContainer.HistoryItem>} items
  */
 WebInspector.TabbedEditorContainer.History = function(items)
 {
@@ -631,7 +631,7 @@ WebInspector.TabbedEditorContainer.History.prototype = {
     },
 
     /**
-     * @param {Array.<string>} urls
+     * @param {!Array.<string>} urls
      */
     update: function(urls)
     {
@@ -686,7 +686,7 @@ WebInspector.TabbedEditorContainer.History.prototype = {
 
 
     /**
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     _urls: function()
     {
@@ -712,7 +712,7 @@ WebInspector.EditorContainerTabDelegate = function(editorContainer)
 WebInspector.EditorContainerTabDelegate.prototype = {
     /**
      * @param {WebInspector.TabbedPane} tabbedPane
-     * @param {Array.<string>} ids
+     * @param {!Array.<string>} ids
      */
     closeTabs: function(tabbedPane, ids)
     {

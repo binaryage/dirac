@@ -610,7 +610,7 @@ Object.defineProperty(Array.prototype, "peekLast",
 
 /**
  * @param {T} object
- * @param {Array.<S>} list
+ * @param {!Array.<S>} list
  * @param {function(T,S):number=} comparator
  * @param {boolean=} insertionIndexAfter
  * @return {number}
@@ -724,7 +724,7 @@ String.standardFormatters = {
 
 /**
  * @param {string} format
- * @param {Array.<*>} substitutions
+ * @param {!Array.<*>} substitutions
  * @return {string}
  */
 String.vsprintf = function(format, substitutions)

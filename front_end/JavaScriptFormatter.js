@@ -740,7 +740,7 @@ FormatterWorker.JavaScriptFormatter.prototype = {
 /**
  * @constructor
  * @param {string} content
- * @param {{original: Array.<number>, formatted: Array.<number>}} mapping
+ * @param {{original: !Array.<number>, formatted: !Array.<number>}} mapping
  * @param {number} originalOffset
  * @param {number} formattedOffset
  * @param {string} indentString
@@ -766,7 +766,7 @@ FormatterWorker.JavaScriptFormattedContentBuilder = function(content, mapping, o
 
 FormatterWorker.JavaScriptFormattedContentBuilder.prototype = {
     /**
-     * @param {{comments_before: Array.<string>, line: number, pos: number, endLine: number, nlb: boolean}} token
+     * @param {{comments_before: !Array.<string>, line: number, pos: number, endLine: number, nlb: boolean}} token
      */
     addToken: function(token)
     {

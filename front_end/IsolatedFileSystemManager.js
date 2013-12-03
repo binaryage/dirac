@@ -36,7 +36,7 @@ WebInspector.IsolatedFileSystemManager = function()
 {
     /** @type {!Object.<string, WebInspector.IsolatedFileSystem>} */
     this._fileSystems = {};
-    /** @type {Object.<string, Array.<function(DOMFileSystem)>>} */
+    /** @type {Object.<string, !Array.<function(DOMFileSystem)>>} */
     this._pendingFileSystemRequests = {};
     this._fileSystemMapping = new WebInspector.FileSystemMapping();
 
@@ -89,7 +89,7 @@ WebInspector.IsolatedFileSystemManager.prototype = {
     },
 
     /**
-     * @param {Array.<WebInspector.IsolatedFileSystemManager.FileSystem>} fileSystems
+     * @param {!Array.<WebInspector.IsolatedFileSystemManager.FileSystem>} fileSystems
      */
     _fileSystemsLoaded: function(fileSystems)
     {
@@ -122,7 +122,7 @@ WebInspector.IsolatedFileSystemManager.prototype = {
     },
 
     /**
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     _fileSystemPaths: function()
     {
@@ -214,7 +214,7 @@ WebInspector.IsolatedFileSystemDispatcher = function(IsolatedFileSystemManager)
 
 WebInspector.IsolatedFileSystemDispatcher.prototype = {
     /**
-     * @param {Array.<WebInspector.IsolatedFileSystemManager.FileSystem>} fileSystems
+     * @param {!Array.<WebInspector.IsolatedFileSystemManager.FileSystem>} fileSystems
      */
     fileSystemsLoaded: function(fileSystems)
     {

@@ -73,9 +73,9 @@ WebInspector.FileSystemMapping = function()
         defaultExcludedFolders = defaultExcludedFolders.concat(defaultLinuxExcludedFolders);
     var defaultExcludedFoldersPattern = defaultExcludedFolders.join("|");
     WebInspector.settings.workspaceFolderExcludePattern = WebInspector.settings.createSetting("workspaceFolderExcludePattern", defaultExcludedFoldersPattern);
-    /** @type {!Object.<string, Array.<WebInspector.FileSystemMapping.Entry>>} */
+    /** @type {!Object.<string, !Array.<WebInspector.FileSystemMapping.Entry>>} */
     this._fileSystemMappings = {};
-    /** @type {!Object.<string, Array.<WebInspector.FileSystemMapping.ExcludedFolderEntry>>} */
+    /** @type {!Object.<string, !Array.<WebInspector.FileSystemMapping.ExcludedFolderEntry>>} */
     this._excludedFolders = {};
     this._loadFromSettings();
 }
@@ -239,7 +239,7 @@ WebInspector.FileSystemMapping.prototype = {
     },
 
     /**
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     fileSystemPaths: function()
     {
@@ -334,7 +334,7 @@ WebInspector.FileSystemMapping.prototype = {
 
     /**
      * @param {string} fileSystemPath
-     * @return {Array.<WebInspector.FileSystemMapping.ExcludedFolderEntry>}
+     * @return {!Array.<WebInspector.FileSystemMapping.ExcludedFolderEntry>}
      */
     excludedFolders: function(fileSystemPath)
     {
@@ -344,7 +344,7 @@ WebInspector.FileSystemMapping.prototype = {
 
     /**
      * @param {string} fileSystemPath
-     * @return {Array.<WebInspector.FileSystemMapping.Entry>}
+     * @return {!Array.<WebInspector.FileSystemMapping.Entry>}
      */
     mappingEntries: function(fileSystemPath)
     {

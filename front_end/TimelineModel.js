@@ -380,7 +380,7 @@ WebInspector.TimelineModelLoader.prototype = {
 
         var items;
         try {
-            items = /** @type {Array} */ (JSON.parse(json));
+            items = /** @type {!Array.<TimelineAgent.TimelineEvent>} */ (JSON.parse(json));
         } catch (e) {
             WebInspector.showErrorMessage("Malformed timeline data.");
             this._model.reset();
@@ -477,7 +477,7 @@ WebInspector.TimelineSaver = function(stream)
 
 WebInspector.TimelineSaver.prototype = {
     /**
-     * @param {Array} records
+     * @param {!Array.<*>} records
      * @param {string} version
      */
     save: function(records, version)

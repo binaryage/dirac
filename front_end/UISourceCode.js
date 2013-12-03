@@ -621,7 +621,7 @@ WebInspector.UISourceCode.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {
@@ -710,7 +710,7 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.PresentationConsoleMessage>}
+     * @return {!Array.<WebInspector.PresentationConsoleMessage>}
      */
     consoleMessages: function()
     {
@@ -1064,7 +1064,7 @@ WebInspector.Revision.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {

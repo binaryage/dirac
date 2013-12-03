@@ -58,7 +58,7 @@ WebInspector.SnippetStorage.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.Snippet>}
+     * @return {!Array.<WebInspector.Snippet>}
      */
     snippets: function()
     {

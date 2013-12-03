@@ -374,7 +374,7 @@ WebInspector.NamedBitSetFilterUI.prototype = {
  * @constructor
  * @implements {WebInspector.FilterUI}
  * @extends {WebInspector.Object}
- * @param {Array.<{value: *, label: string, title: string}>} options
+ * @param {!Array.<{value: *, label: string, title: string}>} options
  */
 WebInspector.ComboBoxFilterUI = function(options)
 {

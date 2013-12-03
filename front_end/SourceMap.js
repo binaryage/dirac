@@ -107,7 +107,7 @@ WebInspector.SourceMap.prototype = {
     },
 
    /**
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     sources: function()
     {
@@ -148,7 +148,7 @@ WebInspector.SourceMap.prototype = {
     },
 
     /**
-     * @param {Array.<SourceMapV3.Section>} sections
+     * @param {!Array.<SourceMapV3.Section>} sections
      */
     _parseSections: function(sections)
     {
@@ -161,7 +161,7 @@ WebInspector.SourceMap.prototype = {
     /**
      * @param {number} lineNumber in compiled resource
      * @param {number} columnNumber in compiled resource
-     * @return {?Array}
+     * @return {?Array.<*>}
      */
     findEntry: function(lineNumber, columnNumber)
     {
@@ -187,7 +187,7 @@ WebInspector.SourceMap.prototype = {
     /**
      * @param {string} sourceURL of the originating resource
      * @param {number} lineNumber in the originating resource
-     * @return {Array}
+     * @return {!Array.<*>}
      */
     findEntryReversed: function(sourceURL, lineNumber)
     {

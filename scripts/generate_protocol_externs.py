@@ -35,7 +35,7 @@ type_traits = {
     "integer": "number",
     "number": "number",
     "boolean": "boolean",
-    "array": "Array.<*>",
+    "array": "!Array.<*>",
     "object": "Object",
 }
 
@@ -69,7 +69,7 @@ def param_type(domain_name, param):
     if "type" in param:
         if param["type"] == "array":
             items = param["items"]
-            return "Array.<%s>" % param_type(domain_name, items)
+            return "!Array.<%s>" % param_type(domain_name, items)
         else:
             return type_traits[param["type"]]
     if "$ref" in param:
@@ -132,7 +132,7 @@ Protocol.Error;
                     suffix = ""
                     if ("optional" in property):
                         suffix = "|undefined"
-                    output_file.write("\n/** @typedef {Array.<%s>%s} */\n%sAgent.%s;\n" % (param_type(domain_name, type["items"]), suffix, domain_name, type["id"]))
+                    output_file.write("\n/** @typedef {!Array.<%s>%s} */\n%sAgent.%s;\n" % (param_type(domain_name, type["items"]), suffix, domain_name, type["id"]))
                 else:
                     output_file.write("\n/** @typedef {%s} */\n%sAgent.%s;\n" % (type_traits[type["type"]], domain_name, type["id"]))
 

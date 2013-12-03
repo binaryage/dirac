@@ -196,7 +196,7 @@ WebInspector.CanvasReplayStateView.prototype = {
     },
 
     /**
-     * @param {Array.<!CanvasAgent.ResourceStateDescriptor>|undefined} descriptors
+     * @param {!Array.<!CanvasAgent.ResourceStateDescriptor>|undefined} descriptors
      * @param {!Array.<!CanvasAgent.CallArgument>} output
      */
     _collectResourceFromResourceStateDescriptors: function(descriptors, output)
@@ -347,7 +347,7 @@ WebInspector.CanvasReplayStateView.prototype = {
             return String.naturalOrderComparator(d1.name, d2.name);
         }
         /**
-         * @param {Array.<!CanvasAgent.ResourceStateDescriptor>|undefined} descriptors
+         * @param {!Array.<!CanvasAgent.ResourceStateDescriptor>|undefined} descriptors
          * @param {!WebInspector.DataGridNode} parent
          * @param {Object=} nameToOldChildren
          */

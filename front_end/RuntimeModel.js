@@ -65,7 +65,7 @@ WebInspector.RuntimeModel.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.FrameExecutionContextList>}
+     * @return {!Array.<WebInspector.FrameExecutionContextList>}
      */
     contextLists: function()
     {
@@ -279,7 +279,7 @@ WebInspector.RuntimeModel.prototype = {
      * @param {boolean} bracketNotation
      * @param {string} expressionString
      * @param {string} prefix
-     * @param {Array.<string>} properties
+     * @param {!Array.<string>} properties
      */
     _reportCompletions: function(completionsReadyCallback, dotNotation, bracketNotation, expressionString, prefix, properties) {
         if (bracketNotation) {

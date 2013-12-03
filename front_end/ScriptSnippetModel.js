@@ -325,7 +325,7 @@ WebInspector.ScriptSnippetModel.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @return {Array.<Object>}
+     * @return {!Array.<Object>}
      */
     _removeBreakpoints: function(uiSourceCode)
     {
@@ -337,7 +337,7 @@ WebInspector.ScriptSnippetModel.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @param {Array.<Object>} breakpointLocations
+     * @param {!Array.<Object>} breakpointLocations
      */
     _restoreBreakpoints: function(uiSourceCode, breakpointLocations)
     {
@@ -571,7 +571,7 @@ WebInspector.SnippetContentProvider.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {

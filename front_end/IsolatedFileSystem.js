@@ -120,7 +120,7 @@ WebInspector.IsolatedFileSystem.prototype = {
         }
 
         /**
-         * @param {Array.<FileEntry>} entries
+         * @param {!Array.<FileEntry>} entries
          */
         function innerCallback(entries)
         {
@@ -472,7 +472,7 @@ WebInspector.IsolatedFileSystem.prototype = {
 
     /**
      * @param {DirectoryEntry} dirEntry
-     * @param {function(Array.<FileEntry>)} callback
+     * @param {function(!Array.<FileEntry>)} callback
      */
     _readDirectory: function(dirEntry, callback)
     {
@@ -507,7 +507,7 @@ WebInspector.IsolatedFileSystem.prototype = {
     /**
      * @param {DOMFileSystem} domFileSystem
      * @param {string} path
-     * @param {function(Array.<FileEntry>)} callback
+     * @param {function(!Array.<FileEntry>)} callback
      */
     _requestEntries: function(domFileSystem, path, callback)
     {

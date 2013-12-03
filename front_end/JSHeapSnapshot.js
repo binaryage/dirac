@@ -550,7 +550,7 @@ WebInspector.JSHeapSnapshotNode.prototype = {
  * @constructor
  * @extends {WebInspector.HeapSnapshotEdge}
  * @param {WebInspector.JSHeapSnapshot} snapshot
- * @param {Array.<number>} edges
+ * @param {!Array.<number>} edges
  * @param {number=} edgeIndex
  */
 WebInspector.JSHeapSnapshotEdge = function(snapshot, edges, edgeIndex)

@@ -151,7 +151,7 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     securityOrigins: function()
     {
@@ -305,7 +305,7 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.ResourceTreeFrame>}
+     * @return {!Array.<WebInspector.ResourceTreeFrame>}
      */
     frames: function() 
     {

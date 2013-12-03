@@ -108,14 +108,14 @@ WebInspector.Script.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(Array.<PageAgent.SearchMatch>)} callback
+     * @param {function(!Array.<PageAgent.SearchMatch>)} callback
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {
         /**
          * @this {WebInspector.Script}
          * @param {?Protocol.Error} error
-         * @param {Array.<PageAgent.SearchMatch>} searchMatches
+         * @param {!Array.<PageAgent.SearchMatch>} searchMatches
          */
         function innerCallback(error, searchMatches)
         {
@@ -138,7 +138,7 @@ WebInspector.Script.prototype = {
 
     /**
      * @param {string} newSource
-     * @param {function(?Protocol.Error, DebuggerAgent.SetScriptSourceError=, Array.<DebuggerAgent.CallFrame>=, boolean=)} callback
+     * @param {function(?Protocol.Error, DebuggerAgent.SetScriptSourceError=, !Array.<DebuggerAgent.CallFrame>=, boolean=)} callback
      */
     editSource: function(newSource, callback)
     {
@@ -146,7 +146,7 @@ WebInspector.Script.prototype = {
          * @this {WebInspector.Script}
          * @param {?Protocol.Error} error
          * @param {DebuggerAgent.SetScriptSourceError=} errorData
-         * @param {Array.<DebuggerAgent.CallFrame>=} callFrames
+         * @param {!Array.<DebuggerAgent.CallFrame>=} callFrames
          * @param {Object=} debugData
          */
         function didEditScriptSource(error, errorData, callFrames, debugData)

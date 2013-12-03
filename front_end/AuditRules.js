@@ -339,7 +339,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
         var self = this;
 
         /**
-         * @param {Array.<WebInspector.CSSStyleSheet>} styleSheets
+         * @param {!Array.<WebInspector.CSSStyleSheet>} styleSheets
          */
         function evalCallback(styleSheets) {
             if (progress.isCanceled())
@@ -364,7 +364,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
             var foundSelectors = {};
 
             /**
-             * @param {Array.<WebInspector.CSSStyleSheet>} styleSheets
+             * @param {!Array.<WebInspector.CSSStyleSheet>} styleSheets
              */
             function selectorsCallback(styleSheets)
             {
@@ -428,7 +428,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
             }
 
             /**
-             * @param {Array.<string>} selectors
+             * @param {!Array.<string>} selectors
              * @param {WebInspector.DOMDocument} document
              */
             function documentLoaded(selectors, document) {
@@ -449,9 +449,9 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
         }
 
         /**
-         * @param {Array.<WebInspector.CSSStyleSheet>} styleSheets
+         * @param {!Array.<WebInspector.CSSStyleSheet>} styleSheets
          * @param {string} sourceURL
-         * @param {?function(Array.<WebInspector.CSSStyleSheet>)} continuation
+         * @param {?function(!Array.<WebInspector.CSSStyleSheet>)} continuation
          * @param {WebInspector.CSSStyleSheet} styleSheet
          */
         function styleSheetCallback(styleSheets, sourceURL, continuation, styleSheet)
@@ -469,7 +469,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
 
         /**
          * @param {?Protocol.Error} error
-         * @param {Array.<CSSAgent.CSSStyleSheetHeader>} styleSheetInfos
+         * @param {!Array.<CSSAgent.CSSStyleSheetHeader>} styleSheetInfos
          */
         function allStylesCallback(error, styleSheetInfos)
         {
@@ -835,6 +835,9 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
                 doneCallback();
         }
 
+        /**
+         * @param {!Array.<DOMAgent.NodeId>=} nodeIds
+         */
         function getStyles(nodeIds)
         {
             if (progress.isCanceled())
@@ -921,6 +924,9 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
             callback(result);
         }
 
+        /**
+         * @param {!Array.<DOMAgent.NodeId>=} nodeIds
+         */
         function externalStylesheetsReceived(root, inlineStyleNodeIds, nodeIds)
         {
             if (progress.isCanceled())
@@ -944,6 +950,9 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
             evalCallback(result);
         }
 
+        /**
+         * @param {!Array.<DOMAgent.NodeId>=} nodeIds
+         */
         function inlineStylesReceived(root, nodeIds)
         {
             if (progress.isCanceled())
@@ -1010,6 +1019,10 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
             callback(result);
         }
 
+        /**
+         * @param {!Array.<DOMAgent.NodeId>} lateStyleIds
+         * @param {!Array.<DOMAgent.NodeId>=} nodeIds
+         */
         function cssBeforeInlineReceived(lateStyleIds, nodeIds)
         {
             if (progress.isCanceled())
@@ -1033,6 +1046,10 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
             evalCallback(result);
         }
 
+        /**
+         * @param {WebInspector.DOMDocument} root
+         * @param {!Array.<DOMAgent.NodeId>=} nodeIds
+         */
         function lateStylesReceived(root, nodeIds)
         {
             if (progress.isCanceled())
@@ -1044,6 +1061,9 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
             WebInspector.domAgent.querySelectorAll(root.id, "head link[rel~='stylesheet'][href] ~ script:not([src])", cssBeforeInlineReceived.bind(null, nodeIds));
         }
 
+        /**
+         * @param {WebInspector.DOMDocument} root
+         */
         function onDocumentAvailable(root)
         {
             if (progress.isCanceled())

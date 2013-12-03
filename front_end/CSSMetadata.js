@@ -32,7 +32,7 @@
 
 /**
  * @constructor
- * @param {Array.<CSSAgent.CSSPropertyInfo|string>} properties
+ * @param {!Array.<CSSAgent.CSSPropertyInfo|string>} properties
  */
 WebInspector.CSSMetadata = function(properties)
 {
@@ -873,7 +873,7 @@ WebInspector.CSSMetadata.prototype = {
     },
 
     /**
-     * @param {Array.<string>} properties
+     * @param {!Array.<string>} properties
      * @return {number}
      */
     mostUsedOf: function(properties)

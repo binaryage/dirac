@@ -813,7 +813,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @return {Array.<Element>}
+     * @return {!Array.<Element>}
      */
     elementsToRestoreScrollPositionsFor: function()
     {
@@ -913,7 +913,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     /**
      * @param {CodeMirror} codeMirror
-     * @param {{origin: string, text: Array.<string>, removed: Array.<string>}} changeObject
+     * @param {{origin: string, text: !Array.<string>, removed: !Array.<string>}} changeObject
      */
     _change: function(codeMirror, changeObject)
     {

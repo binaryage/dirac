@@ -728,7 +728,7 @@ WebInspector.HeapProfilerDispatcher.prototype = {
 
     /**
      * @override
-     * @param {Array.<number>} samples
+     * @param {!Array.<number>} samples
      */
     heapStatsUpdate: function(samples)
     {
@@ -835,7 +835,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
 
     /**
      * @override
-     * @param {Array.<number>} samples
+     * @param {!Array.<number>} samples
      */
     heapStatsUpdate: function(samples)
     {
@@ -976,7 +976,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
 
     /**
      * @override
-     * @param {Array.<number>} samples
+     * @param {!Array.<number>} samples
      */
     heapStatsUpdate: function(samples)
     {
@@ -1557,7 +1557,7 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         var scaleFactor = this._xScale.nextScale(width / profileSamples.totalTime);
         var maxSize = 0;
         /**
-          * @param {Array.<number>} sizes
+          * @param {!Array.<number>} sizes
           * @param {function(number, number):void} callback
           */
         function aggregateAndCall(sizes, callback)

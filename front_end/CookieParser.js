@@ -57,7 +57,7 @@ WebInspector.CookieParser.KeyValue = function(key, value, position)
 
 WebInspector.CookieParser.prototype = {
     /**
-     * @return {Array.<WebInspector.Cookie>}
+     * @return {!Array.<WebInspector.Cookie>}
      */
     cookies: function()
     {
@@ -377,7 +377,7 @@ WebInspector.Cookies.getCookiesAsync = function(callback)
 {
     /**
      * @param {?Protocol.Error} error 
-     * @param {Array.<PageAgent.Cookie>} cookies
+     * @param {!Array.<PageAgent.Cookie>} cookies
      * @param {string} cookiesString
      */
     function mycallback(error, cookies, cookiesString)

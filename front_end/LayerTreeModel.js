@@ -116,7 +116,7 @@ WebInspector.LayerTreeModel.prototype = {
     },
 
     /**
-     * @param{Array.<LayerTreeAgent.Layer>} payload
+     * @param {!Array.<LayerTreeAgent.Layer>} payload
      */
     _repopulate: function(payload)
     {
@@ -151,7 +151,7 @@ WebInspector.LayerTreeModel.prototype = {
     },
 
     /**
-     * @param {Array.<LayerTreeAgent.Layer>=} payload
+     * @param {!Array.<LayerTreeAgent.Layer>=} payload
      */
     _layerTreeChanged: function(payload)
     {
@@ -230,7 +230,7 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.Layer>}
+     * @return {!Array.<WebInspector.Layer>}
      */
     children: function()
     {
@@ -302,7 +302,7 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @return {Array.<number>}
+     * @return {!Array.<number>}
      */
     transform: function()
     {
@@ -310,7 +310,7 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @return {Array.<number>}
+     * @return {!Array.<number>}
      */
     anchorPoint: function()
     {
@@ -346,19 +346,19 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @param {function(Array.<string>?)} callback
+     * @param {function(!Array.<string>)} callback
      */
     requestCompositingReasons: function(callback)
     {
         /**
          * @param {?string} error
-         * @param {?Array.<string>} compositingReasons
+         * @param {!Array.<string>} compositingReasons
          */
         function callbackWrapper(error, compositingReasons)
         {
             if (error) {
                 console.error("LayerTreeAgent.reasonsForCompositingLayer(): " + error);
-                callback(null);
+                callback([]);
                 return;
             }
             callback(compositingReasons);
@@ -399,7 +399,7 @@ WebInspector.LayerTreeDispatcher = function(layerTreeModel)
 
 WebInspector.LayerTreeDispatcher.prototype = {
     /**
-     * @param {Array.<LayerTreeAgent.Layer>=} payload
+     * @param {!Array.<LayerTreeAgent.Layer>=} payload
      */
     layerTreeDidChange: function(payload)
     {

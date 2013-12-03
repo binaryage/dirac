@@ -28,7 +28,7 @@
  */
 
 /**
- * @param {Array.<number>} rgba
+ * @param {!Array.<number>} rgba
  * @param {string=} format
  * @param {string=} originalText
  * @constructor
@@ -133,7 +133,7 @@ WebInspector.Color.parse = function(text)
 }
 
 /**
- * @param {Array.<number>} rgba
+ * @param {!Array.<number>} rgba
  * @return {WebInspector.Color}
  */
 WebInspector.Color.fromRGBA = function(rgba)
@@ -142,7 +142,7 @@ WebInspector.Color.fromRGBA = function(rgba)
 }
 
 /**
- * @param {Array.<number>} hsva
+ * @param {!Array.<number>} hsva
  * @return {WebInspector.Color}
  */
 WebInspector.Color.fromHSVA = function(hsva)
@@ -171,7 +171,7 @@ WebInspector.Color.prototype = {
     },
 
     /**
-     * @return {Array.<number>} HSLA with components within [0..1]
+     * @return {!Array.<number>} HSLA with components within [0..1]
      */
     hsla: function()
     {
@@ -210,7 +210,7 @@ WebInspector.Color.prototype = {
     },
 
     /**
-     * @return {Array.<number>} HSVA with components within [0..1]
+     * @return {!Array.<number>} HSVA with components within [0..1]
      */
     hsva: function()
     {
@@ -315,7 +315,7 @@ WebInspector.Color.prototype = {
     },
 
     /**
-     * @return {Array.<number>}
+     * @return {!Array.<number>}
      */
     _canonicalRGBA: function()
     {
@@ -422,8 +422,8 @@ WebInspector.Color._parseAlphaNumeric = function(value)
 }
 
 /**
- * @param {Array.<number>} hsl
- * @return {Array.<number>}
+ * @param {!Array.<number>} hsl
+ * @return {!Array.<number>}
  */
 WebInspector.Color._hsl2rgb = function(hsl)
 {

@@ -43,7 +43,7 @@ WebInspector.NetworkLog = function()
 
 WebInspector.NetworkLog.prototype = {
     /**
-     * @return {Array.<WebInspector.NetworkRequest>}
+     * @return {!Array.<WebInspector.NetworkRequest>}
      */
     get requests()
     {

@@ -427,7 +427,7 @@ WebInspector.TextPrompt.prototype = {
     },
 
     /**
-     * @param {Array.<string>} completions
+     * @param {!Array.<string>} completions
      * @param {number} wordPrefixLength
      */
     _buildCommonPrefix: function(completions, wordPrefixLength)
@@ -753,7 +753,7 @@ WebInspector.TextPromptWithHistory = function(completions, stopCharacters)
     WebInspector.TextPrompt.call(this, completions, stopCharacters);
 
     /**
-     * @type {Array.<string>}
+     * @type {!Array.<string>}
      */
     this._data = [];
 
@@ -772,7 +772,7 @@ WebInspector.TextPromptWithHistory = function(completions, stopCharacters)
 
 WebInspector.TextPromptWithHistory.prototype = {
     /**
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     get historyData()
     {
@@ -789,7 +789,7 @@ WebInspector.TextPromptWithHistory.prototype = {
     },
 
     /**
-     * @param {Array.<string>} data
+     * @param {!Array.<string>} data
      */
     setHistoryData: function(data)
     {

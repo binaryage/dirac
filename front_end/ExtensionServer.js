@@ -710,7 +710,7 @@ WebInspector.ExtensionServer.prototype = {
     },
 
     /**
-     * @param {Array.<ExtensionDescriptor>} extensions
+     * @param {!Array.<ExtensionDescriptor>} extensions
      */
     _addExtensions: function(extensions)
     {

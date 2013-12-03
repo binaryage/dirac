@@ -465,7 +465,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
             if (WebInspector.experimentsSettings.stepIntoSelection.isEnabled()) {
                 /**
-                 * @param {Array.<DebuggerAgent.Location>} locations
+                 * @param {!Array.<DebuggerAgent.Location>} locations
                  */
                 function locationsCallback(locations)
                 {
@@ -733,8 +733,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
 /**
  * @constructor
- * @param {Array.<DebuggerAgent.Location>} rawPositions
- * @param {Array.<WebInspector.TextRange>} editorRanges
+ * @param {!Array.<DebuggerAgent.Location>} rawPositions
+ * @param {!Array.<WebInspector.TextRange>} editorRanges
  * @param {number} firstToExecute
  * @param {WebInspector.JavaScriptSourceFrame} sourceFrame
  */
@@ -880,7 +880,7 @@ WebInspector.JavaScriptSourceFrame.StepIntoMarkup.prototype = {
 
 /**
  * @param {WebInspector.JavaScriptSourceFrame} sourceFrame
- * @param {Array.<DebuggerAgent.Location>} stepIntoRawLocations
+ * @param {!Array.<DebuggerAgent.Location>} stepIntoRawLocations
  * @return {?WebInspector.JavaScriptSourceFrame.StepIntoMarkup}
  */
 WebInspector.JavaScriptSourceFrame.StepIntoMarkup.create = function(sourceFrame, stepIntoRawLocations)

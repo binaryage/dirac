@@ -117,7 +117,7 @@ WebInspector.FilePathScoreFunction.prototype = {
      * @param {Int32Array} sequence
      * @param {number} n
      * @param {number} m
-     * @param {Array.<Number>} out
+     * @param {!Array.<Number>} out
      */
     _restoreMatchIndexes: function(sequence, n, m, out)
     {

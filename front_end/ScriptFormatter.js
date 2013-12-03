@@ -47,7 +47,7 @@ WebInspector.Formatter.createFormatter = function(contentType)
 }
 
 /**
- * @param {Array.<number>} lineEndings
+ * @param {!Array.<number>} lineEndings
  * @param {number} lineNumber
  * @param {number} columnNumber
  * @return {number}
@@ -59,9 +59,9 @@ WebInspector.Formatter.locationToPosition = function(lineEndings, lineNumber, co
 }
 
 /**
- * @param {Array.<number>} lineEndings
+ * @param {!Array.<number>} lineEndings
  * @param {number} position
- * @return {Array.<number>}
+ * @return {!Array.<number>}
  */
 WebInspector.Formatter.positionToLocation = function(lineEndings, position)
 {
@@ -172,14 +172,14 @@ WebInspector.FormatterSourceMapping.prototype = {
     /**
      * @param {number} lineNumber
      * @param {number=} columnNumber
-     * @return {Array.<number>}
+     * @return {!Array.<number>}
      */
     originalToFormatted: function(lineNumber, columnNumber) { },
 
     /**
      * @param {number} lineNumber
      * @param {number=} columnNumber
-     * @return {Array.<number>}
+     * @return {!Array.<number>}
      */
     formattedToOriginal: function(lineNumber, columnNumber) { }
 }
@@ -196,7 +196,7 @@ WebInspector.IdentityFormatterSourceMapping.prototype = {
     /**
      * @param {number} lineNumber
      * @param {number=} columnNumber
-     * @return {Array.<number>}
+     * @return {!Array.<number>}
      */
     originalToFormatted: function(lineNumber, columnNumber)
     {
@@ -206,7 +206,7 @@ WebInspector.IdentityFormatterSourceMapping.prototype = {
     /**
      * @param {number} lineNumber
      * @param {number=} columnNumber
-     * @return {Array.<number>}
+     * @return {!Array.<number>}
      */
     formattedToOriginal: function(lineNumber, columnNumber)
     {
@@ -217,8 +217,8 @@ WebInspector.IdentityFormatterSourceMapping.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.FormatterSourceMapping}
- * @param {Array.<number>} originalLineEndings
- * @param {Array.<number>} formattedLineEndings
+ * @param {!Array.<number>} originalLineEndings
+ * @param {!Array.<number>} formattedLineEndings
  * @param {WebInspector.FormatterMappingPayload} mapping
  */
 WebInspector.FormatterSourceMappingImpl = function(originalLineEndings, formattedLineEndings, mapping)
@@ -232,7 +232,7 @@ WebInspector.FormatterSourceMappingImpl.prototype = {
     /**
      * @param {number} lineNumber
      * @param {number=} columnNumber
-     * @return {Array.<number>}
+     * @return {!Array.<number>}
      */
     originalToFormatted: function(lineNumber, columnNumber)
     {
@@ -244,7 +244,7 @@ WebInspector.FormatterSourceMappingImpl.prototype = {
     /**
      * @param {number} lineNumber
      * @param {number=} columnNumber
-     * @return {Array.<number>}
+     * @return {!Array.<number>}
      */
     formattedToOriginal: function(lineNumber, columnNumber)
     {
@@ -254,8 +254,8 @@ WebInspector.FormatterSourceMappingImpl.prototype = {
     },
 
     /**
-     * @param {Array.<number>} positions1
-     * @param {Array.<number>} positions2
+     * @param {!Array.<number>} positions1
+     * @param {!Array.<number>} positions2
      * @param {number} position
      * @return {number}
      */

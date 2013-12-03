@@ -987,7 +987,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             this.node = node;
             this.selfTime = 0;
         }
-        var entries = /** @type {Array.<!ChartEntry>} */ ([]);
+        var entries = /** @type {!Array.<!ChartEntry>} */ ([]);
 
         for (var sampleIndex = 0; sampleIndex < samplesCount; sampleIndex++) {
             var node = idToNode[samples[sampleIndex]];

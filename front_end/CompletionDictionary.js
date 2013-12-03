@@ -52,7 +52,7 @@ WebInspector.CompletionDictionary.prototype = {
 
     /**
      * @param {string} prefix
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     wordsWithPrefix: function(prefix) { },
 
@@ -98,7 +98,7 @@ WebInspector.SampleCompletionDictionary.prototype = {
 
     /**
      * @param {string} prefix
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     wordsWithPrefix: function(prefix)
     {

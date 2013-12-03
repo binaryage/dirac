@@ -277,7 +277,7 @@ WebInspector.ExperimentsSettings = function()
 
 WebInspector.ExperimentsSettings.prototype = {
     /**
-     * @return {Array.<WebInspector.Experiment>}
+     * @return {!Array.<WebInspector.Experiment>}
      */
     get experiments()
     {

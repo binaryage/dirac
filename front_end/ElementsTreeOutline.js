@@ -1997,7 +1997,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @param {string} text
-     * @return {{text: string, entityRanges: Array.<WebInspector.SourceRange>}}
+     * @return {{text: string, entityRanges: !Array.<!WebInspector.SourceRange>}}
      */
     _convertWhitespaceToEntities: function(text)
     {
@@ -2306,7 +2306,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.DOMNode>} visibleChildren
+     * @return {!Array.<WebInspector.DOMNode>} visibleChildren
      */
     _visibleChildren: function()
     {
@@ -2324,7 +2324,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.DOMNode>} visibleChildren
+     * @return {number}
      */
     _visibleChildCount: function()
     {

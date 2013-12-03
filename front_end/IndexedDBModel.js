@@ -215,7 +215,7 @@ WebInspector.IndexedDBModel.prototype = {
 
     /**
      * @param {string} securityOrigin
-     * @param {Array.<string>} databaseNames
+     * @param {!Array.<string>} databaseNames
      */
     _updateOriginDatabaseNames: function(securityOrigin, databaseNames)
     {
@@ -265,7 +265,7 @@ WebInspector.IndexedDBModel.prototype = {
     {
         /**
          * @param {?Protocol.Error} error
-         * @param {Array.<string>} databaseNames
+         * @param {!Array.<string>} databaseNames
          */
         function callback(error, databaseNames)
         {
@@ -327,7 +327,7 @@ WebInspector.IndexedDBModel.prototype = {
      * @param {webkitIDBKeyRange} idbKeyRange
      * @param {number} skipCount
      * @param {number} pageSize
-     * @param {function(Array.<WebInspector.IndexedDBModel.Entry>, boolean)} callback
+     * @param {function(!Array.<WebInspector.IndexedDBModel.Entry>, boolean)} callback
      */
     loadObjectStoreData: function(databaseId, objectStoreName, idbKeyRange, skipCount, pageSize, callback)
     {
@@ -341,7 +341,7 @@ WebInspector.IndexedDBModel.prototype = {
      * @param {webkitIDBKeyRange} idbKeyRange
      * @param {number} skipCount
      * @param {number} pageSize
-     * @param {function(Array.<WebInspector.IndexedDBModel.Entry>, boolean)} callback
+     * @param {function(!Array.<WebInspector.IndexedDBModel.Entry>, boolean)} callback
      */
     loadIndexData: function(databaseId, objectStoreName, indexName, idbKeyRange, skipCount, pageSize, callback)
     {
@@ -356,13 +356,13 @@ WebInspector.IndexedDBModel.prototype = {
      * @param {webkitIDBKeyRange} idbKeyRange
      * @param {number} skipCount
      * @param {number} pageSize
-     * @param {function(Array.<WebInspector.IndexedDBModel.Entry>, boolean)} callback
+     * @param {function(!Array.<WebInspector.IndexedDBModel.Entry>, boolean)} callback
      */
     _requestData: function(databaseId, databaseName, objectStoreName, indexName, idbKeyRange, skipCount, pageSize, callback)
     {
         /**
          * @param {?Protocol.Error} error
-         * @param {Array.<IndexedDBAgent.DataEntry>} dataEntries
+         * @param {!Array.<IndexedDBAgent.DataEntry>} dataEntries
          * @param {boolean} hasMore
          */
         function innerCallback(error, dataEntries, hasMore)

@@ -1157,8 +1157,8 @@ WebInspector.HeapSnapshot.prototype = {
     // K. Cooper, T. Harvey and K. Kennedy "A Simple, Fast Dominance Algorithm"
     // Softw. Pract. Exper. 4 (2001), pp. 1-10.
     /**
-     * @param {Array.<number>} postOrderIndex2NodeOrdinal
-     * @param {Array.<number>} nodeOrdinal2PostOrderIndex
+     * @param {!Array.<number>} postOrderIndex2NodeOrdinal
+     * @param {!Array.<number>} nodeOrdinal2PostOrderIndex
      */
     _buildDominatorTree: function(postOrderIndex2NodeOrdinal, nodeOrdinal2PostOrderIndex)
     {
@@ -1542,7 +1542,7 @@ WebInspector.HeapSnapshot.prototype = {
 
 /**
  * @constructor
- * @param {Array.<number>=} unfilteredIterationOrder
+ * @param {!Array.<number>=} unfilteredIterationOrder
  */
 WebInspector.HeapSnapshotFilteredOrderedIterator = function(iterator, filter, unfilteredIterationOrder)
 {
@@ -1791,7 +1791,7 @@ WebInspector.HeapSnapshotEdgesProvider.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotFilteredOrderedIterator}
- * @param {Array.<number>=} nodeIndexes
+ * @param {!Array.<number>=} nodeIndexes
  */
 WebInspector.HeapSnapshotNodesProvider = function(snapshot, filter, nodeIndexes)
 {

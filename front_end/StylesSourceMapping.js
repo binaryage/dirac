@@ -171,7 +171,7 @@ WebInspector.StylesSourceMapping.prototype = {
     {
         var project = /** @type {WebInspector.Project} */ (event.data);
         var uiSourceCodes = project.uiSourceCodes();
-        for (var i = 0; i < uiSourceCodes; ++i)
+        for (var i = 0; i < uiSourceCodes.length; ++i)
             this._unbindUISourceCode(uiSourceCodes[i]);
     },
 

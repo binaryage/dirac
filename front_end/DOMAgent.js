@@ -122,7 +122,7 @@ WebInspector.DOMNode.ShadowRootTypes = {
 
 WebInspector.DOMNode.prototype = {
     /**
-     * @return {Array.<WebInspector.DOMNode>}
+     * @return {?Array.<WebInspector.DOMNode>}
      */
     children: function()
     {
@@ -154,7 +154,7 @@ WebInspector.DOMNode.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.DOMNode>}
+     * @return {!Array.<WebInspector.DOMNode>}
      */
     shadowRoots: function()
     {
@@ -332,7 +332,7 @@ WebInspector.DOMNode.prototype = {
     },
 
     /**
-     * @param {function(Array.<WebInspector.DOMNode>)=} callback
+     * @param {function(?Array.<WebInspector.DOMNode>)=} callback
      */
     getChildNodes: function(callback)
     {
@@ -357,7 +357,7 @@ WebInspector.DOMNode.prototype = {
 
     /**
      * @param {number} depth
-     * @param {function(Array.<WebInspector.DOMNode>)=} callback
+     * @param {function(?Array.<WebInspector.DOMNode>)=} callback
      */
     getSubtree: function(depth, callback)
     {
@@ -461,7 +461,7 @@ WebInspector.DOMNode.prototype = {
     },
 
     /**
-     * @param {Array.<string>} attrs
+     * @param {!Array.<string>} attrs
      * @return {boolean}
      */
     _setAttributesPayload: function(attrs)
@@ -519,7 +519,7 @@ WebInspector.DOMNode.prototype = {
     },
 
     /**
-     * @param {Array.<DOMAgent.Node>} payloads
+     * @param {!Array.<DOMAgent.Node>} payloads
      */
     _setChildrenPayload: function(payloads)
     {
@@ -537,7 +537,7 @@ WebInspector.DOMNode.prototype = {
     },
 
     /**
-     * @param {Array.<DOMAgent.Node>|undefined} payloads
+     * @param {!Array.<DOMAgent.Node>|undefined} payloads
      */
     _setPseudoElements: function(payloads)
     {
@@ -904,7 +904,7 @@ WebInspector.DOMAgent.prototype = {
     },
 
     /**
-     * @param {Array.<DOMAgent.NodeId>} nodeIds
+     * @param {!Array.<DOMAgent.NodeId>} nodeIds
      */
     _inlineStyleInvalidated: function(nodeIds)
     {
@@ -921,7 +921,7 @@ WebInspector.DOMAgent.prototype = {
          * @this {WebInspector.DOMAgent}
          * @param {DOMAgent.NodeId} nodeId
          * @param {?Protocol.Error} error
-         * @param {Array.<string>} attributes
+         * @param {!Array.<string>} attributes
          */
         function callback(nodeId, error, attributes)
         {
@@ -996,7 +996,7 @@ WebInspector.DOMAgent.prototype = {
 
     /**
      * @param {DOMAgent.NodeId} parentId
-     * @param {Array.<DOMAgent.Node>} payloads
+     * @param {!Array.<DOMAgent.Node>} payloads
      */
     _setChildNodes: function(parentId, payloads)
     {
@@ -1190,7 +1190,7 @@ WebInspector.DOMAgent.prototype = {
         if (this._searchId) {
             /**
              * @param {?Protocol.Error} error
-             * @param {Array.<number>} nodeIds
+             * @param {!Array.<number>} nodeIds
              */
             function mycallback(error, nodeIds)
             {
@@ -1230,7 +1230,7 @@ WebInspector.DOMAgent.prototype = {
     /**
      * @param {DOMAgent.NodeId} nodeId
      * @param {string} selectors
-     * @param {function(?Array.<DOMAgent.NodeId>)=} callback
+     * @param {function(!Array.<DOMAgent.NodeId>=)=} callback
      */
     querySelectorAll: function(nodeId, selectors, callback)
     {
@@ -1451,7 +1451,7 @@ WebInspector.DOMDispatcher.prototype = {
     },
 
     /**
-     * @param {Array.<DOMAgent.NodeId>} nodeIds
+     * @param {!Array.<DOMAgent.NodeId>} nodeIds
      */
     inlineStyleInvalidated: function(nodeIds)
     {
@@ -1469,7 +1469,7 @@ WebInspector.DOMDispatcher.prototype = {
 
     /**
      * @param {DOMAgent.NodeId} parentId
-     * @param {Array.<DOMAgent.Node>} payloads
+     * @param {!Array.<DOMAgent.Node>} payloads
      */
     setChildNodes: function(parentId, payloads)
     {

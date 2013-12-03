@@ -32,7 +32,7 @@
  * @param {string=} subtitle
  * @param {?string=} emptyPlaceholder
  * @param {boolean=} ignoreHasOwnProperty
- * @param {Array.<WebInspector.RemoteObjectProperty>=} extraProperties
+ * @param {!Array.<WebInspector.RemoteObjectProperty>=} extraProperties
  * @param {function(new:TreeElement, WebInspector.RemoteObjectProperty)=} treeElementConstructor
  */
 WebInspector.ObjectPropertiesSection = function(object, title, subtitle, emptyPlaceholder, ignoreHasOwnProperty, extraProperties, treeElementConstructor)
@@ -450,8 +450,8 @@ WebInspector.ObjectPropertyTreeElement.populate = function(treeElement, value) {
     }
 
     /**
-     * @param {Array.<WebInspector.RemoteObjectProperty>=} properties
-     * @param {Array.<WebInspector.RemoteObjectProperty>=} internalProperties
+     * @param {?Array.<WebInspector.RemoteObjectProperty>} properties
+     * @param {?Array.<WebInspector.RemoteObjectProperty>} internalProperties
      */
     function callback(properties, internalProperties)
     {
@@ -471,7 +471,7 @@ WebInspector.ObjectPropertyTreeElement.populate = function(treeElement, value) {
 
 /**
  * @param {!TreeElement|!TreeOutline} treeElement
- * @param {Array.<!WebInspector.RemoteObjectProperty>} properties
+ * @param {!Array.<!WebInspector.RemoteObjectProperty>} properties
  * @param {?Array.<!WebInspector.RemoteObjectProperty>} internalProperties
  * @param {function(new:TreeElement, WebInspector.RemoteObjectProperty)} treeElementConstructor
  * @param {function (WebInspector.RemoteObjectProperty, WebInspector.RemoteObjectProperty): number} comparator

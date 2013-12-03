@@ -170,7 +170,7 @@ WebInspector.TextEditor.prototype = {
     clearPositionHighlight: function() { },
 
     /**
-     * @return {Array.<Element>}
+     * @return {!Array.<Element>}
      */
     elementsToRestoreScrollPositionsFor: function() { },
 

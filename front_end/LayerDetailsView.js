@@ -124,7 +124,7 @@ WebInspector.LayerDetailsView.prototype = {
     },
 
     /**
-     * @param {Array.<string>} compositingReasons
+     * @param {!Array.<string>} compositingReasons
      */
     _updateCompositingReasons: function(compositingReasons)
     {

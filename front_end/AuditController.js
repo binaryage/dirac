@@ -94,7 +94,7 @@ WebInspector.AuditController.prototype = {
     },
 
     /**
-     * @param {Array.<string>} categoryIds
+     * @param {!Array.<string>} categoryIds
      * @param {WebInspector.Progress} progress
      * @param {boolean} runImmediately
      * @param {function()} startedCallback

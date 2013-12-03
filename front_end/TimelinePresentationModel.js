@@ -151,7 +151,7 @@ WebInspector.TimelinePresentationModel.isEventDivider = function(record)
 }
 
 /**
- * @param {Array} recordsArray
+ * @param {!Array.<*>} recordsArray
  * @param {?function(*)} preOrderCallback
  * @param {function(*)=} postOrderCallback
  */
@@ -288,7 +288,7 @@ WebInspector.TimelinePresentationModel.prototype = {
 
     /**
      * @param {TimelineAgent.TimelineEvent} record
-     * @return {Array.<WebInspector.TimelinePresentationModel.Record>}
+     * @return {!Array.<WebInspector.TimelinePresentationModel.Record>}
      */
     addRecord: function(record)
     {
@@ -469,7 +469,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
-     * @param {Array.<TimelineAgent.TimelineEvent>} records
+     * @param {!Array.<TimelineAgent.TimelineEvent>} records
      */
     _foldSyncTimeRecords: function(records)
     {
@@ -505,7 +505,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     /**
      * @param {TimelineAgent.TimelineEvent} beginRecord
      * @param {TimelineAgent.TimelineEvent} endRecord
-     * @param {Array.<TimelineAgent.TimelineEvent>} children
+     * @param {!Array.<TimelineAgent.TimelineEvent>} children
      * @return {TimelineAgent.TimelineEvent}
      */
     _createSynchronousTimeRecord: function(beginRecord, endRecord, children)
@@ -932,7 +932,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @return {Array.<WebInspector.TimelinePresentationModel.Record>}
+     * @return {!Array.<WebInspector.TimelinePresentationModel.Record>}
      */
     get children()
     {
@@ -1652,7 +1652,7 @@ WebInspector.TimelinePresentationModel.coalescingKeyForRecord = function(rawReco
 }
 
 /**
- * @param {Array.<number>} quad
+ * @param {!Array.<number>} quad
  * @return {number}
  */
 WebInspector.TimelinePresentationModel.quadWidth = function(quad)
@@ -1661,7 +1661,7 @@ WebInspector.TimelinePresentationModel.quadWidth = function(quad)
 }
 
 /**
- * @param {Array.<number>} quad
+ * @param {!Array.<number>} quad
  * @return {number}
  */
 WebInspector.TimelinePresentationModel.quadHeight = function(quad)
@@ -1671,7 +1671,7 @@ WebInspector.TimelinePresentationModel.quadHeight = function(quad)
 
 /**
  * @param {Object} data
- * @return {Array.<number>?}
+ * @return {?Array.<number>}
  */
 WebInspector.TimelinePresentationModel.quadFromRectData = function(data)
 {

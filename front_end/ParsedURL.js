@@ -88,7 +88,7 @@ WebInspector.ParsedURL = function(url)
 
 /**
  * @param {string} url
- * @return {Array.<string>}
+ * @return {!Array.<string>}
  */
 WebInspector.ParsedURL.splitURL = function(url)
 {

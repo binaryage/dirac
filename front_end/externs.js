@@ -59,13 +59,13 @@ function WebKitMutation(callback)
 {
     this.type = "";
     /** @type {Node} */ this.target = null;
-    /** @type {Array.<Node>} */ this.addedNodes = [];
-    /** @type {Array.<Node>} */ this.removedNodes = [];
+    /** @type {!Array.<Node>} */ this.addedNodes = [];
+    /** @type {!Array.<Node>} */ this.removedNodes = [];
 }
 
 /**
  * @constructor
- * @param {function(Array.<WebKitMutation>)} callback
+ * @param {function(!Array.<WebKitMutation>)} callback
  */
 function WebKitMutationObserver(callback) {}
 /** 
@@ -247,8 +247,8 @@ function SourceMapV3()
 {
     /** @type {number} */ this.version;
     /** @type {string} */ this.file;
-    /** @type {Array.<string>} */ this.sources;
-    /** @type {Array.<SourceMapV3.Section>} */ this.sections;
+    /** @type {!Array.<string>} */ this.sources;
+    /** @type {!Array.<SourceMapV3.Section>} */ this.sections;
     /** @type {string} */ this.mappings;
     /** @type {string} */ this.sourceRoot;
 }

@@ -864,7 +864,7 @@ WebInspector.SettingsList.prototype = {
     },
 
     /**
-     * @return {Array.<?string>}
+     * @return {!Array.<?string>}
      */
     itemIds: function()
     {
@@ -872,7 +872,7 @@ WebInspector.SettingsList.prototype = {
     },
 
     /**
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     columns: function()
     {

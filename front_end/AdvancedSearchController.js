@@ -674,7 +674,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
     /**
      * @param {string} lineContent
      * @param {RegExp} regex
-     * @return {Array.<WebInspector.SourceRange>}
+     * @return {!Array.<WebInspector.SourceRange>}
      */
     _regexMatchRanges: function(lineContent, regex)
     {
@@ -690,7 +690,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
 
     /**
      * @param {string} lineContent
-     * @param {Array.<WebInspector.SourceRange>} matchRanges
+     * @param {!Array.<WebInspector.SourceRange>} matchRanges
      */
     _createContentSpan: function(lineContent, matchRanges)
     {
@@ -707,7 +707,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
 /**
  * @constructor
  * @param {WebInspector.UISourceCode} uiSourceCode
- * @param {Array.<Object>} searchMatches
+ * @param {!Array.<Object>} searchMatches
  */
 WebInspector.FileBasedSearchResultsPane.SearchResult = function(uiSourceCode, searchMatches) {
     this.uiSourceCode = uiSourceCode;

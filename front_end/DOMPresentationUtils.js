@@ -229,7 +229,7 @@ WebInspector.DOMPresentationUtils._cssPathValue = function(node, optimized)
 
     /**
      * @param {WebInspector.DOMNode} node
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     function prefixedElementClassNames(node)
     {

@@ -461,7 +461,7 @@ WebInspector.NavigatorTreeOutline._treeElementsCompare = function compare(treeEl
 
 WebInspector.NavigatorTreeOutline.prototype = {
    /**
-    * @return {Array.<WebInspector.UISourceCode>}
+    * @return {!Array.<WebInspector.UISourceCode>}
     */
    scriptTreeElements: function()
    {
@@ -483,7 +483,7 @@ WebInspector.NavigatorTreeOutline.prototype = {
  * @extends {TreeElement}
  * @param {string} type
  * @param {string} title
- * @param {Array.<string>} iconClasses
+ * @param {!Array.<string>} iconClasses
  * @param {boolean} hasChildren
  * @param {boolean=} noIcon
  */
@@ -647,7 +647,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
     },
 
     /**
-     * @return {Array.<string>}
+     * @return {!Array.<string>}
      */
     _calculateIconClasses: function()
     {

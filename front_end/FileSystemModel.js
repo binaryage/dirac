@@ -163,7 +163,7 @@ WebInspector.FileSystemModel.prototype = {
 
     /**
      * @param {WebInspector.FileSystemModel.Directory} directory
-     * @param {function(number, Array.<WebInspector.FileSystemModel.Entry>=)} callback
+     * @param {function(number, !Array.<WebInspector.FileSystemModel.Entry>=)} callback
      */
     requestDirectoryContent: function(directory, callback)
     {
@@ -172,14 +172,14 @@ WebInspector.FileSystemModel.prototype = {
 
     /**
      * @param {string} url
-     * @param {function(number, Array.<FileSystemAgent.Entry>=)} callback
+     * @param {function(number, !Array.<FileSystemAgent.Entry>=)} callback
      */
     _requestDirectoryContent: function(url, callback)
     {
         /**
          * @param {?Protocol.Error} error
          * @param {number} errorCode
-         * @param {Array.<FileSystemAgent.Entry>=} backendEntries
+         * @param {!Array.<FileSystemAgent.Entry>=} backendEntries
          */
         function innerCallback(error, errorCode, backendEntries)
         {
@@ -189,7 +189,7 @@ WebInspector.FileSystemModel.prototype = {
             }
             
             if (errorCode !== 0) {
-                callback(errorCode, null);
+                callback(errorCode);
                 return;
             }
 
@@ -201,12 +201,17 @@ WebInspector.FileSystemModel.prototype = {
 
     /**
      * @param {WebInspector.FileSystemModel.Directory} parentDirectory
-     * @param {function(number, Array.<WebInspector.FileSystemModel.Entry>=)} callback
+     * @param {function(number, !Array.<WebInspector.FileSystemModel.Entry>=)} callback
      * @param {number} errorCode
-     * @param {Array.<FileSystemAgent.Entry>=} backendEntries
+     * @param {!Array.<FileSystemAgent.Entry>=} backendEntries
      */
     _directoryContentReceived: function(parentDirectory, callback, errorCode, backendEntries)
     {
+        if (!backendEntries) {
+            callback(errorCode);
+            return;
+        }
+
         var entries = [];
         for (var i = 0; i < backendEntries.length; ++i) {
             if (backendEntries[i].isDirectory)
@@ -480,7 +485,7 @@ WebInspector.FileSystemModel.Directory = function(fileSystemModel, fileSystem, b
 
 WebInspector.FileSystemModel.Directory.prototype = {
     /**
-     * @param {function(number, Array.<WebInspector.FileSystemModel.Directory>)} callback
+     * @param {function(number, !Array.<WebInspector.FileSystemModel.Directory>)} callback
      */
     requestDirectoryContent: function(callback)
     {

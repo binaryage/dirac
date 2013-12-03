@@ -43,7 +43,7 @@ WebInspector.FileSystemProjectDelegate = function(isolatedFileSystem, workspace)
         this._normalizedFileSystemPath = this._normalizedFileSystemPath.replace(/\\/g, "/");
     this._fileSystemURL = "file://" + this._normalizedFileSystemPath + "/";
     this._workspace = workspace;
-    /** @type {Object.<number, function(Array.<string>)>} */
+    /** @type {Object.<number, function(!Array.<string>)>} */
     this._searchCallbacks = {};
     /** @type {Object.<number, function()>} */
     this._indexingCallbacks = {};
@@ -187,7 +187,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInFileContent: function(path, query, caseSensitive, isRegex, callback)
     {
@@ -283,7 +283,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
 
     /**
      * @param {number} requestId
-     * @param {Array.<string>} files
+     * @param {!Array.<string>} files
      */
     searchCompleted: function(requestId, files)
     {

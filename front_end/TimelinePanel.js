@@ -1293,7 +1293,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {Array.<number>} quad
+     * @param {!Array.<number>} quad
      */
     _highlightQuad: function(quad)
     {

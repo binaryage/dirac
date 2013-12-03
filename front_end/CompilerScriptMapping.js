@@ -41,7 +41,7 @@ WebInspector.CompilerScriptMapping = function(workspace, networkWorkspaceProvide
     this._networkWorkspaceProvider = networkWorkspaceProvider;
     /** @type {!Object.<string, WebInspector.SourceMap>} */
     this._sourceMapForSourceMapURL = {};
-    /** @type {!Object.<string, Array.<function(?WebInspector.SourceMap)>>} */
+    /** @type {!Object.<string, !Array.<function(?WebInspector.SourceMap)>>} */
     this._pendingSourceMapLoadingCallbacks = {};
     /** @type {!Object.<string, WebInspector.SourceMap>} */
     this._sourceMapForScriptId = {};
@@ -68,11 +68,11 @@ WebInspector.CompilerScriptMapping.prototype = {
         var entry = sourceMap.findEntry(lineNumber, columnNumber);
         if (!entry || entry.length === 2)
             return null;
-        var url = entry[2];
+        var url = /** @type {string} */ (entry[2]);
         var uiSourceCode = this._workspace.uiSourceCodeForURL(url);
         if (!uiSourceCode)
             return null;
-        return new WebInspector.UILocation(uiSourceCode, entry[3], entry[4]);
+        return new WebInspector.UILocation(uiSourceCode, /** @type {number} */ (entry[3]), /** @type {number} */ (entry[4]));
     },
 
     /**

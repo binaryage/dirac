@@ -316,7 +316,7 @@ WebInspector.IDBDataView.prototype = {
         this._lastSkipCount = skipCount;
 
         /**
-         * @param {Array.<WebInspector.IndexedDBModel.Entry>} entries
+         * @param {!Array.<WebInspector.IndexedDBModel.Entry>} entries
          * @param {boolean} hasMore
          */
         function callback(entries, hasMore)
