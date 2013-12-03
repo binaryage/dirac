@@ -138,7 +138,7 @@ WebInspector.Script.prototype = {
 
     /**
      * @param {string} newSource
-     * @param {function(?Protocol.Error, DebuggerAgent.SetScriptSourceError=, !Array.<DebuggerAgent.CallFrame>=, boolean=)} callback
+     * @param {function(?Protocol.Error, DebuggerAgent.SetScriptSourceError=, !Array.<DebuggerAgent.CallFrame>=, DebuggerAgent.StackTrace=, boolean=)} callback
      */
     editSource: function(newSource, callback)
     {
@@ -148,21 +148,22 @@ WebInspector.Script.prototype = {
          * @param {DebuggerAgent.SetScriptSourceError=} errorData
          * @param {!Array.<DebuggerAgent.CallFrame>=} callFrames
          * @param {Object=} debugData
+         * @param {DebuggerAgent.StackTrace=} asyncStackTrace
          */
-        function didEditScriptSource(error, errorData, callFrames, debugData)
+        function didEditScriptSource(error, errorData, callFrames, debugData, asyncStackTrace)
         {
             // FIXME: support debugData.stack_update_needs_step_in flag by calling WebInspector.debugger_model.callStackModified
             if (!error)
                 this._source = newSource;
             var needsStepIn = !!debugData && debugData["stack_update_needs_step_in"] === true;
-            callback(error, errorData, callFrames, needsStepIn);
+            callback(error, errorData, callFrames, asyncStackTrace, needsStepIn);
             if (!error)
                 this.dispatchEventToListeners(WebInspector.Script.Events.ScriptEdited, newSource);
         }
-        if (this.scriptId) {
-            // Script failed to parse.
+
+        if (this.scriptId)
             DebuggerAgent.setScriptSource(this.scriptId, newSource, undefined, didEditScriptSource.bind(this));
-        } else
+        else
             callback("Script failed to parse");
     },
 

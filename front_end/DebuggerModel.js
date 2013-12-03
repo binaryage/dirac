@@ -392,15 +392,16 @@ WebInspector.DebuggerModel.prototype = {
      * @param {?Protocol.Error} error
      * @param {DebuggerAgent.SetScriptSourceError=} errorData
      * @param {!Array.<DebuggerAgent.CallFrame>=} callFrames
+     * @param {DebuggerAgent.StackTrace=} asyncStackTrace
      * @param {boolean=} needsStepIn
      */
-    _didEditScriptSource: function(scriptId, newSource, callback, error, errorData, callFrames, needsStepIn)
+    _didEditScriptSource: function(scriptId, newSource, callback, error, errorData, callFrames, asyncStackTrace, needsStepIn)
     {
         callback(error, errorData);
         if (needsStepIn)
             this.stepInto();
         else if (!error && callFrames && callFrames.length)
-            this._pausedScript(callFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData, this._debuggerPausedDetails.breakpointIds);
+            this._pausedScript(callFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData, this._debuggerPausedDetails.breakpointIds, asyncStackTrace);
     },
 
     /**
@@ -443,8 +444,9 @@ WebInspector.DebuggerModel.prototype = {
      * @param {string} reason
      * @param {Object|undefined} auxData
      * @param {!Array.<string>} breakpointIds
+     * @param {DebuggerAgent.StackTrace=} asyncStackTrace
      */
-    _pausedScript: function(callFrames, reason, auxData, breakpointIds)
+    _pausedScript: function(callFrames, reason, auxData, breakpointIds, asyncStackTrace)
     {
         if (this._pendingStepIntoLocation) {
             var requestedLocation = this._pendingStepIntoLocation;
@@ -459,7 +461,7 @@ WebInspector.DebuggerModel.prototype = {
             }
         }
 
-        this._setDebuggerPausedDetails(new WebInspector.DebuggerPausedDetails(this, callFrames, reason, auxData, breakpointIds));
+        this._setDebuggerPausedDetails(new WebInspector.DebuggerPausedDetails(this, callFrames, reason, auxData, breakpointIds, asyncStackTrace));
     },
 
     _resumedScript: function()
@@ -683,17 +685,15 @@ WebInspector.DebuggerModel.prototype = {
      * @this {WebInspector.DebuggerModel}
      * @param {!Array.<DebuggerAgent.CallFrame>=} newCallFrames
      * @param {Object=} details
+     * @param {DebuggerAgent.StackTrace=} asyncStackTrace
      */
-    callStackModified: function(newCallFrames, details)
+    callStackModified: function(newCallFrames, details, asyncStackTrace)
     {
         // FIXME: declare this property in protocol and in JavaScript.
         if (details && details["stack_update_needs_step_in"])
             this.stepInto();
-        else {
-            if (newCallFrames && newCallFrames.length)
-                this._pausedScript(newCallFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData, this._debuggerPausedDetails.breakpointIds);
-
-        }
+        else if (newCallFrames && newCallFrames.length)
+            this._pausedScript(newCallFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData, this._debuggerPausedDetails.breakpointIds, asyncStackTrace);
     },
 
     __proto__: WebInspector.Object.prototype
@@ -730,10 +730,11 @@ WebInspector.DebuggerDispatcher.prototype = {
      * @param {string} reason
      * @param {Object=} auxData
      * @param {!Array.<string>=} breakpointIds
+     * @param {DebuggerAgent.StackTrace=} asyncStackTrace
      */
-    paused: function(callFrames, reason, auxData, breakpointIds)
+    paused: function(callFrames, reason, auxData, breakpointIds, asyncStackTrace)
     {
-        this._debuggerModel._pausedScript(callFrames, reason, auxData, breakpointIds || []);
+        this._debuggerModel._pausedScript(callFrames, reason, auxData, breakpointIds || [], asyncStackTrace);
     },
 
     resumed: function()
@@ -900,11 +901,12 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
          * @param {?Protocol.Error} error
          * @param {!Array.<DebuggerAgent.CallFrame>=} callFrames
          * @param {Object=} details
+         * @param {DebuggerAgent.StackTrace=} asyncStackTrace
          */
-        function protocolCallback(error, callFrames, details)
+        function protocolCallback(error, callFrames, details, asyncStackTrace)
         {
             if (!error)
-                WebInspector.debuggerModel.callStackModified(callFrames, details);
+                WebInspector.debuggerModel.callStackModified(callFrames, details, asyncStackTrace);
             if (callback)
                 callback(error);
         }
@@ -959,8 +961,9 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
  * @param {string} reason
  * @param {Object|undefined} auxData
  * @param {!Array.<string>} breakpointIds
+ * @param {DebuggerAgent.StackTrace=} asyncStackTrace
  */
-WebInspector.DebuggerPausedDetails = function(model, callFrames, reason, auxData, breakpointIds)
+WebInspector.DebuggerPausedDetails = function(model, callFrames, reason, auxData, breakpointIds, asyncStackTrace)
 {
     this.callFrames = [];
     for (var i = 0; i < callFrames.length; ++i) {
@@ -972,6 +975,7 @@ WebInspector.DebuggerPausedDetails = function(model, callFrames, reason, auxData
     this.reason = reason;
     this.auxData = auxData;
     this.breakpointIds = breakpointIds;
+    this.asyncStackTrace = asyncStackTrace;
 }
 
 WebInspector.DebuggerPausedDetails.prototype = {
