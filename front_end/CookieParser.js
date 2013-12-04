@@ -378,9 +378,8 @@ WebInspector.Cookies.getCookiesAsync = function(callback)
     /**
      * @param {?Protocol.Error} error 
      * @param {!Array.<PageAgent.Cookie>} cookies
-     * @param {string} cookiesString
      */
-    function mycallback(error, cookies, cookiesString)
+    function mycallback(error, cookies)
     {
         if (error)
             return;
