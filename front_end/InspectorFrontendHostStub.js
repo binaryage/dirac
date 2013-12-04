@@ -37,7 +37,6 @@ if (!window.InspectorFrontendHost) {
 WebInspector.InspectorFrontendHostStub = function()
 {
     this.isStub = true;
-    this._fileBuffers = {};
 }
 
 WebInspector.InspectorFrontendHostStub.prototype = {
