@@ -780,7 +780,7 @@ WebInspector.ConsoleViewFilter.Events = {
 WebInspector.ConsoleViewFilter.prototype = {
     addFilters: function(filterBar)
     {
-        this._textFilterUI = new WebInspector.TextFilterUI();
+        this._textFilterUI = new WebInspector.TextFilterUI(true);
         this._textFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._textFilterChanged, this);
         filterBar.addFilter(this._textFilterUI);
 
@@ -797,11 +797,7 @@ WebInspector.ConsoleViewFilter.prototype = {
 
     _textFilterChanged: function(event)
     {
-        var query = this._textFilterUI.value();
-        if (!query)
-            delete this._filterRegex;
-        else
-            this._filterRegex = createPlainTextSearchRegex(query, "gi");
+        this._filterRegex = this._textFilterUI.regex();
 
         this._filterChanged();
     },
