@@ -670,7 +670,7 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
-     * @param {!Array.<Object>} styleRules
+     * @param {!Array.<!Object>} styleRules
      * @param {!Object.<string, boolean>} usedProperties
      * @param {Element} anchorElement
      */

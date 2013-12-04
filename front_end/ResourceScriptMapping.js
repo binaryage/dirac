@@ -143,7 +143,7 @@ WebInspector.ResourceScriptMapping.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @return {!Array.<WebInspector.Script>}
+     * @return {!Array.<!WebInspector.Script>}
      */
     _scriptsForUISourceCode: function(uiSourceCode)
     {
@@ -166,7 +166,7 @@ WebInspector.ResourceScriptMapping.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @param {!Array.<WebInspector.Script>} scripts
+     * @param {!Array.<!WebInspector.Script>} scripts
      */
     _bindUISourceCodeToScripts: function(uiSourceCode, scripts)
     {
@@ -180,7 +180,7 @@ WebInspector.ResourceScriptMapping.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @param {!Array.<WebInspector.Script>} scripts
+     * @param {!Array.<!WebInspector.Script>} scripts
      */
     _unbindUISourceCodeFromScripts: function(uiSourceCode, scripts)
     {

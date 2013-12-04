@@ -145,7 +145,7 @@ WebInspector.DatabaseModel.Events = {
 
 WebInspector.DatabaseModel.prototype = {
     /**
-     * @return {!Array.<WebInspector.Database>}
+     * @return {!Array.<!WebInspector.Database>}
      */
     databases: function()
     {

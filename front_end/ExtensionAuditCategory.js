@@ -57,7 +57,7 @@ WebInspector.ExtensionAuditCategory.prototype = {
     },
 
     /**
-     * @param {!Array.<WebInspector.NetworkRequest>} requests
+     * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {function(WebInspector.AuditRuleResult)} ruleResultCallback
      * @param {function()} categoryDoneCallback
      * @param {WebInspector.Progress} progress

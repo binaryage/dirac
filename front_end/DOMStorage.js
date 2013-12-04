@@ -77,7 +77,7 @@ WebInspector.DOMStorage.prototype = {
     },
 
     /**
-     * @param {function(?Protocol.Error, !Array.<DOMStorageAgent.Item>):void=} callback
+     * @param {function(?Protocol.Error, !Array.<!DOMStorageAgent.Item>):void=} callback
      */
     getItems: function(callback)
     {
@@ -241,7 +241,7 @@ WebInspector.DOMStorageModel.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.DOMStorage>}
+     * @return {!Array.<!WebInspector.DOMStorage>}
      */
     storages: function()
     {

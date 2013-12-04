@@ -36,13 +36,13 @@
 WebInspector.ScriptSnippetModel = function(workspace)
 {
     this._workspace = workspace;
-    /** @type {!Object.<string, WebInspector.UISourceCode>} */
+    /** @type {!Object.<string, !WebInspector.UISourceCode>} */
     this._uiSourceCodeForScriptId = {};
-    /** @type {!Map.<WebInspector.UISourceCode, WebInspector.Script>} */
+    /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.Script>} */
     this._scriptForUISourceCode = new Map();
-    /** @type {!Object.<string, WebInspector.UISourceCode>} */
+    /** @type {!Object.<string, !WebInspector.UISourceCode>} */
     this._uiSourceCodeForSnippetId = {};
-    /** @type {!Map.<WebInspector.UISourceCode, string>} */
+    /** @type {!Map.<!WebInspector.UISourceCode, string>} */
     this._snippetIdForUISourceCode = new Map();
     
     this._snippetStorage = new WebInspector.SnippetStorage("script", "Script snippet #");
@@ -97,6 +97,10 @@ WebInspector.ScriptSnippetModel.prototype = {
     {
         var path = this._projectDelegate.addSnippet(snippet.name, new WebInspector.SnippetContentProvider(snippet));
         var uiSourceCode = this._workspace.uiSourceCode(this._projectDelegate.id(), path);
+        if (!uiSourceCode) {
+            console.assert(uiSourceCode);
+            return "";
+        }
         var scriptFile = new WebInspector.SnippetScriptFile(this, uiSourceCode);
         uiSourceCode.setScriptFile(scriptFile);
         this._snippetIdForUISourceCode.put(uiSourceCode, snippet.id);
@@ -111,6 +115,8 @@ WebInspector.ScriptSnippetModel.prototype = {
     deleteScriptSnippet: function(path)
     {
         var uiSourceCode = this._workspace.uiSourceCode(this._projectDelegate.id(), path);
+        if (!uiSourceCode)
+            return;
         var snippetId = this._snippetIdForUISourceCode.get(uiSourceCode) || "";
         var snippet = this._snippetStorage.snippetForId(snippetId);
         this._snippetStorage.deleteSnippet(snippet);
@@ -155,7 +161,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     _scriptSnippetEdited: function(uiSourceCode)
     {
@@ -183,7 +189,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     evaluateScriptSnippet: function(uiSourceCode)
     {
@@ -289,7 +295,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
      * @return {WebInspector.DebuggerModel.Location}
@@ -325,7 +331,7 @@ WebInspector.ScriptSnippetModel.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @return {!Array.<Object>}
+     * @return {!Array.<!Object>}
      */
     _removeBreakpoints: function(uiSourceCode)
     {
@@ -337,7 +343,7 @@ WebInspector.ScriptSnippetModel.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @param {!Array.<Object>} breakpointLocations
+     * @param {!Array.<!Object>} breakpointLocations
      */
     _restoreBreakpoints: function(uiSourceCode, breakpointLocations)
     {
@@ -349,7 +355,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     _releaseSnippetScript: function(uiSourceCode)
     {
@@ -400,10 +406,10 @@ WebInspector.ScriptSnippetModel.prototype = {
 
     reset: function()
     {
-        /** @type {!Object.<string, WebInspector.UISourceCode>} */
+        /** @type {!Object.<string, !WebInspector.UISourceCode>} */
         this._uiSourceCodeForScriptId = {};
         this._scriptForUISourceCode = new Map();
-        /** @type {!Object.<string, WebInspector.UISourceCode>} */
+        /** @type {!Object.<string, !WebInspector.UISourceCode>} */
         this._uiSourceCodeForSnippetId = {};
         this._snippetIdForUISourceCode = new Map();
         this._projectDelegate.reset();
@@ -418,7 +424,7 @@ WebInspector.ScriptSnippetModel.prototype = {
  * @implements {WebInspector.ScriptFile}
  * @extends {WebInspector.Object}
  * @param {WebInspector.ScriptSnippetModel} scriptSnippetModel
- * @param {WebInspector.UISourceCode} uiSourceCode
+ * @param {!WebInspector.UISourceCode} uiSourceCode
  */
 WebInspector.SnippetScriptFile = function(scriptSnippetModel, uiSourceCode)
 {
@@ -504,7 +510,7 @@ WebInspector.SnippetScriptMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
      * @return {WebInspector.DebuggerModel.Location}
@@ -571,7 +577,7 @@ WebInspector.SnippetContentProvider.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<!WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {

@@ -97,7 +97,7 @@ WebInspector.ApplicationCacheModel.prototype = {
 
     /**
      * @param {?Protocol.Error} error
-     * @param {!Array.<ApplicationCacheAgent.FrameWithManifest>} framesWithManifests
+     * @param {!Array.<!ApplicationCacheAgent.FrameWithManifest>} framesWithManifests
      */
     _framesWithManifestsLoaded: function(error, framesWithManifests)
     {

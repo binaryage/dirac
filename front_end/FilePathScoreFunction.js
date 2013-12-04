@@ -64,7 +64,7 @@ WebInspector.FilePathScoreFunction.filterRegex = function(query)
 WebInspector.FilePathScoreFunction.prototype = {
     /**
      * @param {string} data
-     * @param {?Array.<Number>} matchIndexes
+     * @param {?Array.<!Number>} matchIndexes
      * @return {number}
      */
     score: function(data, matchIndexes)
@@ -117,7 +117,7 @@ WebInspector.FilePathScoreFunction.prototype = {
      * @param {Int32Array} sequence
      * @param {number} n
      * @param {number} m
-     * @param {!Array.<Number>} out
+     * @param {!Array.<!Number>} out
      */
     _restoreMatchIndexes: function(sequence, n, m, out)
     {

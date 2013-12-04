@@ -1002,7 +1002,7 @@ WebInspector.resetToolbarColors = function()
  * @param {Element} element
  * @param {number} offset
  * @param {number} length
- * @param {!Array.<Object>=} domChanges
+ * @param {!Array.<!Object>=} domChanges
  */
 WebInspector.highlightSearchResult = function(element, offset, length, domChanges)
 {
@@ -1012,8 +1012,8 @@ WebInspector.highlightSearchResult = function(element, offset, length, domChange
 
 /**
  * @param {Element} element
- * @param {!Array.<WebInspector.SourceRange>} resultRanges
- * @param {!Array.<Object>=} changes
+ * @param {!Array.<!WebInspector.SourceRange>} resultRanges
+ * @param {!Array.<!Object>=} changes
  */
 WebInspector.highlightSearchResults = function(element, resultRanges, changes)
 {
@@ -1022,9 +1022,9 @@ WebInspector.highlightSearchResults = function(element, resultRanges, changes)
 
 /**
  * @param {Element} element
- * @param {!Array.<WebInspector.SourceRange>} resultRanges
+ * @param {!Array.<!WebInspector.SourceRange>} resultRanges
  * @param {string} styleClass
- * @param {!Array.<Object>=} changes
+ * @param {!Array.<!Object>=} changes
  */
 WebInspector.highlightRangesWithStyleClass = function(element, resultRanges, styleClass, changes)
 {

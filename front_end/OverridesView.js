@@ -82,7 +82,7 @@ WebInspector.OverridesView.prototype = {
  * @extends {WebInspector.View}
  * @param {string} id
  * @param {string} name
- * @param {!Array.<WebInspector.Setting>} settings
+ * @param {!Array.<!WebInspector.Setting>} settings
  */
 WebInspector.OverridesView.Tab = function(id, name, settings)
 {

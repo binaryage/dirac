@@ -310,7 +310,7 @@ WebInspector.AuditRule.prototype = {
     },
 
     /**
-     * @param {!Array.<WebInspector.NetworkRequest>} requests
+     * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {WebInspector.AuditRuleResult} result
      * @param {function(WebInspector.AuditRuleResult)} callback
      * @param {WebInspector.Progress} progress

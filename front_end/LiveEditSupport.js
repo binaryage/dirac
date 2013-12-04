@@ -68,9 +68,9 @@ WebInspector.LiveEditSupport.prototype = {
 
     _debuggerReset: function()
     {
-        /** @type {!Object.<string, WebInspector.UISourceCode>} */
+        /** @type {!Object.<string, !WebInspector.UISourceCode>} */
         this._uiSourceCodeForScriptId = {};
-        /** @type {!Map.<WebInspector.UISourceCode, string>} */
+        /** @type {!Map.<!WebInspector.UISourceCode, string>} */
         this._scriptIdForUISourceCode = new Map();
         this._workspaceProvider.reset();
     },

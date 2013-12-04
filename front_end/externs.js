@@ -59,13 +59,13 @@ function WebKitMutation(callback)
 {
     this.type = "";
     /** @type {Node} */ this.target = null;
-    /** @type {!Array.<Node>} */ this.addedNodes = [];
-    /** @type {!Array.<Node>} */ this.removedNodes = [];
+    /** @type {!Array.<!Node>} */ this.addedNodes = [];
+    /** @type {!Array.<!Node>} */ this.removedNodes = [];
 }
 
 /**
  * @constructor
- * @param {function(!Array.<WebKitMutation>)} callback
+ * @param {function(!Array.<!WebKitMutation>)} callback
  */
 function WebKitMutationObserver(callback) {}
 /** 
@@ -91,12 +91,13 @@ function addEventListener(eventName, listener, capturing) {}
 Array.prototype.remove = function(value, onlyFirst) {}
 /**
  * @return {!Object.<string, boolean>}
- * @this {Array.<*>}
+ * @this {Array.<T>}
+ * @template T
  */
 Array.prototype.keySet = function() {}
 /**
  * @param {number} index
- * @return {!Array.<T>}
+ * @return {!Array.<!T>}
  * @this {Array.<T>}
  * @template T
  */
@@ -164,8 +165,8 @@ Array.prototype.qselect = function(k, comparator) {}
 
 /**
  * @param {string} field
- * @return {!Array.<T>}
- * @this {Array.<Object.<string,T>>}
+ * @return {!Array.<!T>}
+ * @this {Array.<!Object.<string,T>>}
  * @template T
  */
 Array.prototype.select = function(field) {}
@@ -256,7 +257,7 @@ function SourceMapV3()
     /** @type {number} */ this.version;
     /** @type {string} */ this.file;
     /** @type {!Array.<string>} */ this.sources;
-    /** @type {!Array.<SourceMapV3.Section>} */ this.sections;
+    /** @type {!Array.<!SourceMapV3.Section>} */ this.sections;
     /** @type {string} */ this.mappings;
     /** @type {string} */ this.sourceRoot;
 }
@@ -556,7 +557,7 @@ CodeMirror.StringStream.prototype = {
     sol: function () { }
 }
 
-/** @type {Object.<string, Object.<string, string>>} */
+/** @type {Object.<string, !Object.<string, string>>} */
 CodeMirror.keyMap;
 
 WebInspector.suggestReload = function() { }

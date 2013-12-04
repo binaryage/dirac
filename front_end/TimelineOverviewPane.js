@@ -755,9 +755,9 @@ WebInspector.TimelineFrameOverview.prototype = {
     },
 
     /**
-     * @param {!Array.<WebInspector.TimelineFrame>} frames
+     * @param {!Array.<!WebInspector.TimelineFrame>} frames
      * @param {number} framesPerBar
-     * @return {!Array.<WebInspector.TimelineFrame>}
+     * @return {!Array.<!WebInspector.TimelineFrame>}
      */
     _aggregateFrames: function(frames, framesPerBar)
     {
@@ -794,7 +794,7 @@ WebInspector.TimelineFrameOverview.prototype = {
     },
 
     /**
-     * @param {!Array.<WebInspector.TimelineFrame>} frames
+     * @param {!Array.<!WebInspector.TimelineFrame>} frames
      * @return {number}
      */
     _computeTargetFrameLength: function(frames)
@@ -818,7 +818,7 @@ WebInspector.TimelineFrameOverview.prototype = {
     },
 
     /**
-     * @param {!Array.<WebInspector.TimelineFrame>} frames
+     * @param {!Array.<!WebInspector.TimelineFrame>} frames
      * @param {number} scale
      * @param {number} windowHeight
      */

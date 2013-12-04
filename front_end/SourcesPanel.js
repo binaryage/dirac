@@ -268,7 +268,7 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @param {!Array.<WebInspector.UISourceCode>} uiSourceCodes
+     * @param {!Array.<!WebInspector.UISourceCode>} uiSourceCodes
      */
     _removeUISourceCodes: function(uiSourceCodes)
     {
@@ -1484,7 +1484,7 @@ WebInspector.SourcesPanel.prototype = {
     showGoToSourceDialog: function()
     {
         var uiSourceCodes = this._editorContainer.historyUISourceCodes();
-        /** @type {!Map.<WebInspector.UISourceCode, number>} */
+        /** @type {!Map.<!WebInspector.UISourceCode, number>} */
         var defaultScores = new Map();
         for (var i = 1; i < uiSourceCodes.length; ++i) // Skip current element
             defaultScores.put(uiSourceCodes[i], uiSourceCodes.length - i);

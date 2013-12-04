@@ -57,7 +57,7 @@ WebInspector.DirectoryContentView.columnIndexes = {
 
 WebInspector.DirectoryContentView.prototype = {
     /**
-     * @param {!Array.<WebInspector.FileSystemModel.Directory>} entries
+     * @param {!Array.<!WebInspector.FileSystemModel.Directory>} entries
      */
     showEntries: function(entries)
     {

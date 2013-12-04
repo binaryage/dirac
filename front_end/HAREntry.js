@@ -179,8 +179,8 @@ WebInspector.HAREntry.prototype = {
     },
 
     /**
-     * @param {!Array.<Object>} parameters
-     * @return {!Array.<Object>}
+     * @param {!Array.<!Object>} parameters
+     * @return {!Array.<!Object>}
      */
     _buildParameters: function(parameters)
     {
@@ -197,8 +197,8 @@ WebInspector.HAREntry.prototype = {
     },
 
     /**
-     * @param {!Array.<WebInspector.Cookie>} cookies
-     * @return {!Array.<Object>}
+     * @param {!Array.<!WebInspector.Cookie>} cookies
+     * @return {!Array.<!Object>}
      */
     _buildCookies: function(cookies)
     {
@@ -262,7 +262,7 @@ WebInspector.HAREntry._toMilliseconds = function(time)
 
 /**
  * @constructor
- * @param {!Array.<WebInspector.NetworkRequest>} requests
+ * @param {!Array.<!WebInspector.NetworkRequest>} requests
  */
 WebInspector.HARLog = function(requests)
 {
@@ -294,7 +294,7 @@ WebInspector.HARLog.prototype = {
     },
 
     /**
-     * @return {!Array.<Object>}
+     * @return {!Array.<!Object>}
      */
     _buildPages: function()
     {
@@ -360,7 +360,7 @@ WebInspector.HARWriter = function()
 WebInspector.HARWriter.prototype = {
     /**
      * @param {WebInspector.OutputStream} stream
-     * @param {!Array.<WebInspector.NetworkRequest>} requests
+     * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {WebInspector.Progress} progress
      */
     write: function(stream, requests, progress)

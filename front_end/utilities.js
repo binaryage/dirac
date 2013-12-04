@@ -40,7 +40,7 @@ Object.isEmpty = function(obj)
 
 /**
  * @param {!Object.<string,T>} obj
- * @return {!Array.<T>}
+ * @return {!Array.<!T>}
  * @template T
  */
 Object.values = function(obj)
@@ -341,7 +341,7 @@ Object.defineProperty(Array.prototype, "remove",
     /**
      * @param {T} value
      * @param {boolean=} onlyFirst
-     * @this {Array.<T>}
+     * @this {Array.<!T>}
      * @template T
      */
     value: function(value, onlyFirst)
@@ -380,8 +380,8 @@ Object.defineProperty(Array.prototype, "rotate",
 {
     /**
      * @param {number} index
-     * @return {!Array.<T>}
-     * @this {Array.<T>}
+     * @return {!Array.<!T>}
+     * @this {Array.<!T>}
      * @template T
      */
     value: function(index)
@@ -558,7 +558,7 @@ Object.defineProperty(Array.prototype, "lowerBound",
      * @param {T} object
      * @param {function(T,S):number=} comparator
      * @return {number}
-     * @this {Array.<S>}
+     * @this {Array.<!S>}
      * @template T,S
      */
     value: function(object, comparator)
@@ -592,7 +592,7 @@ Object.defineProperty(Array.prototype, "upperBound",
      * @param {T} object
      * @param {function(T,S):number=} comparator
      * @return {number}
-     * @this {Array.<S>}
+     * @this {Array.<!S>}
      * @template T,S
      */
     value: function(object, comparator)
@@ -621,7 +621,7 @@ Object.defineProperty(Array.prototype, "binaryIndexOf",
      * @param {T} value
      * @param {function(T,S):number} comparator
      * @return {number}
-     * @this {Array.<S>}
+     * @this {Array.<!S>}
      * @template T,S
      */
     value: function(value, comparator)
@@ -635,8 +635,8 @@ Object.defineProperty(Array.prototype, "select",
 {
     /**
      * @param {string} field
-     * @return {!Array.<T>}
-     * @this {Array.<Object.<string,T>>}
+     * @return {!Array.<!T>}
+     * @this {Array.<!Object.<string,T>>}
      * @template T
      */
     value: function(field)
@@ -652,7 +652,7 @@ Object.defineProperty(Array.prototype, "peekLast",
 {
     /**
      * @return {T|undefined}
-     * @this {Array.<T>}
+     * @this {Array.<!T>}
      * @template T
      */
     value: function()
@@ -663,7 +663,7 @@ Object.defineProperty(Array.prototype, "peekLast",
 
 /**
  * @param {T} object
- * @param {!Array.<S>} list
+ * @param {!Array.<!S>} list
  * @param {function(T,S):number=} comparator
  * @param {boolean=} insertionIndexAfter
  * @return {number}
@@ -1021,7 +1021,7 @@ Set.prototype = {
  */
 var Map = function()
 {
-    /** @type {!Object.<string, !Array.<K|V>>} */
+    /** @type {!Object.<string, !Array.<!K|!V>>} */
     this._map = {};
     this._size = 0;
 }
@@ -1065,7 +1065,7 @@ Map.prototype = {
     },
 
     /**
-     * @return {!Array.<V>}
+     * @return {!Array.<!V>}
      */
     values: function()
     {
@@ -1074,7 +1074,7 @@ Map.prototype = {
 
     /**
      * @param {number} index
-     * @return {!Array.<K|V>}
+     * @return {!Array.<!K|!V>}
      */
     _list: function(index)
     {
@@ -1187,7 +1187,7 @@ StringMap.prototype = {
     },
 
     /**
-     * @return {!Array.<T>}
+     * @return {!Array.<!T>}
      */
     values: function()
     {

@@ -339,7 +339,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
         var self = this;
 
         /**
-         * @param {!Array.<WebInspector.CSSStyleSheet>} styleSheets
+         * @param {!Array.<!WebInspector.CSSStyleSheet>} styleSheets
          */
         function evalCallback(styleSheets) {
             if (progress.isCanceled())
@@ -364,7 +364,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
             var foundSelectors = {};
 
             /**
-             * @param {!Array.<WebInspector.CSSStyleSheet>} styleSheets
+             * @param {!Array.<!WebInspector.CSSStyleSheet>} styleSheets
              */
             function selectorsCallback(styleSheets)
             {
@@ -449,9 +449,9 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
         }
 
         /**
-         * @param {!Array.<WebInspector.CSSStyleSheet>} styleSheets
+         * @param {!Array.<!WebInspector.CSSStyleSheet>} styleSheets
          * @param {string} sourceURL
-         * @param {?function(!Array.<WebInspector.CSSStyleSheet>)} continuation
+         * @param {?function(!Array.<!WebInspector.CSSStyleSheet>)} continuation
          * @param {WebInspector.CSSStyleSheet} styleSheet
          */
         function styleSheetCallback(styleSheets, sourceURL, continuation, styleSheet)
@@ -469,7 +469,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
 
         /**
          * @param {?Protocol.Error} error
-         * @param {!Array.<CSSAgent.CSSStyleSheetHeader>} styleSheetInfos
+         * @param {!Array.<!CSSAgent.CSSStyleSheetHeader>} styleSheetInfos
          */
         function allStylesCallback(error, styleSheetInfos)
         {
@@ -836,7 +836,7 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
         }
 
         /**
-         * @param {!Array.<DOMAgent.NodeId>=} nodeIds
+         * @param {!Array.<!DOMAgent.NodeId>=} nodeIds
          */
         function getStyles(nodeIds)
         {
@@ -925,7 +925,7 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
         }
 
         /**
-         * @param {!Array.<DOMAgent.NodeId>=} nodeIds
+         * @param {!Array.<!DOMAgent.NodeId>=} nodeIds
          */
         function externalStylesheetsReceived(root, inlineStyleNodeIds, nodeIds)
         {
@@ -951,7 +951,7 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
         }
 
         /**
-         * @param {!Array.<DOMAgent.NodeId>=} nodeIds
+         * @param {!Array.<!DOMAgent.NodeId>=} nodeIds
          */
         function inlineStylesReceived(root, nodeIds)
         {
@@ -1020,8 +1020,8 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
         }
 
         /**
-         * @param {!Array.<DOMAgent.NodeId>} lateStyleIds
-         * @param {!Array.<DOMAgent.NodeId>=} nodeIds
+         * @param {!Array.<!DOMAgent.NodeId>} lateStyleIds
+         * @param {!Array.<!DOMAgent.NodeId>=} nodeIds
          */
         function cssBeforeInlineReceived(lateStyleIds, nodeIds)
         {
@@ -1048,7 +1048,7 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
 
         /**
          * @param {WebInspector.DOMDocument} root
-         * @param {!Array.<DOMAgent.NodeId>=} nodeIds
+         * @param {!Array.<!DOMAgent.NodeId>=} nodeIds
          */
         function lateStylesReceived(root, nodeIds)
         {

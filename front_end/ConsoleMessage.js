@@ -41,7 +41,7 @@
  * @param {number=} line
  * @param {number=} column
  * @param {number=} repeatCount
- * @param {!Array.<RuntimeAgent.RemoteObject>=} parameters
+ * @param {!Array.<!RuntimeAgent.RemoteObject>=} parameters
  * @param {ConsoleAgent.StackTrace=} stackTrace
  * @param {NetworkAgent.RequestId=} requestId
  * @param {boolean=} isOutdated
@@ -424,7 +424,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
 
     /**
      * @param {!WebInspector.RemoteObject} object
-     * @param {!Array.<RuntimeAgent.PropertyPreview>} propertyPath
+     * @param {!Array.<!RuntimeAgent.PropertyPreview>} propertyPath
      * @return {Element}
      */
     _renderPropertyPreviewOrAccessor: function(object, propertyPath)
@@ -522,7 +522,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
     },
 
     /**
-     * @param {!Array.<WebInspector.RemoteObject>} parameters
+     * @param {!Array.<!WebInspector.RemoteObject>} parameters
      * @return {Element}
      */
     _formatParameterAsTable: function(parameters)
@@ -597,7 +597,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
     /**
      * @param {!WebInspector.RemoteObject} array
      * @param {Element} elem
-     * @param {?Array.<WebInspector.RemoteObjectProperty>} properties
+     * @param {?Array.<!WebInspector.RemoteObjectProperty>} properties
      */
     _printArray: function(array, elem, properties)
     {

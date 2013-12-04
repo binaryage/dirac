@@ -111,7 +111,7 @@ WebInspector.TabbedEditorContainer.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.UISourceCode>}
+     * @return {!Array.<!WebInspector.UISourceCode>}
      */
     historyUISourceCodes: function()
     {
@@ -283,7 +283,7 @@ WebInspector.TabbedEditorContainer.prototype = {
     },
 
     /**
-     * @param {!Array.<WebInspector.UISourceCode>} uiSourceCodes
+     * @param {!Array.<!WebInspector.UISourceCode>} uiSourceCodes
      */
     removeUISourceCodes: function(uiSourceCodes)
     {
@@ -542,7 +542,7 @@ WebInspector.TabbedEditorContainer.HistoryItem.prototype = {
 
 /**
  * @constructor
- * @param {!Array.<WebInspector.TabbedEditorContainer.HistoryItem>} items
+ * @param {!Array.<!WebInspector.TabbedEditorContainer.HistoryItem>} items
  */
 WebInspector.TabbedEditorContainer.History = function(items)
 {

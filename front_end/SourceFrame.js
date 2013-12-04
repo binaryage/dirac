@@ -138,7 +138,7 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
-     * @return {!Array.<Element>}
+     * @return {!Array.<!Element>}
      */
     statusBarItems: function()
     {

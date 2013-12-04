@@ -288,7 +288,7 @@ WebInspector.TimelinePresentationModel.prototype = {
 
     /**
      * @param {TimelineAgent.TimelineEvent} record
-     * @return {!Array.<WebInspector.TimelinePresentationModel.Record>}
+     * @return {!Array.<!WebInspector.TimelinePresentationModel.Record>}
      */
     addRecord: function(record)
     {
@@ -469,7 +469,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
-     * @param {!Array.<TimelineAgent.TimelineEvent>} records
+     * @param {!Array.<!TimelineAgent.TimelineEvent>} records
      */
     _foldSyncTimeRecords: function(records)
     {
@@ -505,7 +505,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     /**
      * @param {TimelineAgent.TimelineEvent} beginRecord
      * @param {TimelineAgent.TimelineEvent} endRecord
-     * @param {!Array.<TimelineAgent.TimelineEvent>} children
+     * @param {!Array.<!TimelineAgent.TimelineEvent>} children
      * @return {TimelineAgent.TimelineEvent}
      */
     _createSynchronousTimeRecord: function(beginRecord, endRecord, children)
@@ -932,7 +932,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.TimelinePresentationModel.Record>}
+     * @return {!Array.<!WebInspector.TimelinePresentationModel.Record>}
      */
     get children()
     {
@@ -1037,7 +1037,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @return {?Array.<ConsoleAgent.CallFrame>}
+     * @return {?Array.<!ConsoleAgent.CallFrame>}
      */
     get stackTrace()
     {
@@ -1849,7 +1849,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
 
     /**
      * @param {string} title
-     * @param {!Array.<ConsoleAgent.CallFrame>} stackTrace
+     * @param {!Array.<!ConsoleAgent.CallFrame>} stackTrace
      * @param {function(ConsoleAgent.CallFrame)} callFrameLinkifier
      */
     appendStackTrace: function(title, stackTrace, callFrameLinkifier)

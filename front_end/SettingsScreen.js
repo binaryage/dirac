@@ -960,11 +960,11 @@ WebInspector.EditableSettingsList = function(columns, valuesProvider, validateHa
     this._validateHandler = validateHandler;
     this._editHandler = editHandler;
     this._valuesProvider = valuesProvider;
-    /** @type {!Object.<string, HTMLInputElement>} */
+    /** @type {!Object.<string, !HTMLInputElement>} */
     this._addInputElements = {};
-    /** @type {!Object.<string, !Object.<string, HTMLInputElement>>} */
+    /** @type {!Object.<string, !Object.<string, !HTMLInputElement>>} */
     this._editInputElements = {};
-    /** @type {Object.<string, Object.<string, HTMLSpanElement>>} */
+    /** @type {Object.<string, !Object.<string, !HTMLSpanElement>>} */
     this._textElements = {};
 
     this._addMappingItem = this.addItem(null);
@@ -1054,13 +1054,13 @@ WebInspector.EditableSettingsList.prototype = {
 
     /**
      * @param {?string} itemId
-     * @return {Object.<string, HTMLInputElement>}
+     * @return {?Object.<string, !HTMLInputElement>}
      */
     _inputElements: function(itemId)
     {
         if (!itemId)
             return this._addInputElements;
-        return this._editInputElements[itemId];
+        return this._editInputElements[itemId] || null;
     },
 
     /**

@@ -79,7 +79,7 @@ WebInspector.CookieItemsView.prototype = {
     },
 
     /**
-     * @param {!Array.<WebInspector.Cookie>} allCookies
+     * @param {!Array.<!WebInspector.Cookie>} allCookies
      */
     _updateWithCookies: function(allCookies)
     {
@@ -108,7 +108,7 @@ WebInspector.CookieItemsView.prototype = {
     },
 
     /**
-     * @param {!Array.<WebInspector.Cookie>} allCookies
+     * @param {!Array.<!WebInspector.Cookie>} allCookies
      */
     _filterCookiesForDomain: function(allCookies)
     {

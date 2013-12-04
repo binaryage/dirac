@@ -53,10 +53,10 @@ WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, 
     this._requestContentCallbacks = [];
     /** @type {!Set.<!WebInspector.LiveLocation>} */
     this._liveLocations = new Set();
-    /** @type {!Array.<WebInspector.PresentationConsoleMessage>} */
+    /** @type {!Array.<!WebInspector.PresentationConsoleMessage>} */
     this._consoleMessages = [];
     
-    /** @type {!Array.<WebInspector.Revision>} */
+    /** @type {!Array.<!WebInspector.Revision>} */
     this.history = [];
     if (this.isEditable() && this._url)
         this._restoreRevisionHistory();
@@ -621,7 +621,7 @@ WebInspector.UISourceCode.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<!WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {
@@ -710,7 +710,7 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.PresentationConsoleMessage>}
+     * @return {!Array.<!WebInspector.PresentationConsoleMessage>}
      */
     consoleMessages: function()
     {
@@ -889,7 +889,7 @@ WebInspector.RawLocation = function()
 /**
  * @constructor
  * @param {WebInspector.RawLocation} rawLocation
- * @param {function(WebInspector.UILocation):(boolean|undefined)} updateDelegate
+ * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
  */
 WebInspector.LiveLocation = function(rawLocation, updateDelegate)
 {
@@ -1064,7 +1064,7 @@ WebInspector.Revision.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<!WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {

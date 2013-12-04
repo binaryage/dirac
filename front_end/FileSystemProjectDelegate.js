@@ -187,7 +187,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<!WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInFileContent: function(path, query, caseSensitive, isRegex, callback)
     {

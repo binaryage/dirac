@@ -210,7 +210,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<!WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInFileContent: function(path, query, caseSensitive, isRegex, callback)
     {
@@ -309,7 +309,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     },
 
     /**
-     * @return {Object.<string, WebInspector.ContentProvider>}
+     * @return {Object.<string, !WebInspector.ContentProvider>}
      */
     contentProviders: function()
     {

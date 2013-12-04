@@ -422,7 +422,7 @@ WebInspector.SelectionDialogContentProvider.prototype = {
         /**
          * @param {string} text
          * @param {string} query
-         * @return {?Array.<WebInspector.SourceRange>}
+         * @return {?Array.<!WebInspector.SourceRange>}
          */
         function rangesForMatch(text, query)
         {
@@ -600,7 +600,7 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.SelectionDialogContentProvider}
- * @param {Map.<WebInspector.UISourceCode, number>=} defaultScores
+ * @param {Map.<!WebInspector.UISourceCode, number>=} defaultScores
  */
 WebInspector.SelectUISourceCodeDialog = function(defaultScores)
 {
@@ -756,7 +756,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
  * @constructor
  * @extends {WebInspector.SelectUISourceCodeDialog}
  * @param {WebInspector.SourcesPanel} panel
- * @param {Map.<WebInspector.UISourceCode, number>=} defaultScores
+ * @param {Map.<!WebInspector.UISourceCode, number>=} defaultScores
  */
 WebInspector.OpenResourceDialog = function(panel, defaultScores)
 {
@@ -803,7 +803,7 @@ WebInspector.OpenResourceDialog.prototype = {
  * @param {WebInspector.SourcesPanel} panel
  * @param {Element} relativeToElement
  * @param {string=} name
- * @param {Map.<WebInspector.UISourceCode, number>=} defaultScores
+ * @param {Map.<!WebInspector.UISourceCode, number>=} defaultScores
  */
 WebInspector.OpenResourceDialog.show = function(panel, relativeToElement, name, defaultScores)
 {

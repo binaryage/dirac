@@ -116,7 +116,7 @@ WebInspector.LayerTreeModel.prototype = {
     },
 
     /**
-     * @param {!Array.<LayerTreeAgent.Layer>} payload
+     * @param {!Array.<!LayerTreeAgent.Layer>} payload
      */
     _repopulate: function(payload)
     {
@@ -151,7 +151,7 @@ WebInspector.LayerTreeModel.prototype = {
     },
 
     /**
-     * @param {!Array.<LayerTreeAgent.Layer>=} payload
+     * @param {!Array.<!LayerTreeAgent.Layer>=} payload
      */
     _layerTreeChanged: function(payload)
     {
@@ -230,7 +230,7 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.Layer>}
+     * @return {!Array.<!WebInspector.Layer>}
      */
     children: function()
     {
@@ -399,7 +399,7 @@ WebInspector.LayerTreeDispatcher = function(layerTreeModel)
 
 WebInspector.LayerTreeDispatcher.prototype = {
     /**
-     * @param {!Array.<LayerTreeAgent.Layer>=} payload
+     * @param {!Array.<!LayerTreeAgent.Layer>=} payload
      */
     layerTreeDidChange: function(payload)
     {

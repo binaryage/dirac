@@ -148,7 +148,7 @@ WebInspector.SourceMap.prototype = {
     },
 
     /**
-     * @param {!Array.<SourceMapV3.Section>} sections
+     * @param {!Array.<!SourceMapV3.Section>} sections
      */
     _parseSections: function(sections)
     {

@@ -154,7 +154,7 @@ WebInspector.DOMCountersGraph.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.DOMCounterUI>}
+     * @return {!Array.<!WebInspector.DOMCounterUI>}
      */
     _createCounterUIList: function()
     {

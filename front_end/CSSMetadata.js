@@ -32,7 +32,7 @@
 
 /**
  * @constructor
- * @param {!Array.<CSSAgent.CSSPropertyInfo|string>} properties
+ * @param {!Array.<!CSSAgent.CSSPropertyInfo|string>} properties
  */
 WebInspector.CSSMetadata = function(properties)
 {

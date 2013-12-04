@@ -64,7 +64,7 @@ WebInspector.OverviewGrid.prototype = {
     },
 
     /**
-     * @param {!Array.<Element>} dividers
+     * @param {!Array.<!Element>} dividers
      */
     addEventDividers: function(dividers)
     {

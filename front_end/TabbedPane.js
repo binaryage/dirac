@@ -550,8 +550,8 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @param {!Array.<WebInspector.TabbedPaneTab>} tabsOrdered
-     * @param {!Array.<WebInspector.TabbedPaneTab>} tabsHistory
+     * @param {!Array.<!WebInspector.TabbedPaneTab>} tabsOrdered
+     * @param {!Array.<!WebInspector.TabbedPaneTab>} tabsHistory
      * @param {number} totalWidth
      * @param {number} measuredDropDownButtonWidth
      * @return {!Array.<number>}
@@ -623,7 +623,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @return {!Array.<Element>}
+     * @return {!Array.<!Element>}
      */
     elementsToRestoreScrollPositionsFor: function()
     {

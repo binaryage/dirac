@@ -65,7 +65,7 @@ WebInspector.RuntimeModel.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.FrameExecutionContextList>}
+     * @return {!Array.<!WebInspector.FrameExecutionContextList>}
      */
     contextLists: function()
     {

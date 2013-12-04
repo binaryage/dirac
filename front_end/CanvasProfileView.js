@@ -123,7 +123,7 @@ WebInspector.CanvasProfileView.prototype = {
 
     /**
      * @override
-     * @return {!Array.<Element>}
+     * @return {!Array.<!Element>}
      */
     elementsToRestoreScrollPositionsFor: function()
     {
@@ -627,7 +627,7 @@ WebInspector.CanvasProfileType = function()
     this._capturingModeSelector.createOption(WebInspector.UIString("Single Frame"), WebInspector.UIString("Capture a single canvas frame."), "");
     this._capturingModeSelector.createOption(WebInspector.UIString("Consecutive Frames"), WebInspector.UIString("Capture consecutive canvas frames."), "1");
 
-    /** @type {!Object.<string, Element>} */
+    /** @type {!Object.<string, !Element>} */
     this._frameOptions = {};
 
     /** @type {!Object.<string, boolean>} */
@@ -926,7 +926,7 @@ WebInspector.CanvasProfileType.prototype = {
     _traceLogsRemoved: function(frameId, traceLogId)
     {
         var sidebarElementsToDelete = [];
-        var sidebarElements = /** @type {!Array.<WebInspector.ProfileSidebarTreeElement>} */ ((this.treeElement && this.treeElement.children) || []);
+        var sidebarElements = /** @type {!Array.<!WebInspector.ProfileSidebarTreeElement>} */ ((this.treeElement && this.treeElement.children) || []);
         for (var i = 0, n = sidebarElements.length; i < n; ++i) {
             var header = /** @type {WebInspector.CanvasProfileHeader} */ (sidebarElements[i].profile);
             if (!header)

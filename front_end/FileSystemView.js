@@ -61,7 +61,7 @@ WebInspector.FileSystemView = function(fileSystem)
 
 WebInspector.FileSystemView.prototype = {
     /**
-     * @type {!Array.<Element>}
+     * @type {!Array.<!Element>}
      */
     get statusBarItems()
     {
@@ -160,7 +160,7 @@ WebInspector.FileSystemView.EntryTreeElement.prototype = {
 
     /**
      * @param {number} errorCode
-     * @param {!Array.<WebInspector.FileSystemModel.Entry>=} entries
+     * @param {!Array.<!WebInspector.FileSystemModel.Entry>=} entries
      */
     _directoryContentReceived: function(errorCode, entries)
     {

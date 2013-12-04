@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @implements {WebInspector.ContentProvider}
- * @param {!Array.<WebInspector.Script>} scripts
+ * @param {!Array.<!WebInspector.Script>} scripts
  */
 WebInspector.ConcatenatedScriptsContentProvider = function(scripts)
 {
@@ -43,7 +43,7 @@ WebInspector.ConcatenatedScriptsContentProvider.scriptCloseTag = "</script>";
 
 WebInspector.ConcatenatedScriptsContentProvider.prototype = {
     /**
-     * @return {!Array.<WebInspector.Script>}
+     * @return {!Array.<!WebInspector.Script>}
      */
     _sortedScripts: function()
     {
@@ -112,7 +112,7 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<!WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {
@@ -133,7 +133,7 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
 
         /**
          * @param {WebInspector.Script} script
-         * @param {!Array.<PageAgent.SearchMatch>} searchMatches
+         * @param {!Array.<!PageAgent.SearchMatch>} searchMatches
          */
         function searchCallback(script, searchMatches)
         {
@@ -243,7 +243,7 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<!WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {
@@ -307,7 +307,7 @@ WebInspector.StaticContentProvider.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<!WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {

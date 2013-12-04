@@ -265,7 +265,7 @@ WebInspector.StatusBarButton.prototype = {
     },
 
     /**
-     * @param {?function():!Array.<WebInspector.StatusBarButton>} buttonsProvider
+     * @param {?function():!Array.<!WebInspector.StatusBarButton>} buttonsProvider
      */
     setLongClickOptionsEnabled: function(buttonsProvider)
     {

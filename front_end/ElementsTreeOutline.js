@@ -2306,7 +2306,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.DOMNode>} visibleChildren
+     * @return {!Array.<!WebInspector.DOMNode>} visibleChildren
      */
     _visibleChildren: function()
     {

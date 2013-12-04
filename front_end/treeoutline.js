@@ -33,7 +33,7 @@
  */
 function TreeOutline(listNode, nonFocusable)
 {
-    /** @type {!Array.<TreeElement>} */
+    /** @type {!Array.<!TreeElement>} */
     this.children = [];
     this.selectedTreeElement = null;
     this._childrenListNode = listNode;

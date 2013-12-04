@@ -49,7 +49,7 @@ WebInspector.CSSStyleModel = function(workspace)
 }
 
 /**
- * @param {!Array.<CSSAgent.RuleMatch>|undefined} matchArray
+ * @param {!Array.<!CSSAgent.RuleMatch>|undefined} matchArray
  */
 WebInspector.CSSStyleModel.parseRuleMatchArrayPayload = function(matchArray)
 {
@@ -102,9 +102,9 @@ WebInspector.CSSStyleModel.prototype = {
         /**
          * @param {function(?*)} userCallback
          * @param {?Protocol.Error} error
-         * @param {!Array.<CSSAgent.RuleMatch>=} matchedPayload
-         * @param {!Array.<CSSAgent.PseudoIdMatches>=} pseudoPayload
-         * @param {!Array.<CSSAgent.InheritedStyleEntry>=} inheritedPayload
+         * @param {!Array.<!CSSAgent.RuleMatch>=} matchedPayload
+         * @param {!Array.<!CSSAgent.PseudoIdMatches>=} pseudoPayload
+         * @param {!Array.<!CSSAgent.InheritedStyleEntry>=} inheritedPayload
          */
         function callback(userCallback, error, matchedPayload, pseudoPayload, inheritedPayload)
         {
@@ -156,7 +156,7 @@ WebInspector.CSSStyleModel.prototype = {
 
     /**
      * @param {number} nodeId
-     * @param {function(?String, ?Array.<CSSAgent.PlatformFontUsage>)} callback
+     * @param {function(?String, ?Array.<!CSSAgent.PlatformFontUsage>)} callback
      */
     getPlatformFontsForNode: function(nodeId, callback)
     {
@@ -218,7 +218,7 @@ WebInspector.CSSStyleModel.prototype = {
         /**
          * @param {function(?WebInspector.NamedFlowCollection)} userCallback
          * @param {?Protocol.Error} error
-         * @param {?Array.<CSSAgent.NamedFlow>} namedFlowPayload
+         * @param {?Array.<!CSSAgent.NamedFlow>} namedFlowPayload
          */
         function callback(userCallback, error, namedFlowPayload)
         {
@@ -325,7 +325,7 @@ WebInspector.CSSStyleModel.prototype = {
          * @param {number} index
          * @param {DOMAgent.NodeId} nodeId
          * @param {!Array.<number>} matchingSelectors
-         * @param {!Array.<DOMAgent.NodeId>=} matchingNodeIds
+         * @param {!Array.<!DOMAgent.NodeId>=} matchingNodeIds
          */
         function selectorQueried(index, nodeId, matchingSelectors, matchingNodeIds)
         {
@@ -383,7 +383,7 @@ WebInspector.CSSStyleModel.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.CSSStyleSheetHeader>}
+     * @return {!Array.<!WebInspector.CSSStyleSheetHeader>}
      */
     styleSheetHeaders: function()
     {
@@ -462,7 +462,7 @@ WebInspector.CSSStyleModel.prototype = {
 
     /**
      * @param {string} url
-     * @return {!Array.<CSSAgent.StyleSheetId>}
+     * @return {!Array.<!CSSAgent.StyleSheetId>}
      */
     styleSheetIdsForURL: function(url)
     {
@@ -478,7 +478,7 @@ WebInspector.CSSStyleModel.prototype = {
 
     /**
      * @param {string} url
-     * @return {Object.<PageAgent.FrameId, !Array.<CSSAgent.StyleSheetId>>}
+     * @return {Object.<PageAgent.FrameId, !Array.<!CSSAgent.StyleSheetId>>}
      */
     styleSheetIdsByFrameIdForURL: function(url)
     {
@@ -776,7 +776,7 @@ WebInspector.CSSStyleDeclaration = function(payload)
 }
 
 /**
- * @param {!Array.<CSSAgent.ShorthandEntry>} shorthandEntries
+ * @param {!Array.<!CSSAgent.ShorthandEntry>} shorthandEntries
  * @return {Object}
  */
 WebInspector.CSSStyleDeclaration.buildShorthandValueMap = function(shorthandEntries)
@@ -797,14 +797,14 @@ WebInspector.CSSStyleDeclaration.parsePayload = function(payload)
 }
 
 /**
- * @param {!Array.<CSSAgent.CSSComputedStyleProperty>} payload
+ * @param {!Array.<!CSSAgent.CSSComputedStyleProperty>} payload
  * @return {WebInspector.CSSStyleDeclaration}
  */
 WebInspector.CSSStyleDeclaration.parseComputedStylePayload = function(payload)
 {
     var newPayload = /** @type {CSSAgent.CSSStyle} */ ({ cssProperties: [], shorthandEntries: [], width: "", height: "" });
     if (payload)
-        newPayload.cssProperties = payload;
+        newPayload.cssProperties = /** @type {!Array.<!CSSAgent.CSSProperty>} */ (payload);
 
     return new WebInspector.CSSStyleDeclaration(newPayload);
 }
@@ -856,7 +856,7 @@ WebInspector.CSSStyleDeclaration.prototype = {
 
     /**
      * @param {string} name
-     * @return {!Array.<WebInspector.CSSProperty>}
+     * @return {!Array.<!WebInspector.CSSProperty>}
      */
     longhandProperties: function(name)
     {
@@ -1336,8 +1336,8 @@ WebInspector.CSSMedia.parsePayload = function(payload)
 }
 
 /**
- * @param {!Array.<CSSAgent.CSSMedia>} payload
- * @return {!Array.<WebInspector.CSSMedia>}
+ * @param {!Array.<!CSSAgent.CSSMedia>} payload
+ * @return {!Array.<!WebInspector.CSSMedia>}
  */
 WebInspector.CSSMedia.parseMediaArrayPayload = function(payload)
 {
@@ -1725,11 +1725,11 @@ WebInspector.NamedFlow.parsePayload = function(payload)
 
 /**
  * @constructor
- * @param {!Array.<CSSAgent.NamedFlow>} payload
+ * @param {!Array.<!CSSAgent.NamedFlow>} payload
  */
 WebInspector.NamedFlowCollection = function(payload)
 {
-    /** @type {Object.<string, WebInspector.NamedFlow>} */
+    /** @type {Object.<string, !WebInspector.NamedFlow>} */
     this.namedFlowMap = {};
 
     for (var i = 0; i < payload.length; ++i) {
@@ -1809,7 +1809,7 @@ WebInspector.CSSStyleModel.ComputedStyleLoader.prototype = {
         /**
          * @param {!DOMAgent.NodeId} nodeId
          * @param {?Protocol.Error} error
-         * @param {!Array.<CSSAgent.CSSComputedStyleProperty>} computedPayload
+         * @param {!Array.<!CSSAgent.CSSComputedStyleProperty>} computedPayload
          */
         function resultCallback(nodeId, error, computedPayload)
         {

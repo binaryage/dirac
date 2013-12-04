@@ -229,7 +229,7 @@ WebInspector.BreakpointManager.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @return {!Array.<WebInspector.BreakpointManager.Breakpoint>}
+     * @return {!Array.<!WebInspector.BreakpointManager.Breakpoint>}
      */
     breakpointsForUISourceCode: function(uiSourceCode)
     {
@@ -242,7 +242,7 @@ WebInspector.BreakpointManager.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.BreakpointManager.Breakpoint>}
+     * @return {!Array.<!WebInspector.BreakpointManager.Breakpoint>}
      */
     allBreakpoints: function()
     {
@@ -409,9 +409,9 @@ WebInspector.BreakpointManager.Breakpoint = function(breakpointManager, projectI
     this._path = path;
     this._lineNumber = lineNumber;
     this._sourceFileId = sourceFileId;
-    /** @type {!Array.<WebInspector.Script.Location>} */
+    /** @type {!Array.<!WebInspector.Script.Location>} */
     this._liveLocations = [];
-    /** @type {!Object.<string, WebInspector.UILocation>} */
+    /** @type {!Object.<string, !WebInspector.UILocation>} */
     this._uiLocations = {};
 
     // Force breakpoint update.
@@ -463,7 +463,7 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
 
     /**
      * @param {WebInspector.DebuggerModel.Location} location
-     * @param {WebInspector.UILocation} uiLocation
+     * @param {!WebInspector.UILocation} uiLocation
      */
     _locationUpdated: function(location, uiLocation)
     {
@@ -566,7 +566,7 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
     /**
     * @this {WebInspector.BreakpointManager.Breakpoint}
     * @param {?DebuggerAgent.BreakpointId} breakpointId
-    * @param {!Array.<WebInspector.DebuggerModel.Location>} locations
+    * @param {!Array.<!WebInspector.DebuggerModel.Location>} locations
     */
     _didSetBreakpointInDebugger: function(breakpointId, locations)
     {
@@ -650,7 +650,7 @@ WebInspector.BreakpointManager.Storage = function(breakpointManager, setting)
     this._breakpointManager = breakpointManager;
     this._setting = setting;
     var breakpoints = this._setting.get();
-    /** @type {Object.<string,WebInspector.BreakpointManager.Storage.Item>} */
+    /** @type {Object.<string, !WebInspector.BreakpointManager.Storage.Item>} */
     this._breakpoints = {};
     for (var i = 0; i < breakpoints.length; ++i) {
         var breakpoint = /** @type {WebInspector.BreakpointManager.Storage.Item} */ (breakpoints[i]);
@@ -671,7 +671,7 @@ WebInspector.BreakpointManager.Storage.prototype = {
 
     /**
      * @param {WebInspector.UISourceCode} uiSourceCode
-     * @return {!Array.<WebInspector.BreakpointManager.Storage.Item>}
+     * @return {!Array.<!WebInspector.BreakpointManager.Storage.Item>}
      */
     breakpointItems: function(uiSourceCode)
     {

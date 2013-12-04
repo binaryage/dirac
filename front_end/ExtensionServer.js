@@ -447,7 +447,7 @@ WebInspector.ExtensionServer.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.ContentProvider>}
+     * @return {!Array.<!WebInspector.ContentProvider>}
      */
     _onGetPageResources: function()
     {
@@ -710,7 +710,7 @@ WebInspector.ExtensionServer.prototype = {
     },
 
     /**
-     * @param {!Array.<ExtensionDescriptor>} extensions
+     * @param {!Array.<!ExtensionDescriptor>} extensions
      */
     _addExtensions: function(extensions)
     {

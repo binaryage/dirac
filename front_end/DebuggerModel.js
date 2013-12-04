@@ -38,7 +38,7 @@ WebInspector.DebuggerModel = function()
 
     this._debuggerPausedDetails = null;
     /**
-     * @type {Object.<string, WebInspector.Script>}
+     * @type {Object.<string, !WebInspector.Script>}
      */
     this._scripts = {};
     /** @type {!Object.<!string, !Array.<!WebInspector.Script>>} */
@@ -246,7 +246,7 @@ WebInspector.DebuggerModel.prototype = {
     /**
      * @param {WebInspector.DebuggerModel.Location} rawLocation
      * @param {string} condition
-     * @param {function(?DebuggerAgent.BreakpointId, !Array.<WebInspector.DebuggerModel.Location>):void=} callback
+     * @param {function(?DebuggerAgent.BreakpointId, !Array.<!WebInspector.DebuggerModel.Location>):void=} callback
      */
     setBreakpointByScriptLocation: function(rawLocation, condition, callback)
     {
@@ -262,7 +262,7 @@ WebInspector.DebuggerModel.prototype = {
      * @param {number} lineNumber
      * @param {number=} columnNumber
      * @param {string=} condition
-     * @param {function(?DebuggerAgent.BreakpointId, !Array.<WebInspector.DebuggerModel.Location>)=} callback
+     * @param {function(?DebuggerAgent.BreakpointId, !Array.<!WebInspector.DebuggerModel.Location>)=} callback
      */
     setBreakpointByURL: function(url, lineNumber, columnNumber, condition, callback)
     {
@@ -280,12 +280,12 @@ WebInspector.DebuggerModel.prototype = {
          * @this {WebInspector.DebuggerModel}
          * @param {?Protocol.Error} error
          * @param {DebuggerAgent.BreakpointId} breakpointId
-         * @param {!Array.<DebuggerAgent.Location>} locations
+         * @param {!Array.<!DebuggerAgent.Location>} locations
          */
         function didSetBreakpoint(error, breakpointId, locations)
         {
             if (callback) {
-                var rawLocations = /** @type {!Array.<WebInspector.DebuggerModel.Location>} */ (locations);
+                var rawLocations = /** @type {!Array.<!WebInspector.DebuggerModel.Location>} */ (locations);
                 callback(error ? null : breakpointId, rawLocations);
             }
         }
@@ -296,7 +296,7 @@ WebInspector.DebuggerModel.prototype = {
     /**
      * @param {WebInspector.DebuggerModel.Location} rawLocation
      * @param {string} condition
-     * @param {function(?DebuggerAgent.BreakpointId, !Array.<WebInspector.DebuggerModel.Location>)=} callback
+     * @param {function(?DebuggerAgent.BreakpointId, !Array.<!WebInspector.DebuggerModel.Location>)=} callback
      */
     setBreakpointBySourceId: function(rawLocation, condition, callback)
     {
@@ -349,7 +349,7 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
-     * @return {Object.<string, WebInspector.Script>}
+     * @return {Object.<string, !WebInspector.Script>}
      */
     get scripts()
     {
@@ -391,7 +391,7 @@ WebInspector.DebuggerModel.prototype = {
      * @param {function(?Protocol.Error, DebuggerAgent.SetScriptSourceError=)} callback
      * @param {?Protocol.Error} error
      * @param {DebuggerAgent.SetScriptSourceError=} errorData
-     * @param {!Array.<DebuggerAgent.CallFrame>=} callFrames
+     * @param {!Array.<!DebuggerAgent.CallFrame>=} callFrames
      * @param {DebuggerAgent.StackTrace=} asyncStackTrace
      * @param {boolean=} needsStepIn
      */
@@ -405,7 +405,7 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
-     * @return {?Array.<WebInspector.DebuggerModel.CallFrame>}
+     * @return {?Array.<!WebInspector.DebuggerModel.CallFrame>}
      */
     get callFrames()
     {
@@ -440,7 +440,7 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
-     * @param {!Array.<DebuggerAgent.CallFrame>} callFrames
+     * @param {!Array.<!DebuggerAgent.CallFrame>} callFrames
      * @param {string} reason
      * @param {Object|undefined} auxData
      * @param {!Array.<string>} breakpointIds
@@ -659,7 +659,7 @@ WebInspector.DebuggerModel.prototype = {
 
     /**
      * @param {WebInspector.DebuggerModel.Location} rawLocation
-     * @param {function(WebInspector.UILocation):(boolean|undefined)} updateDelegate
+     * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
      * @return {WebInspector.Script.Location}
      */
     createLiveLocation: function(rawLocation, updateDelegate)
@@ -683,7 +683,7 @@ WebInspector.DebuggerModel.prototype = {
     /**
      * Handles notification from JavaScript VM about updated stack (liveedit or frame restart action).
      * @this {WebInspector.DebuggerModel}
-     * @param {!Array.<DebuggerAgent.CallFrame>=} newCallFrames
+     * @param {!Array.<!DebuggerAgent.CallFrame>=} newCallFrames
      * @param {Object=} details
      * @param {DebuggerAgent.StackTrace=} asyncStackTrace
      */
@@ -726,7 +726,7 @@ WebInspector.DebuggerDispatcher = function(debuggerModel)
 
 WebInspector.DebuggerDispatcher.prototype = {
     /**
-     * @param {!Array.<DebuggerAgent.CallFrame>} callFrames
+     * @param {!Array.<!DebuggerAgent.CallFrame>} callFrames
      * @param {string} reason
      * @param {Object=} auxData
      * @param {!Array.<string>=} breakpointIds
@@ -822,7 +822,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
     },
 
     /**
-     * @return {!Array.<DebuggerAgent.Scope>}
+     * @return {!Array.<!DebuggerAgent.Scope>}
      */
     get scopeChain()
     {
@@ -899,7 +899,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
         /**
          * @this {WebInspector.DebuggerModel.CallFrame}
          * @param {?Protocol.Error} error
-         * @param {!Array.<DebuggerAgent.CallFrame>=} callFrames
+         * @param {!Array.<!DebuggerAgent.CallFrame>=} callFrames
          * @param {Object=} details
          * @param {DebuggerAgent.StackTrace=} asyncStackTrace
          */
@@ -914,7 +914,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
     },
 
     /**
-     * @param {function(!Array.<DebuggerAgent.Location>)} callback
+     * @param {function(!Array.<!DebuggerAgent.Location>)} callback
      */
     getStepIntoLocations: function(callback)
     {
@@ -924,7 +924,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
         }
         /**
          * @param {?string} error
-         * @param {!Array.<DebuggerAgent.Location>=} stepInPositions
+         * @param {!Array.<!DebuggerAgent.Location>=} stepInPositions
          */
         function getStepInPositionsCallback(error, stepInPositions) {
             if (error) {
@@ -937,7 +937,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
     },
 
     /**
-     * @param {function(WebInspector.UILocation):(boolean|undefined)} updateDelegate
+     * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
      */
     createLiveLocation: function(updateDelegate)
     {
@@ -957,7 +957,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
 /**
  * @constructor
  * @param {WebInspector.DebuggerModel} model
- * @param {!Array.<DebuggerAgent.CallFrame>} callFrames
+ * @param {!Array.<!DebuggerAgent.CallFrame>} callFrames
  * @param {string} reason
  * @param {Object|undefined} auxData
  * @param {!Array.<string>} breakpointIds

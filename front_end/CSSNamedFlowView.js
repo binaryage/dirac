@@ -148,8 +148,8 @@ WebInspector.CSSNamedFlowView.prototype = {
     },
 
     /**
-     * @param {!Array.<DOMAgent.NodeId>} oldContent
-     * @param {!Array.<DOMAgent.NodeId>} newContent
+     * @param {!Array.<!DOMAgent.NodeId>} oldContent
+     * @param {!Array.<!DOMAgent.NodeId>} newContent
      */
     _mergeContentNodes: function(oldContent, newContent)
     {
@@ -194,8 +194,8 @@ WebInspector.CSSNamedFlowView.prototype = {
     },
 
     /**
-     * @param {!Array.<CSSAgent.Region>} oldRegions
-     * @param {!Array.<CSSAgent.Region>} newRegions
+     * @param {!Array.<!CSSAgent.Region>} oldRegions
+     * @param {!Array.<!CSSAgent.Region>} newRegions
      */
     _mergeRegions: function(oldRegions, newRegions)
     {

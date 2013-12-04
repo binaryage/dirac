@@ -49,9 +49,9 @@ WebInspector.NavigatorView = function()
     this.element.appendChild(scriptsOutlineElement);
     this.setDefaultFocusedElement(this._scriptsTree.element);
 
-    /** @type {!Map.<WebInspector.UISourceCode, !WebInspector.NavigatorUISourceCodeTreeNode>} */
+    /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.NavigatorUISourceCodeTreeNode>} */
     this._uiSourceCodeNodes = new Map();
-    /** @type {!Map.<WebInspector.NavigatorTreeNode, !StringMap.<!WebInspector.NavigatorFolderTreeNode>>} */
+    /** @type {!Map.<!WebInspector.NavigatorTreeNode, !StringMap.<!WebInspector.NavigatorFolderTreeNode>>} */
     this._subfolderNodes = new Map();
 
     this._rootNode = new WebInspector.NavigatorRootTreeNode(this);
@@ -79,7 +79,7 @@ WebInspector.NavigatorView.iconClassForType = function(type)
 
 WebInspector.NavigatorView.prototype = {
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     addUISourceCode: function(uiSourceCode)
     {
@@ -107,7 +107,7 @@ WebInspector.NavigatorView.prototype = {
 
     /**
      * @param {WebInspector.Project} project
-     * @return {WebInspector.NavigatorTreeNode}
+     * @return {!WebInspector.NavigatorTreeNode}
      */
     _projectNode: function(project)
     {
@@ -124,9 +124,9 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.NavigatorTreeNode} projectNode
+     * @param {!WebInspector.NavigatorTreeNode} projectNode
      * @param {string} folderPath
-     * @return {WebInspector.NavigatorTreeNode}
+     * @return {!WebInspector.NavigatorTreeNode}
      */
     _folderNode: function(projectNode, folderPath)
     {
@@ -156,7 +156,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {boolean=} select
      */
     revealUISourceCode: function(uiSourceCode, select)
@@ -189,7 +189,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     removeUISourceCode: function(uiSourceCode)
     {
@@ -216,7 +216,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     updateIcon: function(uiSourceCode)
     {
@@ -233,7 +233,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {function(boolean)=} callback
      */
     rename: function(uiSourceCode, callback)
@@ -461,7 +461,7 @@ WebInspector.NavigatorTreeOutline._treeElementsCompare = function compare(treeEl
 
 WebInspector.NavigatorTreeOutline.prototype = {
    /**
-    * @return {!Array.<WebInspector.UISourceCode>}
+    * @return {!Array.<!WebInspector.UISourceCode>}
     */
    scriptTreeElements: function()
    {

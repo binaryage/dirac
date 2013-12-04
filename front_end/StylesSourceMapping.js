@@ -128,7 +128,7 @@ WebInspector.StylesSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     _unbindUISourceCode: function(uiSourceCode)
     {
@@ -152,7 +152,7 @@ WebInspector.StylesSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {WebInspector.CSSStyleSheetHeader} header
      */
     _bindUISourceCode: function(uiSourceCode, header)
@@ -180,7 +180,7 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     _uiSourceCodeRemoved: function(event)
     {
-        var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
         this._unbindUISourceCode(uiSourceCode);
     },
 
@@ -188,7 +188,7 @@ WebInspector.StylesSourceMapping.prototype = {
     {
         /** @type {!Object.<string, !StringMap.<!StringMap.<!WebInspector.CSSStyleSheetHeader>>>} */
         this._urlToHeadersByFrameId = {};
-        /** @type {!Map.<WebInspector.UISourceCode, WebInspector.StyleFile>} */
+        /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.StyleFile>} */
         this._styleFiles = new Map();
     },
 

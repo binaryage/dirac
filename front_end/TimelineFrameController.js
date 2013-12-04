@@ -147,7 +147,7 @@ WebInspector.TimelineFrameController.prototype = {
 
 /**
  * @constructor
- * @param {!Array.<WebInspector.TimelineFrame>} frames
+ * @param {!Array.<!WebInspector.TimelineFrame>} frames
  */
 WebInspector.FrameStatistics = function(frames)
 {

@@ -143,7 +143,7 @@ WebInspector.ProjectDelegate.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<!WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInFileContent: function(path, query, caseSensitive, isRegex, callback) { },
 
@@ -172,7 +172,7 @@ WebInspector.Project = function(workspace, projectDelegate)
 {
     /** @type {Object.<string, {uiSourceCode: WebInspector.UISourceCode, index: number}>} */
     this._uiSourceCodesMap = {};
-    /** @type {!Array.<WebInspector.UISourceCode>} */
+    /** @type {!Array.<!WebInspector.UISourceCode>} */
     this._uiSourceCodesList = [];
     this._workspace = workspace;
     this._projectDelegate = projectDelegate;
@@ -288,7 +288,7 @@ WebInspector.Project.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.UISourceCode>}
+     * @return {!Array.<!WebInspector.UISourceCode>}
      */
     uiSourceCodes: function()
     {
@@ -439,7 +439,7 @@ WebInspector.Project.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {function(!Array.<WebInspector.ContentProvider.SearchMatch>)} callback
+     * @param {function(!Array.<!WebInspector.ContentProvider.SearchMatch>)} callback
      */
     searchInFileContent: function(uiSourceCode, query, caseSensitive, isRegex, callback)
     {
@@ -489,7 +489,7 @@ WebInspector.projectTypes = {
 WebInspector.Workspace = function(fileSystemMapping)
 {
     this._fileSystemMapping = fileSystemMapping;
-    /** @type {!Object.<string, WebInspector.Project>} */
+    /** @type {!Object.<string, !WebInspector.Project>} */
     this._projects = {};
 }
 
@@ -530,7 +530,7 @@ WebInspector.Workspace.prototype = {
 
     /**
      * @param {string} type
-     * @return {!Array.<WebInspector.UISourceCode>}
+     * @return {!Array.<!WebInspector.UISourceCode>}
      */
     uiSourceCodesForProjectType: function(type)
     {
@@ -576,7 +576,7 @@ WebInspector.Workspace.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.Project>}
+     * @return {!Array.<!WebInspector.Project>}
      */
     projects: function()
     {
@@ -585,7 +585,7 @@ WebInspector.Workspace.prototype = {
 
     /**
      * @param {string} type
-     * @return {!Array.<WebInspector.Project>}
+     * @return {!Array.<!WebInspector.Project>}
      */
     projectsForType: function(type)
     {
@@ -597,7 +597,7 @@ WebInspector.Workspace.prototype = {
     },
 
     /**
-     * @return {!Array.<WebInspector.UISourceCode>}
+     * @return {!Array.<!WebInspector.UISourceCode>}
      */
     uiSourceCodes: function()
     {

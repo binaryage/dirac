@@ -418,7 +418,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {!Array.<WebInspector.CSSStyleSheetHeader>} headersWithSameSourceURL
+     * @param {!Array.<!WebInspector.CSSStyleSheetHeader>} headersWithSameSourceURL
      * @param {boolean} forceRebind
      * @param {string} completeSourceMapURL
      */
@@ -595,7 +595,7 @@ WebInspector.SASSSourceMapping.prototype = {
         this._pendingSourceMapLoadingCallbacks = {};
         /** @type {Object.<string, {deadlineMs: number, dataByURL: Object.<string, {timer: number, previousPoll: number}>}>} */
         this._pollDataForSASSURL = {};
-        /** @type {Object.<string, WebInspector.SourceMap>} */
+        /** @type {Object.<string, !WebInspector.SourceMap>} */
         this._sourceMapByURL = {};
         this._sourceMapByStyleSheetURL = {};
     }

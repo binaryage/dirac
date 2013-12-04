@@ -172,8 +172,8 @@ WebInspector.TimelinePanel = function()
     this._expandOffset = 15;
 
     // Create gpu tasks containers.
-    this._mainThreadTasks = /** @type {!Array.<TimelineAgent.TimelineEvent>} */ ([]);
-    this._gpuTasks = /** @type {!Array.<TimelineAgent.TimelineEvent>} */ ([]);
+    this._mainThreadTasks = /** @type {!Array.<!TimelineAgent.TimelineEvent>} */ ([]);
+    this._gpuTasks = /** @type {!Array.<!TimelineAgent.TimelineEvent>} */ ([]);
     var utilizationStripsElement = this._timelineGrid.gridHeaderElement.createChild("div", "timeline-utilization-strips vbox");
     this._cpuBarsElement = utilizationStripsElement.createChild("div", "timeline-utilization-strip");
     if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
@@ -1118,7 +1118,7 @@ WebInspector.TimelinePanel.prototype = {
 
     /**
      * @param {string} name
-     * @param {!Array.<TimelineAgent.TimelineEvent>} tasks
+     * @param {!Array.<!TimelineAgent.TimelineEvent>} tasks
      * @param {?Element} container
      */
     _refreshUtilizationBars: function(name, tasks, container)

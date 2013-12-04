@@ -50,7 +50,7 @@ WebInspector.DebuggerScriptMapping.prototype = {
      */
     _parsedScriptSource: function(event)
     {
-        var script = /** @type {WebInspector.Script} */ (event.data);
+        var script = /** @type {!WebInspector.Script} */ (event.data);
         this._defaultMapping.addScript(script);
 
         if (script.isSnippet()) {

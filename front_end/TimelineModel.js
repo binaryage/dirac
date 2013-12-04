@@ -380,7 +380,7 @@ WebInspector.TimelineModelLoader.prototype = {
 
         var items;
         try {
-            items = /** @type {!Array.<TimelineAgent.TimelineEvent>} */ (JSON.parse(json));
+            items = /** @type {!Array.<!TimelineAgent.TimelineEvent>} */ (JSON.parse(json));
         } catch (e) {
             WebInspector.showErrorMessage("Malformed timeline data.");
             this._model.reset();

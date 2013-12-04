@@ -39,15 +39,15 @@ WebInspector.CompilerScriptMapping = function(workspace, networkWorkspaceProvide
     this._workspace = workspace;
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
     this._networkWorkspaceProvider = networkWorkspaceProvider;
-    /** @type {!Object.<string, WebInspector.SourceMap>} */
+    /** @type {!Object.<string, !WebInspector.SourceMap>} */
     this._sourceMapForSourceMapURL = {};
     /** @type {!Object.<string, !Array.<function(?WebInspector.SourceMap)>>} */
     this._pendingSourceMapLoadingCallbacks = {};
-    /** @type {!Object.<string, WebInspector.SourceMap>} */
+    /** @type {!Object.<string, !WebInspector.SourceMap>} */
     this._sourceMapForScriptId = {};
-    /** @type {!Map.<WebInspector.SourceMap, WebInspector.Script>} */
+    /** @type {!Map.<!WebInspector.SourceMap, !WebInspector.Script>} */
     this._scriptForSourceMap = new Map();
-    /** @type {!StringMap.<WebInspector.SourceMap>} */
+    /** @type {!StringMap.<!WebInspector.SourceMap>} */
     this._sourceMapForURL = new StringMap();
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 }
