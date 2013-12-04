@@ -1069,7 +1069,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
 
     _stopRecordingProfile: function()
     {
-        HeapProfilerAgent.stopTrackingHeapObjects();
+        HeapProfilerAgent.stopTrackingHeapObjects(true);
         this._recording = false;
         this.dispatchEventToListeners(WebInspector.TrackingHeapSnapshotProfileType.TrackingStopped);
     },

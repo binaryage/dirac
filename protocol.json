@@ -3552,7 +3552,11 @@
                 "name": "startTrackingHeapObjects"
             },
             {
-                "name": "stopTrackingHeapObjects"
+                "name": "stopTrackingHeapObjects",
+                "parameters": [
+                    { "name": "reportProgress", "type": "boolean", "optional": true, "description": "If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped." }
+                ]
+
             },
             {
                 "name": "getHeapSnapshot",
