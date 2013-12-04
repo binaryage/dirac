@@ -302,7 +302,8 @@ WebInspector.RuntimeModel.prototype = {
         for (var i = 0; i < properties.length; ++i) {
             var property = properties[i];
 
-            if (dotNotation && !/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(property))
+            // Assume that all non-ASCII characters are letters and thus can be used as part of identifier.
+            if (dotNotation && !/^[a-zA-Z_$\u008F-\uFFFF][a-zA-Z0-9_$\u008F-\uFFFF]*$/.test(property))
                 continue;
 
             if (bracketNotation) {
