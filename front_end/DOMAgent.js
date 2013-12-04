@@ -971,7 +971,7 @@ WebInspector.DOMAgent.prototype = {
     },
 
     /**
-     * @param {DOMAgent.Node} payload
+     * @param {?DOMAgent.Node} payload
      */
     _setDocument: function(payload)
     {
@@ -1183,7 +1183,7 @@ WebInspector.DOMAgent.prototype = {
 
     /**
      * @param {number} index
-     * @param {?function(DOMAgent.Node)} callback
+     * @param {?function(?DOMAgent.Node)} callback
      */
     searchResult: function(index, callback)
     {
@@ -1558,7 +1558,7 @@ WebInspector.DOMNodeHighlighter = function() {
 WebInspector.DOMNodeHighlighter.prototype = {
     /**
      * @param {DOMAgent.NodeId} nodeId
-     * @param {?DOMAgent.HighlightConfig} config
+     * @param {!DOMAgent.HighlightConfig} config
      * @param {RuntimeAgent.RemoteObjectId=} objectId
      */
     highlightDOMNode: function(nodeId, config, objectId) {},
@@ -1566,7 +1566,7 @@ WebInspector.DOMNodeHighlighter.prototype = {
     /**
      * @param {boolean} enabled
      * @param {boolean} inspectShadowDOM
-     * @param {DOMAgent.HighlightConfig} config
+     * @param {!DOMAgent.HighlightConfig} config
      * @param {function(?Protocol.Error)} callback
      */
     setInspectModeEnabled: function(enabled, inspectShadowDOM, config, callback) {}
@@ -1582,7 +1582,7 @@ WebInspector.DefaultDOMNodeHighlighter = function() {
 WebInspector.DefaultDOMNodeHighlighter.prototype = {
     /**
      * @param {DOMAgent.NodeId} nodeId
-     * @param {?DOMAgent.HighlightConfig} config
+     * @param {!DOMAgent.HighlightConfig} config
      * @param {RuntimeAgent.RemoteObjectId=} objectId
      */
     highlightDOMNode: function(nodeId, config, objectId)
@@ -1596,7 +1596,7 @@ WebInspector.DefaultDOMNodeHighlighter.prototype = {
     /**
      * @param {boolean} enabled
      * @param {boolean} inspectShadowDOM
-     * @param {DOMAgent.HighlightConfig} config
+     * @param {!DOMAgent.HighlightConfig} config
      * @param {function(?Protocol.Error)} callback
      */
     setInspectModeEnabled: function(enabled, inspectShadowDOM, config, callback)

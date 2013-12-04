@@ -316,7 +316,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
          */
         function showObjectPopover(result, wasThrown)
         {
-            if (!WebInspector.debuggerModel.isPaused()) {
+            if (!WebInspector.debuggerModel.isPaused() || !result) {
                 this._popoverHelper.hidePopover();
                 return;
             }

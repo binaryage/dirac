@@ -301,8 +301,9 @@ WebInspector.CanvasProfileView.prototype = {
             return;
         this._lastReplayCallIndex = index;
         this._pendingReplayTraceLogEvent = true;
+
         /**
-         * @param {CanvasAgent.ResourceState} resourceState
+         * @param {?CanvasAgent.ResourceState} resourceState
          * @param {number} replayTime
          */
         function didReplayTraceLog(resourceState, replayTime)
@@ -1267,14 +1268,13 @@ WebInspector.CanvasTraceLogPlayerProxy.prototype = {
     {
         /**
          * @param {?Protocol.Error} error
-         * @param {CanvasAgent.ResourceState} resourceState
+         * @param {!CanvasAgent.ResourceState} resourceState
          * @param {number} replayTime
          */
         function callback(error, resourceState, replayTime)
         {
             this._currentResourceStates = {};
-            if (error || !resourceState) {
-                resourceState = null;
+            if (error) {
                 userCallback(null, replayTime);
             } else {
                 this._defaultResourceId = resourceState.id;
@@ -1282,7 +1282,7 @@ WebInspector.CanvasTraceLogPlayerProxy.prototype = {
                 userCallback(resourceState, replayTime);
             }
             this.dispatchEventToListeners(WebInspector.CanvasTraceLogPlayerProxy.Events.CanvasReplayStateChanged);
-            if (resourceState)
+            if (!error)
                 this.dispatchEventToListeners(WebInspector.CanvasTraceLogPlayerProxy.Events.CanvasResourceStateReceived, resourceState);
         }
         CanvasAgent.replayTraceLog(this._traceLogId, index, callback.bind(this));

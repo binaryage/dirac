@@ -671,9 +671,9 @@ WebInspector.ConsoleView.prototype = {
         this.prompt.text = newPromptText;
 
         /**
-         * @param {WebInspector.RemoteObject} result
+         * @param {?WebInspector.RemoteObject} result
          * @param {boolean} wasThrown
-         * @param {RuntimeAgent.RemoteObject=} valueResult
+         * @param {?RuntimeAgent.RemoteObject=} valueResult
          */
         function printResult(result, wasThrown, valueResult)
         {

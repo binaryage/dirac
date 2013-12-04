@@ -144,7 +144,7 @@ WebInspector.ExtensionAuditCategoryResults.prototype = {
     {
         /**
          * @param {?string} error
-         * @param {?RuntimeAgent.RemoteObject} result
+         * @param {!RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
          */
         function onEvaluate(error, result, wasThrown)

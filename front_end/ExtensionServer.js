@@ -344,13 +344,13 @@ WebInspector.ExtensionServer.prototype = {
     {
         /**
          * @param {?Protocol.Error} error
-         * @param {RuntimeAgent.RemoteObject} resultPayload
+         * @param {?RuntimeAgent.RemoteObject} resultPayload
          * @param {boolean=} wasThrown
          */
         function callback(error, resultPayload, wasThrown)
         {
             var result;
-            if (error)
+            if (error || !resultPayload)
                 result = this._status.E_PROTOCOLERROR(error.toString());
             else if (wasThrown)
                 result = { isException: true, value: resultPayload.description };
@@ -847,7 +847,7 @@ WebInspector.ExtensionServer.prototype = {
      * @param {boolean} returnByValue
      * @param {Object} options
      * @param {string} securityOrigin
-     * @param {function(?string, ?RuntimeAgent.RemoteObject, boolean=)} callback
+     * @param {function(?string, !RuntimeAgent.RemoteObject, boolean=)} callback
      */
     evaluate: function(expression, exposeCommandLineAPI, returnByValue, options, securityOrigin, callback)
     {

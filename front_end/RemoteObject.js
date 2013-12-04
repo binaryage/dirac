@@ -99,7 +99,7 @@ WebInspector.RemoteObject.resolveNode = function(node, objectGroup, callback)
 }
 
 /**
- * @param {RuntimeAgent.RemoteObject=} payload
+ * @param {!RuntimeAgent.RemoteObject} payload
  * @return {!WebInspector.RemoteObject}
  */
 WebInspector.RemoteObject.fromPayload = function(payload)
@@ -231,6 +231,8 @@ WebInspector.RemoteObject.prototype = {
                 internalPropertiesResult = [];
                 for (var i = 0; i < internalProperties.length; i++) {
                     var property = internalProperties[i];
+                    if (!property.value)
+                        continue;
                     internalPropertiesResult.push(new WebInspector.RemoteObjectProperty(property.name, WebInspector.RemoteObject.fromPayload(property.value)));
                 }
             }

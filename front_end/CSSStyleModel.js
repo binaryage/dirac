@@ -743,7 +743,7 @@ WebInspector.CSSLocation = function(url, lineNumber, columnNumber)
 
 /**
  * @constructor
- * @param {CSSAgent.CSSStyle} payload
+ * @param {!CSSAgent.CSSStyle} payload
  */
 WebInspector.CSSStyleDeclaration = function(payload)
 {
@@ -788,8 +788,8 @@ WebInspector.CSSStyleDeclaration.buildShorthandValueMap = function(shorthandEntr
 }
 
 /**
- * @param {CSSAgent.CSSStyle} payload
- * @return {WebInspector.CSSStyleDeclaration}
+ * @param {!CSSAgent.CSSStyle} payload
+ * @return {!WebInspector.CSSStyleDeclaration}
  */
 WebInspector.CSSStyleDeclaration.parsePayload = function(payload)
 {
@@ -1199,7 +1199,7 @@ WebInspector.CSSProperty.prototype = {
 
         /**
          * @param {?string} error
-         * @param {?CSSAgent.CSSStyle} stylePayload
+         * @param {!CSSAgent.CSSStyle} stylePayload
          */
         function callback(error, stylePayload)
         {
