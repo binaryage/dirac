@@ -298,6 +298,9 @@
             'front_end/TimelineModel.js',
             'front_end/TimelinePresentationModel.js',
             'front_end/TimelineOverviewPane.js',
+            'front_end/TimelineEventOverview.js',
+            'front_end/TimelineFrameOverview.js',
+            'front_end/TimelineMemoryOverview.js',
             'front_end/TimelinePanel.js',
         ],
 

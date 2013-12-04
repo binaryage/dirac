@@ -36,6 +36,9 @@ importScript("TimelineModel.js");
 importScript("TimelineOverviewPane.js");
 importScript("TimelinePresentationModel.js");
 importScript("TimelineFrameController.js");
+importScript("TimelineEventOverview.js");
+importScript("TimelineFrameOverview.js");
+importScript("TimelineMemoryOverview.js");
 
 /**
  * @constructor
