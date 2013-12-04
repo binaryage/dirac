@@ -922,8 +922,10 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     reportHeapSnapshotProgress: function(done, total)
     {
         var profile = this.findTemporaryProfile();
-        if (profile)
-            this.dispatchEventToListeners(WebInspector.ProfileType.Events.ProgressUpdated, {"profile": profile, "done": done, "total": total});
+        if (!profile)
+            return;
+        profile.sidebarElement.subtitle = WebInspector.UIString("%.0f%", (done / total) * 100);
+        profile.sidebarElement.wait = true;
     },
 
     /**

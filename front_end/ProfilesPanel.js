@@ -43,7 +43,6 @@ WebInspector.ProfileType = function(id, name)
 WebInspector.ProfileType.Events = {
     AddProfileHeader: "add-profile-header",
     RemoveProfileHeader: "remove-profile-header",
-    ProgressUpdated: "progress-updated",
     ViewUpdated: "view-updated"
 }
 
@@ -618,14 +617,9 @@ WebInspector.ProfilesPanel.prototype = {
         {
             this._removeProfileHeader(event.data);
         }
-        function onProgressUpdated(event)
-        {
-            this._reportProfileProgress(event.data.profile, event.data.done, event.data.total);
-        }
         profileType.addEventListener(WebInspector.ProfileType.Events.ViewUpdated, this._updateProfileTypeSpecificUI, this);
         profileType.addEventListener(WebInspector.ProfileType.Events.AddProfileHeader, onAddProfileHeader, this);
         profileType.addEventListener(WebInspector.ProfileType.Events.RemoveProfileHeader, onRemoveProfileHeader, this);
-        profileType.addEventListener(WebInspector.ProfileType.Events.ProgressUpdated, onProgressUpdated, this);
     },
 
     /**
