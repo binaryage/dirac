@@ -60,6 +60,7 @@ modules = [
             "UIString.js",
             "UserMetrics.js",
             "utilities.js",
+            "Geometry.js",
         ]
     },
     {

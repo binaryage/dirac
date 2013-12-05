@@ -92,6 +92,7 @@
             'front_end/FilterBar.js',
             'front_end/FlameChart.js',
             'front_end/FontView.js',
+            'front_end/Geometry.js',
             'front_end/GoToLineDialog.js',
             'front_end/HAREntry.js',
             'front_end/HandlerRegistry.js',
@@ -199,6 +200,7 @@
             '<@(devtools_standalone_files)',
         ],
         'devtools_standalone_files': [
+            'front_end/accelerometer.css',
             'front_end/auditsPanel.css',
             'front_end/breadcrumbList.css',
             'front_end/breakpointsList.css',
