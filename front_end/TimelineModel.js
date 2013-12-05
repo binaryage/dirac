@@ -80,6 +80,7 @@ WebInspector.TimelineModel.RecordType = {
 
     MarkLoad: "MarkLoad",
     MarkDOMContent: "MarkDOMContent",
+    MarkFirstPaint: "MarkFirstPaint",
 
     TimeStamp: "TimeStamp",
     Time: "Time",

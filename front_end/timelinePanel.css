@@ -542,6 +542,10 @@
     border-color: rgba(255, 178, 23, 0.5);
 }
 
+.resources-green-divider {
+    border-color: rgba(0, 130, 0, 0.5);
+}
+
 .resources-divider:last-child {
     border-color: transparent;
 }

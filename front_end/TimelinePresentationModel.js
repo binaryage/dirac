@@ -99,6 +99,7 @@ WebInspector.TimelinePresentationModel._initRecordStyles = function()
     recordStyles[recordTypes.GCEvent] = { title: WebInspector.UIString("GC Event"), category: categories["scripting"] };
     recordStyles[recordTypes.MarkDOMContent] = { title: WebInspector.UIString("DOMContentLoaded event"), category: categories["scripting"] };
     recordStyles[recordTypes.MarkLoad] = { title: WebInspector.UIString("Load event"), category: categories["scripting"] };
+    recordStyles[recordTypes.MarkFirstPaint] = { title: WebInspector.UIString("First paint"), category: categories["painting"] };
     recordStyles[recordTypes.TimeStamp] = { title: WebInspector.UIString("Stamp"), category: categories["scripting"] };
     recordStyles[recordTypes.Time] = { title: WebInspector.UIString("Time"), category: categories["scripting"] };
     recordStyles[recordTypes.TimeEnd] = { title: WebInspector.UIString("Time End"), category: categories["scripting"] };
@@ -142,6 +143,8 @@ WebInspector.TimelinePresentationModel.isEventDivider = function(record)
 {
     var recordTypes = WebInspector.TimelineModel.RecordType;
     if (record.type === recordTypes.TimeStamp)
+        return true;
+    if (record.type === recordTypes.MarkFirstPaint)
         return true;
     if (record.type === recordTypes.MarkDOMContent || record.type === recordTypes.MarkLoad) {
         if (record.data && ((typeof record.data.isMainFrame) === "boolean"))
@@ -215,6 +218,8 @@ WebInspector.TimelinePresentationModel.createEventDivider = function(recordType,
         eventDivider.className += " resources-blue-divider";
     else if (recordType === recordTypes.MarkLoad)
         eventDivider.className += " resources-red-divider";
+    else if (recordType === recordTypes.MarkFirstPaint)
+        eventDivider.className += " resources-green-divider";
     else if (recordType === recordTypes.TimeStamp)
         eventDivider.className += " resources-orange-divider";
     else if (recordType === recordTypes.BeginFrame)
@@ -229,6 +234,7 @@ WebInspector.TimelinePresentationModel.createEventDivider = function(recordType,
 WebInspector.TimelinePresentationModel._hiddenRecords = { }
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.MarkDOMContent] = 1;
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.MarkLoad] = 1;
+WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.MarkFirstPaint] = 1;
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.ScheduleStyleRecalculation] = 1;
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.InvalidateLayout] = 1;
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.GPUTask] = 1;
