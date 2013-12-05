@@ -900,7 +900,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
      */
     addHeapSnapshotChunk: function(uid, chunk)
     {
-        var profile = this._profilesIdMap[this._makeKey(uid)];
+        var profile = this.getProfile(uid);
         if (profile)
             profile.transferChunk(chunk);
     },

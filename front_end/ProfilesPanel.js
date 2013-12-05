@@ -35,7 +35,6 @@ WebInspector.ProfileType = function(id, name)
     this._name = name;
     /** @type {!Array.<!WebInspector.ProfileHeader>} */
     this._profiles = [];
-    this._profilesIdMap = {};
     /** @type {WebInspector.SidebarSectionTreeElement} */
     this.treeElement = null;
 }
@@ -140,7 +139,12 @@ WebInspector.ProfileType.prototype = {
      */
     getProfile: function(uid)
     {
-        return this._profilesIdMap[this._makeKey(uid)];
+
+        for (var i = 0; i < this._profiles.length; ++i) {
+            if (this._profiles[i].uid === uid)
+                return this._profiles[i];
+        }
+        return null;
     },
 
     // Must be implemented by subclasses.
@@ -154,23 +158,11 @@ WebInspector.ProfileType.prototype = {
     },
 
     /**
-     * @nosideeffects
-     * @param {number} id
-     * @return {string}
-     */
-    _makeKey: function(id)
-    {
-        return id + '/' + escape(this.id);
-    },
-
-    /**
      * @param {!WebInspector.ProfileHeader} profile
      */
     addProfile: function(profile)
     {
         this._profiles.push(profile);
-        // FIXME: uid only based key should be enough.
-        this._profilesIdMap[this._makeKey(profile.uid)] = profile;
         this.dispatchEventToListeners(WebInspector.ProfileType.Events.AddProfileHeader, profile);
     },
 
@@ -185,7 +177,6 @@ WebInspector.ProfileType.prototype = {
                 break;
             }
         }
-        delete this._profilesIdMap[this._makeKey(profile.uid)];
     },
 
     /**
@@ -216,7 +207,6 @@ WebInspector.ProfileType.prototype = {
         }
         this.treeElement.removeChildren();
         this._profiles = [];
-        this._profilesIdMap = {};
     },
 
     __proto__: WebInspector.Object.prototype
