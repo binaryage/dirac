@@ -520,8 +520,19 @@ WebInspector.ProfilesPanel.prototype = {
      */
     toggleRecordButton: function(event)
     {
-        var isProfiling = this._selectedProfileType.buttonClicked();
-        this.setRecordingProfile(this._selectedProfileType.id, isProfiling);
+        var type = this._selectedProfileType;
+        var isProfiling = type.buttonClicked();
+        this.recordButton.toggled = isProfiling;
+        this.recordButton.title = type.buttonTooltip;
+        if (isProfiling) {
+            this._launcherView.profileStarted();
+            if (!type.findTemporaryProfile())
+                type.addProfile(type.createTemporaryProfile());
+            if (type.hasTemporaryView())
+                this._showProfile(type.findTemporaryProfile());
+        } else {
+            this._launcherView.profileFinished();
+        }
         return true;
     },
 
@@ -828,16 +839,6 @@ WebInspector.ProfilesPanel.prototype = {
     /**
      * @param {string} typeId
      */
-    _createTemporaryProfile: function(typeId)
-    {
-        var type = this.getProfileType(typeId);
-        if (!type.findTemporaryProfile())
-            type.addProfile(type.createTemporaryProfile());
-    },
-
-    /**
-     * @param {string} typeId
-     */
     _removeTemporaryProfile: function(typeId)
     {
         var temporaryProfile = this.getProfileType(typeId).findTemporaryProfile();
@@ -955,24 +956,6 @@ WebInspector.ProfilesPanel.prototype = {
             this._searchResultsView = null;
         }
         this._searchableView.updateSearchMatchesCount(0);
-    },
-
-    /**
-     * @param {string} profileType
-     * @param {boolean} isProfiling
-     */
-    setRecordingProfile: function(profileType, isProfiling)
-    {
-        var profileTypeObject = this.getProfileType(profileType);
-        this.recordButton.toggled = isProfiling;
-        this.recordButton.title = profileTypeObject.buttonTooltip;
-        if (isProfiling) {
-            this._launcherView.profileStarted();
-            this._createTemporaryProfile(profileType);
-            if (profileTypeObject.hasTemporaryView())
-                this._showProfile(profileTypeObject.findTemporaryProfile());
-        } else
-            this._launcherView.profileFinished();
     },
 
     /**
