@@ -3510,12 +3510,6 @@
                 ]
             },
             {
-                "name": "setRecordingProfile",
-                "parameters": [
-                    { "name": "isProfiling", "type": "boolean" }
-                ]
-            },
-            {
                 "name": "resetProfiles"
             }
         ]

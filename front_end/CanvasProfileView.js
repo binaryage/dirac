@@ -767,11 +767,6 @@ WebInspector.CanvasProfileType.prototype = {
             this._recording = false;
     },
 
-    setRecordingProfile: function(isProfiling)
-    {
-        this._recording = isProfiling;
-    },
-
     /**
      * @override
      * @param {string=} title

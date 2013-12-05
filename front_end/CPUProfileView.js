@@ -719,14 +719,6 @@ WebInspector.CPUProfileType.prototype = {
     },
 
     /**
-     * @param {boolean} isProfiling
-     */
-    setRecordingProfile: function(isProfiling)
-    {
-        this._recording = isProfiling;
-    },
-
-    /**
      * @override
      * @param {string=} title
      * @return {!WebInspector.ProfileHeader}
