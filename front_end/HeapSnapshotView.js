@@ -871,21 +871,12 @@ WebInspector.HeapSnapshotProfileType.prototype = {
         return new WebInspector.HeapProfileHeader(this, title);
     },
 
-    /**
-     * @override
-     * @param {HeapProfilerAgent.ProfileHeader} profile
-     * @return {!WebInspector.ProfileHeader}
-     */
-    createProfile: function(profile)
-    {
-        return new WebInspector.HeapProfileHeader(this, profile.title, profile.uid, profile.maxJSObjectId || 0);
-    },
-
     _takeHeapSnapshot: function(callback)
     {
         var temporaryProfile = this.findTemporaryProfile();
-        if (!temporaryProfile)
-            this.addProfile(this.createTemporaryProfile());
+        if (temporaryProfile)
+            return;
+        this.addProfile(this.createTemporaryProfile());
         HeapProfilerAgent.takeHeapSnapshot(true, callback);
     },
 
@@ -896,7 +887,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     {
         if (!this.findTemporaryProfile())
             return;
-        var profile = this.createProfile(profileHeader);
+        var profile = new WebInspector.HeapProfileHeader(this, profileHeader.title, profileHeader.uid, profileHeader.maxJSObjectId || 0);
         profile._profileSamples = this._profileSamples;
         this._profileSamples = null;
         this.addProfile(profile);

@@ -154,15 +154,6 @@ WebInspector.ProfileType.prototype = {
     },
 
     /**
-     * @param {ProfilerAgent.ProfileHeader} profile
-     * @return {!WebInspector.ProfileHeader}
-     */
-    createProfile: function(profile)
-    {
-        throw new Error("Not supported for " + this._name + " profiles.");
-    },
-
-    /**
      * @nosideeffects
      * @param {number} id
      * @return {string}

@@ -779,16 +779,6 @@ WebInspector.CanvasProfileType.prototype = {
     },
 
     /**
-     * @override
-     * @param {ProfilerAgent.ProfileHeader} profile
-     * @return {!WebInspector.ProfileHeader}
-     */
-    createProfile: function(profile)
-    {
-        return new WebInspector.CanvasProfileHeader(this, profile.title, -1);
-    },
-
-    /**
      * @param {boolean=} forcePageReload
      */
     _updateDecorationElement: function(forcePageReload)

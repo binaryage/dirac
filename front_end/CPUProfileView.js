@@ -697,7 +697,7 @@ WebInspector.CPUProfileType.prototype = {
      */
     addProfileHeader: function(profileHeader)
     {
-        this.addProfile(this.createProfile(profileHeader));
+        this.addProfile(new WebInspector.CPUProfileHeader(this, profileHeader.title, profileHeader.uid));
     },
 
     isRecordingProfile: function()
@@ -727,16 +727,6 @@ WebInspector.CPUProfileType.prototype = {
     {
         title = title || WebInspector.UIString("Recording\u2026");
         return new WebInspector.CPUProfileHeader(this, title);
-    },
-
-    /**
-     * @override
-     * @param {ProfilerAgent.ProfileHeader} profile
-     * @return {!WebInspector.ProfileHeader}
-     */
-    createProfile: function(profile)
-    {
-        return new WebInspector.CPUProfileHeader(this, profile.title, profile.uid);
     },
 
     /**
