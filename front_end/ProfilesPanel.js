@@ -760,7 +760,7 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ProfileHeader} profile
+     * @param {?WebInspector.ProfileHeader} profile
      * @return {WebInspector.View}
      */
     _showProfile: function(profile)
