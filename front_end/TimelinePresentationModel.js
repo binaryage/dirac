@@ -1157,8 +1157,9 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                 callSiteStackTraceLabel = WebInspector.UIString("Animation frame requested");
                 contentHelper.appendTextRow(WebInspector.UIString("Callback ID"), this.data["id"]);
                 break;
-            case recordTypes.FunctionCall:
-                contentHelper.appendElementRow(WebInspector.UIString("Location"), this._linkifyScriptLocation());
+        case recordTypes.FunctionCall:
+                if (this.scriptName)
+                    contentHelper.appendElementRow(WebInspector.UIString("Location"), this._linkifyLocation(this.scriptName, this.scriptLine, 0));
                 break;
             case recordTypes.ScheduleResourceRequest:
             case recordTypes.ResourceSendRequest:
@@ -1256,7 +1257,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             contentHelper.appendElementRow(relatedNodeLabel || WebInspector.UIString("Related node"), this._createNodeAnchor(this._relatedNode));
 
         if (this.scriptName && this.type !== recordTypes.FunctionCall)
-            contentHelper.appendElementRow(WebInspector.UIString("Function Call"), this._linkifyScriptLocation());
+            contentHelper.appendElementRow(WebInspector.UIString("Function Call"), this._linkifyLocation(this.scriptName, this.scriptLine, 0));
 
         if (this.usedHeapSize) {
             if (this.usedHeapSizeDelta) {
@@ -1344,7 +1345,8 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             details = this._linkifyScriptLocation(this.data["timerId"]);
             break;
         case WebInspector.TimelineModel.RecordType.FunctionCall:
-            details = this._linkifyScriptLocation();
+            if (this.scriptName)
+                details = this._linkifyLocation(this.scriptName, this.scriptLine, 0);
             break;
         case WebInspector.TimelineModel.RecordType.FireAnimationFrame:
             details = this._linkifyScriptLocation(this.data["id"]);
@@ -1389,7 +1391,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             details = this.data["message"];
             break;
         default:
-            details = this._linkifyScriptLocation() || this._linkifyTopCallFrame() || null;
+            details = this.scriptName ? this._linkifyLocation(this.scriptName, this.scriptLine, 0) : (this._linkifyTopCallFrame() || null);
             break;
         }
 
@@ -1436,15 +1438,12 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @param {*=} defaultValue
+     * @param {*} defaultValue
      * @return {Element|string}
      */
     _linkifyScriptLocation: function(defaultValue)
     {
-        if (this.scriptName)
-            return this._linkifyLocation(this.scriptName, this.scriptLine, 0);
-        else
-            return defaultValue ? "" + defaultValue : null;
+        return this.scriptName ? this._linkifyLocation(this.scriptName, this.scriptLine, 0) : "" + defaultValue;
     },
 
     calculateAggregatedStats: function()
