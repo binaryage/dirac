@@ -51,7 +51,7 @@ WebInspector.CanvasProfileView = function(profile)
     this._imageSplitView = new WebInspector.SplitView(false, "canvasProfileViewSplitLocation", 300);
     this._imageSplitView.show(this._replayInfoSplitView.firstElement());
 
-    var replayImageContainer = this._imageSplitView.firstElement();
+    var replayImageContainer = this._imageSplitView.firstElement().createChild("div");
     replayImageContainer.id = "canvas-replay-image-container";
     this._replayImageElement = replayImageContainer.createChild("img", "canvas-replay-image");
     this._debugInfoElement = replayImageContainer.createChild("div", "canvas-debug-info hidden");

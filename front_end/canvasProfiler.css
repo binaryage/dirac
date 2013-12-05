@@ -28,7 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-.canvas-profile-view {
+.canvas-profile-view,
+#canvas-replay-image-container {
     overflow: hidden;
     position: absolute;
     top: 0;
