@@ -815,5 +815,48 @@ WebInspector.LocalJSONObject.prototype = {
     arrayLength: function()
     {
         return this._value instanceof Array ? this._value.length : 0;
+    },
+
+    /**
+     * @param {function(this:Object, ...)} functionDeclaration
+     * @param {Array.<RuntimeAgent.CallArgument>=} args
+     * @param {function(?WebInspector.RemoteObject, boolean=)=} callback
+     */
+    callFunction: function(functionDeclaration, args, callback)
+    {
+        var target = /** @type {?Object} */ (this._value);
+        var rawArgs = args ? args.map(function(arg) {return arg.value;}) : [];
+
+        var result;
+        var wasThrown = false;
+        try {
+            result = functionDeclaration.apply(target, rawArgs);
+        } catch (e) {
+            wasThrown = true;
+        }
+
+        if (!callback)
+            return;
+        callback(WebInspector.RemoteObject.fromLocalObject(result), wasThrown);
+    },
+
+    /**
+     * @param {function(this:Object)} functionDeclaration
+     * @param {Array.<RuntimeAgent.CallArgument>|undefined} args
+     * @param {function(*)} callback
+     */
+    callFunctionJSON: function(functionDeclaration, args, callback)
+    {
+        var target = /** @type {?Object} */ (this._value);
+        var rawArgs = args ? args.map(function(arg) {return arg.value;}) : [];
+
+        var result;
+        try {
+            result = functionDeclaration.apply(target, rawArgs);
+        } catch (e) {
+            result = null;
+        }
+
+        callback(result);
     }
 }
