@@ -304,7 +304,7 @@
                 "returns": [
                     { "name": "cookies", "type": "array", "items": { "$ref": "Cookie" }, "description": "Array of cookie objects." }
                 ],
-                "description": "Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookie</code> field.",
+                "description": "Returns all browser cookies. Depending on the backend support, will return detailed cookie information in the <code>cookies</code> field.",
                 "hidden": true
             },
             {
