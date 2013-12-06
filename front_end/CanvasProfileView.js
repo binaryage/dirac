@@ -768,17 +768,6 @@ WebInspector.CanvasProfileType.prototype = {
     },
 
     /**
-     * @override
-     * @param {string=} title
-     * @return {!WebInspector.ProfileHeader}
-     */
-    createTemporaryProfile: function(title)
-    {
-        title = title || WebInspector.UIString("Capturing\u2026");
-        return new WebInspector.CanvasProfileHeader(this, title);
-    },
-
-    /**
      * @param {boolean=} forcePageReload
      */
     _updateDecorationElement: function(forcePageReload)

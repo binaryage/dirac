@@ -697,6 +697,15 @@ WebInspector.CPUProfileType.prototype = {
      */
     addProfileHeader: function(profileHeader)
     {
+        if (this._profileBeingRecorded) {
+            this._profileBeingRecorded.isTemporary = false;
+            this._profileBeingRecorded.title = profileHeader.title;
+            this._profileBeingRecorded.sidebarElement.mainTitle = profileHeader.title;
+            this._profileBeingRecorded.uid = profileHeader.uid;
+            WebInspector.panels.profiles._showProfile(this._profileBeingRecorded);
+            this._profileBeingRecorded = null;
+            return;
+        }
         this.addProfile(new WebInspector.CPUProfileHeader(this, profileHeader.title, profileHeader.uid));
     },
 
@@ -707,6 +716,11 @@ WebInspector.CPUProfileType.prototype = {
 
     startRecordingProfile: function()
     {
+        if (this._profileBeingRecorded)
+            return;
+        this._profileBeingRecorded = new WebInspector.CPUProfileHeader(this, WebInspector.UIString("Recording\u2026"));
+        this.addProfile(this._profileBeingRecorded);
+
         this._recording = true;
         WebInspector.userMetrics.ProfilesCPUProfileTaken.record();
         ProfilerAgent.start();
@@ -720,12 +734,11 @@ WebInspector.CPUProfileType.prototype = {
 
     /**
      * @override
-     * @param {string=} title
+     * @param {!string} title
      * @return {!WebInspector.ProfileHeader}
      */
-    createTemporaryProfile: function(title)
+    createProfileLoadedFromFile: function(title)
     {
-        title = title || WebInspector.UIString("Recording\u2026");
         return new WebInspector.CPUProfileHeader(this, title);
     },
 
@@ -746,18 +759,6 @@ WebInspector.CPUProfileType.prototype = {
     resetProfiles: function()
     {
         this._reset();
-    },
-
-    /** @deprecated To be removed from the protocol */
-    addHeapSnapshotChunk: function(uid, chunk)
-    {
-        throw new Error("Never called");
-    },
-
-    /** @deprecated To be removed from the protocol */
-    reportHeapSnapshotProgress: function(done, total)
-    {
-        throw new Error("Never called");
     },
 
     __proto__: WebInspector.ProfileType.prototype
@@ -800,6 +801,9 @@ WebInspector.CPUProfileHeader.prototype = {
         this._jsonifiedProfile = null;
         this.sidebarElement.subtitle = WebInspector.UIString("Loaded");
         this.isTemporary = false;
+
+        if (this._profileType._profileBeingRecorded === this)
+            this._profileType._profileBeingRecorded = null;
     },
 
     /**

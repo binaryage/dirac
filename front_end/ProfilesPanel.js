@@ -37,6 +37,8 @@ WebInspector.ProfileType = function(id, name)
     this._profiles = [];
     /** @type {WebInspector.SidebarSectionTreeElement} */
     this.treeElement = null;
+    /** @type {?WebInspector.ProfileHeader} */
+    this._profileBeingRecorded = null;
 }
 
 WebInspector.ProfileType.Events = {
@@ -147,12 +149,26 @@ WebInspector.ProfileType.prototype = {
         return null;
     },
 
-    // Must be implemented by subclasses.
     /**
-     * @param {string=} title
+     * @param {File} file
+     */
+    loadFromFile: function(file)
+    {
+        var name = file.name;
+        if (name.endsWith(this.fileExtension()))
+            name = name.substr(0, name.length - this.fileExtension().length);
+        var profile = this.createProfileLoadedFromFile(name);
+        profile.setFromFile();
+        this._profileBeingRecorded = profile;
+        this.addProfile(profile);
+        profile.loadFromFile(file);
+    },
+
+    /**
+     * @param {!string} title
      * @return {!WebInspector.ProfileHeader}
      */
-    createTemporaryProfile: function(title)
+    createProfileLoadedFromFile: function(title)
     {
         throw new Error("Needs implemented.");
     },
@@ -181,15 +197,11 @@ WebInspector.ProfileType.prototype = {
 
     /**
      * @nosideeffects
-     * @return {WebInspector.ProfileHeader}
+     * @return {?WebInspector.ProfileHeader}
      */
-    findTemporaryProfile: function()
+    profileBeingRecorded: function()
     {
-        for (var i = 0; i < this._profiles.length; ++i) {
-            if (this._profiles[i].isTemporary)
-                return this._profiles[i];
-        }
-        return null;
+        return this._profileBeingRecorded;
     },
 
     _reset: function()
@@ -481,18 +493,12 @@ WebInspector.ProfilesPanel.prototype = {
             return;
         }
 
-        if (!!profileType.findTemporaryProfile()) {
+        if (!!profileType.profileBeingRecorded()) {
             WebInspector.log(WebInspector.UIString("Can't load profile when other profile is recording."));
             return;
         }
 
-        var name = file.name;
-        if (name.endsWith(profileType.fileExtension()))
-            name = name.substr(0, name.length - profileType.fileExtension().length);
-        var temporaryProfile = profileType.createTemporaryProfile(name);
-        temporaryProfile.setFromFile();
-        profileType.addProfile(temporaryProfile);
-        temporaryProfile.loadFromFile(file);
+        profileType.loadFromFile(file);
     },
 
     /**
@@ -507,10 +513,8 @@ WebInspector.ProfilesPanel.prototype = {
         this.recordButton.title = type.buttonTooltip;
         if (isProfiling) {
             this._launcherView.profileStarted();
-            if (!type.findTemporaryProfile())
-                type.addProfile(type.createTemporaryProfile());
             if (type.hasTemporaryView())
-                this._showProfile(type.findTemporaryProfile());
+                this._showProfile(type.profileBeingRecorded());
         } else {
             this._launcherView.profileFinished();
         }
@@ -704,22 +708,13 @@ WebInspector.ProfilesPanel.prototype = {
             profileTreeElement.mainTitle = alternateTitle;
         profile._profilesTreeElement = profileTreeElement;
 
-        var temporaryProfile = profileType.findTemporaryProfile();
-        if (profile.isTemporary || !temporaryProfile)
-            sidebarParent.appendChild(profileTreeElement);
-        else {
-            if (temporaryProfile) {
-                sidebarParent.insertBeforeChild(profileTreeElement, temporaryProfile._profilesTreeElement);
-                this._removeTemporaryProfile(profile.profileType().id);
-            }
+        sidebarParent.appendChild(profileTreeElement);
+        if (!this.visibleView || this.visibleView === this._launcherView)
+            this._showProfile(profile);
 
-            if (!this.visibleView || this.visibleView === this._launcherView)
-                this._showProfile(profile);
-
-            this.dispatchEventToListeners("profile added", {
-                type: typeId
-            });
-        }
+        this.dispatchEventToListeners("profile added", {
+            type: typeId
+        });
     },
 
     /**
@@ -815,16 +810,6 @@ WebInspector.ProfilesPanel.prototype = {
                 break;
             }
         }
-    },
-
-    /**
-     * @param {string} typeId
-     */
-    _removeTemporaryProfile: function(typeId)
-    {
-        var temporaryProfile = this.getProfileType(typeId).findTemporaryProfile();
-        if (!!temporaryProfile)
-            this._removeProfileHeader(temporaryProfile);
     },
 
     /**
