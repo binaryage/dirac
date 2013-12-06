@@ -532,7 +532,6 @@ WebInspector.StylesSidebarPane.prototype = {
             styleRules.push(attrStyle);
         }
 
-
         styleRules.push({ computedStyle: true, selectorText: "", style: nodeComputedStyle, editable: false });
 
         if (!!node.pseudoType())
@@ -1862,8 +1861,6 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         valueElement.className = "value";
         this.valueElement = valueElement;
 
-        var cf = WebInspector.Color.Format;
-
         if (value) {
             var self = this;
 
@@ -1907,141 +1904,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
                 return container;
             }
 
-            function processColor(text)
-            {
-                var color = WebInspector.Color.parse(text);
-
-                // We can be called with valid non-color values of |text| (like 'none' from border style)
-                if (!color)
-                    return document.createTextNode(text);
-
-                var format = WebInspector.StylesSidebarPane._colorFormat(color);
-                var spectrumHelper = self.editablePane() && self.editablePane()._spectrumHelper;
-                var spectrum = spectrumHelper ? spectrumHelper.spectrum() : null;
-
-                var colorSwatch = new WebInspector.ColorSwatch();
-                colorSwatch.setColorString(text);
-                colorSwatch.element.addEventListener("click", swatchClick, false);
-
-                var scrollerElement;
-
-                function spectrumChanged(e)
-                {
-                    var colorString = /** @type {string} */ (e.data);
-                    spectrum.displayText = colorString;
-                    colorValueElement.textContent = colorString;
-                    colorSwatch.setColorString(colorString);
-                    self.applyStyleText(nameElement.textContent + ": " + valueElement.textContent, false, false, false);
-                }
-
-                function spectrumHidden(event)
-                {
-                    if (scrollerElement)
-                        scrollerElement.removeEventListener("scroll", repositionSpectrum, false);
-                    var commitEdit = event.data;
-                    var propertyText = !commitEdit && self.originalPropertyText ? self.originalPropertyText : (nameElement.textContent + ": " + valueElement.textContent);
-                    self.applyStyleText(propertyText, true, true, false);
-                    spectrum.removeEventListener(WebInspector.Spectrum.Events.ColorChanged, spectrumChanged);
-                    spectrumHelper.removeEventListener(WebInspector.SpectrumPopupHelper.Events.Hidden, spectrumHidden);
-
-                    delete self.editablePane()._isEditingStyle;
-                    delete self.originalPropertyText;
-                }
-
-                function repositionSpectrum()
-                {
-                    spectrumHelper.reposition(colorSwatch.element);
-                }
-
-                function swatchClick(e)
-                {
-                    // Shift + click toggles color formats.
-                    // Click opens colorpicker, only if the element is not in computed styles section.
-                    if (!spectrumHelper || e.shiftKey)
-                        changeColorDisplay(e);
-                    else {
-                        var visible = spectrumHelper.toggle(colorSwatch.element, color, format);
-
-                        if (visible) {
-                            spectrum.displayText = color.toString(format);
-                            self.originalPropertyText = self.property.propertyText;
-                            self.editablePane()._isEditingStyle = true;
-                            spectrum.addEventListener(WebInspector.Spectrum.Events.ColorChanged, spectrumChanged);
-                            spectrumHelper.addEventListener(WebInspector.SpectrumPopupHelper.Events.Hidden, spectrumHidden);
-
-                            scrollerElement = colorSwatch.element.enclosingNodeOrSelfWithClass("scroll-target");
-                            if (scrollerElement)
-                                scrollerElement.addEventListener("scroll", repositionSpectrum, false);
-                            else
-                                console.error("Unable to handle color picker scrolling");
-                        }
-                    }
-                    e.consume(true);
-                }
-
-                var colorValueElement = document.createElement("span");
-                colorValueElement.textContent = color.toString(format);
-
-                function nextFormat(curFormat)
-                {
-                    // The format loop is as follows:
-                    // * original
-                    // * rgb(a)
-                    // * hsl(a)
-                    // * nickname (if the color has a nickname)
-                    // * if the color is simple:
-                    //   - shorthex (if has short hex)
-                    //   - hex
-                    switch (curFormat) {
-                        case cf.Original:
-                            return !color.hasAlpha() ? cf.RGB : cf.RGBA;
-
-                        case cf.RGB:
-                        case cf.RGBA:
-                            return !color.hasAlpha() ? cf.HSL : cf.HSLA;
-
-                        case cf.HSL:
-                        case cf.HSLA:
-                            if (color.nickname())
-                                return cf.Nickname;
-                            if (!color.hasAlpha())
-                                return color.canBeShortHex() ? cf.ShortHEX : cf.HEX;
-                            else
-                                return cf.Original;
-
-                        case cf.ShortHEX:
-                            return cf.HEX;
-
-                        case cf.HEX:
-                            return cf.Original;
-
-                        case cf.Nickname:
-                            if (!color.hasAlpha())
-                                return color.canBeShortHex() ? cf.ShortHEX : cf.HEX;
-                            else
-                                return cf.Original;
-
-                        default:
-                            return cf.RGBA;
-                    }
-                }
-
-                function changeColorDisplay(event)
-                {
-                    do {
-                        format = nextFormat(format);
-                        var currentValue = color.toString(format);
-                    } while (currentValue === colorValueElement.textContent);
-                    colorValueElement.textContent = currentValue;
-                }
-
-                var container = document.createElement("nobr");
-                container.appendChild(colorSwatch.element);
-                container.appendChild(colorValueElement);
-                return container;
-            }
-
-            var colorProcessor = processValue.bind(window, WebInspector.StylesSidebarPane._colorRegex, processColor, null);
+            var colorProcessor = processValue.bind(window, WebInspector.StylesSidebarPane._colorRegex, this._processColor.bind(this, nameElement, valueElement), null);
 
             valueElement.appendChild(processValue(/url\(\s*([^)]+)\s*\)/g, linkifyURL.bind(this), WebInspector.CSSMetadata.isColorAwareProperty(self.name) && self.parsedOk ? colorProcessor : null, value));
         }
@@ -2073,6 +1936,149 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         }
         if (this.property.inactive)
             this.listItemElement.addStyleClass("inactive");
+    },
+
+    /**
+     * @param {!Element} nameElement
+     * @param {!Element} valueElement
+     * @param {string} text
+     */
+    _processColor: function(nameElement, valueElement, text)
+    {
+        var color = WebInspector.Color.parse(text);
+
+        // We can be called with valid non-color values of |text| (like 'none' from border style)
+        if (!color)
+            return document.createTextNode(text);
+
+        var format = WebInspector.StylesSidebarPane._colorFormat(color);
+        var spectrumHelper = this.editablePane() && this.editablePane()._spectrumHelper;
+        var spectrum = spectrumHelper ? spectrumHelper.spectrum() : null;
+
+        var colorSwatch = new WebInspector.ColorSwatch();
+        colorSwatch.setColorString(text);
+        colorSwatch.element.addEventListener("click", swatchClick.bind(this), false);
+
+        var scrollerElement;
+        var boundSpectrumChanged = spectrumChanged.bind(this);
+        var boundSpectrumHidden = spectrumHidden.bind(this);
+
+        function spectrumChanged(e)
+        {
+            var colorString = /** @type {string} */ (e.data);
+            spectrum.displayText = colorString;
+            colorValueElement.textContent = colorString;
+            colorSwatch.setColorString(colorString);
+            this.applyStyleText(nameElement.textContent + ": " + valueElement.textContent, false, false, false);
+        }
+
+        function spectrumHidden(event)
+        {
+            if (scrollerElement)
+                scrollerElement.removeEventListener("scroll", repositionSpectrum, false);
+            var commitEdit = event.data;
+            var propertyText = !commitEdit && this.originalPropertyText ? this.originalPropertyText : (nameElement.textContent + ": " + valueElement.textContent);
+            this.applyStyleText(propertyText, true, true, false);
+            spectrum.removeEventListener(WebInspector.Spectrum.Events.ColorChanged, boundSpectrumChanged);
+            spectrumHelper.removeEventListener(WebInspector.SpectrumPopupHelper.Events.Hidden, boundSpectrumHidden);
+
+            delete this.editablePane()._isEditingStyle;
+            delete this.originalPropertyText;
+        }
+
+        function repositionSpectrum()
+        {
+            spectrumHelper.reposition(colorSwatch.element);
+        }
+
+        function swatchClick(e)
+        {
+            // Shift + click toggles color formats.
+            // Click opens colorpicker, only if the element is not in computed styles section.
+            if (!spectrumHelper || e.shiftKey) {
+                changeColorDisplay(e);
+            } else {
+                var visible = spectrumHelper.toggle(colorSwatch.element, color, format);
+
+                if (visible) {
+                    spectrum.displayText = color.toString(format);
+                    this.originalPropertyText = this.property.propertyText;
+                    this.editablePane()._isEditingStyle = true;
+                    spectrum.addEventListener(WebInspector.Spectrum.Events.ColorChanged, boundSpectrumChanged);
+                    spectrumHelper.addEventListener(WebInspector.SpectrumPopupHelper.Events.Hidden, boundSpectrumHidden);
+
+                    scrollerElement = colorSwatch.element.enclosingNodeOrSelfWithClass("scroll-target");
+                    if (scrollerElement)
+                        scrollerElement.addEventListener("scroll", repositionSpectrum, false);
+                    else
+                        console.error("Unable to handle color picker scrolling");
+                }
+            }
+            e.consume(true);
+        }
+
+        var colorValueElement = document.createElement("span");
+        colorValueElement.textContent = color.toString(format);
+
+        function nextFormat(curFormat)
+        {
+            // The format loop is as follows:
+            // * original
+            // * rgb(a)
+            // * hsl(a)
+            // * nickname (if the color has a nickname)
+            // * if the color is simple:
+            //   - shorthex (if has short hex)
+            //   - hex
+            var cf = WebInspector.Color.Format;
+
+            switch (curFormat) {
+                case cf.Original:
+                    return !color.hasAlpha() ? cf.RGB : cf.RGBA;
+
+                case cf.RGB:
+                case cf.RGBA:
+                    return !color.hasAlpha() ? cf.HSL : cf.HSLA;
+
+                case cf.HSL:
+                case cf.HSLA:
+                    if (color.nickname())
+                        return cf.Nickname;
+                    if (!color.hasAlpha())
+                        return color.canBeShortHex() ? cf.ShortHEX : cf.HEX;
+                    else
+                        return cf.Original;
+
+                case cf.ShortHEX:
+                    return cf.HEX;
+
+                case cf.HEX:
+                    return cf.Original;
+
+                case cf.Nickname:
+                    if (!color.hasAlpha())
+                        return color.canBeShortHex() ? cf.ShortHEX : cf.HEX;
+                    else
+                        return cf.Original;
+
+                default:
+                    return cf.RGBA;
+            }
+        }
+
+        function changeColorDisplay(event)
+        {
+            do {
+                format = nextFormat(format);
+                var currentValue = color.toString(format);
+            } while (currentValue === colorValueElement.textContent);
+            colorValueElement.textContent = currentValue;
+        }
+
+        var container = document.createElement("nobr");
+        container.appendChild(colorSwatch.element);
+        container.appendChild(colorValueElement);
+        return container;
     },
 
     updateState: function()
