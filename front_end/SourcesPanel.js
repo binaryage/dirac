@@ -157,7 +157,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._statusBarContainerElement.appendChild(this._toggleFormatSourceButton.element);
     this._statusBarContainerElement.appendChild(this._scriptViewStatusBarItemsContainer);
     this._statusBarContainerElement.appendChild(this._scriptViewStatusBarTextContainer);
-    this.splitView.installResizer(this._statusBarContainerElement);
 
     this._installDebuggerSidebarController();
 
