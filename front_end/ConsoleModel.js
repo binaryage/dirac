@@ -255,7 +255,8 @@ WebInspector.ConsoleMessage.MessageType = {
     Assert: "assert",
     Result: "result",
     Profile: "profile",
-    ProfileEnd: "profileEnd"
+    ProfileEnd: "profileEnd",
+    Command: "command"
 }
 
 WebInspector.ConsoleMessage.MessageLevel = {

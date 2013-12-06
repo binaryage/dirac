@@ -843,6 +843,9 @@ WebInspector.ConsoleViewFilter.prototype = {
         if ((message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed || message.type === WebInspector.ConsoleMessage.MessageType.EndGroup))
             return true;
 
+        if (message.type === WebInspector.ConsoleMessage.MessageType.Result || message.type === WebInspector.ConsoleMessage.MessageType.Command)
+            return true;
+
         if (message.url && this._messageURLFilters[message.url])
             return false;
 
@@ -877,6 +880,7 @@ WebInspector.ConsoleViewFilter.prototype = {
 WebInspector.ConsoleCommand = function(text)
 {
     this.text = text;
+    this.type = WebInspector.ConsoleMessage.MessageType.Command;
 }
 
 WebInspector.ConsoleCommand.prototype = {
