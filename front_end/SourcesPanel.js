@@ -194,6 +194,21 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     this._boundOnKeyUp = this._onKeyUp.bind(this);
     this._boundOnKeyDown = this._onKeyDown.bind(this);
+
+    function handleBeforeUnload(event)
+    {
+        if (event.returnValue)
+            return;
+        var unsavedSourceCodes = WebInspector.workspace.unsavedSourceCodes();
+        if (!unsavedSourceCodes.length)
+            return;
+
+        event.returnValue = WebInspector.UIString("DevTools have unsaved changes that will be permanently lost.");
+        WebInspector.showPanel("sources");
+        for (var i = 0; i < unsavedSourceCodes.length; ++i)
+            WebInspector.panels.sources.showUISourceCode(unsavedSourceCodes[i]);
+    }
+    window.addEventListener("beforeunload", handleBeforeUnload.bind(this), true);
 }
 
 WebInspector.SourcesPanel.prototype = {

@@ -502,6 +502,18 @@ WebInspector.Workspace.Events = {
 
 WebInspector.Workspace.prototype = {
     /**
+     * @return {Array.<WebInspector.UISourceCode>}
+     */
+    unsavedSourceCodes: function()
+    {
+        function filterUnsaved(sourceCode)
+        {
+            return sourceCode.isDirty();
+        }
+        return this.uiSourceCodes().filter(filterUnsaved);
+    },
+
+    /**
      * @param {string} projectId
      * @param {string} path
      * @return {?WebInspector.UISourceCode}
