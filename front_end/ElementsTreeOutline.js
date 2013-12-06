@@ -689,9 +689,8 @@ WebInspector.ElementsTreeOutline.prototype = {
     _toggleHideShortcut: function(node, userCallback)
     {
         var pseudoType = node.pseudoType();
-        if (pseudoType)
-            node = node.parentNode;
-        if (!node)
+        var effectiveNode = pseudoType ? node.parentNode : node;
+        if (!effectiveNode)
             return;
 
         function resolvedNode(object)
@@ -724,7 +723,7 @@ WebInspector.ElementsTreeOutline.prototype = {
             object.release();
         }
 
-        WebInspector.RemoteObject.resolveNode(node, "", resolvedNode);
+        WebInspector.RemoteObject.resolveNode(effectiveNode, "", resolvedNode);
     },
 
     __proto__: TreeOutline.prototype

@@ -957,12 +957,12 @@ WebInspector.DOMAgent.prototype = {
     },
 
     /**
-     * @param {DOMAgent.NodeId} nodeId
-     * @return {WebInspector.DOMNode|undefined}
+     * @param {!DOMAgent.NodeId} nodeId
+     * @return {?WebInspector.DOMNode}
      */
     nodeForId: function(nodeId)
     {
-        return this._idToDOMNode[nodeId];
+        return this._idToDOMNode[nodeId] || null;
     },
 
     _documentUpdated: function()

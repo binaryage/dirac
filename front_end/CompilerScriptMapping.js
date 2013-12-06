@@ -88,8 +88,10 @@ WebInspector.CompilerScriptMapping.prototype = {
         var sourceMap = this._sourceMapForURL.get(uiSourceCode.url);
         if (!sourceMap)
             return null;
+        var script = /** @type {!WebInspector.Script} */ (this._scriptForSourceMap.get(sourceMap));
+        console.assert(script);
         var entry = sourceMap.findEntryReversed(uiSourceCode.url, lineNumber);
-        return WebInspector.debuggerModel.createRawLocation(this._scriptForSourceMap.get(sourceMap) || null, entry[0], entry[1]);
+        return WebInspector.debuggerModel.createRawLocation(script, entry[0], entry[1]);
     },
 
     /**

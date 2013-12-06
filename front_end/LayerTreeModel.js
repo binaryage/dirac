@@ -108,11 +108,11 @@ WebInspector.LayerTreeModel.prototype = {
 
     /**
      * @param {string} id
-     * @return {WebInspector.Layer?}
+     * @return {?WebInspector.Layer}
      */
     layerById: function(id)
     {
-        return this._layersById[id];
+        return this._layersById[id] || null;
     },
 
     /**

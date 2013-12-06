@@ -305,7 +305,7 @@ WebInspector.ElementsPanel.prototype = {
 
         /**
          * @this {WebInspector.ElementsPanel}
-         * @param {WebInspector.DOMNode=} candidateFocusNode
+         * @param {?WebInspector.DOMNode} candidateFocusNode
          */
         function selectNode(candidateFocusNode)
         {
@@ -336,7 +336,7 @@ WebInspector.ElementsPanel.prototype = {
         if (this._selectedPathOnReset)
             WebInspector.domAgent.pushNodeByPathToFrontend(this._selectedPathOnReset, selectLastSelectedNode.bind(this));
         else
-            selectNode.call(this);
+            selectNode.call(this, null);
         delete this._selectedPathOnReset;
     },
 

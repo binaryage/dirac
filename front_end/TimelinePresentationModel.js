@@ -342,7 +342,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         }
 
         var children = record.children;
-        var scriptDetails;
+        var scriptDetails = null;
         if (record.data && record.data["scriptName"]) {
             scriptDetails = {
                 scriptName: record.data["scriptName"],
@@ -694,7 +694,7 @@ WebInspector.TimelinePresentationModel.prototype = {
  * @param {Object} record
  * @param {WebInspector.TimelinePresentationModel.Record} parentRecord
  * @param {WebInspector.TimelinePresentationModel.Record} origin
- * @param {Object|undefined} scriptDetails
+ * @param {Object} scriptDetails
  * @param {boolean} hidden
  */
 WebInspector.TimelinePresentationModel.Record = function(presentationModel, record, parentRecord, origin, scriptDetails, hidden)

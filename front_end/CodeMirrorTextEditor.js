@@ -634,13 +634,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @param {string} regex
-     * @param {string} cssClass
-     * @return {Object}
-     */
-    highlightRegex: function(regex, cssClass) { },
-
-    /**
      * @return {Element}
      */
     defaultFocusedElement: function()

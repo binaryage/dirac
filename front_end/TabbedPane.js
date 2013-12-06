@@ -753,14 +753,13 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     get tabElement()
     {
-        if (typeof(this._tabElement) !== "undefined")
-            return this._tabElement;
-        
-        this._createTabElement(false);
+        if (!this._tabElement)
+            this._tabElement = this._createTabElement(false);
+
         return this._tabElement;
     },
 
@@ -801,6 +800,7 @@ WebInspector.TabbedPaneTab.prototype = {
 
     /**
      * @param {boolean} measuring
+     * @return {!Element}
      */
     _createTabElement: function(measuring)
     {
@@ -821,10 +821,9 @@ WebInspector.TabbedPaneTab.prototype = {
         if (this._closeable)
             tabElement.createChild("div", "close-button-gray");
 
-        if (measuring)
+        if (measuring) {
             tabElement.addStyleClass("measuring");
-        else {
-            this._tabElement = tabElement;
+        } else {
             tabElement.addEventListener("click", this._tabClicked.bind(this), false);
             tabElement.addEventListener("mousedown", this._tabMouseDown.bind(this), false);
             tabElement.addEventListener("mouseup", this._tabMouseUp.bind(this), false);
