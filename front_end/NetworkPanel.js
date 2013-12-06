@@ -86,6 +86,8 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
 
     this._addFilters();
     this._initializeView();
+    this._recordButton.toggled = true;
+    WebInspector.networkLog.requests.forEach(this._appendRequest.bind(this));
 }
 
 WebInspector.NetworkLogView.HTTPSchemas = {"http": true, "https": true, "ws": true, "wss": true};
@@ -148,7 +150,7 @@ WebInspector.NetworkLogView.prototype = {
 
     get statusBarItems()
     {
-        return [this._recordButton.element, this._clearButton.element, this._filterBar.filterButton(), this._largerRequestsButton.element, this._progressBarContainer];
+        return [this._recordButton.element, this._clearButton.element, this._filterBar.filterButton(), this._largerRequestsButton.element, this._preserveLogCheckbox.element, this._progressBarContainer];
     },
 
     get useLargeRows()
@@ -623,14 +625,14 @@ WebInspector.NetworkLogView.prototype = {
         this._largerRequestsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Use small resource rows."), "network-larger-resources-status-bar-item");
         this._largerRequestsButton.toggled = WebInspector.settings.resourcesLargeRows.get();
         this._largerRequestsButton.addEventListener("click", this._toggleLargerRequests, this);
+
+        this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"));
     },
 
     _loadEventFired: function(event)
     {
         if (!this._recordButton.toggled)
             return;
-         if (!this._userInitiatedRecording)
-            this._recordButton.toggled = false;
 
         this._mainRequestLoadTime = event.data || -1;
         // Schedule refresh to update boundaries and draw the new line.
@@ -709,9 +711,9 @@ WebInspector.NetworkLogView.prototype = {
 
     _onRecordButtonClicked: function(e)
     {
+        if (!this._recordButton.toggled)
+            this._reset();
         this._recordButton.toggled = !this._recordButton.toggled;
-        this._userInitiatedRecording = this._recordButton.toggled;
-        delete this._truncateLogAfterNavigation;
     },
 
     _reset: function()
@@ -804,13 +806,9 @@ WebInspector.NetworkLogView.prototype = {
 
     _willReloadPage: function(event)
     {
-        if (this._userInitiatedRecording)
-            return;
-        if (!this.isShowing())
-            return;
         this._recordButton.toggled = true;
-        this._truncateLogAfterNavigation = true;
-        this._reset();
+        if (!this._preserveLogCheckbox.checked())
+            this._reset();
     },
 
     /**
@@ -818,9 +816,8 @@ WebInspector.NetworkLogView.prototype = {
      */
     _mainFrameNavigated: function(event)
     {
-        if (!this._truncateLogAfterNavigation)
+        if (!this._recordButton.toggled || this._preserveLogCheckbox.checked())
             return;
-        delete this._truncateLogAfterNavigation;
 
         var frame = /** @type {WebInspector.ResourceTreeFrame} */ (event.data);
         var loaderId = frame.loaderId;

@@ -554,6 +554,10 @@ select.status-bar-item {
     line-height: 20px;
 }
 
+.status-bar-item.checkbox {
+    margin: 2px 0 0 0;
+}
+
 .status-bar-item > .glyph {
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
     -webkit-mask-size: 320px 120px;

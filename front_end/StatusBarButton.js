@@ -497,3 +497,29 @@ WebInspector.StatusBarComboBox.prototype = {
 
     __proto__: WebInspector.StatusBarItem.prototype
 }
+
+/**
+ * @constructor
+ * @extends {WebInspector.StatusBarItem}
+ * @param {string} title
+ */
+WebInspector.StatusBarCheckbox = function(title)
+{
+    WebInspector.StatusBarItem.call(this, document.createElement("label"));
+    this.element.classList.add("status-bar-item", "checkbox");
+    this._checkbox = this.element.createChild("input");
+    this._checkbox.type = "checkbox";
+    this.element.createTextChild(title);
+}
+
+WebInspector.StatusBarCheckbox.prototype = {
+    /**
+     * @return {boolean}
+     */
+    checked: function()
+    {
+        return this._checkbox.checked;
+    },
+
+    __proto__: WebInspector.StatusBarItem.prototype
+}
