@@ -698,6 +698,7 @@ WebInspector.documentKeyDown = function(event)
             }
             break;
         case 48: // 0
+        case 96: // Numpad 0
             // Zoom reset shortcut does not allow "Shift" when handled by the browser.
             if (isValidZoomShortcut && !event.shiftKey) {
                 WebInspector._resetZoom();
