@@ -675,13 +675,25 @@ WebInspector.LocalJSONObject.prototype = {
         if (this._cachedDescription)
             return this._cachedDescription;
 
+        /**
+         * @param {!WebInspector.RemoteObjectProperty} property
+         */
+        function formatArrayItem(property)
+        {
+            return property.value.description;
+        }
+
+        /**
+         * @param {!WebInspector.RemoteObjectProperty} property
+         */
+        function formatObjectItem(property)
+        {
+            return property.name + ":" + property.value.description;
+        }
+
         if (this.type === "object") {
             switch (this.subtype) {
             case "array":
-                function formatArrayItem(property)
-                {
-                    return property.value.description;
-                }
                 this._cachedDescription = this._concatenate("[", "]", formatArrayItem);
                 break;
             case "date":
@@ -691,10 +703,6 @@ WebInspector.LocalJSONObject.prototype = {
                 this._cachedDescription = "null";
                 break;
             default:
-                function formatObjectItem(property)
-                {
-                    return property.name + ":" + property.value.description;
-                }
                 this._cachedDescription = this._concatenate("{", "}", formatObjectItem);
             }
         } else
@@ -706,6 +714,7 @@ WebInspector.LocalJSONObject.prototype = {
     /**
      * @param {string} prefix
      * @param {string} suffix
+     * @param {function (!WebInspector.RemoteObjectProperty)} formatProperty
      * @return {string}
      */
     _concatenate: function(prefix, suffix, formatProperty)

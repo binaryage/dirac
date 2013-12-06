@@ -852,20 +852,24 @@ WebInspector.ExtensionServer.prototype = {
     evaluate: function(expression, exposeCommandLineAPI, returnByValue, options, securityOrigin, callback)
     {
         var contextId;
-        if (typeof options === "object") {
 
-            function resolveURLToFrame(url)
+        /**
+         * @param {string} url
+         * @return {boolean}
+         */
+        function resolveURLToFrame(url)
+        {
+            var found;
+            function hasMatchingURL(frame)
             {
-                var found;
-                function hasMatchingURL(frame)
-                {
-                    found = (frame.url === url) ? frame : null;
-                    return found;
-                }
-                WebInspector.resourceTreeModel.frames().some(hasMatchingURL);
+                found = (frame.url === url) ? frame : null;
                 return found;
             }
+            WebInspector.resourceTreeModel.frames().some(hasMatchingURL);
+            return found;
+        }
 
+        if (typeof options === "object") {
             var frame = options.frameURL ? resolveURLToFrame(options.frameURL) : WebInspector.resourceTreeModel.mainFrame;
             if (!frame) {
                 if (options.frameURL)

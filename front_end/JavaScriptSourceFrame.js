@@ -160,11 +160,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             contextMenu.appendItem(evaluateLabel, WebInspector.evaluateInConsole.bind(WebInspector, selection));
             contextMenu.appendSeparator();
         } else if (!this._uiSourceCode.isEditable() && this._uiSourceCode.contentType() === WebInspector.resourceTypes.Script) {
-            function liveEdit(event)
-            {
-                var liveEditUISourceCode = WebInspector.liveEditSupport.uiSourceCodeForLiveEdit(this._uiSourceCode);
-                this._scriptsPanel.showUISourceCode(liveEditUISourceCode, lineNumber)
-            }
 
             // FIXME: Change condition above to explicitly check that current uiSourceCode is created by default debugger mapping
             // and move the code adding this menu item to generic context menu provider for UISourceCode.
@@ -172,6 +167,13 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             contextMenu.appendItem(liveEditLabel, liveEdit.bind(this));
             contextMenu.appendSeparator();
         }
+
+        function liveEdit()
+        {
+            var liveEditUISourceCode = WebInspector.liveEditSupport.uiSourceCodeForLiveEdit(this._uiSourceCode);
+            this._scriptsPanel.showUISourceCode(liveEditUISourceCode, lineNumber)
+        }
+
         WebInspector.UISourceCodeFrame.prototype.populateTextAreaContextMenu.call(this, contextMenu, lineNumber);
     },
 
@@ -463,20 +465,20 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this.loaded) {
             this.textEditor.setExecutionLine(lineNumber);
 
-            if (WebInspector.experimentsSettings.stepIntoSelection.isEnabled()) {
-                /**
-                 * @param {!Array.<!DebuggerAgent.Location>} locations
-                 */
-                function locationsCallback(locations)
-                {
-                    if (this._executionCallFrame !== callFrame || this._stepIntoMarkup)
-                        return;
-                    this._stepIntoMarkup = WebInspector.JavaScriptSourceFrame.StepIntoMarkup.create(this, locations);
-                    if (this._stepIntoMarkup)
-                        this._stepIntoMarkup.show();
-                }
+            if (WebInspector.experimentsSettings.stepIntoSelection.isEnabled())
                 callFrame.getStepIntoLocations(locationsCallback.bind(this));
-            }
+        }
+
+        /**
+         * @param {!Array.<!DebuggerAgent.Location>} locations
+         */
+        function locationsCallback(locations)
+        {
+            if (this._executionCallFrame !== callFrame || this._stepIntoMarkup)
+                return;
+            this._stepIntoMarkup = WebInspector.JavaScriptSourceFrame.StepIntoMarkup.create(this, locations);
+            if (this._stepIntoMarkup)
+                this._stepIntoMarkup.show();
         }
     },
 

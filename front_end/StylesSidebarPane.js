@@ -1861,52 +1861,57 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         valueElement.className = "value";
         this.valueElement = valueElement;
 
-        if (value) {
-            var self = this;
+        /**
+         * @param {!RegExp} regex
+         * @return {!DocumentFragment}
+         */
+        function processValue(regex, processor, nextProcessor, valueText)
+        {
+            var container = document.createDocumentFragment();
 
-            function processValue(regex, processor, nextProcessor, valueText)
-            {
-                var container = document.createDocumentFragment();
-
-                var items = valueText.replace(regex, "\0$1\0").split("\0");
-                for (var i = 0; i < items.length; ++i) {
-                    if ((i % 2) === 0) {
-                        if (nextProcessor)
-                            container.appendChild(nextProcessor(items[i]));
-                        else
-                            container.appendChild(document.createTextNode(items[i]));
-                    } else {
-                        var processedNode = processor(items[i]);
-                        if (processedNode)
-                            container.appendChild(processedNode);
-                    }
+            var items = valueText.replace(regex, "\0$1\0").split("\0");
+            for (var i = 0; i < items.length; ++i) {
+                if ((i % 2) === 0) {
+                    if (nextProcessor)
+                        container.appendChild(nextProcessor(items[i]));
+                    else
+                        container.appendChild(document.createTextNode(items[i]));
+                } else {
+                    var processedNode = processor(items[i]);
+                    if (processedNode)
+                        container.appendChild(processedNode);
                 }
-
-                return container;
             }
 
-            function linkifyURL(url)
-            {
-                var hrefUrl = url;
-                var match = hrefUrl.match(/['"]?([^'"]+)/);
-                if (match)
-                    hrefUrl = match[1];
-                var container = document.createDocumentFragment();
-                container.appendChild(document.createTextNode("url("));
-                if (self._styleRule.sourceURL)
-                    hrefUrl = WebInspector.ParsedURL.completeURL(self._styleRule.sourceURL, hrefUrl);
-                else if (self.node())
-                    hrefUrl = self.node().resolveURL(hrefUrl);
-                var hasResource = !!WebInspector.resourceForURL(hrefUrl);
-                // FIXME: WebInspector.linkifyURLAsNode() should really use baseURI.
-                container.appendChild(WebInspector.linkifyURLAsNode(hrefUrl, url, undefined, !hasResource));
-                container.appendChild(document.createTextNode(")"));
-                return container;
-            }
+            return container;
+        }
 
-            var colorProcessor = processValue.bind(window, WebInspector.StylesSidebarPane._colorRegex, this._processColor.bind(this, nameElement, valueElement), null);
+        /**
+         * @param {string} url
+         * @return {!Node}
+         */
+        function linkifyURL(url)
+        {
+            var hrefUrl = url;
+            var match = hrefUrl.match(/['"]?([^'"]+)/);
+            if (match)
+                hrefUrl = match[1];
+            var container = document.createDocumentFragment();
+            container.appendChild(document.createTextNode("url("));
+            if (this._styleRule.sourceURL)
+                hrefUrl = WebInspector.ParsedURL.completeURL(this._styleRule.sourceURL, hrefUrl);
+            else if (this.node())
+                hrefUrl = this.node().resolveURL(hrefUrl);
+            var hasResource = !!WebInspector.resourceForURL(hrefUrl);
+            // FIXME: WebInspector.linkifyURLAsNode() should really use baseURI.
+            container.appendChild(WebInspector.linkifyURLAsNode(hrefUrl, url, undefined, !hasResource));
+            container.appendChild(document.createTextNode(")"));
+            return container;
+        }
 
-            valueElement.appendChild(processValue(/url\(\s*([^)]+)\s*\)/g, linkifyURL.bind(this), WebInspector.CSSMetadata.isColorAwareProperty(self.name) && self.parsedOk ? colorProcessor : null, value));
+        if (value) {
+            var colorProcessor = processValue.bind(this, WebInspector.StylesSidebarPane._colorRegex, this._processColor.bind(this, nameElement, valueElement), null);
+            valueElement.appendChild(processValue(/url\(\s*([^)]+)\s*\)/g, linkifyURL.bind(this), WebInspector.CSSMetadata.isColorAwareProperty(this.name) && this.parsedOk ? colorProcessor : null, value));
         }
 
         this.listItemElement.removeChildren();

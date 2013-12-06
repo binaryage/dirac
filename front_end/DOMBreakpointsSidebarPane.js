@@ -62,10 +62,14 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
     {
         this._breakpointElements = {};
         this._reset();
-        var url = event.data;
+        var url = /** @type {string} */ (event.data);
         this._inspectedURL = url.removeURLFragment();
     },
 
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @param {!WebInspector.ContextMenu} contextMenu
+     */
     populateNodeContextMenu: function(node, contextMenu)
     {
         if (node.pseudoType())
@@ -99,18 +103,22 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
     {
         if (auxData.type === this._breakpointTypes.SubtreeModified) {
             var targetNodeObject = WebInspector.RemoteObject.fromPayload(auxData["targetNode"]);
-            function didPushNodeToFrontend(targetNodeId)
-            {
-                if (targetNodeId)
-                    targetNodeObject.release();
-                this._doCreateBreakpointHitStatusMessage(auxData, targetNodeId, callback);
-            }
             targetNodeObject.pushNodeToFrontend(didPushNodeToFrontend.bind(this));
         } else
             this._doCreateBreakpointHitStatusMessage(auxData, null, callback);
+
+        /**
+         * @param {?DOMAgent.NodeId} targetNodeId
+         */
+        function didPushNodeToFrontend(targetNodeId)
+        {
+            if (targetNodeId)
+                targetNodeObject.release();
+            this._doCreateBreakpointHitStatusMessage(auxData, targetNodeId, callback);
+        }
     },
 
-    _doCreateBreakpointHitStatusMessage: function (auxData, targetNodeId, callback)
+    _doCreateBreakpointHitStatusMessage: function(auxData, targetNodeId, callback)
     {
         var message;
         var typeLabel = this._breakpointTypeLabels[auxData.type];

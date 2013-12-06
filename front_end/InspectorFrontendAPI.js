@@ -268,11 +268,11 @@ var InspectorFrontendAPI = {
     }
 }
 
-if (window.opener && window.dispatchStandaloneTestRunnerMessages) {
-    function onMessageFromOpener(event)
-    {
-        if (event.source === window.opener)
-            InspectorFrontendAPI._dispatch(event.data);
-    }
-    window.addEventListener("message", onMessageFromOpener, true);
+function onMessageFromOpener(event)
+{
+    if (event.source === window.opener)
+        InspectorFrontendAPI._dispatch(event.data);
 }
+
+if (window.opener && window.dispatchStandaloneTestRunnerMessages)
+    window.addEventListener("message", onMessageFromOpener, true);

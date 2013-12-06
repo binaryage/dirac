@@ -371,14 +371,15 @@ WebInspector.NavigatorView.prototype = {
         }
         contextMenu.appendSeparator();
         this._appendAddFolderItem(contextMenu);
-        if (project.type() === WebInspector.projectTypes.FileSystem && node === projectNode) {
-            function removeFolder()
-            {
-                var shouldRemove = window.confirm(WebInspector.UIString("Are you sure you want to remove this folder?"));
-                if (shouldRemove)
-                    project.remove();
-            }
 
+        function removeFolder()
+        {
+            var shouldRemove = window.confirm(WebInspector.UIString("Are you sure you want to remove this folder?"));
+            if (shouldRemove)
+                project.remove();
+        }
+
+        if (project.type() === WebInspector.projectTypes.FileSystem && node === projectNode) {
             var removeFolderLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Remove folder from workspace" : "Remove Folder from Workspace");
             contextMenu.appendItem(removeFolderLabel, removeFolder);
         }

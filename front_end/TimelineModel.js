@@ -170,16 +170,17 @@ WebInspector.TimelineModel.prototype = {
     stopRecording: function()
     {
         if (!this._clientInitiatedRecording) {
-            // Console started this one and we are just sniffing it. Initiate recording so that we
-            // could stop it.
-            function stopTimeline()
-            {
-                WebInspector.timelineManager.stop(this._fireRecordingStopped.bind(this));
-            }
-
             WebInspector.timelineManager.start(undefined, undefined, undefined, stopTimeline.bind(this));
             return;
         }
+
+        // Console started this one and we are just sniffing it. Initiate recording so that we
+        // could stop it.
+        function stopTimeline()
+        {
+            WebInspector.timelineManager.stop(this._fireRecordingStopped.bind(this));
+        }
+
         this._clientInitiatedRecording = false;
         WebInspector.timelineManager.stop(this._fireRecordingStopped.bind(this));
     },

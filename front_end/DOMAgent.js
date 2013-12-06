@@ -1187,26 +1187,27 @@ WebInspector.DOMAgent.prototype = {
      */
     searchResult: function(index, callback)
     {
-        if (this._searchId) {
-            /**
-             * @param {?Protocol.Error} error
-             * @param {!Array.<number>} nodeIds
-             */
-            function mycallback(error, nodeIds)
-            {
-                if (error) {
-                    console.error(error);
-                    callback(null);
-                    return;
-                }
-                if (nodeIds.length != 1)
-                    return;
-
-                callback(this._idToDOMNode[nodeIds[0]]);
-            }
-            DOMAgent.getSearchResults(this._searchId, index, index + 1, mycallback.bind(this));
-        } else
+        if (this._searchId)
+            DOMAgent.getSearchResults(this._searchId, index, index + 1, searchResultsCallback.bind(this));
+        else
             callback(null);
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {!Array.<number>} nodeIds
+         */
+        function searchResultsCallback(error, nodeIds)
+        {
+            if (error) {
+                console.error(error);
+                callback(null);
+                return;
+            }
+            if (nodeIds.length != 1)
+                return;
+
+            callback(this._idToDOMNode[nodeIds[0]]);
+        }
     },
 
     cancelSearch: function()

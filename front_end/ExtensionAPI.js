@@ -304,21 +304,22 @@ Panels.prototype = {
     {
         var hadHandler = extensionServer.hasHandler(events.OpenResource);
 
+        function callbackWrapper(message)
+        {
+            // Allow the panel to show itself when handling the event.
+            userAction = true;
+            try {
+                callback.call(null, new Resource(message.resource), message.lineNumber);
+            } finally {
+                userAction = false;
+            }
+        }
+
         if (!callback)
             extensionServer.unregisterHandler(events.OpenResource);
-        else {
-            function callbackWrapper(message)
-            {
-                // Allow the panel to show itself when handling the event.
-                userAction = true;
-                try {
-                    callback.call(null, new Resource(message.resource), message.lineNumber);
-                } finally {
-                    userAction = false;
-                }
-            }
+        else
             extensionServer.registerHandler(events.OpenResource, callbackWrapper);
-        }
+
         // Only send command if we either removed an existing handler or added handler and had none before.
         if (hadHandler === !callback)
             extensionServer.sendRequest({ command: commands.SetOpenResourceHandler, "handlerPresent": !!callback });

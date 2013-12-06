@@ -468,7 +468,7 @@ def dump_module(name, recursively, processed_modules):
 
 modules_dir = tempfile.mkdtemp()
 compiler_command = "java -jar %s/closure/compiler.jar --summary_detail_level 3 --compilation_level SIMPLE_OPTIMIZATIONS \
-    --warning_level VERBOSE --jscomp_off=es5Strict --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/ \\\n" % (scripts_path, modules_dir)
+    --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/ \\\n" % (scripts_path, modules_dir)
 
 process_recursively = len(sys.argv) > 1
 if process_recursively:

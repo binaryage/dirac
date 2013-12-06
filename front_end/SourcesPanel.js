@@ -303,12 +303,22 @@ WebInspector.SourcesPanel.prototype = {
 
         this.sidebarPanes.callstack.update(details.callFrames);
 
+        function didCreateBreakpointHitStatusMessage(element)
+        {
+            this.sidebarPanes.callstack.setStatus(element);
+        }
+
+        function didGetUILocation(uiLocation)
+        {
+            var breakpoint = WebInspector.breakpointManager.findBreakpoint(uiLocation.uiSourceCode, uiLocation.lineNumber);
+            if (!breakpoint)
+                return;
+            this.sidebarPanes.jsBreakpoints.highlightBreakpoint(breakpoint);
+            this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a JavaScript breakpoint."));
+        }
+
         if (details.reason === WebInspector.DebuggerModel.BreakReason.DOM) {
             WebInspector.domBreakpointsSidebarPane.highlightBreakpoint(details.auxData);
-            function didCreateBreakpointHitStatusMessage(element)
-            {
-                this.sidebarPanes.callstack.setStatus(element);
-            }
             WebInspector.domBreakpointsSidebarPane.createBreakpointHitStatusMessage(details.auxData, didCreateBreakpointHitStatusMessage.bind(this));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.EventListener) {
             var eventName = details.auxData.eventName;
@@ -327,14 +337,6 @@ WebInspector.SourcesPanel.prototype = {
         else if (details.reason === WebInspector.DebuggerModel.BreakReason.DebugCommand)
             this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a debugged function"));
         else {
-            function didGetUILocation(uiLocation)
-            {
-                var breakpoint = WebInspector.breakpointManager.findBreakpoint(uiLocation.uiSourceCode, uiLocation.lineNumber);
-                if (!breakpoint)
-                    return;
-                this.sidebarPanes.jsBreakpoints.highlightBreakpoint(breakpoint);
-                this.sidebarPanes.callstack.setStatus(WebInspector.UIString("Paused on a JavaScript breakpoint."));
-            }
             if (details.callFrames.length)
                 details.callFrames[0].createLiveLocation(didGetUILocation.bind(this));
             else
@@ -1261,19 +1263,19 @@ WebInspector.SourcesPanel.prototype = {
         var filePath;
         var shouldHideNavigator;
         var uiSourceCode;
-        if (uiSourceCodeToCopy) {
-            /**
-             * @param {?string} content
-             */
-            function contentLoaded(content)
-            {
-                createFile.call(this, content || "");
-            }
 
-            uiSourceCodeToCopy.requestContent(contentLoaded.bind(this));
-        } else {
-            createFile.call(this);
+        /**
+         * @param {?string} content
+         */
+        function contentLoaded(content)
+        {
+            createFile.call(this, content || "");
         }
+
+        if (uiSourceCodeToCopy)
+            uiSourceCodeToCopy.requestContent(contentLoaded.bind(this));
+        else
+            createFile.call(this);
 
         /**
          * @param {string=} content
@@ -1417,15 +1419,15 @@ WebInspector.SourcesPanel.prototype = {
                 contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Remove network mapping" : "Remove Network Mapping"), this._removeNetworkMapping.bind(this, uiSourceCode));
         }
 
-        if (uiSourceCode.project().type() === WebInspector.projectTypes.Network) {
-            /**
-             * @param {WebInspector.Project} project
-             */
-            function filterProject(project)
-            {
-                return project.type() === WebInspector.projectTypes.FileSystem;
-            }
+        /**
+         * @param {!WebInspector.Project} project
+         */
+        function filterProject(project)
+        {
+            return project.type() === WebInspector.projectTypes.FileSystem;
+        }
 
+        if (uiSourceCode.project().type() === WebInspector.projectTypes.Network) {
             if (!this._workspace.projects().filter(filterProject).length)
                 return;
             if (this._workspace.uiSourceCodeForURL(uiSourceCode.url) === uiSourceCode)

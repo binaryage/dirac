@@ -780,17 +780,18 @@ WebInspector.CanvasProfileType.prototype = {
         button.textContent = this._canvasAgentEnabled ? WebInspector.UIString("Disable") : WebInspector.UIString("Enable");
         button.addEventListener("click", this._onProfilerEnableButtonClick.bind(this, !this._canvasAgentEnabled), false);
 
+        /**
+         * @param {?Protocol.Error} error
+         * @param {boolean} result
+         */
+        function hasUninstrumentedCanvasesCallback(error, result)
+        {
+            if (error || result)
+                WebInspector.resourceTreeModel.reloadPage();
+        }
+
         if (forcePageReload) {
             if (this._canvasAgentEnabled) {
-                /**
-                 * @param {?Protocol.Error} error
-                 * @param {boolean} result
-                 */
-                function hasUninstrumentedCanvasesCallback(error, result)
-                {
-                    if (error || result)
-                        WebInspector.resourceTreeModel.reloadPage();
-                }
                 CanvasAgent.hasUninstrumentedCanvases(hasUninstrumentedCanvasesCallback.bind(this));
             } else {
                 for (var frameId in this._framesWithCanvases) {

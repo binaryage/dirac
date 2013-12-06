@@ -264,22 +264,22 @@ WebInspector.Resource.prototype = {
         }
 
         if (this.type === WebInspector.resourceTypes.Document) {
-            /**
-             * @param {?string} content
-             */
-            function documentContentLoaded(content)
-            {
-                if (content === null) {
-                    callback([]);
-                    return;
-                }
-
-                var result = WebInspector.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex);
-                callback(result);
-            }
-
             this.requestContent(documentContentLoaded);
             return;
+        }
+
+        /**
+         * @param {?string} content
+         */
+        function documentContentLoaded(content)
+        {
+            if (content === null) {
+                callback([]);
+                return;
+            }
+
+            var result = WebInspector.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex);
+            callback(result);
         }
 
         if (this.frameId)
@@ -396,17 +396,18 @@ WebInspector.Resource.prototype = {
         }
 
         if (this.request) {
-            /**
-             * @param {?string} content
-             */
-            function requestContentLoaded(content)
-            {
-                contentLoaded.call(this, null, content, this.request.contentEncoded);
-            }
-            
             this.request.requestContent(requestContentLoaded.bind(this));
             return;
         }
+
+        /**
+         * @param {?string} content
+         */
+        function requestContentLoaded(content)
+        {
+            contentLoaded.call(this, null, content, this.request.contentEncoded);
+        }
+
         PageAgent.getResourceContent(this.frameId, this.url, resourceContentLoaded.bind(this));
     },
 

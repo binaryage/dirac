@@ -468,18 +468,22 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
 
     queryObjectContent: function(callback, objectGroupName)
     {
+        /**
+         * @param {?Protocol.Error} error
+         * @param {!RuntimeAgent.RemoteObject} object
+         */
+        function formatResult(error, object)
+        {
+            if (!error && object.type)
+                callback(WebInspector.RemoteObject.fromPayload(object), !!error);
+            else
+                callback(WebInspector.RemoteObject.fromPrimitiveValue(WebInspector.UIString("Preview is not available")));
+        }
+
         if (this._type === "string")
             callback(WebInspector.RemoteObject.fromPrimitiveValue(this._name));
-        else {
-            function formatResult(error, object)
-            {
-                if (!error && object.type)
-                    callback(WebInspector.RemoteObject.fromPayload(object), !!error);
-                else
-                    callback(WebInspector.RemoteObject.fromPrimitiveValue(WebInspector.UIString("Preview is not available")));
-            }
+        else
             HeapProfilerAgent.getObjectByHeapObjectId(String(this.snapshotNodeId), objectGroupName, formatResult);
-        }
     },
 
     get _retainedSizePercent()

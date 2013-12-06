@@ -210,11 +210,13 @@ WebInspector.HeapSnapshotWorkerProxy.prototype = {
         var callId = this._nextCallId++;
         var methodArguments = Array.prototype.slice.call(arguments, 4);
         var newObjectId = this._nextObjectId++;
+
+        function wrapCallback(remoteResult)
+        {
+            callback(remoteResult ? new proxyConstructor(this, newObjectId) : null);
+        }
+
         if (callback) {
-            function wrapCallback(remoteResult)
-            {
-                callback(remoteResult ? new proxyConstructor(this, newObjectId) : null);
-            }
             this._callbacks[callId] = wrapCallback.bind(this);
             this._postMessage({callId: callId, disposition: "factory", objectId: objectId, methodName: methodName, methodArguments: methodArguments, newObjectId: newObjectId});
             return null;

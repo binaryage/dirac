@@ -250,10 +250,6 @@ WebInspector.Layers3DView.prototype = {
         style.top  = layer.offsetY() + "px";
         var transform = layer.transform();
         if (transform) {
-            function toFixed5(x)
-            {
-                return x.toFixed(5);
-            }
             // Avoid exponential notation in CSS.
             style.webkitTransform = "matrix3d(" + transform.map(toFixed5).join(",") + ") translateZ(" + this._layerSpacing + ")";
             var anchor = layer.anchorPoint();
@@ -261,6 +257,11 @@ WebInspector.Layers3DView.prototype = {
         } else {
             style.webkitTransform = "";
             style.webkitTransformOrigin = "";
+        }
+
+        function toFixed5(x)
+        {
+            return x.toFixed(5);
         }
     },
 

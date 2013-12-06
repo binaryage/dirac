@@ -553,14 +553,18 @@ WebInspector.ElementsPanel.prototype = {
             return;
         }
 
+        /**
+         * @param {?DOMAgent.Node} node
+         */
+        function searchCallback(node)
+        {
+            searchResults[index] = node;
+            this._highlightCurrentSearchResult();
+        }
+
         if (typeof searchResult === "undefined") {
             // No data for slot, request it.
-            function callback(node)
-            {
-                searchResults[index] = node || null;
-                this._highlightCurrentSearchResult();
-            }
-            WebInspector.domAgent.searchResult(index, callback.bind(this));
+            WebInspector.domAgent.searchResult(index, searchCallback.bind(this));
             return;
         }
 
@@ -1220,6 +1224,27 @@ WebInspector.ElementsPanel.prototype = {
 
         this.sidebarPanes.platformFonts.show(computedPane.bodyElement);
 
+        /**
+         * @param {WebInspector.SidebarPane} pane
+         * @param {Element=} beforeElement
+         */
+        function showMetrics(pane, beforeElement)
+        {
+            this.sidebarPanes.metrics.show(pane.bodyElement, beforeElement);
+        }
+
+        /**
+         * @param {WebInspector.Event} event
+         */
+        function tabSelected(event)
+        {
+            var tabId = /** @type {string} */ (event.data.tabId);
+            if (tabId === computedPane.title())
+                showMetrics.call(this, computedPane, this.sidebarPanes.computedStyle.element);
+            if (tabId === stylesPane.title())
+                showMetrics.call(this, stylesPane);
+        }
+
         if (vertically) {
             this.sidebarPanes.metrics.show(computedPane.bodyElement, this.sidebarPanes.computedStyle.element);
             this.sidebarPanes.metrics.setExpandCallback(expandComputed);
@@ -1258,27 +1283,6 @@ WebInspector.ElementsPanel.prototype = {
             this.sidebarPanes.styles.setExpandCallback(expandStyles);
             this.sidebarPanes.metrics.setExpandCallback(expandStyles);
             stylesPane.bodyElement.appendChild(this.sidebarPanes.styles.titleElement);
-
-            /**
-             * @param {WebInspector.SidebarPane} pane
-             * @param {Element=} beforeElement
-             */
-            function showMetrics(pane, beforeElement)
-            {
-                this.sidebarPanes.metrics.show(pane.bodyElement, beforeElement);
-            }
-
-            /**
-             * @param {WebInspector.Event} event
-             */
-            function tabSelected(event)
-            {
-                var tabId = /** @type {string} */ (event.data.tabId);
-                if (tabId === computedPane.title())
-                    showMetrics.call(this, computedPane, this.sidebarPanes.computedStyle.element);
-                if (tabId === stylesPane.title())
-                    showMetrics.call(this, stylesPane);
-            }
 
             this.sidebarPaneView.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, tabSelected, this);
 

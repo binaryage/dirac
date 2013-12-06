@@ -255,16 +255,20 @@ WebInspector.HeapSnapshotView.prototype = {
         if (this.currentView !== this.constructorsView && this.currentView !== this.diffView)
             return;
 
+        /**
+         * @param {boolean} found
+         */
+        function didHighlight(found)
+        {
+            finishedCallback(this, found ? 1 : 0);
+        }
+
         if (query.charAt(0) === "@") {
             var snapshotNodeId = parseInt(query.substring(1), 10);
-            if (!isNaN(snapshotNodeId)) {
-                function didHighlight(found) {
-                    finishedCallback(this, found ? 1 : 0);
-                }
+            if (!isNaN(snapshotNodeId))
                 this.dataGrid.highlightObjectByHeapSnapshotId(String(snapshotNodeId), didHighlight.bind(this));
-            } else {
+            else
                 finishedCallback(this, 0);
-            }
             return;
         }
 
@@ -1268,13 +1272,13 @@ WebInspector.HeapProfileHeader.prototype = {
         worker.startCheckingForLongRunningCalls();
         this.notifySnapshotReceived();
 
-        if (this.fromFile()) {
-            function didGetMaxNodeId(id)
-            {
-               this.maxJSObjectId = id;
-            }
-            snapshotProxy.maxJsNodeId(didGetMaxNodeId.bind(this));
+        function didGetMaxNodeId(id)
+        {
+           this.maxJSObjectId = id;
         }
+
+        if (this.fromFile())
+            snapshotProxy.maxJsNodeId(didGetMaxNodeId.bind(this));
     },
 
     notifySnapshotReceived: function()

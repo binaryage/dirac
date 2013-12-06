@@ -62,6 +62,36 @@ WebInspector.ObjectPopoverHelper.prototype = {
     _showObjectPopover: function(element, popover)
     {
         /**
+         * @param {Element} anchorElement
+         * @param {!Element} popoverContentElement
+         * @param {?Protocol.Error} error
+         * @param {!DebuggerAgent.FunctionDetails} response
+         */
+        function didGetDetails(anchorElement, popoverContentElement, error, response)
+        {
+            if (error) {
+                console.error(error);
+                return;
+            }
+            var container = document.createElement("div");
+            container.className = "inline-block";
+
+            var title = container.createChild("div", "function-popover-title source-code");
+            var functionName = title.createChild("span", "function-name");
+            functionName.textContent = response.functionName || WebInspector.UIString("(anonymous function)");
+
+            this._linkifier = new WebInspector.Linkifier();
+            var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (response.location);
+            var link = this._linkifier.linkifyRawLocation(rawLocation, "function-location-link");
+            if (link)
+                title.appendChild(link);
+
+            container.appendChild(popoverContentElement);
+
+            popover.show(container, anchorElement);
+        }
+
+        /**
          * @param {WebInspector.RemoteObject} result
          * @param {boolean} wasThrown
          * @param {Element=} anchorOverride
@@ -85,30 +115,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
                 popoverContentElement.style.whiteSpace = "pre";
                 popoverContentElement.textContent = description;
                 if (result.type === "function") {
-                    function didGetDetails(error, response)
-                    {
-                        if (error) {
-                            console.error(error);
-                            return;
-                        }
-                        var container = document.createElement("div");
-                        container.className = "inline-block";
-
-                        var title = container.createChild("div", "function-popover-title source-code");
-                        var functionName = title.createChild("span", "function-name");
-                        functionName.textContent = response.functionName || WebInspector.UIString("(anonymous function)");
-
-                        this._linkifier = new WebInspector.Linkifier();
-                        var rawLocation = /** @type {WebInspector.DebuggerModel.Location} */ (response.location);
-                        var link = this._linkifier.linkifyRawLocation(rawLocation, "function-location-link");
-                        if (link)
-                            title.appendChild(link);
-
-                        container.appendChild(popoverContentElement);
-
-                        popover.show(container, anchorElement);
-                    }
-                    DebuggerAgent.getFunctionDetails(result.objectId, didGetDetails.bind(this));
+                    DebuggerAgent.getFunctionDetails(result.objectId, didGetDetails.bind(this, anchorElement, popoverContentElement));
                     return;
                 }
                 if (result.type === "string")
