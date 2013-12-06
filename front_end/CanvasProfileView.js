@@ -1033,7 +1033,7 @@ WebInspector.CanvasProfileHeader.prototype = {
      */
     createSidebarTreeElement: function()
     {
-        return new WebInspector.ProfileSidebarTreeElement(this, WebInspector.UIString("Trace Log %d"), "profile-sidebar-tree-item");
+        return new WebInspector.ProfileSidebarTreeElement(this, "profile-sidebar-tree-item");
     },
 
     /**

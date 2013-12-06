@@ -977,13 +977,11 @@ WebInspector.ProfilesPanel.prototype = {
  * @constructor
  * @extends {WebInspector.SidebarTreeElement}
  * @param {!WebInspector.ProfileHeader} profile
- * @param {string} titleFormat
  * @param {string} className
  */
-WebInspector.ProfileSidebarTreeElement = function(profile, titleFormat, className)
+WebInspector.ProfileSidebarTreeElement = function(profile, className)
 {
     this.profile = profile;
-    this._titleFormat = titleFormat;
     WebInspector.SidebarTreeElement.call(this, className, "", "", profile, false);
     this.refreshTitles();
 }
