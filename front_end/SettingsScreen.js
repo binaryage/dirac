@@ -83,7 +83,7 @@ WebInspector.SettingsScreen.regexValidator = function(text)
  */
 WebInspector.SettingsScreen.integerValidator = function(min, max, text)
 {
-    var value = parseInt(text, 10);
+    var value = Number(text);
     if (isNaN(value))
         return "Invalid number format";
     if (value < min || value > max)
@@ -394,6 +394,8 @@ WebInspector.GenericSettingsTab = function()
     }
     WebInspector.settings.skipStackFramesSwitch.addChangeListener(this._skipStackFramesSwitchOrPatternChanged, this);
     WebInspector.settings.skipStackFramesPattern.addChangeListener(this._skipStackFramesSwitchOrPatternChanged, this);
+
+    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Enable async stack traces"), WebInspector.settings.enableAsyncStackTraces));
 
     p = this._appendSection(WebInspector.UIString("Profiler"));
     p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show advanced heap snapshot properties"), WebInspector.settings.showAdvancedHeapSnapshotProperties));

@@ -36,10 +36,9 @@ WebInspector.DebuggerModel = function()
 {
     InspectorBackend.registerDebuggerDispatcher(new WebInspector.DebuggerDispatcher(this));
 
+    /** @type {?WebInspector.DebuggerPausedDetails} */
     this._debuggerPausedDetails = null;
-    /**
-     * @type {!Object.<string, !WebInspector.Script>}
-     */
+    /** @type {!Object.<string, !WebInspector.Script>} */
     this._scripts = {};
     /** @type {!Object.<!string, !Array.<!WebInspector.Script>>} */
     this._scriptsBySourceURL = {};
@@ -49,6 +48,9 @@ WebInspector.DebuggerModel = function()
 
     WebInspector.settings.pauseOnExceptionStateString = WebInspector.settings.createSetting("pauseOnExceptionStateString", WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
     WebInspector.settings.pauseOnExceptionStateString.addChangeListener(this._pauseOnExceptionStateChanged, this);
+
+    WebInspector.settings.enableAsyncStackTraces.addChangeListener(this._asyncStackTracesStateChanged, this);
+    WebInspector.settings.maxAsyncStackTraceDepth.addChangeListener(this._asyncStackTracesStateChanged, this);
 
     this.enableDebugger();
 
@@ -167,12 +169,20 @@ WebInspector.DebuggerModel.prototype = {
     {
         this._debuggerEnabled = true;
         this._pauseOnExceptionStateChanged();
+        this._asyncStackTracesStateChanged();
         this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.DebuggerWasEnabled);
     },
 
     _pauseOnExceptionStateChanged: function()
     {
         DebuggerAgent.setPauseOnExceptions(WebInspector.settings.pauseOnExceptionStateString.get());
+    },
+
+    _asyncStackTracesStateChanged: function()
+    {
+        var enabled = WebInspector.settings.enableAsyncStackTraces.get();
+        var depth = enabled ? Number(WebInspector.settings.maxAsyncStackTraceDepth.get()) : 0;
+        DebuggerAgent.setAsyncCallStackDepth(depth);
     },
 
     _debuggerWasDisabled: function()
@@ -444,7 +454,7 @@ WebInspector.DebuggerModel.prototype = {
      * @param {string} reason
      * @param {Object|undefined} auxData
      * @param {!Array.<string>} breakpointIds
-     * @param {DebuggerAgent.StackTrace=} asyncStackTrace
+     * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
      */
     _pausedScript: function(callFrames, reason, auxData, breakpointIds, asyncStackTrace)
     {
@@ -461,7 +471,7 @@ WebInspector.DebuggerModel.prototype = {
             }
         }
 
-        this._setDebuggerPausedDetails(new WebInspector.DebuggerPausedDetails(this, callFrames, reason, auxData, breakpointIds, asyncStackTrace));
+        this._setDebuggerPausedDetails(new WebInspector.DebuggerPausedDetails(callFrames, reason, auxData, breakpointIds, asyncStackTrace));
     },
 
     _resumedScript: function()
@@ -687,7 +697,7 @@ WebInspector.DebuggerModel.prototype = {
      * @this {WebInspector.DebuggerModel}
      * @param {!Array.<!DebuggerAgent.CallFrame>=} newCallFrames
      * @param {Object=} details
-     * @param {DebuggerAgent.StackTrace=} asyncStackTrace
+     * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
      */
     callStackModified: function(newCallFrames, details, asyncStackTrace)
     {
@@ -732,7 +742,7 @@ WebInspector.DebuggerDispatcher.prototype = {
      * @param {string} reason
      * @param {Object=} auxData
      * @param {!Array.<string>=} breakpointIds
-     * @param {DebuggerAgent.StackTrace=} asyncStackTrace
+     * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
      */
     paused: function(callFrames, reason, auxData, breakpointIds, asyncStackTrace)
     {
@@ -790,12 +800,32 @@ WebInspector.DebuggerDispatcher.prototype = {
  * @constructor
  * @param {!WebInspector.Script} script
  * @param {!DebuggerAgent.CallFrame} payload
+ * @param {boolean=} isAsync
  */
-WebInspector.DebuggerModel.CallFrame = function(script, payload)
+WebInspector.DebuggerModel.CallFrame = function(script, payload, isAsync)
 {
     this._script = script;
     this._payload = payload;
+    /** @type {!Array.<!WebInspector.Script.Location>} */
     this._locations = [];
+    this._isAsync = isAsync;
+}
+
+/**
+ * @param {!Array.<!DebuggerAgent.CallFrame>} callFrames
+ * @param {boolean=} isAsync
+ * @return {!Array.<!WebInspector.DebuggerModel.CallFrame>}
+ */
+WebInspector.DebuggerModel.CallFrame.fromPayloadArray = function(callFrames, isAsync)
+{
+    var result = [];
+    for (var i = 0; i < callFrames.length; ++i) {
+        var callFrame = callFrames[i];
+        var script = WebInspector.debuggerModel.scriptForId(callFrame.location.scriptId);
+        if (script)
+            result.push(new WebInspector.DebuggerModel.CallFrame(script, callFrame, isAsync));
+    }
+    return result;
 }
 
 WebInspector.DebuggerModel.CallFrame.prototype = {
@@ -865,6 +895,14 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isAsync: function()
+    {
+        return !!this._isAsync;
+    },
+
+    /**
      * @param {string} code
      * @param {string} objectGroup
      * @param {boolean} includeCommandLineAPI
@@ -903,7 +941,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
          * @param {?Protocol.Error} error
          * @param {!Array.<!DebuggerAgent.CallFrame>=} callFrames
          * @param {Object=} details
-         * @param {DebuggerAgent.StackTrace=} asyncStackTrace
+         * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
          */
         function protocolCallback(error, callFrames, details, asyncStackTrace)
         {
@@ -928,10 +966,10 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
          * @param {?string} error
          * @param {!Array.<!DebuggerAgent.Location>=} stepInPositions
          */
-        function getStepInPositionsCallback(error, stepInPositions) {
-            if (error) {
+        function getStepInPositionsCallback(error, stepInPositions)
+        {
+            if (error)
                 return;
-            }
             this._stepInLocations = stepInPositions;
             callback(this._stepInLocations.slice(0));
         }
@@ -948,7 +986,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
         return location;
     },
 
-    dispose: function(updateDelegate)
+    dispose: function()
     {
         for (var i = 0; i < this._locations.length; ++i)
             this._locations[i].dispose();
@@ -958,35 +996,65 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.DebuggerModel} model
+ * @param {!Array.<!WebInspector.DebuggerModel.CallFrame>} callFrames
+ * @param {?WebInspector.DebuggerModel.StackTrace} asyncStackTrace
+ */
+WebInspector.DebuggerModel.StackTrace = function(callFrames, asyncStackTrace)
+{
+    this.callFrames = callFrames;
+    this.asyncStackTrace = asyncStackTrace;
+}
+
+/**
+ * @param {!DebuggerAgent.StackTrace=} payload
+ * @param {boolean=} isAsync
+ * @return {?WebInspector.DebuggerModel.StackTrace}
+ */
+WebInspector.DebuggerModel.StackTrace.fromPayload = function(payload, isAsync)
+{
+    if (!payload)
+        return null;
+    var callFrames = WebInspector.DebuggerModel.CallFrame.fromPayloadArray(payload.callFrames, isAsync);
+    if (!callFrames.length)
+        return null;
+    var asyncStackTrace = WebInspector.DebuggerModel.StackTrace.fromPayload(payload.asyncStackTrace, true);
+    return new WebInspector.DebuggerModel.StackTrace(callFrames, asyncStackTrace);
+}
+
+WebInspector.DebuggerModel.StackTrace.prototype = {
+    dispose: function()
+    {
+        for (var i = 0; i < this.callFrames.length; ++i)
+            this.callFrames[i].dispose();
+        if (this.asyncStackTrace)
+            this.asyncStackTrace.dispose();
+    }
+}
+
+/**
+ * @constructor
  * @param {!Array.<!DebuggerAgent.CallFrame>} callFrames
  * @param {string} reason
  * @param {Object|undefined} auxData
  * @param {!Array.<string>} breakpointIds
- * @param {DebuggerAgent.StackTrace=} asyncStackTrace
+ * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
  */
-WebInspector.DebuggerPausedDetails = function(model, callFrames, reason, auxData, breakpointIds, asyncStackTrace)
+WebInspector.DebuggerPausedDetails = function(callFrames, reason, auxData, breakpointIds, asyncStackTrace)
 {
-    this.callFrames = [];
-    for (var i = 0; i < callFrames.length; ++i) {
-        var callFrame = callFrames[i];
-        var script = model.scriptForId(callFrame.location.scriptId);
-        if (script)
-            this.callFrames.push(new WebInspector.DebuggerModel.CallFrame(script, callFrame));
-    }
+    this.callFrames = WebInspector.DebuggerModel.CallFrame.fromPayloadArray(callFrames);
     this.reason = reason;
     this.auxData = auxData;
     this.breakpointIds = breakpointIds;
-    this.asyncStackTrace = asyncStackTrace;
+    this.asyncStackTrace = WebInspector.DebuggerModel.StackTrace.fromPayload(asyncStackTrace, true);
 }
 
 WebInspector.DebuggerPausedDetails.prototype = {
     dispose: function()
     {
-        for (var i = 0; i < this.callFrames.length; ++i) {
-            var callFrame = this.callFrames[i];
-            callFrame.dispose();
-        }
+        for (var i = 0; i < this.callFrames.length; ++i)
+            this.callFrames[i].dispose();
+        if (this.asyncStackTrace)
+            this.asyncStackTrace.dispose();
     }
 }
 

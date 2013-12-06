@@ -226,7 +226,7 @@ WebInspector.Script.prototype = {
     /**
      * @param {WebInspector.DebuggerModel.Location} rawLocation
      * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
-     * @return {WebInspector.Script.Location}
+     * @return {!WebInspector.Script.Location}
      */
     createLiveLocation: function(rawLocation, updateDelegate)
     {

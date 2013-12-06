@@ -1409,9 +1409,14 @@ iframe.panel.extension {
 
 .placard {
     position: relative;
+    border-top: 1px solid transparent;
     padding: 3px 8px 4px 18px;
     min-height: 18px;
     white-space: nowrap;
+}
+
+.placard.grouped {
+    padding-left: 36px;
 }
 
 .placard:nth-of-type(2n) {

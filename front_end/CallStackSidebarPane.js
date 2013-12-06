@@ -42,8 +42,9 @@ WebInspector.CallStackSidebarPane.Events = {
 WebInspector.CallStackSidebarPane.prototype = {
     /**
      * @param {?Array.<!WebInspector.DebuggerModel.CallFrame>} callFrames
+     * @param {?WebInspector.DebuggerModel.StackTrace} asyncStackTrace
      */
-    update: function(callFrames)
+    update: function(callFrames, asyncStackTrace)
     {
         this.bodyElement.removeChildren();
         delete this._statusMessageElement;
@@ -57,22 +58,34 @@ WebInspector.CallStackSidebarPane.prototype = {
         }
 
         this._appendSidebarPlacards(callFrames, this.bodyElement);
+
+        while (asyncStackTrace) {
+            var asyncPlacards = this._appendSidebarPlacards(asyncStackTrace.callFrames);
+            var group = new WebInspector.PlacardGroup(WebInspector.UIString("[Async Call]"), asyncPlacards);
+            group.element.addEventListener("contextmenu", this._placardContextMenu.bind(this, asyncPlacards[0]), true);
+            this.bodyElement.appendChild(group.element);
+            asyncStackTrace = asyncStackTrace.asyncStackTrace;
+        }
     },
 
     /**
      * @param {!Array.<!WebInspector.DebuggerModel.CallFrame>} callFrames
      * @param {!Element=} parentElement
+     * @return {!Array.<!WebInspector.CallStackSidebarPane.Placard>}
      */
     _appendSidebarPlacards: function(callFrames, parentElement)
     {
+        var result = [];
         for (var i = 0, n = callFrames.length; i < n; ++i) {
             var placard = new WebInspector.CallStackSidebarPane.Placard(callFrames[i]);
             placard.element.addEventListener("click", this._placardSelected.bind(this, placard), false);
             placard.element.addEventListener("contextmenu", this._placardContextMenu.bind(this, placard), true);
+            result.push(placard);
             this.placards.push(placard);
             if (parentElement)
                 parentElement.appendChild(placard.element);
         }
+        return result;
     },
 
     /**
@@ -82,10 +95,18 @@ WebInspector.CallStackSidebarPane.prototype = {
     {
         var contextMenu = new WebInspector.ContextMenu(event);
 
-        if (WebInspector.debuggerModel.canSetScriptSource())
+        if (!placard._callFrame.isAsync() && WebInspector.debuggerModel.canSetScriptSource())
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Restart frame" : "Restart Frame"), this._restartFrame.bind(this, placard));
 
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy stack trace" : "Copy Stack Trace"), this._copyStackTrace.bind(this));
+        contextMenu.appendSeparator();
+
+        var asyncStacksEnabled = WebInspector.settings.enableAsyncStackTraces.get();
+        if (asyncStacksEnabled)
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Disable async stack traces" : "Disable Async Stack Traces"), this._enableAsyncStacks.bind(this, false));
+        else
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Enable async stack traces" : "Enable Async Stack Traces"), this._enableAsyncStacks.bind(this, true));
+
         contextMenu.show();
     },
 
@@ -99,7 +120,15 @@ WebInspector.CallStackSidebarPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.DebuggerModel.CallFrame} x
+     * @param {boolean} enable
+     */
+    _enableAsyncStacks: function(enable)
+    {
+        WebInspector.settings.enableAsyncStackTraces.set(enable);
+    },
+
+    /**
+     * @param {WebInspector.DebuggerModel.CallFrame} x
      */
     setSelectedCallFrame: function(x)
     {
@@ -172,8 +201,11 @@ WebInspector.CallStackSidebarPane.prototype = {
     _copyStackTrace: function()
     {
         var text = "";
-        for (var i = 0; i < this.placards.length; ++i)
+        for (var i = 0; i < this.placards.length; ++i) {
+            if (i && this.placards[i].group() !== this.placards[i - 1].group())
+                text += this.placards[i].group().title() + "\n";
             text += this.placards[i].title + " (" + this.placards[i].subtitle + ")\n";
+        }
         InspectorFrontendHost.copyText(text);
     },
 

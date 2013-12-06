@@ -88,6 +88,7 @@
     border-bottom: 1px solid rgb(178, 178, 178);
 }
 
+.placard-group::before,
 .sidebar-pane-title::before {
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 120px;
@@ -103,15 +104,18 @@
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
+.placard-group::before,
 .sidebar-pane-title::before {
     background-image: url(Images/statusbarButtonGlyphs2x.png);
 }
 } /* media */
 
+.placard-group::before,
 .sidebar-pane-title::before {
     background-position: -4px -96px;
 }
 
+.placard-group.expanded::before,
 .sidebar-pane-title.expanded::before {
     background-position: -20px -96px;
 }

@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2008 Apple Inc. All Rights Reserved.
+ * Copyright (C) 2013 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions
@@ -30,18 +31,11 @@
  */
 WebInspector.Placard = function(title, subtitle)
 {
-    this.element = document.createElement("div");
-    this.element.className = "placard";
+    this.element = document.createElementWithClass("div", "placard");
     this.element.placard = this;
 
-    this.titleElement = document.createElement("div");
-    this.titleElement.className = "title";
-
-    this.subtitleElement = document.createElement("div");
-    this.subtitleElement.className = "subtitle";
-
-    this.element.appendChild(this.subtitleElement);
-    this.element.appendChild(this.titleElement);
+    this.subtitleElement = this.element.createChild("div", "subtitle");
+    this.titleElement = this.element.createChild("div", "title");
 
     this.title = title;
     this.subtitle = subtitle;
@@ -91,10 +85,28 @@ WebInspector.Placard.prototype = {
             this.deselect();
     },
 
+    /**
+     * @return {!WebInspector.PlacardGroup|undefined}
+     */
+    group: function()
+    {
+        return this._group;
+    },
+
+    /**
+     * @param {!WebInspector.PlacardGroup} group
+     */
+    setGroup: function(group)
+    {
+        this._group = group;
+    },
+
     select: function()
     {
         if (this._selected)
             return;
+        if (this._group)
+            this._group.setExpanded(true);
         this._selected = true;
         this.element.addStyleClass("selected");
     },
@@ -114,5 +126,96 @@ WebInspector.Placard.prototype = {
 
     discard: function()
     {
+    }
+}
+
+/**
+ * @constructor
+ * @param {string} title
+ * @param {!Array.<!WebInspector.Placard>} placards
+ */
+WebInspector.PlacardGroup = function(title, placards)
+{
+    this.element = document.createElementWithClass("div", "placard placard-group");
+    this.element.addEventListener("click", this._toggleExpanded.bind(this), false);
+    this.placards = placards;
+    this._expanded = false;
+    this.setTitle(title);
+
+    for (var i = 0; i < placards.length; ++i)
+        placards[i].setGroup(this);
+}
+
+WebInspector.PlacardGroup.prototype = {
+    /**
+     * @return {string}
+     */
+    title: function()
+    {
+        return this._title;
+    },
+
+    /**
+     * @param {string} title
+     */
+    setTitle: function(title)
+    {
+        this._title = title;
+        this.element.textContent = title;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    expanded: function()
+    {
+        return this._expanded;
+    },
+
+    /**
+     * @param {boolean} x
+     */
+    setExpanded: function(x)
+    {
+        if (this._expanded === x)
+            return;
+        if (x) {
+            var parent = this.element.parentElement;
+            if (!parent)
+                return;
+            var sibling = this.element.nextSibling;
+            for (var i = 0; i < this.placards.length; ++i) {
+                var placard = this.placards[i];
+                placard.element.addStyleClass("grouped");
+                parent.insertBefore(placard.element, sibling);
+            }
+        } else {
+            if (this.selected())
+                return;
+            for (var i = 0; i < this.placards.length; ++i) {
+                var placard = this.placards[i];
+                placard.element.removeStyleClass("grouped");
+                placard.element.remove();
+            }
+        }
+        this._expanded = x;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    selected: function()
+    {
+        for (var i = 0; i < this.placards.length; ++i) {
+            if (this.placards[i].selected)
+                return true;
+        }
+        return false;
+    },
+
+    _toggleExpanded: function()
+    {
+        this.setExpanded(!this._expanded);
+        this.element.enableStyleClass("expanded", this._expanded);
     }
 }

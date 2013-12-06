@@ -315,7 +315,7 @@ WebInspector.SourcesPanel.prototype = {
 
         this._updateDebuggerButtons();
 
-        this.sidebarPanes.callstack.update(details.callFrames);
+        this.sidebarPanes.callstack.update(details.callFrames, details.asyncStackTrace);
 
         function didCreateBreakpointHitStatusMessage(element)
         {
@@ -750,7 +750,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _clearInterface: function()
     {
-        this.sidebarPanes.callstack.update(null);
+        this.sidebarPanes.callstack.update(null, null);
         this.sidebarPanes.scopechain.update(null);
         this.sidebarPanes.jsBreakpoints.clearBreakpointHighlight();
         WebInspector.domBreakpointsSidebarPane.clearBreakpointHighlight();

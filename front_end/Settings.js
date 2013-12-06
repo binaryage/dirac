@@ -117,6 +117,8 @@ WebInspector.Settings = function()
     this.screencastSidebarWidth = this.createSetting("screencastSidebarWidth", 300);
     this.showEmulationViewInDrawer = this.createSetting("showEmulationViewInDrawer", true);
     this.showRenderingViewInDrawer = this.createSetting("showRenderingViewInDrawer", true);
+    this.enableAsyncStackTraces = this.createSetting("enableAsyncStackTraces", false);
+    this.maxAsyncStackTraceDepth = this.createSetting("maxAsyncStackTraceDepth", 4);
 }
 
 WebInspector.Settings.prototype = {
