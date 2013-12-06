@@ -30,40 +30,77 @@
 WebInspector.CallStackSidebarPane = function()
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Call Stack"));
-    this._model = WebInspector.debuggerModel;
-
     this.bodyElement.addEventListener("keydown", this._keyDown.bind(this), true);
     this.bodyElement.tabIndex = 0;
 }
 
 WebInspector.CallStackSidebarPane.Events = {
+    CallFrameRestarted: "CallFrameRestarted",
     CallFrameSelected: "CallFrameSelected"
 }
 
 WebInspector.CallStackSidebarPane.prototype = {
+    /**
+     * @param {?Array.<!WebInspector.DebuggerModel.CallFrame>} callFrames
+     */
     update: function(callFrames)
     {
         this.bodyElement.removeChildren();
         delete this._statusMessageElement;
+        /** @type {!Array.<!WebInspector.CallStackSidebarPane.Placard>} */
         this.placards = [];
 
         if (!callFrames) {
-            var infoElement = document.createElement("div");
-            infoElement.className = "info";
+            var infoElement = this.bodyElement.createChild("div", "info");
             infoElement.textContent = WebInspector.UIString("Not Paused");
-            this.bodyElement.appendChild(infoElement);
             return;
         }
 
-        for (var i = 0; i < callFrames.length; ++i) {
-            var callFrame = callFrames[i];
-            var placard = new WebInspector.CallStackSidebarPane.Placard(callFrame, this);
+        this._appendSidebarPlacards(callFrames, this.bodyElement);
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.DebuggerModel.CallFrame>} callFrames
+     * @param {!Element=} parentElement
+     */
+    _appendSidebarPlacards: function(callFrames, parentElement)
+    {
+        for (var i = 0, n = callFrames.length; i < n; ++i) {
+            var placard = new WebInspector.CallStackSidebarPane.Placard(callFrames[i]);
             placard.element.addEventListener("click", this._placardSelected.bind(this, placard), false);
+            placard.element.addEventListener("contextmenu", this._placardContextMenu.bind(this, placard), true);
             this.placards.push(placard);
-            this.bodyElement.appendChild(placard.element);
+            if (parentElement)
+                parentElement.appendChild(placard.element);
         }
     },
 
+    /**
+     * @param {!WebInspector.CallStackSidebarPane.Placard} placard
+     */
+    _placardContextMenu: function(placard, event)
+    {
+        var contextMenu = new WebInspector.ContextMenu(event);
+
+        if (WebInspector.debuggerModel.canSetScriptSource())
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Restart frame" : "Restart Frame"), this._restartFrame.bind(this, placard));
+
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy stack trace" : "Copy Stack Trace"), this._copyStackTrace.bind(this));
+        contextMenu.show();
+    },
+
+    /**
+     * @param {!WebInspector.CallStackSidebarPane.Placard} placard
+     */
+    _restartFrame: function(placard)
+    {
+        placard._callFrame.restart();
+        this.dispatchEventToListeners(WebInspector.CallStackSidebarPane.Events.CallFrameRestarted, placard._callFrame);
+    },
+
+    /**
+     * @param {!WebInspector.DebuggerModel.CallFrame} x
+     */
     setSelectedCallFrame: function(x)
     {
         for (var i = 0; i < this.placards.length; ++i) {
@@ -79,9 +116,9 @@ WebInspector.CallStackSidebarPane.prototype = {
     _selectNextCallFrameOnStack: function(event)
     {
         var index = this._selectedCallFrameIndex();
-        if (index == -1)
+        if (index === -1)
             return true;
-        this._selectedPlacardByIndex(index + 1);
+        this._selectPlacardByIndex(index + 1);
         return true;
     },
 
@@ -92,16 +129,16 @@ WebInspector.CallStackSidebarPane.prototype = {
     _selectPreviousCallFrameOnStack: function(event)
     {
         var index = this._selectedCallFrameIndex();
-        if (index == -1)
+        if (index === -1)
             return true;
-        this._selectedPlacardByIndex(index - 1);
+        this._selectPlacardByIndex(index - 1);
         return true;
     },
 
     /**
      * @param {number} index
      */
-    _selectedPlacardByIndex: function(index)
+    _selectPlacardByIndex: function(index)
     {
         if (index < 0 || index >= this.placards.length)
             return;
@@ -113,16 +150,20 @@ WebInspector.CallStackSidebarPane.prototype = {
      */
     _selectedCallFrameIndex: function()
     {
-        if (!this._model.selectedCallFrame())
+        var selectedCallFrame = WebInspector.debuggerModel.selectedCallFrame();
+        if (!selectedCallFrame)
             return -1;
         for (var i = 0; i < this.placards.length; ++i) {
             var placard = this.placards[i];
-            if (placard._callFrame === this._model.selectedCallFrame())
+            if (placard._callFrame === selectedCallFrame)
                 return i;
         }
         return -1;
     },
 
+    /**
+     * @param {!WebInspector.CallStackSidebarPane.Placard} placard
+     */
     _placardSelected: function(placard)
     {
         this.dispatchEventToListeners(WebInspector.CallStackSidebarPane.Events.CallFrameSelected, placard._callFrame);
@@ -145,16 +186,16 @@ WebInspector.CallStackSidebarPane.prototype = {
         registerShortcutDelegate(WebInspector.SourcesPanelDescriptor.ShortcutKeys.PrevCallFrame, this._selectPreviousCallFrameOnStack.bind(this));
     },
 
+    /**
+     * @param {!Element|string} status
+     */
     setStatus: function(status)
     {
-        if (!this._statusMessageElement) {
-            this._statusMessageElement = document.createElement("div");
-            this._statusMessageElement.className = "info";
-            this.bodyElement.appendChild(this._statusMessageElement);
-        }
-        if (typeof status === "string")
+        if (!this._statusMessageElement)
+            this._statusMessageElement = this.bodyElement.createChild("div", "info");
+        if (typeof status === "string") {
             this._statusMessageElement.textContent = status;
-        else {
+        } else {
             this._statusMessageElement.removeChildren();
             this._statusMessageElement.appendChild(status);
         }
@@ -180,40 +221,22 @@ WebInspector.CallStackSidebarPane.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.Placard}
- * @param {WebInspector.DebuggerModel.CallFrame} callFrame
- * @param {WebInspector.CallStackSidebarPane} pane
+ * @param {!WebInspector.DebuggerModel.CallFrame} callFrame
  */
-WebInspector.CallStackSidebarPane.Placard = function(callFrame, pane)
+WebInspector.CallStackSidebarPane.Placard = function(callFrame)
 {
     WebInspector.Placard.call(this, callFrame.functionName || WebInspector.UIString("(anonymous function)"), "");
     callFrame.createLiveLocation(this._update.bind(this));
-    this.element.addEventListener("contextmenu", this._placardContextMenu.bind(this), true);
     this._callFrame = callFrame;
-    this._pane = pane;
 }
 
 WebInspector.CallStackSidebarPane.Placard.prototype = {
+    /**
+     * @param {!WebInspector.UILocation} uiLocation
+     */
     _update: function(uiLocation)
     {
         this.subtitle = uiLocation.linkText().trimMiddle(100);
-    },
-
-    _placardContextMenu: function(event)
-    {
-        var contextMenu = new WebInspector.ContextMenu(event);
-
-        if (WebInspector.debuggerModel.canSetScriptSource()) {
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Restart frame" : "Restart Frame"), this._restartFrame.bind(this));
-            contextMenu.appendSeparator();
-        }
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy stack trace" : "Copy Stack Trace"), this._pane._copyStackTrace.bind(this._pane));
-
-        contextMenu.show();
-    },
-
-    _restartFrame: function()
-    {
-        this._callFrame.restart(undefined);
     },
 
     __proto__: WebInspector.Placard.prototype

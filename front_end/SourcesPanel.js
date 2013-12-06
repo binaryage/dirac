@@ -124,6 +124,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.sidebarPanes.watchExpressions = new WebInspector.WatchExpressionsSidebarPane();
     this.sidebarPanes.callstack = new WebInspector.CallStackSidebarPane();
     this.sidebarPanes.callstack.addEventListener(WebInspector.CallStackSidebarPane.Events.CallFrameSelected, this._callFrameSelectedInSidebar.bind(this));
+    this.sidebarPanes.callstack.addEventListener(WebInspector.CallStackSidebarPane.Events.CallFrameRestarted, this._callFrameRestartedInSidebar.bind(this));
 
     this.sidebarPanes.scopechain = new WebInspector.ScopeChainSidebarPane();
     this.sidebarPanes.jsBreakpoints = new WebInspector.JavaScriptBreakpointsSidebarPane(WebInspector.breakpointManager, this._showSourceLocation.bind(this));
@@ -901,6 +902,11 @@ WebInspector.SourcesPanel.prototype = {
         var callFrame = /** @type {WebInspector.DebuggerModel.CallFrame} */ (event.data);
         delete this._skipExecutionLineRevealing;
         WebInspector.debuggerModel.setSelectedCallFrame(callFrame);
+    },
+
+    _callFrameRestartedInSidebar: function()
+    {
+        delete this._skipExecutionLineRevealing;
     },
 
     continueToLocation: function(rawLocation)
