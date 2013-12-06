@@ -460,7 +460,7 @@ WebInspector.GenericSettingsTab.prototype = {
         noteElement.createChild("span", "help-key").textContent = "Esc";
         noteElement.createTextChild(WebInspector.UIString(" or click the"));
         noteElement.appendChild(new WebInspector.StatusBarButton(WebInspector.UIString("Drawer"), "console-status-bar-item").element);
-        noteElement.createTextChild(WebInspector.UIString("toolbar icon"));
+        noteElement.createTextChild(WebInspector.UIString("toolbar item"));
     },
 
     __proto__: WebInspector.SettingsTab.prototype
