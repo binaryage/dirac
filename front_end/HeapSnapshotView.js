@@ -157,10 +157,7 @@ WebInspector.HeapSnapshotView.prototype = {
         {
             var list = this._profiles();
             var profileIndex = list.indexOf(this._profile);
-            if (profileIndex !== -1)
-                this.baseSelect.setSelectedIndex(profileIndex - 1);
-            else
-                this.baseSelect.setSelectedIndex(0);
+            this.baseSelect.setSelectedIndex(Math.max(0, profileIndex - 1));
             this.dataGrid.setDataSource(heapSnapshotProxy);
         }
     },
