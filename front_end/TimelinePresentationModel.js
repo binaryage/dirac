@@ -57,7 +57,7 @@ WebInspector.TimelinePresentationModel.categories = function()
 };
 
 /**
- * @return {!Object.<string, {title: string, category: WebInspector.TimelineCategory}>}
+ * @return {!Object.<string, {title: string, category: !WebInspector.TimelineCategory}>}
  */
 WebInspector.TimelinePresentationModel._initRecordStyles = function()
 {
@@ -117,8 +117,8 @@ WebInspector.TimelinePresentationModel._initRecordStyles = function()
 }
 
 /**
- * @param {Object} record
- * @return {{title:string, category:WebInspector.TimelineCategory}}
+ * @param {!Object} record
+ * @return {{title: string, category: !WebInspector.TimelineCategory}}
  */
 WebInspector.TimelinePresentationModel.recordStyle = function(record)
 {
@@ -293,7 +293,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
-     * @param {TimelineAgent.TimelineEvent} record
+     * @param {!TimelineAgent.TimelineEvent} record
      * @return {!Array.<!WebInspector.TimelinePresentationModel.Record>}
      */
     addRecord: function(record)
@@ -313,9 +313,9 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.TimelinePresentationModel.Record} parentRecord
-     * @param {TimelineAgent.TimelineEvent} record
-     * @return {WebInspector.TimelinePresentationModel.Record}
+     * @param {!WebInspector.TimelinePresentationModel.Record} parentRecord
+     * @param {!TimelineAgent.TimelineEvent} record
+     * @return {!WebInspector.TimelinePresentationModel.Record}
      */
     _innerAddRecord: function(parentRecord, record)
     {
@@ -395,7 +395,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.TimelinePresentationModel.Record} record
+     * @param {!WebInspector.TimelinePresentationModel.Record} record
      */
     _updateAncestorStats: function(record)
     {
@@ -411,10 +411,10 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
-     * @param {Object} record
-     * @param {Object} newParent
+     * @param {!Object} record
+     * @param {!Object} newParent
      * @param {string=} bucket
-     * @return {WebInspector.TimelinePresentationModel.Record?}
+     * @return {?WebInspector.TimelinePresentationModel.Record}
      */
     _findCoalescedParent: function(record, newParent, bucket)
     {
@@ -441,8 +441,8 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.TimelinePresentationModel.Record} record
-     * @return {WebInspector.TimelinePresentationModel.Record}
+     * @param {!WebInspector.TimelinePresentationModel.Record} record
+     * @return {!WebInspector.TimelinePresentationModel.Record}
      */
     _replaceWithCoalescedRecord: function(record)
     {
@@ -509,10 +509,10 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
-     * @param {TimelineAgent.TimelineEvent} beginRecord
-     * @param {TimelineAgent.TimelineEvent} endRecord
+     * @param {!TimelineAgent.TimelineEvent} beginRecord
+     * @param {!TimelineAgent.TimelineEvent} endRecord
      * @param {!Array.<!TimelineAgent.TimelineEvent>} children
-     * @return {TimelineAgent.TimelineEvent}
+     * @return {!TimelineAgent.TimelineEvent}
      */
     _createSynchronousTimeRecord: function(beginRecord, endRecord, children)
     {
@@ -690,11 +690,11 @@ WebInspector.TimelinePresentationModel.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.TimelinePresentationModel} presentationModel
- * @param {Object} record
- * @param {WebInspector.TimelinePresentationModel.Record} parentRecord
- * @param {WebInspector.TimelinePresentationModel.Record} origin
- * @param {Object} scriptDetails
+ * @param {!WebInspector.TimelinePresentationModel} presentationModel
+ * @param {!Object} record
+ * @param {?WebInspector.TimelinePresentationModel.Record} parentRecord
+ * @param {?WebInspector.TimelinePresentationModel.Record} origin
+ * @param {?Object} scriptDetails
  * @param {boolean} hidden
  */
 WebInspector.TimelinePresentationModel.Record = function(presentationModel, record, parentRecord, origin, scriptDetails, hidden)
@@ -930,7 +930,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @return {WebInspector.TimelinePresentationModel.Record}
+     * @return {!WebInspector.TimelinePresentationModel.Record}
      */
     origin: function()
     {
@@ -962,7 +962,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @return {WebInspector.TimelineCategory}
+     * @return {!WebInspector.TimelineCategory}
      */
     get category()
     {
@@ -1003,7 +1003,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @return {Object}
+     * @return {!Object}
      */
     get data()
     {
@@ -1058,7 +1058,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @param {function(DocumentFragment)} callback
+     * @param {function(!DocumentFragment)} callback
      */
     generatePopupContent: function(callback)
     {
@@ -1077,7 +1077,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
 
     /**
      * @param {string} key
-     * @return {Object}
+     * @return {?Object}
      */
     getUserObject: function(key)
     {
@@ -1088,7 +1088,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
 
     /**
      * @param {string} key
-     * @param {Object} value
+     * @param {!Object} value
      */
     setUserObject: function(key, value)
     {
@@ -1098,7 +1098,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @param {Element} element
+     * @param {!Element} element
      */
     _setImagePreviewElement: function(element)
     {
@@ -1115,7 +1115,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @return {DocumentFragment}
+     * @return {!DocumentFragment}
      */
     _generatePopupContentSynchronously: function()
     {
@@ -1163,7 +1163,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                 callSiteStackTraceLabel = WebInspector.UIString("Animation frame requested");
                 contentHelper.appendTextRow(WebInspector.UIString("Callback ID"), this.data["id"]);
                 break;
-        case recordTypes.FunctionCall:
+            case recordTypes.FunctionCall:
                 if (this.scriptName)
                     contentHelper.appendElementRow(WebInspector.UIString("Location"), this._linkifyLocation(this.scriptName, this.scriptLine, 0));
                 break;
@@ -1291,7 +1291,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @param {WebInspector.DOMAgent} node
+     * @param {!WebInspector.DOMAgent} node
      */
     _createNodeAnchor: function(node)
     {
@@ -1424,7 +1424,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @param {ConsoleAgent.CallFrame} callFrame
+     * @param {!ConsoleAgent.CallFrame} callFrame
      */
     _linkifyCallFrame: function(callFrame)
     {
@@ -1445,7 +1445,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
 
     /**
      * @param {*} defaultValue
-     * @return {Element|string}
+     * @return {!Element|string}
      */
     _linkifyScriptLocation: function(defaultValue)
     {
@@ -1503,7 +1503,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
 }
 
 /**
- * @param {Object} aggregatedStats
+ * @param {!Object} aggregatedStats
  */
 WebInspector.TimelinePresentationModel._generateAggregatedInfo = function(aggregatedStats)
 {
@@ -1521,9 +1521,9 @@ WebInspector.TimelinePresentationModel._generateAggregatedInfo = function(aggreg
 }
 
 /**
- * @param {Object} aggregatedStats
+ * @param {!Object} aggregatedStats
  * @param {string=} firstCategoryName
- * @return {{pieChart:WebInspector.PieChart, element:Element, footerElement:Element}}
+ * @return {{pieChart: !WebInspector.PieChart, element: !Element, footerElement: !Element}}
  */
 WebInspector.TimelinePresentationModel.generatePieChart = function(aggregatedStats, firstCategoryName)
 {
@@ -1572,7 +1572,7 @@ WebInspector.TimelinePresentationModel.generatePopupContentForFrame = function(f
 }
 
 /**
- * @param {WebInspector.FrameStatistics} statistics
+ * @param {!WebInspector.FrameStatistics} statistics
  */
 WebInspector.TimelinePresentationModel.generatePopupContentForFrameStatistics = function(statistics)
 {
@@ -1594,7 +1594,7 @@ WebInspector.TimelinePresentationModel.generatePopupContentForFrameStatistics = 
 }
 
 /**
- * @param {CanvasRenderingContext2D} context
+ * @param {!CanvasRenderingContext2D} context
  * @param {number} width
  * @param {number} height
  * @param {string} color0
@@ -1612,10 +1612,10 @@ WebInspector.TimelinePresentationModel.createFillStyle = function(context, width
 }
 
 /**
- * @param {CanvasRenderingContext2D} context
+ * @param {!CanvasRenderingContext2D} context
  * @param {number} width
  * @param {number} height
- * @param {WebInspector.TimelineCategory} category
+ * @param {!WebInspector.TimelineCategory} category
  */
 WebInspector.TimelinePresentationModel.createFillStyleForCategory = function(context, width, height, category)
 {
@@ -1623,7 +1623,7 @@ WebInspector.TimelinePresentationModel.createFillStyleForCategory = function(con
 }
 
 /**
- * @param {WebInspector.TimelineCategory} category
+ * @param {!WebInspector.TimelineCategory} category
  */
 WebInspector.TimelinePresentationModel.createStyleRuleForCategory = function(category)
 {
@@ -1641,8 +1641,8 @@ WebInspector.TimelinePresentationModel.createStyleRuleForCategory = function(cat
 
 
 /**
- * @param {Object} rawRecord
- * @return {string?}
+ * @param {!Object} rawRecord
+ * @return {?string}
  */
 WebInspector.TimelinePresentationModel.coalescingKeyForRecord = function(rawRecord)
 {
@@ -1675,7 +1675,7 @@ WebInspector.TimelinePresentationModel.quadHeight = function(quad)
 }
 
 /**
- * @param {Object} data
+ * @param {!Object} data
  * @return {?Array.<number>}
  */
 WebInspector.TimelinePresentationModel.quadFromRectData = function(data)
@@ -1796,7 +1796,7 @@ WebInspector.TimelinePopupContentHelper.prototype = {
 
     /**
      * @param {string} title
-     * @param {Element|string} content
+     * @param {!Element|string} content
      */
     appendElementRow: function(title, content)
     {
@@ -1839,7 +1839,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
 
     /**
      * @param {string} title
-     * @param {Element|string} content
+     * @param {!Element|string} content
      */
     appendElementRow: function(title, content)
     {
@@ -1855,7 +1855,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
     /**
      * @param {string} title
      * @param {!Array.<!ConsoleAgent.CallFrame>} stackTrace
-     * @param {function(ConsoleAgent.CallFrame)} callFrameLinkifier
+     * @param {function(!ConsoleAgent.CallFrame)} callFrameLinkifier
      */
     appendStackTrace: function(title, stackTrace, callFrameLinkifier)
     {

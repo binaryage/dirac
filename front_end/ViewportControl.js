@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @param {WebInspector.ViewportControl.Provider} provider
+ * @param {!WebInspector.ViewportControl.Provider} provider
  */
 WebInspector.ViewportControl = function(provider)
 {
@@ -62,14 +62,14 @@ WebInspector.ViewportControl.Provider.prototype = {
 
     /**
      * @param {number} index
-     * @return {Element}
+     * @return {?Element}
      */
     itemElement: function(index) { return null; }
 }
 
 WebInspector.ViewportControl.prototype = {
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     contentElement: function()
     {
@@ -112,7 +112,7 @@ WebInspector.ViewportControl.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onScroll: function(event)
     {

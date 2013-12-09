@@ -67,7 +67,7 @@ WebInspector.DOMStorageItemsView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _domStorageItemsCleared: function(event)
     {
@@ -81,7 +81,7 @@ WebInspector.DOMStorageItemsView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _domStorageItemRemoved: function(event)
     {
@@ -105,7 +105,7 @@ WebInspector.DOMStorageItemsView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _domStorageItemAdded: function(event)
     {
@@ -128,7 +128,7 @@ WebInspector.DOMStorageItemsView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _domStorageItemUpdated: function(event)
     {

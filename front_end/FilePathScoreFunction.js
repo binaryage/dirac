@@ -44,7 +44,7 @@ WebInspector.FilePathScoreFunction = function(query)
 
 /**
  * @param {string} query
- * @return {RegExp}
+ * @return {!RegExp}
  */
 WebInspector.FilePathScoreFunction.filterRegex = function(query)
 {
@@ -78,7 +78,7 @@ WebInspector.FilePathScoreFunction.prototype = {
             this._sequence = new Int32Array(n * m * 2);
         }
         var score = this._score;
-        var sequence = this._sequence;
+        var sequence = /** @type {!Int32Array} */ (this._sequence);
         this._dataUpperCase = data.toUpperCase();
         this._fileNameIndex = data.lastIndexOf("/");
         for (var i = 0; i < n; ++i) {
@@ -114,7 +114,7 @@ WebInspector.FilePathScoreFunction.prototype = {
     },
 
     /**
-     * @param {Int32Array} sequence
+     * @param {!Int32Array} sequence
      * @param {number} n
      * @param {number} m
      * @param {!Array.<!Number>} out

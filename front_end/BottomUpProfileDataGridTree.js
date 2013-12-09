@@ -160,8 +160,8 @@ WebInspector.BottomUpProfileDataGridNode.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileDataGridTree}
- * @param {WebInspector.CPUProfileView} profileView
- * @param {ProfilerAgent.CPUProfileNode} rootProfileNode
+ * @param {!WebInspector.CPUProfileView} profileView
+ * @param {!ProfilerAgent.CPUProfileNode} rootProfileNode
  */
 WebInspector.BottomUpProfileDataGridTree = function(profileView, rootProfileNode)
 {

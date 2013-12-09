@@ -95,17 +95,17 @@ WebInspector.LayersPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onLayerPainted: function(event)
     {
-        var layer = /** @type {WebInspector.Layer} */ (event.data);
+        var layer = /** @type {!WebInspector.Layer} */ (event.data);
         if (this._currentlySelectedLayer === layer)
             this._layerDetailsView.updatePaintCount(this._currentlySelectedLayer.paintCount());
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onLayerSelected: function(event)
     {
@@ -114,7 +114,7 @@ WebInspector.LayersPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onLayerHovered: function(event)
     {
@@ -123,7 +123,7 @@ WebInspector.LayersPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Layer?} layer
+     * @param {?WebInspector.Layer} layer
      */
     _selectLayer: function(layer)
     {
@@ -141,7 +141,7 @@ WebInspector.LayersPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Layer?} layer
+     * @param {?WebInspector.Layer} layer
      */
     _hoverLayer: function(layer)
     {

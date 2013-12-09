@@ -138,7 +138,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _screencastFrame: function(event)
     {
@@ -174,7 +174,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _screencastVisibilityChanged: function(event)
     {
@@ -243,7 +243,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _handleMouseEvent: function(event)
     {
@@ -282,7 +282,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {KeyboardEvent} event
+     * @param {!KeyboardEvent} event
      */
     _handleKeyEvent: function(event)
     {
@@ -314,7 +314,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _handleContextMenuEvent: function(event)
     {
@@ -322,7 +322,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _simulateTouchGestureForMouseEvent: function(event)
     {
@@ -393,8 +393,8 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {Event} event
-     * @return {{x: number, y: number}}
+     * @param {!Event} event
+     * @return {!{x: number, y: number}}
      */
     _convertIntoScreenSpace: function(event)
     {
@@ -406,7 +406,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      * @return number
      */
     _modifiersForEvent: function(event)
@@ -435,9 +435,9 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {DOMAgent.NodeId} nodeId
+     * @param {!DOMAgent.NodeId} nodeId
      * @param {?DOMAgent.HighlightConfig} config
-     * @param {RuntimeAgent.RemoteObjectId=} objectId
+     * @param {!RuntimeAgent.RemoteObjectId=} objectId
      */
     highlightDOMNode: function(nodeId, config, objectId)
     {
@@ -457,7 +457,7 @@ WebInspector.ScreencastView.prototype = {
 
         /**
          * @param {?Protocol.Error} error
-         * @param {DOMAgent.BoxModel} model
+         * @param {!DOMAgent.BoxModel} model
          */
         function callback(error, model)
         {
@@ -472,14 +472,14 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {DOMAgent.BoxModel} model
-     * @return {DOMAgent.BoxModel}
+     * @param {!DOMAgent.BoxModel} model
+     * @return {!DOMAgent.BoxModel}
      */
     _scaleModel: function(model)
     {
         var scale = this._canvasElement.offsetWidth / this._viewport.width;
         /**
-         * @param {DOMAgent.Quad} quad
+         * @param {!DOMAgent.Quad} quad
          */
         function scaleQuad(quad)
         {
@@ -488,10 +488,12 @@ WebInspector.ScreencastView.prototype = {
                 quad[i + 1] = (quad[i + 1] - this._viewport.y) * scale + this._screenOffsetTop * this._screenZoom;
             }
         }
-        scaleQuad.call(this, model.content);
-        scaleQuad.call(this, model.padding);
-        scaleQuad.call(this, model.border);
-        scaleQuad.call(this, model.margin);
+
+        // FIXME: These casts are due to "generate_protocol_externs.py" generating nullable refs for object type fields.
+        scaleQuad.call(this, /** @type {!DOMAgent.Quad} */ (model.content));
+        scaleQuad.call(this, /** @type {!DOMAgent.Quad} */ (model.padding));
+        scaleQuad.call(this, /** @type {!DOMAgent.Quad} */ (model.border));
+        scaleQuad.call(this, /** @type {!DOMAgent.Quad} */ (model.margin));
         return model;
     },
 
@@ -550,8 +552,8 @@ WebInspector.ScreencastView.prototype = {
 
 
     /**
-     * @param {DOMAgent.Quad} quad1
-     * @param {DOMAgent.Quad} quad2
+     * @param {!DOMAgent.Quad} quad1
+     * @param {!DOMAgent.Quad} quad2
      * @return {boolean}
      */
     _quadsAreEqual: function(quad1, quad2)
@@ -564,7 +566,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {DOMAgent.RGBA} color
+     * @param {!DOMAgent.RGBA} color
      * @return {string}
      */
     _cssColor: function(color)
@@ -575,8 +577,8 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {DOMAgent.Quad} quad
-     * @return {CanvasRenderingContext2D}
+     * @param {!DOMAgent.Quad} quad
+     * @return {!CanvasRenderingContext2D}
      */
     _quadToPath: function(quad)
     {
@@ -590,8 +592,8 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {DOMAgent.Quad} quad
-     * @param {DOMAgent.RGBA} fillColor
+     * @param {!DOMAgent.Quad} quad
+     * @param {!DOMAgent.RGBA} fillColor
      */
     _drawOutlinedQuad: function(quad, fillColor)
     {
@@ -604,9 +606,9 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {DOMAgent.Quad} quad
-     * @param {DOMAgent.Quad} clipQuad
-     * @param {DOMAgent.RGBA} fillColor
+     * @param {!DOMAgent.Quad} quad
+     * @param {!DOMAgent.Quad} clipQuad
+     * @param {!DOMAgent.RGBA} fillColor
      */
     _drawOutlinedQuadWithClip: function (quad, clipQuad, fillColor)
     {
@@ -701,7 +703,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @return {{width: number, height: number}}
+     * @return {!{width: number, height: number}}
      */
     _viewportDimensions: function()
     {
@@ -714,7 +716,7 @@ WebInspector.ScreencastView.prototype = {
     /**
      * @param {boolean} enabled
      * @param {boolean} inspectShadowDOM
-     * @param {DOMAgent.HighlightConfig} config
+     * @param {!DOMAgent.HighlightConfig} config
      * @param {function(?Protocol.Error)} callback
      */
     setInspectModeEnabled: function(enabled, inspectShadowDOM, config, callback)
@@ -724,7 +726,7 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {CanvasRenderingContext2D} context
+     * @param {!CanvasRenderingContext2D} context
      */
     _createCheckerboardPattern: function(context)
     {
@@ -829,7 +831,7 @@ WebInspector.ScreencastView.prototype = {
 }
 
 /**
- * @param {HTMLElement} element
+ * @param {!HTMLElement} element
  * @constructor
  */
 WebInspector.ScreencastView.ProgressTracker = function(element) {
@@ -871,7 +873,7 @@ WebInspector.ScreencastView.ProgressTracker.prototype = {
     {
       if (!this._navigationProgressVisible())
           return;
-      var request = /** @type {WebInspector.NetworkRequest} */ (event.data);
+      var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
       // Ignore long-living WebSockets for the sake of progress indicator, as we won't be waiting them anyway.
       if (request.type === WebInspector.resourceTypes.WebSocket)
           return;
@@ -883,7 +885,7 @@ WebInspector.ScreencastView.ProgressTracker.prototype = {
     {
         if (!this._navigationProgressVisible())
             return;
-        var request = /** @type {WebInspector.NetworkRequest} */ (event.data);
+        var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
         if (!(request.requestId in this._requestIds))
             return;
         ++this._finishedRequests;

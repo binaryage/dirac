@@ -90,7 +90,7 @@ WebInspector.AuditsPanel.prototype = {
 
     /**
      * @param {string} id
-     * @return {WebInspector.AuditCategory}
+     * @return {!WebInspector.AuditCategory}
      */
     getCategory: function(id)
     {
@@ -216,7 +216,7 @@ WebInspector.AuditCategory.prototype = {
 
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
-     * @param {function(WebInspector.AuditRuleResult)} ruleResultCallback
+     * @param {function(!WebInspector.AuditRuleResult)} ruleResultCallback
      * @param {function()} categoryDoneCallback
      * @param {!WebInspector.Progress} progress
      */
@@ -267,7 +267,7 @@ WebInspector.AuditRule.Severity = {
 }
 
 /**
- * @type {Object.<WebInspector.AuditRule.Severity, number>}
+ * @enum {number}
  */
 WebInspector.AuditRule.SeverityOrder = {
     "info": 3,
@@ -287,7 +287,7 @@ WebInspector.AuditRule.prototype = {
     },
 
     /**
-     * @param {WebInspector.AuditRule.Severity} severity
+     * @param {!WebInspector.AuditRule.Severity} severity
      */
     set severity(severity)
     {
@@ -296,7 +296,7 @@ WebInspector.AuditRule.prototype = {
 
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
-     * @param {function(WebInspector.AuditRuleResult)} callback
+     * @param {function(!WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     run: function(requests, callback, progress)
@@ -311,9 +311,9 @@ WebInspector.AuditRule.prototype = {
 
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
-     * @param {WebInspector.AuditRuleResult} result
-     * @param {function(WebInspector.AuditRuleResult)} callback
-     * @param {WebInspector.Progress} progress
+     * @param {!WebInspector.AuditRuleResult} result
+     * @param {function(!WebInspector.AuditRuleResult)} callback
+     * @param {!WebInspector.Progress} progress
      */
     doRun: function(requests, result, callback, progress)
     {
@@ -343,7 +343,7 @@ WebInspector.AuditCategoryResult.prototype = {
 
 /**
  * @constructor
- * @param {(string|boolean|number|Object)} value
+ * @param {(string|boolean|number|!Object)} value
  * @param {boolean=} expanded
  * @param {string=} className
  */
@@ -377,7 +377,7 @@ WebInspector.AuditRuleResult.resourceDomain = function(domain)
 
 WebInspector.AuditRuleResult.prototype = {
     /**
-     * @param {(string|boolean|number|Object)} value
+     * @param {(string|boolean|number|!Object)} value
      * @param {boolean=} expanded
      * @param {string=} className
      * @return {!WebInspector.AuditRuleResult}
@@ -444,7 +444,7 @@ WebInspector.AuditRuleResult.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.SidebarTreeElement}
- * @param {WebInspector.AuditsPanel} panel
+ * @param {!WebInspector.AuditsPanel} panel
  */
 WebInspector.AuditsSidebarTreeElement = function(panel)
 {

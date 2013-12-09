@@ -60,7 +60,7 @@ WebInspector.OverridesView = function()
 
 WebInspector.OverridesView.prototype = {
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _tabSelected: function(event)
     {
@@ -96,7 +96,7 @@ WebInspector.OverridesView.Tab = function(id, name, settings)
 
 WebInspector.OverridesView.Tab.prototype = {
     /**
-     * @param {WebInspector.TabbedPane} tabbedPane
+     * @param {!WebInspector.TabbedPane} tabbedPane
      */
     appendAsTab: function(tabbedPane)
     {
@@ -117,12 +117,12 @@ WebInspector.OverridesView.Tab.prototype = {
     /**
      * Creates an input element under the parentElement with the given id and defaultText.
      * It also sets an onblur event listener.
-     * @param {Element} parentElement
+     * @param {!Element} parentElement
      * @param {string} id
      * @param {string} defaultText
      * @param {function(*)} eventListener
      * @param {boolean=} numeric
-     * @return {Element} element
+     * @return {!Element} element
      */
     _createInput: function(parentElement, id, defaultText, eventListener, numeric)
     {
@@ -393,7 +393,7 @@ WebInspector.OverridesView.DeviceTab._tablets = [
 
 WebInspector.OverridesView.DeviceTab.prototype = {
     /**
-     * @param {Event} e
+     * @param {!Event} e
      */
     _keyPressed: function(e)
     {
@@ -524,7 +524,7 @@ WebInspector.OverridesView.ViewportTab.prototype = {
     },
 
     /**
-     * @param {WebInspector.OverridesSupport.DeviceMetrics} metrics
+     * @param {!WebInspector.OverridesSupport.DeviceMetrics} metrics
      */
     _createDeviceMetricsElement: function(metrics)
     {
@@ -698,7 +698,7 @@ WebInspector.OverridesView.UserAgentTab._userAgents = [
 
 WebInspector.OverridesView.UserAgentTab.prototype = {
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     _createUserAgentSelectRowElement: function()
     {
@@ -859,8 +859,8 @@ WebInspector.OverridesView.SensorsTab.prototype = {
     },
 
     /**
-     * @param {WebInspector.OverridesSupport.GeolocationPosition} geolocation
-     * @return {Element}
+     * @param {!WebInspector.OverridesSupport.GeolocationPosition} geolocation
+     * @return {!Element}
      */
     _createGeolocationOverrideElement: function(geolocation)
     {
@@ -922,7 +922,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
 
     /**
      * @param {?WebInspector.OverridesSupport.DeviceOrientation} deviceOrientation
-     * @param {WebInspector.OverridesView.SensorsTab.DeviceOrientationModificationSource} modificationSource
+     * @param {!WebInspector.OverridesView.SensorsTab.DeviceOrientationModificationSource} modificationSource
      */
     _setDeviceOrientation: function(deviceOrientation, modificationSource)
     {
@@ -943,11 +943,11 @@ WebInspector.OverridesView.SensorsTab.prototype = {
     },
 
     /**
-     * @param {Element} parentElement
+     * @param {!Element} parentElement
      * @param {string} id
      * @param {string} label
      * @param {string} defaultText
-     * @return {Element}
+     * @return {!Element}
      */
     _createAxisInput: function(parentElement, id, label, defaultText)
     {
@@ -957,7 +957,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
     },
 
     /**
-     * @param {WebInspector.OverridesSupport.DeviceOrientation} deviceOrientation
+     * @param {!WebInspector.OverridesSupport.DeviceOrientation} deviceOrientation
      */
     _createDeviceOrientationOverrideElement: function(deviceOrientation)
     {
@@ -991,7 +991,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
     },
 
     /**
-     * @param {WebInspector.OverridesSupport.DeviceOrientation} deviceOrientation
+     * @param {!WebInspector.OverridesSupport.DeviceOrientation} deviceOrientation
      */
     _setBoxOrientation: function(deviceOrientation)
     {
@@ -1001,7 +1001,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!MouseEvent} event
      * @return {boolean}
      */
     _onBoxDrag: function(event)
@@ -1025,7 +1025,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!MouseEvent} event
      * @return {boolean}
      */
     _onBoxDragStart: function(event)
@@ -1042,10 +1042,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
         return true;
     },
 
-    /**
-     * @param {Event} event
-     */
-    _onBoxDragEnd: function(event)
+    _onBoxDragEnd: function()
     {
         this._boxMatrix = this._currentMatrix;
     },

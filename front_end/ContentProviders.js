@@ -80,7 +80,7 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
     },
 
     /**
-     * @return {WebInspector.ResourceType}
+     * @return {!WebInspector.ResourceType}
      */
     contentType: function()
     {
@@ -132,7 +132,7 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
         }
 
         /**
-         * @param {WebInspector.Script} script
+         * @param {!WebInspector.Script} script
          * @param {!Array.<!PageAgent.SearchMatch>} searchMatches
          */
         function searchCallback(script, searchMatches)
@@ -188,7 +188,7 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
 /**
  * @constructor
  * @param {string} sourceURL
- * @param {WebInspector.ResourceType} contentType
+ * @param {!WebInspector.ResourceType} contentType
  * @implements {WebInspector.ContentProvider}
  */
 WebInspector.CompilerSourceMappingContentProvider = function(sourceURL, contentType)
@@ -207,7 +207,7 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
     },
 
     /**
-     * @return {WebInspector.ResourceType}
+     * @return {!WebInspector.ResourceType}
      */
     contentType: function()
     {
@@ -224,7 +224,7 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {number} statusCode
-         * @param {NetworkAgent.Headers} headers
+         * @param {!NetworkAgent.Headers} headers
          * @param {string} content
          */
         function contentLoaded(error, statusCode, headers, content)
@@ -269,7 +269,7 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.ContentProvider}
- * @param {WebInspector.ResourceType} contentType 
+ * @param {!WebInspector.ResourceType} contentType
  * @param {string} content
  */
 WebInspector.StaticContentProvider = function(contentType, content)
@@ -288,7 +288,7 @@ WebInspector.StaticContentProvider.prototype = {
     },
 
     /**
-     * @return {WebInspector.ResourceType}
+     * @return {!WebInspector.ResourceType}
      */
     contentType: function()
     {

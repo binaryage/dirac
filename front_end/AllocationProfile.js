@@ -207,7 +207,7 @@ WebInspector.AllocationTraceNode = function(id, functionInfo, count, size, paren
 
 /**
  * @constructor
- * @param {WebInspector.FunctionAllocationInfo} functionInfo
+ * @param {!WebInspector.FunctionAllocationInfo} functionInfo
  */
 WebInspector.AllocationBackTraceNode = function(functionInfo)
 {
@@ -220,8 +220,8 @@ WebInspector.AllocationBackTraceNode = function(functionInfo)
 
 WebInspector.AllocationBackTraceNode.prototype = {
     /**
-     * @param {WebInspector.AllocationTraceNode} traceNode
-     * @return {WebInspector.AllocationTraceNode}
+     * @param {!WebInspector.AllocationTraceNode} traceNode
+     * @return {!WebInspector.AllocationTraceNode}
      */
     addCaller: function(traceNode)
     {

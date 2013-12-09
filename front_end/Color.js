@@ -134,7 +134,7 @@ WebInspector.Color.parse = function(text)
 
 /**
  * @param {!Array.<number>} rgba
- * @return {WebInspector.Color}
+ * @return {!WebInspector.Color}
  */
 WebInspector.Color.fromRGBA = function(rgba)
 {
@@ -143,7 +143,7 @@ WebInspector.Color.fromRGBA = function(rgba)
 
 /**
  * @param {!Array.<number>} hsva
- * @return {WebInspector.Color}
+ * @return {!WebInspector.Color}
  */
 WebInspector.Color.fromHSVA = function(hsva)
 {
@@ -344,7 +344,7 @@ WebInspector.Color.prototype = {
     },
 
     /**
-     * @return {DOMAgent.RGBA}
+     * @return {!DOMAgent.RGBA}
      */
     toProtocolRGBA: function()
     {
@@ -356,7 +356,7 @@ WebInspector.Color.prototype = {
     },
 
     /**
-     * @return {WebInspector.Color}
+     * @return {!WebInspector.Color}
      */
     invert: function()
     {
@@ -370,7 +370,7 @@ WebInspector.Color.prototype = {
 
     /**
      * @param {number} alpha
-     * @return {WebInspector.Color}
+     * @return {!WebInspector.Color}
      */
      setAlpha: function(alpha)
      {

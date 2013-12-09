@@ -33,8 +33,8 @@
  * @extends {TreeOutline}
  * @param {boolean=} omitRootDOMNode
  * @param {boolean=} selectEnabled
- * @param {function(WebInspector.ContextMenu, WebInspector.DOMNode)=} contextMenuCallback
- * @param {function(DOMAgent.NodeId, string, boolean)=} setPseudoClassCallback
+ * @param {function(!WebInspector.ContextMenu, !WebInspector.DOMNode)=} contextMenuCallback
+ * @param {function(!DOMAgent.NodeId, string, boolean)=} setPseudoClassCallback
  */
 WebInspector.ElementsTreeOutline = function(omitRootDOMNode, selectEnabled, contextMenuCallback, setPseudoClassCallback)
 {
@@ -54,9 +54,9 @@ WebInspector.ElementsTreeOutline = function(omitRootDOMNode, selectEnabled, cont
 
     this._includeRootDOMNode = !omitRootDOMNode;
     this._selectEnabled = selectEnabled;
-    /** @type {WebInspector.DOMNode} */
+    /** @type {?WebInspector.DOMNode} */
     this._rootDOMNode = null;
-    /** @type {WebInspector.DOMNode} */
+    /** @type {?WebInspector.DOMNode} */
     this._selectedDOMNode = null;
     this._eventSupport = new WebInspector.Object();
 
@@ -167,7 +167,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     },
 
     /**
-     * @return {WebInspector.DOMNode}
+     * @return {?WebInspector.DOMNode}
      */
     selectedDOMNode: function()
     {
@@ -175,7 +175,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     },
 
     /**
-     * @param {WebInspector.DOMNode} node
+     * @param {?WebInspector.DOMNode} node
      * @param {boolean=} focus
      */
     selectDOMNode: function(node, focus)
@@ -276,7 +276,7 @@ WebInspector.ElementsTreeOutline.prototype = {
 
     /**
      * @param {!WebInspector.DOMNode} node
-     * @return {TreeElement}
+     * @return {?TreeElement}
      */
     findTreeElement: function(node)
     {
@@ -301,7 +301,7 @@ WebInspector.ElementsTreeOutline.prototype = {
 
     /**
      * @param {!WebInspector.DOMNode} node
-     * @return {TreeElement}
+     * @return {?TreeElement}
      */
     createTreeElementFor: function(node)
     {
@@ -323,7 +323,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     },
 
     /**
-     * @param {WebInspector.DOMNode} node
+     * @param {?WebInspector.DOMNode} node
      * @param {boolean} omitFocus
      */
     _revealAndSelectNode: function(node, omitFocus)
@@ -343,7 +343,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     },
 
     /**
-     * @return {TreeElement}
+     * @return {?TreeElement}
      */
     _treeElementFromEvent: function(event)
     {
@@ -472,7 +472,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     },
 
     /**
-     * @param {TreeElement} treeElement
+     * @param {?TreeElement} treeElement
      * @return {boolean}
      */
     _isValidDragSourceOrTarget: function(treeElement)
@@ -499,7 +499,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     },
 
     /**
-     * @param {TreeElement} treeElement
+     * @param {!TreeElement} treeElement
      */
     _doMove: function(treeElement)
     {
@@ -541,12 +541,13 @@ WebInspector.ElementsTreeOutline.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onkeydown: function(event)
     {
-        var keyboardEvent = /** @type {KeyboardEvent} */ (event);
-        var node = this.selectedDOMNode();
+        var keyboardEvent = /** @type {!KeyboardEvent} */ (event);
+        var node = /** @type {!WebInspector.DOMNode} */ (this.selectedDOMNode());
+        console.assert(node);
         var treeElement = this.getCachedTreeElement(node);
         if (!treeElement)
             return;
@@ -636,7 +637,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     },
 
     /**
-     * @param {WebInspector.DOMNode} node
+     * @param {!WebInspector.DOMNode} node
      */
     _toggleEditAsHTML: function(node)
     {
@@ -653,7 +654,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     /**
      * @param {boolean} wasExpanded
      * @param {?Protocol.Error} error
-     * @param {DOMAgent.NodeId=} nodeId
+     * @param {!DOMAgent.NodeId=} nodeId
      */
     _selectNodeAfterEdit: function(wasExpanded, error, nodeId)
     {
@@ -683,7 +684,7 @@ WebInspector.ElementsTreeOutline.prototype = {
      * containing a rule to set "visibility: hidden" on the class and all it's
      * ancestors.
      *
-     * @param {WebInspector.DOMNode} node
+     * @param {!WebInspector.DOMNode} node
      * @param {function(?WebInspector.RemoteObject, boolean=)=} userCallback
      */
     _toggleHideShortcut: function(node, userCallback)
@@ -744,7 +745,7 @@ WebInspector.ElementsTreeOutline.ElementDecorator = function()
 
 WebInspector.ElementsTreeOutline.ElementDecorator.prototype = {
     /**
-     * @param {WebInspector.DOMNode} node
+     * @param {!WebInspector.DOMNode} node
      * @return {?string}
      */
     decorate: function(node)
@@ -752,7 +753,7 @@ WebInspector.ElementsTreeOutline.ElementDecorator.prototype = {
     },
 
     /**
-     * @param {WebInspector.DOMNode} node
+     * @param {!WebInspector.DOMNode} node
      * @return {?string}
      */
     decorateAncestor: function(node)
@@ -939,7 +940,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @param {WebInspector.DOMNode} child
+     * @param {!WebInspector.DOMNode} child
      * @return {?WebInspector.ElementsTreeElement}
      */
     _showChild: function(child)
@@ -1342,8 +1343,8 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @param {WebInspector.ContextMenu} contextMenu
-     * @param {Event} event
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {?Event} event
      */
     _populateTagContextMenu: function(contextMenu, event)
     {
@@ -1367,7 +1368,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @param {WebInspector.ContextMenu} contextMenu
+     * @param {!WebInspector.ContextMenu} contextMenu
      */
     _populateScrollIntoView: function(contextMenu)
     {
@@ -1528,7 +1529,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @param {Element} textNodeElement
+     * @param {!Element} textNodeElement
      */
     _startEditingTextNode: function(textNodeElement)
     {
@@ -1552,7 +1553,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @param {Element=} tagNameElement
+     * @param {!Element=} tagNameElement
      */
     _startEditingTagName: function(tagNameElement)
     {
@@ -1631,7 +1632,7 @@ WebInspector.ElementsTreeElement.prototype = {
         this.updateSelection();
 
         /**
-         * @param {Element} element
+         * @param {!Element} element
          * @param {string} newValue
          */
         function commit(element, newValue)
@@ -1676,7 +1677,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
         var treeOutline = this.treeOutline;
         /**
-         * @param {Protocol.Error=} error
+         * @param {?Protocol.Error=} error
          */
         function moveToNextAttributeIfNeeded(error)
         {
@@ -1794,8 +1795,8 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @param {WebInspector.DOMNode} textNode
-     * @param {Element} element
+     * @param {!WebInspector.DOMNode} textNode
+     * @param {!Element} element
      * @param {string} newText
      */
     _textNodeEditingCommitted: function(textNode, element, newText)
@@ -1810,7 +1811,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @param {Element} element
+     * @param {!Element} element
      * @param {*} context
      */
     _editingCancelled: function(element, context)
@@ -1822,7 +1823,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     _distinctClosingTagElement: function()
     {
@@ -1872,7 +1873,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {?Element}
      */
     _createDecoratorElement: function()
     {
@@ -1915,10 +1916,10 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @param {Node} parentElement
+     * @param {!Node} parentElement
      * @param {string} name
      * @param {string} value
-     * @param {WebInspector.DOMNode=} node
+     * @param {!WebInspector.DOMNode=} node
      * @param {function(string, string, string, boolean=, string=)=} linkify
      */
     _buildAttributeDOM: function(parentElement, name, value, node, linkify)
@@ -1953,7 +1954,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @param {Node} parentElement
+     * @param {!Node} parentElement
      * @param {string} pseudoElementName
      */
     _buildPseudoElementDOM: function(parentElement, pseudoElementName)
@@ -1964,7 +1965,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @param {Node} parentElement
+     * @param {!Node} parentElement
      * @param {string} tagName
      * @param {boolean} isClosingTag
      * @param {boolean} isDistinctTreeElement
@@ -1996,7 +1997,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @param {string} text
-     * @return {{text: string, entityRanges: !Array.<!WebInspector.SourceRange>}}
+     * @return {!{text: string, entityRanges: !Array.<!WebInspector.SourceRange>}}
      */
     _convertWhitespaceToEntities: function(text)
     {
@@ -2247,7 +2248,7 @@ WebInspector.ElementsTreeElement.prototype = {
         WebInspector.RemoteObject.resolveNode(this._node, "console", callback);
 
         /**
-         * @param {WebInspector.RemoteObject} nodeObject
+         * @param {?WebInspector.RemoteObject} nodeObject
          */
         function callback(nodeObject)
         {
@@ -2368,7 +2369,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
     /**
      * @param {!WebInspector.DOMNode} node
      * @param {boolean} isUpdated
-     * @param {WebInspector.DOMNode=} parentNode
+     * @param {!WebInspector.DOMNode=} parentNode
      */
     _nodeModified: function(node, isUpdated, parentNode)
     {
@@ -2502,7 +2503,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
 /**
  * @constructor
  * @param {boolean} isUpdated
- * @param {WebInspector.DOMNode=} parent
+ * @param {!WebInspector.DOMNode=} parent
  */
 WebInspector.ElementsTreeUpdater.UpdateEntry = function(isUpdated, parent)
 {

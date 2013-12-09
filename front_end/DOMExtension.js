@@ -212,8 +212,8 @@ Element.prototype.isScrolledToBottom = function()
 }
 
 /**
- * @param {Node} fromNode
- * @param {Node} toNode
+ * @param {!Node} fromNode
+ * @param {!Node} toNode
  */
 function removeSubsequentNodes(fromNode, toNode)
 {
@@ -236,8 +236,8 @@ function Size(width, height)
 }
 
 /**
- * @param {Element=} containerElement
- * @return {Size}
+ * @param {?Element=} containerElement
+ * @return {!Size}
  */
 Element.prototype.measurePreferredSize = function(containerElement)
 {
@@ -251,7 +251,7 @@ Element.prototype.measurePreferredSize = function(containerElement)
 }
 
 /**
- * @param {Event} event
+ * @param {!Event} event
  * @return {boolean}
  */
 Element.prototype.containsEventPoint = function(event)
@@ -277,7 +277,7 @@ Node.prototype.enclosingNodeOrSelfWithNodeName = function(nodeName)
 
 /**
  * @param {string} className
- * @param {Element=} stayWithin
+ * @param {!Element=} stayWithin
  */
 Node.prototype.enclosingNodeOrSelfWithClass = function(className, stayWithin)
 {
@@ -393,8 +393,8 @@ function AnchorBox(x, y, width, height)
 }
 
 /**
- * @param {Window} targetWindow
- * @return {AnchorBox}
+ * @param {!Window} targetWindow
+ * @return {!AnchorBox}
  */
 Element.prototype.offsetRelativeToWindow = function(targetWindow)
 {
@@ -415,8 +415,8 @@ Element.prototype.offsetRelativeToWindow = function(targetWindow)
 }
 
 /**
- * @param {Window} targetWindow
- * @return {AnchorBox}
+ * @param {!Window} targetWindow
+ * @return {!AnchorBox}
  */
 Element.prototype.boxInWindow = function(targetWindow)
 {
@@ -603,8 +603,8 @@ NonLeakingMutationObserver._instances = [];
 
 NonLeakingMutationObserver.prototype = {
     /**
-     * @param {Element} element
-     * @param {Object} config
+     * @param {!Element} element
+     * @param {!Object} config
      */
     observe: function(element, config)
     {

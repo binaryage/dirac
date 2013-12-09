@@ -57,7 +57,7 @@ WebInspector.ExtensionPanel.prototype = {
     },
 
     /**
-     * @param {Element} element
+     * @param {!Element} element
      */
     addStatusBarItem: function(element)
     {
@@ -72,7 +72,7 @@ WebInspector.ExtensionPanel.prototype = {
     },
 
     /**
-     * @return {WebInspector.SearchableView}
+     * @return {!WebInspector.SearchableView}
      */
     searchableView: function()
     {
@@ -154,7 +154,7 @@ WebInspector.ExtensionSidebarPane = function(title, id)
 
 WebInspector.ExtensionSidebarPane.prototype = {
     /**
-     * @param {Object} object
+     * @param {!Object} object
      * @param {string} title
      * @param {function(?string=)} callback
      */
@@ -206,7 +206,7 @@ WebInspector.ExtensionSidebarPane.prototype = {
      * @param {string} title
      * @param {function(?string=)} callback
      * @param {?Protocol.Error} error
-     * @param {RuntimeAgent.RemoteObject} result
+     * @param {!RuntimeAgent.RemoteObject} result
      * @param {boolean=} wasThrown
      */
     _onEvaluate: function(title, callback, error, result, wasThrown)
@@ -230,7 +230,7 @@ WebInspector.ExtensionSidebarPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.RemoteObject} object
+     * @param {!WebInspector.RemoteObject} object
      * @param {string} title
      * @param {function(?string=)} callback
      */

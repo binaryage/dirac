@@ -64,7 +64,7 @@ WebInspector.TracingAgent.prototype = {
     },
 
     /**
-     * @return {!Array.<{cat: string, args: Object, ph: string, ts: number}>}
+     * @return {!Array.<{cat: string, args: !Object, ph: string, ts: number}>}
      */
     events: function()
     {
@@ -89,7 +89,7 @@ WebInspector.TracingAgent.prototype = {
 /**
  * @constructor
  * @implements {TracingAgent.Dispatcher}
- * @param {WebInspector.TracingAgent} tracingAgent
+ * @param {!WebInspector.TracingAgent} tracingAgent
  */
 WebInspector.TracingDispatcher = function(tracingAgent)
 {
@@ -109,6 +109,6 @@ WebInspector.TracingDispatcher.prototype = {
 }
 
 /**
- * @type {WebInspector.TracingAgent}
+ * @type {?WebInspector.TracingAgent}
  */
-WebInspector.tracingAgent;
+WebInspector.tracingAgent = null;

@@ -69,7 +69,7 @@ WebInspector.InspectElementModeController.prototype = {
     },
 
     /**
-     * @param {KeyboardEvent} event
+     * @param {!KeyboardEvent} event
      * @return {boolean}
      */
     handleShortcut: function(event)
@@ -82,5 +82,5 @@ WebInspector.InspectElementModeController.prototype = {
     }
 }
 
-/** @type {WebInspector.InspectElementModeController} */
+/** @type {?WebInspector.InspectElementModeController} */
 WebInspector.inspectElementModeController = null;

@@ -56,7 +56,7 @@ WebInspector.FilterBar.FilterBarState = {
 
 WebInspector.FilterBar.prototype = {
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     filterButton: function()
     {
@@ -64,7 +64,7 @@ WebInspector.FilterBar.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     filtersElement: function()
     {
@@ -80,7 +80,7 @@ WebInspector.FilterBar.prototype = {
     },
 
     /**
-     * @param {WebInspector.FilterUI} filter
+     * @param {!WebInspector.FilterUI} filter
      */
     addFilter: function(filter)
     {
@@ -91,7 +91,7 @@ WebInspector.FilterBar.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _filterChanged: function(event)
     {
@@ -119,7 +119,7 @@ WebInspector.FilterBar.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _handleFilterButtonClick: function(event)
     {
@@ -150,7 +150,7 @@ WebInspector.FilterUI.prototype = {
     isActive: function() { },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     element: function() { }
 }
@@ -199,7 +199,7 @@ WebInspector.TextFilterUI.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     element: function()
     {
@@ -232,7 +232,7 @@ WebInspector.TextFilterUI.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onFilterFieldManualFocus: function(event)
     {
@@ -240,7 +240,7 @@ WebInspector.TextFilterUI.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onInput: function(event)
     {
@@ -311,7 +311,7 @@ WebInspector.NamedBitSetFilterUI.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     element: function()
     {
@@ -431,7 +431,7 @@ WebInspector.ComboBoxFilterUI.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     element: function()
     {
@@ -449,7 +449,7 @@ WebInspector.ComboBoxFilterUI.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _filterChanged: function(event)
     {
@@ -468,7 +468,7 @@ WebInspector.ComboBoxFilterUI.prototype = {
  * @param {string} className
  * @param {string} title
  * @param {boolean=} activeWhenChecked
- * @param {WebInspector.Setting=} setting
+ * @param {!WebInspector.Setting=} setting
  */
 WebInspector.CheckboxFilterUI = function(className, title, activeWhenChecked, setting)
 {
@@ -497,7 +497,7 @@ WebInspector.CheckboxFilterUI.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     element: function()
     {
@@ -525,7 +525,7 @@ WebInspector.CheckboxFilterUI.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onClick: function(event)
     {

@@ -65,7 +65,7 @@ WebInspector.AdvancedSearchController.prototype = {
     },
 
     /**
-     * @param {KeyboardEvent} event
+     * @param {!KeyboardEvent} event
      * @return {boolean}
      */
     handleShortcut: function(event)
@@ -88,7 +88,7 @@ WebInspector.AdvancedSearchController.prototype = {
     },
 
     /**
-     * @param {WebInspector.SearchScope} searchScope
+     * @param {!WebInspector.SearchScope} searchScope
      */
     registerSearchScope: function(searchScope)
     {
@@ -142,7 +142,7 @@ WebInspector.AdvancedSearchController.prototype = {
 
     /**
      * @param {number} searchId
-     * @param {WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
+     * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
      */
     _onSearchResult: function(searchId, searchResult)
     {
@@ -172,7 +172,7 @@ WebInspector.AdvancedSearchController.prototype = {
     },
 
     /**
-     * @param {WebInspector.SearchConfig} searchConfig
+     * @param {!WebInspector.SearchConfig} searchConfig
      */
     startSearch: function(searchConfig)
     {
@@ -184,7 +184,7 @@ WebInspector.AdvancedSearchController.prototype = {
     },
 
     /**
-     * @param {WebInspector.SearchConfig} searchConfig
+     * @param {!WebInspector.SearchConfig} searchConfig
      */
     _innerStartSearch: function(searchConfig)
     {
@@ -222,7 +222,7 @@ WebInspector.AdvancedSearchController.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.AdvancedSearchController} controller
+ * @param {!WebInspector.AdvancedSearchController} controller
  */
 WebInspector.SearchView = function(controller)
 {
@@ -279,7 +279,7 @@ WebInspector.SearchView.prototype = {
     },
 
     /**
-     * @type {WebInspector.SearchResultsPane}
+     * @type {!WebInspector.SearchResultsPane}
      */
     set resultsPane(resultsPane)
     {
@@ -288,7 +288,7 @@ WebInspector.SearchView.prototype = {
     },
 
     /**
-     * @param {WebInspector.ProgressIndicator} progressIndicator
+     * @param {!WebInspector.ProgressIndicator} progressIndicator
      */
     searchStarted: function(progressIndicator)
     {
@@ -305,7 +305,7 @@ WebInspector.SearchView.prototype = {
     },
 
     /**
-     * @param {WebInspector.ProgressIndicator} progressIndicator
+     * @param {!WebInspector.ProgressIndicator} progressIndicator
      */
     indexingStarted: function(progressIndicator)
     {
@@ -356,7 +356,7 @@ WebInspector.SearchView.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
+     * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
      */
     addSearchResult: function(searchResult)
     {
@@ -392,7 +392,7 @@ WebInspector.SearchView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onKeyDown: function(event)
     {
@@ -452,9 +452,9 @@ WebInspector.SearchScope = function()
 
 WebInspector.SearchScope.prototype = {
     /**
-     * @param {WebInspector.SearchConfig} searchConfig
-     * @param {WebInspector.Progress} progress
-     * @param {function(WebInspector.FileBasedSearchResultsPane.SearchResult)} searchResultCallback
+     * @param {!WebInspector.SearchConfig} searchConfig
+     * @param {!WebInspector.Progress} progress
+     * @param {function(!WebInspector.FileBasedSearchResultsPane.SearchResult)} searchResultCallback
      * @param {function(boolean)} searchFinishedCallback
      */
     performSearch: function(searchConfig, progress, searchResultCallback, searchFinishedCallback) { },
@@ -462,15 +462,15 @@ WebInspector.SearchScope.prototype = {
     stopSearch: function() { },
 
     /**
-     * @param {WebInspector.SearchConfig} searchConfig
-     * @return {WebInspector.SearchResultsPane}
+     * @param {!WebInspector.SearchConfig} searchConfig
+     * @return {!WebInspector.SearchResultsPane}
      */
     createSearchResultsPane: function(searchConfig) { }
 }
 
 /**
  * @constructor
- * @param {WebInspector.SearchConfig} searchConfig
+ * @param {!WebInspector.SearchConfig} searchConfig
  */
 WebInspector.SearchResultsPane = function(searchConfig)
 {
@@ -480,7 +480,7 @@ WebInspector.SearchResultsPane = function(searchConfig)
 
 WebInspector.SearchResultsPane.prototype = {
     /**
-     * @return {WebInspector.SearchConfig}
+     * @return {!WebInspector.SearchConfig}
      */
     get searchConfig()
     {
@@ -488,7 +488,7 @@ WebInspector.SearchResultsPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
+     * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
      */
     addSearchResult: function(searchResult) { }
 }
@@ -496,7 +496,7 @@ WebInspector.SearchResultsPane.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.SearchResultsPane}
- * @param {WebInspector.SearchConfig} searchConfig
+ * @param {!WebInspector.SearchConfig} searchConfig
  */
 WebInspector.FileBasedSearchResultsPane = function(searchConfig)
 {
@@ -504,7 +504,7 @@ WebInspector.FileBasedSearchResultsPane = function(searchConfig)
 
     this._searchResults = [];
 
-    this.element.id ="search-results-pane-file-based";
+    this.element.id = "search-results-pane-file-based";
 
     this._treeOutlineElement = document.createElement("ol");
     this._treeOutlineElement.className = "search-results-outline-disclosure";
@@ -519,10 +519,10 @@ WebInspector.FileBasedSearchResultsPane.fileMatchesShownAtOnce = 20;
 
 WebInspector.FileBasedSearchResultsPane.prototype = {
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
-     * @return {Element}
+     * @return {!Element}
      */
     _createAnchor: function(uiSourceCode, lineNumber, columnNumber)
     {
@@ -535,7 +535,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
+     * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
      */
     addSearchResult: function(searchResult)
     {
@@ -549,8 +549,8 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
-     * @param {TreeElement} fileTreeElement
+     * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
+     * @param {!TreeElement} fileTreeElement
      */
     _fileTreeElementExpanded: function(searchResult, fileTreeElement)
     {
@@ -568,8 +568,8 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
     },
 
     /**
-     * @param {TreeElement} fileTreeElement
-     * @param {WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
+     * @param {!TreeElement} fileTreeElement
+     * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
      * @param {number} fromIndex
      * @param {number} toIndex
      */
@@ -604,8 +604,8 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
     },
 
     /**
-     * @param {TreeElement} fileTreeElement
-     * @param {WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
+     * @param {!TreeElement} fileTreeElement
+     * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
      * @param {number} startMatchIndex
      */
     _appendShowMoreMatchesElement: function(fileTreeElement, searchResult, startMatchIndex)
@@ -619,9 +619,9 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
+     * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
      * @param {number} startMatchIndex
-     * @param {TreeElement} showMoreMatchesElement
+     * @param {!TreeElement} showMoreMatchesElement
      * @return {boolean}
      */
     _showMoreMatchesElementSelected: function(searchResult, startMatchIndex, showMoreMatchesElement)
@@ -673,7 +673,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
 
     /**
      * @param {string} lineContent
-     * @param {RegExp} regex
+     * @param {!RegExp} regex
      * @return {!Array.<!WebInspector.SourceRange>}
      */
     _regexMatchRanges: function(lineContent, regex)
@@ -706,7 +706,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.UISourceCode} uiSourceCode
+ * @param {!WebInspector.UISourceCode} uiSourceCode
  * @param {!Array.<!Object>} searchMatches
  */
 WebInspector.FileBasedSearchResultsPane.SearchResult = function(uiSourceCode, searchMatches) {

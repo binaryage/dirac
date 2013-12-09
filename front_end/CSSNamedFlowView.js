@@ -30,7 +30,7 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.NamedFlow} flow
+ * @param {!WebInspector.NamedFlow} flow
  */
 WebInspector.CSSNamedFlowView = function(flow)
 {
@@ -66,7 +66,7 @@ WebInspector.CSSNamedFlowView.OversetTypeMessageMap = {
 
 WebInspector.CSSNamedFlowView.prototype = {
     /**
-     * @param {WebInspector.DOMNode=} rootDOMNode
+     * @param {?WebInspector.DOMNode} rootDOMNode
      * @return {?WebInspector.ElementsTreeOutline}
      */
     _createFlowTreeOutline: function(rootDOMNode)
@@ -85,7 +85,7 @@ WebInspector.CSSNamedFlowView.prototype = {
     },
 
     /**
-     * @param {DOMAgent.NodeId} contentNodeId
+     * @param {!DOMAgent.NodeId} contentNodeId
      * @param {number=} index
      */
     _insertContentNode: function(contentNodeId, index)
@@ -102,7 +102,7 @@ WebInspector.CSSNamedFlowView.prototype = {
     },
 
     /**
-     * @param {CSSAgent.Region} region
+     * @param {!CSSAgent.Region} region
      * @param {number=} index
      */
     _insertRegion: function(region, index)
@@ -133,7 +133,7 @@ WebInspector.CSSNamedFlowView.prototype = {
     },
 
     /**
-     * @param {TreeElement} regionTreeItem
+     * @param {!TreeElement} regionTreeItem
      * @param {string} newRegionOverset
      * @param {string} oldRegionOverset
      */
@@ -242,7 +242,7 @@ WebInspector.CSSNamedFlowView.prototype = {
     },
 
     /**
-     * @param {WebInspector.NamedFlow} newFlow
+     * @param {!WebInspector.NamedFlow} newFlow
      */
     _update: function(newFlow)
     {

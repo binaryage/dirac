@@ -106,7 +106,7 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     firstElement: function()
     {
@@ -114,7 +114,7 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     secondElement: function()
     {
@@ -122,7 +122,7 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     get mainElement()
     {
@@ -130,7 +130,7 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     get sidebarElement()
     {
@@ -158,7 +158,7 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     resizerElement: function()
     {
@@ -176,8 +176,8 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @param {Element} sideA
-     * @param {Element} sideB
+     * @param {!Element} sideA
+     * @param {!Element} sideB
      */
     _showOnly: function(sideA, sideB)
     {
@@ -391,7 +391,7 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!MouseEvent} event
      * @return {boolean}
      */
     _startResizerDragging: function(event)
@@ -405,7 +405,7 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!MouseEvent} event
      */
     _resizerDragging: function(event)
     {
@@ -416,7 +416,7 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!MouseEvent} event
      */
     _endResizerDragging: function(event)
     {
@@ -438,7 +438,7 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @param {Element} resizerElement
+     * @param {!Element} resizerElement
      */
     installResizer: function(resizerElement)
     {
@@ -446,7 +446,7 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onDragStart: function(event)
     {
@@ -454,7 +454,7 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @return {WebInspector.Setting}
+     * @return {?WebInspector.Setting}
      */
     _sizeSetting: function()
     {

@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.RequestView}
- * @param {WebInspector.NetworkRequest} request
+ * @param {!WebInspector.NetworkRequest} request
  */
 WebInspector.RequestJSONView = function(request, parsedJSON)
 {

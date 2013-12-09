@@ -238,7 +238,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @return {WebInspector.SearchableView}
+     * @return {!WebInspector.SearchableView}
      */
     searchableView: function()
     {
@@ -408,10 +408,9 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {Event=} event
      * @return {boolean}
      */
-    _saveToFile: function(event)
+    _saveToFile: function()
     {
         if (this._operationInProgress)
             return true;
@@ -420,10 +419,9 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {Event=} event
      * @return {boolean}
      */
-    _selectFileToLoad: function(event) {
+    _selectFileToLoad: function() {
         this._fileSelectorElement.click();
         return true;
     },
@@ -663,7 +661,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {TimelineAgent.TimelineEvent} record
+     * @param {!TimelineAgent.TimelineEvent} record
      */
     _innerAddRecordToTimeline: function(record)
     {
@@ -821,10 +819,10 @@ WebInspector.TimelinePanel.prototype = {
 
         // Remove selection rendering.
         if (this._lastSelectedRecord) {
-            var listRow = /** @type {WebInspector.TimelineRecordListRow} */ (this._lastSelectedRecord.getUserObject("WebInspector.TimelineRecordListRow"));
+            var listRow = /** @type {!WebInspector.TimelineRecordListRow} */ (this._lastSelectedRecord.getUserObject("WebInspector.TimelineRecordListRow"));
             if (listRow)
                 listRow.renderAsSelected(false);
-            var graphRow = /** @type {WebInspector.TimelineRecordGraphRow} */ (this._lastSelectedRecord.getUserObject("WebInspector.TimelineRecordGraphRow"));
+            var graphRow = /** @type {!WebInspector.TimelineRecordGraphRow} */ (this._lastSelectedRecord.getUserObject("WebInspector.TimelineRecordGraphRow"));
             if (graphRow)
                 graphRow.renderAsSelected(false);
         }
@@ -836,15 +834,15 @@ WebInspector.TimelinePanel.prototype = {
 
         this._revealRecord(record);
         this._lastSelectedRecord = record;
-        var listRow = /** @type {WebInspector.TimelineRecordListRow} */ (record.getUserObject("WebInspector.TimelineRecordListRow"));
+        var listRow = /** @type {!WebInspector.TimelineRecordListRow} */ (record.getUserObject("WebInspector.TimelineRecordListRow"));
         listRow.renderAsSelected(true);
-        var graphRow = /** @type {WebInspector.TimelineRecordListRow} */ (record.getUserObject("WebInspector.TimelineRecordGraphRow"));
+        var graphRow = /** @type {!WebInspector.TimelineRecordListRow} */ (record.getUserObject("WebInspector.TimelineRecordGraphRow"));
         graphRow.renderAsSelected(true);
 
         record.generatePopupContent(showCallback.bind(this));
 
         /**
-         * @param {DocumentFragment} element
+         * @param {!DocumentFragment} element
          */
         function showCallback(element)
         {
@@ -864,7 +862,7 @@ WebInspector.TimelinePanel.prototype = {
 
         /**
          * @param {number} value
-         * @param {TimelineAgent.TimelineEvent} task
+         * @param {!TimelineAgent.TimelineEvent} task
          * @return {number}
          */
         function compareEndTime(value, task)
@@ -873,7 +871,7 @@ WebInspector.TimelinePanel.prototype = {
         }
 
         /**
-         * @param {TimelineAgent.TimelineEvent} rawRecord
+         * @param {!TimelineAgent.TimelineEvent} rawRecord
          */
         function aggregateTimeForRecordWithinWindow(rawRecord)
         {
@@ -1175,7 +1173,7 @@ WebInspector.TimelinePanel.prototype = {
 
         /**
          * @param {number} value
-         * @param {TimelineAgent.TimelineEvent} task
+         * @param {!TimelineAgent.TimelineEvent} task
          * @return {number}
          */
         function compareEndTime(value, task)
@@ -1249,13 +1247,13 @@ WebInspector.TimelinePanel.prototype = {
         return element.enclosingNodeOrSelfWithClass("timeline-frame-strip");
     },
 
-    _mouseOut: function(e)
+    _mouseOut: function()
     {
         this._hideQuadHighlight();
     },
 
     /**
-     * @param {Event} e
+     * @param {?Event} e
      */
     _mouseMove: function(e)
     {
@@ -1274,7 +1272,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _keyDown: function(event)
     {
@@ -1347,8 +1345,8 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {Element} anchor
-     * @param {WebInspector.Popover} popover
+     * @param {!Element} anchor
+     * @param {!WebInspector.Popover} popover
      */
     _showPopover: function(anchor, popover)
     {
@@ -1506,7 +1504,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _willReloadPage: function(event)
     {
@@ -1516,7 +1514,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _loadEventFired: function(event)
     {
@@ -1530,7 +1528,7 @@ WebInspector.TimelinePanel.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineModel} model
  * @implements {WebInspector.TimelineGrid.Calculator}
  */
 WebInspector.TimelineCalculator = function(model)
@@ -1625,7 +1623,7 @@ WebInspector.TimelineCalculator.prototype = {
 
 /**
  * @constructor
- * @param {function(WebInspector.TimelinePresentationModel.Record)} selectRecord
+ * @param {function(!WebInspector.TimelinePresentationModel.Record)} selectRecord
  * @param {function()} scheduleRefresh
  */
 WebInspector.TimelineRecordListRow = function(selectRecord, scheduleRefresh)
@@ -1693,7 +1691,7 @@ WebInspector.TimelineRecordListRow.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _onExpandClick: function(event)
     {
@@ -1704,7 +1702,7 @@ WebInspector.TimelineRecordListRow.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onClick: function(event)
     {
@@ -1720,22 +1718,22 @@ WebInspector.TimelineRecordListRow.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onMouseOver: function(event)
     {
         this.element.addStyleClass("hovered");
-        var graphRow = /** @type {WebInspector.TimelineRecordGraphRow} */ (this._record.getUserObject("WebInspector.TimelineRecordGraphRow"));
+        var graphRow = /** @type {!WebInspector.TimelineRecordGraphRow} */ (this._record.getUserObject("WebInspector.TimelineRecordGraphRow"));
         graphRow.element.addStyleClass("hovered");
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onMouseOut: function(event)
     {
         this.element.removeStyleClass("hovered");
-        var graphRow = /** @type {WebInspector.TimelineRecordGraphRow} */ (this._record.getUserObject("WebInspector.TimelineRecordGraphRow"));
+        var graphRow = /** @type {!WebInspector.TimelineRecordGraphRow} */ (this._record.getUserObject("WebInspector.TimelineRecordGraphRow"));
         graphRow.element.removeStyleClass("hovered");
     }
 }
@@ -1754,7 +1752,7 @@ WebInspector.TimelineRecordListRow.testContentMatching = function(record, regExp
 
 /**
  * @constructor
- * @param {function(WebInspector.TimelinePresentationModel.Record)} selectRecord
+ * @param {function(!WebInspector.TimelinePresentationModel.Record)} selectRecord
  * @param {function()} scheduleRefresh
  */
 WebInspector.TimelineRecordGraphRow = function(graphContainer, selectRecord, scheduleRefresh)
@@ -1811,7 +1809,7 @@ WebInspector.TimelineRecordGraphRow.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onClick: function(event)
     {
@@ -1837,22 +1835,22 @@ WebInspector.TimelineRecordGraphRow.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onMouseOver: function(event)
     {
         this.element.addStyleClass("hovered");
-        var listRow = /** @type {WebInspector.TimelineRecordListRow} */ (this._record.getUserObject("WebInspector.TimelineRecordListRow"));
+        var listRow = /** @type {!WebInspector.TimelineRecordListRow} */ (this._record.getUserObject("WebInspector.TimelineRecordListRow"));
         listRow.element.addStyleClass("hovered");
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onMouseOut: function(event)
     {
         this.element.removeStyleClass("hovered");
-        var listRow = /** @type {WebInspector.TimelineRecordListRow} */ (this._record.getUserObject("WebInspector.TimelineRecordListRow"));
+        var listRow = /** @type {!WebInspector.TimelineRecordListRow} */ (this._record.getUserObject("WebInspector.TimelineRecordListRow"));
         listRow.element.removeStyleClass("hovered");
     },
 
@@ -1985,7 +1983,7 @@ WebInspector.TimelineDetailsView = function()
 
 WebInspector.TimelineDetailsView.prototype = {
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     titleElement: function()
     {
@@ -1994,7 +1992,7 @@ WebInspector.TimelineDetailsView.prototype = {
 
     /**
      * @param {string} title
-     * @param {Node} node
+     * @param {!Node} node
      */
     setContent: function(title, node)
     {

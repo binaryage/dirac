@@ -36,7 +36,7 @@ WebInspector.IsolatedFileSystemManager = function()
 {
     /** @type {!Object.<string, !WebInspector.IsolatedFileSystem>} */
     this._fileSystems = {};
-    /** @type {Object.<string, !Array.<function(DOMFileSystem)>>} */
+    /** @type {Object.<string, !Array.<function(?DOMFileSystem)>>} */
     this._pendingFileSystemRequests = {};
     this._fileSystemMapping = new WebInspector.FileSystemMapping();
 
@@ -44,7 +44,7 @@ WebInspector.IsolatedFileSystemManager = function()
         this._requestFileSystems();
 }
 
-/** @typedef {{fileSystemName: string, rootURL: string, fileSystemPath: string}} */
+/** @typedef {!{fileSystemName: string, rootURL: string, fileSystemPath: string}} */
 WebInspector.IsolatedFileSystemManager.FileSystem;
 
 WebInspector.IsolatedFileSystemManager.Events = {
@@ -54,7 +54,7 @@ WebInspector.IsolatedFileSystemManager.Events = {
 
 WebInspector.IsolatedFileSystemManager.prototype = {
     /**
-     * @return {WebInspector.FileSystemMapping}
+     * @return {!WebInspector.FileSystemMapping}
      */
     mapping: function()
     {
@@ -110,7 +110,7 @@ WebInspector.IsolatedFileSystemManager.prototype = {
     },
 
     /**
-     * @param {WebInspector.IsolatedFileSystemManager.FileSystem} fileSystem
+     * @param {!WebInspector.IsolatedFileSystemManager.FileSystem} fileSystem
      */
     _innerAddFileSystem: function(fileSystem)
     {
@@ -141,7 +141,7 @@ WebInspector.IsolatedFileSystemManager.prototype = {
 
     /**
      * @param {string} errorMessage
-     * @param {WebInspector.IsolatedFileSystemManager.FileSystem} fileSystem
+     * @param {!WebInspector.IsolatedFileSystemManager.FileSystem} fileSystem
      */
     _fileSystemAdded: function(errorMessage, fileSystem)
     {
@@ -168,7 +168,7 @@ WebInspector.IsolatedFileSystemManager.prototype = {
 
     /**
      * @param {string} fileSystemPath
-     * @return {DOMFileSystem}
+     * @return {?DOMFileSystem}
      */
     _isolatedFileSystem: function(fileSystemPath)
     {
@@ -182,7 +182,7 @@ WebInspector.IsolatedFileSystemManager.prototype = {
 
     /**
      * @param {string} fileSystemPath
-     * @param {function(DOMFileSystem)} callback
+     * @param {function(?DOMFileSystem)} callback
      */
     requestDOMFileSystem: function(fileSystemPath, callback)
     {
@@ -205,7 +205,7 @@ WebInspector.isolatedFileSystemManager = null;
 
 /**
  * @constructor
- * @param {WebInspector.IsolatedFileSystemManager} IsolatedFileSystemManager
+ * @param {!WebInspector.IsolatedFileSystemManager} IsolatedFileSystemManager
  */
 WebInspector.IsolatedFileSystemDispatcher = function(IsolatedFileSystemManager)
 {
@@ -231,7 +231,7 @@ WebInspector.IsolatedFileSystemDispatcher.prototype = {
 
     /**
      * @param {string} errorMessage
-     * @param {WebInspector.IsolatedFileSystemManager.FileSystem} fileSystem
+     * @param {!WebInspector.IsolatedFileSystemManager.FileSystem} fileSystem
      */
     fileSystemAdded: function(errorMessage, fileSystem)
     {

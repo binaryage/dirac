@@ -55,7 +55,7 @@ WebInspector.DockController.Events = {
 
 WebInspector.DockController.prototype = {
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     get element()
     {
@@ -128,7 +128,7 @@ WebInspector.DockController.prototype = {
     },
 
     /**
-     * @param {WebInspector.StatusBarButton} button
+     * @param {!WebInspector.StatusBarButton} button
      * @param {string} state
      */
     _decorateButtonForTargetState: function(button, state)
@@ -155,7 +155,7 @@ WebInspector.DockController.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} e
+     * @param {!WebInspector.Event} e
      */
     _toggleDockState: function(e)
     {

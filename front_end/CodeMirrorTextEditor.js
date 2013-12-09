@@ -53,7 +53,7 @@ importScript("CodeMirrorUtils.js");
  * @extends {WebInspector.View}
  * @implements {WebInspector.TextEditor}
  * @param {?string} url
- * @param {WebInspector.TextEditorDelegate} delegate
+ * @param {!WebInspector.TextEditorDelegate} delegate
  */
 WebInspector.CodeMirrorTextEditor = function(url, delegate)
 {
@@ -308,7 +308,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     /**
      * @param {!RegExp} regex
-     * @param {WebInspector.TextRange} range
+     * @param {?WebInspector.TextRange} range
      */
     highlightSearchResults: function(regex, range)
     {
@@ -488,7 +488,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} textRange
+     * @param {!WebInspector.TextRange} textRange
      * @return {string}
      */
     copyRange: function(textRange)
@@ -609,7 +609,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @param {Object} highlightDescriptor
+     * @param {!Object} highlightDescriptor
      */
     removeHighlight: function(highlightDescriptor)
     {
@@ -617,9 +617,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} range
+     * @param {!WebInspector.TextRange} range
      * @param {string} cssClass
-     * @return {Object}
+     * @return {!Object}
      */
     highlightRange: function(range, cssClass)
     {
@@ -634,7 +634,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     defaultFocusedElement: function()
     {
@@ -672,7 +672,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     /**
      * @param {number} lineNumber
-     * @param {{left: number, top: number, width: number, height: number, clientWidth: number, clientHeight: number}} scrollInfo
+     * @param {!{left: number, top: number, width: number, height: number, clientWidth: number, clientHeight: number}} scrollInfo
      */
     _innerRevealLine: function(lineNumber, scrollInfo)
     {
@@ -752,7 +752,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     /**
      * @param {number} lineNumber
-     * @param {Element} element
+     * @param {!Element} element
      */
     addDecoration: function(lineNumber, element)
     {
@@ -762,7 +762,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     /**
      * @param {number} lineNumber
-     * @param {Element} element
+     * @param {!Element} element
      */
     removeDecoration: function(lineNumber, element)
     {
@@ -814,7 +814,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextEditor} textEditor
+     * @param {!WebInspector.TextEditor} textEditor
      */
     inheritScrollPositions: function(textEditor)
     {
@@ -858,9 +858,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} range
+     * @param {!WebInspector.TextRange} range
      * @param {string} text
-     * @return {WebInspector.TextRange}
+     * @return {!WebInspector.TextRange}
      */
     editRange: function(range, text)
     {
@@ -905,8 +905,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @param {CodeMirror} codeMirror
-     * @param {{origin: string, text: !Array.<string>, removed: !Array.<string>}} changeObject
+     * @param {!CodeMirror} codeMirror
+     * @param {!{origin: string, text: !Array.<string>, removed: !Array.<string>}} changeObject
      */
     _change: function(codeMirror, changeObject)
     {
@@ -1019,7 +1019,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @return {WebInspector.TextRange}
+     * @return {!WebInspector.TextRange}
      */
     selection: function()
     {
@@ -1030,7 +1030,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @return {WebInspector.TextRange?}
+     * @return {?WebInspector.TextRange}
      */
     lastSelection: function()
     {
@@ -1038,7 +1038,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} textRange
+     * @param {!WebInspector.TextRange} textRange
      */
     setSelection: function(textRange)
     {
@@ -1080,7 +1080,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @return {WebInspector.TextRange}
+     * @return {!WebInspector.TextRange}
      */
     range: function()
     {
@@ -1109,7 +1109,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     /**
      * @param {number} line
      * @param {string} name
-     * @param {Object?} value
+     * @param {?Object} value
      */
     setAttribute: function(line, name, value)
     {
@@ -1147,8 +1147,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} range
-     * @return {{start: CodeMirror.Pos, end: CodeMirror.Pos}}
+     * @param {!WebInspector.TextRange} range
+     * @return {!{start: !CodeMirror.Pos, end: !CodeMirror.Pos}}
      */
     _toPos: function(range)
     {
@@ -1168,7 +1168,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
 /**
  * @constructor
- * @param {CodeMirror} codeMirror
+ * @param {!CodeMirror} codeMirror
  */
 WebInspector.CodeMirrorTextEditor.TokenHighlighter = function(codeMirror)
 {
@@ -1177,8 +1177,8 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter = function(codeMirror)
 
 WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
     /**
-     * @param {RegExp} regex
-     * @param {WebInspector.TextRange} range
+     * @param {!RegExp} regex
+     * @param {!WebInspector.TextRange} range
      */
     highlightSearchResults: function(regex, range)
     {
@@ -1259,9 +1259,9 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
     },
 
     /**
-     * @param {RegExp} regex
-     * @param {WebInspector.TextRange} range
-     * @param {CodeMirror.StringStream} stream
+     * @param {!RegExp} regex
+     * @param {!WebInspector.TextRange} range
+     * @param {!CodeMirror.StringStream} stream
      */
     _searchHighlighter: function(regex, range, stream)
     {
@@ -1294,8 +1294,8 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
 
     /**
      * @param {string} token
-     * @param {CodeMirror.Pos} selectionStart
-     * @param {CodeMirror.StringStream} stream
+     * @param {!CodeMirror.Pos} selectionStart
+     * @param {!CodeMirror.StringStream} stream
      */
     _tokenHighlighter: function(token, selectionStart, stream)
     {
@@ -1310,7 +1310,7 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
     },
 
     /**
-     * @param {function(CodeMirror.StringStream)} highlighter
+     * @param {function(!CodeMirror.StringStream)} highlighter
      */
     _setHighlighter: function(highlighter, selectionStart)
     {
@@ -1327,7 +1327,7 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
 
 /**
  * @constructor
- * @param {CodeMirror} codeMirror
+ * @param {!CodeMirror} codeMirror
  */
 WebInspector.CodeMirrorTextEditor.BlockIndentController = function(codeMirror)
 {
@@ -1381,7 +1381,7 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
 
 /**
  * @constructor
- * @param {CodeMirror} codeMirror
+ * @param {!CodeMirror} codeMirror
  */
 WebInspector.CodeMirrorTextEditor.FixWordMovement = function(codeMirror)
 {
@@ -1432,8 +1432,8 @@ WebInspector.CodeMirrorTextEditor.FixWordMovement = function(codeMirror)
 /**
  * @constructor
  * @implements {WebInspector.SuggestBoxDelegate}
- * @param {WebInspector.CodeMirrorTextEditor} textEditor
- * @param {CodeMirror} codeMirror
+ * @param {!WebInspector.CodeMirrorTextEditor} textEditor
+ * @param {!CodeMirror} codeMirror
  */
 WebInspector.CodeMirrorTextEditor.AutocompleteController = function(textEditor, codeMirror)
 {
@@ -1497,7 +1497,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
     },
 
     /**
-     * @param {Event} e
+     * @param {?Event} e
      */
     keyDown: function(e)
     {
@@ -1560,7 +1560,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
     /**
      * @param {number} line
      * @param {number} column
-     * @return {AnchorBox}
+     * @return {?AnchorBox}
      */
     _anchorBoxForPosition: function(line, column)
     {

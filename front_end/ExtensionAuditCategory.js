@@ -58,9 +58,9 @@ WebInspector.ExtensionAuditCategory.prototype = {
 
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
-     * @param {function(WebInspector.AuditRuleResult)} ruleResultCallback
+     * @param {function(!WebInspector.AuditRuleResult)} ruleResultCallback
      * @param {function()} categoryDoneCallback
-     * @param {WebInspector.Progress} progress
+     * @param {!WebInspector.Progress} progress
      */
     run: function(requests, ruleResultCallback, categoryDoneCallback, progress)
     {
@@ -71,10 +71,10 @@ WebInspector.ExtensionAuditCategory.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.ExtensionAuditCategory} category
- * @param {function(WebInspector.AuditRuleResult)} ruleResultCallback
+ * @param {!WebInspector.ExtensionAuditCategory} category
+ * @param {function(!WebInspector.AuditRuleResult)} ruleResultCallback
  * @param {function()} categoryDoneCallback
- * @param {WebInspector.Progress} progress
+ * @param {!WebInspector.Progress} progress
  */
 WebInspector.ExtensionAuditCategoryResults = function(category, ruleResultCallback, categoryDoneCallback, progress)
 {
@@ -138,7 +138,8 @@ WebInspector.ExtensionAuditCategoryResults.prototype = {
 
     /**
      * @param {string} expression
-     * @param {function(WebInspector.RemoteObject)} callback
+     * @param {?Object} evaluateOptions
+     * @param {function(!WebInspector.RemoteObject)} callback
      */
     evaluate: function(expression, evaluateOptions, callback)
     {
@@ -163,7 +164,7 @@ WebInspector.ExtensionAuditFormatters = {
      * @this {WebInspector.ExtensionAuditCategoryResults}
      * @param {string} expression
      * @param {string} title
-     * @param {Object} evaluateOptions
+     * @param {?Object} evaluateOptions
      */
     object: function(expression, title, evaluateOptions)
     {
@@ -182,7 +183,7 @@ WebInspector.ExtensionAuditFormatters = {
     /**
      * @this {WebInspector.ExtensionAuditCategoryResults}
      * @param {string} expression
-     * @param {Object} evaluateOptions
+     * @param {?Object} evaluateOptions
      */
     node: function(expression, evaluateOptions)
     {
@@ -201,7 +202,7 @@ WebInspector.ExtensionAuditFormatters = {
             parentElement.appendChild(treeOutline.element);
         }
         /**
-         * @param {WebInspector.RemoteObject} remoteObject
+         * @param {!WebInspector.RemoteObject} remoteObject
          */
         function onEvaluate(remoteObject)
         {

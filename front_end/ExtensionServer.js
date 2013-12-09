@@ -436,7 +436,7 @@ WebInspector.ExtensionServer.prototype = {
     },
 
     /**
-     * @param {WebInspector.ContentProvider} contentProvider
+     * @param {!WebInspector.ContentProvider} contentProvider
      */
     _makeResource: function(contentProvider)
     {
@@ -465,7 +465,7 @@ WebInspector.ExtensionServer.prototype = {
     },
 
     /**
-     * @param {WebInspector.ContentProvider} contentProvider
+     * @param {!WebInspector.ContentProvider} contentProvider
      */
     _getResourceContent: function(contentProvider, message, port)
     {
@@ -654,7 +654,7 @@ WebInspector.ExtensionServer.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} textRange
+     * @param {!WebInspector.TextRange} textRange
      */
     _makeSourceSelection: function(textRange)
     {
@@ -682,20 +682,20 @@ WebInspector.ExtensionServer.prototype = {
 
     _notifyResourceAdded: function(event)
     {
-        var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
         this._postNotification(WebInspector.extensionAPI.Events.ResourceAdded, this._makeResource(uiSourceCode));
     },
 
     _notifyUISourceCodeContentCommitted: function(event)
     {
-        var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data.uiSourceCode);
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data.uiSourceCode);
         var content = /** @type {string} */ (event.data.content);
         this._postNotification(WebInspector.extensionAPI.Events.ResourceContentCommitted, this._makeResource(uiSourceCode), content);
     },
 
     _notifyRequestFinished: function(event)
     {
-        var request = /** @type {WebInspector.NetworkRequest} */ (event.data);
+        var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
         this._postNotification(WebInspector.extensionAPI.Events.NetworkRequestFinished, this._requestId(request), (new WebInspector.HAREntry(request)).build());
     },
 
@@ -718,7 +718,7 @@ WebInspector.ExtensionServer.prototype = {
     },
 
     /**
-     * @param {ExtensionDescriptor} extensionInfo
+     * @param {!ExtensionDescriptor} extensionInfo
      */
     _addExtension: function(extensionInfo)
     {
@@ -733,7 +733,7 @@ WebInspector.ExtensionServer.prototype = {
     },
 
     /**
-     * @param {ExtensionDescriptor} extensionInfo
+     * @param {!ExtensionDescriptor} extensionInfo
      */
     _innerAddExtension: function(extensionInfo)
     {
@@ -845,7 +845,7 @@ WebInspector.ExtensionServer.prototype = {
      * @param {string} expression
      * @param {boolean} exposeCommandLineAPI
      * @param {boolean} returnByValue
-     * @param {Object} options
+     * @param {?Object} options
      * @param {string} securityOrigin
      * @param {function(?string, !RuntimeAgent.RemoteObject, boolean=)} callback
      */

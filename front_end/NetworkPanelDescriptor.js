@@ -40,8 +40,8 @@ WebInspector.NetworkPanelDescriptor = function()
 
 WebInspector.NetworkPanelDescriptor.prototype = {
     /** 
-     * @param {WebInspector.ContextMenu} contextMenu
-     * @param {Object} target
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} target
      */
     appendApplicableItems: function(event, contextMenu, target)
     {

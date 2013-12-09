@@ -302,16 +302,16 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _databaseAdded: function(event)
     {
-        var database = /** @type {WebInspector.Database} */ (event.data);
+        var database = /** @type {!WebInspector.Database} */ (event.data);
         this._addDatabase(database);
     },
 
     /**
-     * @param {WebInspector.Database} database
+     * @param {!WebInspector.Database} database
      */
     _addDatabase: function(database)
     {
@@ -336,16 +336,16 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _domStorageAdded: function(event)
     {
-        var domStorage = /** @type {WebInspector.DOMStorage} */ (event.data);
+        var domStorage = /** @type {!WebInspector.DOMStorage} */ (event.data);
         this._addDOMStorage(domStorage);
     },
 
     /**
-     * @param {WebInspector.DOMStorage} domStorage
+     * @param {!WebInspector.DOMStorage} domStorage
      */
     _addDOMStorage: function(domStorage)
     {
@@ -360,16 +360,16 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _domStorageRemoved: function(event)
     {
-        var domStorage = /** @type {WebInspector.DOMStorage} */ (event.data);
+        var domStorage = /** @type {!WebInspector.DOMStorage} */ (event.data);
         this._removeDOMStorage(domStorage);
     },
 
     /**
-     * @param {WebInspector.DOMStorage} domStorage
+     * @param {!WebInspector.DOMStorage} domStorage
      */
     _removeDOMStorage: function(domStorage)
     {
@@ -386,7 +386,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Database} database
+     * @param {!WebInspector.Database} database
      */
     selectDatabase: function(database)
     {
@@ -397,7 +397,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.DOMStorage} domStorage
+     * @param {!WebInspector.DOMStorage} domStorage
      */
     selectDOMStorage: function(domStorage)
     {
@@ -408,7 +408,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {Element} anchor
+     * @param {!Element} anchor
      * @return {boolean}
      */
     showAnchorLocation: function(anchor)
@@ -422,7 +422,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Resource} resource
+     * @param {!WebInspector.Resource} resource
      * @param {number=} line
      * @param {number=} column
      */
@@ -462,7 +462,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Database} database
+     * @param {!WebInspector.Database} database
      * @param {string=} tableName
      */
     _showDatabase: function(database, tableName)
@@ -495,7 +495,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.View} view
+     * @param {!WebInspector.View} view
      */
     showIndexedDB: function(view)
     {
@@ -503,7 +503,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.DOMStorage} domStorage
+     * @param {!WebInspector.DOMStorage} domStorage
      */
     _showDOMStorage: function(domStorage)
     {
@@ -552,7 +552,7 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     *  @param {WebInspector.View} view
+     *  @param {!WebInspector.View} view
      */
     showFileSystem: function(view)
     {
@@ -1156,7 +1156,7 @@ WebInspector.FrameResourceTreeElement.prototype = {
     },
 
     /**
-     * @param {MouseEvent} event
+     * @param {!MouseEvent} event
      * @return {boolean}
      */
     _ondragstart: function(event)
@@ -1247,7 +1247,7 @@ WebInspector.FrameResourceTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.BaseStorageTreeElement}
- * @param {WebInspector.Database} database
+ * @param {!WebInspector.Database} database
  */
 WebInspector.DatabaseTreeElement = function(storagePanel, database)
 {
@@ -1328,7 +1328,7 @@ WebInspector.DatabaseTableTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.StorageCategoryTreeElement}
- * @param {WebInspector.ResourcesPanel} storagePanel
+ * @param {!WebInspector.ResourcesPanel} storagePanel
  */
 WebInspector.IndexedDBTreeElement = function(storagePanel)
 {
@@ -1374,11 +1374,11 @@ WebInspector.IndexedDBTreeElement.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _indexedDBAdded: function(event)
     {
-        var databaseId = /** @type {WebInspector.IndexedDBModel.DatabaseId} */ (event.data);
+        var databaseId = /** @type {!WebInspector.IndexedDBModel.DatabaseId} */ (event.data);
 
         var idbDatabaseTreeElement = new WebInspector.IDBDatabaseTreeElement(this._storagePanel, this._indexedDBModel, databaseId);
         this._idbDatabaseTreeElements.push(idbDatabaseTreeElement);
@@ -1388,11 +1388,11 @@ WebInspector.IndexedDBTreeElement.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _indexedDBRemoved: function(event)
     {
-        var databaseId = /** @type {WebInspector.IndexedDBModel.DatabaseId} */ (event.data);
+        var databaseId = /** @type {!WebInspector.IndexedDBModel.DatabaseId} */ (event.data);
 
         var idbDatabaseTreeElement = this._idbDatabaseTreeElement(databaseId)
         if (!idbDatabaseTreeElement)
@@ -1404,11 +1404,11 @@ WebInspector.IndexedDBTreeElement.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _indexedDBLoaded: function(event)
     {
-        var database = /** @type {WebInspector.IndexedDBModel.Database} */ (event.data);
+        var database = /** @type {!WebInspector.IndexedDBModel.Database} */ (event.data);
 
         var idbDatabaseTreeElement = this._idbDatabaseTreeElement(database.databaseId)
         if (!idbDatabaseTreeElement)
@@ -1418,8 +1418,8 @@ WebInspector.IndexedDBTreeElement.prototype = {
     },
 
     /**
-     * @param {WebInspector.IndexedDBModel.DatabaseId} databaseId
-     * @return {WebInspector.IDBDatabaseTreeElement}
+     * @param {!WebInspector.IndexedDBModel.DatabaseId} databaseId
+     * @return {?WebInspector.IDBDatabaseTreeElement}
      */
     _idbDatabaseTreeElement: function(databaseId)
     {
@@ -1441,7 +1441,7 @@ WebInspector.IndexedDBTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.StorageCategoryTreeElement}
- * @param {WebInspector.ResourcesPanel} storagePanel
+ * @param {!WebInspector.ResourcesPanel} storagePanel
  */
 WebInspector.FileSystemListTreeElement = function(storagePanel)
 {
@@ -1469,14 +1469,14 @@ WebInspector.FileSystemListTreeElement.prototype = {
 
     _fileSystemAdded: function(event)
     {
-        var fileSystem = /** @type {WebInspector.FileSystemModel.FileSystem} */ (event.data);
+        var fileSystem = /** @type {!WebInspector.FileSystemModel.FileSystem} */ (event.data);
         var fileSystemTreeElement = new WebInspector.FileSystemTreeElement(this._storagePanel, fileSystem);
         this.appendChild(fileSystemTreeElement);
     },
 
     _fileSystemRemoved: function(event)
     {
-        var fileSystem = /** @type {WebInspector.FileSystemModel.FileSystem} */ (event.data);
+        var fileSystem = /** @type {!WebInspector.FileSystemModel.FileSystem} */ (event.data);
         var fileSystemTreeElement = this._fileSystemTreeElementByName(fileSystem.name);
         if (!fileSystemTreeElement)
             return;
@@ -1487,7 +1487,7 @@ WebInspector.FileSystemListTreeElement.prototype = {
     _fileSystemTreeElementByName: function(fileSystemName)
     {
         for (var i = 0; i < this.children.length; ++i) {
-            var child = /** @type {WebInspector.FileSystemTreeElement} */ (this.children[i]);
+            var child = /** @type {!WebInspector.FileSystemTreeElement} */ (this.children[i]);
             if (child.fileSystemName === fileSystemName)
                 return this.children[i];
         }
@@ -1511,9 +1511,9 @@ WebInspector.FileSystemListTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.BaseStorageTreeElement}
- * @param {WebInspector.ResourcesPanel} storagePanel
- * @param {WebInspector.IndexedDBModel} model
- * @param {WebInspector.IndexedDBModel.DatabaseId} databaseId
+ * @param {!WebInspector.ResourcesPanel} storagePanel
+ * @param {!WebInspector.IndexedDBModel} model
+ * @param {!WebInspector.IndexedDBModel.DatabaseId} databaseId
  */
 WebInspector.IDBDatabaseTreeElement = function(storagePanel, model, databaseId)
 {
@@ -1548,7 +1548,7 @@ WebInspector.IDBDatabaseTreeElement.prototype = {
     },
 
     /**
-     * @param {WebInspector.IndexedDBModel.Database} database
+     * @param {!WebInspector.IndexedDBModel.Database} database
      */
     update: function(database)
     {
@@ -1621,10 +1621,10 @@ WebInspector.IDBDatabaseTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.BaseStorageTreeElement}
- * @param {WebInspector.ResourcesPanel} storagePanel
- * @param {WebInspector.IndexedDBModel} model
- * @param {WebInspector.IndexedDBModel.DatabaseId} databaseId
- * @param {WebInspector.IndexedDBModel.ObjectStore} objectStore
+ * @param {!WebInspector.ResourcesPanel} storagePanel
+ * @param {!WebInspector.IndexedDBModel} model
+ * @param {!WebInspector.IndexedDBModel.DatabaseId} databaseId
+ * @param {!WebInspector.IndexedDBModel.ObjectStore} objectStore
  */
 WebInspector.IDBObjectStoreTreeElement = function(storagePanel, model, databaseId, objectStore)
 {
@@ -1662,7 +1662,7 @@ WebInspector.IDBObjectStoreTreeElement.prototype = {
     },
 
    /**
-     * @param {WebInspector.IndexedDBModel.ObjectStore} objectStore
+     * @param {!WebInspector.IndexedDBModel.ObjectStore} objectStore
      */
     update: function(objectStore)
     {
@@ -1749,11 +1749,11 @@ WebInspector.IDBObjectStoreTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.BaseStorageTreeElement}
- * @param {WebInspector.ResourcesPanel} storagePanel
- * @param {WebInspector.IndexedDBModel} model
- * @param {WebInspector.IndexedDBModel.DatabaseId} databaseId
- * @param {WebInspector.IndexedDBModel.ObjectStore} objectStore
- * @param {WebInspector.IndexedDBModel.Index} index
+ * @param {!WebInspector.ResourcesPanel} storagePanel
+ * @param {!WebInspector.IndexedDBModel} model
+ * @param {!WebInspector.IndexedDBModel.DatabaseId} databaseId
+ * @param {!WebInspector.IndexedDBModel.ObjectStore} objectStore
+ * @param {!WebInspector.IndexedDBModel.Index} index
  */
 WebInspector.IDBIndexTreeElement = function(storagePanel, model, databaseId, objectStore, index)
 {
@@ -1771,7 +1771,7 @@ WebInspector.IDBIndexTreeElement.prototype = {
     },
 
     /**
-     * @param {WebInspector.IndexedDBModel.Index} index
+     * @param {!WebInspector.IndexedDBModel.Index} index
      */
     update: function(index)
     {
@@ -1869,7 +1869,7 @@ WebInspector.CookieTreeElement.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _handleContextMenuEvent: function(event)
     {
@@ -1995,8 +1995,8 @@ WebInspector.ApplicationCacheFrameTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.BaseStorageTreeElement}
- * @param {WebInspector.ResourcesPanel} storagePanel
- * @param {WebInspector.FileSystemModel.FileSystem} fileSystem
+ * @param {!WebInspector.ResourcesPanel} storagePanel
+ * @param {!WebInspector.FileSystemModel.FileSystem} fileSystem
  */
 WebInspector.FileSystemTreeElement = function(storagePanel, fileSystem)
 {

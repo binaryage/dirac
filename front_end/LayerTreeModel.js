@@ -92,8 +92,8 @@ WebInspector.LayerTreeModel.prototype = {
     },
 
     /**
-     * @param {function(WebInspector.Layer)} callback
-     * @param {WebInspector.Layer=} root
+     * @param {function(!WebInspector.Layer)} callback
+     * @param {?WebInspector.Layer} root
      * @return {boolean}
      */
     forEachLayer: function(callback, root)
@@ -164,8 +164,8 @@ WebInspector.LayerTreeModel.prototype = {
     },
 
     /**
-     * @param {LayerTreeAgent.LayerId} layerId
-     * @param {DOMAgent.Rect} clipRect
+     * @param {!LayerTreeAgent.LayerId} layerId
+     * @param {!DOMAgent.Rect} clipRect
      */
     _layerPainted: function(layerId, clipRect)
     {
@@ -189,7 +189,7 @@ WebInspector.LayerTreeModel.prototype = {
 
 /**
  * @constructor
- * @param {LayerTreeAgent.Layer} layerPayload
+ * @param {!LayerTreeAgent.Layer} layerPayload
  */
 WebInspector.Layer = function(layerPayload)
 {
@@ -206,7 +206,7 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @return {string?}
+     * @return {string}
      */
     parentId: function()
     {
@@ -214,7 +214,7 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @return {WebInspector.Layer}
+     * @return {!WebInspector.Layer}
      */
     parent: function()
     {
@@ -238,7 +238,7 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @param {WebInspector.Layer} child
+     * @param {!WebInspector.Layer} child
      */
     addChild: function(child)
     {
@@ -249,7 +249,7 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @return {DOMAgent.NodeId?}
+     * @return {?DOMAgent.NodeId}
      */
     nodeId: function()
     {
@@ -257,7 +257,7 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @return {DOMAgent.NodeId?}
+     * @return {?DOMAgent.NodeId}
      */
     nodeIdForSelfOrAncestor: function()
     {
@@ -367,7 +367,7 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @param {DOMAgent.Rect} rect
+     * @param {!DOMAgent.Rect} rect
      */
     _didPaint: function(rect)
     {
@@ -376,7 +376,7 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @param {LayerTreeAgent.Layer} layerPayload
+     * @param {!LayerTreeAgent.Layer} layerPayload
      */
     _reset: function(layerPayload)
     {
@@ -390,7 +390,7 @@ WebInspector.Layer.prototype = {
 /**
  * @constructor
  * @implements {LayerTreeAgent.Dispatcher}
- * @param {WebInspector.LayerTreeModel} layerTreeModel
+ * @param {!WebInspector.LayerTreeModel} layerTreeModel
  */
 WebInspector.LayerTreeDispatcher = function(layerTreeModel)
 {
@@ -407,8 +407,8 @@ WebInspector.LayerTreeDispatcher.prototype = {
     },
 
     /**
-     * @param {LayerTreeAgent.LayerId} layerId
-     * @param {DOMAgent.Rect} clipRect
+     * @param {!LayerTreeAgent.LayerId} layerId
+     * @param {!DOMAgent.Rect} clipRect
      */
     layerPainted: function(layerId, clipRect)
     {

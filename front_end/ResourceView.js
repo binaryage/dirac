@@ -50,7 +50,7 @@ WebInspector.ResourceView.prototype = {
 }
 
 /**
- * @param {WebInspector.Resource} resource
+ * @param {!WebInspector.Resource} resource
  */
 WebInspector.ResourceView.hasTextContent = function(resource)
 {
@@ -62,7 +62,7 @@ WebInspector.ResourceView.hasTextContent = function(resource)
 }
 
 /**
- * @param {WebInspector.Resource} resource
+ * @param {!WebInspector.Resource} resource
  */
 WebInspector.ResourceView.nonSourceViewForResource = function(resource)
 {
@@ -79,7 +79,7 @@ WebInspector.ResourceView.nonSourceViewForResource = function(resource)
 /**
  * @extends {WebInspector.SourceFrame}
  * @constructor
- * @param {WebInspector.Resource} resource
+ * @param {!WebInspector.Resource} resource
  */
 WebInspector.ResourceSourceFrame = function(resource)
 {
@@ -104,7 +104,7 @@ WebInspector.ResourceSourceFrame.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.Resource} resource
+ * @param {!WebInspector.Resource} resource
  */
 WebInspector.ResourceSourceFrameFallback = function(resource)
 {

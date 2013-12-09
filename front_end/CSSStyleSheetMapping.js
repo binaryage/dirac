@@ -30,9 +30,9 @@
 
 /**
  * @constructor
- * @param {WebInspector.CSSStyleModel} cssModel
- * @param {WebInspector.Workspace} workspace
- * @param {WebInspector.SimpleWorkspaceProvider} networkWorkspaceProvider
+ * @param {!WebInspector.CSSStyleModel} cssModel
+ * @param {!WebInspector.Workspace} workspace
+ * @param {!WebInspector.SimpleWorkspaceProvider} networkWorkspaceProvider
  */
 WebInspector.CSSStyleSheetMapping = function(cssModel, workspace, networkWorkspaceProvider)
 {
@@ -47,21 +47,21 @@ WebInspector.CSSStyleSheetMapping = function(cssModel, workspace, networkWorkspa
 
 WebInspector.CSSStyleSheetMapping.prototype = {
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _styleSheetAdded: function(event)
     {
-        var header = /** @type {WebInspector.CSSStyleSheetHeader} */ (event.data);
+        var header = /** @type {!WebInspector.CSSStyleSheetHeader} */ (event.data);
         this._stylesSourceMapping.addHeader(header);
         this._sassSourceMapping.addHeader(header);
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _styleSheetRemoved: function(event)
     {
-        var header = /** @type {WebInspector.CSSStyleSheetHeader} */ (event.data);
+        var header = /** @type {!WebInspector.CSSStyleSheetHeader} */ (event.data);
         this._stylesSourceMapping.removeHeader(header);
         this._sassSourceMapping.removeHeader(header);
     }

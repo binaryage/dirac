@@ -82,7 +82,7 @@ WebInspector.SimpleProjectDelegate.prototype = {
      * @param {string} parentPath
      * @param {string} name
      * @param {string} url
-     * @param {WebInspector.ContentProvider} contentProvider
+     * @param {!WebInspector.ContentProvider} contentProvider
      * @param {boolean} isEditable
      * @param {boolean=} isContentScript
      * @return {string}
@@ -118,7 +118,7 @@ WebInspector.SimpleProjectDelegate.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {WebInspector.Workspace} workspace
+ * @param {!WebInspector.Workspace} workspace
  * @param {string} type
  */
 WebInspector.SimpleWorkspaceProvider = function(workspace, type)
@@ -131,7 +131,7 @@ WebInspector.SimpleWorkspaceProvider = function(workspace, type)
 WebInspector.SimpleWorkspaceProvider.prototype = {
     /**
      * @param {string} projectName
-     * @return {WebInspector.SimpleProjectDelegate}
+     * @return {!WebInspector.SimpleProjectDelegate}
      */
     _projectDelegate: function(projectName)
     {
@@ -145,10 +145,10 @@ WebInspector.SimpleWorkspaceProvider.prototype = {
  
     /**
      * @param {string} url
-     * @param {WebInspector.ContentProvider} contentProvider
+     * @param {!WebInspector.ContentProvider} contentProvider
      * @param {boolean} isEditable
      * @param {boolean=} isContentScript
-     * @return {WebInspector.UISourceCode}
+     * @return {!WebInspector.UISourceCode}
      */
     addFileForURL: function(url, contentProvider, isEditable, isContentScript)
     {
@@ -157,10 +157,10 @@ WebInspector.SimpleWorkspaceProvider.prototype = {
 
     /**
      * @param {string} url
-     * @param {WebInspector.ContentProvider} contentProvider
+     * @param {!WebInspector.ContentProvider} contentProvider
      * @param {boolean} isEditable
      * @param {boolean=} isContentScript
-     * @return {WebInspector.UISourceCode}
+     * @return {!WebInspector.UISourceCode}
      */
     addUniqueFileForURL: function(url, contentProvider, isEditable, isContentScript)
     {
@@ -169,11 +169,11 @@ WebInspector.SimpleWorkspaceProvider.prototype = {
 
     /**
      * @param {string} url
-     * @param {WebInspector.ContentProvider} contentProvider
+     * @param {!WebInspector.ContentProvider} contentProvider
      * @param {boolean} isEditable
      * @param {boolean} forceUnique
      * @param {boolean=} isContentScript
-     * @return {WebInspector.UISourceCode}
+     * @return {!WebInspector.UISourceCode}
      */
     _innerAddFileForURL: function(url, contentProvider, isEditable, forceUnique, isContentScript)
     {
@@ -183,7 +183,9 @@ WebInspector.SimpleWorkspaceProvider.prototype = {
         var name = splitURL[splitURL.length - 1];
         var projectDelegate = this._projectDelegate(projectName);
         var path = projectDelegate.addFile(parentPath, name, forceUnique, url, contentProvider, isEditable, isContentScript);
-        return this._workspace.uiSourceCode(projectDelegate.id(), path);
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(projectDelegate.id(), path));
+        console.assert(uiSourceCode);
+        return uiSourceCode;
     },
 
     reset: function()

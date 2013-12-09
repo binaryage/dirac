@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @param {WebInspector.Workspace} workspace
+ * @param {!WebInspector.Workspace} workspace
  */
 WebInspector.LiveEditSupport = function(workspace)
 {
@@ -41,13 +41,13 @@ WebInspector.LiveEditSupport = function(workspace)
 
 WebInspector.LiveEditSupport.prototype = {
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
-     * @return {WebInspector.UISourceCode}
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @return {!WebInspector.UISourceCode}
      */
     uiSourceCodeForLiveEdit: function(uiSourceCode)
     {
         var rawLocation = uiSourceCode.uiLocationToRawLocation(0, 0);
-        var debuggerModelLocation = /** @type {WebInspector.DebuggerModel.Location} */ (rawLocation);
+        var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (rawLocation);
         var script = WebInspector.debuggerModel.scriptForId(debuggerModelLocation.scriptId);
         var uiLocation = script.rawLocationToUILocation(0, 0);
 
@@ -78,8 +78,8 @@ WebInspector.LiveEditSupport.prototype = {
 
 /**
  * @param {?string} error
- * @param {DebuggerAgent.SetScriptSourceError=} errorData
- * @param {WebInspector.Script=} contextScript
+ * @param {!DebuggerAgent.SetScriptSourceError=} errorData
+ * @param {!WebInspector.Script=} contextScript
  */
 WebInspector.LiveEditSupport.logDetailedError = function(error, errorData, contextScript)
 {
@@ -109,8 +109,8 @@ WebInspector.LiveEditSupport.logSuccess = function()
  * @constructor
  * @implements {WebInspector.ScriptFile}
  * @extends {WebInspector.Object}
- * @param {WebInspector.UISourceCode} uiSourceCode
- * @param {WebInspector.UISourceCode} liveEditUISourceCode
+ * @param {!WebInspector.UISourceCode} uiSourceCode
+ * @param {!WebInspector.UISourceCode} liveEditUISourceCode
  * @param {string} scriptId
  */
 WebInspector.LiveEditScriptFile = function(uiSourceCode, liveEditUISourceCode, scriptId)
@@ -127,7 +127,7 @@ WebInspector.LiveEditScriptFile.prototype = {
     {
         /**
          * @param {?string} error
-         * @param {DebuggerAgent.SetScriptSourceError=} errorData
+         * @param {!DebuggerAgent.SetScriptSourceError=} errorData
          */
         function innerCallback(error, errorData)
         {
@@ -174,5 +174,5 @@ WebInspector.LiveEditScriptFile.prototype = {
     __proto__: WebInspector.Object.prototype
 }
 
-/** @type {WebInspector.LiveEditSupport} */
+/** @type {?WebInspector.LiveEditSupport} */
 WebInspector.liveEditSupport = null;

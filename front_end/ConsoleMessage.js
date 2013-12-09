@@ -35,15 +35,15 @@
  * @param {string} source
  * @param {string} level
  * @param {string} message
- * @param {WebInspector.Linkifier} linkifier
+ * @param {!WebInspector.Linkifier} linkifier
  * @param {string=} type
  * @param {string=} url
  * @param {number=} line
  * @param {number=} column
  * @param {number=} repeatCount
  * @param {!Array.<!RuntimeAgent.RemoteObject>=} parameters
- * @param {ConsoleAgent.StackTrace=} stackTrace
- * @param {NetworkAgent.RequestId=} requestId
+ * @param {!ConsoleAgent.StackTrace=} stackTrace
+ * @param {!NetworkAgent.RequestId=} requestId
  * @param {boolean=} isOutdated
  */
 WebInspector.ConsoleMessageImpl = function(source, level, message, linkifier, type, url, line, column, repeatCount, parameters, stackTrace, requestId, isOutdated)
@@ -59,7 +59,7 @@ WebInspector.ConsoleMessageImpl = function(source, level, message, linkifier, ty
     this._isOutdated = isOutdated;
     /** @type {!Array.<!WebInspector.DataGrid>} */
     this._dataGrids = [];
-    /** @type {!Map.<!WebInspector.DataGrid, Element>} */
+    /** @type {!Map.<!WebInspector.DataGrid, ?Element>} */
     this._dataGridParents = new Map();
 
     this._customFormatters = {
@@ -209,7 +209,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     get formattedMessage()
     {
@@ -230,7 +230,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
      * @param {string} url
      * @param {number} lineNumber
      * @param {number} columnNumber
-     * @return {Element}
+     * @return {?Element}
      */
     _linkifyLocation: function(url, lineNumber, columnNumber)
     {
@@ -248,7 +248,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
 
     /**
      * @param {!ConsoleAgent.CallFrame} callFrame
-     * @return {Element}
+     * @return {?Element}
      */
     _linkifyCallFrame: function(callFrame)
     {
@@ -318,7 +318,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
     },
 
     /**
-     * @param {Object} output
+     * @param {?Object} output
      * @param {boolean=} forceObjectFormat
      * @param {boolean=} includePreview
      * @return {!Element}
@@ -351,8 +351,8 @@ WebInspector.ConsoleMessageImpl.prototype = {
     },
 
     /**
-     * @param {WebInspector.RemoteObject} obj
-     * @param {Element} elem
+     * @param {!WebInspector.RemoteObject} obj
+     * @param {!Element} elem
      * @param {boolean} includePreview
      */
     _formatParameterAsObject: function(obj, elem, includePreview)
@@ -361,9 +361,9 @@ WebInspector.ConsoleMessageImpl.prototype = {
     },
 
     /**
-     * @param {WebInspector.RemoteObject} obj
+     * @param {!WebInspector.RemoteObject} obj
      * @param {string} description
-     * @param {Element} elem
+     * @param {!Element} elem
      * @param {boolean} includePreview
      */
     _formatParameterAsArrayOrObject: function(obj, description, elem, includePreview)
@@ -390,7 +390,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
     /**
      * @param {!WebInspector.RemoteObject} obj
      * @param {string} description
-     * @param {Element} titleElement
+     * @param {!Element} titleElement
      * @return {boolean} true iff preview captured all information.
      */
     _appendObjectPreview: function(obj, description, titleElement)
@@ -425,7 +425,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
     /**
      * @param {!WebInspector.RemoteObject} object
      * @param {!Array.<!RuntimeAgent.PropertyPreview>} propertyPath
-     * @return {Element}
+     * @return {!Element}
      */
     _renderPropertyPreviewOrAccessor: function(object, propertyPath)
     {
@@ -439,7 +439,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
      * @param {string} type
      * @param {string} subtype
      * @param {string=} description
-     * @return {Element}
+     * @return {!Element}
      */
     _renderPropertyPreview: function(type, subtype, description)
     {
@@ -495,7 +495,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
     },
 
     /**
-     * @param {WebInspector.RemoteObject} array
+     * @param {!WebInspector.RemoteObject} array
      * @return {boolean}
      */
     useArrayPreviewInFormatter: function(array)
@@ -504,8 +504,8 @@ WebInspector.ConsoleMessageImpl.prototype = {
     },
 
     /**
-     * @param {WebInspector.RemoteObject} array
-     * @param {Element} elem
+     * @param {!WebInspector.RemoteObject} array
+     * @param {!Element} elem
      */
     _formatParameterAsArray: function(array, elem)
     {
@@ -523,7 +523,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
 
     /**
      * @param {!Array.<!WebInspector.RemoteObject>} parameters
-     * @return {Element}
+     * @return {!Element}
      */
     _formatParameterAsTable: function(parameters)
     {
@@ -596,7 +596,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
 
     /**
      * @param {!WebInspector.RemoteObject} array
-     * @param {Element} elem
+     * @param {!Element} elem
      * @param {?Array.<!WebInspector.RemoteObjectProperty>} properties
      */
     _printArray: function(array, elem, properties)
@@ -1015,6 +1015,9 @@ WebInspector.ConsoleMessageImpl.prototype = {
         return this._messageText;
     },
 
+    /**
+     * @return {?WebInspector.DebuggerModel.Location}
+     */
     location: function()
     {
         // FIXME(62725): stack trace line/column numbers are one-based.
@@ -1059,7 +1062,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
     },
 
     /**
-     * @return {WebInspector.ConsoleMessage}
+     * @return {!WebInspector.ConsoleMessage}
      */
     clone: function()
     {

@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @implements {WebInspector.ScriptSourceMapping}
- * @param {WebInspector.Workspace} workspace
+ * @param {!WebInspector.Workspace} workspace
  */
 WebInspector.DefaultScriptMapping = function(workspace)
 {
@@ -44,12 +44,12 @@ WebInspector.DefaultScriptMapping = function(workspace)
 
 WebInspector.DefaultScriptMapping.prototype = {
     /**
-     * @param {WebInspector.RawLocation} rawLocation
-     * @return {WebInspector.UILocation}
+     * @param {!WebInspector.RawLocation} rawLocation
+     * @return {!WebInspector.UILocation}
      */
     rawLocationToUILocation: function(rawLocation)
     {
-        var debuggerModelLocation = /** @type {WebInspector.DebuggerModel.Location} */ (rawLocation);
+        var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (rawLocation);
         var script = WebInspector.debuggerModel.scriptForId(debuggerModelLocation.scriptId);
         var uiSourceCode = this._uiSourceCodeForScriptId[script.scriptId];
         var lineNumber = debuggerModelLocation.lineNumber;
@@ -58,10 +58,10 @@ WebInspector.DefaultScriptMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
-     * @return {WebInspector.DebuggerModel.Location}
+     * @return {?WebInspector.DebuggerModel.Location}
      */
     uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
@@ -90,7 +90,7 @@ WebInspector.DefaultScriptMapping.prototype = {
 
     /**
      * @param {string} scriptId
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _scriptEdited: function(scriptId, event)
     {
@@ -134,7 +134,7 @@ WebInspector.DebuggerProjectDelegate.prototype = {
     },
 
     /**
-     * @param {WebInspector.Script} script
+     * @param {!WebInspector.Script} script
      * @return {string}
      */
     addScript: function(script)

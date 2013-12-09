@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.DataGridNode}
- * @param {WebInspector.HeapSnapshotSortableDataGrid} tree
+ * @param {!WebInspector.HeapSnapshotSortableDataGrid} tree
  * @param {boolean} hasChildren
  */
 WebInspector.HeapSnapshotGridNode = function(tree, hasChildren)
@@ -54,7 +54,7 @@ WebInspector.HeapSnapshotGridNode.Events = {
 
 WebInspector.HeapSnapshotGridNode.prototype = {
     /**
-     * @return {WebInspector.HeapSnapshotProviderProxy}
+     * @return {!WebInspector.HeapSnapshotProviderProxy}
      */
     createProvider: function()
     {
@@ -62,7 +62,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
     },
 
     /**
-     * @return {WebInspector.HeapSnapshotProviderProxy}
+     * @return {!WebInspector.HeapSnapshotProviderProxy}
      */
     _provider: function()
     {
@@ -347,7 +347,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotGridNode}
- * @param {WebInspector.HeapSnapshotSortableDataGrid} tree
+ * @param {!WebInspector.HeapSnapshotSortableDataGrid} tree
  */
 WebInspector.HeapSnapshotGenericObjectNode = function(tree, node)
 {
@@ -525,7 +525,7 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotGenericObjectNode}
- * @param {WebInspector.HeapSnapshotSortableDataGrid} tree
+ * @param {!WebInspector.HeapSnapshotSortableDataGrid} tree
  * @param {boolean} isFromBaseSnapshot
  */
 WebInspector.HeapSnapshotObjectNode = function(tree, isFromBaseSnapshot, edge, parentGridNode)
@@ -545,7 +545,7 @@ WebInspector.HeapSnapshotObjectNode = function(tree, isFromBaseSnapshot, edge, p
 
 WebInspector.HeapSnapshotObjectNode.prototype = {
     /**
-     * @return {WebInspector.HeapSnapshotProviderProxy}
+     * @return {!WebInspector.HeapSnapshotProviderProxy}
      */
     createProvider: function()
     {
@@ -746,7 +746,7 @@ WebInspector.HeapSnapshotConstructorNode = function(tree, className, aggregate, 
 WebInspector.HeapSnapshotConstructorNode.prototype = {
     /**
      * @override
-     * @return {WebInspector.HeapSnapshotProviderProxy}
+     * @return {!WebInspector.HeapSnapshotProviderProxy}
      */
     createProvider: function()
     {
@@ -866,8 +866,8 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotProviderProxy}
- * @param {WebInspector.HeapSnapshotProviderProxy} addedNodesProvider
- * @param {WebInspector.HeapSnapshotProviderProxy} deletedNodesProvider
+ * @param {!WebInspector.HeapSnapshotProviderProxy} addedNodesProvider
+ * @param {!WebInspector.HeapSnapshotProviderProxy} deletedNodesProvider
  */
 WebInspector.HeapSnapshotDiffNodesProvider = function(addedNodesProvider, deletedNodesProvider, addedCount, removedCount)
 {
@@ -957,7 +957,7 @@ WebInspector.HeapSnapshotDiffNode = function(tree, className, diffForClass)
 WebInspector.HeapSnapshotDiffNode.prototype = {
     /**
      * @override
-     * @return {WebInspector.HeapSnapshotDiffNodesProvider}
+     * @return {!WebInspector.HeapSnapshotDiffNodesProvider}
      */
     createProvider: function()
     {
@@ -1044,7 +1044,7 @@ WebInspector.HeapSnapshotDominatorObjectNode = function(tree, node)
 WebInspector.HeapSnapshotDominatorObjectNode.prototype = {
     /**
      * @override
-     * @return {WebInspector.HeapSnapshotProviderProxy}
+     * @return {!WebInspector.HeapSnapshotProviderProxy}
      */
     createProvider: function()
     {

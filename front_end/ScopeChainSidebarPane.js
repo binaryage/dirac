@@ -38,7 +38,7 @@ WebInspector.ScopeChainSidebarPane = function()
 
 WebInspector.ScopeChainSidebarPane.prototype = {
     /**
-     * @param {WebInspector.DebuggerModel.CallFrame} callFrame
+     * @param {?WebInspector.DebuggerModel.CallFrame} callFrame
      */
     update: function(callFrame)
     {
@@ -140,7 +140,7 @@ WebInspector.ScopeChainSidebarPane.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ObjectPropertyTreeElement}
- * @param {WebInspector.RemoteObjectProperty} property
+ * @param {!WebInspector.RemoteObjectProperty} property
  */
 WebInspector.ScopeVariableTreeElement = function(property)
 {

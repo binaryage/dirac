@@ -40,13 +40,13 @@ WebInspector.ElementsPanelDescriptor = function()
 
 WebInspector.ElementsPanelDescriptor.prototype = {
     /** 
-     * @param {WebInspector.ContextMenu} contextMenu
-     * @param {Object} target
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} target
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
         if (target instanceof WebInspector.RemoteObject) {
-            var remoteObject = /** @type {WebInspector.RemoteObject} */ (target);
+            var remoteObject = /** @type {!WebInspector.RemoteObject} */ (target);
             if (remoteObject.subtype !== "node")
                 return;
         } else if (!(target instanceof WebInspector.DOMNode))

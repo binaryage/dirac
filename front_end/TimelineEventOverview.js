@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.TimelineOverviewBase}
- * @param {WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.TimelineEventOverview = function(model)
 {
@@ -109,7 +109,7 @@ WebInspector.TimelineEventOverview.prototype = {
      * @param {number} begin
      * @param {number} end
      * @param {number} height
-     * @param {WebInspector.TimelineCategory} category
+     * @param {!WebInspector.TimelineCategory} category
      */
     _renderBar: function(begin, end, height, category)
     {

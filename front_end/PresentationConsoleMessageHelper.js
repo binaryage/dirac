@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @param {WebInspector.Workspace} workspace
+ * @param {!WebInspector.Workspace} workspace
  */
 WebInspector.PresentationConsoleMessageHelper = function(workspace)
 {
@@ -52,11 +52,11 @@ WebInspector.PresentationConsoleMessageHelper = function(workspace)
 
 WebInspector.PresentationConsoleMessageHelper.prototype = {
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _consoleMessageAdded: function(event)
     {
-        var message = /** @type {WebInspector.ConsoleMessage} */ (event.data);
+        var message = /** @type {!WebInspector.ConsoleMessage} */ (event.data);
         if (!message.url || !message.isErrorOrWarning())
             return;
 
@@ -68,8 +68,8 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
     },
 
     /**
-     * @param {WebInspector.ConsoleMessage} message
-     * @param {WebInspector.DebuggerModel.Location} rawLocation
+     * @param {!WebInspector.ConsoleMessage} message
+     * @param {!WebInspector.DebuggerModel.Location} rawLocation
      */
     _addConsoleMessageToScript: function(message, rawLocation)
     {
@@ -77,7 +77,7 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
     },
 
     /**
-     * @param {WebInspector.ConsoleMessage} message
+     * @param {!WebInspector.ConsoleMessage} message
      */
     _addPendingConsoleMessage: function(message)
     {
@@ -89,11 +89,11 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _parsedScriptSource: function(event)
     {
-        var script = /** @type {WebInspector.Script} */ (event.data);
+        var script = /** @type {!WebInspector.Script} */ (event.data);
 
         var messages = this._pendingConsoleMessages[script.sourceURL];
         if (!messages)
@@ -102,7 +102,7 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
         var pendingMessages = [];
         for (var i = 0; i < messages.length; i++) {
             var message = messages[i];
-            var rawLocation = /** @type {WebInspector.DebuggerModel.Location} */ (message.location());
+            var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (message.location());
             if (script.scriptId === rawLocation.scriptId)
                 this._addConsoleMessageToScript(message, rawLocation);
             else
@@ -135,8 +135,8 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.ConsoleMessage} message
- * @param {WebInspector.DebuggerModel.Location} rawLocation
+ * @param {!WebInspector.ConsoleMessage} message
+ * @param {!WebInspector.DebuggerModel.Location} rawLocation
  */
 WebInspector.PresentationConsoleMessage = function(message, rawLocation)
 {
@@ -146,7 +146,7 @@ WebInspector.PresentationConsoleMessage = function(message, rawLocation)
 
 WebInspector.PresentationConsoleMessage.prototype = {
     /**
-     * @param {WebInspector.UILocation} uiLocation
+     * @param {!WebInspector.UILocation} uiLocation
      */
     _updateLocation: function(uiLocation)
     {

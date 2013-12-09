@@ -71,15 +71,15 @@ WebInspector.Progress.prototype = {
 
     /**
      * @param {string} eventType
-     * @param {function(WebInspector.Event)} listener
-     * @param {Object=} thisObject
+     * @param {function(!WebInspector.Event)} listener
+     * @param {!Object=} thisObject
      */
     addEventListener: function(eventType, listener, thisObject) { }
 }
 
 /**
  * @constructor
- * @param {WebInspector.Progress} parent
+ * @param {!WebInspector.Progress} parent
  * @extends {WebInspector.Object}
  */
 WebInspector.CompositeProgress = function(parent)
@@ -138,7 +138,7 @@ WebInspector.CompositeProgress.prototype = {
  * @constructor
  * @implements {WebInspector.Progress}
  * @extends {WebInspector.Object}
- * @param {WebInspector.CompositeProgress} composite
+ * @param {!WebInspector.CompositeProgress} composite
  * @param {number=} weight
  */
 WebInspector.SubProgress = function(composite, weight)

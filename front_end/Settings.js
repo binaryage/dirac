@@ -165,8 +165,8 @@ WebInspector.Setting = function(name, defaultValue, eventSupport, storage)
 
 WebInspector.Setting.prototype = {
     /**
-     * @param {function(WebInspector.Event)} listener
-     * @param {Object=} thisObject
+     * @param {function(!WebInspector.Event)} listener
+     * @param {!Object=} thisObject
      */
     addChangeListener: function(listener, thisObject)
     {
@@ -174,8 +174,8 @@ WebInspector.Setting.prototype = {
     },
 
     /**
-     * @param {function(WebInspector.Event)} listener
-     * @param {Object=} thisObject
+     * @param {function(!WebInspector.Event)} listener
+     * @param {!Object=} thisObject
      */
     removeChangeListener: function(listener, thisObject)
     {
@@ -297,7 +297,7 @@ WebInspector.ExperimentsSettings.prototype = {
     /**
      * @param {string} experimentName
      * @param {string} experimentTitle
-     * @return {WebInspector.Experiment}
+     * @return {!WebInspector.Experiment}
      */
     _createExperiment: function(experimentName, experimentTitle)
     {
@@ -356,7 +356,7 @@ WebInspector.ExperimentsSettings.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.ExperimentsSettings} experimentsSettings
+ * @param {!WebInspector.ExperimentsSettings} experimentsSettings
  * @param {string} name
  * @param {string} title
  */
@@ -465,7 +465,7 @@ WebInspector.VersionController.prototype = {
     },
 
     /**
-     * @param {WebInspector.Setting} breakpointsSetting
+     * @param {!WebInspector.Setting} breakpointsSetting
      * @param {number} maxBreakpointsCount
      */
     _clearBreakpointsWhenTooMany: function(breakpointsSetting, maxBreakpointsCount)

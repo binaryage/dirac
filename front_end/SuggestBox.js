@@ -50,8 +50,8 @@ WebInspector.SuggestBoxDelegate.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.SuggestBoxDelegate} suggestBoxDelegate
- * @param {Element} anchorElement
+ * @param {!WebInspector.SuggestBoxDelegate} suggestBoxDelegate
+ * @param {!Element} anchorElement
  * @param {string=} className
  * @param {number=} maxItemsHeight
  */
@@ -87,7 +87,7 @@ WebInspector.SuggestBox.prototype = {
 
     /**
      * @param {boolean} isScroll
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onScrollOrResize: function(isScroll, event)
     {
@@ -97,7 +97,7 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @param {AnchorBox} anchorBox
+     * @param {!AnchorBox} anchorBox
      */
     setPosition: function(anchorBox)
     {
@@ -105,7 +105,7 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @param {AnchorBox=} anchorBox
+     * @param {!AnchorBox=} anchorBox
      */
     _updateBoxPosition: function(anchorBox)
     {
@@ -160,7 +160,7 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onBoxMouseDown: function(event)
     {
@@ -244,7 +244,7 @@ WebInspector.SuggestBox.prototype = {
 
     /**
      * @param {string} text
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onItemMouseDown: function(text, event)
     {
@@ -339,7 +339,7 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @param {AnchorBox} anchorBox
+     * @param {!AnchorBox} anchorBox
      * @param {!Array.<string>} completions
      * @param {number} selectedIndex
      * @param {boolean} canShowForSingleItem
@@ -358,7 +358,7 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @param {KeyboardEvent} event
+     * @param {!KeyboardEvent} event
      * @return {boolean}
      */
     keyPressed: function(event)

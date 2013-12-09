@@ -111,9 +111,9 @@ WebInspector.Spectrum.Events = {
 };
 
 /**
- * @param {Function=} onmove
- * @param {Function=} onstart
- * @param {Function=} onstop
+ * @param {!Function=} onmove
+ * @param {!Function=} onstart
+ * @param {!Function=} onstop
  */
 WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
 
@@ -186,7 +186,7 @@ WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
 
 WebInspector.Spectrum.prototype = {
     /**
-     * @param {WebInspector.Color} color
+     * @param {!WebInspector.Color} color
      */
     setColor: function(color)
     {
@@ -194,7 +194,7 @@ WebInspector.Spectrum.prototype = {
     },
 
     /**
-     * @return {WebInspector.Color}
+     * @return {!WebInspector.Color}
      */
     color: function()
     {
@@ -305,7 +305,7 @@ WebInspector.SpectrumPopupHelper.Events = {
 
 WebInspector.SpectrumPopupHelper.prototype = {
     /**
-     * @return {WebInspector.Spectrum}
+     * @return {!WebInspector.Spectrum}
      */
     spectrum: function()
     {

@@ -82,7 +82,7 @@ WebInspector.LayerDetailsView.CompositingReasonDetail = {
 
 WebInspector.LayerDetailsView.prototype = {
     /**
-     * @param {WebInspector.Layer} layer
+     * @param {?WebInspector.Layer} layer
      */
     showLayer: function(layer)
     {

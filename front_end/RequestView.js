@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.NetworkRequest} request
+ * @param {!WebInspector.NetworkRequest} request
  */
 WebInspector.RequestView = function(request)
 {
@@ -52,7 +52,7 @@ WebInspector.RequestView.prototype = {
 }
 
 /**
- * @param {WebInspector.NetworkRequest} request
+ * @param {!WebInspector.NetworkRequest} request
  */
 WebInspector.RequestView.hasTextContent = function(request)
 {
@@ -64,7 +64,7 @@ WebInspector.RequestView.hasTextContent = function(request)
 }
 
 /**
- * @param {WebInspector.NetworkRequest} request
+ * @param {!WebInspector.NetworkRequest} request
  */
 WebInspector.RequestView.nonSourceViewForRequest = function(request)
 {

@@ -62,8 +62,8 @@ WebInspector.DatabaseQueryView.prototype = {
     },
     
     /**
-     * @param {Element} proxyElement
-     * @param {Range} wordRange
+     * @param {!Element} proxyElement
+     * @param {!Range} wordRange
      * @param {boolean} force
      * @param {function(!Array.<string>, number=)} completionsReadyCallback
      */
@@ -160,7 +160,7 @@ WebInspector.DatabaseQueryView.prototype = {
 
     /**
      * @param {string} query
-     * @param {WebInspector.View} view
+     * @param {!WebInspector.View} view
      */
     _appendViewQueryResult: function(query, view)
     {

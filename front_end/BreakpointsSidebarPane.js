@@ -25,7 +25,7 @@
 
 /**
  * @constructor
- * @param {WebInspector.BreakpointManager} breakpointManager
+ * @param {!WebInspector.BreakpointManager} breakpointManager
  * @extends {WebInspector.SidebarPane}
  */
 WebInspector.JavaScriptBreakpointsSidebarPane = function(breakpointManager, showSourceLineDelegate)
@@ -70,20 +70,20 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _breakpointAdded: function(event)
     {
         this._breakpointRemoved(event);
 
-        var breakpoint = /** @type {WebInspector.BreakpointManager.Breakpoint} */ (event.data.breakpoint);
-        var uiLocation = /** @type {WebInspector.UILocation} */ (event.data.uiLocation);
+        var breakpoint = /** @type {!WebInspector.BreakpointManager.Breakpoint} */ (event.data.breakpoint);
+        var uiLocation = /** @type {!WebInspector.UILocation} */ (event.data.uiLocation);
         this._addBreakpoint(breakpoint, uiLocation);
     },
 
     /**
-     * @param {WebInspector.BreakpointManager.Breakpoint} breakpoint
-     * @param {WebInspector.UILocation} uiLocation
+     * @param {!WebInspector.BreakpointManager.Breakpoint} breakpoint
+     * @param {!WebInspector.UILocation} uiLocation
      */
     _addBreakpoint: function(breakpoint, uiLocation)
     {
@@ -135,12 +135,12 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _breakpointRemoved: function(event)
     {
-        var breakpoint = /** @type {WebInspector.BreakpointManager.Breakpoint} */ (event.data.breakpoint);
-        var uiLocation = /** @type {WebInspector.UILocation} */ (event.data.uiLocation);
+        var breakpoint = /** @type {!WebInspector.BreakpointManager.Breakpoint} */ (event.data.breakpoint);
+        var uiLocation = /** @type {!WebInspector.UILocation} */ (event.data.uiLocation);
         var breakpointItem = this._items.get(breakpoint);
         if (!breakpointItem)
             return;
@@ -149,7 +149,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.BreakpointManager.Breakpoint} breakpoint
+     * @param {!WebInspector.BreakpointManager.Breakpoint} breakpoint
      */
     highlightBreakpoint: function(breakpoint)
     {
@@ -174,7 +174,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.BreakpointManager.Breakpoint} breakpoint
+     * @param {!WebInspector.BreakpointManager.Breakpoint} breakpoint
      */
     _breakpointCheckboxClicked: function(breakpoint, event)
     {
@@ -184,7 +184,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.BreakpointManager.Breakpoint} breakpoint
+     * @param {!WebInspector.BreakpointManager.Breakpoint} breakpoint
      */
     _breakpointContextMenu: function(breakpoint, event)
     {
@@ -514,7 +514,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.categotyInstrumentation = "inst
 
 /**
  * @param {string} eventName
- * @param {Object=} auxData
+ * @param {!Object=} auxData
  * @return {string}
  */
 WebInspector.EventListenerBreakpointsSidebarPane.eventNameForUI = function(eventName, auxData)

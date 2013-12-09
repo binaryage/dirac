@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.FileSystemModel.File} file
+ * @param {!WebInspector.FileSystemModel.File} file
  */
 WebInspector.FileContentView = function(file)
 {
@@ -58,7 +58,7 @@ WebInspector.FileContentView.prototype = {
 
     /**
      * @param {number} errorCode
-     * @param {FileSystemAgent.Metadata} metadata
+     * @param {!FileSystemAgent.Metadata} metadata
      */
     _metadataReceived: function(errorCode, metadata)
     {
@@ -68,7 +68,7 @@ WebInspector.FileContentView.prototype = {
         if (this._content) {
             if (!this._content.updateMetadata(metadata))
                 return;
-            var sourceFrame = /** @type {WebInspector.SourceFrame} */ (this._innerView);
+            var sourceFrame = /** @type {!WebInspector.SourceFrame} */ (this._innerView);
             this._content.requestContent(sourceFrame.setContent.bind(sourceFrame));
         } else {
             this._innerView.detach();
@@ -95,8 +95,8 @@ WebInspector.FileContentView.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.ContentProvider}
- * @param {WebInspector.FileSystemModel.File} file
- * @param {FileSystemAgent.Metadata} metadata
+ * @param {!WebInspector.FileSystemModel.File} file
+ * @param {!FileSystemAgent.Metadata} metadata
  */
 WebInspector.FileContentView.FileContentProvider = function(file, metadata)
 {
@@ -114,7 +114,7 @@ WebInspector.FileContentView.FileContentProvider.prototype = {
     },
 
     /**
-     * @return {WebInspector.ResourceType}
+     * @return {!WebInspector.ResourceType}
      */
     contentType: function()
     {
@@ -160,7 +160,7 @@ WebInspector.FileContentView.FileContentProvider.prototype = {
     },
 
     /**
-     * @param {FileSystemAgent.Metadata} metadata
+     * @param {!FileSystemAgent.Metadata} metadata
      * @return {boolean}
      */
     updateMetadata: function(metadata)

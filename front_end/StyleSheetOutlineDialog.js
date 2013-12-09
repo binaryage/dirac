@@ -29,8 +29,8 @@
 /**
  * @constructor
  * @extends {WebInspector.SelectionDialogContentProvider}
- * @param {WebInspector.View} view
- * @param {WebInspector.UISourceCode} uiSourceCode
+ * @param {!WebInspector.View} view
+ * @param {!WebInspector.UISourceCode} uiSourceCode
  * @param {function(number, number)} selectItemCallback
  */
 WebInspector.StyleSheetOutlineDialog = function(view, uiSourceCode, selectItemCallback)
@@ -44,8 +44,8 @@ WebInspector.StyleSheetOutlineDialog = function(view, uiSourceCode, selectItemCa
 }
 
 /**
- * @param {WebInspector.View} view
- * @param {WebInspector.UISourceCode} uiSourceCode
+ * @param {!WebInspector.View} view
+ * @param {!WebInspector.UISourceCode} uiSourceCode
  * @param {function(number, number)} selectItemCallback
  */
 WebInspector.StyleSheetOutlineDialog.show = function(view, uiSourceCode, selectItemCallback)
@@ -89,8 +89,8 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
     /**
      * @param {number} itemIndex
      * @param {string} query
-     * @param {Element} titleElement
-     * @param {Element} subtitleElement
+     * @param {!Element} titleElement
+     * @param {!Element} subtitleElement
      */
     renderItem: function(itemIndex, query, titleElement, subtitleElement)
     {

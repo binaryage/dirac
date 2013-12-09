@@ -337,7 +337,7 @@ WebInspector.WatchExpressionsSection.CompareProperties = function(propertyA, pro
 /**
  * @constructor
  * @extends {WebInspector.ObjectPropertyTreeElement}
- * @param {WebInspector.RemoteObjectProperty} property
+ * @param {!WebInspector.RemoteObjectProperty} property
  */
 WebInspector.WatchExpressionTreeElement = function(property)
 {
@@ -390,7 +390,7 @@ WebInspector.WatchExpressionTreeElement.prototype = {
     },
 
     /**
-     * @param {WebInspector.ContextMenu} contextMenu
+     * @param {!WebInspector.ContextMenu} contextMenu
      * @override
      */
     populateContextMenu: function(contextMenu)
@@ -426,7 +426,7 @@ WebInspector.WatchExpressionTreeElement.prototype = {
     },
 
     /**
-     * @param {Event=} event
+     * @param {!Event=} event
      */
     elementAndValueToEdit: function(event)
     {
@@ -459,7 +459,7 @@ WebInspector.WatchExpressionTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ObjectPropertyTreeElement}
- * @param {WebInspector.RemoteObjectProperty} property
+ * @param {!WebInspector.RemoteObjectProperty} property
  */
 WebInspector.WatchedPropertyTreeElement = function(property)
 {

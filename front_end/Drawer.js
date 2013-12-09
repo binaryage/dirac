@@ -30,7 +30,7 @@
 /**
  * @constructor
  * @implements {WebInspector.ViewFactory}
- * @param {WebInspector.InspectorView} inspectorView
+ * @param {!WebInspector.InspectorView} inspectorView
  */
 WebInspector.Drawer = function(inspectorView)
 {
@@ -65,7 +65,7 @@ WebInspector.Drawer = function(inspectorView)
 
 WebInspector.Drawer.prototype = {
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     toggleButtonElement: function()
     {
@@ -85,7 +85,7 @@ WebInspector.Drawer.prototype = {
     /**
      * @param {string} tabId
      * @param {string} title
-     * @param {WebInspector.View} view
+     * @param {!WebInspector.View} view
      */
     _addView: function(tabId, title, view)
     {
@@ -100,7 +100,7 @@ WebInspector.Drawer.prototype = {
     /**
      * @param {string} id
      * @param {string} title
-     * @param {WebInspector.ViewFactory} factory
+     * @param {!WebInspector.ViewFactory} factory
      */
     registerView: function(id, title, factory)
     {
@@ -155,7 +155,7 @@ WebInspector.Drawer.prototype = {
     /**
      * @param {string} id
      * @param {string} title
-     * @param {WebInspector.View} view
+     * @param {!WebInspector.View} view
      */
     showCloseableView: function(id, title, view)
     {
@@ -337,7 +337,7 @@ WebInspector.Drawer.prototype = {
     },
 
     /**
-     * @return {WebInspector.View} view
+     * @return {!WebInspector.View} view
      */
     _visibleView: function()
     {

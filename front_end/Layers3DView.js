@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.LayerTreeModel} model
+ * @param {!WebInspector.LayerTreeModel} model
  */
 WebInspector.Layers3DView = function(model)
 {
@@ -99,8 +99,8 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Layers3DView.OutlineType} type
-     * @param {WebInspector.Layer?} layer
+     * @param {!WebInspector.Layers3DView.OutlineType} type
+     * @param {?WebInspector.Layer} layer
      */
     _setOutline: function(type, layer)
     {
@@ -120,7 +120,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Layer} layer
+     * @param {!WebInspector.Layer} layer
      */
     hoverLayer: function(layer)
     {
@@ -128,7 +128,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Layer} layer
+     * @param {!WebInspector.Layer} layer
      */
     selectLayer: function(layer)
     {
@@ -196,17 +196,17 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onLayerPainted: function(event)
     {
-        var layer = /** @type {WebInspector.Layer} */ (event.data);
+        var layer = /** @type {!WebInspector.Layer} */ (event.data);
         this._updatePaintRect(this._elementForLayer(layer));
     },
 
     /**
-     * @param {WebInspector.Layer} layer
-     * @return {Element}
+     * @param {!WebInspector.Layer} layer
+     * @return {!Element}
      */
     _elementForLayer: function(layer)
     {
@@ -226,7 +226,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {Element} element
+     * @param {!Element} element
      */
     _updateLayerElement: function(element)
     {
@@ -289,7 +289,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {Element} element
+     * @param {!Element} element
      */
     _updateElementColor: function(element)
     {
@@ -305,7 +305,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onMouseDown: function(event)
     {
@@ -315,7 +315,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _setReferencePoint: function(event)
     {
@@ -334,7 +334,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onMouseUp: function(event)
     {
@@ -344,8 +344,8 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {Event} event
-     * @return {WebInspector.Layer?}
+     * @param {?Event} event
+     * @return {?WebInspector.Layer}
      */
     _layerFromEventPoint: function(event)
     {
@@ -357,7 +357,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onMouseMove: function(event)
     {
@@ -378,7 +378,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onContextMenu: function(event)
     {
@@ -404,8 +404,8 @@ WebInspector.Layers3DView.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.Layer} layer
- * @param {Element} paintRectElement
+ * @param {!WebInspector.Layer} layer
+ * @param {!Element} paintRectElement
  */
 WebInspector.LayerDetails = function(layer, paintRectElement)
 {

@@ -26,7 +26,7 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.CPUProfileHeader} profileHeader
+ * @param {!WebInspector.CPUProfileHeader} profileHeader
  */
 WebInspector.CPUProfileView = function(profileHeader)
 {
@@ -121,7 +121,7 @@ WebInspector.CPUProfileView.prototype = {
 
     /**
      * @param {?Protocol.Error} error
-     * @param {ProfilerAgent.CPUProfile} profile
+     * @param {!ProfilerAgent.CPUProfile} profile
      */
     _getCPUProfileCallback: function(error, profile)
     {
@@ -408,7 +408,7 @@ WebInspector.CPUProfileView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onEntrySelected: function(event)
     {
@@ -693,7 +693,7 @@ WebInspector.CPUProfileType.prototype = {
     },
 
     /**
-     * @param {ProfilerAgent.ProfileHeader} profileHeader
+     * @param {!ProfilerAgent.ProfileHeader} profileHeader
      */
     addProfileHeader: function(profileHeader)
     {
@@ -743,7 +743,6 @@ WebInspector.CPUProfileType.prototype = {
 
     /**
      * @override
-     * @param {!WebInspector.ProfileHeader} profile
      */
     removeProfile: function(profile)
     {
@@ -787,7 +786,7 @@ WebInspector.CPUProfileHeader.prototype = {
     },
 
     /**
-     * @param {WebInspector.ChunkedReader} reader
+     * @param {!WebInspector.ChunkedReader} reader
      */
     onChunkTransferred: function(reader)
     {
@@ -807,7 +806,7 @@ WebInspector.CPUProfileHeader.prototype = {
     },
 
     /**
-     * @param {WebInspector.ChunkedReader} reader
+     * @param {!WebInspector.ChunkedReader} reader
      */
     onError: function(reader, e)
     {
@@ -845,7 +844,7 @@ WebInspector.CPUProfileHeader.prototype = {
 
     /**
      * @override
-     * @param {WebInspector.ProfilesPanel} profilesPanel
+     * @param {!WebInspector.ProfilesPanel} profilesPanel
      */
     createView: function(profilesPanel)
     {
@@ -867,7 +866,7 @@ WebInspector.CPUProfileHeader.prototype = {
 
         /**
          * @param {?Protocol.Error} error
-         * @param {ProfilerAgent.CPUProfile} profile
+         * @param {!ProfilerAgent.CPUProfile} profile
          */
         function getCPUProfileCallback(error, profile)
         {
@@ -925,8 +924,8 @@ WebInspector.CPUFlameChartDataProvider = function(cpuProfileView)
 
 WebInspector.CPUFlameChartDataProvider.prototype = {
     /**
-     * @param {WebInspector.FlameChart.ColorGenerator} colorGenerator
-     * @return {Object}
+     * @param {!WebInspector.FlameChart.ColorGenerator} colorGenerator
+     * @return {!Object}
      */
     timelineData: function(colorGenerator)
     {
@@ -934,8 +933,8 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     },
 
     /**
-     * @param {WebInspector.FlameChart.ColorGenerator} colorGenerator
-     * @return {Object}
+     * @param {!WebInspector.FlameChart.ColorGenerator} colorGenerator
+     * @return {?Object}
      */
     _calculateTimelineData: function(colorGenerator)
     {
@@ -962,7 +961,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
          * @param {!number} depth
          * @param {!number} duration
          * @param {!number} startTime
-         * @param {Object} node
+         * @param {!Object} node
          */
         function ChartEntry(colorPair, depth, duration, startTime, node)
         {
@@ -1130,7 +1129,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {Object}
+     * @return {!Object}
      */
     entryData: function(entryIndex)
     {

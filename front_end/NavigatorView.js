@@ -93,7 +93,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _inspectedURLChanged: function(event)
     {
@@ -106,7 +106,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Project} project
+     * @param {!WebInspector.Project} project
      * @return {!WebInspector.NavigatorTreeNode}
      */
     _projectNode: function(project)
@@ -171,7 +171,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {boolean} focusSource
      */
     _sourceSelected: function(uiSourceCode, focusSource)
@@ -182,7 +182,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     sourceDeleted: function(uiSourceCode)
     {
@@ -225,7 +225,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     requestRename: function(uiSourceCode)
     {
@@ -257,7 +257,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     handleContextMenu: function(event)
     {
@@ -267,7 +267,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.ContextMenu} contextMenu
+     * @param {!WebInspector.ContextMenu} contextMenu
      */
     _appendAddFolderItem: function(contextMenu)
     {
@@ -281,7 +281,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Project} project
+     * @param {!WebInspector.Project} project
      * @param {string} path
      */
     _handleContextMenuRefresh: function(project, path)
@@ -290,9 +290,9 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Project} project
+     * @param {!WebInspector.Project} project
      * @param {string} path
-     * @param {WebInspector.UISourceCode=} uiSourceCode
+     * @param {!WebInspector.UISourceCode=} uiSourceCode
      */
     _handleContextMenuCreate: function(project, path, uiSourceCode)
     {
@@ -304,7 +304,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Project} project
+     * @param {!WebInspector.Project} project
      * @param {string} path
      */
     _handleContextMenuExclude: function(project, path)
@@ -318,7 +318,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     _handleContextMenuDelete: function(uiSourceCode)
     {
@@ -328,8 +328,8 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {Event} event
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!Event} event
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     handleFileContextMenu: function(event, uiSourceCode)
     {
@@ -349,8 +349,8 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {Event} event
-     * @param {WebInspector.NavigatorFolderTreeNode} node
+     * @param {!Event} event
+     * @param {!WebInspector.NavigatorFolderTreeNode} node
      */
     handleFolderContextMenu: function(event, node)
     {
@@ -388,7 +388,7 @@ WebInspector.NavigatorView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
    _treeKeyPress: function(event)
    {
@@ -408,7 +408,7 @@ WebInspector.NavigatorView.prototype = {
 /**
  * @constructor
  * @extends {TreeOutline}
- * @param {Element} element
+ * @param {!Element} element
  */
 WebInspector.NavigatorTreeOutline = function(element)
 {
@@ -570,7 +570,7 @@ WebInspector.BaseNavigatorTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.BaseNavigatorTreeElement}
- * @param {WebInspector.NavigatorView} navigatorView
+ * @param {!WebInspector.NavigatorView} navigatorView
  * @param {string} type
  * @param {string} title
  */
@@ -595,7 +595,7 @@ WebInspector.NavigatorFolderTreeElement.prototype = {
     },
 
     /**
-     * @param {WebInspector.NavigatorFolderTreeNode} node
+     * @param {!WebInspector.NavigatorFolderTreeNode} node
      */
     setNode: function(node)
     {
@@ -610,14 +610,14 @@ WebInspector.NavigatorFolderTreeElement.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _handleContextMenuEvent: function(event)
     {
         if (!this._node)
             return;
         this.select();
-        this._navigatorView.handleFolderContextMenu(event, this._node);
+        this._navigatorView.handleFolderContextMenu(/** @type {!Event} */ (event), this._node);
     },
 
     __proto__: WebInspector.BaseNavigatorTreeElement.prototype
@@ -626,8 +626,8 @@ WebInspector.NavigatorFolderTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.BaseNavigatorTreeElement}
- * @param {WebInspector.NavigatorView} navigatorView
- * @param {WebInspector.UISourceCode} uiSourceCode
+ * @param {!WebInspector.NavigatorView} navigatorView
+ * @param {!WebInspector.UISourceCode} uiSourceCode
  * @param {string} title
  */
 WebInspector.NavigatorSourceTreeElement = function(navigatorView, uiSourceCode, title)
@@ -640,7 +640,7 @@ WebInspector.NavigatorSourceTreeElement = function(navigatorView, uiSourceCode, 
 
 WebInspector.NavigatorSourceTreeElement.prototype = {
     /**
-     * @return {WebInspector.UISourceCode}
+     * @return {!WebInspector.UISourceCode}
      */
     get uiSourceCode()
     {
@@ -721,7 +721,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _onclick: function(event)
     {
@@ -757,7 +757,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _handleContextMenuEvent: function(event)
     {
@@ -781,7 +781,7 @@ WebInspector.NavigatorTreeNode = function(id)
 
 WebInspector.NavigatorTreeNode.prototype = {
     /**
-     * @return {TreeElement}
+     * @return {!TreeElement}
      */
     treeElement: function() { },
 
@@ -856,7 +856,7 @@ WebInspector.NavigatorTreeNode.prototype = {
 
     /**
      * @param {string} id
-     * @return {WebInspector.NavigatorTreeNode}
+     * @return {!WebInspector.NavigatorTreeNode}
      */
     child: function(id)
     {
@@ -901,7 +901,7 @@ WebInspector.NavigatorTreeNode.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.NavigatorTreeNode}
- * @param {WebInspector.NavigatorView} navigatorView
+ * @param {!WebInspector.NavigatorView} navigatorView
  */
 WebInspector.NavigatorRootTreeNode = function(navigatorView)
 {
@@ -919,7 +919,7 @@ WebInspector.NavigatorRootTreeNode.prototype = {
     },
 
     /**
-     * @return {TreeOutline}
+     * @return {!TreeOutline}
      */
     treeElement: function()
     {
@@ -932,8 +932,8 @@ WebInspector.NavigatorRootTreeNode.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.NavigatorTreeNode}
- * @param {WebInspector.NavigatorView} navigatorView
- * @param {WebInspector.UISourceCode} uiSourceCode
+ * @param {!WebInspector.NavigatorView} navigatorView
+ * @param {!WebInspector.UISourceCode} uiSourceCode
  */
 WebInspector.NavigatorUISourceCodeTreeNode = function(navigatorView, uiSourceCode)
 {
@@ -945,7 +945,7 @@ WebInspector.NavigatorUISourceCodeTreeNode = function(navigatorView, uiSourceCod
 
 WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
     /**
-     * @return {WebInspector.UISourceCode}
+     * @return {!WebInspector.UISourceCode}
      */
     uiSourceCode: function()
     {
@@ -959,7 +959,7 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
     },
 
     /**
-     * @return {TreeElement}
+     * @return {!TreeElement}
      */
     treeElement: function()
     {
@@ -1103,8 +1103,8 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.NavigatorTreeNode}
- * @param {WebInspector.NavigatorView} navigatorView
- * @param {WebInspector.Project} project
+ * @param {!WebInspector.NavigatorView} navigatorView
+ * @param {?WebInspector.Project} project
  * @param {string} id
  * @param {string} type
  * @param {string} folderPath
@@ -1122,7 +1122,7 @@ WebInspector.NavigatorFolderTreeNode = function(navigatorView, project, id, type
 
 WebInspector.NavigatorFolderTreeNode.prototype = {
     /**
-     * @return {TreeElement}
+     * @return {!TreeElement}
      */
     treeElement: function()
     {
@@ -1133,7 +1133,7 @@ WebInspector.NavigatorFolderTreeNode.prototype = {
     },
 
     /**
-     * @return {TreeElement}
+     * @return {!TreeElement}
      */
     _createTreeElement: function(title, node)
     {

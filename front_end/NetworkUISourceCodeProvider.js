@@ -30,8 +30,8 @@
 
 /**
  * @constructor
- * @param {WebInspector.SimpleWorkspaceProvider} networkWorkspaceProvider
- * @param {WebInspector.Workspace} workspace
+ * @param {!WebInspector.SimpleWorkspaceProvider} networkWorkspaceProvider
+ * @param {!WebInspector.Workspace} workspace
  */
 WebInspector.NetworkUISourceCodeProvider = function(networkWorkspaceProvider, workspace)
 {
@@ -62,11 +62,11 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _parsedScriptSource: function(event)
     {
-        var script = /** @type {WebInspector.Script} */ (event.data);
+        var script = /** @type {!WebInspector.Script} */ (event.data);
         if (!script.sourceURL || script.isInlineScript() || script.isSnippet())
             return;
         // Filter out embedder injected content scripts.
@@ -79,11 +79,11 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _styleSheetAdded: function(event)
     {
-        var header = /** @type {WebInspector.CSSStyleSheetHeader} */ (event.data);
+        var header = /** @type {!WebInspector.CSSStyleSheetHeader} */ (event.data);
         if ((!header.hasSourceURL || header.isInline) && header.origin !== "inspector")
             return;
 
@@ -91,16 +91,16 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _resourceAdded: function(event)
     {
-        var resource = /** @type {WebInspector.Resource} */ (event.data);
+        var resource = /** @type {!WebInspector.Resource} */ (event.data);
         this._addFile(resource.url, resource);
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _mainFrameNavigated: function(event)
     {
@@ -109,7 +109,7 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
 
     /**
      * @param {string} url
-     * @param {WebInspector.ContentProvider} contentProvider
+     * @param {!WebInspector.ContentProvider} contentProvider
      * @param {boolean=} isContentScript
      */
     _addFile: function(url, contentProvider, isContentScript)

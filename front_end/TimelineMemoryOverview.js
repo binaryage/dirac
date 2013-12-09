@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.TimelineOverviewBase}
- * @param {WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.TimelineMemoryOverview = function(model)
 {

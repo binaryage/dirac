@@ -133,8 +133,9 @@ WebInspector.ProfileDataGridNode.prototype = {
     },
 
     /**
-     * @param {function(Object, Object)} comparator
+     * @param {function(!T, !T)} comparator
      * @param {boolean} force
+     * @template T
      */
     sort: function(comparator, force)
     {
@@ -310,8 +311,8 @@ WebInspector.ProfileDataGridNode.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.CPUProfileView} profileView
- * @param {ProfilerAgent.CPUProfileNode} rootProfileNode
+ * @param {!WebInspector.CPUProfileView} profileView
+ * @param {!ProfilerAgent.CPUProfileNode} rootProfileNode
  */
 WebInspector.ProfileDataGridTree = function(profileView, rootProfileNode)
 {
@@ -384,7 +385,7 @@ WebInspector.ProfileDataGridTree.propertyComparators = [{}, {}];
 /**
  * @param {string} property
  * @param {boolean} isAscending
- * @return {function(Object, Object)}
+ * @return {function(!Object.<string, *>, !Object.<string, *>)}
  */
 WebInspector.ProfileDataGridTree.propertyComparator = function(property, isAscending)
 {

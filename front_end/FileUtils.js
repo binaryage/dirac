@@ -41,12 +41,12 @@ WebInspector.OutputStreamDelegate.prototype = {
     onTransferFinished: function() { },
 
     /**
-     * @param {WebInspector.ChunkedReader} reader
+     * @param {!WebInspector.ChunkedReader} reader
      */
     onChunkTransferred: function(reader) { },
 
     /**
-     * @param {WebInspector.ChunkedReader} reader
+     * @param {!WebInspector.ChunkedReader} reader
      */
     onError: function(reader, event) { },
 }
@@ -61,7 +61,7 @@ WebInspector.OutputStream = function()
 WebInspector.OutputStream.prototype = {
     /**
      * @param {string} data
-     * @param {function(WebInspector.OutputStream)=} callback
+     * @param {function(!WebInspector.OutputStream)=} callback
      */
     write: function(data, callback) { },
 
@@ -156,7 +156,7 @@ WebInspector.ChunkedFileReader.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onChunkLoaded: function(event)
     {
@@ -258,7 +258,7 @@ WebInspector.ChunkedXHRReader.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onProgress: function(event)
     {
@@ -280,7 +280,7 @@ WebInspector.ChunkedXHRReader.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onLoad: function(event)
     {
@@ -296,7 +296,7 @@ WebInspector.ChunkedXHRReader.prototype = {
 
 /**
  * @param {function(!File)} callback
- * @return {Node}
+ * @return {!Node}
  */
 WebInspector.createFileSelectorElement = function(callback) {
     var fileSelectorElement = document.createElement("input");
@@ -376,7 +376,7 @@ WebInspector.FileOutputStream.prototype = {
 
     /**
      * @param {string} data
-     * @param {function(WebInspector.OutputStream)=} callback
+     * @param {function(!WebInspector.OutputStream)=} callback
      */
     write: function(data, callback)
     {
@@ -394,7 +394,7 @@ WebInspector.FileOutputStream.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onAppendDone: function(event)
     {

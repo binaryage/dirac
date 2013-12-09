@@ -30,8 +30,8 @@
 /**
  * @constructor
  * @extends {WebInspector.SidebarPane}
- * @param {WebInspector.ComputedStyleSidebarPane} computedStylePane
- * @param {function(DOMAgent.NodeId, string, boolean)} setPseudoClassCallback
+ * @param {!WebInspector.ComputedStyleSidebarPane} computedStylePane
+ * @param {function(!DOMAgent.NodeId, string, boolean)} setPseudoClassCallback
  */
 WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallback)
 {
@@ -133,7 +133,7 @@ WebInspector.StylesSidebarPane.PseudoIdNames = [
 WebInspector.StylesSidebarPane._colorRegex = /((?:rgb|hsl)a?\([^)]+\)|#[0-9a-fA-F]{6}|#[0-9a-fA-F]{3}|\b\w+\b(?!-))/g;
 
 /**
- * @param {WebInspector.CSSProperty} property
+ * @param {!WebInspector.CSSProperty} property
  */
 WebInspector.StylesSidebarPane.createExclamationMark = function(property)
 {
@@ -144,7 +144,7 @@ WebInspector.StylesSidebarPane.createExclamationMark = function(property)
 }
 
 /**
- * @param {WebInspector.Color} color
+ * @param {!WebInspector.Color} color
  */
 WebInspector.StylesSidebarPane._colorFormat = function(color)
 {
@@ -166,7 +166,7 @@ WebInspector.StylesSidebarPane._colorFormat = function(color)
 }
 
 /**
- * @param {WebInspector.CSSProperty} property
+ * @param {!WebInspector.CSSProperty} property
  */
 WebInspector.StylesSidebarPane._ignoreErrorsForProperty = function(property) {
     function hasUnknownVendorPrefix(string)
@@ -203,14 +203,14 @@ WebInspector.StylesSidebarPane._ignoreErrorsForProperty = function(property) {
 
 WebInspector.StylesSidebarPane.prototype = {
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _contextMenuEventFired: function(event)
     {
         // We start editing upon click -> default navigation to resources panel is not available
         // Hence we add a soft context menu for hrefs.
         var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendApplicableItems(event.target);
+        contextMenu.appendApplicableItems(/** @type {!Node} */ (event.target));
         contextMenu.show();
     },
 
@@ -238,7 +238,7 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.DOMNode=} node
+     * @param {?WebInspector.DOMNode} node
      * @param {boolean=} forceUpdate
      */
     update: function(node, forceUpdate)
@@ -274,7 +274,7 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.StylePropertiesSection=} editedSection
+     * @param {!WebInspector.StylePropertiesSection=} editedSection
      * @param {boolean=} forceFetchComputedStyle
      * @param {function()=} userCallback
      */
@@ -671,7 +671,7 @@ WebInspector.StylesSidebarPane.prototype = {
     /**
      * @param {!Array.<!Object>} styleRules
      * @param {!Object.<string, boolean>} usedProperties
-     * @param {Element} anchorElement
+     * @param {?Element} anchorElement
      */
     _rebuildSectionsForStyleRules: function(styleRules, usedProperties, anchorElement)
     {
@@ -860,7 +860,7 @@ WebInspector.StylesSidebarPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _showUserAgentStylesSettingChanged: function(event)
     {
@@ -2206,7 +2206,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
-     * @return {WebInspector.StylePropertiesSection}
+     * @return {?WebInspector.StylePropertiesSection}
      */
     section: function()
     {
@@ -2224,6 +2224,9 @@ WebInspector.StylePropertyTreeElement.prototype = {
         }
     },
 
+    /**
+     * @param {?Event} event
+     */
     toggleEnabled: function(event)
     {
         var disabled = !event.target.checked;
@@ -2344,7 +2347,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
-     * @param {Element} element
+     * @param {!Element} element
      */
     _navigateToSource: function(element)
     {
@@ -2358,7 +2361,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
-     * @param {Element} element
+     * @param {!Element} element
      */
     _isNameElement: function(element)
     {
@@ -2366,7 +2369,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
-     * @param {Element} element
+     * @param {!Element} element
      */
     _isValueElement: function(element)
     {
@@ -2374,7 +2377,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
-     * @param {Element=} selectElement
+     * @param {!Element=} selectElement
      */
     startEditing: function(selectElement)
     {
@@ -2632,7 +2635,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
     /**
      * @param {string} userInput
-     * @param {Object} context
+     * @param {!Object} context
      * @param {string} moveDirection
      */
     editingCommitted: function(userInput, context, moveDirection)
@@ -2910,7 +2913,7 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _handleNameOrValueUpDown: function(event)
     {
@@ -2940,8 +2943,8 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
     },
 
     /**
-     * @param {Element} proxyElement
-     * @param {Range} wordRange
+     * @param {!Element} proxyElement
+     * @param {!Range} wordRange
      * @param {boolean} force
      * @param {function(!Array.<string>, number=)} completionsReadyCallback
      */

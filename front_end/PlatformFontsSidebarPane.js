@@ -55,7 +55,7 @@ WebInspector.PlatformFontsSidebarPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.DOMNode=} node
+     * @param {?WebInspector.DOMNode} node
      */
     update: function(node)
     {
@@ -79,8 +79,9 @@ WebInspector.PlatformFontsSidebarPane.prototype = {
     },
 
     /**
-     * @param {String} cssFamilyName
-     * @param {WebInspector.DOMNode} node
+     * @param {!WebInspector.DOMNode} node
+     * @param {?String} cssFamilyName
+     * @param {?Array.<!CSSAgent.PlatformFontUsage>} platformFonts
      */
     _refreshUI: function(node, cssFamilyName, platformFonts)
     {

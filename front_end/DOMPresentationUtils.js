@@ -114,8 +114,8 @@ WebInspector.DOMPresentationUtils.linkifyNodeById = function(nodeId)
 /**
  * @param {string} imageURL
  * @param {boolean} showDimensions
- * @param {function(Element=)} userCallback
- * @param {Object=} precomputedDimensions
+ * @param {function(!Element=)} userCallback
+ * @param {!Object=} precomputedDimensions
  */
 WebInspector.DOMPresentationUtils.buildImagePreviewContents = function(imageURL, showDimensions, userCallback, precomputedDimensions)
 {
@@ -204,7 +204,7 @@ WebInspector.DOMPresentationUtils.cssPath = function(node, optimized)
 /**
  * @param {!WebInspector.DOMNode} node
  * @param {boolean=} optimized
- * @return {WebInspector.DOMNodePathStep}
+ * @return {?WebInspector.DOMNodePathStep}
  */
 WebInspector.DOMPresentationUtils._cssPathValue = function(node, optimized)
 {
@@ -228,7 +228,7 @@ WebInspector.DOMPresentationUtils._cssPathValue = function(node, optimized)
         return new WebInspector.DOMNodePathStep(nodeName, true);
 
     /**
-     * @param {WebInspector.DOMNode} node
+     * @param {!WebInspector.DOMNode} node
      * @return {!Array.<string>}
      */
     function prefixedElementClassNames(node)
@@ -386,7 +386,7 @@ WebInspector.DOMPresentationUtils.xPath = function(node, optimized)
 /**
  * @param {!WebInspector.DOMNode} node
  * @param {boolean=} optimized
- * @return {WebInspector.DOMNodePathStep}
+ * @return {?WebInspector.DOMNodePathStep}
  */
 WebInspector.DOMPresentationUtils._xPathValue = function(node, optimized)
 {

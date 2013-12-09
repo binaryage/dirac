@@ -178,6 +178,9 @@ WebInspector.HeapSnapshotWorkerProxy = function(eventHandler)
 }
 
 WebInspector.HeapSnapshotWorkerProxy.prototype = {
+    /**
+     * @return {!WebInspector.HeapSnapshotLoaderProxy}
+     */
     createLoader: function(snapshotConstructorName, proxyConstructor)
     {
         var objectId = this._nextObjectId++;
@@ -365,7 +368,7 @@ WebInspector.HeapSnapshotLoaderProxy = function(worker, objectId, snapshotConstr
 
 WebInspector.HeapSnapshotLoaderProxy.prototype = {
     /**
-     * @param {function(WebInspector.HeapSnapshotProxy)} callback
+     * @param {function(!WebInspector.HeapSnapshotProxy)} callback
      */
     addConsumer: function(callback)
     {
@@ -374,7 +377,7 @@ WebInspector.HeapSnapshotLoaderProxy.prototype = {
 
     /**
      * @param {string} chunk
-     * @param {function(WebInspector.OutputStream)=} callback
+     * @param {function(!WebInspector.OutputStream)=} callback
      */
     write: function(chunk, callback)
     {

@@ -28,7 +28,7 @@
 
 /**
  * @constructor
- * @param {Element} listNode
+ * @param {!Element} listNode
  * @param {boolean=} nonFocusable
  */
 function TreeOutline(listNode, nonFocusable)
@@ -45,7 +45,7 @@ function TreeOutline(listNode, nonFocusable)
     this.expanded = true;
     this.selected = false;
     this.treeOutline = this;
-    /** @type {function(TreeElement,TreeElement):number|null} */
+    /** @type {?function(!TreeElement, !TreeElement):number} */
     this.comparator = null;
 
     this.setFocusable(!nonFocusable);
@@ -66,7 +66,7 @@ TreeOutline.prototype.setFocusable = function(focusable)
 }
 
 /**
- * @param {TreeElement} child
+ * @param {!TreeElement} child
  */
 TreeOutline.prototype.appendChild = function(child)
 {
@@ -79,8 +79,8 @@ TreeOutline.prototype.appendChild = function(child)
 }
 
 /**
- * @param {TreeElement} child
- * @param {TreeElement} beforeChild
+ * @param {!TreeElement} child
+ * @param {!TreeElement} beforeChild
  */
 TreeOutline.prototype.insertBeforeChild = function(child, beforeChild)
 {
@@ -98,7 +98,7 @@ TreeOutline.prototype.insertBeforeChild = function(child, beforeChild)
 }
 
 /**
- * @param {TreeElement} child
+ * @param {!TreeElement} child
  * @param {number} index
  */
 TreeOutline.prototype.insertChild = function(child, index)
@@ -188,7 +188,7 @@ TreeOutline.prototype.removeChildAtIndex = function(childIndex)
 }
 
 /**
- * @param {TreeElement} child
+ * @param {!TreeElement} child
  */
 TreeOutline.prototype.removeChild = function(child)
 {
@@ -224,7 +224,7 @@ TreeOutline.prototype.removeChildren = function()
 }
 
 /**
- * @param {TreeElement} element
+ * @param {!TreeElement} element
  */
 TreeOutline.prototype._rememberTreeElement = function(element)
 {
@@ -241,7 +241,7 @@ TreeOutline.prototype._rememberTreeElement = function(element)
 }
 
 /**
- * @param {TreeElement} element
+ * @param {!TreeElement} element
  */
 TreeOutline.prototype._forgetTreeElement = function(element)
 {
@@ -254,7 +254,7 @@ TreeOutline.prototype._forgetTreeElement = function(element)
 }
 
 /**
- * @param {TreeElement} parentElement
+ * @param {!TreeElement} parentElement
  */
 TreeOutline.prototype._forgetChildrenRecursive = function(parentElement)
 {
@@ -266,8 +266,8 @@ TreeOutline.prototype._forgetChildrenRecursive = function(parentElement)
 }
 
 /**
- * @param {Object} representedObject
- * @return {TreeElement}
+ * @param {?Object} representedObject
+ * @return {?TreeElement}
  */
 TreeOutline.prototype.getCachedTreeElement = function(representedObject)
 {
@@ -281,8 +281,8 @@ TreeOutline.prototype.getCachedTreeElement = function(representedObject)
 }
 
 /**
- * @param {Object} representedObject
- * @return {TreeElement}
+ * @param {?Object} representedObject
+ * @return {?TreeElement}
  */
 TreeOutline.prototype.findTreeElement = function(representedObject, isAncestor, getParent)
 {
@@ -317,7 +317,7 @@ TreeOutline.prototype.findTreeElement = function(representedObject, isAncestor, 
 /**
  * @param {number} x
  * @param {number} y
- * @return {TreeElement}
+ * @return {?TreeElement}
  */
 TreeOutline.prototype.treeElementFromPoint = function(x, y)
 {
@@ -898,10 +898,10 @@ TreeElement.prototype.onselect = function(selectedByUser) { return false; }
 
 /**
  * @param {boolean} skipUnrevealed
- * @param {(TreeOutline|TreeElement)=} stayWithin
+ * @param {(!TreeOutline|!TreeElement|null)=} stayWithin
  * @param {boolean=} dontPopulate
- * @param {Object=} info
- * @return {TreeElement}
+ * @param {!Object=} info
+ * @return {?TreeElement}
  */
 TreeElement.prototype.traverseNextTreeElement = function(skipUnrevealed, stayWithin, dontPopulate, info)
 {
@@ -941,7 +941,7 @@ TreeElement.prototype.traverseNextTreeElement = function(skipUnrevealed, stayWit
 /**
  * @param {boolean} skipUnrevealed
  * @param {boolean=} dontPopulate
- * @return {TreeElement}
+ * @return {?TreeElement}
  */
 TreeElement.prototype.traversePreviousTreeElement = function(skipUnrevealed, dontPopulate)
 {

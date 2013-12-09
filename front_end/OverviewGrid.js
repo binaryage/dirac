@@ -117,8 +117,8 @@ WebInspector.OverviewGrid.prototype = {
 
     /**
      * @param {string} eventType
-     * @param {function(WebInspector.Event)} listener
-     * @param {Object=} thisObject
+     * @param {function(!WebInspector.Event)} listener
+     * @param {!Object=} thisObject
      */
     addEventListener: function(eventType, listener, thisObject)
     {
@@ -153,8 +153,8 @@ WebInspector.OverviewGrid.ResizerOffset = 3.5; // half pixel because offset valu
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {Element} parentElement
- * @param {Element} dividersLabelBarElement
+ * @param {!Element} parentElement
+ * @param {!Element} dividersLabelBarElement
  */
 WebInspector.OverviewGrid.Window = function(parentElement, dividersLabelBarElement)
 {
@@ -216,7 +216,7 @@ WebInspector.OverviewGrid.Window.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _resizerElementStartDragging: function(event)
     {
@@ -228,7 +228,7 @@ WebInspector.OverviewGrid.Window.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _leftResizeElementDragging: function(event)
     {
@@ -237,7 +237,7 @@ WebInspector.OverviewGrid.Window.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _rightResizeElementDragging: function(event)
     {
@@ -246,7 +246,7 @@ WebInspector.OverviewGrid.Window.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      * @return {boolean}
      */
     _startWindowSelectorDragging: function(event)
@@ -260,7 +260,7 @@ WebInspector.OverviewGrid.Window.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _windowSelectorDragging: function(event)
     {
@@ -269,7 +269,7 @@ WebInspector.OverviewGrid.Window.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _endWindowSelectorDragging: function(event)
     {
@@ -289,7 +289,7 @@ WebInspector.OverviewGrid.Window.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      * @return {boolean}
      */
     _startWindowDragging: function(event)
@@ -301,7 +301,7 @@ WebInspector.OverviewGrid.Window.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _windowDragging: function(event)
     {
@@ -392,7 +392,7 @@ WebInspector.OverviewGrid.Window.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _onMouseWheel: function(event)
     {

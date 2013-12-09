@@ -35,7 +35,7 @@
  * @param {string|undefined} subtype
  * @param {*} value
  * @param {string=} description
- * @param {RuntimeAgent.ObjectPreview=} preview
+ * @param {!RuntimeAgent.ObjectPreview=} preview
  */
 WebInspector.RemoteObject = function(objectId, type, subtype, value, description, preview)
 {
@@ -58,7 +58,7 @@ WebInspector.RemoteObject = function(objectId, type, subtype, value, description
 
 /**
  * @param {number|string|boolean} value
- * @return {WebInspector.RemoteObject}
+ * @return {!WebInspector.RemoteObject}
  */
 WebInspector.RemoteObject.fromPrimitiveValue = function(value)
 {
@@ -67,7 +67,7 @@ WebInspector.RemoteObject.fromPrimitiveValue = function(value)
 
 /**
  * @param {*} value
- * @return {WebInspector.RemoteObject}
+ * @return {!WebInspector.RemoteObject}
  */
 WebInspector.RemoteObject.fromLocalObject = function(value)
 {
@@ -75,7 +75,7 @@ WebInspector.RemoteObject.fromLocalObject = function(value)
 }
 
 /**
- * @param {WebInspector.DOMNode} node
+ * @param {!WebInspector.DOMNode} node
  * @param {string} objectGroup
  * @param {function(?WebInspector.RemoteObject)} callback
  */
@@ -83,7 +83,7 @@ WebInspector.RemoteObject.resolveNode = function(node, objectGroup, callback)
 {
     /**
      * @param {?Protocol.Error} error
-     * @param {RuntimeAgent.RemoteObject} object
+     * @param {!RuntimeAgent.RemoteObject} object
      */
     function mycallback(error, object)
     {
@@ -110,7 +110,7 @@ WebInspector.RemoteObject.fromPayload = function(payload)
 }
 
 /**
- * @param {WebInspector.RemoteObject} remoteObject
+ * @param {!WebInspector.RemoteObject} remoteObject
  * @return {string}
  */
 WebInspector.RemoteObject.type = function(remoteObject)
@@ -126,7 +126,7 @@ WebInspector.RemoteObject.type = function(remoteObject)
 }
 
 WebInspector.RemoteObject.prototype = {
-    /** @return {RuntimeAgent.RemoteObjectId} */
+    /** @return {!RuntimeAgent.RemoteObjectId} */
     get objectId()
     {
         return this._objectId;
@@ -156,7 +156,7 @@ WebInspector.RemoteObject.prototype = {
         return this._hasChildren;
     },
 
-    /** @return {RuntimeAgent.ObjectPreview|undefined} */
+    /** @return {!RuntimeAgent.ObjectPreview|undefined} */
     get preview()
     {
         return this._preview;
@@ -257,7 +257,7 @@ WebInspector.RemoteObject.prototype = {
 
         /**
          * @param {?Protocol.Error} error
-         * @param {RuntimeAgent.RemoteObject} result
+         * @param {!RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
          */
         function evaluatedCallback(error, result, wasThrown)
@@ -275,7 +275,7 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
-     * @param {RuntimeAgent.RemoteObject} result
+     * @param {!RuntimeAgent.RemoteObject} result
      * @param {string} name
      * @param {function(string=)} callback
      */
@@ -296,7 +296,7 @@ WebInspector.RemoteObject.prototype = {
 
         /**
          * @param {?Protocol.Error} error
-         * @param {RuntimeAgent.RemoteObject} result
+         * @param {!RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
          */
         function propertySetCallback(error, result, wasThrown)
@@ -339,7 +339,7 @@ WebInspector.RemoteObject.prototype = {
     {
         /**
          * @param {?Protocol.Error} error
-         * @param {RuntimeAgent.RemoteObject} result
+         * @param {!RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
          */
         function mycallback(error, result, wasThrown)
@@ -364,7 +364,7 @@ WebInspector.RemoteObject.prototype = {
     {
         /**
          * @param {?Protocol.Error} error
-         * @param {RuntimeAgent.RemoteObject} result
+         * @param {!RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
          */
         function mycallback(error, result, wasThrown)
@@ -399,7 +399,7 @@ WebInspector.RemoteObject.prototype = {
 
 
 /**
- * @param {WebInspector.RemoteObject} object
+ * @param {!WebInspector.RemoteObject} object
  * @param {boolean} flattenProtoChain
  * @param {function(?Array.<!WebInspector.RemoteObjectProperty>, ?Array.<!WebInspector.RemoteObjectProperty>)} callback
  */
@@ -412,7 +412,7 @@ WebInspector.RemoteObject.loadFromObject = function(object, flattenProtoChain, c
 };
 
 /**
- * @param {WebInspector.RemoteObject} object
+ * @param {!WebInspector.RemoteObject} object
  * @param {function(?Array.<!WebInspector.RemoteObjectProperty>, ?Array.<!WebInspector.RemoteObjectProperty>)} callback
  */
 WebInspector.RemoteObject.loadFromObjectPerProto = function(object, callback)
@@ -470,12 +470,12 @@ WebInspector.RemoteObject.loadFromObjectPerProto = function(object, callback)
  * @constructor
  * @extends {WebInspector.RemoteObject}
  * @param {string|undefined} objectId
- * @param {WebInspector.ScopeRef} scopeRef
+ * @param {!WebInspector.ScopeRef} scopeRef
  * @param {string} type
  * @param {string|undefined} subtype
  * @param {*} value
  * @param {string=} description
- * @param {RuntimeAgent.ObjectPreview=} preview
+ * @param {!RuntimeAgent.ObjectPreview=} preview
  */
 WebInspector.ScopeRemoteObject = function(objectId, scopeRef, type, subtype, value, description, preview)
 {
@@ -485,9 +485,9 @@ WebInspector.ScopeRemoteObject = function(objectId, scopeRef, type, subtype, val
 };
 
 /**
- * @param {RuntimeAgent.RemoteObject} payload
- * @param {WebInspector.ScopeRef=} scopeRef
- * @return {WebInspector.RemoteObject}
+ * @param {!RuntimeAgent.RemoteObject} payload
+ * @param {!WebInspector.ScopeRef=} scopeRef
+ * @return {!WebInspector.RemoteObject}
  */
 WebInspector.ScopeRemoteObject.fromPayload = function(payload, scopeRef)
 {
@@ -534,7 +534,7 @@ WebInspector.ScopeRemoteObject.prototype = {
 
     /**
      * @override
-     * @param {RuntimeAgent.RemoteObject} result
+     * @param {!RuntimeAgent.RemoteObject} result
      * @param {string} name
      * @param {function(string=)} callback
      */
@@ -596,7 +596,7 @@ WebInspector.ScopeRef = function(number, callFrameId, functionId)
  * @constructor
  * @param {string} name
  * @param {?WebInspector.RemoteObject} value
- * @param {RuntimeAgent.PropertyDescriptor=} descriptor
+ * @param {!RuntimeAgent.PropertyDescriptor=} descriptor
  */
 WebInspector.RemoteObjectProperty = function(name, value, descriptor)
 {
@@ -631,7 +631,7 @@ WebInspector.RemoteObjectProperty.prototype = {
 /**
  * @param {string} name
  * @param {string} value
- * @return {WebInspector.RemoteObjectProperty}
+ * @return {!WebInspector.RemoteObjectProperty}
  */
 WebInspector.RemoteObjectProperty.fromPrimitiveValue = function(name, value)
 {
@@ -640,8 +640,8 @@ WebInspector.RemoteObjectProperty.fromPrimitiveValue = function(name, value)
 
 /**
  * @param {string} name
- * @param {WebInspector.RemoteObject} value
- * @return {WebInspector.RemoteObjectProperty}
+ * @param {!WebInspector.RemoteObject} value
+ * @return {!WebInspector.RemoteObjectProperty}
  */
 WebInspector.RemoteObjectProperty.fromScopeValue = function(name, value)
 {
@@ -828,7 +828,7 @@ WebInspector.LocalJSONObject.prototype = {
 
     /**
      * @param {function(this:Object, ...)} functionDeclaration
-     * @param {Array.<RuntimeAgent.CallArgument>=} args
+     * @param {!Array.<!RuntimeAgent.CallArgument>=} args
      * @param {function(?WebInspector.RemoteObject, boolean=)=} callback
      */
     callFunction: function(functionDeclaration, args, callback)
@@ -851,7 +851,7 @@ WebInspector.LocalJSONObject.prototype = {
 
     /**
      * @param {function(this:Object)} functionDeclaration
-     * @param {Array.<RuntimeAgent.CallArgument>|undefined} args
+     * @param {!Array.<!RuntimeAgent.CallArgument>|undefined} args
      * @param {function(*)} callback
      */
     callFunctionJSON: function(functionDeclaration, args, callback)

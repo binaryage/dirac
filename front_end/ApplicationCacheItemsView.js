@@ -152,7 +152,7 @@ WebInspector.ApplicationCacheItemsView.prototype = {
     },
 
     /**
-     * @param {Object} applicationCache
+     * @param {?ApplicationCacheAgent.ApplicationCache} applicationCache
      */
     _updateCallback: function(applicationCache)
     {

@@ -49,8 +49,8 @@ WebInspector.TextRange.createFromLocation = function(line, column)
 }
 
 /**
- * @param {Object} serializedTextRange
- * @return {WebInspector.TextRange}
+ * @param {!Object} serializedTextRange
+ * @return {!WebInspector.TextRange}
  */
 WebInspector.TextRange.fromObject = function(serializedTextRange)
 {
@@ -67,7 +67,7 @@ WebInspector.TextRange.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} range
+     * @param {!WebInspector.TextRange} range
      * @return {boolean}
      */
     immediatelyPrecedes: function(range)
@@ -78,7 +78,7 @@ WebInspector.TextRange.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} range
+     * @param {!WebInspector.TextRange} range
      * @return {boolean}
      */
     immediatelyFollows: function(range)
@@ -102,7 +102,7 @@ WebInspector.TextRange.prototype = {
     },
 
     /**
-     * @return {WebInspector.TextRange}
+     * @return {!WebInspector.TextRange}
      */
     normalize: function()
     {
@@ -113,7 +113,7 @@ WebInspector.TextRange.prototype = {
     },
 
     /**
-     * @return {WebInspector.TextRange}
+     * @return {!WebInspector.TextRange}
      */
     clone: function()
     {
@@ -121,7 +121,7 @@ WebInspector.TextRange.prototype = {
     },
 
     /**
-     * @return {Object}
+     * @return {!Object}
      */
     serializeToObject: function()
     {
@@ -134,7 +134,7 @@ WebInspector.TextRange.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} other
+     * @param {!WebInspector.TextRange} other
      * @return {number}
      */
     compareTo: function(other)
@@ -152,7 +152,7 @@ WebInspector.TextRange.prototype = {
 
     /**
      * @param {number} lineOffset
-     * @return {WebInspector.TextRange}
+     * @return {!WebInspector.TextRange}
      */
     shift: function(lineOffset)
     {

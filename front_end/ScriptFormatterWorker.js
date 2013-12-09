@@ -45,7 +45,7 @@ var onmessage = function(event) {
 };
 
 /**
- * @param {Object} params
+ * @param {!Object} params
  */
 FormatterWorker.format = function(params)
 {
@@ -81,7 +81,7 @@ FormatterWorker._chunkCount = function(totalLength, chunkSize)
 }
 
 /**
- * @param {Object} params
+ * @param {!Object} params
  */
 FormatterWorker.outline = function(params)
 {
@@ -166,7 +166,7 @@ FormatterWorker.outline = function(params)
 
 /**
  * @param {string} content
- * @param {{original: !Array.<number>, formatted: !Array.<number>}} mapping
+ * @param {!{original: !Array.<number>, formatted: !Array.<number>}} mapping
  * @param {number} offset
  * @param {number} formattedOffset
  * @param {string} indentString
@@ -189,7 +189,7 @@ FormatterWorker._formatScript = function(content, mapping, offset, formattedOffs
 
 /**
  * @param {string} content
- * @param {{original: !Array.<number>, formatted: !Array.<number>}} mapping
+ * @param {!{original: !Array.<number>, formatted: !Array.<number>}} mapping
  * @param {number} offset
  * @param {number} formattedOffset
  * @param {string} indentString
@@ -333,7 +333,7 @@ function require()
 }
 
 /**
- * @type {{tokenizer}}
+ * @type {!{tokenizer}}
  */
 var exports = { tokenizer: null };
 importScripts("UglifyJS/parse-js.js");

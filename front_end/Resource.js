@@ -33,9 +33,9 @@
  * @param {?WebInspector.NetworkRequest} request
  * @param {string} url
  * @param {string} documentURL
- * @param {PageAgent.FrameId} frameId
- * @param {NetworkAgent.LoaderId} loaderId
- * @param {WebInspector.ResourceType} type
+ * @param {!PageAgent.FrameId} frameId
+ * @param {!NetworkAgent.LoaderId} loaderId
+ * @param {!WebInspector.ResourceType} type
  * @param {string} mimeType
  * @param {boolean=} isHidden
  */
@@ -99,7 +99,7 @@ WebInspector.Resource.prototype = {
     },
 
     /**
-     * @return {PageAgent.FrameId}
+     * @return {!PageAgent.FrameId}
      */
     get frameId()
     {
@@ -107,7 +107,7 @@ WebInspector.Resource.prototype = {
     },
 
     /**
-     * @return {NetworkAgent.LoaderId}
+     * @return {!NetworkAgent.LoaderId}
      */
     get loaderId()
     {
@@ -123,7 +123,7 @@ WebInspector.Resource.prototype = {
     },
 
     /**
-     * @return {WebInspector.ResourceType}
+     * @return {!WebInspector.ResourceType}
      */
     get type()
     {
@@ -147,7 +147,7 @@ WebInspector.Resource.prototype = {
     },
 
     /**
-     * @param {WebInspector.ConsoleMessage} msg
+     * @param {!WebInspector.ConsoleMessage} msg
      */
     addMessage: function(msg)
     {
@@ -219,7 +219,7 @@ WebInspector.Resource.prototype = {
     },
 
     /**
-     * @return {WebInspector.ResourceType}
+     * @return {!WebInspector.ResourceType}
      */
     contentType: function()
     {
@@ -289,7 +289,7 @@ WebInspector.Resource.prototype = {
     },
 
     /**
-     * @param {Element} image
+     * @param {!Element} image
      */
     populateImageSource: function(image)
     {

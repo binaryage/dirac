@@ -30,10 +30,10 @@
  */
 
 /**
- * @param {Element} element
- * @param {?function(MouseEvent): boolean} elementDragStart
- * @param {function(MouseEvent)} elementDrag
- * @param {?function(MouseEvent)} elementDragEnd
+ * @param {!Element} element
+ * @param {?function(!MouseEvent): boolean} elementDragStart
+ * @param {function(!MouseEvent)} elementDrag
+ * @param {?function(!MouseEvent)} elementDragEnd
  * @param {string} cursor
  */
 WebInspector.installDragHandle = function(element, elementDragStart, elementDrag, elementDragEnd, cursor)
@@ -42,11 +42,11 @@ WebInspector.installDragHandle = function(element, elementDragStart, elementDrag
 }
 
 /**
- * @param {?function(MouseEvent):boolean} elementDragStart
- * @param {function(MouseEvent)} elementDrag
- * @param {?function(MouseEvent)} elementDragEnd
+ * @param {?function(!MouseEvent):boolean} elementDragStart
+ * @param {function(!MouseEvent)} elementDrag
+ * @param {?function(!MouseEvent)} elementDragEnd
  * @param {string} cursor
- * @param {Event} event
+ * @param {?Event} event
  */
 WebInspector._elementDragStart = function(elementDragStart, elementDrag, elementDragEnd, cursor, event)
 {
@@ -57,7 +57,7 @@ WebInspector._elementDragStart = function(elementDragStart, elementDrag, element
     if (WebInspector._elementDraggingEventListener)
         return;
 
-    if (elementDragStart && !elementDragStart(/** @type {MouseEvent} */ (event)))
+    if (elementDragStart && !elementDragStart(/** @type {!MouseEvent} */ (event)))
         return;
 
     if (WebInspector._elementDraggingGlassPane) {
@@ -95,7 +95,7 @@ WebInspector._unregisterMouseOutWhileDragging = function()
 }
 
 /**
- * @param {Event} event
+ * @param {!Event} event
  */
 WebInspector._elementDragMove = function(event)
 {
@@ -104,7 +104,7 @@ WebInspector._elementDragMove = function(event)
 }
 
 /**
- * @param {Event} event
+ * @param {!Event} event
  */
 WebInspector._cancelDragEvents = function(event)
 {
@@ -124,17 +124,17 @@ WebInspector._cancelDragEvents = function(event)
 }
 
 /**
- * @param {Event} event
+ * @param {!Event} event
  */
 WebInspector._elementDragEnd = function(event)
 {
     var elementDragEnd = WebInspector._elementEndDraggingEventListener;
 
-    WebInspector._cancelDragEvents(/** @type {MouseEvent} */ (event));
+    WebInspector._cancelDragEvents(/** @type {!MouseEvent} */ (event));
 
     event.preventDefault();
     if (elementDragEnd)
-        elementDragEnd(/** @type {MouseEvent} */ (event));
+        elementDragEnd(/** @type {!MouseEvent} */ (event));
 }
 
 /**
@@ -286,8 +286,8 @@ WebInspector.markBeingEdited = function(element, value)
 
 /**
  * @constructor
- * @param {function(Element,string,string,*,string)} commitHandler
- * @param {function(Element,*)} cancelHandler
+ * @param {function(!Element,string,string,*,string)} commitHandler
+ * @param {function(!Element,*)} cancelHandler
  * @param {*=} context
  */
 WebInspector.EditingConfig = function(commitHandler, cancelHandler, context)
@@ -298,7 +298,7 @@ WebInspector.EditingConfig = function(commitHandler, cancelHandler, context)
 
     /**
      * Handles the "paste" event, return values are the same as those for customFinishHandler
-     * @type {function(Element)|undefined}
+     * @type {function(!Element)|undefined}
      */
     this.pasteHandler;
 
@@ -310,7 +310,7 @@ WebInspector.EditingConfig = function(commitHandler, cancelHandler, context)
 
     /**
      * Custom finish handler for the editing session (invoked on keydown)
-     * @type {function(Element,*)|undefined}
+     * @type {function(!Element,*)|undefined}
      */
     this.customFinishHandler;
 }
@@ -323,7 +323,7 @@ WebInspector.EditingConfig.prototype = {
 
     /**
      * @param {string} initialValue
-     * @param {Object} mode
+     * @param {!Object} mode
      * @param {string} theme
      * @param {boolean=} lineWrapping
      * @param {boolean=} smartIndent
@@ -350,7 +350,7 @@ WebInspector.StyleValueDelimiters = " \xA0\t\n\"':;,/()";
 
 
 /**
-  * @param {Event} event
+  * @param {!Event} event
   * @return {?string}
   */
 WebInspector._valueModificationDirection = function(event)
@@ -372,7 +372,7 @@ WebInspector._valueModificationDirection = function(event)
 
 /**
  * @param {string} hexString
- * @param {Event} event
+ * @param {!Event} event
  */
 WebInspector._modifiedHexValue = function(hexString, event)
 {
@@ -411,7 +411,7 @@ WebInspector._modifiedHexValue = function(hexString, event)
 
 /**
  * @param {number} number
- * @param {Event} event
+ * @param {!Event} event
  */
 WebInspector._modifiedFloatNumber = function(number, event)
 {
@@ -444,11 +444,12 @@ WebInspector._modifiedFloatNumber = function(number, event)
 }
 
 /**
-  * @param {Event} event
-  * @param {Element} element
+  * @param {?Event} event
+  * @param {!Element} element
   * @param {function(string,string)=} finishHandler
   * @param {function(string)=} suggestionHandler
   * @param {function(number):number=} customNumberHandler
+  * @return {boolean}
  */
 WebInspector.handleElementValueModifications = function(event, element, finishHandler, suggestionHandler, customNumberHandler)
 {
@@ -529,9 +530,9 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
 }
 
 /** 
- * @param {Element} element
- * @param {WebInspector.EditingConfig=} config
- * @return {?{cancel: function(), commit: function(), codeMirror: CodeMirror, setWidth: function(number)}}
+ * @param {!Element} element
+ * @param {!WebInspector.EditingConfig=} config
+ * @return {?{cancel: function(), commit: function(), codeMirror: !CodeMirror, setWidth: function(number)}}
  */
 WebInspector.startEditing = function(element, config)
 {
@@ -551,7 +552,7 @@ WebInspector.startEditing = function(element, config)
     var cssLoadView;
 
     /**
-     * @param {Event} e
+     * @param {?Event} e
      */
     function consumeCopy(e)
     {
@@ -596,7 +597,7 @@ WebInspector.startEditing = function(element, config)
     }
 
     /**
-     * @param {Event=} e
+     * @param {?Event=} e
      */
     function blurEventListener(e) {
         if (!isMultiline || !e || !e.relatedTarget || !e.relatedTarget.isSelfOrDescendant(element))
@@ -999,7 +1000,7 @@ WebInspector.resetToolbarColors = function()
 }
 
 /**
- * @param {Element} element
+ * @param {!Element} element
  * @param {number} offset
  * @param {number} length
  * @param {!Array.<!Object>=} domChanges
@@ -1011,7 +1012,7 @@ WebInspector.highlightSearchResult = function(element, offset, length, domChange
 }
 
 /**
- * @param {Element} element
+ * @param {!Element} element
  * @param {!Array.<!WebInspector.SourceRange>} resultRanges
  * @param {!Array.<!Object>=} changes
  */
@@ -1021,7 +1022,7 @@ WebInspector.highlightSearchResults = function(element, resultRanges, changes)
 }
 
 /**
- * @param {Element} element
+ * @param {!Element} element
  * @param {!Array.<!WebInspector.SourceRange>} resultRanges
  * @param {string} styleClass
  * @param {!Array.<!Object>=} changes
@@ -1162,7 +1163,7 @@ WebInspector.endBatchUpdate = function()
 }
 
 /**
- * @param {Object} object
+ * @param {!Object} object
  * @param {function()} method
  */
 WebInspector.invokeOnceAfterBatchUpdate = function(object, method)

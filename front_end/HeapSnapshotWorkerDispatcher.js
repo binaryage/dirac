@@ -49,8 +49,8 @@ WebInspector.HeapSnapshotWorkerDispatcher.prototype = {
     },
 
     /**
-     * @param{string} name
-     * @param{*} data
+     * @param {string} name
+     * @param {*} data
      */
     sendEvent: function(name, data)
     {

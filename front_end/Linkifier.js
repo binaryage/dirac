@@ -37,15 +37,15 @@ WebInspector.LinkifierFormatter = function()
 
 WebInspector.LinkifierFormatter.prototype = {
     /**
-     * @param {Element} anchor
-     * @param {WebInspector.UILocation} uiLocation
+     * @param {!Element} anchor
+     * @param {!WebInspector.UILocation} uiLocation
      */
     formatLiveAnchor: function(anchor, uiLocation) { }
 }
 
 /**
  * @constructor
- * @param {WebInspector.LinkifierFormatter=} formatter
+ * @param {!WebInspector.LinkifierFormatter=} formatter
  */
 WebInspector.Linkifier = function(formatter)
 {
@@ -59,7 +59,7 @@ WebInspector.Linkifier.prototype = {
      * @param {number} lineNumber
      * @param {number=} columnNumber
      * @param {string=} classes
-     * @return {Element}
+     * @return {?Element}
      */
     linkifyLocation: function(sourceURL, lineNumber, columnNumber, classes)
     {
@@ -70,9 +70,9 @@ WebInspector.Linkifier.prototype = {
     },
 
     /**
-     * @param {WebInspector.DebuggerModel.Location} rawLocation
+     * @param {!WebInspector.DebuggerModel.Location} rawLocation
      * @param {string=} classes
-     * @return {Element}
+     * @return {?Element}
      */
     linkifyRawLocation: function(rawLocation, classes)
     {
@@ -87,7 +87,7 @@ WebInspector.Linkifier.prototype = {
 
     /**
      * @param {?CSSAgent.StyleSheetId} styleSheetId
-     * @param {WebInspector.CSSLocation} rawLocation
+     * @param {!WebInspector.CSSLocation} rawLocation
      * @param {string=} classes
      * @return {?Element}
      */
@@ -109,8 +109,8 @@ WebInspector.Linkifier.prototype = {
     },
 
     /**
-     * @param {Element} anchor
-     * @param {WebInspector.UILocation} uiLocation
+     * @param {!Element} anchor
+     * @param {!WebInspector.UILocation} uiLocation
      */
     _updateAnchor: function(anchor, uiLocation)
     {
@@ -135,8 +135,8 @@ WebInspector.Linkifier.DefaultFormatter = function(maxLength)
 
 WebInspector.Linkifier.DefaultFormatter.prototype = {
     /**
-     * @param {Element} anchor
-     * @param {WebInspector.UILocation} uiLocation
+     * @param {!Element} anchor
+     * @param {!WebInspector.UILocation} uiLocation
      */
     formatLiveAnchor: function(anchor, uiLocation)
     {
@@ -167,8 +167,8 @@ WebInspector.Linkifier.DefaultCSSFormatter.MaxLengthForDisplayedURLs = 30;
 
 WebInspector.Linkifier.DefaultCSSFormatter.prototype = {
     /**
-     * @param {Element} anchor
-     * @param {WebInspector.UILocation} uiLocation
+     * @param {!Element} anchor
+     * @param {!WebInspector.UILocation} uiLocation
      */
     formatLiveAnchor: function(anchor, uiLocation)
     {

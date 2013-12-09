@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.CanvasTraceLogPlayerProxy} traceLogPlayer
+ * @param {!WebInspector.CanvasTraceLogPlayerProxy} traceLogPlayer
  */
 WebInspector.CanvasReplayStateView = function(traceLogPlayer)
 {
@@ -102,7 +102,7 @@ WebInspector.CanvasReplayStateView.prototype = {
     },
 
     /**
-     * @param {Element} parent
+     * @param {!Element} parent
      * @param {string} className
      * @param {string} title
      * @param {function(this:WebInspector.CanvasProfileView)} clickCallback
@@ -211,7 +211,7 @@ WebInspector.CanvasReplayStateView.prototype = {
     },
 
     /**
-     * @param {CanvasAgent.CallArgument|undefined} argument
+     * @param {!CanvasAgent.CallArgument|undefined} argument
      * @param {!Array.<!CanvasAgent.CallArgument>} output
      */
     _collectResourceFromCallArgument: function(argument, output)
@@ -275,7 +275,7 @@ WebInspector.CanvasReplayStateView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onCanvasTraceLogReceived: function(event)
     {
@@ -285,7 +285,7 @@ WebInspector.CanvasReplayStateView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onCanvasResourceStateReceived: function(event)
     {
@@ -315,7 +315,7 @@ WebInspector.CanvasReplayStateView.prototype = {
 
         /**
          * @param {!Object} map
-         * @param {WebInspector.DataGridNode=} node
+         * @param {!WebInspector.DataGridNode=} node
          */
         function populateNameToNodesMap(map, node)
         {
@@ -349,7 +349,7 @@ WebInspector.CanvasReplayStateView.prototype = {
         /**
          * @param {!Array.<!CanvasAgent.ResourceStateDescriptor>|undefined} descriptors
          * @param {!WebInspector.DataGridNode} parent
-         * @param {Object=} nameToOldChildren
+         * @param {!Object=} nameToOldChildren
          */
         function appendResourceStateDescriptors(descriptors, parent, nameToOldChildren)
         {

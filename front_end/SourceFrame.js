@@ -31,7 +31,7 @@
 /**
  * @extends {WebInspector.View}
  * @constructor
- * @param {WebInspector.ContentProvider} contentProvider
+ * @param {!WebInspector.ContentProvider} contentProvider
  */
 WebInspector.SourceFrame = function(contentProvider)
 {
@@ -285,7 +285,7 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} textRange
+     * @param {!WebInspector.TextRange} textRange
      */
     setSelection: function(textRange)
     {
@@ -404,7 +404,7 @@ WebInspector.SourceFrame.prototype = {
     /**
      * @param {string} query
      * @param {boolean} shouldJump
-     * @param {function(WebInspector.View, number)} callback
+     * @param {function(!WebInspector.View, number)} callback
      * @param {function(number)} currentMatchChangedCallback
      * @param {function()} searchResultsChangedCallback
      */
@@ -599,7 +599,7 @@ WebInspector.SourceFrame.prototype = {
 
     /**
      * @param {number} lineNumber
-     * @param {WebInspector.ConsoleMessage} msg
+     * @param {!WebInspector.ConsoleMessage} msg
      */
     addMessageToSource: function(lineNumber, msg)
     {
@@ -676,7 +676,7 @@ WebInspector.SourceFrame.prototype = {
 
     /**
      * @param {number} lineNumber
-     * @param {WebInspector.ConsoleMessage} msg
+     * @param {!WebInspector.ConsoleMessage} msg
      */
     removeMessageFromSource: function(lineNumber, msg)
     {
@@ -734,7 +734,7 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} textRange
+     * @param {!WebInspector.TextRange} textRange
      */
     selectionChanged: function(textRange)
     {
@@ -744,7 +744,7 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} textRange
+     * @param {!WebInspector.TextRange} textRange
      */
     _updateSourcePosition: function(textRange)
     {
@@ -810,7 +810,7 @@ WebInspector.TextEditorDelegateForSourceFrame.prototype = {
     },
 
     /**
-     * @param {WebInspector.TextRange} textRange
+     * @param {!WebInspector.TextRange} textRange
      */
     selectionChanged: function(textRange)
     {
@@ -843,7 +843,7 @@ WebInspector.TextEditorDelegateForSourceFrame.prototype = {
     /**
      * @param {string} hrefValue
      * @param {boolean} isExternal
-     * @return {Element}
+     * @return {!Element}
      */
     createLink: function(hrefValue, isExternal)
     {

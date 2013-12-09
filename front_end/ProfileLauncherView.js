@@ -51,7 +51,7 @@ WebInspector.ProfileLauncherView = function(profilesPanel)
 
 WebInspector.ProfileLauncherView.prototype = {
     /**
-     * @param {WebInspector.ProfileType} profileType
+     * @param {!WebInspector.ProfileType} profileType
      */
     addProfileType: function(profileType)
     {
@@ -103,7 +103,7 @@ WebInspector.ProfileLauncherView.prototype = {
     },
 
     /**
-     * @param {WebInspector.ProfileType} profileType
+     * @param {!WebInspector.ProfileType} profileType
      */
     updateProfileType: function(profileType)
     {
@@ -145,7 +145,7 @@ WebInspector.MultiProfileLauncherView.EventTypes = {
 WebInspector.MultiProfileLauncherView.prototype = {
     /**
      * @override
-     * @param {WebInspector.ProfileType} profileType
+     * @param {!WebInspector.ProfileType} profileType
      */
     addProfileType: function(profileType)
     {
@@ -192,7 +192,7 @@ WebInspector.MultiProfileLauncherView.prototype = {
     },
 
     /**
-     * @param {WebInspector.ProfileType} profileType
+     * @param {!WebInspector.ProfileType} profileType
      */
     _profileTypeChanged: function(profileType, event)
     {

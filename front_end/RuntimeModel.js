@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {WebInspector.ResourceTreeModel} resourceTreeModel
+ * @param {!WebInspector.ResourceTreeModel} resourceTreeModel
  */
 WebInspector.RuntimeModel = function(resourceTreeModel)
 {
@@ -49,7 +49,7 @@ WebInspector.RuntimeModel.Events = {
 
 WebInspector.RuntimeModel.prototype = {
     /**
-     * @param {WebInspector.ExecutionContext} executionContext
+     * @param {?WebInspector.ExecutionContext} executionContext
      */
     setCurrentExecutionContext: function(executionContext)
     {
@@ -57,7 +57,7 @@ WebInspector.RuntimeModel.prototype = {
     },
 
     /**
-     * @return {WebInspector.ExecutionContext}
+     * @return {?WebInspector.ExecutionContext}
      */
     currentExecutionContext: function()
     {
@@ -73,8 +73,8 @@ WebInspector.RuntimeModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.ResourceTreeFrame} frame
-     * @return {WebInspector.FrameExecutionContextList}
+     * @param {!WebInspector.ResourceTreeFrame} frame
+     * @return {!WebInspector.FrameExecutionContextList}
      */
     contextListByFrame: function(frame)
     {
@@ -145,7 +145,7 @@ WebInspector.RuntimeModel.prototype = {
 
         /**
          * @param {?Protocol.Error} error
-         * @param {RuntimeAgent.RemoteObject} result
+         * @param {!RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
          */
         function evalCallback(error, result, wasThrown)
@@ -164,8 +164,8 @@ WebInspector.RuntimeModel.prototype = {
     },
 
     /**
-     * @param {Element} proxyElement
-     * @param {Range} wordRange
+     * @param {!Element} proxyElement
+     * @param {!Range} wordRange
      * @param {boolean} force
      * @param {function(!Array.<string>, number=)} completionsReadyCallback
      */
@@ -326,14 +326,14 @@ WebInspector.RuntimeModel.prototype = {
 }
 
 /**
- * @type {WebInspector.RuntimeModel}
+ * @type {?WebInspector.RuntimeModel}
  */
 WebInspector.runtimeModel = null;
 
 /**
  * @constructor
  * @implements {RuntimeAgent.Dispatcher}
- * @param {WebInspector.RuntimeModel} runtimeModel
+ * @param {!WebInspector.RuntimeModel} runtimeModel
  */
 WebInspector.RuntimeDispatcher = function(runtimeModel)
 {

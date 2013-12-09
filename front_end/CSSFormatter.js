@@ -136,7 +136,7 @@ FormatterWorker.CSSFormatter.prototype = {
 /**
  * @constructor
  * @param {string} content
- * @param {{original: !Array.<number>, formatted: !Array.<number>}} mapping
+ * @param {!{original: !Array.<number>, formatted: !Array.<number>}} mapping
  * @param {number} originalOffset
  * @param {number} formattedOffset
  * @param {string} indentString

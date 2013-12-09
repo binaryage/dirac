@@ -109,7 +109,7 @@ WebInspector.SettingsScreen.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _tabSelected: function(event)
     {
@@ -170,9 +170,9 @@ WebInspector.SettingsTab = function(name, id)
  * @param {function(): *} getter
  * @param {function(*)} setter
  * @param {boolean=} omitParagraphElement
- * @param {Element=} inputElement
+ * @param {!Element=} inputElement
  * @param {string=} tooltip
- * @return {Element}
+ * @return {!Element}
  */
 WebInspector.SettingsTab.createCheckbox = function(name, getter, setter, omitParagraphElement, inputElement, tooltip)
 {
@@ -203,11 +203,11 @@ WebInspector.SettingsTab.createCheckbox = function(name, getter, setter, omitPar
 
 /**
  * @param {string} name
- * @param {WebInspector.Setting} setting
+ * @param {!WebInspector.Setting} setting
  * @param {boolean=} omitParagraphElement
- * @param {Element=} inputElement
+ * @param {!Element=} inputElement
  * @param {string=} tooltip
- * @return {Element}
+ * @return {!Element}
  */
 WebInspector.SettingsTab.createSettingCheckbox = function(name, setting, omitParagraphElement, inputElement, tooltip)
 {
@@ -215,8 +215,8 @@ WebInspector.SettingsTab.createSettingCheckbox = function(name, setting, omitPar
 }
 
 /**
- * @param {WebInspector.Setting} setting
- * @return {Element}
+ * @param {!WebInspector.Setting} setting
+ * @return {!Element}
  */
 WebInspector.SettingsTab.createSettingFieldset = function(setting)
 {
@@ -272,7 +272,7 @@ WebInspector.SettingsTab.prototype = {
 
     /**
      * @param {string} label
-     * @param {WebInspector.Setting} setting
+     * @param {!WebInspector.Setting} setting
      * @param {boolean} numeric
      * @param {number=} maxLength
      * @param {string=} width
@@ -453,7 +453,7 @@ WebInspector.GenericSettingsTab.prototype = {
     },
 
     /**
-     * @param {Element} p
+     * @param {?Element} p
      */
     _appendDrawerNote: function(p)
     {
@@ -541,7 +541,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _fileSystemSelected: function(event)
     {
@@ -549,7 +549,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _fileSystemDoubleClicked: function(event)
     {
@@ -558,7 +558,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event=} event
+     * @param {!WebInspector.Event=} event
      */
     _editFileSystemClicked: function(event)
     {
@@ -574,8 +574,8 @@ WebInspector.WorkspaceSettingsTab.prototype = {
     },
 
     /**
-     * @param {function(Event)} handler
-     * @return {Element}
+     * @param {function(?Event)} handler
+     * @return {!Element}
      */
     _createRemoveButton: function(handler)
     {
@@ -591,7 +591,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
     },
 
     /**
-     * @param {Element} columnElement
+     * @param {!Element} columnElement
      * @param {string} column
      * @param {?string} id
      */
@@ -621,7 +621,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _fileSystemRemovedfromList: function(event)
     {
@@ -638,7 +638,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
 
     _fileSystemAdded: function(event)
     {
-        var fileSystem = /** @type {WebInspector.IsolatedFileSystem} */ (event.data);
+        var fileSystem = /** @type {!WebInspector.IsolatedFileSystem} */ (event.data);
         if (!this._fileSystemsList)
             this._reset();
         else
@@ -647,7 +647,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
 
     _fileSystemRemoved: function(event)
     {
-        var fileSystem = /** @type {WebInspector.IsolatedFileSystem} */ (event.data);
+        var fileSystem = /** @type {!WebInspector.IsolatedFileSystem} */ (event.data);
         var selectedFileSystemPath = this._selectedFileSystemPath();
         if (this._fileSystemsList.itemForId(fileSystem.path()))
             this._fileSystemsList.removeItem(fileSystem.path());
@@ -684,7 +684,7 @@ WebInspector.ExperimentsSettingsTab = function()
 
 WebInspector.ExperimentsSettingsTab.prototype = {
     /**
-     * @return {Element} element
+     * @return {!Element} element
      */
     _createExperimentsWarningSubsection: function()
     {
@@ -734,15 +734,15 @@ WebInspector.SettingsController = function()
 
 WebInspector.SettingsController.prototype =
 {
+    /**
+     * @return {!Element}
+     */
     get statusBarItem()
     {
         return this._statusBarButton.element;
     },
 
-    /**
-     * @param {Event} event
-     */
-    _mouseUp: function(event)
+    _mouseUp: function()
     {
         this.showSettingsScreen();
     },
@@ -783,7 +783,7 @@ WebInspector.SettingsController.prototype =
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {function(Element, string, ?string)} itemRenderer
+ * @param {function(!Element, string, ?string)} itemRenderer
  */
 WebInspector.SettingsList = function(columns, itemRenderer)
 {
@@ -806,7 +806,7 @@ WebInspector.SettingsList.prototype = {
     /**
      * @param {?string} itemId
      * @param {?string=} beforeId
-     * @return {Element}
+     * @return {!Element}
      */
     addItem: function(itemId, beforeId)
     {
@@ -890,7 +890,7 @@ WebInspector.SettingsList.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     selectedItem: function()
     {
@@ -899,7 +899,7 @@ WebInspector.SettingsList.prototype = {
 
     /**
      * @param {string} itemId
-     * @return {Element}
+     * @return {!Element}
      */
     itemForId: function(itemId)
     {
@@ -908,7 +908,7 @@ WebInspector.SettingsList.prototype = {
 
     /**
      * @param {?string} id
-     * @param {Event=} event
+     * @param {!Event=} event
      */
     _onDoubleClick: function(id, event)
     {
@@ -917,7 +917,7 @@ WebInspector.SettingsList.prototype = {
 
     /**
      * @param {?string} id
-     * @param {Event=} event
+     * @param {!Event=} event
      */
     selectItem: function(id, event)
     {
@@ -935,8 +935,8 @@ WebInspector.SettingsList.prototype = {
     },
 
     /**
-     * @param {function(Event)} handler
-     * @return {Element}
+     * @param {function(?Event)} handler
+     * @return {!Element}
      */
     _createRemoveButton: function(handler)
     {
@@ -953,8 +953,8 @@ WebInspector.SettingsList.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.SettingsList}
- * @param {function(?string, Object)} validateHandler
- * @param {function(?string, Object)} editHandler
+ * @param {function(?string, !Object)} validateHandler
+ * @param {function(?string, !Object)} editHandler
  */
 WebInspector.EditableSettingsList = function(columns, valuesProvider, validateHandler, editHandler)
 {
@@ -978,7 +978,7 @@ WebInspector.EditableSettingsList.prototype = {
     /**
      * @param {?string} itemId
      * @param {?string=} beforeId
-     * @return {Element}
+     * @return {!Element}
      */
     addItem: function(itemId, beforeId)
     {
@@ -988,7 +988,7 @@ WebInspector.EditableSettingsList.prototype = {
     },
 
     /**
-     * @param {Element} columnElement
+     * @param {!Element} columnElement
      * @param {string} columnId
      * @param {?string} itemId
      */
@@ -1042,7 +1042,7 @@ WebInspector.EditableSettingsList.prototype = {
 
     /**
      * @param {?string} itemId
-     * @return {Object}
+     * @return {!Object}
      */
     _data: function(itemId)
     {

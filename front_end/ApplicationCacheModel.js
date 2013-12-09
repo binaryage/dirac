@@ -56,7 +56,7 @@ WebInspector.ApplicationCacheModel.EventTypes = {
 WebInspector.ApplicationCacheModel.prototype = {
     _frameNavigated: function(event)
     {
-        var frame = /** @type {WebInspector.ResourceTreeFrame} */ (event.data);
+        var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
         if (frame.isMainFrame()) {
             this._mainFrameNavigated();
             return;
@@ -66,11 +66,11 @@ WebInspector.ApplicationCacheModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _frameDetached: function(event)
     {
-        var frame = /** @type {WebInspector.ResourceTreeFrame} */ (event.data);
+        var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
         this._frameManifestRemoved(frame.id);
     },
 
@@ -193,10 +193,14 @@ WebInspector.ApplicationCacheModel.prototype = {
 
     /**
      * @param {string} frameId
-     * @param {function(?Object)} callback
+     * @param {function(?ApplicationCacheAgent.ApplicationCache)} callback
      */
     requestApplicationCache: function(frameId, callback)
     {
+        /**
+         * @param {?Protocol.Error} error
+         * @param {!ApplicationCacheAgent.ApplicationCache} applicationCache
+         */
         function callbackWrapper(error, applicationCache)
         {
             if (error) {

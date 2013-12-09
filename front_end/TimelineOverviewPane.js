@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.TimelineOverviewPane = function(model)
 {
@@ -109,7 +109,7 @@ WebInspector.TimelineOverviewPane.prototype = {
     },
 
     /**
-     * @return {WebInspector.TimelineOverviewBase|null}
+     * @return {?WebInspector.TimelineOverviewBase}
      */
     _createOverviewControl: function()
     {
@@ -161,7 +161,7 @@ WebInspector.TimelineOverviewPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.TimelineFrame} frame
+     * @param {!WebInspector.TimelineFrame} frame
      */
     addFrame: function(frame)
     {
@@ -170,7 +170,7 @@ WebInspector.TimelineOverviewPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.TimelineFrame} frame
+     * @param {!WebInspector.TimelineFrame} frame
      */
     zoomToFrame: function(frame)
     {
@@ -235,8 +235,8 @@ WebInspector.TimelineOverviewPane.prototype = {
     },
 
     /**
-     * @param {Number} startTime
-     * @param {Number} endTime
+     * @param {!Number} startTime
+     * @param {!Number} endTime
      */
     setWindowTimes: function(startTime, endTime)
     {
@@ -349,7 +349,7 @@ WebInspector.TimelineOverviewCalculator.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.TimelineOverviewBase = function(model)
 {
@@ -368,7 +368,7 @@ WebInspector.TimelineOverviewBase.prototype = {
     categoryVisibilityChanged: function() { },
 
     /**
-     * @param {WebInspector.TimelineFrame} frame
+     * @param {!WebInspector.TimelineFrame} frame
      */
     addFrame: function(frame) { },
 
@@ -411,9 +411,9 @@ WebInspector.TimelineOverviewBase.prototype = {
 }
 
 /**
- * @param {WebInspector.TimelineOverviewPane} pane
  * @constructor
  * @implements {WebInspector.TimelinePresentationModel.Filter}
+ * @param {!WebInspector.TimelineOverviewPane} pane
  */
 WebInspector.TimelineWindowFilter = function(pane)
 {

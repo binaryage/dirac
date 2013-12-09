@@ -83,8 +83,8 @@ WebInspector.Geometry.EulerAngles = function(alpha, beta, gamma)
 }
 
 /**
- * @param {CSSMatrix} rotationMatrix
- * @return {WebInspector.Geometry.EulerAngles}
+ * @param {!CSSMatrix} rotationMatrix
+ * @return {!WebInspector.Geometry.EulerAngles}
  */
 WebInspector.Geometry.EulerAngles.fromRotationMatrix = function(rotationMatrix)
 {
@@ -95,8 +95,8 @@ WebInspector.Geometry.EulerAngles.fromRotationMatrix = function(rotationMatrix)
 }
 
 /**
- * @param {WebInspector.Geometry.Vector} u
- * @param {WebInspector.Geometry.Vector} v
+ * @param {!WebInspector.Geometry.Vector} u
+ * @param {!WebInspector.Geometry.Vector} v
  * @return {number}
  */
 WebInspector.Geometry.scalarProduct = function(u, v)
@@ -105,9 +105,9 @@ WebInspector.Geometry.scalarProduct = function(u, v)
 }
 
 /**
- * @param {WebInspector.Geometry.Vector} u
- * @param {WebInspector.Geometry.Vector} v
- * @return {WebInspector.Geometry.Vector}
+ * @param {!WebInspector.Geometry.Vector} u
+ * @param {!WebInspector.Geometry.Vector} v
+ * @return {!WebInspector.Geometry.Vector}
  */
 WebInspector.Geometry.crossProduct = function(u, v)
 {
@@ -118,8 +118,8 @@ WebInspector.Geometry.crossProduct = function(u, v)
 }
 
 /**
- * @param {WebInspector.Geometry.Vector} u
- * @param {WebInspector.Geometry.Vector} v
+ * @param {!WebInspector.Geometry.Vector} u
+ * @param {!WebInspector.Geometry.Vector} v
  * @return {number}
  */
 WebInspector.Geometry.calculateAngle = function(u, v)

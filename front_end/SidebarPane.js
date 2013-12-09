@@ -100,8 +100,8 @@ WebInspector.SidebarPane.prototype = {
 
 /**
  * @constructor
- * @param {Element} container
- * @param {WebInspector.SidebarPane} pane
+ * @param {!Element} container
+ * @param {!WebInspector.SidebarPane} pane
  */
 WebInspector.SidebarPaneTitle = function(container, pane)
 {
@@ -141,7 +141,7 @@ WebInspector.SidebarPaneTitle.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _onTitleKeyDown: function(event)
     {
@@ -163,7 +163,7 @@ WebInspector.SidebarPaneStack = function()
 
 WebInspector.SidebarPaneStack.prototype = {
     /**
-     * @param {WebInspector.SidebarPane} pane
+     * @param {!WebInspector.SidebarPane} pane
      */
     addPane: function(pane)
     {
@@ -187,7 +187,7 @@ WebInspector.SidebarTabbedPane = function()
 
 WebInspector.SidebarTabbedPane.prototype = {
     /**
-     * @param {WebInspector.SidebarPane} pane
+     * @param {!WebInspector.SidebarPane} pane
      */
     addPane: function(pane)
     {

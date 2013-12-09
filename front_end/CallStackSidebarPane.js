@@ -128,7 +128,7 @@ WebInspector.CallStackSidebarPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.DebuggerModel.CallFrame} x
+     * @param {!WebInspector.DebuggerModel.CallFrame} x
      */
     setSelectedCallFrame: function(x)
     {
@@ -139,10 +139,9 @@ WebInspector.CallStackSidebarPane.prototype = {
     },
 
     /**
-     * @param {Event=} event
      * @return {boolean}
      */
-    _selectNextCallFrameOnStack: function(event)
+    _selectNextCallFrameOnStack: function()
     {
         var index = this._selectedCallFrameIndex();
         if (index === -1)
@@ -152,10 +151,9 @@ WebInspector.CallStackSidebarPane.prototype = {
     },
 
     /**
-     * @param {Event=} event
      * @return {boolean}
      */
-    _selectPreviousCallFrameOnStack: function(event)
+    _selectPreviousCallFrameOnStack: function()
     {
         var index = this._selectedCallFrameIndex();
         if (index === -1)
@@ -210,7 +208,7 @@ WebInspector.CallStackSidebarPane.prototype = {
     },
 
     /**
-     * @param {function(!Array.<!WebInspector.KeyboardShortcut.Descriptor>, function(Event=):boolean)} registerShortcutDelegate
+     * @param {function(!Array.<!WebInspector.KeyboardShortcut.Descriptor>, function(?Event=):boolean)} registerShortcutDelegate
      */
     registerShortcuts: function(registerShortcutDelegate)
     {

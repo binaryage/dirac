@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.IndexedDBModel.Database} database
+ * @param {!WebInspector.IndexedDBModel.Database} database
  */
 WebInspector.IDBDatabaseView = function(database)
 {
@@ -87,7 +87,7 @@ WebInspector.IDBDatabaseView.prototype = {
     },
 
     /**
-     * @param {WebInspector.IndexedDBModel.Database} database
+     * @param {!WebInspector.IndexedDBModel.Database} database
      */
     update: function(database)
     {
@@ -102,10 +102,10 @@ WebInspector.IDBDatabaseView.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.IndexedDBModel} model
- * @param {WebInspector.IndexedDBModel.DatabaseId} databaseId
- * @param {WebInspector.IndexedDBModel.ObjectStore} objectStore
- * @param {WebInspector.IndexedDBModel.Index} index
+ * @param {!WebInspector.IndexedDBModel} model
+ * @param {!WebInspector.IndexedDBModel.DatabaseId} databaseId
+ * @param {!WebInspector.IndexedDBModel.ObjectStore} objectStore
+ * @param {?WebInspector.IndexedDBModel.Index} index
  */
 WebInspector.IDBDataView = function(model, databaseId, objectStore, index)
 {
@@ -139,7 +139,7 @@ WebInspector.IDBDataView = function(model, databaseId, objectStore, index)
 
 WebInspector.IDBDataView.prototype = {
     /**
-     * @return {WebInspector.DataGrid}
+     * @return {!WebInspector.DataGrid}
      */
     _createDataGrid: function()
     {
@@ -159,7 +159,7 @@ WebInspector.IDBDataView.prototype = {
     /**
      * @param {string} prefix
      * @param {*} keyPath
-     * @return {DocumentFragment}
+     * @return {!DocumentFragment}
      */
     _keyColumnHeaderFragment: function(prefix, keyPath)
     {
@@ -187,7 +187,7 @@ WebInspector.IDBDataView.prototype = {
 
     /**
      * @param {string} keyPathString
-     * @return {DocumentFragment}
+     * @return {!DocumentFragment}
      */
     _keyPathStringFragment: function(keyPathString)
     {
@@ -200,7 +200,7 @@ WebInspector.IDBDataView.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     _createEditorToolbar: function()
     {
@@ -252,8 +252,8 @@ WebInspector.IDBDataView.prototype = {
     },
 
     /**
-     * @param {WebInspector.IndexedDBModel.ObjectStore} objectStore
-     * @param {WebInspector.IndexedDBModel.Index} index
+     * @param {!WebInspector.IndexedDBModel.ObjectStore} objectStore
+     * @param {?WebInspector.IndexedDBModel.Index} index
      */
     update: function(objectStore, index)
     {
@@ -394,7 +394,7 @@ WebInspector.IDBDataGridNode = function(data)
 
 WebInspector.IDBDataGridNode.prototype = {
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     createCell: function(columnIdentifier)
     {

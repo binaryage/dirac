@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {WebInspector.Workspace} workspace
+ * @param {!WebInspector.Workspace} workspace
  */
 WebInspector.ScriptSnippetModel = function(workspace)
 {
@@ -56,7 +56,7 @@ WebInspector.ScriptSnippetModel = function(workspace)
 
 WebInspector.ScriptSnippetModel.prototype = {
     /**
-     * @return {WebInspector.SnippetScriptMapping}
+     * @return {!WebInspector.SnippetScriptMapping}
      */
     get scriptMapping()
     {
@@ -64,7 +64,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @return {WebInspector.Project}
+     * @return {!WebInspector.Project}
      */
     project: function()
     {
@@ -90,7 +90,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Snippet} snippet
+     * @param {!WebInspector.Snippet} snippet
      * @return {string}
      */
     _addScriptSnippet: function(snippet)
@@ -248,7 +248,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @param {DebuggerAgent.ScriptId} scriptId
+     * @param {!DebuggerAgent.ScriptId} scriptId
      */
     _runScript: function(scriptId)
     {
@@ -283,8 +283,8 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.DebuggerModel.Location} rawLocation
-     * @return {WebInspector.UILocation}
+     * @param {!WebInspector.DebuggerModel.Location} rawLocation
+     * @return {?WebInspector.UILocation}
      */
     _rawLocationToUILocation: function(rawLocation)
     {
@@ -298,7 +298,7 @@ WebInspector.ScriptSnippetModel.prototype = {
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
-     * @return {WebInspector.DebuggerModel.Location}
+     * @return {?WebInspector.DebuggerModel.Location}
      */
     _uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
@@ -310,7 +310,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Script} script
+     * @param {!WebInspector.Script} script
      */
     _addScript: function(script)
     {
@@ -330,7 +330,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @return {!Array.<!Object>}
      */
     _removeBreakpoints: function(uiSourceCode)
@@ -342,7 +342,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {!Array.<!Object>} breakpointLocations
      */
     _restoreBreakpoints: function(uiSourceCode, breakpointLocations)
@@ -380,7 +380,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @return {string}
      */
     _evaluationSourceURL: function(uiSourceCode)
@@ -392,7 +392,7 @@ WebInspector.ScriptSnippetModel.prototype = {
 
     /**
      * @param {string} sourceURL
-     * @return {string|null}
+     * @return {?string}
      */
     _snippetIdForSourceURL: function(sourceURL)
     {
@@ -423,7 +423,7 @@ WebInspector.ScriptSnippetModel.prototype = {
  * @constructor
  * @implements {WebInspector.ScriptFile}
  * @extends {WebInspector.Object}
- * @param {WebInspector.ScriptSnippetModel} scriptSnippetModel
+ * @param {!WebInspector.ScriptSnippetModel} scriptSnippetModel
  * @param {!WebInspector.UISourceCode} uiSourceCode
  */
 WebInspector.SnippetScriptFile = function(scriptSnippetModel, uiSourceCode)
@@ -491,7 +491,7 @@ WebInspector.SnippetScriptFile.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.ScriptSourceMapping}
- * @param {WebInspector.ScriptSnippetModel} scriptSnippetModel
+ * @param {!WebInspector.ScriptSnippetModel} scriptSnippetModel
  */
 WebInspector.SnippetScriptMapping = function(scriptSnippetModel)
 {
@@ -500,12 +500,12 @@ WebInspector.SnippetScriptMapping = function(scriptSnippetModel)
 
 WebInspector.SnippetScriptMapping.prototype = {
     /**
-     * @param {WebInspector.RawLocation} rawLocation
-     * @return {WebInspector.UILocation}
+     * @param {!WebInspector.RawLocation} rawLocation
+     * @return {?WebInspector.UILocation}
      */
     rawLocationToUILocation: function(rawLocation)
     {
-        var debuggerModelLocation = /** @type {WebInspector.DebuggerModel.Location} */(rawLocation);
+        var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */(rawLocation);
         return this._scriptSnippetModel._rawLocationToUILocation(debuggerModelLocation);
     },
 
@@ -513,7 +513,7 @@ WebInspector.SnippetScriptMapping.prototype = {
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
-     * @return {WebInspector.DebuggerModel.Location}
+     * @return {?WebInspector.DebuggerModel.Location}
      */
     uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
@@ -522,7 +522,7 @@ WebInspector.SnippetScriptMapping.prototype = {
 
     /**
      * @param {string} sourceURL
-     * @return {string|null}
+     * @return {?string}
      */
     snippetIdForSourceURL: function(sourceURL)
     {
@@ -530,7 +530,7 @@ WebInspector.SnippetScriptMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.Script} script
+     * @param {!WebInspector.Script} script
      */
     addScript: function(script)
     {
@@ -541,7 +541,7 @@ WebInspector.SnippetScriptMapping.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.ContentProvider}
- * @param {WebInspector.Snippet} snippet
+ * @param {!WebInspector.Snippet} snippet
  */
 WebInspector.SnippetContentProvider = function(snippet)
 {
@@ -558,7 +558,7 @@ WebInspector.SnippetContentProvider.prototype = {
     },
 
     /**
-     * @return {WebInspector.ResourceType}
+     * @return {!WebInspector.ResourceType}
      */
     contentType: function()
     {
@@ -596,7 +596,7 @@ WebInspector.SnippetContentProvider.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ContentProviderBasedProjectDelegate}
- * @param {WebInspector.ScriptSnippetModel} model
+ * @param {!WebInspector.ScriptSnippetModel} model
  */
 WebInspector.SnippetsProjectDelegate = function(model)
 {
@@ -616,7 +616,7 @@ WebInspector.SnippetsProjectDelegate.prototype = {
 
     /**
      * @param {string} name
-     * @param {WebInspector.ContentProvider} contentProvider
+     * @param {!WebInspector.ContentProvider} contentProvider
      * @return {string}
      */
     addSnippet: function(name, contentProvider)

@@ -36,8 +36,8 @@ WebInspector.Formatter = function()
 }
 
 /**
- * @param {WebInspector.ResourceType} contentType
- * @return {?WebInspector.Formatter}
+ * @param {!WebInspector.ResourceType} contentType
+ * @return {!WebInspector.Formatter}
  */
 WebInspector.Formatter.createFormatter = function(contentType)
 {
@@ -77,7 +77,7 @@ WebInspector.Formatter.prototype = {
     /**
      * @param {string} mimeType
      * @param {string} content
-     * @param {function(string, WebInspector.FormatterSourceMapping)} callback
+     * @param {function(string, !WebInspector.FormatterSourceMapping)} callback
      */
     formatContent: function(mimeType, content, callback)
     {
@@ -97,7 +97,7 @@ WebInspector.ScriptFormatter.prototype = {
     /**
      * @param {string} mimeType
      * @param {string} content
-     * @param {function(string, WebInspector.FormatterSourceMapping)} callback
+     * @param {function(string, !WebInspector.FormatterSourceMapping)} callback
      */
     formatContent: function(mimeType, content, callback)
     {
@@ -119,7 +119,7 @@ WebInspector.ScriptFormatter.prototype = {
     },
 
     /**
-     * @return {Worker}
+     * @return {!Worker}
      */
     get _worker()
     {
@@ -144,7 +144,7 @@ WebInspector.IdentityFormatter.prototype = {
     /**
      * @param {string} mimeType
      * @param {string} content
-     * @param {function(string, WebInspector.FormatterSourceMapping)} callback
+     * @param {function(string, !WebInspector.FormatterSourceMapping)} callback
      */
     formatContent: function(mimeType, content, callback)
     {
@@ -219,7 +219,7 @@ WebInspector.IdentityFormatterSourceMapping.prototype = {
  * @implements {WebInspector.FormatterSourceMapping}
  * @param {!Array.<number>} originalLineEndings
  * @param {!Array.<number>} formattedLineEndings
- * @param {WebInspector.FormatterMappingPayload} mapping
+ * @param {!WebInspector.FormatterMappingPayload} mapping
  */
 WebInspector.FormatterSourceMappingImpl = function(originalLineEndings, formattedLineEndings, mapping)
 {

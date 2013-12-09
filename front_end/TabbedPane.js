@@ -54,7 +54,7 @@ WebInspector.TabbedPane.EventTypes = {
 
 WebInspector.TabbedPane.prototype = {
     /**
-     * @return {WebInspector.View}
+     * @return {!WebInspector.View}
      */
     get visibleView()
     {
@@ -102,7 +102,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {?Element}
      */
     defaultFocusedElement: function()
     {
@@ -110,7 +110,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     headerElement: function()
     {
@@ -128,7 +128,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.TabbedPaneTabDelegate} delegate
+     * @param {!WebInspector.TabbedPaneTabDelegate} delegate
      */
     setTabDelegate: function(delegate)
     {
@@ -141,7 +141,7 @@ WebInspector.TabbedPane.prototype = {
     /**
      * @param {string} id
      * @param {string} tabTitle
-     * @param {WebInspector.View} view
+     * @param {!WebInspector.View} view
      * @param {string=} tabTooltip
      * @param {boolean=} userGesture
      * @param {boolean=} isCloseable
@@ -312,7 +312,7 @@ WebInspector.TabbedPane.prototype = {
 
     /**
      * @param {string} id
-     * @param {WebInspector.View} view
+     * @param {!WebInspector.View} view
      */
     changeTabView: function(id, view)
     {
@@ -382,7 +382,7 @@ WebInspector.TabbedPane.prototype = {
 
     /**
      * @param {number} index
-     * @param {WebInspector.TabbedPaneTab} tab
+     * @param {!WebInspector.TabbedPaneTab} tab
      */
     _showTabElement: function(index, tab)
     {
@@ -394,7 +394,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.TabbedPaneTab} tab
+     * @param {!WebInspector.TabbedPaneTab} tab
      */
     _hideTabElement: function(tab)
     {
@@ -598,7 +598,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.TabbedPaneTab} tab
+     * @param {!WebInspector.TabbedPaneTab} tab
      */
     _showTab: function(tab)
     {
@@ -607,7 +607,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.TabbedPaneTab} tab
+     * @param {!WebInspector.TabbedPaneTab} tab
      */
     _hideTab: function(tab)
     {
@@ -641,7 +641,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.TabbedPaneTab} tab
+     * @param {!WebInspector.TabbedPaneTab} tab
      * @param {number} index
      */
     _insertBefore: function(tab, index)
@@ -660,11 +660,11 @@ WebInspector.TabbedPane.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.TabbedPane} tabbedPane
+ * @param {!WebInspector.TabbedPane} tabbedPane
  * @param {string} id
  * @param {string} title
  * @param {boolean} closeable
- * @param {WebInspector.View} view
+ * @param {!WebInspector.View} view
  * @param {string=} tooltip
  */
 WebInspector.TabbedPaneTab = function(tabbedPane, id, title, closeable, view, tooltip)
@@ -677,7 +677,7 @@ WebInspector.TabbedPaneTab = function(tabbedPane, id, title, closeable, view, to
     this._view = view;
     this._shown = false;
     /** @type {number} */ this._measuredWidth;
-    /** @type {Element} */ this._tabElement;
+    /** @type {!Element|undefined} */ this._tabElement;
 }
 
 WebInspector.TabbedPaneTab.prototype = {
@@ -743,7 +743,7 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @return {WebInspector.View}
+     * @return {!WebInspector.View}
      */
     get view()
     {
@@ -799,7 +799,7 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @param {WebInspector.TabbedPaneTabDelegate} delegate
+     * @param {!WebInspector.TabbedPaneTabDelegate} delegate
      */
     setDelegate: function(delegate)
     {
@@ -856,7 +856,7 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _tabClicked: function(event)
     {
@@ -871,7 +871,7 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _tabMouseDown: function(event)
     {
@@ -881,7 +881,7 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _tabMouseUp: function(event)
     {
@@ -927,7 +927,7 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      * @return {boolean}
      */
     _startTabDragging: function(event)
@@ -939,7 +939,7 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _tabDragging: function(event)
     {
@@ -982,7 +982,7 @@ WebInspector.TabbedPaneTab.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _endTabDragging: function(event)
     {
@@ -1001,7 +1001,7 @@ WebInspector.TabbedPaneTabDelegate = function()
 
 WebInspector.TabbedPaneTabDelegate.prototype = {
     /**
-     * @param {WebInspector.TabbedPane} tabbedPane
+     * @param {!WebInspector.TabbedPane} tabbedPane
      * @param {!Array.<string>} ids
      */
     closeTabs: function(tabbedPane, ids) { }

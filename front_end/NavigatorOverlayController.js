@@ -28,9 +28,9 @@
 
 /**
  * @constructor
- * @param {WebInspector.SidebarView} parentSidebarView
- * @param {WebInspector.View} navigatorView
- * @param {WebInspector.View} editorView
+ * @param {!WebInspector.SidebarView} parentSidebarView
+ * @param {!WebInspector.View} navigatorView
+ * @param {!WebInspector.View} editorView
  */
 WebInspector.NavigatorOverlayController = function(parentSidebarView, navigatorView, editorView)
 {

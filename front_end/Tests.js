@@ -54,7 +54,7 @@ TestSuite = function()
 
 /**
  * Reports test failure.
- * @param {string} message Failure description.
+ * @param {string} message !Failure description.
  */
 TestSuite.prototype.fail = function(message)
 {
@@ -67,9 +67,9 @@ TestSuite.prototype.fail = function(message)
 
 /**
  * Equals assertion tests that expected === actual.
- * @param {Object} expected Expected object.
- * @param {Object} actual Actual object.
- * @param {string} opt_message User message to print if the test fails.
+ * @param {!Object} expected !Expected object.
+ * @param {!Object} actual !Actual object.
+ * @param {string} opt_message !User message to print if the test fails.
  */
 TestSuite.prototype.assertEquals = function(expected, actual, opt_message)
 {
@@ -83,8 +83,8 @@ TestSuite.prototype.assertEquals = function(expected, actual, opt_message)
 
 /**
  * True assertion tests that value == true.
- * @param {Object} value Actual object.
- * @param {string} opt_message User message to print if the test fails.
+ * @param {!Object} value !Actual object.
+ * @param {string} opt_message !User message to print if the test fails.
  */
 TestSuite.prototype.assertTrue = function(value, opt_message)
 {
@@ -94,7 +94,7 @@ TestSuite.prototype.assertTrue = function(value, opt_message)
 
 /**
  * HasKey assertion tests that object has given key.
- * @param {Object} object
+ * @param {!Object} object
  * @param {string} key
  */
 TestSuite.prototype.assertHasKey = function(object, key)
@@ -106,8 +106,8 @@ TestSuite.prototype.assertHasKey = function(object, key)
 
 /**
  * Contains assertion tests that string contains substring.
- * @param {string} string Outer.
- * @param {string} substring Inner.
+ * @param {string} string !Outer.
+ * @param {string} substring !Inner.
  */
 TestSuite.prototype.assertContains = function(string, substring)
 {
@@ -181,7 +181,7 @@ TestSuite.prototype.runTest = function(testName)
 
 
 /**
- * @param {string} panelName Name of the panel to show.
+ * @param {string} panelName !Name of the panel to show.
  */
 TestSuite.prototype.showPanel = function(panelName)
 {
@@ -194,11 +194,11 @@ TestSuite.prototype.showPanel = function(panelName)
 
 /**
  * Overrides the method with specified name until it's called first time.
- * @param {Object} receiver An object whose method to override.
- * @param {string} methodName Name of the method to override.
- * @param {Function} override A function that should be called right after the
+ * @param {!Object} receiver !An object whose method to override.
+ * @param {string} methodName !Name of the method to override.
+ * @param {!Function} override !A function that should be called right after the
  *     overriden method returns.
- * @param {boolean} opt_sticky Whether restore original method after first run
+ * @param {boolean} opt_sticky !Whether restore original method after first run
  *     or not.
  */
 TestSuite.prototype.addSniffer = function(receiver, methodName, override, opt_sticky)
@@ -839,7 +839,7 @@ TestSuite.prototype.evaluateInConsole_ = function(code, callback)
 /**
  * Checks that all expected scripts are present in the scripts list
  * in the Scripts panel.
- * @param {!Array.<string>} expected Regular expressions describing
+ * @param {!Array.<string>} expected !Regular expressions describing
  *     expected script names.
  * @return {boolean} Whether all the scripts are in "scripts-files" select
  *     box
@@ -947,7 +947,7 @@ uiTests.runAllTests = function()
 
 /**
  * Run specified test on a fresh instance of the test suite.
- * @param {string} name Name of a test method from TestSuite class.
+ * @param {string} name Name of a test method from !TestSuite class.
  */
 uiTests.runTest = function(name)
 {

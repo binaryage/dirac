@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @param{WebInspector.HeapSnapshotProgress} progress
+ * @param {!WebInspector.HeapSnapshotProgress} progress
  * @extends {WebInspector.HeapSnapshot}
  */
 WebInspector.JSHeapSnapshot = function(profile, progress)
@@ -170,7 +170,7 @@ WebInspector.JSHeapSnapshot.prototype = {
         /**
          * @param {!WebInspector.HeapSnapshotNode} node
          * @param {!string} name
-         * @return {!WebInspector.HeapSnapshotNode|null}
+         * @return {?WebInspector.HeapSnapshotNode}
          */
         function getChildNodeByName(node, name)
         {
@@ -185,7 +185,7 @@ WebInspector.JSHeapSnapshot.prototype = {
         /**
          * @param {!WebInspector.HeapSnapshotNode} node
          * @param {!string} name
-         * @return {!WebInspector.HeapSnapshotNode|null}
+         * @return {?WebInspector.HeapSnapshotNode}
          */
         function getChildNodeByLinkName(node, name)
         {
@@ -392,7 +392,7 @@ WebInspector.JSHeapSnapshot.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotNode}
- * @param {WebInspector.JSHeapSnapshot} snapshot
+ * @param {!WebInspector.JSHeapSnapshot} snapshot
  * @param {number=} nodeIndex
  */
 WebInspector.JSHeapSnapshotNode = function(snapshot, nodeIndex)
@@ -549,7 +549,7 @@ WebInspector.JSHeapSnapshotNode.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotEdge}
- * @param {WebInspector.JSHeapSnapshot} snapshot
+ * @param {!WebInspector.JSHeapSnapshot} snapshot
  * @param {!Array.<number>} edges
  * @param {number=} edgeIndex
  */
@@ -658,7 +658,7 @@ WebInspector.JSHeapSnapshotEdge.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotRetainerEdge}
- * @param {WebInspector.JSHeapSnapshot} snapshot
+ * @param {!WebInspector.JSHeapSnapshot} snapshot
  */
 WebInspector.JSHeapSnapshotRetainerEdge = function(snapshot, retainedNodeIndex, retainerIndex)
 {

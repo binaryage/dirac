@@ -101,7 +101,7 @@ WebInspector.TimelineDispatcher = function(manager)
 
 WebInspector.TimelineDispatcher.prototype = {
     /**
-     * @param {TimelineAgent.TimelineEvent} record
+     * @param {!TimelineAgent.TimelineEvent} record
      */
     eventRecorded: function(record)
     {
@@ -140,6 +140,6 @@ WebInspector.TimelineDispatcher.prototype = {
 }
 
 /**
- * @type {WebInspector.TimelineManager}
+ * @type {?WebInspector.TimelineManager}
  */
-WebInspector.timelineManager;
+WebInspector.timelineManager = null;

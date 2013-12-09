@@ -31,9 +31,9 @@
 /**
  * @constructor
  * @implements {WebInspector.SourceMapping}
- * @param {WebInspector.CSSStyleModel} cssModel
- * @param {WebInspector.Workspace} workspace
- * @param {WebInspector.SimpleWorkspaceProvider} networkWorkspaceProvider
+ * @param {!WebInspector.CSSStyleModel} cssModel
+ * @param {!WebInspector.Workspace} workspace
+ * @param {!WebInspector.SimpleWorkspaceProvider} networkWorkspaceProvider
  */
 WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceProvider)
 {
@@ -55,7 +55,7 @@ WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceP
 
 WebInspector.SASSSourceMapping.prototype = {
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _styleSheetChanged: function(event)
     {
@@ -72,7 +72,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _toggleSourceMapSupport: function(event)
     {
@@ -87,7 +87,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _fileSaveFinished: function(event)
     {
@@ -97,7 +97,7 @@ WebInspector.SASSSourceMapping.prototype = {
 
     /**
      * @param {string} headerName
-     * @param {NetworkAgent.Headers} headers
+     * @param {!NetworkAgent.Headers} headers
      * @return {?string}
      */
     _headerValue: function(headerName, headers)
@@ -114,7 +114,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {NetworkAgent.Headers} headers
+     * @param {!NetworkAgent.Headers} headers
      * @return {?Date}
      */
     _lastModified: function(headers)
@@ -129,7 +129,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {NetworkAgent.Headers} headers
+     * @param {!NetworkAgent.Headers} headers
      * @param {string} url
      * @return {?Date}
      */
@@ -167,7 +167,7 @@ WebInspector.SASSSourceMapping.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {number} statusCode
-         * @param {NetworkAgent.Headers} headers
+         * @param {!NetworkAgent.Headers} headers
          * @param {string} content
          */
         function sassLoadedViaNetwork(error, statusCode, headers, content)
@@ -252,7 +252,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} cssUISourceCode
+     * @param {!WebInspector.UISourceCode} cssUISourceCode
      * @param {string} sassURL
      * @param {function(string, string, boolean)} callback
      */
@@ -270,7 +270,7 @@ WebInspector.SASSSourceMapping.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {number} statusCode
-         * @param {NetworkAgent.Headers} headers
+         * @param {!NetworkAgent.Headers} headers
          * @param {string} content
          */
         function contentLoaded(error, statusCode, headers, content)
@@ -302,7 +302,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} cssUISourceCode
+     * @param {!WebInspector.UISourceCode} cssUISourceCode
      * @param {string} content
      * @param {string} sassURL
      * @param {function(string, string, boolean)} callback
@@ -315,7 +315,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} cssUISourceCode
+     * @param {!WebInspector.UISourceCode} cssUISourceCode
      * @param {string} sassURL
      * @param {function(string, string, boolean)} callback
      */
@@ -382,7 +382,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.CSSStyleSheetHeader} header
+     * @param {!WebInspector.CSSStyleSheetHeader} header
      */
     addHeader: function(header)
     {
@@ -396,7 +396,7 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.CSSStyleSheetHeader} header
+     * @param {!WebInspector.CSSStyleSheetHeader} header
      */
     removeHeader: function(header)
     {
@@ -507,8 +507,8 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.CSSStyleSheetHeader} header
-     * @param {WebInspector.SourceMap} sourceMap
+     * @param {!WebInspector.CSSStyleSheetHeader} header
+     * @param {!WebInspector.SourceMap} sourceMap
      */
     _bindUISourceCode: function(header, sourceMap)
     {
@@ -526,8 +526,8 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.RawLocation} rawLocation
-     * @return {WebInspector.UILocation}
+     * @param {!WebInspector.RawLocation} rawLocation
+     * @return {?WebInspector.UILocation}
      */
     rawLocationToUILocation: function(rawLocation)
     {
@@ -546,10 +546,10 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number} lineNumber
      * @param {number} columnNumber
-     * @return {WebInspector.RawLocation}
+     * @return {!WebInspector.RawLocation}
      */
     uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
@@ -558,11 +558,11 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _uiSourceCodeAdded: function(event)
     {
-        var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
         var cssURLs = this._cssURLsForSASSURL[uiSourceCode.url];
         if (!cssURLs)
             return;
@@ -577,11 +577,11 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _uiSourceCodeContentCommitted: function(event)
     {
-        var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data.uiSourceCode);
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data.uiSourceCode);
         if (uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem)
             this._sassFileSaved(uiSourceCode.url, true);
     },
@@ -593,7 +593,7 @@ WebInspector.SASSSourceMapping.prototype = {
         this._cssURLsForSASSURL = {};
         /** @type {Object.<string, !Array.<function(?WebInspector.SourceMap)>>} */
         this._pendingSourceMapLoadingCallbacks = {};
-        /** @type {Object.<string, {deadlineMs: number, dataByURL: Object.<string, {timer: number, previousPoll: number}>}>} */
+        /** @type {Object.<string, {deadlineMs: number, dataByURL: !Object.<string, !{timer: number, previousPoll: number}>}>} */
         this._pollDataForSASSURL = {};
         /** @type {Object.<string, !WebInspector.SourceMap>} */
         this._sourceMapByURL = {};

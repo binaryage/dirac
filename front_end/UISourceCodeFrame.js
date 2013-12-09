@@ -29,7 +29,7 @@
 /**
  * @constructor
  * @extends {WebInspector.SourceFrame}
- * @param {WebInspector.UISourceCode} uiSourceCode
+ * @param {!WebInspector.UISourceCode} uiSourceCode
  */
 WebInspector.UISourceCodeFrame = function(uiSourceCode)
 {
@@ -121,7 +121,7 @@ WebInspector.UISourceCodeFrame.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onFormattedChanged: function(event)
     {
@@ -144,7 +144,7 @@ WebInspector.UISourceCodeFrame.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onWorkingCopyChanged: function(event)
     {
@@ -155,7 +155,7 @@ WebInspector.UISourceCodeFrame.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onWorkingCopyCommitted: function(event)
     {

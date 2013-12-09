@@ -31,8 +31,8 @@
 /**
  * @constructor
  * @extends {WebInspector.MemoryStatistics}
- * @param {WebInspector.TimelinePanel} timelinePanel
- * @param {WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelinePanel} timelinePanel
+ * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.DOMCountersGraph = function(timelinePanel, model)
 {
@@ -42,11 +42,11 @@ WebInspector.DOMCountersGraph = function(timelinePanel, model)
 /**
  * @constructor
  * @extends {WebInspector.CounterUIBase}
- * @param {WebInspector.DOMCountersGraph} memoryCountersPane
+ * @param {!WebInspector.DOMCountersGraph} memoryCountersPane
  * @param {string} title
  * @param {string} currentValueLabel
  * @param {!Array.<number>} rgb
- * @param {function(WebInspector.DOMCountersGraph.Counter):number} valueGetter
+ * @param {function(!WebInspector.DOMCountersGraph.Counter):number} valueGetter
  */
 WebInspector.DOMCounterUI = function(memoryCountersPane, title, currentValueLabel, rgb, valueGetter)
 {
@@ -100,7 +100,7 @@ WebInspector.DOMCounterUI.prototype = {
     },
 
     /**
-     * @param {CanvasRenderingContext2D} ctx
+     * @param {!CanvasRenderingContext2D} ctx
      * @param {number} x
      * @param {number} y
      * @param {number} radius
@@ -117,7 +117,7 @@ WebInspector.DOMCounterUI.prototype = {
     },
 
     /**
-     * @param {CanvasRenderingContext2D} ctx
+     * @param {!CanvasRenderingContext2D} ctx
      */
     restoreImageUnderMarker: function(ctx)
     {
@@ -146,7 +146,7 @@ WebInspector.DOMCountersGraph.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     resizeElement: function()
     {
@@ -178,7 +178,7 @@ WebInspector.DOMCountersGraph.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onRecordAdded: function(event)
     {
@@ -205,7 +205,7 @@ WebInspector.DOMCountersGraph.prototype = {
     },
 
     /**
-     * @param {CanvasRenderingContext2D} ctx
+     * @param {!CanvasRenderingContext2D} ctx
      */
     _restoreImageUnderMarker: function(ctx)
     {
@@ -218,7 +218,7 @@ WebInspector.DOMCountersGraph.prototype = {
     },
 
     /**
-     * @param {CanvasRenderingContext2D} ctx
+     * @param {!CanvasRenderingContext2D} ctx
      * @param {number} x
      * @param {number} index
      */
@@ -235,7 +235,7 @@ WebInspector.DOMCountersGraph.prototype = {
     },
 
     /**
-     * @param {CanvasRenderingContext2D} ctx
+     * @param {!CanvasRenderingContext2D} ctx
      * @param {number} x
      * @param {number} index
      */
@@ -260,7 +260,7 @@ WebInspector.DOMCountersGraph.prototype = {
     },
 
     /**
-     * @param {WebInspector.CounterUIBase} counterUI
+     * @param {!WebInspector.CounterUIBase} counterUI
      */
     _drawGraph: function(counterUI)
     {

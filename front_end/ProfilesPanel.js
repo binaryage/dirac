@@ -35,7 +35,7 @@ WebInspector.ProfileType = function(id, name)
     this._name = name;
     /** @type {!Array.<!WebInspector.ProfileHeader>} */
     this._profiles = [];
-    /** @type {WebInspector.SidebarSectionTreeElement} */
+    /** @type {?WebInspector.SidebarSectionTreeElement} */
     this.treeElement = null;
     /** @type {?WebInspector.ProfileHeader} */
     this._profileBeingRecorded = null;
@@ -57,7 +57,7 @@ WebInspector.ProfileType.prototype = {
     },
 
     /**
-     * @return {string|null}
+     * @return {?string}
      */
     fileExtension: function()
     {
@@ -135,7 +135,7 @@ WebInspector.ProfileType.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {?Element}
      */
     decorationElement: function()
     {
@@ -145,7 +145,7 @@ WebInspector.ProfileType.prototype = {
     /**
      * @nosideeffects
      * @param {number} uid
-     * @return {WebInspector.ProfileHeader}
+     * @return {?WebInspector.ProfileHeader}
      */
     getProfile: function(uid)
     {
@@ -158,7 +158,7 @@ WebInspector.ProfileType.prototype = {
     },
 
     /**
-     * @param {File} file
+     * @param {!File} file
      */
     loadFromFile: function(file)
     {
@@ -261,7 +261,7 @@ WebInspector.ProfileHeader.prototype = {
 
     /**
      * Must be implemented by subclasses.
-     * @return {WebInspector.ProfileSidebarTreeElement}
+     * @return {!WebInspector.ProfileSidebarTreeElement}
      */
     createSidebarTreeElement: function()
     {
@@ -301,7 +301,7 @@ WebInspector.ProfileHeader.prototype = {
     },
 
     /**
-     * @param {Function} callback
+     * @param {!Function} callback
      */
     load: function(callback)
     {
@@ -321,7 +321,7 @@ WebInspector.ProfileHeader.prototype = {
     },
 
     /**
-     * @param {File} file
+     * @param {!File} file
      */
     loadFromFile: function(file)
     {
@@ -349,7 +349,7 @@ WebInspector.ProfileHeader.prototype = {
  * @implements {WebInspector.ContextMenu.Provider}
  * @extends {WebInspector.Panel}
  * @param {string=} name
- * @param {WebInspector.ProfileType=} type
+ * @param {!WebInspector.ProfileType=} type
  */
 WebInspector.ProfilesPanel = function(name, type)
 {
@@ -430,7 +430,7 @@ WebInspector.ProfilesPanel = function(name, type)
 
 WebInspector.ProfilesPanel.prototype = {
     /**
-     * @return {WebInspector.SearchableView}
+     * @return {!WebInspector.SearchableView}
      */
     searchableView: function()
     {
@@ -511,10 +511,9 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event|Event=} event
      * @return {boolean}
      */
-    toggleRecordButton: function(event)
+    toggleRecordButton: function()
     {
         var type = this._selectedProfileType;
         var isProfiling = type.buttonClicked();
@@ -531,7 +530,7 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onProfileTypeSelected: function(event)
     {
@@ -628,7 +627,7 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _handleContextMenuEvent: function(event)
     {
@@ -765,7 +764,7 @@ WebInspector.ProfilesPanel.prototype = {
 
     /**
      * @param {?WebInspector.ProfileHeader} profile
-     * @return {WebInspector.View}
+     * @return {?WebInspector.View}
      */
     _showProfile: function(profile)
     {
@@ -797,7 +796,7 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     /**
-     * @param {HeapProfilerAgent.HeapSnapshotObjectId} snapshotObjectId
+     * @param {!HeapProfilerAgent.HeapSnapshotObjectId} snapshotObjectId
      * @param {string} viewName
      */
     showObject: function(snapshotObjectId, viewName)
@@ -831,7 +830,7 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.View} view
+     * @param {!WebInspector.View} view
      */
     showView: function(view)
     {
@@ -849,7 +848,7 @@ WebInspector.ProfilesPanel.prototype = {
     /**
      * @param {string} typeId
      * @param {string} uid
-     * @return {WebInspector.View}
+     * @return {?WebInspector.View}
      */
     showProfile: function(typeId, uid)
     {
@@ -945,15 +944,15 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     /** 
-     * @param {WebInspector.ContextMenu} contextMenu
-     * @param {Object} target
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} target
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
         if (WebInspector.inspectorView.currentPanel() !== this)
             return;
 
-        var object = /** @type {WebInspector.RemoteObject} */ (target);
+        var object = /** @type {!WebInspector.RemoteObject} */ (target);
         var objectId = object.objectId;
         if (!objectId)
             return;
@@ -1043,7 +1042,7 @@ WebInspector.ProfileSidebarTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.SidebarTreeElement}
- * @param {WebInspector.ProfilesPanel} panel
+ * @param {!WebInspector.ProfilesPanel} panel
  * @param {string} title
  * @param {string=} subtitle
  */

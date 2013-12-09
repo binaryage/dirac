@@ -75,8 +75,8 @@ WebInspector.TopDownProfileDataGridNode.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileDataGridTree}
- * @param {WebInspector.CPUProfileView} profileView
- * @param {ProfilerAgent.CPUProfileNode} rootProfileNode
+ * @param {!WebInspector.CPUProfileView} profileView
+ * @param {!ProfilerAgent.CPUProfileNode} rootProfileNode
  */
 WebInspector.TopDownProfileDataGridTree = function(profileView, rootProfileNode)
 {

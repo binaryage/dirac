@@ -248,7 +248,7 @@ WebInspector.FileSystemMapping.prototype = {
 
     /**
      * @param {string} url
-     * @return {WebInspector.FileSystemMapping.Entry}
+     * @return {?WebInspector.FileSystemMapping.Entry}
      */
     _mappingEntryForURL: function(url)
     {
@@ -304,7 +304,7 @@ WebInspector.FileSystemMapping.prototype = {
     /**
      * @param {string} fileSystemPath
      * @param {string} pathPrefix
-     * @return {WebInspector.FileSystemMapping.Entry}
+     * @return {?WebInspector.FileSystemMapping.Entry}
      */
     _mappingEntryForPathPrefix: function(fileSystemPath, pathPrefix)
     {

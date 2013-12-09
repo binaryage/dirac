@@ -102,7 +102,7 @@ WebInspector.WorkerManager._calculateWorkerInspectorTitle = function()
     
     /**
      * @param {?Protocol.Error} error
-     * @param {RuntimeAgent.RemoteObject} result
+     * @param {!RuntimeAgent.RemoteObject} result
      * @param {boolean=} wasThrown
      */
     function evalCallback(error, result, wasThrown)

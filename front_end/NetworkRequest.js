@@ -32,11 +32,11 @@
  * @constructor
  * @extends {WebInspector.Object}
  * @implements {WebInspector.ContentProvider}
- * @param {NetworkAgent.RequestId} requestId
+ * @param {!NetworkAgent.RequestId} requestId
  * @param {string} url
  * @param {string} documentURL
- * @param {PageAgent.FrameId} frameId
- * @param {NetworkAgent.LoaderId} loaderId
+ * @param {!PageAgent.FrameId} frameId
+ * @param {!NetworkAgent.LoaderId} loaderId
  */
 WebInspector.NetworkRequest = function(requestId, url, documentURL, frameId, loaderId)
 {
@@ -76,12 +76,12 @@ WebInspector.NetworkRequest.InitiatorType = {
     Script: "script"
 }
 
-/** @typedef {{name: string, value: string}} */
+/** @typedef {!{name: string, value: string}} */
 WebInspector.NetworkRequest.NameValue;
 
 WebInspector.NetworkRequest.prototype = {
     /**
-     * @return {NetworkAgent.RequestId}
+     * @return {!NetworkAgent.RequestId}
      */
     get requestId()
     {
@@ -128,7 +128,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {PageAgent.FrameId}
+     * @return {!PageAgent.FrameId}
      */
     get frameId()
     {
@@ -136,7 +136,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {NetworkAgent.LoaderId}
+     * @return {!NetworkAgent.LoaderId}
      */
     get loaderId()
     {
@@ -320,7 +320,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {NetworkAgent.ResourceTiming|undefined}
+     * @return {!NetworkAgent.ResourceTiming|undefined}
      */
     get timing()
     {
@@ -414,7 +414,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {WebInspector.ResourceType}
+     * @return {!WebInspector.ResourceType}
      */
     get type()
     {
@@ -745,7 +745,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {WebInspector.ResourceType}
+     * @return {!WebInspector.ResourceType}
      */
     contentType: function()
     {
@@ -817,7 +817,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @param {Element} image
+     * @param {!Element} image
      */
     populateImageSource: function(image)
     {
@@ -869,7 +869,7 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
-     * @return {{type: WebInspector.NetworkRequest.InitiatorType, url: string, source: string, lineNumber: number, columnNumber: number}}
+     * @return {!{type: !WebInspector.NetworkRequest.InitiatorType, url: string, source: string, lineNumber: number, columnNumber: number}}
      */
     initiatorInfo: function()
     {
@@ -914,7 +914,7 @@ WebInspector.NetworkRequest.prototype = {
 
     /**
      * @param {number} position
-     * @return {Object|undefined}
+     * @return {!Object|undefined}
      */
     frame: function(position)
     {

@@ -70,7 +70,7 @@ WebInspector.SnippetStorage.prototype = {
 
     /**
      * @param {string} id
-     * @return {WebInspector.Snippet}
+     * @return {!WebInspector.Snippet}
      */
     snippetForId: function(id)
     {
@@ -79,7 +79,7 @@ WebInspector.SnippetStorage.prototype = {
 
     /**
      * @param {string} name
-     * @return {WebInspector.Snippet}
+     * @return {?WebInspector.Snippet}
      */
     snippetForName: function(name)
     {
@@ -98,7 +98,7 @@ WebInspector.SnippetStorage.prototype = {
     },
 
     /**
-     * @param {WebInspector.Snippet} snippet
+     * @param {!WebInspector.Snippet} snippet
      */
     deleteSnippet: function(snippet)
     {
@@ -107,7 +107,7 @@ WebInspector.SnippetStorage.prototype = {
     },
 
     /**
-     * @return {WebInspector.Snippet}
+     * @return {!WebInspector.Snippet}
      */
     createSnippet: function()
     {
@@ -121,7 +121,7 @@ WebInspector.SnippetStorage.prototype = {
     },
 
     /**
-     * @param {WebInspector.Snippet} snippet
+     * @param {!WebInspector.Snippet} snippet
      */
     _snippetAdded: function(snippet)
     {
@@ -141,7 +141,7 @@ WebInspector.SnippetStorage.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {WebInspector.SnippetStorage} storage
+ * @param {!WebInspector.SnippetStorage} storage
  * @param {string} id
  * @param {string=} name
  * @param {string=} content
@@ -155,9 +155,9 @@ WebInspector.Snippet = function(storage, id, name, content)
 }
 
 /**
- * @param {WebInspector.SnippetStorage} storage
- * @param {Object} serializedSnippet
- * @return {WebInspector.Snippet}
+ * @param {!WebInspector.SnippetStorage} storage
+ * @param {!Object} serializedSnippet
+ * @return {!WebInspector.Snippet}
  */
 WebInspector.Snippet.fromObject = function(storage, serializedSnippet)
 {
@@ -208,7 +208,7 @@ WebInspector.Snippet.prototype = {
     },
 
     /**
-     * @return {Object}
+     * @return {!Object}
      */
     serializeToObject: function()
     {

@@ -45,7 +45,7 @@ WebInspector.RevisionHistoryView = function()
     this._treeOutline = new TreeOutline(olElement);
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     function populateRevisions(uiSourceCode)
     {
@@ -60,7 +60,7 @@ WebInspector.RevisionHistoryView = function()
 }
 
 /**
- * @param {WebInspector.UISourceCode} uiSourceCode
+ * @param {!WebInspector.UISourceCode} uiSourceCode
  */
 WebInspector.RevisionHistoryView.showHistory = function(uiSourceCode)
 {
@@ -73,7 +73,7 @@ WebInspector.RevisionHistoryView.showHistory = function(uiSourceCode)
 
 WebInspector.RevisionHistoryView.prototype = {
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     _createUISourceCodeItem: function(uiSourceCode)
     {
@@ -114,7 +114,7 @@ WebInspector.RevisionHistoryView.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     _clearHistory: function(uiSourceCode)
     {
@@ -123,7 +123,7 @@ WebInspector.RevisionHistoryView.prototype = {
 
     _revisionAdded: function(event)
     {
-        var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data.uiSourceCode);
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data.uiSourceCode);
         var uiSourceCodeItem = this._uiSourceCodeItems.get(uiSourceCode);
         if (!uiSourceCodeItem) {
             uiSourceCodeItem = this._createUISourceCodeItem(uiSourceCode);
@@ -138,7 +138,7 @@ WebInspector.RevisionHistoryView.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     _revealUISourceCode: function(uiSourceCode)
     {
@@ -151,12 +151,12 @@ WebInspector.RevisionHistoryView.prototype = {
 
     _uiSourceCodeRemoved: function(event)
     {
-        var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (event.data);
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
         this._removeUISourceCode(uiSourceCode);
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     _removeUISourceCode: function(uiSourceCode)
     {
@@ -179,8 +179,8 @@ WebInspector.RevisionHistoryView.prototype = {
 /**
  * @constructor
  * @extends {TreeElement}
- * @param {WebInspector.Revision} revision
- * @param {WebInspector.Revision} baseRevision
+ * @param {!WebInspector.Revision} revision
+ * @param {!WebInspector.Revision} baseRevision
  * @param {boolean} allowRevert
  */
 WebInspector.RevisionHistoryTreeElement = function(revision, baseRevision, allowRevert)

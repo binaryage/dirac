@@ -167,8 +167,8 @@ WebInspector.View.prototype = {
     },
 
     /**
-     * @param {Element} parentElement
-     * @param {Element=} insertBefore
+     * @param {?Element} parentElement
+     * @param {!Element=} insertBefore
      */
     show: function(parentElement, insertBefore)
     {
@@ -189,8 +189,9 @@ WebInspector.View.prototype = {
                 this._isRoot = false;
             } else
                 WebInspector.View._assert(this._isRoot, "Attempt to attach view to orphan node");
-        } else if (this._visible)
+        } else if (this._visible) {
             return;
+        }
 
         this._visible = true;
 
@@ -402,7 +403,7 @@ WebInspector.View.prototype = {
     },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     defaultFocusedElement: function()
     {
@@ -410,7 +411,7 @@ WebInspector.View.prototype = {
     },
 
     /**
-     * @param {Element} element
+     * @param {!Element} element
      */
     setDefaultFocusedElement: function(element)
     {
@@ -427,7 +428,7 @@ WebInspector.View.prototype = {
     },
 
     /**
-     * @return {Size}
+     * @return {!Size}
      */
     measurePreferredSize: function()
     {

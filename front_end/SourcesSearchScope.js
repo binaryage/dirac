@@ -29,7 +29,7 @@
 /**
  * @constructor
  * @implements {WebInspector.SearchScope}
- * @param {WebInspector.Workspace} workspace
+ * @param {!WebInspector.Workspace} workspace
  */
 WebInspector.SourcesSearchScope = function(workspace)
 {
@@ -41,7 +41,7 @@ WebInspector.SourcesSearchScope = function(workspace)
 
 WebInspector.SourcesSearchScope.prototype = {
     /**
-     * @param {WebInspector.Progress} progress
+     * @param {!WebInspector.Progress} progress
      * @param {function(boolean)} indexingFinishedCallback
      */
     performIndexing: function(progress, indexingFinishedCallback)
@@ -72,9 +72,9 @@ WebInspector.SourcesSearchScope.prototype = {
     },
 
     /**
-     * @param {WebInspector.SearchConfig} searchConfig
-     * @param {WebInspector.Progress} progress
-     * @param {function(WebInspector.FileBasedSearchResultsPane.SearchResult)} searchResultCallback
+     * @param {!WebInspector.SearchConfig} searchConfig
+     * @param {!WebInspector.Progress} progress
+     * @param {function(!WebInspector.FileBasedSearchResultsPane.SearchResult)} searchResultCallback
      * @param {function(boolean)} searchFinishedCallback
      */
     performSearch: function(searchConfig, progress, searchResultCallback, searchFinishedCallback)
@@ -85,7 +85,7 @@ WebInspector.SourcesSearchScope.prototype = {
         this._searchConfig = searchConfig;
 
         /**
-         * @param {WebInspector.Project} project
+         * @param {!WebInspector.Project} project
          */
         function filterOutServiceProjects(project)
         {
@@ -110,10 +110,10 @@ WebInspector.SourcesSearchScope.prototype = {
 
     /**
      * @param {number} searchId
-     * @param {WebInspector.Project} project
-     * @param {WebInspector.Progress} progress
+     * @param {!WebInspector.Project} project
+     * @param {!WebInspector.Progress} progress
      * @param {function()} callback
-     * @param {Array.<string>} files
+     * @param {!Array.<string>} files
      */
     _processMatchingFilesForProject: function(searchId, project, progress, callback, files)
     {
@@ -195,7 +195,7 @@ WebInspector.SourcesSearchScope.prototype = {
     },
 
     /**
-     * @param {WebInspector.SearchConfig} searchConfig
+     * @param {!WebInspector.SearchConfig} searchConfig
      */
     createSearchResultsPane: function(searchConfig)
     {

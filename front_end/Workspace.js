@@ -34,7 +34,7 @@
  * @param {string} name
  * @param {string} originURL
  * @param {string} url
- * @param {WebInspector.ResourceType} contentType
+ * @param {!WebInspector.ResourceType} contentType
  * @param {boolean} isEditable
  * @param {boolean=} isContentScript
  */
@@ -109,7 +109,7 @@ WebInspector.ProjectDelegate.prototype = {
     /**
      * @param {string} path
      * @param {string} newName
-     * @param {function(boolean, string=, string=, string=, WebInspector.ResourceType=)} callback
+     * @param {function(boolean, string=, string=, string=, !WebInspector.ResourceType=)} callback
      */
     rename: function(path, newName, callback) { },
 
@@ -151,26 +151,26 @@ WebInspector.ProjectDelegate.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {WebInspector.Progress} progress
-     * @param {function(Array.<string>)} callback
+     * @param {!WebInspector.Progress} progress
+     * @param {function(!Array.<string>)} callback
      */
     findFilesMatchingSearchRequest: function(query, caseSensitive, isRegex, progress, callback) { },
 
     /**
-     * @param {WebInspector.Progress} progress
+     * @param {!WebInspector.Progress} progress
      * @param {function()} callback
      */
     indexContent: function(progress, callback) { }
 }
 
 /**
- * @param {WebInspector.Workspace} workspace
- * @param {WebInspector.ProjectDelegate} projectDelegate
+ * @param {!WebInspector.Workspace} workspace
+ * @param {!WebInspector.ProjectDelegate} projectDelegate
  * @constructor
  */
 WebInspector.Project = function(workspace, projectDelegate)
 {
-    /** @type {Object.<string, {uiSourceCode: WebInspector.UISourceCode, index: number}>} */
+    /** @type {!Object.<string, {uiSourceCode: !WebInspector.UISourceCode, index: number}>} */
     this._uiSourceCodesMap = {};
     /** @type {!Array.<!WebInspector.UISourceCode>} */
     this._uiSourceCodesList = [];
@@ -217,7 +217,7 @@ WebInspector.Project.prototype = {
 
     _fileAdded: function(event)
     {
-        var fileDescriptor = /** @type {WebInspector.FileDescriptor} */ (event.data);
+        var fileDescriptor = /** @type {!WebInspector.FileDescriptor} */ (event.data);
         var path = fileDescriptor.parentPath ? fileDescriptor.parentPath + "/" + fileDescriptor.name : fileDescriptor.name;
         var uiSourceCode = this.uiSourceCode(path);
         if (uiSourceCode)
@@ -296,7 +296,7 @@ WebInspector.Project.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {function(?Date, ?number)} callback
      */
     requestMetadata: function(uiSourceCode, callback)
@@ -305,7 +305,7 @@ WebInspector.Project.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {function(?string)} callback
      */
     requestFileContent: function(uiSourceCode, callback)
@@ -322,7 +322,7 @@ WebInspector.Project.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {string} newContent
      * @param {function(?string)} callback
      */
@@ -349,9 +349,9 @@ WebInspector.Project.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {string} newName
-     * @param {function(boolean, string=, string=, string=, WebInspector.ResourceType=)} callback
+     * @param {function(boolean, string=, string=, string=, !WebInspector.ResourceType=)} callback
      */
     rename: function(uiSourceCode, newName, callback)
     {
@@ -367,7 +367,7 @@ WebInspector.Project.prototype = {
          * @param {string=} newName
          * @param {string=} newURL
          * @param {string=} newOriginURL
-         * @param {WebInspector.ResourceType=} newContentType
+         * @param {!WebInspector.ResourceType=} newContentType
          */
         function innerCallback(success, newName, newURL, newOriginURL, newContentType)
         {
@@ -435,7 +435,7 @@ WebInspector.Project.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
@@ -450,8 +450,8 @@ WebInspector.Project.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {WebInspector.Progress} progress
-     * @param {function(Array.<string>)} callback
+     * @param {!WebInspector.Progress} progress
+     * @param {function(!Array.<string>)} callback
      */
     findFilesMatchingSearchRequest: function(query, caseSensitive, isRegex, progress, callback)
     {
@@ -459,7 +459,7 @@ WebInspector.Project.prototype = {
     },
 
     /**
-     * @param {WebInspector.Progress} progress
+     * @param {!WebInspector.Progress} progress
      * @param {function()} callback
      */
     indexContent: function(progress, callback)
@@ -484,7 +484,7 @@ WebInspector.projectTypes = {
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {WebInspector.FileSystemMapping} fileSystemMapping
+ * @param {!WebInspector.FileSystemMapping} fileSystemMapping
  */
 WebInspector.Workspace = function(fileSystemMapping)
 {
@@ -556,8 +556,8 @@ WebInspector.Workspace.prototype = {
     },
 
     /**
-     * @param {WebInspector.ProjectDelegate} projectDelegate
-     * @return {WebInspector.Project}
+     * @param {!WebInspector.ProjectDelegate} projectDelegate
+     * @return {!WebInspector.Project}
      */
     addProject: function(projectDelegate)
     {
@@ -580,7 +580,7 @@ WebInspector.Workspace.prototype = {
 
     /**
      * @param {string} projectId
-     * @return {WebInspector.Project}
+     * @return {!WebInspector.Project}
      */
     project: function(projectId)
     {
@@ -672,9 +672,9 @@ WebInspector.Workspace.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} networkUISourceCode
-     * @param {WebInspector.UISourceCode} uiSourceCode
-     * @param {WebInspector.FileSystemWorkspaceProvider} fileSystemWorkspaceProvider
+     * @param {!WebInspector.UISourceCode} networkUISourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.FileSystemWorkspaceProvider} fileSystemWorkspaceProvider
      */
     addMapping: function(networkUISourceCode, uiSourceCode, fileSystemWorkspaceProvider)
     {
@@ -686,7 +686,7 @@ WebInspector.Workspace.prototype = {
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     removeMapping: function(uiSourceCode)
     {

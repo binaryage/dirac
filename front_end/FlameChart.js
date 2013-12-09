@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.FlameChartDataProvider} dataProvider
+ * @param {!WebInspector.FlameChartDataProvider} dataProvider
  */
 WebInspector.FlameChart = function(dataProvider)
 {
@@ -54,7 +54,7 @@ WebInspector.FlameChart = function(dataProvider)
 
 WebInspector.FlameChart.prototype = {
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onWindowChanged: function(event)
     {
@@ -71,7 +71,7 @@ WebInspector.FlameChart.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onEntrySelected: function(event)
     {
@@ -96,10 +96,10 @@ WebInspector.FlameChartDataProvider = function()
 
 WebInspector.FlameChartDataProvider.prototype = {
     /**
-     * @param {WebInspector.FlameChart.ColorGenerator} colorGenerator
-     * @return {Object}
+     * @param {!WebInspector.FlameChart.ColorGenerator} colorGenerator
+     * @return {!Object}
      */
-    timelineData: function(colorGenerator) { return null; },
+    timelineData: function(colorGenerator) { },
 
     /**
      * @param {number} entryIndex
@@ -110,13 +110,13 @@ WebInspector.FlameChartDataProvider.prototype = {
      * @param {number} entryIndex
      * @return {boolean}
      */
-    canJumpToEntry: function(entryIndex) { return false; },
+    canJumpToEntry: function(entryIndex) { },
 
     /**
      * @param {number} entryIndex
-     * @return {Object}
+     * @return {!Object}
      */
-    entryData: function(entryIndex) { return null; }
+    entryData: function(entryIndex) { }
 }
 
 /**
@@ -129,7 +129,7 @@ WebInspector.FlameChart.Calculator = function()
 
 WebInspector.FlameChart.Calculator.prototype = {
     /**
-     * @param {WebInspector.FlameChart.MainPane} mainPane
+     * @param {!WebInspector.FlameChart.MainPane} mainPane
      */
     _updateBoundaries: function(mainPane)
     {
@@ -209,7 +209,7 @@ WebInspector.FlameChart.OverviewCalculator = function()
 
 WebInspector.FlameChart.OverviewCalculator.prototype = {
     /**
-     * @param {WebInspector.FlameChart.OverviewPane} overviewPane
+     * @param {!WebInspector.FlameChart.OverviewPane} overviewPane
      */
     _updateBoundaries: function(overviewPane)
     {
@@ -350,7 +350,7 @@ WebInspector.FlameChart.OverviewPaneInterface.prototype = {
  * @constructor
  * @extends {WebInspector.View}
  * @implements {WebInspector.FlameChart.OverviewPaneInterface}
- * @param {WebInspector.FlameChartDataProvider} dataProvider
+ * @param {!WebInspector.FlameChartDataProvider} dataProvider
  */
 WebInspector.FlameChart.OverviewPane = function(dataProvider)
 {
@@ -505,8 +505,8 @@ WebInspector.FlameChart.OverviewPane.drawOverviewCanvas = function(timelineData,
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.FlameChartDataProvider} dataProvider
- * @param {WebInspector.FlameChart.OverviewPaneInterface} overviewPane
+ * @param {!WebInspector.FlameChartDataProvider} dataProvider
+ * @param {!WebInspector.FlameChart.OverviewPaneInterface} overviewPane
  */
 WebInspector.FlameChart.MainPane = function(dataProvider, overviewPane)
 {
@@ -556,7 +556,7 @@ WebInspector.FlameChart.MainPane.prototype = {
     },
 
     /**
-     * @param {MouseEvent} event
+     * @param {!MouseEvent} event
      */
     _startCanvasDragging: function(event)
     {
@@ -572,7 +572,7 @@ WebInspector.FlameChart.MainPane.prototype = {
     },
 
     /**
-     * @param {MouseEvent} event
+     * @param {!MouseEvent} event
      */
     _canvasDragging: function(event)
     {
@@ -598,7 +598,7 @@ WebInspector.FlameChart.MainPane.prototype = {
     },
 
     /**
-     * @param {MouseEvent} event
+     * @param {?MouseEvent} event
      */
     _onMouseMove: function(event)
     {
@@ -633,7 +633,7 @@ WebInspector.FlameChart.MainPane.prototype = {
     },
 
     /**
-     * @param {MouseEvent} e
+     * @param {?MouseEvent} e
      */
     _onMouseWheel: function(e)
     {

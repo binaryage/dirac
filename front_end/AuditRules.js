@@ -46,7 +46,7 @@ WebInspector.AuditRules.CacheableResponseCodes =
  * @param {!Array.<!WebInspector.NetworkRequest>} requests
  * @param {?Array.<!WebInspector.resourceTypes>} types
  * @param {boolean} needFullResources
- * @return {(Object.<string, !Array.<!WebInspector.NetworkRequest>>|Object.<string, !Array.<string>>)}
+ * @return {!Object.<string, !Array.<!WebInspector.NetworkRequest|string>>}
  */
 WebInspector.AuditRules.getDomainToResourcesMap = function(requests, types, needFullResources)
 {
@@ -429,7 +429,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
 
             /**
              * @param {!Array.<string>} selectors
-             * @param {WebInspector.DOMDocument} document
+             * @param {!WebInspector.DOMDocument} document
              */
             function documentLoaded(selectors, document) {
                 var pseudoSelectorRegexp = /::?(?:[\w-]+)(?:\(.*?\))?/g;
@@ -452,7 +452,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
          * @param {!Array.<!WebInspector.CSSStyleSheet>} styleSheets
          * @param {string} sourceURL
          * @param {?function(!Array.<!WebInspector.CSSStyleSheet>)} continuation
-         * @param {WebInspector.CSSStyleSheet} styleSheet
+         * @param {?WebInspector.CSSStyleSheet} styleSheet
          */
         function styleSheetCallback(styleSheets, sourceURL, continuation, styleSheet)
         {
@@ -506,7 +506,7 @@ WebInspector.AuditRules.CacheControlRule.prototype = {
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
-     * @param {function(WebInspector.AuditRuleResult)} callback
+     * @param {function(!WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     doRun: function(requests, result, callback, progress)
@@ -1047,7 +1047,7 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
         }
 
         /**
-         * @param {WebInspector.DOMDocument} root
+         * @param {!WebInspector.DOMDocument} root
          * @param {!Array.<!DOMAgent.NodeId>=} nodeIds
          */
         function lateStylesReceived(root, nodeIds)
@@ -1062,7 +1062,7 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
         }
 
         /**
-         * @param {WebInspector.DOMDocument} root
+         * @param {!WebInspector.DOMDocument} root
          */
         function onDocumentAvailable(root)
         {
@@ -1260,7 +1260,7 @@ WebInspector.AuditRules.CookieRuleBase.prototype = {
     /**
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
-     * @param {function(WebInspector.AuditRuleResult)} callback
+     * @param {function(!WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
     doRun: function(requests, result, callback, progress)

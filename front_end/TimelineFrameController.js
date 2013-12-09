@@ -30,9 +30,9 @@
 
 /**
  * @constructor
- * @param {WebInspector.TimelineModel} model
- * @param {WebInspector.TimelineOverviewPane} overviewPane
- * @param {WebInspector.TimelinePresentationModel} presentationModel
+ * @param {!WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineOverviewPane} overviewPane
+ * @param {!WebInspector.TimelinePresentationModel} presentationModel
  */
 WebInspector.TimelineFrameController = function(model, overviewPane, presentationModel)
 {
@@ -76,8 +76,8 @@ WebInspector.TimelineFrameController.prototype = {
     },
 
     /**
-     * @param {Object} programRecord
-     * @param {Object} record
+     * @param {!Object} programRecord
+     * @param {!Object} record
      */
     _innerAddRecord: function(programRecord, record)
     {
@@ -107,8 +107,8 @@ WebInspector.TimelineFrameController.prototype = {
     },
 
     /**
-     * @param {WebInspector.TimelineFrame} frame
-     * @param {Object} record
+     * @param {!WebInspector.TimelineFrame} frame
+     * @param {!Object} record
      * @param {number} programTimeCarryover
      */
     _flushFrame: function(frame, record, programTimeCarryover)
@@ -124,7 +124,7 @@ WebInspector.TimelineFrameController.prototype = {
     },
 
     /**
-     * @param {Object} record
+     * @param {!Object} record
      * @param {number} programTimeCarryover
      */
     _createFrame: function(record, programTimeCarryover)

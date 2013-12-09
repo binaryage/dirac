@@ -128,8 +128,8 @@ WebInspector.TimelineModel.durationInSeconds = function(record)
 }
 
 /**
- * @param {Object} total
- * @param {Object} rawRecord
+ * @param {!Object} total
+ * @param {!Object} rawRecord
  */
 WebInspector.TimelineModel.aggregateTimeForRecord = function(total, rawRecord)
 {
@@ -145,8 +145,8 @@ WebInspector.TimelineModel.aggregateTimeForRecord = function(total, rawRecord)
 }
 
 /**
- * @param {Object} total
- * @param {Object} addend
+ * @param {!Object} total
+ * @param {!Object} addend
  */
 WebInspector.TimelineModel.aggregateTimeByCategory = function(total, addend)
 {
@@ -191,7 +191,7 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onRecordAdded: function(event)
     {
@@ -200,7 +200,7 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onStarted: function(event)
     {
@@ -211,7 +211,7 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onStopped: function(event)
     {
@@ -234,7 +234,7 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @param {TimelineAgent.TimelineEvent} record
+     * @param {!TimelineAgent.TimelineEvent} record
      */
     _addRecord: function(record)
     {
@@ -316,7 +316,7 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @param {TimelineAgent.TimelineEvent} record
+     * @param {!TimelineAgent.TimelineEvent} record
      */
     _updateBoundaries: function(record)
     {
@@ -330,7 +330,7 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @param {Object} rawRecord
+     * @param {!Object} rawRecord
      */
     recordOffsetInSeconds: function(rawRecord)
     {
@@ -424,7 +424,7 @@ WebInspector.TimelineModelLoadFromFileDelegate.prototype = {
     },
 
     /**
-     * @param {WebInspector.ChunkedReader} reader
+     * @param {!WebInspector.ChunkedReader} reader
      */
     onChunkTransferred: function(reader)
     {
@@ -448,7 +448,7 @@ WebInspector.TimelineModelLoadFromFileDelegate.prototype = {
     },
 
     /**
-     * @param {WebInspector.ChunkedReader} reader
+     * @param {!WebInspector.ChunkedReader} reader
      */
     onError: function(reader, event)
     {

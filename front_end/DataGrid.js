@@ -27,10 +27,10 @@
  * @constructor
  * @extends {WebInspector.View}
  * @param {!Array.<!WebInspector.DataGrid.ColumnDescriptor>} columnsArray
- * @param {function(WebInspector.DataGridNode, string, string, string)=} editCallback
- * @param {function(WebInspector.DataGridNode)=} deleteCallback
+ * @param {function(!WebInspector.DataGridNode, string, string, string)=} editCallback
+ * @param {function(!WebInspector.DataGridNode)=} deleteCallback
  * @param {function()=} refreshCallback
- * @param {function(!WebInspector.ContextMenu, WebInspector.DataGridNode)=} contextMenuCallback
+ * @param {function(!WebInspector.ContextMenu, !WebInspector.DataGridNode)=} contextMenuCallback
  */
 WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, refreshCallback, contextMenuCallback)
 {
@@ -139,7 +139,7 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     this._columnWidthsInitialized = false;
 }
 
-/** @typedef {{id: ?string, editable: boolean, longText: ?boolean, sort: WebInspector.DataGrid.Order, sortable: boolean, align: WebInspector.DataGrid.Align}} */
+/** @typedef {!{id: ?string, editable: boolean, longText: ?boolean, sort: !WebInspector.DataGrid.Order, sortable: boolean, align: !WebInspector.DataGrid.Align}} */
 WebInspector.DataGrid.ColumnDescriptor;
 
 WebInspector.DataGrid.Events = {
@@ -164,7 +164,7 @@ WebInspector.DataGrid.Align = {
 /**
  * @param {!Array.<string>} columnNames
  * @param {!Array.<string>} values
- * @return {WebInspector.DataGrid}
+ * @return {?WebInspector.DataGrid}
  */
 WebInspector.DataGrid.createSortableDataGrid = function(columnNames, values)
 {
@@ -283,7 +283,7 @@ WebInspector.DataGrid.prototype = {
     _startEditingColumnOfDataGridNode: function(node, columnOrdinal)
     {
         this._editing = true;
-        /** @type {WebInspector.DataGridNode} */
+        /** @type {!WebInspector.DataGridNode} */
         this._editingNode = node;
         this._editingNode.select();
 
@@ -1124,7 +1124,7 @@ WebInspector.DataGrid.ResizeMethod = {
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {Object.<string, *>=} data
+ * @param {?Object.<string, *>=} data
  * @param {boolean=} hasChildren
  */
 WebInspector.DataGridNode = function(data, hasChildren)
@@ -1140,9 +1140,9 @@ WebInspector.DataGridNode = function(data, hasChildren)
     this.children = [];
     this.dataGrid = null;
     this.parent = null;
-    /** @type {WebInspector.DataGridNode} */
+    /** @type {?WebInspector.DataGridNode} */
     this.previousSibling = null;
-    /** @type {WebInspector.DataGridNode} */
+    /** @type {?WebInspector.DataGridNode} */
     this.nextSibling = null;
     this.disclosureToggleWidth = 10;
 }
@@ -1385,7 +1385,7 @@ WebInspector.DataGridNode.prototype = {
     },
 
     /**
-     * @param {WebInspector.DataGridNode} child
+     * @param {!WebInspector.DataGridNode} child
      */
     appendChild: function(child)
     {
@@ -1393,7 +1393,7 @@ WebInspector.DataGridNode.prototype = {
     },
 
     /**
-     * @param {WebInspector.DataGridNode} child
+     * @param {!WebInspector.DataGridNode} child
      * @param {number} index
      */
     insertChild: function(child, index)
@@ -1435,7 +1435,7 @@ WebInspector.DataGridNode.prototype = {
     },
 
     /**
-     * @param {WebInspector.DataGridNode} child
+     * @param {!WebInspector.DataGridNode} child
      */
     removeChild: function(child)
     {
@@ -1639,8 +1639,8 @@ WebInspector.DataGridNode.prototype = {
      * @param {boolean} skipHidden
      * @param {?WebInspector.DataGridNode=} stayWithin
      * @param {boolean=} dontPopulate
-     * @param {Object=} info
-     * @return {WebInspector.DataGridNode}
+     * @param {!Object=} info
+     * @return {?WebInspector.DataGridNode}
      */
     traverseNextNode: function(skipHidden, stayWithin, dontPopulate, info)
     {
@@ -1680,7 +1680,7 @@ WebInspector.DataGridNode.prototype = {
     /**
      * @param {boolean} skipHidden
      * @param {boolean=} dontPopulate
-     * @return {WebInspector.DataGridNode}
+     * @return {?WebInspector.DataGridNode}
      */
     traversePreviousNode: function(skipHidden, dontPopulate)
     {

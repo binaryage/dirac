@@ -63,7 +63,7 @@ WebInspector.Panel.prototype = {
     },
 
     /**
-     * @return {WebInspector.SearchableView}
+     * @return {?WebInspector.SearchableView}
      */
     searchableView: function()
     {
@@ -86,7 +86,7 @@ WebInspector.Panel.prototype = {
     },
 
     /**
-     * @param {Element=} parentElement
+     * @param {!Element=} parentElement
      * @param {string=} position
      * @param {number=} defaultWidth
      * @param {number=} defaultHeight
@@ -107,7 +107,7 @@ WebInspector.Panel.prototype = {
     },
 
     /**
-     * @param {Element=} parentElement
+     * @param {!Element=} parentElement
      * @param {string=} position
      * @param {number=} defaultWidth
      */
@@ -139,7 +139,7 @@ WebInspector.Panel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     sidebarResized: function(event)
     {
@@ -150,7 +150,7 @@ WebInspector.Panel.prototype = {
     },
 
     /**
-     * @param {Element} anchor
+     * @param {!Element} anchor
      * @return {boolean}
      */
     showAnchorLocation: function(anchor)
@@ -164,7 +164,7 @@ WebInspector.Panel.prototype = {
     },
 
     /**
-     * @param {KeyboardEvent} event
+     * @param {!KeyboardEvent} event
      */
     handleShortcut: function(event)
     {
@@ -197,7 +197,7 @@ WebInspector.Panel.prototype = {
 
     /**
      * @param {!Array.<!WebInspector.KeyboardShortcut.Descriptor>} keys
-     * @param {function(Event=):boolean} handler
+     * @param {function(?Event=):boolean} handler
      */
     registerShortcuts: function(keys, handler)
     {
@@ -214,7 +214,7 @@ WebInspector.Panel.prototype = {
  * @param {string} title
  * @param {string=} className
  * @param {string=} scriptName
- * @param {WebInspector.Panel=} panel
+ * @param {!WebInspector.Panel=} panel
  */
 WebInspector.PanelDescriptor = function(name, title, className, scriptName, panel)
 {
@@ -243,7 +243,7 @@ WebInspector.PanelDescriptor.prototype = {
     },
 
     /**
-     * @return {WebInspector.Panel}
+     * @return {!WebInspector.Panel}
      */
     panel: function()
     {

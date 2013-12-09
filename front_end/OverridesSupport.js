@@ -77,7 +77,7 @@ WebInspector.OverridesSupport.DeviceMetrics = function(width, height, deviceScal
 }
 
 /**
- * @return {WebInspector.OverridesSupport.DeviceMetrics}
+ * @return {!WebInspector.OverridesSupport.DeviceMetrics}
  */
 WebInspector.OverridesSupport.DeviceMetrics.parseSetting = function(value)
 {
@@ -254,7 +254,7 @@ WebInspector.OverridesSupport.GeolocationPosition.prototype = {
 }
 
 /**
- * @return {WebInspector.OverridesSupport.GeolocationPosition}
+ * @return {!WebInspector.OverridesSupport.GeolocationPosition}
  */
 WebInspector.OverridesSupport.GeolocationPosition.parseSetting = function(value)
 {
@@ -325,7 +325,7 @@ WebInspector.OverridesSupport.DeviceOrientation.prototype = {
 }
 
 /**
- * @return {WebInspector.OverridesSupport.DeviceOrientation}
+ * @return {!WebInspector.OverridesSupport.DeviceOrientation}
  */
 WebInspector.OverridesSupport.DeviceOrientation.parseSetting = function(value)
 {
@@ -542,6 +542,6 @@ WebInspector.OverridesSupport.prototype = {
 
 
 /**
- * @type {WebInspector.OverridesSupport}
+ * @type {?WebInspector.OverridesSupport}
  */
-WebInspector.overridesSupport;
+WebInspector.overridesSupport = null;

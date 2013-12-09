@@ -128,7 +128,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     /**
      * @param {string} path
      * @param {string} newName
-     * @param {function(boolean, string=, string=, string=, WebInspector.ResourceType=)} callback
+     * @param {function(boolean, string=, string=, string=, !WebInspector.ResourceType=)} callback
      */
     rename: function(path, newName, callback)
     {
@@ -222,8 +222,8 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {WebInspector.Progress} progress
-     * @param {function(Array.<string>)} callback
+     * @param {!WebInspector.Progress} progress
+     * @param {function(!Array.<string>)} callback
      */
     findFilesMatchingSearchRequest: function(query, caseSensitive, isRegex, progress, callback)
     {
@@ -266,7 +266,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     },
 
     /**
-     * @param {WebInspector.Progress} progress
+     * @param {!WebInspector.Progress} progress
      * @param {function()} callback
      */
     indexContent: function(progress, callback)
@@ -284,7 +284,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
      * @param {string} parentPath
      * @param {string} name
      * @param {string} url
-     * @param {WebInspector.ContentProvider} contentProvider
+     * @param {!WebInspector.ContentProvider} contentProvider
      * @param {boolean} isEditable
      * @param {boolean=} isContentScript
      * @return {string}
@@ -310,7 +310,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     },
 
     /**
-     * @return {Object.<string, !WebInspector.ContentProvider>}
+     * @return {!Object.<string, !WebInspector.ContentProvider>}
      */
     contentProviders: function()
     {

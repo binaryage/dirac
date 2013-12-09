@@ -115,7 +115,7 @@ WebInspector.ResourceWebSocketFrameView.prototype = {
 
     /**
      * @param {!WebInspector.ContextMenu} contextMenu
-     * @param {WebInspector.DataGridNode} node
+     * @param {!WebInspector.DataGridNode} node
      */
     _onContextMenu: function(contextMenu, node)
     {

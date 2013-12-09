@@ -39,15 +39,15 @@ WebInspector.SourcesPanelDescriptor = function()
 
 WebInspector.SourcesPanelDescriptor.prototype = {
     /**
-     * @param {WebInspector.ContextMenu} contextMenu
-     * @param {Object} target
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} target
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
         var hasApplicableItems = target instanceof WebInspector.UISourceCode;
 
         if (!hasApplicableItems && target instanceof WebInspector.RemoteObject) {
-            var remoteObject = /** @type {WebInspector.RemoteObject} */ (target);
+            var remoteObject = /** @type {!WebInspector.RemoteObject} */ (target);
             if (remoteObject.type !== "function")
                 return;
         }

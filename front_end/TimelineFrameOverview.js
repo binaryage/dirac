@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.TimelineOverviewBase}
- * @param {WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.TimelineFrameOverview = function(model)
 {
@@ -115,7 +115,7 @@ WebInspector.TimelineFrameOverview.prototype = {
     },
 
     /**
-     * @param {WebInspector.TimelineFrame} frame
+     * @param {!WebInspector.TimelineFrame} frame
      */
     addFrame: function(frame)
     {
@@ -150,7 +150,7 @@ WebInspector.TimelineFrameOverview.prototype = {
     /**
      * @param {!Array.<!WebInspector.TimelineFrame>} frames
      * @param {number} framesPerBar
-     * @return {!Array.<WebInspector.TimelineFrame>}
+     * @return {!Array.<!WebInspector.TimelineFrame>}
      */
     _aggregateFrames: function(frames, framesPerBar)
     {
@@ -178,7 +178,7 @@ WebInspector.TimelineFrameOverview.prototype = {
     },
 
     /**
-     * @param {WebInspector.TimelineFrame} frame
+     * @param {!WebInspector.TimelineFrame} frame
      */
     _frameDuration: function(frame)
     {
@@ -288,7 +288,7 @@ WebInspector.TimelineFrameOverview.prototype = {
      * @param {number} left
      * @param {number} width
      * @param {number} windowHeight
-     * @param {WebInspector.TimelineFrame} frame
+     * @param {!WebInspector.TimelineFrame} frame
      * @param {number} scale
      */
     _renderBar: function(left, width, windowHeight, frame, scale)

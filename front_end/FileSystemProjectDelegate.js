@@ -32,8 +32,8 @@
  * @constructor
  * @implements {WebInspector.ProjectDelegate}
  * @extends {WebInspector.Object}
- * @param {WebInspector.IsolatedFileSystem} isolatedFileSystem
- * @param {WebInspector.Workspace} workspace
+ * @param {!WebInspector.IsolatedFileSystem} isolatedFileSystem
+ * @param {!WebInspector.Workspace} workspace
  */
 WebInspector.FileSystemProjectDelegate = function(isolatedFileSystem, workspace)
 {
@@ -47,7 +47,7 @@ WebInspector.FileSystemProjectDelegate = function(isolatedFileSystem, workspace)
     this._searchCallbacks = {};
     /** @type {Object.<number, function()>} */
     this._indexingCallbacks = {};
-    /** @type {Object.<number, WebInspector.Progress>} */
+    /** @type {Object.<number, !WebInspector.Progress>} */
     this._indexingProgresses = {};
 }
 
@@ -154,7 +154,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     /**
      * @param {string} path
      * @param {string} newName
-     * @param {function(boolean, string=, string=, string=, WebInspector.ResourceType=)} callback
+     * @param {function(boolean, string=, string=, string=, !WebInspector.ResourceType=)} callback
      */
     rename: function(path, newName, callback)
     {
@@ -210,8 +210,8 @@ WebInspector.FileSystemProjectDelegate.prototype = {
      * @param {string} query
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
-     * @param {WebInspector.Progress} progress
-     * @param {function(Array.<string>)} callback
+     * @param {!WebInspector.Progress} progress
+     * @param {function(!Array.<string>)} callback
      */
     findFilesMatchingSearchRequest: function(query, caseSensitive, isRegex, progress, callback)
     {
@@ -256,7 +256,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     },
 
     /**
-     * @param {WebInspector.Progress} progress
+     * @param {!WebInspector.Progress} progress
      * @param {function()} callback
      */
     indexContent: function(progress, callback)
@@ -334,7 +334,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
 
     /**
      * @param {string} extension
-     * @return {WebInspector.ResourceType}
+     * @return {!WebInspector.ResourceType}
      */
     _contentTypeForExtension: function(extension)
     {
@@ -456,8 +456,8 @@ WebInspector.fileSystemProjectDelegate = null;
 
 /**
  * @constructor
- * @param {WebInspector.IsolatedFileSystemManager} isolatedFileSystemManager
- * @param {WebInspector.Workspace} workspace
+ * @param {!WebInspector.IsolatedFileSystemManager} isolatedFileSystemManager
+ * @param {!WebInspector.Workspace} workspace
  */
 WebInspector.FileSystemWorkspaceProvider = function(isolatedFileSystemManager, workspace)
 {
@@ -470,11 +470,11 @@ WebInspector.FileSystemWorkspaceProvider = function(isolatedFileSystemManager, w
 
 WebInspector.FileSystemWorkspaceProvider.prototype = {
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _fileSystemAdded: function(event)
     {
-        var fileSystem = /** @type {WebInspector.IsolatedFileSystem} */ (event.data);
+        var fileSystem = /** @type {!WebInspector.IsolatedFileSystem} */ (event.data);
         var projectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystem.path());
         var projectDelegate = new WebInspector.FileSystemProjectDelegate(fileSystem, this._workspace)
         this._projectDelegates[projectDelegate.id()] = projectDelegate;
@@ -484,18 +484,18 @@ WebInspector.FileSystemWorkspaceProvider.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _fileSystemRemoved: function(event)
     {
-        var fileSystem = /** @type {WebInspector.IsolatedFileSystem} */ (event.data);
+        var fileSystem = /** @type {!WebInspector.IsolatedFileSystem} */ (event.data);
         var projectId = WebInspector.FileSystemProjectDelegate.projectId(fileSystem.path());
         this._workspace.removeProject(projectId);
         delete this._projectDelegates[projectId];
     },
 
     /**
-     * @param {WebInspector.UISourceCode} uiSourceCode
+     * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     fileSystemPath: function(uiSourceCode)
     {
@@ -504,7 +504,7 @@ WebInspector.FileSystemWorkspaceProvider.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileSystemProjectDelegate} fileSystemPath
+     * @param {!WebInspector.FileSystemProjectDelegate} fileSystemPath
      */
     delegate: function(fileSystemPath)
     {

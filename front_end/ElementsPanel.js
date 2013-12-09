@@ -145,7 +145,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
-     * @return {WebInspector.SearchableView}
+     * @return {!WebInspector.SearchableView}
      */
     searchableView: function()
     {
@@ -211,7 +211,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
-     * @param {DOMAgent.NodeId} nodeId
+     * @param {!DOMAgent.NodeId} nodeId
      * @param {string} pseudoClass
      * @param {boolean} enable
      */
@@ -468,7 +468,7 @@ WebInspector.ElementsPanel.prototype = {
             return;
         }
         
-        var node = /** @type {WebInspector.DOMNode} */ (treeElement.representedObject);
+        var node = /** @type {!WebInspector.DOMNode} */ (treeElement.representedObject);
 
         if (!node.nodeName() || node.nodeName().toLowerCase() !== "img") {
             callback();
@@ -495,8 +495,8 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
-     * @param {Element} anchor
-     * @param {WebInspector.Popover} popover
+     * @param {!Element} anchor
+     * @param {!WebInspector.Popover} popover
      */
     _showPopover: function(anchor, popover)
     {
@@ -507,7 +507,7 @@ WebInspector.ElementsPanel.prototype = {
             WebInspector.DOMPresentationUtils.buildImagePreviewContents(anchor.href, true, showPopover);
 
         /**
-         * @param {Element=} contents
+         * @param {!Element=} contents
          */
         function showPopover(contents)
         {
@@ -593,7 +593,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
-     * @return {WebInspector.DOMNode}
+     * @return {?WebInspector.DOMNode}
      */
     selectedDOMNode: function()
     {
@@ -609,7 +609,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _updateBreadcrumbIfNeeded: function(event)
     {
@@ -786,7 +786,7 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
-     * @param {Element=} focusedCrumb
+     * @param {!Element=} focusedCrumb
      */
     updateBreadcrumbSizes: function(focusedCrumb)
     {
@@ -1141,8 +1141,8 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /** 
-     * @param {WebInspector.ContextMenu} contextMenu
-     * @param {Object} target
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} target
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
@@ -1156,7 +1156,7 @@ WebInspector.ElementsPanel.prototype = {
         }
 
         /**
-         * @param {WebInspector.RemoteObject} remoteObject
+         * @param {!WebInspector.RemoteObject} remoteObject
          */
         function revealElement(remoteObject)
         {
@@ -1165,11 +1165,11 @@ WebInspector.ElementsPanel.prototype = {
 
         var commandCallback;
         if (target instanceof WebInspector.RemoteObject) {
-            var remoteObject = /** @type {WebInspector.RemoteObject} */ (target);
+            var remoteObject = /** @type {!WebInspector.RemoteObject} */ (target);
             if (remoteObject.subtype === "node")
                 commandCallback = revealElement.bind(this, remoteObject);
         } else if (target instanceof WebInspector.DOMNode) {
-            var domNode = /** @type {WebInspector.DOMNode} */ (target);
+            var domNode = /** @type {!WebInspector.DOMNode} */ (target);
             if (domNode.id)
                 commandCallback = WebInspector.domAgent.inspectElement.bind(WebInspector.domAgent, domNode.id);
         }
@@ -1225,8 +1225,8 @@ WebInspector.ElementsPanel.prototype = {
         this.sidebarPanes.platformFonts.show(computedPane.bodyElement);
 
         /**
-         * @param {WebInspector.SidebarPane} pane
-         * @param {Element=} beforeElement
+         * @param {!WebInspector.SidebarPane} pane
+         * @param {!Element=} beforeElement
          */
         function showMetrics(pane, beforeElement)
         {
@@ -1234,7 +1234,7 @@ WebInspector.ElementsPanel.prototype = {
         }
 
         /**
-         * @param {WebInspector.Event} event
+         * @param {!WebInspector.Event} event
          */
         function tabSelected(event)
         {
@@ -1304,7 +1304,7 @@ WebInspector.ElementsPanel.prototype = {
 
     /**
      * @param {string} id
-     * @param {WebInspector.SidebarPane} pane
+     * @param {!WebInspector.SidebarPane} pane
      */
     addExtensionSidebarPane: function(id, pane)
     {

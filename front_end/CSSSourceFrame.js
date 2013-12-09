@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.UISourceCodeFrame}
- * @param {WebInspector.UISourceCode} uiSourceCode
+ * @param {!WebInspector.UISourceCode} uiSourceCode
  */
 WebInspector.CSSSourceFrame = function(uiSourceCode)
 {

@@ -382,7 +382,7 @@ WebInspector.StatusBarButton.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.StatusBarItem}
- * @param {?function(Event)} changeHandler
+ * @param {?function(!Event)} changeHandler
  * @param {string=} className
  */
 WebInspector.StatusBarComboBox = function(changeHandler, className)
@@ -472,7 +472,7 @@ WebInspector.StatusBarComboBox.prototype = {
     },
 
     /**
-     * @param {Element} option
+     * @param {!Element} option
      */
     select: function(option)
     {

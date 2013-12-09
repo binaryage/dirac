@@ -28,7 +28,7 @@
  */
 
 /**
- * @param {Object} obj
+ * @param {!Object} obj
  * @return {boolean}
  */
 Object.isEmpty = function(obj)
@@ -39,7 +39,7 @@ Object.isEmpty = function(obj)
 }
 
 /**
- * @param {!Object.<string,T>} obj
+ * @param {!Object.<string,!T>} obj
  * @return {!Array.<!T>}
  * @template T
  */
@@ -339,7 +339,7 @@ Date.prototype.toISO8601Compact = function()
 Object.defineProperty(Array.prototype, "remove",
 {
     /**
-     * @param {T} value
+     * @param {!T} value
      * @param {boolean=} onlyFirst
      * @this {Array.<!T>}
      * @template T
@@ -468,9 +468,9 @@ Object.defineProperty(Uint32Array.prototype, "sortRange", sortRange);
 Object.defineProperty(Array.prototype, "stableSort",
 {
     /**
-     * @param {function(T,T): number=} comparator
-     * @return {!Array.<T>}
-     * @this {Array.<T>}
+     * @param {function(?T, ?T): number=} comparator
+     * @return {!Array.<?T>}
+     * @this {Array.<?T>}
      * @template T
      */
     value: function(comparator)
@@ -555,8 +555,8 @@ Object.defineProperty(Array.prototype, "lowerBound",
      * elements are smaller than the specimen) returns array.length.
      * The function works for sorted array.
      *
-     * @param {T} object
-     * @param {function(T,S):number=} comparator
+     * @param {!T} object
+     * @param {function(!T,!S):number=} comparator
      * @return {number}
      * @this {Array.<!S>}
      * @template T,S
@@ -589,8 +589,8 @@ Object.defineProperty(Array.prototype, "upperBound",
      * elements are smaller than the specimen) returns array.length.
      * The function works for sorted array.
      *
-     * @param {T} object
-     * @param {function(T,S):number=} comparator
+     * @param {!T} object
+     * @param {function(!T,!S):number=} comparator
      * @return {number}
      * @this {Array.<!S>}
      * @template T,S
@@ -618,8 +618,8 @@ Object.defineProperty(Array.prototype, "upperBound",
 Object.defineProperty(Array.prototype, "binaryIndexOf",
 {
     /**
-     * @param {T} value
-     * @param {function(T,S):number} comparator
+     * @param {!T} value
+     * @param {function(!T,!S):number} comparator
      * @return {number}
      * @this {Array.<!S>}
      * @template T,S
@@ -636,7 +636,7 @@ Object.defineProperty(Array.prototype, "select",
     /**
      * @param {string} field
      * @return {!Array.<!T>}
-     * @this {Array.<!Object.<string,T>>}
+     * @this {Array.<!Object.<string,!T>>}
      * @template T
      */
     value: function(field)
@@ -651,7 +651,7 @@ Object.defineProperty(Array.prototype, "select",
 Object.defineProperty(Array.prototype, "peekLast",
 {
     /**
-     * @return {T|undefined}
+     * @return {!T|undefined}
      * @this {Array.<!T>}
      * @template T
      */
@@ -662,9 +662,9 @@ Object.defineProperty(Array.prototype, "peekLast",
 });
 
 /**
- * @param {T} object
+ * @param {!T} object
  * @param {!Array.<!S>} list
- * @param {function(T,S):number=} comparator
+ * @param {function(!T,!S):number=} comparator
  * @param {boolean=} insertionIndexAfter
  * @return {number}
  * @template T,S
@@ -856,7 +856,7 @@ String.format = function(format, substitutions, formatters, initialValue, append
  * @param {string} query
  * @param {boolean} caseSensitive
  * @param {boolean} isRegex
- * @return {RegExp}
+ * @return {!RegExp}
  */
 function createSearchRegex(query, caseSensitive, isRegex)
 {
@@ -897,7 +897,7 @@ function createPlainTextSearchRegex(query, flags)
 }
 
 /**
- * @param {RegExp} regex
+ * @param {!RegExp} regex
  * @param {string} content
  * @return {number}
  */
@@ -1021,15 +1021,15 @@ Set.prototype = {
  */
 var Map = function()
 {
-    /** @type {!Object.<string, !Array.<!K|!V>>} */
+    /** @type {!Object.<string, !Array.<K|V>>} */
     this._map = {};
     this._size = 0;
 }
 
 Map.prototype = {
     /**
-     * @param {!K} key
-     * @param {V=} value
+     * @param {K} key
+     * @param {V} value
      */
     put: function(key, value)
     {
@@ -1044,7 +1044,8 @@ Map.prototype = {
     },
 
     /**
-     * @param {!K} key
+     * @param {K} key
+     * @return {V}
      */
     remove: function(key)
     {
@@ -1057,7 +1058,7 @@ Map.prototype = {
     },
 
     /**
-     * @return {!Array.<!K>}
+     * @return {!Array.<K>}
      */
     keys: function()
     {
@@ -1065,7 +1066,7 @@ Map.prototype = {
     },
 
     /**
-     * @return {!Array.<!V>}
+     * @return {!Array.<V>}
      */
     values: function()
     {
@@ -1074,7 +1075,7 @@ Map.prototype = {
 
     /**
      * @param {number} index
-     * @return {!Array.<!K|!V>}
+     * @return {!Array.<K|V>}
      */
     _list: function(index)
     {
@@ -1086,7 +1087,7 @@ Map.prototype = {
     },
 
     /**
-     * @param {!K} key
+     * @param {K} key
      * @return {V|undefined}
      */
     get: function(key)
@@ -1096,7 +1097,7 @@ Map.prototype = {
     },
 
     /**
-     * @param {!K} key
+     * @param {K} key
      * @return {boolean}
      */
     contains: function(key)
@@ -1187,7 +1188,7 @@ StringMap.prototype = {
     },
 
     /**
-     * @return {!Array.<!T>}
+     * @return {!Array.<T>}
      */
     values: function()
     {
@@ -1305,7 +1306,7 @@ StringPool.prototype = {
     },
 
     /**
-     * @param {Object} obj
+     * @param {!Object} obj
      * @param {number=} depthLimit
      */
     internObjectStrings: function(obj, depthLimit)
@@ -1368,8 +1369,8 @@ function CallbackBarrier()
 
 CallbackBarrier.prototype = {
     /**
-     * @param {function(T)=} userCallback
-     * @return {function(T=)}
+     * @param {function(!T)=} userCallback
+     * @return {function(!T=)}
      * @template T
      */
     createCallback: function(userCallback)

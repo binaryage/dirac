@@ -52,7 +52,7 @@ WebInspector.NetworkLog.prototype = {
 
     /**
      * @param {string} url
-     * @return {WebInspector.NetworkRequest}
+     * @return {?WebInspector.NetworkRequest}
      */
     requestForURL: function(url)
     {
@@ -64,8 +64,8 @@ WebInspector.NetworkLog.prototype = {
     },
 
     /**
-     * @param {WebInspector.NetworkRequest} request
-     * @return {WebInspector.PageLoad}
+     * @param {!WebInspector.NetworkRequest} request
+     * @return {!WebInspector.PageLoad}
      */
     pageLoadForRequest: function(request)
     {
@@ -73,7 +73,7 @@ WebInspector.NetworkLog.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onMainFrameNavigated: function(event)
     {
@@ -95,18 +95,18 @@ WebInspector.NetworkLog.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onRequestStarted: function(event)
     {
-        var request = /** @type {WebInspector.NetworkRequest} */ (event.data);
+        var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
         this._requests.push(request);
         this._requestForId[request.requestId] = request;
         request.__page = this._currentPageLoad;
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onDOMContentLoaded: function(event)
     {
@@ -115,7 +115,7 @@ WebInspector.NetworkLog.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onLoad: function(event)
     {
@@ -124,7 +124,7 @@ WebInspector.NetworkLog.prototype = {
     },
 
     /**
-     * @param {NetworkAgent.RequestId} requestId
+     * @param {!NetworkAgent.RequestId} requestId
      * @return {?WebInspector.NetworkRequest}
      */
     requestForId: function(requestId)
@@ -134,13 +134,13 @@ WebInspector.NetworkLog.prototype = {
 }
 
 /**
- * @type {WebInspector.NetworkLog}
+ * @type {?WebInspector.NetworkLog}
  */
 WebInspector.networkLog = null;
 
 /**
  * @constructor
- * @param {WebInspector.NetworkRequest} mainRequest
+ * @param {!WebInspector.NetworkRequest} mainRequest
  */
 WebInspector.PageLoad = function(mainRequest)
 {

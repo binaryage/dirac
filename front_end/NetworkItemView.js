@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.TabbedPane}
- * @param {WebInspector.NetworkRequest} request
+ * @param {!WebInspector.NetworkRequest} request
  */
 WebInspector.NetworkItemView = function(request)
 {
@@ -102,7 +102,7 @@ WebInspector.NetworkItemView.prototype = {
     },
 
     /**
-      * @return {WebInspector.NetworkRequest}
+      * @return {!WebInspector.NetworkRequest}
       */
     request: function()
     {
@@ -115,7 +115,7 @@ WebInspector.NetworkItemView.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.RequestView}
- * @param {WebInspector.NetworkRequest} request
+ * @param {!WebInspector.NetworkRequest} request
  */
 WebInspector.RequestContentView = function(request)
 {

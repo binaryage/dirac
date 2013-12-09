@@ -43,8 +43,8 @@ importScript("ResourceWebSocketFrameView.js");
  * @constructor
  * @implements {WebInspector.Searchable}
  * @extends {WebInspector.View}
- * @param {WebInspector.FilterBar} filterBar
- * @param {WebInspector.Setting} coulmnsVisibilitySetting
+ * @param {!WebInspector.FilterBar} filterBar
+ * @param {!WebInspector.Setting} coulmnsVisibilitySetting
  */
 WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
 {
@@ -785,16 +785,16 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onRequestUpdated: function(event)
     {
-        var request = /** @type {WebInspector.NetworkRequest} */ (event.data);
+        var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
         this._refreshRequest(request);
     },
 
     /**
-     * @param {WebInspector.NetworkRequest} request
+     * @param {!WebInspector.NetworkRequest} request
      */
     _refreshRequest: function(request)
     {
@@ -812,14 +812,14 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _mainFrameNavigated: function(event)
     {
         if (!this._recordButton.toggled || this._preserveLogCheckbox.checked())
             return;
 
-        var frame = /** @type {WebInspector.ResourceTreeFrame} */ (event.data);
+        var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
         var loaderId = frame.loaderId;
 
         // Pick provisional load requests.
@@ -895,8 +895,8 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @param {Element} anchor
-     * @param {WebInspector.Popover} popover
+     * @param {!Element} anchor
+     * @param {!WebInspector.Popover} popover
      */
     _showPopover: function(anchor, popover)
     {
@@ -1051,7 +1051,7 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @param {WebInspector.NetworkRequest} request
+     * @param {!WebInspector.NetworkRequest} request
      */
     _copyCurlCommand: function(request)
     {
@@ -1185,9 +1185,9 @@ WebInspector.NetworkLogView.prototype = {
     },
 
     /**
-     * @param {WebInspector.NetworkRequest} request
+     * @param {!WebInspector.NetworkRequest} request
      * @param {boolean} reveal
-     * @param {RegExp=} regExp
+     * @param {!RegExp=} regExp
      */
     _highlightMatchedRequest: function(request, reveal, regExp)
     {
@@ -1341,7 +1341,7 @@ WebInspector.NetworkLogView.prototype = {
     },
 
    /**
-     * @param {WebInspector.NetworkRequest} request
+     * @param {!WebInspector.NetworkRequest} request
      * @return {string}
      */
     _generateCurlCommand: function(request)
@@ -1539,7 +1539,7 @@ WebInspector.NetworkPanel.prototype = {
     },
 
     /**
-     * @return {WebInspector.SearchableView}
+     * @return {!WebInspector.SearchableView}
      */
     searchableView: function()
     {
@@ -1584,7 +1584,7 @@ WebInspector.NetworkPanel.prototype = {
     },
 
     /**
-     * @param {Element} anchor
+     * @param {!Element} anchor
      * @return {boolean}
      */
     showAnchorLocation: function(anchor)
@@ -1710,8 +1710,8 @@ WebInspector.NetworkPanel.prototype = {
     },
 
     /** 
-     * @param {WebInspector.ContextMenu} contextMenu
-     * @param {Object} target
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} target
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
@@ -1728,13 +1728,13 @@ WebInspector.NetworkPanel.prototype = {
         }
 
         if (target instanceof WebInspector.Resource) {
-            var resource = /** @type {WebInspector.Resource} */ (target);
+            var resource = /** @type {!WebInspector.Resource} */ (target);
             if (resource.request)
                 appendRevealItem.call(this, resource.request);
             return;
         }
         if (target instanceof WebInspector.UISourceCode) {
-            var uiSourceCode = /** @type {WebInspector.UISourceCode} */ (target);
+            var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (target);
             var resource = WebInspector.resourceForURL(uiSourceCode.url);
             if (resource && resource.request)
                 appendRevealItem.call(this, resource.request);
@@ -1743,7 +1743,7 @@ WebInspector.NetworkPanel.prototype = {
 
         if (!(target instanceof WebInspector.NetworkRequest))
             return;
-        var request = /** @type {WebInspector.NetworkRequest} */ (target);
+        var request = /** @type {!WebInspector.NetworkRequest} */ (target);
         if (this.visibleView && this.visibleView.isShowing() && this.visibleView.request() === request)
             return;
 
@@ -2318,7 +2318,9 @@ WebInspector.NetworkDataGridNode.prototype = {
 
         case WebInspector.NetworkRequest.InitiatorType.Redirect:
             this._initiatorCell.title = initiator.url;
-            this._initiatorCell.appendChild(WebInspector.linkifyRequestAsNode(request.redirectSource));
+            console.assert(request.redirectSource);
+            var redirectSource = /** @type {!WebInspector.NetworkRequest} */ (request.redirectSource);
+            this._initiatorCell.appendChild(WebInspector.linkifyRequestAsNode(redirectSource));
             this._appendSubtitle(this._initiatorCell, WebInspector.UIString("Redirect"));
             break;
 

@@ -25,7 +25,7 @@
 
 /**
  * @constructor
- * @param {WebInspector.SoftContextMenu=} parentMenu
+ * @param {!WebInspector.SoftContextMenu=} parentMenu
  */
 WebInspector.SoftContextMenu = function(items, parentMenu)
 {
@@ -35,7 +35,7 @@ WebInspector.SoftContextMenu = function(items, parentMenu)
 
 WebInspector.SoftContextMenu.prototype = {
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     show: function(event)
     {
@@ -336,7 +336,7 @@ WebInspector.SoftContextMenu.prototype = {
 
     /**
      * @param {boolean} closeParentMenus
-     * @param {Event=} event
+     * @param {!Event=} event
      */
     _discardMenu: function(closeParentMenus, event)
     {

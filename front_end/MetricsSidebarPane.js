@@ -43,7 +43,7 @@ WebInspector.MetricsSidebarPane = function()
 
 WebInspector.MetricsSidebarPane.prototype = {
     /**
-     * @param {WebInspector.DOMNode=} node
+     * @param {?WebInspector.DOMNode=} node
      */
     update: function(node)
     {

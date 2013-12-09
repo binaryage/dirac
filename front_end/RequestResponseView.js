@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.RequestContentView}
- * @param {WebInspector.NetworkRequest} request
+ * @param {!WebInspector.NetworkRequest} request
  */
 WebInspector.RequestResponseView = function(request)
 {

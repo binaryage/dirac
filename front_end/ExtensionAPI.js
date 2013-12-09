@@ -905,7 +905,7 @@ return new InspectorExtensionAPI();
 }
 
 /**
- * @param {ExtensionDescriptor} extensionInfo
+ * @param {!ExtensionDescriptor} extensionInfo
  * @return {string}
  */
 function buildExtensionAPIInjectedScript(extensionInfo)

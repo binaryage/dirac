@@ -127,7 +127,7 @@ WebInspector.CookieParser.prototype = {
     },
 
     /**
-     * @return {WebInspector.CookieParser.KeyValue}
+     * @return {?WebInspector.CookieParser.KeyValue}
      */
     _extractKeyValue: function()
     {
@@ -318,7 +318,7 @@ WebInspector.Cookie.prototype = {
     },
 
     /**
-     * @return {Date}
+     * @return {?Date}
      */
     expiresDate: function(requestDate)
     {
@@ -335,7 +335,7 @@ WebInspector.Cookie.prototype = {
     },
 
     /**
-     * @return {Object}
+     * @return {!Object}
      */
     attributes: function()
     {
@@ -390,7 +390,7 @@ WebInspector.Cookies.getCookiesAsync = function(callback)
 }
 
 /**
- * @param {PageAgent.Cookie} protocolCookie
+ * @param {!PageAgent.Cookie} protocolCookie
  * @return {!WebInspector.Cookie}
  */
 WebInspector.Cookies.buildCookieProtocolObject = function(protocolCookie)
@@ -410,7 +410,7 @@ WebInspector.Cookies.buildCookieProtocolObject = function(protocolCookie)
 }
 
 /**
- * @param {WebInspector.Cookie} cookie 
+ * @param {!WebInspector.Cookie} cookie
  * @param {string} resourceURL
  */
 WebInspector.Cookies.cookieMatchesResourceURL = function(cookie, resourceURL)

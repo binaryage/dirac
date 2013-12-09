@@ -42,7 +42,7 @@ WebInspector.DOMStorage = function(securityOrigin, isLocalStorage)
 /**
  * @param {string} securityOrigin
  * @param {boolean} isLocalStorage
- * @return {DOMStorageAgent.StorageId}
+ * @return {!DOMStorageAgent.StorageId}
  */
 WebInspector.DOMStorage.storageId = function(securityOrigin, isLocalStorage)
 {
@@ -58,7 +58,7 @@ WebInspector.DOMStorage.Events = {
 
 WebInspector.DOMStorage.prototype = {
 
-    /** @return {DOMStorageAgent.StorageId} */
+    /** @return {!DOMStorageAgent.StorageId} */
     get id()
     {
         return WebInspector.DOMStorage.storageId(this._securityOrigin, this._isLocalStorage);
@@ -126,7 +126,7 @@ WebInspector.DOMStorageModel.Events = {
 WebInspector.DOMStorageModel.prototype = {
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _securityOriginAdded: function(event)
     {
@@ -145,7 +145,7 @@ WebInspector.DOMStorageModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _securityOriginRemoved: function(event)
     {
@@ -174,7 +174,7 @@ WebInspector.DOMStorageModel.prototype = {
     },
 
     /**
-     * @param {DOMStorageAgent.StorageId} storageId
+     * @param {!DOMStorageAgent.StorageId} storageId
      */
     _domStorageItemsCleared: function(storageId)
     {
@@ -187,7 +187,7 @@ WebInspector.DOMStorageModel.prototype = {
     },
 
     /**
-     * @param {DOMStorageAgent.StorageId} storageId
+     * @param {!DOMStorageAgent.StorageId} storageId
      * @param {string} key
      */
     _domStorageItemRemoved: function(storageId, key)
@@ -201,7 +201,7 @@ WebInspector.DOMStorageModel.prototype = {
     },
 
     /**
-     * @param {DOMStorageAgent.StorageId} storageId
+     * @param {!DOMStorageAgent.StorageId} storageId
      * @param {string} key
      * @param {string} value
      */
@@ -216,7 +216,7 @@ WebInspector.DOMStorageModel.prototype = {
     },
 
     /**
-     * @param {DOMStorageAgent.StorageId} storageId
+     * @param {!DOMStorageAgent.StorageId} storageId
      * @param {string} key
      * @param {string} oldValue
      * @param {string} value
@@ -232,8 +232,8 @@ WebInspector.DOMStorageModel.prototype = {
     },
 
     /**
-     * @param {DOMStorageAgent.StorageId} storageId
-     * @return {WebInspector.DOMStorage}
+     * @param {!DOMStorageAgent.StorageId} storageId
+     * @return {!WebInspector.DOMStorage}
      */
     storageForId: function(storageId)
     {
@@ -257,7 +257,7 @@ WebInspector.DOMStorageModel.prototype = {
 /**
  * @constructor
  * @implements {DOMStorageAgent.Dispatcher}
- * @param {WebInspector.DOMStorageModel} model
+ * @param {!WebInspector.DOMStorageModel} model
  */
 WebInspector.DOMStorageDispatcher = function(model)
 {
@@ -267,7 +267,7 @@ WebInspector.DOMStorageDispatcher = function(model)
 WebInspector.DOMStorageDispatcher.prototype = {
 
     /**
-     * @param {DOMStorageAgent.StorageId} storageId
+     * @param {!DOMStorageAgent.StorageId} storageId
      */
     domStorageItemsCleared: function(storageId)
     {
@@ -275,7 +275,7 @@ WebInspector.DOMStorageDispatcher.prototype = {
     },
 
     /**
-     * @param {DOMStorageAgent.StorageId} storageId
+     * @param {!DOMStorageAgent.StorageId} storageId
      * @param {string} key
      */
     domStorageItemRemoved: function(storageId, key)
@@ -284,7 +284,7 @@ WebInspector.DOMStorageDispatcher.prototype = {
     },
 
     /**
-     * @param {DOMStorageAgent.StorageId} storageId
+     * @param {!DOMStorageAgent.StorageId} storageId
      * @param {string} key
      * @param {string} value
      */
@@ -294,7 +294,7 @@ WebInspector.DOMStorageDispatcher.prototype = {
     },
 
     /**
-     * @param {DOMStorageAgent.StorageId} storageId
+     * @param {!DOMStorageAgent.StorageId} storageId
      * @param {string} key
      * @param {string} oldValue
      * @param {string} value
@@ -306,6 +306,6 @@ WebInspector.DOMStorageDispatcher.prototype = {
 }
 
 /**
- * @type {WebInspector.DOMStorageModel}
+ * @type {?WebInspector.DOMStorageModel}
  */
 WebInspector.domStorageModel = null;

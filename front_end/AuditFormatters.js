@@ -77,7 +77,7 @@ WebInspector.AuditFormatters.Registry = {
 
 WebInspector.AuditFormatters.prototype = {
     /**
-     * @param {string|boolean|number|Object} value
+     * @param {string|boolean|number|!Object} value
      */
     apply: function(value)
     {
@@ -111,9 +111,9 @@ WebInspector.AuditFormatters.prototype = {
     },
 
     /**
-     * @param {Object} formatters
-     * @param {Object} thisArgument
-     * @param {string|boolean|number|Object} value
+     * @param {!Object} formatters
+     * @param {?Object} thisArgument
+     * @param {string|boolean|number|!Object} value
      */
     partiallyApply: function(formatters, thisArgument, value)
     {

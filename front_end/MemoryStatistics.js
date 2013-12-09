@@ -29,8 +29,8 @@
  */
 
 /**
- * @param {WebInspector.TimelinePanel} timelinePanel
- * @param {WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelinePanel} timelinePanel
+ * @param {!WebInspector.TimelineModel} model
  * @constructor
  * @extends {WebInspector.View}
  */
@@ -185,7 +185,7 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {WebInspector.TimelineGrid} timelineGrid
+     * @param {!WebInspector.TimelineGrid} timelineGrid
      */
     setMainTimelineGrid: function(timelineGrid)
     {
@@ -213,7 +213,7 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _sidebarResized: function(event)
     {
@@ -243,7 +243,7 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onRecordAdded: function(event)
     {
@@ -281,7 +281,7 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {MouseEvent} event
+     * @param {!MouseEvent} event
      */
      _onClick: function(event)
     {
@@ -293,7 +293,7 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {MouseEvent} event
+     * @param {!MouseEvent} event
      */
      _onMouseOut: function(event)
     {
@@ -304,7 +304,7 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {CanvasRenderingContext2D} ctx
+     * @param {!CanvasRenderingContext2D} ctx
      */
     _clearCurrentValueAndMarker: function(ctx)
     {
@@ -313,7 +313,7 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {MouseEvent} event
+     * @param {!MouseEvent} event
      */
      _onMouseOver: function(event)
     {
@@ -321,7 +321,7 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {MouseEvent} event
+     * @param {!MouseEvent} event
      */
      _onMouseMove: function(event)
     {

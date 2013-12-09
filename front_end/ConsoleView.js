@@ -130,7 +130,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
 WebInspector.ConsoleView.prototype = {
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     defaultFocusedElement: function()
     {
@@ -144,16 +144,16 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _frameAdded: function(event)
     {
-        var contextList = /** @type {WebInspector.FrameExecutionContextList} */ (event.data);
+        var contextList = /** @type {!WebInspector.FrameExecutionContextList} */ (event.data);
         this._addFrame(contextList);
     },
 
     /**
-     * @param {WebInspector.FrameExecutionContextList} contextList
+     * @param {!WebInspector.FrameExecutionContextList} contextList
      */
     _addFrame: function(contextList)
     {
@@ -166,11 +166,11 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _frameRemoved: function(event)
     {
-        var contextList = /** @type {WebInspector.FrameExecutionContextList} */ (event.data);
+        var contextList = /** @type {!WebInspector.FrameExecutionContextList} */ (event.data);
         this._frameSelector.removeOption(contextList._consoleOption);
         this._frameChanged();
     },
@@ -199,7 +199,7 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {WebInspector.ExecutionContext} executionContext
+     * @param {!WebInspector.ExecutionContext} executionContext
      */
     _appendContextOption: function(executionContext)
     {
@@ -209,38 +209,35 @@ WebInspector.ConsoleView.prototype = {
         option._executionContext = executionContext;
     },
 
-    /**
-     * @param {Event} event
-     */
-    _contextChanged: function(event)
+    _contextChanged: function()
     {
         var option = this._contextSelector.selectedOption();
         WebInspector.runtimeModel.setCurrentExecutionContext(option ? option._executionContext : null);
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _frameUpdated: function(event)
     {
-        var contextList = /** @type {WebInspector.FrameExecutionContextList} */ (event.data);
+        var contextList = /** @type {!WebInspector.FrameExecutionContextList} */ (event.data);
         var option = contextList._consoleOption;
         option.text = contextList.displayName;
         option.title = contextList.url;
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _contextAdded: function(event)
     {
-        var contextList = /** @type {WebInspector.FrameExecutionContextList} */ (event.data);
+        var contextList = /** @type {!WebInspector.FrameExecutionContextList} */ (event.data);
         if (contextList === this._currentFrame())
             this._frameChanged();
     },
 
     /**
-     * @return {WebInspector.FrameExecutionContextList|undefined}
+     * @return {!WebInspector.FrameExecutionContextList|undefined}
      */
     _currentFrame: function()
     {
@@ -327,11 +324,11 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _consoleMessageAdded: function(event)
     {
-        var message = /** @type {WebInspector.ConsoleMessage} */ (event.data);
+        var message = /** @type {!WebInspector.ConsoleMessage} */ (event.data);
         var index = message.index;
 
         if (this._urlToMessageCount[message.url])
@@ -604,9 +601,9 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {WebInspector.RemoteObject} result
+     * @param {!WebInspector.RemoteObject} result
      * @param {boolean} wasThrown
-     * @param {WebInspector.ConsoleCommand} originatingCommand
+     * @param {!WebInspector.ConsoleCommand} originatingCommand
      */
     _printResult: function(result, wasThrown, originatingCommand)
     {
@@ -633,7 +630,7 @@ WebInspector.ConsoleView.prototype = {
 
         /**
          * @param {?Protocol.Error} error
-         * @param {DebuggerAgent.FunctionDetails} response
+         * @param {!DebuggerAgent.FunctionDetails} response
          */
         function didGetDetails(error, response)
         {
@@ -827,7 +824,7 @@ WebInspector.ConsoleViewFilter.prototype = {
     },
 
     /**
-     * @returns {Object}
+     * @returns {!Object}
      */
     get messageURLFilters()
     {
@@ -835,7 +832,7 @@ WebInspector.ConsoleViewFilter.prototype = {
     },
 
     /**
-     * @param {WebInspector.ConsoleMessage} message
+     * @param {!WebInspector.ConsoleMessage} message
      * @return {boolean}
      */
     shouldBeVisible: function(message)
@@ -901,7 +898,7 @@ WebInspector.ConsoleCommand.prototype = {
     },
 
     /**
-     * @param {RegExp} regexObject
+     * @param {!RegExp} regexObject
      */
     highlightSearchResults: function(regexObject)
     {
@@ -917,7 +914,7 @@ WebInspector.ConsoleCommand.prototype = {
     },
 
     /**
-     * @param {RegExp} regexObject
+     * @param {!RegExp} regexObject
      */
     matchesRegex: function(regexObject)
     {
@@ -951,10 +948,10 @@ WebInspector.ConsoleCommand.prototype = {
 /**
  * @extends {WebInspector.ConsoleMessageImpl}
  * @constructor
- * @param {WebInspector.RemoteObject} result
+ * @param {!WebInspector.RemoteObject} result
  * @param {boolean} wasThrown
- * @param {WebInspector.ConsoleCommand} originatingCommand
- * @param {WebInspector.Linkifier} linkifier
+ * @param {!WebInspector.ConsoleCommand} originatingCommand
+ * @param {!WebInspector.Linkifier} linkifier
  * @param {string=} url
  * @param {number=} lineNumber
  * @param {number=} columnNumber
@@ -969,7 +966,7 @@ WebInspector.ConsoleCommandResult = function(result, wasThrown, originatingComma
 WebInspector.ConsoleCommandResult.prototype = {
     /**
      * @override
-     * @param {WebInspector.RemoteObject} array
+     * @param {!WebInspector.RemoteObject} array
      * @return {boolean}
      */
     useArrayPreviewInFormatter: function(array)
@@ -1013,8 +1010,8 @@ WebInspector.ConsoleGroup = function(parentGroup)
 
 WebInspector.ConsoleGroup.prototype = {
     /**
-     * @param {WebInspector.ConsoleMessage} message
-     * @param {Node=} node
+     * @param {!WebInspector.ConsoleMessage} message
+     * @param {!Node=} node
      */
     addMessage: function(message, node)
     {

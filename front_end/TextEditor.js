@@ -38,7 +38,7 @@ WebInspector.TextEditor.Events = {
     GutterClick: "gutterClick"
 };
 
-/** @typedef {{lineNumber: number, event: Event}} */
+/** @typedef {{lineNumber: number, event: !Event}} */
 WebInspector.TextEditor.GutterClickEventData;
 
 WebInspector.TextEditor.prototype = {
@@ -96,19 +96,19 @@ WebInspector.TextEditor.prototype = {
     readOnly: function() { },
 
     /**
-     * @return {Element}
+     * @return {!Element}
      */
     defaultFocusedElement: function() { },
 
     /**
-     * @param {WebInspector.TextRange} range
+     * @param {!WebInspector.TextRange} range
      * @param {string} cssClass
-     * @return {Object}
+     * @return {!Object}
      */
     highlightRange: function(range, cssClass) { },
 
     /**
-     * @param {Object} highlightDescriptor
+     * @param {!Object} highlightDescriptor
      */
     removeHighlight: function(highlightDescriptor) { },
 
@@ -138,19 +138,19 @@ WebInspector.TextEditor.prototype = {
 
     /**
      * @param {number} lineNumber
-     * @param {Element} element
+     * @param {!Element} element
      */
     addDecoration: function(lineNumber, element) { },
 
     /**
      * @param {number} lineNumber
-     * @param {Element} element
+     * @param {!Element} element
      */
     removeDecoration: function(lineNumber, element) { },
 
     /**
      * @param {!RegExp} regex
-     * @param {WebInspector.TextRange} range
+     * @param {?WebInspector.TextRange} range
      */
     highlightSearchResults: function(regex, range) { },
 
@@ -168,7 +168,7 @@ WebInspector.TextEditor.prototype = {
     elementsToRestoreScrollPositionsFor: function() { },
 
     /**
-     * @param {WebInspector.TextEditor} textEditor
+     * @param {!WebInspector.TextEditor} textEditor
      */
     inheritScrollPositions: function(textEditor) { },
 
@@ -179,9 +179,9 @@ WebInspector.TextEditor.prototype = {
     onResize: function() { },
 
     /**
-     * @param {WebInspector.TextRange} range
+     * @param {!WebInspector.TextRange} range
      * @param {string} text
-     * @return {WebInspector.TextRange}
+     * @return {!WebInspector.TextRange}
      */
     editRange: function(range, text) { },
 
@@ -201,22 +201,22 @@ WebInspector.TextEditor.prototype = {
     lastVisibleLine: function() { },
 
     /**
-     * @return {WebInspector.TextRange}
+     * @return {!WebInspector.TextRange}
      */
     selection: function() { },
 
     /**
-     * @return {WebInspector.TextRange?}
+     * @return {?WebInspector.TextRange}
      */
     lastSelection: function() { },
 
     /**
-     * @param {WebInspector.TextRange} textRange
+     * @param {!WebInspector.TextRange} textRange
      */
     setSelection: function(textRange) { },
 
     /**
-     * @param {WebInspector.TextRange} range
+     * @param {!WebInspector.TextRange} range
      * @return {string}
      */
     copyRange: function(range) { },
@@ -232,7 +232,7 @@ WebInspector.TextEditor.prototype = {
     text: function() { },
 
     /**
-     * @return {WebInspector.TextRange}
+     * @return {!WebInspector.TextRange}
      */
     range: function() { },
 
@@ -250,14 +250,14 @@ WebInspector.TextEditor.prototype = {
     /**
      * @param {number} line
      * @param {string} name  
-     * @param {Object?} value  
+     * @param {?Object} value
      */
     setAttribute: function(line, name, value) { },
 
     /**
      * @param {number} line
      * @param {string} name  
-     * @return {Object|null} value  
+     * @return {?Object} value
      */
     getAttribute: function(line, name) { },
 
@@ -286,13 +286,13 @@ WebInspector.TextEditorDelegate = function()
 
 WebInspector.TextEditorDelegate.prototype = {
     /**
-     * @param {WebInspector.TextRange} oldRange
-     * @param {WebInspector.TextRange} newRange
+     * @param {!WebInspector.TextRange} oldRange
+     * @param {!WebInspector.TextRange} newRange
      */
     onTextChanged: function(oldRange, newRange) { },
 
     /**
-     * @param {WebInspector.TextRange} textRange
+     * @param {!WebInspector.TextRange} textRange
      */
     selectionChanged: function(textRange) { },
 
@@ -304,13 +304,13 @@ WebInspector.TextEditorDelegate.prototype = {
     editorFocused: function() { },
 
     /**
-     * @param {WebInspector.ContextMenu} contextMenu
+     * @param {!WebInspector.ContextMenu} contextMenu
      * @param {number} lineNumber
      */
     populateLineGutterContextMenu: function(contextMenu, lineNumber) { },
 
     /**
-     * @param {WebInspector.ContextMenu} contextMenu
+     * @param {!WebInspector.ContextMenu} contextMenu
      * @param {number} lineNumber
      */
     populateTextAreaContextMenu: function(contextMenu, lineNumber) { },
@@ -318,7 +318,7 @@ WebInspector.TextEditorDelegate.prototype = {
     /**
      * @param {string} hrefValue
      * @param {boolean} isExternal
-     * @return {Element}
+     * @return {!Element}
      */
     createLink: function(hrefValue, isExternal) { }
 }

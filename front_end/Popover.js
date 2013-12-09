@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.PopoverHelper=} popoverHelper
+ * @param {!WebInspector.PopoverHelper=} popoverHelper
  */
 WebInspector.Popover = function(popoverHelper)
 {
@@ -52,8 +52,8 @@ WebInspector.Popover = function(popoverHelper)
 
 WebInspector.Popover.prototype = {
     /**
-     * @param {Element} element
-     * @param {Element|AnchorBox} anchor
+     * @param {!Element} element
+     * @param {!Element|!AnchorBox} anchor
      * @param {?number=} preferredWidth
      * @param {?number=} preferredHeight
      * @param {?WebInspector.Popover.Orientation=} arrowDirection
@@ -64,8 +64,8 @@ WebInspector.Popover.prototype = {
     },
 
     /**
-     * @param {WebInspector.View} view
-     * @param {Element|AnchorBox} anchor
+     * @param {!WebInspector.View} view
+     * @param {!Element|!AnchorBox} anchor
      * @param {?number=} preferredWidth
      * @param {?number=} preferredHeight
      */
@@ -75,9 +75,9 @@ WebInspector.Popover.prototype = {
     },
 
     /**
-     * @param {WebInspector.View?} view
-     * @param {Element} contentElement
-     * @param {Element|AnchorBox} anchor
+     * @param {?WebInspector.View} view
+     * @param {!Element} contentElement
+     * @param {!Element|!AnchorBox} anchor
      * @param {?number=} preferredWidth
      * @param {?number=} preferredHeight
      * @param {?WebInspector.Popover.Orientation=} arrowDirection
@@ -138,7 +138,7 @@ WebInspector.Popover.prototype = {
     },
 
     /**
-     * @param {Element|AnchorBox} anchorElement
+     * @param {!Element|!AnchorBox} anchorElement
      * @param {number} preferredWidth
      * @param {number} preferredHeight
      * @param {?WebInspector.Popover.Orientation=} arrowDirection
@@ -225,9 +225,9 @@ WebInspector.Popover.prototype = {
 
 /**
  * @constructor
- * @param {Element} panelElement
- * @param {function(Element, Event):(Element|AnchorBox)|undefined} getAnchor
- * @param {function(Element, WebInspector.Popover):undefined} showPopover
+ * @param {!Element} panelElement
+ * @param {function(!Element, !Event):(!Element|!AnchorBox)|undefined} getAnchor
+ * @param {function(!Element, !WebInspector.Popover):undefined} showPopover
  * @param {function()=} onHide
  * @param {boolean=} disableOnClick
  */
@@ -251,7 +251,7 @@ WebInspector.PopoverHelper.prototype = {
     },
 
     /**
-     * @param {MouseEvent} event
+     * @param {!MouseEvent} event
      * @return {boolean}
      */
     _eventInHoverElement: function(event)

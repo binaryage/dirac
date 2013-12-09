@@ -31,9 +31,9 @@
 /**
  * @constructor
  * @extends {WebInspector.PopoverHelper}
- * @param {Element} panelElement
- * @param {function(Element, Event):Element|undefined} getAnchor
- * @param {function(Element, function(WebInspector.RemoteObject, boolean, Element=):undefined, string):undefined} queryObject
+ * @param {!Element} panelElement
+ * @param {function(!Element, !Event):!Element|undefined} getAnchor
+ * @param {function(!Element, function(!WebInspector.RemoteObject, boolean, !Element=):undefined, string):undefined} queryObject
  * @param {function()=} onHide
  * @param {boolean=} disableOnClick
  */
@@ -48,7 +48,7 @@ WebInspector.ObjectPopoverHelper = function(panelElement, getAnchor, queryObject
 
 WebInspector.ObjectPopoverHelper.prototype = {
     /**
-     * @param {function(WebInspector.RemoteObject):string} formatter
+     * @param {function(!WebInspector.RemoteObject):string} formatter
      */
     setRemoteObjectFormatter: function(formatter)
     {
@@ -56,13 +56,13 @@ WebInspector.ObjectPopoverHelper.prototype = {
     },
 
     /**
-     * @param {Element} element
-     * @param {WebInspector.Popover} popover
+     * @param {!Element} element
+     * @param {!WebInspector.Popover} popover
      */
     _showObjectPopover: function(element, popover)
     {
         /**
-         * @param {Element} anchorElement
+         * @param {!Element} anchorElement
          * @param {!Element} popoverContentElement
          * @param {?Protocol.Error} error
          * @param {!DebuggerAgent.FunctionDetails} response
@@ -92,9 +92,9 @@ WebInspector.ObjectPopoverHelper.prototype = {
         }
 
         /**
-         * @param {WebInspector.RemoteObject} result
+         * @param {!WebInspector.RemoteObject} result
          * @param {boolean} wasThrown
-         * @param {Element=} anchorOverride
+         * @param {!Element=} anchorOverride
          */
         function showObjectPopover(result, wasThrown, anchorOverride)
         {

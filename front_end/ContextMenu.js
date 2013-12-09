@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @param {WebInspector.ContextSubMenuItem} topLevelMenu
+ * @param {!WebInspector.ContextSubMenuItem} topLevelMenu
  * @param {string} type
  * @param {string=} label
  * @param {boolean=} disabled
@@ -106,7 +106,7 @@ WebInspector.ContextSubMenuItem.prototype = {
      * @param {string} label
      * @param {function(?)} handler
      * @param {boolean=} disabled
-     * @return {WebInspector.ContextMenuItem}
+     * @return {!WebInspector.ContextMenuItem}
      */
     appendItem: function(label, handler, disabled)
     {
@@ -119,7 +119,7 @@ WebInspector.ContextSubMenuItem.prototype = {
     /**
      * @param {string} label
      * @param {boolean=} disabled
-     * @return {WebInspector.ContextMenuItem}
+     * @return {!WebInspector.ContextMenuItem}
      */
     appendSubMenuItem: function(label, disabled)
     {
@@ -238,7 +238,7 @@ WebInspector.ContextMenu.prototype = {
     },
 
     /**
-     * @param {Object} target
+     * @param {!Object} target
      */
     appendApplicableItems: function(target)
     {
@@ -261,14 +261,14 @@ WebInspector.ContextMenu.Provider = function() {
 
 WebInspector.ContextMenu.Provider.prototype = {
     /** 
-     * @param {WebInspector.ContextMenu} contextMenu
-     * @param {Object} target
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} target
      */
     appendApplicableItems: function(event, contextMenu, target) { }
 }
 
 /**
- * @param {WebInspector.ContextMenu.Provider} provider
+ * @param {!WebInspector.ContextMenu.Provider} provider
  */
 WebInspector.ContextMenu.registerProvider = function(provider)
 {

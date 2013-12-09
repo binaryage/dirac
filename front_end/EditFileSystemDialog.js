@@ -97,7 +97,7 @@ WebInspector.EditFileSystemDialog.show = function(element, fileSystemPath)
 
 WebInspector.EditFileSystemDialog.prototype = {
     /**
-     * @param {Element} element
+     * @param {!Element} element
      */
     show: function(element)
     {
@@ -122,8 +122,8 @@ WebInspector.EditFileSystemDialog.prototype = {
     },
 
     /**
-     * @param {Element} element
-     * @param {Element} relativeToElement
+     * @param {!Element} element
+     * @param {!Element} relativeToElement
      */
     position: function(element, relativeToElement)
     {
@@ -136,13 +136,13 @@ WebInspector.EditFileSystemDialog.prototype = {
 
     _fileMappingAdded: function(event)
     {
-        var entry = /** @type {WebInspector.FileSystemMapping.Entry} */ (event.data);
+        var entry = /** @type {!WebInspector.FileSystemMapping.Entry} */ (event.data);
         this._addMappingRow(entry);
     },
 
     _fileMappingRemoved: function(event)
     {
-        var entry = /** @type {WebInspector.FileSystemMapping.Entry} */ (event.data);
+        var entry = /** @type {!WebInspector.FileSystemMapping.Entry} */ (event.data);
         if (this._fileSystemPath !== entry.fileSystemPath)
             return;
         delete this._entries[entry.urlPrefix];
@@ -169,7 +169,7 @@ WebInspector.EditFileSystemDialog.prototype = {
 
     /**
      * @param {?string} itemId
-     * @param {Object} data
+     * @param {!Object} data
      */
     _fileMappingValidate: function(itemId, data)
     {
@@ -179,7 +179,7 @@ WebInspector.EditFileSystemDialog.prototype = {
 
     /**
      * @param {?string} itemId
-     * @param {Object} data
+     * @param {!Object} data
      */
     _fileMappingEdit: function(itemId, data)
     {
@@ -209,7 +209,7 @@ WebInspector.EditFileSystemDialog.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _fileMappingRemovedfromList: function(event)
     {
@@ -260,13 +260,13 @@ WebInspector.EditFileSystemDialog.prototype = {
 
     _excludedFolderAdded: function(event)
     {
-        var entry = /** @type {WebInspector.FileSystemMapping.ExcludedFolderEntry} */ (event.data);
+        var entry = /** @type {!WebInspector.FileSystemMapping.ExcludedFolderEntry} */ (event.data);
         this._addExcludedFolderRow(entry);
     },
 
     _excludedFolderRemoved: function(event)
     {
-        var entry = /** @type {WebInspector.FileSystemMapping.ExcludedFolderEntry} */ (event.data);
+        var entry = /** @type {!WebInspector.FileSystemMapping.ExcludedFolderEntry} */ (event.data);
         var fileSystemPath = entry.fileSystemPath;
         if (!fileSystemPath || this._fileSystemPath !== fileSystemPath)
             return;
@@ -282,7 +282,7 @@ WebInspector.EditFileSystemDialog.prototype = {
 
     /**
      * @param {?string} itemId
-     * @param {Object} data
+     * @param {!Object} data
      */
     _excludedFolderValidate: function(itemId, data)
     {
@@ -305,7 +305,7 @@ WebInspector.EditFileSystemDialog.prototype = {
 
     /**
      * @param {?string} itemId
-     * @param {Object} data
+     * @param {!Object} data
      */
     _excludedFolderEdit: function(itemId, data)
     {
@@ -317,7 +317,7 @@ WebInspector.EditFileSystemDialog.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _excludedFolderRemovedfromList: function(event)
     {
@@ -328,7 +328,7 @@ WebInspector.EditFileSystemDialog.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileSystemMapping.ExcludedFolderEntry} entry
+     * @param {!WebInspector.FileSystemMapping.ExcludedFolderEntry} entry
      */
     _addExcludedFolderRow: function(entry)
     {

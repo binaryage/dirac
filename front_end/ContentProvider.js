@@ -40,7 +40,7 @@ WebInspector.ContentProvider.prototype = {
     contentURL: function() { },
 
     /**
-     * @return {WebInspector.ResourceType}
+     * @return {!WebInspector.ResourceType}
      */
     contentType: function() { },
 

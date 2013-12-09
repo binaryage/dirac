@@ -38,7 +38,7 @@ WebInspector.resourceForURL = function(url)
 }
 
 /**
- * @param {function(WebInspector.Resource)} callback
+ * @param {function(!WebInspector.Resource)} callback
  */
 WebInspector.forAllResources = function(callback)
 {
@@ -83,8 +83,8 @@ WebInspector.displayNameForURL = function(url)
 
 /**
  * @param {string} string
- * @param {function(string,string,number=,number=):Node} linkifier
- * @return {DocumentFragment}
+ * @param {function(string,string,number=,number=):!Node} linkifier
+ * @return {!DocumentFragment}
  */
 WebInspector.linkifyStringAsFragmentWithCustomLinkifier = function(string, linkifier)
 {
@@ -131,7 +131,7 @@ WebInspector.linkifyStringAsFragmentWithCustomLinkifier = function(string, linki
 
 /**
  * @param {string} string
- * @return {DocumentFragment}
+ * @return {!DocumentFragment}
  */
 WebInspector.linkifyStringAsFragment = function(string)
 {
@@ -140,7 +140,7 @@ WebInspector.linkifyStringAsFragment = function(string)
      * @param {string} url
      * @param {number=} lineNumber
      * @param {number=} columnNumber
-     * @return {Node}
+     * @return {!Node}
      */
     function linkifier(title, url, lineNumber, columnNumber)
     {
@@ -206,7 +206,7 @@ WebInspector.formatLinkText = function(url, lineNumber)
  * @param {number=} lineNumber
  * @param {string=} classes
  * @param {string=} tooltipText
- * @return {Element}
+ * @return {!Element}
  */
 WebInspector.linkifyResourceAsNode = function(url, lineNumber, classes, tooltipText)
 {
@@ -217,8 +217,8 @@ WebInspector.linkifyResourceAsNode = function(url, lineNumber, classes, tooltipT
 }
 
 /**
- * @param {WebInspector.NetworkRequest} request
- * @return {Element}
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {!Element}
  */
 WebInspector.linkifyRequestAsNode = function(request)
 {

@@ -63,14 +63,14 @@ WebInspector.ProfilesPanelDescriptor.resolveProfileTitle = function(title)
 }
 
 /**
- * @param {Event} event
+ * @param {?Event} event
  */
 WebInspector.ProfilesPanelDescriptor._openCPUProfile = function(event)
 {
     event.preventDefault();
     var panel = WebInspector.showPanel("profiles");
     var link = /** @type {!Element} */ (event.target);
-    var view = /** @type {WebInspector.CPUProfileView} */ (panel.showProfile("CPU", link.profileUID));
+    var view = /** @type {!WebInspector.CPUProfileView} */ (panel.showProfile("CPU", link.profileUID));
     if (!view)
         return;
     if (typeof link.timeLeft === "number" && typeof link.timeRight === "number")
@@ -146,6 +146,6 @@ WebInspector.ProfileManager.prototype = {
 };
 
 /**
- * @type {WebInspector.ProfileManager}
+ * @type {?WebInspector.ProfileManager}
  */
-WebInspector.profileManager;
+WebInspector.profileManager = null;

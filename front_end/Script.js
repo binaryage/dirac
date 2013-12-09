@@ -70,7 +70,7 @@ WebInspector.Script.prototype = {
     },
 
     /**
-     * @return {WebInspector.ResourceType}
+     * @return {!WebInspector.ResourceType}
      */
     contentType: function()
     {
@@ -138,17 +138,17 @@ WebInspector.Script.prototype = {
 
     /**
      * @param {string} newSource
-     * @param {function(?Protocol.Error, DebuggerAgent.SetScriptSourceError=, !Array.<!DebuggerAgent.CallFrame>=, DebuggerAgent.StackTrace=, boolean=)} callback
+     * @param {function(?Protocol.Error, !DebuggerAgent.SetScriptSourceError=, !Array.<!DebuggerAgent.CallFrame>=, !DebuggerAgent.StackTrace=, boolean=)} callback
      */
     editSource: function(newSource, callback)
     {
         /**
          * @this {WebInspector.Script}
          * @param {?Protocol.Error} error
-         * @param {DebuggerAgent.SetScriptSourceError=} errorData
+         * @param {!DebuggerAgent.SetScriptSourceError=} errorData
          * @param {!Array.<!DebuggerAgent.CallFrame>=} callFrames
-         * @param {Object=} debugData
-         * @param {DebuggerAgent.StackTrace=} asyncStackTrace
+         * @param {!Object=} debugData
+         * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
          */
         function didEditScriptSource(error, errorData, callFrames, debugData, asyncStackTrace)
         {
@@ -195,7 +195,7 @@ WebInspector.Script.prototype = {
     /**
      * @param {number} lineNumber
      * @param {number=} columnNumber
-     * @return {WebInspector.UILocation}
+     * @return {!WebInspector.UILocation}
      */
     rawLocationToUILocation: function(lineNumber, columnNumber)
     {
@@ -224,7 +224,7 @@ WebInspector.Script.prototype = {
     },
 
     /**
-     * @param {WebInspector.DebuggerModel.Location} rawLocation
+     * @param {!WebInspector.DebuggerModel.Location} rawLocation
      * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
      * @return {!WebInspector.Script.Location}
      */
@@ -243,8 +243,8 @@ WebInspector.Script.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.LiveLocation}
- * @param {WebInspector.Script} script
- * @param {WebInspector.DebuggerModel.Location} rawLocation
+ * @param {!WebInspector.Script} script
+ * @param {!WebInspector.DebuggerModel.Location} rawLocation
  * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
  */
 WebInspector.Script.Location = function(script, rawLocation, updateDelegate)
@@ -255,11 +255,11 @@ WebInspector.Script.Location = function(script, rawLocation, updateDelegate)
 
 WebInspector.Script.Location.prototype = {
     /**
-     * @return {WebInspector.UILocation}
+     * @return {!WebInspector.UILocation}
      */
     uiLocation: function()
     {
-        var debuggerModelLocation = /** @type {WebInspector.DebuggerModel.Location} */ (this.rawLocation());
+        var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (this.rawLocation());
         return this._script.rawLocationToUILocation(debuggerModelLocation.lineNumber, debuggerModelLocation.columnNumber);
     },
 

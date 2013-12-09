@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {WebInspector.NetworkManager} networkManager
+ * @param {!WebInspector.NetworkManager} networkManager
  */
 WebInspector.ResourceTreeModel = function(networkManager)
 {
@@ -108,7 +108,7 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.ResourceTreeFrame} frame
+     * @param {!WebInspector.ResourceTreeFrame} frame
      * @param {boolean=} aboutToNavigate
      */
     _addFrame: function(frame, aboutToNavigate)
@@ -159,12 +159,12 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.ResourceTreeFrame} mainFrame
+     * @param {!WebInspector.ResourceTreeFrame} mainFrame
      */
     _handleMainFrameDetached: function(mainFrame)
     {
         /**
-         * @param {WebInspector.ResourceTreeFrame} frame
+         * @param {!WebInspector.ResourceTreeFrame} frame
          */
         function removeOriginForFrame(frame)
         {
@@ -177,7 +177,7 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {PageAgent.Frame} framePayload
+     * @param {!PageAgent.Frame} framePayload
      */
     _frameNavigated: function(framePayload)
     {
@@ -225,7 +225,7 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {PageAgent.FrameId} frameId
+     * @param {!PageAgent.FrameId} frameId
      */
     _frameDetached: function(frameId)
     {
@@ -245,14 +245,14 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onRequestFinished: function(event)
     {
         if (!this._cachedResourcesProcessed)
             return;
 
-        var request = /** @type {WebInspector.NetworkRequest} */ (event.data);
+        var request = /** @type {!WebInspector.NetworkRequest} */ (event.data);
         if (request.failed || request.type === WebInspector.resourceTypes.XHR)
             return;
 
@@ -264,7 +264,7 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onRequestUpdateDropped: function(event)
     {
@@ -285,8 +285,8 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {PageAgent.FrameId} frameId
-     * @return {WebInspector.ResourceTreeFrame}
+     * @param {!PageAgent.FrameId} frameId
+     * @return {!WebInspector.ResourceTreeFrame}
      */
     frameForId: function(frameId)
     {
@@ -294,7 +294,7 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {function(WebInspector.Resource)} callback
+     * @param {function(!WebInspector.Resource)} callback
      * @return {boolean}
      */
     forAllResources: function(callback)
@@ -313,11 +313,11 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _consoleMessageAdded: function(event)
     {
-        var msg = /** @type {WebInspector.ConsoleMessage} */ (event.data);
+        var msg = /** @type {!WebInspector.ConsoleMessage} */ (event.data);
         var resource = msg.url ? this.resourceForURL(msg.url) : null;
         if (resource)
             this._addConsoleMessageToResource(msg, resource);
@@ -326,7 +326,7 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.ConsoleMessage} msg
+     * @param {!WebInspector.ConsoleMessage} msg
      */
     _addPendingConsoleMessage: function(msg)
     {
@@ -338,7 +338,7 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Resource} resource
+     * @param {!WebInspector.Resource} resource
      */
     _addPendingConsoleMessagesToResource: function(resource)
     {
@@ -351,8 +351,8 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.ConsoleMessage} msg
-     * @param {WebInspector.Resource} resource
+     * @param {!WebInspector.ConsoleMessage} msg
+     * @param {!WebInspector.Resource} resource
      */
     _addConsoleMessageToResource: function(msg, resource)
     {
@@ -380,7 +380,7 @@ WebInspector.ResourceTreeModel.prototype = {
 
     /**
      * @param {string} url
-     * @return {WebInspector.Resource}
+     * @return {!WebInspector.Resource}
      */
     resourceForURL: function(url)
     {
@@ -389,8 +389,8 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.ResourceTreeFrame} parentFrame
-     * @param {PageAgent.FrameResourceTree} frameTreePayload
+     * @param {?WebInspector.ResourceTreeFrame} parentFrame
+     * @param {!PageAgent.FrameResourceTree} frameTreePayload
      */
     _addFramesRecursively: function(parentFrame, frameTreePayload)
     {
@@ -414,9 +414,9 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {PageAgent.Frame} frame
+     * @param {!PageAgent.Frame} frame
      * @param {string} url
-     * @param {WebInspector.ResourceType} type
+     * @param {!WebInspector.ResourceType} type
      * @param {string} mimeType
      * @return {!WebInspector.Resource}
      */
@@ -441,9 +441,9 @@ WebInspector.ResourceTreeModel.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.ResourceTreeModel} model
+ * @param {!WebInspector.ResourceTreeModel} model
  * @param {?WebInspector.ResourceTreeFrame} parentFrame
- * @param {PageAgent.Frame} payload
+ * @param {!PageAgent.Frame} payload
  */
 WebInspector.ResourceTreeFrame = function(model, parentFrame, payload)
 {
@@ -513,7 +513,7 @@ WebInspector.ResourceTreeFrame.prototype = {
     },
 
     /**
-     * @return {WebInspector.ResourceTreeFrame}
+     * @return {?WebInspector.ResourceTreeFrame}
      */
     get parentFrame()
     {
@@ -537,7 +537,7 @@ WebInspector.ResourceTreeFrame.prototype = {
     },
 
     /**
-     * @param {PageAgent.Frame} framePayload
+     * @param {!PageAgent.Frame} framePayload
      */
     _navigate: function(framePayload)
     {
@@ -555,7 +555,7 @@ WebInspector.ResourceTreeFrame.prototype = {
     },
 
     /**
-     * @return {WebInspector.Resource}
+     * @return {!WebInspector.Resource}
      */
     get mainResource()
     {
@@ -600,8 +600,8 @@ WebInspector.ResourceTreeFrame.prototype = {
     },
 
     /**
-     * @param {WebInspector.NetworkRequest} request
-     * @return {WebInspector.Resource}
+     * @param {!WebInspector.NetworkRequest} request
+     * @return {!WebInspector.Resource}
      */
     _addRequest: function(request)
     {
@@ -646,7 +646,7 @@ WebInspector.ResourceTreeFrame.prototype = {
     },
 
     /**
-     * @param {function(WebInspector.Resource)} callback
+     * @param {function(!WebInspector.Resource)} callback
      * @return {boolean}
      */
     _callForFrameResources: function(callback)
@@ -734,7 +734,7 @@ WebInspector.PageDispatcher.prototype = {
 
     /**
      * @param {string} data
-     * @param {PageAgent.ScreencastFrameMetadata=} metadata
+     * @param {!PageAgent.ScreencastFrameMetadata=} metadata
      */
     screencastFrame: function(data, metadata)
     {
@@ -751,6 +751,6 @@ WebInspector.PageDispatcher.prototype = {
 }
 
 /**
- * @type {WebInspector.ResourceTreeModel}
+ * @type {?WebInspector.ResourceTreeModel}
  */
 WebInspector.resourceTreeModel = null;

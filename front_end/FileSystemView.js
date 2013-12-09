@@ -31,7 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.SidebarView}
- * @param {WebInspector.FileSystemModel.FileSystem} fileSystem
+ * @param {!WebInspector.FileSystemModel.FileSystem} fileSystem
  */
 WebInspector.FileSystemView = function(fileSystem)
 {
@@ -69,7 +69,7 @@ WebInspector.FileSystemView.prototype = {
     },
 
     /**
-     * @type {WebInspector.View}
+     * @type {!WebInspector.View}
      */
     get visibleView()
     {
@@ -77,7 +77,7 @@ WebInspector.FileSystemView.prototype = {
     },
 
     /**
-     * @param {WebInspector.View} view
+     * @param {!WebInspector.View} view
      */
     showView: function(view)
     {
@@ -111,8 +111,8 @@ WebInspector.FileSystemView.prototype = {
 /**
  * @constructor
  * @extends {TreeElement}
- * @param {WebInspector.FileSystemView} fileSystemView
- * @param {WebInspector.FileSystemModel.Entry} entry
+ * @param {!WebInspector.FileSystemView} fileSystemView
+ * @param {!WebInspector.FileSystemModel.Entry} entry
  */
 WebInspector.FileSystemView.EntryTreeElement = function(fileSystemView, entry)
 {
@@ -141,7 +141,7 @@ WebInspector.FileSystemView.EntryTreeElement.prototype = {
             if (this._entry.isDirectory)
                 this._view = new WebInspector.DirectoryContentView();
             else {
-                var file = /** @type {WebInspector.FileSystemModel.File} */ (this._entry);
+                var file = /** @type {!WebInspector.FileSystemModel.File} */ (this._entry);
                 this._view = new WebInspector.FileContentView(file);
             }
         }
@@ -221,7 +221,7 @@ WebInspector.FileSystemView.EntryTreeElement.prototype = {
     {
         if (!this._entry.isDirectory) {
             if (this._view && this._view === this._fileSystemView.visibleView) {
-                var fileContentView = /** @type {WebInspector.FileContentView} */ (this._view);
+                var fileContentView = /** @type {!WebInspector.FileContentView} */ (this._view);
                 fileContentView.refresh();
             }
         } else

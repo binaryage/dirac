@@ -57,7 +57,7 @@ WebInspector.FileSystemModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _securityOriginAdded: function(event)
     {
@@ -66,7 +66,7 @@ WebInspector.FileSystemModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _securityOriginRemoved: function(event)
     {
@@ -102,14 +102,14 @@ WebInspector.FileSystemModel.prototype = {
     /**
      * @param {string} origin
      * @param {string} type
-     * @param {function(number, FileSystemAgent.Entry=)} callback
+     * @param {function(number, !FileSystemAgent.Entry=)} callback
      */
     _requestFileSystemRoot: function(origin, type, callback)
     {
         /**
          * @param {?Protocol.Error} error
          * @param {number} errorCode
-         * @param {FileSystemAgent.Entry=} backendRootEntry
+         * @param {!FileSystemAgent.Entry=} backendRootEntry
          */
         function innerCallback(error, errorCode, backendRootEntry)
         {
@@ -125,7 +125,7 @@ WebInspector.FileSystemModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileSystemModel.FileSystem} fileSystem
+     * @param {!WebInspector.FileSystemModel.FileSystem} fileSystem
      */
     _fileSystemAdded: function(fileSystem)
     {
@@ -133,7 +133,7 @@ WebInspector.FileSystemModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileSystemModel.FileSystem} fileSystem
+     * @param {!WebInspector.FileSystemModel.FileSystem} fileSystem
      */
     _fileSystemRemoved: function(fileSystem)
     {
@@ -148,9 +148,9 @@ WebInspector.FileSystemModel.prototype = {
     /**
      * @param {string} origin
      * @param {string} type
-     * @param {Object.<WebInspector.FileSystemModel.FileSystem>} store
+     * @param {!Object.<string, !WebInspector.FileSystemModel.FileSystem>} store
      * @param {number} errorCode
-     * @param {FileSystemAgent.Entry=} backendRootEntry
+     * @param {!FileSystemAgent.Entry=} backendRootEntry
      */
     _fileSystemRootReceived: function(origin, type, store, errorCode, backendRootEntry)
     {
@@ -162,7 +162,7 @@ WebInspector.FileSystemModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileSystemModel.Directory} directory
+     * @param {!WebInspector.FileSystemModel.Directory} directory
      * @param {function(number, !Array.<!WebInspector.FileSystemModel.Entry>=)} callback
      */
     requestDirectoryContent: function(directory, callback)
@@ -200,7 +200,7 @@ WebInspector.FileSystemModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileSystemModel.Directory} parentDirectory
+     * @param {!WebInspector.FileSystemModel.Directory} parentDirectory
      * @param {function(number, !Array.<!WebInspector.FileSystemModel.Entry>=)} callback
      * @param {number} errorCode
      * @param {!Array.<!FileSystemAgent.Entry>=} backendEntries
@@ -224,15 +224,15 @@ WebInspector.FileSystemModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileSystemModel.Entry} entry
-     * @param {function(number, FileSystemAgent.Metadata=)} callback
+     * @param {!WebInspector.FileSystemModel.Entry} entry
+     * @param {function(number, !FileSystemAgent.Metadata=)} callback
      */
     requestMetadata: function(entry, callback)
     {
         /**
          * @param {?Protocol.Error} error
          * @param {number} errorCode
-         * @param {FileSystemAgent.Metadata=} metadata
+         * @param {!FileSystemAgent.Metadata=} metadata
          */
         function innerCallback(error, errorCode, metadata)
         {
@@ -248,7 +248,7 @@ WebInspector.FileSystemModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileSystemModel.File} file
+     * @param {!WebInspector.FileSystemModel.File} file
      * @param {boolean} readAsText
      * @param {number=} start
      * @param {number=} end
@@ -291,7 +291,7 @@ WebInspector.FileSystemModel.prototype = {
         FileSystemAgent.requestFileContent(url, readAsText, start, end, charset, innerCallback.bind(this));
     },
     /**
-     * @param {WebInspector.FileSystemModel.Entry} entry
+     * @param {!WebInspector.FileSystemModel.Entry} entry
      * @param {function(number)=} callback
      */
     deleteEntry: function(entry, callback)
@@ -336,7 +336,7 @@ WebInspector.FileSystemModel.prototype = {
     },
 
     /**
-     * @param {WebInspector.FileSystemModel.FileSystem} fileSystem
+     * @param {!WebInspector.FileSystemModel.FileSystem} fileSystem
      */
     _removeFileSystem: function(fileSystem)
     {
@@ -362,10 +362,10 @@ WebInspector.FileSystemModel.EventTypes = {
 
 /**
  * @constructor
- * @param {WebInspector.FileSystemModel} fileSystemModel
+ * @param {!WebInspector.FileSystemModel} fileSystemModel
  * @param {string} origin
  * @param {string} type
- * @param {FileSystemAgent.Entry} backendRootEntry
+ * @param {!FileSystemAgent.Entry} backendRootEntry
  */
 WebInspector.FileSystemModel.FileSystem = function(fileSystemModel, origin, type, backendRootEntry)
 {
@@ -387,9 +387,9 @@ WebInspector.FileSystemModel.FileSystem.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.FileSystemModel} fileSystemModel
- * @param {WebInspector.FileSystemModel.FileSystem} fileSystem
- * @param {FileSystemAgent.Entry} backendEntry
+ * @param {!WebInspector.FileSystemModel} fileSystemModel
+ * @param {!WebInspector.FileSystemModel.FileSystem} fileSystem
+ * @param {!FileSystemAgent.Entry} backendEntry
  */
 WebInspector.FileSystemModel.Entry = function(fileSystemModel, fileSystem, backendEntry)
 {
@@ -402,8 +402,8 @@ WebInspector.FileSystemModel.Entry = function(fileSystemModel, fileSystem, backe
 }
 
 /**
- * @param {WebInspector.FileSystemModel.Entry} x
- * @param {WebInspector.FileSystemModel.Entry} y
+ * @param {!WebInspector.FileSystemModel.Entry} x
+ * @param {!WebInspector.FileSystemModel.Entry} y
  * @return {number}
  */
 WebInspector.FileSystemModel.Entry.compare = function(x, y)
@@ -415,7 +415,7 @@ WebInspector.FileSystemModel.Entry.compare = function(x, y)
 
 WebInspector.FileSystemModel.Entry.prototype = {
     /**
-     * @type {WebInspector.FileSystemModel}
+     * @type {!WebInspector.FileSystemModel}
      */
     get fileSystemModel()
     {
@@ -423,7 +423,7 @@ WebInspector.FileSystemModel.Entry.prototype = {
     },
 
     /**
-     * @type {WebInspector.FileSystemModel.FileSystem}
+     * @type {!WebInspector.FileSystemModel.FileSystem}
      */
     get fileSystem()
     {
@@ -455,7 +455,7 @@ WebInspector.FileSystemModel.Entry.prototype = {
     },
 
     /**
-     * @param {function(number, FileSystemAgent.Metadata)} callback
+     * @param {function(number, !FileSystemAgent.Metadata)} callback
      */
     requestMetadata: function(callback)
     {
@@ -474,9 +474,9 @@ WebInspector.FileSystemModel.Entry.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.FileSystemModel.Entry}
- * @param {WebInspector.FileSystemModel} fileSystemModel
- * @param {WebInspector.FileSystemModel.FileSystem} fileSystem
- * @param {FileSystemAgent.Entry} backendEntry
+ * @param {!WebInspector.FileSystemModel} fileSystemModel
+ * @param {!WebInspector.FileSystemModel.FileSystem} fileSystem
+ * @param {!FileSystemAgent.Entry} backendEntry
  */
 WebInspector.FileSystemModel.Directory = function(fileSystemModel, fileSystem, backendEntry)
 {
@@ -498,9 +498,9 @@ WebInspector.FileSystemModel.Directory.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.FileSystemModel.Entry}
- * @param {WebInspector.FileSystemModel} fileSystemModel
- * @param {WebInspector.FileSystemModel.FileSystem} fileSystem
- * @param {FileSystemAgent.Entry} backendEntry
+ * @param {!WebInspector.FileSystemModel} fileSystemModel
+ * @param {!WebInspector.FileSystemModel.FileSystem} fileSystem
+ * @param {!FileSystemAgent.Entry} backendEntry
  */
 WebInspector.FileSystemModel.File = function(fileSystemModel, fileSystem, backendEntry)
 {
@@ -521,7 +521,7 @@ WebInspector.FileSystemModel.File.prototype = {
     },
 
     /**
-     * @type {WebInspector.ResourceType}
+     * @type {!WebInspector.ResourceType}
      */
     get resourceType()
     {

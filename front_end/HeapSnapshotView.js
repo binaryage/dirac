@@ -70,7 +70,7 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.constructorsDataGrid.show(this.constructorsView.element);
     this.constructorsDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
-    this.dataGrid = /** @type {WebInspector.HeapSnapshotSortableDataGrid} */ (this.constructorsDataGrid);
+    this.dataGrid = /** @type {!WebInspector.HeapSnapshotSortableDataGrid} */ (this.constructorsDataGrid);
     this.currentView = this.constructorsView;
     this.currentView.show(this.viewsContainer);
 
@@ -380,7 +380,7 @@ WebInspector.HeapSnapshotView.prototype = {
             return;
 
         this._baseProfileUid = this._profiles()[this.baseSelect.selectedIndex()].uid;
-        var dataGrid = /** @type {WebInspector.HeapSnapshotDiffDataGrid} */ (this.dataGrid);
+        var dataGrid = /** @type {!WebInspector.HeapSnapshotDiffDataGrid} */ (this.dataGrid);
         // Change set base data source only if main data source is already set.
         if (dataGrid.snapshot)
             this.baseProfile.load(dataGrid.setBaseDataSource.bind(dataGrid));
@@ -442,8 +442,8 @@ WebInspector.HeapSnapshotView.prototype = {
     },
 
     /**
-     * @param {WebInspector.ContextMenu} contextMenu
-     * @param {Event} event
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {?Event} event
      */
     populateContextMenu: function(contextMenu, event)
     {
@@ -685,7 +685,7 @@ WebInspector.HeapSnapshotView.prototype = {
     },
 
     /**
-     * @param {WebInspector.Event} event
+     * @param {!WebInspector.Event} event
      */
     _onProfileHeaderAdded: function(event)
     {
@@ -710,7 +710,7 @@ WebInspector.HeapProfilerDispatcher = function()
 
 WebInspector.HeapProfilerDispatcher.prototype = {
     /**
-     * @param {HeapProfilerAgent.Dispatcher} dispatcher
+     * @param {!HeapProfilerAgent.Dispatcher} dispatcher
      */
     register: function(dispatcher)
     {
@@ -744,7 +744,7 @@ WebInspector.HeapProfilerDispatcher.prototype = {
     },
 
     /**
-     * @param {HeapProfilerAgent.ProfileHeader} profileHeader
+     * @param {!HeapProfilerAgent.ProfileHeader} profileHeader
      */
     addProfileHeader: function(profileHeader)
     {
@@ -878,7 +878,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     },
 
     /**
-     * @param {HeapProfilerAgent.ProfileHeader} profileHeader
+     * @param {!HeapProfilerAgent.ProfileHeader} profileHeader
      */
     addProfileHeader: function(profileHeader)
     {
@@ -959,7 +959,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotProfileType}
- * @param {WebInspector.ProfilesPanel} profilesPanel
+ * @param {!WebInspector.ProfilesPanel} profilesPanel
  */
 WebInspector.TrackingHeapSnapshotProfileType = function(profilesPanel)
 {
@@ -1125,11 +1125,11 @@ WebInspector.HeapProfileHeader = function(type, title, uid, maxJSObjectId)
     WebInspector.ProfileHeader.call(this, type, title, uid);
     this.maxJSObjectId = maxJSObjectId;
     /**
-     * @type {WebInspector.OutputStream}
+     * @type {?WebInspector.OutputStream}
      */
     this._receiver = null;
     /**
-     * @type {WebInspector.HeapSnapshotProxy}
+     * @type {?WebInspector.HeapSnapshotProxy}
      */
     this._snapshotProxy = null;
     this._totalNumberOfChunks = 0;
@@ -1156,7 +1156,7 @@ WebInspector.HeapProfileHeader.prototype = {
 
     /**
      * @override
-     * @param {function(WebInspector.HeapSnapshotProxy):void} callback
+     * @param {function(!WebInspector.HeapSnapshotProxy):void} callback
      */
     load: function(callback)
     {
@@ -1175,7 +1175,8 @@ WebInspector.HeapProfileHeader.prototype = {
             this.sidebarElement.wait = true;
             this._transferSnapshot();
         }
-        var loaderProxy = /** @type {WebInspector.HeapSnapshotLoaderProxy} */ (this._receiver);
+        var loaderProxy = /** @type {?WebInspector.HeapSnapshotLoaderProxy} */ (this._receiver);
+        console.assert(loaderProxy);
         loaderProxy.addConsumer(callback);
     },
 
@@ -1215,8 +1216,8 @@ WebInspector.HeapProfileHeader.prototype = {
     },
 
     /**
-     * @param{string} eventName
-     * @param{*} data
+     * @param {string} eventName
+     * @param {*} data
      */
     _handleWorkerEvent: function(eventName, data)
     {
@@ -1266,7 +1267,7 @@ WebInspector.HeapProfileHeader.prototype = {
         if (snapshotProxy)
             this._snapshotProxy = snapshotProxy;
         this._didCompleteSnapshotTransfer();
-        var worker = /** @type {WebInspector.HeapSnapshotWorkerProxy} */ (this._snapshotProxy.worker);
+        var worker = /** @type {!WebInspector.HeapSnapshotWorkerProxy} */ (this._snapshotProxy.worker);
         worker.startCheckingForLongRunningCalls();
         this.notifySnapshotReceived();
 
@@ -1322,7 +1323,7 @@ WebInspector.HeapProfileHeader.prototype = {
 
     /**
      * @override
-     * @param {File} file
+     * @param {!File} file
      */
     loadFromFile: function(file)
     {
@@ -1346,7 +1347,7 @@ WebInspector.HeapProfileHeader.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.HeapProfileHeader} header
+ * @param {!WebInspector.HeapProfileHeader} header
  * @param {string} title
  */
 WebInspector.SnapshotTransferHandler = function(header, title)
@@ -1386,7 +1387,7 @@ WebInspector.SnapshotTransferHandler.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.HeapProfileHeader} header
+ * @param {!WebInspector.HeapProfileHeader} header
  * @extends {WebInspector.SnapshotTransferHandler}
  */
 WebInspector.SaveSnapshotHandler = function(header)
@@ -1414,7 +1415,7 @@ WebInspector.SaveSnapshotHandler.prototype = {
 
 /**
  * @constructor
- * @param {WebInspector.HeapProfileHeader} header
+ * @param {!WebInspector.HeapProfileHeader} header
  * @extends {WebInspector.SnapshotTransferHandler}
  */
 WebInspector.BackendSnapshotLoader = function(header)
@@ -1454,7 +1455,7 @@ WebInspector.HeapSnapshotLoadFromFileDelegate.prototype = {
     },
 
     /**
-     * @param {WebInspector.ChunkedReader} reader
+     * @param {!WebInspector.ChunkedReader} reader
      */
     onChunkTransferred: function(reader)
     {
@@ -1465,7 +1466,7 @@ WebInspector.HeapSnapshotLoadFromFileDelegate.prototype = {
     },
 
     /**
-     * @param {WebInspector.ChunkedReader} reader
+     * @param {!WebInspector.ChunkedReader} reader
      */
     onError: function (reader, e)
     {
@@ -1778,7 +1779,7 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator = function()
 
 WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
     /**
-     * @param {WebInspector.HeapTrackingOverviewGrid} chart
+     * @param {!WebInspector.HeapTrackingOverviewGrid} chart
      */
     _updateBoundaries: function(chart)
     {

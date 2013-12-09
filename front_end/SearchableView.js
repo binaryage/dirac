@@ -32,7 +32,7 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {WebInspector.Searchable} searchable
+ * @param {!WebInspector.Searchable} searchable
  */
 WebInspector.SearchableView = function(searchable)
 {
@@ -166,7 +166,7 @@ WebInspector.SearchableView.findPreviousShortcuts = function()
 
 WebInspector.SearchableView.prototype = {
     /**
-     * @param {KeyboardEvent} event
+     * @param {!KeyboardEvent} event
      */
     _onKeyDown: function(event)
     {
@@ -370,7 +370,7 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {!Event} event
      */
     _onSearchFieldManualFocus: function(event)
     {
@@ -378,7 +378,7 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
-     * @param {KeyboardEvent} event
+     * @param {!KeyboardEvent} event
      */
     _onSearchKeyDown: function(event)
     {
@@ -392,7 +392,7 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
-     * @param {KeyboardEvent} event
+     * @param {!KeyboardEvent} event
      */
     _onReplaceKeyDown: function(event)
     {

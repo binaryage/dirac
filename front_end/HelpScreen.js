@@ -53,7 +53,7 @@ WebInspector.HelpScreen = function(title)
 }
 
 /**
- * @type {WebInspector.HelpScreen}
+ * @type {?WebInspector.HelpScreen}
  */
 WebInspector.HelpScreen._visibleScreen = null;
 
