@@ -152,9 +152,9 @@ WebInspector.ProjectDelegate.prototype = {
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
      * @param {WebInspector.Progress} progress
-     * @param {function(StringMap)} callback
+     * @param {function(Array.<string>)} callback
      */
-    searchInContent: function(query, caseSensitive, isRegex, progress, callback) { },
+    findFilesMatchingSearchRequest: function(query, caseSensitive, isRegex, progress, callback) { },
 
     /**
      * @param {WebInspector.Progress} progress
@@ -451,11 +451,11 @@ WebInspector.Project.prototype = {
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
      * @param {WebInspector.Progress} progress
-     * @param {function(StringMap)} callback
+     * @param {function(Array.<string>)} callback
      */
-    searchInContent: function(query, caseSensitive, isRegex, progress, callback)
+    findFilesMatchingSearchRequest: function(query, caseSensitive, isRegex, progress, callback)
     {
-        this._projectDelegate.searchInContent(query, caseSensitive, isRegex, progress, callback);
+        this._projectDelegate.findFilesMatchingSearchRequest(query, caseSensitive, isRegex, progress, callback);
     },
 
     /**

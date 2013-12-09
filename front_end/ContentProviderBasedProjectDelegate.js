@@ -223,11 +223,11 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
      * @param {WebInspector.Progress} progress
-     * @param {function(StringMap)} callback
+     * @param {function(Array.<string>)} callback
      */
-    searchInContent: function(query, caseSensitive, isRegex, progress, callback)
+    findFilesMatchingSearchRequest: function(query, caseSensitive, isRegex, progress, callback)
     {
-        var result = new StringMap();
+        var result = [];
 
         var paths = Object.keys(this._contentProviders);
         var totalCount = paths.length;
@@ -253,7 +253,8 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
 
         function contentCallback(i, searchMatches)
         {
-            result.put(paths[i], searchMatches);
+            if (searchMatches.length)
+                result.push(paths[i]);
             progress.worked(1);
         }
 

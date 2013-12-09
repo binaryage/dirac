@@ -211,16 +211,22 @@ WebInspector.FileSystemProjectDelegate.prototype = {
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
      * @param {WebInspector.Progress} progress
-     * @param {function(StringMap)} callback
+     * @param {function(Array.<string>)} callback
      */
-    searchInContent: function(query, caseSensitive, isRegex, progress, callback)
+    findFilesMatchingSearchRequest: function(query, caseSensitive, isRegex, progress, callback)
     {
         var requestId = ++WebInspector.FileSystemProjectDelegate._lastRequestId;
         this._searchCallbacks[requestId] = innerCallback.bind(this);
         InspectorFrontendHost.searchInPath(requestId, this._fileSystem.path(), isRegex ? "" : query);
 
+        /**
+         * @param {!Array.<!string>} files
+         */
         function innerCallback(files)
         {
+            /**
+             * @param {string} fullPath
+             */
             function trimAndNormalizeFileSystemPath(fullPath)
             {
                 var trimmedPath = fullPath.substr(this._fileSystem.path().length + 1);
@@ -230,54 +236,9 @@ WebInspector.FileSystemProjectDelegate.prototype = {
             }
 
             files = files.map(trimAndNormalizeFileSystemPath.bind(this));
-            var result = new StringMap();
             progress.setTotalWork(files.length);
-            if (files.length === 0) {
-                progress.done();
-                callback(result);
-                return;
-            }
-
-            var fileIndex = 0;
-            var maxFileContentRequests = 20;
-            var callbacksLeft = 0;
-
-            function searchInNextFiles()
-            {
-                for (; callbacksLeft < maxFileContentRequests; ++callbacksLeft) {
-                    if (fileIndex >= files.length)
-                        break;
-                    var path = files[fileIndex++];
-                    var filePath = this._filePathForPath(path);
-                    this._fileSystem.requestFileContent(filePath, contentCallback.bind(this, path));
-                }
-            }
-
-            searchInNextFiles.call(this);
-
-            /**
-             * @param {string} path
-             * @param {?string} content
-             */
-            function contentCallback(path, content)
-            {
-                var matches = [];
-                if (content !== null)
-                    matches = WebInspector.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex);
-
-                result.put(path, matches);
-                progress.worked(1);
-
-                --callbacksLeft;
-                if (fileIndex < files.length) {
-                    searchInNextFiles.call(this);
-                } else {
-                    if (callbacksLeft)
-                        return;
-                    progress.done();
-                    callback(result);
-                }
-            }
+            progress.done();
+            callback(files);
         }
     },
 
