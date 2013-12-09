@@ -36,8 +36,7 @@
 WebInspector.TimelineOverviewPane = function(model)
 {
     WebInspector.View.call(this);
-    this.element.id = "timeline-overview-panel";
-    this.element.addStyleClass("hbox");
+    this.element.id = "timeline-overview-pane";
 
     this._windowStartTime = 0;
     this._windowEndTime = Infinity;
@@ -45,35 +44,9 @@ WebInspector.TimelineOverviewPane = function(model)
 
     this._model = model;
 
-    this._topPaneSidebarElement = document.createElement("div");
-    this._topPaneSidebarElement.id = "timeline-overview-sidebar";
-
-    var overviewTreeElement = document.createElement("ol");
-    overviewTreeElement.className = "sidebar-tree vbox";
-    this._topPaneSidebarElement.appendChild(overviewTreeElement);
-    this.element.appendChild(this._topPaneSidebarElement);
-
-    var topPaneSidebarTree = new TreeOutline(overviewTreeElement);
-
-    this._overviewItems = {};
-    this._overviewItems[WebInspector.TimelineOverviewPane.Mode.Events] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-events",
-        WebInspector.UIString("Events"));
-    this._overviewItems[WebInspector.TimelineOverviewPane.Mode.Frames] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-frames",
-        WebInspector.UIString("Frames"));
-    this._overviewItems[WebInspector.TimelineOverviewPane.Mode.Memory] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-memory",
-        WebInspector.UIString("Memory"));
-
-    for (var mode in this._overviewItems) {
-        var item = this._overviewItems[mode];
-        item.onselect = this.setMode.bind(this, mode);
-        topPaneSidebarTree.appendChild(item);
-    }
-    
     this._overviewGrid = new WebInspector.OverviewGrid("timeline");
 
     this.element.appendChild(this._overviewGrid.element);
-
-    this._innerSetMode(WebInspector.TimelineOverviewPane.Mode.Events);
 
     var categories = WebInspector.TimelinePresentationModel.categories();
     for (var category in categories)
@@ -93,7 +66,6 @@ WebInspector.TimelineOverviewPane.Mode = {
 };
 
 WebInspector.TimelineOverviewPane.Events = {
-    ModeChanged: "ModeChanged",
     WindowChanged: "WindowChanged"
 };
 
@@ -108,29 +80,32 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._update();
     },
 
-    setMode: function(newMode)
+    willSetMode: function(newMode)
     {
+        this._lastMode = this._currentMode;
         if (this._currentMode === newMode)
             return;
-        var windowTimes;
-        if (this._overviewControl)
-            windowTimes = this._overviewControl.windowTimes(this.windowLeft(), this.windowRight());
+        this._windowTimes = this._overviewControl ? this._overviewControl.windowTimes(this.windowLeft(), this.windowRight()) : null;
         this._innerSetMode(newMode);
-        this.dispatchEventToListeners(WebInspector.TimelineOverviewPane.Events.ModeChanged, this._currentMode);
-        if (windowTimes && windowTimes.startTime >= 0)
-            this.setWindowTimes(windowTimes.startTime, windowTimes.endTime);
+        this._update();
+    },
+
+    didSetMode: function()
+    {
+        if (this._lastMode === this._currentMode)
+            return;
+        if (this._windowTimes && this._windowTimes.startTime >= 0)
+            this.setWindowTimes(this._windowTimes.startTime, this._windowTimes.endTime);
         this._update();
     },
 
     _innerSetMode: function(newMode)
     {
-        var windowTimes;
         if (this._overviewControl)
             this._overviewControl.detach();
         this._currentMode = newMode;
         this._overviewControl = this._createOverviewControl();
         this._overviewControl.show(this._overviewGrid.element);
-        this._overviewItems[this._currentMode].revealAndSelect(false);
     },
 
     /**
@@ -183,15 +158,6 @@ WebInspector.TimelineOverviewPane.prototype = {
             dividers[dividerPosition] = divider;
         }
         this._overviewGrid.addEventDividers(dividers);
-    },
-
-    /**
-     * @param {number} width
-     */
-    sidebarResized: function(width)
-    {
-        this._topPaneSidebarElement.style.flexBasis = width + "px";
-        this._update();
     },
 
     /**

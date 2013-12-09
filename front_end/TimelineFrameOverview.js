@@ -364,6 +364,8 @@ WebInspector.TimelineFrameOverview.prototype = {
      */
     windowBoundaries: function(startTime, endTime)
     {
+        if (this._barTimes.length === 0)
+            return {left: 0, right: 1};
         /**
          * @param {number} time
          * @param {{startTime:number, endTime:number}} barTime

@@ -262,9 +262,15 @@
     top: 25px;
 }
 
+#timeline-overview-pane {
+    flex: auto;
+    position: relative;
+}
+
 #timeline-overview-container {
     flex: auto;
     position: relative;
+    height: 80px;
 }
 
 #timeline-overview-container canvas {
