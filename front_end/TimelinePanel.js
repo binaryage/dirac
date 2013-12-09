@@ -64,10 +64,7 @@ WebInspector.TimelinePanel = function()
     this._presentationModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", WebInspector.TimelineOverviewPane.Mode.Events);
     this._glueRecordsSetting = WebInspector.settings.createSetting("timelineGlueRecords", false);
 
-    // Create filters and then status bar.
-    this._filterBar = new WebInspector.FilterBar();
     this._createStatusBarItems();
-    this._createFilters();
 
     this._createPresentationSelector();
 
@@ -245,12 +242,12 @@ WebInspector.TimelinePanel.prototype = {
         return this._searchableView;
     },
 
-    _createFilters: function()
+    /**
+     * @param {WebInspector.FilterBar} filterBar
+     * @return {boolean}
+     */
+    _createFilters: function(filterBar)
     {
-        this._filtersContainer = this.element.createChild("div", "timeline-filters-header hidden");
-        this._filtersContainer.appendChild(this._filterBar.filtersElement());
-        this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
-
         this._textFilter = new WebInspector.TextFilterUI();
         this._textFilter.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._textFilterChanged, this);
         this._filterBar.addFilter(this._textFilter);
@@ -286,6 +283,7 @@ WebInspector.TimelinePanel.prototype = {
             this._filterBar.addFilter(filter);
             this._categoryFilters[category.name] = filter;
         }
+        return true;
     },
 
     _createStatusBarItems: function()
@@ -303,7 +301,8 @@ WebInspector.TimelinePanel.prototype = {
         this._statusBarButtons.push(this.clearButton);
         panelStatusBarElement.appendChild(this.clearButton.element);
 
-        panelStatusBarElement.appendChild(this._filterBar.filterButton());
+        this._filterBar = new WebInspector.FilterBar();
+        panelStatusBarElement.appendChild(this._filterBar.filterButton().element);
 
         this.garbageCollectButton = new WebInspector.StatusBarButton(WebInspector.UIString("Collect Garbage"), "garbage-collect-status-bar-item");
         this.garbageCollectButton.addEventListener("click", this._garbageCollectButtonClicked, this);
@@ -324,6 +323,12 @@ WebInspector.TimelinePanel.prototype = {
         this._statusTextContainer.appendChild(this.recordsCounter.element);
 
         this._miscStatusBarItems = panelStatusBarElement.createChild("div", "status-bar-item");
+
+        var hasFilters = this._createFilters(this._filterBar);
+        this._filterBar.filterButton().setEnabled(hasFilters);
+        this._filtersContainer = this.element.createChild("div", "timeline-filters-header hidden");
+        this._filtersContainer.appendChild(this._filterBar.filtersElement());
+        this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
     },
 
     _textFilterChanged: function(event)

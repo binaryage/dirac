@@ -150,7 +150,7 @@ WebInspector.NetworkLogView.prototype = {
 
     get statusBarItems()
     {
-        return [this._recordButton.element, this._clearButton.element, this._filterBar.filterButton(), this._largerRequestsButton.element, this._preserveLogCheckbox.element, this._progressBarContainer];
+        return [this._recordButton.element, this._clearButton.element, this._filterBar.filterButton().element, this._largerRequestsButton.element, this._preserveLogCheckbox.element, this._progressBarContainer];
     },
 
     get useLargeRows()

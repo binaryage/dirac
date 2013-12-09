@@ -56,11 +56,11 @@ WebInspector.FilterBar.FilterBarState = {
 
 WebInspector.FilterBar.prototype = {
     /**
-     * @return {!Element}
+     * @return {!WebInspector.StatusBarButton}
      */
     filterButton: function()
     {
-        return this._filterButton.element;
+        return this._filterButton;
     },
 
     /**
