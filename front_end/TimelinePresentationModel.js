@@ -669,10 +669,10 @@ WebInspector.TimelinePresentationModel.prototype = {
 
         for (var i = firstTaskIndex; i <= lastTaskIndex; ++i) {
             var task = tasks[i];
-            cpuTime += task.endTime - task.startTime;
+            cpuTime += WebInspector.TimelineModel.endTimeInSeconds(task) - WebInspector.TimelineModel.startTimeInSeconds(task);
         }
-        var startTime = tasks[firstTaskIndex].startTime;
-        var endTime = tasks[lastTaskIndex].endTime;
+        var startTime = WebInspector.TimelineModel.startTimeInSeconds(tasks[firstTaskIndex]);
+        var endTime = WebInspector.TimelineModel.endTimeInSeconds(tasks[lastTaskIndex]);
         var duration = endTime - startTime;
         var offset = this._minimumRecordTime;
 
