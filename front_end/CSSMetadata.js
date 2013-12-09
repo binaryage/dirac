@@ -456,7 +456,7 @@ WebInspector.CSSMetadata._propertyDataMap = {
         "hide", "show"
     ] },
     "pointer-events": { values: [
-        "none", "all", "auto", "visible", "visiblepainted", "visiblefill", "visiblestroke", "painted", "fill", "stroke"
+        "none", "all", "auto", "visible", "visiblepainted", "visiblefill", "visiblestroke", "painted", "fill", "stroke", "bounding-box"
     ] },
     "letter-spacing": { values: [
         "normal"
