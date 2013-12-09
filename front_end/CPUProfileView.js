@@ -698,7 +698,6 @@ WebInspector.CPUProfileType.prototype = {
     addProfileHeader: function(profileHeader)
     {
         if (this._profileBeingRecorded) {
-            this._profileBeingRecorded.isTemporary = false;
             this._profileBeingRecorded.title = profileHeader.title;
             this._profileBeingRecorded.sidebarElement.mainTitle = profileHeader.title;
             this._profileBeingRecorded.uid = profileHeader.uid;
@@ -748,9 +747,11 @@ WebInspector.CPUProfileType.prototype = {
      */
     removeProfile: function(profile)
     {
-        WebInspector.ProfileType.prototype.removeProfile.call(this, profile);
-        if (!profile.isTemporary && !profile.fromFile())
+        if (this._profileBeingRecorded === profile)
+            this._recording = false;
+        else if (!profile.fromFile())
             ProfilerAgent.removeProfile(this.id, profile.uid);
+        WebInspector.ProfileType.prototype.removeProfile.call(this, profile);
     },
 
     /**
@@ -800,7 +801,6 @@ WebInspector.CPUProfileHeader.prototype = {
         this._profile = JSON.parse(this._jsonifiedProfile);
         this._jsonifiedProfile = null;
         this.sidebarElement.subtitle = WebInspector.UIString("Loaded");
-        this.isTemporary = false;
 
         if (this._profileType._profileBeingRecorded === this)
             this._profileType._profileBeingRecorded = null;

@@ -123,7 +123,15 @@ WebInspector.ProfileType.prototype = {
      */
     getProfiles: function()
     {
-        return this._profiles.filter(function(profile) { return !profile.isTemporary; });
+        /**
+         * @param {!WebInspector.ProfileHeader} profile
+         * @return {boolean}
+         */
+        function isFinished(profile)
+        {
+            return this._profileBeingRecorded !== profile;
+        }
+        return this._profiles.filter(isFinished.bind(this));
     },
 
     /**
@@ -187,6 +195,8 @@ WebInspector.ProfileType.prototype = {
      */
     removeProfile: function(profile)
     {
+        if (this._profileBeingRecorded === profile)
+            this._profileBeingRecorded = null;
         for (var i = 0; i < this._profiles.length; ++i) {
             if (this._profiles[i].uid === profile.uid) {
                 this._profiles.splice(i, 1);
@@ -234,8 +244,7 @@ WebInspector.ProfileHeader = function(profileType, title, uid)
 {
     this._profileType = profileType;
     this.title = title;
-    this.isTemporary = uid === undefined;
-    this.uid = this.isTemporary ? -1 : uid;
+    this.uid = (uid === undefined) ? -1 : uid;
     this._fromFile = false;
 }
 
@@ -666,7 +675,7 @@ WebInspector.ProfilesPanel.prototype = {
         var small = false;
         var alternateTitle;
 
-        if (!profile.fromFile() && !profile.isTemporary) {
+        if (!profile.fromFile() && profile.profileType().profileBeingRecorded() !== profile) {
             var profileTitleKey = this._makeTitleKey(profile.title, typeId);
             if (!(profileTitleKey in this._profileGroups))
                 this._profileGroups[profileTitleKey] = [];
@@ -760,7 +769,7 @@ WebInspector.ProfilesPanel.prototype = {
      */
     _showProfile: function(profile)
     {
-        if (!profile || (profile.isTemporary && !profile.profileType().hasTemporaryView()))
+        if (!profile || (profile.profileType().profileBeingRecorded() === profile) && !profile.profileType().hasTemporaryView())
             return null;
 
         var view = profile.view(this);

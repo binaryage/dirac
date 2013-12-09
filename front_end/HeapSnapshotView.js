@@ -885,7 +885,6 @@ WebInspector.HeapSnapshotProfileType.prototype = {
         var profile = this.profileBeingRecorded();
         if (!profile)
             return;
-        profile.isTemporary = false;
         profile.title = profileHeader.title;
         profile.uid = profileHeader.uid;
         profile.maxJSObjectId = profileHeader.maxJSObjectId || 0;
@@ -941,9 +940,9 @@ WebInspector.HeapSnapshotProfileType.prototype = {
      */
     removeProfile: function(profile)
     {
-        WebInspector.ProfileType.prototype.removeProfile.call(this, profile);
-        if (!profile.isTemporary && !profile.fromFile())
+        if (this._profileBeingRecorded !== profile && !profile.fromFile())
             HeapProfilerAgent.removeProfile(profile.uid);
+        WebInspector.ProfileType.prototype.removeProfile.call(this, profile);
     },
 
     _snapshotReceived: function(profile)
@@ -1268,7 +1267,6 @@ WebInspector.HeapProfileHeader.prototype = {
             this._snapshotProxy = snapshotProxy;
         this._didCompleteSnapshotTransfer();
         var worker = /** @type {WebInspector.HeapSnapshotWorkerProxy} */ (this._snapshotProxy.worker);
-        this.isTemporary = false;
         worker.startCheckingForLongRunningCalls();
         this.notifySnapshotReceived();
 
@@ -1507,7 +1505,7 @@ WebInspector.HeapTrackingOverviewGrid = function(heapProfileHeader)
     this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
 
     this._profileSamples = heapProfileHeader._profileSamples;
-    if (heapProfileHeader.isTemporary) {
+    if (heapProfileHeader.profileType().profileBeingRecorded() === heapProfileHeader) {
         this._profileType = heapProfileHeader._profileType;
         this._profileType.addEventListener(WebInspector.TrackingHeapSnapshotProfileType.HeapStatsUpdate, this._onHeapStatsUpdate, this);
         this._profileType.addEventListener(WebInspector.TrackingHeapSnapshotProfileType.TrackingStopped, this._onStopTracking, this);
