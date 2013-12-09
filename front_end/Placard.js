@@ -85,28 +85,10 @@ WebInspector.Placard.prototype = {
             this.deselect();
     },
 
-    /**
-     * @return {!WebInspector.PlacardGroup|undefined}
-     */
-    group: function()
-    {
-        return this._group;
-    },
-
-    /**
-     * @param {!WebInspector.PlacardGroup} group
-     */
-    setGroup: function(group)
-    {
-        this._group = group;
-    },
-
     select: function()
     {
         if (this._selected)
             return;
-        if (this._group)
-            this._group.setExpanded(true);
         this._selected = true;
         this.element.addStyleClass("selected");
     },
@@ -126,96 +108,5 @@ WebInspector.Placard.prototype = {
 
     discard: function()
     {
-    }
-}
-
-/**
- * @constructor
- * @param {string} title
- * @param {!Array.<!WebInspector.Placard>} placards
- */
-WebInspector.PlacardGroup = function(title, placards)
-{
-    this.element = document.createElementWithClass("div", "placard placard-group");
-    this.element.addEventListener("click", this._toggleExpanded.bind(this), false);
-    this.placards = placards;
-    this._expanded = false;
-    this.setTitle(title);
-
-    for (var i = 0; i < placards.length; ++i)
-        placards[i].setGroup(this);
-}
-
-WebInspector.PlacardGroup.prototype = {
-    /**
-     * @return {string}
-     */
-    title: function()
-    {
-        return this._title;
-    },
-
-    /**
-     * @param {string} title
-     */
-    setTitle: function(title)
-    {
-        this._title = title;
-        this.element.textContent = title;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    expanded: function()
-    {
-        return this._expanded;
-    },
-
-    /**
-     * @param {boolean} x
-     */
-    setExpanded: function(x)
-    {
-        if (this._expanded === x)
-            return;
-        if (x) {
-            var parent = this.element.parentElement;
-            if (!parent)
-                return;
-            var sibling = this.element.nextSibling;
-            for (var i = 0; i < this.placards.length; ++i) {
-                var placard = this.placards[i];
-                placard.element.addStyleClass("grouped");
-                parent.insertBefore(placard.element, sibling);
-            }
-        } else {
-            if (this.selected())
-                return;
-            for (var i = 0; i < this.placards.length; ++i) {
-                var placard = this.placards[i];
-                placard.element.removeStyleClass("grouped");
-                placard.element.remove();
-            }
-        }
-        this._expanded = x;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    selected: function()
-    {
-        for (var i = 0; i < this.placards.length; ++i) {
-            if (this.placards[i].selected)
-                return true;
-        }
-        return false;
-    },
-
-    _toggleExpanded: function()
-    {
-        this.setExpanded(!this._expanded);
-        this.element.enableStyleClass("expanded", this._expanded);
     }
 }

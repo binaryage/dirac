@@ -50,7 +50,6 @@ WebInspector.DebuggerModel = function()
     WebInspector.settings.pauseOnExceptionStateString.addChangeListener(this._pauseOnExceptionStateChanged, this);
 
     WebInspector.settings.enableAsyncStackTraces.addChangeListener(this._asyncStackTracesStateChanged, this);
-    WebInspector.settings.maxAsyncStackTraceDepth.addChangeListener(this._asyncStackTracesStateChanged, this);
 
     this.enableDebugger();
 
@@ -180,9 +179,9 @@ WebInspector.DebuggerModel.prototype = {
 
     _asyncStackTracesStateChanged: function()
     {
+        const maxAsyncStackChainDepth = 4;
         var enabled = WebInspector.settings.enableAsyncStackTraces.get();
-        var depth = enabled ? Number(WebInspector.settings.maxAsyncStackTraceDepth.get()) : 0;
-        DebuggerAgent.setAsyncCallStackDepth(depth);
+        DebuggerAgent.setAsyncCallStackDepth(enabled ? maxAsyncStackChainDepth : 0);
     },
 
     _debuggerWasDisabled: function()
