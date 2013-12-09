@@ -353,7 +353,8 @@ WebInspector.Drawer.prototype = {
     _tabSelected: function()
     {
         var tabId = this._tabbedPane.selectedTabId;
-        this._lastSelectedViewSetting.set(tabId);
+        if (!this._tabbedPane.isTabCloseable(tabId))
+            this._lastSelectedViewSetting.set(tabId);
         if (this._viewFactories[tabId])
             this._tabbedPane.changeTabView(tabId, this._viewFactories[tabId].createView(tabId));
     },

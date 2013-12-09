@@ -118,6 +118,16 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
+     * @param {string} id
+     * @return {boolean}
+     */
+    isTabCloseable: function(id)
+    {
+        var tab = this._tabsById[id];
+        return tab ? tab.isCloseable() : false;
+    },
+
+    /**
      * @param {WebInspector.TabbedPaneTabDelegate} delegate
      */
     setTabDelegate: function(delegate)
@@ -703,6 +713,14 @@ WebInspector.TabbedPaneTab.prototype = {
     iconClass: function()
     {
         return this._iconClass;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isCloseable: function()
+    {
+        return this._closeable;
     },
 
     /**
