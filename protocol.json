@@ -3561,7 +3561,6 @@
             {
                 "name": "removeProfile",
                 "parameters": [
-                    { "name": "type", "type": "string" },
                     { "name": "uid", "type": "integer" }
                 ]
             },

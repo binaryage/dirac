@@ -750,7 +750,7 @@ WebInspector.CPUProfileType.prototype = {
         if (this._profileBeingRecorded === profile)
             this._recording = false;
         else if (!profile.fromFile())
-            ProfilerAgent.removeProfile(this.id, profile.uid);
+            ProfilerAgent.removeProfile(profile.uid);
         WebInspector.ProfileType.prototype.removeProfile.call(this, profile);
     },
 
