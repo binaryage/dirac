@@ -965,6 +965,10 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.PropertiesSection}
+ * @param {!WebInspector.StylesSidebarPane} parentPane
+ * @param {!Object} styleRule
+ * @param {boolean} editable
+ * @param {boolean} isInherited
  */
 WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, isInherited)
 {
@@ -1427,6 +1431,7 @@ WebInspector.StylePropertiesSection.prototype = {
         WebInspector.startEditing(this._selectorElement, config);
 
         window.getSelection().setBaseAndExtent(element, 0, element, 1);
+        this._parentPane._isEditingStyle = true;
     },
 
     _moveEditorFromSelector: function(moveDirection)
@@ -1457,6 +1462,7 @@ WebInspector.StylePropertiesSection.prototype = {
 
     editingSelectorCommitted: function(element, newContent, oldContent, context, moveDirection)
     {
+        this._editingSelectorEnded();
         if (newContent)
             newContent = newContent.trim();
         if (newContent === oldContent) {
@@ -1504,9 +1510,16 @@ WebInspector.StylePropertiesSection.prototype = {
         this._selectorRefElement.appendChild(this._createRuleOriginNode());
     },
 
+    _editingSelectorEnded: function()
+    {
+        delete this._parentPane._isEditingStyle;
+    },
+
     editingSelectorCancelled: function()
     {
-        // Do nothing but mark the selectors in group if necessary.
+        this._editingSelectorEnded();
+
+        // Mark the selectors in group if necessary.
         // This is overridden by BlankStylePropertiesSection.
         this._markSelectorMatches();
     },
@@ -1637,7 +1650,7 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.StylePropertiesSection}
- * @param {WebInspector.StylesSidebarPane} stylesPane
+ * @param {!WebInspector.StylesSidebarPane} stylesPane
  * @param {string} defaultSelectorText
  */
 WebInspector.BlankStylePropertiesSection = function(stylesPane, defaultSelectorText)
@@ -1681,8 +1694,9 @@ WebInspector.BlankStylePropertiesSection.prototype = {
             if (this.element.parentElement) // Might have been detached already.
                 this._moveEditorFromSelector(moveDirection);
 
-            this._markSelectorMatches();
             delete this._parentPane._userOperation;
+            this._editingSelectorEnded();
+            this._markSelectorMatches();
         }
 
         if (newContent)
@@ -1699,6 +1713,7 @@ WebInspector.BlankStylePropertiesSection.prototype = {
             return;
         }
 
+        this._editingSelectorEnded();
         this.pane.removeSection(this);
     },
 
@@ -1718,9 +1733,9 @@ WebInspector.BlankStylePropertiesSection.prototype = {
 /**
  * @constructor
  * @extends {TreeElement}
- * @param {Object} styleRule
- * @param {WebInspector.CSSStyleDeclaration} style
- * @param {WebInspector.CSSProperty} property
+ * @param {!Object} styleRule
+ * @param {!WebInspector.CSSStyleDeclaration} style
+ * @param {!WebInspector.CSSProperty} property
  * @param {boolean} inherited
  * @param {boolean} overloaded
  * @param {boolean} hasChildren
@@ -2123,10 +2138,10 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.StylePropertyTreeElementBase}
- * @param {WebInspector.StylesSidebarPane} stylesPane
- * @param {Object} styleRule
- * @param {WebInspector.CSSStyleDeclaration} style
- * @param {WebInspector.CSSProperty} property
+ * @param {!WebInspector.StylesSidebarPane} stylesPane
+ * @param {!Object} styleRule
+ * @param {!WebInspector.CSSStyleDeclaration} style
+ * @param {!WebInspector.CSSProperty} property
  * @param {boolean} inherited
  */
 WebInspector.ComputedStylePropertyTreeElement = function(stylesPane, styleRule, style, property, inherited)
@@ -2158,10 +2173,10 @@ WebInspector.ComputedStylePropertyTreeElement.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.StylePropertyTreeElementBase}
- * @param {?WebInspector.StylesSidebarPane} stylesPane
- * @param {Object} styleRule
- * @param {WebInspector.CSSStyleDeclaration} style
- * @param {WebInspector.CSSProperty} property
+ * @param {!WebInspector.StylesSidebarPane} stylesPane
+ * @param {!Object} styleRule
+ * @param {!WebInspector.CSSStyleDeclaration} style
+ * @param {!WebInspector.CSSProperty} property
  * @param {boolean} isShorthand
  * @param {boolean} inherited
  * @param {boolean} overloaded
