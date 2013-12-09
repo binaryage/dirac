@@ -165,6 +165,7 @@ WebInspector.WorkerManager.prototype = {
         if (workerIsPaused)
             url += "&workerPaused=true";
         url = url.replace("docked=true&", "");
+        url = url.replace("can_dock=true&", "");
         url += hash;
         var width = WebInspector.settings.workerInspectorWidth.get();
         var height = WebInspector.settings.workerInspectorHeight.get();
