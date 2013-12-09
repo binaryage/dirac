@@ -158,6 +158,7 @@
 .metrics .editing {
     position: relative;
     z-index: 100;
+    cursor: text;
 }
 
 .metrics .left {
