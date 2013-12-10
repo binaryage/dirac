@@ -66,7 +66,8 @@ WebInspector.CallStackSidebarPane.prototype = {
         this._appendSidebarPlacards(callFrames);
 
         while (asyncStackTrace) {
-            var asyncPlacard = new WebInspector.Placard(WebInspector.UIString("[Async Call]"), "");
+            var title = "[" + (asyncStackTrace.description || WebInspector.UIString("Async Call")) + "]";
+            var asyncPlacard = new WebInspector.Placard(title, "");
             this.bodyElement.appendChild(asyncPlacard.element);
             this._appendSidebarPlacards(asyncStackTrace.callFrames, asyncPlacard);
             asyncStackTrace = asyncStackTrace.asyncStackTrace;

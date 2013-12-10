@@ -1003,11 +1003,13 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
  * @constructor
  * @param {!Array.<!WebInspector.DebuggerModel.CallFrame>} callFrames
  * @param {?WebInspector.DebuggerModel.StackTrace} asyncStackTrace
+ * @param {string=} description
  */
-WebInspector.DebuggerModel.StackTrace = function(callFrames, asyncStackTrace)
+WebInspector.DebuggerModel.StackTrace = function(callFrames, asyncStackTrace, description)
 {
     this.callFrames = callFrames;
     this.asyncStackTrace = asyncStackTrace;
+    this.description = description;
 }
 
 /**
@@ -1023,7 +1025,7 @@ WebInspector.DebuggerModel.StackTrace.fromPayload = function(payload, isAsync)
     if (!callFrames.length)
         return null;
     var asyncStackTrace = WebInspector.DebuggerModel.StackTrace.fromPayload(payload.asyncStackTrace, true);
-    return new WebInspector.DebuggerModel.StackTrace(callFrames, asyncStackTrace);
+    return new WebInspector.DebuggerModel.StackTrace(callFrames, asyncStackTrace, payload.description);
 }
 
 WebInspector.DebuggerModel.StackTrace.prototype = {
