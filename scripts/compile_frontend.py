@@ -111,6 +111,7 @@ modules = [
             "SnippetStorage.js",
             "SourceMapping.js",
             "StylesSourceMapping.js",
+            "TempFile.js",
             "TimelineManager.js",
             "RemoteObject.js",
             "Resource.js",

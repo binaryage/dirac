@@ -171,6 +171,7 @@
             'front_end/StylesSourceMapping.js',
             'front_end/SuggestBox.js',
             'front_end/TabbedPane.js',
+            'front_end/TempFile.js',
             'front_end/TestController.js',
             'front_end/TextEditor.js',
             'front_end/TextRange.js',

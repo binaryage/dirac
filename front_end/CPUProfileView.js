@@ -86,10 +86,14 @@ WebInspector.CPUProfileView = function(profileHeader)
 
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultFormatter(30));
 
+    function didCreateTempFile()
+    {
+        ProfilerAgent.getCPUProfile(this.profile.uid, this._getCPUProfileCallback.bind(this));
+    }
     if (this.profile._profile) // If the profile has been loaded from file then use it.
         this._processProfileData(this.profile._profile);
     else
-        ProfilerAgent.getCPUProfile(this.profile.uid, this._getCPUProfileCallback.bind(this));
+        this.profile._createTempFile(didCreateTempFile.bind(this));
 }
 
 WebInspector.CPUProfileView._TypeFlame = "Flame";
@@ -133,6 +137,7 @@ WebInspector.CPUProfileView.prototype = {
             return;
         }
 
+        this.profile._saveToTempFile(JSON.stringify(profile));
         this._processProfileData(profile);
     },
 
@@ -776,6 +781,7 @@ WebInspector.CPUProfileType.prototype = {
 WebInspector.CPUProfileHeader = function(type, title, uid)
 {
     WebInspector.ProfileHeader.call(this, type, title, uid);
+    this._tempFile = null;
 }
 
 WebInspector.CPUProfileHeader.prototype = {
@@ -795,7 +801,6 @@ WebInspector.CPUProfileHeader.prototype = {
 
     onTransferFinished: function()
     {
-
         this.sidebarElement.subtitle = WebInspector.UIString("Parsing\u2026");
         this._profile = JSON.parse(this._jsonifiedProfile);
         this._jsonifiedProfile = null;
@@ -857,44 +862,30 @@ WebInspector.CPUProfileHeader.prototype = {
      */
     canSaveToFile: function()
     {
-        return true;
+        return !!this._tempFile;
     },
 
     saveToFile: function()
     {
         var fileOutputStream = new WebInspector.FileOutputStream();
-
-        /**
-         * @param {?Protocol.Error} error
-         * @param {!ProfilerAgent.CPUProfile} profile
-         */
-        function getCPUProfileCallback(error, profile)
-        {
-            if (error) {
-                fileOutputStream.close();
-                return;
-            }
-
-            if (!profile.head) {
-                // Profiling was tentatively terminated with the "Clear all profiles." button.
-                fileOutputStream.close();
-                return;
-            }
-
-            fileOutputStream.write(JSON.stringify(profile), fileOutputStream.close.bind(fileOutputStream));
-        }
-
         /**
          * @param {boolean} accepted
          */
-        function onOpen(accepted)
+        function onOpenForSave(accepted)
         {
-            if (accepted)
-                ProfilerAgent.getCPUProfile(this.uid, getCPUProfileCallback.bind(this));
+            if (!accepted)
+                return;
+            function didRead(data)
+            {
+                if (data)
+                    fileOutputStream.write(data, fileOutputStream.close.bind(fileOutputStream));
+                else
+                    fileOutputStream.close();
+            }
+            this._tempFile.read(didRead.bind(this));
         }
-
         this._fileName = this._fileName || "CPU-" + new Date().toISO8601Compact() + this._profileType.fileExtension();
-        fileOutputStream.open(this._fileName, onOpen.bind(this));
+        fileOutputStream.open(this._fileName, onOpenForSave.bind(this));
     },
 
     /**
@@ -907,6 +898,28 @@ WebInspector.CPUProfileHeader.prototype = {
 
         var fileReader = new WebInspector.ChunkedFileReader(file, 10000000, this);
         fileReader.start(this);
+    },
+
+    /**
+     * @param {!function()} callback
+     */
+    _createTempFile: function(callback)
+    {
+        function didCreateFile(result)
+        {
+            this._tempFile = result;
+            callback();
+        }
+        new WebInspector.TempFile("cpu-profiler", this.uid, didCreateFile.bind(this));
+    },
+
+    /**
+     * @param {!string} data
+     */
+    _saveToTempFile: function(data)
+    {
+        if (this._tempFile)
+            this._tempFile.write(data);
     },
 
     __proto__: WebInspector.ProfileHeader.prototype
