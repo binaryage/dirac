@@ -4060,6 +4060,11 @@
                 "description": "Unique RenderLayer identifier."
             },
             {
+                "id": "SnapshotId",
+                "type": "string",
+                "description": "Unique snapshot identifier."
+            },
+            {
                 "id": "Layer",
                 "type": "object",
                 "description": "Information about a compositing layer.",
@@ -4078,6 +4083,15 @@
                     { "name": "paintCount", "type": "integer", "description": "Indicates how many time this layer has painted." },
                     { "name": "invisible", "type": "boolean", "optional": true, "description": "Set if layer is not visible." }
                 ]
+            },
+            {
+                "id": "PaintProfile",
+                "type": "array",
+                "description": "Array of timings, one per paint step.",
+                "items": {
+                    "type": "number",
+                    "description": "A time in seconds since the end of previous step (for the first step, time since painting started)"
+                }
             }
         ],
         "commands": [
@@ -4097,6 +4111,46 @@
                 "description": "Provides the reasons why the given layer was composited.",
                 "returns": [
                     { "name": "compositingReasons", "type": "array", "items": { "type": "string" }, "description": "A list of strings specifying reasons for the given layer to become composited." }
+                ]
+            },
+            {
+                "name": "makeSnapshot",
+                "parameters": [
+                    { "name": "layerId", "$ref": "LayerId", "description": "The id of the layer." }
+                ],
+                "description": "Returns the layer snapshot identifier.",
+                "returns": [
+                    { "name": "snapshotId", "$ref": "SnapshotId", "description": "The id of the layer snapshot." }
+                ]
+            },
+            {
+                "name": "releaseSnapshot",
+                "parameters": [
+                    { "name": "snapshotId", "$ref": "SnapshotId", "description": "The id of the layer snapshot." }
+                ],
+                "description": "Releases layer snapshot captured by the back-end."
+            },
+            {
+                "name": "profileSnapshot",
+                "parameters": [
+                    { "name": "snapshotId", "$ref": "SnapshotId", "description": "The id of the layer snapshot." },
+                    { "name": "minRepeatCount", "type": "integer", "optional": true, "description": "The maximum number of times to replay the snapshot (1, if not specified)." },
+                    { "name": "minDuration", "type": "number", "optional": true, "description": "The minimum duration (in seconds) to replay the snapshot." }
+                ],
+                "returns": [
+                    { "name": "timings", "type": "array", "items": { "$ref": "PaintProfile" }, "description": "The array of paint profilers, one per run." }
+                ]
+            },
+            {
+                "name": "replaySnapshot",
+                "parameters": [
+                    { "name": "snapshotId", "$ref": "SnapshotId", "description": "The id of the layer snapshot." },
+                    { "name": "fromStep", "type": "integer", "optional": true, "description": "The first step to replay from (replay from the very start if not specified)." },
+                    { "name": "toStep", "type": "integer", "optional": true, "description": "The last step to replay to (replay till the end if not specified)." }
+                ],
+                "description": "Replays the layer snapshot and returns the resulting bitmap.",
+                "returns": [
+                    { "name": "dataURL", "type": "string", "description": "A data: URL for resulting image." }
                 ]
             }
         ],
