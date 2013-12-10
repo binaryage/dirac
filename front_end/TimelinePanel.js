@@ -186,7 +186,7 @@ WebInspector.TimelinePanel = function()
 
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._willReloadPage, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
-    this._overviewItems[this._presentationModeSetting.get()].revealAndSelect(false);
+    this._selectPresentationMode(this._presentationModeSetting.get());
 }
 
 // Define row and header height, should be in sync with styles for timeline graphs.
@@ -219,7 +219,7 @@ WebInspector.TimelinePanel.prototype = {
 
         for (var mode in this._overviewItems) {
             var item = this._overviewItems[mode];
-            item.onselect = this._modeChanged.bind(this, mode);
+            item.onselect = this._onModeChanged.bind(this, mode);
             topPaneSidebarTree.appendChild(item);
         }
     },
@@ -250,7 +250,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._textFilter = new WebInspector.TextFilterUI();
         this._textFilter.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._textFilterChanged, this);
-        this._filterBar.addFilter(this._textFilter);
+        filterBar.addFilter(this._textFilter);
 
         var durationOptions = [];
         for (var presetIndex = 0; presetIndex < WebInspector.TimelinePanel.durationFilterPresetsMs.length; ++presetIndex) {
@@ -269,7 +269,7 @@ WebInspector.TimelinePanel.prototype = {
         this._durationFilter = new WebInspector.TimelineIsLongFilter();
         this._durationComboBoxFilter = new WebInspector.ComboBoxFilterUI(durationOptions);
         this._durationComboBoxFilter.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._durationFilterChanged, this);
-        this._filterBar.addFilter(this._durationComboBoxFilter);
+        filterBar.addFilter(this._durationComboBoxFilter);
 
         this._categoryFilters = {};
         var categoryTypes = [];
@@ -280,7 +280,7 @@ WebInspector.TimelinePanel.prototype = {
                 continue;
             var filter = new WebInspector.CheckboxFilterUI(category.name, category.title);
             filter.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._categoriesFilterChanged.bind(this, category.name), this);
-            this._filterBar.addFilter(filter);
+            filterBar.addFilter(filter);
             this._categoryFilters[category.name] = filter;
         }
         return true;
@@ -570,7 +570,14 @@ WebInspector.TimelinePanel.prototype = {
         this._overviewPane.zoomToFrame(frameBar._frame);
     },
 
-    _modeChanged: function(mode)
+    _selectPresentationMode: function(mode)
+    {
+        if (!this._overviewItems[mode])
+            mode = WebInspector.TimelineOverviewPane.Mode.Events;
+        this._overviewItems[mode].revealAndSelect(false);
+    },
+
+    _onModeChanged: function(mode)
     {
         this._overviewPane.willSetMode(mode);
 
