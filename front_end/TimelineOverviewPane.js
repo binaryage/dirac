@@ -52,14 +52,7 @@ WebInspector.TimelineOverviewPane = function(model)
     model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
     model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._reset, this);
     this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
-    this._createOverviewControls();
 }
-
-WebInspector.TimelineOverviewPane.Mode = {
-    Events: "Events",
-    Frames: "Frames",
-    Memory: "Memory"
-};
 
 WebInspector.TimelineOverviewPane.Events = {
     WindowChanged: "WindowChanged"
@@ -76,40 +69,31 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._update();
     },
 
-    willSetMode: function(newMode)
+    /**
+     * @param {WebInspector.TimelineOverviewBase} overviewControl
+     */
+    willSetOverviewControl: function(overviewControl)
     {
-        this._lastMode = this._currentMode;
-        if (this._currentMode === newMode)
+        this._sameOverviewControl = this._overviewControl === overviewControl;
+        if (this._sameOverviewControl)
             return;
-        this._windowTimes = this._overviewControl ? this._overviewControl.windowTimes(this.windowLeft(), this.windowRight()) : null;
-        this._innerSetMode(newMode);
+        this._windowTimes = null;
+        if (this._overviewControl) {
+            this._windowTimes = this._overviewControl.windowTimes(this.windowLeft(), this.windowRight());
+            this._overviewControl.detach();
+        }
+        this._overviewControl = overviewControl;
+        this._overviewControl.show(this._overviewGrid.element);
         this._update();
     },
 
-    didSetMode: function()
+    didSetOverviewControl: function()
     {
-        if (this._lastMode === this._currentMode)
+        if (this._sameOverviewControl)
             return;
         if (this._windowTimes && this._windowTimes.startTime >= 0)
             this.setWindowTimes(this._windowTimes.startTime, this._windowTimes.endTime);
         this._update();
-    },
-
-    _innerSetMode: function(newMode)
-    {
-        if (this._overviewControl)
-            this._overviewControl.detach();
-        this._currentMode = newMode;
-        this._overviewControl = this._overviewControls[newMode];
-        this._overviewControl.show(this._overviewGrid.element);
-    },
-
-    _createOverviewControls: function()
-    {
-        this._overviewControls = {};
-        this._overviewControls[WebInspector.TimelineOverviewPane.Mode.Events] = new WebInspector.TimelineEventOverview(this._model);
-        this._overviewControls[WebInspector.TimelineOverviewPane.Mode.Frames] = new WebInspector.TimelineFrameOverview(this._model);
-        this._overviewControls[WebInspector.TimelineOverviewPane.Mode.Memory] = new WebInspector.TimelineMemoryOverview(this._model);
     },
 
     _update: function()
@@ -141,15 +125,6 @@ WebInspector.TimelineOverviewPane.prototype = {
             dividers[dividerPosition] = divider;
         }
         this._overviewGrid.addEventDividers(dividers);
-    },
-
-    /**
-     * @param {!WebInspector.TimelineFrame} frame
-     */
-    addFrame: function(frame)
-    {
-        this._overviewControl.addFrame(frame);
-        this._scheduleRefresh();
     },
 
     /**
@@ -347,11 +322,6 @@ WebInspector.TimelineOverviewBase = function(model)
 WebInspector.TimelineOverviewBase.prototype = {
     update: function() { },
     reset: function() { },
-
-    /**
-     * @param {!WebInspector.TimelineFrame} frame
-     */
-    addFrame: function(frame) { },
 
     /**
      * @param {number} windowLeft

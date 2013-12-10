@@ -31,22 +31,24 @@
 /**
  * @constructor
  * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.TimelineOverviewPane} overviewPane
+ * @param {!WebInspector.TimelineFrameOverview} frameOverview
  * @param {!WebInspector.TimelinePresentationModel} presentationModel
  */
-WebInspector.TimelineFrameController = function(model, overviewPane, presentationModel)
+WebInspector.TimelineFrameController = function(model, frameOverview, presentationModel)
 {
     this._lastMainThreadFrame = null;
     this._lastBackgroundFrame = null;
     this._model = model;
-    this._overviewPane = overviewPane;
+    this._frameOverview = frameOverview;
     this._presentationModel = presentationModel;
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
 
+    this._frameOverview.reset();
     var records = model.records;
     for (var i = 0; i < records.length; ++i)
         this._addRecord(records[i]);
+    this._frameOverview.update();
 }
 
 WebInspector.TimelineFrameController.prototype = {
@@ -119,7 +121,7 @@ WebInspector.TimelineFrameController.prototype = {
         // Alternatively, we could compute CPU time as sum of all Program events.
         // This way it's a bit more flexible, as it works in case there's no program events.
         frame.cpuTime += frame.timeByCategory["other"];
-        this._overviewPane.addFrame(frame);
+        this._frameOverview.addFrame(frame);
         this._presentationModel.addFrame(frame);
     },
 

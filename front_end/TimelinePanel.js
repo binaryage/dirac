@@ -61,7 +61,7 @@ WebInspector.TimelinePanel = function()
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
 
-    this._presentationModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", WebInspector.TimelineOverviewPane.Mode.Events);
+    this._presentationModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", WebInspector.TimelinePanel.Mode.Events);
     this._glueRecordsSetting = WebInspector.settings.createSetting("timelineGlueRecords", false);
 
     this._createStatusBarItems();
@@ -120,7 +120,7 @@ WebInspector.TimelinePanel = function()
     this._timelineMemorySplitter.element.classList.remove("fill");
     this._timelineMemorySplitter.element.classList.add("timeline-memory-split");
     this._timelineMemorySplitter.show(this._searchableView.element);
-    if (this._presentationModeSetting.get() !== WebInspector.TimelineOverviewPane.Mode.Memory)
+    if (this._presentationModeSetting.get() !== WebInspector.TimelinePanel.Mode.Memory)
         this._timelineMemorySplitter.showOnlyFirst();
 
     // Create records sidebar as a top memory splitter child.
@@ -186,8 +186,16 @@ WebInspector.TimelinePanel = function()
 
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._willReloadPage, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
+
+    this._createOverviewControls();
     this._selectPresentationMode(this._presentationModeSetting.get());
 }
+
+WebInspector.TimelinePanel.Mode = {
+    Events: "Events",
+    Frames: "Frames",
+    Memory: "Memory"
+};
 
 // Define row and header height, should be in sync with styles for timeline graphs.
 WebInspector.TimelinePanel.rowHeight = 18;
@@ -210,11 +218,11 @@ WebInspector.TimelinePanel.prototype = {
         var topPaneSidebarTree = new TreeOutline(overviewTreeElement);
 
         this._overviewItems = {};
-        this._overviewItems[WebInspector.TimelineOverviewPane.Mode.Events] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-events",
+        this._overviewItems[WebInspector.TimelinePanel.Mode.Events] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-events",
             WebInspector.UIString("Events"));
-        this._overviewItems[WebInspector.TimelineOverviewPane.Mode.Frames] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-frames",
+        this._overviewItems[WebInspector.TimelinePanel.Mode.Frames] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-frames",
             WebInspector.UIString("Frames"));
-        this._overviewItems[WebInspector.TimelineOverviewPane.Mode.Memory] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-memory",
+        this._overviewItems[WebInspector.TimelinePanel.Mode.Memory] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-memory",
             WebInspector.UIString("Memory"));
 
         for (var mode in this._overviewItems) {
@@ -570,19 +578,28 @@ WebInspector.TimelinePanel.prototype = {
         this._overviewPane.zoomToFrame(frameBar._frame);
     },
 
+    _createOverviewControls: function()
+    {
+        this._overviewControls = {};
+        this._overviewControls[WebInspector.TimelinePanel.Mode.Events] = new WebInspector.TimelineEventOverview(this._model);
+        this._frameOverviewControl = new WebInspector.TimelineFrameOverview(this._model);
+        this._overviewControls[WebInspector.TimelinePanel.Mode.Frames] = this._frameOverviewControl;
+        this._overviewControls[WebInspector.TimelinePanel.Mode.Memory] = new WebInspector.TimelineMemoryOverview(this._model);
+    },
+
     _selectPresentationMode: function(mode)
     {
         if (!this._overviewItems[mode])
-            mode = WebInspector.TimelineOverviewPane.Mode.Events;
+            mode = WebInspector.TimelinePanel.Mode.Events;
         this._overviewItems[mode].revealAndSelect(false);
     },
 
     _onModeChanged: function(mode)
     {
-        this._overviewPane.willSetMode(mode);
+        this._overviewPane.willSetOverviewControl(this._overviewControls[mode]);
 
-        var shouldShowMemory = mode === WebInspector.TimelineOverviewPane.Mode.Memory;
-        var frameMode = mode === WebInspector.TimelineOverviewPane.Mode.Frames;
+        var shouldShowMemory = mode === WebInspector.TimelinePanel.Mode.Memory;
+        var frameMode = mode === WebInspector.TimelinePanel.Mode.Frames;
         this._presentationModeSetting.set(mode);
         if (frameMode !== this._frameMode) {
             this._frameMode = frameMode;
@@ -593,7 +610,7 @@ WebInspector.TimelinePanel.prototype = {
             if (frameMode) {
                 this.element.classList.add("timeline-frame-overview");
                 this.recordsCounter.element.classList.add("hidden");
-                this._frameController = new WebInspector.TimelineFrameController(this._model, this._overviewPane, this._presentationModel);
+                this._frameController = new WebInspector.TimelineFrameController(this._model, this._frameOverviewControl, this._presentationModel);
             } else {
                 this._frameController.dispose();
                 this._frameController = null;
@@ -608,7 +625,7 @@ WebInspector.TimelinePanel.prototype = {
             this._timelineMemorySplitter.showOnlyFirst();
         this.onResize();
         this._updateSelectionDetails();
-        this._overviewPane.didSetMode();
+        this._overviewPane.didSetOverviewControl();
     },
 
     /**
@@ -707,7 +724,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         var width = this._sidebarView.sidebarWidth();
         this._topPaneSidebarElement.style.flexBasis = width + "px";
-        if (this._presentationModeSetting.get() === WebInspector.TimelineOverviewPane.Mode.Memory)
+        if (this._presentationModeSetting.get() === WebInspector.TimelinePanel.Mode.Memory)
             this._memoryStatistics.setSidebarWidth(width);
         this._timelineGrid.gridHeaderElement.style.left = width + "px";
     },
@@ -717,7 +734,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     setSidebarWidth: function(width)
     {
-        if (this._presentationModeSetting.get() === WebInspector.TimelineOverviewPane.Mode.Memory)
+        if (this._presentationModeSetting.get() === WebInspector.TimelinePanel.Mode.Memory)
             this._sidebarView.setSidebarWidth(width);
     },
 
@@ -790,7 +807,7 @@ WebInspector.TimelinePanel.prototype = {
             WebInspector.TimelinePanel._categoryStylesInitialized = true;
             this._injectCategoryStyles();
         }
-        this._overviewPane.willSetMode(this._presentationModeSetting.get());
+        this._overviewPane.willSetOverviewControl(this._overviewControls[this._presentationModeSetting.get()]);
         this._onViewportResize();
         this._refresh();
     },
@@ -984,7 +1001,7 @@ WebInspector.TimelinePanel.prototype = {
                 this._timelineGrid.updateDividers(this._calculator);
             this._refreshAllUtilizationBars();
         }
-        if (this._presentationModeSetting.get() === WebInspector.TimelineOverviewPane.Mode.Memory)
+        if (this._presentationModeSetting.get() === WebInspector.TimelinePanel.Mode.Memory)
             this._memoryStatistics.refresh();
         this._boundariesAreValid = true;
     },
