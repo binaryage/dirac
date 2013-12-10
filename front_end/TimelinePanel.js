@@ -50,7 +50,7 @@ WebInspector.TimelinePanel = function()
     WebInspector.Panel.call(this, "timeline");
     this.registerRequiredCSS("timelinePanel.css");
     this.registerRequiredCSS("filter.css");
-    this.element.addStyleClass("vbox");
+    this.element.classList.add("vbox");
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), false);
 
     // Create model.
@@ -98,11 +98,11 @@ WebInspector.TimelinePanel = function()
 
     // Create top level properties splitter.
     this._detailsSplitView = new WebInspector.SplitView(false, "timeline-details");
-    this._detailsSplitView.element.removeStyleClass("fill");
-    this._detailsSplitView.element.addStyleClass("timeline-details-split");
-    this._detailsSplitView.sidebarElement.addStyleClass("timeline-details");
+    this._detailsSplitView.element.classList.remove("fill");
+    this._detailsSplitView.element.classList.add("timeline-details-split");
+    this._detailsSplitView.sidebarElement.classList.add("timeline-details");
     this._detailsSplitView.show(this.element);
-    this._detailsSplitView.mainElement.addStyleClass("vbox");
+    this._detailsSplitView.mainElement.classList.add("vbox");
     this._detailsSplitView.setMainElementConstraints(undefined, 40);
     this._detailsView = new WebInspector.TimelineDetailsView();
     this._detailsView.show(this._detailsSplitView.sidebarElement);
@@ -117,8 +117,8 @@ WebInspector.TimelinePanel = function()
     this._searchableView.show(this._detailsSplitView.mainElement);
 
     this._timelineMemorySplitter = new WebInspector.SplitView(false, "timeline-memory");
-    this._timelineMemorySplitter.element.removeStyleClass("fill");
-    this._timelineMemorySplitter.element.addStyleClass("timeline-memory-split");
+    this._timelineMemorySplitter.element.classList.remove("fill");
+    this._timelineMemorySplitter.element.classList.add("timeline-memory-split");
     this._timelineMemorySplitter.show(this._searchableView.element);
     if (this._presentationModeSetting.get() !== WebInspector.TimelineOverviewPane.Mode.Memory)
         this._timelineMemorySplitter.showOnlyFirst();
@@ -139,13 +139,13 @@ WebInspector.TimelinePanel = function()
     this._timelineMemorySplitter.installResizer(this._memoryStatistics.resizeElement());
 
     // Create records list in the records sidebar.
-    this._sidebarView.sidebarElement.addStyleClass("vbox");
+    this._sidebarView.sidebarElement.classList.add("vbox");
     this._sidebarView.sidebarElement.createChild("div", "timeline-records-title").textContent = WebInspector.UIString("RECORDS");
     this._sidebarListElement = this._sidebarView.sidebarElement.createChild("div", "timeline-records-list");
 
     // Create grid in the records main area.
     this._gridContainer = new WebInspector.ViewWithResizeCallback(this._onViewportResize.bind(this));
-    this._gridContainer.element.addStyleClass("fill");
+    this._gridContainer.element.classList.add("fill");
     this._gridContainer.element.id = "resources-container-content";
     this._gridContainer.show(this._sidebarView.mainElement);
     this._timelineGrid = new WebInspector.TimelineGrid();
@@ -153,7 +153,7 @@ WebInspector.TimelinePanel = function()
     this._itemsGraphsElement.id = "timeline-graphs";
     this._gridContainer.element.appendChild(this._timelineGrid.element);
     this._timelineGrid.gridHeaderElement.id = "timeline-grid-header";
-    this._timelineGrid.gridHeaderElement.addStyleClass("fill");
+    this._timelineGrid.gridHeaderElement.classList.add("fill");
     this._memoryStatistics.setMainTimelineGrid(this._timelineGrid);
     this._timelineMemorySplitter.mainElement.appendChild(this._timelineGrid.gridHeaderElement);
 
@@ -199,7 +199,7 @@ WebInspector.TimelinePanel.prototype = {
     _createPresentationSelector: function()
     {
         this._presentationSelector = new WebInspector.View();
-        this._presentationSelector.element.addStyleClass("hbox");
+        this._presentationSelector.element.classList.add("hbox");
         this._presentationSelector.element.id = "timeline-overview-panel";
         this._presentationSelector.show(this.element);
 
@@ -526,8 +526,8 @@ WebInspector.TimelinePanel.prototype = {
         else {
             const frameContainerBorderWidth = 1;
             this._frameContainer = document.createElement("div");
-            this._frameContainer.addStyleClass("fill");
-            this._frameContainer.addStyleClass("timeline-frame-container");
+            this._frameContainer.classList.add("fill");
+            this._frameContainer.classList.add("timeline-frame-container");
             this._frameContainer.style.height = WebInspector.TimelinePanel.rowHeight + frameContainerBorderWidth + "px";
             this._frameContainer.addEventListener("dblclick", this._onFrameDoubleClicked.bind(this), false);
         }
@@ -591,14 +591,14 @@ WebInspector.TimelinePanel.prototype = {
             this._repopulateRecords();
 
             if (frameMode) {
-                this.element.addStyleClass("timeline-frame-overview");
-                this.recordsCounter.element.addStyleClass("hidden");
+                this.element.classList.add("timeline-frame-overview");
+                this.recordsCounter.element.classList.add("hidden");
                 this._frameController = new WebInspector.TimelineFrameController(this._model, this._overviewPane, this._presentationModel);
             } else {
                 this._frameController.dispose();
                 this._frameController = null;
-                this.element.removeStyleClass("timeline-frame-overview");
-                this.recordsCounter.element.removeStyleClass("hidden");
+                this.element.classList.remove("timeline-frame-overview");
+                this.recordsCounter.element.classList.remove("hidden");
             }
         }
 
@@ -1147,8 +1147,8 @@ WebInspector.TimelinePanel.prototype = {
         this._updateSearchHighlight(false, true);
 
         if (highlightedListRowElement) {
-            highlightedListRowElement.addStyleClass("highlighted-timeline-record");
-            highlightedGraphRowElement.addStyleClass("highlighted-timeline-record");
+            highlightedListRowElement.classList.add("highlighted-timeline-record");
+            highlightedGraphRowElement.classList.add("highlighted-timeline-record");
         }
 
         return recordsInWindow.length;
@@ -1213,7 +1213,7 @@ WebInspector.TimelinePanel.prototype = {
                 var gap = Math.floor(left) - Math.ceil(lastRight);
                 if (gap < minGap) {
                     if (!task.data["foreign"])
-                        lastElement.removeStyleClass(foreignStyle);
+                        lastElement.classList.remove(foreignStyle);
                     lastRight = right;
                     lastElement._tasksInfo.lastTaskIndex = taskIndex;
                     continue;
@@ -1226,7 +1226,7 @@ WebInspector.TimelinePanel.prototype = {
             element.style.left = left + "px";
             element._tasksInfo = {name: name, tasks: tasks, firstTaskIndex: taskIndex, lastTaskIndex: taskIndex};
             if (task.data["foreign"])
-                element.addStyleClass(foreignStyle);
+                element.classList.add(foreignStyle);
             lastLeft = left;
             lastRight = right;
             lastElement = element;
@@ -1362,7 +1362,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     _showPopover: function(anchor, popover)
     {
-        if (anchor.hasStyleClass("timeline-frame-strip")) {
+        if (anchor.classList.contains("timeline-frame-strip")) {
             var frame = anchor._frame;
             popover.show(WebInspector.TimelinePresentationModel.generatePopupContentForFrame(frame), anchor);
         } else {
@@ -1673,7 +1673,7 @@ WebInspector.TimelineRecordListRow.prototype = {
             paddingLeft += 12 / (Math.max(1, step++));
         this.element.style.paddingLeft = paddingLeft + "px";
         if (record.isBackground)
-            this.element.addStyleClass("background");
+            this.element.classList.add("background");
 
         this._typeElement.textContent = record.title;
 
@@ -1734,9 +1734,9 @@ WebInspector.TimelineRecordListRow.prototype = {
      */
     _onMouseOver: function(event)
     {
-        this.element.addStyleClass("hovered");
+        this.element.classList.add("hovered");
         var graphRow = /** @type {!WebInspector.TimelineRecordGraphRow} */ (this._record.getUserObject("WebInspector.TimelineRecordGraphRow"));
-        graphRow.element.addStyleClass("hovered");
+        graphRow.element.classList.add("hovered");
     },
 
     /**
@@ -1744,9 +1744,9 @@ WebInspector.TimelineRecordListRow.prototype = {
      */
     _onMouseOut: function(event)
     {
-        this.element.removeStyleClass("hovered");
+        this.element.classList.remove("hovered");
         var graphRow = /** @type {!WebInspector.TimelineRecordGraphRow} */ (this._record.getUserObject("WebInspector.TimelineRecordGraphRow"));
-        graphRow.element.removeStyleClass("hovered");
+        graphRow.element.classList.remove("hovered");
     }
 }
 
@@ -1806,7 +1806,7 @@ WebInspector.TimelineRecordGraphRow.prototype = {
         this._record = record;
         this.element.className = "timeline-graph-side timeline-category-" + record.category.name;
         if (record.isBackground)
-            this.element.addStyleClass("background");
+            this.element.classList.add("background");
 
         var barPosition = calculator.computeBarGraphWindowPosition(record);
         this._barWithChildrenElement.style.left = barPosition.left + "px";
@@ -1851,9 +1851,9 @@ WebInspector.TimelineRecordGraphRow.prototype = {
      */
     _onMouseOver: function(event)
     {
-        this.element.addStyleClass("hovered");
+        this.element.classList.add("hovered");
         var listRow = /** @type {!WebInspector.TimelineRecordListRow} */ (this._record.getUserObject("WebInspector.TimelineRecordListRow"));
-        listRow.element.addStyleClass("hovered");
+        listRow.element.classList.add("hovered");
     },
 
     /**
@@ -1861,9 +1861,9 @@ WebInspector.TimelineRecordGraphRow.prototype = {
      */
     _onMouseOut: function(event)
     {
-        this.element.removeStyleClass("hovered");
+        this.element.classList.remove("hovered");
         var listRow = /** @type {!WebInspector.TimelineRecordListRow} */ (this._record.getUserObject("WebInspector.TimelineRecordListRow"));
-        listRow.element.removeStyleClass("hovered");
+        listRow.element.classList.remove("hovered");
     },
 
     dispose: function()
@@ -1893,16 +1893,16 @@ WebInspector.TimelineExpandableElement.prototype = {
             this._element.style.width = Math.max(12, width + 25) + "px";
             if (!record.collapsed) {
                 this._element.style.height = (record.visibleChildrenCount + 1) * rowHeight + "px";
-                this._element.addStyleClass("timeline-expandable-expanded");
-                this._element.removeStyleClass("timeline-expandable-collapsed");
+                this._element.classList.add("timeline-expandable-expanded");
+                this._element.classList.remove("timeline-expandable-collapsed");
             } else {
                 this._element.style.height = rowHeight + "px";
-                this._element.addStyleClass("timeline-expandable-collapsed");
-                this._element.removeStyleClass("timeline-expandable-expanded");
+                this._element.classList.add("timeline-expandable-collapsed");
+                this._element.classList.remove("timeline-expandable-expanded");
             }
-            this._element.removeStyleClass("hidden");
+            this._element.classList.remove("hidden");
         } else
-            this._element.addStyleClass("hidden");
+            this._element.classList.add("hidden");
     },
 
     _dispose: function()

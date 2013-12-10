@@ -35,8 +35,8 @@ WebInspector.Panel = function(name)
     WebInspector.View.call(this);
     WebInspector.panels[name] = this;
 
-    this.element.addStyleClass("panel");
-    this.element.addStyleClass(name);
+    this.element.classList.add("panel");
+    this.element.classList.add(name);
     this._panelName = name;
 
     this._shortcuts = /** !Object.<number, function(Event=):boolean> */ ({});
@@ -121,7 +121,7 @@ WebInspector.Panel.prototype = {
         this.sidebarTreeElement = document.createElement("ol");
         this.sidebarTreeElement.className = "sidebar-tree";
         this.splitView.sidebarElement.appendChild(this.sidebarTreeElement);
-        this.splitView.sidebarElement.addStyleClass("sidebar");
+        this.splitView.sidebarElement.classList.add("sidebar");
 
         this.sidebarTree = new TreeOutline(this.sidebarTreeElement);
         this.sidebarTree.panel = this;

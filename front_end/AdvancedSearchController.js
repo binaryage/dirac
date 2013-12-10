@@ -241,22 +241,22 @@ WebInspector.SearchView = function(controller)
     this._search = this._searchPanelElement.createChild("input");
     this._search.placeholder = WebInspector.UIString("Search sources");
     this._search.setAttribute("type", "text");
-    this._search.addStyleClass("search-config-search");
+    this._search.classList.add("search-config-search");
     this._search.setAttribute("results", "0");
     this._search.setAttribute("size", 30);
 
     this._ignoreCaseLabel = this._searchPanelElement.createChild("label");
-    this._ignoreCaseLabel.addStyleClass("search-config-label");
+    this._ignoreCaseLabel.classList.add("search-config-label");
     this._ignoreCaseCheckbox = this._ignoreCaseLabel.createChild("input");
     this._ignoreCaseCheckbox.setAttribute("type", "checkbox");
-    this._ignoreCaseCheckbox.addStyleClass("search-config-checkbox");
+    this._ignoreCaseCheckbox.classList.add("search-config-checkbox");
     this._ignoreCaseLabel.appendChild(document.createTextNode(WebInspector.UIString("Ignore case")));
 
     this._regexLabel = this._searchPanelElement.createChild("label");
-    this._regexLabel.addStyleClass("search-config-label");
+    this._regexLabel.classList.add("search-config-label");
     this._regexCheckbox = this._regexLabel.createChild("input");
     this._regexCheckbox.setAttribute("type", "checkbox");
-    this._regexCheckbox.addStyleClass("search-config-checkbox");
+    this._regexCheckbox.classList.add("search-config-checkbox");
     this._regexLabel.appendChild(document.createTextNode(WebInspector.UIString("Regular expression")));
 
     this._searchStatusBarElement = this.element.createChild("div", "search-status-bar-summary");
@@ -588,7 +588,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
 
             var numberString = numberToStringWithSpacesPadding(lineNumber + 1, 4);
             var lineNumberSpan = document.createElement("span");
-            lineNumberSpan.addStyleClass("search-match-line-number");
+            lineNumberSpan.classList.add("search-match-line-number");
             lineNumberSpan.textContent = numberString;
             anchor.appendChild(lineNumberSpan);
 
@@ -614,7 +614,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
         var showMoreMatchesText = WebInspector.UIString("Show all matches (%d more).", matchesLeftCount);
         var showMoreMatchesElement = new TreeElement(showMoreMatchesText);
         fileTreeElement.appendChild(showMoreMatchesElement);
-        showMoreMatchesElement.listItemElement.addStyleClass("show-more-matches");
+        showMoreMatchesElement.listItemElement.classList.add("show-more-matches");
         showMoreMatchesElement.onselect = this._showMoreMatchesElementSelected.bind(this, searchResult, startMatchIndex, showMoreMatchesElement);
     },
 
@@ -644,7 +644,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
         fileTreeElement.selectable = false;
 
         this._treeOutline.appendChild(fileTreeElement);
-        fileTreeElement.listItemElement.addStyleClass("search-result");
+        fileTreeElement.listItemElement.classList.add("search-result");
 
         var fileNameSpan = document.createElement("span");
         fileNameSpan.className = "search-result-file-name";

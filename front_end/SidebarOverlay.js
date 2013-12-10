@@ -59,7 +59,7 @@ WebInspector.SidebarOverlay.prototype = {
     show: function(relativeToElement)
     {
         relativeToElement.appendChild(this.element);
-        relativeToElement.addStyleClass("sidebar-overlay-shown");
+        relativeToElement.classList.add("sidebar-overlay-shown");
         this._view.show(this.element);
         this.element.appendChild(this._resizerElement);
         if (this._resizerWidgetElement)
@@ -89,7 +89,7 @@ WebInspector.SidebarOverlay.prototype = {
 
         this._view.detach();
         element.removeChild(this.element);
-        element.removeStyleClass("sidebar-overlay-shown");
+        element.classList.remove("sidebar-overlay-shown");
         this.element.removeChild(this._resizerElement);
         if (this._resizerWidgetElement)
             this.element.removeChild(this._resizerWidgetElement);

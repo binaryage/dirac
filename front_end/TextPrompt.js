@@ -112,7 +112,7 @@ WebInspector.TextPrompt.prototype = {
         this._proxyElement.style.display = this._proxyElementDisplay;
         element.parentElement.insertBefore(this.proxyElement, element);
         this.proxyElement.appendChild(element);
-        this._element.addStyleClass("text-prompt");
+        this._element.classList.add("text-prompt");
         this._element.addEventListener("keydown", this._boundOnKeyDown, false);
         this._element.addEventListener("mousewheel", this._boundOnMouseWheel, false);
         this._element.addEventListener("selectstart", this._boundSelectStart, false);
@@ -129,7 +129,7 @@ WebInspector.TextPrompt.prototype = {
         this.proxyElement.parentElement.insertBefore(this._element, this.proxyElement);
         this.proxyElement.remove();
         delete this._proxyElement;
-        this._element.removeStyleClass("text-prompt");
+        this._element.classList.remove("text-prompt");
         this._element.removeEventListener("keydown", this._boundOnKeyDown, false);
         this._element.removeEventListener("mousewheel", this._boundOnMouseWheel, false);
         this._element.removeEventListener("selectstart", this._boundSelectStart, false);
@@ -178,7 +178,7 @@ WebInspector.TextPrompt.prototype = {
     _startEditing: function(blurListener)
     {
         this._isEditing = true;
-        this._element.addStyleClass("editing");
+        this._element.classList.add("editing");
         if (blurListener) {
             this._blurListener = blurListener;
             this._element.addEventListener("blur", this._blurListener, false);
@@ -196,7 +196,7 @@ WebInspector.TextPrompt.prototype = {
         this._element.tabIndex = this._oldTabIndex;
         if (this._blurListener)
             this._element.removeEventListener("blur", this._blurListener, false);
-        this._element.removeStyleClass("editing");
+        this._element.classList.remove("editing");
         delete this._isEditing;
     },
 

@@ -36,9 +36,9 @@ WebInspector.RevisionHistoryView = function()
 {
     WebInspector.View.call(this);
     this.registerRequiredCSS("revisionHistory.css");
-    this.element.addStyleClass("revision-history-drawer");
-    this.element.addStyleClass("fill");
-    this.element.addStyleClass("outline-disclosure");
+    this.element.classList.add("revision-history-drawer");
+    this.element.classList.add("fill");
+    this.element.classList.add("outline-disclosure");
     this._uiSourceCodeItems = new Map();
 
     var olElement = this.element.createChild("ol");
@@ -196,13 +196,13 @@ WebInspector.RevisionHistoryTreeElement = function(revision, baseRevision, allow
     this._revertElement.textContent = WebInspector.UIString("apply revision content");
     this._revertElement.addEventListener("click", this._revision.revertToThis.bind(this._revision), false);
     if (!allowRevert)
-        this._revertElement.addStyleClass("hidden");
+        this._revertElement.classList.add("hidden");
 }
 
 WebInspector.RevisionHistoryTreeElement.prototype = {
     onattach: function()
     {
-        this.listItemElement.addStyleClass("revision-history-revision");
+        this.listItemElement.classList.add("revision-history-revision");
     },
 
     onexpand: function()
@@ -213,7 +213,7 @@ WebInspector.RevisionHistoryTreeElement.prototype = {
             return;
         this._wasExpandedOnce = true;
 
-        this.childrenListElement.addStyleClass("source-code");
+        this.childrenListElement.classList.add("source-code");
         if (this._baseRevision)
             this._baseRevision.requestContent(step1.bind(this));
         else
@@ -296,7 +296,7 @@ WebInspector.RevisionHistoryTreeElement.prototype = {
         {
             var numberString = lineNumber !== null ? numberToStringWithSpacesPadding(lineNumber + 1, 4) : "    ";
             var lineNumberSpan = document.createElement("span");
-            lineNumberSpan.addStyleClass("webkit-line-number");
+            lineNumberSpan.classList.add("webkit-line-number");
             lineNumberSpan.textContent = numberString;
             child.listItemElement.appendChild(lineNumberSpan);
         }
@@ -307,13 +307,13 @@ WebInspector.RevisionHistoryTreeElement.prototype = {
         var contentSpan = document.createElement("span");
         contentSpan.textContent = lineContent;
         child.listItemElement.appendChild(contentSpan);
-        child.listItemElement.addStyleClass("revision-history-line");
-        child.listItemElement.addStyleClass("revision-history-line-" + changeType);
+        child.listItemElement.classList.add("revision-history-line");
+        child.listItemElement.classList.add("revision-history-line-" + changeType);
     },
 
     allowRevert: function()
     {
-        this._revertElement.removeStyleClass("hidden");
+        this._revertElement.classList.remove("hidden");
     },
 
     __proto__: TreeElement.prototype

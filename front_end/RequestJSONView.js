@@ -37,7 +37,7 @@ WebInspector.RequestJSONView = function(request, parsedJSON)
 {
     WebInspector.RequestView.call(this, request);
     this._parsedJSON = parsedJSON;
-    this.element.addStyleClass("json");
+    this.element.classList.add("json");
 }
 
 WebInspector.RequestJSONView.parseJSON = function(text)

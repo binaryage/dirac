@@ -42,7 +42,7 @@ WebInspector.SettingsScreen = function(onHide)
     this._onHide = onHide;
 
     this._tabbedPane = new WebInspector.TabbedPane();
-    this._tabbedPane.element.addStyleClass("help-window-main");
+    this._tabbedPane.element.classList.add("help-window-main");
     var settingsLabelElement = document.createElement("div");
     settingsLabelElement.className = "help-window-label";
     settingsLabelElement.createTextChild(WebInspector.UIString("Settings"));
@@ -294,7 +294,7 @@ WebInspector.SettingsTab.prototype = {
             inputElement.style.width = width;
         if (validatorCallback) {
             var errorMessageLabel = p.createChild("div");
-            errorMessageLabel.addStyleClass("field-error-message");
+            errorMessageLabel.classList.add("field-error-message");
             errorMessageLabel.style.color = "DarkRed";
             inputElement.oninput = function()
             {
@@ -523,7 +523,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
         }
 
         this._fileSystemsList = new WebInspector.SettingsList(["path"], this._renderFileSystem.bind(this));
-        this._fileSystemsList.element.addStyleClass("file-systems-list");
+        this._fileSystemsList.element.classList.add("file-systems-list");
         this._fileSystemsList.addEventListener(WebInspector.SettingsList.Events.Selected, this._fileSystemSelected.bind(this));
         this._fileSystemsList.addEventListener(WebInspector.SettingsList.Events.Removed, this._fileSystemRemovedfromList.bind(this));
         this._fileSystemsList.addEventListener(WebInspector.SettingsList.Events.DoubleClicked, this._fileSystemDoubleClicked.bind(this));
@@ -578,8 +578,8 @@ WebInspector.WorkspaceSettingsTab.prototype = {
     _createRemoveButton: function(handler)
     {
         var removeButton = document.createElement("button");
-        removeButton.addStyleClass("button");
-        removeButton.addStyleClass("remove-item-button");
+        removeButton.classList.add("button");
+        removeButton.classList.add("remove-item-button");
         removeButton.value = WebInspector.UIString("Remove");
         if (handler)
             removeButton.addEventListener("click", handler, false);
@@ -786,7 +786,7 @@ WebInspector.SettingsController.prototype =
 WebInspector.SettingsList = function(columns, itemRenderer)
 {
     this.element = document.createElement("div");
-    this.element.addStyleClass("settings-list");
+    this.element.classList.add("settings-list");
     this.element.tabIndex = -1;
     this._itemRenderer = itemRenderer;
     this._listItems = {};
@@ -810,7 +810,7 @@ WebInspector.SettingsList.prototype = {
     {
         var listItem = document.createElement("div");
         listItem._id = itemId;
-        listItem.addStyleClass("settings-list-item");
+        listItem.classList.add("settings-list-item");
         if (typeof beforeId !== undefined)
             this.element.insertBefore(listItem, this._listItems[beforeId]);
         else
@@ -920,12 +920,12 @@ WebInspector.SettingsList.prototype = {
     selectItem: function(id, event)
     {
         if (typeof this._selectedId !== "undefined") {
-            this._listItems[this._selectedId].removeStyleClass("selected");
+            this._listItems[this._selectedId].classList.remove("selected");
         }
 
         this._selectedId = id;
         if (typeof this._selectedId !== "undefined") {
-            this._listItems[this._selectedId].addStyleClass("selected");
+            this._listItems[this._selectedId].classList.add("selected");
         }
         this.dispatchEventToListeners(WebInspector.SettingsList.Events.Selected, id);
         if (event)
@@ -939,7 +939,7 @@ WebInspector.SettingsList.prototype = {
     _createRemoveButton: function(handler)
     {
         var removeButton = document.createElement("button");
-        removeButton.addStyleClass("remove-item-button");
+        removeButton.classList.add("remove-item-button");
         removeButton.value = WebInspector.UIString("Remove");
         removeButton.addEventListener("click", handler, false);
         return removeButton;
@@ -968,8 +968,8 @@ WebInspector.EditableSettingsList = function(columns, valuesProvider, validateHa
     this._textElements = {};
 
     this._addMappingItem = this.addItem(null);
-    this._addMappingItem.addStyleClass("item-editing");
-    this._addMappingItem.addStyleClass("add-list-item");
+    this._addMappingItem.classList.add("item-editing");
+    this._addMappingItem.classList.add("add-list-item");
 }
 
 WebInspector.EditableSettingsList.prototype = {
@@ -981,7 +981,7 @@ WebInspector.EditableSettingsList.prototype = {
     addItem: function(itemId, beforeId)
     {
         var listItem = WebInspector.SettingsList.prototype.addItem.call(this, itemId, beforeId);
-        listItem.addStyleClass("editable");
+        listItem.classList.add("editable");
         return listItem;
     },
 
@@ -992,7 +992,7 @@ WebInspector.EditableSettingsList.prototype = {
      */
     _renderColumn: function(columnElement, columnId, itemId)
     {
-        columnElement.addStyleClass("settings-list-column-" + columnId);
+        columnElement.classList.add("settings-list-column-" + columnId);
         var placeholder = (columnId === "url") ? WebInspector.UIString("URL prefix") : WebInspector.UIString("Folder path");
         if (itemId === null) {
             var inputElement = columnElement.createChild("input", "list-column-editor");
@@ -1031,7 +1031,7 @@ WebInspector.EditableSettingsList.prototype = {
             console.assert(!this._editingId);
             this._editingId = itemId;
             var listItem = this.itemForId(itemId);
-            listItem.addStyleClass("item-editing");
+            listItem.classList.add("item-editing");
             var inputElement = event.target.inputElement || this._editInputElements[itemId][this.columns()[0]];
             inputElement.focus();
             inputElement.select();
@@ -1076,9 +1076,9 @@ WebInspector.EditableSettingsList.prototype = {
             var columnId = columns[i];
             var inputElement = this._inputElements(itemId)[columnId];
             if (hasChanges && errorColumns.indexOf(columnId) !== -1)
-                inputElement.addStyleClass("editable-item-error");
+                inputElement.classList.add("editable-item-error");
             else
-                inputElement.removeStyleClass("editable-item-error");
+                inputElement.classList.remove("editable-item-error");
         }
         return !errorColumns.length;
     },
@@ -1113,7 +1113,7 @@ WebInspector.EditableSettingsList.prototype = {
             return;
 
         var listItem = this.itemForId(itemId);
-        listItem.removeStyleClass("item-editing");
+        listItem.classList.remove("item-editing");
         delete this._editingId;
 
         if (!this._hasChanges(itemId))
@@ -1125,7 +1125,7 @@ WebInspector.EditableSettingsList.prototype = {
                 var columnId = columns[i];
                 var inputElement = this._editInputElements[itemId][columnId];
                 inputElement.value = this._textElements[itemId][columnId].textContent;
-                inputElement.removeStyleClass("editable-item-error");
+                inputElement.classList.remove("editable-item-error");
             }
             return;
         }

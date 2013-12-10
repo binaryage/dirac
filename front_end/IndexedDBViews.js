@@ -38,8 +38,8 @@ WebInspector.IDBDatabaseView = function(database)
     WebInspector.View.call(this);
     this.registerRequiredCSS("indexedDBViews.css");
 
-    this.element.addStyleClass("fill");
-    this.element.addStyleClass("indexed-db-database-view");
+    this.element.classList.add("fill");
+    this.element.classList.add("indexed-db-database-view");
 
     this._headersListElement = this.element.createChild("ol", "outline-disclosure");
     this._headersTreeOutline = new TreeOutline(this._headersListElement);
@@ -116,13 +116,13 @@ WebInspector.IDBDataView = function(model, databaseId, objectStore, index)
     this._databaseId = databaseId;
     this._isIndex = !!index;
 
-    this.element.addStyleClass("indexed-db-data-view");
+    this.element.classList.add("indexed-db-data-view");
 
     var editorToolbar = this._createEditorToolbar();
     this.element.appendChild(editorToolbar);
 
     this._dataGridContainer = this.element.createChild("div", "fill");
-    this._dataGridContainer.addStyleClass("data-grid-container");
+    this._dataGridContainer.classList.add("data-grid-container");
 
     this._refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-storage-status-bar-item");
     this._refreshButton.addEventListener("click", this._refreshButtonClicked, this);
@@ -205,11 +205,11 @@ WebInspector.IDBDataView.prototype = {
     _createEditorToolbar: function()
     {
         var editorToolbar = document.createElement("div");
-        editorToolbar.addStyleClass("status-bar");
-        editorToolbar.addStyleClass("data-view-toolbar");
+        editorToolbar.classList.add("status-bar");
+        editorToolbar.classList.add("data-view-toolbar");
 
         this._pageBackButton = editorToolbar.createChild("button", "back-button");
-        this._pageBackButton.addStyleClass("status-bar-item");
+        this._pageBackButton.classList.add("status-bar-item");
         this._pageBackButton.title = WebInspector.UIString("Show previous page.");
         this._pageBackButton.disabled = true;
         this._pageBackButton.appendChild(document.createElement("img"));
@@ -217,7 +217,7 @@ WebInspector.IDBDataView.prototype = {
         editorToolbar.appendChild(this._pageBackButton);
 
         this._pageForwardButton = editorToolbar.createChild("button", "forward-button");
-        this._pageForwardButton.addStyleClass("status-bar-item");
+        this._pageForwardButton.classList.add("status-bar-item");
         this._pageForwardButton.title = WebInspector.UIString("Show next page.");
         this._pageForwardButton.disabled = true;
         this._pageForwardButton.appendChild(document.createElement("img"));
@@ -428,11 +428,11 @@ WebInspector.IDBDataGridNode.prototype = {
             contents.appendChild(section.element);
             break;
         case "string":
-            contents.addStyleClass("primitive-value");
+            contents.classList.add("primitive-value");
             contents.appendChild(document.createTextNode("\"" + value.description + "\""));
             break;
         default:
-            contents.addStyleClass("primitive-value");
+            contents.classList.add("primitive-value");
             contents.appendChild(document.createTextNode(value.description));
         }
     },

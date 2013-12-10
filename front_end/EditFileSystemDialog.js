@@ -64,7 +64,7 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
     this._fileMappingsList = new WebInspector.EditableSettingsList(["url", "path"], this._fileMappingValuesProvider.bind(this), this._fileMappingValidate.bind(this), this._fileMappingEdit.bind(this));
     this._fileMappingsList.addEventListener(WebInspector.SettingsList.Events.Removed, this._fileMappingRemovedfromList.bind(this));
 
-    this._fileMappingsList.element.addStyleClass("file-mappings-list");
+    this._fileMappingsList.element.classList.add("file-mappings-list");
     this._fileMappingsListContainer.appendChild(this._fileMappingsList.element);
 
     this._entries = {};
@@ -79,7 +79,7 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
 
     this._excludedFolderList = new WebInspector.EditableSettingsList(["path"], this._excludedFolderValueProvider.bind(this), this._excludedFolderValidate.bind(this), this._excludedFolderEdit.bind(this));
     this._excludedFolderList.addEventListener(WebInspector.SettingsList.Events.Removed, this._excludedFolderRemovedfromList.bind(this));
-    this._excludedFolderList.element.addStyleClass("excluded-folders-list");
+    this._excludedFolderList.element.classList.add("excluded-folders-list");
     this._excludedFolderListContainer.appendChild(this._excludedFolderList.element);
     this._excludedFolderEntries = new StringMap();
     for (var i = 0; i < excludedFolderEntries.length; ++i)
@@ -92,7 +92,7 @@ WebInspector.EditFileSystemDialog.show = function(element, fileSystemPath)
 {
     WebInspector.Dialog.show(element, new WebInspector.EditFileSystemDialog(fileSystemPath));
     var glassPane = document.getElementById("glass-pane");
-    glassPane.addStyleClass("settings-glass-pane");
+    glassPane.classList.add("settings-glass-pane");
 }
 
 WebInspector.EditFileSystemDialog.prototype = {
@@ -102,9 +102,9 @@ WebInspector.EditFileSystemDialog.prototype = {
     show: function(element)
     {
         element.appendChild(this.element);
-        this.element.addStyleClass("dialog-contents");
-        element.addStyleClass("settings-dialog");
-        element.addStyleClass("settings-tab");
+        this.element.classList.add("dialog-contents");
+        element.classList.add("settings-dialog");
+        element.classList.add("settings-tab");
         this._dialogElement = element;
     },
 

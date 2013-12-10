@@ -153,7 +153,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
         var prevNode = this._highlightedNode;
         this._clearCurrentHighlight();
         this._highlightedNode = node;
-        this._highlightedNode.element.addStyleClass("highlighted-row");
+        this._highlightedNode.element.classList.add("highlighted-row");
         // If highlighted node hasn't changed reinsert it to make the highlight animation restart.
         if (node === prevNode) {
             var element = node.element;
@@ -174,7 +174,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
     {
         if (!this._highlightedNode)
             return
-        this._highlightedNode.element.removeStyleClass("highlighted-row");
+        this._highlightedNode.element.classList.remove("highlighted-row");
         this._highlightedNode = null;
     },
 
@@ -445,7 +445,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
 WebInspector.HeapSnapshotPaddingNode = function()
 {
     this.element = document.createElement("tr");
-    this.element.addStyleClass("revealed");
+    this.element.classList.add("revealed");
 }
 
 WebInspector.HeapSnapshotPaddingNode.prototype = {

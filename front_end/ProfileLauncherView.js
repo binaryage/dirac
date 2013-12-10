@@ -39,8 +39,8 @@ WebInspector.ProfileLauncherView = function(profilesPanel)
 
     this._panel = profilesPanel;
 
-    this.element.addStyleClass("profile-launcher-view");
-    this.element.addStyleClass("panel-enabler-view");
+    this.element.classList.add("profile-launcher-view");
+    this.element.classList.add("panel-enabler-view");
 
     this._contentElement = this.element.createChild("div", "profile-launcher-view-content");
     this._innerContentElement = this._contentElement.createChild("div");
@@ -77,13 +77,13 @@ WebInspector.ProfileLauncherView.prototype = {
         else
             this._controlButton.setAttribute("disabled", "");
         if (this._isInstantProfile) {
-            this._controlButton.removeStyleClass("running");
+            this._controlButton.classList.remove("running");
             this._controlButton.textContent = WebInspector.UIString("Take Snapshot");
         } else if (this._isProfiling) {
-            this._controlButton.addStyleClass("running");
+            this._controlButton.classList.add("running");
             this._controlButton.textContent = WebInspector.UIString("Stop");
         } else {
-            this._controlButton.removeStyleClass("running");
+            this._controlButton.classList.remove("running");
             this._controlButton.textContent = WebInspector.UIString("Start");
         }
     },

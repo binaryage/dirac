@@ -33,8 +33,8 @@ WebInspector.ApplicationCacheItemsView = function(model, frameId)
     
     this._model = model;
 
-    this.element.addStyleClass("storage-view");
-    this.element.addStyleClass("table");
+    this.element.classList.add("storage-view");
+    this.element.classList.add("table");
 
     // FIXME: Needs better tooltip. (Localized)
     this.deleteButton = new WebInspector.StatusBarButton(WebInspector.UIString("Delete"), "delete-storage-status-bar-item");
@@ -166,7 +166,7 @@ WebInspector.ApplicationCacheItemsView.prototype = {
             this._emptyView.show(this.element);
             this.deleteButton.visible = false;
             if (this._dataGrid)
-                this._dataGrid.element.addStyleClass("hidden");
+                this._dataGrid.element.classList.add("hidden");
             return;
         }
         // FIXME: are these variables needed anywhere else?
@@ -181,7 +181,7 @@ WebInspector.ApplicationCacheItemsView.prototype = {
 
         this._populateDataGrid();
         this._dataGrid.autoSizeColumns(20, 80);
-        this._dataGrid.element.removeStyleClass("hidden");
+        this._dataGrid.element.classList.remove("hidden");
         this._emptyView.detach();
         this.deleteButton.visible = true;
 

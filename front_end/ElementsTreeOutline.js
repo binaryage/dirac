@@ -457,7 +457,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         }
 
         treeElement.updateSelection();
-        treeElement.listItemElement.addStyleClass("elements-drag-over");
+        treeElement.listItemElement.classList.add("elements-drag-over");
         this._dragOverTreeElement = treeElement;
         event.preventDefault();
         event.dataTransfer.dropEffect = 'move';
@@ -535,7 +535,7 @@ WebInspector.ElementsTreeOutline.prototype = {
     {
         if (this._dragOverTreeElement) {
             this._dragOverTreeElement.updateSelection();
-            this._dragOverTreeElement.listItemElement.removeStyleClass("elements-drag-over");
+            this._dragOverTreeElement.listItemElement.classList.remove("elements-drag-over");
             delete this._dragOverTreeElement;
         }
     },
@@ -579,7 +579,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         var isPseudoElement = !!treeElement._node.pseudoType();
         var isTag = treeElement._node.nodeType() === Node.ELEMENT_NODE && !isPseudoElement;
         var textNode = event.target.enclosingNodeOrSelfWithClass("webkit-html-text-node");
-        if (textNode && textNode.hasStyleClass("bogus"))
+        if (textNode && textNode.classList.contains("bogus"))
             textNode = null;
         var commentNode = event.target.enclosingNodeOrSelfWithClass("webkit-html-comment");
         contextMenu.appendApplicableItems(event.target);
@@ -907,9 +907,9 @@ WebInspector.ElementsTreeElement.prototype = {
         if (this.listItemElement) {
             if (x) {
                 this.updateSelection();
-                this.listItemElement.addStyleClass("hovered");
+                this.listItemElement.classList.add("hovered");
             } else {
-                this.listItemElement.removeStyleClass("hovered");
+                this.listItemElement.classList.remove("hovered");
             }
         }
     },
@@ -990,7 +990,7 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         if (this._hovered) {
             this.updateSelection();
-            this.listItemElement.addStyleClass("hovered");
+            this.listItemElement.classList.add("hovered");
         }
 
         this.updateTitle();
@@ -1456,7 +1456,7 @@ WebInspector.ElementsTreeElement.prototype = {
                     if (elem.nodeType !== Node.ELEMENT_NODE)
                         continue;
 
-                    if (elem.hasStyleClass("webkit-html-attribute-value"))
+                    if (elem.classList.contains("webkit-html-attribute-value"))
                         return this._startEditingAttribute(elem.parentNode, elem);
                 }
             }
@@ -1859,7 +1859,7 @@ WebInspector.ElementsTreeElement.prototype = {
         } else {
             var nodeInfo = this._nodeTitleInfo(WebInspector.linkifyURLAsNode);
             if (nodeInfo.shadowRoot)
-                this.listItemElement.addStyleClass("shadow-root");
+                this.listItemElement.classList.add("shadow-root");
             var highlightElement = document.createElement("span");
             highlightElement.className = "highlight";
             highlightElement.appendChild(nodeInfo.titleDOM);
@@ -1902,9 +1902,9 @@ WebInspector.ElementsTreeElement.prototype = {
             return null;
 
         var decoratorElement = document.createElement("div");
-        decoratorElement.addStyleClass("elements-gutter-decoration");
+        decoratorElement.classList.add("elements-gutter-decoration");
         if (!decoratorMessages.length)
-            decoratorElement.addStyleClass("elements-has-decorated-children");
+            decoratorElement.classList.add("elements-has-decorated-children");
         decoratorElement.title = decoratorMessages.concat(parentDecoratorMessages).join("\n");
         return decoratorElement;
     },
@@ -2131,7 +2131,7 @@ WebInspector.ElementsTreeElement.prototype = {
                     var shadowRootType = node.shadowRootType();
                     if (shadowRootType) {
                         info.shadowRoot = true;
-                        fragmentElement.addStyleClass("shadow-root");
+                        fragmentElement.classList.add("shadow-root");
                         nodeTitle = "#shadow-root";
                         if (shadowRootType === WebInspector.DOMNode.ShadowRootTypes.UserAgent)
                             nodeTitle += " (" + shadowRootType + ")";
@@ -2449,7 +2449,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
         if (hidePanelWhileUpdating) {
             var treeOutlineContainerElement = this._treeOutline.element.parentNode;
             var originalScrollTop = treeOutlineContainerElement ? treeOutlineContainerElement.scrollTop : 0;
-            this._treeOutline.element.addStyleClass("hidden");
+            this._treeOutline.element.classList.add("hidden");
         }
 
         var nodes = this._recentlyModifiedNodes.keys();
@@ -2461,7 +2461,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
             if (parent === this._treeOutline._rootDOMNode) {
                 // Document's children have changed, perform total update.
                 this._treeOutline.update();
-                this._treeOutline.element.removeStyleClass("hidden");
+                this._treeOutline.element.classList.remove("hidden");
                 return;
             }
 
@@ -2483,7 +2483,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
             delete updatedParentTreeElements[i].alreadyUpdatedChildren;
 
         if (hidePanelWhileUpdating) {
-            this._treeOutline.element.removeStyleClass("hidden");
+            this._treeOutline.element.classList.remove("hidden");
             if (originalScrollTop)
                 treeOutlineContainerElement.scrollTop = originalScrollTop;
             this._treeOutline.updateSelection();

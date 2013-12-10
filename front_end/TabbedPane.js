@@ -360,13 +360,13 @@ WebInspector.TabbedPane.prototype = {
             return;
 
         if (!this._tabs.length) {
-            this._contentElement.addStyleClass("has-no-tabs");
+            this._contentElement.classList.add("has-no-tabs");
             if (this._noTabsMessage && !this._noTabsMessageElement) {
                 this._noTabsMessageElement = this._contentElement.createChild("div", "tabbed-pane-placeholder fill");
                 this._noTabsMessageElement.textContent = this._noTabsMessage;
             }
         } else {
-            this._contentElement.removeStyleClass("has-no-tabs");
+            this._contentElement.classList.remove("has-no-tabs");
             if (this._noTabsMessageElement) {
                 this._noTabsMessageElement.remove();
                 delete this._noTabsMessageElement;
@@ -405,7 +405,7 @@ WebInspector.TabbedPane.prototype = {
     _createDropDownButton: function()
     {
         var dropDownContainer = document.createElement("div");
-        dropDownContainer.addStyleClass("tabbed-pane-header-tabs-drop-down-container");
+        dropDownContainer.classList.add("tabbed-pane-header-tabs-drop-down-container");
         var dropDownButton = dropDownContainer.createChild("div", "tabbed-pane-header-tabs-drop-down");
         dropDownButton.appendChild(document.createTextNode("\u00bb"));
         this._tabsSelect = dropDownButton.createChild("select", "tabbed-pane-header-tabs-drop-down-select");
@@ -478,11 +478,11 @@ WebInspector.TabbedPane.prototype = {
 
     _measureDropDownButton: function()
     {
-        this._dropDownButton.addStyleClass("measuring");
+        this._dropDownButton.classList.add("measuring");
         this._headerContentsElement.appendChild(this._dropDownButton);
         this._measuredDropDownButtonWidth = this._dropDownButton.getBoundingClientRect().width;
         this._headerContentsElement.removeChild(this._dropDownButton);
-        this._dropDownButton.removeStyleClass("measuring");
+        this._dropDownButton.classList.remove("measuring");
     },
 
     _updateWidths: function()
@@ -602,7 +602,7 @@ WebInspector.TabbedPane.prototype = {
      */
     _showTab: function(tab)
     {
-        tab.tabElement.addStyleClass("selected");
+        tab.tabElement.classList.add("selected");
         tab.view.show(this._contentElement);
     },
 
@@ -611,7 +611,7 @@ WebInspector.TabbedPane.prototype = {
      */
     _hideTab: function(tab)
     {
-        tab.tabElement.removeStyleClass("selected");
+        tab.tabElement.classList.remove("selected");
         tab.view.detach();
     },
 
@@ -823,7 +823,7 @@ WebInspector.TabbedPaneTab.prototype = {
     _createTabElement: function(measuring)
     {
         var tabElement = document.createElement("div");
-        tabElement.addStyleClass("tabbed-pane-header-tab");
+        tabElement.classList.add("tabbed-pane-header-tab");
         tabElement.id = "tab-" + this._id;
         tabElement.tabIndex = -1;
         tabElement.selectTabForTest = this._tabbedPane.selectTab.bind(this._tabbedPane, this.id, true);
@@ -840,7 +840,7 @@ WebInspector.TabbedPaneTab.prototype = {
             tabElement.createChild("div", "close-button-gray");
 
         if (measuring) {
-            tabElement.addStyleClass("measuring");
+            tabElement.classList.add("measuring");
         } else {
             tabElement.addEventListener("click", this._tabClicked.bind(this), false);
             tabElement.addEventListener("mousedown", this._tabMouseDown.bind(this), false);
@@ -861,7 +861,7 @@ WebInspector.TabbedPaneTab.prototype = {
     _tabClicked: function(event)
     {
         var middleButton = event.button === 1;
-        var shouldClose = this._closeable && (middleButton || event.target.hasStyleClass("close-button-gray"));
+        var shouldClose = this._closeable && (middleButton || event.target.classList.contains("close-button-gray"));
         if (!shouldClose) {
             this._tabbedPane.focus();
             return;
@@ -875,7 +875,7 @@ WebInspector.TabbedPaneTab.prototype = {
      */
     _tabMouseDown: function(event)
     {
-        if (event.target.hasStyleClass("close-button-gray") || event.button === 1)
+        if (event.target.classList.contains("close-button-gray") || event.button === 1)
             return;
         this._tabbedPane.selectTab(this.id, true);
     },
@@ -932,7 +932,7 @@ WebInspector.TabbedPaneTab.prototype = {
      */
     _startTabDragging: function(event)
     {
-        if (event.target.hasStyleClass("close-button-gray"))
+        if (event.target.classList.contains("close-button-gray"))
             return false;
         this._dragStartX = event.pageX;
         return true;

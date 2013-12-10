@@ -197,7 +197,7 @@ WebInspector.ExtensionAuditFormatters = {
                 return;
             var treeOutline = new WebInspector.ElementsTreeOutline(false, false);
             treeOutline.rootDOMNode = WebInspector.domAgent.nodeForId(nodeId);
-            treeOutline.element.addStyleClass("outline-disclosure");
+            treeOutline.element.classList.add("outline-disclosure");
             treeOutline.setVisible(true);
             parentElement.appendChild(treeOutline.element);
         }

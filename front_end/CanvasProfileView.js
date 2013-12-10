@@ -37,7 +37,7 @@ WebInspector.CanvasProfileView = function(profile)
 {
     WebInspector.View.call(this);
     this.registerRequiredCSS("canvasProfiler.css");
-    this.element.addStyleClass("canvas-profile-view");
+    this.element.classList.add("canvas-profile-view");
     this._profile = profile;
     this._traceLogId = profile.traceLogId();
     this._traceLogPlayer = /** @type {!WebInspector.CanvasTraceLogPlayerProxy} */ (profile.traceLogPlayer());
@@ -87,7 +87,7 @@ WebInspector.CanvasProfileView = function(profile)
     ];
 
     this._logGrid = new WebInspector.DataGrid(columns);
-    this._logGrid.element.addStyleClass("fill");
+    this._logGrid.element.classList.add("fill");
     this._logGrid.show(logGridContainer);
     this._logGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._replayTraceLog, this);
 
@@ -548,8 +548,8 @@ WebInspector.CanvasProfileView.prototype = {
                 return;
 
             this._popoverAnchorElement = argumentElement.cloneNode(true);
-            this._popoverAnchorElement.addStyleClass("canvas-popover-anchor");
-            this._popoverAnchorElement.addStyleClass("source-frame-eval-expression");
+            this._popoverAnchorElement.classList.add("canvas-popover-anchor");
+            this._popoverAnchorElement.classList.add("source-frame-eval-expression");
             argumentElement.parentElement.appendChild(this._popoverAnchorElement);
 
             var diffLeft = this._popoverAnchorElement.boxInWindow().x - argumentElement.boxInWindow().x;
@@ -636,7 +636,7 @@ WebInspector.CanvasProfileType = function()
 
     this._frameSelector = new WebInspector.StatusBarComboBox(this._dispatchViewUpdatedEvent.bind(this));
     this._frameSelector.element.title = WebInspector.UIString("Frame containing the canvases to capture.");
-    this._frameSelector.element.addStyleClass("hidden");
+    this._frameSelector.element.classList.add("hidden");
     WebInspector.runtimeModel.contextLists().forEach(this._addFrame, this);
     WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.FrameExecutionContextListAdded, this._frameAdded, this);
     WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.FrameExecutionContextListRemoved, this._frameRemoved, this);
@@ -1121,7 +1121,7 @@ WebInspector.CanvasProfileDataGridHelper = {
         } else {
             var type = callArgument.subtype || callArgument.type;
             if (type) {
-                element.addStyleClass("canvas-formatted-" + type);
+                element.classList.add("canvas-formatted-" + type);
                 if (["null", "undefined", "boolean", "number"].indexOf(type) >= 0)
                     element.__suppressPopover = true;
             }
@@ -1130,7 +1130,7 @@ WebInspector.CanvasProfileDataGridHelper = {
                 element.__evalResult = WebInspector.RemoteObject.fromPayload(callArgument.remoteObject);
         }
         if (callArgument.resourceId) {
-            element.addStyleClass("canvas-formatted-resource");
+            element.classList.add("canvas-formatted-resource");
             element.__resourceId = callArgument.resourceId;
         }
         return element;

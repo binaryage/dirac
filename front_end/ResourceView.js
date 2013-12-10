@@ -36,7 +36,7 @@ WebInspector.ResourceView = function(resource)
     WebInspector.View.call(this);
     this.registerRequiredCSS("resourceView.css");
 
-    this.element.addStyleClass("resource-view");
+    this.element.classList.add("resource-view");
     this.resource = resource;
 }
 
@@ -110,8 +110,8 @@ WebInspector.ResourceSourceFrameFallback = function(resource)
 {
     WebInspector.View.call(this);
     this._resource = resource;
-    this.element.addStyleClass("fill");
-    this.element.addStyleClass("script-view");
+    this.element.classList.add("fill");
+    this.element.classList.add("script-view");
     this._content = this.element.createChild("div", "script-view-fallback monospace");
 }
 

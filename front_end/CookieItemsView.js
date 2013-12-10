@@ -35,7 +35,7 @@ WebInspector.CookieItemsView = function(treeElement, cookieDomain)
 {
     WebInspector.View.call(this);
 
-    this.element.addStyleClass("storage-view");
+    this.element.classList.add("storage-view");
 
     this._deleteButton = new WebInspector.StatusBarButton(WebInspector.UIString("Delete"), "delete-storage-status-bar-item");
     this._deleteButton.visible = false;

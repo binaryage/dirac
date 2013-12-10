@@ -36,8 +36,8 @@
 WebInspector.SourceFrame = function(contentProvider)
 {
     WebInspector.View.call(this);
-    this.element.addStyleClass("script-view");
-    this.element.addStyleClass("fill");
+    this.element.classList.add("script-view");
+    this.element.classList.add("fill");
 
     this._url = contentProvider.contentURL();
     this._contentProvider = contentProvider;
@@ -637,11 +637,11 @@ WebInspector.SourceFrame.prototype = {
         var imageElement = document.createElement("div");
         switch (msg.level) {
             case WebInspector.ConsoleMessage.MessageLevel.Error:
-                messageBubbleElement.addStyleClass("webkit-html-error-message");
+                messageBubbleElement.classList.add("webkit-html-error-message");
                 imageElement.className = "error-icon-small";
                 break;
             case WebInspector.ConsoleMessage.MessageLevel.Warning:
-                messageBubbleElement.addStyleClass("webkit-html-warning-message");
+                messageBubbleElement.classList.add("webkit-html-warning-message");
                 imageElement.className = "warning-icon-small";
                 break;
         }

@@ -79,8 +79,8 @@ WebInspector.NavigatorOverlayController.prototype = {
         this._navigatorShowHideButton.title = WebInspector.UIString("Show navigator");
         this._parentSidebarView.element.appendChild(this._navigatorShowHideButton.element);
 
-        this._editorView.element.addStyleClass("navigator-hidden");
-        this._navigatorSidebarResizeWidgetElement.addStyleClass("hidden");
+        this._editorView.element.classList.add("navigator-hidden");
+        this._navigatorSidebarResizeWidgetElement.classList.add("hidden");
 
         this._parentSidebarView.hideSidebarElement();
         this._navigatorView.detach();
@@ -95,8 +95,8 @@ WebInspector.NavigatorOverlayController.prototype = {
         this._navigatorShowHideButton.state = "left";
         this._navigatorShowHideButton.title = WebInspector.UIString("Hide navigator");
 
-        this._editorView.element.removeStyleClass("navigator-hidden");
-        this._navigatorSidebarResizeWidgetElement.removeStyleClass("hidden");
+        this._editorView.element.classList.remove("navigator-hidden");
+        this._navigatorSidebarResizeWidgetElement.classList.remove("hidden");
         this._editorView.element.appendChild(this._navigatorShowHideButton.element);
 
         this._innerHideNavigatorOverlay();
@@ -119,7 +119,7 @@ WebInspector.NavigatorOverlayController.prototype = {
         this._sidebarOverlay.element.addEventListener("keydown", this._boundKeyDown, false);
 
         var navigatorOverlayResizeWidgetElement = document.createElement("div");
-        navigatorOverlayResizeWidgetElement.addStyleClass("resizer-widget");
+        navigatorOverlayResizeWidgetElement.classList.add("resizer-widget");
         this._sidebarOverlay.resizerWidgetElement = navigatorOverlayResizeWidgetElement;
 
         this._navigatorView.element.appendChild(this._navigatorShowHideButton.element);

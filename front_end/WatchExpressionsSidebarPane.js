@@ -125,7 +125,7 @@ WebInspector.WatchExpressionsSection = function()
     this.headerElement.className = "hidden";
     this.editable = true;
     this.expanded = true;
-    this.propertiesElement.addStyleClass("watch-expressions");
+    this.propertiesElement.classList.add("watch-expressions");
 
     this.element.addEventListener("mousemove", this._mouseMove.bind(this), true);
     this.element.addEventListener("mouseout", this._mouseOut.bind(this), true);
@@ -285,7 +285,7 @@ WebInspector.WatchExpressionsSection.prototype = {
     _mouseOut: function()
     {
         if (this._hoveredElement) {
-            this._hoveredElement.removeStyleClass("hovered");
+            this._hoveredElement.classList.remove("hovered");
             delete this._hoveredElement;
         }
         delete this._lastMouseMovePageY;
@@ -305,9 +305,9 @@ WebInspector.WatchExpressionsSection.prototype = {
 
         if (this._hoveredElement !== candidateElement) {
             if (this._hoveredElement)
-                this._hoveredElement.removeStyleClass("hovered");
+                this._hoveredElement.classList.remove("hovered");
             if (candidateElement)
-                candidateElement.addStyleClass("hovered");
+                candidateElement.classList.add("hovered");
             this._hoveredElement = candidateElement;
         }
 
@@ -375,15 +375,15 @@ WebInspector.WatchExpressionTreeElement.prototype = {
 
         if (this.property.wasThrown) {
             this.valueElement.textContent = WebInspector.UIString("<not available>");
-            this.listItemElement.addStyleClass("dimmed");
+            this.listItemElement.classList.add("dimmed");
         } else
-            this.listItemElement.removeStyleClass("dimmed");
+            this.listItemElement.classList.remove("dimmed");
 
         var deleteButton = document.createElement("input");
         deleteButton.type = "button";
         deleteButton.title = WebInspector.UIString("Delete watch expression.");
-        deleteButton.addStyleClass("enabled-button");
-        deleteButton.addStyleClass("delete-button");
+        deleteButton.classList.add("enabled-button");
+        deleteButton.classList.add("delete-button");
         deleteButton.addEventListener("click", this._deleteButtonClicked.bind(this), false);
         this.listItemElement.addEventListener("contextmenu", this._contextMenu.bind(this), false);
         this.listItemElement.insertBefore(deleteButton, this.listItemElement.firstChild);

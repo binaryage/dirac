@@ -93,18 +93,18 @@ WebInspector.ProfileDataGridNode.prototype = {
         var cell = WebInspector.DataGridNode.prototype.createCell.call(this, columnIdentifier);
 
         if (columnIdentifier === "self" && this._searchMatchedSelfColumn)
-            cell.addStyleClass("highlight");
+            cell.classList.add("highlight");
         else if (columnIdentifier === "total" && this._searchMatchedTotalColumn)
-            cell.addStyleClass("highlight");
+            cell.classList.add("highlight");
 
         if (columnIdentifier !== "function")
             return cell;
 
         if (this._deoptReason)
-            cell.addStyleClass("not-optimized");
+            cell.classList.add("not-optimized");
 
         if (this.profileNode._searchMatchedFunctionColumn)
-            cell.addStyleClass("highlight");
+            cell.classList.add("highlight");
 
         if (this.profileNode.scriptId !== "0") {
             var lineNumber = this.profileNode.lineNumber ? this.profileNode.lineNumber - 1 : 0;

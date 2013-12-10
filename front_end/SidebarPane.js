@@ -121,20 +121,20 @@ WebInspector.SidebarPaneTitle.prototype = {
 
     _expand: function()
     {
-        this.element.addStyleClass("expanded");
+        this.element.classList.add("expanded");
         this._pane.show(this.element.parentNode, this.element.nextSibling);
     },
 
     _collapse: function()
     {
-        this.element.removeStyleClass("expanded");
+        this.element.classList.remove("expanded");
         if (this._pane.element.parentNode == this.element.parentNode)
             this._pane.detach();
     },
 
     _toggleExpanded: function()
     {
-        if (this.element.hasStyleClass("expanded"))
+        if (this.element.classList.contains("expanded"))
             this._collapse();
         else
             this._pane.expand();
@@ -181,7 +181,7 @@ WebInspector.SidebarTabbedPane = function()
 {
     WebInspector.TabbedPane.call(this);
     this.setRetainTabsOrder(true);
-    this.element.addStyleClass("sidebar-tabbed-pane");
+    this.element.classList.add("sidebar-tabbed-pane");
     this.registerRequiredCSS("sidebarPane.css");
 }
 

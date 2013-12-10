@@ -102,7 +102,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
                     break;
                 case WebInspector.ConsoleMessage.MessageType.Clear:
                     this._messageElement = document.createTextNode(WebInspector.UIString("Console was cleared"));
-                    this._formattedMessage.addStyleClass("console-info");
+                    this._formattedMessage.classList.add("console-info");
                     break;
                 case WebInspector.ConsoleMessage.MessageType.Assert:
                     var args = [WebInspector.UIString("Assertion failed:")];
@@ -372,7 +372,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
         if (description)
             titleElement.createTextChild(description);
         if (includePreview && obj.preview) {
-            titleElement.addStyleClass("console-object-preview");
+            titleElement.classList.add("console-object-preview");
             var lossless = this._appendObjectPreview(obj, description, titleElement);
             if (lossless) {
                 elem.appendChild(titleElement);
@@ -452,13 +452,13 @@ WebInspector.ConsoleMessageImpl.prototype = {
         }
 
         if (type === "object" && subtype === "regexp") {
-            span.addStyleClass("console-formatted-string");
+            span.classList.add("console-formatted-string");
             span.textContent = description;
             return span;
         }
 
         if (type === "object" && subtype === "node" && description) {
-            span.addStyleClass("console-formatted-preview-node");
+            span.classList.add("console-formatted-preview-node");
             WebInspector.DOMPresentationUtils.createSpansForNodeTitle(span, description);
             return span;
         }
@@ -485,9 +485,9 @@ WebInspector.ConsoleMessageImpl.prototype = {
             var treeOutline = new WebInspector.ElementsTreeOutline(false, false);
             treeOutline.setVisible(true);
             treeOutline.rootDOMNode = WebInspector.domAgent.nodeForId(nodeId);
-            treeOutline.element.addStyleClass("outline-disclosure");
+            treeOutline.element.classList.add("outline-disclosure");
             if (!treeOutline.children[0].hasChildren)
-                treeOutline.element.addStyleClass("single-node");
+                treeOutline.element.classList.add("single-node");
             elem.appendChild(treeOutline.element);
             treeOutline.element.treeElementForTest = treeOutline.children[0];
         }
@@ -555,7 +555,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
 
                 if (columnRendered) {
                     var cellElement = this._renderPropertyPreviewOrAccessor(table, [rowProperty, cellProperty]);
-                    cellElement.addStyleClass("nowrap-below");
+                    cellElement.classList.add("nowrap-below");
                     rowValue[cellProperty.name] = cellElement;
                 }
             }
@@ -588,7 +588,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
         span.appendChild(WebInspector.linkifyStringAsFragment(output.description));
 
         // Make black quotes.
-        elem.removeStyleClass("console-formatted-string");
+        elem.classList.remove("console-formatted-string");
         elem.appendChild(document.createTextNode("\""));
         elem.appendChild(span);
         elem.appendChild(document.createTextNode("\""));
@@ -853,24 +853,24 @@ WebInspector.ConsoleMessageImpl.prototype = {
 
         switch (this.level) {
         case WebInspector.ConsoleMessage.MessageLevel.Log:
-            element.addStyleClass("console-log-level");
+            element.classList.add("console-log-level");
             break;
         case WebInspector.ConsoleMessage.MessageLevel.Debug:
-            element.addStyleClass("console-debug-level");
+            element.classList.add("console-debug-level");
             break;
         case WebInspector.ConsoleMessage.MessageLevel.Warning:
-            element.addStyleClass("console-warning-level");
+            element.classList.add("console-warning-level");
             break;
         case WebInspector.ConsoleMessage.MessageLevel.Error:
-            element.addStyleClass("console-error-level");
+            element.classList.add("console-error-level");
             break;
         case WebInspector.ConsoleMessage.MessageLevel.Info:
-            element.addStyleClass("console-info-level");
+            element.classList.add("console-info-level");
             break;
         }
 
         if (this.type === WebInspector.ConsoleMessage.MessageType.StartGroup || this.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed)
-            element.addStyleClass("console-group-title");
+            element.classList.add("console-group-title");
 
         element.appendChild(this.formattedMessage);
 
@@ -914,7 +914,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
             this.repeatCountElement.className = "bubble";
 
             this._element.insertBefore(this.repeatCountElement, this._element.firstChild);
-            this._element.addStyleClass("repeated-message");
+            this._element.classList.add("repeated-message");
         }
         this.repeatCountElement.textContent = this.repeatCount;
     },

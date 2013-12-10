@@ -148,7 +148,7 @@ WebInspector.CookiesTable.prototype = {
                 var groupNode = new WebInspector.DataGridNode(groupData);
                 groupNode.selectable = true;
                 this._dataGrid.rootNode().appendChild(groupNode);
-                groupNode.element.addStyleClass("row-group");
+                groupNode.element.classList.add("row-group");
                 this._populateNode(groupNode, item.cookies, selectedCookie);
                 groupNode.expand();
             } else

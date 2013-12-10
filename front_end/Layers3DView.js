@@ -110,11 +110,11 @@ WebInspector.Layers3DView.prototype = {
             return;
         this._lastOutlinedElement[type] = element;
         if (previousElement) {
-            previousElement.removeStyleClass(type);
+            previousElement.classList.remove(type);
             this._updateElementColor(previousElement);
         }
         if (element) {
-            element.addStyleClass(type);
+            element.classList.add(type);
             this._updateElementColor(element);
         }
     },
@@ -271,10 +271,10 @@ WebInspector.Layers3DView.prototype = {
         var paintRect = details.layer.lastPaintRect();
         var paintRectElement = details.paintRectElement;
         if (!paintRect || !WebInspector.settings.showPaintRects.get()) {
-            paintRectElement.addStyleClass("hidden");
+            paintRectElement.classList.add("hidden");
             return;
         }
-        paintRectElement.removeStyleClass("hidden");
+        paintRectElement.classList.remove("hidden");
         if (details.paintCount === details.layer.paintCount())
             return;
         details.paintCount = details.layer.paintCount();

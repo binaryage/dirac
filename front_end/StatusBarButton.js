@@ -73,7 +73,7 @@ WebInspector.StatusBarText = function(text, className)
     WebInspector.StatusBarItem.call(this, document.createElement("span"));
     this.element.className = "status-bar-item status-bar-text";
     if (className)
-        this.element.addStyleClass(className);
+        this.element.classList.add(className);
     this.element.textContent = text;
 }
 
@@ -181,9 +181,9 @@ WebInspector.StatusBarButton.prototype = {
         if (this.states === 2)
             this.element.enableStyleClass("toggled-on", x);
         else {
-            this.element.removeStyleClass("toggled-" + this._state);
+            this.element.classList.remove("toggled-" + this._state);
             if (x !== 0)
-                this.element.addStyleClass("toggled-" + x);
+                this.element.classList.add("toggled-" + x);
         }
         this._state = x;
     },
@@ -341,14 +341,14 @@ WebInspector.StatusBarButton.prototype = {
             optionsBarElement.appendChild(buttons[i].element);
         }
         var hostButtonIndex = topNotBottom ? 0 : buttons.length - 1;
-        buttons[hostButtonIndex].element.addStyleClass("emulate-active");
+        buttons[hostButtonIndex].element.classList.add("emulate-active");
 
         function mouseOver(e)
         {
             if (e.which !== 1)
                 return;
             var buttonElement = e.target.enclosingNodeOrSelfWithClass("status-bar-item");
-            buttonElement.addStyleClass("emulate-active");
+            buttonElement.classList.add("emulate-active");
         }
 
         function mouseOut(e)
@@ -356,7 +356,7 @@ WebInspector.StatusBarButton.prototype = {
             if (e.which !== 1)
                 return;
             var buttonElement = e.target.enclosingNodeOrSelfWithClass("status-bar-item");
-            buttonElement.removeStyleClass("emulate-active");
+            buttonElement.classList.remove("emulate-active");
         }
 
         function mouseUp(e)
@@ -367,8 +367,8 @@ WebInspector.StatusBarButton.prototype = {
             document.documentElement.removeEventListener("mouseup", mouseUpListener, false);
 
             for (var i = 0; i < buttons.length; ++i) {
-                if (buttons[i].element.hasStyleClass("emulate-active")) {
-                    buttons[i].element.removeStyleClass("emulate-active");
+                if (buttons[i].element.classList.contains("emulate-active")) {
+                    buttons[i].element.classList.remove("emulate-active");
                     buttons[i]._clicked();
                     break;
                 }
@@ -395,7 +395,7 @@ WebInspector.StatusBarComboBox = function(changeHandler, className)
     if (changeHandler)
         this._selectElement.addEventListener("change", changeHandler, false);
     if (className)
-        this._selectElement.addStyleClass(className);
+        this._selectElement.classList.add(className);
 }
 
 WebInspector.StatusBarComboBox.prototype = {

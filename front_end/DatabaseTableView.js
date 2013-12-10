@@ -34,8 +34,8 @@ WebInspector.DatabaseTableView = function(database, tableName)
     this.database = database;
     this.tableName = tableName;
 
-    this.element.addStyleClass("storage-view");
-    this.element.addStyleClass("table");
+    this.element.classList.add("storage-view");
+    this.element.classList.add("table");
 
     this.refreshButton = new WebInspector.StatusBarButton(WebInspector.UIString("Refresh"), "refresh-storage-status-bar-item");
     this.refreshButton.addEventListener("click", this._refreshButtonClicked, this);

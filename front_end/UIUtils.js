@@ -252,7 +252,7 @@ WebInspector.animateStyle = function(animations, duration, callback)
 
 WebInspector.isBeingEdited = function(element)
 {
-    if (element.hasStyleClass("text-prompt") || element.nodeName === "INPUT" || element.nodeName === "TEXTAREA")
+    if (element.classList.contains("text-prompt") || element.nodeName === "INPUT" || element.nodeName === "TEXTAREA")
         return true;
 
     if (!WebInspector.__editingCount)
@@ -271,13 +271,13 @@ WebInspector.markBeingEdited = function(element, value)
     if (value) {
         if (element.__editing)
             return false;
-        element.addStyleClass("being-edited");
+        element.classList.add("being-edited");
         element.__editing = true;
         WebInspector.__editingCount = (WebInspector.__editingCount || 0) + 1;
     } else {
         if (!element.__editing)
             return false;
-        element.removeStyleClass("being-edited");
+        element.classList.remove("being-edited");
         delete element.__editing;
         --WebInspector.__editingCount;
     }
@@ -573,12 +573,12 @@ WebInspector.startEditing = function(element, config)
             theme: config.theme,
             value: oldText
         });
-        codeMirror.getWrapperElement().addStyleClass("source-code");
+        codeMirror.getWrapperElement().classList.add("source-code");
         codeMirror.on("cursorActivity", function(cm) {
             cm.display.cursor.scrollIntoViewIfNeeded(false);
         });
     } else {
-        element.addStyleClass("editing");
+        element.classList.add("editing");
 
         oldTabIndex = element.getAttribute("tabIndex");
         if (typeof oldTabIndex !== "number" || oldTabIndex < 0)
@@ -632,7 +632,7 @@ WebInspector.startEditing = function(element, config)
             return;
         }
 
-        this.removeStyleClass("editing");
+        this.classList.remove("editing");
         
         if (typeof oldTabIndex !== "number")
             element.removeAttribute("tabIndex");
@@ -887,24 +887,24 @@ WebInspector.port = function()
 WebInspector.installPortStyles = function()
 {
     var platform = WebInspector.platform();
-    document.body.addStyleClass("platform-" + platform);
+    document.body.classList.add("platform-" + platform);
     var flavor = WebInspector.platformFlavor();
     if (flavor)
-        document.body.addStyleClass("platform-" + flavor);
+        document.body.classList.add("platform-" + flavor);
     var port = WebInspector.port();
-    document.body.addStyleClass("port-" + port);
+    document.body.classList.add("port-" + port);
 }
 
 WebInspector._windowFocused = function(event)
 {
     if (event.target.document.nodeType === Node.DOCUMENT_NODE)
-        document.body.removeStyleClass("inactive");
+        document.body.classList.remove("inactive");
 }
 
 WebInspector._windowBlurred = function(event)
 {
     if (event.target.document.nodeType === Node.DOCUMENT_NODE)
-        document.body.addStyleClass("inactive");
+        document.body.classList.add("inactive");
 }
 
 WebInspector.previousFocusElement = function()
@@ -1190,7 +1190,7 @@ WebInspector.invokeOnceAfterBatchUpdate = function(object, method)
 WebInspector.CodeMirrorCSSLoadView = function()
 {
     WebInspector.View.call(this);
-    this.element.addStyleClass("hidden");
+    this.element.classList.add("hidden");
     this.registerRequiredCSS("cm/codemirror.css");
     this.registerRequiredCSS("cm/cmdevtools.css");
 }

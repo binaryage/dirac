@@ -39,11 +39,11 @@ WebInspector.AuditsPanel = function()
     this.registerRequiredCSS("auditsPanel.css");
 
     this.createSidebarViewWithTree();
-    this.splitView.mainElement.addStyleClass("vbox");
+    this.splitView.mainElement.classList.add("vbox");
 
     this.auditsTreeElement = new WebInspector.SidebarSectionTreeElement("", {}, true);
     this.sidebarTree.appendChild(this.auditsTreeElement);
-    this.auditsTreeElement.listItemElement.addStyleClass("hidden");
+    this.auditsTreeElement.listItemElement.classList.add("hidden");
 
     this.auditsItemTreeElement = new WebInspector.AuditsSidebarTreeElement(this);
     this.auditsTreeElement.appendChild(this.auditsItemTreeElement);

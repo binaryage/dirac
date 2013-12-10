@@ -90,7 +90,7 @@ WebInspector.Placard.prototype = {
         if (this._selected)
             return;
         this._selected = true;
-        this.element.addStyleClass("selected");
+        this.element.classList.add("selected");
     },
 
     deselect: function()
@@ -98,7 +98,7 @@ WebInspector.Placard.prototype = {
         if (!this._selected)
             return;
         this._selected = false;
-        this.element.removeStyleClass("selected");
+        this.element.classList.remove("selected");
     },
 
     toggleSelected: function()

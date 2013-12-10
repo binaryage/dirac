@@ -94,8 +94,8 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     var tabbedEditorPlaceholderText = WebInspector.isMac() ? WebInspector.UIString("Hit Cmd+O to open a file") : WebInspector.UIString("Hit Ctrl+O to open a file");
 
-    this.editorView.mainElement.addStyleClass("vbox");
-    this.editorView.sidebarElement.addStyleClass("vbox");
+    this.editorView.mainElement.classList.add("vbox");
+    this.editorView.sidebarElement.classList.add("vbox");
 
     this.sourcesView = new WebInspector.SourcesView();
 
@@ -527,9 +527,9 @@ WebInspector.SourcesPanel.prototype = {
         this._updateScriptViewStatusBarItems();
 
         if (this._currentUISourceCode.project().type() === WebInspector.projectTypes.Snippets)
-            this._runSnippetButton.element.removeStyleClass("hidden");
+            this._runSnippetButton.element.classList.remove("hidden");
         else
-            this._runSnippetButton.element.addStyleClass("hidden");
+            this._runSnippetButton.element.classList.add("hidden");
 
         return sourceFrame;
     },
@@ -942,12 +942,12 @@ WebInspector.SourcesPanel.prototype = {
         this._toggleBreakpointsButton.toggled = !active;
         if (active) {
             this._toggleBreakpointsButton.title = WebInspector.UIString("Deactivate breakpoints.");
-            WebInspector.inspectorView.element.removeStyleClass("breakpoints-deactivated");
-            this.sidebarPanes.jsBreakpoints.listElement.removeStyleClass("breakpoints-list-deactivated");
+            WebInspector.inspectorView.element.classList.remove("breakpoints-deactivated");
+            this.sidebarPanes.jsBreakpoints.listElement.classList.remove("breakpoints-list-deactivated");
         } else {
             this._toggleBreakpointsButton.title = WebInspector.UIString("Activate breakpoints.");
-            WebInspector.inspectorView.element.addStyleClass("breakpoints-deactivated");
-            this.sidebarPanes.jsBreakpoints.listElement.addStyleClass("breakpoints-list-deactivated");
+            WebInspector.inspectorView.element.classList.add("breakpoints-deactivated");
+            this.sidebarPanes.jsBreakpoints.listElement.classList.add("breakpoints-list-deactivated");
         }
     },
 
@@ -965,7 +965,7 @@ WebInspector.SourcesPanel.prototype = {
         handler = this._runSnippet.bind(this);
         this._runSnippetButton = this._createButtonAndRegisterShortcuts("scripts-run-snippet", title, handler, WebInspector.SourcesPanelDescriptor.ShortcutKeys.RunSnippet);
         debugToolbar.appendChild(this._runSnippetButton.element);
-        this._runSnippetButton.element.addStyleClass("hidden");
+        this._runSnippetButton.element.classList.add("hidden");
 
         // Continue.
         handler = this._togglePause.bind(this);
@@ -1619,7 +1619,7 @@ WebInspector.SourcesView = function()
     WebInspector.View.call(this);
     this.registerRequiredCSS("sourcesView.css");
     this.element.id = "sources-panel-sources-view";
-    this.element.addStyleClass("vbox");
+    this.element.classList.add("vbox");
     this.element.addEventListener("dragenter", this._onDragEnter.bind(this), true);
     this.element.addEventListener("dragover", this._onDragOver.bind(this), true);
 }
@@ -1681,7 +1681,7 @@ WebInspector.DrawerEditorView = function()
 {
     WebInspector.View.call(this);
     this.element.id = "drawer-editor-view";
-    this.element.addStyleClass("vbox");
+    this.element.classList.add("vbox");
 }
 
 WebInspector.DrawerEditorView.prototype = {

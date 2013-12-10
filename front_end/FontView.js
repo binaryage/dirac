@@ -34,7 +34,7 @@ WebInspector.FontView = function(resource)
 {
     WebInspector.ResourceView.call(this, resource);
 
-    this.element.addStyleClass("font");
+    this.element.classList.add("font");
 }
 
 WebInspector.FontView._fontPreviewLines = [ "ABCDEFGHIJKLM", "NOPQRSTUVWXYZ", "abcdefghijklm", "nopqrstuvwxyz", "1234567890" ];

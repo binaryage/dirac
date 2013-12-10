@@ -45,8 +45,8 @@ WebInspector.LayersPanel = function()
     const initialLayerTreeSidebarWidth = 225;
     const minimumMainWidthPercent = 0.5;
     this.createSidebarViewWithTree();
-    this.sidebarElement.addStyleClass("outline-disclosure");
-    this.sidebarTreeElement.removeStyleClass("sidebar-tree");
+    this.sidebarElement.classList.add("outline-disclosure");
+    this.sidebarTreeElement.classList.remove("sidebar-tree");
 
     this._model = new WebInspector.LayerTreeModel();
     this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._onLayerTreeUpdated, this);

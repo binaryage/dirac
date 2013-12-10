@@ -57,8 +57,8 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._filter.addEventListener(WebInspector.ConsoleViewFilter.Events.FilterChanged, this._updateMessageList.bind(this));
 
     if (hideContextSelector) {
-        this._frameSelector.element.addStyleClass("hidden");
-        this._contextSelector.element.addStyleClass("hidden");
+        this._frameSelector.element.classList.add("hidden");
+        this._contextSelector.element.classList.add("hidden");
     }
 
     this._filterBar = new WebInspector.FilterBar();
@@ -180,7 +180,7 @@ WebInspector.ConsoleView.prototype = {
         var context = this._currentFrame();
         if (!context) {
             WebInspector.runtimeModel.setCurrentExecutionContext(null);
-            this._contextSelector.element.addStyleClass("hidden");
+            this._contextSelector.element.classList.add("hidden");
             return;
         }
 
@@ -189,10 +189,10 @@ WebInspector.ConsoleView.prototype = {
             WebInspector.runtimeModel.setCurrentExecutionContext(executionContexts[0]);
 
         if (executionContexts.length === 1) {
-            this._contextSelector.element.addStyleClass("hidden");
+            this._contextSelector.element.classList.add("hidden");
             return;
         }
-        this._contextSelector.element.removeStyleClass("hidden");
+        this._contextSelector.element.classList.remove("hidden");
         this._contextSelector.removeOptions();
         for (var i = 0; i < executionContexts.length; ++i)
             this._appendContextOption(executionContexts[i]);
@@ -977,7 +977,7 @@ WebInspector.ConsoleCommandResult.prototype = {
     toMessageElement: function()
     {
         var element = WebInspector.ConsoleMessageImpl.prototype.toMessageElement.call(this);
-        element.addStyleClass("console-user-command-result");
+        element.classList.add("console-user-command-result");
         return element;
     },
 
@@ -1022,14 +1022,14 @@ WebInspector.ConsoleGroup.prototype = {
             element.addEventListener("click", this._titleClicked.bind(this), false);
             var groupElement = element.enclosingNodeOrSelfWithClass("console-group");
             if (groupElement && message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed)
-                groupElement.addStyleClass("collapsed");
+                groupElement.classList.add("collapsed");
         } else {
             this.messagesElement.insertBefore(element, node || null);
             message.wasShown();
         }
 
         if (element.previousSibling && message.originatingCommand && element.previousSibling.command === message.originatingCommand)
-            element.previousSibling.addStyleClass("console-adjacent-user-command-result");
+            element.previousSibling.classList.add("console-adjacent-user-command-result");
     },
 
     _titleClicked: function(event)
@@ -1049,13 +1049,13 @@ WebInspector.ConsoleGroup.prototype = {
 
     wasShown: function()
     {
-        if (this.element.hasStyleClass("collapsed"))
+        if (this.element.classList.contains("collapsed"))
             return;
         var node = this.messagesElement.firstChild;
         while (node) {
-            if (node.hasStyleClass("console-message") && node.message)
+            if (node.classList.contains("console-message") && node.message)
                 node.message.wasShown();
-            if (node.hasStyleClass("console-group") && node.group)
+            if (node.classList.contains("console-group") && node.group)
                 node.group.wasShown();
             node = node.nextSibling;
         }

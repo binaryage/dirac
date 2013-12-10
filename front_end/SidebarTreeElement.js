@@ -54,14 +54,14 @@ WebInspector.SidebarSectionTreeElement.prototype = {
         this._smallChildren = x;
 
         if (this._smallChildren)
-            this._childrenListNode.addStyleClass("small");
+            this._childrenListNode.classList.add("small");
         else
-            this._childrenListNode.removeStyleClass("small");
+            this._childrenListNode.classList.remove("small");
     },
 
     onattach: function()
     {
-        this._listItemNode.addStyleClass("sidebar-tree-section");
+        this._listItemNode.classList.add("sidebar-tree-section");
     },
 
     onreveal: function()
@@ -127,9 +127,9 @@ WebInspector.SidebarTreeElement.prototype = {
 
         if (this._listItemNode) {
             if (this._small)
-                this._listItemNode.addStyleClass("small");
+                this._listItemNode.classList.add("small");
             else
-                this._listItemNode.removeStyleClass("small");
+                this._listItemNode.classList.remove("small");
         }
     },
 
@@ -158,9 +158,9 @@ WebInspector.SidebarTreeElement.prototype = {
     set wait(x)
     {
         if (x)
-            this._listItemNode.addStyleClass("wait");
+            this._listItemNode.classList.add("wait");
         else
-            this._listItemNode.removeStyleClass("wait");
+            this._listItemNode.classList.remove("wait");
     },
 
     refreshTitles: function()
@@ -173,10 +173,10 @@ WebInspector.SidebarTreeElement.prototype = {
         if (subtitle) {
             if (this.subtitleElement.textContent !== subtitle)
                 this.subtitleElement.textContent = subtitle;
-            this.titlesElement.removeStyleClass("no-subtitle");
+            this.titlesElement.classList.remove("no-subtitle");
         } else {
             this.subtitleElement.textContent = "";
-            this.titlesElement.addStyleClass("no-subtitle");
+            this.titlesElement.classList.add("no-subtitle");
         }
     },
 
@@ -187,13 +187,13 @@ WebInspector.SidebarTreeElement.prototype = {
 
     onattach: function()
     {
-        this._listItemNode.addStyleClass("sidebar-tree-item");
+        this._listItemNode.classList.add("sidebar-tree-item");
 
         if (this.className)
-            this._listItemNode.addStyleClass(this.className);
+            this._listItemNode.classList.add(this.className);
 
         if (this.small)
-            this._listItemNode.addStyleClass("small");
+            this._listItemNode.classList.add("small");
 
         if (this.hasChildren && this.disclosureButton)
             this._listItemNode.appendChild(this.disclosureButton);

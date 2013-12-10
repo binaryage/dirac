@@ -35,7 +35,7 @@
 WebInspector.PlatformFontsSidebarPane = function()
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Fonts"));
-    this.element.addStyleClass("platform-fonts");
+    this.element.classList.add("platform-fonts");
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrModified, this._onNodeChange.bind(this));
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrRemoved, this._onNodeChange.bind(this));
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.CharacterDataModified, this._onNodeChange.bind(this));

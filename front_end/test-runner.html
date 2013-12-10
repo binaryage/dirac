@@ -233,7 +233,7 @@ StandaloneTestRunner.prototype = {
         }
 
         this._treeElement.title = this._testPath + ": FAILED";
-        this._treeElement.listItemElement.addStyleClass("failed");
+        this._treeElement.listItemElement.classList.add("failed");
 
         var baseLines = difflib.stringAsLines(this._expected);
         var newLines = difflib.stringAsLines(actual);
@@ -283,7 +283,7 @@ StandaloneTestRunner.prototype = {
     _timeout: function()
     {
         this._treeElement.title = this._testPath + ": TIMEOUT";
-        this._treeElement.listItemElement.addStyleClass("timeout");
+        this._treeElement.listItemElement.classList.add("timeout");
         this._done = true;
         this.cleanup();
         this._next("timeout");

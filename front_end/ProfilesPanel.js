@@ -363,8 +363,8 @@ WebInspector.ProfilesPanel = function(name, type)
 
     this.createSidebarViewWithTree();
 
-    this.splitView.mainElement.addStyleClass("vbox");
-    this.splitView.sidebarElement.addStyleClass("vbox");
+    this.splitView.mainElement.classList.add("vbox");
+    this.splitView.sidebarElement.classList.add("vbox");
 
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.show(this.splitView.mainElement);
@@ -377,7 +377,7 @@ WebInspector.ProfilesPanel = function(name, type)
 
     this.profileViews = document.createElement("div");
     this.profileViews.id = "profile-views";
-    this.profileViews.addStyleClass("vbox");
+    this.profileViews.classList.add("vbox");
     this._searchableView.element.appendChild(this.profileViews);
 
     var statusBarContainer = this.splitView.mainElement.createChild("div", "profiles-status-bar");
@@ -567,7 +567,7 @@ WebInspector.ProfilesPanel.prototype = {
             this.recordButton.title = this._selectedProfileType.buttonTooltip;
         this._launcherView.profileFinished();
 
-        this.sidebarTreeElement.removeStyleClass("some-expandable");
+        this.sidebarTreeElement.classList.remove("some-expandable");
 
         this._launcherView.detach();
         this.profileViews.removeChildren();
@@ -576,8 +576,8 @@ WebInspector.ProfilesPanel.prototype = {
         this.removeAllListeners();
 
         this.recordButton.visible = true;
-        this._profileViewStatusBarItemsContainer.removeStyleClass("hidden");
-        this.clearResultsButton.element.removeStyleClass("hidden");
+        this._profileViewStatusBarItemsContainer.classList.remove("hidden");
+        this.clearResultsButton.element.classList.remove("hidden");
         this.profilesItemTreeElement.select();
         this._showLauncherView();
     },
@@ -699,7 +699,7 @@ WebInspector.ProfilesPanel.prototype = {
                 group[0]._profilesTreeElement.small = true;
                 group[0]._profilesTreeElement.mainTitle = WebInspector.UIString("Run %d", 1);
 
-                this.sidebarTreeElement.addStyleClass("some-expandable");
+                this.sidebarTreeElement.classList.add("some-expandable");
             }
 
             if (group.length >= 2) {

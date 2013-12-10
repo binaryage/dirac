@@ -198,7 +198,7 @@ WebInspector.View.prototype = {
         if (this._parentIsShowing())
             this._processWillShow();
 
-        this.element.addStyleClass("visible");
+        this.element.classList.add("visible");
 
         // Reparent
         if (this.element.parentElement !== parentElement) {
@@ -226,7 +226,7 @@ WebInspector.View.prototype = {
             this._processWillHide();
 
         if (this._hideOnDetach && !overrideHideOnDetach) {
-            this.element.removeStyleClass("visible");
+            this.element.classList.remove("visible");
             this._visible = false;
             if (this._parentIsShowing())
                 this._processWasHidden();

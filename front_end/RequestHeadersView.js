@@ -37,7 +37,7 @@ WebInspector.RequestHeadersView = function(request)
 {
     WebInspector.View.call(this);
     this.registerRequiredCSS("resourceView.css");
-    this.element.addStyleClass("resource-headers-view");
+    this.element.classList.add("resource-headers-view");
 
     this._request = request;
 
@@ -204,8 +204,8 @@ WebInspector.RequestHeadersView.prototype = {
     _populateTreeElementWithSourceText: function(treeElement, sourceText)
     {
         var sourceTextElement = document.createElement("span");
-        sourceTextElement.addStyleClass("header-value");
-        sourceTextElement.addStyleClass("source-code");
+        sourceTextElement.classList.add("header-value");
+        sourceTextElement.classList.add("source-code");
         sourceTextElement.textContent = String(sourceText || "").trim();
 
         var sourceTreeElement = new TreeElement(sourceTextElement);
@@ -228,7 +228,7 @@ WebInspector.RequestHeadersView.prototype = {
         paramsTreeElement.listItemElement.appendChild(document.createTextNode(title));
 
         var headerCount = document.createElement("span");
-        headerCount.addStyleClass("header-count");
+        headerCount.classList.add("header-count");
         headerCount.textContent = WebInspector.UIString(" (%d)", params.length);
         paramsTreeElement.listItemElement.appendChild(headerCount);
 
@@ -384,11 +384,11 @@ WebInspector.RequestHeadersView.prototype = {
             statusCodeImage.title = this._request.statusCode + " " + this._request.statusText;
 
             if (this._request.statusCode < 300 || this._request.statusCode === 304)
-                statusCodeImage.addStyleClass("green-ball");
+                statusCodeImage.classList.add("green-ball");
             else if (this._request.statusCode < 400)
-                statusCodeImage.addStyleClass("orange-ball");
+                statusCodeImage.classList.add("orange-ball");
             else
-                statusCodeImage.addStyleClass("red-ball");
+                statusCodeImage.classList.add("red-ball");
 
             requestMethodElement.title = this._formatHeader(WebInspector.UIString("Request Method"), this._request.requestMethod);
 
@@ -471,7 +471,7 @@ WebInspector.RequestHeadersView.prototype = {
     _createToggleButton: function(title)
     {
         var button = document.createElement("span");
-        button.addStyleClass("header-toggle");
+        button.classList.add("header-toggle");
         button.textContent = title;
         return button;
     },

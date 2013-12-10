@@ -122,7 +122,7 @@ var WebInspector = {
         if (!errorWarningElement)
             return;
 
-        errorWarningElement.addStyleClass("hidden");
+        errorWarningElement.classList.add("hidden");
     },
 
     _updateErrorAndWarningCounts: function()
@@ -139,7 +139,7 @@ var WebInspector = {
         if (!errorWarningElement)
             return;
 
-        errorWarningElement.removeStyleClass("hidden");
+        errorWarningElement.classList.remove("hidden");
         errorWarningElement.removeChildren();
 
         if (errors) {
@@ -333,7 +333,7 @@ WebInspector.doLoadedDone = function()
     // Install styles and themes
     WebInspector.installPortStyles();
     if (WebInspector.socket)
-        document.body.addStyleClass("remote");
+        document.body.classList.add("remote");
 
     if (WebInspector.queryParamsObject.toolbarColor && WebInspector.queryParamsObject.textColor)
         WebInspector.setToolbarColors(WebInspector.queryParamsObject.toolbarColor, WebInspector.queryParamsObject.textColor);
@@ -757,7 +757,7 @@ WebInspector.documentCopy = function(event)
 
 WebInspector.contextMenuEventFired = function(event)
 {
-    if (event.handled || event.target.hasStyleClass("popup-glasspane"))
+    if (event.handled || event.target.classList.contains("popup-glasspane"))
         event.preventDefault();
 }
 
@@ -954,9 +954,9 @@ WebInspector._showAnchorLocationInPanel = function(anchor, panel)
     var result = panel.showAnchorLocation(anchor);
     if (result) {
         // FIXME: support webkit-html-external-link links here.
-        if (anchor.hasStyleClass("webkit-html-external-link")) {
-            anchor.removeStyleClass("webkit-html-external-link");
-            anchor.addStyleClass("webkit-html-resource-link");
+        if (anchor.classList.contains("webkit-html-external-link")) {
+            anchor.classList.remove("webkit-html-external-link");
+            anchor.classList.add("webkit-html-resource-link");
         }
     }
     return result;

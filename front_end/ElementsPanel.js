@@ -57,20 +57,20 @@ WebInspector.ElementsPanel = function()
     const initialSidebarHeight = 325;
     const minimumContentHeightPercent = 0.34;
     this.createSidebarView(this.element, WebInspector.SidebarView.SidebarPosition.End, initialSidebarWidth, initialSidebarHeight);
-    this.splitView.sidebarElement.addStyleClass("vbox");
+    this.splitView.sidebarElement.classList.add("vbox");
     this.splitView.setSidebarElementConstraints(Preferences.minElementsSidebarWidth, Preferences.minElementsSidebarHeight);
     this.splitView.setMainElementConstraints(minimumContentWidthPercent, minimumContentHeightPercent);
     this.splitView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._updateTreeOutlineVisibleWidth.bind(this));
 
     this._searchableView = new WebInspector.SearchableView(this);
-    this.splitView.mainElement.addStyleClass("vbox");
+    this.splitView.mainElement.classList.add("vbox");
     this._searchableView.show(this.splitView.mainElement);
     var stackElement = this._searchableView.element;
 
     this.contentElement = stackElement.createChild("div");
     this.contentElement.id = "elements-content";
-    this.contentElement.addStyleClass("outline-disclosure");
-    this.contentElement.addStyleClass("source-code");
+    this.contentElement.classList.add("outline-disclosure");
+    this.contentElement.classList.add("source-code");
     if (!WebInspector.settings.domWordWrap.get())
         this.contentElement.classList.add("nowrap");
     WebInspector.settings.domWordWrap.addChangeListener(this._domWordWrapSettingChanged.bind(this));
@@ -415,9 +415,9 @@ WebInspector.ElementsPanel.prototype = {
     _domWordWrapSettingChanged: function(event)
     {
         if (event.data)
-            this.contentElement.removeStyleClass("nowrap");
+            this.contentElement.classList.remove("nowrap");
         else
-            this.contentElement.addStyleClass("nowrap");
+            this.contentElement.classList.add("nowrap");
 
         var selectedNode = this.selectedDOMNode();
         if (!selectedNode)
@@ -680,10 +680,10 @@ WebInspector.ElementsPanel.prototype = {
         var crumb = crumbs.firstChild;
         while (crumb) {
             if (crumb.representedObject === this.selectedDOMNode()) {
-                crumb.addStyleClass("selected");
+                crumb.classList.add("selected");
                 handled = true;
             } else {
-                crumb.removeStyleClass("selected");
+                crumb.classList.remove("selected");
             }
 
             crumb = crumb.nextSibling;
@@ -703,15 +703,15 @@ WebInspector.ElementsPanel.prototype = {
         function selectCrumbFunction(event)
         {
             var crumb = event.currentTarget;
-            if (crumb.hasStyleClass("collapsed")) {
+            if (crumb.classList.contains("collapsed")) {
                 // Clicking a collapsed crumb will expose the hidden crumbs.
                 if (crumb === panel.crumbsElement.firstChild) {
                     // If the focused crumb is the first child, pick the farthest crumb
                     // that is still hidden. This allows the user to expose every crumb.
                     var currentCrumb = crumb;
                     while (currentCrumb) {
-                        var hidden = currentCrumb.hasStyleClass("hidden");
-                        var collapsed = currentCrumb.hasStyleClass("collapsed");
+                        var hidden = currentCrumb.classList.contains("hidden");
+                        var collapsed = currentCrumb.classList.contains("collapsed");
                         if (!hidden && !collapsed)
                             break;
                         crumb = currentCrumb;
@@ -772,15 +772,15 @@ WebInspector.ElementsPanel.prototype = {
             }
 
             if (current === this.selectedDOMNode())
-                crumb.addStyleClass("selected");
+                crumb.classList.add("selected");
             if (!crumbs.childNodes.length)
-                crumb.addStyleClass("end");
+                crumb.classList.add("end");
 
             crumbs.insertBefore(crumb, crumbs.firstChild);
         }
 
         if (crumbs.hasChildNodes())
-            crumbs.lastChild.addStyleClass("start");
+            crumbs.lastChild.classList.add("start");
 
         this.updateBreadcrumbSizes();
     },
@@ -812,7 +812,7 @@ WebInspector.ElementsPanel.prototype = {
         var crumb = crumbs.firstChild;
         while (crumb) {
             // Find the selected crumb and index.
-            if (!selectedCrumb && crumb.hasStyleClass("selected")) {
+            if (!selectedCrumb && crumb.classList.contains("selected")) {
                 selectedCrumb = crumb;
                 selectedIndex = i;
             }
@@ -824,13 +824,13 @@ WebInspector.ElementsPanel.prototype = {
             // Remove any styles that affect size before
             // deciding to shorten any crumbs.
             if (crumb !== crumbs.lastChild)
-                crumb.removeStyleClass("start");
+                crumb.classList.remove("start");
             if (crumb !== crumbs.firstChild)
-                crumb.removeStyleClass("end");
+                crumb.classList.remove("end");
 
-            crumb.removeStyleClass("compact");
-            crumb.removeStyleClass("collapsed");
-            crumb.removeStyleClass("hidden");
+            crumb.classList.remove("compact");
+            crumb.classList.remove("collapsed");
+            crumb.classList.remove("hidden");
 
             crumb = crumb.nextSibling;
             ++i;
@@ -838,8 +838,8 @@ WebInspector.ElementsPanel.prototype = {
 
         // Restore the start and end crumb classes in case they got removed in coalesceCollapsedCrumbs().
         // The order of the crumbs in the document is opposite of the visual order.
-        crumbs.firstChild.addStyleClass("end");
-        crumbs.lastChild.addStyleClass("start");
+        crumbs.firstChild.classList.add("end");
+        crumbs.lastChild.classList.add("start");
 
         var contentElement = this.contentElement;
         function crumbsAreSmallerThanContainer()
@@ -925,21 +925,21 @@ WebInspector.ElementsPanel.prototype = {
             var newStartNeeded = false;
             var newEndNeeded = false;
             while (crumb) {
-                var hidden = crumb.hasStyleClass("hidden");
+                var hidden = crumb.classList.contains("hidden");
                 if (!hidden) {
-                    var collapsed = crumb.hasStyleClass("collapsed");
+                    var collapsed = crumb.classList.contains("collapsed");
                     if (collapsedRun && collapsed) {
-                        crumb.addStyleClass("hidden");
-                        crumb.removeStyleClass("compact");
-                        crumb.removeStyleClass("collapsed");
+                        crumb.classList.add("hidden");
+                        crumb.classList.remove("compact");
+                        crumb.classList.remove("collapsed");
 
-                        if (crumb.hasStyleClass("start")) {
-                            crumb.removeStyleClass("start");
+                        if (crumb.classList.contains("start")) {
+                            crumb.classList.remove("start");
                             newStartNeeded = true;
                         }
 
-                        if (crumb.hasStyleClass("end")) {
-                            crumb.removeStyleClass("end");
+                        if (crumb.classList.contains("end")) {
+                            crumb.classList.remove("end");
                             newEndNeeded = true;
                         }
 
@@ -950,7 +950,7 @@ WebInspector.ElementsPanel.prototype = {
 
                     if (newEndNeeded) {
                         newEndNeeded = false;
-                        crumb.addStyleClass("end");
+                        crumb.classList.add("end");
                     }
                 } else
                     collapsedRun = true;
@@ -960,8 +960,8 @@ WebInspector.ElementsPanel.prototype = {
             if (newStartNeeded) {
                 crumb = crumbs.lastChild;
                 while (crumb) {
-                    if (!crumb.hasStyleClass("hidden")) {
-                        crumb.addStyleClass("start");
+                    if (!crumb.classList.contains("hidden")) {
+                        crumb.classList.add("start");
                         break;
                     }
                     crumb = crumb.previousSibling;
@@ -971,17 +971,17 @@ WebInspector.ElementsPanel.prototype = {
 
         function compact(crumb)
         {
-            if (crumb.hasStyleClass("hidden"))
+            if (crumb.classList.contains("hidden"))
                 return;
-            crumb.addStyleClass("compact");
+            crumb.classList.add("compact");
         }
 
         function collapse(crumb, dontCoalesce)
         {
-            if (crumb.hasStyleClass("hidden"))
+            if (crumb.classList.contains("hidden"))
                 return;
-            crumb.addStyleClass("collapsed");
-            crumb.removeStyleClass("compact");
+            crumb.classList.add("collapsed");
+            crumb.classList.remove("compact");
             if (!dontCoalesce)
                 coalesceCollapsedCrumbs();
         }
@@ -1213,12 +1213,12 @@ WebInspector.ElementsPanel.prototype = {
         this.splitView.setVertical(!vertically);
 
         var computedPane = new WebInspector.SidebarPane(WebInspector.UIString("Computed"));
-        computedPane.element.addStyleClass("composite");
-        computedPane.element.addStyleClass("fill");
+        computedPane.element.classList.add("composite");
+        computedPane.element.classList.add("fill");
         var expandComputed = computedPane.expand.bind(computedPane);
 
         computedPane.bodyElement.appendChild(this.sidebarPanes.computedStyle.titleElement);
-        computedPane.bodyElement.addStyleClass("metrics-and-computed");
+        computedPane.bodyElement.classList.add("metrics-and-computed");
         this.sidebarPanes.computedStyle.show(computedPane.bodyElement);
         this.sidebarPanes.computedStyle.setExpandCallback(expandComputed);
 
@@ -1252,8 +1252,8 @@ WebInspector.ElementsPanel.prototype = {
             this.sidebarPaneView = new WebInspector.SidebarTabbedPane();
 
             var compositePane = new WebInspector.SidebarPane(this.sidebarPanes.styles.title());
-            compositePane.element.addStyleClass("composite");
-            compositePane.element.addStyleClass("fill");
+            compositePane.element.classList.add("composite");
+            compositePane.element.classList.add("fill");
             var expandComposite = compositePane.expand.bind(compositePane);
 
             var splitView = new WebInspector.SplitView(true, "StylesPaneSplitRatio", 0.5);
@@ -1275,10 +1275,10 @@ WebInspector.ElementsPanel.prototype = {
             this.sidebarPaneView = new WebInspector.SidebarTabbedPane();
 
             var stylesPane = new WebInspector.SidebarPane(this.sidebarPanes.styles.title());
-            stylesPane.element.addStyleClass("composite");
-            stylesPane.element.addStyleClass("fill");
+            stylesPane.element.classList.add("composite");
+            stylesPane.element.classList.add("fill");
             var expandStyles = stylesPane.expand.bind(stylesPane);
-            stylesPane.bodyElement.addStyleClass("metrics-and-styles");
+            stylesPane.bodyElement.classList.add("metrics-and-styles");
             this.sidebarPanes.styles.show(stylesPane.bodyElement);
             this.sidebarPanes.styles.setExpandCallback(expandStyles);
             this.sidebarPanes.metrics.setExpandCallback(expandStyles);

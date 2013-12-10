@@ -40,8 +40,8 @@ WebInspector.SplitView = function(isVertical, sidebarSizeSettingName, defaultSid
 
     this.registerRequiredCSS("splitView.css");
 
-    this.element.addStyleClass("split-view");
-    this.element.addStyleClass("fill");
+    this.element.classList.add("split-view");
+    this.element.classList.add("fill");
 
     this._firstElement = this.element.createChild("div", "split-view-contents scroll-target split-view-contents-first");
     this._secondElement = this.element.createChild("div", "split-view-contents scroll-target split-view-contents-second");
@@ -92,9 +92,9 @@ WebInspector.SplitView.prototype = {
      */
     _innerSetVertical: function(isVertical)
     {
-        this.element.removeStyleClass(this._isVertical ? "hbox" : "vbox");
+        this.element.classList.remove(this._isVertical ? "hbox" : "vbox");
         this._isVertical = isVertical;
-        this.element.addStyleClass(this._isVertical ? "hbox" : "vbox");
+        this.element.classList.add(this._isVertical ? "hbox" : "vbox");
         delete this._resizerElementSize;
         this._sidebarSize = -1;
     },
@@ -150,11 +150,11 @@ WebInspector.SplitView.prototype = {
      */
     setSecondIsSidebar: function(secondIsSidebar)
     {
-        this.sidebarElement.removeStyleClass("split-view-sidebar");
-        this.mainElement.removeStyleClass("split-view-main");
+        this.sidebarElement.classList.remove("split-view-sidebar");
+        this.mainElement.classList.remove("split-view-main");
         this._secondIsSidebar = secondIsSidebar;
-        this.sidebarElement.addStyleClass("split-view-sidebar");
-        this.mainElement.addStyleClass("split-view-main");
+        this.sidebarElement.classList.add("split-view-sidebar");
+        this.mainElement.classList.add("split-view-main");
     },
 
     /**
@@ -181,10 +181,10 @@ WebInspector.SplitView.prototype = {
      */
     _showOnly: function(sideA, sideB)
     {
-        sideA.removeStyleClass("hidden");
-        sideA.addStyleClass("maximized");
-        sideB.addStyleClass("hidden");
-        sideB.removeStyleClass("maximized");
+        sideA.classList.remove("hidden");
+        sideA.classList.add("maximized");
+        sideB.classList.add("hidden");
+        sideB.classList.remove("maximized");
         this._removeAllLayoutProperties();
 
         this._isShowingOne = true;
@@ -210,10 +210,10 @@ WebInspector.SplitView.prototype = {
 
     showBoth: function()
     {
-        this._firstElement.removeStyleClass("hidden");
-        this._firstElement.removeStyleClass("maximized");
-        this._secondElement.removeStyleClass("hidden");
-        this._secondElement.removeStyleClass("maximized");
+        this._firstElement.classList.remove("hidden");
+        this._firstElement.classList.remove("maximized");
+        this._secondElement.classList.remove("hidden");
+        this._secondElement.classList.remove("maximized");
 
         this._isShowingOne = false;
         this._sidebarSize = -1;

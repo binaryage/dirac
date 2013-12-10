@@ -245,7 +245,7 @@ WebInspector.SoftContextMenu.prototype = {
         }
 
         var relatedTarget = event.relatedTarget;
-        if (this._contextMenuElement.isSelfOrAncestor(relatedTarget) || relatedTarget.hasStyleClass("soft-context-menu-glass-pane"))
+        if (this._contextMenuElement.isSelfOrAncestor(relatedTarget) || relatedTarget.classList.contains("soft-context-menu-glass-pane"))
             this._highlightMenuItem(null);
     },
 
@@ -256,7 +256,7 @@ WebInspector.SoftContextMenu.prototype = {
 
         this._hideSubMenu();
         if (this._highlightedMenuItemElement) {
-            this._highlightedMenuItemElement.removeStyleClass("soft-context-menu-item-mouse-over");
+            this._highlightedMenuItemElement.classList.remove("soft-context-menu-item-mouse-over");
             if (this._highlightedMenuItemElement._subItems && this._highlightedMenuItemElement._subMenuTimer) {
                 clearTimeout(this._highlightedMenuItemElement._subMenuTimer);
                 delete this._highlightedMenuItemElement._subMenuTimer;
@@ -264,7 +264,7 @@ WebInspector.SoftContextMenu.prototype = {
         }
         this._highlightedMenuItemElement = menuItemElement;
         if (this._highlightedMenuItemElement) {
-            this._highlightedMenuItemElement.addStyleClass("soft-context-menu-item-mouse-over");
+            this._highlightedMenuItemElement.classList.add("soft-context-menu-item-mouse-over");
             this._contextMenuElement.focus();
             if (this._highlightedMenuItemElement._subItems && !this._highlightedMenuItemElement._subMenuTimer)
                 this._highlightedMenuItemElement._subMenuTimer = setTimeout(this._showSubMenu.bind(this, this._highlightedMenuItemElement, this._buildMouseEventForSubMenu(this._highlightedMenuItemElement)), 150);

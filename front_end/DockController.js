@@ -95,19 +95,19 @@ WebInspector.DockController.prototype = {
         var body = document.body;
         switch (this._dockSide) {
         case WebInspector.DockController.State.DockedToBottom:
-            body.removeStyleClass("undocked");
-            body.removeStyleClass("dock-to-right");
-            body.addStyleClass("dock-to-bottom");
+            body.classList.remove("undocked");
+            body.classList.remove("dock-to-right");
+            body.classList.add("dock-to-bottom");
             break;
         case WebInspector.DockController.State.DockedToRight: 
-            body.removeStyleClass("undocked");
-            body.addStyleClass("dock-to-right");
-            body.removeStyleClass("dock-to-bottom");
+            body.classList.remove("undocked");
+            body.classList.add("dock-to-right");
+            body.classList.remove("dock-to-bottom");
             break;
         case WebInspector.DockController.State.Undocked: 
-            body.addStyleClass("undocked");
-            body.removeStyleClass("dock-to-right");
-            body.removeStyleClass("dock-to-bottom");
+            body.classList.add("undocked");
+            body.classList.remove("dock-to-right");
+            body.classList.remove("dock-to-bottom");
             break;
         }
 

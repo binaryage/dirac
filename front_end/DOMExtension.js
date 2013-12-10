@@ -144,14 +144,6 @@ Node.prototype.rangeBoundaryForOffset = function(offset)
     return { container: node, offset: offset };
 }
 
-/**
- * @param {string} className
- */
-Element.prototype.removeStyleClass = function(className)
-{
-    this.classList.remove(className);
-}
-
 Element.prototype.removeMatchingStyleClasses = function(classNameRegex)
 {
     var regex = new RegExp("(^|\\s+)" + classNameRegex + "($|\\s+)");
@@ -161,31 +153,14 @@ Element.prototype.removeMatchingStyleClasses = function(classNameRegex)
 
 /**
  * @param {string} className
- */
-Element.prototype.addStyleClass = function(className)
-{
-    this.classList.add(className);
-}
-
-/**
- * @param {string} className
- * @return {boolean}
- */
-Element.prototype.hasStyleClass = function(className)
-{
-    return this.classList.contains(className);
-}
-
-/**
- * @param {string} className
  * @param {*} enable
  */
 Element.prototype.enableStyleClass = function(className, enable)
 {
     if (enable)
-        this.addStyleClass(className);
+        this.classList.add(className);
     else
-        this.removeStyleClass(className);
+        this.classList.remove(className);
 }
 
 /**
@@ -282,7 +257,7 @@ Node.prototype.enclosingNodeOrSelfWithNodeName = function(nodeName)
 Node.prototype.enclosingNodeOrSelfWithClass = function(className, stayWithin)
 {
     for (var node = this; node && node !== stayWithin && node !== this.ownerDocument; node = node.parentNode)
-        if (node.nodeType === Node.ELEMENT_NODE && node.hasStyleClass(className))
+        if (node.nodeType === Node.ELEMENT_NODE && node.classList.contains(className))
             return node;
     return null;
 }

@@ -137,8 +137,8 @@ WebInspector.ObjectPopoverHelper.prototype = {
                     section.updateProperties = this._updateHTMLId.bind(this);
                 }
                 section.expanded = true;
-                section.element.addStyleClass("source-frame-popover-tree");
-                section.headerElement.addStyleClass("hidden");
+                section.element.classList.add("source-frame-popover-tree");
+                section.headerElement.classList.add("hidden");
                 popoverContentElement.appendChild(section.element);
 
                 const popoverWidth = 300;

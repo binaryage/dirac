@@ -199,7 +199,7 @@ WebInspector.Drawer.prototype = {
         this._toggleDrawerButton.toggled = true;
         this._toggleDrawerButton.title = WebInspector.UIString("Hide drawer.");
 
-        document.body.addStyleClass("drawer-visible");
+        document.body.classList.add("drawer-visible");
         this._tabbedPane.show(this._drawerContentsElement);
 
         var height = this._constrainHeight(this._savedHeight);
@@ -249,9 +249,9 @@ WebInspector.Drawer.prototype = {
 
         // Temporarily set properties and classes to mimic the post-animation values so panels
         // like Elements in their updateStatusBarItems call will size things to fit the final location.
-        document.body.removeStyleClass("drawer-visible");
+        document.body.classList.remove("drawer-visible");
         this._inspectorView.currentPanel().statusBarResized();
-        document.body.addStyleClass("drawer-visible");
+        document.body.classList.add("drawer-visible");
 
         var animations = [
             {element: this.element, start: {"flex-basis": this.element.offsetHeight }, end: {"flex-basis": 23}},
@@ -265,7 +265,7 @@ WebInspector.Drawer.prototype = {
                 return;
             this._tabbedPane.detach();
             this._drawerContentsElement.removeChildren();
-            document.body.removeStyleClass("drawer-visible");
+            document.body.classList.remove("drawer-visible");
             delete this._currentAnimation;
             delete this._isHiding;
         }

@@ -142,7 +142,7 @@ WebInspector.DOMCountersGraph.prototype = {
     {
         this._currentValuesBar = this._canvasContainer.createChild("div");
         this._currentValuesBar.id = "counter-values-bar";
-        this._canvasContainer.addStyleClass("dom-counters");
+        this._canvasContainer.classList.add("dom-counters");
     },
 
     /**

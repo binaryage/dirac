@@ -357,7 +357,7 @@ WebInspector.FlameChart.OverviewPane = function(dataProvider)
     WebInspector.View.call(this);
     this._overviewContainer = this.element.createChild("div", "overview-container");
     this._overviewGrid = new WebInspector.OverviewGrid("flame-chart");
-    this._overviewGrid.element.addStyleClass("fill");
+    this._overviewGrid.element.classList.add("fill");
     this._overviewCanvas = this._overviewContainer.createChild("canvas", "flame-chart-overview-canvas");
     this._overviewContainer.appendChild(this._overviewGrid.element);
     this._overviewCalculator = new WebInspector.FlameChart.OverviewCalculator();

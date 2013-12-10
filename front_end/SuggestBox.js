@@ -145,13 +145,13 @@ WebInspector.SuggestBox.prototype = {
         if (underHeight >= aboveHeight) {
             // Locate the suggest box under the anchorBox.
             boxY = anchorBox.y + anchorBox.height;
-            this._element.removeStyleClass("above-anchor");
-            this._element.addStyleClass("under-anchor");
+            this._element.classList.remove("above-anchor");
+            this._element.classList.add("under-anchor");
         } else {
             // Locate the suggest box above the anchorBox.
             boxY = anchorBox.y - height;
-            this._element.removeStyleClass("under-anchor");
-            this._element.addStyleClass("above-anchor");
+            this._element.classList.remove("under-anchor");
+            this._element.classList.add("above-anchor");
         }
 
         this._element.positionAt(boxX, boxY);

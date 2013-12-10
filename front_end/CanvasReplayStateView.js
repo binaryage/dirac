@@ -37,7 +37,7 @@ WebInspector.CanvasReplayStateView = function(traceLogPlayer)
 {
     WebInspector.View.call(this);
     this.registerRequiredCSS("canvasProfiler.css");
-    this.element.addStyleClass("canvas-replay-state-view");
+    this.element.classList.add("canvas-replay-state-view");
     this._traceLogPlayer = traceLogPlayer;
 
     var controlsContainer = this.element.createChild("div", "status-bar");
@@ -73,7 +73,7 @@ WebInspector.CanvasReplayStateView = function(traceLogPlayer)
     ];
 
     this._stateGrid = new WebInspector.DataGrid(columns);
-    this._stateGrid.element.addStyleClass("fill");
+    this._stateGrid.element.classList.add("fill");
     this._stateGrid.show(this.element);
 
     this._traceLogPlayer.addEventListener(WebInspector.CanvasTraceLogPlayerProxy.Events.CanvasReplayStateChanged, this._onReplayResourceChanged, this);
@@ -383,14 +383,14 @@ WebInspector.CanvasReplayStateView.prototype = {
     {
         for (var i = 0, n = this._highlightedGridNodes.length; i < n; ++i) {
             var node = this._highlightedGridNodes[i];
-            node.element.removeStyleClass("canvas-grid-node-highlighted");
+            node.element.classList.remove("canvas-grid-node-highlighted");
         }
 
         this._highlightedGridNodes = nodes;
 
         for (var i = 0, n = this._highlightedGridNodes.length; i < n; ++i) {
             var node = this._highlightedGridNodes[i];
-            node.element.addStyleClass("canvas-grid-node-highlighted");
+            node.element.classList.add("canvas-grid-node-highlighted");
             node.reveal();
         }
     },

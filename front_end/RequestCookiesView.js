@@ -36,7 +36,7 @@
 WebInspector.RequestCookiesView = function(request)
 {
     WebInspector.View.call(this);
-    this.element.addStyleClass("resource-cookies-view");
+    this.element.classList.add("resource-cookies-view");
 
     this._request = request;
 }

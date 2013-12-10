@@ -49,12 +49,12 @@ WebInspector.ResourcesPanel = function(database)
     WebInspector.settings.resourcesLastSelectedItem = WebInspector.settings.createSetting("resourcesLastSelectedItem", {});
 
     this.createSidebarViewWithTree();
-    this.sidebarElement.addStyleClass("outline-disclosure");
-    this.sidebarElement.addStyleClass("filter-all");
-    this.sidebarElement.addStyleClass("children");
-    this.sidebarElement.addStyleClass("small");
+    this.sidebarElement.classList.add("outline-disclosure");
+    this.sidebarElement.classList.add("filter-all");
+    this.sidebarElement.classList.add("children");
+    this.sidebarElement.classList.add("small");
 
-    this.sidebarTreeElement.removeStyleClass("sidebar-tree");
+    this.sidebarTreeElement.classList.remove("sidebar-tree");
 
     this.resourcesListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Frames"), "Frames", ["frame-storage-tree-item"]);
     this.sidebarTree.appendChild(this.resourcesListTreeElement);
@@ -86,7 +86,7 @@ WebInspector.ResourcesPanel = function(database)
     this.storageViews = mainElement.createChild("div", "resources-main");
     var statusBarContainer = mainElement.createChild("div", "resources-status-bar");
     this.storageViewStatusBarItemsContainer = statusBarContainer.createChild("div", "status-bar");
-    this.storageViews.addStyleClass("diff-container");
+    this.storageViews.classList.add("diff-container");
 
     /** @type {!Map.<!WebInspector.Database, !Object.<string, !WebInspector.DatabaseTableView>>} */
     this._databaseTableViews = new Map();
@@ -795,7 +795,7 @@ WebInspector.BaseStorageTreeElement.prototype = {
         this.listItemElement.removeChildren();
         if (this._iconClasses) {
             for (var i = 0; i < this._iconClasses.length; ++i)
-                this.listItemElement.addStyleClass(this._iconClasses[i]);
+                this.listItemElement.classList.add(this._iconClasses[i]);
         }
 
         var selectionElement = document.createElement("div");
@@ -1003,7 +1003,7 @@ WebInspector.FrameTreeElement.prototype = {
         WebInspector.BaseStorageTreeElement.prototype.onselect.call(this, selectedByUser);
         this._storagePanel.showCategoryView(this.displayName);
 
-        this.listItemElement.removeStyleClass("hovered");
+        this.listItemElement.classList.remove("hovered");
         DOMAgent.hideHighlight();
         return false;
     },
@@ -1011,10 +1011,10 @@ WebInspector.FrameTreeElement.prototype = {
     set hovered(hovered)
     {
         if (hovered) {
-            this.listItemElement.addStyleClass("hovered");
+            this.listItemElement.classList.add("hovered");
             DOMAgent.highlightFrame(this._frameId, WebInspector.Color.PageHighlight.Content.toProtocolRGBA(), WebInspector.Color.PageHighlight.ContentOutline.toProtocolRGBA());
         } else {
-            this.listItemElement.removeStyleClass("hovered");
+            this.listItemElement.classList.remove("hovered");
             DOMAgent.hideHighlight();
         }
     },
@@ -1188,8 +1188,8 @@ WebInspector.FrameResourceTreeElement.prototype = {
     {
         if (this._bubbleElement) {
             this._bubbleElement.textContent = "";
-            this._bubbleElement.removeStyleClass("warning");
-            this._bubbleElement.removeStyleClass("error");
+            this._bubbleElement.classList.remove("warning");
+            this._bubbleElement.classList.remove("error");
         }
     },
 
@@ -1204,10 +1204,10 @@ WebInspector.FrameResourceTreeElement.prototype = {
             this._setBubbleText(this._resource.warnings + this._resource.errors);
 
         if (this._resource.warnings)
-            this._bubbleElement.addStyleClass("warning");
+            this._bubbleElement.classList.add("warning");
 
         if (this._resource.errors)
-            this._bubbleElement.addStyleClass("error");
+            this._bubbleElement.classList.add("error");
     },
 
     _consoleMessagesCleared: function()
@@ -2044,7 +2044,7 @@ WebInspector.StorageCategoryView = function()
 {
     WebInspector.View.call(this);
 
-    this.element.addStyleClass("storage-view");
+    this.element.classList.add("storage-view");
     this._emptyView = new WebInspector.EmptyView("");
     this._emptyView.show(this.element);
 }

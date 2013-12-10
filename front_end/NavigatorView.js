@@ -40,12 +40,12 @@ WebInspector.NavigatorView = function()
     this._scriptsTree.childrenListElement.addEventListener("keypress", this._treeKeyPress.bind(this), true);
 
     var scriptsOutlineElement = document.createElement("div");
-    scriptsOutlineElement.addStyleClass("outline-disclosure");
-    scriptsOutlineElement.addStyleClass("navigator");
+    scriptsOutlineElement.classList.add("outline-disclosure");
+    scriptsOutlineElement.classList.add("navigator");
     scriptsOutlineElement.appendChild(scriptsTreeElement);
 
-    this.element.addStyleClass("fill");
-    this.element.addStyleClass("navigator-container");
+    this.element.classList.add("fill");
+    this.element.classList.add("navigator-container");
     this.element.appendChild(scriptsOutlineElement);
     this.setDefaultFocusedElement(this._scriptsTree.element);
 
@@ -503,7 +503,7 @@ WebInspector.BaseNavigatorTreeElement.prototype = {
         this.listItemElement.removeChildren();
         if (this._iconClasses) {
             for (var i = 0; i < this._iconClasses.length; ++i)
-                this.listItemElement.addStyleClass(this._iconClasses[i]);
+                this.listItemElement.classList.add(this._iconClasses[i]);
         }
 
         var selectionElement = document.createElement("div");
@@ -527,10 +527,10 @@ WebInspector.BaseNavigatorTreeElement.prototype = {
     updateIconClasses: function(iconClasses)
     {
         for (var i = 0; i < this._iconClasses.length; ++i)
-            this.listItemElement.removeStyleClass(this._iconClasses[i]);
+            this.listItemElement.classList.remove(this._iconClasses[i]);
         this._iconClasses = iconClasses;
         for (var i = 0; i < this._iconClasses.length; ++i)
-            this.listItemElement.addStyleClass(this._iconClasses[i]);
+            this.listItemElement.classList.add(this._iconClasses[i]);
     },
 
     onreveal: function()

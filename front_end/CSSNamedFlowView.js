@@ -35,8 +35,8 @@
 WebInspector.CSSNamedFlowView = function(flow)
 {
     WebInspector.View.call(this);
-    this.element.addStyleClass("css-named-flow");
-    this.element.addStyleClass("outline-disclosure");
+    this.element.classList.add("css-named-flow");
+    this.element.classList.add("outline-disclosure");
 
     this._treeOutline = new TreeOutline(this.element.createChild("ol"), true);
 
@@ -75,7 +75,7 @@ WebInspector.CSSNamedFlowView.prototype = {
             return null;
 
         var treeOutline = new WebInspector.ElementsTreeOutline(false, false);
-        treeOutline.element.addStyleClass("named-flow-element");
+        treeOutline.element.classList.add("named-flow-element");
         treeOutline.setVisible(true);
         treeOutline.rootDOMNode = rootDOMNode;
         treeOutline.wireToDomAgent();
@@ -108,7 +108,7 @@ WebInspector.CSSNamedFlowView.prototype = {
     _insertRegion: function(region, index)
     {
         var treeOutline = this._createFlowTreeOutline(WebInspector.domAgent.nodeForId(region.nodeId));
-        treeOutline.element.addStyleClass("region-" + region.regionOverset);
+        treeOutline.element.classList.add("region-" + region.regionOverset);
 
         var treeItem = new TreeElement(treeOutline.element, treeOutline);
         var oversetText = WebInspector.UIString(WebInspector.CSSNamedFlowView.OversetTypeMessageMap[region.regionOverset]);
@@ -140,8 +140,8 @@ WebInspector.CSSNamedFlowView.prototype = {
     _updateRegionOverset: function(regionTreeItem, newRegionOverset, oldRegionOverset)
     {
         var element = regionTreeItem.representedObject.element;
-        element.removeStyleClass("region-" + oldRegionOverset);
-        element.addStyleClass("region-" + newRegionOverset);
+        element.classList.remove("region-" + oldRegionOverset);
+        element.classList.add("region-" + newRegionOverset);
 
         var oversetText = WebInspector.UIString(WebInspector.CSSNamedFlowView.OversetTypeMessageMap[newRegionOverset]);
         regionTreeItem.tooltip = WebInspector.UIString("Region is %s." , oversetText);

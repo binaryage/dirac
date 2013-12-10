@@ -36,7 +36,7 @@ WebInspector.SourcesNavigator = function()
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.shrinkableTabs = true;
-    this._tabbedPane.element.addStyleClass("navigator-tabbed-pane");
+    this._tabbedPane.element.classList.add("navigator-tabbed-pane");
 
     this._sourcesView = new WebInspector.NavigatorView();
     this._sourcesView.addEventListener(WebInspector.NavigatorView.Events.ItemSelected, this._sourceSelected, this);

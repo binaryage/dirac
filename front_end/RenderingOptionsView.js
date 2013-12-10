@@ -36,7 +36,7 @@ WebInspector.RenderingOptionsView = function()
 {
     WebInspector.View.call(this);
     this.registerRequiredCSS("helpScreen.css");
-    this.element.addStyleClass("help-indent-labels");
+    this.element.classList.add("help-indent-labels");
 
     var div = this.element.createChild("div", "settings-tab help-content help-container");
     div.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show paint rectangles"), WebInspector.settings.showPaintRects));

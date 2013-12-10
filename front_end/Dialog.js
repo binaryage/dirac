@@ -147,8 +147,8 @@ WebInspector.DialogDelegate.prototype = {
     show: function(element)
     {
         element.appendChild(this.element);
-        this.element.addStyleClass("dialog-contents");
-        element.addStyleClass("dialog");    
+        this.element.classList.add("dialog-contents");
+        element.classList.add("dialog");
     },
 
     /**

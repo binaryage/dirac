@@ -36,14 +36,14 @@
 WebInspector.FileSystemView = function(fileSystem)
 {
     WebInspector.SidebarView.call(this, WebInspector.SidebarView.SidebarPosition.Start, "FileSystemViewSidebarWidth");
-    this.element.addStyleClass("file-system-view");
-    this.element.addStyleClass("storage-view");
+    this.element.classList.add("file-system-view");
+    this.element.classList.add("storage-view");
 
     var directoryTreeElement = this.element.createChild("ol", "filesystem-directory-tree");
     this._directoryTree = new TreeOutline(directoryTreeElement);
     this.sidebarElement.appendChild(directoryTreeElement);
-    this.sidebarElement.addStyleClass("outline-disclosure");
-    this.sidebarElement.addStyleClass("sidebar");
+    this.sidebarElement.classList.add("outline-disclosure");
+    this.sidebarElement.classList.add("sidebar");
 
     var rootItem = new WebInspector.FileSystemView.EntryTreeElement(this, fileSystem.root);
     rootItem.expanded = true;

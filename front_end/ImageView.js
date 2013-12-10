@@ -34,7 +34,7 @@ WebInspector.ImageView = function(resource)
 {
     WebInspector.ResourceView.call(this, resource);
 
-    this.element.addStyleClass("image");
+    this.element.classList.add("image");
 }
 
 WebInspector.ImageView.prototype = {
@@ -58,7 +58,7 @@ WebInspector.ImageView.prototype = {
         this.element.appendChild(imageContainer);
 
         var imagePreviewElement = document.createElement("img");
-        imagePreviewElement.addStyleClass("resource-image-view");
+        imagePreviewElement.classList.add("resource-image-view");
         imageContainer.appendChild(imagePreviewElement);
         imagePreviewElement.addEventListener("contextmenu", this._contextMenu.bind(this), true);
 

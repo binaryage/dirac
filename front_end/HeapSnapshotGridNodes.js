@@ -75,7 +75,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
     {
         var cell = WebInspector.DataGridNode.prototype.createCell.call(this, columnIdentifier);
         if (this._searchMatched)
-            cell.addStyleClass("highlight");
+            cell.classList.add("highlight");
         return cell;
     },
 
@@ -145,7 +145,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
                 percentSpan.className = "percent-column";
                 percentSpan.textContent = this.data[percentColumn];
                 div.appendChild(percentSpan);
-                div.addStyleClass("heap-snapshot-multiple-values");
+                div.classList.add("heap-snapshot-multiple-values");
             }
             cell.appendChild(div);
         }
@@ -379,7 +379,7 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
     {
         var cell = columnIdentifier !== "object" ? this._createValueCell(columnIdentifier) : this._createObjectCell();
         if (this._searchMatched)
-            cell.addStyleClass("highlight");
+            cell.classList.add("highlight");
         return cell;
     },
 
@@ -409,7 +409,7 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
             this._postfixObjectCell(div, data);
 
         cell.appendChild(div);
-        cell.addStyleClass("disclosure");
+        cell.classList.add("disclosure");
         if (this.depth)
             cell.style.setProperty("padding-left", (this.depth * this.dataGrid.indentWidth) + "px");
         cell.heapSnapshotNode = this;
@@ -798,7 +798,7 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
     {
         var cell = columnIdentifier !== "object" ? this._createValueCell(columnIdentifier) : WebInspector.HeapSnapshotGridNode.prototype.createCell.call(this, columnIdentifier);
         if (this._searchMatched)
-            cell.addStyleClass("highlight");
+            cell.classList.add("highlight");
         return cell;
     },
 

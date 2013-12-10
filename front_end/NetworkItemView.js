@@ -36,7 +36,7 @@
 WebInspector.NetworkItemView = function(request)
 {
     WebInspector.TabbedPane.call(this);
-    this.element.addStyleClass("network-item-view");
+    this.element.classList.add("network-item-view");
 
     var headersView = new WebInspector.RequestHeadersView(request);
     this.appendTab("headers", WebInspector.UIString("Headers"), headersView);

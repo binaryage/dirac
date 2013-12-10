@@ -36,7 +36,7 @@
 WebInspector.RequestTimingView = function(request)
 {
     WebInspector.View.call(this);
-    this.element.addStyleClass("resource-timing-view");
+    this.element.classList.add("resource-timing-view");
 
     this._request = request;
 }

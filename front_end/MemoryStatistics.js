@@ -39,7 +39,7 @@ WebInspector.MemoryStatistics = function(timelinePanel, model)
     WebInspector.View.call(this);
     this._timelinePanel = timelinePanel;
 
-    this.element.addStyleClass("fill");
+    this.element.classList.add("fill");
     this._counters = [];
 
     model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
@@ -146,9 +146,9 @@ WebInspector.CounterUIBase.prototype = {
     _toggleCounterGraph: function(event)
     {
         if (this._swatch.checked)
-            this._value.removeStyleClass("hidden");
+            this._value.classList.remove("hidden");
         else
-            this._value.addStyleClass("hidden");
+            this._value.classList.add("hidden");
         this._memoryCountersPane.refresh();
     },
 

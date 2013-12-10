@@ -38,7 +38,7 @@ WebInspector.HeapSnapshotView = function(parent, profile)
 {
     WebInspector.View.call(this);
 
-    this.element.addStyleClass("heap-snapshot-view");
+    this.element.classList.add("heap-snapshot-view");
 
     this.parent = parent;
     this.parent.addEventListener("profile added", this._onProfileHeaderAdded, this);
@@ -50,22 +50,22 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     }
 
     this.viewsContainer = document.createElement("div");
-    this.viewsContainer.addStyleClass("views-container");
+    this.viewsContainer.classList.add("views-container");
     this.element.appendChild(this.viewsContainer);
 
     this.containmentView = new WebInspector.View();
-    this.containmentView.element.addStyleClass("view");
+    this.containmentView.element.classList.add("view");
     this.containmentDataGrid = new WebInspector.HeapSnapshotContainmentDataGrid();
     this.containmentDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
     this.containmentDataGrid.show(this.containmentView.element);
     this.containmentDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
     this.constructorsView = new WebInspector.View();
-    this.constructorsView.element.addStyleClass("view");
+    this.constructorsView.element.classList.add("view");
     this.constructorsView.element.appendChild(this._createToolbarWithClassNameFilter());
 
     this.constructorsDataGrid = new WebInspector.HeapSnapshotConstructorsDataGrid();
-    this.constructorsDataGrid.element.addStyleClass("class-view-grid");
+    this.constructorsDataGrid.element.classList.add("class-view-grid");
     this.constructorsDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
     this.constructorsDataGrid.show(this.constructorsView.element);
     this.constructorsDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
@@ -75,16 +75,16 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.currentView.show(this.viewsContainer);
 
     this.diffView = new WebInspector.View();
-    this.diffView.element.addStyleClass("view");
+    this.diffView.element.classList.add("view");
     this.diffView.element.appendChild(this._createToolbarWithClassNameFilter());
 
     this.diffDataGrid = new WebInspector.HeapSnapshotDiffDataGrid();
-    this.diffDataGrid.element.addStyleClass("class-view-grid");
+    this.diffDataGrid.element.classList.add("class-view-grid");
     this.diffDataGrid.show(this.diffView.element);
     this.diffDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
     this.dominatorView = new WebInspector.View();
-    this.dominatorView.element.addStyleClass("view");
+    this.dominatorView.element.classList.add("view");
     this.dominatorDataGrid = new WebInspector.HeapSnapshotDominatorsDataGrid();
     this.dominatorDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
     this.dominatorDataGrid.show(this.dominatorView.element);
@@ -92,7 +92,7 @@ WebInspector.HeapSnapshotView = function(parent, profile)
 
     if (WebInspector.HeapSnapshot.enableAllocationProfiler) {
         this.allocationView = new WebInspector.View();
-        this.allocationView.element.addStyleClass("view");
+        this.allocationView.element.classList.add("view");
         this.allocationDataGrid = new WebInspector.AllocationDataGrid();
         this.allocationDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
         this.allocationDataGrid.show(this.allocationView.element);
@@ -100,7 +100,7 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     }
 
     this.retainmentViewHeader = document.createElement("div");
-    this.retainmentViewHeader.addStyleClass("retainers-view-header");
+    this.retainmentViewHeader.classList.add("retainers-view-header");
     WebInspector.installDragHandle(this.retainmentViewHeader, this._startRetainersHeaderDragging.bind(this), this._retainersHeaderDragging.bind(this), this._endRetainersHeaderDragging.bind(this), "row-resize");
     var retainingPathsTitleDiv = document.createElement("div");
     retainingPathsTitleDiv.className = "title";
@@ -111,8 +111,8 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.element.appendChild(this.retainmentViewHeader);
 
     this.retainmentView = new WebInspector.View();
-    this.retainmentView.element.addStyleClass("view");
-    this.retainmentView.element.addStyleClass("retaining-paths-view");
+    this.retainmentView.element.classList.add("view");
+    this.retainmentView.element.classList.add("retaining-paths-view");
     this.retainmentDataGrid = new WebInspector.HeapSnapshotRetainmentDataGrid();
     this.retainmentDataGrid.show(this.retainmentView.element);
     this.retainmentDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._inspectedObjectChanged, this);
@@ -135,7 +135,7 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this._profile = profile;
 
     this.baseSelect = new WebInspector.StatusBarComboBox(this._changeBase.bind(this));
-    this.baseSelect.element.addStyleClass("hidden");
+    this.baseSelect.element.classList.add("hidden");
     this._updateBaseOptions();
 
     this.filterSelect = new WebInspector.StatusBarComboBox(this._changeFilter.bind(this));
@@ -418,9 +418,9 @@ WebInspector.HeapSnapshotView.prototype = {
     _createToolbarWithClassNameFilter: function()
     {
         var toolbar = document.createElement("div");
-        toolbar.addStyleClass("class-view-toolbar");
+        toolbar.classList.add("class-view-toolbar");
         var classNameFilter = document.createElement("input");
-        classNameFilter.addStyleClass("class-name-filter");
+        classNameFilter.classList.add("class-name-filter");
         classNameFilter.setAttribute("placeholder", WebInspector.UIString("Class filter"));
         classNameFilter.addEventListener("keyup", this._changeNameFilter.bind(this, classNameFilter), false);
         toolbar.appendChild(classNameFilter);
@@ -478,7 +478,7 @@ WebInspector.HeapSnapshotView.prototype = {
             return;
 
         var cell = event.target.enclosingNodeOrSelfWithNodeName("td");
-        if (!cell || (!cell.hasStyleClass("count-column") && !cell.hasStyleClass("shallowSize-column") && !cell.hasStyleClass("retainedSize-column")))
+        if (!cell || (!cell.classList.contains("count-column") && !cell.classList.contains("shallowSize-column") && !cell.classList.contains("retainedSize-column")))
             return;
 
         event.consume(true);
@@ -546,22 +546,22 @@ WebInspector.HeapSnapshotView.prototype = {
     _updateSelectorsVisibility: function()
     {
         if (this.currentView === this.diffView)
-            this.baseSelect.element.removeStyleClass("hidden");
+            this.baseSelect.element.classList.remove("hidden");
         else
-            this.baseSelect.element.addStyleClass("hidden");
+            this.baseSelect.element.classList.add("hidden");
 
         if (this.currentView === this.constructorsView) {
             if (this._trackingOverviewGrid) {
-                this._trackingOverviewGrid.element.removeStyleClass("hidden");
+                this._trackingOverviewGrid.element.classList.remove("hidden");
                 this._trackingOverviewGrid.update();
-                this.viewsContainer.addStyleClass("reserve-80px-at-top");
+                this.viewsContainer.classList.add("reserve-80px-at-top");
             }
-            this.filterSelect.element.removeStyleClass("hidden");
+            this.filterSelect.element.classList.remove("hidden");
         } else {
-            this.filterSelect.element.addStyleClass("hidden");
+            this.filterSelect.element.classList.add("hidden");
             if (this._trackingOverviewGrid) {
-                this._trackingOverviewGrid.element.addStyleClass("hidden");
-                this.viewsContainer.removeStyleClass("reserve-80px-at-top");
+                this._trackingOverviewGrid.element.classList.add("hidden");
+                this.viewsContainer.classList.remove("reserve-80px-at-top");
             }
         }
     },
@@ -645,7 +645,7 @@ WebInspector.HeapSnapshotView.prototype = {
         height = Number.constrain(height, Preferences.minConsoleHeight, this.element.clientHeight - Preferences.minConsoleHeight);
         this.viewsContainer.style.bottom = (height + this.retainmentViewHeader.clientHeight) + "px";
         if (this._trackingOverviewGrid && this.currentView === this.constructorsView)
-            this.viewsContainer.addStyleClass("reserve-80px-at-top");
+            this.viewsContainer.classList.add("reserve-80px-at-top");
         this.retainmentView.element.style.height = height + "px";
         this.retainmentViewHeader.style.bottom = height + "px";
         this.currentView.doResize();
@@ -1498,7 +1498,7 @@ WebInspector.HeapTrackingOverviewGrid = function(heapProfileHeader)
 
     this._overviewContainer = this.element.createChild("div", "overview-container");
     this._overviewGrid = new WebInspector.OverviewGrid("heap-recording");
-    this._overviewGrid.element.addStyleClass("fill");
+    this._overviewGrid.element.classList.add("fill");
 
     this._overviewCanvas = this._overviewContainer.createChild("canvas", "heap-recording-overview-canvas");
     this._overviewContainer.appendChild(this._overviewGrid.element);

@@ -40,8 +40,8 @@ WebInspector.CSSNamedFlowCollectionsView = function()
     this._contentNodes = {};
     this._regionNodes = {};
 
-    this.element.addStyleClass("css-named-flow-collections-view");
-    this.element.addStyleClass("fill");
+    this.element.classList.add("css-named-flow-collections-view");
+    this.element.classList.add("fill");
 
     this._statusElement = document.createElement("span");
     this._statusElement.textContent = WebInspector.UIString("CSS Named Flows");
@@ -55,7 +55,7 @@ WebInspector.CSSNamedFlowCollectionsView = function()
     this._flowTree = new TreeOutline(this._flowListElement);
 
     this._emptyElement = document.createElement("div");
-    this._emptyElement.addStyleClass("info");
+    this._emptyElement.classList.add("info");
     this._emptyElement.textContent = WebInspector.UIString("No CSS Named Flows");
 
     this._tabbedPane = new WebInspector.TabbedPane();
@@ -419,10 +419,10 @@ WebInspector.FlowTreeElement.prototype = {
             return;
 
         if (newOverset) {
-            this.title.addStyleClass("named-flow-overflow");
+            this.title.classList.add("named-flow-overflow");
             this.tooltip = WebInspector.UIString("Overflows.");
         } else {
-            this.title.removeStyleClass("named-flow-overflow");
+            this.title.classList.remove("named-flow-overflow");
             this.tooltip = "";
         }
 

@@ -42,8 +42,8 @@ WebInspector.AuditLauncherView = function(auditController)
     this._categoryIdPrefix = "audit-category-item-";
     this._auditRunning = false;
 
-    this.element.addStyleClass("audit-launcher-view");
-    this.element.addStyleClass("panel-enabler-view");
+    this.element.classList.add("audit-launcher-view");
+    this.element.classList.add("panel-enabler-view");
 
     this._contentElement = document.createElement("div");
     this._contentElement.className = "audit-launcher-view-content";

@@ -39,7 +39,7 @@ WebInspector.ExtensionPanel = function(id, pageURL)
 {
     WebInspector.Panel.call(this, id);
     this.setHideOnDetach();
-    this.element.addStyleClass("extension-panel");
+    this.element.classList.add("extension-panel");
     this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar hidden");
 
     this._searchableView = new WebInspector.SearchableView(this);
@@ -61,7 +61,7 @@ WebInspector.ExtensionPanel.prototype = {
      */
     addStatusBarItem: function(element)
     {
-        this._panelStatusBarElement.removeStyleClass("hidden");
+        this._panelStatusBarElement.classList.remove("hidden");
         this._panelStatusBarElement.appendChild(element);
     },
 
@@ -244,7 +244,7 @@ WebInspector.ExtensionSidebarPane.prototype = {
         this._objectPropertiesView.element.removeChildren();
         var section = new WebInspector.ObjectPropertiesSection(object, title);
         if (!title)
-            section.headerElement.addStyleClass("hidden");
+            section.headerElement.classList.add("hidden");
         section.expanded = true;
         section.editable = false;
         this._objectPropertiesView.element.appendChild(section.element);

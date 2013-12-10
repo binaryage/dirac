@@ -57,8 +57,8 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
     this._filteredItems = [];
     this._viewportControl = new WebInspector.ViewportControl(this);
     this._itemElementsContainer = this._viewportControl.element;
-    this._itemElementsContainer.addStyleClass("container");
-    this._itemElementsContainer.addStyleClass("monospace");
+    this._itemElementsContainer.classList.add("container");
+    this._itemElementsContainer.classList.add("monospace");
     this._itemElementsContainer.addEventListener("click", this._onClick.bind(this), false);
     this.element.appendChild(this._itemElementsContainer);
 
@@ -306,12 +306,12 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     { 
         var element = this._viewportControl.renderedElementAt(this._selectedIndexInFiltered);
         if (element)
-            element.removeStyleClass("selected");
+            element.classList.remove("selected");
         this._viewportControl.scrollItemIntoView(index, makeLast);
         this._selectedIndexInFiltered = index;
         element = this._viewportControl.renderedElementAt(index);
         if (element)
-            element.addStyleClass("selected");
+            element.classList.add("selected");
     },
 
     _onClick: function(event)
@@ -340,7 +340,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         var delegateIndex = this._filteredItems[index];
         var element = this._createItemElement(delegateIndex);
         if (index === this._selectedIndexInFiltered)
-            element.addStyleClass("selected");
+            element.classList.add("selected");
         return element;
     },
 

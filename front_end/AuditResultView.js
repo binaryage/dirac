@@ -36,7 +36,7 @@
 WebInspector.AuditResultView = function(categoryResults)
 {
     WebInspector.SidebarPaneStack.call(this);
-    this.element.addStyleClass("audit-result-view");
+    this.element.classList.add("audit-result-view");
 
     function categorySorter(a, b) {
         return (a.title || "").localeCompare(b.title || "");
@@ -59,7 +59,7 @@ WebInspector.AuditCategoryResultPane = function(categoryResult)
 {
     WebInspector.SidebarPane.call(this, categoryResult.title);
     var treeOutlineElement = document.createElement("ol");
-    this.bodyElement.addStyleClass("audit-result-tree");
+    this.bodyElement.classList.add("audit-result-tree");
     this.bodyElement.appendChild(treeOutlineElement);
 
     this._treeOutline = new TreeOutline(treeOutlineElement);
@@ -78,7 +78,7 @@ WebInspector.AuditCategoryResultPane = function(categoryResult)
     for (var i = 0; i < categoryResult.ruleResults.length; ++i) {
         var ruleResult = categoryResult.ruleResults[i];
         var treeElement = this._appendResult(this._treeOutline, ruleResult);
-        treeElement.listItemElement.addStyleClass("audit-result");
+        treeElement.listItemElement.classList.add("audit-result");
 
         if (ruleResult.severity) {
             var severityElement = document.createElement("div");
@@ -108,7 +108,7 @@ WebInspector.AuditCategoryResultPane.prototype = {
         parentTreeElement.appendChild(treeElement);
 
         if (result.className)
-            treeElement.listItemElement.addStyleClass(result.className);
+            treeElement.listItemElement.classList.add(result.className);
         if (typeof result.value !== "string")
             treeElement.listItemElement.appendChild(WebInspector.auditFormatters.apply(result.value));
 
@@ -117,8 +117,8 @@ WebInspector.AuditCategoryResultPane.prototype = {
                 this._appendResult(treeElement, result.children[i]);
         }
         if (result.expanded) {
-            treeElement.listItemElement.removeStyleClass("parent");
-            treeElement.listItemElement.addStyleClass("parent-expanded");
+            treeElement.listItemElement.classList.remove("parent");
+            treeElement.listItemElement.classList.add("parent-expanded");
             treeElement.expand();
         }
         return treeElement;

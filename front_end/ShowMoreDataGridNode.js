@@ -82,11 +82,11 @@ WebInspector.ShowMoreDataGridNode.prototype = {
     {
         var totalSize = this._endPosition - this._startPosition;
         if (totalSize > this._chunkSize) {
-            this.showNext.removeStyleClass("hidden");
-            this.showLast.removeStyleClass("hidden");
+            this.showNext.classList.remove("hidden");
+            this.showLast.classList.remove("hidden");
         } else {
-            this.showNext.addStyleClass("hidden");
-            this.showLast.addStyleClass("hidden");
+            this.showNext.classList.add("hidden");
+            this.showLast.classList.add("hidden");
         }
         this.showAll.textContent = WebInspector.UIString("Show all %d", totalSize);
     },

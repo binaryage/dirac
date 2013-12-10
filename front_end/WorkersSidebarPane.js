@@ -57,7 +57,7 @@ WebInspector.WorkersSidebarPane = function(workerManager)
 
     var note = this.bodyElement.createChild("div");
     note.id = "shared-workers-list";
-    note.addStyleClass("sidebar-label")
+    note.classList.add("sidebar-label")
     note.textContent = WebInspector.UIString("Shared workers can be inspected in the Task Manager");
 
     var separator = this.bodyElement.createChild("div", "sidebar-separator");
@@ -65,8 +65,8 @@ WebInspector.WorkersSidebarPane = function(workerManager)
 
     this._workerListElement = document.createElement("ol");
     this._workerListElement.tabIndex = 0;
-    this._workerListElement.addStyleClass("properties-tree");
-    this._workerListElement.addStyleClass("sidebar-label");
+    this._workerListElement.classList.add("properties-tree");
+    this._workerListElement.classList.add("sidebar-label");
     this.bodyElement.appendChild(this._workerListElement);
 
     this._idToWorkerItem = {};

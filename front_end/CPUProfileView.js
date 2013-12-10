@@ -32,7 +32,7 @@ WebInspector.CPUProfileView = function(profileHeader)
 {
     WebInspector.View.call(this);
 
-    this.element.addStyleClass("profile-view");
+    this.element.classList.add("profile-view");
     
     this.showSelfTimeAsPercent = WebInspector.settings.createSetting("cpuProfilerShowSelfTimeAsPercent", true);
     this.showTotalTimeAsPercent = WebInspector.settings.createSetting("cpuProfilerShowTotalTimeAsPercent", true);
@@ -558,14 +558,14 @@ WebInspector.CPUProfileView.prototype = {
             return;
 
         var cell = event.target.enclosingNodeOrSelfWithNodeName("td");
-        if (!cell || (!cell.hasStyleClass("total-column") && !cell.hasStyleClass("self-column") && !cell.hasStyleClass("average-column")))
+        if (!cell || (!cell.classList.contains("total-column") && !cell.classList.contains("self-column") && !cell.classList.contains("average-column")))
             return;
 
-        if (cell.hasStyleClass("total-column"))
+        if (cell.classList.contains("total-column"))
             this.showTotalTimeAsPercent.set(!this.showTotalTimeAsPercent.get());
-        else if (cell.hasStyleClass("self-column"))
+        else if (cell.classList.contains("self-column"))
             this.showSelfTimeAsPercent.set(!this.showSelfTimeAsPercent.get());
-        else if (cell.hasStyleClass("average-column"))
+        else if (cell.classList.contains("average-column"))
             this.showAverageTimeAsPercent.set(!this.showAverageTimeAsPercent.get());
 
         this.refreshShowAsPercents();

@@ -190,9 +190,9 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
             name = "\"" + name.replace(/\n/g, "\u21B5") + "\"";
         this.nameElement.textContent = name;
         if (!this.property.enumerable)
-            this.nameElement.addStyleClass("dimmed");
+            this.nameElement.classList.add("dimmed");
         if (this.property.isAccessorProperty())
-            this.nameElement.addStyleClass("properties-accessor-property-name");
+            this.nameElement.classList.add("properties-accessor-property-name");
 
         var separatorElement = document.createElement("span");
         separatorElement.className = "separator";
@@ -216,11 +216,11 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
             }
 
             if (this.property.wasThrown)
-                this.valueElement.addStyleClass("error");
+                this.valueElement.classList.add("error");
             if (this.property.value.subtype)
-                this.valueElement.addStyleClass("console-formatted-" + this.property.value.subtype);
+                this.valueElement.classList.add("console-formatted-" + this.property.value.subtype);
             else if (this.property.value.type)
-                this.valueElement.addStyleClass("console-formatted-" + this.property.value.type);
+                this.valueElement.classList.add("console-formatted-" + this.property.value.type);
 
             this.valueElement.addEventListener("contextmenu", this._contextMenuFired.bind(this, this.property.value), false);
             if (this.property.value.type === "object" && this.property.value.subtype === "node" && this.property.value.description) {
@@ -314,7 +314,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         // Lie about our children to prevent expanding on double click and to collapse subproperties.
         this.hasChildren = false;
 
-        this.listItemElement.addStyleClass("editing-sub-part");
+        this.listItemElement.classList.add("editing-sub-part");
 
         this._prompt = new WebInspector.ObjectPropertyPrompt(this.editingCommitted.bind(this, null, elementToEdit.textContent, context.previousContent, context), this.editingCancelled.bind(this, null, context), this.renderPromptAsBlock());
 
@@ -342,7 +342,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         delete this._prompt;
 
         this.listItemElement.scrollLeft = 0;
-        this.listItemElement.removeStyleClass("editing-sub-part");
+        this.listItemElement.classList.remove("editing-sub-part");
         if (context.expanded)
             this.expand();
     },
@@ -931,7 +931,7 @@ WebInspector.ArrayGroupingTreeElement.prototype = {
 
     onattach: function()
     {
-        this.listItemElement.addStyleClass("name");
+        this.listItemElement.classList.add("name");
     },
 
     __proto__: TreeElement.prototype

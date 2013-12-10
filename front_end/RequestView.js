@@ -38,7 +38,7 @@ WebInspector.RequestView = function(request)
     WebInspector.View.call(this);
     this.registerRequiredCSS("resourceView.css");
 
-    this.element.addStyleClass("resource-view");
+    this.element.classList.add("resource-view");
     this.request = request;
 }
 

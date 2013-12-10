@@ -204,7 +204,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         element.appendChild(labelElement);
 
         var linkifiedNode = WebInspector.DOMPresentationUtils.linkifyNodeById(node.id);
-        linkifiedNode.addStyleClass("monospace");
+        linkifiedNode.classList.add("monospace");
         labelElement.appendChild(linkifiedNode);
 
         var description = document.createElement("div");
@@ -275,14 +275,14 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         if (!element)
             return;
         this.expand();
-        element.addStyleClass("breakpoint-hit");
+        element.classList.add("breakpoint-hit");
         this._highlightedElement = element;
     },
 
     clearBreakpointHighlight: function()
     {
         if (this._highlightedElement) {
-            this._highlightedElement.removeStyleClass("breakpoint-hit");
+            this._highlightedElement.classList.remove("breakpoint-hit");
             delete this._highlightedElement;
         }
     },

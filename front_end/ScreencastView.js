@@ -38,8 +38,8 @@ WebInspector.ScreencastView = function()
     WebInspector.View.call(this);
     this.registerRequiredCSS("screencastView.css");
 
-    this.element.addStyleClass("fill");
-    this.element.addStyleClass("screencast");
+    this.element.classList.add("fill");
+    this.element.classList.add("screencast");
 
     this._createNavigationBar();
 
@@ -237,7 +237,7 @@ WebInspector.ScreencastView.prototype = {
         this._screenZoom = Math.min(dimensions.width / screenWidthDIP, dimensions.height / screenHeightDIP);
 
         var bordersSize = WebInspector.ScreencastView._bordersSize;
-        this._viewportElement.removeStyleClass("hidden");
+        this._viewportElement.classList.remove("hidden");
         this._viewportElement.style.width = screenWidthDIP * this._screenZoom + bordersSize + "px";
         this._viewportElement.style.height = screenHeightDIP * this._screenZoom + bordersSize + "px";
     },
@@ -447,7 +447,7 @@ WebInspector.ScreencastView.prototype = {
             this._model = null;
             this._config = null;
             this._node = null;
-            this._titleElement.addStyleClass("hidden");
+            this._titleElement.classList.add("hidden");
             this._repaint();
             return;
         }
@@ -697,7 +697,7 @@ WebInspector.ScreencastView.prototype = {
 
         this._context.restore();
 
-        this._titleElement.removeStyleClass("hidden");
+        this._titleElement.classList.remove("hidden");
         this._titleElement.style.top = (boxY + 3) + "px";
         this._titleElement.style.left = (boxX + 3) + "px";
     },
