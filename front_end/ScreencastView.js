@@ -489,11 +489,10 @@ WebInspector.ScreencastView.prototype = {
             }
         }
 
-        // FIXME: These casts are due to "generate_protocol_externs.py" generating nullable refs for object type fields.
-        scaleQuad.call(this, /** @type {!DOMAgent.Quad} */ (model.content));
-        scaleQuad.call(this, /** @type {!DOMAgent.Quad} */ (model.padding));
-        scaleQuad.call(this, /** @type {!DOMAgent.Quad} */ (model.border));
-        scaleQuad.call(this, /** @type {!DOMAgent.Quad} */ (model.margin));
+        scaleQuad.call(this, model.content);
+        scaleQuad.call(this, model.padding);
+        scaleQuad.call(this, model.border);
+        scaleQuad.call(this, model.margin);
         return model;
     },
 

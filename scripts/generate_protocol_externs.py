@@ -129,10 +129,7 @@ Protocol.Error;
                 elif type["type"] == "string" and "enum" in type:
                     output_file.write(generate_enum("%sAgent.%s" % (domain_name, type["id"]), type))
                 elif type["type"] == "array":
-                    suffix = ""
-                    if ("optional" in property):
-                        suffix = "|undefined"
-                    output_file.write("\n/** @typedef {!Array.<!%s>%s} */\n%sAgent.%s;\n" % (param_type(domain_name, type["items"]), suffix, domain_name, type["id"]))
+                    output_file.write("\n/** @typedef {!Array.<!%s>} */\n%sAgent.%s;\n" % (param_type(domain_name, type["items"]), domain_name, type["id"]))
                 else:
                     output_file.write("\n/** @typedef {%s} */\n%sAgent.%s;\n" % (type_traits[type["type"]], domain_name, type["id"]))
 
