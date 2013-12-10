@@ -1857,9 +1857,12 @@ WebInspector.ElementsTreeElement.prototype = {
             if (this._highlightResult)
                 this._updateSearchHighlight(false);
         } else {
+            var nodeInfo = this._nodeTitleInfo(WebInspector.linkifyURLAsNode);
+            if (nodeInfo.shadowRoot)
+                this.listItemElement.addStyleClass("shadow-root");
             var highlightElement = document.createElement("span");
             highlightElement.className = "highlight";
-            highlightElement.appendChild(this._nodeTitleInfo(WebInspector.linkifyURLAsNode).titleDOM);
+            highlightElement.appendChild(nodeInfo.titleDOM);
             this.title = highlightElement;
             this._updateDecorations();
             delete this._highlightResult;
@@ -1977,8 +1980,6 @@ WebInspector.ElementsTreeElement.prototype = {
         var classes = [ "webkit-html-tag" ];
         if (isClosingTag && isDistinctTreeElement)
             classes.push("close");
-        if (node.isInShadowTree())
-            classes.push("shadow");
         var tagElement = parentElement.createChild("span", classes.join(" "));
         tagElement.appendChild(document.createTextNode("<"));
         var tagNameElement = tagElement.createChild("span", isClosingTag ? "" : "webkit-html-tag-name");
@@ -2127,9 +2128,10 @@ WebInspector.ElementsTreeElement.prototype = {
                 var fragmentElement = info.titleDOM.createChild("span", "webkit-html-fragment");
                 var nodeTitle;
                 if (node.isInShadowTree()) {
-                    fragmentElement.addStyleClass("shadow");
                     var shadowRootType = node.shadowRootType();
                     if (shadowRootType) {
+                        info.shadowRoot = true;
+                        fragmentElement.addStyleClass("shadow-root");
                         nodeTitle = "#shadow-root";
                         if (shadowRootType === WebInspector.DOMNode.ShadowRootTypes.UserAgent)
                             nodeTitle += " (" + shadowRootType + ")";

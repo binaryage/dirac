@@ -1360,11 +1360,6 @@ iframe.panel.extension {
     margin-left: -12px;
 }
 
-.webkit-html-tag.shadow,
-.webkit-html-fragment.shadow {
-    opacity: 0.6;
-}
-
 .outline-disclosure li.parent::before {
     float: left;
     width: 8px;
@@ -2815,6 +2810,12 @@ body.platform-mac .progress-bar-container progress {
 
 .elements-tree-outline li.parent::before {
     top: 0 !important;
+}
+
+.elements-tree-outline li.shadow-root + ol {
+    margin-left: 5px;
+    padding-left: 5px;
+    border-left: 1px solid gray;
 }
 
 #drawer-editor-view {
