@@ -568,7 +568,8 @@
                 "name": "frameAttached",
                 "description": "Fired when frame has been attached to its parent.",
                 "parameters": [
-                    { "name": "frameId", "$ref": "FrameId", "description": "Id of the frame that has been attached." }
+                    { "name": "frameId", "$ref": "FrameId", "description": "Id of the frame that has been attached." },
+                    { "name": "parentFrameId", "$ref": "FrameId", "description": "Parent frame identifier." }
                 ]
             },
             {

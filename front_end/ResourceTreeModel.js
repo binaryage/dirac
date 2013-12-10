@@ -177,6 +177,30 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
+     * @param {PageAgent.FrameId} frameId
+     * @param {PageAgent.FrameId} parentFrameId
+     * @return {?WebInspector.ResourceTreeFrame}
+     */
+    _frameAttached: function(frameId, parentFrameId)
+    {
+        // Do nothing unless cached resource tree is processed - it will overwrite everything.
+        if (!this._cachedResourcesProcessed)
+            return null;
+        if (this._frames[frameId])
+            return null;
+
+        var parentFrame = parentFrameId ? this._frames[parentFrameId] : null;
+        var frame = new WebInspector.ResourceTreeFrame(this, parentFrame, frameId);
+        if (frame.isMainFrame() && this.mainFrame) {
+            this._handleMainFrameDetached(this.mainFrame);
+            // Navigation to the new backend process.
+            this._frameDetached(this.mainFrame.id);
+        }
+        this._addFrame(frame, true);
+        return frame;
+    },
+
+    /**
      * @param {!PageAgent.Frame} framePayload
      */
     _frameNavigated: function(framePayload)
@@ -185,24 +209,18 @@ WebInspector.ResourceTreeModel.prototype = {
         if (!this._cachedResourcesProcessed)
             return;
         var frame = this._frames[framePayload.id];
-        var addedOrigin;
         if (frame) {
             // Navigation within existing frame.
             this._removeSecurityOrigin(frame.securityOrigin);
             frame._navigate(framePayload);
-            addedOrigin = frame.securityOrigin;
         } else {
-            // Either a new frame or a main frame navigation to the new backend process. 
-            var parentFrame = framePayload.parentId ? this._frames[framePayload.parentId] : null;
-            frame = new WebInspector.ResourceTreeFrame(this, parentFrame, framePayload);
-            if (frame.isMainFrame() && this.mainFrame) {
-                this._handleMainFrameDetached(this.mainFrame);
-                // Definitely a navigation to the new backend process.
-                this._frameDetached(this.mainFrame.id);
-            }
-            this._addFrame(frame, true);
-            addedOrigin = frame.securityOrigin;
+            // Either a new frame or a main frame navigation to the new backend process.
+            console.error("Navigated unregistered frame.");
+            frame = this._frameAttached(framePayload.id, framePayload.parentId || "");
+            if (!frame)
+                return;
         }
+        var addedOrigin = frame.securityOrigin;
 
         if (frame.isMainFrame())
             WebInspector.inspectedPageURL = frame.url;
@@ -395,7 +413,7 @@ WebInspector.ResourceTreeModel.prototype = {
     _addFramesRecursively: function(parentFrame, frameTreePayload)
     {
         var framePayload = frameTreePayload.frame;
-        var frame = new WebInspector.ResourceTreeFrame(this, parentFrame, framePayload);
+        var frame = new WebInspector.ResourceTreeFrame(this, parentFrame, framePayload.id, framePayload);
         this._addFrame(frame);
 
         var frameResource = this._createResourceFromFramePayload(framePayload, framePayload.url, WebInspector.resourceTypes.Document, framePayload.mimeType);
@@ -443,19 +461,23 @@ WebInspector.ResourceTreeModel.prototype = {
  * @constructor
  * @param {!WebInspector.ResourceTreeModel} model
  * @param {?WebInspector.ResourceTreeFrame} parentFrame
- * @param {!PageAgent.Frame} payload
+ * @param {!PageAgent.FrameId} frameId
+ * @param {PageAgent.Frame=} payload
  */
-WebInspector.ResourceTreeFrame = function(model, parentFrame, payload)
+WebInspector.ResourceTreeFrame = function(model, parentFrame, frameId, payload)
 {
     this._model = model;
     this._parentFrame = parentFrame;
+    this._id = frameId;
+    this._url = "";
 
-    this._id = payload.id;
-    this._loaderId = payload.loaderId;
-    this._name = payload.name;
-    this._url = payload.url;
-    this._securityOrigin = payload.securityOrigin;
-    this._mimeType = payload.mimeType;
+    if (payload) {
+        this._loaderId = payload.loaderId;
+        this._name = payload.name;
+        this._url = payload.url;
+        this._securityOrigin = payload.securityOrigin;
+        this._mimeType = payload.mimeType;
+    }
 
     /**
      * @type {!Array.<!WebInspector.ResourceTreeFrame>}
@@ -684,8 +706,9 @@ WebInspector.PageDispatcher.prototype = {
         this._resourceTreeModel.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.Load, time);
     },
 
-    frameAttached: function(frameId)
+    frameAttached: function(frameId, parentFrameId)
     {
+        this._resourceTreeModel._frameAttached(frameId, parentFrameId);
     },
 
     frameNavigated: function(frame)
