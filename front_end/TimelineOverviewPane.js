@@ -45,18 +45,14 @@ WebInspector.TimelineOverviewPane = function(model)
     this._model = model;
 
     this._overviewGrid = new WebInspector.OverviewGrid("timeline");
-
     this.element.appendChild(this._overviewGrid.element);
-
-    var categories = WebInspector.TimelinePresentationModel.categories();
-    for (var category in categories)
-        categories[category].addEventListener(WebInspector.TimelineCategory.Events.VisibilityChanged, this._onCategoryVisibilityChanged, this);
 
     this._overviewCalculator = new WebInspector.TimelineOverviewCalculator();
 
     model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
     model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._reset, this);
     this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
+    this._createOverviewControls();
 }
 
 WebInspector.TimelineOverviewPane.Mode = {
@@ -104,29 +100,16 @@ WebInspector.TimelineOverviewPane.prototype = {
         if (this._overviewControl)
             this._overviewControl.detach();
         this._currentMode = newMode;
-        this._overviewControl = this._createOverviewControl();
+        this._overviewControl = this._overviewControls[newMode];
         this._overviewControl.show(this._overviewGrid.element);
     },
 
-    /**
-     * @return {?WebInspector.TimelineOverviewBase}
-     */
-    _createOverviewControl: function()
+    _createOverviewControls: function()
     {
-        switch (this._currentMode) {
-        case WebInspector.TimelineOverviewPane.Mode.Events:
-            return new WebInspector.TimelineEventOverview(this._model);
-        case WebInspector.TimelineOverviewPane.Mode.Frames:
-            return new WebInspector.TimelineFrameOverview(this._model);
-        case WebInspector.TimelineOverviewPane.Mode.Memory:
-            return new WebInspector.TimelineMemoryOverview(this._model);
-        }
-        throw new Error("Invalid overview mode: " + this._currentMode);
-    },
-
-    _onCategoryVisibilityChanged: function(event)
-    {
-        this._overviewControl.categoryVisibilityChanged();
+        this._overviewControls = {};
+        this._overviewControls[WebInspector.TimelineOverviewPane.Mode.Events] = new WebInspector.TimelineEventOverview(this._model);
+        this._overviewControls[WebInspector.TimelineOverviewPane.Mode.Frames] = new WebInspector.TimelineFrameOverview(this._model);
+        this._overviewControls[WebInspector.TimelineOverviewPane.Mode.Memory] = new WebInspector.TimelineMemoryOverview(this._model);
     },
 
     _update: function()
@@ -364,8 +347,6 @@ WebInspector.TimelineOverviewBase = function(model)
 WebInspector.TimelineOverviewBase.prototype = {
     update: function() { },
     reset: function() { },
-
-    categoryVisibilityChanged: function() { },
 
     /**
      * @param {!WebInspector.TimelineFrame} frame

@@ -41,8 +41,10 @@ WebInspector.TimelineEventOverview = function(model)
 
     this._fillStyles = {};
     var categories = WebInspector.TimelinePresentationModel.categories();
-    for (var category in categories)
+    for (var category in categories) {
         this._fillStyles[category] = WebInspector.TimelinePresentationModel.createFillStyleForCategory(this._context, 0, WebInspector.TimelineEventOverview._stripGradientHeight, categories[category]);
+        categories[category].addEventListener(WebInspector.TimelineCategory.Events.VisibilityChanged, this._onCategoryVisibilityChanged, this);
+    }
 
     this._disabledCategoryFillStyle = WebInspector.TimelinePresentationModel.createFillStyle(this._context, 0, WebInspector.TimelineEventOverview._stripGradientHeight,
         "rgb(218, 218, 218)", "rgb(170, 170, 170)", "rgb(143, 143, 143)");
@@ -100,7 +102,7 @@ WebInspector.TimelineEventOverview.prototype = {
         }
     },
 
-    categoryVisibilityChanged: function()
+    _onCategoryVisibilityChanged: function()
     {
         this.update();
     },
