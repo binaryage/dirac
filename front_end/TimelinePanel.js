@@ -691,6 +691,7 @@ WebInspector.TimelinePanel.prototype = {
 
     /**
      * @param {!TimelineAgent.TimelineEvent} record
+     * @return {boolean}
      */
     _innerAddRecordToTimeline: function(record)
     {
