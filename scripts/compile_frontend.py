@@ -32,6 +32,7 @@ import os.path
 import generate_protocol_externs
 import re
 import shutil
+import subprocess
 import sys
 import tempfile
 
@@ -434,9 +435,14 @@ def verify_importScript_usage():
 print "Verifying 'importScript' function usage..."
 verify_importScript_usage()
 
-if os.system("which java") != 0:
-    print "Cannot find java ('which java' returns non-zero error code)"
+proc = subprocess.Popen("which java", stdout=subprocess.PIPE, shell=True)
+(javaPath, _) = proc.communicate()
+
+if proc.returncode != 0:
+    print "Cannot find java ('which java' return code = %d, should be 0)" % proc.returncode
     sys.exit(1)
+
+javaPath = re.sub(r"\n$", "", javaPath)
 
 modules_by_name = {}
 for module in modules:
@@ -490,10 +496,8 @@ else:
     command += "    --externs " + protocol_externs_path
     for module in modules:
         command += dump_module(module["name"], False, {})
-    print "Compiling front_end..."
-    os.system(command)
-
-if not process_recursively:
+    print "Compiling front_end (java executable: %s)..." % javaPath
+    frontEndCompileProc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
     def unclosure_injected_script(sourceFileName, outFileName):
         sourceFile = open(sourceFileName, "r")
@@ -528,13 +532,26 @@ if not process_recursively:
     command += "    --module " + jsmodule_name_prefix + "injected_canvas_script" + ":1:" + jsmodule_name_prefix + "injected_script" + " \\\n"
     command += "        --js " + injectedScriptCanvasModuleSourceTmpFile + " \\\n"
     command += "\n"
-    os.system(command)
-    os.system("rm " + injectedScriptSourceTmpFile)
-    os.system("rm " + injectedScriptCanvasModuleSourceTmpFile)
+
+    injectedScriptCompileProc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
     print "Checking generated code in InjectedScriptCanvasModuleSource.js..."
     check_injected_webgl_calls_command = "%s/check_injected_webgl_calls_info.py %s %s/InjectedScriptCanvasModuleSource.js" % (scripts_path, webgl_rendering_context_idl_path, inspector_path)
-    os.system(check_injected_webgl_calls_command)
+    canvasModuleCompileProc = subprocess.Popen(check_injected_webgl_calls_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
+    print
+
+    (frontEndCompileOut, _) = frontEndCompileProc.communicate()
+    print "front_end compilation output:\n", frontEndCompileOut
+
+    (injectedScriptCompileOut, _) = injectedScriptCompileProc.communicate()
+    print "InjectedScriptSource.js and InjectedScriptCanvasModuleSource.js compilation output:\n", injectedScriptCompileOut
+
+    (canvasModuleCompileOut, _) = canvasModuleCompileProc.communicate()
+    print "InjectedScriptCanvasModuleSource.js generated code compilation output:\n", canvasModuleCompileOut
+
+    os.system("rm " + injectedScriptSourceTmpFile)
+    os.system("rm " + injectedScriptCanvasModuleSourceTmpFile)
 
 shutil.rmtree(modules_dir)
 os.system("rm " + protocol_externs_path)
