@@ -1528,6 +1528,7 @@ WebInspector.SourcesPanel.prototype = {
         this.splitView.setVertical(!vertically);
 
         if (!vertically) {
+            this.splitView.uninstallResizer(this._statusBarContainerElement);
             this.sidebarPaneView = new WebInspector.SidebarPaneStack();
             for (var pane in this.sidebarPanes)
                 this.sidebarPaneView.addPane(this.sidebarPanes[pane]);
@@ -1536,6 +1537,7 @@ WebInspector.SourcesPanel.prototype = {
             this.editorView.element.appendChild(this._toggleDebuggerSidebarButton.element);
             this.splitView.mainElement.appendChild(this._debugSidebarResizeWidgetElement);
         } else {
+            this.splitView.installResizer(this._statusBarContainerElement);
             this.sidebarPaneView = new WebInspector.SplitView(true, this.name + "PanelSplitSidebarRatio", 0.5);
 
             var group1 = new WebInspector.SidebarPaneStack();

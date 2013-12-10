@@ -197,10 +197,6 @@ iframe.view {
     box-shadow: white 1px 0 0, white -1px 0 0, white 0 1px 0, white 0 -1px 0;
 }
 
-.resize-enabled .overview-grid-window-resizer {
-    cursor: ew-resize;
-}
-
 .overview-grid-window-resizer-right {
     margin-left: -3px;
     margin-right: -2px;

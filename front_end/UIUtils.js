@@ -38,7 +38,7 @@
  */
 WebInspector.installDragHandle = function(element, elementDragStart, elementDrag, elementDragEnd, cursor)
 {
-    element.addEventListener("mousedown", WebInspector._elementDragStart.bind(WebInspector, elementDragStart, elementDrag, elementDragEnd, cursor), false);
+    element.addEventListener("mousedown", WebInspector.elementDragStart.bind(WebInspector, elementDragStart, elementDrag, elementDragEnd, cursor), false);
 }
 
 /**
@@ -48,7 +48,7 @@ WebInspector.installDragHandle = function(element, elementDragStart, elementDrag
  * @param {string} cursor
  * @param {?Event} event
  */
-WebInspector._elementDragStart = function(elementDragStart, elementDrag, elementDragEnd, cursor, event)
+WebInspector.elementDragStart = function(elementDragStart, elementDrag, elementDragEnd, cursor, event)
 {
     // Only drag upon left button. Right will likely cause a context menu. So will ctrl-click on mac.
     if (event.button || (WebInspector.isMac() && event.ctrlKey))

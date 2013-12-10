@@ -1207,8 +1207,10 @@ WebInspector.ElementsPanel.prototype = {
         if (this.sidebarPaneView && vertically === !this.splitView.isVertical())
             return;
 
-        if (this.sidebarPaneView)
+        if (this.sidebarPaneView) {
             this.sidebarPaneView.detach();
+            this.splitView.uninstallResizer(this.sidebarPaneView.headerElement());
+        }
 
         this.splitView.setVertical(!vertically);
 
@@ -1245,11 +1247,12 @@ WebInspector.ElementsPanel.prototype = {
                 showMetrics.call(this, stylesPane);
         }
 
+        this.sidebarPaneView = new WebInspector.SidebarTabbedPane();
+
         if (vertically) {
+            this.splitView.installResizer(this.sidebarPaneView.headerElement());
             this.sidebarPanes.metrics.show(computedPane.bodyElement, this.sidebarPanes.computedStyle.element);
             this.sidebarPanes.metrics.setExpandCallback(expandComputed);
-
-            this.sidebarPaneView = new WebInspector.SidebarTabbedPane();
 
             var compositePane = new WebInspector.SidebarPane(this.sidebarPanes.styles.title());
             compositePane.element.classList.add("composite");
@@ -1267,13 +1270,7 @@ WebInspector.ElementsPanel.prototype = {
             computedPane.setExpandCallback(expandComposite);
 
             this.sidebarPaneView.addPane(compositePane);
-            this.sidebarPaneView.addPane(this.sidebarPanes.properties);
-            this.sidebarPaneView.addPane(this.sidebarPanes.domBreakpoints);
-            this.sidebarPaneView.addPane(this.sidebarPanes.eventListeners);
-            this._extensionSidebarPanesContainer = this.sidebarPaneView;
         } else {
-            this.sidebarPaneView = new WebInspector.SidebarTabbedPane();
-
             var stylesPane = new WebInspector.SidebarPane(this.sidebarPanes.styles.title());
             stylesPane.element.classList.add("composite");
             stylesPane.element.classList.add("fill");
@@ -1289,12 +1286,13 @@ WebInspector.ElementsPanel.prototype = {
             showMetrics.call(this, stylesPane);
             this.sidebarPaneView.addPane(stylesPane);
             this.sidebarPaneView.addPane(computedPane);
-
-            this.sidebarPaneView.addPane(this.sidebarPanes.eventListeners);
-            this.sidebarPaneView.addPane(this.sidebarPanes.domBreakpoints);
-            this.sidebarPaneView.addPane(this.sidebarPanes.properties);
-            this._extensionSidebarPanesContainer = this.sidebarPaneView;
         }
+
+        this.sidebarPaneView.addPane(this.sidebarPanes.eventListeners);
+        this.sidebarPaneView.addPane(this.sidebarPanes.domBreakpoints);
+        this.sidebarPaneView.addPane(this.sidebarPanes.properties);
+        this._extensionSidebarPanesContainer = this.sidebarPaneView;
+
         for (var i = 0; i < this._extensionSidebarPanes.length; ++i)
             this._extensionSidebarPanesContainer.addPane(this._extensionSidebarPanes[i]);
 

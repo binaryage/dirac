@@ -47,7 +47,9 @@ WebInspector.SplitView = function(isVertical, sidebarSizeSettingName, defaultSid
     this._secondElement = this.element.createChild("div", "split-view-contents scroll-target split-view-contents-second");
 
     this._resizerElement = this.element.createChild("div", "split-view-resizer");
-    this.installResizer(this._resizerElement);
+    this._onDragStartBound = this._onDragStart.bind(this);
+    this._resizerElements = [];
+
     this._resizable = true;
 
     this._savedSidebarWidth = defaultSidebarWidth || 200;
@@ -62,6 +64,9 @@ WebInspector.SplitView = function(isVertical, sidebarSizeSettingName, defaultSid
     this.setSecondIsSidebar(true);
 
     this._innerSetVertical(isVertical);
+
+    // Should be called after isVertical has the right value.
+    this.installResizer(this._resizerElement);
 }
 
 WebInspector.SplitView.prototype = {
@@ -85,6 +90,9 @@ WebInspector.SplitView.prototype = {
 
         if (this.isShowing())
             this._updateLayout();
+
+        for (var i = 0; i < this._resizerElements.length; ++i)
+            this._resizerElements[i].style.setProperty("cursor", this._isVertical ? "ew-resize" : "ns-resize");
     },
 
     /**
@@ -442,7 +450,19 @@ WebInspector.SplitView.prototype = {
      */
     installResizer: function(resizerElement)
     {
-        resizerElement.addEventListener("mousedown", this._onDragStart.bind(this), false);
+        resizerElement.addEventListener("mousedown", this._onDragStartBound, false);
+        resizerElement.style.setProperty("cursor", this._isVertical ? "ew-resize" : "ns-resize");
+        this._resizerElements.push(resizerElement);
+    },
+
+    /**
+     * @param {!Element} resizerElement
+     */
+    uninstallResizer: function(resizerElement)
+    {
+        resizerElement.removeEventListener("mousedown", this._onDragStartBound, false);
+        resizerElement.style.removeProperty("cursor");
+        this._resizerElements.remove(resizerElement);
     },
 
     /**
@@ -450,7 +470,7 @@ WebInspector.SplitView.prototype = {
      */
     _onDragStart: function(event)
     {
-        WebInspector._elementDragStart(this._startResizerDragging.bind(this), this._resizerDragging.bind(this), this._endResizerDragging.bind(this), this._isVertical ? "ew-resize" : "ns-resize", event);
+        WebInspector.elementDragStart(this._startResizerDragging.bind(this), this._resizerDragging.bind(this), this._endResizerDragging.bind(this), this._isVertical ? "ew-resize" : "ns-resize", event);
     },
 
     /**
