@@ -177,8 +177,8 @@ WebInspector.ResourceTreeModel.prototype = {
     },
 
     /**
-     * @param {PageAgent.FrameId} frameId
-     * @param {PageAgent.FrameId} parentFrameId
+     * @param {!PageAgent.FrameId} frameId
+     * @param {?PageAgent.FrameId} parentFrameId
      * @return {?WebInspector.ResourceTreeFrame}
      */
     _frameAttached: function(frameId, parentFrameId)
@@ -325,7 +325,7 @@ WebInspector.ResourceTreeModel.prototype = {
     /**
      * @return {!Array.<!WebInspector.ResourceTreeFrame>}
      */
-    frames: function() 
+    frames: function()
     {
         return Object.values(this._frames);
     },
@@ -462,7 +462,7 @@ WebInspector.ResourceTreeModel.prototype = {
  * @param {!WebInspector.ResourceTreeModel} model
  * @param {?WebInspector.ResourceTreeFrame} parentFrame
  * @param {!PageAgent.FrameId} frameId
- * @param {PageAgent.Frame=} payload
+ * @param {!PageAgent.Frame=} payload
  */
 WebInspector.ResourceTreeFrame = function(model, parentFrame, frameId, payload)
 {
