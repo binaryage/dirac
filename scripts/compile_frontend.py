@@ -421,6 +421,15 @@ allowed_import_statements_files = [
     "CodeMirrorTextEditor.js",
 ]
 
+type_checked_jsdoc_tags_list = ["param", "return", "type", "enum"]
+
+type_checked_jsdoc_tags_or = "|".join(type_checked_jsdoc_tags_list)
+
+# Basic regex for invalid JsDoc types: an object type name ([A-Z][A-Za-z0-9.]+[A-Za-z0-9]) not preceded by '!', '?', ':' (this, new), or '.' (object property).
+invalid_type_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*\{.*(?<![!?:.A-Za-z0-9])([A-Z][A-Za-z0-9.]+[A-Za-z0-9]).*\}")
+
+invalid_type_designator_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*.*([?!])=?\}")
+
 
 def verify_importScript_usage():
     for module in modules:
@@ -433,8 +442,38 @@ def verify_importScript_usage():
             if "importScript(" in source:
                 print "ERROR: importScript function is allowed in module header files only (found in %s)" % file_name
 
+
+def verify_jsdoc():
+    for module in modules:
+        for file_name in module['sources']:
+            lineIndex = 0
+            full_file_name = devtools_frontend_path + "/" + file_name
+            with open(full_file_name, "r") as sourceFile:
+                for line in sourceFile:
+                    line = line.rstrip()
+                    lineIndex += 1
+                    if not line:
+                        continue
+                    verify_jsdoc_line(full_file_name, lineIndex, line)
+
+
+def verify_jsdoc_line(fileName, lineIndex, line):
+    def print_error(message, errorPosition):
+        print "%s:%s: ERROR - %s\n%s\n%s\n" % (fileName, lineIndex, message, line, " " * errorPosition + "^")
+
+    match = re.search(invalid_type_regex, line)
+    if match:
+        print_error("Type '%s' nullability not marked explicitly with '?' (nullable) or '!' (non-nullable)" % match.group(1), match.start(1))
+
+    match = re.search(invalid_type_designator_regex, line)
+    if (match):
+        print_error("Type nullability indicator misplaced, should precede type", match.start(1))
+
 print "Verifying 'importScript' function usage..."
 verify_importScript_usage()
+
+print "Verifying JSDoc comments..."
+verify_jsdoc()
 
 proc = subprocess.Popen("which java", stdout=subprocess.PIPE, shell=True)
 (javaPath, _) = proc.communicate()

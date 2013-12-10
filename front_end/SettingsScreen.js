@@ -964,7 +964,7 @@ WebInspector.EditableSettingsList = function(columns, valuesProvider, validateHa
     this._addInputElements = {};
     /** @type {!Object.<string, !Object.<string, !HTMLInputElement>>} */
     this._editInputElements = {};
-    /** @type {Object.<string, !Object.<string, !HTMLSpanElement>>} */
+    /** @type {!Object.<string, !Object.<string, !HTMLSpanElement>>} */
     this._textElements = {};
 
     this._addMappingItem = this.addItem(null);

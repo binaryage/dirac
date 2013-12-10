@@ -499,7 +499,7 @@ WebInspector.TimelinePresentationModel.prototype = {
                 var begin = stack.pop();
                 if (result[begin].data.message !== records[i].data.message)
                     continue;
-                var timeEndRecord = /** @type {TimelineAgent.TimelineEvent} */ (result.pop());
+                var timeEndRecord = /** @type {!TimelineAgent.TimelineEvent} */ (result.pop());
                 var children = result.splice(begin + 1, result.length - begin);
                 result[begin] = this._createSynchronousTimeRecord(result[begin], timeEndRecord, children);
                 break;

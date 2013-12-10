@@ -1600,7 +1600,7 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @return {?WebInspector.TabbedEditorContainer}
+     * @return {!WebInspector.TabbedEditorContainer}
      */
     get tabbedEditorContainer()
     {
@@ -1650,9 +1650,10 @@ WebInspector.SourcesView.prototype = {
     {
         event.consume(true);
         this._removeMask();
-        var items = event.dataTransfer.items;
-        var item = /** @type {DataTransferItem} */ (items.length ? items[0] : null);
-        var entry = item.webkitGetAsEntry();
+        var items = /** @type {!Array.<!DataTransferItem>} */ (event.dataTransfer.items);
+        if (!items.length)
+            return;
+        var entry = items[0].webkitGetAsEntry();
         if (!entry.isDirectory)
             return;
         InspectorFrontendHost.upgradeDraggedFileSystemPermissions(entry.filesystem);

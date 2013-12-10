@@ -84,8 +84,8 @@ WebInspector.TopDownProfileDataGridTree = function(profileView, rootProfileNode)
 
     this._remainingChildren = rootProfileNode.children;
 
-    var any = /** @type{*} */(this);
-    var node = /** @type{WebInspector.ProfileDataGridNode} */(any);
+    var any = /** @type {*} */(this);
+    var node = /** @type {!WebInspector.ProfileDataGridNode} */(any);
     WebInspector.TopDownProfileDataGridNode.prototype.populate.call(node);
 }
 
@@ -117,8 +117,8 @@ WebInspector.TopDownProfileDataGridTree.prototype = {
 
         var excludedCallUID = profileDataGridNode.callUID;
 
-        var any = /** @type{*} */(this);
-        var node = /** @type{WebInspector.TopDownProfileDataGridNode} */(any);
+        var any = /** @type {*} */(this);
+        var node = /** @type {!WebInspector.TopDownProfileDataGridNode} */(any);
         WebInspector.TopDownProfileDataGridNode.prototype._exclude.call(node, excludedCallUID);
 
         if (this.lastComparator)

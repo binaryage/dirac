@@ -803,7 +803,7 @@ WebInspector.CSSStyleDeclaration.parsePayload = function(payload)
  */
 WebInspector.CSSStyleDeclaration.parseComputedStylePayload = function(payload)
 {
-    var newPayload = /** @type {CSSAgent.CSSStyle} */ ({ cssProperties: [], shorthandEntries: [], width: "", height: "" });
+    var newPayload = /** @type {!CSSAgent.CSSStyle} */ ({ cssProperties: [], shorthandEntries: [], width: "", height: "" });
     if (payload)
         newPayload.cssProperties = /** @type {!Array.<!CSSAgent.CSSProperty>} */ (payload);
 
@@ -1730,7 +1730,7 @@ WebInspector.NamedFlow.parsePayload = function(payload)
  */
 WebInspector.NamedFlowCollection = function(payload)
 {
-    /** @type {Object.<string, !WebInspector.NamedFlow>} */
+    /** @type {!Object.<string, !WebInspector.NamedFlow>} */
     this.namedFlowMap = {};
 
     for (var i = 0; i < payload.length; ++i) {
@@ -1777,7 +1777,7 @@ WebInspector.NamedFlowCollection.prototype = {
 WebInspector.CSSStyleModel.ComputedStyleLoader = function(cssModel)
 {
     this._cssModel = cssModel;
-    /** @type {Object.<*, !Array.<function(?WebInspector.CSSStyleDeclaration)>>} */
+    /** @type {!Object.<*, !Array.<function(?WebInspector.CSSStyleDeclaration)>>} */
     this._nodeIdToCallbackData = {};
 }
 

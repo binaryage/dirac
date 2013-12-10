@@ -279,7 +279,7 @@ WebInspector.CanvasReplayStateView.prototype = {
      */
     _onCanvasTraceLogReceived: function(event)
     {
-        var traceLog = /** @type {CanvasAgent.TraceLog} */ (event.data);
+        var traceLog = /** @type {!CanvasAgent.TraceLog} */ (event.data);
         if (traceLog)
             this._collectResourcesFromTraceLog(traceLog);
     },
@@ -289,7 +289,7 @@ WebInspector.CanvasReplayStateView.prototype = {
      */
     _onCanvasResourceStateReceived: function(event)
     {
-        var resourceState = /** @type {CanvasAgent.ResourceState} */ (event.data);
+        var resourceState = /** @type {!CanvasAgent.ResourceState} */ (event.data);
         if (resourceState)
             this._collectResourcesFromResourceState(resourceState);
     },

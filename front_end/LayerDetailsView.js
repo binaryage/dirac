@@ -43,7 +43,7 @@ WebInspector.LayerDetailsView = function()
 }
 
 /**
- * @type {Object.<string, string>}
+ * @type {!Object.<string, string>}
  */
 WebInspector.LayerDetailsView.CompositingReasonDetail = {
     "transform3D": WebInspector.UIString("Composition due to association with an element with a CSS 3D transform."),

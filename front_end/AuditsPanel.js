@@ -512,7 +512,7 @@ WebInspector.AuditRules = {};
 
 /**
  * Contributed audit categories should go into this namespace.
- * @type {Object.<string, function(new:WebInspector.AuditCategory)>}
+ * @type {!Object.<string, function(new:WebInspector.AuditCategory)>}
  */
 WebInspector.AuditCategories = {};
 

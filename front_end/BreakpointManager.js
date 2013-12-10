@@ -321,7 +321,7 @@ WebInspector.BreakpointManager.prototype = {
 
     _breakpointResolved: function(event)
     {
-        var breakpointId = /** @type {DebuggerAgent.BreakpointId} */ (event.data.breakpointId);
+        var breakpointId = /** @type {!DebuggerAgent.BreakpointId} */ (event.data.breakpointId);
         var location = /** @type {!WebInspector.DebuggerModel.Location} */ (event.data.location);
         var breakpoint = this._breakpointForDebuggerId[breakpointId];
         if (!breakpoint)
@@ -650,7 +650,7 @@ WebInspector.BreakpointManager.Storage = function(breakpointManager, setting)
     this._breakpointManager = breakpointManager;
     this._setting = setting;
     var breakpoints = this._setting.get();
-    /** @type {Object.<string, !WebInspector.BreakpointManager.Storage.Item>} */
+    /** @type {!Object.<string, !WebInspector.BreakpointManager.Storage.Item>} */
     this._breakpoints = {};
     for (var i = 0; i < breakpoints.length; ++i) {
         var breakpoint = /** @type {!WebInspector.BreakpointManager.Storage.Item} */ (breakpoints[i]);

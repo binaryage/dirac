@@ -251,7 +251,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {WebInspector.FilterBar} filterBar
+     * @param {!WebInspector.FilterBar} filterBar
      * @return {boolean}
      */
     _createFilters: function(filterBar)
@@ -685,7 +685,7 @@ WebInspector.TimelinePanel.prototype = {
 
     _onTimelineEventRecorded: function(event)
     {
-        if (this._innerAddRecordToTimeline(/** @type {TimelineAgent.TimelineEvent} */(event.data)))
+        if (this._innerAddRecordToTimeline(/** @type {!TimelineAgent.TimelineEvent} */(event.data)))
             this._invalidateAndScheduleRefresh(false, false);
     },
 

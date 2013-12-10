@@ -196,7 +196,7 @@ WebInspector.TimelineModel.prototype = {
     _onRecordAdded: function(event)
     {
         if (this._collectionEnabled)
-            this._addRecord(/** @type {TimelineAgent.TimelineEvent} */(event.data));
+            this._addRecord(/** @type {!TimelineAgent.TimelineEvent} */(event.data));
     },
 
     /**

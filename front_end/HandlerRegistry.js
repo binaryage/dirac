@@ -167,7 +167,7 @@ WebInspector.HandlerRegistry.prototype = {
     {
         if (!(target instanceof Node))
             return;
-        var targetNode = /** @type {Node} */ (target);
+        var targetNode = /** @type {!Node} */ (target);
 
         var anchorElement = targetNode.enclosingNodeOrSelfWithClass("webkit-html-resource-link") || targetNode.enclosingNodeOrSelfWithClass("webkit-html-external-link");
         if (!anchorElement)

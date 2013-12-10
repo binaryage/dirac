@@ -502,7 +502,7 @@ WebInspector.Workspace.Events = {
 
 WebInspector.Workspace.prototype = {
     /**
-     * @return {Array.<WebInspector.UISourceCode>}
+     * @return {!Array.<!WebInspector.UISourceCode>}
      */
     unsavedSourceCodes: function()
     {

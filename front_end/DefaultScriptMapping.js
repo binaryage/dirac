@@ -100,7 +100,7 @@ WebInspector.DefaultScriptMapping.prototype = {
 
     _debuggerReset: function()
     {
-        /** @type {Object.<string, !WebInspector.UISourceCode>} */
+        /** @type {!Object.<string, !WebInspector.UISourceCode>} */
         this._uiSourceCodeForScriptId = {};
         this._scriptIdForUISourceCode = new Map();
         this._projectDelegate.reset();

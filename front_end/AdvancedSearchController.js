@@ -271,7 +271,7 @@ WebInspector.SearchView.maxQueriesCount = 20;
 
 WebInspector.SearchView.prototype = {
     /**
-     * @return {WebInspector.SearchConfig}
+     * @return {!WebInspector.SearchConfig}
      */
     get searchConfig()
     {
@@ -715,6 +715,6 @@ WebInspector.FileBasedSearchResultsPane.SearchResult = function(uiSourceCode, se
 }
 
 /**
- * @type {WebInspector.AdvancedSearchController}
+ * @type {?WebInspector.AdvancedSearchController}
  */
 WebInspector.advancedSearchController = null;

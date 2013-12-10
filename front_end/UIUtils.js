@@ -99,7 +99,7 @@ WebInspector._unregisterMouseOutWhileDragging = function()
  */
 WebInspector._elementDragMove = function(event)
 {
-    if (WebInspector._elementDraggingEventListener(/** @type {MouseEvent} */ (event)))
+    if (WebInspector._elementDraggingEventListener(/** @type {!MouseEvent} */ (event)))
         WebInspector._cancelDragEvents(event);
 }
 

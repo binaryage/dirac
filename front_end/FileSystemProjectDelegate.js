@@ -43,11 +43,11 @@ WebInspector.FileSystemProjectDelegate = function(isolatedFileSystem, workspace)
         this._normalizedFileSystemPath = this._normalizedFileSystemPath.replace(/\\/g, "/");
     this._fileSystemURL = "file://" + this._normalizedFileSystemPath + "/";
     this._workspace = workspace;
-    /** @type {Object.<number, function(!Array.<string>)>} */
+    /** @type {!Object.<number, function(!Array.<string>)>} */
     this._searchCallbacks = {};
-    /** @type {Object.<number, function()>} */
+    /** @type {!Object.<number, function()>} */
     this._indexingCallbacks = {};
-    /** @type {Object.<number, !WebInspector.Progress>} */
+    /** @type {!Object.<number, !WebInspector.Progress>} */
     this._indexingProgresses = {};
 }
 

@@ -33,7 +33,8 @@
  */
 WebInspector.ShortcutsScreen = function()
 {
-    this._sections = /** @type {Object.<string, !WebInspector.ShortcutsSection>} */ ({});
+    /** @type {!Object.<string, !WebInspector.ShortcutsSection>} */
+    this._sections = {};
 }
 
 WebInspector.ShortcutsScreen.prototype = {

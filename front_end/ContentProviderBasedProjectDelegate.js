@@ -39,7 +39,7 @@ WebInspector.ContentProviderBasedProjectDelegate = function(type)
     this._type = type;
     /** @type {!Object.<string, !WebInspector.ContentProvider>} */
     this._contentProviders = {};
-    /** @type {Object.<string, boolean>} */
+    /** @type {!Object.<string, boolean>} */
     this._isContentScriptMap = {};
 }
 

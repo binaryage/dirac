@@ -35,7 +35,7 @@
 WebInspector.PresentationConsoleMessageHelper = function(workspace)
 {
     /**
-     * @type {Object.<string, !Array.<!WebInspector.ConsoleMessage>>}
+     * @type {!Object.<string, !Array.<!WebInspector.ConsoleMessage>>}
      */
     this._pendingConsoleMessages = {};
     this._presentationConsoleMessages = [];

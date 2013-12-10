@@ -65,7 +65,7 @@ WebInspector.ExtensionView.prototype = {
 
     _onLoad: function()
     {
-        var frames = /** @type {Window} */ (window.frames);
+        var frames = /** @type {!Array.<!Window>} */ (window.frames);
         this._frameIndex = Array.prototype.indexOf.call(frames, this._iframe.contentWindow);
         if (this.isShowing())
             WebInspector.extensionServer.notifyViewShown(this._id, this._frameIndex);

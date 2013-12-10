@@ -195,9 +195,9 @@ WebInspector.ResourceScriptMapping.prototype = {
 
     _initialize: function()
     {
-        /** @type {StringMap.<!Array.<!WebInspector.Script>>} */
+        /** @type {!StringMap.<!Array.<!WebInspector.Script>>} */
         this._inlineScriptsForSourceURL = new StringMap();
-        /** @type {StringMap.<!Array.<!WebInspector.Script>>} */
+        /** @type {!StringMap.<!Array.<!WebInspector.Script>>} */
         this._nonInlineScriptsForSourceURL = new StringMap();
     },
 

@@ -70,7 +70,7 @@ WebInspector.TimelineOverviewPane.prototype = {
     },
 
     /**
-     * @param {WebInspector.TimelineOverviewBase} overviewControl
+     * @param {!WebInspector.TimelineOverviewBase} overviewControl
      */
     willSetOverviewControl: function(overviewControl)
     {

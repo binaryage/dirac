@@ -170,7 +170,7 @@ WebInspector.SidebarOverlay.prototype = {
     },
 
     /**
-     * @type {Element}
+     * @param {!Element} resizerWidgetElement
      */
     set resizerWidgetElement(resizerWidgetElement)
     {
