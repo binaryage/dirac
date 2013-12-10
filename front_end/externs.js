@@ -178,6 +178,24 @@ Array.prototype.select = function(field) {}
  */
 Array.prototype.peekLast = function() {}
 
+/**
+ * @param {!Array.<T>} array
+ * @param {function(T,T):number} comparator
+ * @return {!Array.<T>}
+ * @this {!Array.<T>}
+ * @template T
+ */
+Array.prototype.intersectOrdered = function(array, comparator) {}
+
+/**
+ * @param {!Array.<T>} array
+ * @param {function(T,T):number} comparator
+ * @return {!Array.<T>}
+ * @this {!Array.<T>}
+ * @template T
+ */
+Array.prototype.mergeOrdered = function(array, comparator) {}
+
 DOMApplicationCache.prototype.UNCACHED = 0;
 DOMApplicationCache.prototype.IDLE = 1;
 DOMApplicationCache.prototype.CHECKING = 2;

@@ -207,20 +207,86 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     },
 
     /**
-     * @param {string} query
+     * @param {Array.<string>} queries
+     * @param {Array.<string>} fileQueries
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
      * @param {!WebInspector.Progress} progress
      * @param {function(!Array.<string>)} callback
      */
-    findFilesMatchingSearchRequest: function(query, caseSensitive, isRegex, progress, callback)
+    findFilesMatchingSearchRequest: function(queries, fileQueries, caseSensitive, isRegex, progress, callback)
+    {
+        var result = [];
+        var queriesToRun = queries.slice();
+        if (!queriesToRun.length)
+            queriesToRun.push("");
+        progress.setTotalWork(queriesToRun.length);
+        searchNextQuery.call(this);
+
+        function searchNextQuery()
+        {
+            if (!queriesToRun.length) {
+                matchFileQueries.call(this, result);
+                return;
+            }
+            var query = queriesToRun.shift();
+            this._searchInPath(isRegex ? "" : query, progress, innerCallback.bind(this));
+        }
+
+        /**
+         * @param {!Array.<string>} files
+         */
+        function innerCallback(files)
+        {
+            files = files.sort();
+            progress.worked(1);
+            if (!result)
+                result = files;
+            else
+                result = result.intersectOrdered(files, String.naturalOrderComparator);
+            searchNextQuery.call(this);
+        }
+
+        /**
+         * @param {!Array.<string>} files
+         */
+        function matchFileQueries(files)
+        {
+            var fileRegexes = [];
+            for (var i = 0; i < fileQueries.length; ++i)
+                fileRegexes.push(new RegExp(fileQueries[i], caseSensitive ? "" : "i"));
+
+            /**
+             * @param {!string} file
+             */
+            function filterOutNonMatchingFiles(file)
+            {
+                for (var i = 0; i < fileRegexes.length; ++i) {
+                    if (!file.match(fileRegexes[i]))
+                        return false;
+                }
+                return true;
+            }
+
+            files = files.filter(filterOutNonMatchingFiles);
+            progress.done();
+            callback(files);
+        }
+    },
+
+    /**
+     * @param {string} query
+     * @param {!WebInspector.Progress} progress
+     * @param {function(Array.<string>)} callback
+     */
+    _searchInPath: function(query, progress, callback)
     {
         var requestId = ++WebInspector.FileSystemProjectDelegate._lastRequestId;
         this._searchCallbacks[requestId] = innerCallback.bind(this);
-        InspectorFrontendHost.searchInPath(requestId, this._fileSystem.path(), isRegex ? "" : query);
+        InspectorFrontendHost.searchInPath(requestId, this._fileSystem.path(), query);
 
         /**
-         * @param {!Array.<!string>} files
+         * @param {!Array.<string>} files
          */
         function innerCallback(files)
         {
@@ -236,8 +302,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
             }
 
             files = files.map(trimAndNormalizeFileSystemPath.bind(this));
-            progress.setTotalWork(files.length);
-            progress.done();
+            progress.worked(1);
             callback(files);
         }
     },

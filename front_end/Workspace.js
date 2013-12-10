@@ -148,13 +148,14 @@ WebInspector.ProjectDelegate.prototype = {
     searchInFileContent: function(path, query, caseSensitive, isRegex, callback) { },
 
     /**
-     * @param {string} query
+     * @param {Array.<string>} queries
+     * @param {Array.<string>} fileQueries
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
      * @param {!WebInspector.Progress} progress
      * @param {function(!Array.<string>)} callback
      */
-    findFilesMatchingSearchRequest: function(query, caseSensitive, isRegex, progress, callback) { },
+    findFilesMatchingSearchRequest: function(queries, fileQueries, caseSensitive, isRegex, progress, callback) { },
 
     /**
      * @param {!WebInspector.Progress} progress
@@ -447,15 +448,16 @@ WebInspector.Project.prototype = {
     },
 
     /**
-     * @param {string} query
+     * @param {Array.<string>} queries
+     * @param {Array.<string>} fileQueries
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
      * @param {!WebInspector.Progress} progress
      * @param {function(!Array.<string>)} callback
      */
-    findFilesMatchingSearchRequest: function(query, caseSensitive, isRegex, progress, callback)
+    findFilesMatchingSearchRequest: function(queries, fileQueries, caseSensitive, isRegex, progress, callback)
     {
-        this._projectDelegate.findFilesMatchingSearchRequest(query, caseSensitive, isRegex, progress, callback);
+        this._projectDelegate.findFilesMatchingSearchRequest(queries, fileQueries, caseSensitive, isRegex, progress, callback);
     },
 
     /**

@@ -103,7 +103,7 @@ WebInspector.SourcesSearchScope.prototype = {
             var searchContentProgress = projectProgress.createSubProgress();
             var barrierCallback = barrier.createCallback();
             var callback = this._processMatchingFilesForProject.bind(this, this._searchId, project, searchContentProgress, barrierCallback);
-            project.findFilesMatchingSearchRequest(searchConfig.query, !searchConfig.ignoreCase, searchConfig.isRegex, findMatchingFilesProgress, callback);
+            project.findFilesMatchingSearchRequest(searchConfig.queries(), searchConfig.fileQueries(), !searchConfig.ignoreCase, searchConfig.isRegex, findMatchingFilesProgress, callback);
         }
         barrier.callWhenDone(this._searchFinishedCallback.bind(this, true));
     },
@@ -174,10 +174,24 @@ WebInspector.SourcesSearchScope.prototype = {
          */
         function contentLoaded(path, content)
         {
+            /**
+             * @param {!WebInspector.ContentProvider.SearchMatch} a
+             * @param {!WebInspector.ContentProvider.SearchMatch} b
+             */
+            function matchesComparator(a, b)
+            {
+                return a.lineNumber - b.lineNumber;
+            }
+
             progress.worked(1);
-            var matches;
-            if (content !== null)
-                matches = WebInspector.ContentProvider.performSearchInContent(content, this._searchConfig.query, !this._searchConfig.ignoreCase, this._searchConfig.isRegex);
+            var matches = [];
+            var queries = this._searchConfig.queries();
+            if (content !== null) {
+                for (var i = 0; i < queries.length; ++i) {
+                    var nextMatches = WebInspector.ContentProvider.performSearchInContent(content, queries[i], !this._searchConfig.ignoreCase, this._searchConfig.isRegex)
+                    matches = matches.mergeOrdered(nextMatches, matchesComparator);
+                }
+            }
             var uiSourceCode = project.uiSourceCode(path);
             if (matches && uiSourceCode) {
                 var searchResult = new WebInspector.FileBasedSearchResultsPane.SearchResult(uiSourceCode, matches);

@@ -661,6 +661,80 @@ Object.defineProperty(Array.prototype, "peekLast",
     }
 });
 
+(function(){
+
+/**
+ * @param {!Array.<T>} array1
+ * @param {!Array.<T>} array2
+ * @param {function(T,T):number} comparator
+ * @return {!Array.<T>}
+ * @template T
+ */
+function mergeOrIntersect(array1, array2, comparator, mergeNotIntersect)
+{
+    var result = [];
+    var i = 0;
+    var j = 0;
+    while (i < array1.length || j < array2.length) {
+        if (i === array1.length) {
+            result = result.concat(array2.slice(j));
+            j = array2.length;
+        } else if (j === array2.length) {
+            result = result.concat(array1.slice(i));
+            i = array1.length;
+        } else {
+            var compareValue = comparator(array1[i], array2[j])
+             if (compareValue < 0) {
+                 if (mergeNotIntersect)
+                    result.push(array1[i]);
+                 ++i;
+             } else if (compareValue > 0) {
+                 if (mergeNotIntersect)
+                     result.push(array2[j]);
+                 ++j;
+             } else {
+                 result.push(array1[i]);
+                 ++i;
+                 ++j;
+             }
+        }
+    }
+    return result;
+}
+
+Object.defineProperty(Array.prototype, "intersectOrdered",
+{
+    /**
+     * @param {!Array.<T>} array
+     * @param {function(T,T):number} comparator
+     * @return {!Array.<T>}
+     * @this {!Array.<T>}
+     * @template T
+     */
+    value: function(array, comparator)
+    {
+        return mergeOrIntersect(this, array, comparator, false);
+    }
+});
+
+Object.defineProperty(Array.prototype, "mergeOrdered",
+{
+    /**
+     * @param {!Array.<T>} array
+     * @param {function(T,T):number} comparator
+     * @return {!Array.<T>}
+     * @this {!Array.<T>}
+     * @template T
+     */
+    value: function(array, comparator)
+    {
+        return mergeOrIntersect(this, array, comparator, true);
+    }
+});
+
+}());
+
+
 /**
  * @param {!T} object
  * @param {!Array.<!S>} list

@@ -195,8 +195,8 @@ WebInspector.AdvancedSearchController.prototype = {
         if (this._progressIndicator)
             this._progressIndicator.done();
         this._progressIndicator = new WebInspector.ProgressIndicator();
-        var totalSearchResultsCount = this._currentSearchScope.performSearch(searchConfig, this._progressIndicator, this._onSearchResult.bind(this, this._searchId), this._onSearchFinished.bind(this, this._searchId));
         this._searchView.searchStarted(this._progressIndicator);
+        this._currentSearchScope.performSearch(searchConfig, this._progressIndicator, this._onSearchResult.bind(this, this._searchId), this._onSearchFinished.bind(this, this._searchId));
     },
 
     resetSearch: function()
@@ -405,8 +405,7 @@ WebInspector.SearchView.prototype = {
 
     _save: function()
     {
-        var searchConfig = new WebInspector.SearchConfig(this.searchConfig.query, this.searchConfig.ignoreCase, this.searchConfig.isRegex);
-        WebInspector.settings.advancedSearchConfig.set(searchConfig);
+        WebInspector.settings.advancedSearchConfig.set(this.searchConfig);
     },
 
     _load: function()
@@ -419,11 +418,12 @@ WebInspector.SearchView.prototype = {
 
     _onAction: function()
     {
-        if (!this.searchConfig.query || !this.searchConfig.query.length)
+        var searchConfig = this.searchConfig;
+        if (!searchConfig.query || !searchConfig.query.length)
             return;
 
         this._save();
-        this._controller.startSearch(this.searchConfig);
+        this._controller.startSearch(searchConfig);
     },
 
     __proto__: WebInspector.View.prototype
@@ -441,6 +441,82 @@ WebInspector.SearchConfig = function(query, ignoreCase, isRegex)
     this.query = query;
     this.ignoreCase = ignoreCase;
     this.isRegex = isRegex;
+    this._parse();
+}
+
+WebInspector.SearchConfig.prototype = {
+    _parse: function()
+    {
+        var filePattern = "file:(([^\\\\ ]|\\\\.)+)"; // After file: prefix: any symbol except space and backslash or any symbol escaped with a backslash.
+        var quotedPattern = "\"(([^\\\\\"]|\\\\.)+)\""; // Inside double quotes: any symbol except double quote and backslash or any symbol escaped with a backslash.
+        var unquotedPattern = "(([^\\\\ ]|\\\\.)+)"; // any symbol except space and backslash or any symbol escaped with a backslash.
+
+        var pattern = "(" + filePattern + ")|(" + quotedPattern + ")|(" + unquotedPattern + ")";
+        var regexp = new RegExp(pattern, "g");
+        var queryParts = this.query.match(regexp) || [];
+
+        this._fileQueries = [];
+        this._queries = [];
+
+        for (var i = 0; i < queryParts.length; ++i) {
+            var queryPart = queryParts[i];
+            if (!queryPart)
+                continue;
+            if (queryPart.startsWith("file:")) {
+                this._fileQueries.push(this._parseFileQuery(queryPart));
+                continue;
+            }
+            if (queryPart.startsWith("\"")) {
+                if (!queryPart.endsWith("\""))
+                    continue;
+                this._queries.push(this._parseQuotedQuery(queryPart));
+                continue;
+            }
+            this._queries.push(this._parseUnquotedQuery(queryPart));
+        }
+    },
+
+    fileQueries: function()
+    {
+        return this._fileQueries;
+    },
+
+    queries: function()
+    {
+        return this._queries;
+    },
+
+    _parseUnquotedQuery: function(query)
+    {
+        return query.replace(/\\(.)/g, "$1");
+    },
+
+    _parseQuotedQuery: function(query)
+    {
+        return query.substring(1, query.length - 1).replace(/\\(.)/g, "$1");
+    },
+
+    _parseFileQuery: function(query)
+    {
+        query = query.substr("file:".length);
+        var result = "";
+        for (var i = 0; i < query.length; ++i) {
+            var char = query[i];
+            if (char === "*") {
+                result += ".*";
+            } else if (char === "\\") {
+                ++i;
+                var nextChar = query[i];
+                if (nextChar === " ")
+                    result += " ";
+            } else {
+                if (String.regexSpecialCharacters().indexOf(query.charAt(i)) !== -1)
+                    result += "\\";
+                result += query.charAt(i);
+            }
+        }
+        return result;
+    }
 }
 
 /**
@@ -578,11 +654,17 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
         var uiSourceCode = searchResult.uiSourceCode;
         var searchMatches = searchResult.searchMatches;
 
-        var regex = createSearchRegex(this._searchConfig.query, !this._searchConfig.ignoreCase, this._searchConfig.isRegex);
+        var queries = this._searchConfig.queries();
+        var regexes = [];
+        for (var i = 0; i < queries.length; ++i)
+            regexes.push(createSearchRegex(queries[i], !this._searchConfig.ignoreCase, this._searchConfig.isRegex));
+
         for (var i = fromIndex; i < toIndex; ++i) {
             var lineNumber = searchMatches[i].lineNumber;
             var lineContent = searchMatches[i].lineContent;
-            var matchRanges = this._regexMatchRanges(lineContent, regex);
+            var matchRanges = [];
+            for (var j = 0; j < regexes.length; ++j)
+                matchRanges = matchRanges.concat(this._regexMatchRanges(lineContent, regexes[j]));
 
             var anchor = this._createAnchor(uiSourceCode, lineNumber, matchRanges[0].offset);
 

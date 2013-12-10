@@ -219,16 +219,16 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     },
 
     /**
-     * @param {string} query
+     * @param {Array.<string>} queries
+     * @param {Array.<string>} fileQueries
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
      * @param {!WebInspector.Progress} progress
      * @param {function(!Array.<string>)} callback
      */
-    findFilesMatchingSearchRequest: function(query, caseSensitive, isRegex, progress, callback)
+    findFilesMatchingSearchRequest: function(queries, fileQueries, caseSensitive, isRegex, progress, callback)
     {
         var result = [];
-
         var paths = Object.keys(this._contentProviders);
         var totalCount = paths.length;
         if (totalCount === 0) {
@@ -237,6 +237,9 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
             return;
         }
 
+        /**
+         * @param {string} path
+         */
         function filterOutContentScripts(path)
         {
             return !this._isContentScriptMap[path];
@@ -245,16 +248,69 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
         if (!WebInspector.settings.searchInContentScripts.get())
             paths = paths.filter(filterOutContentScripts.bind(this));
 
+        var fileRegexes = [];
+        for (var i = 0; i < fileQueries.length; ++i)
+            fileRegexes.push(new RegExp(fileQueries[i], caseSensitive ? "" : "i"));
+
+        /**
+         * @param {!string} file
+         */
+        function filterOutNonMatchingFiles(file)
+        {
+            for (var i = 0; i < fileRegexes.length; ++i) {
+                if (!file.match(fileRegexes[i]))
+                    return false;
+            }
+            return true;
+        }
+
+        paths = paths.filter(filterOutNonMatchingFiles);
         var barrier = new CallbackBarrier();
         progress.setTotalWork(paths.length);
         for (var i = 0; i < paths.length; ++i)
-            this._contentProviders[paths[i]].searchInContent(query, caseSensitive, isRegex, barrier.createCallback(contentCallback.bind(this, i)));
+            searchInContent.call(this, paths[i], barrier.createCallback(searchInContentCallback.bind(this, paths[i])));
         barrier.callWhenDone(doneCallback);
 
-        function contentCallback(i, searchMatches)
+        /**
+         * @param {string} path
+         * @param {function(boolean)} callback
+         */
+        function searchInContent(path, callback)
         {
-            if (searchMatches.length)
-                result.push(paths[i]);
+            var queriesToRun = queries.slice();
+            searchNextQuery.call(this);
+
+            function searchNextQuery()
+            {
+                if (!queriesToRun.length) {
+                    callback(true);
+                    return;
+                }
+                var query = queriesToRun.shift();
+                this._contentProviders[path].searchInContent(query, caseSensitive, isRegex, contentCallback.bind(this));
+            }
+
+            /**
+             * @param {Array.<WebInspector.ContentProvider.SearchMatch>} searchMatches
+             */
+            function contentCallback(searchMatches)
+            {
+                if (!searchMatches.length) {
+                    callback(false);
+                    return;
+                }
+                searchNextQuery.call(this);
+            }
+        }
+
+        /**
+         * @param {string} path
+         * @param {boolean} matches
+         */
+        function searchInContentCallback(path, matches)
+        {
+            if (matches)
+                result.push(path);
             progress.worked(1);
         }
 
