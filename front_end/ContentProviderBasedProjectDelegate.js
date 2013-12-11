@@ -219,8 +219,8 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     },
 
     /**
-     * @param {Array.<string>} queries
-     * @param {Array.<string>} fileQueries
+     * @param {!Array.<string>} queries
+     * @param {!Array.<string>} fileQueries
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
      * @param {!WebInspector.Progress} progress
@@ -291,7 +291,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
             }
 
             /**
-             * @param {Array.<WebInspector.ContentProvider.SearchMatch>} searchMatches
+             * @param {!Array.<!WebInspector.ContentProvider.SearchMatch>} searchMatches
              */
             function contentCallback(searchMatches)
             {

@@ -207,8 +207,8 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     },
 
     /**
-     * @param {Array.<string>} queries
-     * @param {Array.<string>} fileQueries
+     * @param {!Array.<string>} queries
+     * @param {!Array.<string>} fileQueries
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
      * @param {!WebInspector.Progress} progress
@@ -277,7 +277,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     /**
      * @param {string} query
      * @param {!WebInspector.Progress} progress
-     * @param {function(Array.<string>)} callback
+     * @param {function(!Array.<string>)} callback
      */
     _searchInPath: function(query, progress, callback)
     {

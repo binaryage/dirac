@@ -148,8 +148,8 @@ WebInspector.ProjectDelegate.prototype = {
     searchInFileContent: function(path, query, caseSensitive, isRegex, callback) { },
 
     /**
-     * @param {Array.<string>} queries
-     * @param {Array.<string>} fileQueries
+     * @param {!Array.<string>} queries
+     * @param {!Array.<string>} fileQueries
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
      * @param {!WebInspector.Progress} progress
@@ -448,8 +448,8 @@ WebInspector.Project.prototype = {
     },
 
     /**
-     * @param {Array.<string>} queries
-     * @param {Array.<string>} fileQueries
+     * @param {!Array.<string>} queries
+     * @param {!Array.<string>} fileQueries
      * @param {boolean} caseSensitive
      * @param {boolean} isRegex
      * @param {!WebInspector.Progress} progress
