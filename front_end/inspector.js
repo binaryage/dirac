@@ -598,7 +598,7 @@ WebInspector._registerShortcuts = function()
     section.addRelatedKeys(keys, WebInspector.UIString("Go back/forward in panel history"));
 
     var toggleConsoleLabel = WebInspector.UIString("Toggle console");
-    if (WebInspector.experimentsSettings.openConsoleWithCtrlTilde.isEnabled())
+    if (!WebInspector.experimentsSettings.openConsoleWithCtrlTilde.isEnabled())
         section.addKey(shortcut.makeDescriptor(shortcut.Keys.Esc), toggleConsoleLabel);
     else
         section.addKey(shortcut.makeDescriptor(shortcut.Keys.Tilde, shortcut.Modifiers.CtrlOrMeta), toggleConsoleLabel);
