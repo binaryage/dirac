@@ -885,7 +885,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
         for (var i = 0; i < this._stackTrace.length; i++) {
             var frame = this._stackTrace[i];
 
-            var content = document.createElement("div");
+            var content = document.createElementWithClass("div", "stacktrace-entry");
             var messageTextElement = document.createElement("span");
             messageTextElement.className = "console-message-text source-code";
             var functionName = frame.functionName || WebInspector.UIString("(anonymous function)");

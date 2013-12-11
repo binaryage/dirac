@@ -918,6 +918,10 @@ body.platform-linux .source-code {
     top: 0;
 }
 
+.console-message .outline-disclosure .stacktrace-entry:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
 .console-message .bubble {
     display: inline-block;
     height: 14px;
