@@ -30,16 +30,19 @@
 
 /**
  * @constructor
+ * @param {!WebInspector.LayerTreeModel} model
  * @extends {WebInspector.View}
  */
-WebInspector.LayerDetailsView = function()
+WebInspector.LayerDetailsView = function(model)
 {
     WebInspector.View.call(this);
     this.element.classList.add("fill");
     this.element.classList.add("layer-details-view");
     this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("Select a layer to see its details"));
     this._createTable();
-    this.showLayer(null);
+    this._model = model;
+    this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._onLayerTreeUpdated, this);
+    this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerPainted, this._onLayerPainted, this);
 }
 
 /**
@@ -84,21 +87,50 @@ WebInspector.LayerDetailsView.prototype = {
     /**
      * @param {?WebInspector.Layer} layer
      */
-    showLayer: function(layer)
+    setLayer: function(layer)
     {
-        if (!layer) {
+        this._layer = layer;
+        if (this.isShowing())
+            this._update();
+    },
+
+    wasShown: function()
+    {
+        WebInspector.View.prototype.wasShown.call(this);
+        this._update();
+    },
+
+    _onLayerTreeUpdated: function()
+    {
+        if (this.isShowing())
+            this._update();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onLayerPainted: function(event)
+    {
+        var layer = /** @type {!WebInspector.Layer} */ (event.data);
+        if (this._layer === layer)
+            this._paintCountCell.textContent = layer.paintCount();
+    },
+
+    _update: function()
+    {
+        if (!this._layer) {
             this._tableElement.remove();
             this._emptyView.show(this.element);
             return;
         }
         this._emptyView.detach();
         this.element.appendChild(this._tableElement);
-        this._positionCell.textContent = WebInspector.UIString("%d,%d", layer.offsetX(), layer.offsetY());
-        this._sizeCell.textContent = WebInspector.UIString("%d × %d", layer.width(), layer.height());
-        this._paintCountCell.textContent = layer.paintCount();
+        this._positionCell.textContent = WebInspector.UIString("%d,%d", this._layer.offsetX(), this._layer.offsetY());
+        this._sizeCell.textContent = WebInspector.UIString("%d × %d", this._layer.width(), this._layer.height());
+        this._paintCountCell.textContent = this._layer.paintCount();
         const bytesPerPixel = 4;
-        this._memoryEstimateCell.textContent = Number.bytesToString(layer.invisible() ? 0 : layer.width() * layer.height() * bytesPerPixel);
-        layer.requestCompositingReasons(this._updateCompositingReasons.bind(this));
+        this._memoryEstimateCell.textContent = Number.bytesToString(this._layer.invisible() ? 0 : this._layer.width() * this._layer.height() * bytesPerPixel);
+        this._layer.requestCompositingReasons(this._updateCompositingReasons.bind(this));
     },
 
     _createTable: function()
@@ -143,14 +175,6 @@ WebInspector.LayerDetailsView.prototype = {
         }
         this._compositingReasonsCell.removeChildren();
         this._compositingReasonsCell.appendChild(fragment);
-    },
-
-    /**
-     * @param {number} paintCount
-     */
-    updatePaintCount: function(paintCount)
-    {
-        this._paintCountCell.textContent = paintCount;
     },
 
     __proto__: WebInspector.View.prototype

@@ -340,6 +340,7 @@ modules = [
             "LayerTree.js",
             "Layers3DView.js",
             "LayerDetailsView.js",
+            "PaintProfilerView.js",
         ]
     },
     {

@@ -143,4 +143,24 @@
     font-weight: bold;
 }
 
+.paint-profiler-view canvas {
+    z-index: 200;
+    opacity: 0.8;
+    background-color: white;
+}
+
+.paint-profiler-view {
+    overflow: hidden;
+}
+
+.paint-profiler-view .overview-grid-dividers-background,
+.paint-profiler-view .overview-grid-window {
+    bottom: 0;
+    height: auto;
+}
+
+.paint-profiler-view .overview-grid-window-resizer {
+    z-index: 2000;
+}
+
 }

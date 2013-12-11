@@ -48,6 +48,36 @@ WebInspector.LayerTreeModel.Events = {
     LayerPainted: "LayerPainted",
 }
 
+/**
+ * @param {function(T)} clientCallback
+ * @param {string} errorPrefix
+ * @param {function(new:T,S)=} constructor
+ * @param {T=} defaultValue
+ * @return {function(?string, S)}
+ * @template T,S
+ */
+WebInspector.LayerTreeModel._wrapCallback = function(clientCallback, errorPrefix, constructor, defaultValue)
+{
+    /**
+     * @param {?string} error
+     * @param {S} value
+     * @template S
+     */
+    function callbackWrapper(error, value)
+    {
+        if (error) {
+            console.error(errorPrefix + error);
+            clientCallback(defaultValue);
+            return;
+        }
+        if (constructor)
+            clientCallback(new constructor(value));
+        else
+            clientCallback(value);
+    }
+    return callbackWrapper;
+}
+
 WebInspector.LayerTreeModel.prototype = {
     disable: function()
     {
@@ -350,20 +380,17 @@ WebInspector.Layer.prototype = {
      */
     requestCompositingReasons: function(callback)
     {
-        /**
-         * @param {?string} error
-         * @param {!Array.<string>} compositingReasons
-         */
-        function callbackWrapper(error, compositingReasons)
-        {
-            if (error) {
-                console.error("LayerTreeAgent.reasonsForCompositingLayer(): " + error);
-                callback([]);
-                return;
-            }
-            callback(compositingReasons);
-        }
-        LayerTreeAgent.compositingReasons(this.id(), callbackWrapper.bind(this));
+        var wrappedCallback = WebInspector.LayerTreeModel._wrapCallback(callback, "LayerTreeAgent.reasonsForCompositingLayer(): ", undefined, []);
+        LayerTreeAgent.compositingReasons(this.id(), wrappedCallback);
+    },
+
+    /**
+     * @param {function(!WebInspector.LayerSnapshot=)} callback
+     */
+    requestSnapshot: function(callback)
+    {
+        var wrappedCallback = WebInspector.LayerTreeModel._wrapCallback(callback, "LayerTreeAgent.makeSnapshot(): ", WebInspector.LayerSnapshot.bind(null, this));
+        LayerTreeAgent.makeSnapshot(this.id(), wrappedCallback);
     },
 
     /**
@@ -373,6 +400,7 @@ WebInspector.Layer.prototype = {
     {
         this._lastPaintRect = rect;
         this._paintCount = this.paintCount() + 1;
+        this._image = null;
     },
 
     /**
@@ -384,8 +412,47 @@ WebInspector.Layer.prototype = {
         this._parent = null;
         this._paintCount = 0;
         this._layerPayload = layerPayload;
+        this._image = null;
     }
 }
+
+/**
+ * @constructor
+ * @param {!WebInspector.Layer} layer
+ * @param {string} snapshotId
+ */
+WebInspector.LayerSnapshot = function(layer, snapshotId)
+{
+    this._id = snapshotId;
+    this._layer = layer;
+}
+
+WebInspector.LayerSnapshot.prototype = {
+    dispose: function()
+    {
+        LayerTreeAgent.releaseSnapshot(this._id);
+    },
+
+    /**
+     * @param {?number} firstStep
+     * @param {?number} lastStep
+     * @param {function(string=)} callback
+     */
+    requestImage: function(firstStep, lastStep, callback)
+    {
+        var wrappedCallback = WebInspector.LayerTreeModel._wrapCallback(callback, "LayerTreeAgent.replaySnapshot(): ");
+        LayerTreeAgent.replaySnapshot(this._id, firstStep || undefined, lastStep || undefined, wrappedCallback);
+    },
+
+    /**
+     * @param {function(!Array.<!LayerTreeAgent.PaintProfile>=)} callback
+     */
+    profile: function(callback)
+    {
+        var wrappedCallback = WebInspector.LayerTreeModel._wrapCallback(callback, "LayerTreeAgent.profileSnapshot(): ");
+        LayerTreeAgent.profileSnapshot(this._id, 5, 1, wrappedCallback);
+    }
+};
 
 /**
  * @constructor
