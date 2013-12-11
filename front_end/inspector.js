@@ -597,11 +597,11 @@ WebInspector._registerShortcuts = function()
     ];
     section.addRelatedKeys(keys, WebInspector.UIString("Go back/forward in panel history"));
 
-    var toggleConsoleLabel = WebInspector.UIString("Toggle console");
-    if (!WebInspector.experimentsSettings.openConsoleWithCtrlTilde.isEnabled())
-        section.addKey(shortcut.makeDescriptor(shortcut.Keys.Esc), toggleConsoleLabel);
-    else
-        section.addKey(shortcut.makeDescriptor(shortcut.Keys.Tilde, shortcut.Modifiers.CtrlOrMeta), toggleConsoleLabel);
+    var toggleConsoleLabel = WebInspector.UIString("Show console");
+    section.addKey(shortcut.makeDescriptor(shortcut.Keys.Tilde, shortcut.Modifiers.CtrlOrMeta), toggleConsoleLabel);
+    var doNotOpenDrawerOnEsc = WebInspector.experimentsSettings.doNotOpenDrawerOnEsc.isEnabled();
+    var toggleDrawerLabel = doNotOpenDrawerOnEsc ? WebInspector.UIString("Hide drawer") : WebInspector.UIString("Toggle drawer");
+    section.addKey(shortcut.makeDescriptor(shortcut.Keys.Esc), toggleDrawerLabel);
     section.addKey(shortcut.makeDescriptor("f", shortcut.Modifiers.CtrlOrMeta), WebInspector.UIString("Search"));
 
     var advancedSearchShortcut = WebInspector.AdvancedSearchController.createShortcut();
@@ -727,22 +727,16 @@ WebInspector.postDocumentKeyDown = function(event)
     if (event.handled)
         return;
 
-    var openConsoleWithCtrlTildeEnabled = WebInspector.experimentsSettings.openConsoleWithCtrlTilde.isEnabled();
+    var doNotOpenDrawerOnEsc = WebInspector.experimentsSettings.doNotOpenDrawerOnEsc.isEnabled();
     if (event.keyIdentifier === Esc) {
         if (this.inspectorView.drawer().visible())
             this.inspectorView.drawer().hide();
-        else if (!openConsoleWithCtrlTildeEnabled)
+        else if (!doNotOpenDrawerOnEsc)
             this.inspectorView.drawer().show();
     }
 
-    if (openConsoleWithCtrlTildeEnabled) {
-        if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Tilde.code && WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
-            if (this.inspectorView.drawer().visible())
-                this.inspectorView.drawer().hide();
-            else
-                this.showConsole();
-        }
-    }
+    if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Tilde.code && WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event))
+        this.showConsole();
 }
 
 WebInspector.documentCanCopy = function(event)
