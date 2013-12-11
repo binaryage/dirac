@@ -777,7 +777,6 @@ body.remote .dock-status-bar-item {
 
 #drawer-contents > .tabbed-pane > .tabbed-pane-header {
     background-color: rgb(236, 236, 236);
-    cursor: ns-resize;
     border-top: 1px solid rgb(124, 124, 124);
     border-bottom: 1px solid rgb(203, 203, 203);
 }

@@ -237,7 +237,6 @@ a.worker-item:hover {
     width: 18px;
     height: 16px;
     -webkit-transform: rotate(90deg);
-    cursor: ns-resize;
     top: 2px;
     right: 17px;
 }
