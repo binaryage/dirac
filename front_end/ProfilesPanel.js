@@ -592,7 +592,6 @@ WebInspector.ProfilesPanel.prototype = {
 
     _clearProfiles: function()
     {
-        ProfilerAgent.clearProfiles();
         HeapProfilerAgent.clearProfiles();
         this._reset();
     },

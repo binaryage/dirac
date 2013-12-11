@@ -3486,15 +3486,6 @@
         "hidden": true,
         "types": [
             {
-                "id": "ProfileHeader",
-                "type": "object",
-                "description": "Profile header.",
-                "properties": [
-                    { "name": "title", "type": "string", "description": "Profile title." },
-                    { "name": "uid", "type": "integer", "description": "Unique identifier of the profile." }
-                ]
-            },
-            {
                 "id": "CPUProfileNode",
                 "type": "object",
                 "description": "CPU Profile node. Holds callsite information, execution statistics and child nodes.",
@@ -3521,11 +3512,6 @@
                     { "name": "endTime", "type": "number", "description": "Profiling end time in seconds." },
                     { "name": "samples", "optional": true, "type": "array", "items": { "type": "integer" }, "description": "Ids of samples top nodes." }
                 ]
-            },
-            {
-                "id": "HeapSnapshotObjectId",
-                "type": "string",
-                "description": "Heap snashot object id."
             }
         ],
         "commands": [
@@ -3548,33 +3534,16 @@
             {
                 "name": "stop",
                 "returns": [
-                    { "name": "header", "$ref": "ProfileHeader", "description": "The header of the recorded profile."}
+                    { "name": "profile", "$ref": "CPUProfile", "description": "Recorded profile." }
                 ]
-            },
-            {
-                "name": "getCPUProfile",
-                "parameters": [
-                    { "name": "uid", "type": "integer" }
-                ],
-                "returns": [
-                    { "name": "profile", "$ref": "CPUProfile" }
-                ]
-            },
-            {
-                "name": "removeProfile",
-                "parameters": [
-                    { "name": "uid", "type": "integer" }
-                ]
-            },
-            {
-                "name": "clearProfiles"
             }
         ],
         "events": [
             {
                 "name": "addProfileHeader",
                 "parameters": [
-                    { "name": "header", "$ref": "ProfileHeader" }
+                    { "name": "profile", "$ref": "CPUProfile" },
+                    { "name": "title", "type": "string", "description": "Profile title passed as argumemt to console.profile()." }
                 ]
             },
             {
