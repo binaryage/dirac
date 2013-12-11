@@ -229,8 +229,13 @@ InspectorFrontendHostAPI.prototype.addFileSystem = function(callback) {}
 InspectorFrontendHostAPI.prototype.append = function(url, content, callback) {}
 /** @param {!Function=} callback callback */
 InspectorFrontendHostAPI.prototype.indexPath = function(requestId, fileSystemPath, callback) {}
-/** @param {!Function=} callback callback */
-InspectorFrontendHostAPI.prototype.setWindowBounds = function(x, y, callback) {}
+/**
+ * @param top
+ * @param left
+ * @param bottom
+ * @param right
+ */
+InspectorFrontendHostAPI.prototype.setContentsInsets = function(top, left, bottom, right) {}
 /** @param {!Function=} callback callback */
 InspectorFrontendHostAPI.prototype.moveWindowBy = function(x, y, callback) {}
 /** @param {!Function=} callback callback */

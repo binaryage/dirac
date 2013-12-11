@@ -942,11 +942,11 @@ WebInspector.SourcesPanel.prototype = {
         this._toggleBreakpointsButton.toggled = !active;
         if (active) {
             this._toggleBreakpointsButton.title = WebInspector.UIString("Deactivate breakpoints.");
-            WebInspector.inspectorView.element.classList.remove("breakpoints-deactivated");
+            this._editorContainer.view.element.classList.remove("breakpoints-deactivated");
             this.sidebarPanes.jsBreakpoints.listElement.classList.remove("breakpoints-list-deactivated");
         } else {
             this._toggleBreakpointsButton.title = WebInspector.UIString("Activate breakpoints.");
-            WebInspector.inspectorView.element.classList.add("breakpoints-deactivated");
+            this._editorContainer.view.element.classList.add("breakpoints-deactivated");
             this.sidebarPanes.jsBreakpoints.listElement.classList.add("breakpoints-list-deactivated");
         }
     },

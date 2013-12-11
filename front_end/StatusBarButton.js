@@ -321,7 +321,7 @@ WebInspector.StatusBarButton.prototype = {
 
         var hostButtonPosition = this.element.totalOffset();
 
-        var topNotBottom = hostButtonPosition.top < document.documentElement.offsetHeight / 2;
+        var topNotBottom = hostButtonPosition.top + buttonHeight * buttons.length < document.documentElement.offsetHeight;
 
         if (topNotBottom)
             buttons = buttons.reverse();

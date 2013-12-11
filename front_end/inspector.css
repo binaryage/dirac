@@ -118,16 +118,27 @@ body.inactive .toolbar-background {
 
 body.dock-to-bottom .toolbar-background {
     padding-top: 0;
+}
+
+body.dock-to-bottom.platform-mac:not(.overlay-contents) .toolbar-background {
+    border-top-color: white;
+}
+
+body.dock-to-bottom:not(.overlay-contents) .toolbar-background {
     border-top: 1px solid rgb(100, 100, 100);
     cursor: default;
 }
 
-body.dock-to-bottom.platform-mac .toolbar-background {
-    border-top-color: white;
+body.dock-to-bottom.inactive:not(.overlay-contents) .toolbar-background {
+    border-top: 1px solid rgb(64%, 64%, 64%);
 }
 
-body.dock-to-bottom.inactive .toolbar-background {
-    border-top: 1px solid rgb(64%, 64%, 64%);
+body.dock-to-bottom.overlay-contents .toolbar-background .tabbed-pane-header {
+    cursor: ns-resize;
+}
+
+body.dock-to-bottom.overlay-contents .toolbar-background .tabbed-pane-header .tabbed-pane-header-tabs {
+    cursor: default;
 }
 
 body.platform-windows .toolbar-background,
@@ -2833,5 +2844,9 @@ body.platform-mac .progress-bar-container progress {
 }
 
 body.undocked .toolbar-close-button-item {
+    display: none;
+}
+
+body.dock-to-bottom.overlay-contents #inspector-split-view .split-view-resizer {
     display: none;
 }

@@ -39,18 +39,33 @@ WebInspector.InspectorView = function()
     this.element.classList.add("fill", "vbox", "inspector-view");
     this.element.setAttribute("spellcheck", false);
 
+    this._splitView = new WebInspector.SplitView(false, "InspectorView.splitView", 300, 300);
+    this._splitView.setSecondIsSidebar(true);
+    this._splitView.setSidebarElementConstraints(150, 50);
+    this._splitView.setMainElementConstraints(50, 50);
+    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._updateSplitView.bind(this));
+
+    this._splitView.element.id = "inspector-split-view";
+    this._splitView.show(this.element);
+
+    this._overlayView = new WebInspector.ViewWithResizeCallback(this._onOverlayResized.bind(this));
+    this._overlayView.show(this._splitView.mainElement);
+
+    this._devtoolsElement = this._splitView.sidebarElement;
+    this._devtoolsElement.classList.add("vbox");
+
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.setRetainTabsOrder(true);
-    this._tabbedPane.show(this.element);
+    this._tabbedPane.show(this._devtoolsElement);
 
-    var toolbarElement = document.createElement("div");
-    toolbarElement.className = "toolbar toolbar-background";
+    this._toolbarElement = document.createElement("div");
+    this._toolbarElement.className = "toolbar toolbar-background";
     var headerElement = this._tabbedPane.headerElement();
-    headerElement.parentElement.insertBefore(toolbarElement, headerElement);
+    headerElement.parentElement.insertBefore(this._toolbarElement, headerElement);
 
-    this._leftToolbarElement = toolbarElement.createChild("div", "toolbar-controls-left");
-    toolbarElement.appendChild(headerElement);
-    this._rightToolbarElement = toolbarElement.createChild("div", "toolbar-controls-right");
+    this._leftToolbarElement = this._toolbarElement.createChild("div", "toolbar-controls-left");
+    this._toolbarElement.appendChild(headerElement);
+    this._rightToolbarElement = this._toolbarElement.createChild("div", "toolbar-controls-right");
 
     this._errorWarningCountElement = this._rightToolbarElement.createChild("div", "hidden");
     this._errorWarningCountElement.id = "error-warning-count";
@@ -68,6 +83,8 @@ WebInspector.InspectorView = function()
     this._openBracketIdentifiers = ["U+005B", "U+00DB"].keySet();
     this._closeBracketIdentifiers = ["U+005D", "U+00DD"].keySet();
     this._lastActivePanelSetting = WebInspector.settings.createSetting("lastActivePanel", "elements");
+
+    this._updateSplitView();
 }
 
 WebInspector.InspectorView.prototype = {
@@ -93,6 +110,14 @@ WebInspector.InspectorView.prototype = {
     drawer: function()
     {
         return this._drawer;
+    },
+
+    /**
+     * @return {!Element}
+     */
+    devtoolsElement: function()
+    {
+        return this._devtoolsElement;
     },
 
     /**
@@ -357,8 +382,41 @@ WebInspector.InspectorView.prototype = {
         this._drawer.resize();
     },
 
+    _updateSplitView: function()
+    {
+        var dockSide = WebInspector.dockController.dockSide();
+        if (WebInspector.queryParamsObject["overlayContents"] && dockSide !== WebInspector.DockController.State.Undocked) {
+            this._splitView.showBoth();
+            var vertical = dockSide === WebInspector.DockController.State.DockedToRight;
+            this._splitView.setVertical(vertical);
+            if (vertical) {
+                this._splitView.uninstallResizer(this._tabbedPane.headerElement());
+                this._splitView.installResizer(this._splitView.resizerElement());
+            } else {
+                this._splitView.uninstallResizer(this._splitView.resizerElement());
+                this._splitView.installResizer(this._tabbedPane.headerElement());
+            }
+        } else {
+            this._splitView.showOnlySecond();
+        }
+    },
+
+    _onOverlayResized: function()
+    {
+        var dockSide = WebInspector.dockController.dockSide();
+        if (WebInspector.queryParamsObject["overlayContents"] && dockSide !== WebInspector.DockController.State.Undocked) {
+            // Leave 3px room for resizer.
+            var bottom = this._splitView.isVertical() ? 0 : this._splitView.sidebarSize();
+            var right = this._splitView.isVertical() ? this._splitView.sidebarSize() + 3 : 0;
+            InspectorFrontendHost.setContentsInsets(0, 0, bottom, right);
+        }
+
+        // FIXME: make drawer a view.
+        this._drawer.resize();
+    },
+
     __proto__: WebInspector.View.prototype
-}
+};
 
 /**
  * @type {?WebInspector.InspectorView}

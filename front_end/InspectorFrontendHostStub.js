@@ -100,9 +100,16 @@ WebInspector.InspectorFrontendHostStub.prototype = {
         InspectorFrontendAPI.setDockSide(side);
     },
 
-    setWindowBounds: function(x, y, width, height, callback)
+    /**
+     * Requests inspected page to be placed atop of the inspector frontend
+     * with passed insets from the frontend sides.
+     * @param {number} top
+     * @param {number} left
+     * @param {number} bottom
+     * @param {number} right
+     */
+    setContentsInsets: function(top, left, bottom, right)
     {
-        callback();
     },
 
     moveWindowBy: function(x, y)
@@ -251,7 +258,7 @@ InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
         "requestSetDockSide",
         "save",
         "searchInPath",
-        "setWindowBounds",
+        "setContentsInsets",
         "stopIndexing"
     ];
 

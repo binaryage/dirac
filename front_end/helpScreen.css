@@ -295,8 +295,7 @@ body.platform-mac .help-content input[type=radio] {
     border: none transparent;
     height: auto;
     width: 110px;
-    position: relative;
-    top: 14px;
+    margin-top: 14px;
     flex: auto;
 }
 

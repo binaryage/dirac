@@ -28,16 +28,16 @@ body.platform-mac {
   font-family: 'Lucida Grande', sans-serif;
 }
 
-body.platform-windows {
-  font-family: 'Segoe UI', Tahoma, sans-serif;
-}
-
-body.dock-to-right:not(.undocked) {
+body.dock-to-right:not(.undocked):not(.overlay-contents) {
     border-left: 1px solid rgb(80, 80, 80);
 }
 
-body.dock-to-right.inactive:not(.undocked) {
+body.dock-to-right.inactive:not(.undocked):not(.overlay-contents) {
     border-left: 1px solid rgb(64%, 64%, 64%);
+}
+
+body.platform-windows {
+  font-family: 'Segoe UI', Tahoma, sans-serif;
 }
 
 * {

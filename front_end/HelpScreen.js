@@ -88,7 +88,7 @@ WebInspector.HelpScreen.prototype = {
         if (visibleHelpScreen)
             visibleHelpScreen.hide();
         WebInspector.HelpScreen._visibleScreen = this;
-        this.show(document.body);
+        this.show(WebInspector.inspectorView.devtoolsElement());
         this.focus();
     },
 

@@ -334,6 +334,8 @@ WebInspector.doLoadedDone = function()
     WebInspector.installPortStyles();
     if (WebInspector.socket)
         document.body.classList.add("remote");
+    if (WebInspector.queryParamsObject["overlayContents"])
+        document.body.classList.add("overlay-contents");
 
     if (WebInspector.queryParamsObject.toolbarColor && WebInspector.queryParamsObject.textColor)
         WebInspector.setToolbarColors(WebInspector.queryParamsObject.toolbarColor, WebInspector.queryParamsObject.textColor);
