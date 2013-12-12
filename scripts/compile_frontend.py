@@ -514,7 +514,7 @@ def dump_module(name, recursively, processed_modules):
     return command
 
 modules_dir = tempfile.mkdtemp()
-compiler_command = "java -jar %s/closure/compiler.jar --summary_detail_level 3 --compilation_level SIMPLE_OPTIMIZATIONS \
+compiler_command = "java -server -XX:+TieredCompilation -jar %s/closure/compiler.jar --summary_detail_level 3 --compilation_level SIMPLE_OPTIMIZATIONS \
     --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/ \\\n" % (scripts_path, modules_dir)
 
 process_recursively = len(sys.argv) > 1
@@ -589,7 +589,7 @@ else:
     print "InjectedScriptSource.js and InjectedScriptCanvasModuleSource.js compilation output:\n", injectedScriptCompileOut
 
     (canvasModuleCompileOut, _) = canvasModuleCompileProc.communicate()
-    print "InjectedScriptCanvasModuleSource.js generated code compilation output:\n", canvasModuleCompileOut
+    print "InjectedScriptCanvasModuleSource.js generated code check output:\n", canvasModuleCompileOut
 
     os.system("rm " + injectedScriptSourceTmpFile)
     os.system("rm " + injectedScriptCanvasModuleSourceTmpFile)
