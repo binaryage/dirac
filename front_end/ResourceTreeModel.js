@@ -165,6 +165,7 @@ WebInspector.ResourceTreeModel.prototype = {
     {
         /**
          * @param {!WebInspector.ResourceTreeFrame} frame
+         * @this {WebInspector.ResourceTreeModel}
          */
         function removeOriginForFrame(frame)
         {
@@ -774,6 +775,6 @@ WebInspector.PageDispatcher.prototype = {
 }
 
 /**
- * @type {?WebInspector.ResourceTreeModel}
+ * @type {!WebInspector.ResourceTreeModel}
  */
-WebInspector.resourceTreeModel = null;
+WebInspector.resourceTreeModel;

@@ -151,6 +151,7 @@ WebInspector.RequestContentView.prototype = {
 
         /**
          * @param {?string} content
+         * @this {WebInspector.RequestContentView}
          */
         function callback(content)
         {

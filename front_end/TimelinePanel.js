@@ -894,6 +894,7 @@ WebInspector.TimelinePanel.prototype = {
 
         /**
          * @param {!DocumentFragment} element
+         * @this {WebInspector.TimelinePanel}
          */
         function showCallback(element)
         {

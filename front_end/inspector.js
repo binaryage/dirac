@@ -212,6 +212,7 @@ var WebInspector = {
 
     /**
      * @return {number}
+     * @this {WebInspector}
      */
     zoomFactor: function()
     {
@@ -405,7 +406,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.openAnchorLocationRegistry = new WebInspector.HandlerRegistry(openAnchorLocationSetting);
     this.openAnchorLocationRegistry.registerHandler(autoselectPanel, function() { return false; });
 
-    this.workspaceController = new WebInspector.WorkspaceController(this.workspace);
+    new WebInspector.WorkspaceController(this.workspace);
 
     this.fileSystemWorkspaceProvider = new WebInspector.FileSystemWorkspaceProvider(this.isolatedFileSystemManager, this.workspace);
 

@@ -64,6 +64,7 @@ WebInspector.SourceMap.hasSourceMapRequestHeader = function(request)
  * @param {string} sourceMapURL
  * @param {string} compiledURL
  * @param {function(?WebInspector.SourceMap)} callback
+ * @this {WebInspector.SourceMap}
  */
 WebInspector.SourceMap.load = function(sourceMapURL, compiledURL, callback)
 {

@@ -104,6 +104,7 @@ WebInspector.CompilerScriptMapping.prototype = {
 
         /**
          * @param {?WebInspector.SourceMap} sourceMap
+         * @this {WebInspector.CompilerScriptMapping}
          */
         function sourceMapLoaded(sourceMap)
         {
@@ -210,15 +211,17 @@ WebInspector.CompilerScriptMapping.prototype = {
 
         /**
          * @param {?WebInspector.SourceMap} sourceMap
+         * @this {WebInspector.CompilerScriptMapping}
          */
         function sourceMapLoaded(sourceMap)
         {
-            var callbacks = this._pendingSourceMapLoadingCallbacks[sourceMapURL];
-            delete this._pendingSourceMapLoadingCallbacks[sourceMapURL];
+            var url = /** @type {string} */ (sourceMapURL);
+            var callbacks = this._pendingSourceMapLoadingCallbacks[url];
+            delete this._pendingSourceMapLoadingCallbacks[url];
             if (!callbacks)
                 return;
             if (sourceMap)
-                this._sourceMapForSourceMapURL[sourceMapURL] = sourceMap;
+                this._sourceMapForSourceMapURL[url] = sourceMap;
             for (var i = 0; i < callbacks.length; ++i)
                 callbacks[i](sourceMap);
         }

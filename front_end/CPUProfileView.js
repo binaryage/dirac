@@ -714,9 +714,11 @@ WebInspector.CPUProfileType.prototype = {
     {
         this._recording = false;
         WebInspector.cpuProfilerModel.setRecording(false);
+
         /**
          * @param {?string} error
          * @param {?ProfilerAgent.CPUProfile} profile
+         * @this {WebInspector.CPUProfileType}
          */
         function didStopProfiling(error, profile)
         {
@@ -866,8 +868,10 @@ WebInspector.CPUProfileHeader.prototype = {
     saveToFile: function()
     {
         var fileOutputStream = new WebInspector.FileOutputStream();
+
         /**
          * @param {boolean} accepted
+         * @this {WebInspector.CPUProfileHeader}
          */
         function onOpenForSave(accepted)
         {

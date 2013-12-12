@@ -444,7 +444,8 @@ WebInspector.OverridesSupport.prototype = {
         PageAgent.setDeviceMetricsOverride(dipWidth, dipHeight, metrics.deviceScaleFactor, WebInspector.settings.emulateViewport.get(), WebInspector.settings.deviceFitWindow.get(), metrics.textAutosizing, metrics.fontScaleFactor(), apiCallback.bind(this));
 
         /**
-         * param {?Protocol.Error} error
+         * @param {?Protocol.Error} error
+         * @this {WebInspector.OverridesSupport}
          */
         function apiCallback(error)
         {
@@ -545,6 +546,6 @@ WebInspector.OverridesSupport.prototype = {
 
 
 /**
- * @type {?WebInspector.OverridesSupport}
+ * @type {!WebInspector.OverridesSupport}
  */
-WebInspector.overridesSupport = null;
+WebInspector.overridesSupport;

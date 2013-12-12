@@ -262,8 +262,10 @@ WebInspector.CanvasReplayStateView.prototype = {
     {
         this._updateCurrentOption();
         var selectedResourceId = this._resourceSelector.selectedOption().value;
+
         /**
          * @param {?CanvasAgent.ResourceState} resourceState
+         * @this {WebInspector.CanvasReplayStateView}
          */
         function didReceiveResourceState(resourceState)
         {
@@ -280,8 +282,8 @@ WebInspector.CanvasReplayStateView.prototype = {
     _onCanvasTraceLogReceived: function(event)
     {
         var traceLog = /** @type {!CanvasAgent.TraceLog} */ (event.data);
-        if (traceLog)
-            this._collectResourcesFromTraceLog(traceLog);
+        console.assert(traceLog);
+        this._collectResourcesFromTraceLog(traceLog);
     },
 
     /**
@@ -290,8 +292,8 @@ WebInspector.CanvasReplayStateView.prototype = {
     _onCanvasResourceStateReceived: function(event)
     {
         var resourceState = /** @type {!CanvasAgent.ResourceState} */ (event.data);
-        if (resourceState)
-            this._collectResourcesFromResourceState(resourceState);
+        console.assert(resourceState);
+        this._collectResourcesFromResourceState(resourceState);
     },
 
     /**
@@ -350,6 +352,7 @@ WebInspector.CanvasReplayStateView.prototype = {
          * @param {!Array.<!CanvasAgent.ResourceStateDescriptor>|undefined} descriptors
          * @param {!WebInspector.DataGridNode} parent
          * @param {!Object=} nameToOldChildren
+         * @this {WebInspector.CanvasReplayStateView}
          */
         function appendResourceStateDescriptors(descriptors, parent, nameToOldChildren)
         {

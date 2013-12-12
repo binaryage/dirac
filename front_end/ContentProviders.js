@@ -97,6 +97,7 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
 
         /**
          * @param {?string} content
+         * @this {WebInspector.ConcatenatedScriptsContentProvider}
          */
         function didRequestSource(content)
         {
@@ -134,6 +135,7 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
         /**
          * @param {!WebInspector.Script} script
          * @param {!Array.<!PageAgent.SearchMatch>} searchMatches
+         * @this {WebInspector.ConcatenatedScriptsContentProvider}
          */
         function searchCallback(script, searchMatches)
         {
@@ -226,6 +228,7 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
          * @param {number} statusCode
          * @param {!NetworkAgent.Headers} headers
          * @param {string} content
+         * @this {WebInspector.CompilerSourceMappingContentProvider}
          */
         function contentLoaded(error, statusCode, headers, content)
         {

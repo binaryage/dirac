@@ -1904,6 +1904,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         /**
          * @param {string} url
          * @return {!Node}
+         * @this {WebInspector.StylePropertyTreeElementBase}
          */
         function linkifyURL(url)
         {
@@ -1917,9 +1918,9 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
                 hrefUrl = WebInspector.ParsedURL.completeURL(this._styleRule.sourceURL, hrefUrl);
             else if (this.node())
                 hrefUrl = this.node().resolveURL(hrefUrl);
-            var hasResource = !!WebInspector.resourceForURL(hrefUrl);
+            var hasResource = hrefUrl && !!WebInspector.resourceForURL(hrefUrl);
             // FIXME: WebInspector.linkifyURLAsNode() should really use baseURI.
-            container.appendChild(WebInspector.linkifyURLAsNode(hrefUrl, url, undefined, !hasResource));
+            container.appendChild(WebInspector.linkifyURLAsNode(hrefUrl || url, url, undefined, !hasResource));
             container.appendChild(document.createTextNode(")"));
             return container;
         }

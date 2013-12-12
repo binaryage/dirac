@@ -267,6 +267,7 @@ WebInspector.ScreencastView.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {number} nodeId
+         * @this {WebInspector.ScreencastView}
          */
         function callback(error, nodeId)
         {
@@ -456,6 +457,7 @@ WebInspector.ScreencastView.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {!DOMAgent.BoxModel} model
+         * @this {WebInspector.ScreencastView}
          */
         function callback(error, model)
         {
@@ -476,8 +478,10 @@ WebInspector.ScreencastView.prototype = {
     _scaleModel: function(model)
     {
         var scale = this._canvasElement.offsetWidth / this._viewport.width;
+
         /**
          * @param {!DOMAgent.Quad} quad
+         * @this {WebInspector.ScreencastView}
          */
         function scaleQuad(quad)
         {

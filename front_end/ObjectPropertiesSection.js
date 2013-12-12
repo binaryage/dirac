@@ -79,6 +79,7 @@ WebInspector.ObjectPropertiesSection.prototype = {
         /**
          * @param {?Array.<!WebInspector.RemoteObjectProperty>} properties
          * @param {?Array.<!WebInspector.RemoteObjectProperty>} internalProperties
+         * @this {WebInspector.ObjectPropertiesSection}
          */
         function callback(properties, internalProperties)
         {
@@ -580,6 +581,7 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {!DebuggerAgent.FunctionDetails} response
+         * @this {WebInspector.FunctionScopeMainTreeElement}
          */
         function didGetDetails(error, response)
         {
@@ -706,6 +708,7 @@ WebInspector.ArrayGroupingTreeElement._populateArray = function(treeElement, obj
  * @param {number} fromIndex
  * @param {number} toIndex
  * @param {boolean} topLevel
+ * @this {WebInspector.ArrayGroupingTreeElement}
  */
 WebInspector.ArrayGroupingTreeElement._populateRanges = function(treeElement, object, fromIndex, toIndex, topLevel)
 {
@@ -800,6 +803,7 @@ WebInspector.ArrayGroupingTreeElement._populateRanges = function(treeElement, ob
  * @param {!WebInspector.RemoteObject} object
  * @param {number} fromIndex
  * @param {number} toIndex
+ * @this {WebInspector.ArrayGroupingTreeElement}
  */
 WebInspector.ArrayGroupingTreeElement._populateAsFragment = function(treeElement, object, fromIndex, toIndex)
 {
@@ -862,6 +866,7 @@ WebInspector.ArrayGroupingTreeElement._populateAsFragment = function(treeElement
 /**
  * @param {!TreeElement|!TreeOutline} treeElement
  * @param {!WebInspector.RemoteObject} object
+ * @this {WebInspector.ArrayGroupingTreeElement}
  */
 WebInspector.ArrayGroupingTreeElement._populateNonIndexProperties = function(treeElement, object)
 {
@@ -887,6 +892,7 @@ WebInspector.ArrayGroupingTreeElement._populateNonIndexProperties = function(tre
     /**
      * @param {?WebInspector.RemoteObject} arrayFragment
      * @param {boolean=} wasThrown
+     * @this {WebInspector.ArrayGroupingTreeElement}
      */
     function processObjectFragment(arrayFragment, wasThrown)
     {

@@ -65,9 +65,3 @@ WebInspector.WorkspaceController.prototype = {
         }
     }
 }
-
-/**
- * @type {?WebInspector.WorkspaceController}
- */
-WebInspector.workspaceController = null;
-

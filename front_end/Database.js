@@ -202,6 +202,6 @@ WebInspector.DatabaseDispatcher.prototype = {
 }
 
 /**
- * @type {?WebInspector.DatabaseModel}
+ * @type {!WebInspector.DatabaseModel}
  */
-WebInspector.databaseModel = null;
+WebInspector.databaseModel;

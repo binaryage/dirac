@@ -1634,6 +1634,7 @@ WebInspector.ElementsTreeElement.prototype = {
         /**
          * @param {!Element} element
          * @param {string} newValue
+         * @this {WebInspector.ElementsTreeElement}
          */
         function commit(element, newValue)
         {
@@ -1676,8 +1677,10 @@ WebInspector.ElementsTreeElement.prototype = {
         delete this._editing;
 
         var treeOutline = this.treeOutline;
+
         /**
          * @param {?Protocol.Error=} error
+         * @this {WebInspector.ElementsTreeElement}
          */
         function moveToNextAttributeIfNeeded(error)
         {

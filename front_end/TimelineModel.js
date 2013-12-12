@@ -285,6 +285,7 @@ WebInspector.TimelineModel.prototype = {
 
         /**
          * @param {boolean} accepted
+         * @this {WebInspector.TimelineModel}
          */
         function callback(accepted)
         {

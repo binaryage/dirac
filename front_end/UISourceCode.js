@@ -169,11 +169,12 @@ WebInspector.UISourceCode.prototype = {
          * @param {string=} newURL
          * @param {string=} newOriginURL
          * @param {!WebInspector.ResourceType=} newContentType
+         * @this {WebInspector.UISourceCode}
          */
         function innerCallback(success, newName, newURL, newOriginURL, newContentType)
         {
             if (success)
-                this._updateName(newName, newURL, newOriginURL, newContentType);
+                this._updateName(/** @type {string} */ (newName), /** @type {string} */ (newURL), /** @type {string} */ (newOriginURL), /** @type {!WebInspector.ResourceType} */ (newContentType));
             callback(success);
         }
     },
@@ -273,6 +274,7 @@ WebInspector.UISourceCode.prototype = {
 
         /**
          * @param {?string} updatedContent
+         * @this {WebInspector.UISourceCode}
          */
         function contentLoaded(updatedContent)
         {
@@ -363,6 +365,7 @@ WebInspector.UISourceCode.prototype = {
 
         /**
          * @param {boolean} accepted
+         * @this {WebInspector.UISourceCode}
          */
         function callback(accepted)
         {
@@ -1026,7 +1029,8 @@ WebInspector.Revision.prototype = {
     revertToThis: function()
     {
         /**
-         * @param {?string} content
+         * @param {string} content
+         * @this {WebInspector.Revision}
          */
         function revert(content)
         {
@@ -1053,7 +1057,7 @@ WebInspector.Revision.prototype = {
     },
 
     /**
-     * @param {function(?string)} callback
+     * @param {function(string)} callback
      */
     requestContent: function(callback)
     {

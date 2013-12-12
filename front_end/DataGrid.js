@@ -192,7 +192,7 @@ WebInspector.DataGrid.createSortableDataGrid = function(columnNames, values)
     for (var i = 0; i < length; ++i)
         dataGrid.rootNode().appendChild(nodes[i]);
 
-    dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, sortDataGrid, this);
+    dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, sortDataGrid);
 
     function sortDataGrid()
     {

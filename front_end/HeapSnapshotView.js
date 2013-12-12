@@ -257,6 +257,7 @@ WebInspector.HeapSnapshotView.prototype = {
 
         /**
          * @param {boolean} found
+         * @this {WebInspector.HeapSnapshotView}
          */
         function didHighlight(found)
         {
@@ -1308,6 +1309,7 @@ WebInspector.HeapProfileHeader.prototype = {
 
         /**
          * @param {boolean} accepted
+         * @this {WebInspector.HeapProfileHeader}
          */
         function onOpen(accepted)
         {

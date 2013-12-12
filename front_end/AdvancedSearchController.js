@@ -797,6 +797,6 @@ WebInspector.FileBasedSearchResultsPane.SearchResult = function(uiSourceCode, se
 }
 
 /**
- * @type {?WebInspector.AdvancedSearchController}
+ * @type {!WebInspector.AdvancedSearchController}
  */
-WebInspector.advancedSearchController = null;
+WebInspector.advancedSearchController;

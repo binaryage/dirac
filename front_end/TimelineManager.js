@@ -140,6 +140,6 @@ WebInspector.TimelineDispatcher.prototype = {
 }
 
 /**
- * @type {?WebInspector.TimelineManager}
+ * @type {!WebInspector.TimelineManager}
  */
-WebInspector.timelineManager = null;
+WebInspector.timelineManager;

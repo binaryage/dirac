@@ -127,7 +127,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.sidebarPanes.callstack.addEventListener(WebInspector.CallStackSidebarPane.Events.CallFrameRestarted, this._callFrameRestartedInSidebar.bind(this));
 
     this.sidebarPanes.scopechain = new WebInspector.ScopeChainSidebarPane();
-    this.sidebarPanes.jsBreakpoints = new WebInspector.JavaScriptBreakpointsSidebarPane(/** @type {!WebInspector.BreakpointManager} */ (WebInspector.breakpointManager), this._showSourceLocation.bind(this));
+    this.sidebarPanes.jsBreakpoints = new WebInspector.JavaScriptBreakpointsSidebarPane(WebInspector.breakpointManager, this._showSourceLocation.bind(this));
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane.createProxy(this);
     this.sidebarPanes.xhrBreakpoints = new WebInspector.XHRBreakpointsSidebarPane();
     this.sidebarPanes.eventListenerBreakpoints = new WebInspector.EventListenerBreakpointsSidebarPane();
@@ -1274,6 +1274,7 @@ WebInspector.SourcesPanel.prototype = {
 
         /**
          * @param {?string} content
+         * @this {WebInspector.SourcesPanel}
          */
         function contentLoaded(content)
         {
@@ -1287,6 +1288,7 @@ WebInspector.SourcesPanel.prototype = {
 
         /**
          * @param {string=} content
+         * @this {WebInspector.SourcesPanel}
          */
         function createFile(content)
         {
@@ -1295,6 +1297,7 @@ WebInspector.SourcesPanel.prototype = {
 
         /**
          * @param {?string} path
+         * @this {WebInspector.SourcesPanel}
          */
         function fileCreated(path)
         {
@@ -1312,6 +1315,7 @@ WebInspector.SourcesPanel.prototype = {
 
         /**
          * @param {boolean} committed
+         * @this {WebInspector.SourcesPanel}
          */
         function callback(committed)
         {
@@ -1343,6 +1347,7 @@ WebInspector.SourcesPanel.prototype = {
 
         /**
          * @param {boolean} committed
+         * @this {WebInspector.SourcesPanel}
          */
         function callback(committed)
         {
@@ -1381,6 +1386,7 @@ WebInspector.SourcesPanel.prototype = {
 
         /**
          * @param {!WebInspector.UISourceCode} networkUISourceCode
+         * @this {WebInspector.SourcesPanel}
          */
         function mapFileSystemToNetwork(networkUISourceCode)
         {
@@ -1406,6 +1412,7 @@ WebInspector.SourcesPanel.prototype = {
 
         /**
          * @param {!WebInspector.UISourceCode} uiSourceCode
+         * @this {WebInspector.SourcesPanel}
          */
         function mapNetworkToFileSystem(uiSourceCode)
         {
@@ -1474,6 +1481,7 @@ WebInspector.SourcesPanel.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {!DebuggerAgent.FunctionDetails} response
+         * @this {WebInspector.SourcesPanel}
          */
         function didGetDetails(error, response)
         {

@@ -109,6 +109,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
 
         /**
          * @param {?DOMAgent.NodeId} targetNodeId
+         * @this {WebInspector.DOMBreakpointsSidebarPane}
          */
         function didPushNodeToFrontend(targetNodeId)
         {
@@ -315,6 +316,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         /**
          * @param {string} path
          * @param {?DOMAgent.NodeId} nodeId
+         * @this {WebInspector.DOMBreakpointsSidebarPane}
          */
         function didPushNodeByPathToFrontend(path, nodeId)
         {
@@ -412,6 +414,6 @@ WebInspector.DOMBreakpointsSidebarPane.Proxy.prototype = {
 }
 
 /**
- * @type {?WebInspector.DOMBreakpointsSidebarPane}
+ * @type {!WebInspector.DOMBreakpointsSidebarPane}
  */
-WebInspector.domBreakpointsSidebarPane = null;
+WebInspector.domBreakpointsSidebarPane;

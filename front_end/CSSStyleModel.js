@@ -219,6 +219,7 @@ WebInspector.CSSStyleModel.prototype = {
          * @param {function(?WebInspector.NamedFlowCollection)} userCallback
          * @param {?Protocol.Error} error
          * @param {?Array.<!CSSAgent.NamedFlow>} namedFlowPayload
+         * @this {WebInspector.CSSStyleModel}
          */
         function callback(userCallback, error, namedFlowPayload)
         {
@@ -277,7 +278,8 @@ WebInspector.CSSStyleModel.prototype = {
          * @param {function()} failureCallback
          * @param {?Protocol.Error} error
          * @param {string} newSelector
-         * @param {?CSSAgent.CSSRule} rulePayload
+         * @param {!CSSAgent.CSSRule} rulePayload
+         * @this {WebInspector.CSSStyleModel}
          */
         function callback(nodeId, successCallback, failureCallback, newSelector, error, rulePayload)
         {
@@ -345,13 +347,11 @@ WebInspector.CSSStyleModel.prototype = {
     addRule: function(nodeId, selector, successCallback, failureCallback)
     {
         /**
-         * @param {function(!WebInspector.CSSRule, boolean)} successCallback
-         * @param {function()} failureCallback
-         * @param {string} selector
          * @param {?Protocol.Error} error
-         * @param {?CSSAgent.CSSRule} rulePayload
+         * @param {!CSSAgent.CSSRule} rulePayload
+         * @this {WebInspector.CSSStyleModel}
          */
-        function callback(successCallback, failureCallback, selector, error, rulePayload)
+        function callback(error, rulePayload)
         {
             this._pendingCommandsMajorState.pop();
             if (error) {
@@ -364,7 +364,7 @@ WebInspector.CSSStyleModel.prototype = {
         }
 
         this._pendingCommandsMajorState.push(true);
-        CSSAgent.addRule(nodeId, selector, callback.bind(this, successCallback, failureCallback, selector));
+        CSSAgent.addRule(nodeId, selector, callback.bind(this));
     },
 
     mediaQueryResultChanged: function()
@@ -1201,6 +1201,7 @@ WebInspector.CSSProperty.prototype = {
         /**
          * @param {?string} error
          * @param {!CSSAgent.CSSStyle} stylePayload
+         * @this {WebInspector.CSSProperty}
          */
         function callback(error, stylePayload)
         {
@@ -1591,7 +1592,7 @@ WebInspector.CSSStyleSheet.createForId = function(styleSheetId, userCallback)
         else
             userCallback(new WebInspector.CSSStyleSheet(styleSheetPayload));
     }
-    CSSAgent.getStyleSheet(styleSheetId, callback.bind(this));
+    CSSAgent.getStyleSheet(styleSheetId, callback);
 }
 
 WebInspector.CSSStyleSheet.prototype = {
@@ -1811,6 +1812,7 @@ WebInspector.CSSStyleModel.ComputedStyleLoader.prototype = {
          * @param {!DOMAgent.NodeId} nodeId
          * @param {?Protocol.Error} error
          * @param {!Array.<!CSSAgent.CSSComputedStyleProperty>} computedPayload
+         * @this {WebInspector.CSSStyleModel.ComputedStyleLoader}
          */
         function resultCallback(nodeId, error, computedPayload)
         {
@@ -1829,6 +1831,6 @@ WebInspector.CSSStyleModel.ComputedStyleLoader.prototype = {
 }
 
 /**
- * @type {?WebInspector.CSSStyleModel}
+ * @type {!WebInspector.CSSStyleModel}
  */
-WebInspector.cssModel = null;
+WebInspector.cssModel;

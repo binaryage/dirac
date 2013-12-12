@@ -312,7 +312,8 @@ WebInspector.DOMNode.prototype = {
     removeAttribute: function(name, callback)
     {
         /**
-         *  @param {?Protocol.Error} error
+         * @param {?Protocol.Error} error
+         * @this {WebInspector.DOMNode}
          */
         function mycallback(error)
         {
@@ -1173,6 +1174,7 @@ WebInspector.DOMAgent.prototype = {
          * @param {?Protocol.Error} error
          * @param {string} searchId
          * @param {number} resultsCount
+         * @this {WebInspector.DOMAgent}
          */
         function callback(error, searchId, resultsCount)
         {
@@ -1184,7 +1186,7 @@ WebInspector.DOMAgent.prototype = {
 
     /**
      * @param {number} index
-     * @param {?function(?DOMAgent.Node)} callback
+     * @param {?function(?WebInspector.DOMNode)} callback
      */
     searchResult: function(index, callback)
     {
@@ -1196,6 +1198,7 @@ WebInspector.DOMAgent.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {!Array.<number>} nodeIds
+         * @this {WebInspector.DOMAgent}
          */
         function searchResultsCallback(error, nodeIds)
         {
@@ -1207,7 +1210,7 @@ WebInspector.DOMAgent.prototype = {
             if (nodeIds.length != 1)
                 return;
 
-            callback(this._idToDOMNode[nodeIds[0]]);
+            callback(this.nodeForId(nodeIds[0]));
         }
     },
 
@@ -1608,6 +1611,6 @@ WebInspector.DefaultDOMNodeHighlighter.prototype = {
 }
 
 /**
- * @type {?WebInspector.DOMAgent}
+ * @type {!WebInspector.DOMAgent}
  */
-WebInspector.domAgent = null;
+WebInspector.domAgent;

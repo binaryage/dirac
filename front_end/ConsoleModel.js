@@ -316,6 +316,6 @@ WebInspector.ConsoleDispatcher.prototype = {
 }
 
 /**
- * @type {?WebInspector.ConsoleModel}
+ * @type {!WebInspector.ConsoleModel}
  */
-WebInspector.console = null;
+WebInspector.console;

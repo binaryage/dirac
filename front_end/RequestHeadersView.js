@@ -234,6 +234,7 @@ WebInspector.RequestHeadersView.prototype = {
 
         /**
          * @param {?Event} event
+         * @this {WebInspector.RequestHeadersView}
          */
         function toggleViewSource(event)
         {
@@ -281,6 +282,7 @@ WebInspector.RequestHeadersView.prototype = {
 
         /**
          * @param {?Event} event
+         * @this {WebInspector.RequestHeadersView}
          */
         function toggleViewSource(event)
         {

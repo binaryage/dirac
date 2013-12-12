@@ -134,9 +134,9 @@ WebInspector.NetworkLog.prototype = {
 }
 
 /**
- * @type {?WebInspector.NetworkLog}
+ * @type {!WebInspector.NetworkLog}
  */
-WebInspector.networkLog = null;
+WebInspector.networkLog;
 
 /**
  * @constructor

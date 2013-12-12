@@ -271,6 +271,7 @@ WebInspector.StylesSourceMapping.prototype = {
         /**
          * @param {?string} error
          * @param {string} content
+         * @this {WebInspector.StylesSourceMapping}
          */
         function callback(error, content)
         {

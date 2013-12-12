@@ -126,6 +126,7 @@ WebInspector.ProfileType.prototype = {
         /**
          * @param {!WebInspector.ProfileHeader} profile
          * @return {boolean}
+         * @this {WebInspector.ProfileType}
          */
         function isFinished(profile)
         {

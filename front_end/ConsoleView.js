@@ -614,6 +614,7 @@ WebInspector.ConsoleView.prototype = {
          * @param {string=} url
          * @param {number=} lineNumber
          * @param {number=} columnNumber
+         * @this {WebInspector.ConsoleView}
          */
         function addMessage(url, lineNumber, columnNumber)
         {
@@ -631,6 +632,7 @@ WebInspector.ConsoleView.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {!DebuggerAgent.FunctionDetails} response
+         * @this {WebInspector.ConsoleView}
          */
         function didGetDetails(error, response)
         {
@@ -671,6 +673,7 @@ WebInspector.ConsoleView.prototype = {
          * @param {?WebInspector.RemoteObject} result
          * @param {boolean} wasThrown
          * @param {?RuntimeAgent.RemoteObject=} valueResult
+         * @this {WebInspector.ConsoleView}
          */
         function printResult(result, wasThrown, valueResult)
         {
@@ -1063,9 +1066,9 @@ WebInspector.ConsoleGroup.prototype = {
 }
 
 /**
- * @type {?WebInspector.ConsoleView}
+ * @type {!WebInspector.ConsoleView}
  */
-WebInspector.consoleView = null;
+WebInspector.consoleView;
 
 WebInspector.ConsoleMessage.create = function(source, level, message, type, url, line, column, repeatCount, parameters, stackTrace, requestId, isOutdated)
 {

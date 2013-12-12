@@ -143,6 +143,7 @@ WebInspector.HandlerRegistry.prototype = {
 
         /**
          * @param {boolean} forceSaveAs
+         * @this {WebInspector.HandlerRegistry}
          */
         function save(forceSaveAs)
         {
@@ -230,6 +231,6 @@ WebInspector.HandlerSelector.prototype =
 
 
 /**
- * @type {?WebInspector.HandlerRegistry}
+ * @type {!WebInspector.HandlerRegistry}
  */
-WebInspector.openAnchorLocationRegistry = null;
+WebInspector.openAnchorLocationRegistry;

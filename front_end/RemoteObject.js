@@ -259,6 +259,7 @@ WebInspector.RemoteObject.prototype = {
          * @param {?Protocol.Error} error
          * @param {!RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
+         * @this {WebInspector.RemoteObject}
          */
         function evaluatedCallback(error, result, wasThrown)
         {
@@ -521,6 +522,7 @@ WebInspector.ScopeRemoteObject.prototype = {
         /**
          * @param {?Array.<!WebInspector.RemoteObjectProperty>} properties
          * @param {?Array.<!WebInspector.RemoteObjectProperty>} internalProperties
+         * @this {WebInspector.ScopeRemoteObject}
          */
         function wrappedCallback(properties, internalProperties)
         {
@@ -558,6 +560,7 @@ WebInspector.ScopeRemoteObject.prototype = {
 
         /**
          * @param {?Protocol.Error} error
+         * @this {WebInspector.ScopeRemoteObject}
          */
         function setVariableValueCallback(error)
         {

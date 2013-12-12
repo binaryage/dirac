@@ -220,6 +220,7 @@ WebInspector.ScriptSnippetModel.prototype = {
          * @param {?string} error
          * @param {string=} scriptId
          * @param {string=} syntaxErrorMessage
+         * @this {WebInspector.ScriptSnippetModel}
          */
         function compileCallback(error, scriptId, syntaxErrorMessage)
         {
@@ -259,6 +260,7 @@ WebInspector.ScriptSnippetModel.prototype = {
          * @param {?string} error
          * @param {?RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
+         * @this {WebInspector.ScriptSnippetModel}
          */
         function runCallback(error, result, wasThrown)
         {
@@ -685,6 +687,6 @@ WebInspector.SnippetsProjectDelegate.prototype = {
 }
 
 /**
- * @type {?WebInspector.ScriptSnippetModel}
+ * @type {!WebInspector.ScriptSnippetModel}
  */
-WebInspector.scriptSnippetModel = null;
+WebInspector.scriptSnippetModel;

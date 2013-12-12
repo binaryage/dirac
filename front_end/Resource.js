@@ -295,6 +295,7 @@ WebInspector.Resource.prototype = {
     {
         /**
          * @param {?string} content
+         * @this {WebInspector.Resource}
          */
         function onResourceContent(content)
         {
@@ -325,6 +326,7 @@ WebInspector.Resource.prototype = {
          * @param {?Protocol.Error} error
          * @param {?string} content
          * @param {boolean} contentEncoded
+         * @this {WebInspector.Resource}
          */
         function contentLoaded(error, content, contentEncoded)
         {
@@ -338,6 +340,7 @@ WebInspector.Resource.prototype = {
         /**
          * @param {?string} content
          * @param {boolean} contentEncoded
+         * @this {WebInspector.Resource}
          */
         function replyWithContent(content, contentEncoded)
         {
@@ -354,6 +357,7 @@ WebInspector.Resource.prototype = {
          * @param {?Protocol.Error} error
          * @param {string} content
          * @param {boolean} contentEncoded
+         * @this {WebInspector.Resource}
          */
         function resourceContentLoaded(error, content, contentEncoded)
         {
@@ -362,6 +366,7 @@ WebInspector.Resource.prototype = {
         
         /**
          * @param {?Protocol.Error} error
+         * @this {WebInspector.Resource}
          */
         function loadFallbackContent(error)
         {
@@ -389,6 +394,7 @@ WebInspector.Resource.prototype = {
 
         /**
          * @param {?string} content
+         * @this {WebInspector.Resource}
          */
         function fallbackContentLoaded(content)
         {
@@ -402,6 +408,7 @@ WebInspector.Resource.prototype = {
 
         /**
          * @param {?string} content
+         * @this {WebInspector.Resource}
          */
         function requestContentLoaded(content)
         {

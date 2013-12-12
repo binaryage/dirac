@@ -364,6 +364,7 @@ WebInspector.FileOutputStream.prototype = {
 
         /**
          * @param {boolean} accepted
+         * @this {WebInspector.FileOutputStream}
          */
         function callbackWrapper(accepted)
         {

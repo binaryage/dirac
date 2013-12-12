@@ -676,6 +676,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
             this._uiSourceCode.requestContent(callback.bind(this));
         /**
          * @param {?string} content
+         * @this {WebInspector.NavigatorSourceTreeElement}
          */
         function callback(content)
         {
@@ -1081,6 +1082,7 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
 
         /**
          * @param {boolean} committed
+         * @this {WebInspector.NavigatorUISourceCodeTreeNode}
          */
         function afterEditing(committed)
         {

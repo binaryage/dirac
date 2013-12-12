@@ -854,6 +854,7 @@ WebInspector.NetworkRequest.prototype = {
          * @param {?Protocol.Error} error
          * @param {string} content
          * @param {boolean} contentEncoded
+         * @this {WebInspector.NetworkRequest}
          */
         function onResourceContent(error, content, contentEncoded)
         {

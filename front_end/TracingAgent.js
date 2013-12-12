@@ -109,6 +109,6 @@ WebInspector.TracingDispatcher.prototype = {
 }
 
 /**
- * @type {?WebInspector.TracingAgent}
+ * @type {!WebInspector.TracingAgent}
  */
-WebInspector.tracingAgent = null;
+WebInspector.tracingAgent;

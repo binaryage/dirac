@@ -169,6 +169,7 @@ WebInspector.SASSSourceMapping.prototype = {
          * @param {number} statusCode
          * @param {!NetworkAgent.Headers} headers
          * @param {string} content
+         * @this {WebInspector.SASSSourceMapping}
          */
         function sassLoadedViaNetwork(error, statusCode, headers, content)
         {
@@ -184,6 +185,7 @@ WebInspector.SASSSourceMapping.prototype = {
 
         /**
          * @param {?Date} timestamp
+         * @this {WebInspector.SASSSourceMapping}
          */
         function metadataReceived(timestamp)
         {
@@ -272,6 +274,7 @@ WebInspector.SASSSourceMapping.prototype = {
          * @param {number} statusCode
          * @param {!NetworkAgent.Headers} headers
          * @param {string} content
+         * @this {WebInspector.SASSSourceMapping}
          */
         function contentLoaded(error, statusCode, headers, content)
         {
@@ -325,6 +328,7 @@ WebInspector.SASSSourceMapping.prototype = {
 
         /**
          * @param {?Date} timestamp
+         * @this {WebInspector.SASSSourceMapping}
          */
         function metadataCallback(timestamp)
         {
@@ -349,6 +353,7 @@ WebInspector.SASSSourceMapping.prototype = {
 
             /**
              * @param {?string} content
+             * @this {WebInspector.SASSSourceMapping}
              */
             function contentCallback(content)
             {
@@ -430,6 +435,7 @@ WebInspector.SASSSourceMapping.prototype = {
 
         /**
          * @param {?WebInspector.SourceMap} sourceMap
+         * @this {WebInspector.SASSSourceMapping}
          */
         function sourceMapLoaded(sourceMap)
         {
@@ -490,6 +496,7 @@ WebInspector.SASSSourceMapping.prototype = {
 
         /**
          * @param {?WebInspector.SourceMap} sourceMap
+         * @this {WebInspector.SASSSourceMapping}
          */
         function sourceMapLoaded(sourceMap)
         {

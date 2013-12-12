@@ -419,6 +419,6 @@ WebInspector.InspectorView.prototype = {
 };
 
 /**
- * @type {?WebInspector.InspectorView}
+ * @type {!WebInspector.InspectorView}
  */
-WebInspector.inspectorView = null;
+WebInspector.inspectorView;

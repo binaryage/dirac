@@ -314,6 +314,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         /**
          * @param {?RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
+         * @this {WebInspector.JavaScriptSourceFrame}
          */
         function showObjectPopover(result, wasThrown)
         {
@@ -470,6 +471,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
         /**
          * @param {!Array.<!DebuggerAgent.Location>} locations
+         * @this {WebInspector.JavaScriptSourceFrame}
          */
         function locationsCallback(locations)
         {

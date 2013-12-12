@@ -124,6 +124,6 @@ WebInspector.CPUProfilerModel.prototype = {
 }
 
 /**
- * @type {?WebInspector.CPUProfilerModel}
+ * @type {!WebInspector.CPUProfilerModel}
  */
-WebInspector.cpuProfilerModel = null;
+WebInspector.cpuProfilerModel;

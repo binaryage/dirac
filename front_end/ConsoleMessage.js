@@ -436,7 +436,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
 
     /**
      * @param {string} type
-     * @param {string} subtype
+     * @param {string=} subtype
      * @param {string=} description
      * @return {!Element}
      */
@@ -670,6 +670,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
         /**
          * @param {?WebInspector.RemoteObject} result
          * @param {boolean=} wasThrown
+         * @this {WebInspector.ConsoleMessageImpl}
          */
         function onInvokeGetterClick(result, wasThrown)
         {

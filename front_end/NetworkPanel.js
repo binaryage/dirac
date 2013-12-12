@@ -1066,6 +1066,7 @@ WebInspector.NetworkLogView.prototype = {
 
         /**
          * @param {boolean} accepted
+         * @this {WebInspector.NetworkLogView}
          */
         function openCallback(accepted)
         {

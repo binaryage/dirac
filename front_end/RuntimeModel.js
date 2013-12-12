@@ -326,9 +326,9 @@ WebInspector.RuntimeModel.prototype = {
 }
 
 /**
- * @type {?WebInspector.RuntimeModel}
+ * @type {!WebInspector.RuntimeModel}
  */
-WebInspector.runtimeModel = null;
+WebInspector.runtimeModel;
 
 /**
  * @constructor

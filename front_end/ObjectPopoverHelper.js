@@ -66,6 +66,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
          * @param {!Element} popoverContentElement
          * @param {?Protocol.Error} error
          * @param {!DebuggerAgent.FunctionDetails} response
+         * @this {WebInspector.ObjectPopoverHelper}
          */
         function didGetDetails(anchorElement, popoverContentElement, error, response)
         {
@@ -95,6 +96,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
          * @param {!WebInspector.RemoteObject} result
          * @param {boolean} wasThrown
          * @param {!Element=} anchorOverride
+         * @this {WebInspector.ObjectPopoverHelper}
          */
         function showObjectPopover(result, wasThrown, anchorOverride)
         {

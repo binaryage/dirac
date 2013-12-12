@@ -322,6 +322,7 @@ WebInspector.ElementsPanel.prototype = {
 
         /**
          * @param {?DOMAgent.NodeId} nodeId
+         * @this {WebInspector.ElementsPanel}
          */
         function selectLastSelectedNode(nodeId)
         {
@@ -369,6 +370,7 @@ WebInspector.ElementsPanel.prototype = {
 
         /**
          * @param {number} resultCount
+         * @this {WebInspector.ElementsPanel}
          */
         function resultCountCallback(resultCount)
         {
@@ -554,7 +556,8 @@ WebInspector.ElementsPanel.prototype = {
         }
 
         /**
-         * @param {?DOMAgent.Node} node
+         * @param {?WebInspector.DOMNode} node
+         * @this {WebInspector.ElementsPanel}
          */
         function searchCallback(node)
         {
@@ -1229,6 +1232,7 @@ WebInspector.ElementsPanel.prototype = {
         /**
          * @param {!WebInspector.SidebarPane} pane
          * @param {!Element=} beforeElement
+         * @this {WebInspector.ElementsPanel}
          */
         function showMetrics(pane, beforeElement)
         {
@@ -1237,6 +1241,7 @@ WebInspector.ElementsPanel.prototype = {
 
         /**
          * @param {!WebInspector.Event} event
+         * @this {WebInspector.ElementsPanel}
          */
         function tabSelected(event)
         {

@@ -137,11 +137,12 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
         /**
          * @param {boolean} success
          * @param {string=} newName
+         * @this {WebInspector.ContentProviderBasedProjectDelegate}
          */
         function innerCallback(success, newName)
         {
             if (success)
-                this._updateName(path, newName);
+                this._updateName(path, /** @type {string} */ (newName));
             callback(success, newName);
         }
     },
@@ -239,6 +240,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
 
         /**
          * @param {string} path
+         * @this {WebInspector.ContentProviderBasedProjectDelegate}
          */
         function filterOutContentScripts(path)
         {
@@ -274,12 +276,16 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
         /**
          * @param {string} path
          * @param {function(boolean)} callback
+         * @this {WebInspector.ContentProviderBasedProjectDelegate}
          */
         function searchInContent(path, callback)
         {
             var queriesToRun = queries.slice();
             searchNextQuery.call(this);
 
+            /**
+             * @this {WebInspector.ContentProviderBasedProjectDelegate}
+             */
             function searchNextQuery()
             {
                 if (!queriesToRun.length) {
@@ -292,6 +298,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
 
             /**
              * @param {!Array.<!WebInspector.ContentProvider.SearchMatch>} searchMatches
+             * @this {WebInspector.ContentProviderBasedProjectDelegate}
              */
             function contentCallback(searchMatches)
             {

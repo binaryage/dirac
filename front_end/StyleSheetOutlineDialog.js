@@ -120,6 +120,7 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
 
         /**
          * @param {?WebInspector.CSSStyleSheet} styleSheet
+         * @this {WebInspector.StyleSheetOutlineDialog}
          */
         function didGetStyleSheet(styleSheet)
         {

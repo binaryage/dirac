@@ -172,6 +172,6 @@ WebInspector.DockController.prototype = {
 }
 
 /**
- * @type {?WebInspector.DockController}
+ * @type {!WebInspector.DockController}
  */
-WebInspector.dockController = null;
+WebInspector.dockController;

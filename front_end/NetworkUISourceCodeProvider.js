@@ -136,6 +136,6 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
 }
 
 /**
- * @type {?WebInspector.SimpleWorkspaceProvider}
+ * @type {!WebInspector.SimpleWorkspaceProvider}
  */
-WebInspector.networkWorkspaceProvider = null;
+WebInspector.networkWorkspaceProvider;

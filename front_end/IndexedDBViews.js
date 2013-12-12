@@ -318,6 +318,7 @@ WebInspector.IDBDataView.prototype = {
         /**
          * @param {!Array.<!WebInspector.IndexedDBModel.Entry>} entries
          * @param {boolean} hasMore
+         * @this {WebInspector.IDBDataView}
          */
         function callback(entries, hasMore)
         {

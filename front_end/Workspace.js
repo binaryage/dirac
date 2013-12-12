@@ -333,6 +333,7 @@ WebInspector.Project.prototype = {
 
         /**
          * @param {?string} content
+         * @this {WebInspector.Project}
          */
         function onSetContent(content)
         {
@@ -369,6 +370,7 @@ WebInspector.Project.prototype = {
          * @param {string=} newURL
          * @param {string=} newOriginURL
          * @param {!WebInspector.ResourceType=} newContentType
+         * @this {WebInspector.Project}
          */
         function innerCallback(success, newName, newURL, newOriginURL, newContentType)
         {
@@ -700,6 +702,6 @@ WebInspector.Workspace.prototype = {
 }
 
 /**
- * @type {?WebInspector.Workspace}
+ * @type {!WebInspector.Workspace}
  */
-WebInspector.workspace = null;
+WebInspector.workspace;

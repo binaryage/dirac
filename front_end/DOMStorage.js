@@ -306,6 +306,6 @@ WebInspector.DOMStorageDispatcher.prototype = {
 }
 
 /**
- * @type {?WebInspector.DOMStorageModel}
+ * @type {!WebInspector.DOMStorageModel}
  */
-WebInspector.domStorageModel = null;
+WebInspector.domStorageModel;

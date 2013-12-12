@@ -346,6 +346,7 @@ WebInspector.ExtensionServer.prototype = {
          * @param {?Protocol.Error} error
          * @param {?RuntimeAgent.RemoteObject} resultPayload
          * @param {boolean=} wasThrown
+         * @this {WebInspector.ExtensionServer}
          */
         function callback(error, resultPayload, wasThrown)
         {
@@ -471,6 +472,7 @@ WebInspector.ExtensionServer.prototype = {
     {
         /**
          * @param {?string} content
+         * @this {WebInspector.ExtensionServer}
          */
         function onContentAvailable(content)
         {
@@ -505,6 +507,7 @@ WebInspector.ExtensionServer.prototype = {
     {
         /**
          * @param {?Protocol.Error} error
+         * @this {WebInspector.ExtensionServer}
          */
         function callbackWrapper(error)
         {

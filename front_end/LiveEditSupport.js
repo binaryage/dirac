@@ -128,6 +128,7 @@ WebInspector.LiveEditScriptFile.prototype = {
         /**
          * @param {?string} error
          * @param {!DebuggerAgent.SetScriptSourceError=} errorData
+         * @this {WebInspector.LiveEditScriptFile}
          */
         function innerCallback(error, errorData)
         {
@@ -174,5 +175,5 @@ WebInspector.LiveEditScriptFile.prototype = {
     __proto__: WebInspector.Object.prototype
 }
 
-/** @type {?WebInspector.LiveEditSupport} */
-WebInspector.liveEditSupport = null;
+/** @type {!WebInspector.LiveEditSupport} */
+WebInspector.liveEditSupport;

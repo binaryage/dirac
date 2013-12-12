@@ -150,6 +150,7 @@ WebInspector.PaintProfilerView.prototype = {
 
         /**
          * @param {!WebInspector.LayerSnapshot=} snapshot
+         * @this {WebInspector.PaintProfilerView}
          */
         function onSnapshotDone(snapshot)
         {
@@ -162,8 +163,10 @@ WebInspector.PaintProfilerView.prototype = {
             snapshot.requestImage(null, null, this._layers3DView.showImageForLayer.bind(this._layers3DView, this._layer));
             snapshot.profile(onProfileDone.bind(this));
         }
+
         /**
          * @param {!Array.<!LayerTreeAgent.PaintProfile>=} profiles
+         * @this {WebInspector.PaintProfilerView}
          */
         function onProfileDone(profiles)
         {

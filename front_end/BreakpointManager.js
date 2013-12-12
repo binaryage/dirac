@@ -728,5 +728,5 @@ WebInspector.BreakpointManager.Storage.Item = function(breakpoint)
     this.enabled = breakpoint.enabled();
 }
 
-/** @type {?WebInspector.BreakpointManager} */
-WebInspector.breakpointManager = null;
+/** @type {!WebInspector.BreakpointManager} */
+WebInspector.breakpointManager;

@@ -59,6 +59,7 @@ WebInspector.InspectElementModeController.prototype = {
 
         /**
          * @param {?Protocol.Error} error
+         * @this {WebInspector.InspectElementModeController}
          */
         function callback(error)
         {
@@ -82,5 +83,5 @@ WebInspector.InspectElementModeController.prototype = {
     }
 }
 
-/** @type {?WebInspector.InspectElementModeController} */
-WebInspector.inspectElementModeController = null;
+/** @type {!WebInspector.InspectElementModeController} */
+WebInspector.inspectElementModeController;

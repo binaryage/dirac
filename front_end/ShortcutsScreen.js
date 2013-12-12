@@ -86,9 +86,9 @@ WebInspector.ShortcutsScreen.prototype = {
 
 /**
  * We cannot initialize it here as localized strings are not loaded yet.
- * @type {?WebInspector.ShortcutsScreen}
+ * @type {!WebInspector.ShortcutsScreen}
  */
-WebInspector.shortcutsScreen = null;
+WebInspector.shortcutsScreen;
 
 /**
  * @constructor

@@ -141,7 +141,7 @@ WebInspector.Layers3DView.prototype = {
 
     /**
      * @param {!WebInspector.Layer} layer
-     * @param {?string} imageURL
+     * @param {string=} imageURL
      */
     showImageForLayer: function(layer, imageURL)
     {

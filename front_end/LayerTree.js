@@ -89,6 +89,7 @@ WebInspector.LayerTree.prototype = {
 
         /**
          * @param {!WebInspector.Layer} layer
+         * @this {WebInspector.LayerTree}
          */
         function updateLayer(layer)
         {

@@ -266,6 +266,7 @@ WebInspector.IndexedDBModel.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {!Array.<string>} databaseNames
+         * @this {WebInspector.IndexedDBModel}
          */
         function callback(error, databaseNames)
         {
@@ -290,6 +291,7 @@ WebInspector.IndexedDBModel.prototype = {
         /**
          * @param {?Protocol.Error} error
          * @param {!IndexedDBAgent.DatabaseWithObjectStores} databaseWithObjectStores
+         * @this {WebInspector.IndexedDBModel}
          */
         function callback(error, databaseWithObjectStores)
         {
@@ -364,6 +366,7 @@ WebInspector.IndexedDBModel.prototype = {
          * @param {?Protocol.Error} error
          * @param {!Array.<!IndexedDBAgent.DataEntry>} dataEntries
          * @param {boolean} hasMore
+         * @this {WebInspector.IndexedDBModel}
          */
         function innerCallback(error, dataEntries, hasMore)
         {

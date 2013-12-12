@@ -46,6 +46,7 @@ WebInspector.RevisionHistoryView = function()
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @this {WebInspector.RevisionHistoryView}
      */
     function populateRevisions(uiSourceCode)
     {
@@ -221,6 +222,7 @@ WebInspector.RevisionHistoryTreeElement.prototype = {
 
         /**
          * @param {?string} baseContent
+         * @this {WebInspector.RevisionHistoryTreeElement}
          */
         function step1(baseContent)
         {
@@ -230,6 +232,7 @@ WebInspector.RevisionHistoryTreeElement.prototype = {
         /**
          * @param {?string} baseContent
          * @param {?string} newContent
+         * @this {WebInspector.RevisionHistoryTreeElement}
          */
         function step2(baseContent, newContent)
         {

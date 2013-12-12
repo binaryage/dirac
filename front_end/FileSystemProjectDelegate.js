@@ -164,6 +164,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
         /**
          * @param {boolean} success
          * @param {string=} newName
+         * @this {WebInspector.FileSystemProjectDelegate}
          */
         function innerCallback(success, newName)
         {
@@ -171,14 +172,16 @@ WebInspector.FileSystemProjectDelegate.prototype = {
                 callback(false, newName);
                 return;
             }
+            var validNewName = /** @type {string} */ (newName);
+            console.assert(validNewName);
             var slash = filePath.lastIndexOf("/");
             var parentPath = filePath.substring(0, slash);
-            filePath = parentPath + "/" + newName;
+            filePath = parentPath + "/" + validNewName;
             var newURL = this._workspace.urlForPath(this._fileSystem.path(), filePath);
-            var extension = this._extensionForPath(newName);
+            var extension = this._extensionForPath(validNewName);
             var newOriginURL = this._fileSystemURL + filePath
             var newContentType = this._contentTypeForExtension(extension);
-            callback(true, newName, newURL, newOriginURL, newContentType);
+            callback(true, validNewName, newURL, newOriginURL, newContentType);
         }
     },
 
@@ -235,6 +238,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
 
         /**
          * @param {!Array.<string>} files
+         * @this {WebInspector.FileSystemProjectDelegate}
          */
         function innerCallback(files)
         {
@@ -287,11 +291,13 @@ WebInspector.FileSystemProjectDelegate.prototype = {
 
         /**
          * @param {!Array.<string>} files
+         * @this {WebInspector.FileSystemProjectDelegate}
          */
         function innerCallback(files)
         {
             /**
              * @param {string} fullPath
+             * @this {WebInspector.FileSystemProjectDelegate}
              */
             function trimAndNormalizeFileSystemPath(fullPath)
             {
@@ -446,6 +452,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
 
         /**
          * @param {?string} filePath
+         * @this {WebInspector.FileSystemProjectDelegate}
          */
         function innerCallback(filePath)
         {
@@ -515,9 +522,9 @@ WebInspector.FileSystemProjectDelegate.prototype = {
 }
 
 /**
- * @type {?WebInspector.FileSystemProjectDelegate}
+ * @type {!WebInspector.FileSystemProjectDelegate}
  */
-WebInspector.fileSystemProjectDelegate = null;
+WebInspector.fileSystemProjectDelegate;
 
 /**
  * @constructor
@@ -579,6 +586,6 @@ WebInspector.FileSystemWorkspaceProvider.prototype = {
 }
 
 /**
- * @type {?WebInspector.FileSystemWorkspaceProvider}
+ * @type {!WebInspector.FileSystemWorkspaceProvider}
  */
-WebInspector.fileSystemWorkspaceProvider = null;
+WebInspector.fileSystemWorkspaceProvider;

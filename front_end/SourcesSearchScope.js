@@ -139,6 +139,7 @@ WebInspector.SourcesSearchScope.prototype = {
 
         /**
          * @param {!string} path
+         * @this {WebInspector.SourcesSearchScope}
          */
         function searchInNextFile(path)
         {
@@ -152,6 +153,9 @@ WebInspector.SourcesSearchScope.prototype = {
             uiSourceCode.requestContent(contentLoaded.bind(this, path));
         }
 
+        /**
+         * @this {WebInspector.SourcesSearchScope}
+         */
         function scheduleSearchInNextFileOrFinish()
         {
             if (fileIndex >= files.length) {
@@ -171,6 +175,7 @@ WebInspector.SourcesSearchScope.prototype = {
         /**
          * @param {!string} path
          * @param {?string} content
+         * @this {WebInspector.SourcesSearchScope}
          */
         function contentLoaded(path, content)
         {

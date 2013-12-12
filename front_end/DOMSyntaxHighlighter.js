@@ -59,6 +59,7 @@ WebInspector.DOMSyntaxHighlighter.prototype = {
          * @param {string} tokenType
          * @param {number} column
          * @param {number} newColumn
+         * @this {WebInspector.DOMSyntaxHighlighter}
          */
         function processToken(token, tokenType, column, newColumn)
         {

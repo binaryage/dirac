@@ -199,9 +199,9 @@ WebInspector.IsolatedFileSystemManager.prototype = {
 }
 
 /**
- * @type {?WebInspector.IsolatedFileSystemManager}
+ * @type {!WebInspector.IsolatedFileSystemManager}
  */
-WebInspector.isolatedFileSystemManager = null;
+WebInspector.isolatedFileSystemManager;
 
 /**
  * @constructor
@@ -240,6 +240,6 @@ WebInspector.IsolatedFileSystemDispatcher.prototype = {
 }
 
 /**
- * @type {?WebInspector.IsolatedFileSystemDispatcher}
+ * @type {!WebInspector.IsolatedFileSystemDispatcher}
  */
-WebInspector.isolatedFileSystemDispatcher = null;
+WebInspector.isolatedFileSystemDispatcher;

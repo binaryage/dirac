@@ -555,6 +555,6 @@ WebInspector.NetworkDispatcher.prototype = {
 }
 
 /**
- * @type {?WebInspector.NetworkManager}
+ * @type {!WebInspector.NetworkManager}
  */
-WebInspector.networkManager = null;
+WebInspector.networkManager;

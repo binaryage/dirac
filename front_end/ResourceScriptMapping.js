@@ -205,6 +205,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     {
         /**
          * @param {!Array.<!WebInspector.Script>} scripts
+         * @this {WebInspector.ResourceScriptMapping}
          */
         function unbindUISourceCodesForScripts(scripts)
         {
@@ -283,6 +284,7 @@ WebInspector.ResourceScriptFile.prototype = {
         /**
          * @param {?string} error
          * @param {!DebuggerAgent.SetScriptSourceError=} errorData
+         * @this {WebInspector.ResourceScriptFile}
          */
         function innerCallback(error, errorData)
         {
@@ -410,6 +412,7 @@ WebInspector.ResourceScriptFile.prototype = {
 
         /**
          * @param {?string} source
+         * @this {WebInspector.ResourceScriptFile}
          */
         function callback(source)
         {
