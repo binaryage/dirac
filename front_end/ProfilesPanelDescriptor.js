@@ -54,44 +54,6 @@ WebInspector.ProfilesPanelDescriptor.ShortcutKeys = {
 WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp = /webkit-profile:\/\/(.+)\/(.+)/;
 
 /**
- * @param {?Event} event
- */
-WebInspector.ProfilesPanelDescriptor._openCPUProfile = function(event)
-{
-    event.preventDefault();
-    var panel = WebInspector.showPanel("profiles");
-    var link = /** @type {!Element} */ (event.target);
-    var view = /** @type {!WebInspector.CPUProfileView} */ (panel.showProfile("CPU", link.profileUID));
-    if (!view)
-        return;
-    if (typeof link.timeLeft === "number" && typeof link.timeRight === "number")
-        view.selectRange(link.timeLeft, link.timeRight);
-}
-
-/**
- * @param {number} uid
- * @param {string} linkText
- * @param {number=} timeLeft
- * @param {number=} timeRight
- * @param {string=} tooltipText
- * @return {!Element}
- */
-WebInspector.ProfilesPanelDescriptor.linkifyCPUProfile = function(uid, linkText, timeLeft, timeRight, tooltipText)
-{
-    var link = document.createElement("a");
-    link.innerText = linkText;
-    link.href = WebInspector.UIString("show CPU profile");
-    link.target = "_blank";
-    if (tooltipText)
-        link.title = tooltipText;
-    link.timeLeft = timeLeft;
-    link.timeRight = timeRight;
-    link.profileUID = uid;
-    link.addEventListener("click", WebInspector.ProfilesPanelDescriptor._openCPUProfile, true);
-    return link;
-}
-
-/**
  * @constructor
  * @extends {WebInspector.Object}
  */
