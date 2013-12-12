@@ -116,12 +116,11 @@ WebInspector.ConsoleMessageImpl.prototype = {
                     this._messageElement = this._format(args);
                     break;
                 case WebInspector.ConsoleMessage.MessageType.Profile:
-                    var title = WebInspector.ProfilesPanelDescriptor.resolveProfileTitle(this._messageText);
-                    this._messageElement = document.createTextNode(WebInspector.UIString("Profile '%s' started.", title));
+                    this._messageElement = document.createTextNode(WebInspector.UIString("Profile '%s' started.", this._messageText));
                     break;
                 case WebInspector.ConsoleMessage.MessageType.ProfileEnd:
                     var hashIndex = this._messageText.lastIndexOf("#");
-                    var title = WebInspector.ProfilesPanelDescriptor.resolveProfileTitle(this._messageText.substring(0, hashIndex));
+                    var title = this._messageText.substring(0, hashIndex);
                     var uid = this._messageText.substring(hashIndex + 1);
                     var format = WebInspector.UIString("Profile '%s' finished.", "%_");
                     var link = WebInspector.linkifyURLAsNode("webkit-profile://CPU/" + uid, title);

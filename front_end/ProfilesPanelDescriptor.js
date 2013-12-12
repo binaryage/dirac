@@ -54,15 +54,6 @@ WebInspector.ProfilesPanelDescriptor.ShortcutKeys = {
 WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp = /webkit-profile:\/\/(.+)\/(.+)/;
 
 /**
- * @param {string} title
- * @return {string}
- */
-WebInspector.ProfilesPanelDescriptor.resolveProfileTitle = function(title)
-{
-    return title;
-}
-
-/**
  * @param {?Event} event
  */
 WebInspector.ProfilesPanelDescriptor._openCPUProfile = function(event)
