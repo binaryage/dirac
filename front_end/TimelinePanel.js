@@ -232,68 +232,6 @@ WebInspector.TimelinePanel.prototype = {
         }
     },
 
-    get calculator()
-    {
-        return this._calculator;
-    },
-
-    defaultFocusedElement: function()
-    {
-        return this.element;
-    },
-
-    /**
-     * @return {!WebInspector.SearchableView}
-     */
-    searchableView: function()
-    {
-        return this._searchableView;
-    },
-
-    /**
-     * @param {!WebInspector.FilterBar} filterBar
-     * @return {boolean}
-     */
-    _createFilters: function(filterBar)
-    {
-        this._textFilter = new WebInspector.TextFilterUI();
-        this._textFilter.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._textFilterChanged, this);
-        filterBar.addFilter(this._textFilter);
-
-        var durationOptions = [];
-        for (var presetIndex = 0; presetIndex < WebInspector.TimelinePanel.durationFilterPresetsMs.length; ++presetIndex) {
-            var durationMs = WebInspector.TimelinePanel.durationFilterPresetsMs[presetIndex];
-            var durationOption = {};
-            if (!durationMs) {
-                durationOption.label = WebInspector.UIString("All");
-                durationOption.title = WebInspector.UIString("Show all records");
-            } else {
-                durationOption.label = WebInspector.UIString("\u2265 %dms", durationMs);
-                durationOption.title = WebInspector.UIString("Hide records shorter than %dms", durationMs);
-            }
-            durationOption.value = durationMs;
-            durationOptions.push(durationOption);
-        }
-        this._durationFilter = new WebInspector.TimelineIsLongFilter();
-        this._durationComboBoxFilter = new WebInspector.ComboBoxFilterUI(durationOptions);
-        this._durationComboBoxFilter.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._durationFilterChanged, this);
-        filterBar.addFilter(this._durationComboBoxFilter);
-
-        this._categoryFilters = {};
-        var categoryTypes = [];
-        var categories = WebInspector.TimelinePresentationModel.categories();
-        for (var categoryName in categories) {
-            var category = categories[categoryName];
-            if (category.overviewStripGroupIndex < 0)
-                continue;
-            var filter = new WebInspector.CheckboxFilterUI(category.name, category.title);
-            filter.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._categoriesFilterChanged.bind(this, category.name), this);
-            filterBar.addFilter(filter);
-            this._categoryFilters[category.name] = filter;
-        }
-        return true;
-    },
-
     _createStatusBarItems: function()
     {
         var panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
@@ -339,39 +277,17 @@ WebInspector.TimelinePanel.prototype = {
         this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
     },
 
-    _textFilterChanged: function(event)
+    defaultFocusedElement: function()
     {
-        var searchQuery = this._textFilter.value();
-        this._presentationModel.setSearchFilter(null);
-        delete this._searchFilter;
-
-        function cleanRecord(record)
-        {
-            delete record.clicked;
-        }
-        WebInspector.TimelinePresentationModel.forAllRecords(this._presentationModel.rootRecord().children, cleanRecord);
-
-        this.searchCanceled();
-        if (searchQuery) {
-            this._searchFilter = new WebInspector.TimelineSearchFilter(createPlainTextSearchRegex(searchQuery, "i"));
-            this._presentationModel.setSearchFilter(this._searchFilter);
-        }
-        this._invalidateAndScheduleRefresh(true, true);
+        return this.element;
     },
 
-    _durationFilterChanged: function()
+    /**
+     * @return {!WebInspector.SearchableView}
+     */
+    searchableView: function()
     {
-        var duration = this._durationComboBoxFilter.value();
-        var minimumRecordDuration = +duration / 1000.0;
-        this._durationFilter.setMinimumRecordDuration(minimumRecordDuration);
-        this._invalidateAndScheduleRefresh(true, true);
-    },
-
-    _categoriesFilterChanged: function(name, event)
-    {
-        var categories = WebInspector.TimelinePresentationModel.categories();
-        categories[name].hidden = !this._categoryFilters[name].checked();
-        this._invalidateAndScheduleRefresh(true, true);
+        return this._searchableView;
     },
 
     _onFiltersToggled: function(event)
@@ -460,6 +376,229 @@ WebInspector.TimelinePanel.prototype = {
         if (!progressIndicator)
             return;
         this._model.loadFromURL(url, progressIndicator);
+    },
+
+    _createOverviewControls: function()
+    {
+        this._overviewControls = {};
+        this._overviewControls[WebInspector.TimelinePanel.Mode.Events] = new WebInspector.TimelineEventOverview(this._model);
+        this._frameOverviewControl = new WebInspector.TimelineFrameOverview(this._model);
+        this._overviewControls[WebInspector.TimelinePanel.Mode.Frames] = this._frameOverviewControl;
+        this._overviewControls[WebInspector.TimelinePanel.Mode.Memory] = new WebInspector.TimelineMemoryOverview(this._model);
+    },
+
+    _selectPresentationMode: function(mode)
+    {
+        if (!this._overviewItems[mode])
+            mode = WebInspector.TimelinePanel.Mode.Events;
+        this._overviewItems[mode].revealAndSelect(false);
+    },
+
+    _onModeChanged: function(mode)
+    {
+        this._overviewPane.willSetOverviewControl(this._overviewControls[mode]);
+
+        var shouldShowMemory = mode === WebInspector.TimelinePanel.Mode.Memory;
+        var frameMode = mode === WebInspector.TimelinePanel.Mode.Frames;
+        this._presentationModeSetting.set(mode);
+        if (frameMode !== this._frameMode) {
+            this._frameMode = frameMode;
+            this._glueParentButton.setEnabled(!frameMode);
+            this._presentationModel.setGlueRecords(this._glueParentButton.toggled && !frameMode);
+            this._repopulateRecords();
+
+            if (frameMode) {
+                this.element.classList.add("timeline-frame-overview");
+                this.recordsCounter.element.classList.add("hidden");
+                this._frameController = new WebInspector.TimelineFrameController(this._model, this._frameOverviewControl, this._presentationModel);
+            } else {
+                this._frameController.dispose();
+                this._frameController = null;
+                this.element.classList.remove("timeline-frame-overview");
+                this.recordsCounter.element.classList.remove("hidden");
+            }
+        }
+
+        if (shouldShowMemory)
+            this._timelineMemorySplitter.showBoth();
+        else
+            this._timelineMemorySplitter.showOnlyFirst();
+        this.onResize();
+        this._updateSelectionDetails();
+        this._overviewPane.didSetOverviewControl();
+    },
+
+    /**
+     * @param {boolean} userInitiated
+     */
+    _startRecording: function(userInitiated)
+    {
+        this._userInitiatedRecording = userInitiated;
+        this._model.startRecording(true);
+        if (userInitiated)
+            WebInspector.userMetrics.TimelineStarted.record();
+    },
+
+    _stopRecording: function()
+    {
+        this._userInitiatedRecording = false;
+        this._model.stopRecording();
+    },
+
+    /**
+     * @return {boolean}
+     */
+    _toggleTimelineButtonClicked: function()
+    {
+        if (this._operationInProgress)
+            return true;
+        if (this._recordingInProgress())
+            this._stopRecording();
+        else
+            this._startRecording(true);
+        return true;
+    },
+
+    _garbageCollectButtonClicked: function()
+    {
+        HeapProfilerAgent.collectGarbage();
+    },
+
+    _glueParentButtonClicked: function()
+    {
+        var newValue = !this._glueParentButton.toggled;
+        this._glueParentButton.toggled = newValue;
+        this._presentationModel.setGlueRecords(newValue);
+        this._glueRecordsSetting.set(newValue);
+        this._repopulateRecords();
+    },
+
+    _clearPanel: function()
+    {
+        this._model.reset();
+    },
+
+    _onRecordingStarted: function()
+    {
+        this.toggleTimelineButton.title = WebInspector.UIString("Stop");
+        this.toggleTimelineButton.toggled = true;
+    },
+
+    _recordingInProgress: function()
+    {
+        return this.toggleTimelineButton.toggled;
+    },
+
+    _onRecordingStopped: function()
+    {
+        this.toggleTimelineButton.title = WebInspector.UIString("Record");
+        this.toggleTimelineButton.toggled = false;
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _willReloadPage: function(event)
+    {
+        if (this._operationInProgress || this._userInitiatedRecording || !this.isShowing())
+            return;
+        this._startRecording(false);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _loadEventFired: function(event)
+    {
+        if (!this._recordingInProgress() || this._userInitiatedRecording)
+            return;
+        this._stopRecording();
+    },
+
+// TimelineView.
+
+    get calculator()
+    {
+        return this._calculator;
+    },
+
+    /**
+     * @param {!WebInspector.FilterBar} filterBar
+     * @return {boolean}
+     */
+    _createFilters: function(filterBar)
+    {
+        this._textFilter = new WebInspector.TextFilterUI();
+        this._textFilter.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._textFilterChanged, this);
+        filterBar.addFilter(this._textFilter);
+
+        var durationOptions = [];
+        for (var presetIndex = 0; presetIndex < WebInspector.TimelinePanel.durationFilterPresetsMs.length; ++presetIndex) {
+            var durationMs = WebInspector.TimelinePanel.durationFilterPresetsMs[presetIndex];
+            var durationOption = {};
+            if (!durationMs) {
+                durationOption.label = WebInspector.UIString("All");
+                durationOption.title = WebInspector.UIString("Show all records");
+            } else {
+                durationOption.label = WebInspector.UIString("\u2265 %dms", durationMs);
+                durationOption.title = WebInspector.UIString("Hide records shorter than %dms", durationMs);
+            }
+            durationOption.value = durationMs;
+            durationOptions.push(durationOption);
+        }
+        this._durationFilter = new WebInspector.TimelineIsLongFilter();
+        this._durationComboBoxFilter = new WebInspector.ComboBoxFilterUI(durationOptions);
+        this._durationComboBoxFilter.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._durationFilterChanged, this);
+        filterBar.addFilter(this._durationComboBoxFilter);
+
+        this._categoryFilters = {};
+        var categoryTypes = [];
+        var categories = WebInspector.TimelinePresentationModel.categories();
+        for (var categoryName in categories) {
+            var category = categories[categoryName];
+            if (category.overviewStripGroupIndex < 0)
+                continue;
+            var filter = new WebInspector.CheckboxFilterUI(category.name, category.title);
+            filter.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._categoriesFilterChanged.bind(this, category.name), this);
+            filterBar.addFilter(filter);
+            this._categoryFilters[category.name] = filter;
+        }
+        return true;
+    },
+
+    _textFilterChanged: function(event)
+    {
+        var searchQuery = this._textFilter.value();
+        this._presentationModel.setSearchFilter(null);
+        delete this._searchFilter;
+
+        function cleanRecord(record)
+        {
+            delete record.clicked;
+        }
+        WebInspector.TimelinePresentationModel.forAllRecords(this._presentationModel.rootRecord().children, cleanRecord);
+
+        this.searchCanceled();
+        if (searchQuery) {
+            this._searchFilter = new WebInspector.TimelineSearchFilter(createPlainTextSearchRegex(searchQuery, "i"));
+            this._presentationModel.setSearchFilter(this._searchFilter);
+        }
+        this._invalidateAndScheduleRefresh(true, true);
+    },
+
+    _durationFilterChanged: function()
+    {
+        var duration = this._durationComboBoxFilter.value();
+        var minimumRecordDuration = +duration / 1000.0;
+        this._durationFilter.setMinimumRecordDuration(minimumRecordDuration);
+        this._invalidateAndScheduleRefresh(true, true);
+    },
+
+    _categoriesFilterChanged: function(name, event)
+    {
+        var categories = WebInspector.TimelinePresentationModel.categories();
+        categories[name].hidden = !this._categoryFilters[name].checked();
+        this._invalidateAndScheduleRefresh(true, true);
     },
 
     _dockSideChanged: function()
@@ -578,101 +717,6 @@ WebInspector.TimelinePanel.prototype = {
         this._overviewPane.zoomToFrame(frameBar._frame);
     },
 
-    _createOverviewControls: function()
-    {
-        this._overviewControls = {};
-        this._overviewControls[WebInspector.TimelinePanel.Mode.Events] = new WebInspector.TimelineEventOverview(this._model);
-        this._frameOverviewControl = new WebInspector.TimelineFrameOverview(this._model);
-        this._overviewControls[WebInspector.TimelinePanel.Mode.Frames] = this._frameOverviewControl;
-        this._overviewControls[WebInspector.TimelinePanel.Mode.Memory] = new WebInspector.TimelineMemoryOverview(this._model);
-    },
-
-    _selectPresentationMode: function(mode)
-    {
-        if (!this._overviewItems[mode])
-            mode = WebInspector.TimelinePanel.Mode.Events;
-        this._overviewItems[mode].revealAndSelect(false);
-    },
-
-    _onModeChanged: function(mode)
-    {
-        this._overviewPane.willSetOverviewControl(this._overviewControls[mode]);
-
-        var shouldShowMemory = mode === WebInspector.TimelinePanel.Mode.Memory;
-        var frameMode = mode === WebInspector.TimelinePanel.Mode.Frames;
-        this._presentationModeSetting.set(mode);
-        if (frameMode !== this._frameMode) {
-            this._frameMode = frameMode;
-            this._glueParentButton.setEnabled(!frameMode);
-            this._presentationModel.setGlueRecords(this._glueParentButton.toggled && !frameMode);
-            this._repopulateRecords();
-
-            if (frameMode) {
-                this.element.classList.add("timeline-frame-overview");
-                this.recordsCounter.element.classList.add("hidden");
-                this._frameController = new WebInspector.TimelineFrameController(this._model, this._frameOverviewControl, this._presentationModel);
-            } else {
-                this._frameController.dispose();
-                this._frameController = null;
-                this.element.classList.remove("timeline-frame-overview");
-                this.recordsCounter.element.classList.remove("hidden");
-            }
-        }
-
-        if (shouldShowMemory)
-            this._timelineMemorySplitter.showBoth();
-        else
-            this._timelineMemorySplitter.showOnlyFirst();
-        this.onResize();
-        this._updateSelectionDetails();
-        this._overviewPane.didSetOverviewControl();
-    },
-
-    /**
-     * @param {boolean} userInitiated
-     */
-    _startRecording: function(userInitiated)
-    {
-        this._userInitiatedRecording = userInitiated;
-        this._model.startRecording(true);
-        if (userInitiated)
-            WebInspector.userMetrics.TimelineStarted.record();
-    },
-
-    _stopRecording: function()
-    {
-        this._userInitiatedRecording = false;
-        this._model.stopRecording();
-    },
-
-    /**
-     * @return {boolean}
-     */
-    _toggleTimelineButtonClicked: function()
-    {
-        if (this._operationInProgress)
-            return true;
-        if (this._recordingInProgress())
-            this._stopRecording();
-        else
-            this._startRecording(true);
-        return true;
-    },
-
-    _garbageCollectButtonClicked: function()
-    {
-        HeapProfilerAgent.collectGarbage();
-    },
-
-    _glueParentButtonClicked: function()
-    {
-        var newValue = !this._glueParentButton.toggled;
-        this._glueParentButton.toggled = newValue;
-        this._presentationModel.setGlueRecords(newValue);
-        this._glueRecordsSetting.set(newValue);
-        this._repopulateRecords();
-    },
-
     _repopulateRecords: function()
     {
         this._resetPanel();
@@ -756,34 +800,6 @@ WebInspector.TimelinePanel.prototype = {
         this._scheduleRefresh(false, true);
     },
 
-    _clearPanel: function()
-    {
-        this._model.reset();
-    },
-
-    _onRecordsCleared: function()
-    {
-        this._resetPanel();
-        this._invalidateAndScheduleRefresh(true, true);
-    },
-
-    _onRecordingStarted: function()
-    {
-        this.toggleTimelineButton.title = WebInspector.UIString("Stop");
-        this.toggleTimelineButton.toggled = true;
-    },
-
-    _recordingInProgress: function()
-    {
-        return this.toggleTimelineButton.toggled;
-    },
-
-    _onRecordingStopped: function()
-    {
-        this.toggleTimelineButton.title = WebInspector.UIString("Record");
-        this.toggleTimelineButton.toggled = false;
-    },
-
     _resetPanel: function()
     {
         this._presentationModel.reset();
@@ -794,6 +810,12 @@ WebInspector.TimelinePanel.prototype = {
         this._automaticallySizeWindow = true;
         this._mainThreadTasks = [];
         this._gpuTasks = [];
+    },
+
+    _onRecordsCleared: function()
+    {
+        this._resetPanel();
+        this._invalidateAndScheduleRefresh(true, true);
     },
 
     elementsToRestoreScrollPositionsFor: function()
@@ -1531,26 +1553,6 @@ WebInspector.TimelinePanel.prototype = {
         this._searchRegExp = createPlainTextSearchRegex(query, "i");
         delete this._searchResults;
         this._updateSearchHighlight(true, shouldJump);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _willReloadPage: function(event)
-    {
-        if (this._operationInProgress || this._userInitiatedRecording || !this.isShowing())
-            return;
-        this._startRecording(false);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _loadEventFired: function(event)
-    {
-        if (!this._recordingInProgress() || this._userInitiatedRecording)
-            return;
-        this._stopRecording();
     },
 
     __proto__: WebInspector.Panel.prototype
