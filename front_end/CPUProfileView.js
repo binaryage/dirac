@@ -725,8 +725,9 @@ WebInspector.CPUProfileType.prototype = {
             var title = WebInspector.UIString("Profile %d", this._profileBeingRecorded.uid);
             this._profileBeingRecorded.title = title;
             this._profileBeingRecorded.sidebarElement.mainTitle = title;
-            WebInspector.panels.profiles._showProfile(this._profileBeingRecorded);
+            var recordedProfile = this._profileBeingRecorded;
             this._profileBeingRecorded = null;
+            WebInspector.panels.profiles._showProfile(recordedProfile);
         }
         ProfilerAgent.stop(didStopProfiling.bind(this));
     },
