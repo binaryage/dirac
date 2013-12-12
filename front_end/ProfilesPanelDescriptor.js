@@ -56,64 +56,21 @@ WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp = /webkit-profile:\/\/(.+)
 /**
  * @constructor
  * @extends {WebInspector.Object}
- */
-WebInspector.ProfileManager = function()
-{
-   this._startedProfiles = {};
-};
-
-WebInspector.ProfileManager.EventTypes = {
-    ProfileStarted: "profile-started",
-    ProfileStopped: "profile-stopped"
-};
-
-WebInspector.ProfileManager.prototype = {
-    /**
-     * @param {string} profileTypeId
-     * @return {boolean}
-     */
-    isStarted: function(profileTypeId)
-    {
-        return profileTypeId in this._startedProfiles;
-    },
-
-    /**
-     * @param {string} profileTypeId
-     */
-    notifyStarted: function(profileTypeId)
-    {
-        this._startedProfiles[profileTypeId] = true;
-        this.dispatchEventToListeners(WebInspector.ProfileManager.EventTypes.ProfileStarted, profileTypeId);
-    },
-
-    /**
-     * @param {string} profileTypeId
-     */
-    notifyStoped: function(profileTypeId)
-    {
-        delete this._startedProfiles[profileTypeId];
-        this.dispatchEventToListeners(WebInspector.ProfileManager.EventTypes.ProfileStopped, profileTypeId);
-    },
-
-    __proto__: WebInspector.Object.prototype
-};
-
-/**
- * @type {?WebInspector.ProfileManager}
- */
-WebInspector.profileManager = null;
-
-/**
- * @constructor
  * @implements {ProfilerAgent.Dispatcher}
  */
 WebInspector.CPUProfilerModel = function()
 {
     /** @type {?ProfilerAgent.Dispatcher} */
     this._delegate = null;
+    this._isRecording = false;
     InspectorBackend.registerProfilerDispatcher(this);
     ProfilerAgent.enable();
 }
+
+WebInspector.CPUProfilerModel.EventTypes = {
+    ProfileStarted: "profile-started",
+    ProfileStopped: "profile-stopped"
+};
 
 WebInspector.CPUProfilerModel.prototype = {
     /**
@@ -142,7 +99,28 @@ WebInspector.CPUProfilerModel.prototype = {
     {
         if (this._delegate)
             this._delegate.resetProfiles();
-    }
+    },
+
+    /**
+      * @param {boolean} isRecording
+      */
+    setRecording: function(isRecording)
+    {
+        this._isRecording = isRecording;
+        this.dispatchEventToListeners(isRecording ?
+            WebInspector.CPUProfilerModel.EventTypes.ProfileStarted :
+            WebInspector.CPUProfilerModel.EventTypes.ProfileStopped);
+    },
+
+    /**
+      * @return {boolean}
+      */
+    isRecordingProfile: function()
+    {
+        return this._isRecording;
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
 
 /**

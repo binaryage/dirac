@@ -84,9 +84,9 @@ WebInspector.ScreencastView = function()
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStopped, this._onTimeline.bind(this, false), this);
     this._timelineActive = WebInspector.timelineManager.isStarted();
 
-    WebInspector.profileManager.addEventListener(WebInspector.ProfileManager.EventTypes.ProfileStarted, this._onProfiler.bind(this, true), this);
-    WebInspector.profileManager.addEventListener(WebInspector.ProfileManager.EventTypes.ProfileStopped, this._onProfiler.bind(this, false), this);
-    this._profilerActive = WebInspector.CPUProfileType && WebInspector.profileManager.isStarted(WebInspector.CPUProfileType.TypeId);
+    WebInspector.cpuProfilerModel.addEventListener(WebInspector.CPUProfilerModel.EventTypes.ProfileStarted, this._onProfiler.bind(this, true), this);
+    WebInspector.cpuProfilerModel.addEventListener(WebInspector.CPUProfilerModel.EventTypes.ProfileStopped, this._onProfiler.bind(this, false), this);
+    this._profilerActive = WebInspector.cpuProfilerModel.isRecordingProfile();
 
     this._updateGlasspane();
 }
@@ -201,8 +201,6 @@ WebInspector.ScreencastView.prototype = {
      * @private
      */
     _onProfiler: function(on, event) {
-        if (!WebInspector.CPUProfileType || event.data != WebInspector.CPUProfileType.TypeId)
-           return;
         this._profilerActive = on;
         if (this._profilerActive)
             this._stopCasting();

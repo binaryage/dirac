@@ -91,14 +91,12 @@ WebInspector.ProfileLauncherView.prototype = {
     profileStarted: function()
     {
         this._isProfiling = true;
-        WebInspector.profileManager.notifyStarted(this._profileTypeId);
         this._updateControls();
     },
 
     profileFinished: function()
     {
         this._isProfiling = false;
-        WebInspector.profileManager.notifyStoped(this._profileTypeId);
         this._updateControls();
     },
 
@@ -207,14 +205,12 @@ WebInspector.MultiProfileLauncherView.prototype = {
     profileStarted: function()
     {
         this._isProfiling = true;
-        WebInspector.profileManager.notifyStarted(this._profileTypeId);
         this._updateControls();
     },
 
     profileFinished: function()
     {
         this._isProfiling = false;
-        WebInspector.profileManager.notifyStoped(this._profileTypeId);
         this._updateControls();
     },
 

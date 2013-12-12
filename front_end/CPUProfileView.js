@@ -705,6 +705,7 @@ WebInspector.CPUProfileType.prototype = {
         this.addProfile(this._profileBeingRecorded);
 
         this._recording = true;
+        WebInspector.cpuProfilerModel.setRecording(true);
         WebInspector.userMetrics.ProfilesCPUProfileTaken.record();
         ProfilerAgent.start();
     },
@@ -712,6 +713,7 @@ WebInspector.CPUProfileType.prototype = {
     stopRecordingProfile: function()
     {
         this._recording = false;
+        WebInspector.cpuProfilerModel.setRecording(false);
         /**
          * @param {?string} error
          * @param {?ProfilerAgent.CPUProfile} profile
