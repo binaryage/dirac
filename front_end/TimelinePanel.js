@@ -243,7 +243,7 @@ WebInspector.TimelinePanel.prototype = {
         panelStatusBarElement.appendChild(this.toggleTimelineButton.element);
 
         this.clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
-        this.clearButton.addEventListener("click", this._clearPanel, this);
+        this.clearButton.addEventListener("click", this._onClearButtonClick, this);
         this._statusBarButtons.push(this.clearButton);
         panelStatusBarElement.appendChild(this.clearButton.element);
 
@@ -265,7 +265,7 @@ WebInspector.TimelinePanel.prototype = {
                                                WebInspector.UIString("Capture JavaScript stack on every timeline event")));
 
         this._statusTextContainer = panelStatusBarElement.createChild("div");
-        this.recordsCounter = new WebInspector.StatusBarText("");
+        this.recordsCounter = new WebInspector.StatusBarText("", "timeline-records-counter");
         this._statusTextContainer.appendChild(this.recordsCounter.element);
 
         this._miscStatusBarItems = panelStatusBarElement.createChild("div", "status-bar-item");
@@ -396,11 +396,13 @@ WebInspector.TimelinePanel.prototype = {
 
     _onModeChanged: function(mode)
     {
+        this.element.classList.remove("timeline-" + this._presentationModeSetting.get().toLowerCase() + "-view");
+        this._presentationModeSetting.set(mode);
+        this.element.classList.add("timeline-" + mode.toLowerCase() + "-view");
+
         this._overviewPane.willSetOverviewControl(this._overviewControls[mode]);
 
-        var shouldShowMemory = mode === WebInspector.TimelinePanel.Mode.Memory;
         var frameMode = mode === WebInspector.TimelinePanel.Mode.Frames;
-        this._presentationModeSetting.set(mode);
         if (frameMode !== this._frameMode) {
             this._frameMode = frameMode;
             this._glueParentButton.setEnabled(!frameMode);
@@ -408,21 +410,18 @@ WebInspector.TimelinePanel.prototype = {
             this._repopulateRecords();
 
             if (frameMode) {
-                this.element.classList.add("timeline-frame-overview");
-                this.recordsCounter.element.classList.add("hidden");
                 this._frameController = new WebInspector.TimelineFrameController(this._model, this._frameOverviewControl, this._presentationModel);
             } else {
                 this._frameController.dispose();
                 this._frameController = null;
-                this.element.classList.remove("timeline-frame-overview");
-                this.recordsCounter.element.classList.remove("hidden");
             }
         }
 
-        if (shouldShowMemory)
+        if (mode === WebInspector.TimelinePanel.Mode.Memory)
             this._timelineMemorySplitter.showBoth();
         else
             this._timelineMemorySplitter.showOnlyFirst();
+
         this.onResize();
         this._updateSelectionDetails();
         this._overviewPane.didSetOverviewControl();
@@ -473,7 +472,7 @@ WebInspector.TimelinePanel.prototype = {
         this._repopulateRecords();
     },
 
-    _clearPanel: function()
+    _onClearButtonClick: function()
     {
         this._model.reset();
     },

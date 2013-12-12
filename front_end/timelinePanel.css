@@ -61,7 +61,11 @@
     background-color: rgb(255, 255, 255);
 }
 
-.timeline-frame-overview #timeline-overview-grid {
+.timeline-frames-view .timeline-records-counter {
+    display: none;
+}
+
+.timeline-frames-view #timeline-overview-grid {
     display: none;
 }
 
@@ -69,9 +73,9 @@
     pointer-events: auto;
 }
 
-.timeline-frame-overview .overview-grid-window,
-.timeline-frame-overview .overview-grid-dividers-background,
-.timeline-frame-overview .overview-grid-window-resizer {
+.timeline-frames-view .overview-grid-window,
+.timeline-frames-view .overview-grid-dividers-background,
+.timeline-frames-view .overview-grid-window-resizer {
     height: 15px;
 }
 
