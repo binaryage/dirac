@@ -1805,7 +1805,7 @@ WebInspector.TimelinePopupContentHelper.prototype = {
         row.appendChild(titleCell);
         var cell = document.createElement("td");
         cell.className = "details";
-        if (content instanceof Element)
+        if (content instanceof Node)
             cell.appendChild(content);
         else
             cell.createTextChild(content || "");
@@ -1846,7 +1846,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
         var rowElement = this.element.createChild("div", "timeline-details-view-row");
         rowElement.createChild("span", "timeline-details-view-row-title").textContent = WebInspector.UIString("%s: ", title);
         var valueElement = rowElement.createChild("span", "timeline-details-view-row-details" + (this._monospaceValues ? " monospace" : ""));
-        if (content instanceof Element)
+        if (content instanceof Node)
             valueElement.appendChild(content);
         else
             valueElement.createTextChild(content || "");
