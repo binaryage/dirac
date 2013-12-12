@@ -102,3 +102,50 @@ WebInspector.ProfileManager.prototype = {
  * @type {?WebInspector.ProfileManager}
  */
 WebInspector.profileManager = null;
+
+/**
+ * @constructor
+ * @implements {ProfilerAgent.Dispatcher}
+ */
+WebInspector.CPUProfilerModel = function()
+{
+    /** @type {?ProfilerAgent.Dispatcher} */
+    this._delegate = null;
+    InspectorBackend.registerProfilerDispatcher(this);
+    ProfilerAgent.enable();
+}
+
+WebInspector.CPUProfilerModel.prototype = {
+    /**
+      * @param {!ProfilerAgent.Dispatcher} delegate
+      */
+    setDelegate: function(delegate)
+    {
+        this._delegate = delegate;
+    },
+
+    /**
+     * @param {!ProfilerAgent.CPUProfile} cpuProfile
+     * @param {!string} title
+     */
+    addProfileHeader: function(cpuProfile, title)
+    {
+        // Make sure ProfilesPanel is initialized and CPUProfileType is created.
+        WebInspector.inspectorView.panel("profiles");
+        this._delegate.addProfileHeader(cpuProfile, title);
+    },
+
+    /**
+     * @override
+     */
+    resetProfiles: function()
+    {
+        if (this._delegate)
+            this._delegate.resetProfiles();
+    }
+}
+
+/**
+ * @type {?WebInspector.CPUProfilerModel}
+ */
+WebInspector.cpuProfilerModel = null;

@@ -631,10 +631,10 @@ WebInspector.CPUProfileView.prototype = {
 WebInspector.CPUProfileType = function()
 {
     WebInspector.ProfileType.call(this, WebInspector.CPUProfileType.TypeId, WebInspector.UIString("Collect JavaScript CPU Profile"));
-    InspectorBackend.registerProfilerDispatcher(this);
     this._recording = false;
     this._nextProfileId = 1;
     WebInspector.CPUProfileType.instance = this;
+    WebInspector.cpuProfilerModel.setDelegate(this);
 }
 
 WebInspector.CPUProfileType.TypeId = "CPU";

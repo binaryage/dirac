@@ -448,7 +448,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.databaseModel = new WebInspector.DatabaseModel();
     this.domStorageModel = new WebInspector.DOMStorageModel();
 
-    ProfilerAgent.enable();
+    this.cpuProfilerModel = new WebInspector.CPUProfilerModel();
     HeapProfilerAgent.enable();
 
     WebInspector.settings.showPaintRects = WebInspector.settings.createBackendSetting("showPaintRects", false, PageAgent.setShowPaintRects.bind(PageAgent));
