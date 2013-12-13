@@ -471,8 +471,7 @@ def verify_jsdoc():
                     if not line:
                         continue
                     verify_jsdoc_line(full_file_name, lineIndex, line)
-    # FIXME: Enable once we are clear to run Java-based JsDoc annotation checks.
-    # verify_jsdoc_extra()
+    verify_jsdoc_extra()
 
 
 def verify_jsdoc_line(fileName, lineIndex, line):
