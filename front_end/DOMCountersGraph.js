@@ -45,20 +45,19 @@ WebInspector.DOMCountersGraph = function(timelinePanel, model)
  * @param {!WebInspector.DOMCountersGraph} memoryCountersPane
  * @param {string} title
  * @param {string} currentValueLabel
- * @param {!Array.<number>} rgb
+ * @param {!string} color
  * @param {function(!WebInspector.DOMCountersGraph.Counter):number} valueGetter
  */
-WebInspector.DOMCounterUI = function(memoryCountersPane, title, currentValueLabel, rgb, valueGetter)
+WebInspector.DOMCounterUI = function(memoryCountersPane, title, currentValueLabel, color, valueGetter)
 {
-    var swatchColor = "rgb(" + rgb.join(",") + ")";
-    WebInspector.CounterUIBase.call(this, memoryCountersPane, title, swatchColor, valueGetter)
+    WebInspector.CounterUIBase.call(this, memoryCountersPane, title, color, valueGetter)
     this._range = this._swatch.element.createChild("span");
 
     this._value = memoryCountersPane._currentValuesBar.createChild("span", "memory-counter-value");
-    this._value.style.color = swatchColor;
+    this._value.style.color = color;
     this._currentValueLabel = currentValueLabel;
 
-    this.graphColor = "rgba(" + rgb.join(",") + ",0.8)";
+    this.graphColor = color;
     this.graphYValues = [];
 }
 
@@ -91,7 +90,7 @@ WebInspector.DOMCounterUI.prototype = {
 
     updateCurrentValue: function(countersEntry)
     {
-        this._value.textContent =  WebInspector.UIString(this._currentValueLabel, this.valueGetter(countersEntry));
+        this._value.textContent = WebInspector.UIString(this._currentValueLabel, this.valueGetter(countersEntry));
     },
 
     clearCurrentValueAndMarker: function(ctx)
@@ -176,12 +175,12 @@ WebInspector.DOMCountersGraph.prototype = {
             return entry.usedGPUMemoryKBytes || 0;
         }
         var counterUIs = [
-            new WebInspector.DOMCounterUI(this, "Documents", "Documents: %d", [100, 0, 0], getDocumentCount),
-            new WebInspector.DOMCounterUI(this, "Nodes", "Nodes: %d", [0, 100, 0], getNodeCount),
-            new WebInspector.DOMCounterUI(this, "Listeners", "Listeners: %d", [0, 0, 100], getListenerCount)
+            new WebInspector.DOMCounterUI(this, "Documents", "Documents: %d", "#d00", getDocumentCount),
+            new WebInspector.DOMCounterUI(this, "Nodes", "Nodes: %d", "#0a0", getNodeCount),
+            new WebInspector.DOMCounterUI(this, "Listeners", "Listeners: %d", "#00d", getListenerCount)
         ];
         if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
-            counterUIs.push(new WebInspector.DOMCounterUI(this, "GPU Memory", "GPU Memory [KB]: %d", [200, 0, 200], getUsedGPUMemoryKBytes));
+            counterUIs.push(new WebInspector.DOMCounterUI(this, "GPU Memory", "GPU Memory [KB]: %d", "#c0c", getUsedGPUMemoryKBytes));
         return counterUIs;
     },
 
