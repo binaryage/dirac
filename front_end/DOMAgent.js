@@ -719,8 +719,7 @@ WebInspector.DOMDocument = function(domAgent, payload)
 {
     WebInspector.DOMNode.call(this, domAgent, this, false, payload);
     this.documentURL = payload.documentURL || "";
-    this.baseURL = /** @type {string} */ (payload.baseURL);
-    console.assert(this.baseURL);
+    this.baseURL = payload.baseURL || "";
     this.xmlVersion = payload.xmlVersion;
     this._listeners = {};
 }
