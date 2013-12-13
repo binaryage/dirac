@@ -128,6 +128,13 @@ WebInspector.FilterBar.prototype = {
         this.dispatchEventToListeners(WebInspector.FilterBar.Events.FiltersToggled, this._filtersShown);
     },
 
+    clear: function()
+    {
+        this._element.removeChildren();
+        this._filters = [];
+        this._updateFilterButton();
+    },
+
     __proto__: WebInspector.Object.prototype
 }
 

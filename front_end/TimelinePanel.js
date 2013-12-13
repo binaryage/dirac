@@ -270,11 +270,17 @@ WebInspector.TimelinePanel.prototype = {
 
         this._miscStatusBarItems = panelStatusBarElement.createChild("div", "status-bar-item");
 
-        var hasFilters = this._createFilters(this._filterBar);
-        this._filterBar.filterButton().setEnabled(hasFilters);
         this._filtersContainer = this.element.createChild("div", "timeline-filters-header hidden");
         this._filtersContainer.appendChild(this._filterBar.filtersElement());
         this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
+        this._updateFiltersBar();
+    },
+
+    _updateFiltersBar: function()
+    {
+        this._filterBar.clear();
+        var hasFilters = this._createFilters(this._filterBar);
+        this._filterBar.filterButton().setEnabled(hasFilters);
     },
 
     defaultFocusedElement: function()
@@ -295,6 +301,23 @@ WebInspector.TimelinePanel.prototype = {
         var toggled = /** @type {boolean} */ (event.data);
         this._filtersContainer.enableStyleClass("hidden", !toggled);
         this.onResize();
+    },
+
+    /**
+     * @return {?WebInspector.ProgressIndicator}
+     */
+    _prepareToLoadTimeline: function()
+    {
+        if (this._operationInProgress)
+            return null;
+        if (this._recordingInProgress()) {
+            this.toggleTimelineButton.toggled = false;
+            this._stopRecording();
+        }
+        var progressIndicator = new WebInspector.ProgressIndicator();
+        progressIndicator.addEventListener(WebInspector.ProgressIndicator.Events.Done, this._setOperationInProgress.bind(this, null));
+        this._setOperationInProgress(progressIndicator);
+        return progressIndicator;
     },
 
     /**
@@ -405,7 +428,6 @@ WebInspector.TimelinePanel.prototype = {
         this._timelineViewWasShown(mode);
 
         this.onResize();
-        this._updateSelectionDetails();
         this._overviewPane.didSetOverviewControl();
     },
 
@@ -521,6 +543,7 @@ WebInspector.TimelinePanel.prototype = {
             this._timelineMemorySplitter.showBoth();
         else
             this._timelineMemorySplitter.showOnlyFirst();
+        this._updateSelectionDetails();
     },
 
     get calculator()
@@ -617,23 +640,6 @@ WebInspector.TimelinePanel.prototype = {
             vertically = !WebInspector.settings.splitVerticallyWhenDockedToRight.get();
         this._detailsSplitView.setVertical(vertically);
         this._detailsView.setVertical(vertically);
-    },
-
-    /**
-     * @return {?WebInspector.ProgressIndicator}
-     */
-    _prepareToLoadTimeline: function()
-    {
-        if (this._operationInProgress)
-            return null;
-        if (this._recordingInProgress()) {
-            this.toggleTimelineButton.toggled = false;
-            this._stopRecording();
-        }
-        var progressIndicator = new WebInspector.ProgressIndicator();
-        progressIndicator.addEventListener(WebInspector.ProgressIndicator.Events.Done, this._setOperationInProgress.bind(this, null));
-        this._setOperationInProgress(progressIndicator);
-        return progressIndicator;
     },
 
     _rootRecord: function()
