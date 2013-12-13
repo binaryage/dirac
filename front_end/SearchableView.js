@@ -110,7 +110,7 @@ WebInspector.SearchableView = function(searchable)
     this._replaceCheckboxElement = this._replaceElement.createChild("input");
     this._replaceCheckboxElement.type = "checkbox";
     this._replaceCheckboxElement.id = "search-replace-trigger";
-    this._replaceCheckboxElement.addEventListener("click", this._updateSecondRowVisibility.bind(this), false);
+    this._replaceCheckboxElement.addEventListener("change", this._updateSecondRowVisibility.bind(this), false);
 
     this._replaceLabelElement = this._replaceElement.createChild("label");
     this._replaceLabelElement.textContent = WebInspector.UIString("Replace");
