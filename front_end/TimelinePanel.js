@@ -1334,6 +1334,9 @@ WebInspector.TimelinePanel.prototype = {
         var record = this._lastSelectedRecord;
         var recordsInWindow = this._presentationModel.filteredRecords();
         var index = recordsInWindow.indexOf(record);
+        var recordsInPage = Math.floor(this._containerElementHeight / WebInspector.TimelinePanel.rowHeight);
+        var rowHeight = WebInspector.TimelinePanel.rowHeight;
+
         if (index === -1)
             index = 0;
 
@@ -1371,6 +1374,30 @@ WebInspector.TimelinePanel.prototype = {
         case "Down":
             if (++index >= recordsInWindow.length)
                 break;
+            this._selectRecord(recordsInWindow[index]);
+            event.consume(true);
+            break;
+        case "PageUp":
+            index = Math.max(0, index - recordsInPage);
+            this._scrollTop = Math.max(0, this._scrollTop - recordsInPage * rowHeight);
+            this._containerElement.scrollTop = this._scrollTop;
+            this._selectRecord(recordsInWindow[index]);
+            event.consume(true);
+            break;
+        case "PageDown":
+            index = Math.min(recordsInWindow.length - 1, index + recordsInPage);
+            this._scrollTop = Math.min(this._containerElement.scrollHeight - this._containerElementHeight, this._scrollTop + recordsInPage * rowHeight);
+            this._containerElement.scrollTop = this._scrollTop;
+            this._selectRecord(recordsInWindow[index]);
+            event.consume(true);
+            break;
+        case "Home":
+            index = 0;
+            this._selectRecord(recordsInWindow[index]);
+            event.consume(true);
+            break;
+        case "End":
+            index = recordsInWindow.length - 1;
             this._selectRecord(recordsInWindow[index]);
             event.consume(true);
             break;
