@@ -277,15 +277,23 @@ WebInspector.InspectorView.prototype = {
         if (!WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event))
             return;
 
+        var keyboardEvent = /** @type {!KeyboardEvent} */ (event);
         // Ctrl/Cmd + 1-9 should show corresponding panel.
         var panelShortcutEnabled = WebInspector.settings.shortcutPanelSwitch.get();
-        if (panelShortcutEnabled && !event.shiftKey && !event.altKey && event.keyCode > 0x30 && event.keyCode < 0x3A) {
-            var panelName = this._tabbedPane.allTabs()[event.keyCode - 0x31];
-            if (panelName) {
-                this.showPanel(panelName);
-                event.consume(true);
+        if (panelShortcutEnabled && !event.shiftKey && !event.altKey) {
+            var panelIndex = -1;
+            if (event.keyCode > 0x30 && event.keyCode < 0x3A)
+                panelIndex = event.keyCode - 0x31;
+            else if (event.keyCode > 0x60 && event.keyCode < 0x6A && keyboardEvent.location === KeyboardEvent.DOM_KEY_LOCATION_NUMPAD)
+                panelIndex = event.keyCode - 0x61;
+            if (panelIndex !== -1) {
+                var panelName = this._tabbedPane.allTabs()[panelIndex];
+                if (panelName) {
+                    this.showPanel(panelName);
+                    event.consume(true);
+                }
+                return;
             }
-            return;
         }
 
         // BUG85312: On French AZERTY keyboards, AltGr-]/[ combinations (synonymous to Ctrl-Alt-]/[ on Windows) are used to enter ]/[,

@@ -44,6 +44,11 @@ Event.prototype.stopImmediatePropagation = function() {}
  */
 window.KeyboardEvent = function(eventType, properties) {}
 
+/**
+ * @type {number}
+ */
+KeyboardEvent.DOM_KEY_LOCATION_NUMPAD;
+
 /** @param {?Element} element */
 window.getComputedStyle = function(element) {}
 /** @param {*} message */
