@@ -896,12 +896,14 @@ WebInspector.TimelinePanel.prototype = {
             return;
         }
 
-        this._revealRecord(record);
         this._lastSelectedRecord = record;
+        this._revealRecord(record);
         var listRow = /** @type {!WebInspector.TimelineRecordListRow} */ (record.getUserObject("WebInspector.TimelineRecordListRow"));
-        listRow.renderAsSelected(true);
+        if (listRow)
+            listRow.renderAsSelected(true);
         var graphRow = /** @type {!WebInspector.TimelineRecordListRow} */ (record.getUserObject("WebInspector.TimelineRecordGraphRow"));
-        graphRow.renderAsSelected(true);
+        if (graphRow)
+            graphRow.renderAsSelected(true);
 
         record.generatePopupContent(showCallback.bind(this));
 
@@ -1064,25 +1066,25 @@ WebInspector.TimelinePanel.prototype = {
             return;
         }
 
-        this._revealRecord(recordToReveal, true);
+        this._selectRecord(recordToReveal);
     },
 
     /**
-     * @param {boolean=} highlight
+     * @param {!WebInspector.TimelinePresentationModel.Record} recordToReveal
      */
-    _revealRecord: function(recordToReveal, highlight)
+    _revealRecord: function(recordToReveal)
     {
+        var needRefresh = false;
         // Expand all ancestors.
         for (var parent = recordToReveal.parent; parent !== this._rootRecord(); parent = parent.parent) {
             if (!parent.collapsed)
                 continue;
             this._presentationModel.invalidateFilteredRecords();
             parent.collapsed = false;
+            needRefresh = true;
         }
         var recordsInWindow = this._presentationModel.filteredRecords();
         var index = recordsInWindow.indexOf(recordToReveal);
-        if (highlight)
-            this._recordToHighlight = recordToReveal;
 
         var itemOffset = index * WebInspector.TimelinePanel.rowHeight;
         var visibleTop = this._scrollTop - WebInspector.TimelinePanel.headerHeight;
@@ -1091,8 +1093,8 @@ WebInspector.TimelinePanel.prototype = {
             this._containerElement.scrollTop = itemOffset;
         else if (itemOffset > visibleBottom)
             this._containerElement.scrollTop = itemOffset - this._containerElementHeight + WebInspector.TimelinePanel.headerHeight + WebInspector.TimelinePanel.rowHeight;
-        else if (highlight)
-            this._refresh();
+        else if (needRefresh)
+            this._refreshRecords();
     },
 
     _refreshRecords: function()
@@ -1140,11 +1142,6 @@ WebInspector.TimelinePanel.prototype = {
         this._itemsGraphsElement.removeChild(this._expandElements);
         this._expandElements.removeChildren();
 
-        var highlightedRecord = this._recordToHighlight;
-        delete this._recordToHighlight;
-        var highlightedListRowElement;
-        var highlightedGraphRowElement;
-
         for (var i = 0; i < endIndex; ++i) {
             var record = recordsInWindow[i];
 
@@ -1163,11 +1160,6 @@ WebInspector.TimelinePanel.prototype = {
                 if (!graphRowElement) {
                     graphRowElement = new WebInspector.TimelineRecordGraphRow(this._itemsGraphsElement, selectRecordCallback, scheduleRefreshCallback).element;
                     this._graphRowsElement.appendChild(graphRowElement);
-                }
-
-                if (highlightedRecord === record) {
-                    highlightedListRowElement = listRowElement;
-                    highlightedGraphRowElement = graphRowElement;
                 }
 
                 listRowElement.row.update(record, visibleTop);
@@ -1198,11 +1190,6 @@ WebInspector.TimelinePanel.prototype = {
         this._itemsGraphsElement.appendChild(this._expandElements);
         this._adjustScrollPosition(recordsInWindow.length * rowHeight + headerHeight);
         this._updateSearchHighlight(false, true);
-
-        if (highlightedListRowElement) {
-            highlightedListRowElement.classList.add("highlighted-timeline-record");
-            highlightedGraphRowElement.classList.add("highlighted-timeline-record");
-        }
 
         return recordsInWindow.length;
     },
@@ -1473,7 +1460,10 @@ WebInspector.TimelinePanel.prototype = {
         this._searchableView.updateCurrentMatchIndex(index);
     },
 
-    _highlightSelectedSearchResult: function(revealRecord)
+    /**
+     * @param {boolean} selectRecord
+     */
+    _highlightSelectedSearchResult: function(selectRecord)
     {
         this._clearHighlight();
         if (this._searchFilter)
@@ -1483,15 +1473,15 @@ WebInspector.TimelinePanel.prototype = {
         if (!record)
             return;
 
+        if (selectRecord)
+            this._selectRecord(record);
+
         for (var element = this._sidebarListElement.firstChild; element; element = element.nextSibling) {
             if (element.row._record === record) {
                 element.row.highlight(this._searchRegExp, this._highlightDomChanges);
-                return;
+                break;
             }
         }
-
-        if (revealRecord)
-            this._revealRecord(record, true);
     },
 
     _clearHighlight: function()
