@@ -402,25 +402,7 @@ WebInspector.TimelinePanel.prototype = {
 
         this._overviewPane.willSetOverviewControl(this._overviewControls[mode]);
 
-        var frameMode = mode === WebInspector.TimelinePanel.Mode.Frames;
-        if (frameMode !== this._frameMode) {
-            this._frameMode = frameMode;
-            this._glueParentButton.setEnabled(!frameMode);
-            this._presentationModel.setGlueRecords(this._glueParentButton.toggled && !frameMode);
-            this._repopulateRecords();
-
-            if (frameMode) {
-                this._frameController = new WebInspector.TimelineFrameController(this._model, this._frameOverviewControl, this._presentationModel);
-            } else {
-                this._frameController.dispose();
-                this._frameController = null;
-            }
-        }
-
-        if (mode === WebInspector.TimelinePanel.Mode.Memory)
-            this._timelineMemorySplitter.showBoth();
-        else
-            this._timelineMemorySplitter.showOnlyFirst();
+        this._timelineViewWasShown(mode);
 
         this.onResize();
         this._updateSelectionDetails();
@@ -514,7 +496,32 @@ WebInspector.TimelinePanel.prototype = {
         this._stopRecording();
     },
 
-// TimelineView.
+    // TimelineView.
+
+    /**
+     * @param {!string} mode
+     */
+    _timelineViewWasShown: function(mode)
+    {
+        var frameMode = mode === WebInspector.TimelinePanel.Mode.Frames
+        if (frameMode !== this._frameMode) {
+            this._frameMode = frameMode;
+            this._glueParentButton.setEnabled(!this._frameMode);
+            this._presentationModel.setGlueRecords(!this._frameMode && this._glueParentButton.toggled);
+            this._repopulateRecords();
+
+            if (this._frameMode) {
+                this._frameController = new WebInspector.TimelineFrameController(this._model, this._frameOverviewControl, this._presentationModel);
+            } else {
+                this._frameController.dispose();
+                this._frameController = null;
+            }
+        }
+        if (mode === WebInspector.TimelinePanel.Mode.Memory)
+            this._timelineMemorySplitter.showBoth();
+        else
+            this._timelineMemorySplitter.showOnlyFirst();
+    },
 
     get calculator()
     {
