@@ -341,6 +341,11 @@ WebInspector.TabbedPane.prototype = {
         this._updateTabElements();
     },
 
+    headerResized: function()
+    {
+        this._updateTabElements();
+    },
+
     _updateTabElements: function()
     {
         WebInspector.invokeOnceAfterBatchUpdate(this, this._innerUpdateTabElements);

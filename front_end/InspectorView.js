@@ -415,6 +415,60 @@ WebInspector.InspectorView.prototype = {
         this._drawer.resize();
     },
 
+    /**
+     * @param {number} errors
+     * @param {number} warnings
+     */
+    setErrorAndWarningCounts: function(errors, warnings)
+    {
+        if (!errors && !warnings) {
+            this._errorWarningCountElement.classList.add("hidden");
+            this._tabbedPane.headerResized();
+            return;
+        }
+
+        this._errorWarningCountElement.classList.remove("hidden");
+        this._errorWarningCountElement.removeChildren();
+
+        if (errors) {
+            var errorImageElement = this._errorWarningCountElement.createChild("div", "error-icon-small");
+            var errorElement = this._errorWarningCountElement.createChild("span");
+            errorElement.id = "error-count";
+            errorElement.textContent = errors;
+        }
+
+        if (warnings) {
+            var warningsImageElement = this._errorWarningCountElement.createChild("div", "warning-icon-small");
+            var warningsElement = this._errorWarningCountElement.createChild("span");
+            warningsElement.id = "warning-count";
+            warningsElement.textContent = warnings;
+        }
+
+        if (errors) {
+            if (warnings) {
+                if (errors == 1) {
+                    if (warnings == 1)
+                        this._errorWarningCountElement.title = WebInspector.UIString("%d error, %d warning", errors, warnings);
+                    else
+                        this._errorWarningCountElement.title = WebInspector.UIString("%d error, %d warnings", errors, warnings);
+                } else if (warnings == 1)
+                    this._errorWarningCountElement.title = WebInspector.UIString("%d errors, %d warning", errors, warnings);
+                else
+                    this._errorWarningCountElement.title = WebInspector.UIString("%d errors, %d warnings", errors, warnings);
+            } else if (errors == 1)
+                this._errorWarningCountElement.title = WebInspector.UIString("%d error", errors);
+            else
+                this._errorWarningCountElement.title = WebInspector.UIString("%d errors", errors);
+        } else if (warnings == 1)
+            this._errorWarningCountElement.title = WebInspector.UIString("%d warning", warnings);
+        else if (warnings)
+            this._errorWarningCountElement.title = WebInspector.UIString("%d warnings", warnings);
+        else
+            this._errorWarningCountElement.title = null;
+
+        this._tabbedPane.headerResized();
+    },
+
     __proto__: WebInspector.View.prototype
 };
 
