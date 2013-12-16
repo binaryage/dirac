@@ -53,6 +53,28 @@ WebInspector.ProfilesPanelDescriptor.ShortcutKeys = {
 
 WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp = /webkit-profile:\/\/(.+)\/(.+)/;
 
+/** @interface */
+WebInspector.CPUProfilerModelDelegate = function() {};
+
+WebInspector.CPUProfilerModelDelegate.prototype = {
+    /**
+     * @param {string} protocolId
+     * @param {!DebuggerAgent.Location} scriptLocation
+     * @param {string=} title
+     */
+    consoleProfile: function(protocolId, scriptLocation, title) {},
+
+    /**
+     * @param {string} protocolId
+     * @param {!DebuggerAgent.Location} scriptLocation
+     * @param {!ProfilerAgent.CPUProfile} cpuProfile
+     * @param {string=} title
+     */
+    consoleProfileEnd: function(protocolId, scriptLocation, cpuProfile, title) {},
+
+    resetProfiles: function() {}
+}
+
 /**
  * @constructor
  * @extends {WebInspector.Object}
@@ -60,7 +82,7 @@ WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp = /webkit-profile:\/\/(.+)
  */
 WebInspector.CPUProfilerModel = function()
 {
-    /** @type {?ProfilerAgent.Dispatcher} */
+    /** @type {?WebInspector.CPUProfilerModelDelegate} */
     this._delegate = null;
     this._isRecording = false;
     InspectorBackend.registerProfilerDispatcher(this);
@@ -74,7 +96,7 @@ WebInspector.CPUProfilerModel.EventTypes = {
 
 WebInspector.CPUProfilerModel.prototype = {
     /**
-      * @param {!ProfilerAgent.Dispatcher} delegate
+      * @param {!WebInspector.CPUProfilerModelDelegate} delegate
       */
     setDelegate: function(delegate)
     {
@@ -82,14 +104,28 @@ WebInspector.CPUProfilerModel.prototype = {
     },
 
     /**
+     * @param {string} id
+     * @param {!DebuggerAgent.Location} scriptLocation
      * @param {!ProfilerAgent.CPUProfile} cpuProfile
-     * @param {!string} title
+     * @param {string=} title
      */
-    addProfileHeader: function(cpuProfile, title)
+    addProfileHeader: function(id, scriptLocation, cpuProfile, title)
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
         WebInspector.inspectorView.panel("profiles");
-        this._delegate.addProfileHeader(cpuProfile, title);
+        this._delegate.consoleProfileEnd(id, scriptLocation, cpuProfile, title);
+    },
+
+    /**
+     * @param {string} id
+     * @param {!DebuggerAgent.Location} scriptLocation
+     * @param {string=} title
+     */
+    consoleProfile: function(id, scriptLocation, title)
+    {
+        // Make sure ProfilesPanel is initialized and CPUProfileType is created.
+        WebInspector.inspectorView.panel("profiles");
+        this._delegate.consoleProfile(id, scriptLocation, title);
     },
 
     /**

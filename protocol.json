@@ -3519,10 +3519,22 @@
         ],
         "events": [
             {
+                "name": "consoleProfile",
+                "parameters": [
+                    { "name": "id", "type": "string" },
+                    { "name": "location", "$ref": "Debugger.Location", "description": "Location of console.profile()." },
+                    { "name": "title", "type": "string", "optional": true, "description": "Profile title passed as argument to console.profile()." }
+
+                ],
+                "description": "Sent when new profile recodring is started using console.profile() call."
+            },
+            {
                 "name": "addProfileHeader",
                 "parameters": [
+                    { "name": "id", "type": "string" },
+                    { "name": "location", "$ref": "Debugger.Location", "description": "Location of console.profileEnd()." },
                     { "name": "profile", "$ref": "CPUProfile" },
-                    { "name": "title", "type": "string", "description": "Profile title passed as argumemt to console.profile()." }
+                    { "name": "title", "type": "string", "optional": true, "description": "Profile title passed as argunet to console.profile()." }
                 ]
             },
             {

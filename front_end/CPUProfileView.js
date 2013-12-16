@@ -626,13 +626,17 @@ WebInspector.CPUProfileView.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileType}
- * @implements {ProfilerAgent.Dispatcher}
+ * @implements {WebInspector.CPUProfilerModelDelegate}
  */
 WebInspector.CPUProfileType = function()
 {
     WebInspector.ProfileType.call(this, WebInspector.CPUProfileType.TypeId, WebInspector.UIString("Collect JavaScript CPU Profile"));
     this._recording = false;
     this._nextProfileId = 1;
+
+    this._nextAnonymousConsoleProfileNumber = 1;
+    this._anonymousConsoleProfileIdToTitle = {};
+
     WebInspector.CPUProfileType.instance = this;
     WebInspector.cpuProfilerModel.setDelegate(this);
 }
@@ -680,10 +684,72 @@ WebInspector.CPUProfileType.prototype = {
     },
 
     /**
-     * @param {!ProfilerAgent.CPUProfile} cpuProfile
-     * @param {!string} title
+     * @param {string} id
+     * @param {!DebuggerAgent.Location} scriptLocation
+     * @param {string=} title
      */
-    addProfileHeader: function(cpuProfile, title)
+    consoleProfile: function(id, scriptLocation, title)
+    {
+        var resolvedTitle = title;
+        if (!resolvedTitle) {
+            resolvedTitle = WebInspector.UIString("Profile %s", this._nextAnonymousConsoleProfileNumber++);
+            this._anonymousConsoleProfileIdToTitle[id] = resolvedTitle;
+        }
+        this._addMessageToConsole(WebInspector.ConsoleMessage.MessageType.Profile, scriptLocation, resolvedTitle);
+    },
+
+    /**
+     * @param {string} protocolId
+     * @param {!DebuggerAgent.Location} scriptLocation
+     * @param {!ProfilerAgent.CPUProfile} cpuProfile
+     * @param {string=} title
+     */
+    consoleProfileEnd: function(protocolId, scriptLocation, cpuProfile, title)
+    {
+        // Make sure ProfilesPanel is initialized and CPUProfileType is created.
+        var resolvedTitle = title;
+        if (typeof title === "undefined") {
+            resolvedTitle = this._anonymousConsoleProfileIdToTitle[protocolId];
+            delete this._anonymousConsoleProfileIdToTitle[protocolId];
+        }
+
+        var id = this._nextProfileId++;
+        var profile = new WebInspector.CPUProfileHeader(this, resolvedTitle, id);
+        profile.setProtocolProfile(cpuProfile);
+        this.addProfile(profile);
+
+        resolvedTitle += "#" + id;
+        this._addMessageToConsole(WebInspector.ConsoleMessage.MessageType.ProfileEnd, scriptLocation, resolvedTitle);
+    },
+
+    /**
+     * @param {string} type
+     * @param {!DebuggerAgent.Location} scriptLocation
+     * @param {string} title
+     */
+    _addMessageToConsole: function(type, scriptLocation, title)
+    {
+        var rawLocation = new WebInspector.DebuggerModel.Location(scriptLocation.scriptId, scriptLocation.lineNumber, scriptLocation.columnNumber || 0);
+        var uiLocation = WebInspector.debuggerModel.rawLocationToUILocation(rawLocation);
+        var url;
+        if (uiLocation)
+            url = uiLocation.url();
+        var message = WebInspector.ConsoleMessage.create(
+            WebInspector.ConsoleMessage.MessageSource.ConsoleAPI,
+            WebInspector.ConsoleMessage.MessageLevel.Debug,
+            title,
+            type,
+            url || undefined,
+            scriptLocation.lineNumber,
+            scriptLocation.columnNumber);
+        WebInspector.console.addMessage(message);
+    },
+
+    /**
+     * @param {!ProfilerAgent.CPUProfile} cpuProfile
+     * @param {string} title
+     */
+    _addProfileHeader: function(cpuProfile, title)
     {
         var id = this._nextProfileId++;
         var profile = new WebInspector.CPUProfileHeader(this, title, id);
@@ -738,7 +804,7 @@ WebInspector.CPUProfileType.prototype = {
 
     /**
      * @override
-     * @param {!string} title
+     * @param {string} title
      * @return {!WebInspector.ProfileHeader}
      */
     createProfileLoadedFromFile: function(title)
@@ -939,7 +1005,7 @@ WebInspector.CPUProfileHeader.prototype = {
 
     /**
      * @param {?WebInspector.TempFile} tempFile
-     * @param {!string} serializedData
+     * @param {string} serializedData
      */
     _writeToTempFile: function(tempFile, serializedData)
     {
