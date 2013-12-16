@@ -213,8 +213,7 @@ WebInspector.Drawer.prototype = {
          */
         function animationCallback(finished)
         {
-            if (this._inspectorView.currentPanel())
-                this._inspectorView.currentPanel().doResize();
+            this._inspectorView.currentPanel().doResize();
             if (!finished)
                 return;
             this._updateTabStrip();
@@ -267,13 +266,15 @@ WebInspector.Drawer.prototype = {
          */
         function animationCallback(finished)
         {
-            if (this._inspectorView.currentPanel())
-                this._inspectorView.currentPanel().doResize();
-            if (!finished)
+            var panel = this._inspectorView.currentPanel();
+            if (!finished) {
+                panel.doResize();
                 return;
+            }
             this._tabbedPane.detach();
             this._drawerContentsElement.removeChildren();
             document.body.classList.remove("drawer-visible");
+            panel.doResize();
             delete this._currentAnimation;
             delete this._isHiding;
         }
