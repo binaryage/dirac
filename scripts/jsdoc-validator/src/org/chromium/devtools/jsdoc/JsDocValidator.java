@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.SortedSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -55,9 +56,9 @@ public class JsDocValidator {
 
         Collections.sort(results, VALIDATOR_CONTEXT_COMPARATOR);
         for (ValidatorContext context : results) {
-            String resultText = context.getValidationResult();
-            if (!resultText.isEmpty()) {
-                System.err.println(resultText);
+            SortedSet<ValidatorContext.MessageRecord> records = context.getValidationResult();
+            for (ValidatorContext.MessageRecord record : records) {
+                System.err.println(record.text);
             }
         }
     }
