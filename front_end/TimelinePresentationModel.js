@@ -380,12 +380,9 @@ WebInspector.TimelinePresentationModel.prototype = {
         }
 
         formattedRecord.calculateAggregatedStats();
-
-        if (parentRecord.coalesced) {
-            WebInspector.TimelineModel.aggregateTimeByCategory(parentRecord._aggregatedStats, formattedRecord._aggregatedStats);
-            if (parentRecord.startTime > formattedRecord.startTime)
-                parentRecord._record.startTime = record.startTime;
-        } else if (origin)
+        if (parentRecord.coalesced)
+            this._updateCoalescingParent(formattedRecord);
+        else if (origin)
             this._updateAncestorStats(formattedRecord);
 
         origin = formattedRecord.origin();
@@ -472,6 +469,21 @@ WebInspector.TimelinePresentationModel.prototype = {
         WebInspector.TimelineModel.aggregateTimeByCategory(coalescedRecord._aggregatedStats, record._aggregatedStats);
 
         return coalescedRecord;
+    },
+
+    /**
+     * @param {!WebInspector.TimelinePresentationModel.Record} record
+     */
+    _updateCoalescingParent: function(record)
+    {
+        var parentRecord = record.parent;
+        WebInspector.TimelineModel.aggregateTimeByCategory(parentRecord._aggregatedStats, record._aggregatedStats);
+        if (parentRecord.startTime > record._record.startTime)
+            parentRecord._record.startTime = record._record.startTime;
+        if (parentRecord.endTime < record._record.endTime) {
+            parentRecord._record.endTime = record._record.endTime;
+            parentRecord.lastChildEndTime = parentRecord.endTime;
+        }
     },
 
     /**
