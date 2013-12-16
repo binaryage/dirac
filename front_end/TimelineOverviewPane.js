@@ -360,24 +360,3 @@ WebInspector.TimelineOverviewBase.prototype = {
 
     __proto__: WebInspector.View.prototype
 }
-
-/**
- * @constructor
- * @implements {WebInspector.TimelinePresentationModel.Filter}
- * @param {!WebInspector.TimelineOverviewPane} pane
- */
-WebInspector.TimelineWindowFilter = function(pane)
-{
-    this._pane = pane;
-}
-
-WebInspector.TimelineWindowFilter.prototype = {
-    /**
-     * @param {!WebInspector.TimelinePresentationModel.Record} record
-     * @return {boolean}
-     */
-    accept: function(record)
-    {
-        return record.lastChildEndTime >= this._pane._windowStartTime && record.startTime <= this._pane._windowEndTime;
-    }
-}
