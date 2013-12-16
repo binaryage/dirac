@@ -410,6 +410,10 @@ WebInspector.SourceFrame.prototype = {
      */
     performSearch: function(query, shouldJump, callback, currentMatchChangedCallback, searchResultsChangedCallback)
     {
+        /**
+         * @param {string} query
+         * @this {WebInspector.SourceFrame}
+         */
         function doFindSearchMatches(query)
         {
             this._currentSearchResultIndex = -1;

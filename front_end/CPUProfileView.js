@@ -926,6 +926,10 @@ WebInspector.CPUProfileHeader.prototype = {
     _saveProfileDataToTempFile: function(data)
     {
         var serializedData = JSON.stringify(data);
+
+        /**
+         * @this {WebInspector.CPUProfileHeader}
+         */
         function didCreateTempFile(tempFile)
         {
             this._writeToTempFile(tempFile, serializedData);

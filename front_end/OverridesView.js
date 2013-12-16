@@ -532,7 +532,10 @@ WebInspector.OverridesView.ViewportTab.prototype = {
         fieldsetElement.disabled = WebInspector.isInspectingDevice();
         fieldsetElement.id = "metrics-override-section";
 
-        function swapDimensionsClicked(event)
+        /**
+         * @this {WebInspector.OverridesView.ViewportTab}
+         */
+        function swapDimensionsClicked()
         {
             var widthValue = this._widthOverrideElement.value;
             this._widthOverrideElement.value = this._heightOverrideElement.value;
@@ -740,12 +743,18 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
         fieldsetElement.addEventListener("dblclick", textDoubleClicked.bind(this), false);
         this._otherUserAgentElement.addEventListener("blur", textChanged.bind(this), false);
 
+        /**
+         * @this {WebInspector.OverridesView.UserAgentTab}
+         */
         function textDoubleClicked()
         {
             this._selectElement.selectedIndex = userAgents.length - 1;
             this._userAgentChanged();
         }
 
+        /**
+         * @this {WebInspector.OverridesView.UserAgentTab}
+         */
         function textChanged()
         {
             if (WebInspector.settings.userAgent.get() !== this._otherUserAgentElement.value)

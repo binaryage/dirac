@@ -489,6 +489,10 @@ WebInspector.ElementsPanel.prototype = {
             object.callFunctionJSON(dimensions, undefined, callback);
             object.release();
 
+            /**
+             * @return {{ offsetWidth: number, offsetHeight: number, naturalWidth: number, naturalHeight: number }}
+             * @this {!Element}
+             */
             function dimensions()
             {
                 return { offsetWidth: this.offsetWidth, offsetHeight: this.offsetHeight, naturalWidth: this.naturalWidth, naturalHeight: this.naturalHeight };
@@ -1082,8 +1086,14 @@ WebInspector.ElementsPanel.prototype = {
         eventListenersSidebarPane.needsUpdate = false;
     },
 
+    /**
+     * @param {!KeyboardEvent} event
+     */
     handleShortcut: function(event)
     {
+        /**
+         * @this {WebInspector.ElementsPanel}
+         */
         function handleUndoRedo()
         {
             if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) && !event.shiftKey && event.keyIdentifier === "U+005A") { // Z key

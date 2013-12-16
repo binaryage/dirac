@@ -1098,6 +1098,11 @@ WebInspector.AuditRules.CSSRuleBase.prototype = {
     {
         CSSAgent.getAllStyleSheets(sheetsCallback.bind(this));
 
+        /**
+         * @param {?Protocol.Error} error
+         * @param {!Array.<!CSSAgent.CSSStyleSheetHeader>} headers
+         * @this {WebInspector.AuditRules.CSSRuleBase}
+         */
         function sheetsCallback(error, headers)
         {
             if (error)
@@ -1124,6 +1129,10 @@ WebInspector.AuditRules.CSSRuleBase.prototype = {
     {
         WebInspector.CSSStyleSheet.createForId(styleSheetId, sheetCallback.bind(this));
 
+        /**
+         * @param {?WebInspector.CSSStyleSheet} styleSheet
+         * @this {WebInspector.AuditRules.CSSRuleBase}
+         */
         function sheetCallback(styleSheet)
         {
             if (progress.isCanceled())

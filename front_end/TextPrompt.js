@@ -213,6 +213,9 @@ WebInspector.TextPrompt.prototype = {
 
         this._removeSuggestionAids();
 
+        /**
+         * @this {WebInspector.TextPrompt}
+         */
         function moveBackIfOutside()
         {
             delete this._selectionTimeout;

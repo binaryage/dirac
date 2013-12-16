@@ -82,6 +82,10 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
                 nodeBreakpoints[element._type] = true;
         }
 
+        /**
+         * @param {string} type
+         * @this {WebInspector.DOMBreakpointsSidebarPane}
+         */
         function toggleBreakpoint(type)
         {
             if (!nodeBreakpoints[type])
@@ -250,6 +254,10 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
     _contextMenu: function(node, type, event)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
+
+        /**
+         * @this {WebInspector.DOMBreakpointsSidebarPane}
+         */
         function removeBreakpoint()
         {
             this._removeBreakpoint(node, type);

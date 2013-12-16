@@ -106,6 +106,10 @@ WebInspector.ResourcesPanel = function(database)
     this.sidebarElement.addEventListener("mousemove", this._onmousemove.bind(this), false);
     this.sidebarElement.addEventListener("mouseout", this._onmouseout.bind(this), false);
 
+    /**
+     * @return {!WebInspector.View}
+     * @this {WebInspector.ResourcesPanel}
+     */
     function viewGetter()
     {
         return this.visibleView;
@@ -219,6 +223,10 @@ WebInspector.ResourcesPanel.prototype = {
         WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameDetached, this);
         WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ResourceAdded, this._resourceAdded, this);
 
+        /**
+         * @param {!WebInspector.ResourceTreeFrame} frame
+         * @this {WebInspector.ResourcesPanel}
+         */
         function populateFrame(frame)
         {
             this._frameAdded({data:frame});
@@ -1283,6 +1291,10 @@ WebInspector.DatabaseTreeElement.prototype = {
     {
         this.removeChildren();
 
+        /**
+         * @param {!Array.<string>} tableNames
+         * @this {WebInspector.DatabaseTreeElement}
+         */
         function tableNamesCallback(tableNames)
         {
             var tableNamesLength = tableNames.length;
@@ -1655,6 +1667,9 @@ WebInspector.IDBObjectStoreTreeElement.prototype = {
 
     _clearObjectStore: function()
     {
+        /**
+         * @this {WebInspector.IDBObjectStoreTreeElement}
+         */
         function callback() {
             this.update(this._objectStore);
         }

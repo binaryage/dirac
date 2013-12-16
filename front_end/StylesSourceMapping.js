@@ -221,6 +221,11 @@ WebInspector.StylesSourceMapping.prototype = {
         }
 
         this._isSettingContent = true;
+
+        /**
+         * @param {?Protocol.Error} error
+         * @this {WebInspector.StylesSourceMapping}
+         */
         function callback(error)
         {
             userCallback(error);

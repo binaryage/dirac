@@ -336,6 +336,10 @@ WebInspector.DataGrid.prototype = {
         var textBeforeEditing = this._editingNode.data[columnIdentifier];
         var currentEditingNode = this._editingNode;
 
+        /**
+         * @param {boolean} wasChange
+         * @this {WebInspector.DataGrid}
+         */
         function moveToNextIfNeeded(wasChange) {
             if (!moveDirection)
                 return;

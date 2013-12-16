@@ -1519,6 +1519,9 @@ WebInspector.NetworkPanel = function()
     for (var i = 0; i < this._networkLogView.statusBarItems.length; ++i)
         this._panelStatusBarElement.appendChild(this._networkLogView.statusBarItems[i]);
 
+    /**
+     * @this {WebInspector.NetworkPanel}
+     */
     function viewGetter()
     {
         return this.visibleView;
@@ -1713,15 +1716,22 @@ WebInspector.NetworkPanel.prototype = {
     /** 
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
+     * @this {WebInspector.NetworkPanel}
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
+        /**
+         * @this {WebInspector.NetworkPanel}
+         */
         function reveal(request)
         {
             WebInspector.inspectorView.setCurrentPanel(this);
             this.revealAndHighlightRequest(request);
         }
 
+        /**
+         * @this {WebInspector.NetworkPanel}
+         */
         function appendRevealItem(request)
         {
             var revealText = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Network panel" : "Reveal in Network Panel");

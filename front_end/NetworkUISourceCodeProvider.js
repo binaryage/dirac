@@ -48,6 +48,10 @@ WebInspector.NetworkUISourceCodeProvider = function(networkWorkspaceProvider, wo
 WebInspector.NetworkUISourceCodeProvider.prototype = {
     _populate: function()
     {
+        /**
+         * @param {!WebInspector.ResourceTreeFrame} frame
+         * @this {WebInspector.NetworkUISourceCodeProvider}
+         */
         function populateFrame(frame)
         {
             for (var i = 0; i < frame.childFrames.length; ++i)
@@ -91,7 +95,7 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Event} event
+     * @param {!WebInspector.Event|{data: !WebInspector.Resource}} event
      */
     _resourceAdded: function(event)
     {

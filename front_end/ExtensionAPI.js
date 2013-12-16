@@ -156,7 +156,10 @@ EventSinkImpl.prototype = {
             extensionServer.sendRequest({ command: commands.Unsubscribe, type: this._type });
     },
 
-    _fire: function()
+    /**
+     * @param {...} vararg
+     */
+    _fire: function(vararg)
     {
         var listeners = this._listeners.slice();
         for (var i = 0; i < listeners.length; ++i)
@@ -216,6 +219,9 @@ ConsoleAPI.prototype = {
  */
 function Network()
 {
+    /**
+     * @this {EventSinkImpl}
+     */
     function dispatchRequestEvent(message)
     {
         var request = message.arguments[1];
@@ -343,6 +349,9 @@ function ExtensionViewImpl(id)
 {
     this._id = id;
 
+    /**
+     * @this {EventSinkImpl}
+     */
     function dispatchShowEvent(message)
     {
         var frameIndex = message.arguments[0];
@@ -529,6 +538,9 @@ Audits.prototype = {
  */
 function AuditCategoryImpl(id)
 {
+    /**
+     * @this {EventSinkImpl}
+     */
     function dispatchAuditEvent(request)
     {
         var auditResult = new AuditResult(request.arguments[0]);
@@ -636,14 +648,22 @@ AuditResultNode.prototype = {
  */
 function InspectedWindow()
 {
+    /**
+     * @this {EventSinkImpl}
+     */
     function dispatchResourceEvent(message)
     {
         this._fire(new Resource(message.arguments[0]));
     }
+
+    /**
+     * @this {EventSinkImpl}
+     */
     function dispatchResourceContentEvent(message)
     {
         this._fire(new Resource(message.arguments[0]), message.arguments[1]);
     }
+
     this.onResourceAdded = new EventSink(events.ResourceAdded, dispatchResourceEvent);
     this.onResourceContentCommitted = new EventSink(events.ResourceContentCommitted, dispatchResourceContentEvent);
 }

@@ -417,6 +417,11 @@ WebInspector.GenericSettingsTab = function()
 WebInspector.GenericSettingsTab.prototype = {
     _updateScriptDisabledCheckbox: function()
     {
+        /**
+         * @param {?Protocol.Error} error
+         * @param {string} status
+         * @this {WebInspector.GenericSettingsTab}
+         */
         function executionStatusCallback(error, status)
         {
             if (error || !status)
@@ -837,6 +842,10 @@ WebInspector.SettingsList.prototype = {
         else
             this._ids.push(itemId);
 
+        /**
+         * @param {?Event} event
+         * @this {WebInspector.SettingsList}
+         */
         function removeItemClicked(event)
         {
             removeItemButton.disabled = true;
@@ -1002,6 +1011,7 @@ WebInspector.EditableSettingsList.prototype = {
             this._addInputElements[columnId] = inputElement;
             return;
         }
+        var validItemId = itemId;
 
         if (!this._editInputElements[itemId])
             this._editInputElements[itemId] = {};
@@ -1023,16 +1033,20 @@ WebInspector.EditableSettingsList.prototype = {
         columnElement.inputElement = inputElement;
         this._editInputElements[itemId][columnId] = inputElement;
 
+        /**
+         * @param {?Event} event
+         * @this {WebInspector.EditableSettingsList}
+         */
         function rowClicked(event)
         {
             if (itemId === this._editingId)
                 return;
             event.consume();
             console.assert(!this._editingId);
-            this._editingId = itemId;
-            var listItem = this.itemForId(itemId);
+            this._editingId = validItemId;
+            var listItem = this.itemForId(validItemId);
             listItem.classList.add("item-editing");
-            var inputElement = event.target.inputElement || this._editInputElements[itemId][this.columns()[0]];
+            var inputElement = event.target.inputElement || this._editInputElements[validItemId][this.columns()[0]];
             inputElement.focus();
             inputElement.select();
         }

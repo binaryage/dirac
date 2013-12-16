@@ -196,6 +196,10 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
             return b - a;
         }
 
+        /**
+         * @param {number} fromIndex
+         * @this {WebInspector.FilteredItemSelectionDialog}
+         */
         function scoreItems(fromIndex)
         {
             var maxWorkItems = 1000;

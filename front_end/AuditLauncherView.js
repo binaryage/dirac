@@ -158,6 +158,9 @@ WebInspector.AuditLauncherView.prototype = {
         this._buttonContainerElement.appendChild(this._progressIndicator.element);
         this._displayResourceLoadingProgress = true;
 
+        /**
+         * @this {WebInspector.AuditLauncherView}
+         */
         function onAuditStarted()
         {
             this._displayResourceLoadingProgress = false;
@@ -244,6 +247,10 @@ WebInspector.AuditLauncherView.prototype = {
 
         this._contentElement.appendChild(this._headerElement);
 
+        /**
+         * @param {?Event} event
+         * @this {WebInspector.AuditLauncherView}
+         */
         function handleSelectAllClick(event)
         {
             this._selectAllClicked(event.target.checked, true);

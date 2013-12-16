@@ -289,6 +289,10 @@ WebInspector.StylesSidebarPane.prototype = {
         if (!node)
             return;
 
+        /**
+         * @param {?WebInspector.CSSStyleDeclaration} computedStyle
+         * @this {WebInspector.StylesSidebarPane}
+         */
         function computedStyleCallback(computedStyle)
         {
             delete this._refreshUpdateInProgress;
@@ -331,6 +335,10 @@ WebInspector.StylesSidebarPane.prototype = {
 
         var resultStyles = {};
 
+        /**
+         * @param {?*} matchedResult
+         * @this {WebInspector.StylesSidebarPane}
+         */
         function stylesCallback(matchedResult)
         {
             delete this._rebuildUpdateInProgress;
@@ -358,12 +366,19 @@ WebInspector.StylesSidebarPane.prototype = {
             }
         }
 
+        /**
+         * @param {?WebInspector.CSSStyleDeclaration} inlineStyle
+         * @param {?WebInspector.CSSStyleDeclaration} attributesStyle
+         */
         function inlineCallback(inlineStyle, attributesStyle)
         {
             resultStyles.inlineStyle = inlineStyle;
             resultStyles.attributesStyle = attributesStyle;
         }
 
+        /**
+         * @param {?WebInspector.CSSStyleDeclaration} computedStyle
+         */
         function computedCallback(computedStyle)
         {
             resultStyles.computedStyle = computedStyle;
@@ -401,6 +416,9 @@ WebInspector.StylesSidebarPane.prototype = {
 
     _frameResized: function()
     {
+        /**
+         * @this {WebInspector.StylesSidebarPane}
+         */
         function refreshContents()
         {
             this._rebuildUpdate();
@@ -823,6 +841,10 @@ WebInspector.StylesSidebarPane.prototype = {
         var inputs = [];
         this._elementStatePane.inputs = inputs;
 
+        /**
+         * @param {?Event} event
+         * @this {WebInspector.StylesSidebarPane}
+         */
         function clickListener(event)
         {
             var node = this._validateNode();
@@ -831,6 +853,11 @@ WebInspector.StylesSidebarPane.prototype = {
             this._setPseudoClassCallback(node.id, event.target.state, event.target.checked);
         }
 
+        /**
+         * @param {string} state
+         * @return {!Element}
+         * @this {WebInspector.StylesSidebarPane}
+         */
         function createCheckbox(state)
         {
             var td = document.createElement("td");
@@ -919,12 +946,16 @@ WebInspector.ComputedStyleSidebarPane = function()
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Computed Style"));
     var showInheritedCheckbox = new WebInspector.Checkbox(WebInspector.UIString("Show inherited"), "sidebar-pane-subtitle");
     this.titleElement.appendChild(showInheritedCheckbox.element);
+    this._hasFreshContent = false;
 
     if (WebInspector.settings.showInheritedComputedStyleProperties.get()) {
         this.bodyElement.classList.add("show-inherited");
         showInheritedCheckbox.checked = true;
     }
 
+    /**
+     * @this {WebInspector.ComputedStyleSidebarPane}
+     */
     function showInheritedToggleFunction()
     {
         WebInspector.settings.showInheritedComputedStyleProperties.set(showInheritedCheckbox.checked);
@@ -950,6 +981,9 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
      */
     prepareContent: function(callback)
     {
+        /**
+         * @this {WebInspector.ComputedStyleSidebarPane}
+         */
         function wrappedCallback() {
             this._hasFreshContent = true;
             if (callback)
@@ -1473,6 +1507,10 @@ WebInspector.StylePropertiesSection.prototype = {
 
         var selectedNode = this._parentPane.node;
 
+        /**
+         * @param {!WebInspector.CSSRule} newRule
+         * @this {WebInspector.StylePropertiesSection}
+         */
         function successCallback(newRule)
         {
             var doesAffectSelectedNode = newRule.matchingSelectors.length > 0;
@@ -1493,6 +1531,9 @@ WebInspector.StylePropertiesSection.prototype = {
             finishOperationAndMoveEditor.call(this, moveDirection);
         }
 
+        /**
+         * @this {WebInspector.StylePropertiesSection}
+         */
         function finishOperationAndMoveEditor(direction)
         {
             delete this._parentPane._userOperation;
@@ -1678,6 +1719,10 @@ WebInspector.BlankStylePropertiesSection.prototype = {
             return;
         }
 
+        /**
+         * @param {!WebInspector.CSSRule} newRule
+         * @this {WebInspector.StylePropertiesSection}
+         */
         function successCallback(newRule)
         {
             var doesSelectorAffectSelectedNode = newRule.matchingSelectors.length > 0;
@@ -1984,6 +2029,10 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         var boundSpectrumChanged = spectrumChanged.bind(this);
         var boundSpectrumHidden = spectrumHidden.bind(this);
 
+        /**
+         * @param {!WebInspector.Event} e
+         * @this {WebInspector.StylePropertyTreeElementBase}
+         */
         function spectrumChanged(e)
         {
             var colorString = /** @type {string} */ (e.data);
@@ -1993,6 +2042,10 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             this.applyStyleText(nameElement.textContent + ": " + valueElement.textContent, false, false, false);
         }
 
+        /**
+         * @param {!WebInspector.Event} event
+         * @this {WebInspector.StylePropertyTreeElementBase}
+         */
         function spectrumHidden(event)
         {
             if (scrollerElement)
@@ -2012,12 +2065,16 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             spectrumHelper.reposition(colorSwatch.element);
         }
 
+        /**
+         * @param {?Event} e
+         * @this {WebInspector.StylePropertyTreeElementBase}
+         */
         function swatchClick(e)
         {
             // Shift + click toggles color formats.
             // Click opens colorpicker, only if the element is not in computed styles section.
             if (!spectrumHelper || e.shiftKey) {
-                changeColorDisplay(e);
+                changeColorDisplay();
             } else {
                 var visible = spectrumHelper.toggle(colorSwatch.element, color, format);
 
@@ -2041,6 +2098,9 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         var colorValueElement = document.createElement("span");
         colorValueElement.textContent = color.toString(format);
 
+        /**
+         * @param {string} curFormat
+         */
         function nextFormat(curFormat)
         {
             // The format loop is as follows:
@@ -2087,7 +2147,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
             }
         }
 
-        function changeColorDisplay(event)
+        function changeColorDisplay()
         {
             do {
                 format = nextFormat(format);
@@ -2214,6 +2274,9 @@ WebInspector.StylePropertyTreeElement.prototype = {
         return this.treeOutline && this.treeOutline.section;
     },
 
+    /**
+     * @param {function()=} userCallback
+     */
     _updatePane: function(userCallback)
     {
         var section = this.section();
@@ -2232,6 +2295,10 @@ WebInspector.StylePropertyTreeElement.prototype = {
     {
         var disabled = !event.target.checked;
 
+        /**
+         * @param {?WebInspector.CSSStyleDeclaration} newStyle
+         * @this {WebInspector.StylePropertyTreeElement}
+         */
         function callback(newStyle)
         {
             if (!newStyle)
@@ -2439,6 +2506,9 @@ WebInspector.StylePropertyTreeElement.prototype = {
             selectElement.parentElement.classList.add("child-editing");
         selectElement.textContent = selectElement.textContent; // remove color swatch and the like
 
+        /**
+         * @this {WebInspector.StylePropertyTreeElement}
+         */
         function pasteHandler(context, event)
         {
             var data = event.clipboardData.getData("Text");
@@ -2466,6 +2536,9 @@ WebInspector.StylePropertyTreeElement.prototype = {
             this.editingCommitted(event.target.textContent, context, "forward");
         }
 
+        /**
+         * @this {WebInspector.StylePropertyTreeElement}
+         */
         function blurListener(context, event)
         {
             var treeElement = this._parentPane._mouseDownTreeElement;
@@ -2569,6 +2642,9 @@ WebInspector.StylePropertyTreeElement.prototype = {
         if (this._applyFreeFlowStyleTextEditTimer)
             clearTimeout(this._applyFreeFlowStyleTextEditTimer);
 
+        /**
+         * @this {WebInspector.StylePropertyTreeElement}
+         */
         function apply()
         {
             var valueText = this.valueElement.textContent;
@@ -2690,7 +2766,10 @@ WebInspector.StylePropertyTreeElement.prototype = {
             moveToNextCallback.call(this, this._newProperty, false, section);
         }
 
-        // The Callback to start editing the next/previous property/selector.
+        /**
+         * The Callback to start editing the next/previous property/selector.
+         * @this {WebInspector.StylePropertyTreeElement}
+         */
         function moveToNextCallback(alreadyNew, valueChanged, section)
         {
             if (!moveDirection)
@@ -2801,6 +2880,12 @@ WebInspector.StylePropertyTreeElement.prototype = {
         if (updateInterface)
             this._parentPane._userOperation = true;
 
+        /**
+         * @param {function()} userCallback
+         * @param {string} originalPropertyText
+         * @param {?WebInspector.CSSStyleDeclaration} newStyle
+         * @this {WebInspector.StylePropertyTreeElement}
+         */
         function callback(userCallback, originalPropertyText, newStyle)
         {
             if (!newStyle) {
@@ -2918,6 +3003,11 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
      */
     _handleNameOrValueUpDown: function(event)
     {
+        /**
+         * @param {string} originalValue
+         * @param {string} replacementString
+         * @this {WebInspector.StylesSidebarPane.CSSPropertyPrompt}
+         */
         function finishHandler(originalValue, replacementString)
         {
             // Synthesize property text disregarding any comments, custom whitespace etc.

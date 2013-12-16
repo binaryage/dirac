@@ -210,6 +210,9 @@ WebInspector.RuntimeModel.prototype = {
         else
             this.evaluate(expressionString, "completion", true, true, false, false, evaluated.bind(this));
 
+        /**
+         * @this {WebInspector.RuntimeModel}
+         */
         function evaluated(result, wasThrown)
         {
             if (!result || wasThrown) {
@@ -217,6 +220,10 @@ WebInspector.RuntimeModel.prototype = {
                 return;
             }
 
+            /**
+             * @param {string} primitiveType
+             * @this {WebInspector.RuntimeModel}
+             */
             function getCompletions(primitiveType)
             {
                 var object;
@@ -247,6 +254,12 @@ WebInspector.RuntimeModel.prototype = {
                 this.evaluate("(" + getCompletions + ")(\"" + result.type + "\")", "completion", false, true, true, false, receivedPropertyNamesFromEval.bind(this));
         }
 
+        /**
+         * @param {?WebInspector.RemoteObject} notRelevant
+         * @param {boolean} wasThrown
+         * @param {?RuntimeAgent.RemoteObject=} result
+         * @this {WebInspector.RuntimeModel}
+         */
         function receivedPropertyNamesFromEval(notRelevant, wasThrown, result)
         {
             if (result && !wasThrown)
@@ -255,6 +268,9 @@ WebInspector.RuntimeModel.prototype = {
                 completionsReadyCallback([]);
         }
 
+        /**
+         * @this {WebInspector.RuntimeModel}
+         */
         function receivedPropertyNames(propertyNames)
         {
             RuntimeAgent.releaseObjectGroup("completion");

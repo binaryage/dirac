@@ -67,6 +67,10 @@ WebInspector.MetricsSidebarPane.prototype = {
             return;
         }
 
+        /**
+         * @param {?WebInspector.CSSStyleDeclaration} style
+         * @this {WebInspector.MetricsSidebarPane}
+         */
         function callback(style)
         {
             if (!style || this.node !== node)
@@ -75,6 +79,10 @@ WebInspector.MetricsSidebarPane.prototype = {
         }
         WebInspector.cssModel.getComputedStyleAsync(node.id, callback.bind(this));
 
+        /**
+         * @param {?WebInspector.CSSStyleDeclaration} style
+         * @this {WebInspector.MetricsSidebarPane}
+         */
         function inlineStyleCallback(style)
         {
             if (!style || this.node !== node)
@@ -91,6 +99,9 @@ WebInspector.MetricsSidebarPane.prototype = {
 
     _frameResized: function()
     {
+        /**
+         * @this {WebInspector.MetricsSidebarPane}
+         */
         function refreshContents()
         {
             this._innerUpdate();
@@ -149,6 +160,9 @@ WebInspector.MetricsSidebarPane.prototype = {
         }
     },
 
+    /**
+     * @param {!WebInspector.CSSStyleDeclaration} style
+     */
     _updateMetrics: function(style)
     {
         // Updating with computed style.
@@ -156,6 +170,13 @@ WebInspector.MetricsSidebarPane.prototype = {
         metricsElement.className = "metrics";
         var self = this;
 
+        /**
+         * @param {!WebInspector.CSSStyleDeclaration} style
+         * @param {string} name
+         * @param {string} side
+         * @param {string} suffix
+         * @this {WebInspector.MetricsSidebarPane}
+         */
         function createBoxPartElement(style, name, side, suffix)
         {
             var propertyName = (name !== "position" ? name + "-" : "") + side + suffix;
@@ -318,6 +339,11 @@ WebInspector.MetricsSidebarPane.prototype = {
     {
         var element = event.currentTarget;
 
+        /**
+         * @param {string} originalValue
+         * @param {string} replacementString
+         * @this {WebInspector.MetricsSidebarPane}
+         */
         function finishHandler(originalValue, replacementString)
         {
             this._applyUserInput(element, replacementString, originalValue, context, false);

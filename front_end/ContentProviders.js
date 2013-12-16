@@ -314,6 +314,9 @@ WebInspector.StaticContentProvider.prototype = {
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {
+        /**
+         * @this {WebInspector.StaticContentProvider}
+         */
         function performSearch()
         {
             callback(WebInspector.ContentProvider.performSearchInContent(this._content, query, caseSensitive, isRegex));

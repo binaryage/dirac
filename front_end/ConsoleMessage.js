@@ -473,6 +473,10 @@ WebInspector.ConsoleMessageImpl.prototype = {
 
     _formatParameterAsNode: function(object, elem)
     {
+        /**
+         * @param {!DOMAgent.NodeId} nodeId
+         * @this {WebInspector.ConsoleMessageImpl}
+         */
         function printNode(nodeId)
         {
             if (!nodeId) {
@@ -702,10 +706,22 @@ WebInspector.ConsoleMessageImpl.prototype = {
         return rootElement;
     },
 
+    /**
+     * @param {string} format
+     * @param {!Array.<string>} parameters
+     * @param {!Element} formattedResult
+     * @this {WebInspector.ConsoleMessageImpl}
+     */
     _formatWithSubstitutionString: function(format, parameters, formattedResult)
     {
         var formatters = {};
 
+        /**
+         * @param {boolean} force
+         * @param {!Object} obj
+         * @return {!Element}
+         * @this {WebInspector.ConsoleMessageImpl}
+         */
         function parameterFormatter(force, obj)
         {
             return this._formatParameter(obj, force, false);

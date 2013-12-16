@@ -289,9 +289,10 @@ WebInspector.markBeingEdited = function(element, value)
 
 /**
  * @constructor
- * @param {function(!Element,string,string,*,string)} commitHandler
- * @param {function(!Element,*)} cancelHandler
- * @param {*=} context
+ * @param {function(!Element,string,string,T,string)} commitHandler
+ * @param {function(!Element,T)} cancelHandler
+ * @param {T=} context
+ * @template T
  */
 WebInspector.EditingConfig = function(commitHandler, cancelHandler, context)
 {
@@ -1204,6 +1205,9 @@ WebInspector.CodeMirrorCSSLoadView.prototype = {
 
 ;(function() {
 
+/**
+ * @this {Window}
+ */
 function windowLoaded()
 {
     window.addEventListener("focus", WebInspector._windowFocused, false);

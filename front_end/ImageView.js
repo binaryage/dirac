@@ -76,6 +76,9 @@ WebInspector.ImageView.prototype = {
 
         this.resource.populateImageSource(imagePreviewElement);
 
+        /**
+         * @this {WebInspector.ImageView}
+         */
         function onImageLoad()
         {
             var content = this.resource.content;

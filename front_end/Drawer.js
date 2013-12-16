@@ -207,6 +207,10 @@ WebInspector.Drawer.prototype = {
             {element: this.element, start: {"flex-basis": 23}, end: {"flex-basis": height}},
         ];
 
+        /**
+         * @param {boolean} finished
+         * @this {WebInspector.Drawer}
+         */
         function animationCallback(finished)
         {
             if (this._inspectorView.currentPanel())
@@ -257,6 +261,10 @@ WebInspector.Drawer.prototype = {
             {element: this.element, start: {"flex-basis": this.element.offsetHeight }, end: {"flex-basis": 23}},
         ];
 
+        /**
+         * @param {boolean} finished
+         * @this {WebInspector.Drawer}
+         */
         function animationCallback(finished)
         {
             if (this._inspectorView.currentPanel())

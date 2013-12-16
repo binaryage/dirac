@@ -1100,6 +1100,9 @@ WebInspector.Revision.prototype = {
         }
         historyItems.push({url: url, loaderId: loaderId, timestamp: timestamp, key: key});
 
+        /**
+         * @this {WebInspector.Revision}
+         */
         function persist()
         {
             window.localStorage[key] = this._content;

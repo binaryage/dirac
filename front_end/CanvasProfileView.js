@@ -143,6 +143,9 @@ WebInspector.CanvasProfileView.prototype = {
         controlsContainer.appendChild(this._toggleReplayStateSidebarButton.element);
         this._enableReplayInfoSidebar(false);
 
+        /**
+         * @this {WebInspector.CanvasProfileView}
+         */
         function clickHandler()
         {
             this._enableReplayInfoSidebar(this._toggleReplayStateSidebarButton.state === "left");

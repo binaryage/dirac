@@ -96,6 +96,10 @@ WebInspector.LayerTreeModel.prototype = {
             return;
         this._enabled = true;
         WebInspector.domAgent.requestDocument(onDocumentAvailable.bind(this));
+
+        /**
+         * @this {WebInspector.LayerTreeModel}
+         */
         function onDocumentAvailable()
         {
             // The agent might have been disabled while we were waiting for the document.

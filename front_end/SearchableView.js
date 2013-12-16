@@ -180,6 +180,11 @@ WebInspector.SearchableView.prototype = {
     {
         this._shortcuts = {};
 
+        /**
+         * @param {!Array.<!WebInspector.KeyboardShortcut.Descriptor>} shortcuts
+         * @param {function()} handler
+         * @this {WebInspector.SearchableView}
+         */
         function register(shortcuts, handler)
         {
             for (var i = 0; i < shortcuts.length; ++i)

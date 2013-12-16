@@ -153,6 +153,9 @@ WebInspector.HeapSnapshotView.prototype = {
     {
         this.profile.load(profileCallback.bind(this));
 
+        /**
+         * @this {WebInspector.HeapSnapshotView}
+         */
         function profileCallback(heapSnapshotProxy)
         {
             var list = this._profiles();
@@ -203,6 +206,10 @@ WebInspector.HeapSnapshotView.prototype = {
     {
         // FIXME: load base and current snapshots in parallel
         this.profile.load(profileCallback.bind(this));
+
+        /**
+         * @this {WebInspector.HeapSnapshotView}
+         */
         function profileCallback() {
             this.profile._wasShown();
             if (this.baseProfile)
@@ -499,6 +506,9 @@ WebInspector.HeapSnapshotView.prototype = {
             return;
         }
 
+        /**
+         * @this {WebInspector.HeapSnapshotView}
+         */
         function dataGridContentShown(event)
         {
             var dataGrid = event.data;
@@ -519,6 +529,10 @@ WebInspector.HeapSnapshotView.prototype = {
             return;
 
         this.profile.load(didLoadSnapshot.bind(this));
+
+        /**
+         * @this {WebInspector.HeapSnapshotView}
+         */
         function didLoadSnapshot(snapshotProxy)
         {
             if (this.dataGrid !== dataGrid)
@@ -532,6 +546,9 @@ WebInspector.HeapSnapshotView.prototype = {
             }
         }
 
+        /**
+         * @this {WebInspector.HeapSnapshotView}
+         */
         function didLoadBaseSnaphot(baseSnapshotProxy)
         {
             if (this.diffDataGrid.baseSnapshot !== baseSnapshotProxy)
@@ -1183,6 +1200,9 @@ WebInspector.HeapProfileHeader.prototype = {
 
     _transferSnapshot: function()
     {
+        /**
+         * @this {WebInspector.HeapProfileHeader}
+         */
         function finishTransfer()
         {
             if (this._transferHandler) {
@@ -1205,6 +1225,9 @@ WebInspector.HeapProfileHeader.prototype = {
 
     _setupWorker: function()
     {
+        /**
+         * @this {WebInspector.HeapProfileHeader}
+         */
         function setProfileWait(event)
         {
             this.sidebarElement.wait = event.data;
@@ -1272,6 +1295,9 @@ WebInspector.HeapProfileHeader.prototype = {
         worker.startCheckingForLongRunningCalls();
         this.notifySnapshotReceived();
 
+        /**
+         * @this {WebInspector.HeapProfileHeader}
+         */
         function didGetMaxNodeId(id)
         {
            this.maxJSObjectId = id;

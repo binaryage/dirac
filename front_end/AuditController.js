@@ -48,6 +48,11 @@ WebInspector.AuditController.prototype = {
     {
         this._progress.setTitle(WebInspector.UIString("Running audit"));
 
+        /**
+         * @param {!WebInspector.AuditCategoryResult} categoryResult
+         * @param {!WebInspector.AuditRuleResult} ruleResult
+         * @this {WebInspector.AuditController}
+         */
         function ruleResultReadyCallback(categoryResult, ruleResult)
         {
             if (ruleResult && ruleResult.children)
@@ -60,6 +65,10 @@ WebInspector.AuditController.prototype = {
         var results = [];
         var mainResourceURL = WebInspector.inspectedPageURL;
         var categoriesDone = 0;
+
+        /**
+         * @this {WebInspector.AuditController}
+         */
         function categoryDoneCallback()
         {
             if (++categoriesDone !== categories.length)
@@ -111,6 +120,9 @@ WebInspector.AuditController.prototype = {
         for (var i = 0; i < categoryIds.length; ++i)
             categories.push(this._auditsPanel.categoriesById[categoryIds[i]]);
 
+        /**
+         * @this {WebInspector.AuditController}
+         */
         function startAuditWhenResourcesReady()
         {
             startedCallback();

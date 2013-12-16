@@ -41,24 +41,43 @@ WebInspector.TempFile = function(dirPath, name, callback)
     this._fileEntry = null;
     this._writer = null;
 
+    /**
+     * @param {!FileSystem} fs
+     * @this {WebInspector.TempFile}
+     */
     function didInitFs(fs)
     {
         fs.root.getDirectory(dirPath, { create: true }, didGetDir.bind(this), boundErrorHandler);
     }
 
+    /**
+     * @param {!DirectoryEntry} dir
+     * @this {WebInspector.TempFile}
+     */
     function didGetDir(dir)
     {
         dir.getFile(name, { create: true }, didCreateFile.bind(this), boundErrorHandler);
     }
 
+    /**
+     * @param {!FileEntry} fileEntry
+     * @this {WebInspector.TempFile}
+     */
     function didCreateFile(fileEntry)
     {
         this._fileEntry = fileEntry;
         fileEntry.createWriter(didCreateWriter.bind(this), boundErrorHandler);
     }
 
+    /**
+     * @param {!FileWriter} writer
+     * @this {WebInspector.TempFile}
+     */
     function didCreateWriter(writer)
     {
+        /**
+         * @this {WebInspector.TempFile}
+         */
         function didTruncate(e)
         {
             this._writer = writer;
@@ -109,16 +128,24 @@ WebInspector.TempFile.prototype = {
     },
 
     /**
-     * @param {!function(?string)} callback
+     * @param {function(?string)} callback
      */
     read: function(callback)
     {
+        /**
+         * @param {!File} file
+         * @this {WebInspector.TempFile}
+         */
         function didGetFile(file)
         {
             var reader = new FileReader();
+
+            /**
+             * @this {FileReader}
+             */
             reader.onloadend = function(e)
             {
-                callback(this.result);
+                callback(/** @type {string} */ (this.result));
             }
             reader.onerror = function(error)
             {

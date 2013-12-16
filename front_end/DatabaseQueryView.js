@@ -103,6 +103,9 @@ WebInspector.DatabaseQueryView.prototype = {
 
         this.prompt.clearAutoComplete();
 
+        /**
+         * @this {WebInspector.DatabaseQueryView}
+         */
         function moveBackIfOutside()
         {
             delete this._selectionTimeout;

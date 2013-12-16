@@ -87,7 +87,7 @@ WebInspector.CodeMirrorUtils = {
             innerConfig.name = oldModeName;
             var codeMirrorMode = CodeMirror.getMode(config, innerConfig);
             codeMirrorMode.name = modeName;
-            codeMirrorMode.token = tokenOverride.bind(this, codeMirrorMode.token);
+            codeMirrorMode.token = tokenOverride.bind(null, codeMirrorMode.token);
             return codeMirrorMode;
         }
 

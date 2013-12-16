@@ -318,6 +318,12 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
         inputElementContainer.appendChild(inputElement);
         this._addListElement(inputElementContainer, this.listElement.firstChild);
 
+        /**
+         * @param {boolean} accept
+         * @param {!Element} e
+         * @param {string} text
+         * @this {WebInspector.XHRBreakpointsSidebarPane}
+         */
         function finishEditing(accept, e, text)
         {
             this._removeListElement(inputElementContainer);
@@ -384,11 +390,19 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
     _contextMenu: function(url, event)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
+
+        /**
+         * @this {WebInspector.XHRBreakpointsSidebarPane}
+         */
         function removeBreakpoint()
         {
             this._removeBreakpoint(url);
             this._saveBreakpoints();
         }
+
+        /**
+         * @this {WebInspector.XHRBreakpointsSidebarPane}
+         */
         function removeAllBreakpoints()
         {
             for (var url in this._breakpointElements)
@@ -421,6 +435,12 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
         this.listElement.insertBefore(inputElement, element);
         element.classList.add("hidden");
 
+        /**
+         * @param {boolean} accept
+         * @param {!Element} e
+         * @param {string} text
+         * @this {WebInspector.XHRBreakpointsSidebarPane}
+         */
         function finishEditing(accept, e, text)
         {
             this._removeListElement(inputElement);

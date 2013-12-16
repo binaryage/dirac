@@ -190,6 +190,10 @@ WebInspector.EventListenerBar = function(eventListener, nodeId, linkifier)
 WebInspector.EventListenerBar.prototype = {
     update: function()
     {
+        /**
+         * @param {?WebInspector.RemoteObject} nodeObject
+         * @this {WebInspector.EventListenerBar}
+         */
         function updateWithNodeObject(nodeObject)
         {
             var properties = [];

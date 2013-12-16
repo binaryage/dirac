@@ -116,6 +116,9 @@ WebInspector.CookieItemsView.prototype = {
         var resourceURLsForDocumentURL = [];
         this._totalSize = 0;
 
+        /**
+         * @this {WebInspector.CookieItemsView}
+         */
         function populateResourcesForDocuments(resource)
         {
             var url = resource.documentURL.asParsedURL();

@@ -237,6 +237,10 @@ WebInspector.BackendSetting = function(name, defaultValue, eventSupport, storage
 WebInspector.BackendSetting.prototype = {
     set: function(value)
     {
+        /**
+         * @param {?Protocol.Error} error
+         * @this {WebInspector.BackendSetting}
+         */
         function callback(error)
         {
             if (error) {

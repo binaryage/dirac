@@ -628,6 +628,10 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
             return;
         }
 
+        /**
+         * @param {?string} className
+         * @this {WebInspector.HeapSnapshotConstructorsDataGrid}
+         */
         function didGetClassName(className)
         {
             if (!className) {
@@ -788,9 +792,16 @@ WebInspector.HeapSnapshotDiffDataGrid.prototype = {
 
     _populateChildren: function()
     {
+        /**
+         * @this {WebInspector.HeapSnapshotDiffDataGrid}
+         */
         function aggregatesForDiffReceived(aggregatesForDiff)
         {
             this.snapshot.calculateSnapshotDiff(this.baseSnapshot.uid, aggregatesForDiff, didCalculateSnapshotDiff.bind(this));
+
+            /**
+             * @this {WebInspector.HeapSnapshotDiffDataGrid}
+             */
             function didCalculateSnapshotDiff(diffByClassName)
             {
                 for (var className in diffByClassName) {
@@ -867,6 +878,9 @@ WebInspector.HeapSnapshotDominatorsDataGrid.prototype = {
             return;
         }
 
+        /**
+         * @this {WebInspector.HeapSnapshotDominatorsDataGrid}
+         */
         function didGetDominators(dominatorIds)
         {
             if (!dominatorIds) {
@@ -878,6 +892,9 @@ WebInspector.HeapSnapshotDominatorsDataGrid.prototype = {
             expandNextDominator.call(this, dominatorIds, dominatorNode);
         }
 
+        /**
+         * @this {WebInspector.HeapSnapshotDominatorsDataGrid}
+         */
         function expandNextDominator(dominatorIds, dominatorNode)
         {
             if (!dominatorNode) {
@@ -922,6 +939,11 @@ WebInspector.AllocationDataGrid.prototype = {
     {
         this._snapshot = snapshot;
         this._snapshot.allocationTracesTops(didReceiveAllocationTracesTops.bind(this));
+
+        /**
+         * @param {!Array.<!WebInspector.DataGrid>} tops
+         * @this {WebInspector.AllocationDataGrid}
+         */
         function didReceiveAllocationTracesTops(tops)
         {
             var root = this.rootNode();
@@ -953,6 +975,10 @@ WebInspector.AllocationGridNode.prototype = {
             return;
         this._populated = true;
         this._dataGrid._snapshot.allocationNodeCallers(this.data.id, didReceiveCallers.bind(this));
+
+        /**
+         * @this {WebInspector.AllocationGridNode}
+         */
         function didReceiveCallers(callers)
         {
             var callersChain = callers.nodesWithSingleCaller;

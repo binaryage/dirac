@@ -233,6 +233,10 @@ FormatterWorker.HTMLFormatter.prototype = {
         var scriptOpened = false;
         var styleOpened = false;
         var tokenizer = WebInspector.CodeMirrorUtils.createTokenizer("text/html");
+
+        /**
+         * @this {FormatterWorker.HTMLFormatter}
+         */
         function processToken(tokenValue, tokenType, tokenStart, tokenEnd) {
             if (tokenType !== "xml-tag")
                 return;

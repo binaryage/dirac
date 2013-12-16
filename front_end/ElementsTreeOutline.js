@@ -699,6 +699,10 @@ WebInspector.ElementsTreeOutline.prototype = {
             if (!object)
                 return;
 
+            /**
+             * @param {?string} pseudoType
+             * @this {!Element}
+             */
             function toggleClassAndInjectStyleRule(pseudoType)
             {
                 const classNamePrefix = "__web-inspector-hide";
@@ -1070,6 +1074,9 @@ WebInspector.ElementsTreeElement.prototype = {
         var treeChildIndex = 0;
         var elementToSelect;
 
+        /**
+         * @this {WebInspector.ElementsTreeElement}
+         */
         function updateChildrenOfNode()
         {
             var treeOutline = treeElement.treeOutline;
@@ -1184,6 +1191,9 @@ WebInspector.ElementsTreeElement.prototype = {
 
     expandRecursively: function()
     {
+        /**
+         * @this {WebInspector.ElementsTreeElement}
+         */
         function callback()
         {
             TreeElement.prototype.expandRecursively.call(this, Number.MAX_VALUE);
@@ -1572,18 +1582,30 @@ WebInspector.ElementsTreeElement.prototype = {
 
         var closingTagElement = this._distinctClosingTagElement();
 
+        /**
+         * @param {?Event} event
+         * @this {WebInspector.ElementsTreeElement}
+         */
         function keyupListener(event)
         {
             if (closingTagElement)
                 closingTagElement.textContent = "</" + tagNameElement.textContent + ">";
         }
 
+        /**
+         * @param {!Element} element
+         * @param {string} newTagName
+         * @this {WebInspector.ElementsTreeElement}
+         */
         function editingComitted(element, newTagName)
         {
             tagNameElement.removeEventListener('keyup', keyupListener, false);
             this._tagNameEditingCommitted.apply(this, arguments);
         }
 
+        /**
+         * @this {WebInspector.ElementsTreeElement}
+         */
         function editingCancelled()
         {
             tagNameElement.removeEventListener('keyup', keyupListener, false);
@@ -1642,6 +1664,9 @@ WebInspector.ElementsTreeElement.prototype = {
             dispose.call(this);
         }
 
+        /**
+         * @this {WebInspector.ElementsTreeElement}
+         */
         function dispose()
         {
             delete this._editing;
@@ -1761,6 +1786,9 @@ WebInspector.ElementsTreeElement.prototype = {
             moveToNextAttributeIfNeeded.call(self);
         }
 
+        /**
+         * @this {WebInspector.ElementsTreeElement}
+         */
         function moveToNextAttributeIfNeeded()
         {
             if (moveDirection !== "forward") {
@@ -1806,6 +1834,9 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         delete this._editing;
 
+        /**
+         * @this {WebInspector.ElementsTreeElement}
+         */
         function callback()
         {
             this.updateTitle();
@@ -2298,6 +2329,9 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         function scrollIntoViewCallback(object)
         {
+            /**
+             * @this {!Element}
+             */
             function scrollIntoView()
             {
                 this.scrollIntoViewIfNeeded(true);

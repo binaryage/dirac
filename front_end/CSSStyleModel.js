@@ -156,7 +156,7 @@ WebInspector.CSSStyleModel.prototype = {
 
     /**
      * @param {number} nodeId
-     * @param {function(?String, ?Array.<!CSSAgent.PlatformFontUsage>)} callback
+     * @param {function(?string, ?Array.<!CSSAgent.PlatformFontUsage>)} callback
      */
     getPlatformFontsForNode: function(nodeId, callback)
     {
@@ -553,10 +553,14 @@ WebInspector.CSSStyleModel.prototype = {
      * @param {!CSSAgent.StyleSheetId} styleSheetId
      * @param {string} newText
      * @param {boolean} majorChange
-     * @param {function(?string)} userCallback
+     * @param {function(?Protocol.Error)} userCallback
      */
     setStyleSheetText: function(styleSheetId, newText, majorChange, userCallback)
     {
+        /**
+         * @param {?Protocol.Error} error
+         * @this {WebInspector.CSSStyleModel}
+         */
         function callback(error)
         {
             this._pendingCommandsMajorState.pop();
@@ -1530,6 +1534,9 @@ WebInspector.CSSStyleSheetHeader.prototype = {
     {
         CSSAgent.getStyleSheetText(this.id, textCallback.bind(this));
 
+        /**
+         * @this {WebInspector.CSSStyleSheetHeader}
+         */
         function textCallback(error, text)
         {
             if (error) {

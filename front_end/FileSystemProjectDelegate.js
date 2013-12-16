@@ -226,6 +226,9 @@ WebInspector.FileSystemProjectDelegate.prototype = {
         progress.setTotalWork(queriesToRun.length);
         searchNextQuery.call(this);
 
+        /**
+         * @this {WebInspector.FileSystemProjectDelegate}
+         */
         function searchNextQuery()
         {
             if (!queriesToRun.length) {
@@ -456,14 +459,21 @@ WebInspector.FileSystemProjectDelegate.prototype = {
          */
         function innerCallback(filePath)
         {
+            if (!filePath) {
+                callback(null);
+                return;
+            }
             createFilePath = filePath;
-            if (!filePath || !content) {
+            if (!content) {
                 contentSet.call(this);
                 return;
             }
             this._fileSystem.setFileContent(filePath, content, contentSet.bind(this));
         }
 
+        /**
+         * @this {WebInspector.FileSystemProjectDelegate}
+         */
         function contentSet()
         {
             this._addFile(createFilePath);

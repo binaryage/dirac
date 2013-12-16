@@ -62,6 +62,10 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     this._workspace = workspaceForTest || WebInspector.workspace;
 
+    /**
+     * @return {!WebInspector.View}
+     * @this {WebInspector.SourcesPanel}
+     */
     function viewGetter()
     {
         return this.visibleView;
@@ -317,11 +321,19 @@ WebInspector.SourcesPanel.prototype = {
 
         this.sidebarPanes.callstack.update(details.callFrames, details.asyncStackTrace);
 
+        /**
+         * @param {!Element} element
+         * @this {WebInspector.SourcesPanel}
+         */
         function didCreateBreakpointHitStatusMessage(element)
         {
             this.sidebarPanes.callstack.setStatus(element);
         }
 
+        /**
+         * @param {!WebInspector.UILocation} uiLocation
+         * @this {WebInspector.SourcesPanel}
+         */
         function didGetUILocation(uiLocation)
         {
             var breakpoint = WebInspector.breakpointManager.findBreakpoint(uiLocation.uiSourceCode, uiLocation.lineNumber);
@@ -1065,6 +1077,11 @@ WebInspector.SourcesPanel.prototype = {
         this._searchView = this.visibleView;
         this._searchQuery = query;
 
+        /**
+         * @param {!WebInspector.View} view
+         * @param {number} searchMatches
+         * @this {WebInspector.SourcesPanel}
+         */
         function finishedCallback(view, searchMatches)
         {
             if (!searchMatches)
@@ -1073,11 +1090,18 @@ WebInspector.SourcesPanel.prototype = {
             this._searchableView.updateSearchMatchesCount(searchMatches);
         }
 
+        /**
+         * @param {number} currentMatchIndex
+         * @this {WebInspector.SourcesPanel}
+         */
         function currentMatchChanged(currentMatchIndex)
         {
             this._searchableView.updateCurrentMatchIndex(currentMatchIndex);
         }
 
+        /**
+         * @this {WebInspector.SourcesPanel}
+         */
         function searchResultsChanged()
         {
             this._searchableView.cancelSearch();
@@ -1239,6 +1263,9 @@ WebInspector.SourcesPanel.prototype = {
 
         this._enableDebuggerSidebar(!WebInspector.settings.debuggerSidebarHidden.get());
 
+        /**
+         * @this {WebInspector.SourcesPanel}
+         */
         function clickHandler()
         {
             this._enableDebuggerSidebar(this._toggleDebuggerSidebarButton.state === "left");
@@ -1497,6 +1524,9 @@ WebInspector.SourcesPanel.prototype = {
             this.showUILocation(uiLocation, true);
         }
 
+        /**
+         * @this {WebInspector.SourcesPanel}
+         */
         function revealFunction()
         {
             DebuggerAgent.getFunctionDetails(remoteObject.objectId, didGetDetails.bind(this));

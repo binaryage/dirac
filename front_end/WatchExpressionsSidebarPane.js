@@ -136,11 +136,21 @@ WebInspector.WatchExpressionsSection = function()
 WebInspector.WatchExpressionsSection.NewWatchExpression = "\xA0";
 
 WebInspector.WatchExpressionsSection.prototype = {
+    /**
+     * @param {?Event=} e
+     */
     update: function(e)
     {
         if (e)
             e.consume();
 
+        /***
+         * @param {string} expression
+         * @param {number} watchIndex
+         * @param {?WebInspector.RemoteObject} result
+         * @param {boolean} wasThrown
+         * @this {WebInspector.WatchExpressionsSection}
+         */
         function appendResult(expression, watchIndex, result, wasThrown)
         {
             if (!result)

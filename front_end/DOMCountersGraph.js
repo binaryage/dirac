@@ -204,6 +204,9 @@ WebInspector.DOMCountersGraph.prototype = {
             return index;
         }
 
+        /**
+         * @this {WebInspector.DOMCountersGraph}
+         */
         function addStatistics(record)
         {
             var counters = record["counters"];

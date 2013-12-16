@@ -85,7 +85,10 @@ WebInspector.ElementsPanelDescriptor.prototype = {
         stylesPaneSection.addAlternateKeys(WebInspector.ElementsPanelDescriptor.ShortcutKeys.IncrementBy01, WebInspector.UIString("Increment by %f", 0.1));
         stylesPaneSection.addAlternateKeys(WebInspector.ElementsPanelDescriptor.ShortcutKeys.DecrementBy01, WebInspector.UIString("Decrement by %f", 0.1));
 
-        // Install emulation view
+        /**
+         * Install emulation view.
+         * @this {WebInspector.ElementsPanelDescriptor}
+         */
         function toggleEmulationView()
         {
             if (WebInspector.settings.showEmulationViewInDrawer.get())
@@ -96,7 +99,10 @@ WebInspector.ElementsPanelDescriptor.prototype = {
         WebInspector.settings.showEmulationViewInDrawer.addChangeListener(toggleEmulationView, this);
         toggleEmulationView.call(this);
 
-        // Install rendering view
+        /**
+         * Install rendering view.
+         * @this {WebInspector.ElementsPanelDescriptor}
+         */
         function toggleRenderingView()
         {
             if (WebInspector.settings.showRenderingViewInDrawer.get())

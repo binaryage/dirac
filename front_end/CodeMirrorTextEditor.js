@@ -312,6 +312,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     highlightSearchResults: function(regex, range)
     {
+        /**
+         * @this {WebInspector.CodeMirrorTextEditor}
+         */
         function innerHighlightRegex()
         {
             if (range) {
@@ -1178,7 +1181,7 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter = function(codeMirror)
 WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
     /**
      * @param {!RegExp} regex
-     * @param {!WebInspector.TextRange} range
+     * @param {?WebInspector.TextRange} range
      */
     highlightSearchResults: function(regex, range)
     {
@@ -1200,9 +1203,9 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
                 this._highlightDescriptor.selectionStart = selectionStart;
         } else {
             this._removeHighlight();
-            this._setHighlighter(this._searchHighlighter.bind(this, this._highlightRegex, this._highlightRange), selectionStart);
+            this._setHighlighter(this._searchHighlighter.bind(this, this._highlightRegex), selectionStart);
         }
-        if (selectionStart) {
+        if (this._highlightRange) {
             var pos = WebInspector.CodeMirrorTextEditor.prototype._toPos(this._highlightRange);
             this._searchResultMarker = this._codeMirror.markText(pos.start, pos.end, {className: "cm-column-with-selection"});
         }
@@ -1260,10 +1263,9 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
 
     /**
      * @param {!RegExp} regex
-     * @param {!WebInspector.TextRange} range
      * @param {!CodeMirror.StringStream} stream
      */
-    _searchHighlighter: function(regex, range, stream)
+    _searchHighlighter: function(regex, stream)
     {
         if (stream.column() === 0)
             delete this._searchMatchLength;

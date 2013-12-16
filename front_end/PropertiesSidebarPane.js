@@ -50,10 +50,17 @@ WebInspector.PropertiesSidebarPane.prototype = {
 
         WebInspector.RemoteObject.resolveNode(node, WebInspector.PropertiesSidebarPane._objectGroupName, nodeResolved.bind(this));
 
+        /**
+         * @this {WebInspector.PropertiesSidebarPane}
+         */
         function nodeResolved(object)
         {
             if (!object)
                 return;
+
+            /**
+             * @this {WebInspector.PropertiesSidebarPane}
+             */
             function protoList()
             {
                 var proto = this;
@@ -69,6 +76,9 @@ WebInspector.PropertiesSidebarPane.prototype = {
             object.release();
         }
 
+        /**
+         * @this {WebInspector.PropertiesSidebarPane}
+         */
         function nodePrototypesReady(object, wasThrown)
         {
             if (!object || wasThrown)
@@ -76,6 +86,9 @@ WebInspector.PropertiesSidebarPane.prototype = {
             object.getOwnProperties(fillSection.bind(this));
         }
 
+        /**
+         * @this {WebInspector.PropertiesSidebarPane}
+         */
         function fillSection(prototypes)
         {
             if (!prototypes)

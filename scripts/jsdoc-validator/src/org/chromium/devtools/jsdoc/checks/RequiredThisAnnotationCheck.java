@@ -47,7 +47,7 @@ public final class RequiredThisAnnotationCheck extends ValidationCheck {
         FunctionNode functionNode = (FunctionNode) functionStack.remove();
         if (thisReferencingFunctions.contains(functionNode) && !functionStack.isEmpty()) {
             // If the stack is not empty, then it's a nested function.
-            String jsDoc = functionNode.getJsDoc();
+            String jsDoc = getJsDoc(functionNode);
             AstNode functionNameNode = getFunctionNameNode(functionNode);
             if (functionNameNode != null && shouldAddThisAnnotation(jsDoc)) {
                 context.reportError(functionNameNode.getLineno(),
@@ -59,7 +59,7 @@ public final class RequiredThisAnnotationCheck extends ValidationCheck {
     }
 
     private boolean shouldAddThisAnnotation(String jsDoc) {
-        return jsDoc != null && !jsDoc.contains("@this") && !jsDoc.contains("@constructor");
+        return jsDoc == null || (!jsDoc.contains("@this") && !jsDoc.contains("@constructor"));
     }
 
     private AstNode getFunctionNameNode(FunctionNode functionNode) {
@@ -72,6 +72,25 @@ public final class RequiredThisAnnotationCheck extends ValidationCheck {
             Assignment assignment = (Assignment) functionNode.getParent();
             if (assignment.getRight() == functionNode) {
                 return assignment.getLeft();
+            }
+        }
+        return null;
+    }
+
+    private String getJsDoc(FunctionNode functionNode) {
+        String jsDoc = functionNode.getJsDoc();
+        if (jsDoc != null) {
+            return jsDoc;
+        }
+
+        // reader.onloadend = function() {...}
+        if (AstUtil.hasParentOfType(functionNode, Token.ASSIGN)) {
+            Assignment assignment = (Assignment) functionNode.getParent();
+            if (assignment.getRight() == functionNode) {
+                jsDoc = assignment.getJsDoc();
+                if (jsDoc != null) {
+                    return jsDoc;
+                }
             }
         }
         return null;

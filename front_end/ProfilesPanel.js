@@ -613,14 +613,23 @@ WebInspector.ProfilesPanel.prototype = {
         profileType.treeElement.hidden = !this._singleProfileMode;
         this.sidebarTree.appendChild(profileType.treeElement);
         profileType.treeElement.childrenListElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
+
+        /**
+         * @this {WebInspector.ProfilesPanel}
+         */
         function onAddProfileHeader(event)
         {
             this._addProfileHeader(event.data);
         }
+
+        /**
+         * @this {WebInspector.ProfilesPanel}
+         */
         function onRemoveProfileHeader(event)
         {
             this._removeProfileHeader(event.data);
         }
+
         profileType.addEventListener(WebInspector.ProfileType.Events.ViewUpdated, this._updateProfileTypeSpecificUI, this);
         profileType.addEventListener(WebInspector.ProfileType.Events.AddProfileHeader, onAddProfileHeader, this);
         profileType.addEventListener(WebInspector.ProfileType.Events.RemoveProfileHeader, onRemoveProfileHeader, this);
@@ -874,6 +883,9 @@ WebInspector.ProfilesPanel.prototype = {
         if (!visibleView)
             return;
 
+        /**
+         * @this {WebInspector.ProfilesPanel}
+         */
         function finishedCallback(view, searchMatches)
         {
             if (!searchMatches)
@@ -961,11 +973,17 @@ WebInspector.ProfilesPanel.prototype = {
         if (!heapProfiles.length)
             return;
 
+        /**
+         * @this {WebInspector.ProfilesPanel}
+         */
         function revealInView(viewName)
         {
             HeapProfilerAgent.getHeapObjectId(objectId, didReceiveHeapObjectId.bind(this, viewName));
         }
 
+        /**
+         * @this {WebInspector.ProfilesPanel}
+         */
         function didReceiveHeapObjectId(viewName, error, result)
         {
             if (WebInspector.inspectorView.currentPanel() !== this)

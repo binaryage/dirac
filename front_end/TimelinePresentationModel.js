@@ -1069,6 +1069,10 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             WebInspector.domAgent.pushNodeByBackendIdToFrontend(this._relatedBackendNodeId, barrier.createCallback(this._setRelatedNode.bind(this)));
 
         barrier.callWhenDone(callbackWrapper.bind(this));
+
+        /**
+         * @this {WebInspector.TimelinePresentationModel.Record}
+         */
         function callbackWrapper()
         {
             callback(this._generatePopupContentSynchronously());

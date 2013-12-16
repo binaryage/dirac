@@ -583,6 +583,9 @@ WebInspector.SnippetContentProvider.prototype = {
      */
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {
+        /**
+         * @this {WebInspector.SnippetContentProvider}
+         */
         function performSearch()
         {
             callback(WebInspector.ContentProvider.performSearchInContent(this._snippet.content, query, caseSensitive, isRegex));

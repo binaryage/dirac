@@ -134,6 +134,9 @@ WebInspector.HeapSnapshotFakeWorker = function()
 WebInspector.HeapSnapshotFakeWorker.prototype = {
     postMessage: function(message)
     {
+        /**
+         * @this {WebInspector.HeapSnapshotFakeWorker}
+         */
         function dispatch()
         {
             if (this._dispatcher)
@@ -149,6 +152,9 @@ WebInspector.HeapSnapshotFakeWorker.prototype = {
 
     _postMessageFromWorker: function(message)
     {
+        /**
+         * @this {WebInspector.HeapSnapshotFakeWorker}
+         */
         function send()
         {
             this.dispatchEventToListeners("message", message);
@@ -214,6 +220,9 @@ WebInspector.HeapSnapshotWorkerProxy.prototype = {
         var methodArguments = Array.prototype.slice.call(arguments, 4);
         var newObjectId = this._nextObjectId++;
 
+        /**
+         * @this {WebInspector.HeapSnapshotWorkerProxy}
+         */
         function wrapCallback(remoteResult)
         {
             callback(remoteResult ? new proxyConstructor(this, newObjectId) : null);
@@ -389,23 +398,35 @@ WebInspector.HeapSnapshotLoaderProxy.prototype = {
      */
     close: function(callback)
     {
+        /**
+         * @this {WebInspector.HeapSnapshotLoaderProxy}
+         */
         function buildSnapshot()
         {
             if (callback)
                 callback();
             this.callFactoryMethod(updateStaticData.bind(this), "buildSnapshot", this._proxyConstructor, this._snapshotConstructorName);
         }
+
+        /**
+         * @this {WebInspector.HeapSnapshotLoaderProxy}
+         */
         function updateStaticData(snapshotProxy)
         {
             this.dispose();
             snapshotProxy.updateStaticData(notifyPendingConsumers.bind(this));
         }
+
+        /**
+         * @this {WebInspector.HeapSnapshotLoaderProxy}
+         */
         function notifyPendingConsumers(snapshotProxy)
         {
             for (var i = 0; i < this._pendingSnapshotConsumers.length; ++i)
                 this._pendingSnapshotConsumers[i](snapshotProxy);
             this._pendingSnapshotConsumers = [];
         }
+
         this.callMethod(buildSnapshot.bind(this), "close");
     },
 
@@ -515,6 +536,9 @@ WebInspector.HeapSnapshotProxy.prototype = {
 
     updateStaticData: function(callback)
     {
+        /**
+         * @this {WebInspector.HeapSnapshotProxy}
+         */
         function dataReceived(staticData)
         {
             this._staticData = staticData;

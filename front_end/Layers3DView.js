@@ -194,6 +194,10 @@ WebInspector.Layers3DView.prototype = {
             return;
         }
         this._emptyView.detach();
+
+        /**
+         * @this {WebInspector.Layers3DView}
+         */
         function updateLayer(layer)
         {
             this._updateLayerElement(this._elementForLayer(layer));

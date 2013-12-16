@@ -275,6 +275,10 @@ WebInspector.ExtensionServer.prototype = {
         var sidebar = this._clientObjects[message.id];
         if (!sidebar)
             return this._status.E_NOTFOUND(message.id);
+
+        /**
+         * @this {WebInspector.ExtensionServer}
+         */
         function callback(error)
         {
             var result = error ? this._status.E_FAILED(error) : this._status.OK();
@@ -454,6 +458,9 @@ WebInspector.ExtensionServer.prototype = {
     {
         var resources = {};
 
+        /**
+         * @this {WebInspector.ExtensionServer}
+         */
         function pushResourceData(contentProvider)
         {
             if (!resources[contentProvider.contentURL()])
@@ -630,18 +637,26 @@ WebInspector.ExtensionServer.prototype = {
             WebInspector.Workspace.Events.UISourceCodeContentCommitted,
             this._notifyUISourceCodeContentCommitted);
 
+        /**
+         * @this {WebInspector.ExtensionServer}
+         */
         function onTimelineSubscriptionStarted()
         {
             WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded,
                 this._notifyTimelineEventRecorded, this);
             WebInspector.timelineManager.start();
         }
+
+        /**
+         * @this {WebInspector.ExtensionServer}
+         */
         function onTimelineSubscriptionStopped()
         {
             WebInspector.timelineManager.stop();
             WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded,
                 this._notifyTimelineEventRecorded, this);
         }
+
         this._registerSubscriptionHandler(WebInspector.extensionAPI.Events.TimelineEventRecorded,
             onTimelineSubscriptionStarted.bind(this), onTimelineSubscriptionStopped.bind(this));
 

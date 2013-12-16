@@ -909,19 +909,28 @@ WebInspector.TabbedPaneTab.prototype = {
 
     _tabContextMenu: function(event)
     {
+        /**
+         * @this {WebInspector.TabbedPaneTab}
+         */
         function close()
         {
             this._closeTabs([this.id]);
         }
   
+        /**
+         * @this {WebInspector.TabbedPaneTab}
+         */
         function closeOthers()
         {
             this._closeTabs(this._tabbedPane.otherTabs(this.id));
         }
   
+        /**
+         * @this {WebInspector.TabbedPaneTab}
+         */
         function closeAll()
         {
-            this._closeTabs(this._tabbedPane.allTabs(this.id));
+            this._closeTabs(this._tabbedPane.allTabs());
         }
   
         var contextMenu = new WebInspector.ContextMenu(event);

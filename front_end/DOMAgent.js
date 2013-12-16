@@ -864,6 +864,9 @@ WebInspector.DOMAgent.prototype = {
     {
         var callbackWrapper = this._wrapClientCallback(callback);
 
+        /**
+         * @this {WebInspector.DOMAgent}
+         */
         function onDocumentAvailable()
         {
             if (this._document)
@@ -1276,6 +1279,9 @@ WebInspector.DOMAgent.prototype = {
      */
     setInspectModeEnabled: function(enabled, inspectShadowDOM, callback)
     {
+        /**
+         * @this {WebInspector.DOMAgent}
+         */
         function onDocumentAvailable()
         {
             this._highlighter.setInspectModeEnabled(enabled, inspectShadowDOM, this._buildHighlightConfig(), callback);
@@ -1317,6 +1323,10 @@ WebInspector.DOMAgent.prototype = {
      */
     _markRevision: function(node, callback)
     {
+        /**
+         * @param {?Protocol.Error} error
+         * @this {WebInspector.DOMAgent}
+         */
         function wrapperFunction(error)
         {
             if (!error)
@@ -1354,6 +1364,11 @@ WebInspector.DOMAgent.prototype = {
             }
         }
 
+        /**
+         * @param {?Protocol.Error} error
+         * @param {string} scriptId
+         * @this {WebInspector.DOMAgent}
+         */
         function scriptAddedCallback(error, scriptId)
         {
             delete this._addTouchEventsScriptInjecting;
@@ -1375,6 +1390,10 @@ WebInspector.DOMAgent.prototype = {
      */
     undo: function(callback)
     {
+        /**
+         * @param {?Protocol.Error} error
+         * @this {WebInspector.DOMAgent}
+         */
         function mycallback(error)
         {
             this.dispatchEventToListeners(WebInspector.DOMAgent.Events.UndoRedoCompleted);
@@ -1390,6 +1409,10 @@ WebInspector.DOMAgent.prototype = {
      */
     redo: function(callback)
     {
+        /**
+         * @param {?Protocol.Error} error
+         * @this {WebInspector.DOMAgent}
+         */
         function mycallback(error)
         {
             this.dispatchEventToListeners(WebInspector.DOMAgent.Events.UndoRedoCompleted);
@@ -1571,7 +1594,7 @@ WebInspector.DOMNodeHighlighter.prototype = {
      * @param {boolean} enabled
      * @param {boolean} inspectShadowDOM
      * @param {!DOMAgent.HighlightConfig} config
-     * @param {function(?Protocol.Error)} callback
+     * @param {function(?Protocol.Error)=} callback
      */
     setInspectModeEnabled: function(enabled, inspectShadowDOM, config, callback) {}
 }
@@ -1601,7 +1624,7 @@ WebInspector.DefaultDOMNodeHighlighter.prototype = {
      * @param {boolean} enabled
      * @param {boolean} inspectShadowDOM
      * @param {!DOMAgent.HighlightConfig} config
-     * @param {function(?Protocol.Error)} callback
+     * @param {function(?Protocol.Error)=} callback
      */
     setInspectModeEnabled: function(enabled, inspectShadowDOM, config, callback)
     {

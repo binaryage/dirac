@@ -69,6 +69,12 @@ WebInspector.Spectrum = function()
     WebInspector.Spectrum.draggable(this._sliderElement, hueDrag.bind(this));
     WebInspector.Spectrum.draggable(this._draggerElement, colorDrag.bind(this), colorDragStart.bind(this));
 
+    /**
+     * @param {!Element} element
+     * @param {number} dragX
+     * @param {number} dragY
+     * @this {WebInspector.Spectrum}
+     */
     function hueDrag(element, dragX, dragY)
     {
         this._hsv[0] = (this.slideHeight - dragY) / this.slideHeight;
@@ -78,11 +84,21 @@ WebInspector.Spectrum = function()
 
     var initialHelperOffset;
 
-    function colorDragStart(element, dragX, dragY)
+    /**
+     * @this {WebInspector.Spectrum}
+     */
+    function colorDragStart()
     {
         initialHelperOffset = { x: this._dragHelperElement.offsetLeft, y: this._dragHelperElement.offsetTop };
     }
 
+    /**
+     * @param {!Element} element
+     * @param {number} dragX
+     * @param {number} dragY
+     * @param {!MouseEvent} event
+     * @this {WebInspector.Spectrum}
+     */
     function colorDrag(element, dragX, dragY, event)
     {
         if (event.shiftKey) {
@@ -98,6 +114,9 @@ WebInspector.Spectrum = function()
         this._onchange();
     }
 
+    /**
+     * @this {WebInspector.Spectrum}
+     */
     function alphaDrag()
     {
         this._hsv[3] = this._alphaElement.value / 100;
@@ -111,9 +130,9 @@ WebInspector.Spectrum.Events = {
 };
 
 /**
- * @param {!Function=} onmove
- * @param {!Function=} onstart
- * @param {!Function=} onstop
+ * @param {function(!Element, number, number, !MouseEvent)=} onmove
+ * @param {function(!Element, !MouseEvent)=} onstart
+ * @param {function(!Element, !MouseEvent)=} onstop
  */
 WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
 
@@ -124,11 +143,17 @@ WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
     var maxHeight;
     var maxWidth;
 
+    /**
+     * @param {?Event} e
+     */
     function consume(e)
     {
         e.consume(true);
     }
 
+    /**
+     * @param {?Event} e
+     */
     function move(e)
     {
         if (dragging) {
@@ -136,18 +161,22 @@ WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
             var dragY = Math.max(0, Math.min(e.pageY - offset.top + scrollOffset.top, maxHeight));
 
             if (onmove)
-                onmove(element, dragX, dragY, e);
+                onmove(element, dragX, dragY, /** @type {!MouseEvent} */ (e));
         }
     }
 
+    /**
+     * @param {?Event} e
+     */
     function start(e)
     {
-        var rightClick = e.which ? (e.which === 3) : (e.button === 2);
+        var mouseEvent = /** @type {!MouseEvent} */ (e);
+        var rightClick = mouseEvent.which ? (mouseEvent.which === 3) : (mouseEvent.button === 2);
 
         if (!rightClick && !dragging) {
 
             if (onstart)
-                onstart(element, e)
+                onstart(element, mouseEvent);
 
             dragging = true;
             maxHeight = element.clientHeight;
@@ -161,11 +190,14 @@ WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
             doc.addEventListener("mousemove", move, false);
             doc.addEventListener("mouseup", stop, false);
 
-            move(e);
-            consume(e);
+            move(mouseEvent);
+            consume(mouseEvent);
         }
     }
 
+    /**
+     * @param {?Event} e
+     */
     function stop(e)
     {
         if (dragging) {
@@ -175,7 +207,7 @@ WebInspector.Spectrum.draggable = function(element, onmove, onstart, onstop) {
             doc.removeEventListener("mouseup", stop, false);
 
             if (onstop)
-                onstop(element, e);
+                onstop(element, /** @type {!MouseEvent} */ (e));
         }
 
         dragging = false;

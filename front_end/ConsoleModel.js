@@ -54,6 +54,10 @@ WebInspector.ConsoleModel.prototype = {
             ConsoleAgent.setMonitoringXHREnabled(true);
 
         this._enablingConsole = true;
+
+        /**
+         * @this {WebInspector.ConsoleModel}
+         */
         function callback()
         {
             delete this._enablingConsole;

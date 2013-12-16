@@ -80,7 +80,7 @@ WebInspector.PlatformFontsSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.DOMNode} node
-     * @param {?String} cssFamilyName
+     * @param {?string} cssFamilyName
      * @param {?Array.<!CSSAgent.PlatformFontUsage>} platformFonts
      */
     _refreshUI: function(node, cssFamilyName, platformFonts)

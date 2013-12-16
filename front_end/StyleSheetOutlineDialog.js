@@ -102,6 +102,11 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
 
     _requestItems: function()
     {
+        /**
+         * @param {?Protocol.Error} error
+         * @param {!Array.<!CSSAgent.CSSStyleSheetHeader>} infos
+         * @this {WebInspector.StyleSheetOutlineDialog}
+         */
         function didGetAllStyleSheets(error, infos)
         {
             if (error)

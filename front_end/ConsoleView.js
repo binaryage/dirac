@@ -291,6 +291,9 @@ WebInspector.ConsoleView.prototype = {
         if (this._scrollIntoViewTimer)
             return;
 
+        /**
+         * @this {WebInspector.ConsoleView}
+         */
         function scrollIntoView()
         {
             delete this._scrollIntoViewTimer;

@@ -185,6 +185,10 @@ WebInspector.RemoteObject.prototype = {
      */
     getProperty: function(propertyPath, callback)
     {
+        /**
+         * @param {string} arrayStr
+         * @this {Object}
+         */
         function remoteFunction(arrayStr)
         {
             var result = this;
@@ -804,6 +808,10 @@ WebInspector.LocalJSONObject.prototype = {
             return [];
         var value = /** @type {!Object} */ (this._value);
 
+        /**
+         * @param {string} propName
+         * @this {WebInspector.LocalJSONObject}
+         */
         function buildProperty(propName)
         {
             return new WebInspector.RemoteObjectProperty(propName, new WebInspector.LocalJSONObject(this._value[propName]));

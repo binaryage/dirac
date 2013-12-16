@@ -229,6 +229,10 @@ WebInspector.CompilerScriptMapping.prototype = {
 
     _debuggerReset: function()
     {
+        /**
+         * @param {!WebInspector.SourceMap} sourceMap
+         * @this {WebInspector.CompilerScriptMapping}
+         */
         function unbindUISourceCodesForSourceMap(sourceMap)
         {
             var sourceURLs = sourceMap.sources();

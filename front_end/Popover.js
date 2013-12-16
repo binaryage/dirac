@@ -305,6 +305,9 @@ WebInspector.PopoverHelper.prototype = {
         if (!this._popover || this._hidePopoverTimer)
             return;
 
+        /**
+         * @this {WebInspector.PopoverHelper}
+         */
         function doHide()
         {
             this._hidePopover();

@@ -333,7 +333,7 @@ WebInspector.AuditCategoryResult = function(category)
 
 WebInspector.AuditCategoryResult.prototype = {
     /**
-     * @param {!WebInspector.AuditCategoryResult} ruleResult
+     * @param {!WebInspector.AuditRuleResult} ruleResult
      */
     addRuleResult: function(ruleResult)
     {

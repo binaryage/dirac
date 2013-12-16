@@ -319,6 +319,9 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
         this._prompt = new WebInspector.ObjectPropertyPrompt(this.editingCommitted.bind(this, null, elementToEdit.textContent, context.previousContent, context), this.editingCancelled.bind(this, null, context), this.renderPromptAsBlock());
 
+        /**
+         * @this {WebInspector.ObjectPropertyTreeElement}
+         */
         function blurListener()
         {
             this.editingCommitted(null, elementToEdit.textContent, context.previousContent, context);
@@ -379,6 +382,11 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     {
         expression = expression.trim();
         var expressionLength = expression.length;
+
+        /**
+         * @param {?Protocol.Error} error
+         * @this {WebInspector.ObjectPropertyTreeElement}
+         */
         function callback(error)
         {
             if (!updateInterface)
@@ -724,6 +732,10 @@ WebInspector.ArrayGroupingTreeElement._populateRanges = function(treeElement, ob
     function packRanges(fromIndex, toIndex, bucketThreshold, sparseIterationThreshold)
     {
         var ownPropertyNames = null;
+
+        /**
+         * @this {Object}
+         */
         function doLoop(iterationCallback)
         {
             if (toIndex - fromIndex < sparseIterationThreshold) {

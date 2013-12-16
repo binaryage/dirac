@@ -74,6 +74,9 @@ WebInspector.TimelineEventOverview.prototype = {
         for (var i = 1; i < WebInspector.TimelineEventOverview._numberOfStrips; i += 2)
             this._context.fillRect(0.5, i * stripHeight + 0.5, this._canvas.width, stripHeight);
 
+        /**
+         * @this {WebInspector.TimelineEventOverview}
+         */
         function appendRecord(record)
         {
             if (record.type === WebInspector.TimelineModel.RecordType.BeginFrame)

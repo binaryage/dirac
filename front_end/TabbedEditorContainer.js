@@ -316,7 +316,11 @@ WebInspector.TabbedEditorContainer.prototype = {
     _updateHistory: function()
     {
         var tabIds = this._tabbedPane.lastOpenedTabIds(WebInspector.TabbedEditorContainer.maximalPreviouslyViewedFilesCount);
-        
+
+        /**
+         * @param {string} tabId
+         * @this {WebInspector.TabbedEditorContainer}
+         */
         function tabIdToURI(tabId)
         {
             return this._files[tabId].uri();

@@ -115,6 +115,11 @@ WebInspector.DebuggerModel.prototype = {
         if (this._debuggerEnabled)
             return;
 
+        /**
+         * @param {?Protocol.Error} error
+         * @param {boolean} result
+         * @this {WebInspector.DebuggerModel}
+         */
         function callback(error, result)
         {
             this._canSetScriptSource = result;
