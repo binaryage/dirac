@@ -362,13 +362,8 @@ WebInspector.SearchableView.prototype = {
 
     _updateReplaceVisibility: function()
     {
-        if (!this._searchIsVisible)
-            return;
-
-        if (this._canReplace)
-            this._replaceElement.classList.remove("hidden");
-        else {
-            this._replaceElement.classList.add("hidden");
+        this._replaceElement.enableStyleClass("hidden", !this._canReplace);
+        if (!this._canReplace) {
             this._replaceCheckboxElement.checked = false;
             this._updateSecondRowVisibility();
         }
@@ -466,8 +461,6 @@ WebInspector.SearchableView.prototype = {
 
     _updateSecondRowVisibility: function()
     {
-        if (!this._searchIsVisible)
-            return;
         if (this._replaceCheckboxElement.checked) {
             this._footerElement.classList.add("toolbar-search-replace");
             this._secondRowElement.classList.remove("hidden");
