@@ -161,9 +161,8 @@ WebInspector.CallStackSidebarPane.prototype = {
     {
         var index = this._selectedCallFrameIndex();
         if (index === -1)
-            return true;
-        this._selectPlacardByIndex(index + 1);
-        return true;
+            return false;
+        return this._selectPlacardByIndex(index + 1);
     },
 
     /**
@@ -173,19 +172,20 @@ WebInspector.CallStackSidebarPane.prototype = {
     {
         var index = this._selectedCallFrameIndex();
         if (index === -1)
-            return true;
-        this._selectPlacardByIndex(index - 1);
-        return true;
+            return false;
+        return this._selectPlacardByIndex(index - 1);
     },
 
     /**
      * @param {number} index
+     * @return {boolean}
      */
     _selectPlacardByIndex: function(index)
     {
         if (index < 0 || index >= this.placards.length)
-            return;
-        this._placardSelected(this.placards[index])
+            return false;
+        this._placardSelected(this.placards[index]);
+        return true;
     },
 
     /**
@@ -209,6 +209,7 @@ WebInspector.CallStackSidebarPane.prototype = {
      */
     _placardSelected: function(placard)
     {
+        placard.element.scrollIntoViewIfNeeded();
         this.dispatchEventToListeners(WebInspector.CallStackSidebarPane.Events.CallFrameSelected, placard._callFrame);
     },
 
@@ -251,14 +252,8 @@ WebInspector.CallStackSidebarPane.prototype = {
     {
         if (event.altKey || event.shiftKey || event.metaKey || event.ctrlKey)
             return;
-
-        if (event.keyIdentifier === "Up") {
-            this._selectPreviousCallFrameOnStack();
-            event.consume();
-        } else if (event.keyIdentifier === "Down") {
-            this._selectNextCallFrameOnStack();
-            event.consume();
-        }
+        if (event.keyIdentifier === "Up" && this._selectPreviousCallFrameOnStack() || event.keyIdentifier === "Down" && this._selectNextCallFrameOnStack())
+            event.consume(true);
     },
 
     __proto__: WebInspector.SidebarPane.prototype
