@@ -213,7 +213,8 @@ WebInspector.Drawer.prototype = {
          */
         function animationCallback(finished)
         {
-            this._inspectorView.currentPanel().doResize();
+            if (this._inspectorView.currentPanel())
+                this._inspectorView.currentPanel().doResize();
             if (!finished)
                 return;
             this._updateTabStrip();
