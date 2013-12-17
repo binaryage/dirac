@@ -90,21 +90,11 @@ var WebInspector = {
         WebInspector.settings.screencastEnabled.set(this._toggleScreencastButton.toggled);
 
         if (this._toggleScreencastButton.toggled) {
-            if (!this._screencastView) {
-                // Rebuild the UI upon first invocation.
+            if (!this._screencastView)
                 this._screencastView = new WebInspector.ScreencastView();
-                this._screencastSplitView = new WebInspector.SplitView(true, WebInspector.settings.screencastSidebarWidth.name);
-                this._screencastSplitView.markAsRoot();
-                this._screencastSplitView.show(document.body);
-
-                this._screencastView.show(this._screencastSplitView.firstElement());
-
-                this.inspectorView.element.remove();
-                this.inspectorView.show(this._screencastSplitView.secondElement());
-            }
-            this._screencastSplitView.showBoth();
+            this.inspectorView.showScreencastView(this._screencastView);
         } else {
-            this._screencastSplitView.showOnlySecond();
+            this.inspectorView.hideScreencastView();
         }
     },
 
@@ -461,8 +451,6 @@ WebInspector.windowResize = function(event)
         WebInspector.inspectorView.onResize();
     if (WebInspector.settingsController)
         WebInspector.settingsController.resize();
-    if (WebInspector._screencastSplitView)
-        WebInspector._screencastSplitView.doResize();
 }
 
 WebInspector.close = function(event)

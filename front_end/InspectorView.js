@@ -39,7 +39,9 @@ WebInspector.InspectorView = function()
     this.element.classList.add("fill", "vbox", "inspector-view");
     this.element.setAttribute("spellcheck", false);
 
-    this._splitView = new WebInspector.SplitView(false, "InspectorView.splitView", 300, 300);
+    // We can use split view either for docking or screencast, but not together.
+    var settingName = WebInspector.queryParamsObject["can_dock"] ? "InspectorView.splitView" : "InspectorView.screencastSplitView";
+    this._splitView = new WebInspector.SplitView(false, settingName, 300, 300);
     this._splitView.setSecondIsSidebar(true);
     this._splitView.setSidebarElementConstraints(150, 50);
     this._splitView.setMainElementConstraints(50, 50);
@@ -421,6 +423,22 @@ WebInspector.InspectorView.prototype = {
 
         // FIXME: make drawer a view.
         this._drawer.resize();
+    },
+
+    /**
+     * @param {!WebInspector.View} view
+     */
+    showScreencastView: function(view)
+    {
+        this._splitView.setVertical(true);
+        if (view.parentView() !== this._overlayView)
+            view.show(this._overlayView.element);
+        this._splitView.showBoth();
+    },
+
+    hideScreencastView: function()
+    {
+        this._splitView.showOnlySecond();
     },
 
     /**
