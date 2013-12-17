@@ -3519,7 +3519,7 @@
         ],
         "events": [
             {
-                "name": "consoleProfile",
+                "name": "consoleProfileStarted",
                 "parameters": [
                     { "name": "id", "type": "string" },
                     { "name": "location", "$ref": "Debugger.Location", "description": "Location of console.profile()." },
@@ -3529,7 +3529,7 @@
                 "description": "Sent when new profile recodring is started using console.profile() call."
             },
             {
-                "name": "addProfileHeader",
+                "name": "consoleProfileFinished",
                 "parameters": [
                     { "name": "id", "type": "string" },
                     { "name": "location", "$ref": "Debugger.Location", "description": "Location of console.profileEnd()." },

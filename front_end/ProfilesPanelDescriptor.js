@@ -62,7 +62,7 @@ WebInspector.CPUProfilerModelDelegate.prototype = {
      * @param {!DebuggerAgent.Location} scriptLocation
      * @param {string=} title
      */
-    consoleProfile: function(protocolId, scriptLocation, title) {},
+    consoleProfileStarted: function(protocolId, scriptLocation, title) {},
 
     /**
      * @param {string} protocolId
@@ -70,7 +70,7 @@ WebInspector.CPUProfilerModelDelegate.prototype = {
      * @param {!ProfilerAgent.CPUProfile} cpuProfile
      * @param {string=} title
      */
-    consoleProfileEnd: function(protocolId, scriptLocation, cpuProfile, title) {},
+    consoleProfileFinished: function(protocolId, scriptLocation, cpuProfile, title) {},
 
     resetProfiles: function() {}
 }
@@ -109,11 +109,11 @@ WebInspector.CPUProfilerModel.prototype = {
      * @param {!ProfilerAgent.CPUProfile} cpuProfile
      * @param {string=} title
      */
-    addProfileHeader: function(id, scriptLocation, cpuProfile, title)
+    consoleProfileFinished: function(id, scriptLocation, cpuProfile, title)
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
         WebInspector.inspectorView.panel("profiles");
-        this._delegate.consoleProfileEnd(id, scriptLocation, cpuProfile, title);
+        this._delegate.consoleProfileFinished(id, scriptLocation, cpuProfile, title);
     },
 
     /**
@@ -121,11 +121,11 @@ WebInspector.CPUProfilerModel.prototype = {
      * @param {!DebuggerAgent.Location} scriptLocation
      * @param {string=} title
      */
-    consoleProfile: function(id, scriptLocation, title)
+    consoleProfileStarted: function(id, scriptLocation, title)
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
         WebInspector.inspectorView.panel("profiles");
-        this._delegate.consoleProfile(id, scriptLocation, title);
+        this._delegate.consoleProfileStarted(id, scriptLocation, title);
     },
 
     /**

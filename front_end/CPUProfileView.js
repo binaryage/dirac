@@ -688,7 +688,7 @@ WebInspector.CPUProfileType.prototype = {
      * @param {!DebuggerAgent.Location} scriptLocation
      * @param {string=} title
      */
-    consoleProfile: function(id, scriptLocation, title)
+    consoleProfileStarted: function(id, scriptLocation, title)
     {
         var resolvedTitle = title;
         if (!resolvedTitle) {
@@ -704,7 +704,7 @@ WebInspector.CPUProfileType.prototype = {
      * @param {!ProfilerAgent.CPUProfile} cpuProfile
      * @param {string=} title
      */
-    consoleProfileEnd: function(protocolId, scriptLocation, cpuProfile, title)
+    consoleProfileFinished: function(protocolId, scriptLocation, cpuProfile, title)
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
         var resolvedTitle = title;
