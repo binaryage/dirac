@@ -120,7 +120,7 @@
 .audit-result-view .severity-warning,
 .audit-result-view .severity-info {
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 120px;
+    background-size: 320px 144px;
     display: inline-block;
     width: 10px;
     height: 10px;
@@ -152,7 +152,7 @@
 .audit-result-tree li.parent::before {
     -webkit-user-select: none;
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 120px;
+    background-size: 320px 144px;
     opacity: 0.5;
     float: left;
     width: 8px;

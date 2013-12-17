@@ -143,7 +143,7 @@
     display: inline-block;
     -webkit-user-select: none;
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 120px;
+    -webkit-mask-size: 320px 144px;
     width: 10px;
     height: 10px;
     content: "";
@@ -169,7 +169,7 @@
 
 .timeline-expandable-arrow {
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 120px;
+    background-size: 320px 144px;
     opacity: 0.5;
     width: 10px;
     height: 10px;
@@ -218,7 +218,7 @@
 .timeline-tree-item-warning {
     display: block;
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 120px;
+    background-size: 320px 144px;
     width: 10px;
     height: 10px;
     float: right;
@@ -445,7 +445,7 @@
     height: 24px;
     margin: 0;
     -webkit-mask-image: url(Images/statusbarButtonGlyphs.png);
-    -webkit-mask-size: 320px 120px;
+    -webkit-mask-size: 320px 144px;
     background-color: black;
 }
 

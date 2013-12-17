@@ -216,7 +216,7 @@ button.overrides-swap {
 
 .overrides-view .overrides-footer::before {
     background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 120px;
+    background-size: 320px 144px;
     width: 10px;
     height: 10px;
     content: "";
