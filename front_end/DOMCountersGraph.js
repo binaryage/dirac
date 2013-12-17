@@ -172,7 +172,7 @@ WebInspector.DOMCountersGraph.prototype = {
         }
         function getUsedGPUMemoryKBytes(entry)
         {
-            return entry.usedGPUMemoryKBytes || 0;
+            return entry.usedGPUMemoryKBytes;
         }
         var counterUIs = [
             new WebInspector.DOMCounterUI(this, "Documents", "Documents: %d", "#d00", getDocumentCount),
@@ -360,12 +360,16 @@ WebInspector.DOMCountersGraph.prototype = {
         ctx.save();
         ctx.translate(0.5, 0.5);
         ctx.beginPath();
-        var currentY = Math.round(originY + (height - (valueGetter(this._counters[this._minimumIndex]) - minValue) * yFactor));
+        var value = valueGetter(this._counters[this._minimumIndex]) || 0;
+        var currentY = Math.round(originY + height - (value - minValue) * yFactor);
         ctx.moveTo(0, currentY);
         for (var i = this._minimumIndex; i <= this._maximumIndex; i++) {
              var x = Math.round(this._counters[i].x);
              ctx.lineTo(x, currentY);
-             currentY = Math.round(originY + (height - (valueGetter(this._counters[i]) - minValue) * yFactor));
+             var currentValue = valueGetter(this._counters[i]);
+             if (typeof currentValue !== "undefined")
+                value = currentValue;
+             currentY = Math.round(originY + height - (value - minValue) * yFactor);
              ctx.lineTo(x, currentY);
              yValues[i] = currentY;
         }
