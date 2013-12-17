@@ -824,14 +824,6 @@ WebInspector.CPUProfileType.prototype = {
         WebInspector.ProfileType.prototype.removeProfile.call(this, profile);
     },
 
-    /**
-     * @override
-     */
-    resetProfiles: function()
-    {
-        this._reset();
-    },
-
     __proto__: WebInspector.ProfileType.prototype
 }
 

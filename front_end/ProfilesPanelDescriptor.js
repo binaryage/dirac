@@ -70,9 +70,7 @@ WebInspector.CPUProfilerModelDelegate.prototype = {
      * @param {!ProfilerAgent.CPUProfile} cpuProfile
      * @param {string=} title
      */
-    consoleProfileFinished: function(protocolId, scriptLocation, cpuProfile, title) {},
-
-    resetProfiles: function() {}
+    consoleProfileFinished: function(protocolId, scriptLocation, cpuProfile, title) {}
 }
 
 /**
@@ -126,15 +124,6 @@ WebInspector.CPUProfilerModel.prototype = {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
         WebInspector.inspectorView.panel("profiles");
         this._delegate.consoleProfileStarted(id, scriptLocation, title);
-    },
-
-    /**
-     * @override
-     */
-    resetProfiles: function()
-    {
-        if (this._delegate)
-            this._delegate.resetProfiles();
     },
 
     /**
