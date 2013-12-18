@@ -424,8 +424,8 @@ WebInspector.ResourcesPanel.prototype = {
         var resource = WebInspector.resourceForURL(anchor.href);
         if (!resource)
             return false;
-        this.showResource(resource, anchor.lineNumber);
         WebInspector.inspectorView.setCurrentPanel(this);
+        this.showResource(resource, anchor.lineNumber);
         return true;
     },
 
