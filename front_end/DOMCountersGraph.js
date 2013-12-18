@@ -345,6 +345,8 @@ WebInspector.DOMCountersGraph.prototype = {
             if (maxValue === undefined || value > maxValue)
                 maxValue = value;
         }
+        minValue = minValue || 0;
+        maxValue = maxValue || 1;
 
         counterUI.setRange(minValue, maxValue);
 
