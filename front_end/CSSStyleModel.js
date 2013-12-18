@@ -1565,21 +1565,20 @@ WebInspector.CSSStyleSheetHeader.prototype = {
 
 /**
  * @constructor
- * @param {!CSSAgent.CSSStyleSheetBody} payload
+ * @param {!CSSAgent.StyleSheetId} styleSheetId
+ * @param {!Array.<!CSSAgent.CSSRule>} payload
  */
-WebInspector.CSSStyleSheet = function(payload)
+WebInspector.CSSStyleSheet = function(styleSheetId, payload)
 {
-    this.id = payload.styleSheetId;
+    this.id = styleSheetId;
     this.rules = [];
     this.styles = {};
-    for (var i = 0; i < payload.rules.length; ++i) {
-        var rule = WebInspector.CSSRule.parsePayload(payload.rules[i]);
+    for (var i = 0; i < payload.length; ++i) {
+        var rule = WebInspector.CSSRule.parsePayload(payload[i]);
         this.rules.push(rule);
         if (rule.style)
             this.styles[rule.style.id] = rule.style;
     }
-    if ("text" in payload)
-        this._text = payload.text;
 }
 
 /**
@@ -1590,50 +1589,16 @@ WebInspector.CSSStyleSheet.createForId = function(styleSheetId, userCallback)
 {
     /**
      * @param {?string} error
-     * @param {!CSSAgent.CSSStyleSheetBody} styleSheetPayload
+     * @param {!Array.<!CSSAgent.CSSRule>} cssRulesPayload
      */
-    function callback(error, styleSheetPayload)
+    function callback(error, cssRulesPayload)
     {
         if (error)
             userCallback(null);
         else
-            userCallback(new WebInspector.CSSStyleSheet(styleSheetPayload));
+            userCallback(new WebInspector.CSSStyleSheet(styleSheetId, cssRulesPayload));
     }
-    CSSAgent.getStyleSheet(styleSheetId, callback);
-}
-
-WebInspector.CSSStyleSheet.prototype = {
-    /**
-     * @return {string|undefined}
-     */
-    getText: function()
-    {
-        return this._text;
-    },
-
-    /**
-     * @param {string} newText
-     * @param {boolean} majorChange
-     * @param {function(?string)=} userCallback
-     */
-    setText: function(newText, majorChange, userCallback)
-    {
-        /**
-         * @param {?string} error
-         */
-        function callback(error)
-        {
-            if (!error)
-                WebInspector.domAgent.markUndoableState();
-
-            WebInspector.cssModel._pendingCommandsMajorState.pop();
-            if (userCallback)
-                userCallback(error);
-        }
-
-        WebInspector.cssModel._pendingCommandsMajorState.push(majorChange);
-        CSSAgent.setStyleSheetText(this.id, newText, callback.bind(this));
-    }
+    CSSAgent.getStyleSheetRules(styleSheetId, callback);
 }
 
 /**

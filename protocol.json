@@ -2516,16 +2516,6 @@
                 "description": "CSS stylesheet metainformation."
             },
             {
-                "id": "CSSStyleSheetBody",
-                "type": "object",
-                "properties": [
-                    { "name": "styleSheetId", "$ref": "StyleSheetId", "description": "The stylesheet identifier."},
-                    { "name": "rules", "type": "array", "items": { "$ref": "CSSRule" }, "description": "Stylesheet resource URL."},
-                    { "name": "text", "type": "string", "optional": true, "description": "Stylesheet resource contents (if available)."}
-                ],
-                "description": "CSS stylesheet contents."
-            },
-            {
                 "id": "CSSRule",
                 "type": "object",
                 "properties": [
@@ -2712,14 +2702,14 @@
                 "description": "Returns metainfo entries for all known stylesheets."
             },
             {
-                "name": "getStyleSheet",
+                "name": "getStyleSheetRules",
                 "parameters": [
                     { "name": "styleSheetId", "$ref": "StyleSheetId" }
                 ],
                 "returns": [
-                    { "name": "styleSheet", "$ref": "CSSStyleSheetBody", "description": "Stylesheet contents for the specified <code>styleSheetId</code>." }
+                    { "name": "rules", "type": "array", "items": { "$ref": "CSSRule" }, "description": "An array of stylesheet rules."}
                 ],
-                "description": "Returns stylesheet data for the specified <code>styleSheetId</code>."
+                "description": "Returns an array of stylesheet rules for the specified <code>styleSheetId</code>."
             },
             {
                 "name": "getStyleSheetText",
