@@ -445,9 +445,9 @@
 .styles-element-state-pane {
     background-color: rgb(240, 240, 240);
     overflow: hidden;
-    margin-top: -56px;
+    margin-top: -78px;
     padding-top: 18px;
-    height: 56px;
+    height: 78px;
     -webkit-transition: margin-top 0.1s ease-in-out;
     padding-left: 2px;
 }

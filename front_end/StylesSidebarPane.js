@@ -87,6 +87,7 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
     this._setPseudoClassCallback = setPseudoClassCallback;
     this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
     WebInspector.settings.colorFormat.addChangeListener(this._colorFormatSettingChanged.bind(this));
+    WebInspector.settings.updatePseudoStatesFromPage.addChangeListener(this._pseudoStatesFromPageChanged.bind(this));
 
     this._createElementStatePane();
     this.bodyElement.appendChild(this._elementStatePane);
@@ -446,6 +447,9 @@ WebInspector.StylesSidebarPane.prototype = {
 
     _pseudoStateChanged: function(event)
     {
+        if (!WebInspector.settings.updatePseudoStatesFromPage.get())
+            return;
+
         // Do not update edited element styles under our feet.
         if (this._isEditingStyle || this._userOperation)
             return;
@@ -821,6 +825,12 @@ WebInspector.StylesSidebarPane.prototype = {
         }
     },
 
+    _pseudoStatesFromPageChanged: function()
+    {
+        if (this._elementStatePane)
+            this._elementStatePane.updateSwitchInput.checked = WebInspector.settings.updatePseudoStatesFromPage.get();
+    },
+
     _toggleElementStatePane: function(event)
     {
         event.consume();
@@ -837,6 +847,7 @@ WebInspector.StylesSidebarPane.prototype = {
         this._elementStatePane = document.createElement("div");
         this._elementStatePane.className = "styles-element-state-pane source-code";
         var table = document.createElement("table");
+        console.log('foo')
 
         var inputs = [];
         this._elementStatePane.inputs = inputs;
@@ -858,32 +869,67 @@ WebInspector.StylesSidebarPane.prototype = {
          * @return {!Element}
          * @this {WebInspector.StylesSidebarPane}
          */
-        function createCheckbox(state)
+        function createStateSwitchCell(state)
+        {
+            var input = createCheckbox.call(this, clickListener.bind(this));
+            input.state = state;
+            inputs.push(input);
+            return createCell(":" + state, input);
+        }
+
+        /**
+         * @param {function(?Event)} listener
+         * @this {WebInspector.StylesSidebarPane}
+         */
+        function createCheckbox(listener)
+        {
+            var input = document.createElement("input");
+            input.type = "checkbox";
+            input.addEventListener("click", listener.bind(this), false);
+            return input;
+        }
+
+        /**
+         * @param {string} labelText
+         * @param {!Element} input
+         * @return {!Element}
+         */
+        function createCell(labelText, input)
         {
             var td = document.createElement("td");
             var label = document.createElement("label");
-            var input = document.createElement("input");
-            input.type = "checkbox";
-            input.state = state;
-            input.addEventListener("click", clickListener.bind(this), false);
-            inputs.push(input);
             label.appendChild(input);
-            label.appendChild(document.createTextNode(":" + state));
+            label.appendChild(document.createTextNode(labelText));
             td.appendChild(label);
             return td;
         }
 
-        var tr = document.createElement("tr");
-        tr.appendChild(createCheckbox.call(this, "active"));
-        tr.appendChild(createCheckbox.call(this, "hover"));
-        table.appendChild(tr);
+        /**
+         * @param {?Event} e
+         */
+        function switchLiveUpdatesListener(e)
+        {
+            WebInspector.settings.updatePseudoStatesFromPage.set(e.target.checked);
+        }
 
-        tr = document.createElement("tr");
-        tr.appendChild(createCheckbox.call(this, "focus"));
-        tr.appendChild(createCheckbox.call(this, "visited"));
-        table.appendChild(tr);
+        var tr = table.createChild("tr");
+
+        var updateSwitchInput = createCheckbox.call(this, switchLiveUpdatesListener);
+        this._elementStatePane.updateSwitchInput = updateSwitchInput;
+        var switchUpdatesCell = createCell.call(this, WebInspector.UIString("Auto-update"), updateSwitchInput);
+        switchUpdatesCell.colSpan = 2;
+        tr.appendChild(switchUpdatesCell);
+
+        tr = table.createChild("tr");
+        tr.appendChild(createStateSwitchCell.call(this, "active"));
+        tr.appendChild(createStateSwitchCell.call(this, "hover"));
+
+        tr = table.createChild("tr");
+        tr.appendChild(createStateSwitchCell.call(this, "focus"));
+        tr.appendChild(createStateSwitchCell.call(this, "visited"));
 
         this._elementStatePane.appendChild(table);
+        this._pseudoStatesFromPageChanged();
     },
 
     /**

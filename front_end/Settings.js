@@ -118,6 +118,7 @@ WebInspector.Settings = function()
     this.showEmulationViewInDrawer = this.createSetting("showEmulationViewInDrawer", true);
     this.showRenderingViewInDrawer = this.createSetting("showRenderingViewInDrawer", true);
     this.enableAsyncStackTraces = this.createSetting("enableAsyncStackTraces", false);
+    this.updatePseudoStatesFromPage = this.createSetting("updatePseudoStatesFromPage", false);
 }
 
 WebInspector.Settings.prototype = {
