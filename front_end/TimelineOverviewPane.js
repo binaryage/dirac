@@ -72,10 +72,9 @@ WebInspector.TimelineOverviewPane.prototype = {
     /**
      * @param {!WebInspector.TimelineOverviewBase} overviewControl
      */
-    willSetOverviewControl: function(overviewControl)
+    setOverviewControl: function(overviewControl)
     {
-        this._sameOverviewControl = this._overviewControl === overviewControl;
-        if (this._sameOverviewControl)
+        if (this._overviewControl === overviewControl)
             return;
         this._windowTimes = null;
         if (this._overviewControl) {
@@ -85,12 +84,6 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewControl = overviewControl;
         this._overviewControl.show(this._overviewGrid.element);
         this._update();
-    },
-
-    didSetOverviewControl: function()
-    {
-        if (this._sameOverviewControl)
-            return;
         if (this._windowTimes && this._windowTimes.startTime >= 0)
             this.setWindowTimes(this._windowTimes.startTime, this._windowTimes.endTime);
         this._update();

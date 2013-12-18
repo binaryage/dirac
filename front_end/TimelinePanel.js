@@ -401,15 +401,6 @@ WebInspector.TimelinePanel.prototype = {
         this._model.loadFromURL(url, progressIndicator);
     },
 
-    _createOverviewControls: function()
-    {
-        this._overviewControls = {};
-        this._overviewControls[WebInspector.TimelinePanel.Mode.Events] = new WebInspector.TimelineEventOverview(this._model);
-        this._frameOverviewControl = new WebInspector.TimelineFrameOverview(this._model);
-        this._overviewControls[WebInspector.TimelinePanel.Mode.Frames] = this._frameOverviewControl;
-        this._overviewControls[WebInspector.TimelinePanel.Mode.Memory] = new WebInspector.TimelineMemoryOverview(this._model);
-    },
-
     _selectPresentationMode: function(mode)
     {
         if (!this._overviewItems[mode])
@@ -422,13 +413,8 @@ WebInspector.TimelinePanel.prototype = {
         this.element.classList.remove("timeline-" + this._presentationModeSetting.get().toLowerCase() + "-view");
         this._presentationModeSetting.set(mode);
         this.element.classList.add("timeline-" + mode.toLowerCase() + "-view");
-
-        this._overviewPane.willSetOverviewControl(this._overviewControls[mode]);
-
         this._timelineViewWasShown(mode);
-
-        this.onResize();
-        this._overviewPane.didSetOverviewControl();
+        this._overviewPane.setOverviewControl(this._overviewControl());
     },
 
     /**
@@ -520,11 +506,29 @@ WebInspector.TimelinePanel.prototype = {
 
     // TimelineView.
 
+    _createOverviewControls: function()
+    {
+        this._overviewControls = {};
+        this._overviewControls[WebInspector.TimelinePanel.Mode.Events] = new WebInspector.TimelineEventOverview(this._model);
+        this._frameOverviewControl = new WebInspector.TimelineFrameOverview(this._model);
+        this._overviewControls[WebInspector.TimelinePanel.Mode.Frames] = this._frameOverviewControl;
+        this._overviewControls[WebInspector.TimelinePanel.Mode.Memory] = new WebInspector.TimelineMemoryOverview(this._model);
+    },
+
+    /**
+     * @return {!WebInspector.TimelineOverviewBase}
+     */
+    _overviewControl: function()
+    {
+        return this._overviewControls[this._currentMode];
+    },
+
     /**
      * @param {!string} mode
      */
     _timelineViewWasShown: function(mode)
     {
+        this._currentMode = mode;
         var frameMode = mode === WebInspector.TimelinePanel.Mode.Frames
         if (frameMode !== this._frameMode) {
             this._frameMode = frameMode;
@@ -846,7 +850,7 @@ WebInspector.TimelinePanel.prototype = {
             WebInspector.TimelinePanel._categoryStylesInitialized = true;
             this._injectCategoryStyles();
         }
-        this._overviewPane.willSetOverviewControl(this._overviewControls[this._presentationModeSetting.get()]);
+        this._overviewPane.setOverviewControl(this._overviewControl());
         this._onViewportResize();
         this._refresh();
     },
