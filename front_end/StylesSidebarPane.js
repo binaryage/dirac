@@ -847,7 +847,6 @@ WebInspector.StylesSidebarPane.prototype = {
         this._elementStatePane = document.createElement("div");
         this._elementStatePane.className = "styles-element-state-pane source-code";
         var table = document.createElement("table");
-        console.log('foo')
 
         var inputs = [];
         this._elementStatePane.inputs = inputs;
