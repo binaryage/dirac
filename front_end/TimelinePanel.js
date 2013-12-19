@@ -835,6 +835,7 @@ WebInspector.TimelinePanel.prototype = {
     _onRecordsCleared: function()
     {
         this._resetPanel();
+        this._windowFilter.reset();
         this._invalidateAndScheduleRefresh(true, true);
     },
 
@@ -1125,7 +1126,9 @@ WebInspector.TimelinePanel.prototype = {
             this._automaticallySizeWindow = false;
             // If we're at the top, always use real timeline start as a left window bound so that expansion arrow padding logic works.
             var windowStartTime = startIndex ? recordsInWindow[startIndex].startTime : this._model.minimumRecordTime();
-            this._overviewPane.setWindowTimes(windowStartTime, recordsInWindow[Math.max(0, lastVisibleLine - 1)].endTime);
+            var windowEndTime = recordsInWindow[Math.max(0, lastVisibleLine - 1)].endTime;
+            this._overviewPane.setWindowTimes(windowStartTime, windowEndTime);
+            this._windowFilter.setWindowTimes(windowStartTime, windowEndTime);
             recordsInWindow = this._presentationModel.filteredRecords();
             endIndex = Math.min(recordsInWindow.length, lastVisibleLine);
         }
@@ -2044,11 +2047,16 @@ WebInspector.TimelineSearchFilter.prototype = {
  */
 WebInspector.TimelineWindowFilter = function()
 {
-    this._windowStartTime = 0;
-    this._windowEndTime = Infinity;
+    this.reset();
 }
 
 WebInspector.TimelineWindowFilter.prototype = {
+    reset: function()
+    {
+        this._windowStartTime = 0;
+        this._windowEndTime = Infinity;
+    },
+
     setWindowTimes: function(windowStartTime, windowEndTime)
     {
         this._windowStartTime = windowStartTime;
