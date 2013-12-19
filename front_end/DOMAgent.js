@@ -916,7 +916,7 @@ WebInspector.DOMAgent.prototype = {
             this._attributeLoadNodeIds[nodeIds[i]] = true;
         if ("_loadNodeAttributesTimeout" in this)
             return;
-        this._loadNodeAttributesTimeout = setTimeout(this._loadNodeAttributes.bind(this), 0);
+        this._loadNodeAttributesTimeout = setTimeout(this._loadNodeAttributes.bind(this), 20);
     },
 
     _loadNodeAttributes: function()
