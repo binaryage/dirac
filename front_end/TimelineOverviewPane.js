@@ -38,8 +38,6 @@ WebInspector.TimelineOverviewPane = function(model)
     WebInspector.View.call(this);
     this.element.id = "timeline-overview-pane";
 
-    this._windowStartTime = 0;
-    this._windowEndTime = Infinity;
     this._eventDividers = [];
 
     this._model = model;
@@ -76,16 +74,10 @@ WebInspector.TimelineOverviewPane.prototype = {
     {
         if (this._overviewControl === overviewControl)
             return;
-        this._windowTimes = null;
-        if (this._overviewControl) {
-            this._windowTimes = this._overviewControl.windowTimes(this.windowLeft(), this.windowRight());
+        if (this._overviewControl)
             this._overviewControl.detach();
-        }
         this._overviewControl = overviewControl;
         this._overviewControl.show(this._overviewGrid.element);
-        this._update();
-        if (this._windowTimes && this._windowTimes.startTime >= 0)
-            this.setWindowTimes(this._windowTimes.startTime, this._windowTimes.endTime);
         this._update();
     },
 
@@ -93,7 +85,6 @@ WebInspector.TimelineOverviewPane.prototype = {
     {
         delete this._refreshTimeout;
 
-        this._updateWindow();
         this._overviewCalculator.setWindow(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this._overviewCalculator.setDisplayWindow(0, this._overviewGrid.clientWidth());
 
@@ -120,15 +111,6 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewGrid.addEventDividers(dividers);
     },
 
-    /**
-     * @param {!WebInspector.TimelineFrame} frame
-     */
-    zoomToFrame: function(frame)
-    {
-        this.setWindowTimes(frame.startTime, frame.endTime);
-        this.dispatchEventToListeners(WebInspector.TimelineOverviewPane.Events.WindowChanged);
-    },
-
     _onRecordAdded: function(event)
     {
         var record = event.data;
@@ -144,8 +126,6 @@ WebInspector.TimelineOverviewPane.prototype = {
 
     _reset: function()
     {
-        this._windowStartTime = 0;
-        this._windowEndTime = Infinity;
         this._overviewCalculator.reset();
         this._overviewGrid.reset();
         this._overviewGrid.setResizeEnabled(false);
@@ -153,16 +133,6 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewGrid.updateDividers(this._overviewCalculator);
         this._overviewControl.reset();
         this._update();
-    },
-
-    windowStartTime: function()
-    {
-        return this._windowStartTime || this._model.minimumRecordTime();
-    },
-
-    windowEndTime: function()
-    {
-        return this._windowEndTime < Infinity ? this._windowEndTime : this._model.maximumRecordTime();
     },
 
     windowLeft: function()
@@ -179,28 +149,17 @@ WebInspector.TimelineOverviewPane.prototype = {
     {
         if (this._ignoreWindowChangedEvent)
             return;
-        var times = this._overviewControl.windowTimes(this.windowLeft(), this.windowRight());
-        this._windowStartTime = times.startTime;
-        this._windowEndTime = times.endTime;
         this.dispatchEventToListeners(WebInspector.TimelineOverviewPane.Events.WindowChanged);
     },
 
     /**
-     * @param {!Number} startTime
-     * @param {!Number} endTime
+     * @param {number} left
+     * @param {number} right
      */
-    setWindowTimes: function(startTime, endTime)
+    setWindow: function(left, right)
     {
-        this._windowStartTime = startTime;
-        this._windowEndTime = endTime;
-        this._updateWindow();
-    },
-
-    _updateWindow: function()
-    {
-        var windowBoundaries = this._overviewControl.windowBoundaries(this._windowStartTime, this._windowEndTime);
         this._ignoreWindowChangedEvent = true;
-        this._overviewGrid.setWindow(windowBoundaries.left, windowBoundaries.right);
+        this._overviewGrid.setWindow(left, right);
         this._overviewGrid.setResizeEnabled(this._model.records.length);
         this._ignoreWindowChangedEvent = false;
     },
