@@ -533,7 +533,7 @@ WebInspector.ProfilesPanel.prototype = {
     profileBeingRecordedRemoved: function()
     {
         this.recordButton.toggled = false;
-        this.recordButton.title = this.buttonTooltip;
+        this.recordButton.title = this._selectedProfileType.buttonTooltip;
         this._launcherView.profileFinished();
     },
 
