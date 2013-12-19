@@ -755,8 +755,7 @@ WebInspector.DOMAgent.Events = {
     ChildNodeCountUpdated: "ChildNodeCountUpdated",
     UndoRedoRequested: "UndoRedoRequested",
     UndoRedoCompleted: "UndoRedoCompleted",
-    InspectNodeRequested: "InspectNodeRequested",
-    PseudoStateChanged: "PseudoStateChanged"
+    InspectNodeRequested: "InspectNodeRequested"
 }
 
 WebInspector.DOMAgent.prototype = {
@@ -1116,17 +1115,6 @@ WebInspector.DOMAgent.prototype = {
         parent._removeChild(pseudoElement);
         this._unbind(pseudoElement);
         this.dispatchEventToListeners(WebInspector.DOMAgent.Events.NodeRemoved, {node: pseudoElement, parent: parent});
-    },
-
-    /**
-     * @param {!DOMAgent.NodeId} elementId
-     */
-    _pseudoStateChanged: function(elementId)
-    {
-        var node = this._idToDOMNode[elementId];
-        if (!node)
-            return;
-        this.dispatchEventToListeners(WebInspector.DOMAgent.Events.PseudoStateChanged, node);
     },
 
     /**
@@ -1565,14 +1553,6 @@ WebInspector.DOMDispatcher.prototype = {
     pseudoElementRemoved: function(parentId, pseudoElementId)
     {
         this._domAgent._pseudoElementRemoved(parentId, pseudoElementId);
-    },
-
-    /**
-     * @param {!DOMAgent.NodeId} elementId
-     */
-    pseudoStateChanged: function(elementId)
-    {
-        this._domAgent._pseudoStateChanged(elementId);
     }
 }
 

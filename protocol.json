@@ -2399,14 +2399,6 @@
                 ],
                 "description": "Called when a pseudo element is removed from an element.",
                 "hidden": true
-            },
-            {
-                "name": "pseudoStateChanged",
-                "parameters": [
-                    { "name": "nodeId", "$ref": "NodeId", "description": "Id of the element whose pseudo state has changed." }
-                ],
-                "description": "Called when an element's <code>:active</code>, <code>:focus</code>, or <code>:hover</code> pseudo state is changed.",
-                "hidden": true
             }
         ]
     },
