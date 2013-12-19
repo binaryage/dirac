@@ -167,6 +167,7 @@ WebInspector.DialogDelegate.prototype = {
 
         element.style.left = positionX + "px";
         element.style.top = positionY + "px";
+        element.style.position = "absolute";
     },
 
     focus: function() { },

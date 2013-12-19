@@ -110,15 +110,17 @@ WebInspector.EditFileSystemDialog.prototype = {
 
     _resize: function()
     {
-        if (!this._dialogElement)
+        if (!this._dialogElement || !this._relativeToElement)
             return;
 
         const width = 540;
         const minHeight = 150;
-        var maxHeight = document.body.offsetHeight - 10;
+        var maxHeight = this._relativeToElement.offsetHeight - 10;
         maxHeight = Math.max(minHeight, maxHeight);
         this._dialogElement.style.maxHeight = maxHeight + "px";
         this._dialogElement.style.width = width + "px";
+
+        WebInspector.DialogDelegate.prototype.position(this._dialogElement, this._relativeToElement);
     },
 
     /**
@@ -127,6 +129,7 @@ WebInspector.EditFileSystemDialog.prototype = {
      */
     position: function(element, relativeToElement)
     {
+        this._relativeToElement = relativeToElement;
         this._resize();
     },
 
