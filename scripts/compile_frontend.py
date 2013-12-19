@@ -435,6 +435,20 @@ invalid_type_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*\{.
 invalid_type_designator_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*.*([?!])=?\}")
 
 
+def total_memory_mb():
+    try:
+        totalMemory = os.popen("free -m").readlines()[1].split()[1]
+        return int(totalMemory)
+    except:
+        print "Failed to get total memory size."
+        return 0
+
+
+def can_parallelize_module_compilation():
+    # Use a heuristic based on the actual total memory normally consumed by the script.
+    return os.environ.get("FORCE_PARALLEL_DEVTOOLS_COMPILATION", "") == "1" or total_memory_mb() > 8192
+
+
 def verify_importScript_usage():
     for module in modules:
         for file_name in module['sources']:
@@ -509,6 +523,9 @@ for module in modules:
     modules_by_name[module["name"]] = module
 
 
+def nice_child():
+    os.nice(10)
+
 def dump_module(name, recursively, processed_modules):
     if name in processed_modules:
         return ""
@@ -543,13 +560,31 @@ if process_recursively:
         modules = []
         for i in range(1, len(sys.argv)):
             modules.append(modules_by_name[sys.argv[i]])
+
+    can_parallelize = can_parallelize_module_compilation()
+    if can_parallelize:
+        print "Compiling modules in parallel..."
+        processes = []
+    else:
+        print "Compiling modules sequentially..."
+
     for module in modules:
-        command = compiler_command
+        echo_command = "echo '='; echo -e \"= Compiling \\\"%s\\\"...\"; echo '='; echo;" % module["name"]
+        command = echo_command + compiler_command
         command += "    --externs " + devtools_frontend_path + "/externs.js" + " \\\n"
         command += "    --externs " + protocol_externs_path
         command += dump_module(module["name"], True, {})
-        print "Compiling \"" + module["name"] + "\"..."
-        os.system(command)
+        if can_parallelize:
+            proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, preexec_fn=nice_child)
+            processes.append(proc)
+        else:
+            os.system(command)
+    if can_parallelize:
+        outputs = []
+        for proc in processes:
+            (out, _) = proc.communicate()
+            outputs.append(out)
+        print "\n".join(outputs)
 else:
     command = compiler_command
     command += "    --externs " + devtools_frontend_path + "/externs.js" + " \\\n"
