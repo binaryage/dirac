@@ -418,9 +418,9 @@ WebInspector.FlameChart.OverviewPane.prototype = {
         var timelineData = this._timelineData();
         if (!timelineData)
             return;
+        this._resetCanvas(this._overviewContainer.clientWidth, this._overviewContainer.clientHeight - 20);
         this._overviewCalculator._updateBoundaries(this);
         this._overviewGrid.updateDividers(this._overviewCalculator);
-        this._resetCanvas(this._overviewContainer.clientWidth, this._overviewContainer.clientHeight - 20);
         WebInspector.FlameChart.OverviewPane.drawOverviewCanvas(
             timelineData,
             this._overviewCanvas.getContext("2d"),
