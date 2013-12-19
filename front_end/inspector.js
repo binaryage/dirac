@@ -310,6 +310,10 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.domAgent.addEventListener(WebInspector.DOMAgent.Events.InspectNodeRequested, this._inspectNodeRequested, this);
     this.runtimeModel = new WebInspector.RuntimeModel(this.resourceTreeModel);
 
+    this._zoomLevel = WebInspector.settings.zoomLevel.get();
+    if (this._zoomLevel)
+        this._requestZoom();
+
     var panelDescriptors = this._panelDescriptors();
     this.advancedSearchController = new WebInspector.AdvancedSearchController();
     for (var i = 0; i < panelDescriptors.length; ++i)
@@ -335,10 +339,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.settingsController = new WebInspector.SettingsController();
 
     this.domBreakpointsSidebarPane = new WebInspector.DOMBreakpointsSidebarPane();
-
-    this._zoomLevel = WebInspector.settings.zoomLevel.get();
-    if (this._zoomLevel)
-        this._requestZoom();
 
     var autoselectPanel = WebInspector.UIString("a panel chosen automatically");
     var openAnchorLocationSetting = WebInspector.settings.createSetting("openLinkHandler", autoselectPanel);

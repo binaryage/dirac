@@ -52,6 +52,7 @@ WebInspector.InspectorView = function()
 
     this._overlayView = new WebInspector.ViewWithResizeCallback(this._onOverlayResized.bind(this));
     this._overlayView.show(this._splitView.mainElement);
+    WebInspector.settings.zoomLevel.addChangeListener(this._onOverlayResized, this);
 
     this._devtoolsElement = this._splitView.sidebarElement;
     this._devtoolsElement.classList.add("vbox");
@@ -416,8 +417,9 @@ WebInspector.InspectorView.prototype = {
         var dockSide = WebInspector.dockController.dockSide();
         if (WebInspector.queryParamsObject["overlayContents"] && dockSide !== WebInspector.DockController.State.Undocked) {
             // Leave 3px room for resizer.
-            var bottom = this._splitView.isVertical() ? 0 : this._splitView.sidebarSize();
-            var right = this._splitView.isVertical() ? this._splitView.sidebarSize() + 3 : 0;
+            var sidebarSize = Math.ceil(this._splitView.sidebarSize() * WebInspector.zoomFactor());
+            var bottom = this._splitView.isVertical() ? 0 : sidebarSize;
+            var right = this._splitView.isVertical() ? sidebarSize + 3 : 0;
             InspectorFrontendHost.setContentsInsets(0, 0, bottom, right);
         }
 
