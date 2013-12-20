@@ -83,7 +83,8 @@ WebInspector.RequestPreviewView.prototype = {
     _createPreviewView: function()
     {
         if (this.request.content) {
-            if (this.request.mimeType === "application/json") {
+            var jsonMediaTypeRE = /^application\/[^;]*\+json/;
+            if (this.request.mimeType === "application/json" || jsonMediaTypeRE.test(this.request.mimeType)) {
                 var jsonView = this._jsonView();
                 if (jsonView)
                     return jsonView;
