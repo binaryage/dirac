@@ -745,18 +745,6 @@ WebInspector.CPUProfileType.prototype = {
         WebInspector.console.addMessage(message);
     },
 
-    /**
-     * @param {!ProfilerAgent.CPUProfile} cpuProfile
-     * @param {string} title
-     */
-    _addProfileHeader: function(cpuProfile, title)
-    {
-        var id = this._nextProfileId++;
-        var profile = new WebInspector.CPUProfileHeader(this, title, id);
-        profile.setProtocolProfile(cpuProfile);
-        this.addProfile(profile);
-    },
-
     isRecordingProfile: function()
     {
         return this._recording;

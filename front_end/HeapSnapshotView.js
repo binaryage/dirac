@@ -41,7 +41,7 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.element.classList.add("heap-snapshot-view");
 
     this.parent = parent;
-    this.parent.addEventListener("profile added", this._onProfileHeaderAdded, this);
+    profile.profileType().addEventListener(WebInspector.ProfileType.Events.AddProfileHeader, this._onProfileHeaderAdded, this);
 
     if (profile._profileType.id === WebInspector.TrackingHeapSnapshotProfileType.TypeId) {
         this._trackingOverviewGrid = new WebInspector.HeapTrackingOverviewGrid(profile);
@@ -176,7 +176,7 @@ WebInspector.HeapSnapshotView.prototype = {
 
     dispose: function()
     {
-        this.parent.removeEventListener("profile added", this._onProfileHeaderAdded, this);
+        this.profile.profileType().removeEventListener(WebInspector.ProfileType.Events.AddProfileHeader, this._onProfileHeaderAdded, this);
         this.profile.dispose();
         if (this.baseProfile)
             this.baseProfile.dispose();
@@ -707,8 +707,6 @@ WebInspector.HeapSnapshotView.prototype = {
      */
     _onProfileHeaderAdded: function(event)
     {
-        if (!event.data || event.data.type !== this._profile.profileType().id)
-            return;
         this._updateBaseOptions();
         this._updateFilterOptions();
     },

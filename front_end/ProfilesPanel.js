@@ -735,10 +735,6 @@ WebInspector.ProfilesPanel.prototype = {
         sidebarParent.appendChild(profileTreeElement);
         if (!this.visibleView || this.visibleView === this._launcherView)
             this._showProfile(profile);
-
-        this.dispatchEventToListeners("profile added", {
-            type: typeId
-        });
     },
 
     /**
