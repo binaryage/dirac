@@ -222,7 +222,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         if (this._operationInProgress)
             return null;
-        if (this.recordingInProgress()) {
+        if (this._recordingInProgress()) {
             this.toggleTimelineButton.toggled = false;
             this._stopRecording();
         }
@@ -353,7 +353,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         if (this._operationInProgress)
             return true;
-        if (this.recordingInProgress())
+        if (this._recordingInProgress())
             this._stopRecording();
         else
             this._startRecording(true);
@@ -383,7 +383,7 @@ WebInspector.TimelinePanel.prototype = {
         this.toggleTimelineButton.toggled = true;
     },
 
-    recordingInProgress: function()
+    _recordingInProgress: function()
     {
         return this.toggleTimelineButton.toggled;
     },
@@ -409,7 +409,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     _loadEventFired: function(event)
     {
-        if (!this.recordingInProgress() || this._userInitiatedRecording)
+        if (!this._recordingInProgress() || this._userInitiatedRecording)
             return;
         this._stopRecording();
     },
@@ -1435,7 +1435,7 @@ WebInspector.TimelineView.prototype = {
     _mouseMove: function(e)
     {
         var rowElement = e.target.enclosingNodeOrSelfWithClass("timeline-tree-item");
-        if (rowElement && rowElement.row && rowElement.row._record.highlightQuad && !this._panel.recordingInProgress())
+        if (rowElement && rowElement.row && rowElement.row._record.highlightQuad)
             this._highlightQuad(rowElement.row._record.highlightQuad);
         else
             this._hideQuadHighlight();
