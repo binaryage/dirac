@@ -66,9 +66,14 @@
     color: brown;
 }
 
+.webkit-html-text-node {
+    unicode-bidi: -webkit-isolate;
+}
+
 .webkit-html-entity-value {
     /* This one is non-standard. */
     background-color: rgba(0, 0, 0, 0.15);
+    unicode-bidi: -webkit-isolate;
 }
 
 .webkit-html-doctype {
@@ -79,11 +84,13 @@
 .webkit-html-attribute-name {
     /* Keep this in sync with view-source.css (.webkit-html-attribute-name) */
     color: rgb(153, 69, 0);
+    unicode-bidi: -webkit-isolate;
 }
 
 .webkit-html-attribute-value {
     /* Keep this in sync with view-source.css (.webkit-html-attribute-value) */
     color: rgb(26, 26, 166);
+    unicode-bidi: -webkit-isolate;
 }
 
 .webkit-html-external-link,
