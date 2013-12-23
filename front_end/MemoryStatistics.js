@@ -29,15 +29,15 @@
  */
 
 /**
- * @param {!WebInspector.TimelinePanel} timelinePanel
+ * @param {!WebInspector.TimelineView} timelineView
  * @param {!WebInspector.TimelineModel} model
  * @constructor
  * @extends {WebInspector.View}
  */
-WebInspector.MemoryStatistics = function(timelinePanel, model)
+WebInspector.MemoryStatistics = function(timelineView, model)
 {
     WebInspector.View.call(this);
-    this._timelinePanel = timelinePanel;
+    this._timelineView = timelineView;
 
     this.element.classList.add("fill");
     this._counters = [];
@@ -220,7 +220,7 @@ WebInspector.MemoryStatistics.prototype = {
         if (this._ignoreSidebarResize)
             return;
         this._ignoreSidebarResize = true;
-        this._timelinePanel.setSidebarWidth(/** @type {number} */(event.data));
+        this._timelineView.setSidebarWidth(/** @type {number} */(event.data));
         this._ignoreSidebarResize = false;
     },
 
@@ -261,7 +261,7 @@ WebInspector.MemoryStatistics.prototype = {
 
     _calculateVisibleIndexes: function()
     {
-        var calculator = this._timelinePanel.calculator;
+        var calculator = this._timelineView.calculator;
         var start = calculator.minimumBoundary() * 1000;
         var end = calculator.maximumBoundary() * 1000;
         function comparator(value, sample)
@@ -289,7 +289,7 @@ WebInspector.MemoryStatistics.prototype = {
         var i = this._recordIndexAt(x);
         var counter = this._counters[i];
         if (counter)
-            this._timelinePanel.revealRecordAt(counter.time / 1000);
+            this._timelineView.revealRecordAt(counter.time / 1000);
     },
 
     /**
@@ -389,7 +389,7 @@ WebInspector.MemoryStatistics.prototype = {
 
     _refreshDividers: function()
     {
-        this._timelineGrid.updateDividers(this._timelinePanel.calculator);
+        this._timelineGrid.updateDividers(this._timelineView.calculator);
     },
 
     _setVerticalClip: function(originY, height)

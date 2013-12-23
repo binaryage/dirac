@@ -31,12 +31,12 @@
 /**
  * @constructor
  * @extends {WebInspector.MemoryStatistics}
- * @param {!WebInspector.TimelinePanel} timelinePanel
+ * @param {!WebInspector.TimelineView} timelineView
  * @param {!WebInspector.TimelineModel} model
  */
-WebInspector.DOMCountersGraph = function(timelinePanel, model)
+WebInspector.DOMCountersGraph = function(timelineView, model)
 {
-    WebInspector.MemoryStatistics.call(this, timelinePanel, model);
+    WebInspector.MemoryStatistics.call(this, timelineView, model);
 }
 
 /**
