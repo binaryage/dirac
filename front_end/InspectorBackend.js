@@ -302,6 +302,36 @@ InspectorBackendClass.prototype = {
         var schema = JSON.parse(xhr.responseText);
         var code = InspectorBackendClass._generateCommands(schema);
         eval(code);
+    },
+
+    /**
+     * @param {function(T)} clientCallback
+     * @param {string} errorPrefix
+     * @param {function(new:T,S)=} constructor
+     * @param {T=} defaultValue
+     * @return {function(?string, S)}
+     * @template T,S
+     */
+    wrapClientCallback: function(clientCallback, errorPrefix, constructor, defaultValue)
+    {
+        /**
+         * @param {?string} error
+         * @param {S} value
+         * @template S
+         */
+        function callbackWrapper(error, value)
+        {
+            if (error) {
+                console.error(errorPrefix + error);
+                clientCallback(defaultValue);
+                return;
+            }
+            if (constructor)
+                clientCallback(new constructor(value));
+            else
+                clientCallback(value);
+        }
+        return callbackWrapper;
     }
 }
 

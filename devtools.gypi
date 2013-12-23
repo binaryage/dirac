@@ -125,6 +125,7 @@
             'front_end/ObjectPropertiesSection.js',
             'front_end/OverridesSupport.js',
             'front_end/OverviewGrid.js',
+            'front_end/PaintProfiler.js',
             'front_end/Panel.js',
             'front_end/ParsedURL.js',
             'front_end/Placard.js',

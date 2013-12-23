@@ -79,7 +79,8 @@
             "NetworkRequest.js",
             "UISourceCode.js",
             "Workspace.js",
-            "WorkspaceController.js"
+            "WorkspaceController.js",
+            "PaintProfiler.js"
         ]
     },
     {

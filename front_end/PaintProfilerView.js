@@ -149,7 +149,7 @@ WebInspector.PaintProfilerView.prototype = {
         this._layer.requestSnapshot(onSnapshotDone.bind(this));
 
         /**
-         * @param {!WebInspector.LayerSnapshot=} snapshot
+         * @param {!WebInspector.PaintProfilerSnapshot=} snapshot
          * @this {WebInspector.PaintProfilerView}
          */
         function onSnapshotDone(snapshot)

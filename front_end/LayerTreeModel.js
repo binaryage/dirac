@@ -48,36 +48,6 @@ WebInspector.LayerTreeModel.Events = {
     LayerPainted: "LayerPainted",
 }
 
-/**
- * @param {function(T)} clientCallback
- * @param {string} errorPrefix
- * @param {function(new:T,S)=} constructor
- * @param {T=} defaultValue
- * @return {function(?string, S)}
- * @template T,S
- */
-WebInspector.LayerTreeModel._wrapCallback = function(clientCallback, errorPrefix, constructor, defaultValue)
-{
-    /**
-     * @param {?string} error
-     * @param {S} value
-     * @template S
-     */
-    function callbackWrapper(error, value)
-    {
-        if (error) {
-            console.error(errorPrefix + error);
-            clientCallback(defaultValue);
-            return;
-        }
-        if (constructor)
-            clientCallback(new constructor(value));
-        else
-            clientCallback(value);
-    }
-    return callbackWrapper;
-}
-
 WebInspector.LayerTreeModel.prototype = {
     disable: function()
     {
@@ -384,16 +354,16 @@ WebInspector.Layer.prototype = {
      */
     requestCompositingReasons: function(callback)
     {
-        var wrappedCallback = WebInspector.LayerTreeModel._wrapCallback(callback, "LayerTreeAgent.reasonsForCompositingLayer(): ", undefined, []);
+        var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.reasonsForCompositingLayer(): ", undefined, []);
         LayerTreeAgent.compositingReasons(this.id(), wrappedCallback);
     },
 
     /**
-     * @param {function(!WebInspector.LayerSnapshot=)} callback
+     * @param {function(!WebInspector.PaintProfilerSnapshot=)} callback
      */
     requestSnapshot: function(callback)
     {
-        var wrappedCallback = WebInspector.LayerTreeModel._wrapCallback(callback, "LayerTreeAgent.makeSnapshot(): ", WebInspector.LayerSnapshot.bind(null, this));
+        var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.makeSnapshot(): ", WebInspector.PaintProfilerSnapshot);
         LayerTreeAgent.makeSnapshot(this.id(), wrappedCallback);
     },
 
@@ -419,44 +389,6 @@ WebInspector.Layer.prototype = {
         this._image = null;
     }
 }
-
-/**
- * @constructor
- * @param {!WebInspector.Layer} layer
- * @param {string} snapshotId
- */
-WebInspector.LayerSnapshot = function(layer, snapshotId)
-{
-    this._id = snapshotId;
-    this._layer = layer;
-}
-
-WebInspector.LayerSnapshot.prototype = {
-    dispose: function()
-    {
-        LayerTreeAgent.releaseSnapshot(this._id);
-    },
-
-    /**
-     * @param {?number} firstStep
-     * @param {?number} lastStep
-     * @param {function(string=)} callback
-     */
-    requestImage: function(firstStep, lastStep, callback)
-    {
-        var wrappedCallback = WebInspector.LayerTreeModel._wrapCallback(callback, "LayerTreeAgent.replaySnapshot(): ");
-        LayerTreeAgent.replaySnapshot(this._id, firstStep || undefined, lastStep || undefined, wrappedCallback);
-    },
-
-    /**
-     * @param {function(!Array.<!LayerTreeAgent.PaintProfile>=)} callback
-     */
-    profile: function(callback)
-    {
-        var wrappedCallback = WebInspector.LayerTreeModel._wrapCallback(callback, "LayerTreeAgent.profileSnapshot(): ");
-        LayerTreeAgent.profileSnapshot(this._id, 5, 1, wrappedCallback);
-    }
-};
 
 /**
  * @constructor
