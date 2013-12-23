@@ -415,6 +415,7 @@ WebInspector.TabbedPane.prototype = {
         dropDownButton.appendChild(document.createTextNode("\u00bb"));
         this._tabsSelect = dropDownButton.createChild("select", "tabbed-pane-header-tabs-drop-down-select");
         this._tabsSelect.addEventListener("change", this._tabsSelectChanged.bind(this), false);
+        this._tabsSelect.addEventListener("mousedown", consumeEvent, false);
         return dropDownContainer;
     },
 

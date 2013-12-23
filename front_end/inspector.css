@@ -844,7 +844,8 @@ body.platform-linux .source-code {
     background-color: rgb(236, 236, 236);
 }
 
-.console-status-bar {
+.console-status-bar,
+.console-filters-header {
     flex: 0 0 23px;
     overflow: hidden;
 }
@@ -2846,6 +2847,6 @@ body.undocked .toolbar-close-button-item {
     display: none;
 }
 
-body.dock-to-bottom.overlay-contents #inspector-split-view .split-view-resizer {
+body.dock-to-bottom.overlay-contents #inspector-split-view > .split-view-resizer {
     display: none;
 }
