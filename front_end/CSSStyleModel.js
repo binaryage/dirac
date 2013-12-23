@@ -557,6 +557,11 @@ WebInspector.CSSStyleModel.prototype = {
      */
     setStyleSheetText: function(styleSheetId, newText, majorChange, userCallback)
     {
+        var header = this._styleSheetIdToHeader[styleSheetId];
+        console.assert(header);
+        this._pendingCommandsMajorState.push(majorChange);
+        header.setContent(styleSheetId, newText, callback.bind(this));
+
         /**
          * @param {?Protocol.Error} error
          * @this {WebInspector.CSSStyleModel}
@@ -570,8 +575,6 @@ WebInspector.CSSStyleModel.prototype = {
             if (!error && userCallback)
                 userCallback(error);
         }
-        this._pendingCommandsMajorState.push(majorChange);
-        CSSAgent.setStyleSheetText(styleSheetId, newText, callback.bind(this));
     },
 
     _undoRedoRequested: function()
@@ -1513,6 +1516,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
 
     /**
      * @override
+     * @return {string}
      */
     contentURL: function()
     {
@@ -1521,6 +1525,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
 
     /**
      * @override
+     * @return {!WebInspector.ResourceType}
      */
     contentType: function()
     {
@@ -1528,7 +1533,18 @@ WebInspector.CSSStyleSheetHeader.prototype = {
     },
 
     /**
+     * @param {string} text
+     * @return {string}
+     */
+    _trimSourceURL: function(text)
+    {
+        var sourceURLRegex = /\n[\040\t]*\/\*[#@][\040\t]sourceURL=[\040\t]*([^\s]*)[\040\t]*\*\/[\040\t]*$/mg;
+        return text.replace(sourceURLRegex, "");
+    },
+
+    /**
      * @override
+     * @param {function(?string)} callback
      */
     requestContent: function(callback)
     {
@@ -1544,6 +1560,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
                 text = "";
                 // Fall through.
             }
+            text = this._trimSourceURL(text);
             callback(text);
         }
     },
@@ -1560,7 +1577,20 @@ WebInspector.CSSStyleSheetHeader.prototype = {
 
         // searchInContent should call back later.
         this.requestContent(performSearch);
-    }
+    },
+
+    /**
+     * @param {!CSSAgent.StyleSheetId} styleSheetId
+     * @param {string} newText
+     * @param {function(?Protocol.Error)} callback
+     */
+    setContent: function(styleSheetId, newText, callback)
+    {
+        newText = this._trimSourceURL(newText);
+        if (this.hasSourceURL)
+            newText += "\n/*# sourceURL=" + this.sourceURL + " */";
+        CSSAgent.setStyleSheetText(styleSheetId, newText, callback);
+    },
 }
 
 /**

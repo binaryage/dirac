@@ -271,40 +271,28 @@ WebInspector.StylesSourceMapping.prototype = {
             delete this._updateStyleSheetTextTimer;
         }
 
-        CSSAgent.getStyleSheetText(styleSheetId, callback.bind(this));
-
-        /**
-         * @param {?string} error
-         * @param {string} content
-         * @this {WebInspector.StylesSourceMapping}
-         */
-        function callback(error, content)
-        {
-            if (!error)
-                this._innerStyleSheetChanged(styleSheetId, content);
-        }
-    },
-
-    /**
-     * @param {!CSSAgent.StyleSheetId} styleSheetId
-     * @param {string} content
-     */
-    _innerStyleSheetChanged: function(styleSheetId, content)
-    {
         var header = this._cssModel.styleSheetHeaderForId(styleSheetId);
         if (!header)
             return;
         var styleSheetURL = header.resourceURL();
         if (!styleSheetURL)
             return;
-
         var uiSourceCode = this._workspace.uiSourceCodeForURL(styleSheetURL)
         if (!uiSourceCode)
             return;
+        header.requestContent(callback.bind(this, uiSourceCode));
 
-        var styleFile = this._styleFiles.get(uiSourceCode);
-        if (styleFile)
-            styleFile.addRevision(content);
+        /**
+         * @param {!WebInspector.UISourceCode} uiSourceCode
+         * @param {?string} content
+         * @this {WebInspector.StylesSourceMapping}
+         */
+        function callback(uiSourceCode, content)
+        {
+            var styleFile = this._styleFiles.get(uiSourceCode);
+            if (styleFile)
+                styleFile.addRevision(content || "");
+        }
     }
 }
 
@@ -322,8 +310,6 @@ WebInspector.StyleFile = function(uiSourceCode, mapping)
 }
 
 WebInspector.StyleFile.updateTimeout = 200;
-
-WebInspector.StyleFile.sourceURLRegex = /\n[\040\t]*\/\*#[\040\t]sourceURL=[\040\t]*([^\s]*)[\040\t]*\*\/[\040\t]*$/m;
 
 WebInspector.StyleFile.prototype = {
     _workingCopyCommitted: function(event)
@@ -378,8 +364,6 @@ WebInspector.StyleFile.prototype = {
     addRevision: function(content)
     {
         this._isAddingRevision = true;
-        if (this._uiSourceCode.project().type() === WebInspector.projectTypes.FileSystem)
-            content = content.replace(WebInspector.StyleFile.sourceURLRegex, "");
         this._uiSourceCode.addRevision(content);
         delete this._isAddingRevision;
     },
