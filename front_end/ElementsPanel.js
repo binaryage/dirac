@@ -1220,10 +1220,8 @@ WebInspector.ElementsPanel.prototype = {
         if (this.sidebarPaneView && vertically === !this.splitView.isVertical())
             return;
 
-        if (this.sidebarPaneView) {
+        if (this.sidebarPaneView)
             this.sidebarPaneView.detach();
-            this.splitView.uninstallResizer(this.sidebarPaneView.headerElement());
-        }
 
         this.splitView.setVertical(!vertically);
 
@@ -1265,7 +1263,6 @@ WebInspector.ElementsPanel.prototype = {
         this.sidebarPaneView = new WebInspector.SidebarTabbedPane();
 
         if (vertically) {
-            this.splitView.installResizer(this.sidebarPaneView.headerElement());
             this.sidebarPanes.metrics.show(computedPane.bodyElement, this.sidebarPanes.computedStyle.element);
             this.sidebarPanes.metrics.setExpandCallback(expandComputed);
 
