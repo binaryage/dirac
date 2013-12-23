@@ -2853,14 +2853,14 @@
         "description": "Timeline provides its clients with instrumentation records that are generated during the page runtime. Timeline instrumentation can be started and stopped using corresponding commands. While timeline is started, it is generating timeline event records.",
         "types": [
             {
-                "id": "DOMCounters",
+                "id": "Counters",
                 "type": "object",
                 "properties": [
-                    { "name": "documents", "type": "integer" },
-                    { "name": "nodes", "type": "integer" },
-                    { "name": "jsEventListeners", "type": "integer" }
+                    { "name": "documents", "type": "integer", "optional": true },
+                    { "name": "nodes", "type": "integer", "optional": true },
+                    { "name": "jsEventListeners", "type": "integer", "optional": true }
                 ],
-                "description": "Current values of DOM counters.",
+                "description": "Current values of counters.",
                 "hidden": true
             },
             {
@@ -2871,7 +2871,7 @@
                     { "name": "thread", "type": "string", "optional": true, "description": "If present, identifies the thread that produced the event.", "hidden": true },
                     { "name": "data", "type": "object", "description": "Event data." },
                     { "name": "children", "type": "array", "optional": true, "items": { "$ref": "TimelineEvent" }, "description": "Nested records." },
-                    { "name": "counters", "$ref": "DOMCounters", "optional": true, "hidden": true, "description": "Current values of DOM counters." },
+                    { "name": "counters", "$ref": "Counters", "optional": true, "hidden": true, "description": "Current values of counters." },
                     { "name": "usedHeapSize", "type": "integer", "optional": true, "hidden": true, "description": "Current size of JS heap." }
                 ],
                 "description": "Timeline record contains information about the recorded activity."
@@ -2891,7 +2891,7 @@
                 "parameters": [
                     { "name": "maxCallStackDepth", "optional": true, "type": "integer", "description": "Samples JavaScript stack traces up to <code>maxCallStackDepth</code>, defaults to 5." },
                     { "name": "bufferEvents", "optional": true, "type": "boolean", "hidden": true, "description": "Whether instrumentation events should be buffered and returned upon <code>stop</code> call." },
-                    { "name": "includeDomCounters", "optional": true, "type": "boolean", "hidden": true, "description": "Whether DOM counters data should be included into timeline events." },
+                    { "name": "includeCounters", "optional": true, "type": "boolean", "hidden": true, "description": "Whether counters data should be included into timeline events." },
                     { "name": "includeGPUEvents", "optional": true, "type": "boolean", "hidden": true, "description": "Whether events from GPU process should be collected." }
                 ],
                 "description": "Starts capturing instrumentation events."

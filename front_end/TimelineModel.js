@@ -156,15 +156,15 @@ WebInspector.TimelineModel.aggregateTimeByCategory = function(total, addend)
 
 WebInspector.TimelineModel.prototype = {
     /**
-     * @param {boolean=} includeDomCounters
+     * @param {boolean=} includeCounters
      */
-    startRecording: function(includeDomCounters)
+    startRecording: function(includeCounters)
     {
         this._clientInitiatedRecording = true;
         this.reset();
         var maxStackFrames = WebInspector.settings.timelineCaptureStacks.get() ? 30 : 0;
         var includeGPUEvents = WebInspector.experimentsSettings.gpuTimeline.isEnabled();
-        WebInspector.timelineManager.start(maxStackFrames, includeDomCounters, includeGPUEvents, this._fireRecordingStarted.bind(this));
+        WebInspector.timelineManager.start(maxStackFrames, includeCounters, includeGPUEvents, this._fireRecordingStarted.bind(this));
     },
 
     stopRecording: function()

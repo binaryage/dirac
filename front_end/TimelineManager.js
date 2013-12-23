@@ -57,15 +57,15 @@ WebInspector.TimelineManager.prototype = {
 
     /**
      * @param {number=} maxCallStackDepth
-     * @param {boolean=} includeDomCounters
+     * @param {boolean=} includeCounters
      * @param {boolean=} includeGPUEvents
      * @param {function(?Protocol.Error)=} callback
      */
-    start: function(maxCallStackDepth, includeDomCounters, includeGPUEvents, callback)
+    start: function(maxCallStackDepth, includeCounters, includeGPUEvents, callback)
     {
         this._enablementCount++;
         if (this._enablementCount === 1)
-            TimelineAgent.start(maxCallStackDepth, /* bufferEvents */false, includeDomCounters, includeGPUEvents, callback);
+            TimelineAgent.start(maxCallStackDepth, /* bufferEvents */false, includeCounters, includeGPUEvents, callback);
         else if (callback)
             callback(null);
     },
