@@ -305,6 +305,7 @@
             'front_end/TimelineEventOverview.js',
             'front_end/TimelineFrameOverview.js',
             'front_end/TimelineMemoryOverview.js',
+            'front_end/TimelineView.js',
             'front_end/TimelinePanel.js',
         ],
         'devtools_profiles_js_files': [

@@ -252,6 +252,7 @@
             "MemoryStatistics.js",
             "PieChart.js",
             "TimelineEventOverview.js",
+            "TimelineFrameController.js",
             "TimelineFrameOverview.js",
             "TimelineMemoryOverview.js",
             "TimelineModel.js",
@@ -259,7 +260,7 @@
             "TimelinePanel.js",
             "TimelinePanelDescriptor.js",
             "TimelinePresentationModel.js",
-            "TimelineFrameController.js"
+            "TimelineView.js"
         ]
     },
     {
