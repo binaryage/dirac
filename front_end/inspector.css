@@ -585,7 +585,7 @@ select.status-bar-item {
 }
 } /* media */
 
-button.status-bar-item.dock-status-bar-item.toggled-undocked .glyph {
+button.status-bar-item.dock-status-bar-item.toggled-undock .glyph {
     -webkit-mask-position: 0 -48px;
 }
 

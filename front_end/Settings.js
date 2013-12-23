@@ -96,6 +96,7 @@ WebInspector.Settings = function()
     this.textEditorAutoDetectIndent = this.createSetting("textEditorAutoIndentIndent", true);
     this.textEditorAutocompletion = this.createSetting("textEditorAutocompletion", true);
     this.textEditorBracketMatching = this.createSetting("textEditorBracketMatching", true);
+    this.lastDockState = this.createSetting("lastDockState", "");
     this.cssReloadEnabled = this.createSetting("cssReloadEnabled", false);
     this.timelineCaptureStacks = this.createSetting("timelineCaptureStacks", true);
     this.showMetricsRulers = this.createSetting("showMetricsRulers", false);

@@ -97,6 +97,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
 
     requestSetDockSide: function(side)
     {
+        InspectorFrontendAPI.setDockSide(side);
     },
 
     /**

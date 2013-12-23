@@ -108,6 +108,17 @@ var InspectorFrontendAPI = {
         WebInspector.ContextMenu.setUseSoftMenu(useSoftMenu);
     },
 
+    // FIXME: remove this legacy support.
+    setAttachedWindow: function(side)
+    {
+    },
+
+    // FIXME: remove this legacy support.
+    setDockSide: function(side)
+    {
+        WebInspector.dockController.setDockSide(side);
+    },
+
     dispatchMessage: function(messageObject)
     {
         InspectorBackend.dispatch(messageObject);
