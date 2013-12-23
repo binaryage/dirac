@@ -535,7 +535,7 @@ WebInspector._registerShortcuts = function()
     section.addRelatedKeys(keys, WebInspector.UIString("Go back/forward in panel history"));
 
     var toggleConsoleLabel = WebInspector.UIString("Show console");
-    section.addKey(shortcut.makeDescriptor(shortcut.Keys.Tilde, shortcut.Modifiers.CtrlOrMeta), toggleConsoleLabel);
+    section.addKey(shortcut.makeDescriptor(shortcut.Keys.Tilde, shortcut.Modifiers.Ctrl), toggleConsoleLabel);
     var doNotOpenDrawerOnEsc = WebInspector.experimentsSettings.doNotOpenDrawerOnEsc.isEnabled();
     var toggleDrawerLabel = doNotOpenDrawerOnEsc ? WebInspector.UIString("Hide drawer") : WebInspector.UIString("Toggle drawer");
     section.addKey(shortcut.makeDescriptor(shortcut.Keys.Esc), toggleDrawerLabel);
@@ -672,7 +672,7 @@ WebInspector.postDocumentKeyDown = function(event)
             this.inspectorView.drawer().show();
     }
 
-    if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Tilde.code && WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event))
+    if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Tilde.code && event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey)
         this.showConsole();
 }
 
