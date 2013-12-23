@@ -72,7 +72,7 @@ WebInspector.TimelineFrameOverview.prototype = {
         this.resetCanvas();
         this._barTimes = [];
 
-        var backgroundFramesHeight = 15;
+        var backgroundFramesHeight = 15 * window.devicePixelRatio;
         var mainThreadFramesHeight = this._canvas.height - backgroundFramesHeight;
         const minBarWidth = 4 * window.devicePixelRatio;
         var frameCount = this._backgroundFrames.length || this._mainThreadFrames.length;
