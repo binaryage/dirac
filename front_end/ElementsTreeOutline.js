@@ -1956,12 +1956,52 @@ WebInspector.ElementsTreeElement.prototype = {
      * @param {!Node} parentElement
      * @param {string} name
      * @param {string} value
+     * @param {boolean=} forceValue
      * @param {!WebInspector.DOMNode=} node
      * @param {function(string, string, string, boolean=, string=)=} linkify
      */
-    _buildAttributeDOM: function(parentElement, name, value, node, linkify)
+    _buildAttributeDOM: function(parentElement, name, value, forceValue, node, linkify)
     {
-        var hasText = (value.length > 0);
+        var closingPunctuationRegex = /[\/;:\)\]\}]/g;
+        var highlightIndex = 0;
+        var highlightCount;
+        var additionalHighlightOffset = 0;
+        var result;
+
+        /**
+         * @param {string} match
+         * @param {number} replaceOffset
+         * @return {string}
+         */
+        function replacer(match, replaceOffset) {
+            while (highlightIndex < highlightCount && result.entityRanges[highlightIndex].offset < replaceOffset) {
+                result.entityRanges[highlightIndex].offset += additionalHighlightOffset;
+                ++highlightIndex;
+            }
+            additionalHighlightOffset += 1;
+            return match + "\u200B";
+        }
+
+        /**
+         * @param {!Element} element
+         * @param {string} value
+         * @this {WebInspector.ElementsTreeElement}
+         */
+        function setValueWithEntities(element, value)
+        {
+            var attrValueElement = element.createChild("span", "webkit-html-attribute-value");
+            result = this._convertWhitespaceToEntities(value);
+            highlightCount = result.entityRanges.length;
+            value = result.text.replace(closingPunctuationRegex, replacer);
+            while (highlightIndex < highlightCount) {
+                result.entityRanges[highlightIndex].offset += additionalHighlightOffset;
+                ++highlightIndex;
+            }
+            attrValueElement.textContent = value;
+            WebInspector.highlightRangesWithStyleClass(attrValueElement, result.entityRanges, "webkit-html-entity-value");
+        }
+
+        var hasText = (forceValue || value.length > 0);
         var attrSpanElement = parentElement.createChild("span", "webkit-html-attribute");
         var attrNameElement = attrSpanElement.createChild("span", "webkit-html-attribute-name");
         attrNameElement.textContent = name;
@@ -1971,19 +2011,16 @@ WebInspector.ElementsTreeElement.prototype = {
 
         if (linkify && (name === "src" || name === "href")) {
             var rewrittenHref = node.resolveURL(value);
-            value = value.replace(/([\/;:\)\]\}])/g, "$1\u200B");
             if (rewrittenHref === null) {
-                var attrValueElement = attrSpanElement.createChild("span", "webkit-html-attribute-value");
-                attrValueElement.textContent = value;
+                setValueWithEntities.call(this, attrSpanElement, value);
             } else {
+                value = value.replace(closingPunctuationRegex, "$&\u200B");
                 if (value.startsWith("data:"))
                     value = value.trimMiddle(60);
                 attrSpanElement.appendChild(linkify(rewrittenHref, value, "webkit-html-attribute-value", node.nodeName().toLowerCase() === "a"));
             }
         } else {
-            value = value.replace(/([\/;:\)\]\}])/g, "$1\u200B");
-            var attrValueElement = attrSpanElement.createChild("span", "webkit-html-attribute-value");
-            attrValueElement.textContent = value;
+            setValueWithEntities.call(this, attrSpanElement, value);
         }
 
         if (hasText)
@@ -2023,7 +2060,7 @@ WebInspector.ElementsTreeElement.prototype = {
             for (var i = 0; i < attributes.length; ++i) {
                 var attr = attributes[i];
                 tagElement.appendChild(document.createTextNode(" "));
-                this._buildAttributeDOM(tagElement, attr.name, attr.value, node, linkify);
+                this._buildAttributeDOM(tagElement, attr.name, attr.value, false, node, linkify);
             }
         }
         tagElement.appendChild(document.createTextNode(">"));
@@ -2066,8 +2103,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
         switch (node.nodeType()) {
             case Node.ATTRIBUTE_NODE:
-                var value = node.value || "\u200B"; // Zero width space to force showing an empty value.
-                this._buildAttributeDOM(info.titleDOM, node.name, value);
+                this._buildAttributeDOM(info.titleDOM, node.name, node.value, true);
                 break;
 
             case Node.ELEMENT_NODE:
