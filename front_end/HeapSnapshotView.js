@@ -1369,27 +1369,9 @@ WebInspector.HeapProfileHeader.prototype = {
                     return;
                 }
 
-                var header = this;
-                var reader = new FileReader();
-                reader.onloadend = function(e)
-                {
-                    fileOutputStream.close();
-                    header._didCompleteSnapshotTransfer();
-                }
-                reader.onerror = function(error)
-                {
-                    WebInspector.log("Failed to read heap snapshot from temp file: " + error.message,
-                                     WebInspector.ConsoleMessage.MessageLevel.Error);
-                }
-                var currentPos = 0;
-                reader.onprogress = function(e)
-                {
-                    var chunk = reader.result.substring(currentPos, e.loaded);
-                    currentPos = e.loaded;
-                    fileOutputStream.write(chunk);
-                    header._updateSaveProgress(e.loaded, e.total);
-                }
-                reader.readAsText(file);
+                var delegate = new WebInspector.SaveSnapshotOutputStreamDelegate(this);
+                var reader = new WebInspector.ChunkedFileReader(file, 10*1000*1000, delegate)
+                reader.start(fileOutputStream);
             }
 
             function reportTempFileError()
@@ -1551,6 +1533,46 @@ WebInspector.HeapSnapshotLoadFromFileDelegate.prototype = {
         default:
             this._snapshotHeader._updateSubtitle(WebInspector.UIString("'%s' error %d", reader.fileName(), e.target.error.code));
         }
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.OutputStreamDelegate}
+ * @param {!WebInspector.HeapProfileHeader} profileHeader
+ */
+WebInspector.SaveSnapshotOutputStreamDelegate = function(profileHeader)
+{
+    this._profileHeader = profileHeader;
+}
+
+WebInspector.SaveSnapshotOutputStreamDelegate.prototype = {
+    onTransferStarted: function()
+    {
+        this._profileHeader._updateSaveProgress(0, 1);
+    },
+
+    onTransferFinished: function()
+    {
+        this._profileHeader._didCompleteSnapshotTransfer();
+    },
+
+    /**
+     * @param {!WebInspector.ChunkedReader} reader
+     */
+    onChunkTransferred: function(reader)
+    {
+        this._profileHeader._updateSaveProgress(reader.loadedSize(), reader.fileSize());
+    },
+
+    /**
+     * @param {!WebInspector.ChunkedReader} reader
+     */
+    onError: function(reader, event)
+    {
+        WebInspector.log("Failed to read heap snapshot from temp file: " + event.message,
+                         WebInspector.ConsoleMessage.MessageLevel.Error);
+        this.onTransferFinished();
     }
 }
 
