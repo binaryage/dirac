@@ -508,6 +508,7 @@ WebInspector.TextPrompt.prototype = {
             finalSelectionRange.setEnd(prefixTextNode, wordPrefixLength);
             selection.removeAllRanges();
             selection.addRange(finalSelectionRange);
+            this.dispatchEventToListeners(WebInspector.TextPrompt.Events.ItemApplied);
         }
     },
 
