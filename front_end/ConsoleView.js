@@ -878,7 +878,7 @@ WebInspector.ConsoleViewFilter.prototype = {
 
 /**
  * @constructor
- * @extends WebInspector.ConsoleMessage
+ * @extends {WebInspector.ConsoleMessage}
  */
 WebInspector.ConsoleCommand = function(text)
 {

@@ -853,7 +853,5 @@ WebInspector.TextEditorDelegateForSourceFrame.prototype = {
     {
         var targetLocation = WebInspector.ParsedURL.completeURL(this._sourceFrame._url, hrefValue);
         return WebInspector.linkifyURLAsNode(targetLocation || hrefValue, hrefValue, undefined, isExternal);
-    },
-
-    __proto__: WebInspector.TextEditorDelegate.prototype
+    }
 }

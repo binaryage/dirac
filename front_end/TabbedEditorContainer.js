@@ -539,9 +539,7 @@ WebInspector.TabbedEditorContainer.HistoryItem.prototype = {
         serializedHistoryItem.selectionRange = this.selectionRange;
         serializedHistoryItem.scrollLineNumber = this.scrollLineNumber;
         return serializedHistoryItem;
-    },
-
-    __proto__: WebInspector.Object.prototype
+    }
 }
 
 /**
@@ -698,9 +696,7 @@ WebInspector.TabbedEditorContainer.History.prototype = {
         for (var i = 0; i < this._items.length; ++i)
             result.push(this._items[i].url);
         return result;
-    },
-
-    __proto__: WebInspector.Object.prototype
+    }
 }
 
 /**

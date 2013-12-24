@@ -182,16 +182,14 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
         }
 
         return content;
-    },
-
-    __proto__: WebInspector.ContentProvider.prototype
+    }
 }
 
 /**
  * @constructor
+ * @implements {WebInspector.ContentProvider}
  * @param {string} sourceURL
  * @param {!WebInspector.ResourceType} contentType
- * @implements {WebInspector.ContentProvider}
  */
 WebInspector.CompilerSourceMappingContentProvider = function(sourceURL, contentType)
 {
@@ -264,9 +262,7 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
 
             callback(WebInspector.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex));
         }
-    },
-
-    __proto__: WebInspector.ContentProvider.prototype
+    }
 }
 
 /**
@@ -324,7 +320,5 @@ WebInspector.StaticContentProvider.prototype = {
 
         // searchInContent should call back later.
         window.setTimeout(performSearch.bind(this), 0);
-    },
-
-    __proto__: WebInspector.ContentProvider.prototype
+    }
 }

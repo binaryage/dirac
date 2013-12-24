@@ -366,6 +366,7 @@ function ExtensionViewImpl(id)
 
 /**
  * @constructor
+ * @extends {ExtensionViewImpl}
  */
 function PanelWithSidebarImpl(hostPanelName)
 {

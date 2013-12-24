@@ -798,9 +798,7 @@ WebInspector.ElementsTreeOutline.PseudoStateDecorator.prototype = {
         if (descendantCount === 1)
             return WebInspector.UIString("%d descendant with forced state", descendantCount);
         return WebInspector.UIString("%d descendants with forced state", descendantCount);
-    },
-
-    __proto__: WebInspector.ElementsTreeOutline.ElementDecorator.prototype
+    }
 }
 
 /**

@@ -29,7 +29,7 @@
 
 /**
  * @constructor
- * @extends WebInspector.Object
+ * @extends {WebInspector.Object}
  * @implements {WebInspector.SuggestBoxDelegate}
  * @param {function(!Element, !Range, boolean, function(!Array.<string>, number=))} completions
  * @param {string=} stopCharacters

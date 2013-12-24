@@ -34,7 +34,6 @@
 WebInspector.SourcesSearchScope = function(workspace)
 {
     // FIXME: Add title once it is used by search controller.
-    WebInspector.SearchScope.call(this)
     this._searchId = 0;
     this._workspace = workspace;
 }
@@ -219,7 +218,5 @@ WebInspector.SourcesSearchScope.prototype = {
     createSearchResultsPane: function(searchConfig)
     {
         return new WebInspector.FileBasedSearchResultsPane(searchConfig);
-    },
-
-    __proto__: WebInspector.SearchScope.prototype
+    }
 }

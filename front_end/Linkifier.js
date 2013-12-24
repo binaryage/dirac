@@ -149,9 +149,7 @@ WebInspector.Linkifier.DefaultFormatter.prototype = {
         if (typeof uiLocation.lineNumber === "number")
             titleText += ":" + (uiLocation.lineNumber + 1);
         anchor.title = titleText;
-    },
-
-    __proto__: WebInspector.LinkifierFormatter.prototype
+    }
 }
 
 /**

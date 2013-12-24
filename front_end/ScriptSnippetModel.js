@@ -593,9 +593,7 @@ WebInspector.SnippetContentProvider.prototype = {
 
         // searchInContent should call back later.
         window.setTimeout(performSearch.bind(this), 0);
-    },
-
-    __proto__: WebInspector.ContentProvider.prototype
+    }
 }
 
 /**
