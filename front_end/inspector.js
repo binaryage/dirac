@@ -67,7 +67,7 @@ var WebInspector = {
         }
 
         this.inspectorView.appendToRightToolbar(this.settingsController.statusBarItem);
-        if (WebInspector.queryParamsObject["can_dock"])
+        if (this.dockController.element)
             this.inspectorView.appendToRightToolbar(this.dockController.element);
 
         var closeButtonToolbarItem = document.createElementWithClass("div", "toolbar-close-button-item");
