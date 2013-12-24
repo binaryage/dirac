@@ -60,6 +60,17 @@ WebInspector.Script.Events = {
 
 WebInspector.Script.snippetSourceURLPrefix = "snippets:///";
 
+/**
+ * @param {string} source
+ * @return {string}
+ */
+WebInspector.Script._trimSourceURLComment = function(source)
+{
+    var sourceURLRegex = /\n[\040\t]*\/\/[@#]\ssourceURL=\s*(\S*?)\s*$/mg;
+    return source.replace(sourceURLRegex, "");
+},
+
+
 WebInspector.Script.prototype = {
     /**
      * @return {string}
@@ -94,7 +105,7 @@ WebInspector.Script.prototype = {
          */
         function didGetScriptSource(error, source)
         {
-            this._source = error ? "" : source;
+            this._source = WebInspector.Script._trimSourceURLComment(error ? "" : source);
             callback(this._source);
         }
         if (this.scriptId) {
@@ -137,6 +148,17 @@ WebInspector.Script.prototype = {
     },
 
     /**
+     * @param {string} source
+     * @return {string}
+     */
+    _appendSourceURLCommentIfNeeded: function(source)
+    {
+        if (!this.hasSourceURL)
+            return source;
+        return source + "\n //# sourceURL=" + this.sourceURL;
+    },
+
+    /**
      * @param {string} newSource
      * @param {function(?Protocol.Error, !DebuggerAgent.SetScriptSourceError=, !Array.<!DebuggerAgent.CallFrame>=, !DebuggerAgent.StackTrace=, boolean=)} callback
      */
@@ -160,6 +182,10 @@ WebInspector.Script.prototype = {
             if (!error)
                 this.dispatchEventToListeners(WebInspector.Script.Events.ScriptEdited, newSource);
         }
+
+        newSource = WebInspector.Script._trimSourceURLComment(newSource);
+        // We append correct sourceURL to script for consistency only. It's not actually needed for things to work correctly.
+        newSource = this._appendSourceURLCommentIfNeeded(newSource);
 
         if (this.scriptId)
             DebuggerAgent.setScriptSource(this.scriptId, newSource, undefined, didEditScriptSource.bind(this));

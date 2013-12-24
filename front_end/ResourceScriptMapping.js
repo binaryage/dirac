@@ -301,8 +301,6 @@ WebInspector.ResourceScriptFile.prototype = {
         if (!this._script)
             return;
         var source = this._uiSourceCode.workingCopy();
-        if (this._script.hasSourceURL && !this._sourceEndsWithSourceURL(source))
-            source += "\n //# sourceURL=" + this._script.sourceURL;
         WebInspector.debuggerModel.setScriptSource(this._script.scriptId, source, innerCallback.bind(this));
     },
 
@@ -319,29 +317,7 @@ WebInspector.ResourceScriptFile.prototype = {
             return false;
         if (typeof this._scriptSource === "undefined")
             return false;
-        return !this._sourceMatchesScriptSource(this._uiSourceCode.workingCopy(), this._scriptSource);
-    },
-
-    /**
-     * @param {string} source
-     * @param {string} scriptSource
-     * @return {boolean}
-     */
-    _sourceMatchesScriptSource: function(source, scriptSource)
-    {
-        if (!scriptSource.startsWith(source))
-            return false;
-        var scriptSourceTail = scriptSource.substr(source.length).trim();
-        return !scriptSourceTail || !!scriptSourceTail.match(/^\/\/[@#]\ssourceURL=\s*(\S*?)\s*$/m);
-    },
-
-    /**
-     * @param {string} source
-     * @return {boolean}
-     */
-    _sourceEndsWithSourceURL: function(source)
-    {
-        return !!source.match(/\/\/[@#]\ssourceURL=\s*(\S*?)\s*$/m);
+        return this._uiSourceCode.workingCopy() !== this._scriptSource;
     },
 
     /**
