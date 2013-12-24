@@ -100,6 +100,8 @@ WebInspector.TimelineFrameController.prototype = {
                 var duration = WebInspector.TimelineModel.durationInSeconds(record);
                 lastFrame.cpuTime += duration;
                 lastFrame.timeByCategory["other"] -= duration;
+            } else if (!isFrameRecord && WebInspector.TimelinePresentationModel.recordStyle(record).category === WebInspector.TimelinePresentationModel.categories().painting) {
+                this._updatePaintingDuration(record);
             }
         }
         if (record.thread)
@@ -121,6 +123,11 @@ WebInspector.TimelineFrameController.prototype = {
         // Alternatively, we could compute CPU time as sum of all Program events.
         // This way it's a bit more flexible, as it works in case there's no program events.
         frame.cpuTime += frame.timeByCategory["other"];
+        if (frame.isBackground) {
+            var paintDuration = this._paintEndTime - this._paintStartTime;
+            if (paintDuration)
+                frame.timeByCategory[WebInspector.TimelinePresentationModel.categories().painting.name] = paintDuration;
+        }
         this._frameOverview.addFrame(frame);
         this._presentationModel.addFrame(frame);
     },
@@ -137,7 +144,22 @@ WebInspector.TimelineFrameController.prototype = {
         frame.timeByCategory["other"] = programTimeCarryover;
         frame.isBackground = !!record.thread;
         frame.id = record.data && record.data["id"];
+        if (frame.isBackground) {
+            this._paintStartTime = null;
+            this._paintEndTime = null;
+        }
         return frame;
+    },
+
+    /**
+     * @param {!Object} record
+     */
+    _updatePaintingDuration: function(record)
+    {
+        var startTime = WebInspector.TimelineModel.startTimeInSeconds(record);
+        this._paintStartTime = this._paintStartTime ? Math.min(this._paintStartTime, startTime) : startTime;
+        var endTime = WebInspector.TimelineModel.endTimeInSeconds(record);
+        this._paintEndTime = this._paintEndTime ? Math.max(this._paintEndTime, endTime) : endTime;
     },
 
     dispose: function()
