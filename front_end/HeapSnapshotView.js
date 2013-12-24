@@ -1150,6 +1150,7 @@ WebInspector.HeapProfileHeader = function(type, title, uid, maxJSObjectId)
     this._snapshotProxy = null;
     this._totalNumberOfChunks = 0;
     this._transferHandler = null;
+    this._bufferedWriter = null;
 }
 
 WebInspector.HeapProfileHeader.prototype = {
@@ -1207,8 +1208,23 @@ WebInspector.HeapProfileHeader.prototype = {
                 this._transferHandler.finishTransfer();
                 this._totalNumberOfChunks = this._transferHandler._totalNumberOfChunks;
             }
+            if (this._bufferedWriter) {
+                this._bufferedWriter.close(this._didWriteToTempFile.bind(this));
+                this._bufferedWriter = null;
+            }
         }
         HeapProfilerAgent.getHeapSnapshot(this.uid, finishTransfer.bind(this));
+    },
+
+    _didWriteToTempFile: function(tempFile)
+    {
+        this._tempFile = tempFile;
+        if (!tempFile)
+            this._failedToCreateTempFile = true;
+        if (this._onTempFileReady) {
+            this._onTempFileReady();
+            this._onTempFileReady = null;
+        }
     },
 
     snapshotConstructorName: function()
@@ -1280,6 +1296,9 @@ WebInspector.HeapProfileHeader.prototype = {
      */
     transferChunk: function(chunk)
     {
+        if (!this._bufferedWriter)
+            this._bufferedWriter = new WebInspector.BufferedTempFileWriter("heap-profiler", this.uid);
+        this._bufferedWriter.write(chunk);
         this._transferHandler.transferChunk(chunk);
     },
 
@@ -1321,7 +1340,7 @@ WebInspector.HeapProfileHeader.prototype = {
      */
     canSaveToFile: function()
     {
-        return !this.fromFile() && !!this._snapshotProxy && !this._receiver;
+        return !this.fromFile() && !!this._snapshotProxy && !this._receiver && !this._failedToCreateTempFile;
     },
 
     /**
@@ -1339,12 +1358,64 @@ WebInspector.HeapProfileHeader.prototype = {
         {
             if (!accepted)
                 return;
-            this._receiver = fileOutputStream;
-            this._transferHandler = new WebInspector.SaveSnapshotHandler(this);
-            this._transferSnapshot();
+            /**
+             * @param {!File} file
+             * @this {WebInspector.HeapProfileHeader}
+             */
+            function didGetFile(file)
+            {
+                if (!file) {
+                    reportTempFileError();
+                    return;
+                }
+
+                var header = this;
+                var reader = new FileReader();
+                reader.onloadend = function(e)
+                {
+                    fileOutputStream.close();
+                    header._didCompleteSnapshotTransfer();
+                }
+                reader.onerror = function(error)
+                {
+                    WebInspector.log("Failed to read heap snapshot from temp file: " + error.message,
+                                     WebInspector.ConsoleMessage.MessageLevel.Error);
+                }
+                var currentPos = 0;
+                reader.onprogress = function(e)
+                {
+                    var chunk = reader.result.substring(currentPos, e.loaded);
+                    currentPos = e.loaded;
+                    fileOutputStream.write(chunk);
+                    header._updateSaveProgress(e.loaded, e.total);
+                }
+                reader.readAsText(file);
+            }
+
+            function reportTempFileError()
+            {
+                WebInspector.log("Failed to open temp file with heap snapshot",
+                                 WebInspector.ConsoleMessage.MessageLevel.Error);
+                fileOutputStream.close();
+            }
+
+            if (this._failedToCreateTempFile) {
+                reportTempFileError();
+            } else if (this._tempFile) {
+                this._tempFile.getFile(didGetFile.bind(this));
+            } else {
+                this._onTempFileReady = onOpen.bind(this, accepted);
+                this._updateSaveProgress(0, 1);
+            }
         }
         this._fileName = this._fileName || "Heap-" + new Date().toISO8601Compact() + this._profileType.fileExtension();
         fileOutputStream.open(this._fileName, onOpen.bind(this));
+    },
+
+    _updateSaveProgress: function(value, total)
+    {
+        var percentValue = ((total ? (value / total) : 0) * 100).toFixed(0);
+        this._updateSubtitle(WebInspector.UIString("Saving\u2026 %d\%", percentValue));
     },
 
     /**
@@ -1408,34 +1479,6 @@ WebInspector.SnapshotTransferHandler.prototype = {
     _updateProgress: function(value, total)
     {
     }
-}
-
-
-/**
- * @constructor
- * @param {!WebInspector.HeapProfileHeader} header
- * @extends {WebInspector.SnapshotTransferHandler}
- */
-WebInspector.SaveSnapshotHandler = function(header)
-{
-    WebInspector.SnapshotTransferHandler.call(this, header, "Saving\u2026 %d\%");
-    this._totalNumberOfChunks = header._totalNumberOfChunks;
-    this._updateProgress(0, this._totalNumberOfChunks);
-}
-
-
-WebInspector.SaveSnapshotHandler.prototype = {
-    _updateProgress: function(value, total)
-    {
-        var percentValue = ((total ? (value / total) : 0) * 100).toFixed(0);
-        this._header._updateSubtitle(WebInspector.UIString(this._title, percentValue));
-        if (value === total) {
-            this._header._receiver.close();
-            this._header._didCompleteSnapshotTransfer();
-        }
-    },
-
-    __proto__: WebInspector.SnapshotTransferHandler.prototype
 }
 
 

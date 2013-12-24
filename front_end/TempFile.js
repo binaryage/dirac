@@ -114,16 +114,26 @@ WebInspector.TempFile = function(dirPath, name, callback)
 WebInspector.TempFile.prototype = {
     /**
      * @param {!string} data
+     * @param {!function(boolean)} callback
      */
-    write: function(data)
+    write: function(data, callback)
     {
         var blob = new Blob([data], {type: 'text/plain'});
         this._writer.onerror = function(e)
         {
             WebInspector.log("Failed to write into a temp file: " + e.message,
                              WebInspector.ConsoleMessage.MessageLevel.Error);
+            callback(false);
+        }
+        this._writer.onwrite = function(e)
+        {
+            callback(true);
         }
         this._writer.write(blob);
+    },
+
+    finishWriting: function()
+    {
         this._writer = null;
     },
 
@@ -145,13 +155,12 @@ WebInspector.TempFile.prototype = {
              */
             reader.onloadend = function(e)
             {
-                callback(/** @type {string} */ (this.result));
+                callback(/** @type {?string} */ (this.result));
             }
             reader.onerror = function(error)
             {
                 WebInspector.log("Failed to read from temp file: " + error.message,
                                  WebInspector.ConsoleMessage.MessageLevel.Error);
-                callback(null);
             }
             reader.readAsText(file);
         }
@@ -159,7 +168,106 @@ WebInspector.TempFile.prototype = {
         {
             WebInspector.log("Failed to load temp file: " + error.message,
                               WebInspector.ConsoleMessage.MessageLevel.Error);
+            callback(null);
         }
         this._fileEntry.file(didGetFile.bind(this), didFailToGetFile.bind(this));
+    },
+
+    /**
+     * @param {!function(?File)} callback
+     */
+    getFile: function(callback)
+    {
+        function didFailToGetFile(error)
+        {
+            WebInspector.log("Failed to load temp file: " + error.message,
+                              WebInspector.ConsoleMessage.MessageLevel.Error);
+            callback(null);
+        }
+        this._fileEntry.file(callback, didFailToGetFile.bind(this));
+    }
+}
+
+/**
+ * @constructor
+ * @param {!string} dirPath
+ * @param {!string} name
+ */
+WebInspector.BufferedTempFileWriter = function(dirPath, name)
+{
+    this._chunks = [];
+    this._tempFile = null;
+    this._isWriting = false;
+    this._finishCallback = null;
+    this._isFinished = false;
+    new WebInspector.TempFile(dirPath, name, this._didCreateTempFile.bind(this));
+}
+
+WebInspector.BufferedTempFileWriter.prototype = {
+    /**
+     * @param {!string} data
+     */
+    write: function(data)
+    {
+        if (!this._chunks)
+            return;
+        if (this._finishCallback)
+            throw new Error("Now writes are allowed after close.");
+        this._chunks.push(data);
+        if (this._tempFile && !this._isWriting)
+            this._writeNextChunk();
+    },
+
+    /**
+     * @param {!function(?WebInspector.TempFile)} callback
+     */
+    close: function(callback)
+    {
+        this._finishCallback = callback;
+        if (this._isFinished)
+            callback(this._tempFile);
+    },
+
+    _didCreateTempFile: function(tempFile)
+    {
+        this._tempFile = tempFile;
+        if (!tempFile) {
+            this._chunks = null;
+            this._notifyFinished();
+            return;
+        }
+        if (this._chunks.length)
+            this._writeNextChunk();
+    },
+
+    _writeNextChunk: function()
+    {
+        var chunk = this._chunks.shift();
+        this._tempFile.write(chunk, this._didWriteChunk.bind(this));
+        this._isWriting = true;
+    },
+
+    _didWriteChunk: function(success)
+    {
+        this._isWriting = false;
+        if (!success) {
+            this._tempFile = null;
+            this._chunks = null;
+            this._notifyFinished();
+            return;
+        }
+        if (this._chunks.length)
+            this._writeNextChunk();
+        else if (this._finishCallback)
+            this._notifyFinished();
+    },
+
+    _notifyFinished: function()
+    {
+        this._isFinished = true;
+        if (this._tempFile)
+            this._tempFile.finishWriting();
+        if (this._finishCallback)
+            this._finishCallback(this._tempFile);
     }
 }

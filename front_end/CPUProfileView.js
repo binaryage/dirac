@@ -992,7 +992,7 @@ WebInspector.CPUProfileHeader.prototype = {
     {
         this._tempFile = tempFile;
         if (tempFile)
-            tempFile.write(serializedData);
+            tempFile.write(serializedData, tempFile.finishWriting.bind(tempFile));
     },
 
     __proto__: WebInspector.ProfileHeader.prototype
