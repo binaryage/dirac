@@ -242,7 +242,15 @@ WebInspector.BufferedTempFileWriter.prototype = {
 
     _writeNextChunk: function()
     {
-        var chunk = this._chunks.shift();
+        var chunkSize = 0;
+        var endIndex = 0;
+        for (; endIndex < this._chunks.length; endIndex++) {
+            chunkSize += this._chunks[endIndex].length;
+            if (chunkSize > 10 * 1000 * 1000)
+                break;
+        }
+        var chunk = this._chunks.slice(0, endIndex + 1).join("");
+        this._chunks.splice(0, endIndex + 1);
         this._tempFile.write(chunk, this._didWriteChunk.bind(this));
         this._isWriting = true;
     },
