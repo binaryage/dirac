@@ -563,7 +563,7 @@ WebInspector.TimelineView.prototype = {
 
     wasShown: function()
     {
-        WebInspector.Panel.prototype.wasShown.call(this);
+        WebInspector.View.prototype.wasShown.call(this);
         if (!WebInspector.TimelinePanel._categoryStylesInitialized) {
             WebInspector.TimelinePanel._categoryStylesInitialized = true;
             this._injectCategoryStyles();
@@ -575,7 +575,7 @@ WebInspector.TimelineView.prototype = {
     willHide: function()
     {
         this._closeRecordDetails();
-        WebInspector.Panel.prototype.willHide.call(this);
+        WebInspector.View.prototype.willHide.call(this);
     },
 
     _onScroll: function(event)
@@ -1321,7 +1321,7 @@ WebInspector.TimelineView.prototype = {
         this._updateSearchHighlight(true, shouldJump);
     },
 
-    __proto__: WebInspector.Panel.prototype
+    __proto__: WebInspector.View.prototype
 }
 
 /**
