@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- * @extends {WebInspector.AuditCategory}
+ * @implements {WebInspector.AuditCategory}
  * @param {string} extensionOrigin
  * @param {string} id
  * @param {string} displayName
@@ -45,18 +45,24 @@ WebInspector.ExtensionAuditCategory = function(extensionOrigin, id, displayName,
 }
 
 WebInspector.ExtensionAuditCategory.prototype = {
-    // AuditCategory interface
+    /**
+     * @override
+     */
     get id()
     {
         return this._id;
     },
 
+    /**
+     * @override
+     */
     get displayName()
     {
         return this._displayName;
     },
 
     /**
+     * @override
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {function(!WebInspector.AuditRuleResult)} ruleResultCallback
      * @param {function()} categoryDoneCallback

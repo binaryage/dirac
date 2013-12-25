@@ -335,6 +335,7 @@
             'front_end/AuditResultView.js',
             'front_end/AuditRules.js',
             'front_end/AuditsPanel.js',
+            'front_end/AuditsPanelDescriptor.js',
         ],
         'devtools_codemirror_js_files': [
             'front_end/CodeMirrorTextEditor.js',

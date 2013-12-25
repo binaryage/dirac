@@ -176,16 +176,18 @@ WebInspector.AuditsPanel.prototype = {
 
 /**
  * @constructor
+ * @implements {WebInspector.AuditCategory}
  * @param {string} displayName
  */
-WebInspector.AuditCategory = function(displayName)
+WebInspector.AuditCategoryImpl = function(displayName)
 {
     this._displayName = displayName;
     this._rules = [];
 }
 
-WebInspector.AuditCategory.prototype = {
+WebInspector.AuditCategoryImpl.prototype = {
     /**
+     * @override
      * @return {string}
      */
     get id()
@@ -195,6 +197,7 @@ WebInspector.AuditCategory.prototype = {
     },
 
     /**
+     * @override
      * @return {string}
      */
     get displayName()
@@ -213,6 +216,7 @@ WebInspector.AuditCategory.prototype = {
     },
 
     /**
+     * @override
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {function(!WebInspector.AuditRuleResult)} ruleResultCallback
      * @param {function()} categoryDoneCallback

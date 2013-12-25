@@ -41,7 +41,7 @@ var WebInspector = {
         var timeline = new WebInspector.TimelinePanelDescriptor();
         var profiles = new WebInspector.ProfilesPanelDescriptor();
         var resources = new WebInspector.PanelDescriptor("resources", WebInspector.UIString("Resources"), "ResourcesPanel", "ResourcesPanel.js");
-        var audits = new WebInspector.PanelDescriptor("audits", WebInspector.UIString("Audits"), "AuditsPanel", "AuditsPanel.js");
+        var audits = new WebInspector.AuditsPanelDescriptor();
         var console = new WebInspector.PanelDescriptor("console", WebInspector.UIString("Console"), "ConsolePanel");
 
         if (WebInspector.WorkerManager.isWorkerFrontend())

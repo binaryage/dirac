@@ -30,10 +30,10 @@
 
 /**
  * @constructor
- * @extends {WebInspector.AuditCategory}
+ * @extends {WebInspector.AuditCategoryImpl}
  */
 WebInspector.AuditCategories.PagePerformance = function() {
-    WebInspector.AuditCategory.call(this, WebInspector.AuditCategories.PagePerformance.AuditCategoryName);
+    WebInspector.AuditCategoryImpl.call(this, WebInspector.AuditCategories.PagePerformance.AuditCategoryName);
 }
 
 WebInspector.AuditCategories.PagePerformance.AuditCategoryName = "Web Page Performance";
@@ -47,15 +47,15 @@ WebInspector.AuditCategories.PagePerformance.prototype = {
         this.addRule(new WebInspector.AuditRules.VendorPrefixedCSSProperties(), WebInspector.AuditRule.Severity.Warning);
     },
 
-    __proto__: WebInspector.AuditCategory.prototype
+    __proto__: WebInspector.AuditCategoryImpl.prototype
 }
 
 /**
  * @constructor
- * @extends {WebInspector.AuditCategory}
+ * @extends {WebInspector.AuditCategoryImpl}
  */
 WebInspector.AuditCategories.NetworkUtilization = function() {
-    WebInspector.AuditCategory.call(this, WebInspector.AuditCategories.NetworkUtilization.AuditCategoryName);
+    WebInspector.AuditCategoryImpl.call(this, WebInspector.AuditCategories.NetworkUtilization.AuditCategoryName);
 }
 
 WebInspector.AuditCategories.NetworkUtilization.AuditCategoryName = "Network Utilization";
@@ -75,5 +75,5 @@ WebInspector.AuditCategories.NetworkUtilization.prototype = {
         this.addRule(new WebInspector.AuditRules.ProxyCacheControlRule(), WebInspector.AuditRule.Severity.Warning);
     },
 
-    __proto__: WebInspector.AuditCategory.prototype
+    __proto__: WebInspector.AuditCategoryImpl.prototype
 }
