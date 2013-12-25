@@ -365,7 +365,6 @@ WebInspector.RuntimeDispatcher.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
  */
 WebInspector.ExecutionContext = function(id, name, isPageContext)
 {

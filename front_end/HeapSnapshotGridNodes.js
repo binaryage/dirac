@@ -984,7 +984,9 @@ WebInspector.HeapSnapshotDiffNodesProvider.prototype = {
             this._deletedNodesProvider.sortAndRewind(comparator, callback);
         }
         this._addedNodesProvider.sortAndRewind(comparator, afterSort.bind(this));
-    }
+    },
+
+    __proto__: WebInspector.HeapSnapshotProviderProxy.prototype
 };
 
 /**

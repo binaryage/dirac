@@ -394,6 +394,47 @@ PanelWithSidebarImpl.prototype = {
     __proto__: ExtensionViewImpl.prototype
 }
 
+function declareInterfaceClass(implConstructor)
+{
+    return function()
+    {
+        var impl = { __proto__: implConstructor.prototype };
+        implConstructor.apply(impl, arguments);
+        populateInterfaceClass(this, impl);
+    }
+}
+
+function defineDeprecatedProperty(object, className, oldName, newName)
+{
+    var warningGiven = false;
+    function getter()
+    {
+        if (!warningGiven) {
+            console.warn(className + "." + oldName + " is deprecated. Use " + className + "." + newName + " instead");
+            warningGiven = true;
+        }
+        return object[newName];
+    }
+    object.__defineGetter__(oldName, getter);
+}
+
+function extractCallbackArgument(args)
+{
+    var lastArgument = args[args.length - 1];
+    return typeof lastArgument === "function" ? lastArgument : undefined;
+}
+
+var AuditCategory = declareInterfaceClass(AuditCategoryImpl);
+var AuditResult = declareInterfaceClass(AuditResultImpl);
+var Button = declareInterfaceClass(ButtonImpl);
+var EventSink = declareInterfaceClass(EventSinkImpl);
+var ExtensionPanel = declareInterfaceClass(ExtensionPanelImpl);
+var ExtensionSidebarPane = declareInterfaceClass(ExtensionSidebarPaneImpl);
+var PanelWithSidebar = declareInterfaceClass(PanelWithSidebarImpl);
+var Request = declareInterfaceClass(RequestImpl);
+var Resource = declareInterfaceClass(ResourceImpl);
+var Timeline = declareInterfaceClass(TimelineImpl);
+
 /**
  * @constructor
  * @extends {PanelWithSidebar}
@@ -403,6 +444,10 @@ function ElementsPanel()
     PanelWithSidebar.call(this, "elements");
 }
 
+ElementsPanel.prototype = {
+    __proto__: PanelWithSidebar.prototype
+}
+
 /**
  * @constructor
  * @extends {PanelWithSidebar}
@@ -410,6 +455,10 @@ function ElementsPanel()
 function SourcesPanel()
 {
     PanelWithSidebar.call(this, "sources");
+}
+
+SourcesPanel.prototype = {
+    __proto__: PanelWithSidebar.prototype
 }
 
 /**
@@ -490,7 +539,9 @@ ExtensionSidebarPaneImpl.prototype = {
     setPage: function(page)
     {
         extensionServer.sendRequest({ command: commands.SetSidebarPage, id: this._id, page: page });
-    }
+    },
+
+    __proto__: ExtensionViewImpl.prototype
 }
 
 /**
@@ -876,47 +927,6 @@ function populateInterfaceClass(interface, implementation)
             Object.defineProperty(interface, member, descriptor);
     }
 }
-
-function declareInterfaceClass(implConstructor)
-{
-    return function()
-    {
-        var impl = { __proto__: implConstructor.prototype };
-        implConstructor.apply(impl, arguments);
-        populateInterfaceClass(this, impl);
-    }
-}
-
-function defineDeprecatedProperty(object, className, oldName, newName)
-{
-    var warningGiven = false;
-    function getter()
-    {
-        if (!warningGiven) {
-            console.warn(className + "." + oldName + " is deprecated. Use " + className + "." + newName + " instead");
-            warningGiven = true;
-        }
-        return object[newName];
-    }
-    object.__defineGetter__(oldName, getter);
-}
-
-function extractCallbackArgument(args)
-{
-    var lastArgument = args[args.length - 1];
-    return typeof lastArgument === "function" ? lastArgument : undefined;
-}
-
-var AuditCategory = declareInterfaceClass(AuditCategoryImpl);
-var AuditResult = declareInterfaceClass(AuditResultImpl);
-var Button = declareInterfaceClass(ButtonImpl);
-var EventSink = declareInterfaceClass(EventSinkImpl);
-var ExtensionPanel = declareInterfaceClass(ExtensionPanelImpl);
-var ExtensionSidebarPane = declareInterfaceClass(ExtensionSidebarPaneImpl);
-var PanelWithSidebar = declareInterfaceClass(PanelWithSidebarImpl);
-var Request = declareInterfaceClass(RequestImpl);
-var Resource = declareInterfaceClass(ResourceImpl);
-var Timeline = declareInterfaceClass(TimelineImpl);
 
 // extensionServer is a closure variable defined by the glue below -- make sure we fail if it's not there.
 if (!extensionServer)

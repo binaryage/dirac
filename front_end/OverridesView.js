@@ -192,10 +192,10 @@ WebInspector.OverridesView.Tab.prototype = {
                 checkbox.firstChild.checked = setting.get();
         }
         return checkbox;
-    }
-}
+    },
 
-WebInspector.OverridesView.Tab.prototype.__proto__ = WebInspector.View.prototype;
+    __proto__: WebInspector.View.prototype
+}
 
 /**
  * @constructor
@@ -428,10 +428,10 @@ WebInspector.OverridesView.DeviceTab.prototype = {
         else
             this._viewportValueElement.textContent = "";
         this._userAgentValueElement.textContent = option._userAgent || "";
-    }
-}
+    },
 
-WebInspector.OverridesView.DeviceTab.prototype.__proto__ = WebInspector.OverridesView.Tab.prototype;
+    __proto__: WebInspector.OverridesView.Tab.prototype
+}
 
 
 /**
@@ -651,10 +651,10 @@ WebInspector.OverridesView.ViewportTab.prototype = {
             return;
         this._widthOverrideElement.value = this._widthRangeInput.value;
         this._applyDeviceMetricsUserInput();
-    }
-}
+    },
 
-WebInspector.OverridesView.ViewportTab.prototype.__proto__ = WebInspector.OverridesView.Tab.prototype;
+    __proto__: WebInspector.OverridesView.Tab.prototype
+}
 
 
 /**
@@ -807,10 +807,10 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
             this._otherUserAgentElement.value = value;
             this._otherUserAgentElement.title = value;
         }
-    }
-}
+    },
 
-WebInspector.OverridesView.UserAgentTab.prototype.__proto__ = WebInspector.OverridesView.Tab.prototype;
+    __proto__: WebInspector.OverridesView.Tab.prototype
+}
 
 
 /**

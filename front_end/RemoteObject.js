@@ -878,5 +878,7 @@ WebInspector.LocalJSONObject.prototype = {
         }
 
         callback(result);
-    }
+    },
+
+    __proto__: WebInspector.RemoteObject.prototype
 }

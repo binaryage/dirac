@@ -78,6 +78,10 @@ WebInspector.DOMCountersGraph.Counter = function(time, documentCount, nodeCount,
     this.usedGPUMemoryKBytes = usedGPUMemoryKBytes;
 }
 
+WebInspector.DOMCountersGraph.Counter.prototype = {
+    __proto__: WebInspector.MemoryStatistics.Counter.prototype
+}
+
 WebInspector.DOMCounterUI.prototype = {
     /**
      * @param {number} minValue
