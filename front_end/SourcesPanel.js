@@ -91,15 +91,15 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     this.editorView.setSidebarElementConstraints(Preferences.minScriptsSidebarWidth);
     this.editorView.setMainElementConstraints(minimumViewsContainerWidthPercent);
-    this.editorView.show(this.splitView.mainElement);
+    this.splitView.setMainView(this.editorView);
 
     this._navigator = new WebInspector.SourcesNavigator();
-    this._navigator.view.show(this.editorView.sidebarElement);
+    this.editorView.setSidebarView(this._navigator.view);
 
     var tabbedEditorPlaceholderText = WebInspector.isMac() ? WebInspector.UIString("Hit Cmd+O to open a file") : WebInspector.UIString("Hit Ctrl+O to open a file");
 
-    this.editorView.mainElement.classList.add("vbox");
-    this.editorView.sidebarElement.classList.add("vbox");
+    this.editorView.mainElement().classList.add("vbox");
+    this.editorView.sidebarElement().classList.add("vbox");
 
     this.sourcesView = new WebInspector.SourcesView();
 
@@ -228,7 +228,7 @@ WebInspector.SourcesPanel.prototype = {
     wasShown: function()
     {
         WebInspector.inspectorView.closeViewInDrawer("editor");
-        this.sourcesView.show(this.editorView.mainElement);
+        this.editorView.setMainView(this.sourcesView);
         WebInspector.Panel.prototype.wasShown.call(this);
         this._navigatorController.wasShown();
 
@@ -717,7 +717,7 @@ WebInspector.SourcesPanel.prototype = {
     _itemSearchStarted: function(event)
     {
         var searchText = /** @type {string} */ (event.data);
-        WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement, searchText);
+        WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement(), searchText);
     },
 
     _pauseOnExceptionStateChanged: function()
@@ -1255,7 +1255,7 @@ WebInspector.SourcesPanel.prototype = {
 
         if (this.splitView.isVertical()) {
             this.editorView.element.appendChild(this._toggleDebuggerSidebarButton.element);
-            this.splitView.mainElement.appendChild(this._debugSidebarResizeWidgetElement);
+            this.splitView.mainElement().appendChild(this._debugSidebarResizeWidgetElement);
         } else {
             this._statusBarContainerElement.appendChild(this._debugSidebarResizeWidgetElement);
             this._statusBarContainerElement.appendChild(this._toggleDebuggerSidebarButton.element);
@@ -1409,7 +1409,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     _mapFileSystemToNetwork: function(uiSourceCode)
     {
-        WebInspector.SelectUISourceCodeForProjectTypeDialog.show(uiSourceCode.name(), WebInspector.projectTypes.Network, mapFileSystemToNetwork.bind(this), this.editorView.mainElement)
+        WebInspector.SelectUISourceCodeForProjectTypeDialog.show(uiSourceCode.name(), WebInspector.projectTypes.Network, mapFileSystemToNetwork.bind(this), this.editorView.mainElement())
 
         /**
          * @param {!WebInspector.UISourceCode} networkUISourceCode
@@ -1435,7 +1435,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     _mapNetworkToFileSystem: function(networkUISourceCode)
     {
-        WebInspector.SelectUISourceCodeForProjectTypeDialog.show(networkUISourceCode.name(), WebInspector.projectTypes.FileSystem, mapNetworkToFileSystem.bind(this), this.editorView.mainElement)
+        WebInspector.SelectUISourceCodeForProjectTypeDialog.show(networkUISourceCode.name(), WebInspector.projectTypes.FileSystem, mapNetworkToFileSystem.bind(this), this.editorView.mainElement())
 
         /**
          * @param {!WebInspector.UISourceCode} uiSourceCode
@@ -1542,7 +1542,7 @@ WebInspector.SourcesPanel.prototype = {
         var defaultScores = new Map();
         for (var i = 1; i < uiSourceCodes.length; ++i) // Skip current element
             defaultScores.put(uiSourceCodes[i], uiSourceCodes.length - i);
-        WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement, undefined, defaultScores);
+        WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement(), undefined, defaultScores);
     },
 
     _dockSideChanged: function()
@@ -1571,15 +1571,15 @@ WebInspector.SourcesPanel.prototype = {
             for (var pane in this.sidebarPanes)
                 this.sidebarPaneView.addPane(this.sidebarPanes[pane]);
             this._extensionSidebarPanesContainer = this.sidebarPaneView;
-            this.sidebarElement.appendChild(this.debugToolbar);
+            this.splitView.sidebarElement().appendChild(this.debugToolbar);
             this.editorView.element.appendChild(this._toggleDebuggerSidebarButton.element);
-            this.splitView.mainElement.appendChild(this._debugSidebarResizeWidgetElement);
+            this.splitView.mainElement().appendChild(this._debugSidebarResizeWidgetElement);
         } else {
             this.splitView.installResizer(this._statusBarContainerElement);
             this.sidebarPaneView = new WebInspector.SplitView(true, this.name + "PanelSplitSidebarRatio", 0.5);
 
             var group1 = new WebInspector.SidebarPaneStack();
-            group1.show(this.sidebarPaneView.firstElement());
+            this.sidebarPaneView.setFirstView(group1);
             group1.element.id = "scripts-sidebar-stack-pane";
             group1.addPane(this.sidebarPanes.callstack);
             group1.addPane(this.sidebarPanes.jsBreakpoints);
@@ -1590,7 +1590,7 @@ WebInspector.SourcesPanel.prototype = {
                 group1.addPane(this.sidebarPanes.workerList);
 
             var group2 = new WebInspector.SidebarTabbedPane();
-            group2.show(this.sidebarPaneView.secondElement());
+            this.sidebarPaneView.setSecondView(group2);
             group2.addPane(this.sidebarPanes.scopechain);
             group2.addPane(this.sidebarPanes.watchExpressions);
             this._extensionSidebarPanesContainer = group2;
@@ -1602,7 +1602,7 @@ WebInspector.SourcesPanel.prototype = {
             this._extensionSidebarPanesContainer.addPane(this._extensionSidebarPanes[i]);
 
         this.sidebarPaneView.element.id = "scripts-debug-sidebar-contents";
-        this.sidebarPaneView.show(this.splitView.sidebarElement);
+        this.splitView.setSidebarView(this.sidebarPaneView);
 
         this.sidebarPanes.scopechain.expand();
         this.sidebarPanes.jsBreakpoints.expand();

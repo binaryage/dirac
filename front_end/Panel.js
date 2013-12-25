@@ -102,8 +102,6 @@ WebInspector.Panel.prototype = {
         this.splitView = new WebInspector.SidebarView(position, this._sidebarWidthSettingName(), defaultWidth, defaultHeight);
         this.splitView.show(parentElement);
         this.splitView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this.sidebarResized.bind(this));
-
-        this.sidebarElement = this.splitView.sidebarElement;
     },
 
     /**
@@ -120,8 +118,8 @@ WebInspector.Panel.prototype = {
 
         this.sidebarTreeElement = document.createElement("ol");
         this.sidebarTreeElement.className = "sidebar-tree";
-        this.splitView.sidebarElement.appendChild(this.sidebarTreeElement);
-        this.splitView.sidebarElement.classList.add("sidebar");
+        this.splitView.sidebarElement().appendChild(this.sidebarTreeElement);
+        this.splitView.sidebarElement().classList.add("sidebar");
 
         this.sidebarTree = new TreeOutline(this.sidebarTreeElement);
         this.sidebarTree.panel = this;

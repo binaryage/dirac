@@ -50,7 +50,7 @@ WebInspector.MemoryStatistics = function(timelineView, model)
 
     this._memorySidebarView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._sidebarResized.bind(this));
 
-    this._canvasContainer = this._memorySidebarView.mainElement;
+    this._canvasContainer = this._memorySidebarView.mainElement();
     this._canvasContainer.id = "memory-graphs-canvas-container";
     this._createCurrentValuesBar();
     this._canvas = this._canvasContainer.createChild("canvas", "fill");
@@ -66,7 +66,7 @@ WebInspector.MemoryStatistics = function(timelineView, model)
     this._canvasContainer.appendChild(this._timelineGrid.dividersElement);
 
     // Populate sidebar
-    this._memorySidebarView.sidebarElement.createChild("div", "sidebar-tree sidebar-tree-section").textContent = WebInspector.UIString("COUNTERS");
+    this._memorySidebarView.sidebarElement().createChild("div", "sidebar-tree sidebar-tree-section").textContent = WebInspector.UIString("COUNTERS");
     this._counterUI = this._createCounterUIList();
     this._memorySidebarView.show(this.element);
 }
@@ -130,7 +130,7 @@ WebInspector.CounterUIBase = function(memoryCountersPane, title, graphColor, val
 {
     this._memoryCountersPane = memoryCountersPane;
     this.valueGetter = valueGetter;
-    var container = memoryCountersPane._memorySidebarView.sidebarElement.createChild("div", "memory-counter-sidebar-info");
+    var container = memoryCountersPane._memorySidebarView.sidebarElement().createChild("div", "memory-counter-sidebar-info");
     var swatchColor = graphColor;
     this._swatch = new WebInspector.SwatchCheckbox(WebInspector.UIString(title), swatchColor);
     this._swatch.addEventListener(WebInspector.SwatchCheckbox.Events.Changed, this._toggleCounterGraph.bind(this));

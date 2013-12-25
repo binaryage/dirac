@@ -49,10 +49,7 @@ WebInspector.ResourcesPanel = function(database)
     WebInspector.settings.resourcesLastSelectedItem = WebInspector.settings.createSetting("resourcesLastSelectedItem", {});
 
     this.createSidebarViewWithTree();
-    this.sidebarElement.classList.add("outline-disclosure");
-    this.sidebarElement.classList.add("filter-all");
-    this.sidebarElement.classList.add("children");
-    this.sidebarElement.classList.add("small");
+    this.splitView.sidebarElement().classList.add("outline-disclosure", "filter-all", "children", "small");
 
     this.sidebarTreeElement.classList.remove("sidebar-tree");
 
@@ -82,7 +79,7 @@ WebInspector.ResourcesPanel = function(database)
         this.sidebarTree.appendChild(this.fileSystemListTreeElement);
     }
 
-    var mainElement = this.splitView.mainElement;
+    var mainElement = this.splitView.mainElement();
     this.storageViews = mainElement.createChild("div", "resources-main");
     var statusBarContainer = mainElement.createChild("div", "resources-status-bar");
     this.storageViewStatusBarItemsContainer = statusBarContainer.createChild("div", "status-bar");
@@ -103,8 +100,8 @@ WebInspector.ResourcesPanel = function(database)
     /** @type {!Object.<string, boolean>} */
     this._domains = {};
 
-    this.sidebarElement.addEventListener("mousemove", this._onmousemove.bind(this), false);
-    this.sidebarElement.addEventListener("mouseout", this._onmouseout.bind(this), false);
+    this.splitView.sidebarElement().addEventListener("mousemove", this._onmousemove.bind(this), false);
+    this.splitView.sidebarElement().addEventListener("mouseout", this._onmouseout.bind(this), false);
 
     /**
      * @return {!WebInspector.View}

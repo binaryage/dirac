@@ -364,11 +364,11 @@ WebInspector.ProfilesPanel = function(name, type)
 
     this.createSidebarViewWithTree();
 
-    this.splitView.mainElement.classList.add("vbox");
-    this.splitView.sidebarElement.classList.add("vbox");
+    this.splitView.mainElement().classList.add("vbox");
+    this.splitView.sidebarElement().classList.add("vbox");
 
     this._searchableView = new WebInspector.SearchableView(this);
-    this._searchableView.show(this.splitView.mainElement);
+    this.splitView.setMainView(this._searchableView);
 
     this.profilesItemTreeElement = new WebInspector.ProfilesSidebarTreeElement(this);
     this.sidebarTree.appendChild(this.profilesItemTreeElement);
@@ -381,12 +381,12 @@ WebInspector.ProfilesPanel = function(name, type)
     this.profileViews.classList.add("vbox");
     this._searchableView.element.appendChild(this.profileViews);
 
-    var statusBarContainer = this.splitView.mainElement.createChild("div", "profiles-status-bar");
+    var statusBarContainer = this.splitView.mainElement().createChild("div", "profiles-status-bar");
     this._statusBarElement = statusBarContainer.createChild("div", "status-bar");
 
-    var sidebarTreeBox = this.sidebarElement.createChild("div", "profiles-sidebar-tree-box");
+    var sidebarTreeBox = this.splitView.sidebarElement().createChild("div", "profiles-sidebar-tree-box");
     sidebarTreeBox.appendChild(this.sidebarTreeElement);
-    var statusBarContainerLeft = this.sidebarElement.createChild("div", "profiles-status-bar");
+    var statusBarContainerLeft = this.splitView.sidebarElement().createChild("div", "profiles-status-bar");
     this._statusBarButtons = statusBarContainerLeft.createChild("div", "status-bar");
 
     this.recordButton = new WebInspector.StatusBarButton("", "record-profile-status-bar-item");
@@ -661,7 +661,7 @@ WebInspector.ProfilesPanel.prototype = {
         if (this.visibleView instanceof WebInspector.HeapSnapshotView) {
             this.visibleView.populateContextMenu(contextMenu, event);
         }
-        if (element !== this.element || event.srcElement === this.sidebarElement) {
+        if (element !== this.element || event.srcElement === this.splitView.sidebarElement()) {
             contextMenu.appendItem(WebInspector.UIString("Load\u2026"), this._fileSelectorElement.click.bind(this._fileSelectorElement));
         }
         contextMenu.show();

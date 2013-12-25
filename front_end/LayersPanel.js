@@ -46,7 +46,7 @@ WebInspector.LayersPanel = function()
     const initialLayerTreeSidebarWidth = 225;
     const minimumMainWidthPercent = 0.5;
     this.createSidebarViewWithTree();
-    this.sidebarElement.classList.add("outline-disclosure");
+    this.splitView.sidebarElement().classList.add("outline-disclosure");
     this.sidebarTreeElement.classList.remove("sidebar-tree");
 
     this._model = new WebInspector.LayerTreeModel();
@@ -59,7 +59,7 @@ WebInspector.LayersPanel = function()
     this._layerTree.addEventListener(WebInspector.LayerTree.Events.LayerHovered, this._onLayerHovered, this);
 
     this._rightSplitView = new WebInspector.SplitView(false, "layerDetailsSplitView");
-    this._rightSplitView.show(this.splitView.mainElement);
+    this.splitView.setMainView(this._rightSplitView);
 
     this._layers3DView = new WebInspector.Layers3DView(this._model);
     this._layers3DView.show(this._rightSplitView.firstElement());

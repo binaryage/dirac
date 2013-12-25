@@ -39,7 +39,7 @@ WebInspector.AuditsPanel = function()
     this.registerRequiredCSS("auditsPanel.css");
 
     this.createSidebarViewWithTree();
-    this.splitView.mainElement.classList.add("vbox");
+    this.splitView.mainElement().classList.add("vbox");
 
     this.auditsTreeElement = new WebInspector.SidebarSectionTreeElement("", {}, true);
     this.sidebarTree.appendChild(this.auditsTreeElement);
@@ -51,8 +51,6 @@ WebInspector.AuditsPanel = function()
     this.auditResultsTreeElement = new WebInspector.SidebarSectionTreeElement(WebInspector.UIString("RESULTS"), {}, true);
     this.sidebarTree.appendChild(this.auditResultsTreeElement);
     this.auditResultsTreeElement.expand();
-
-    this.viewsContainerElement = this.splitView.mainElement;
 
     this._constructCategories();
 
@@ -157,7 +155,7 @@ WebInspector.AuditsPanel.prototype = {
         this._visibleView = x;
 
         if (x)
-            x.show(this.viewsContainerElement);
+            this.splitView.setMainView(x);
     },
 
     wasShown: function()

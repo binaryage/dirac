@@ -51,15 +51,15 @@ WebInspector.InspectorView = function()
     this._splitView.show(this.element);
 
     this._overlayView = new WebInspector.ViewWithResizeCallback(this._onOverlayResized.bind(this));
-    this._overlayView.show(this._splitView.mainElement);
+    this._splitView.setMainView(this._overlayView);
     WebInspector.settings.zoomLevel.addChangeListener(this._onOverlayResized, this);
 
-    this._devtoolsElement = this._splitView.sidebarElement;
+    this._devtoolsElement = this._splitView.sidebarElement();
     this._devtoolsElement.classList.add("vbox");
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.setRetainTabsOrder(true);
-    this._tabbedPane.show(this._devtoolsElement);
+    this._splitView.setSidebarView(this._tabbedPane);
 
     this._toolbarElement = document.createElement("div");
     this._toolbarElement.className = "toolbar toolbar-background";

@@ -49,7 +49,7 @@ WebInspector.CanvasProfileView = function(profile)
     this._replayInfoSplitView.show(this.element);
 
     this._imageSplitView = new WebInspector.SplitView(false, "canvasProfileViewSplitLocation", 300);
-    this._imageSplitView.show(this._replayInfoSplitView.firstElement());
+    this._replayInfoSplitView.setFirstView(this._imageSplitView);
 
     var replayImageContainer = this._imageSplitView.firstElement().createChild("div");
     replayImageContainer.id = "canvas-replay-image-container";
@@ -75,7 +75,7 @@ WebInspector.CanvasProfileView = function(profile)
     this._installReplayInfoSidebarWidgets(controlsContainer);
 
     this._replayStateView = new WebInspector.CanvasReplayStateView(this._traceLogPlayer);
-    this._replayStateView.show(this._replayInfoSplitView.secondElement());
+    this._replayInfoSplitView.setSecondView(this._replayStateView);
 
     /** @type {!Object.<string, boolean>} */
     this._replayContexts = {};

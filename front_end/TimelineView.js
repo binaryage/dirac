@@ -76,12 +76,12 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting)
     this._detailsSplitView = new WebInspector.SplitView(false, "timeline-details");
     this._detailsSplitView.element.classList.remove("fill");
     this._detailsSplitView.element.classList.add("timeline-details-split");
-    this._detailsSplitView.sidebarElement.classList.add("timeline-details");
+    this._detailsSplitView.sidebarElement().classList.add("timeline-details");
     this._detailsSplitView.show(this.element);
-    this._detailsSplitView.mainElement.classList.add("vbox");
+    this._detailsSplitView.mainElement().classList.add("vbox");
     this._detailsSplitView.setMainElementConstraints(undefined, 40);
     this._detailsView = new WebInspector.TimelineDetailsView();
-    this._detailsView.show(this._detailsSplitView.sidebarElement);
+    this._detailsSplitView.setSidebarView(this._detailsView);
     this._detailsSplitView.installResizer(this._detailsView.titleElement());
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
@@ -90,7 +90,7 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting)
 
     // Create memory splitter as a left child of properties.
     this._searchableView = new WebInspector.SearchableView(this);
-    this._searchableView.show(this._detailsSplitView.mainElement);
+    this._detailsSplitView.setMainView(this._searchableView);
 
     this._timelineMemorySplitter = new WebInspector.SplitView(false, "timeline-memory");
     this._timelineMemorySplitter.element.classList.remove("fill");
@@ -101,7 +101,7 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting)
     this._sidebarView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Start, "timeline-split");
     this._sidebarView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._sidebarResized, this);
     this._sidebarView.setSecondIsSidebar(false);
-    this._sidebarView.show(this._timelineMemorySplitter.mainElement);
+    this._timelineMemorySplitter.setMainView(this._sidebarView);
     this._containerElement = this._sidebarView.element;
     this._containerElement.tabIndex = 0;
     this._containerElement.id = "timeline-container";
@@ -109,19 +109,19 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting)
 
     // Create memory statistics as a bottom memory splitter child.
     this._memoryStatistics = new WebInspector.DOMCountersGraph(this, this._model);
-    this._memoryStatistics.show(this._timelineMemorySplitter.sidebarElement);
+    this._timelineMemorySplitter.setSidebarView(this._memoryStatistics);
     this._timelineMemorySplitter.installResizer(this._memoryStatistics.resizeElement());
 
     // Create records list in the records sidebar.
-    this._sidebarView.sidebarElement.classList.add("vbox");
-    this._sidebarView.sidebarElement.createChild("div", "timeline-records-title").textContent = WebInspector.UIString("RECORDS");
-    this._sidebarListElement = this._sidebarView.sidebarElement.createChild("div", "timeline-records-list");
+    this._sidebarView.sidebarElement().classList.add("vbox");
+    this._sidebarView.sidebarElement().createChild("div", "timeline-records-title").textContent = WebInspector.UIString("RECORDS");
+    this._sidebarListElement = this._sidebarView.sidebarElement().createChild("div", "timeline-records-list");
 
     // Create grid in the records main area.
     this._gridContainer = new WebInspector.ViewWithResizeCallback(this._onViewportResize.bind(this));
     this._gridContainer.element.classList.add("fill");
     this._gridContainer.element.id = "resources-container-content";
-    this._gridContainer.show(this._sidebarView.mainElement);
+    this._sidebarView.setMainView(this._gridContainer);
     this._timelineGrid = new WebInspector.TimelineGrid();
     this._itemsGraphsElement = this._timelineGrid.itemsGraphsElement;
     this._itemsGraphsElement.id = "timeline-graphs";
@@ -129,7 +129,7 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting)
     this._timelineGrid.gridHeaderElement.id = "timeline-grid-header";
     this._timelineGrid.gridHeaderElement.classList.add("fill");
     this._memoryStatistics.setMainTimelineGrid(this._timelineGrid);
-    this._timelineMemorySplitter.mainElement.appendChild(this._timelineGrid.gridHeaderElement);
+    this._timelineMemorySplitter.mainElement().appendChild(this._timelineGrid.gridHeaderElement);
 
     // Create gap elements
     this._topGapElement = this._itemsGraphsElement.createChild("div", "timeline-gap");
@@ -859,7 +859,7 @@ WebInspector.TimelineView.prototype = {
 
         // Resize gaps first.
         this._topGapElement.style.height = (startIndex * rowHeight) + "px";
-        this._sidebarView.sidebarElement.firstChild.style.flexBasis = (startIndex * rowHeight + headerHeight) + "px";
+        this._sidebarView.sidebarElement().firstChild.style.flexBasis = (startIndex * rowHeight + headerHeight) + "px";
         this._bottomGapElement.style.height = (recordsInWindow.length - endIndex) * rowHeight + "px";
         var rowsHeight = headerHeight + recordsInWindow.length * rowHeight;
         var totalHeight = Math.max(this._containerElementHeight, rowsHeight);

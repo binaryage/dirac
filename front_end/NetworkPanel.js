@@ -1497,9 +1497,9 @@ WebInspector.NetworkPanel = function()
     networkLogColumnsVisibilitySetting.set(columnsVisibility);
 
     this._networkLogView = new WebInspector.NetworkLogView(this._filterBar, networkLogColumnsVisibilitySetting);
-    this._networkLogView.show(this.sidebarElement);
+    this.splitView.setSidebarView(this._networkLogView);
 
-    this._viewsContainerElement = this.splitView.mainElement;
+    this._viewsContainerElement = this.splitView.mainElement();
     this._viewsContainerElement.id = "network-views";
     this._viewsContainerElement.classList.add("hidden");
     if (!this._networkLogView.useLargeRows)

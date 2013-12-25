@@ -114,6 +114,50 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
+     * @param {!WebInspector.View} view
+     */
+    setFirstView: function(view)
+    {
+        if (this._firstView)
+            this._firstView.detach();
+        this._firstView = view;
+        view.show(this._firstElement);
+    },
+
+    /**
+     * @param {!WebInspector.View} view
+     */
+    setSecondView: function(view)
+    {
+        if (this._secondView)
+            this._secondView.detach();
+        this._secondView = view;
+        view.show(this._secondElement);
+    },
+
+    /**
+     * @param {!WebInspector.View} view
+     */
+    setMainView: function(view)
+    {
+        if (this.isSidebarSecond())
+            this.setFirstView(view);
+        else
+            this.setSecondView(view);
+    },
+
+    /**
+     * @param {!WebInspector.View} view
+     */
+    setSidebarView: function(view)
+    {
+        if (this.isSidebarSecond())
+            this.setSecondView(view);
+        else
+            this.setFirstView(view);
+    },
+
+    /**
      * @return {!Element}
      */
     firstElement: function()
@@ -132,7 +176,7 @@ WebInspector.SplitView.prototype = {
     /**
      * @return {!Element}
      */
-    get mainElement()
+    mainElement: function()
     {
         return this.isSidebarSecond() ? this.firstElement() : this.secondElement();
     },
@@ -140,7 +184,7 @@ WebInspector.SplitView.prototype = {
     /**
      * @return {!Element}
      */
-    get sidebarElement()
+    sidebarElement: function()
     {
         return this.isSidebarSecond() ? this.secondElement() : this.firstElement();
     },
@@ -158,11 +202,11 @@ WebInspector.SplitView.prototype = {
      */
     setSecondIsSidebar: function(secondIsSidebar)
     {
-        this.sidebarElement.classList.remove("split-view-sidebar");
-        this.mainElement.classList.remove("split-view-main");
+        this.sidebarElement().classList.remove("split-view-sidebar");
+        this.mainElement().classList.remove("split-view-main");
         this._secondIsSidebar = secondIsSidebar;
-        this.sidebarElement.classList.add("split-view-sidebar");
-        this.mainElement.classList.add("split-view-main");
+        this.sidebarElement().classList.add("split-view-sidebar");
+        this.mainElement().classList.add("split-view-main");
     },
 
     /**
@@ -176,11 +220,21 @@ WebInspector.SplitView.prototype = {
     showOnlyFirst: function()
     {
         this._showOnly(this._firstElement, this._secondElement);
+        if (this._firstView)
+            this._firstView.show(this._firstElement);
+        if (this._secondView)
+            this._secondView.detach();
+        this.doResize();
     },
 
     showOnlySecond: function()
     {
         this._showOnly(this._secondElement, this._firstElement);
+        if (this._firstView)
+            this._firstView.detach();
+        if (this._secondView)
+            this._secondView.show(this._secondElement);
+        this.doResize();
     },
 
     /**
@@ -198,12 +252,11 @@ WebInspector.SplitView.prototype = {
         this._isShowingOne = true;
         this._sidebarSize = -1;
         this.setResizable(false);
-        this.doResize();
     },
 
     _removeAllLayoutProperties: function()
     {
-        this.sidebarElement.style.removeProperty("flexBasis");
+        this.sidebarElement().style.removeProperty("flexBasis");
 
         this._resizerElement.style.removeProperty("left");
         this._resizerElement.style.removeProperty("right");
@@ -222,6 +275,11 @@ WebInspector.SplitView.prototype = {
         this._firstElement.classList.remove("maximized");
         this._secondElement.classList.remove("hidden");
         this._secondElement.classList.remove("maximized");
+
+        if (this._firstView)
+            this._firstView.show(this._firstElement);
+        if (this._secondView)
+            this._secondView.show(this._secondElement);
 
         this._isShowingOne = false;
         this._sidebarSize = -1;
@@ -295,7 +353,7 @@ WebInspector.SplitView.prototype = {
         if (!this._resizerElementSize)
             this._resizerElementSize = this._isVertical ? this._resizerElement.offsetWidth : this._resizerElement.offsetHeight;
 
-        this.sidebarElement.style.flexBasis = sizeValue;
+        this.sidebarElement().style.flexBasis = sizeValue;
         if (this._isVertical) {
             if (this._secondIsSidebar) {
                 this._resizerElement.style.right = sizeValue;
