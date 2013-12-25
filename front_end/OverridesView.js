@@ -470,6 +470,7 @@ WebInspector.OverridesView.ViewportTab.prototype = {
     {
         if (enabled && !this._widthOverrideElement.value)
             this._widthOverrideElement.focus();
+        this._applyDeviceMetricsUserInput();
     },
 
     _applyDeviceMetricsUserInput: function()
@@ -529,7 +530,8 @@ WebInspector.OverridesView.ViewportTab.prototype = {
     _createDeviceMetricsElement: function(metrics)
     {
         var fieldsetElement = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.overrideDeviceMetrics);
-        fieldsetElement.disabled = WebInspector.isInspectingDevice();
+        if (WebInspector.isInspectingDevice())
+            fieldsetElement.disabled = true;
         fieldsetElement.id = "metrics-override-section";
 
         /**
@@ -612,7 +614,8 @@ WebInspector.OverridesView.ViewportTab.prototype = {
     {
         var checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("CSS media"), WebInspector.settings.overrideCSSMedia, true);
         var fieldsetElement = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.overrideCSSMedia);
-        fieldsetElement.disabled = WebInspector.isInspectingDevice();
+        if (WebInspector.isInspectingDevice())
+            fieldsetElement.disabled = true;
         checkbox.appendChild(fieldsetElement);
 
         var mediaSelectElement = fieldsetElement.createChild("select");
@@ -709,7 +712,8 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
         var userAgents = WebInspector.OverridesView.UserAgentTab._userAgents.concat([[WebInspector.UIString("Other"), "Other"]]);
 
         var fieldsetElement = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.overrideUserAgent);
-        fieldsetElement.disabled = WebInspector.isInspectingDevice();
+        if (WebInspector.isInspectingDevice())
+            fieldsetElement.disabled = true;
 
         this._selectElement = fieldsetElement.createChild("select");
         fieldsetElement.createChild("br");
