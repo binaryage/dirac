@@ -1340,7 +1340,7 @@ WebInspector.HeapProfileHeader.prototype = {
      */
     canSaveToFile: function()
     {
-        return !this.fromFile() && !!this._snapshotProxy && !this._receiver && !this._failedToCreateTempFile;
+        return !this.fromFile() && !this._bufferedWriter && !this._failedToCreateTempFile;
     },
 
     /**
