@@ -2858,7 +2858,8 @@
                 "properties": [
                     { "name": "documents", "type": "integer", "optional": true },
                     { "name": "nodes", "type": "integer", "optional": true },
-                    { "name": "jsEventListeners", "type": "integer", "optional": true }
+                    { "name": "jsEventListeners", "type": "integer", "optional": true },
+                    { "name": "jsHeapSizeUsed", "type": "number", "optional": true, "description": "Currently used size of JS heap." }
                 ],
                 "description": "Current values of counters.",
                 "hidden": true
@@ -2876,7 +2877,6 @@
                     { "name": "counters", "$ref": "Counters", "optional": true, "hidden": true, "description": "Current values of counters." },
                     { "name": "stackTrace", "$ref": "Console.StackTrace", "optional": true, "hidden": true, "description": "Stack trace." },
                     { "name": "frameId", "type": "string", "optional": true, "hidden": true, "description": "Unique identifier of the frame within the page that the event relates to." },
-                    { "name": "usedHeapSize", "type": "integer", "optional": true, "hidden": true, "description": "Current size of JS heap." },
                     { "name": "usedHeapSizeDelta", "type": "integer", "optional": true, "hidden": true, "description": "JS heap size change." }
                 ],
                 "description": "Timeline record contains information about the recorded activity."

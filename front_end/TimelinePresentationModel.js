@@ -1049,9 +1049,9 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     /**
      * @return {number}
      */
-    get usedHeapSize()
+    get jsHeapSizeUsed()
     {
-        return this._record.usedHeapSize;
+        return this._record.counters ? this._record.counters.jsHeapSizeUsed : 0;
     },
 
     /**
@@ -1281,13 +1281,13 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         if (this.scriptName && this.type !== recordTypes.FunctionCall)
             contentHelper.appendElementRow(WebInspector.UIString("Function Call"), this._linkifyLocation(this.scriptName, this.scriptLine, 0));
 
-        if (this.usedHeapSize) {
+        if (this.jsHeapSizeUsed) {
             if (this.usedHeapSizeDelta) {
                 var sign = this.usedHeapSizeDelta > 0 ? "+" : "-";
-                contentHelper.appendTextRow(WebInspector.UIString("Used Heap Size"),
-                    WebInspector.UIString("%s (%s%s)", Number.bytesToString(this.usedHeapSize), sign, Number.bytesToString(Math.abs(this.usedHeapSizeDelta))));
+                contentHelper.appendTextRow(WebInspector.UIString("Used JS Heap Size"),
+                    WebInspector.UIString("%s (%s%s)", Number.bytesToString(this.jsHeapSizeUsed), sign, Number.bytesToString(Math.abs(this.usedHeapSizeDelta))));
             } else if (this.category === WebInspector.TimelinePresentationModel.categories().scripting)
-                contentHelper.appendTextRow(WebInspector.UIString("Used Heap Size"), Number.bytesToString(this.usedHeapSize));
+                contentHelper.appendTextRow(WebInspector.UIString("Used JS Heap Size"), Number.bytesToString(this.jsHeapSizeUsed));
         }
 
         if (this.callSiteStackTrace)

@@ -57,8 +57,10 @@ WebInspector.TimelineMemoryOverview.prototype = {
         var minTime = this._model.minimumRecordTime();
         var maxTime = this._model.maximumRecordTime();
         WebInspector.TimelinePresentationModel.forAllRecords(records, function(r) {
-            maxUsedHeapSize = Math.max(maxUsedHeapSize, r.usedHeapSize || maxUsedHeapSize);
-            minUsedHeapSize = Math.min(minUsedHeapSize, r.usedHeapSize || minUsedHeapSize);
+            if (!r.counters || !r.counters.jsHeapSizeUsed)
+                return;
+            maxUsedHeapSize = Math.max(maxUsedHeapSize, r.counters.jsHeapSizeUsed);
+            minUsedHeapSize = Math.min(minUsedHeapSize, r.counters.jsHeapSizeUsed);
         });
         minUsedHeapSize = Math.min(minUsedHeapSize, maxUsedHeapSize);
 
@@ -69,10 +71,10 @@ WebInspector.TimelineMemoryOverview.prototype = {
 
         var histogram = new Array(width);
         WebInspector.TimelinePresentationModel.forAllRecords(records, function(r) {
-            if (!r.usedHeapSize)
+            if (!r.counters || !r.counters.jsHeapSizeUsed)
                 return;
             var x = Math.round((WebInspector.TimelineModel.endTimeInSeconds(r) - minTime) * xFactor);
-            var y = (r.usedHeapSize - minUsedHeapSize) * yFactor;
+            var y = (r.counters.jsHeapSizeUsed - minUsedHeapSize) * yFactor;
             histogram[x] = Math.max(histogram[x] || 0, y);
         });
 
