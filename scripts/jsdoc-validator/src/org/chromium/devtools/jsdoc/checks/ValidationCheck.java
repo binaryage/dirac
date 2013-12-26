@@ -8,9 +8,18 @@ import org.chromium.devtools.jsdoc.ValidatorContext;
  */
 public abstract class ValidationCheck implements DoDidNodeVisitor {
 
-    protected final ValidatorContext context;
+    private ValidatorContext context;
 
-    ValidationCheck(ValidatorContext context) {
+    public void didTraverseTree() { }
+
+    protected ValidatorContext getContext() {
+        return context;
+    }
+
+    public void setContext(ValidatorContext context) {
+        if (this.context != null) {
+            throw new RuntimeException("ValidatorContext already set");
+        }
         this.context = context;
     }
 }

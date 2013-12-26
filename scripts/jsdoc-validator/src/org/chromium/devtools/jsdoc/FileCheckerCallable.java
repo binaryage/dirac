@@ -5,7 +5,9 @@ import com.google.javascript.rhino.head.IRFactory;
 import com.google.javascript.rhino.head.ast.AstNode;
 import com.google.javascript.rhino.head.ast.AstRoot;
 
+import org.chromium.devtools.jsdoc.checks.ProtoFollowsExtendsAnnotationCheck;
 import org.chromium.devtools.jsdoc.checks.RequiredThisAnnotationCheck;
+import org.chromium.devtools.jsdoc.checks.ValidationCheck;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -31,10 +33,11 @@ class FileCheckerCallable implements Callable<ValidatorContext> {
         try {
             ValidatorContext context = new ValidatorContext(readScriptText(), fileName);
             AstRoot node = parseScript(context);
-            DispatchingVisitor dispatchingVisitor = new DispatchingVisitor();
-            dispatchingVisitor.registerVisitor(new RequiredThisAnnotationCheck(context));
-            node.visit(dispatchingVisitor);
-            dispatchingVisitor.flush();
+            ValidationCheckDispatcher dispatcher = new ValidationCheckDispatcher(context);
+            dispatcher.registerCheck(new ProtoFollowsExtendsAnnotationCheck());
+            dispatcher.registerCheck(new RequiredThisAnnotationCheck());
+            node.visit(dispatcher);
+            dispatcher.flush();
             return context;
         } catch (FileNotFoundException e) {
             logError("File not found: " + fileName);
@@ -65,24 +68,38 @@ class FileCheckerCallable implements Callable<ValidatorContext> {
         System.err.println("ERROR: " + message);
     }
 
-    private static class DispatchingVisitor extends DoDidVisitorAdapter {
-        private final List<DoDidNodeVisitor> visitors = new ArrayList<>(2);
+    private static class ValidationCheckDispatcher extends DoDidVisitorAdapter {
+        private final List<ValidationCheck> checks = new ArrayList<>(2);
+        private ValidatorContext context;
 
-        public void registerVisitor(DoDidNodeVisitor visitor) {
-            visitors.add(visitor);
+        public ValidationCheckDispatcher(ValidatorContext context) {
+            this.context = context;
+        }
+
+        public void registerCheck(ValidationCheck check) {
+            check.setContext(context);
+            checks.add(check);
         }
 
         @Override
         public void doVisit(AstNode node) {
-            for (DoDidNodeVisitor visitor : visitors) {
+            for (DoDidNodeVisitor visitor : checks) {
                 visitor.doVisit(node);
             }
         }
 
         @Override
         public void didVisit(AstNode node) {
-            for (DoDidNodeVisitor visitor : visitors) {
-                visitor.didVisit(node);
+            for (ValidationCheck check : checks) {
+                check.didVisit(node);
+            }
+        }
+
+        @Override
+        public void flush() {
+            super.flush();
+            for (ValidationCheck check : checks) {
+                check.didTraverseTree();
             }
         }
     }

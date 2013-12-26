@@ -5,8 +5,6 @@ import com.google.javascript.rhino.head.ast.Assignment;
 import com.google.javascript.rhino.head.ast.AstNode;
 import com.google.javascript.rhino.head.ast.FunctionNode;
 
-import org.chromium.devtools.jsdoc.ValidatorContext;
-
 import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
@@ -16,10 +14,6 @@ public final class RequiredThisAnnotationCheck extends ValidationCheck {
 
     private final Deque<AstNode> functionStack = new ArrayDeque<>(16);
     private final Set<AstNode> thisReferencingFunctions = new HashSet<>();
-
-    public RequiredThisAnnotationCheck(ValidatorContext context) {
-        super(context);
-    }
 
     @Override
     public void doVisit(AstNode node) {
@@ -48,10 +42,9 @@ public final class RequiredThisAnnotationCheck extends ValidationCheck {
         if (thisReferencingFunctions.contains(functionNode) && !functionStack.isEmpty()) {
             // If the stack is not empty, then it's a nested function.
             String jsDoc = getJsDoc(functionNode);
-            AstNode functionNameNode = getFunctionNameNode(functionNode);
+            AstNode functionNameNode = AstUtil.getFunctionNameNode(functionNode);
             if (functionNameNode != null && shouldAddThisAnnotation(jsDoc)) {
-                context.reportError(functionNameNode.getLineno(),
-                        functionNameNode.getAbsolutePosition(),
+                getContext().reportErrorInNode(functionNameNode, 0,
                         "@this annotation is required for functions referencing 'this'");
             }
         }
@@ -60,21 +53,6 @@ public final class RequiredThisAnnotationCheck extends ValidationCheck {
 
     private boolean shouldAddThisAnnotation(String jsDoc) {
         return jsDoc == null || (!jsDoc.contains("@this") && !jsDoc.contains("@constructor"));
-    }
-
-    private AstNode getFunctionNameNode(FunctionNode functionNode) {
-        AstNode nameNode = functionNode.getFunctionName();
-        if (nameNode != null) {
-            return nameNode;
-        }
-
-        if (AstUtil.hasParentOfType(functionNode, Token.ASSIGN)) {
-            Assignment assignment = (Assignment) functionNode.getParent();
-            if (assignment.getRight() == functionNode) {
-                return assignment.getLeft();
-            }
-        }
-        return null;
     }
 
     private String getJsDoc(FunctionNode functionNode) {

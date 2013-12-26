@@ -1220,8 +1220,6 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     entryData: function(entryIndex)
     {
         return this._timelineData.entryNodes[entryIndex];
-    },
-
-    __proto__: WebInspector.FlameChartDataProvider
+    }
 }
 
