@@ -360,7 +360,7 @@ WebInspector.UISourceCode.prototype = {
      */
     _saveURLWithFileManager: function(forceSaveAs, content)
     {
-        WebInspector.fileManager.save(this._url, content, forceSaveAs, callback.bind(this));
+        WebInspector.fileManager.save(this._url, /** @type {string} */ (content), forceSaveAs, callback.bind(this));
         WebInspector.fileManager.close(this._url);
 
         /**

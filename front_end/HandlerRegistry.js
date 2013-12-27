@@ -137,7 +137,7 @@ WebInspector.HandlerRegistry.prototype = {
         function doSave(forceSaveAs, content)
         {
             var url = contentProvider.contentURL();
-            WebInspector.fileManager.save(url, content, forceSaveAs);
+            WebInspector.fileManager.save(url, /** @type {string} */ (content), forceSaveAs);
             WebInspector.fileManager.close(url);
         }
 

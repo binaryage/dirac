@@ -395,7 +395,7 @@ WebInspector.FileOutputStream.prototype = {
     },
 
     /**
-     * @param {?Event} event
+     * @param {!WebInspector.Event} event
      */
     _onAppendDone: function(event)
     {

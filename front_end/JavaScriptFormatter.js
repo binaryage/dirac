@@ -49,7 +49,7 @@ FormatterWorker.JavaScriptFormatter.prototype = {
     },
 
     /**
-     * @return {string}
+     * @return {number}
      */
     _peek: function()
     {
@@ -57,7 +57,7 @@ FormatterWorker.JavaScriptFormatter.prototype = {
     },
 
     /**
-     * @return {string}
+     * @return {number}
      */
     _next: function()
     {
@@ -72,7 +72,7 @@ FormatterWorker.JavaScriptFormatter.prototype = {
     },
 
     /**
-     * @param {string} token
+     * @param {number} token
      */
     _consume: function(token)
     {
@@ -82,7 +82,7 @@ FormatterWorker.JavaScriptFormatter.prototype = {
     },
 
     /**
-     * @param {string} token
+     * @param {number} token
      */
     _expect: function(token)
     {
@@ -106,7 +106,7 @@ FormatterWorker.JavaScriptFormatter.prototype = {
     },
 
     /**
-     * @param {string} endToken
+     * @param {number} endToken
      */
     _parseSourceElements: function(endToken)
     {
@@ -1011,6 +1011,9 @@ FormatterWorker.JavaScriptTokenizer.prototype = {
         return uglifyToken;
     },
 
+    /**
+     * @return {number}
+     */
     _convertUglifyToken: function(uglifyToken)
     {
         var token = FormatterWorker.JavaScriptTokensByType[uglifyToken.type];
