@@ -312,11 +312,15 @@ WebInspector.DOMPresentationUtils._cssPathValue = function(node, optimized)
     var needsClassNames = false;
     var needsNthChild = false;
     var ownIndex = -1;
+    var elementIndex = -1;
     var siblings = parent.children();
     for (var i = 0; (ownIndex === -1 || !needsNthChild) && i < siblings.length; ++i) {
         var sibling = siblings[i];
+        if (sibling.nodeType() !== Node.ELEMENT_NODE)
+            continue;
+        elementIndex += 1;
         if (sibling === node) {
-            ownIndex = i;
+            ownIndex = elementIndex;
             continue;
         }
         if (needsNthChild)
