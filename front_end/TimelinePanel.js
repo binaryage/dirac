@@ -30,7 +30,7 @@
  */
 
 importScript("MemoryStatistics.js");
-importScript("DOMCountersGraph.js");
+importScript("CountersGraph.js");
 importScript("PieChart.js");
 importScript("TimelineModel.js");
 importScript("TimelineOverviewPane.js");

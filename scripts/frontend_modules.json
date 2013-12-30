@@ -248,7 +248,7 @@
         "name": "timeline",
         "dependencies": ["components"],
         "sources": [
-            "DOMCountersGraph.js",
+            "CountersGraph.js",
             "MemoryStatistics.js",
             "PieChart.js",
             "TimelineEventOverview.js",

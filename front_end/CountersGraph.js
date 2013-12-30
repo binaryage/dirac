@@ -34,7 +34,7 @@
  * @param {!WebInspector.TimelineView} timelineView
  * @param {!WebInspector.TimelineModel} model
  */
-WebInspector.DOMCountersGraph = function(timelineView, model)
+WebInspector.CountersGraph = function(timelineView, model)
 {
     WebInspector.MemoryStatistics.call(this, timelineView, model);
 }
@@ -42,13 +42,13 @@ WebInspector.DOMCountersGraph = function(timelineView, model)
 /**
  * @constructor
  * @extends {WebInspector.CounterUIBase}
- * @param {!WebInspector.DOMCountersGraph} memoryCountersPane
+ * @param {!WebInspector.CountersGraph} memoryCountersPane
  * @param {string} title
  * @param {string} currentValueLabel
  * @param {!string} color
- * @param {function(!WebInspector.DOMCountersGraph.Counter):number} valueGetter
+ * @param {function(!WebInspector.CountersGraph.Counter):number} valueGetter
  */
-WebInspector.DOMCounterUI = function(memoryCountersPane, title, currentValueLabel, color, valueGetter)
+WebInspector.CounterUI = function(memoryCountersPane, title, currentValueLabel, color, valueGetter)
 {
     WebInspector.CounterUIBase.call(this, memoryCountersPane, title, color, valueGetter)
     this._range = this._swatch.element.createChild("span");
@@ -69,7 +69,7 @@ WebInspector.DOMCounterUI = function(memoryCountersPane, title, currentValueLabe
  * @param {number} nodeCount
  * @param {number} listenerCount
  */
-WebInspector.DOMCountersGraph.Counter = function(time, documentCount, nodeCount, listenerCount, usedGPUMemoryKBytes)
+WebInspector.CountersGraph.Counter = function(time, documentCount, nodeCount, listenerCount, usedGPUMemoryKBytes)
 {
     WebInspector.MemoryStatistics.Counter.call(this, time);
     this.documentCount = documentCount;
@@ -78,11 +78,11 @@ WebInspector.DOMCountersGraph.Counter = function(time, documentCount, nodeCount,
     this.usedGPUMemoryKBytes = usedGPUMemoryKBytes;
 }
 
-WebInspector.DOMCountersGraph.Counter.prototype = {
+WebInspector.CountersGraph.Counter.prototype = {
     __proto__: WebInspector.MemoryStatistics.Counter.prototype
 }
 
-WebInspector.DOMCounterUI.prototype = {
+WebInspector.CounterUI.prototype = {
     /**
      * @param {number} minValue
      * @param {number} maxValue
@@ -141,7 +141,7 @@ WebInspector.DOMCounterUI.prototype = {
 }
 
 
-WebInspector.DOMCountersGraph.prototype = {
+WebInspector.CountersGraph.prototype = {
     _createCurrentValuesBar: function()
     {
         this._currentValuesBar = this._canvasContainer.createChild("div");
@@ -158,7 +158,7 @@ WebInspector.DOMCountersGraph.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.DOMCounterUI>}
+     * @return {!Array.<!WebInspector.CounterUI>}
      */
     _createCounterUIList: function()
     {
@@ -179,12 +179,12 @@ WebInspector.DOMCountersGraph.prototype = {
             return entry.usedGPUMemoryKBytes;
         }
         var counterUIs = [
-            new WebInspector.DOMCounterUI(this, "Documents", "Documents: %d", "#d00", getDocumentCount),
-            new WebInspector.DOMCounterUI(this, "Nodes", "Nodes: %d", "#0a0", getNodeCount),
-            new WebInspector.DOMCounterUI(this, "Listeners", "Listeners: %d", "#00d", getListenerCount)
+            new WebInspector.CounterUI(this, "Documents", "Documents: %d", "#d00", getDocumentCount),
+            new WebInspector.CounterUI(this, "Nodes", "Nodes: %d", "#0a0", getNodeCount),
+            new WebInspector.CounterUI(this, "Listeners", "Listeners: %d", "#00d", getListenerCount)
         ];
         if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
-            counterUIs.push(new WebInspector.DOMCounterUI(this, "GPU Memory", "GPU Memory [KB]: %d", "#c0c", getUsedGPUMemoryKBytes));
+            counterUIs.push(new WebInspector.CounterUI(this, "GPU Memory", "GPU Memory [KB]: %d", "#c0c", getUsedGPUMemoryKBytes));
         return counterUIs;
     },
 
@@ -209,7 +209,7 @@ WebInspector.DOMCountersGraph.prototype = {
         }
 
         /**
-         * @this {WebInspector.DOMCountersGraph}
+         * @this {WebInspector.CountersGraph}
          */
         function addStatistics(record)
         {
@@ -226,7 +226,7 @@ WebInspector.DOMCountersGraph.prototype = {
                 return;
 
             var time = record.endTime || record.startTime;
-            var counter = new WebInspector.DOMCountersGraph.Counter(
+            var counter = new WebInspector.CountersGraph.Counter(
                 time,
                 counters["documents"],
                 counters["nodes"],
@@ -242,7 +242,7 @@ WebInspector.DOMCountersGraph.prototype = {
             this._counters.splice(index, 0, counter);
             if (isGPURecord) {
                 // Populate missing values from preceeding records.
-                // FIXME: Refactor the code to make each WebInspector.DOMCountersGraph.Counter
+                // FIXME: Refactor the code to make each WebInspector.CountersGraph.Counter
                 // be responsible for a single graph to avoid such synchronizations.
                 for (var i = index - 1; i >= 0 && typeof this._counters[i].usedGPUMemoryKBytes === "undefined"; --i) { }
                 var usedGPUMemoryKBytes = this._counters[i >= 0 ? i : index].usedGPUMemoryKBytes;

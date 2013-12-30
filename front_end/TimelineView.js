@@ -108,7 +108,7 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting)
     this._containerElement.addEventListener("scroll", this._onScroll.bind(this), false);
 
     // Create memory statistics as a bottom memory splitter child.
-    this._memoryStatistics = new WebInspector.DOMCountersGraph(this, this._model);
+    this._memoryStatistics = new WebInspector.CountersGraph(this, this._model);
     this._timelineMemorySplitter.setSidebarView(this._memoryStatistics);
     this._timelineMemorySplitter.installResizer(this._memoryStatistics.resizeElement());
 
