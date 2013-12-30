@@ -399,7 +399,7 @@ WebInspector.Experiment.prototype = {
      */
     setEnabled: function(enabled)
     {
-        return this._experimentsSettings.setEnabled(this._name, enabled);
+        this._experimentsSettings.setEnabled(this._name, enabled);
     },
 
     enableForTest: function()

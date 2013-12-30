@@ -108,8 +108,10 @@ WebInspector.AuditRules.GzipRule.prototype = {
                 result.violationCount++;
             }
         }
-        if (!totalSavings)
-            return callback(null);
+        if (!totalSavings) {
+            callback(null);
+            return;
+        }
         summary.value = String.sprintf("Compressing the following resources with gzip could reduce their transfer size by about two thirds (~%s):", Number.bytesToString(totalSavings));
         callback(result);
     },
@@ -165,8 +167,10 @@ WebInspector.AuditRules.CombineExternalResourcesRule.prototype = {
             summary.addChild(String.sprintf("%d %s resources served from %s.", domainResources.length, this._resourceTypeName, WebInspector.AuditRuleResult.resourceDomain(domain)));
             result.violationCount += domainResources.length;
         }
-        if (!penalizedResourceCount)
-            return callback(null);
+        if (!penalizedResourceCount) {
+            callback(null);
+            return;
+        }
 
         summary.value = "There are multiple resources served from same domain. Consider combining them into as few files as possible.";
         callback(result);
@@ -230,8 +234,10 @@ WebInspector.AuditRules.MinimizeDnsLookupsRule.prototype = {
             summary.addSnippet(domain);
             result.violationCount++;
         }
-        if (!summary.children || summary.children.length <= this._hostCountThreshold)
-            return callback(null);
+        if (!summary.children || summary.children.length <= this._hostCountThreshold) {
+            callback(null);
+            return;
+        }
 
         summary.value = "The following domains only serve one resource each. If possible, avoid the extra DNS lookups by serving these resources from existing domains.";
         callback(result);
@@ -277,8 +283,10 @@ WebInspector.AuditRules.ParallelizeDownloadRule.prototype = {
         for (var url in domainToResourcesMap)
             hosts.push(url);
 
-        if (!hosts.length)
-            return callback(null); // no hosts (local file or something)
+        if (!hosts.length) {
+            callback(null); // no hosts (local file or something)
+            return;
+        }
 
         hosts.sort(hostSorter);
 
@@ -288,8 +296,10 @@ WebInspector.AuditRules.ParallelizeDownloadRule.prototype = {
 
         var busiestHostResourceCount = domainToResourcesMap[hosts[0]].length;
         var requestCountAboveThreshold = busiestHostResourceCount - this._minRequestThreshold;
-        if (requestCountAboveThreshold <= 0)
-            return callback(null);
+        if (requestCountAboveThreshold <= 0) {
+            callback(null);
+            return;
+        }
 
         var avgResourcesPerHost = 0;
         for (var i = 0, size = hosts.length; i < size; ++i)
@@ -301,8 +311,10 @@ WebInspector.AuditRules.ParallelizeDownloadRule.prototype = {
 
         var pctAboveAvg = (requestCountAboveThreshold / avgResourcesPerHost) - 1.0;
         var minBalanceThreshold = this._minBalanceThreshold;
-        if (pctAboveAvg < minBalanceThreshold)
-            return callback(null);
+        if (pctAboveAvg < minBalanceThreshold) {
+            callback(null);
+            return;
+        }
 
         var requestsOnBusiestHost = domainToResourcesMap[hosts[0]];
         var entry = result.addChild(String.sprintf("This page makes %d parallelizable requests to %s. Increase download parallelization by distributing the following requests across multiple hostnames.", busiestHostResourceCount, hosts[0]), true);
@@ -610,22 +622,22 @@ WebInspector.AuditRules.CacheControlRule.prototype = {
     {
         return request.responseHeaderValue(header)
             ? request.responseHeaderValue(header).match(new RegExp(regexp, "im"))
-            : undefined;
+            : null;
     },
 
     hasExplicitExpiration: function(request)
     {
         return this.hasResponseHeader(request, "Date") &&
-            (this.hasResponseHeader(request, "Expires") || this.responseHeaderMatch(request, "Cache-Control", "max-age"));
+            (this.hasResponseHeader(request, "Expires") || !!this.responseHeaderMatch(request, "Cache-Control", "max-age"));
     },
 
     _isExplicitlyNonCacheable: function(request)
     {
         var hasExplicitExp = this.hasExplicitExpiration(request);
-        return this.responseHeaderMatch(request, "Cache-Control", "(no-cache|no-store|must-revalidate)") ||
-            this.responseHeaderMatch(request, "Pragma", "no-cache") ||
+        return !!this.responseHeaderMatch(request, "Cache-Control", "(no-cache|no-store|must-revalidate)") ||
+            !!this.responseHeaderMatch(request, "Pragma", "no-cache") ||
             (hasExplicitExp && !this.freshnessLifetimeGreaterThan(request, 0)) ||
-            (!hasExplicitExp && request.url && request.url.indexOf("?") >= 0) ||
+            (!hasExplicitExp && !!request.url && request.url.indexOf("?") >= 0) ||
             (!hasExplicitExp && !this.isCacheableResource(request));
     },
 

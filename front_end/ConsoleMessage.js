@@ -853,7 +853,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
     matchesRegex: function(regexObject)
     {
         regexObject.lastIndex = 0;
-        return regexObject.test(this.message) || (this._anchorElement && regexObject.test(this._anchorElement.textContent));
+        return regexObject.test(this.message) || (!!this._anchorElement && regexObject.test(this._anchorElement.textContent));
     },
 
     toMessageElement: function()

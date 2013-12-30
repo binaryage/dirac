@@ -685,7 +685,7 @@ WebInspector.DOMNode.prototype = {
 
     getUserProperty: function(name)
     {
-        return this._userProperties ? this._userProperties[name] : null;
+        return (this._userProperties && this._userProperties[name]) || null;
     },
 
     descendantUserPropertyCount: function(name)

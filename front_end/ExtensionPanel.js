@@ -172,7 +172,7 @@ WebInspector.ExtensionSidebarPane.prototype = {
     setExpression: function(expression, title, evaluateOptions, securityOrigin, callback)
     {
         this._createObjectPropertiesView();
-        return WebInspector.extensionServer.evaluate(expression, true, false, evaluateOptions, securityOrigin, this._onEvaluate.bind(this, title, callback));
+        WebInspector.extensionServer.evaluate(expression, true, false, evaluateOptions, securityOrigin, this._onEvaluate.bind(this, title, callback));
     },
 
     /**

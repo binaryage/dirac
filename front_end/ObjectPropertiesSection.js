@@ -161,7 +161,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     {
         var propertyValue = /** @type {!WebInspector.RemoteObject} */ (this.property.value);
         console.assert(propertyValue);
-        return WebInspector.ObjectPropertyTreeElement.populate(this, propertyValue);
+        WebInspector.ObjectPropertyTreeElement.populate(this, propertyValue);
     },
 
     /**
@@ -359,8 +359,10 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
     editingCommitted: function(element, userInput, previousContent, context)
     {
-        if (userInput === previousContent)
-            return this.editingCancelled(element, context); // nothing changed, so cancel
+        if (userInput === previousContent) {
+            this.editingCancelled(element, context); // nothing changed, so cancel
+            return;
+        }
 
         this.editingEnded(context);
         this.applyExpression(userInput, true);
@@ -370,11 +372,13 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
     {
         if (isEnterKey(event)) {
             event.consume(true);
-            return this.editingCommitted(null, context.elementToEdit.textContent, context.previousContent, context);
+            this.editingCommitted(null, context.elementToEdit.textContent, context.previousContent, context);
+            return;
         }
         if (event.keyIdentifier === "U+001B") { // Esc
             event.consume();
-            return this.editingCancelled(null, context);
+            this.editingCancelled(null, context);
+            return;
         }
     },
 
@@ -671,7 +675,7 @@ WebInspector.ScopeTreeElement = function(title, subtitle, remoteObject)
 WebInspector.ScopeTreeElement.prototype = {
     onpopulate: function()
     {
-        return WebInspector.ObjectPropertyTreeElement.populate(this, this._remoteObject);
+        WebInspector.ObjectPropertyTreeElement.populate(this, this._remoteObject);
     },
 
     __proto__: TreeElement.prototype

@@ -113,8 +113,8 @@ FormatterWorker.outline = function(params)
      */
     function processToken(tokenValue, tokenType, column, newColumn)
     {
-        tokenType = tokenType ? WebInspector.CodeMirrorUtils.convertTokenType(tokenType) : null;
-        if (tokenType === "javascript-ident") {
+        var convertedType = tokenType ? WebInspector.CodeMirrorUtils.convertTokenType(tokenType) : null;
+        if (convertedType === "javascript-ident") {
             previousIdentifier = tokenValue;
             if (tokenValue && previousToken === "function") {
                 // A named function: "function f...".
@@ -122,7 +122,7 @@ FormatterWorker.outline = function(params)
                 addedFunction = true;
                 previousIdentifier = null;
             }
-        } else if (tokenType === "javascript-keyword") {
+        } else if (convertedType === "javascript-keyword") {
             if (tokenValue === "function") {
                 if (previousIdentifier && (previousToken === "=" || previousToken === ":")) {
                     // Anonymous function assigned to an identifier: "...f = function..."
@@ -150,7 +150,7 @@ FormatterWorker.outline = function(params)
         if (tokenValue.trim().length) {
             // Skip whitespace tokens.
             previousToken = tokenValue;
-            previousTokenType = tokenType;
+            previousTokenType = convertedType;
         }
         processedChunkCharacters += newColumn - column;
 

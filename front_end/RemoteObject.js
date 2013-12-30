@@ -631,7 +631,7 @@ WebInspector.RemoteObjectProperty = function(name, value, descriptor)
 WebInspector.RemoteObjectProperty.prototype = {
     isAccessorProperty: function()
     {
-        return this.getter || this.setter;
+        return !!(this.getter || this.setter);
     }
 };
 

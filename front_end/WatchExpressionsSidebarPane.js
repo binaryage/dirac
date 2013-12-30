@@ -273,6 +273,7 @@ WebInspector.WatchExpressionsSection.prototype = {
             if (children[i].property.name === WebInspector.WatchExpressionsSection.NewWatchExpression)
                 return children[i];
         }
+        return null;
     },
 
     saveExpressions: function()

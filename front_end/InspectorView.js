@@ -205,7 +205,7 @@ WebInspector.InspectorView.prototype = {
      */
     closeViewInDrawer: function(id)
     {
-        return this._drawer.closeView(id);
+        this._drawer.closeView(id);
     },
 
     /**

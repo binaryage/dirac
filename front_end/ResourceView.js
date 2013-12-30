@@ -57,7 +57,7 @@ WebInspector.ResourceView.hasTextContent = function(resource)
     if (resource.type.isTextType())
         return true; 
     if (resource.type === WebInspector.resourceTypes.Other)
-        return resource.content && !resource.contentEncoded;
+        return !!resource.content && !resource.contentEncoded;
     return false;
 }
 

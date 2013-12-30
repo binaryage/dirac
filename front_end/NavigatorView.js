@@ -163,7 +163,7 @@ WebInspector.NavigatorView.prototype = {
     {
         var node = this._uiSourceCodeNodes.get(uiSourceCode);
         if (!node)
-            return null;
+            return;
         if (this._scriptsTree.selectedTreeElement)
             this._scriptsTree.selectedTreeElement.deselect();
         this._lastSelectedUISourceCode = uiSourceCode;
@@ -240,7 +240,7 @@ WebInspector.NavigatorView.prototype = {
     {
         var node = this._uiSourceCodeNodes.get(uiSourceCode);
         if (!node)
-            return null;
+            return;
         node.rename(callback);
     },
 
@@ -860,11 +860,11 @@ WebInspector.NavigatorTreeNode.prototype = {
 
     /**
      * @param {string} id
-     * @return {!WebInspector.NavigatorTreeNode}
+     * @return {?WebInspector.NavigatorTreeNode}
      */
     child: function(id)
     {
-        return this._children.get(id);
+        return this._children.get(id) || null;
     },
 
     /**

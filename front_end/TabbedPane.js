@@ -269,7 +269,6 @@ WebInspector.TabbedPane.prototype = {
 
         var eventData = { tabId: id, view: tab.view, isUserGesture: userGesture };
         this.dispatchEventToListeners(WebInspector.TabbedPane.EventTypes.TabSelected, eventData);
-        return true;
     },
 
     /**
@@ -626,7 +625,7 @@ WebInspector.TabbedPane.prototype = {
      */
     canHighlightPosition: function()
     {
-        return this._currentTab && this._currentTab.view && this._currentTab.view.canHighlightPosition();
+        return !!(this._currentTab && this._currentTab.view && this._currentTab.view.canHighlightPosition());
     },
 
     /**

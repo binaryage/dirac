@@ -1489,7 +1489,8 @@ WebInspector.StylePropertiesSection.prototype = {
         if (newContent === oldContent) {
             // Revert to a trimmed version of the selector if need be.
             this._selectorElement.textContent = newContent;
-            return this._moveEditorFromSelector(moveDirection);
+            this._moveEditorFromSelector(moveDirection);
+            return;
         }
 
         var selectedNode = this._parentPane.node;
@@ -2318,11 +2319,13 @@ WebInspector.StylePropertyTreeElement.prototype = {
         var longhandProperties = this.style.longhandProperties(this.name);
         for (var i = 0; i < longhandProperties.length; ++i) {
             var name = longhandProperties[i].name;
+            var inherited = false;
+            var overloaded = false;
 
             var section = this.section();
             if (section) {
-                var inherited = section.isPropertyInherited(name);
-                var overloaded = section.isPropertyOverloaded(name);
+                inherited = section.isPropertyInherited(name);
+                overloaded = section.isPropertyOverloaded(name);
             }
 
             var liveProperty = this.style.getLiveProperty(name);
@@ -2555,7 +2558,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
         proxyElement.addEventListener("keydown", this.editingNameValueKeyDown.bind(this, context), false);
         if (isEditingName)
-            proxyElement.addEventListener("paste", pasteHandler.bind(this, context));
+            proxyElement.addEventListener("paste", pasteHandler.bind(this, context), false);
 
         window.getSelection().setBaseAndExtent(selectElement, 0, selectElement, 1);
     },
@@ -2953,18 +2956,18 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
         case "PageDown":
             if (this._handleNameOrValueUpDown(event)) {
                 event.preventDefault();
-                return;
+                return true;
             }
             break;
         case "Enter":
             if (this.autoCompleteElement && !this.autoCompleteElement.textContent.length) {
                 this.tabKeyPressed();
-                return;
+                return true;
             }
             break;
         }
 
-        WebInspector.TextPrompt.prototype.onKeyDown.call(this, event);
+        return WebInspector.TextPrompt.prototype.onKeyDown.call(this, event);
     },
 
     onMouseWheel: function(event)

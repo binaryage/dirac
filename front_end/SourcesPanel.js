@@ -1121,7 +1121,6 @@ WebInspector.SourcesPanel.prototype = {
         }
 
         this._searchView.jumpToNextSearchResult();
-        return true;
     },
 
     jumpToPreviousSearchResult: function()

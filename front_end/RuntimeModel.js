@@ -442,6 +442,7 @@ WebInspector.FrameExecutionContextList.prototype =
             if (!context.isMainWorldContext && context.name === securityOrigin)
                 return context; 
         }
+        return null;
     },
 
     get frameId()
