@@ -622,6 +622,7 @@ WebInspector.TabbedPane.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     canHighlightPosition: function()
     {

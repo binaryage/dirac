@@ -545,6 +545,9 @@ Node.prototype.traversePreviousNode = function(stayWithin)
     return this.parentNode;
 }
 
+/**
+ * @return {boolean}
+ */
 function isEnterKey(event) {
     // Check if in IME.
     return event.keyCode !== 229 && event.keyIdentifier === "Enter";

@@ -171,7 +171,7 @@ WebInspector.ProjectDelegate.prototype = {
  */
 WebInspector.Project = function(workspace, projectDelegate)
 {
-    /** @type {!Object.<string, {uiSourceCode: !WebInspector.UISourceCode, index: number}>} */
+    /** @type {!Object.<string, !{uiSourceCode: !WebInspector.UISourceCode, index: number}>} */
     this._uiSourceCodesMap = {};
     /** @type {!Array.<!WebInspector.UISourceCode>} */
     this._uiSourceCodesList = [];

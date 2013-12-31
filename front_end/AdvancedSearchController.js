@@ -455,7 +455,14 @@ WebInspector.SearchConfig.prototype = {
         var regexp = new RegExp(pattern, "g");
         var queryParts = this.query.match(regexp) || [];
 
+        /**
+         * @type {!Array.<string>}
+         */
         this._fileQueries = [];
+
+        /**
+         * @type {!Array.<string>}
+         */
         this._queries = [];
 
         for (var i = 0; i < queryParts.length; ++i) {
@@ -476,11 +483,17 @@ WebInspector.SearchConfig.prototype = {
         }
     },
 
+    /**
+     * @return {!Array.<string>}
+     */
     fileQueries: function()
     {
         return this._fileQueries;
     },
 
+    /**
+     * @return {!Array.<string>}
+     */
     queries: function()
     {
         return this._queries;

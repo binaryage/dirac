@@ -166,6 +166,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     ondblclick: function(event)
     {
@@ -284,6 +285,9 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
             this.parent.shouldRefreshChildren = true;
     },
 
+    /**
+     * @return {boolean}
+     */
     renderPromptAsBlock: function()
     {
         return false;
@@ -291,12 +295,16 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
     /**
      * @param {!Event=} event
+     * @return {!Array.<!Element|undefined>}
      */
     elementAndValueToEdit: function(event)
     {
         return [this.valueElement, (typeof this.valueElement._originalTextContent === "string") ? this.valueElement._originalTextContent : undefined];
     },
 
+    /**
+     * @param {!Event=} event
+     */
     startEditing: function(event)
     {
         var elementAndValueToEdit = this.elementAndValueToEdit(event);
@@ -410,6 +418,9 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
         this.property.parentObject.setPropertyValue(this.property.name, expression.trim(), callback.bind(this));
     },
 
+    /**
+     * @return {string|undefined}
+     */
     propertyPath: function()
     {
         if ("_cachedPropertyPath" in this)

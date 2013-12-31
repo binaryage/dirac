@@ -43,6 +43,9 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
 
     this._headerTable = document.createElement("table");
     this._headerTable.className = "header";
+    /**
+     * @type {!Object.<string, !Element>}
+     */
     this._headerTableHeaders = {};
 
     this._dataTable = document.createElement("table");
@@ -694,6 +697,9 @@ WebInspector.DataGrid.prototype = {
         return this._scrollContainer;
     },
 
+    /**
+     * @return {boolean}
+     */
     isScrolledToLastRow: function()
     {
         return this._scrollContainer.isScrolledToBottom();
@@ -949,6 +955,10 @@ WebInspector.DataGrid.prototype = {
         this._sortColumnCell.classList.add("sort-" + sortOrder);
     },
 
+    /**
+     * @param {string} columnIdentifier
+     * @return {!Element}
+     */
     headerTableHeader: function(columnIdentifier)
     {
         return this._headerTableHeaders[columnIdentifier];

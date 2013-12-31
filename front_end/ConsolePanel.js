@@ -53,6 +53,9 @@ WebInspector.ConsolePanel.prototype = {
         return this._consoleViewWrapper;
     },
 
+    /**
+     * @return {!Element}
+     */
     defaultFocusedElement: function()
     {
         return this._view.defaultFocusedElement();

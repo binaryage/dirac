@@ -39,6 +39,11 @@ WebInspector.DOMSyntaxHighlighter = function(mimeType, stripExtraWhitespace)
 }
 
 WebInspector.DOMSyntaxHighlighter.prototype = {
+    /**
+     * @param {string} content
+     * @param {string} className
+     * @return {!Element}
+     */
     createSpan: function(content, className)
     {
         var span = document.createElement("span");

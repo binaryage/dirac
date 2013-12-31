@@ -1030,6 +1030,7 @@ WebInspector.highlightSearchResults = function(element, resultRanges, changes)
  * @param {!Array.<!WebInspector.SourceRange>} resultRanges
  * @param {string} styleClass
  * @param {!Array.<!Object>=} changes
+ * @return {!Array.<!Element>}
  */
 WebInspector.highlightRangesWithStyleClass = function(element, resultRanges, styleClass, changes)
 {

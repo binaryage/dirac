@@ -42,6 +42,9 @@ WebInspector.InspectElementModeController.createShortcut = function()
 }
 
 WebInspector.InspectElementModeController.prototype = {
+    /**
+     * @return {boolean}
+     */
     enabled: function()
     {
         return this.toggleSearchButton.toggled;

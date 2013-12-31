@@ -565,6 +565,11 @@ WebInspector.AuditRules.CacheControlRule.prototype = {
         }
     },
 
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     * @param {number} timeMs
+     * @return {boolean}
+     */
     freshnessLifetimeGreaterThan: function(request, timeMs)
     {
         var dateHeader = this.responseHeader(request, "Date");
@@ -592,21 +597,39 @@ WebInspector.AuditRules.CacheControlRule.prototype = {
         return (isNaN(freshnessLifetimeMs)) ? false : freshnessLifetimeMs > timeMs;
     },
 
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     * @param {string} header
+     * @return {string|undefined}
+     */
     responseHeader: function(request, header)
     {
         return request.responseHeaderValue(header);
     },
 
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     * @param {string} header
+     * @return {boolean}
+     */
     hasResponseHeader: function(request, header)
     {
         return request.responseHeaderValue(header) !== undefined;
     },
 
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     * @return {boolean}
+     */
     isCompressible: function(request)
     {
         return request.type.isTextType();
     },
 
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     * @return {boolean}
+     */
     isPubliclyCacheable: function(request)
     {
         if (this._isExplicitlyNonCacheable(request))
@@ -618,6 +641,12 @@ WebInspector.AuditRules.CacheControlRule.prototype = {
         return request.url.indexOf("?") == -1 && !this.responseHeaderMatch(request, "Cache-Control", "private");
     },
 
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     * @param {string} header
+     * @param {string} regexp
+     * @return {?Array.<string>}
+     */
     responseHeaderMatch: function(request, header, regexp)
     {
         return request.responseHeaderValue(header)
@@ -625,12 +654,20 @@ WebInspector.AuditRules.CacheControlRule.prototype = {
             : null;
     },
 
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     * @return {boolean}
+     */
     hasExplicitExpiration: function(request)
     {
         return this.hasResponseHeader(request, "Date") &&
             (this.hasResponseHeader(request, "Expires") || !!this.responseHeaderMatch(request, "Cache-Control", "max-age"));
     },
 
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     * @return {boolean}
+     */
     _isExplicitlyNonCacheable: function(request)
     {
         var hasExplicitExp = this.hasExplicitExpiration(request);
@@ -641,6 +678,10 @@ WebInspector.AuditRules.CacheControlRule.prototype = {
             (!hasExplicitExp && !this.isCacheableResource(request));
     },
 
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     * @return {boolean}
+     */
     isCacheableResource: function(request)
     {
         return request.statusCode !== undefined && WebInspector.AuditRules.CacheableResponseCodes[request.statusCode];

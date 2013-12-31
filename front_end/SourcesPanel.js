@@ -215,6 +215,9 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 }
 
 WebInspector.SourcesPanel.prototype = {
+    /**
+     * @return {!Element}
+     */
     defaultFocusedElement: function()
     {
         return this._editorContainer.view.defaultFocusedElement() || this._navigator.view.defaultFocusedElement();
@@ -1611,6 +1614,9 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPanes.watchExpressions.expand();
     },
 
+    /**
+     * @return {boolean}
+     */
     canHighlightPosition: function()
     {
         return this.visibleView && this.visibleView.canHighlightPosition();

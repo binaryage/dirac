@@ -48,11 +48,17 @@ WebInspector.ContextMenuItem = function(topLevelMenu, type, label, disabled, che
 }
 
 WebInspector.ContextMenuItem.prototype = {
+    /**
+     * @return {number}
+     */
     id: function()
     {
         return this._id;
     },
 
+    /**
+     * @return {string}
+     */
     type: function()
     {
         return this._type;
@@ -130,6 +136,7 @@ WebInspector.ContextSubMenuItem.prototype = {
 
     /**
      * @param {boolean=} disabled
+     * @return {!WebInspector.ContextMenuItem}
      */
     appendCheckboxItem: function(label, handler, checked, disabled)
     {
@@ -196,6 +203,9 @@ WebInspector.ContextMenu.setUseSoftMenu = function(useSoftMenu)
 }
 
 WebInspector.ContextMenu.prototype = {
+    /**
+     * @return {number}
+     */
     nextId: function()
     {
         return this._id++;

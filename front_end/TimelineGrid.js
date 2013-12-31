@@ -83,6 +83,9 @@ WebInspector.TimelineGrid.prototype = {
         this._dividersLabelBarElement.removeChildren();
     },
 
+    /**
+     * @return {boolean}
+     */
     updateDividers: function(calculator)
     {
         const minGridSlicePx = 64; // minimal distance between grid lines.

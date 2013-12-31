@@ -344,6 +344,9 @@ WebInspector.SpectrumPopupHelper.prototype = {
         return this._spectrum;
     },
 
+    /**
+     * @return {boolean}
+     */
     toggle: function(element, color, format)
     {
         if (this._popover.isShowing())
@@ -354,6 +357,9 @@ WebInspector.SpectrumPopupHelper.prototype = {
         return this._popover.isShowing();
     },
 
+    /**
+     * @return {boolean}
+     */
     show: function(element, color, format)
     {
         if (this._popover.isShowing()) {

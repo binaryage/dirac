@@ -109,6 +109,7 @@ WebInspector.CompositeProgress.prototype = {
 
     /**
      * @param {number=} weight
+     * @return {!WebInspector.SubProgress}
      */
     createSubProgress: function(weight)
     {

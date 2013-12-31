@@ -95,7 +95,7 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Event|{data: !WebInspector.Resource}} event
+     * @param {!WebInspector.Event|!{data: !WebInspector.Resource}} event
      */
     _resourceAdded: function(event)
     {

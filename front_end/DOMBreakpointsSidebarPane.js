@@ -353,6 +353,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
 
     /**
      * @param {!WebInspector.Panel} panel
+     * @return {!WebInspector.DOMBreakpointsSidebarPane.Proxy}
      */
     createProxy: function(panel)
     {

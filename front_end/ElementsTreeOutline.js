@@ -777,6 +777,10 @@ WebInspector.ElementsTreeOutline.PseudoStateDecorator = function()
 WebInspector.ElementsTreeOutline.PseudoStateDecorator.PropertyName = "pseudoState";
 
 WebInspector.ElementsTreeOutline.PseudoStateDecorator.prototype = {
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @return {?string}
+     */
     decorate: function(node)
     {
         if (node.nodeType() !== Node.ELEMENT_NODE)
@@ -787,6 +791,10 @@ WebInspector.ElementsTreeOutline.PseudoStateDecorator.prototype = {
         return WebInspector.UIString("Element state: %s", ":" + propertyValue.join(", :"));
     },
 
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @return {?string}
+     */
     decorateAncestor: function(node)
     {
         if (node.nodeType() !== Node.ELEMENT_NODE)
@@ -1030,6 +1038,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @param {boolean=} closingTag
+     * @return {!WebInspector.ElementsTreeElement}
      */
     insertChildElement: function(child, index, closingTag)
     {
@@ -1237,6 +1246,8 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @override
+     * @param {boolean=} selectedByUser
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -1251,6 +1262,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     ondelete: function()
     {
@@ -1261,6 +1273,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onenter: function()
     {
@@ -1294,6 +1307,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     ondblclick: function(event)
     {

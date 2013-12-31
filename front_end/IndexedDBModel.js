@@ -421,6 +421,7 @@ WebInspector.IndexedDBModel.DatabaseId = function(securityOrigin, name)
 WebInspector.IndexedDBModel.DatabaseId.prototype = {
     /**
      * @param {!WebInspector.IndexedDBModel.DatabaseId} databaseId
+     * @return {boolean}
      */
     equals: function(databaseId)
     {

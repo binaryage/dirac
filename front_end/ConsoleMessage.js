@@ -850,12 +850,18 @@ WebInspector.ConsoleMessageImpl.prototype = {
         WebInspector.highlightSearchResults(element, matchRanges);
     },
 
+    /**
+     * @return {boolean}
+     */
     matchesRegex: function(regexObject)
     {
         regexObject.lastIndex = 0;
         return regexObject.test(this.message) || (!!this._anchorElement && regexObject.test(this._anchorElement.textContent));
     },
 
+    /**
+     * @return {!Element}
+     */
     toMessageElement: function()
     {
         if (this._element)
@@ -935,6 +941,9 @@ WebInspector.ConsoleMessageImpl.prototype = {
         this.repeatCountElement.textContent = this.repeatCount;
     },
 
+    /**
+     * @return {string}
+     */
     toString: function()
     {
         var sourceString;
@@ -1042,6 +1051,10 @@ WebInspector.ConsoleMessageImpl.prototype = {
         return WebInspector.debuggerModel.createRawLocationByURL(this.url, lineNumber, columnNumber);
     },
 
+    /**
+     * @param {?WebInspector.ConsoleMessage} msg
+     * @return {boolean}
+     */
     isEqual: function(msg)
     {
         if (!msg)

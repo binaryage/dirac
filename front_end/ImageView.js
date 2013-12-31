@@ -38,6 +38,9 @@ WebInspector.ImageView = function(resource)
 }
 
 WebInspector.ImageView.prototype = {
+    /**
+     * @return {boolean}
+     */
     hasContent: function()
     {
         return true;

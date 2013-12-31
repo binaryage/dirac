@@ -79,6 +79,9 @@ WebInspector.ExtensionServer = function()
 }
 
 WebInspector.ExtensionServer.prototype = {
+    /**
+     * @return {boolean}
+     */
     hasExtensions: function()
     {
         return !!Object.keys(this._registeredExtensions).length;
@@ -866,6 +869,7 @@ WebInspector.ExtensionServer.prototype = {
      * @param {?Object} options
      * @param {string} securityOrigin
      * @param {function(?string, !RuntimeAgent.RemoteObject, boolean=)} callback
+     * @return {!WebInspector.ExtensionStatus.Record|undefined}
      */
     evaluate: function(expression, exposeCommandLineAPI, returnByValue, options, securityOrigin, callback)
     {
@@ -928,6 +932,11 @@ WebInspector.ExtensionServer.prototype = {
  */
 WebInspector.ExtensionStatus = function()
 {
+    /**
+     * @param {string} code
+     * @param {string} description
+     * @return {!WebInspector.ExtensionStatus.Record}
+     */
     function makeStatus(code, description)
     {
         var details = Array.prototype.slice.call(arguments, 2);
@@ -948,6 +957,11 @@ WebInspector.ExtensionStatus = function()
     this.E_PROTOCOLERROR = makeStatus.bind(null, "E_PROTOCOLERROR", "Inspector protocol error: %s");
     this.E_FAILED = makeStatus.bind(null, "E_FAILED", "Operation failed: %s");
 }
+
+/**
+ * @typedef {{code: string, description: string, details: !Array.<*>}}
+ */
+WebInspector.ExtensionStatus.Record;
 
 WebInspector.addExtensions = function(extensions)
 {

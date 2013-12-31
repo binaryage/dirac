@@ -241,6 +241,9 @@ WebInspector.Resource.prototype = {
             this._innerRequestContent();
     },
 
+    /**
+     * @return {string}
+     */
     canonicalMimeType: function()
     {
         return this.type.canonicalMimeType() || this.mimeType;

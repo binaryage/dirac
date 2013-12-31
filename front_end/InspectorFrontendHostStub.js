@@ -59,16 +59,25 @@ WebInspector.InspectorFrontendHostStub = function()
 }
 
 WebInspector.InspectorFrontendHostStub.prototype = {
+    /**
+     * @return {string}
+     */
     getSelectionBackgroundColor: function()
     {
         return "#6e86ff";
     },
 
+    /**
+     * @return {string}
+     */
     getSelectionForegroundColor: function()
     {
         return "#ffffff";
     },
 
+    /**
+     * @return {string}
+     */
     platform: function()
     {
         var match = navigator.userAgent.match(/Windows NT/);
@@ -80,6 +89,9 @@ WebInspector.InspectorFrontendHostStub.prototype = {
         return "linux";
     },
 
+    /**
+     * @return {string}
+     */
     port: function()
     {
         return "unknown";
@@ -177,6 +189,9 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     {
     },
 
+    /**
+     * @return {boolean}
+     */
     supportsFileSystems: function()
     {
         return false;
@@ -194,6 +209,11 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     {
     },
 
+    /**
+     * @param {string} fileSystemId
+     * @param {string} registeredName
+     * @return {?WebInspector.IsolatedFileSystem}
+     */
     isolatedFileSystem: function(fileSystemId, registeredName)
     {
         return null;
@@ -219,6 +239,9 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     {
     },
 
+    /**
+     * @return {boolean}
+     */
     isUnderTest: function()
     {
         return false;

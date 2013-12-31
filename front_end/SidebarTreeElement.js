@@ -180,6 +180,9 @@ WebInspector.SidebarTreeElement.prototype = {
         }
     },
 
+    /**
+     * @return {boolean}
+     */
     isEventWithinDisclosureTriangle: function(event)
     {
         return event.target === this.disclosureButton;

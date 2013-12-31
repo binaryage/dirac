@@ -133,6 +133,7 @@ WebInspector.FileSystemView.EntryTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function()
     {

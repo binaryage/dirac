@@ -695,6 +695,9 @@ WebInspector.ConsoleView.prototype = {
         WebInspector.userMetrics.ConsoleEvaluated.record();
     },
 
+    /**
+     * @return {!Array.<!Element>}
+     */
     elementsToRestoreScrollPositionsFor: function()
     {
         return [this.messagesElement];
@@ -921,6 +924,7 @@ WebInspector.ConsoleCommand.prototype = {
 
     /**
      * @param {!RegExp} regexObject
+     * @return {boolean}
      */
     matchesRegex: function(regexObject)
     {
@@ -928,6 +932,9 @@ WebInspector.ConsoleCommand.prototype = {
         return regexObject.test(this.text);
     },
 
+    /**
+     * @return {!Element}
+     */
     toMessageElement: function()
     {
         if (!this._element) {
@@ -980,6 +987,9 @@ WebInspector.ConsoleCommandResult.prototype = {
         return false;
     },
 
+    /**
+     * @return {!Element}
+     */
     toMessageElement: function()
     {
         var element = WebInspector.ConsoleMessageImpl.prototype.toMessageElement.call(this);

@@ -911,6 +911,7 @@ WebInspector.CSSStyleDeclaration.prototype = {
 
     /**
      * @param {number=} index
+     * @return {!WebInspector.CSSProperty}
      */
     newBlankProperty: function(index)
     {

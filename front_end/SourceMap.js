@@ -162,7 +162,7 @@ WebInspector.SourceMap.prototype = {
     /**
      * @param {number} lineNumber in compiled resource
      * @param {number} columnNumber in compiled resource
-     * @return {?Array.<*>}
+     * @return {?Array.<number|string>}
      */
     findEntry: function(lineNumber, columnNumber)
     {

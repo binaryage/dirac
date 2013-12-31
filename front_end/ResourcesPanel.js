@@ -430,6 +430,7 @@ WebInspector.ResourcesPanel.prototype = {
      * @param {!WebInspector.Resource} resource
      * @param {number=} line
      * @param {number=} column
+     * @return {boolean}
      */
     showResource: function(resource, line, column)
     {
@@ -866,6 +867,7 @@ WebInspector.BaseStorageTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -932,6 +934,7 @@ WebInspector.StorageCategoryTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -1002,6 +1005,7 @@ WebInspector.FrameTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -1040,6 +1044,10 @@ WebInspector.FrameTreeElement.prototype = {
         this._treeElementForResource[resource.url] = resourceTreeElement;
     },
 
+    /**
+     * @param {string} url
+     * @return {?WebInspector.Resource}
+     */
     resourceByURL: function(url)
     {
         var treeElement = this._treeElementForResource[url];
@@ -1114,6 +1122,7 @@ WebInspector.FrameResourceTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -1124,6 +1133,7 @@ WebInspector.FrameResourceTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     ondblclick: function(event)
     {
@@ -1232,6 +1242,9 @@ WebInspector.FrameResourceTreeElement.prototype = {
         this._updateErrorsAndWarningsBubbles();
     },
 
+    /**
+     * @return {!WebInspector.ResourceSourceFrame}
+     */
     sourceView: function()
     {
         if (!this._sourceView) {
@@ -1268,6 +1281,7 @@ WebInspector.DatabaseTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -1323,6 +1337,7 @@ WebInspector.DatabaseTableTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -1596,6 +1611,7 @@ WebInspector.IDBDatabaseTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -1725,6 +1741,7 @@ WebInspector.IDBObjectStoreTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -1809,6 +1826,7 @@ WebInspector.IDBIndexTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -1847,6 +1865,7 @@ WebInspector.DOMStorageTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -1900,6 +1919,7 @@ WebInspector.CookieTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -1936,6 +1956,7 @@ WebInspector.ApplicationCacheManifestTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -1993,6 +2014,7 @@ WebInspector.ApplicationCacheFrameTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {
@@ -2030,6 +2052,7 @@ WebInspector.FileSystemTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function(selectedByUser)
     {

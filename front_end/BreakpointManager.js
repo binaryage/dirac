@@ -255,7 +255,7 @@ WebInspector.BreakpointManager.prototype = {
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @return {!Array.<{breakpoint: !WebInspector.BreakpointManager.Breakpoint, uiLocation: !WebInspector.UILocation}>}
+     * @return {!Array.<!{breakpoint: !WebInspector.BreakpointManager.Breakpoint, uiLocation: !WebInspector.UILocation}>}
      */
     breakpointLocationsForUISourceCode: function(uiSourceCode)
     {
@@ -277,7 +277,7 @@ WebInspector.BreakpointManager.prototype = {
     },
 
     /**
-     * @return {!Array.<{breakpoint: !WebInspector.BreakpointManager.Breakpoint, uiLocation: !WebInspector.UILocation}>}
+     * @return {!Array.<!{breakpoint: !WebInspector.BreakpointManager.Breakpoint, uiLocation: !WebInspector.UILocation}>}
      */
     allBreakpointLocations: function()
     {

@@ -1211,6 +1211,9 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
         }
     },
 
+    /**
+     * @return {!RegExp|undefined}
+     */
     highlightedRegex: function()
     {
         return this._highlightRegex;
@@ -1339,6 +1342,9 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController = function(codeMirror)
 WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
     name: "blockIndentKeymap",
 
+    /**
+     * @return {*}
+     */
     Enter: function(codeMirror)
     {
         if (codeMirror.somethingSelected())
@@ -1359,6 +1365,9 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
             return CodeMirror.Pass;
     },
 
+    /**
+     * @return {*}
+     */
     "'}'": function(codeMirror)
     {
         var cursor = codeMirror.getCursor();
@@ -1500,6 +1509,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
 
     /**
      * @param {?Event} e
+     * @return {boolean}
      */
     keyDown: function(e)
     {

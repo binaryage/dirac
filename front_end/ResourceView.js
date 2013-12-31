@@ -41,6 +41,9 @@ WebInspector.ResourceView = function(resource)
 }
 
 WebInspector.ResourceView.prototype = {
+    /**
+     * @return {boolean}
+     */
     hasContent: function()
     {
         return false;
@@ -51,6 +54,7 @@ WebInspector.ResourceView.prototype = {
 
 /**
  * @param {!WebInspector.Resource} resource
+ * @return {boolean}
  */
 WebInspector.ResourceView.hasTextContent = function(resource)
 {

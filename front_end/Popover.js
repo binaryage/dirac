@@ -336,6 +336,9 @@ WebInspector.PopoverHelper.prototype = {
         }
     },
 
+    /**
+     * @return {boolean}
+     */
     isPopoverVisible: function()
     {
         return !!this._popover;

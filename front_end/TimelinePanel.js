@@ -196,6 +196,9 @@ WebInspector.TimelinePanel.prototype = {
         this._filterBar.filterButton().setEnabled(hasFilters);
     },
 
+    /**
+     * @return {!Element}
+     */
     defaultFocusedElement: function()
     {
         return this.element;

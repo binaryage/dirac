@@ -51,6 +51,9 @@ WebInspector.ExtensionPanel = function(id, pageURL)
 }
 
 WebInspector.ExtensionPanel.prototype = {
+    /**
+     * @return {!Element}
+     */
     defaultFocusedElement: function()
     {
         return WebInspector.View.prototype.defaultFocusedElement.call(this);

@@ -77,6 +77,9 @@ WebInspector.Drawer.prototype = {
         return Number.constrain(height, Preferences.minConsoleHeight, this._inspectorView.devtoolsElement().offsetHeight - Preferences.minConsoleHeight);
     },
 
+    /**
+     * @return {boolean}
+     */
     isHiding: function()
     {
         return this._isHiding;

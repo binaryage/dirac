@@ -922,6 +922,9 @@ WebInspector.CSSMetadata.prototype = {
         return foundIndex;
     },
 
+    /**
+     * @return {!Object.<string, boolean>}
+     */
     keySet: function()
     {
         if (!this._keySet)
@@ -929,16 +932,32 @@ WebInspector.CSSMetadata.prototype = {
         return this._keySet;
     },
 
+    /**
+     * @param {string} str
+     * @param {string} prefix
+     * @return {string}
+     */
     next: function(str, prefix)
     {
         return this._closest(str, prefix, 1);
     },
 
+    /**
+     * @param {string} str
+     * @param {string} prefix
+     * @return {string}
+     */
     previous: function(str, prefix)
     {
         return this._closest(str, prefix, -1);
     },
 
+    /**
+     * @param {string} str
+     * @param {string} prefix
+     * @param {number} shift
+     * @return {string}
+     */
     _closest: function(str, prefix, shift)
     {
         if (!str)

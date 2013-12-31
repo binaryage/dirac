@@ -61,6 +61,7 @@ WebInspector.HandlerRegistry.prototype = {
 
     /**
      * @param {!Object} data
+     * @return {boolean}
      */
     dispatch: function(data)
     {
@@ -70,6 +71,7 @@ WebInspector.HandlerRegistry.prototype = {
     /**
      * @param {string} name
      * @param {!Object} data
+     * @return {boolean}
      */
     dispatchToHandler: function(name, data)
     {

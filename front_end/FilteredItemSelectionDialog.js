@@ -632,6 +632,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
 
     /**
      * @param {!WebInspector.Project} project
+     * @return {boolean}
      */
     filterProject: function(project)
     {
@@ -682,6 +683,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
      * @param {string} query
      * @param {!Element} titleElement
      * @param {!Element} subtitleElement
+     * @return {!Array.<!Element>}
      */
     renderItem: function(itemIndex, query, titleElement, subtitleElement)
     {
@@ -794,6 +796,7 @@ WebInspector.OpenResourceDialog.prototype = {
 
     /**
      * @param {!WebInspector.Project} project
+     * @return {boolean}
      */
     filterProject: function(project)
     {
@@ -846,6 +849,7 @@ WebInspector.SelectUISourceCodeForProjectTypeDialog.prototype = {
 
     /**
      * @param {!WebInspector.Project} project
+     * @return {boolean}
      */
     filterProject: function(project)
     {

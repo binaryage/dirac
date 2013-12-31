@@ -221,6 +221,7 @@ FormatterWorker.HTMLFormatter = function(indentString)
 FormatterWorker.HTMLFormatter.prototype = {
     /**
      * @param {string} content
+     * @return {!{content: string, mapping: {original: !Array.<number>, formatted: !Array.<number>}}}
      */
     format: function(content)
     {
@@ -305,7 +306,7 @@ FormatterWorker.HTMLFormatter.prototype = {
     },
 
     /**
-     * @param {function(string, {formatted: !Array.<number>, original: !Array.<number>}, number, number, string)} formatFunction
+     * @param {function(string, !{formatted: !Array.<number>, original: !Array.<number>}, number, number, string)} formatFunction
      * @param {number} cursor
      */
     _handleSubFormatterEnd: function(formatFunction, cursor)
@@ -331,6 +332,9 @@ Array.prototype.keySet = function()
     return keys;
 };
 
+/**
+ * @return {!Object}
+ */
 function require()
 {
     return parse;

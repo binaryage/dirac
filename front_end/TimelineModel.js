@@ -309,11 +309,17 @@ WebInspector.TimelineModel.prototype = {
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordsCleared);
     },
 
+    /**
+     * @return {number}
+     */
     minimumRecordTime: function()
     {
         return this._minimumRecordTime;
     },
 
+    /**
+     * @return {number}
+     */
     maximumRecordTime: function()
     {
         return this._maximumRecordTime;
@@ -335,6 +341,7 @@ WebInspector.TimelineModel.prototype = {
 
     /**
      * @param {!Object} rawRecord
+     * @return {number}
      */
     recordOffsetInSeconds: function(rawRecord)
     {

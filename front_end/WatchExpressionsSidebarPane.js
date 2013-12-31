@@ -266,6 +266,9 @@ WebInspector.WatchExpressionsSection.prototype = {
         this.update();
     },
 
+    /**
+     * @return {?TreeElement}
+     */
     findAddedTreeElement: function()
     {
         var children = this.propertiesTreeOutline.children;
@@ -276,6 +279,9 @@ WebInspector.WatchExpressionsSection.prototype = {
         return null;
     },
 
+    /**
+     * @return {number}
+     */
     saveExpressions: function()
     {
         var toSave = [];
@@ -431,6 +437,9 @@ WebInspector.WatchExpressionTreeElement.prototype = {
         this.treeOutline.section.updateExpression(this, null);
     },
 
+    /**
+     * @return {boolean}
+     */
     renderPromptAsBlock: function()
     {
         return true;
@@ -438,6 +447,7 @@ WebInspector.WatchExpressionTreeElement.prototype = {
 
     /**
      * @param {!Event=} event
+     * @return {!Array.<!Element|string>}
      */
     elementAndValueToEdit: function(event)
     {

@@ -60,7 +60,7 @@ WebInspector.TimelineFrameOverview.prototype = {
     reset: function()
     {
         this._recordsPerBar = 1;
-        /** @type {!Array.<{startTime:number, endTime:number}>} */
+        /** @type {!Array.<!{startTime:number, endTime:number}>} */
         this._barTimes = [];
         this._mainThreadFrames = [];
         this._backgroundFrames = [];
@@ -338,6 +338,7 @@ WebInspector.TimelineFrameOverview.prototype = {
     /**
      * @param {number} windowLeft
      * @param {number} windowRight
+     * @return {!{startTime: number, endTime: number}}
      */
     windowTimes: function(windowLeft, windowRight)
     {
@@ -361,6 +362,7 @@ WebInspector.TimelineFrameOverview.prototype = {
     /**
      * @param {number} startTime
      * @param {number} endTime
+     * @return {!{left: number, right: number}}
      */
     windowBoundaries: function(startTime, endTime)
     {
@@ -368,7 +370,7 @@ WebInspector.TimelineFrameOverview.prototype = {
             return {left: 0, right: 1};
         /**
          * @param {number} time
-         * @param {{startTime:number, endTime:number}} barTime
+         * @param {!{startTime:number, endTime:number}} barTime
          * @return {number}
          */
         function barStartComparator(time, barTime)
@@ -377,7 +379,7 @@ WebInspector.TimelineFrameOverview.prototype = {
         }
         /**
          * @param {number} time
-         * @param {{startTime:number, endTime:number}} barTime
+         * @param {!{startTime:number, endTime:number}} barTime
          * @return {number}
          */
         function barEndComparator(time, barTime)
@@ -395,7 +397,7 @@ WebInspector.TimelineFrameOverview.prototype = {
 
     /**
      * @param {number} time
-     * @param {function(number, {startTime:number, endTime:number}):number} comparator
+     * @param {function(number, !{startTime:number, endTime:number}):number} comparator
      */
     _windowBoundaryFromTime: function(time, comparator)
     {

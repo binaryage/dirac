@@ -703,6 +703,7 @@ WebInspector.UISourceCode.prototype = {
 
     /**
      * @param {!WebInspector.UILocation} uiLocation
+     * @return {!WebInspector.UILocation}
      */
     overrideLocation: function(uiLocation)
     {

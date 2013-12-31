@@ -360,16 +360,25 @@ WebInspector.CPUProfileView.prototype = {
         this._jumpToSearchResult(this._currentSearchResultIndex);
     },
 
+    /**
+     * @return {boolean}
+     */
     showingFirstSearchResult: function()
     {
         return (this._currentSearchResultIndex === 0);
     },
 
+    /**
+     * @return {boolean}
+     */
     showingLastSearchResult: function()
     {
         return (this._searchResults && this._currentSearchResultIndex === (this._searchResults.length - 1));
     },
 
+    /**
+     * @return {number}
+     */
     currentSearchResultIndex: function() {
         return this._currentSearchResultIndex;
     },
@@ -745,6 +754,9 @@ WebInspector.CPUProfileType.prototype = {
         WebInspector.console.addMessage(message);
     },
 
+    /**
+     * @return {boolean}
+     */
     isRecordingProfile: function()
     {
         return this._recording;
@@ -888,6 +900,7 @@ WebInspector.CPUProfileHeader.prototype = {
 
     /**
      * @override
+     * @return {!WebInspector.ProfileSidebarTreeElement}
      */
     createSidebarTreeElement: function()
     {
@@ -897,6 +910,7 @@ WebInspector.CPUProfileHeader.prototype = {
     /**
      * @override
      * @param {!WebInspector.ProfilesPanel} profilesPanel
+     * @return {!WebInspector.CPUProfileView}
      */
     createView: function(profilesPanel)
     {
@@ -1160,6 +1174,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} ms
+     * @return {string}
      */
     _millisecondsToString: function(ms)
     {
@@ -1172,6 +1187,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
+     * @return {?Array.<!{title: string, text: string}>}
      */
     prepareHighlightedEntryInfo: function(entryIndex)
     {

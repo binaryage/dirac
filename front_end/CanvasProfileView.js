@@ -1049,6 +1049,7 @@ WebInspector.CanvasProfileHeader.prototype = {
     /**
      * @override
      * @param {!WebInspector.ProfilesPanel} profilesPanel
+     * @return {!WebInspector.CanvasProfileView}
      */
     createView: function(profilesPanel)
     {

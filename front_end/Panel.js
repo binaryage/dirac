@@ -57,6 +57,9 @@ WebInspector.Panel.prototype = {
     {
     },
 
+    /**
+     * @return {!Element}
+     */
     defaultFocusedElement: function()
     {
         return this.sidebarTreeElement || this.element;
@@ -156,6 +159,9 @@ WebInspector.Panel.prototype = {
         return false;
     },
 
+    /**
+     * @return {!Array.<!Element>}
+     */
     elementsToRestoreScrollPositionsFor: function()
     {
         return [];

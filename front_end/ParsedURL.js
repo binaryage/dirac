@@ -238,6 +238,9 @@ WebInspector.ParsedURL.prototype = {
         return this._displayName;
     },
 
+    /**
+     * @return {string}
+     */
     dataURLDisplayName: function()
     {
         if (this._dataURLDisplayName)
@@ -248,11 +251,17 @@ WebInspector.ParsedURL.prototype = {
         return this._dataURLDisplayName;
     },
 
+    /**
+     * @return {boolean}
+     */
     isAboutBlank: function()
     {
         return this.url === "about:blank";
     },
 
+    /**
+     * @return {boolean}
+     */
     isDataURL: function()
     {
         return this.scheme === "data";

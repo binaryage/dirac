@@ -683,11 +683,20 @@ WebInspector.DOMNode.prototype = {
             this.parentNode._updateDescendantUserPropertyCount(name, -1);
     },
 
+    /**
+     * @param {string} name
+     * @return {?T}
+     * @template T
+     */
     getUserProperty: function(name)
     {
         return (this._userProperties && this._userProperties[name]) || null;
     },
 
+    /**
+     * @param {string} name
+     * @return {number}
+     */
     descendantUserPropertyCount: function(name)
     {
         return this._descendantUserPropertyCounters && this._descendantUserPropertyCounters[name] ? this._descendantUserPropertyCounters[name] : 0;

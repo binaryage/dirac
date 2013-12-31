@@ -171,6 +171,7 @@ WebInspector.ExtensionAuditFormatters = {
      * @param {string} expression
      * @param {string} title
      * @param {?Object} evaluateOptions
+     * @return {!Element}
      */
     object: function(expression, title, evaluateOptions)
     {
@@ -190,6 +191,7 @@ WebInspector.ExtensionAuditFormatters = {
      * @this {WebInspector.ExtensionAuditCategoryResults}
      * @param {string} expression
      * @param {?Object} evaluateOptions
+     * @return {!Element}
      */
     node: function(expression, evaluateOptions)
     {

@@ -831,11 +831,17 @@ String.tokenizeFormatString = function(format, formatters)
 }
 
 String.standardFormatters = {
+    /**
+     * @return {number}
+     */
     d: function(substitution)
     {
         return !isNaN(substitution) ? substitution : 0;
     },
 
+    /**
+     * @return {number}
+     */
     f: function(substitution, token)
     {
         if (substitution && token.precision > -1)
@@ -843,6 +849,9 @@ String.standardFormatters = {
         return !isNaN(substitution) ? substitution : (token.precision > -1 ? Number(0).toFixed(token.precision) : 0);
     },
 
+    /**
+     * @return {string}
+     */
     s: function(substitution)
     {
         return substitution;
@@ -1229,6 +1238,7 @@ StringMap.prototype = {
 
     /**
      * @param {string} key
+     * @return {T|undefined}
      */
     remove: function(key)
     {
@@ -1274,6 +1284,7 @@ StringMap.prototype = {
 
     /**
      * @param {string} key
+     * @return {T|undefined}
      */
     get: function(key)
     {

@@ -111,6 +111,9 @@ WebInspector.AllocationProfile.prototype = {
         return traverseNode(traceTreeRaw, 0, null);
     },
 
+    /**
+     * @return {!Array.<!{id: string, name: string, scriptName: string, line: number, column: number, count: number, size: number, hasChildren: boolean}>}
+     */
     serializeTraceTops: function()
     {
         if (this._traceTops)
@@ -136,6 +139,10 @@ WebInspector.AllocationProfile.prototype = {
         return result;
     },
 
+    /**
+     * @param {string} nodeId
+     * @return {!{nodesWithSingleCaller: !Array.<!{id: string, name: string, scriptName: string, line: number, column: number, count: number, size: number, hasChildren: boolean}>, branchingCallers: !Array.<!{id: string, name: string, scriptName: string, line: number, column: number, count: number, size: number, hasChildren: boolean}>}}
+     */
     serializeCallers: function(nodeId)
     {
         var node = this._idToNode[nodeId];
@@ -241,11 +248,17 @@ WebInspector.AllocationBackTraceNode.prototype = {
         return result;
     },
 
+    /**
+     * @return {!Array.<!WebInspector.AllocationBackTraceNode>}
+     */
     callers: function()
     {
         return this._callers;
     },
 
+    /**
+     * @return {boolean}
+     */
     hasCallers: function()
     {
         return this._callers.length > 0;
@@ -278,6 +291,9 @@ WebInspector.FunctionAllocationInfo.prototype = {
         this.totalSize += node.allocationSize;
     },
 
+    /**
+     * @return {?WebInspector.AllocationBackTraceNode}
+     */
     tracesWithThisTop: function()
     {
         if (!this._traceTops.length)

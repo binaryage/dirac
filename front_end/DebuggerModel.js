@@ -991,6 +991,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
 
     /**
      * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
+     * @return {!WebInspector.LiveLocation}
      */
     createLiveLocation: function(updateDelegate)
     {

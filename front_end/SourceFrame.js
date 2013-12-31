@@ -145,6 +145,9 @@ WebInspector.SourceFrame.prototype = {
         return [];
     },
 
+    /**
+     * @return {!Element}
+     */
     defaultFocusedElement: function()
     {
         return this._textEditor.defaultFocusedElement();
@@ -155,6 +158,9 @@ WebInspector.SourceFrame.prototype = {
         return this._loaded;
     },
 
+    /**
+     * @return {boolean}
+     */
     hasContent: function()
     {
         return true;
@@ -195,6 +201,7 @@ WebInspector.SourceFrame.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     canHighlightPosition: function()
     {
@@ -484,6 +491,9 @@ WebInspector.SourceFrame.prototype = {
             this._textEditor.setSelection(range);
     },
 
+    /**
+     * @return {boolean}
+     */
     hasSearchResults: function()
     {
         return this._searchResults.length > 0;
@@ -512,11 +522,17 @@ WebInspector.SourceFrame.prototype = {
         this.jumpToSearchResult(currentIndex - 1);
     },
 
+    /**
+     * @return {boolean}
+     */
     showingFirstSearchResult: function()
     {
         return this._searchResults.length &&  this._currentSearchResultIndex === 0;
     },
 
+    /**
+     * @return {boolean}
+     */
     showingLastSearchResult: function()
     {
         return this._searchResults.length && this._currentSearchResultIndex === (this._searchResults.length - 1);

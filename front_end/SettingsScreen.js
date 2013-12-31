@@ -127,6 +127,7 @@ WebInspector.SettingsScreen.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     isClosingKey: function(keyCode)
     {

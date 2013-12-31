@@ -135,11 +135,17 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._update();
     },
 
+    /**
+     * @return {number}
+     */
     windowLeft: function()
     {
         return this._overviewGrid.windowLeft();
     },
 
+    /**
+     * @return {number}
+     */
     windowRight: function()
     {
         return this._overviewGrid.windowRight();
@@ -187,12 +193,16 @@ WebInspector.TimelineOverviewCalculator = function()
 WebInspector.TimelineOverviewCalculator.prototype = {
     /**
      * @param {number} time
+     * @return {number}
      */
     computePosition: function(time)
     {
         return (time - this._minimumBoundary) / this.boundarySpan() * this._workingArea + this.paddingLeft;
     },
 
+    /**
+     * @return {!{start: number, end: number}}
+     */
     computeBarGraphPercentages: function(record)
     {
         var start = (WebInspector.TimelineModel.startTimeInSeconds(record) - this._minimumBoundary) / this.boundarySpan() * 100;
@@ -235,21 +245,33 @@ WebInspector.TimelineOverviewCalculator.prototype = {
         return Number.secondsToString(value, hires);
     },
 
+    /**
+     * @return {number}
+     */
     maximumBoundary: function()
     {
         return this._maximumBoundary;
     },
 
+    /**
+     * @return {number}
+     */
     minimumBoundary: function()
     {
         return this._minimumBoundary;
     },
 
+    /**
+     * @return {number}
+     */
     zeroTime: function()
     {
         return this._minimumBoundary;
     },
 
+    /**
+     * @return {number}
+     */
     boundarySpan: function()
     {
         return this._maximumBoundary - this._minimumBoundary;
@@ -278,6 +300,7 @@ WebInspector.TimelineOverviewBase.prototype = {
     /**
      * @param {number} windowLeft
      * @param {number} windowRight
+     * @return {!{startTime: number, endTime: number}}
      */
     windowTimes: function(windowLeft, windowRight)
     {
@@ -292,6 +315,7 @@ WebInspector.TimelineOverviewBase.prototype = {
     /**
      * @param {number} startTime
      * @param {number} endTime
+     * @return {!{left: number, right: number}}
      */
     windowBoundaries: function(startTime, endTime)
     {

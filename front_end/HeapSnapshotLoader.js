@@ -58,6 +58,11 @@ WebInspector.HeapSnapshotLoader.prototype = {
             this._parseStringsArray();
     },
 
+    /**
+     * @param {string} constructorName
+     * @return {T}
+     * @template T
+     */
     buildSnapshot: function(constructorName)
     {
         this._progress.updateStatus("Processing snapshot\u2026");

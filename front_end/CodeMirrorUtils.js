@@ -52,6 +52,7 @@ WebInspector.CodeMirrorUtils = {
 
     /**
      * @param {string} tokenType
+     * @return {?string}
      */
     convertTokenType: function(tokenType)
     {

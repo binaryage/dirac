@@ -163,6 +163,9 @@ WebInspector.NetworkLogView.prototype = {
         this._allowPopover = flag;
     },
 
+    /**
+     * @return {!Array.<!Element>}
+     */
     elementsToRestoreScrollPositionsFor: function()
     {
         if (!this._dataGrid) // Not initialized yet.
@@ -748,6 +751,9 @@ WebInspector.NetworkLogView.prototype = {
         return this._requests;
     },
 
+    /**
+     * @return {!WebInspector.NetworkRequest}
+     */
     requestById: function(id)
     {
         return this._requestsById[id];
@@ -1537,6 +1543,9 @@ WebInspector.NetworkPanel.prototype = {
         this.element.enableStyleClass("filters-toggled", toggled);
     },
 
+    /**
+     * @return {!Array.<!Element>}
+     */
     elementsToRestoreScrollPositionsFor: function()
     {
         return this._networkLogView.elementsToRestoreScrollPositionsFor();
@@ -1577,6 +1586,9 @@ WebInspector.NetworkPanel.prototype = {
         return this._networkLogView.requests;
     },
 
+    /**
+     * @return {!WebInspector.NetworkRequest}
+     */
     requestById: function(id)
     {
         return this._networkLogView.requestById(id);
@@ -1793,27 +1805,43 @@ WebInspector.NetworkBaseCalculator = function()
 }
 
 WebInspector.NetworkBaseCalculator.prototype = {
+    /**
+     * @param {number} time
+     * @return {number}
+     */
     computePosition: function(time)
     {
         return (time - this._minimumBoundary) / this.boundarySpan() * this._workingArea;
     },
 
+    /**
+     * @return {!{start: number, middle: number, end: number}}
+     */
     computeBarGraphPercentages: function(item)
     {
         return {start: 0, middle: 0, end: (this._value(item) / this.boundarySpan()) * 100};
     },
 
+    /**
+     * @return {!{left: string, right: string, tooltip: string}}
+     */
     computeBarGraphLabels: function(item)
     {
         const label = this.formatTime(this._value(item));
         return {left: label, right: label, tooltip: label};
     },
 
+    /**
+     * @return {number}
+     */
     boundarySpan: function()
     {
         return this._maximumBoundary - this._minimumBoundary;
     },
 
+    /**
+     * @return {boolean}
+     */
     updateBoundaries: function(item)
     {
         this._minimumBoundary = 0;
@@ -1832,21 +1860,33 @@ WebInspector.NetworkBaseCalculator.prototype = {
         delete this._maximumBoundary;
     },
 
+    /**
+     * @return {number}
+     */
     maximumBoundary: function()
     {
         return this._maximumBoundary;
     },
 
+    /**
+     * @return {number}
+     */
     minimumBoundary: function()
     {
         return this._minimumBoundary;
     },
 
+    /**
+     * @return {number}
+     */
     zeroTime: function()
     {
         return this._minimumBoundary;
     },
 
+    /**
+     * @return {number}
+     */
     _value: function(item)
     {
         return 0;
@@ -1880,6 +1920,10 @@ WebInspector.NetworkTimeCalculator = function(startAtZero)
 }
 
 WebInspector.NetworkTimeCalculator.prototype = {
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     * @return {!{start: number, middle: number, end: number}}
+     */
     computeBarGraphPercentages: function(request)
     {
         if (request.startTime !== -1)
@@ -1906,6 +1950,9 @@ WebInspector.NetworkTimeCalculator.prototype = {
         return {start: start, middle: middle, end: end};
     },
 
+    /**
+     * @return {number}
+     */
     computePercentageFromEventTime: function(eventTime)
     {
         // This function computes a percentage in terms of the total loading time
@@ -1917,6 +1964,9 @@ WebInspector.NetworkTimeCalculator.prototype = {
         return 0;
     },
 
+    /**
+     * @return {boolean}
+     */
     updateBoundariesForEventTime: function(eventTime)
     {
         if (eventTime === -1 || this.startAtZero)
@@ -1929,6 +1979,9 @@ WebInspector.NetworkTimeCalculator.prototype = {
         return false;
     },
 
+    /**
+     * @return {!{left: string, right: string, tooltip: (string|undefined)}}
+     */
     computeBarGraphLabels: function(request)
     {
         var rightLabel = "";
@@ -1957,6 +2010,9 @@ WebInspector.NetworkTimeCalculator.prototype = {
         return {left: leftLabel, right: rightLabel, tooltip: tooltip};
     },
 
+    /**
+     * @return {boolean}
+     */
     updateBoundaries: function(request)
     {
         var didChange = false;
@@ -1981,6 +2037,9 @@ WebInspector.NetworkTimeCalculator.prototype = {
         return didChange;
     },
 
+    /**
+     * @return {string}
+     */
     formatTime: function(value)
     {
         return Number.secondsToString(value);
@@ -2009,6 +2068,10 @@ WebInspector.NetworkTransferTimeCalculator = function()
 }
 
 WebInspector.NetworkTransferTimeCalculator.prototype = {
+    /**
+     * @param {number} value
+     * @return {string}
+     */
     formatTime: function(value)
     {
         return Number.secondsToString(value);
@@ -2037,6 +2100,10 @@ WebInspector.NetworkTransferDurationCalculator = function()
 }
 
 WebInspector.NetworkTransferDurationCalculator.prototype = {
+    /**
+     * @param {number} value
+     * @return {string}
+     */
     formatTime: function(value)
     {
         return Number.secondsToString(value);
@@ -2098,6 +2165,9 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._linkifier.reset();
     },
 
+    /**
+     * @return {boolean}
+     */
     isFilteredOut: function()
     {
         return !!this._parentView._filteredOutRequests.get(this._request);

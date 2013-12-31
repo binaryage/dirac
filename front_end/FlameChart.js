@@ -103,6 +103,7 @@ WebInspector.FlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
+     * @return {?Array.<!{title: string, text: string}>}
      */
     prepareHighlightedEntryInfo: function(entryIndex) { },
 

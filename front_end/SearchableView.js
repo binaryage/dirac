@@ -230,6 +230,9 @@ WebInspector.SearchableView.prototype = {
         this._updateSearchMatchesCountAndCurrentMatchIndex(this._searchProvider.currentSearchMatches, currentMatchIndex);
     },
 
+    /**
+     * @return {boolean}
+     */
     isSearchVisible: function()
     {
         return this._searchIsVisible;

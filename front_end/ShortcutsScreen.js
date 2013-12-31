@@ -97,7 +97,7 @@ WebInspector.shortcutsScreen;
 WebInspector.ShortcutsSection = function(name)
 {
     this.name = name;
-    this._lines = /** @type {!Array.<{key: !Node, text: string}>} */ ([]);
+    this._lines = /** @type {!Array.<!{key: !Node, text: string}>} */ ([]);
     this.order = ++WebInspector.ShortcutsSection._sequenceNumber;
 };
 

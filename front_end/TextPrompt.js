@@ -74,6 +74,7 @@ WebInspector.TextPrompt.prototype = {
      * they should use the result of this method to attach listeners for bubbling events.
      *
      * @param {!Element} element
+     * @return {!Element}
      */
     attach: function(element)
     {
@@ -88,6 +89,7 @@ WebInspector.TextPrompt.prototype = {
      *
      * @param {!Element} element
      * @param {function(!Event)} blurListener
+     * @return {!Element}
      */
     attachAndStartEditing: function(element, blurListener)
     {
@@ -98,6 +100,7 @@ WebInspector.TextPrompt.prototype = {
 
     /**
      * @param {!Element} element
+     * @return {!Element}
      */
     _attachInternal: function(element)
     {
@@ -257,6 +260,7 @@ WebInspector.TextPrompt.prototype = {
 
     /**
      * @param {?Event} event
+     * @return {boolean}
      */
     onKeyDown: function(event)
     {
@@ -864,6 +868,7 @@ WebInspector.TextPromptWithHistory.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     defaultKeyHandler: function(event, force)
     {

@@ -139,6 +139,9 @@ WebInspector.ElementsPanel.prototype = {
         this.updateBreadcrumbSizes();
     },
 
+    /**
+     * @return {!Element}
+     */
     defaultFocusedElement: function()
     {
         return this.treeOutline.element;
@@ -490,7 +493,7 @@ WebInspector.ElementsPanel.prototype = {
             object.release();
 
             /**
-             * @return {{ offsetWidth: number, offsetHeight: number, naturalWidth: number, naturalHeight: number }}
+             * @return {!{offsetWidth: number, offsetHeight: number, naturalWidth: number, naturalHeight: number}}
              * @this {!Element}
              */
             function dimensions()

@@ -149,9 +149,10 @@ WebInspector.Settings.prototype = {
 /**
  * @constructor
  * @param {string} name
- * @param {*} defaultValue
+ * @param {V} defaultValue
  * @param {!WebInspector.Object} eventSupport
  * @param {?Storage} storage
+ * @template V
  */
 WebInspector.Setting = function(name, defaultValue, eventSupport, storage)
 {
@@ -185,6 +186,9 @@ WebInspector.Setting.prototype = {
         return this._name;
     },
 
+    /**
+     * @return {V}
+     */
     get: function()
     {
         if (typeof this._value !== "undefined")

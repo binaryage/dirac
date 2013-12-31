@@ -64,7 +64,7 @@ WebInspector.TracingAgent.prototype = {
     },
 
     /**
-     * @return {!Array.<{cat: string, args: !Object, ph: string, ts: number}>}
+     * @return {!Array.<!{cat: string, args: !Object, ph: string, ts: number}>}
      */
     events: function()
     {

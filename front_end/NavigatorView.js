@@ -426,6 +426,11 @@ WebInspector.NavigatorTreeOutline.Types = {
     FileSystem: "FileSystem"
 }
 
+/**
+ * @param {!TreeElement} treeElement1
+ * @param {!TreeElement} treeElement2
+ * @return {number}
+ */
 WebInspector.NavigatorTreeOutline._treeElementsCompare = function compare(treeElement1, treeElement2)
 {
     // Insert in the alphabetical order, first domains, then folders, then scripts.
@@ -718,6 +723,9 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
         return true;
     },
 
+    /**
+     * @return {boolean}
+     */
     onspace: function()
     {
         this._navigatorView._sourceSelected(this.uiSourceCode, true);
@@ -734,6 +742,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     ondblclick: function(event)
     {
@@ -744,6 +753,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onenter: function()
     {
@@ -753,6 +763,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     ondelete: function()
     {

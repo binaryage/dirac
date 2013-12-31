@@ -50,6 +50,9 @@ WebInspector.SidebarPane.EventTypes = {
 }
 
 WebInspector.SidebarPane.prototype = {
+    /**
+     * @return {string}
+     */
     title: function()
     {
         return this._title;

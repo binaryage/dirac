@@ -55,6 +55,10 @@ WebInspector.FileSystemProjectDelegate._scriptExtensions = ["js", "java", "coffe
 WebInspector.FileSystemProjectDelegate._styleSheetExtensions = ["css", "scss", "sass", "less"].keySet();
 WebInspector.FileSystemProjectDelegate._documentExtensions = ["htm", "html", "asp", "aspx", "phtml", "jsp"].keySet();
 
+/**
+ * @param {string} fileSystemPath
+ * @return {string}
+ */
 WebInspector.FileSystemProjectDelegate.projectId = function(fileSystemPath)
 {
     return "filesystem:" + fileSystemPath;
@@ -578,6 +582,7 @@ WebInspector.FileSystemWorkspaceProvider.prototype = {
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @return {string}
      */
     fileSystemPath: function(uiSourceCode)
     {
@@ -586,7 +591,8 @@ WebInspector.FileSystemWorkspaceProvider.prototype = {
     },
 
     /**
-     * @param {!WebInspector.FileSystemProjectDelegate} fileSystemPath
+     * @param {string} fileSystemPath
+     * @return {!WebInspector.FileSystemProjectDelegate}
      */
     delegate: function(fileSystemPath)
     {

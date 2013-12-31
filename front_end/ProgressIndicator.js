@@ -81,6 +81,9 @@ WebInspector.ProgressIndicator.prototype = {
         this.dispatchEventToListeners(WebInspector.Progress.Events.Canceled);
     },
 
+    /**
+     * @return {boolean}
+     */
     isCanceled: function()
     {
         return this._isCanceled;

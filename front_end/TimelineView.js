@@ -184,11 +184,17 @@ WebInspector.TimelineView.prototype = {
         this._repopulateRecords();
     },
 
+    /**
+     * @return {number}
+     */
     windowStartTime: function()
     {
         return this._windowStartTime || this._model.minimumRecordTime();
     },
 
+    /**
+     * @return {number}
+     */
     windowEndTime: function()
     {
         return this._windowEndTime < Infinity ? this._windowEndTime : this._model.maximumRecordTime();
@@ -556,6 +562,9 @@ WebInspector.TimelineView.prototype = {
         this._invalidateAndScheduleRefresh(true, true);
     },
 
+    /**
+     * @return {!Array.<!Element>}
+     */
     elementsToRestoreScrollPositionsFor: function()
     {
         return [this._containerElement];
@@ -1339,12 +1348,16 @@ WebInspector.TimelineCalculator._minWidth = 5;
 WebInspector.TimelineCalculator.prototype = {
     /**
      * @param {number} time
+     * @return {number}
      */
     computePosition: function(time)
     {
         return (time - this._minimumBoundary) / this.boundarySpan() * this._workingArea + this.paddingLeft;
     },
 
+    /**
+     * @return {!{start: number, end: number, endWithChildren: number, cpuWidth: number}}
+     */
     computeBarGraphPercentages: function(record)
     {
         var start = (record.startTime - this._minimumBoundary) / this.boundarySpan() * 100;
@@ -1354,6 +1367,9 @@ WebInspector.TimelineCalculator.prototype = {
         return {start: start, end: end, endWithChildren: endWithChildren, cpuWidth: cpuWidth};
     },
 
+    /**
+     * @return {!{left: number, width: number, widthWithChildren: number, cpuWidth: number}}
+     */
     computeBarGraphWindowPosition: function(record)
     {
         var percentages = this.computeBarGraphPercentages(record);
@@ -1398,21 +1414,33 @@ WebInspector.TimelineCalculator.prototype = {
         return Number.secondsToString(value + this._minimumBoundary - this._model.minimumRecordTime(), hires);
     },
 
+    /**
+     * @return {number}
+     */
     maximumBoundary: function()
     {
         return this._maximumBoundary;
     },
 
+    /**
+     * @return {number}
+     */
     minimumBoundary: function()
     {
         return this._minimumBoundary;
     },
 
+    /**
+     * @return {number}
+     */
     zeroTime: function()
     {
         return this._model.minimumRecordTime();
     },
 
+    /**
+     * @return {number}
+     */
     boundarySpan: function()
     {
         return this._maximumBoundary - this._minimumBoundary;

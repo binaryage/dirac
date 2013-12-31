@@ -54,7 +54,7 @@ WebInspector.CanvasReplayStateView = function(traceLogPlayer)
 
     /** @type {!Object.<string, !Object.<string, boolean>>} */
     this._gridNodesExpandedState = {};
-    /** @type {!Object.<string, {scrollTop:number, scrollLeft:number}>} */
+    /** @type {!Object.<string, !{scrollTop: number, scrollLeft: number}>} */
     this._gridScrollPositions = {};
 
     /** @type {?CanvasAgent.ResourceId} */

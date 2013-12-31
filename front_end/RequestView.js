@@ -43,6 +43,9 @@ WebInspector.RequestView = function(request)
 }
 
 WebInspector.RequestView.prototype = {
+    /**
+     * @return {boolean}
+     */
     hasContent: function()
     {
         return false;

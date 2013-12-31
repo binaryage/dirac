@@ -96,6 +96,9 @@ WebInspector.ResourceTreeModel.prototype = {
         this._cachedResourcesProcessed = true;
     },
 
+    /**
+     * @return {boolean}
+     */
     cachedResourcesLoaded: function()
     {
         return this._cachedResourcesProcessed;

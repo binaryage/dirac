@@ -203,6 +203,7 @@ WebInspector.ProfileDataGridNode.prototype = {
 
     /**
      * @param {!WebInspector.ProfileDataGridNode} node
+     * @return {?WebInspector.ProfileDataGridNode}
      */
     findChild: function(node)
     {

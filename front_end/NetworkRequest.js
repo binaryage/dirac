@@ -361,6 +361,9 @@ WebInspector.NetworkRequest.prototype = {
         return this._parsedURL.displayName;
     },
 
+    /**
+     * @return {string}
+     */
     name: function()
     {
         if (this._name)
@@ -369,6 +372,9 @@ WebInspector.NetworkRequest.prototype = {
         return this._name;
     },
 
+    /**
+     * @return {string}
+     */
     path: function()
     {
         if (this._path)

@@ -60,6 +60,9 @@ WebInspector.View.prototype = {
         return this._parentView;
     },
 
+    /**
+     * @return {boolean}
+     */
     isShowing: function()
     {
         return this._isShowing;
@@ -258,6 +261,9 @@ WebInspector.View.prototype = {
             children[i].detach();
     },
 
+    /**
+     * @return {!Array.<!Element>}
+     */
     elementsToRestoreScrollPositionsFor: function()
     {
         return [this.element];
@@ -285,6 +291,9 @@ WebInspector.View.prototype = {
         }
     },
 
+    /**
+     * @return {boolean}
+     */
     canHighlightPosition: function()
     {
         return false;

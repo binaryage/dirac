@@ -210,6 +210,7 @@ WebInspector.LayerTreeElement.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     onselect: function()
     {

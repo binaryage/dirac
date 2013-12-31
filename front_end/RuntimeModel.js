@@ -422,11 +422,17 @@ WebInspector.FrameExecutionContextList.prototype =
         this.dispatchEventToListeners(WebInspector.FrameExecutionContextList.EventTypes.ContextAdded, this);
     },
 
+    /**
+     * @return {!Array.<!WebInspector.ExecutionContext>}
+     */
     executionContexts: function()
     {
         return this._executionContexts;
     },
 
+    /**
+     * @return {!WebInspector.ExecutionContext}
+     */
     mainWorldContext: function() 
     {
         return this._executionContexts[0];
@@ -434,6 +440,7 @@ WebInspector.FrameExecutionContextList.prototype =
 
     /**
      * @param {string} securityOrigin
+     * @return {?WebInspector.ExecutionContext}
      */
     contextBySecurityOrigin: function(securityOrigin)
     {

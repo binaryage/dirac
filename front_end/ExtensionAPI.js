@@ -104,6 +104,10 @@ function defineCommonExtensionSymbols(apiPrivate)
     };
 }
 
+/**
+ * @param {number} injectedScriptId
+ * @return {!Object}
+ */
 function injectedExtensionAPI(injectedScriptId)
 {
 

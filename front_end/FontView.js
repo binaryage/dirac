@@ -44,6 +44,9 @@ WebInspector.FontView._fontId = 0;
 WebInspector.FontView._measureFontSize = 50;
 
 WebInspector.FontView.prototype = {
+    /**
+     * @return {boolean}
+     */
     hasContent: function()
     {
         return true;

@@ -123,11 +123,17 @@ WebInspector.RequestContentView = function(request)
 }
 
 WebInspector.RequestContentView.prototype = {
+    /**
+     * @return {boolean}
+     */
     hasContent: function()
     {
         return true;
     },
 
+    /**
+     * @return {!WebInspector.View}
+     */
     get innerView()
     {
         return this._innerView;
@@ -169,6 +175,7 @@ WebInspector.RequestContentView.prototype = {
 
     /**
      * @override
+     * @return {boolean}
      */
     canHighlightPosition: function()
     {

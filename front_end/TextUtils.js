@@ -100,6 +100,10 @@ WebInspector.TextUtils = {
         return WebInspector.TextUtils.isOpeningBraceChar(char) || WebInspector.TextUtils.isClosingBraceChar(char);
     },
 
+    /**
+     * @param {string} text
+     * @return {!Array.<string>}
+     */
     textToWords: function(text)
     {
         var words = [];

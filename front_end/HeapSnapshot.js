@@ -30,6 +30,9 @@
 
 /**
  * @constructor
+ * @param {!Uint32Array} array
+ * @param {number} start
+ * @param {number} end
  */
 WebInspector.HeapSnapshotArraySlice = function(array, start, end)
 {
@@ -39,11 +42,20 @@ WebInspector.HeapSnapshotArraySlice = function(array, start, end)
 }
 
 WebInspector.HeapSnapshotArraySlice.prototype = {
+    /**
+     * @param {number} index
+     * @return {number}
+     */
     item: function(index)
     {
         return this._array[this._start + index];
     },
 
+    /**
+     * @param {number} start
+     * @param {number} end
+     * @return {!Uint32Array}
+     */
     slice: function(start, end)
     {
         if (typeof end === "undefined")
@@ -64,6 +76,9 @@ WebInspector.HeapSnapshotEdge = function(snapshot, edges, edgeIndex)
 }
 
 WebInspector.HeapSnapshotEdge.prototype = {
+    /**
+     * @return {!WebInspector.HeapSnapshotEdge}
+     */
     clone: function()
     {
         return new WebInspector.HeapSnapshotEdge(this._snapshot, this._edges, this.edgeIndex);
@@ -79,31 +94,49 @@ WebInspector.HeapSnapshotEdge.prototype = {
         throw new Error("Not implemented");
     },
 
+    /**
+     * @return {!WebInspector.HeapSnapshotNode}
+     */
     node: function()
     {
         return this._snapshot.createNode(this.nodeIndex());
     },
 
+    /**
+     * @return {number}
+     */
     nodeIndex: function()
     {
         return this._edges.item(this.edgeIndex + this._snapshot._edgeToNodeOffset);
     },
 
+    /**
+     * @return {!Array.<number>}
+     */
     rawEdges: function()
     {
         return this._edges;
     },
 
+    /**
+     * @return {string}
+     */
     toString: function()
     {
         return "HeapSnapshotEdge: " + this.name();
     },
 
+    /**
+     * @return {string}
+     */
     type: function()
     {
         return this._snapshot._edgeTypes[this._type()];
     },
 
+    /**
+     * @return {!{name: string, node: string, nodeIndex: number, type: string, distance: number}}
+     */
     serialize: function()
     {
         var node = this.node();

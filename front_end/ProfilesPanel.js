@@ -835,6 +835,7 @@ WebInspector.ProfilesPanel.prototype = {
     /**
      * @param {string} typeId
      * @param {number} uid
+     * @return {?WebInspector.ProfileHeader}
      */
     getProfile: function(typeId, uid)
     {
@@ -851,6 +852,7 @@ WebInspector.ProfilesPanel.prototype = {
 
     /**
      * @param {string} typeId
+     * @return {!WebInspector.ProfileType}
      */
     getProfileType: function(typeId)
     {
@@ -1022,6 +1024,9 @@ WebInspector.ProfileSidebarTreeElement.prototype = {
             this.treeOutline.panel._showProfile(this.profile);
     },
 
+    /**
+     * @return {boolean}
+     */
     ondelete: function()
     {
         this.treeOutline.panel._removeProfileHeader(this.profile);

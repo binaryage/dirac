@@ -57,7 +57,7 @@ WebInspector.TimelinePresentationModel.categories = function()
 };
 
 /**
- * @return {!Object.<string, {title: string, category: !WebInspector.TimelineCategory}>}
+ * @return {!Object.<string, !{title: string, category: !WebInspector.TimelineCategory}>}
  */
 WebInspector.TimelinePresentationModel._initRecordStyles = function()
 {
@@ -118,7 +118,7 @@ WebInspector.TimelinePresentationModel._initRecordStyles = function()
 
 /**
  * @param {!Object} record
- * @return {{title: string, category: !WebInspector.TimelineCategory}}
+ * @return {!{title: string, category: !WebInspector.TimelineCategory}}
  */
 WebInspector.TimelinePresentationModel.recordStyle = function(record)
 {
@@ -257,11 +257,17 @@ WebInspector.TimelinePresentationModel.prototype = {
         this._searchFilter = filter;
     },
 
+    /**
+     * @return {!WebInspector.TimelinePresentationModel.Record}
+     */
     rootRecord: function()
     {
         return this._rootRecord;
     },
 
+    /**
+     * @return {!Array.<!WebInspector.TimelinePresentationModel.Record>}
+     */
     frames: function()
     {
         return this._frames;
@@ -286,6 +292,9 @@ WebInspector.TimelinePresentationModel.prototype = {
         this._coalescingBuckets = {};
     },
 
+    /**
+     * @param {!WebInspector.TimelineFrame} frame
+     */
     addFrame: function(frame)
     {
         if (!frame.isBackground)
@@ -577,6 +586,9 @@ WebInspector.TimelinePresentationModel.prototype = {
         delete this._filteredRecords;
     },
 
+    /**
+     * @return {!Array.<!WebInspector.TimelinePresentationModel.Record>}
+     */
     filteredRecords: function()
     {
         if (this._filteredRecords)
@@ -636,6 +648,11 @@ WebInspector.TimelinePresentationModel.prototype = {
         return recordsInWindow;
     },
 
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     * @return {!Array.<!WebInspector.TimelinePresentationModel.Record>}
+     */
     filteredFrames: function(startTime, endTime)
     {
         function compareStartTime(value, object)
@@ -653,11 +670,17 @@ WebInspector.TimelinePresentationModel.prototype = {
         return this._frames.slice(firstFrame, lastFrame);
     },
 
+    /**
+     * @return {!Array.<!WebInspector.TimelinePresentationModel.Record>}
+     */
     eventDividerRecords: function()
     {
         return this._eventDividerRecords;
     },
 
+    /**
+     * @return {boolean}
+     */
     isVisible: function(record)
     {
         for (var i = 0; i < this._filters.length; ++i) {
@@ -668,7 +691,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
-     * @param {{tasks: !Array.<{startTime: number, endTime: number}>, firstTaskIndex: number, lastTaskIndex: number}} info
+     * @param {!{tasks: !Array.<!{startTime: number, endTime: number}>, firstTaskIndex: number, lastTaskIndex: number}} info
      * @return {!Element}
      */
     generateMainThreadBarPopupContent: function(info)
@@ -1064,6 +1087,9 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         return null;
     },
 
+    /**
+     * @return {boolean}
+     */
     containsTime: function(time)
     {
         return this.startTime <= time && time <= this.endTime;
@@ -1539,7 +1565,7 @@ WebInspector.TimelinePresentationModel._generateAggregatedInfo = function(aggreg
 /**
  * @param {!Object} aggregatedStats
  * @param {string=} firstCategoryName
- * @return {{pieChart: !WebInspector.PieChart, element: !Element, footerElement: !Element}}
+ * @return {!{pieChart: !WebInspector.PieChart, element: !Element, footerElement: !Element}}
  */
 WebInspector.TimelinePresentationModel.generatePieChart = function(aggregatedStats, firstCategoryName)
 {
@@ -1778,6 +1804,9 @@ WebInspector.TimelinePopupContentHelper = function(title)
 }
 
 WebInspector.TimelinePopupContentHelper.prototype = {
+    /**
+     * @return {!Element}
+     */
     contentTable: function()
     {
         return this._contentTable;
