@@ -166,12 +166,12 @@ body.undocked.platform-mac-snowleopard.inactive .toolbar-background {
     color: #555 !important;
 }
 
-body.undocked.platform-mac-mountain-lion .toolbar-background {
+body.undocked.platform-mac .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(208, 208, 208)), to(rgb(200, 200, 200))) !important;
     color: #333 !important;
 }
 
-body.undocked.platform-mac-mountain-lion.inactive .toolbar-background {
+body.undocked.platform-mac.inactive .toolbar-background {
     background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(238, 238, 238)), to(rgb(224, 224, 224))) !important;
     color: #555 !important;
 }

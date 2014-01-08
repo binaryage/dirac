@@ -838,8 +838,7 @@ WebInspector.PlatformFlavor = {
     MacTiger: "mac-tiger",
     MacLeopard: "mac-leopard",
     MacSnowLeopard: "mac-snowleopard",
-    MacLion: "mac-lion",
-    MacMountainLion: "mac-mountain-lion"
+    MacLion: "mac-lion"
 }
 
 WebInspector.platformFlavor = function()
@@ -866,8 +865,8 @@ WebInspector.platformFlavor = function()
                     return WebInspector.PlatformFlavor.MacSnowLeopard;
                 case 7:
                     return WebInspector.PlatformFlavor.MacLion;
-                case 8:
-                    return WebInspector.PlatformFlavor.MacMountainLion;
+                case 8: // Matches the default version
+                case 9: // Matches the default version
                 default:
                     return "";
             }
