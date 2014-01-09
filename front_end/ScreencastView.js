@@ -32,63 +32,13 @@
  * @constructor
  * @extends {WebInspector.View}
  * @implements {WebInspector.DOMNodeHighlighter}
+ * @param {!Element} statusBarButtonPlaceholder
  */
-WebInspector.ScreencastView = function()
+WebInspector.ScreencastView = function(statusBarButtonPlaceholder)
 {
     WebInspector.View.call(this);
     this.registerRequiredCSS("screencastView.css");
-
-    this.element.classList.add("fill");
-    this.element.classList.add("screencast");
-
-    this._createNavigationBar();
-
-    this._viewportElement = this.element.createChild("div", "screencast-viewport hidden");
-    this._glassPaneElement = this.element.createChild("div", "screencast-glasspane hidden");
-
-    this._canvasElement = this._viewportElement.createChild("canvas");
-    this._canvasElement.tabIndex = 1;
-    this._canvasElement.addEventListener("mousedown", this._handleMouseEvent.bind(this), false);
-    this._canvasElement.addEventListener("mouseup", this._handleMouseEvent.bind(this), false);
-    this._canvasElement.addEventListener("mousemove", this._handleMouseEvent.bind(this), false);
-    this._canvasElement.addEventListener("mousewheel", this._handleMouseEvent.bind(this), false);
-    this._canvasElement.addEventListener("click", this._handleMouseEvent.bind(this), false);
-    this._canvasElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), false);
-    this._canvasElement.addEventListener("keydown", this._handleKeyEvent.bind(this), false);
-    this._canvasElement.addEventListener("keyup", this._handleKeyEvent.bind(this), false);
-    this._canvasElement.addEventListener("keypress", this._handleKeyEvent.bind(this), false);
-
-    this._titleElement = this._viewportElement.createChild("div", "screencast-element-title monospace hidden");
-    this._tagNameElement = this._titleElement.createChild("span", "screencast-tag-name");
-    this._nodeIdElement = this._titleElement.createChild("span", "screencast-node-id");
-    this._classNameElement = this._titleElement.createChild("span", "screencast-class-name");
-    this._titleElement.appendChild(document.createTextNode(" "));
-    this._nodeWidthElement = this._titleElement.createChild("span");
-    this._titleElement.createChild("span", "screencast-px").textContent = "px";
-    this._titleElement.appendChild(document.createTextNode(" \u00D7 "));
-    this._nodeHeightElement = this._titleElement.createChild("span");
-    this._titleElement.createChild("span", "screencast-px").textContent = "px";
-
-    this._imageElement = new Image();
-    this._isCasting = false;
-    this._context = this._canvasElement.getContext("2d");
-    this._checkerboardPattern = this._createCheckerboardPattern(this._context);
-
-    this._shortcuts = /** !Object.<number, function(Event=):boolean> */ ({});
-    this._shortcuts[WebInspector.KeyboardShortcut.makeKey("l", WebInspector.KeyboardShortcut.Modifiers.Ctrl)] = this._focusNavigationBar.bind(this);
-
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastVisibilityChanged, this._screencastVisibilityChanged, this);
-
-    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, this._onTimeline.bind(this, true), this);
-    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStopped, this._onTimeline.bind(this, false), this);
-    this._timelineActive = WebInspector.timelineManager.isStarted();
-
-    WebInspector.cpuProfilerModel.addEventListener(WebInspector.CPUProfilerModel.EventTypes.ProfileStarted, this._onProfiler.bind(this, true), this);
-    WebInspector.cpuProfilerModel.addEventListener(WebInspector.CPUProfilerModel.EventTypes.ProfileStopped, this._onProfiler.bind(this, false), this);
-    this._profilerActive = WebInspector.cpuProfilerModel.isRecordingProfile();
-
-    this._updateGlasspane();
+    this._statusBarButtonPlaceholder = statusBarButtonPlaceholder;
 }
 
 WebInspector.ScreencastView._bordersSize = 40;
@@ -98,6 +48,84 @@ WebInspector.ScreencastView._navBarHeight = 29;
 WebInspector.ScreencastView._HttpRegex = /^https?:\/\/(.+)/;
 
 WebInspector.ScreencastView.prototype = {
+    initialize: function()
+    {
+        this.element.classList.add("fill");
+        this.element.classList.add("screencast");
+
+        this._createNavigationBar();
+
+        this._viewportElement = this.element.createChild("div", "screencast-viewport hidden");
+        this._glassPaneElement = this.element.createChild("div", "screencast-glasspane hidden");
+
+        this._canvasElement = this._viewportElement.createChild("canvas");
+        this._canvasElement.tabIndex = 1;
+        this._canvasElement.addEventListener("mousedown", this._handleMouseEvent.bind(this), false);
+        this._canvasElement.addEventListener("mouseup", this._handleMouseEvent.bind(this), false);
+        this._canvasElement.addEventListener("mousemove", this._handleMouseEvent.bind(this), false);
+        this._canvasElement.addEventListener("mousewheel", this._handleMouseEvent.bind(this), false);
+        this._canvasElement.addEventListener("click", this._handleMouseEvent.bind(this), false);
+        this._canvasElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), false);
+        this._canvasElement.addEventListener("keydown", this._handleKeyEvent.bind(this), false);
+        this._canvasElement.addEventListener("keyup", this._handleKeyEvent.bind(this), false);
+        this._canvasElement.addEventListener("keypress", this._handleKeyEvent.bind(this), false);
+
+        this._titleElement = this._viewportElement.createChild("div", "screencast-element-title monospace hidden");
+        this._tagNameElement = this._titleElement.createChild("span", "screencast-tag-name");
+        this._nodeIdElement = this._titleElement.createChild("span", "screencast-node-id");
+        this._classNameElement = this._titleElement.createChild("span", "screencast-class-name");
+        this._titleElement.appendChild(document.createTextNode(" "));
+        this._nodeWidthElement = this._titleElement.createChild("span");
+        this._titleElement.createChild("span", "screencast-px").textContent = "px";
+        this._titleElement.appendChild(document.createTextNode(" \u00D7 "));
+        this._nodeHeightElement = this._titleElement.createChild("span");
+        this._titleElement.createChild("span", "screencast-px").textContent = "px";
+
+        this._imageElement = new Image();
+        this._isCasting = false;
+        this._context = this._canvasElement.getContext("2d");
+        this._checkerboardPattern = this._createCheckerboardPattern(this._context);
+
+        this._shortcuts = /** !Object.<number, function(Event=):boolean> */ ({});
+        this._shortcuts[WebInspector.KeyboardShortcut.makeKey("l", WebInspector.KeyboardShortcut.Modifiers.Ctrl)] = this._focusNavigationBar.bind(this);
+
+        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastFrame, this._screencastFrame, this);
+        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.ScreencastVisibilityChanged, this._screencastVisibilityChanged, this);
+
+        WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, this._onTimeline.bind(this, true), this);
+        WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStopped, this._onTimeline.bind(this, false), this);
+        this._timelineActive = WebInspector.timelineManager.isStarted();
+
+        WebInspector.cpuProfilerModel.addEventListener(WebInspector.CPUProfilerModel.EventTypes.ProfileStarted, this._onProfiler.bind(this, true), this);
+        WebInspector.cpuProfilerModel.addEventListener(WebInspector.CPUProfilerModel.EventTypes.ProfileStopped, this._onProfiler.bind(this, false), this);
+        this._profilerActive = WebInspector.cpuProfilerModel.isRecordingProfile();
+
+        this._updateGlasspane();
+
+        this._currentScreencastState = WebInspector.settings.createSetting("currentScreencastState", "");
+        this._lastScreencastState = WebInspector.settings.createSetting("lastScreencastState", "");
+        this._toggleScreencastButton = new WebInspector.StatusBarStatesSettingButton(
+            "screencast-status-bar-item",
+            ["disabled", "left", "top"],
+            [WebInspector.UIString("Disable screencast."), WebInspector.UIString("Switch to portrait screencast."), WebInspector.UIString("Switch to landscape screencast.")],
+            this._currentScreencastState,
+            this._lastScreencastState,
+            this._toggleScreencastButtonClicked.bind(this));
+        this._statusBarButtonPlaceholder.parentElement.insertBefore(this._toggleScreencastButton.element, this._statusBarButtonPlaceholder);
+        this._statusBarButtonPlaceholder.parentElement.removeChild(this._statusBarButtonPlaceholder);
+    },
+
+    /**
+     * @param {string} state
+     */
+    _toggleScreencastButtonClicked: function(state)
+    {
+        if (state === "disabled")
+            WebInspector.inspectorView.hideScreencastView();
+        else
+            WebInspector.inspectorView.showScreencastView(this, state === "left");
+    },
+
     wasShown: function()
     {
         this._startCasting();

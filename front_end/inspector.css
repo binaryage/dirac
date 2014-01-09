@@ -672,8 +672,16 @@ body.remote .dock-status-bar-item {
     -webkit-mask-position: -64px -24px;
 }
 
-.screencast-status-bar-item .glyph {
+.screencast-status-bar-item.toggled-left .glyph {
     -webkit-mask-position: -256px -96px;
+}
+
+.screencast-status-bar-item.toggled-top .glyph {
+    -webkit-mask-position: -288px -96px;
+}
+
+.screencast-status-bar-item.toggled-disabled .glyph {
+    -webkit-mask-position: 0px -120px;
 }
 
 .clear-status-bar-item .glyph {

@@ -73,6 +73,11 @@ WebInspector.InspectorView = function()
     this._errorWarningCountElement = this._rightToolbarElement.createChild("div", "hidden");
     this._errorWarningCountElement.id = "error-warning-count";
 
+    this._closeButtonToolbarItem = document.createElementWithClass("div", "toolbar-close-button-item");
+    var closeButtonElement = this._closeButtonToolbarItem.createChild("div", "close-button");
+    closeButtonElement.addEventListener("click", WebInspector.close.bind(WebInspector), true);
+    this._rightToolbarElement.appendChild(this._closeButtonToolbarItem);
+
     this._drawer = new WebInspector.Drawer(this);
     this.appendToRightToolbar(this._drawer.toggleButtonElement());
 
@@ -111,7 +116,7 @@ WebInspector.InspectorView.prototype = {
      */
     appendToRightToolbar: function(element)
     {
-        this._rightToolbarElement.appendChild(element);
+        this._rightToolbarElement.insertBefore(element, this._closeButtonToolbarItem);
     },
 
     /**
@@ -454,12 +459,13 @@ WebInspector.InspectorView.prototype = {
 
     /**
      * @param {!WebInspector.View} view
+     * @param {boolean} vertical
      */
-    showScreencastView: function(view)
+    showScreencastView: function(view, vertical)
     {
-        this._splitView.setVertical(true);
         if (view.parentView() !== this._overlayView)
             view.show(this._overlayView.element);
+        this._splitView.setVertical(vertical);
         this._splitView.showBoth();
     },
 

@@ -60,20 +60,15 @@ var WebInspector = {
         if (this.inspectElementModeController)
             this.inspectorView.appendToLeftToolbar(this.inspectElementModeController.toggleSearchButton.element);
 
-        if (Capabilities.canScreencast) {
-            this._toggleScreencastButton = new WebInspector.StatusBarButton(WebInspector.UIString("Toggle screencast."), "screencast-status-bar-item");
-            this._toggleScreencastButton.addEventListener("click", this._toggleScreencastButtonClicked.bind(this), false);
-            this.inspectorView.appendToLeftToolbar(this._toggleScreencastButton.element);
-        }
-
         this.inspectorView.appendToRightToolbar(this.settingsController.statusBarItem);
         if (this.dockController.element)
             this.inspectorView.appendToRightToolbar(this.dockController.element);
 
-        var closeButtonToolbarItem = document.createElementWithClass("div", "toolbar-close-button-item");
-        var closeButtonElement = closeButtonToolbarItem.createChild("div", "close-button");
-        closeButtonElement.addEventListener("click", WebInspector.close.bind(WebInspector), true);
-        this.inspectorView.appendToRightToolbar(closeButtonToolbarItem);
+        if (Capabilities.canScreencast) {
+            var placeholder = document.createElement("div");
+            this._screencastView = new WebInspector.ScreencastView(placeholder);
+            this.inspectorView.appendToRightToolbar(placeholder);
+        }
     },
 
     /**
@@ -83,21 +78,6 @@ var WebInspector = {
     {
         return !!WebInspector.queryParamsObject["remoteFrontend"];
     },
-
-    _toggleScreencastButtonClicked: function()
-    {
-        this._toggleScreencastButton.toggled = !this._toggleScreencastButton.toggled;
-        WebInspector.settings.screencastEnabled.set(this._toggleScreencastButton.toggled);
-
-        if (this._toggleScreencastButton.toggled) {
-            if (!this._screencastView)
-                this._screencastView = new WebInspector.ScreencastView();
-            this.inspectorView.showScreencastView(this._screencastView);
-        } else {
-            this.inspectorView.hideScreencastView();
-        }
-    },
-
 
     showConsole: function()
     {
@@ -409,9 +389,8 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     WebInspector.WorkerManager.loadCompleted();
     InspectorFrontendAPI.loadCompleted();
 
-    if (Capabilities.canScreencast && WebInspector.settings.screencastEnabled.get())
-        this._toggleScreencastButtonClicked();
-
+    if (Capabilities.canScreencast)
+        this._screencastView.initialize();
     WebInspector.notifications.dispatchEventToListeners(WebInspector.Events.InspectorLoaded);
 }
 
