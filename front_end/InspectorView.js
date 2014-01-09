@@ -396,7 +396,7 @@ WebInspector.InspectorView.prototype = {
     _updateSplitView: function()
     {
         var dockSide = WebInspector.dockController.dockSide();
-        if (WebInspector.queryParamsObject["overlayContents"] && dockSide !== WebInspector.DockController.State.Undocked) {
+        if (dockSide !== WebInspector.DockController.State.Undocked) {
             this._splitView.showBoth();
             var vertical = dockSide === WebInspector.DockController.State.DockedToRight;
             this._splitView.setVertical(vertical);
@@ -415,7 +415,7 @@ WebInspector.InspectorView.prototype = {
     _onOverlayResized: function()
     {
         var dockSide = WebInspector.dockController.dockSide();
-        if (WebInspector.queryParamsObject["overlayContents"] && dockSide !== WebInspector.DockController.State.Undocked) {
+        if (dockSide !== WebInspector.DockController.State.Undocked) {
             // Leave 3px room for resizer.
             var sidebarSize = Math.ceil(this._splitView.sidebarSize() * WebInspector.zoomFactor());
             var bottom = this._splitView.isVertical() ? 0 : sidebarSize;
