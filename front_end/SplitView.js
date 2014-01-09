@@ -298,10 +298,11 @@ WebInspector.SplitView.prototype = {
 
     /**
      * @param {number} size
+     * @param {boolean=} ignoreConstraints
      */
-    setSidebarSize: function(size)
+    setSidebarSize: function(size, ignoreConstraints)
     {
-        this._innerSetSidebarSize(size);
+        this._innerSetSidebarSize(size, ignoreConstraints);
         this._saveSidebarSize();
     },
 
@@ -325,15 +326,17 @@ WebInspector.SplitView.prototype = {
 
     /**
      * @param {number} size
+     * @param {boolean=} ignoreConstraints
      */
-    _innerSetSidebarSize: function(size)
+    _innerSetSidebarSize: function(size, ignoreConstraints)
     {
         if (this._isShowingOne) {
             this._sidebarSize = size;
             return;
         }
 
-        size = this._applyConstraints(size);
+        if (!ignoreConstraints)
+            size = this._applyConstraints(size);
         if (this._sidebarSize === size)
             return;
 
@@ -412,21 +415,25 @@ WebInspector.SplitView.prototype = {
     {
         const minPadding = 20;
         var totalSize = this.totalSize();
-        var from = (this.isVertical() ? this._minimumSidebarWidth : this._minimumSidebarHeight) || 0;
+        var minimumSiderbarSizeContraint = this.isVertical() ? this._minimumSidebarWidth : this._minimumSidebarHeight;
+        var from = minimumSiderbarSizeContraint || 0;
         var fromInPercents = false;
         if (from && from < 1) {
             fromInPercents = true;
             from = Math.round(totalSize * from);
         }
-        from = Math.max(from, minPadding);
+        if (typeof minimumSiderbarSizeContraint !== "number")
+            from = Math.max(from, minPadding);
 
-        var minMainSize = (this.isVertical() ? this._minimumMainWidth : this._minimumMainHeight) || 0;
+        var minimumMainSizeConstraint = this.isVertical() ? this._minimumMainWidth : this._minimumMainHeight;
+        var minMainSize = minimumMainSizeConstraint || 0;
         var toInPercents = false;
         if (minMainSize && minMainSize < 1) {
             toInPercents = true;
             minMainSize = Math.round(totalSize * minMainSize);
         }
-        minMainSize = Math.max(minMainSize, minPadding);
+        if (typeof minimumMainSizeConstraint !== "number")
+            minMainSize = Math.max(minMainSize, minPadding);
 
         var to = totalSize - minMainSize;
         if (from <= to)

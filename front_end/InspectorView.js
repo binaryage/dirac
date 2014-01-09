@@ -43,8 +43,7 @@ WebInspector.InspectorView = function()
     var settingName = WebInspector.queryParamsObject["can_dock"] ? "InspectorView.splitView" : "InspectorView.screencastSplitView";
     this._splitView = new WebInspector.SplitView(false, settingName, 300, 300);
     this._splitView.setSecondIsSidebar(true);
-    this._splitView.setSidebarElementConstraints(150, 50);
-    this._splitView.setMainElementConstraints(50, 50);
+    this._updateConstraints();
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._updateSplitView.bind(this));
 
     this._splitView.element.id = "inspector-split-view";
@@ -52,7 +51,8 @@ WebInspector.InspectorView = function()
 
     this._overlayView = new WebInspector.ViewWithResizeCallback(this._onOverlayResized.bind(this));
     this._splitView.setMainView(this._overlayView);
-    WebInspector.settings.zoomLevel.addChangeListener(this._onOverlayResized, this);
+    this._zoomFactor = WebInspector.zoomFactor();
+    WebInspector.settings.zoomLevel.addChangeListener(this._onZoomChanged, this);
 
     this._devtoolsElement = this._splitView.sidebarElement();
     this._devtoolsElement.classList.add("vbox");
@@ -89,6 +89,13 @@ WebInspector.InspectorView = function()
 
     this._updateSplitView();
 }
+
+WebInspector.InspectorView.Constraints = {
+    OverlayWidth: 50,
+    OverlayHeight: 50,
+    DevToolsWidth: 150,
+    DevToolsHeight: 50
+};
 
 WebInspector.InspectorView.prototype = {
     /**
@@ -425,6 +432,24 @@ WebInspector.InspectorView.prototype = {
 
         // FIXME: make drawer a view.
         this._drawer.resize();
+    },
+
+    _onZoomChanged: function()
+    {
+        this._updateConstraints();
+        var zoomFactor = WebInspector.zoomFactor();
+        if (zoomFactor !== this._zoomFactor)
+            this._splitView.setSidebarSize(this._splitView.sidebarSize() * this._zoomFactor / zoomFactor, true);
+        this._zoomFactor = zoomFactor;
+    },
+
+    _updateConstraints: function()
+    {
+        var zoomFactor = WebInspector.zoomFactor();
+        this._splitView.setSidebarElementConstraints(WebInspector.InspectorView.Constraints.DevToolsWidth / zoomFactor,
+            WebInspector.InspectorView.Constraints.DevToolsHeight / zoomFactor);
+        this._splitView.setMainElementConstraints(WebInspector.InspectorView.Constraints.OverlayWidth / zoomFactor,
+            WebInspector.InspectorView.Constraints.OverlayHeight / zoomFactor);
     },
 
     /**
