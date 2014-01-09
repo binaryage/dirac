@@ -618,10 +618,6 @@
     left: 8px;
 }
 
-.sidebar-pane.composite .styles-section.read-only {
-    background-color: inherit;
-}
-
 .panel.elements .sidebar-pane-toolbar > select {
     float: right;
     width: 23px;
