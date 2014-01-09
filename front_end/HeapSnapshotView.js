@@ -1125,6 +1125,19 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
         this._lastSeenIndex = -1;
     },
 
+    /**
+     * @override
+     * @param {!WebInspector.ProfileHeader} profile
+     */
+    removeProfile: function(profile)
+    {
+        if (this._profileBeingRecorded === profile) {
+            this._stopRecordingProfile();
+            this._profileSamples = null;
+        }
+        WebInspector.HeapSnapshotProfileType.prototype.removeProfile.call(this, profile);
+    },
+
     __proto__: WebInspector.HeapSnapshotProfileType.prototype
 }
 

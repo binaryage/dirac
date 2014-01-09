@@ -530,7 +530,7 @@ WebInspector.ProfilesPanel.prototype = {
         return true;
     },
 
-    profileBeingRecordedRemoved: function()
+    _profileBeingRecordedRemoved: function()
     {
         this.recordButton.toggled = false;
         this.recordButton.title = this._selectedProfileType.buttonTooltip;
@@ -742,6 +742,8 @@ WebInspector.ProfilesPanel.prototype = {
      */
     _removeProfileHeader: function(profile)
     {
+        if (profile.profileType()._profileBeingRecorded === profile)
+            this._profileBeingRecordedRemoved();
         profile.dispose();
         profile.profileType().removeProfile(profile);
 

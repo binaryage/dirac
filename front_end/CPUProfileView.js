@@ -817,11 +817,8 @@ WebInspector.CPUProfileType.prototype = {
      */
     removeProfile: function(profile)
     {
-        if (this._profileBeingRecorded === profile) {
+        if (this._profileBeingRecorded === profile)
             this.stopRecordingProfile();
-            this._profileBeingRecorded = null;
-            WebInspector.panels.profiles.profileBeingRecordedRemoved();
-        }
         WebInspector.ProfileType.prototype.removeProfile.call(this, profile);
     },
 
