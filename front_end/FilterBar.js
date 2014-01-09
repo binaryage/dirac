@@ -456,6 +456,22 @@ WebInspector.ComboBoxFilterUI.prototype = {
     },
 
     /**
+     * @param {number} index
+     */
+    setSelectedIndex: function(index)
+    {
+        this._filterComboBox.setSelectedIndex(index);
+    },
+
+    /**
+     * @return {number}
+     */
+    selectedIndex: function(index)
+    {
+        return this._filterComboBox.selectedIndex();
+    },
+
+    /**
      * @param {?Event} event
      */
     _filterChanged: function(event)
@@ -517,6 +533,15 @@ WebInspector.CheckboxFilterUI.prototype = {
     checked: function()
     {
         return this._checked;
+    },
+
+    /**
+     * @param {boolean} state
+     */
+    setState: function(state)
+    {
+        this._checked = state;
+        this._update();
     },
 
     _update: function()

@@ -61,7 +61,6 @@ WebInspector.TimelinePanel = function()
     this._presentationModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", WebInspector.TimelinePanel.Mode.Events);
     this._glueRecordsSetting = WebInspector.settings.createSetting("timelineGlueRecords", false);
 
-    this._currentView = new WebInspector.TimelineView(this, this._model, this._glueRecordsSetting);
     this._createStatusBarItems();
 
     this._createPresentationSelector();
@@ -70,8 +69,6 @@ WebInspector.TimelinePanel = function()
     this._overviewPane = new WebInspector.TimelineOverviewPane(this._model);
     this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.WindowChanged, this._onWindowChanged.bind(this));
     this._overviewPane.show(this._presentationSelector.element);
-
-    this._currentView.show(this.element);
 
     this._createFileSelector();
     this._registerShortcuts();
@@ -117,8 +114,31 @@ WebInspector.TimelinePanel.prototype = {
         this._overviewPane.setWindow(left, right);
     },
 
+    /**
+     * @param {string} mode
+     */
+    _viewForMode: function(mode)
+    {
+        var view = this._views[mode];
+        if (!view) {
+            switch (mode) {
+            case WebInspector.TimelinePanel.Mode.Events:
+            case WebInspector.TimelinePanel.Mode.Frames:
+            case WebInspector.TimelinePanel.Mode.Memory:
+                view = new WebInspector.TimelineView(this, this._model, this._overviewPane, this._glueRecordsSetting, mode);
+                this._views[mode] = view;
+                break;
+            default:
+                console.assert(false, "Unknown mode: " + mode);
+            }
+        }
+        return view;
+    },
+
     _createPresentationSelector: function()
     {
+        this._views = {};
+
         this._presentationSelector = new WebInspector.View();
         this._presentationSelector.element.classList.add("hbox");
         this._presentationSelector.element.id = "timeline-overview-panel";
@@ -131,14 +151,8 @@ WebInspector.TimelinePanel.prototype = {
         var topPaneSidebarTree = new TreeOutline(overviewTreeElement);
 
         this._overviewItems = {};
-        this._overviewItems[WebInspector.TimelinePanel.Mode.Events] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-events",
-            WebInspector.UIString("Events"));
-        this._overviewItems[WebInspector.TimelinePanel.Mode.Frames] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-frames",
-            WebInspector.UIString("Frames"));
-        this._overviewItems[WebInspector.TimelinePanel.Mode.Memory] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-memory",
-            WebInspector.UIString("Memory"));
-
-        for (var mode in this._overviewItems) {
+        for (var mode in WebInspector.TimelinePanel.Mode) {
+            this._overviewItems[mode] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-" + mode.toLowerCase(), WebInspector.UIString(mode));
             var item = this._overviewItems[mode];
             item.onselect = this._onModeChanged.bind(this, mode);
             topPaneSidebarTree.appendChild(item);
@@ -186,13 +200,12 @@ WebInspector.TimelinePanel.prototype = {
         this._filtersContainer = this.element.createChild("div", "timeline-filters-header hidden");
         this._filtersContainer.appendChild(this._filterBar.filtersElement());
         this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
-        this._updateFiltersBar();
     },
 
     _updateFiltersBar: function()
     {
         this._filterBar.clear();
-        var hasFilters = this._currentView.createFilters(this._filterBar);
+        var hasFilters = this._currentView.createUIFilters(this._filterBar);
         this._filterBar.filterButton().setEnabled(hasFilters);
     },
 
@@ -329,7 +342,15 @@ WebInspector.TimelinePanel.prototype = {
         this.element.classList.remove("timeline-" + this._presentationModeSetting.get().toLowerCase() + "-view");
         this._presentationModeSetting.set(mode);
         this.element.classList.add("timeline-" + mode.toLowerCase() + "-view");
-        this._currentView.modeChanged(mode, this._overviewPane);
+        var windowTimes = null;
+        if (this._currentView) {
+            this._currentView.detach();
+            windowTimes = this._currentView.windowTimes();
+        }
+        this._currentView = this._viewForMode(mode);
+        this._updateFiltersBar();
+        this._currentView.show(this.element);
+        this._currentView.setWindowTimes(windowTimes);
         this._glueParentButton.setEnabled(this._currentView.supportsGlueParentMode());
     },
 

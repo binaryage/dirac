@@ -88,7 +88,8 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewCalculator.setWindow(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this._overviewCalculator.setDisplayWindow(0, this._overviewGrid.clientWidth());
 
-        this._overviewControl.update();
+        if (this._overviewControl)
+            this._overviewControl.update();
         this._overviewGrid.updateDividers(this._overviewCalculator);
         this._updateEventDividers();
     },
@@ -131,7 +132,8 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewGrid.setResizeEnabled(false);
         this._eventDividers = [];
         this._overviewGrid.updateDividers(this._overviewCalculator);
-        this._overviewControl.reset();
+        if (this._overviewControl)
+            this._overviewControl.reset();
         this._update();
     },
 
