@@ -214,6 +214,9 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "border-left-width": { values: [
         "medium", "thick", "thin"
     ] },
+    "box-shadow": { values: [
+        "inset", "none"
+    ] },
     "-webkit-writing-mode": { values: [
         "lr", "rl", "tb", "lr-tb", "rl-tb", "tb-rl", "horizontal-tb", "vertical-rl", "vertical-lr", "horizontal-bt"
     ] },
@@ -655,7 +658,6 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "border-left": { m: "background" },
     "border-radius": { m: "background" },
     "bottom": { m: "visuren" },
-    "box-shadow": { m: "background" },
     "color": { m: "color", a: "foreground" },
     "counter-increment": { m: "generate" },
     "counter-reset": { m: "generate" },
