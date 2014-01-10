@@ -170,7 +170,7 @@
 }
 
 .sidebar-pane-toolbar > label > input {
-    vertical-align: -2px;
+    vertical-align: bottom;
 }
 
 .sidebar-pane-toolbar > label.scripts-callstack-async {
