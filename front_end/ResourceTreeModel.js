@@ -214,17 +214,14 @@ WebInspector.ResourceTreeModel.prototype = {
         if (!this._cachedResourcesProcessed)
             return;
         var frame = this._frames[framePayload.id];
-        if (frame) {
-            // Navigation within existing frame.
-            this._removeSecurityOrigin(frame.securityOrigin);
-            frame._navigate(framePayload);
-        } else {
-            // Either a new frame or a main frame navigation to the new backend process.
-            console.error("Navigated unregistered frame.");
+        if (!frame) {
+            // Simulate missed "frameAttached" for a main frame navigation to the new backend process.
+            console.assert(!framePayload.parentId, "Main frame shouldn't have parent frame id.");
             frame = this._frameAttached(framePayload.id, framePayload.parentId || "");
-            if (!frame)
-                return;
+            console.assert(frame);
         }
+        this._removeSecurityOrigin(frame.securityOrigin);
+        frame._navigate(framePayload);
         var addedOrigin = frame.securityOrigin;
 
         if (frame.isMainFrame())
