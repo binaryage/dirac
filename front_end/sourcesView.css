@@ -65,7 +65,7 @@
     background-color: rgb(66, 129, 235);
 }
 
-#sources-panel-sources-view .drag-mask
+#sources-panel-sources-view .drag-mask {
     background-color: transparent;
     z-index: 1000;
 }
