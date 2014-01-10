@@ -2009,7 +2009,8 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         var spectrumHelper = this.editablePane() && this.editablePane()._spectrumHelper;
         var spectrum = spectrumHelper ? spectrumHelper.spectrum() : null;
 
-        var colorSwatch = new WebInspector.ColorSwatch();
+        var isEditable = !!(this._styleRule && this._styleRule.editable);
+        var colorSwatch = new WebInspector.ColorSwatch(!isEditable);
         colorSwatch.setColorString(text);
         colorSwatch.element.addEventListener("click", swatchClick.bind(this), false);
 
@@ -2059,28 +2060,32 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
          */
         function swatchClick(e)
         {
+            e.consume(true);
+
             // Shift + click toggles color formats.
             // Click opens colorpicker, only if the element is not in computed styles section.
             if (!spectrumHelper || e.shiftKey) {
                 changeColorDisplay();
-            } else {
-                var visible = spectrumHelper.toggle(colorSwatch.element, color, format);
-
-                if (visible) {
-                    spectrum.displayText = color.toString(format);
-                    this.originalPropertyText = this.property.propertyText;
-                    this.editablePane()._isEditingStyle = true;
-                    spectrum.addEventListener(WebInspector.Spectrum.Events.ColorChanged, boundSpectrumChanged);
-                    spectrumHelper.addEventListener(WebInspector.SpectrumPopupHelper.Events.Hidden, boundSpectrumHidden);
-
-                    scrollerElement = colorSwatch.element.enclosingNodeOrSelfWithClass("scroll-target");
-                    if (scrollerElement)
-                        scrollerElement.addEventListener("scroll", repositionSpectrum, false);
-                    else
-                        console.error("Unable to handle color picker scrolling");
-                }
+                return;
             }
-            e.consume(true);
+
+            if (!isEditable)
+                return;
+
+            var visible = spectrumHelper.toggle(colorSwatch.element, color, format);
+            if (visible) {
+                spectrum.displayText = color.toString(format);
+                this.originalPropertyText = this.property.propertyText;
+                this.editablePane()._isEditingStyle = true;
+                spectrum.addEventListener(WebInspector.Spectrum.Events.ColorChanged, boundSpectrumChanged);
+                spectrumHelper.addEventListener(WebInspector.SpectrumPopupHelper.Events.Hidden, boundSpectrumHidden);
+
+                scrollerElement = colorSwatch.element.enclosingNodeOrSelfWithClass("scroll-target");
+                if (scrollerElement)
+                    scrollerElement.addEventListener("scroll", repositionSpectrum, false);
+                else
+                    console.error("Unable to handle color picker scrolling");
+            }
         }
 
         var colorValueElement = document.createElement("span");
