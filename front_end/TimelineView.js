@@ -573,6 +573,7 @@ WebInspector.TimelineView.prototype = {
         this._windowEndTime = Infinity;
 
         this._resetView();
+        this.overviewControl().reset();
         this._windowFilter.reset();
         this._invalidateAndScheduleRefresh(true, true);
     },
