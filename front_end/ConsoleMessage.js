@@ -952,7 +952,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
                 sourceString = "XML";
                 break;
             case WebInspector.ConsoleMessage.MessageSource.JS:
-                sourceString = "JS";
+                sourceString = "JavaScript";
                 break;
             case WebInspector.ConsoleMessage.MessageSource.Network:
                 sourceString = "Network";

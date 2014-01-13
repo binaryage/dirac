@@ -912,7 +912,7 @@ WebInspector.ExtensionServer.prototype = {
             if (contextSecurityOrigin) {
                 context = frameContextList.contextBySecurityOrigin(contextSecurityOrigin);
                 if (!context) {
-                    console.warn("The JS context " + contextSecurityOrigin + " was not found in the frame " + frame.url)
+                    console.warn("The JavaScript context " + contextSecurityOrigin + " was not found in the frame " + frame.url)
                     return this._status.E_NOTFOUND(contextSecurityOrigin)
                 }
             } else {

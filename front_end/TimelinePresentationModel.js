@@ -1310,10 +1310,10 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         if (this.jsHeapSizeUsed) {
             if (this.usedHeapSizeDelta) {
                 var sign = this.usedHeapSizeDelta > 0 ? "+" : "-";
-                contentHelper.appendTextRow(WebInspector.UIString("Used JS Heap Size"),
+                contentHelper.appendTextRow(WebInspector.UIString("Used JavaScript Heap Size"),
                     WebInspector.UIString("%s (%s%s)", Number.bytesToString(this.jsHeapSizeUsed), sign, Number.bytesToString(Math.abs(this.usedHeapSizeDelta))));
             } else if (this.category === WebInspector.TimelinePresentationModel.categories().scripting)
-                contentHelper.appendTextRow(WebInspector.UIString("Used JS Heap Size"), Number.bytesToString(this.jsHeapSizeUsed));
+                contentHelper.appendTextRow(WebInspector.UIString("Used JavaScript Heap Size"), Number.bytesToString(this.jsHeapSizeUsed));
         }
 
         if (this.callSiteStackTrace)
