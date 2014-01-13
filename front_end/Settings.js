@@ -83,6 +83,7 @@ WebInspector.Settings = function()
     this.emulateTouchEvents = this.createSetting("emulateTouchEvents", false);
     this.showShadowDOM = this.createSetting("showShadowDOM", false);
     this.zoomLevel = this.createSetting("zoomLevel", 0);
+    this.externalZoomFactor = this.createSetting("externalZoomFactor", 1);
     this.savedURLs = this.createSetting("savedURLs", {});
     this.javaScriptDisabled = this.createSetting("javaScriptDisabled", false);
     this.overrideGeolocation = this.createSetting("overrideGeolocation", false);

@@ -129,6 +129,17 @@ var WebInspector = {
         this._requestZoom();
     },
 
+    _adjustExternalZoomFactor: function()
+    {
+        var realZoomFactor = InspectorFrontendHost.zoomFactor();
+        var expectedZoomFactor = this.zoomFactor();
+        if (Math.abs(realZoomFactor - expectedZoomFactor) > 1e-3) {
+            // Unexpected zoom factor means that it was overriden by external zoom.
+            WebInspector.settings.externalZoomFactor.set(realZoomFactor);
+            this._requestZoom();
+        }
+    },
+
     /**
      * @return {number}
      * @this {WebInspector}
@@ -139,7 +150,7 @@ var WebInspector = {
         var index = this._zoomLevel + WebInspector.Zoom.DefaultOffset;
         index = Math.min(WebInspector.Zoom.Table.length - 1, index);
         index = Math.max(0, index);
-        return WebInspector.Zoom.Table[index];
+        return WebInspector.Zoom.Table[index] * WebInspector.settings.externalZoomFactor.get();
     },
 
     _requestZoom: function()
@@ -289,6 +300,9 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.runtimeModel = new WebInspector.RuntimeModel(this.resourceTreeModel);
 
     this._zoomLevel = WebInspector.settings.zoomLevel.get();
+    // FIXME: when user changes external zoom factor, and after that opens inspector,
+    // we should somehow rescale zoom-dependent settings, e.g. inspectorView split size.
+    WebInspector.settings.externalZoomFactor.set(InspectorFrontendHost.zoomFactor());
     if (this._zoomLevel)
         this._requestZoom();
 
@@ -424,6 +438,7 @@ WebInspector.dispatch = function(message) {
 
 WebInspector.windowResize = function(event)
 {
+    this._adjustExternalZoomFactor();
     if (WebInspector.inspectorView)
         WebInspector.inspectorView.onResize();
     if (WebInspector.settingsController)
