@@ -37,38 +37,6 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Styles"));
 
-    this.settingsSelectElement = document.createElement("select");
-    this.settingsSelectElement.className = "select-settings";
-
-    var option = document.createElement("option");
-    option.value = WebInspector.Color.Format.Original;
-    option.label = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "As authored" : "As Authored");
-    this.settingsSelectElement.appendChild(option);
-
-    option = document.createElement("option");
-    option.value = WebInspector.Color.Format.HEX;
-    option.label = WebInspector.UIString("Hex Colors");
-    this.settingsSelectElement.appendChild(option);
-
-    option = document.createElement("option");
-    option.value = WebInspector.Color.Format.RGB;
-    option.label = WebInspector.UIString("RGB Colors");
-    this.settingsSelectElement.appendChild(option);
-
-    option = document.createElement("option");
-    option.value = WebInspector.Color.Format.HSL;
-    option.label = WebInspector.UIString("HSL Colors");
-    this.settingsSelectElement.appendChild(option);
-
-    // Prevent section from collapsing.
-    var muteEventListener = function(event) { event.consume(true); };
-
-    this.settingsSelectElement.addEventListener("click", muteEventListener, true);
-    this.settingsSelectElement.addEventListener("change", this._changeSetting.bind(this), false);
-    this._updateColorFormatFilter();
-
-    this.titleElement.appendChild(this.settingsSelectElement);
-
     this._elementStateButton = document.createElement("button");
     this._elementStateButton.className = "pane-title-button element-state";
     this._elementStateButton.title = WebInspector.UIString("Toggle Element State");
@@ -747,34 +715,11 @@ WebInspector.StylesSidebarPane.prototype = {
 
     _colorFormatSettingChanged: function(event)
     {
-        this._updateColorFormatFilter();
         for (var pseudoId in this.sections) {
             var sections = this.sections[pseudoId];
             for (var i = 0; i < sections.length; ++i)
                 sections[i].update(true);
         }
-    },
-
-    _updateColorFormatFilter: function()
-    {
-        // Select the correct color format setting again, since it needs to be selected.
-        var selectedIndex = 0;
-        var value = WebInspector.settings.colorFormat.get();
-        var options = this.settingsSelectElement.options;
-        for (var i = 0; i < options.length; ++i) {
-            if (options[i].value === value) {
-                selectedIndex = i;
-                break;
-            }
-        }
-        this.settingsSelectElement.selectedIndex = selectedIndex;
-    },
-
-    _changeSetting: function(event)
-    {
-        var options = this.settingsSelectElement.options;
-        var selectedOption = options[this.settingsSelectElement.selectedIndex];
-        WebInspector.settings.colorFormat.set(selectedOption.value);
     },
 
     _createNewRule: function(event)
