@@ -100,6 +100,6 @@ WebInspector.CodeMirrorUtils = {
     }
 }
 
-WebInspector.CodeMirrorUtils.overrideModeWithPrefixedTokens("css-base", "css-");
+WebInspector.CodeMirrorUtils.overrideModeWithPrefixedTokens("css", "css-");
 WebInspector.CodeMirrorUtils.overrideModeWithPrefixedTokens("javascript", "js-");
 WebInspector.CodeMirrorUtils.overrideModeWithPrefixedTokens("xml", "xml-");
