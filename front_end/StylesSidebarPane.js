@@ -876,28 +876,6 @@ WebInspector.StylesSidebarPane.prototype = {
 WebInspector.ComputedStyleSidebarPane = function()
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Computed Style"));
-    var showInheritedCheckbox = new WebInspector.Checkbox(WebInspector.UIString("Show inherited"), "sidebar-pane-subtitle");
-    this.titleElement.appendChild(showInheritedCheckbox.element);
-    this._hasFreshContent = false;
-
-    if (WebInspector.settings.showInheritedComputedStyleProperties.get()) {
-        this.bodyElement.classList.add("show-inherited");
-        showInheritedCheckbox.checked = true;
-    }
-
-    /**
-     * @this {WebInspector.ComputedStyleSidebarPane}
-     */
-    function showInheritedToggleFunction()
-    {
-        WebInspector.settings.showInheritedComputedStyleProperties.set(showInheritedCheckbox.checked);
-        if (WebInspector.settings.showInheritedComputedStyleProperties.get())
-            this.bodyElement.classList.add("show-inherited");
-        else
-            this.bodyElement.classList.remove("show-inherited");
-    }
-
-    showInheritedCheckbox.addEventListener(showInheritedToggleFunction.bind(this));
 }
 
 WebInspector.ComputedStyleSidebarPane.prototype = {
@@ -1042,7 +1020,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
     this._selectorContainer = selectorContainer;
 
     if (isInherited)
-        this.element.classList.add("show-inherited"); // This one is related to inherited rules, not computed style.
+        this.element.classList.add("styles-show-inherited"); // This one is related to inherited rules, not computed style.
 
     if (this.navigable)
         this.element.classList.add("navigable");
@@ -1511,8 +1489,32 @@ WebInspector.StylePropertiesSection.prototype = {
 WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, usedProperties)
 {
     WebInspector.PropertiesSection.call(this, "");
-    this.headerElement.classList.add("hidden");
+
+    var showInheritedCheckbox = new WebInspector.Checkbox(WebInspector.UIString("Show inherited properties"), "sidebar-pane-subtitle");
+    this.headerElement.appendChild(showInheritedCheckbox.element);
+    this._hasFreshContent = false;
+
+    /**
+     * @this {WebInspector.ComputedStylePropertiesSection}
+     */
+    function showInheritedToggleFunction()
+    {
+        var showInherited = showInheritedCheckbox.checked;
+        WebInspector.settings.showInheritedComputedStyleProperties.set(showInherited);
+        if (showInherited)
+            this.element.classList.add("styles-show-inherited");
+        else
+            this.element.classList.remove("styles-show-inherited");
+    }
+
+    showInheritedCheckbox.addEventListener(showInheritedToggleFunction.bind(this));
+
     this.element.className = "styles-section monospace read-only computed-style";
+    if (WebInspector.settings.showInheritedComputedStyleProperties.get()) {
+        this.element.classList.add("styles-show-inherited");
+        showInheritedCheckbox.checked = true;
+    }
+
     this._stylesPane = stylesPane;
     this.styleRule = styleRule;
     this._usedProperties = usedProperties;
