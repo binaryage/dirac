@@ -93,52 +93,34 @@ WebInspector.TimelineView = function(panel, model, overviewPane, glueRecordsSett
     WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
     this._dockSideChanged();
 
-    // Create memory splitter as a left child of properties.
     this._searchableView = new WebInspector.SearchableView(this);
     this._detailsSplitView.setMainView(this._searchableView);
 
-    this._timelineMemorySplitter = new WebInspector.SplitView(false, "timeline-memory");
-    this._timelineMemorySplitter.element.classList.remove("fill");
-    this._timelineMemorySplitter.element.classList.add("timeline-memory-split");
-    this._timelineMemorySplitter.show(this._searchableView.element);
-
     // Create records sidebar as a top memory splitter child.
-    this._sidebarView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Start, "timeline-split");
-    this._sidebarView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._sidebarResized, this);
-    this._sidebarView.setSecondIsSidebar(false);
-    this._timelineMemorySplitter.setMainView(this._sidebarView);
-    this._containerElement = this._sidebarView.element;
+    this._recordsView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Start, "timeline-split");
+    this._recordsView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._sidebarResized, this);
+    this._recordsView.setSecondIsSidebar(false);
+    this._containerElement = this._recordsView.element;
     this._containerElement.tabIndex = 0;
     this._containerElement.id = "timeline-container";
     this._containerElement.addEventListener("scroll", this._onScroll.bind(this), false);
 
-    // Create memory statistics as a bottom memory splitter child.
-    this._memoryStatistics = new WebInspector.CountersGraph(this, this._model);
-    this._timelineMemorySplitter.setSidebarView(this._memoryStatistics);
-    this._timelineMemorySplitter.installResizer(this._memoryStatistics.resizeElement());
-
     // Create records list in the records sidebar.
-    this._sidebarView.sidebarElement().classList.add("vbox");
-    this._sidebarView.sidebarElement().createChild("div", "timeline-records-title").textContent = WebInspector.UIString("RECORDS");
-    this._sidebarListElement = this._sidebarView.sidebarElement().createChild("div", "timeline-records-list");
+    this._recordsView.sidebarElement().classList.add("vbox");
+    this._recordsView.sidebarElement().createChild("div", "timeline-records-title").textContent = WebInspector.UIString("RECORDS");
+    this._sidebarListElement = this._recordsView.sidebarElement().createChild("div", "timeline-records-list");
 
     // Create grid in the records main area.
     this._gridContainer = new WebInspector.ViewWithResizeCallback(this._onViewportResize.bind(this));
     this._gridContainer.element.classList.add("fill");
     this._gridContainer.element.id = "resources-container-content";
-    this._sidebarView.setMainView(this._gridContainer);
+    this._recordsView.setMainView(this._gridContainer);
     this._timelineGrid = new WebInspector.TimelineGrid();
     this._itemsGraphsElement = this._timelineGrid.itemsGraphsElement;
     this._itemsGraphsElement.id = "timeline-graphs";
     this._gridContainer.element.appendChild(this._timelineGrid.element);
     this._timelineGrid.gridHeaderElement.id = "timeline-grid-header";
     this._timelineGrid.gridHeaderElement.classList.add("fill");
-    this._memoryStatistics.setMainTimelineGrid(this._timelineGrid);
-    this._timelineMemorySplitter.mainElement().appendChild(this._timelineGrid.gridHeaderElement);
-    if (this._currentMode === WebInspector.TimelinePanel.Mode.Memory)
-        this._timelineMemorySplitter.showBoth();
-    else
-        this._timelineMemorySplitter.showOnlyFirst();
 
     // Create gap elements
     this._topGapElement = this._itemsGraphsElement.createChild("div", "timeline-gap");
@@ -147,14 +129,6 @@ WebInspector.TimelineView = function(panel, model, overviewPane, glueRecordsSett
     this._expandElements = this._itemsGraphsElement.createChild("div");
     this._expandElements.id = "orphan-expand-elements";
 
-    this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
-
-    this.element.addEventListener("mousemove", this._mouseMove.bind(this), false);
-    this.element.addEventListener("mouseout", this._mouseOut.bind(this), false);
-    this.element.addEventListener("keydown", this._keyDown.bind(this), false);
-
-    this._expandOffset = 15;
-
     // Create gpu tasks containers.
     this._mainThreadTasks = /** @type {!Array.<!TimelineAgent.TimelineEvent>} */ ([]);
     this._gpuTasks = /** @type {!Array.<!TimelineAgent.TimelineEvent>} */ ([]);
@@ -162,6 +136,33 @@ WebInspector.TimelineView = function(panel, model, overviewPane, glueRecordsSett
     this._cpuBarsElement = utilizationStripsElement.createChild("div", "timeline-utilization-strip");
     if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
         this._gpuBarsElement = utilizationStripsElement.createChild("div", "timeline-utilization-strip gpu");
+
+    // Create memory splitter as a left child of properties.
+    this._timelineMemorySplitter = new WebInspector.SplitView(false, "timeline-memory");
+    this._timelineMemorySplitter.element.classList.remove("fill");
+    this._timelineMemorySplitter.element.classList.add("timeline-memory-split");
+    this._timelineMemorySplitter.show(this._searchableView.element);
+    this._timelineMemorySplitter.setMainView(this._recordsView);
+
+    // Create memory statistics as a bottom memory splitter child.
+    this._memoryStatistics = new WebInspector.CountersGraph(this, this._model);
+    this._timelineMemorySplitter.setSidebarView(this._memoryStatistics);
+    this._timelineMemorySplitter.installResizer(this._memoryStatistics.resizeElement());
+
+    this._memoryStatistics.setMainTimelineGrid(this._timelineGrid);
+    this._timelineMemorySplitter.mainElement().appendChild(this._timelineGrid.gridHeaderElement);
+    if (this._currentMode === WebInspector.TimelinePanel.Mode.Memory)
+        this._timelineMemorySplitter.showBoth();
+    else
+        this._timelineMemorySplitter.showOnlyFirst();
+
+    this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
+
+    this.element.addEventListener("mousemove", this._mouseMove.bind(this), false);
+    this.element.addEventListener("mouseout", this._mouseOut.bind(this), false);
+    this.element.addEventListener("keydown", this._keyDown.bind(this), false);
+
+    this._expandOffset = 15;
 
     this._windowStartTime = 0;
     this._windowEndTime = Infinity;
@@ -521,7 +522,7 @@ WebInspector.TimelineView.prototype = {
 
     _sidebarResized: function()
     {
-        var width = this._sidebarView.sidebarWidth();
+        var width = this._recordsView.sidebarWidth();
         this._panel.setSidebarWidth(width);
         if (this._currentMode === WebInspector.TimelinePanel.Mode.Memory)
             this._memoryStatistics.setSidebarWidth(width);
@@ -534,12 +535,12 @@ WebInspector.TimelineView.prototype = {
     setSidebarWidth: function(width)
     {
         if (this._currentMode === WebInspector.TimelinePanel.Mode.Memory)
-            this._sidebarView.setSidebarWidth(width);
+            this._recordsView.setSidebarWidth(width);
     },
 
     _onViewportResize: function()
     {
-        this._resize(this._sidebarView.sidebarWidth());
+        this._resize(this._recordsView.sidebarWidth());
     },
 
     /**
@@ -888,14 +889,14 @@ WebInspector.TimelineView.prototype = {
 
         // Resize gaps first.
         this._topGapElement.style.height = (startIndex * rowHeight) + "px";
-        this._sidebarView.sidebarElement().firstChild.style.flexBasis = (startIndex * rowHeight + headerHeight) + "px";
+        this._recordsView.sidebarElement().firstChild.style.flexBasis = (startIndex * rowHeight + headerHeight) + "px";
         this._bottomGapElement.style.height = (recordsInWindow.length - endIndex) * rowHeight + "px";
         var rowsHeight = headerHeight + recordsInWindow.length * rowHeight;
         var totalHeight = Math.max(this._containerElementHeight, rowsHeight);
 
-        this._sidebarView.firstElement().style.height = totalHeight + "px";
-        this._sidebarView.secondElement().style.height = totalHeight + "px";
-        this._sidebarView.resizerElement().style.height = totalHeight + "px";
+        this._recordsView.firstElement().style.height = totalHeight + "px";
+        this._recordsView.secondElement().style.height = totalHeight + "px";
+        this._recordsView.resizerElement().style.height = totalHeight + "px";
 
         // Update visible rows.
         var listRowElement = this._sidebarListElement.firstChild;
