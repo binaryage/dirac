@@ -4103,6 +4103,7 @@
             {
                 "name": "start",
                 "description": "Start trace events collection.",
+                "async": true,
                 "parameters": [
                     { "name": "categories", "type": "string", "description": "Category/tag filter" },
                     { "name": "options", "type": "string", "description": "Tracing options" }
