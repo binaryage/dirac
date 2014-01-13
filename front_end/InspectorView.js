@@ -428,15 +428,23 @@ WebInspector.InspectorView.prototype = {
     {
         var dockSide = WebInspector.dockController.dockSide();
         if (dockSide !== WebInspector.DockController.State.Undocked) {
-            // Leave 3px room for resizer.
-            var sidebarSize = Math.ceil(this._splitView.sidebarSize() * WebInspector.zoomFactor());
-            var bottom = this._splitView.isVertical() ? 0 : sidebarSize;
-            var right = this._splitView.isVertical() ? sidebarSize + 3 : 0;
-            InspectorFrontendHost.setContentsInsets(0, 0, bottom, right);
+            if (this._setContentsInsetsId)
+                window.cancelAnimationFrame(this._setContentsInsetsId);
+            this._setContentsInsetsId = window.requestAnimationFrame(this._setContentsInsets.bind(this));
         }
 
         // FIXME: make drawer a view.
         this._drawer.resize();
+    },
+
+    _setContentsInsets: function()
+    {
+        delete this._setContentsInsetsId;
+        // Leave 3px room for resizer.
+        var sidebarSize = Math.ceil(this._splitView.sidebarSize() * WebInspector.zoomFactor());
+        var bottom = this._splitView.isVertical() ? 0 : sidebarSize;
+        var right = this._splitView.isVertical() ? sidebarSize + 3 : 0;
+        InspectorFrontendHost.setContentsInsets(0, 0, bottom, right);
     },
 
     _onZoomChanged: function()
