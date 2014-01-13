@@ -398,12 +398,6 @@ WebInspector.ConsoleView.prototype = {
 
     _handleContextMenuEvent: function(event)
     {
-        if (!window.getSelection().isCollapsed) {
-            // If there is a selection, we want to show our normal context menu
-            // (with Copy, etc.), and not Clear Console.
-            return;
-        }
-
         if (event.target.enclosingNodeOrSelfWithNodeName("a"))
             return;
 
