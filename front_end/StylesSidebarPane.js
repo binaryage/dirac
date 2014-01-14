@@ -1956,7 +1956,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         var spectrumHelper = this.editablePane() && this.editablePane()._spectrumHelper;
         var spectrum = spectrumHelper ? spectrumHelper.spectrum() : null;
 
-        var isEditable = !!(this._styleRule && this._styleRule.editable);
+        var isEditable = !!(this._styleRule && this._styleRule.editable !== false); // |editable| is true by default.
         var colorSwatch = new WebInspector.ColorSwatch(!isEditable);
         colorSwatch.setColorString(text);
         colorSwatch.element.addEventListener("click", swatchClick.bind(this), false);
