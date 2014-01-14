@@ -432,7 +432,7 @@ WebInspector.CSSMetadata._propertyDataMap = {
         "none", "hidden", "inset", "groove", "ridge", "outset", "dotted", "dashed", "solid", "double"
     ] },
     "unicode-bidi": { values: [
-        "normal", "bidi-override", "embed"
+        "normal", "bidi-override", "embed", "isolate", "isolate-override", "plaintext"
     ] },
     "clip-rule": { values: [
         "nonzero", "evenodd"
