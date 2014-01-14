@@ -120,11 +120,14 @@ WebInspector.UISourceCodeFrame.prototype = {
         }
     },
 
+    beforeFormattedChange: function() { },
+
     /**
      * @param {!WebInspector.Event} event
      */
     _onFormattedChanged: function(event)
     {
+        this.beforeFormattedChange();
         var content = /** @type {string} */ (event.data.content);
         this._textEditor.setReadOnly(this._uiSourceCode.formatted());
         var selection = this._textEditor.selection();
