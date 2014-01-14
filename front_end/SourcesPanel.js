@@ -214,6 +214,13 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     window.addEventListener("beforeunload", handleBeforeUnload.bind(this), true);
 }
 
+/** @type {!Array.<!WebInspector.DebuggerModel.PauseOnExceptionsState>} */
+WebInspector.SourcesPanel.PauseOnExceptionsStates = [
+    WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions,
+    WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions,
+    WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions
+];
+
 WebInspector.SourcesPanel.prototype = {
     /**
      * @return {!Element}
@@ -723,21 +730,66 @@ WebInspector.SourcesPanel.prototype = {
         WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement(), searchText);
     },
 
+    /**
+     * @return {!Array.<!WebInspector.StatusBarButton>}
+     */
+    _createPauseOnExceptionOptions: function()
+    {
+        this._pauseOnExceptionButton.title = this._pauseOnExceptionStateTitle(this._pauseOnExceptionButton.state);
+        var excludedOption = this._pauseOnExceptionButton.state;
+        var pauseStates = WebInspector.SourcesPanel.PauseOnExceptionsStates.slice(0);
+        var options = [];
+        for (var i = 0; i < pauseStates.length; ++i) {
+            if (pauseStates[i] === excludedOption)
+                continue;
+            var button = new WebInspector.StatusBarButton("", "scripts-pause-on-exceptions-status-bar-item", 3);
+            button.addEventListener("click", this._togglePauseOnExceptions, this);
+            button.state = pauseStates[i];
+            button.title = this._pauseOnExceptionStateTitle(pauseStates[i]);
+            options.push(button);
+        }
+        return options;
+    },
+
     _pauseOnExceptionStateChanged: function()
     {
-        var pauseOnExceptionsState = WebInspector.settings.pauseOnExceptionStateString.get();
-        switch (pauseOnExceptionsState) {
-        case WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions:
-            this._pauseOnExceptionButton.title = WebInspector.UIString("Don't pause on exceptions.\nClick to Pause on all exceptions.");
-            break;
-        case WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions:
-            this._pauseOnExceptionButton.title = WebInspector.UIString("Pause on all exceptions.\nClick to Pause on uncaught exceptions.");
-            break;
-        case WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions:
-            this._pauseOnExceptionButton.title = WebInspector.UIString("Pause on uncaught exceptions.\nClick to Not pause on exceptions.");
-            break;
+        var state = WebInspector.settings.pauseOnExceptionStateString.get();
+        var nextState;
+        if (state === WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions)
+            nextState = WebInspector.settings.lastPauseOnExceptionState.get();
+        else
+            nextState = WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions;
+        this._pauseOnExceptionButton.title = this._pauseOnExceptionStateTitle(state, nextState);
+        this._pauseOnExceptionButton.state = state;
+    },
+
+    /**
+     * @param {!WebInspector.DebuggerModel.PauseOnExceptionsState} state
+     * @param {!WebInspector.DebuggerModel.PauseOnExceptionsState=} nextState
+     * @return {string}
+     */
+    _pauseOnExceptionStateTitle: function(state, nextState)
+    {
+        var states = WebInspector.DebuggerModel.PauseOnExceptionsState;
+        var stateDescription;
+        if (state === states.DontPauseOnExceptions) {
+            stateDescription = WebInspector.UIString("Don't pause on exceptions.");
+        } else if (state === states.PauseOnAllExceptions) {
+            stateDescription = WebInspector.UIString("Pause on exceptions, including caught exceptions.");
+        } else if (state === states.PauseOnUncaughtExceptions) {
+            stateDescription = WebInspector.UIString("Pause on exceptions.");
+        } else {
+            throw "Unexpected state: " + state;
         }
-        this._pauseOnExceptionButton.state = pauseOnExceptionsState;
+        var nextStateDescription;
+        if (nextState === states.DontPauseOnExceptions) {
+            nextStateDescription = WebInspector.UIString("Click to Not pause on exceptions.");
+        } else if (nextState === states.PauseOnAllExceptions) {
+            nextStateDescription = WebInspector.UIString("Click to Pause on exceptions, including caught exceptions.");
+        } else if (nextState === states.PauseOnUncaughtExceptions) {
+            nextStateDescription = WebInspector.UIString("Click to Pause on exceptions.");
+        }
+        return nextState ? String.sprintf("%s\n%s", stateDescription, nextStateDescription) : stateDescription;
     },
 
     _updateDebuggerButtons: function()
@@ -776,14 +828,24 @@ WebInspector.SourcesPanel.prototype = {
         this._updateDebuggerButtons();
     },
 
-    _togglePauseOnExceptions: function()
+    /**
+     * @param {!WebInspector.Event} e
+     */
+    _togglePauseOnExceptions: function(e)
     {
-        var nextStateMap = {};
+        var target = /** @type {!WebInspector.StatusBarButton} */ (e.target);
+        var state = /** @type {!WebInspector.DebuggerModel.PauseOnExceptionsState} */ (target.state);
+        var toggle = !e.data;
         var stateEnum = WebInspector.DebuggerModel.PauseOnExceptionsState;
-        nextStateMap[stateEnum.DontPauseOnExceptions] = stateEnum.PauseOnAllExceptions;
-        nextStateMap[stateEnum.PauseOnAllExceptions] = stateEnum.PauseOnUncaughtExceptions;
-        nextStateMap[stateEnum.PauseOnUncaughtExceptions] = stateEnum.DontPauseOnExceptions;
-        WebInspector.settings.pauseOnExceptionStateString.set(nextStateMap[this._pauseOnExceptionButton.state]);
+        if (toggle) {
+            if (state !== stateEnum.DontPauseOnExceptions)
+                state = stateEnum.DontPauseOnExceptions
+            else
+                state = WebInspector.settings.lastPauseOnExceptionState.get();
+        }
+        if (state !== stateEnum.DontPauseOnExceptions)
+            WebInspector.settings.lastPauseOnExceptionState.set(state);
+        WebInspector.settings.pauseOnExceptionStateString.set(state);
     },
 
     /**
@@ -1022,6 +1084,7 @@ WebInspector.SourcesPanel.prototype = {
         // Pause on Exception
         this._pauseOnExceptionButton = new WebInspector.StatusBarButton("", "scripts-pause-on-exceptions-status-bar-item", 3);
         this._pauseOnExceptionButton.addEventListener("click", this._togglePauseOnExceptions, this);
+        this._pauseOnExceptionButton.setLongClickOptionsEnabled(this._createPauseOnExceptionOptions.bind(this));
         debugToolbar.appendChild(this._pauseOnExceptionButton.element);
 
         return debugToolbar;

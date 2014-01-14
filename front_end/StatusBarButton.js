@@ -101,7 +101,7 @@ WebInspector.StatusBarButton = function(title, className, states)
 {
     WebInspector.StatusBarItem.call(this, document.createElement("button"));
     this.element.className = className + " status-bar-item";
-    this.element.addEventListener("click", this._clicked.bind(this), false);
+    this.element.addEventListener("click", this._clicked.bind(this, false), false);
 
     this.glyph = document.createElement("div");
     this.glyph.className = "glyph";
@@ -126,9 +126,12 @@ WebInspector.StatusBarButton = function(title, className, states)
 }
 
 WebInspector.StatusBarButton.prototype = {
-    _clicked: function()
+    /**
+     * @param {boolean} optionClick
+     */
+    _clicked: function(optionClick)
     {
-        this.dispatchEventToListeners("click");
+        this.dispatchEventToListeners("click", optionClick);
         if (this._longClickInterval) {
             clearInterval(this._longClickInterval);
             delete this._longClickInterval;
@@ -319,9 +322,9 @@ WebInspector.StatusBarButton.prototype = {
     {
         var buttons = this._longClickOptionsData.buttonsProvider();
         var mainButtonClone = new WebInspector.StatusBarButton(this.title, this.className, this.states);
-        mainButtonClone.addEventListener("click", this._clicked, this);
+        mainButtonClone.addEventListener("click", this._clicked.bind(this, true), this);
         mainButtonClone.state = this.state;
-        buttons.push(mainButtonClone);
+        buttons.unshift(mainButtonClone);
 
         var mouseUpListener = mouseUp.bind(this);
         document.documentElement.addEventListener("mouseup", mouseUpListener, false);
@@ -334,7 +337,7 @@ WebInspector.StatusBarButton.prototype = {
 
         var topNotBottom = hostButtonPosition.top + buttonHeight * buttons.length < document.documentElement.offsetHeight;
 
-        if (topNotBottom)
+        if (!topNotBottom)
             buttons = buttons.reverse();
 
         optionsBarElement.style.height = (buttonHeight * buttons.length) + "px";
@@ -380,7 +383,7 @@ WebInspector.StatusBarButton.prototype = {
             for (var i = 0; i < buttons.length; ++i) {
                 if (buttons[i].element.classList.contains("emulate-active")) {
                     buttons[i].element.classList.remove("emulate-active");
-                    buttons[i]._clicked();
+                    buttons[i]._clicked(true);
                     break;
                 }
             }
