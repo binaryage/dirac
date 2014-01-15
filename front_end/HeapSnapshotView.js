@@ -1301,6 +1301,8 @@ WebInspector.HeapProfileHeader.prototype = {
 
     _didCompleteSnapshotTransfer: function()
     {
+        if (!this._snapshotProxy)
+            return;
         this.sidebarElement.subtitle = Number.bytesToString(this._snapshotProxy.totalSize);
         this.sidebarElement.wait = false;
     },
@@ -1372,33 +1374,13 @@ WebInspector.HeapProfileHeader.prototype = {
         {
             if (!accepted)
                 return;
-            /**
-             * @param {!File} file
-             * @this {WebInspector.HeapProfileHeader}
-             */
-            function didGetFile(file)
-            {
-                if (!file) {
-                    reportTempFileError();
-                    return;
-                }
-
-                var delegate = new WebInspector.SaveSnapshotOutputStreamDelegate(this);
-                var reader = new WebInspector.ChunkedFileReader(file, 10*1000*1000, delegate)
-                reader.start(fileOutputStream);
-            }
-
-            function reportTempFileError()
-            {
+            if (this._failedToCreateTempFile) {
                 WebInspector.log("Failed to open temp file with heap snapshot",
                                  WebInspector.ConsoleMessage.MessageLevel.Error);
                 fileOutputStream.close();
-            }
-
-            if (this._failedToCreateTempFile) {
-                reportTempFileError();
             } else if (this._tempFile) {
-                this._tempFile.getFile(didGetFile.bind(this));
+                var delegate = new WebInspector.SaveSnapshotOutputStreamDelegate(this);
+                this._tempFile.writeToOutputSteam(fileOutputStream, delegate);
             } else {
                 this._onTempFileReady = onOpen.bind(this, accepted);
                 this._updateSaveProgress(0, 1);

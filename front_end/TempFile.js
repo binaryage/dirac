@@ -182,17 +182,27 @@ WebInspector.TempFile.prototype = {
     },
 
     /**
-     * @param {!function(?File)} callback
+     * @param {!WebInspector.OutputStream} outputStream
+     * @param {!WebInspector.OutputStreamDelegate} delegate
      */
-    getFile: function(callback)
+    writeToOutputSteam: function(outputStream, delegate)
     {
+        /**
+         * @param {!File} file
+         * @this {WebInspector.TempFile}
+         */
+        function didGetFile(file)
+        {
+            var reader = new WebInspector.ChunkedFileReader(file, 10*1000*1000, delegate);
+            reader.start(outputStream);
+        }
         function didFailToGetFile(error)
         {
             WebInspector.log("Failed to load temp file: " + error.message,
-                              WebInspector.ConsoleMessage.MessageLevel.Error);
-            callback(null);
+                             WebInspector.ConsoleMessage.MessageLevel.Error);
+            outputStream.close();
         }
-        this._fileEntry.file(callback, didFailToGetFile.bind(this));
+        this._fileEntry.file(didGetFile.bind(this), didFailToGetFile.bind(this));
     },
 
     remove: function()
@@ -240,6 +250,8 @@ WebInspector.BufferedTempFileWriter.prototype = {
         this._finishCallback = callback;
         if (this._isFinished)
             callback(this._tempFile);
+        else if (!this._isWriting && !this._chunks.length)
+            this._notifyFinished();
     },
 
     _didCreateTempFile: function(tempFile)
@@ -265,8 +277,8 @@ WebInspector.BufferedTempFileWriter.prototype = {
         }
         var chunk = this._chunks.slice(0, endIndex + 1).join("");
         this._chunks.splice(0, endIndex + 1);
-        this._tempFile.write(chunk, this._didWriteChunk.bind(this));
         this._isWriting = true;
+        this._tempFile.write(chunk, this._didWriteChunk.bind(this));
     },
 
     _didWriteChunk: function(success)
