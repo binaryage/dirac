@@ -67,8 +67,6 @@ WebInspector.TimelineView = function(panel, model, overviewPane, glueRecordsSett
 
     // Create layout componets.
 
-    //  -------------------------------
-    // |            Overview           |
     // |-------------------------------|
     // |    |           |              |
     // |    |  Records  |              |
@@ -96,65 +94,19 @@ WebInspector.TimelineView = function(panel, model, overviewPane, glueRecordsSett
     this._searchableView = new WebInspector.SearchableView(this);
     this._detailsSplitView.setMainView(this._searchableView);
 
-    // Create records sidebar as a top memory splitter child.
-    this._recordsView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Start, "timeline-split");
-    this._recordsView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._sidebarResized, this);
-    this._recordsView.setSecondIsSidebar(false);
-    this._containerElement = this._recordsView.element;
-    this._containerElement.tabIndex = 0;
-    this._containerElement.id = "timeline-container";
-    this._containerElement.addEventListener("scroll", this._onScroll.bind(this), false);
+    this._recordsView = this._createRecordsView();
 
-    // Create records list in the records sidebar.
-    this._recordsView.sidebarElement().classList.add("vbox");
-    this._recordsView.sidebarElement().createChild("div", "timeline-records-title").textContent = WebInspector.UIString("RECORDS");
-    this._sidebarListElement = this._recordsView.sidebarElement().createChild("div", "timeline-records-list");
+    this._stackView = new WebInspector.StackView(false);
+    this._stackView.show(this._searchableView.element);
+    this._recordsViewMainElement = this._stackView.appendView(this._recordsView, "timeline-records").mainElement();
+    this._recordsViewMainElement.appendChild(this._timelineGrid.gridHeaderElement);
 
-    // Create grid in the records main area.
-    this._gridContainer = new WebInspector.ViewWithResizeCallback(this._onViewportResize.bind(this));
-    this._gridContainer.element.classList.add("fill");
-    this._gridContainer.element.id = "resources-container-content";
-    this._recordsView.setMainView(this._gridContainer);
-    this._timelineGrid = new WebInspector.TimelineGrid();
-    this._itemsGraphsElement = this._timelineGrid.itemsGraphsElement;
-    this._itemsGraphsElement.id = "timeline-graphs";
-    this._gridContainer.element.appendChild(this._timelineGrid.element);
-    this._timelineGrid.gridHeaderElement.id = "timeline-grid-header";
-    this._timelineGrid.gridHeaderElement.classList.add("fill");
-
-    // Create gap elements
-    this._topGapElement = this._itemsGraphsElement.createChild("div", "timeline-gap");
-    this._graphRowsElement = this._itemsGraphsElement.createChild("div");
-    this._bottomGapElement = this._itemsGraphsElement.createChild("div", "timeline-gap");
-    this._expandElements = this._itemsGraphsElement.createChild("div");
-    this._expandElements.id = "orphan-expand-elements";
-
-    // Create gpu tasks containers.
-    this._mainThreadTasks = /** @type {!Array.<!TimelineAgent.TimelineEvent>} */ ([]);
-    this._gpuTasks = /** @type {!Array.<!TimelineAgent.TimelineEvent>} */ ([]);
-    var utilizationStripsElement = this._timelineGrid.gridHeaderElement.createChild("div", "timeline-utilization-strips vbox");
-    this._cpuBarsElement = utilizationStripsElement.createChild("div", "timeline-utilization-strip");
-    if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
-        this._gpuBarsElement = utilizationStripsElement.createChild("div", "timeline-utilization-strip gpu");
-
-    // Create memory splitter as a left child of properties.
-    this._timelineMemorySplitter = new WebInspector.SplitView(false, "timeline-memory");
-    this._timelineMemorySplitter.element.classList.remove("fill");
-    this._timelineMemorySplitter.element.classList.add("timeline-memory-split");
-    this._timelineMemorySplitter.show(this._searchableView.element);
-    this._timelineMemorySplitter.setMainView(this._recordsView);
-
-    // Create memory statistics as a bottom memory splitter child.
-    this._memoryStatistics = new WebInspector.CountersGraph(this, this._model);
-    this._timelineMemorySplitter.setSidebarView(this._memoryStatistics);
-    this._timelineMemorySplitter.installResizer(this._memoryStatistics.resizeElement());
-
-    this._memoryStatistics.setMainTimelineGrid(this._timelineGrid);
-    this._timelineMemorySplitter.mainElement().appendChild(this._timelineGrid.gridHeaderElement);
-    if (this._currentMode === WebInspector.TimelinePanel.Mode.Memory)
-        this._timelineMemorySplitter.showBoth();
-    else
-        this._timelineMemorySplitter.showOnlyFirst();
+    if (this._currentMode === WebInspector.TimelinePanel.Mode.Memory) {
+        // Create memory statistics as a bottom memory splitter child.
+        this._memoryStatistics = new WebInspector.CountersGraph(this, this._model);
+        this._stackView.appendView(this._memoryStatistics, "timeline-memory");
+        this._memoryStatistics.setMainTimelineGrid(this._timelineGrid);
+    }
 
     this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
 
@@ -219,6 +171,57 @@ WebInspector.TimelineView.commonUIFilters = function()
 }
 
 WebInspector.TimelineView.prototype = {
+    /**
+     * @return {!WebInspector.SidebarView}
+     */
+    _createRecordsView: function()
+    {
+        // Create records sidebar as a top memory splitter child.
+        var recordsView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Start, "timeline-split");
+        recordsView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._sidebarResized, this);
+        recordsView.setSecondIsSidebar(false);
+        this._containerElement = recordsView.element;
+        this._containerElement.tabIndex = 0;
+        this._containerElement.id = "timeline-container";
+        this._containerElement.addEventListener("scroll", this._onScroll.bind(this), false);
+
+        // Create records list in the records sidebar.
+        recordsView.sidebarElement().classList.add("vbox");
+        recordsView.sidebarElement().createChild("div", "timeline-records-title").textContent = WebInspector.UIString("RECORDS");
+        this._sidebarListElement = recordsView.sidebarElement().createChild("div", "timeline-records-list");
+
+        // Create grid in the records main area.
+        this._gridContainer = new WebInspector.ViewWithResizeCallback(this._onViewportResize.bind(this));
+        this._gridContainer.element.classList.add("fill");
+        this._gridContainer.element.id = "resources-container-content";
+        recordsView.setMainView(this._gridContainer);
+        this._timelineGrid = new WebInspector.TimelineGrid();
+        this._itemsGraphsElement = this._timelineGrid.itemsGraphsElement;
+        this._itemsGraphsElement.id = "timeline-graphs";
+        this._gridContainer.element.appendChild(this._timelineGrid.element);
+        this._timelineGrid.gridHeaderElement.id = "timeline-grid-header";
+        this._timelineGrid.gridHeaderElement.classList.add("fill");
+
+        // Create gap elements
+        this._topGapElement = this._itemsGraphsElement.createChild("div", "timeline-gap");
+        this._graphRowsElement = this._itemsGraphsElement.createChild("div");
+        this._bottomGapElement = this._itemsGraphsElement.createChild("div", "timeline-gap");
+        this._expandElements = this._itemsGraphsElement.createChild("div");
+        this._expandElements.id = "orphan-expand-elements";
+
+        // Create gpu tasks containers.
+        /** @type {!Array.<!TimelineAgent.TimelineEvent>} */
+        this._mainThreadTasks =  ([]);
+        /** @type {!Array.<!TimelineAgent.TimelineEvent>} */
+        this._gpuTasks = ([]);
+        var utilizationStripsElement = this._timelineGrid.gridHeaderElement.createChild("div", "timeline-utilization-strips vbox");
+        this._cpuBarsElement = utilizationStripsElement.createChild("div", "timeline-utilization-strip");
+        if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
+            this._gpuBarsElement = utilizationStripsElement.createChild("div", "timeline-utilization-strip gpu");
+
+        return recordsView;
+    },
+
     /**
      * @return {!WebInspector.SearchableView}
      */

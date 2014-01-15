@@ -168,6 +168,7 @@
             'front_end/SourcesPanelDescriptor.js',
             'front_end/Spectrum.js',
             'front_end/SplitView.js',
+            'front_end/StackView.js',
             'front_end/StatusBarButton.js',
             'front_end/StylesSourceMapping.js',
             'front_end/SuggestBox.js',
