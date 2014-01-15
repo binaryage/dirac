@@ -466,5 +466,8 @@
             'front_end/ExtensionAPI.js',
             'front_end/DevToolsExtensionAPI.js'
         ],
+        'devtools_temp_storage_shared_worker_js_files': [
+            'front_end/TempStorageSharedWorker.js',
+        ],
     },
 }

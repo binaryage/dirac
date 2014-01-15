@@ -39,6 +39,8 @@ WebInspector.ProfileType = function(id, name)
     this.treeElement = null;
     /** @type {?WebInspector.ProfileHeader} */
     this._profileBeingRecorded = null;
+
+    window.addEventListener("unload", this._clearTempStorage.bind(this), false);
 }
 
 WebInspector.ProfileType.Events = {
@@ -206,6 +208,12 @@ WebInspector.ProfileType.prototype = {
         }
     },
 
+    _clearTempStorage: function()
+    {
+        for (var i = 0; i < this._profiles.length; ++i)
+            this._profiles[i].removeTempFile();
+    },
+
     /**
      * @nosideeffects
      * @return {?WebInspector.ProfileHeader}
@@ -295,6 +303,12 @@ WebInspector.ProfileHeader.prototype = {
     createView: function(panel)
     {
         throw new Error("Not implemented.");
+    },
+
+    removeTempFile: function()
+    {
+        if (this._tempFile)
+            this._tempFile.remove();
     },
 
     dispose: function()

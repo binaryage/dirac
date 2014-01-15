@@ -107,8 +107,16 @@ WebInspector.TempFile = function(dirPath, name, callback)
                          WebInspector.ConsoleMessage.MessageLevel.Error);
         callback(null);
     }
+
     var boundErrorHandler = errorHandler.bind(this)
-    window.requestFileSystem(window.TEMPORARY, 10, didInitFs.bind(this), errorHandler.bind(this));
+    /**
+     * @this {WebInspector.TempFile}
+     */
+    function didClearTempStorage()
+    {
+        window.requestFileSystem(window.TEMPORARY, 10, didInitFs.bind(this), boundErrorHandler);
+    }
+    WebInspector.TempFile._ensureTempStorageCleared(didClearTempStorage.bind(this));
 }
 
 WebInspector.TempFile.prototype = {
@@ -185,6 +193,12 @@ WebInspector.TempFile.prototype = {
             callback(null);
         }
         this._fileEntry.file(callback, didFailToGetFile.bind(this));
+    },
+
+    remove: function()
+    {
+        if (this._fileEntry)
+            this._fileEntry.remove(function() {});
     }
 }
 
@@ -278,4 +292,62 @@ WebInspector.BufferedTempFileWriter.prototype = {
         if (this._finishCallback)
             this._finishCallback(this._tempFile);
     }
+}
+
+/**
+ * @constructor
+ */
+WebInspector.TempStorageCleaner = function()
+{
+    this._worker = new SharedWorker("TempStorageSharedWorker.js", "TempStorage");
+    this._callbacks = [];
+    this._worker.port.onmessage = this._handleMessage.bind(this);
+    this._worker.port.onerror = this._handleError.bind(this);
+}
+
+WebInspector.TempStorageCleaner.prototype = {
+    /**
+     * @param {!function()} callback
+     */
+    ensureStorageCleared: function(callback)
+    {
+        if (this._callbacks)
+            this._callbacks.push(callback);
+        else
+            callback();
+    },
+
+    _handleMessage: function(event)
+    {
+        if (event.data.type === "tempStorageCleared") {
+            if (event.data.error)
+                WebInspector.log(event.data.error, WebInspector.ConsoleMessage.MessageLevel.Error);
+            this._notifyCallbacks();
+        }
+    },
+
+    _handleError: function(event)
+    {
+        WebInspector.log(WebInspector.UIString("Failed to clear temp storage: %s", event.data),
+                         WebInspector.ConsoleMessage.MessageLevel.Error);
+        this._notifyCallbacks();
+    },
+
+    _notifyCallbacks: function()
+    {
+        var callbacks = this._callbacks;
+        this._callbacks = null;
+        for (var i = 0; i < callbacks.length; i++)
+            callbacks[i]();
+    }
+}
+
+/**
+ * @param {!function()} callback
+ */
+WebInspector.TempFile._ensureTempStorageCleared = function(callback)
+{
+    if (!WebInspector.TempFile._storageCleaner)
+        WebInspector.TempFile._storageCleaner = new WebInspector.TempStorageCleaner();
+    WebInspector.TempFile._storageCleaner.ensureStorageCleared(callback);
 }

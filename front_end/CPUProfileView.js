@@ -897,6 +897,14 @@ WebInspector.CPUProfileHeader.prototype = {
 
     /**
      * @override
+     */
+    dispose: function()
+    {
+        this.removeTempFile();
+    },
+
+    /**
+     * @override
      * @return {!WebInspector.ProfileSidebarTreeElement}
      */
     createSidebarTreeElement: function()

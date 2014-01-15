@@ -1291,6 +1291,7 @@ WebInspector.HeapProfileHeader.prototype = {
             this._view = null;
             view.dispose();
         }
+        this.removeTempFile();
     },
 
     _updateSubtitle: function(value)

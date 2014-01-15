@@ -54,6 +54,7 @@
                                      'concatenated_devtools_layers_js',
                                      'concatenated_heap_snapshot_worker_js',
                                      'concatenated_script_formatter_worker_js',
+                                     'concatenated_temp_storage_shared_worker_js',
                                      'concatenated_devtools_css'],
                 }],
             ],
@@ -151,6 +152,7 @@
                                      'concatenated_devtools_layers_js',
                                      'concatenated_heap_snapshot_worker_js',
                                      'concatenated_script_formatter_worker_js',
+                                     'concatenated_temp_storage_shared_worker_js',
                                      'concatenated_devtools_css'],
                     'actions': [{
                         'action_name': 'generate_devtools_grd',
@@ -169,6 +171,7 @@
                             '<(PRODUCT_DIR)/resources/inspector/CodeMirrorTextEditor.js',
                             '<(PRODUCT_DIR)/resources/inspector/HeapSnapshotWorker.js',
                             '<(PRODUCT_DIR)/resources/inspector/ScriptFormatterWorker.js',
+                            '<(PRODUCT_DIR)/resources/inspector/TempStorageSharedWorker.js',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.css',
                             '<(PRODUCT_DIR)/resources/inspector/devtools_extension_api.js',
                             '<@(devtools_standalone_files)',
@@ -439,6 +442,22 @@
                         ],
                         'search_path': 'front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/ScriptFormatterWorker.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                    }],
+                },
+                {
+                    'target_name': 'concatenated_temp_storage_shared_worker_js',
+                    'type': 'none',
+                    'actions': [{
+                        'action_name': 'concatenate_temp_storage_shared_worker_js',
+                        'script_name': 'scripts/inline_js_imports.py',
+                        'input_file': 'front_end/TempStorageSharedWorker.js',
+                        'inputs': [
+                            '<@(_script_name)',
+                            '<@(devtools_temp_storage_shared_worker_js_files)'
+                        ],
+                        'search_path': 'front_end',
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/TempStorageSharedWorker.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
                     }],
                 },

@@ -326,6 +326,13 @@
         ]
     },
     {
+        "name": "temp_storage_shared_worker",
+        "dependencies": [],
+        "sources": [
+            "TempStorageSharedWorker.js"
+        ]
+    },
+    {
         "name": "profiler",
         "dependencies": ["components", "workers"],
         "sources": [
