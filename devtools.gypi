@@ -129,6 +129,7 @@
             'front_end/Panel.js',
             'front_end/ParsedURL.js',
             'front_end/Placard.js',
+            'front_end/Platform.js',
             'front_end/Popover.js',
             'front_end/PresentationConsoleMessageHelper.js',
             'front_end/ProfilesPanelDescriptor.js',

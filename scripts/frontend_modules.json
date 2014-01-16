@@ -5,15 +5,16 @@
         "sources": [
             "Color.js",
             "DOMExtension.js",
+            "Geometry.js",
             "Object.js",
             "ParsedURL.js",
+            "Platform.js",
             "Progress.js",
             "Settings.js",
             "TextRange.js",
             "UIString.js",
             "UserMetrics.js",
-            "utilities.js",
-            "Geometry.js"
+            "utilities.js"
         ]
     },
     {
