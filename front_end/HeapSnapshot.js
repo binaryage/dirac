@@ -1488,6 +1488,20 @@ WebInspector.HeapSnapshot.prototype = {
         return null;
     },
 
+    /**
+     * @param {string} name
+     * @return {!Array.<number>}
+     */
+    idsOfObjectsWithName: function(name)
+    {
+        var ids = [];
+        for (var it = this._allNodes(); it.hasNext(); it.next()) {
+            if (it.item().name() === name)
+                ids.push(it.item().id());
+        }
+        return ids;
+    },
+
     dominatorIdsForNode: function(snapshotObjectId)
     {
         var node = this._nodeForSnapshotObjectId(snapshotObjectId);
