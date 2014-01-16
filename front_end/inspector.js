@@ -350,6 +350,11 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     this.overridesSupport = new WebInspector.OverridesSupport();
     this.overridesSupport.applyInitialOverrides();
+    if (this.overridesSupport.hasActiveOverrides()) {
+        if (!WebInspector.settings.showEmulationViewInDrawer.get())
+            WebInspector.settings.showEmulationViewInDrawer.set(true);
+        WebInspector.inspectorView.showViewInDrawer("emulation");
+    }
 
     new WebInspector.DebuggerScriptMapping(this.workspace, this.networkWorkspaceProvider);
     this.liveEditSupport = new WebInspector.LiveEditSupport(this.workspace);
@@ -686,11 +691,17 @@ WebInspector.contextMenuEventFired = function(event)
         event.preventDefault();
 }
 
+/**
+ * @param {string} panel
+ */
 WebInspector.showPanel = function(panel)
 {
     return WebInspector.inspectorView.showPanel(panel);
 }
 
+/**
+ * @param {string} panel
+ */
 WebInspector.panel = function(panel)
 {
     return WebInspector.inspectorView.panel(panel);

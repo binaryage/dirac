@@ -425,7 +425,6 @@ WebInspector.OverridesSupport.prototype = {
         delete this._userAgentChangedListenerMuted;
         this._deviceMetricsChanged();
         this._userAgentChanged();
-        this._revealOverridesTabIfNeeded();
     },
 
     _userAgentChanged: function()
@@ -523,20 +522,14 @@ WebInspector.OverridesSupport.prototype = {
         WebInspector.cssModel.mediaQueryResultChanged();
     },
 
-    _anyOverrideIsEnabled: function()
+    /**
+     * @return {boolean}
+     */
+    hasActiveOverrides: function()
     {
         return WebInspector.settings.overrideUserAgent.get() || WebInspector.settings.overrideDeviceMetrics.get() ||
             WebInspector.settings.overrideGeolocation.get() || WebInspector.settings.overrideDeviceOrientation.get() ||
             WebInspector.settings.emulateTouchEvents.get() || WebInspector.settings.overrideCSSMedia.get();
-    },
-
-    _revealOverridesTabIfNeeded: function()
-    {
-        if (this._anyOverrideIsEnabled()) {
-            if (!WebInspector.settings.showEmulationViewInDrawer.get())
-                WebInspector.settings.showEmulationViewInDrawer.set(true);
-            WebInspector.inspectorView.showViewInDrawer("emulation");
-        }
     },
 
     _onMainFrameNavigated: function()
