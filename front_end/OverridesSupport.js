@@ -34,9 +34,10 @@
  */
 WebInspector.OverridesSupport = function()
 {
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._deviceMetricsChanged.bind(this), this);
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated.bind(this), this);
     this._deviceMetricsOverrideEnabled = false;
     this._emulateViewportEnabled = false;
+    this._userAgent = "";
 
     WebInspector.settings.overrideUserAgent.addChangeListener(this._userAgentChanged, this);
     WebInspector.settings.userAgent.addChangeListener(this._userAgentChanged, this);
@@ -379,6 +380,7 @@ WebInspector.OverridesSupport.prototype = {
     emulateDevice: function(deviceMetrics, userAgent)
     {
         this._deviceMetricsChangedListenerMuted = true;
+        this._userAgentChangedListenerMuted = true;
         WebInspector.settings.deviceMetrics.set(deviceMetrics);
         WebInspector.settings.userAgent.set(userAgent);
         WebInspector.settings.overrideDeviceMetrics.set(true);
@@ -386,12 +388,15 @@ WebInspector.OverridesSupport.prototype = {
         WebInspector.settings.emulateTouchEvents.set(true);
         WebInspector.settings.emulateViewport.set(true);
         delete this._deviceMetricsChangedListenerMuted;
+        delete this._userAgentChangedListenerMuted;
         this._deviceMetricsChanged();
+        this._userAgentChanged();
     },
 
     reset: function()
     {
         this._deviceMetricsChangedListenerMuted = true;
+        this._userAgentChangedListenerMuted = true;
         WebInspector.settings.overrideDeviceMetrics.set(false);
         WebInspector.settings.overrideUserAgent.set(false);
         WebInspector.settings.emulateTouchEvents.set(false);
@@ -401,12 +406,15 @@ WebInspector.OverridesSupport.prototype = {
         WebInspector.settings.emulateViewport.set(false);
         WebInspector.settings.deviceMetrics.set("");
         delete this._deviceMetricsChangedListenerMuted;
+        delete this._userAgentChangedListenerMuted;
         this._deviceMetricsChanged();
+        this._userAgentChanged();
     },
 
     applyInitialOverrides: function()
     {
         this._deviceMetricsChangedListenerMuted = true;
+        this._userAgentChangedListenerMuted = true;
         this._userAgentChanged();
         this._deviceMetricsChanged();
         this._deviceOrientationChanged();
@@ -414,15 +422,20 @@ WebInspector.OverridesSupport.prototype = {
         this._emulateTouchEventsChanged();
         this._cssMediaChanged();
         delete this._deviceMetricsChangedListenerMuted;
+        delete this._userAgentChangedListenerMuted;
         this._deviceMetricsChanged();
+        this._userAgentChanged();
         this._revealOverridesTabIfNeeded();
     },
 
     _userAgentChanged: function()
     {
-        if (WebInspector.isInspectingDevice())
+        if (WebInspector.isInspectingDevice() || this._userAgentChangedListenerMuted)
             return;
-        NetworkAgent.setUserAgentOverride(WebInspector.settings.overrideUserAgent.get() ? WebInspector.settings.userAgent.get() : "");
+        var userAgent = WebInspector.settings.overrideUserAgent.get() ? WebInspector.settings.userAgent.get() : "";
+        NetworkAgent.setUserAgentOverride(userAgent);
+        this._updateUserAgentWarningMessage(this._userAgent !== userAgent ? WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering.") : "");
+        this._userAgent = userAgent;
     },
 
     _deviceMetricsChanged: function()
@@ -438,7 +451,7 @@ WebInspector.OverridesSupport.prototype = {
 
         // Disable override without checks.
         if (dipWidth && dipHeight && WebInspector.isInspectingDevice()) {
-            this._updateWarningMessage(WebInspector.UIString("Screen emulation on the device is not available."));
+            this._updateDeviceMetricsWarningMessage(WebInspector.UIString("Screen emulation on the device is not available."));
             return;
         }
 
@@ -451,17 +464,23 @@ WebInspector.OverridesSupport.prototype = {
         function apiCallback(error)
         {
             if (error) {
-                this._updateWarningMessage(WebInspector.UIString("Screen emulation is not available on this page."));
+                this._updateDeviceMetricsWarningMessage(WebInspector.UIString("Screen emulation is not available on this page."));
                 return;
             }
 
             var metricsOverrideEnabled = !!(dipWidth && dipHeight);
             var viewportEnabled =  WebInspector.settings.emulateViewport.get();
-            this._updateWarningMessage(this._deviceMetricsOverrideEnabled !== metricsOverrideEnabled || (metricsOverrideEnabled && this._emulateViewportEnabled != viewportEnabled) ?
+            this._updateDeviceMetricsWarningMessage(this._deviceMetricsOverrideEnabled !== metricsOverrideEnabled || (metricsOverrideEnabled && this._emulateViewportEnabled != viewportEnabled) ?
                 WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering.") : "");
             this._deviceMetricsOverrideEnabled = metricsOverrideEnabled;
             this._emulateViewportEnabled = viewportEnabled;
+            this._deviceMetricsOverrideAppliedForTest();
         }
+    },
+
+    _deviceMetricsOverrideAppliedForTest: function()
+    {
+        // Used for sniffing in tests.
     },
 
     _geolocationPositionChanged: function()
@@ -520,12 +539,27 @@ WebInspector.OverridesSupport.prototype = {
         }
     },
 
+    _onMainFrameNavigated: function()
+    {
+        this._deviceMetricsChanged();
+        this._updateUserAgentWarningMessage("");
+    },
+
     /**
      * @param {string} warningMessage
      */
-    _updateWarningMessage: function(warningMessage)
+    _updateDeviceMetricsWarningMessage: function(warningMessage)
     {
-        this._warningMessage = warningMessage;
+        this._deviceMetricsWarningMessage = warningMessage;
+        this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesWarningUpdated);
+    },
+
+    /**
+     * @param {string} warningMessage
+     */
+    _updateUserAgentWarningMessage: function(warningMessage)
+    {
+        this._userAgentWarningMessage = warningMessage;
         this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.OverridesWarningUpdated);
     },
 
@@ -534,7 +568,7 @@ WebInspector.OverridesSupport.prototype = {
      */
     warningMessage: function()
     {
-        return this._warningMessage || "";
+        return this._deviceMetricsWarningMessage || this._userAgentWarningMessage || "";
     },
 
     __proto__: WebInspector.Object.prototype
