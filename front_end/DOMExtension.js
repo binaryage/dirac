@@ -166,16 +166,21 @@ Element.prototype.enableStyleClass = function(className, enable)
 /**
  * @param {number|undefined} x
  * @param {number|undefined} y
+ * @param {!Element=} relativeTo
  */
-Element.prototype.positionAt = function(x, y)
+Element.prototype.positionAt = function(x, y, relativeTo)
 {
+    var shift = {x: 0, y: 0};
+    if (relativeTo)
+       shift = relativeTo.boxInWindow(this.ownerDocument.defaultView);
+
     if (typeof x === "number")
-        this.style.setProperty("left", x + "px");
+        this.style.setProperty("left", (shift.x + x) + "px");
     else
         this.style.removeProperty("left");
 
     if (typeof y === "number")
-        this.style.setProperty("top", y + "px");
+        this.style.setProperty("top", (shift.y + y) + "px");
     else
         this.style.removeProperty("top");
 }
@@ -366,6 +371,25 @@ function AnchorBox(x, y, width, height)
     this.width = width || 0;
     this.height = height || 0;
 }
+
+/**
+ * @param {!AnchorBox} box
+ * @return {!AnchorBox}
+ */
+AnchorBox.prototype.relativeTo = function(box)
+{
+    return new AnchorBox(
+        this.x - box.x, this.y - box.y, this.width, this.height);
+};
+
+/**
+ * @param {!Element} element
+ * @return {!AnchorBox}
+ */
+AnchorBox.prototype.relativeToElement = function(element)
+{
+    return this.relativeTo(element.boxInWindow(element.ownerDocument.defaultView));
+};
 
 /**
  * @param {!Window} targetWindow

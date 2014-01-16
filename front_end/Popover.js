@@ -153,16 +153,13 @@ WebInspector.Popover.prototype = {
 
         // Skinny tooltips are not pretty, their arrow location is not nice.
         preferredWidth = Math.max(preferredWidth, 50);
-        // Position popover inside container.
+        // Position relative to main DevTools element.
         const container = WebInspector.inspectorView.devtoolsElement();
-        const containerBox = container.boxInWindow(window);
         const totalWidth = container.offsetWidth;
         const totalHeight = container.offsetHeight;
 
         var anchorBox = anchorElement instanceof AnchorBox ? anchorElement : anchorElement.boxInWindow(window);
-        // Switch to coordinates relative to the container.
-        anchorBox.x -= containerBox.x;
-        anchorBox.y -= containerBox.y;
+        anchorBox = anchorBox.relativeToElement(container);
         var newElementPosition = { x: 0, y: 0, width: preferredWidth + scrollerWidth, height: preferredHeight };
 
         var verticalAlignment;
@@ -220,11 +217,8 @@ WebInspector.Popover.prototype = {
             this._popupArrowElement.style.left += anchorBox.width / 2;
         }
 
-        // Switch back to coordinates relative to the window for absoulte positioning.
-        newElementPosition.x += containerBox.x;
-        newElementPosition.y += containerBox.y;
         this.element.className = "popover custom-popup-vertical-scroll custom-popup-horizontal-scroll " + verticalAlignment + "-" + horizontalAlignment + "-arrow";
-        this.element.positionAt(newElementPosition.x - borderWidth, newElementPosition.y - borderWidth);
+        this.element.positionAt(newElementPosition.x - borderWidth, newElementPosition.y - borderWidth, container);
         this.element.style.width = newElementPosition.width + borderWidth * 2 + "px";
         this.element.style.height = newElementPosition.height + borderWidth * 2 + "px";
     },
