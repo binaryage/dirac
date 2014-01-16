@@ -31,6 +31,7 @@
 /**
  * @extends {WebInspector.View}
  * @constructor
+ * @implements {WebInspector.Replaceable}
  * @param {!WebInspector.ContentProvider} contentProvider
  */
 WebInspector.SourceFrame = function(contentProvider)
@@ -556,7 +557,7 @@ WebInspector.SourceFrame.prototype = {
     /**
      * @param {string} text
      */
-    replaceSearchMatchWith: function(text)
+    replaceSelectionWith: function(text)
     {
         var range = this._searchResults[this._currentSearchResultIndex];
         if (!range)

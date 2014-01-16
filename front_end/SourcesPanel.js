@@ -47,6 +47,7 @@ importScript("WorkersSidebarPane.js");
  * @implements {WebInspector.TabbedEditorContainerDelegate}
  * @implements {WebInspector.ContextMenu.Provider}
  * @implements {WebInspector.Searchable}
+ * @implements {WebInspector.Replaceable}
  * @extends {WebInspector.Panel}
  * @param {!WebInspector.Workspace=} workspaceForTest
  */
@@ -711,7 +712,7 @@ WebInspector.SourcesPanel.prototype = {
         this._navigatorController.hideNavigatorOverlay();
         if (!this._navigatorController.isNavigatorPinned())
             sourceFrame.focus();
-        this._searchableView.setCanReplace(!!sourceFrame && sourceFrame.canEditSource());
+        this._searchableView.setReplaceable(!!sourceFrame && sourceFrame.canEditSource());
         this._searchableView.resetSearch();
     },
 
@@ -1209,8 +1210,8 @@ WebInspector.SourcesPanel.prototype = {
      */
     replaceSelectionWith: function(text)
     {
-        var view = /** @type {!WebInspector.SourceFrame} */ (this.visibleView);
-        view.replaceSearchMatchWith(text);
+        var view = /** @type {!WebInspector.Replaceable} */ (this.visibleView);
+        view.replaceSelectionWith(text);
     },
 
     /**
@@ -1219,7 +1220,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     replaceAllWith: function(query, text)
     {
-        var view = /** @type {!WebInspector.SourceFrame} */ (this.visibleView);
+        var view = /** @type {!WebInspector.Replaceable} */ (this.visibleView);
         view.replaceAllWith(query, text);
     },
 

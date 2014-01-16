@@ -206,11 +206,11 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
-     * @param {boolean} canReplace
+     * @param {boolean} replaceable
      */
-    setCanReplace: function(canReplace)
+    setReplaceable: function(replaceable)
     {
-        this._canReplace = canReplace;
+        this._replaceable = replaceable;
     },
 
     /**
@@ -365,8 +365,8 @@ WebInspector.SearchableView.prototype = {
 
     _updateReplaceVisibility: function()
     {
-        this._replaceElement.enableStyleClass("hidden", !this._canReplace);
-        if (!this._canReplace) {
+        this._replaceElement.enableStyleClass("hidden", !this._replaceable);
+        if (!this._replaceable) {
             this._replaceCheckboxElement.checked = false;
             this._updateSecondRowVisibility();
         }
@@ -484,14 +484,14 @@ WebInspector.SearchableView.prototype = {
 
     _replace: function()
     {
-        this._searchProvider.replaceSelectionWith(this._replaceInputElement.value);
+        /** @type {!WebInspector.Replaceable} */ (this._searchProvider).replaceSelectionWith(this._replaceInputElement.value);
         delete this._currentQuery;
         this._performSearch(true, true);
     },
 
     _replaceAll: function()
     {
-        this._searchProvider.replaceAllWith(this._searchInputElement.value, this._replaceInputElement.value);
+        /** @type {!WebInspector.Replaceable} */ (this._searchProvider).replaceAllWith(this._searchInputElement.value, this._replaceInputElement.value);
     },
 
     _onInput: function(event)
@@ -525,5 +525,25 @@ WebInspector.Searchable.prototype = {
 
     jumpToNextSearchResult: function() { },
 
-    jumpToPreviousSearchResult: function() { },
+    jumpToPreviousSearchResult: function() { }
+}
+
+/**
+ * @interface
+ */
+WebInspector.Replaceable = function()
+{
+}
+
+WebInspector.Replaceable.prototype = {
+    /**
+     * @param {string} text
+     */
+    replaceSelectionWith: function(text) { },
+
+    /**
+     * @param {string} query
+     * @param {string} replacement
+     */
+    replaceAllWith: function(query, replacement) { }
 }
