@@ -165,10 +165,6 @@ WebInspector.InspectorFrontendHostStub.prototype = {
         WebInspector.log("Saving files is not enabled in hosted mode. Please inspect using chrome://inspect", WebInspector.ConsoleMessage.MessageLevel.Error, true);
     },
 
-    close: function(url)
-    {
-    },
-
     sendMessageToBackend: function(message)
     {
     },

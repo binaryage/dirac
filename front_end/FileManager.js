@@ -124,7 +124,7 @@ WebInspector.FileManager.prototype = {
      */
     close: function(url)
     {
-        InspectorFrontendHost.close(url);
+        // Currently a no-op.
     },
 
     /**

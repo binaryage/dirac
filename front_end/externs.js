@@ -257,7 +257,6 @@ InspectorFrontendHostAPI.prototype.searchInPath = function(requestId, fileSystem
 InspectorFrontendHostAPI.prototype.stopIndexing = function(requestId, callback) {}
 
 InspectorFrontendHostAPI.prototype.bringToFront = function() {}
-InspectorFrontendHostAPI.prototype.close = function(url) {}
 InspectorFrontendHostAPI.prototype.closeWindow = function() {}
 InspectorFrontendHostAPI.prototype.copyText = function(text) {}
 InspectorFrontendHostAPI.prototype.inspectedURLChanged = function(url) {}
