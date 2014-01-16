@@ -68,6 +68,11 @@
                     'conditions': [
                         ['debug_devtools==0', {
                             'files/': [['exclude', '\\.(js|css|html)$']],
+                        },
+                        {
+                            'files': [
+                                '<@(devtools_temp_storage_shared_worker_js_files)',
+                            ],
                         }],
                     ],
                 },
