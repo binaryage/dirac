@@ -349,8 +349,8 @@ WebInspector.TimelinePanel.prototype = {
         }
         this._currentView = this._viewForMode(mode);
         this._updateFiltersBar();
-        this._currentView.show(this.element);
         this._currentView.setWindowTimes(windowTimes);
+        this._currentView.show(this.element);
         this._glueParentButton.setEnabled(this._currentView.supportsGlueParentMode());
     },
 
