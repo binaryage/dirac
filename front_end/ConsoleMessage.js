@@ -48,14 +48,13 @@
  */
 WebInspector.ConsoleMessageImpl = function(source, level, message, linkifier, type, url, line, column, repeatCount, parameters, stackTrace, requestId, isOutdated)
 {
-    WebInspector.ConsoleMessage.call(this, source, level, url, line, column, repeatCount);
+    WebInspector.ConsoleMessage.call(this, source, level, url, line, column, repeatCount, requestId);
 
     this._linkifier = linkifier;
     this.type = type || WebInspector.ConsoleMessage.MessageType.Log;
     this._messageText = message;
     this._parameters = parameters;
     this._stackTrace = stackTrace;
-    this._request = requestId ? WebInspector.networkLog.requestForId(requestId) : null;
     this._isOutdated = isOutdated;
     /** @type {!Array.<!WebInspector.DataGrid>} */
     this._dataGrids = [];
@@ -215,14 +214,6 @@ WebInspector.ConsoleMessageImpl.prototype = {
         if (!this._formattedMessage)
             this._formatMessage();
         return this._formattedMessage;
-    },
-
-    /**
-     * @return {?WebInspector.NetworkRequest}
-     */
-    request: function()
-    {
-        return this._request;
     },
 
     /**
