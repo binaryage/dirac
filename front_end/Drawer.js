@@ -224,8 +224,7 @@ WebInspector.Drawer.prototype = {
             if (this._visibleView()) {
                 // Get console content back
                 this._tabbedPane.changeTabView(this._tabbedPane.selectedTabId, this._visibleView());
-                if (this._visibleView().afterShow)
-                    this._visibleView().afterShow();
+                this._visibleView().focus();
             }
             delete this._currentAnimation;
         }

@@ -45,7 +45,7 @@ WebInspector.ConsolePanel.prototype = {
     createView: function(id)
     {
         if (!this._consoleViewWrapper) {
-            this._consoleViewWrapper = new WebInspector.View();
+            this._consoleViewWrapper = new WebInspector.ConsolePanel.WrapperView();
             this._consoleViewWrapper.element.classList.add("fill", "console-view-wrapper");
             if (WebInspector.inspectorView.currentPanel() !== this)
                 this._showViewInWrapper();
@@ -79,15 +79,44 @@ WebInspector.ConsolePanel.prototype = {
         }
 
         WebInspector.Panel.prototype.willHide.call(this);
-        if (this._consoleViewWrapper)
-            this._showViewInWrapper();
+        this._showViewInWrapper();
     },
 
     _showViewInWrapper: function()
     {
-        this._view.show(this._consoleViewWrapper.element);
-        this._consoleViewWrapper.setDefaultFocusedElement(this._view.defaultFocusedElement());
+        if (this._consoleViewWrapper)
+            this._consoleViewWrapper.setWrappedView(this._view);
     },
 
     __proto__: WebInspector.Panel.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.View}
+ */
+WebInspector.ConsolePanel.WrapperView = function()
+{
+    WebInspector.View.call(this);
+}
+
+WebInspector.ConsolePanel.WrapperView.prototype = {
+    /**
+     * @param {!WebInspector.View} view
+     */
+    setWrappedView: function(view)
+    {
+        this._view = view;
+        this._view.show(this.element);
+    },
+
+    focus: function()
+    {
+        if (this._view)
+            this._view.focus();
+        else
+            WebInspector.View.prototype.focus.call(this);
+    },
+
+    __proto__: WebInspector.View.prototype
 }

@@ -257,9 +257,10 @@ WebInspector.ConsoleView.prototype = {
             this.prompt.moveCaretToEndOfPrompt();
     },
 
-    afterShow: function()
+    focus: function()
     {
         WebInspector.setCurrentFocusElement(this.promptElement);
+        this.prompt.moveCaretToEndOfPrompt();
     },
 
     storeScrollPositions: function()

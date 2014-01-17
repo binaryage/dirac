@@ -109,6 +109,14 @@ WebInspector.TabbedPane.prototype = {
         return this.visibleView ? this.visibleView.defaultFocusedElement() : null;
     },
 
+    focus: function()
+    {
+        if (this.visibleView)
+            this.visibleView.focus();
+        else
+            WebInspector.View.prototype.focus.call(this);
+    },
+
     /**
      * @return {!Element}
      */
