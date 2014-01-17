@@ -145,6 +145,7 @@
             "DOMPresentationUtils.js",
             "ElementsTreeOutline.js",
             "FontView.js",
+            "HelpScreenUntilReload.js",
             "ImageView.js",
             "NativeBreakpointsSidebarPane.js",
             "InspectElementModeController.js",

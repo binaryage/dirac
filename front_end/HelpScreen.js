@@ -129,29 +129,19 @@ WebInspector.HelpScreen.prototype = {
 
 /**
  * @constructor
- * @param {string=} title
- * @param {string=} message
  * @extends {WebInspector.HelpScreen}
  */
-WebInspector.HelpScreenUntilReload = function(title, message)
+WebInspector.RemoteDebuggingTerminatedScreen = function(reason)
 {
-    WebInspector.HelpScreen.call(this, title);
+    WebInspector.HelpScreen.call(this, WebInspector.UIString("Detached from the target"));
     var p = this.contentElement.createChild("p");
     p.classList.add("help-section");
-    p.textContent = message;
-    WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this.hide, this);
+    p.createChild("span").textContent = "Remote debugging has been terminated with reason: ";
+    p.createChild("span", "error-message").textContent = reason;
+    p.createChild("br");
+    p.createChild("span").textContent = "Please re-attach to the new target.";
 }
 
-WebInspector.HelpScreenUntilReload.prototype = {
-    /**
-     * @override
-     */
-    willHide: function()
-    {
-        WebInspector.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this.hide, this);
-        WebInspector.HelpScreen.prototype.willHide.call(this);
-    },
-
+WebInspector.RemoteDebuggingTerminatedScreen.prototype = {
     __proto__: WebInspector.HelpScreen.prototype
 }
-

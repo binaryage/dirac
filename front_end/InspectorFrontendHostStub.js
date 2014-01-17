@@ -288,22 +288,3 @@ InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
     for (var i = 0; i < methodList.length; ++i)
         InspectorFrontendHost[methodList[i]] = dispatchMethodByName.bind(null, methodList[i]);
 }
-
-/**
- * @constructor
- * @extends {WebInspector.HelpScreen}
- */
-WebInspector.RemoteDebuggingTerminatedScreen = function(reason)
-{
-    WebInspector.HelpScreen.call(this, WebInspector.UIString("Detached from the target"));
-    var p = this.contentElement.createChild("p");
-    p.classList.add("help-section");
-    p.createChild("span").textContent = "Remote debugging has been terminated with reason: ";
-    p.createChild("span", "error-message").textContent = reason;
-    p.createChild("br");
-    p.createChild("span").textContent = "Please re-attach to the new target.";
-}
-
-WebInspector.RemoteDebuggingTerminatedScreen.prototype = {
-    __proto__: WebInspector.HelpScreen.prototype
-}
