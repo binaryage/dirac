@@ -100,7 +100,7 @@ WebInspector.CallStackSidebarPane.prototype = {
     {
         var contextMenu = new WebInspector.ContextMenu(event);
 
-        if (!placard._callFrame.isAsync() && WebInspector.debuggerModel.canSetScriptSource())
+        if (!placard._callFrame.isAsync())
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Restart frame" : "Restart Frame"), this._restartFrame.bind(this, placard));
 
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy stack trace" : "Copy Stack Trace"), this._copyStackTrace.bind(this));

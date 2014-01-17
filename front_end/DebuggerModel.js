@@ -43,7 +43,6 @@ WebInspector.DebuggerModel = function()
     /** @type {!Object.<!string, !Array.<!WebInspector.Script>>} */
     this._scriptsBySourceURL = {};
 
-    this._canSetScriptSource = false;
     this._breakpointsActive = true;
 
     WebInspector.settings.pauseOnExceptionStateString = WebInspector.settings.createSetting("pauseOnExceptionStateString", WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
@@ -121,16 +120,6 @@ WebInspector.DebuggerModel.prototype = {
         if (this._debuggerEnabled)
             return;
 
-        /**
-         * @param {?Protocol.Error} error
-         * @param {boolean} result
-         * @this {WebInspector.DebuggerModel}
-         */
-        function callback(error, result)
-        {
-            this._canSetScriptSource = result;
-        }
-        DebuggerAgent.canSetScriptSource(callback.bind(this));
         DebuggerAgent.enable(this._debuggerWasEnabled.bind(this));
     },
 
@@ -165,14 +154,6 @@ WebInspector.DebuggerModel.prototype = {
         DebuggerAgent.setSkipAllPauses(true, true);
         // If reload happens before the timeout, the flag will be already unset and the timeout callback won't change anything.
         this._skipAllPausesTimeout = setTimeout(this.skipAllPauses.bind(this, false), timeout);
-    },
-
-    /**
-     * @return {boolean}
-     */
-    canSetScriptSource: function()
-    {
-        return this._canSetScriptSource;
     },
 
     _debuggerWasEnabled: function()
