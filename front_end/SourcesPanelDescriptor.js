@@ -45,6 +45,10 @@ WebInspector.SourcesPanelDescriptor = function()
                     type: "@WebInspector.ContextMenu.Provider",
                     contextTypes: ["WebInspector.UISourceCode", "WebInspector.RemoteObject"],
                     className: "WebInspector.SourcesPanel.ContextMenuProvider"
+                },
+                {
+                    type: "@WebInspector.SearchScope",
+                    className: "WebInspector.SourcesSearchScope"
                 }
             ],
             scripts: [ "SourcesPanel.js" ]

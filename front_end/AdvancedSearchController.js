@@ -87,15 +87,6 @@ WebInspector.AdvancedSearchController.prototype = {
         this.resetSearch();
     },
 
-    /**
-     * @param {!WebInspector.SearchScope} searchScope
-     */
-    registerSearchScope: function(searchScope)
-    {
-        // FIXME: implement multiple search scopes.
-        this._searchScope = searchScope;
-    },
-
     show: function()
     {
         var selection = window.getSelection();
@@ -132,7 +123,7 @@ WebInspector.AdvancedSearchController.prototype = {
     {
         this._isIndexing = true;
         // FIXME: this._currentSearchScope should be initialized based on searchConfig
-        this._currentSearchScope = this._searchScope;
+        this._currentSearchScope = this._searchScopes()[0];
         if (this._progressIndicator)
             this._progressIndicator.done();
         this._progressIndicator = new WebInspector.ProgressIndicator();
@@ -190,7 +181,7 @@ WebInspector.AdvancedSearchController.prototype = {
     {
         this._searchConfig = searchConfig;
         // FIXME: this._currentSearchScope should be initialized based on searchConfig
-        this._currentSearchScope = this._searchScope;
+        this._currentSearchScope = this._searchScopes()[0];
 
         if (this._progressIndicator)
             this._progressIndicator.done();
@@ -216,6 +207,15 @@ WebInspector.AdvancedSearchController.prototype = {
         if (this._currentSearchScope)
             this._currentSearchScope.stopSearch();
         delete this._searchConfig;
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.SearchScope>}
+     */
+    _searchScopes: function()
+    {
+        // FIXME: implement multiple search scopes.
+        return /** @type {!Array.<!WebInspector.SearchScope>} */ (WebInspector.moduleManager.instances(WebInspector.SearchScope));
     }
 }
 

@@ -194,8 +194,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._projectWillReset.bind(this), this);
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 
-    WebInspector.advancedSearchController.registerSearchScope(new WebInspector.SourcesSearchScope(this._workspace));
-
     this._boundOnKeyUp = this._onKeyUp.bind(this);
     this._boundOnKeyDown = this._onKeyDown.bind(this);
 

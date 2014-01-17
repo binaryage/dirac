@@ -68,6 +68,23 @@ WebInspector.ModuleManager.prototype = {
         }
 
         return this._extensions.filter(filter);
+    },
+
+    /**
+     * @param {string|!Function} type
+     * @return {!Array.<!Object>}
+     */
+    instances: function(type)
+    {
+        /**
+         * @param {!WebInspector.ModuleManager.Extension} extension
+         * @return {?Object}
+         */
+        function instantiate(extension)
+        {
+            return extension.instance();
+        }
+        return this.extensions(type).filter(instantiate).map(instantiate);
     }
 }
 

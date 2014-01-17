@@ -29,13 +29,12 @@
 /**
  * @constructor
  * @implements {WebInspector.SearchScope}
- * @param {!WebInspector.Workspace} workspace
  */
-WebInspector.SourcesSearchScope = function(workspace)
+WebInspector.SourcesSearchScope = function()
 {
     // FIXME: Add title once it is used by search controller.
     this._searchId = 0;
-    this._workspace = workspace;
+    this._workspace = WebInspector.workspace;
 }
 
 WebInspector.SourcesSearchScope.prototype = {
