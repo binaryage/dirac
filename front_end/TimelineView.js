@@ -38,7 +38,7 @@
  * @param {!WebInspector.Setting} glueRecordsSetting
  * @param {string} mode
  */
-WebInspector.TimelineView = function(panel, model, overviewPane, glueRecordsSetting, mode)
+WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
 {
     WebInspector.View.call(this);
     this.element.classList.add("timeline-view");
@@ -46,7 +46,6 @@ WebInspector.TimelineView = function(panel, model, overviewPane, glueRecordsSett
 
     this._panel = panel;
     this._model = model;
-    this._overviewPane = overviewPane;
     this._currentMode = mode;
     this._calculator = new WebInspector.TimelineCalculator(this._model);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onTimelineEventRecorded, this);
@@ -120,14 +119,23 @@ WebInspector.TimelineView = function(panel, model, overviewPane, glueRecordsSett
     this._windowEndTime = Infinity;
 
     this._allRecordsCount = 0;
-    this._createOverviewControls();
-    if (this._frameMode) {
+
+    this._presentationModel.setGlueRecords(glueRecordsSetting.get());
+    this._glueRecordsSetting = glueRecordsSetting;
+    this._glueRecordsSetting.addChangeListener(this._onGlueRecordsSettingChanged, this);
+
+    switch (mode) {
+    case WebInspector.TimelinePanel.Mode.Events:
+        this._overviewControl = new WebInspector.TimelineEventOverview(this._model);
+        break;
+    case WebInspector.TimelinePanel.Mode.Frames:
+        this._overviewControl = new WebInspector.TimelineFrameOverview(this._model);
         this._presentationModel.setGlueRecords(false);
-        this._frameController = new WebInspector.TimelineFrameController(this._model, this._frameOverviewControl, this._presentationModel);
-    } else {
-        this._presentationModel.setGlueRecords(glueRecordsSetting.get());
-        this._glueRecordsSetting = glueRecordsSetting;
-        this._glueRecordsSetting.addChangeListener(this._onGlueRecordsSettingChanged, this);
+        this._frameController = new WebInspector.TimelineFrameController(this._model, this._overviewControl, this._presentationModel);
+        break;
+    case WebInspector.TimelinePanel.Mode.Memory:
+        this._overviewControl = new WebInspector.TimelineMemoryOverview(this._model);
+        break;
     }
 }
 
@@ -260,21 +268,12 @@ WebInspector.TimelineView.prototype = {
         return this._windowEndTime < Infinity ? this._windowEndTime : this._model.maximumRecordTime();
     },
 
-    _createOverviewControls: function()
-    {
-        this._overviewControls = {};
-        this._overviewControls[WebInspector.TimelinePanel.Mode.Events] = new WebInspector.TimelineEventOverview(this._model);
-        this._frameOverviewControl = new WebInspector.TimelineFrameOverview(this._model);
-        this._overviewControls[WebInspector.TimelinePanel.Mode.Frames] = this._frameOverviewControl;
-        this._overviewControls[WebInspector.TimelinePanel.Mode.Memory] = new WebInspector.TimelineMemoryOverview(this._model);
-    },
-
     /**
      * @return {!WebInspector.TimelineOverviewBase}
      */
     overviewControl: function()
     {
-        return this._overviewControls[this._currentMode];
+        return this._overviewControl;
     },
 
     get calculator()
@@ -594,7 +593,6 @@ WebInspector.TimelineView.prototype = {
         WebInspector.View.prototype.wasShown.call(this);
 
         this._repopulateRecords();
-        this._overviewPane.setOverviewControl(this.overviewControl());
         this._updateSelectionDetails();
         this._updateWindowBoundaries();
 

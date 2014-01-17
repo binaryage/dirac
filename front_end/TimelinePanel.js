@@ -125,7 +125,7 @@ WebInspector.TimelinePanel.prototype = {
             case WebInspector.TimelinePanel.Mode.Events:
             case WebInspector.TimelinePanel.Mode.Frames:
             case WebInspector.TimelinePanel.Mode.Memory:
-                view = new WebInspector.TimelineView(this, this._model, this._overviewPane, this._glueRecordsSetting, mode);
+                view = new WebInspector.TimelineView(this, this._model, this._glueRecordsSetting, mode);
                 this._views[mode] = view;
                 break;
             default:
@@ -350,6 +350,7 @@ WebInspector.TimelinePanel.prototype = {
         this._currentView = this._viewForMode(mode);
         this._updateFiltersBar();
         this._currentView.setWindowTimes(windowTimes);
+        this._overviewPane.setOverviewControl(this._currentView.overviewControl());
         this._currentView.show(this.element);
         this._glueParentButton.setEnabled(this._currentView.supportsGlueParentMode());
     },
