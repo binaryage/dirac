@@ -1001,7 +1001,7 @@ FormatterWorker.JavaScriptTokenizer.prototype = {
 
     /**
      * @param {boolean=} forceRegexp
-     * @return {!{comments_before: !Array.<string>, line: number, pos: number, endLine: number, nlb: boolean}}
+     * @return {!{comments_before: !Array.<string>, line: number, pos: number, endLine: number, nlb: boolean, token: number, type: string, value: *}}
      */
     next: function(forceRegexp)
     {

@@ -1459,7 +1459,7 @@ WebInspector.ElementsTreeElement.prototype = {
         // a parent node. Use a temporary span container for the HTML.
         var container = document.createElement("span");
         this._buildAttributeDOM(container, " ", "");
-        var attr = container.firstChild;
+        var attr = container.firstElementChild;
         attr.style.marginLeft = "2px"; // overrides the .editing margin rule
         attr.style.marginRight = "2px"; // overrides the .editing margin rule
 

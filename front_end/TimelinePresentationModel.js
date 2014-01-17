@@ -1343,7 +1343,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         WebInspector.DOMPresentationUtils.decorateNodeLabel(node, span);
         function onClick()
         {
-            WebInspector.showPanel("elements").revealAndSelectNode(node.id);
+            /** @type {!WebInspector.ElementsPanel} */ (WebInspector.showPanel("elements")).revealAndSelectNode(node.id);
         }
         return span;
     },

@@ -37,15 +37,21 @@ WebInspector = {};
 FormatterWorker = {};
 importScripts("CodeMirrorUtils.js");
 
+/**
+ * @typedef {{indentString: string, content: string, mimeType: string}}
+ */
+var FormatterParameters;
+
 var onmessage = function(event) {
-    if (!event.data.method)
+    var data = /** @type !{method: string, params: !FormatterParameters} */ (event.data);
+    if (!data.method)
         return;
 
-    FormatterWorker[event.data.method](event.data.params);
+    FormatterWorker[data.method](data.params);
 };
 
 /**
- * @param {!Object} params
+ * @param {!FormatterParameters} params
  */
 FormatterWorker.format = function(params)
 {

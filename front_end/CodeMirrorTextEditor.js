@@ -171,6 +171,12 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._setupWhitespaceHighlight();
 }
 
+/** @typedef {{canceled: boolean, from: CodeMirror.Pos, to: CodeMirror.Pos, text: string, origin: string, cancel: function()}} */
+WebInspector.CodeMirrorTextEditor.BeforeChangeObject;
+
+/** @typedef {{from: CodeMirror.Pos, to: CodeMirror.Pos, origin: string, text: !Array.<string>, removed: !Array.<string>}} */
+WebInspector.CodeMirrorTextEditor.ChangeObject;
+
 WebInspector.CodeMirrorTextEditor.maxHighlightLength = 1000;
 
 WebInspector.CodeMirrorTextEditor.autocompleteCommand = function(codeMirror)
@@ -185,7 +191,7 @@ CodeMirror.commands.smartNewlineAndIndent = function(codeMirror)
 
     function countIndent(line)
     {
-        for(var i = 0; i < line.length; ++i) {
+        for (var i = 0; i < line.length; ++i) {
             if (!WebInspector.TextUtils.isSpaceChar(line[i]))
                 return i;
         }
@@ -400,7 +406,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     _addTextToCompletionDictionary: function(text)
     {
         var words = WebInspector.TextUtils.textToWords(text);
-        for(var i = 0; i < words.length; ++i) {
+        for (var i = 0; i < words.length; ++i) {
             if (this._shouldProcessWordForAutocompletion(words[i]))
                 this._dictionary.addWord(words[i]);
         }
@@ -412,7 +418,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     _removeTextFromCompletionDictionary: function(text)
     {
         var words = WebInspector.TextUtils.textToWords(text);
-        for(var i = 0; i < words.length; ++i) {
+        for (var i = 0; i < words.length; ++i) {
             if (this._shouldProcessWordForAutocompletion(words[i]))
                 this._dictionary.removeWord(words[i]);
         }
@@ -731,7 +737,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         if (!wrapClasses)
             return;
         var classes = wrapClasses.split(" ");
-        for(var i = 0; i < classes.length; ++i) {
+        for (var i = 0; i < classes.length; ++i) {
             if (classes[i].startsWith("cm-breakpoint"))
                 this._codeMirror.removeLineClass(lineNumber, "wrap", classes[i]);
         }
@@ -831,7 +837,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         var scrollInfo = this._codeMirror.getScrollInfo();
         var newPaddingBottom;
-        var linesElement = this.element.firstChild.querySelector(".CodeMirror-lines");
+        var linesElement = this.element.firstElementChild.querySelector(".CodeMirror-lines");
         var lineCount = this._codeMirror.lineCount();
         if (lineCount <= 1)
             newPaddingBottom = 0;
@@ -888,28 +894,32 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         if (column === 0 || !WebInspector.TextUtils.isWordChar(line.charAt(column - 1)))
             return null;
         var wordStart = column - 1;
-        while(wordStart > 0 && WebInspector.TextUtils.isWordChar(line.charAt(wordStart - 1)))
+        while (wordStart > 0 && WebInspector.TextUtils.isWordChar(line.charAt(wordStart - 1)))
             --wordStart;
         if (prefixOnly)
             return new WebInspector.TextRange(lineNumber, wordStart, lineNumber, column);
         var wordEnd = column;
-        while(wordEnd < line.length && WebInspector.TextUtils.isWordChar(line.charAt(wordEnd)))
+        while (wordEnd < line.length && WebInspector.TextUtils.isWordChar(line.charAt(wordEnd)))
             ++wordEnd;
         return new WebInspector.TextRange(lineNumber, wordStart, lineNumber, wordEnd);
     },
 
+    /**
+     * @param {!CodeMirror} codeMirror
+     * @param {!WebInspector.CodeMirrorTextEditor.BeforeChangeObject} changeObject
+     */
     _beforeChange: function(codeMirror, changeObject)
     {
         if (!this._dictionary)
             return;
         this._updatedLines = this._updatedLines || {};
-        for(var i = changeObject.from.line; i <= changeObject.to.line; ++i)
+        for (var i = changeObject.from.line; i <= changeObject.to.line; ++i)
             this._updatedLines[i] = this.line(i);
     },
 
     /**
      * @param {!CodeMirror} codeMirror
-     * @param {!{origin: string, text: !Array.<string>, removed: !Array.<string>}} changeObject
+     * @param {!WebInspector.CodeMirrorTextEditor.ChangeObject} changeObject
      */
     _change: function(codeMirror, changeObject)
     {
@@ -924,7 +934,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._elementToWidget.clear();
 
         if (this._updatedLines) {
-            for(var lineNumber in this._updatedLines)
+            for (var lineNumber in this._updatedLines)
                 this._removeTextFromCompletionDictionary(this._updatedLines[lineNumber]);
             delete this._updatedLines;
         }
@@ -951,16 +961,16 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             if (!this._muteTextChangedEvent)
                 this._delegate.onTextChanged(oldRange, newRange);
 
-            for(var i = newRange.startLine; i <= newRange.endLine; ++i) {
+            for (var i = newRange.startLine; i <= newRange.endLine; ++i) {
                 linesToUpdate[i] = true;
             }
             if (this._dictionary) {
-                for(var i = newRange.startLine; i <= newRange.endLine; ++i)
+                for (var i = newRange.startLine; i <= newRange.endLine; ++i)
                     linesToUpdate[i] = this.line(i);
             }
         } while (changeObject = changeObject.next);
         if (this._dictionary) {
-            for(var lineNumber in linesToUpdate)
+            for (var lineNumber in linesToUpdate)
                 this._addTextToCompletionDictionary(linesToUpdate[lineNumber]);
         }
         if (singleCharInput)
@@ -1372,9 +1382,10 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
     {
         var cursor = codeMirror.getCursor();
         var line = codeMirror.getLine(cursor.line);
-        for(var i = 0 ; i < line.length; ++i)
+        for (var i = 0 ; i < line.length; ++i) {
             if (!WebInspector.TextUtils.isSpaceChar(line.charAt(i)))
                 return CodeMirror.Pass;
+        }
 
         codeMirror.replaceRange("}", cursor);
         var matchingBracket = codeMirror.findMatchingBracket();
