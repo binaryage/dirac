@@ -165,6 +165,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
 
     this.element.addEventListener("focus", this._handleElementFocus.bind(this), false);
     this.element.addEventListener("keydown", this._handleKeyDown.bind(this), true);
+    this.element.addEventListener("keydown", this._handlePostKeyDown.bind(this), false);
     this.element.tabIndex = 0;
 
     this._setupSelectionColor();
@@ -392,6 +393,12 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     _handleKeyDown: function(e)
     {
         if (this._autocompleteController.keyDown(e))
+            e.consume(true);
+    },
+
+    _handlePostKeyDown: function(e)
+    {
+        if (e.defaultPrevented)
             e.consume(true);
     },
 
