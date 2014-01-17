@@ -48,7 +48,7 @@ WebInspector.ConsolePanel.prototype = {
             this._consoleViewWrapper = new WebInspector.View();
             this._consoleViewWrapper.element.classList.add("fill", "console-view-wrapper");
             if (WebInspector.inspectorView.currentPanel() !== this)
-                this._view.show(this._consoleViewWrapper.element);
+                this._showViewInWrapper();
         }
         return this._consoleViewWrapper;
     },
@@ -80,7 +80,13 @@ WebInspector.ConsolePanel.prototype = {
 
         WebInspector.Panel.prototype.willHide.call(this);
         if (this._consoleViewWrapper)
-            this._view.show(this._consoleViewWrapper.element);
+            this._showViewInWrapper();
+    },
+
+    _showViewInWrapper: function()
+    {
+        this._view.show(this._consoleViewWrapper.element);
+        this._consoleViewWrapper.setDefaultFocusedElement(this._view.defaultFocusedElement());
     },
 
     __proto__: WebInspector.Panel.prototype
