@@ -738,10 +738,10 @@ WebInspector.HeapSnapshotDiffDataGrid = function()
         {id: "object", title: WebInspector.UIString("Constructor"), disclosure: true, sortable: true},
         {id: "addedCount", title: WebInspector.UIString("# New"), width: "72px", sortable: true},
         {id: "removedCount", title: WebInspector.UIString("# Deleted"), width: "72px", sortable: true},
-        {id: "countDelta", title: "# Delta", width: "64px", sortable: true},
+        {id: "countDelta", title: WebInspector.UIString("# Delta"), width: "64px", sortable: true},
         {id: "addedSize", title: WebInspector.UIString("Alloc. Size"), width: "72px", sortable: true, sort: WebInspector.DataGrid.Order.Descending},
         {id: "removedSize", title: WebInspector.UIString("Freed Size"), width: "72px", sortable: true},
-        {id: "sizeDelta", title: "Size Delta", width: "72px", sortable: true}
+        {id: "sizeDelta", title: WebInspector.UIString("Size Delta"), width: "72px", sortable: true}
     ];
     WebInspector.HeapSnapshotViewportDataGrid.call(this, columns);
 }

@@ -316,7 +316,7 @@ WebInspector.CanvasProfileView.prototype = {
             delete this._pendingReplayTraceLogEvent;
             this._enableWaitIcon(false);
 
-            this._debugInfoElement.textContent = "Replay time: " + Number.secondsToString(replayTime / 1000, true);
+            this._debugInfoElement.textContent = WebInspector.UIString("Replay time: %s", Number.secondsToString(replayTime / 1000, true));
             this._onReplayContextChanged();
 
             if (index !== this._selectedCallIndex())
@@ -401,7 +401,7 @@ WebInspector.CanvasProfileView.prototype = {
                 var index = rootNode.children.length;
                 var data = {};
                 data[0] = "";
-                data[1] = "Frame #" + (index + 1);
+                data[1] = WebInspector.UIString("Frame #%d", index + 1);
                 data[2] = "";
                 frameNode = new WebInspector.DataGridNode(data);
                 frameNode.selectable = true;
@@ -430,7 +430,7 @@ WebInspector.CanvasProfileView.prototype = {
             var index = self._drawCallGroupsCount || 0;
             var data = {};
             data[0] = "";
-            data[1] = "Draw call group #" + (index + 1);
+            data[1] = WebInspector.UIString("Draw call group #%d", index + 1);
             data[2] = "";
             var node = new WebInspector.DataGridNode(data);
             node.selectable = true;

@@ -72,7 +72,7 @@ WebInspector.SettingsScreen.regexValidator = function(text)
         regex = new RegExp(text);
     } catch (e) {
     }
-    return regex ? null : "Invalid pattern";
+    return regex ? null : WebInspector.UIString("Invalid pattern");
 }
 
 /**
@@ -85,9 +85,9 @@ WebInspector.SettingsScreen.integerValidator = function(min, max, text)
 {
     var value = Number(text);
     if (isNaN(value))
-        return "Invalid number format";
+        return WebInspector.UIString("Invalid number format");
     if (value < min || value > max)
-        return "Value is out of range [" + min + ", " + max + "]";
+        return WebInspector.UIString("Value is out of range [%d, %d]", min, max);
     return null;
 }
 

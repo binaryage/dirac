@@ -121,13 +121,13 @@ WebInspector.HeapSnapshotView = function(parent, profile)
 
     this.viewSelect = new WebInspector.StatusBarComboBox(this._onSelectedViewChanged.bind(this));
 
-    this.views = [{title: "Summary", view: this.constructorsView, grid: this.constructorsDataGrid},
-                  {title: "Comparison", view: this.diffView, grid: this.diffDataGrid},
-                  {title: "Containment", view: this.containmentView, grid: this.containmentDataGrid}];
+    this.views = [{title: WebInspector.UIString("Summary"), view: this.constructorsView, grid: this.constructorsDataGrid},
+                  {title: WebInspector.UIString("Comparison"), view: this.diffView, grid: this.diffDataGrid},
+                  {title: WebInspector.UIString("Containment"), view: this.containmentView, grid: this.containmentDataGrid}];
     if (WebInspector.settings.showAdvancedHeapSnapshotProperties.get())
-        this.views.push({title: "Dominators", view: this.dominatorView, grid: this.dominatorDataGrid});
+        this.views.push({title: WebInspector.UIString("Dominators"), view: this.dominatorView, grid: this.dominatorDataGrid});
     if (WebInspector.HeapSnapshot.enableAllocationProfiler)
-        this.views.push({title: "Allocation", view: this.allocationView, grid: this.allocationDataGrid});
+        this.views.push({title: WebInspector.UIString("Allocation"), view: this.allocationView, grid: this.allocationDataGrid});
     this.views.current = 0;
     for (var i = 0; i < this.views.length; ++i)
         this.viewSelect.createOption(WebInspector.UIString(this.views[i].title));

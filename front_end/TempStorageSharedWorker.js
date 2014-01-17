@@ -58,7 +58,7 @@ function clearTempStorage()
 {
     function didFail(e)
     {
-        tempStorageError = "Failed to clear temp storage: " + e.message + " " + e.name;
+        tempStorageError = WebInspector.UIString("Failed to clear temp storage: %s %s", e.message, e.name);
         console.error(tempStorageError);
         didClearTempStorage();
     }
@@ -86,7 +86,7 @@ function clearTempStorage()
         }
         function failedToDeleteEntry(e)
         {
-            tempStorageError = "Failed to delete entry: " + e.message + " " + e.name;
+            tempStorageError = WebInspector.UIString("Failed to delete entry: %s %s", e.message, e.name);
             console.error(tempStorageError);
             didDeleteEntry();
         }

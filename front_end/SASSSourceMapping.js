@@ -242,7 +242,7 @@ WebInspector.SASSSourceMapping.prototype = {
     {
         var cssUISourceCode = this._workspace.uiSourceCodeForURL(cssURL);
         if (!cssUISourceCode) {
-            WebInspector.log(cssURL + " resource missing. Please reload the page.");
+            WebInspector.log(WebInspector.UIString("%s resource missing. Please reload the page.", cssURL));
             callback(cssURL, sassURL, true);
             return;
         }

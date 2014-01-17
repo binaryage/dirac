@@ -43,7 +43,7 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
 
     var header = this.element.createChild("div", "header");
     var headerText = header.createChild("span");
-    headerText.textContent = "Edit file system";
+    headerText.textContent = WebInspector.UIString("Edit file system");
 
     var closeButton = header.createChild("div", "close-button-gray done-button");
     closeButton.addEventListener("click", this._onDoneClick.bind(this), false);
@@ -56,7 +56,7 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
     WebInspector.isolatedFileSystemManager.mapping().addEventListener(WebInspector.FileSystemMapping.Events.ExcludedFolderRemoved, this._excludedFolderRemoved, this);
 
     var blockHeader = contents.createChild("div", "block-header");
-    blockHeader.textContent = "Mappings";
+    blockHeader.textContent = WebInspector.UIString("Mappings");
     this._fileMappingsSection = contents.createChild("div", "file-mappings-section");
     this._fileMappingsListContainer = this._fileMappingsSection.createChild("div", "settings-list-container");
     var entries = WebInspector.isolatedFileSystemManager.mapping().mappingEntries(this._fileSystemPath);
@@ -72,7 +72,7 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
         this._addMappingRow(entries[i]);
 
     blockHeader = contents.createChild("div", "block-header");
-    blockHeader.textContent = "Excluded folders";
+    blockHeader.textContent = WebInspector.UIString("Excluded folders");
     this._excludedFolderListSection = contents.createChild("div", "excluded-folders-section");
     this._excludedFolderListContainer = this._excludedFolderListSection.createChild("div", "settings-list-container");
     var excludedFolderEntries = WebInspector.isolatedFileSystemManager.mapping().excludedFolders(fileSystemPath);

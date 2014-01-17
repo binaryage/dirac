@@ -36,7 +36,7 @@ WebInspector.AuditCategories.PagePerformance = function() {
     WebInspector.AuditCategoryImpl.call(this, WebInspector.AuditCategories.PagePerformance.AuditCategoryName);
 }
 
-WebInspector.AuditCategories.PagePerformance.AuditCategoryName = "Web Page Performance";
+WebInspector.AuditCategories.PagePerformance.AuditCategoryName = WebInspector.UIString("Web Page Performance");
 
 WebInspector.AuditCategories.PagePerformance.prototype = {
     initialize: function()
@@ -58,7 +58,7 @@ WebInspector.AuditCategories.NetworkUtilization = function() {
     WebInspector.AuditCategoryImpl.call(this, WebInspector.AuditCategories.NetworkUtilization.AuditCategoryName);
 }
 
-WebInspector.AuditCategories.NetworkUtilization.AuditCategoryName = "Network Utilization";
+WebInspector.AuditCategories.NetworkUtilization.AuditCategoryName = WebInspector.UIString("Network Utilization");
 
 WebInspector.AuditCategories.NetworkUtilization.prototype = {
     initialize: function()

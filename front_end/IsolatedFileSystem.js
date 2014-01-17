@@ -61,11 +61,11 @@ WebInspector.IsolatedFileSystem.errorMessage = function(error)
         msg = "INVALID_STATE_ERR";
         break;
     default:
-        msg = "Unknown Error";
+        msg = WebInspector.UIString("Unknown Error");
         break;
     };
 
-    return "File system error: " + msg;
+    return WebInspector.UIString("File system error: %s", msg);
 }
 
 WebInspector.IsolatedFileSystem.prototype = {
