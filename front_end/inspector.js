@@ -57,23 +57,22 @@ var WebInspector = {
             );
         }
 
-        var audits = new WebInspector.AuditsPanelDescriptor();
+        if (!WebInspector.WorkerManager.isWorkerFrontend())
+            new WebInspector.AuditsPanelDescriptor();
 
-        if (!WebInspector.WorkerManager.isWorkerFrontend()) {
-            WebInspector.moduleManager.registerModule(
-                {
-                    name: "ConsolePanel",
-                    extensions: [
-                        {
-                            type: "@WebInspector.Panel",
-                            name: "console",
-                            title: "Console",
-                            className: "WebInspector.ConsolePanel"
-                        }
-                    ]
-                }
-            );
-        }
+        WebInspector.moduleManager.registerModule(
+            {
+                name: "ConsolePanel",
+                extensions: [
+                    {
+                        type: "@WebInspector.Panel",
+                        name: "console",
+                        title: "Console",
+                        className: "WebInspector.ConsolePanel"
+                    }
+                ]
+            }
+        );
 
         if (WebInspector.experimentsSettings.layersPanel.isEnabled() && !WebInspector.WorkerManager.isWorkerFrontend())
             new WebInspector.LayersPanelDescriptor();
