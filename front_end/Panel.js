@@ -213,23 +213,42 @@ WebInspector.Panel.prototype = {
 }
 
 /**
- * @constructor
- * @param {string} name
- * @param {string} title
- * @param {string=} className
- * @param {string=} scriptName
- * @param {!WebInspector.Panel=} panel
+ * @interface
  */
-WebInspector.PanelDescriptor = function(name, title, className, scriptName, panel)
+WebInspector.PanelDescriptor = function()
 {
-    this._name = name;
-    this._title = title;
-    this._className = className;
-    this._scriptName = scriptName;
-    this._panel = panel;
 }
 
 WebInspector.PanelDescriptor.prototype = {
+    /**
+     * @return {string}
+     */
+    name: function() {},
+
+    /**
+     * @return {string}
+     */
+    title: function() {},
+
+    /**
+     * @return {!WebInspector.Panel}
+     */
+    panel: function() {}
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.ModuleManager.Extension} extension
+ * @implements {WebInspector.PanelDescriptor}
+ */
+WebInspector.ModuleManagerExtensionPanelDescriptor = function(extension)
+{
+    this._name = extension.descriptor()["name"];
+    this._title = WebInspector.UIString(extension.descriptor()["title"]);
+    this._extension = extension;
+}
+
+WebInspector.ModuleManagerExtensionPanelDescriptor.prototype = {
     /**
      * @return {string}
      */
@@ -251,21 +270,6 @@ WebInspector.PanelDescriptor.prototype = {
      */
     panel: function()
     {
-        if (this._panel)
-            return this._panel;
-        if (!this._isCreatingPanel) {
-            var oldStackTraceLimit = Error.stackTraceLimit;
-            Error.stackTraceLimit = 50;
-            console.assert(!this._isCreatingPanel, "PanelDescriptor.panel() is called from inside itself: " + new Error().stack);
-            Error.stackTraceLimit = oldStackTraceLimit;
-        }
-        if (this._scriptName)
-            loadScript(this._scriptName);
-        this._isCreatingPanel = true;
-        this._panel = new WebInspector[this._className];
-        delete this._isCreatingPanel;
-        return this._panel;
-    },
-
-    registerShortcuts: function() {}
+        return /** @type {!WebInspector.Panel} */ (this._extension.instance());
+    }
 }

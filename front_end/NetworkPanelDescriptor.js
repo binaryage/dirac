@@ -29,26 +29,26 @@
 
 /**
  * @constructor
- * @extends {WebInspector.PanelDescriptor}
- * @implements {WebInspector.ContextMenu.Provider}
  */
 WebInspector.NetworkPanelDescriptor = function()
 {
-    WebInspector.PanelDescriptor.call(this, "network", WebInspector.UIString("Network"), "NetworkPanel", "NetworkPanel.js");
-    WebInspector.ContextMenu.registerProvider(this);
-}
-
-WebInspector.NetworkPanelDescriptor.prototype = {
-    /** 
-     * @param {!WebInspector.ContextMenu} contextMenu
-     * @param {!Object} target
-     */
-    appendApplicableItems: function(event, contextMenu, target)
-    {
-        if (!(target instanceof WebInspector.NetworkRequest || target instanceof WebInspector.Resource || target instanceof WebInspector.UISourceCode))
-            return;
-        this.panel().appendApplicableItems(event, contextMenu, target);
-    },
-
-    __proto__: WebInspector.PanelDescriptor.prototype
+    WebInspector.moduleManager.registerModule(
+        {
+            name: "NetworkPanel",
+            extensions: [
+                {
+                    type: "@WebInspector.Panel",
+                    name: "network",
+                    title: "Network",
+                    className: "WebInspector.NetworkPanel"
+                },
+                {
+                    type: "@WebInspector.ContextMenu.Provider",
+                    contextTypes: ["WebInspector.NetworkRequest", "WebInspector.Resource", "WebInspector.UISourceCode"],
+                    className: "WebInspector.NetworkPanel.ContextMenuProvider"
+                }
+            ],
+            scripts: [ "NetworkPanel.js" ]
+        }
+    );
 }

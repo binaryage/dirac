@@ -361,7 +361,6 @@ WebInspector.ProfileHeader.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.Searchable}
- * @implements {WebInspector.ContextMenu.Provider}
  * @extends {WebInspector.Panel}
  * @param {string=} name
  * @param {!WebInspector.ProfileType=} type
@@ -436,8 +435,6 @@ WebInspector.ProfilesPanel = function(name, type)
     this._createFileSelectorElement();
     this.element.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
     this._registerShortcuts();
-
-    WebInspector.ContextMenu.registerProvider(this);
 
     this._configureCpuProfilerSamplingInterval();
     WebInspector.settings.highResolutionCpuProfiling.addChangeListener(this._configureCpuProfilerSamplingInterval, this);
@@ -982,6 +979,9 @@ WebInspector.ProfilesPanel.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
+        if (!(target instanceof WebInspector.RemoteObject))
+            return;
+
         if (WebInspector.inspectorView.currentPanel() !== this)
             return;
 
@@ -1018,6 +1018,25 @@ WebInspector.ProfilesPanel.prototype = {
     },
 
     __proto__: WebInspector.Panel.prototype
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ContextMenu.Provider}
+ */
+WebInspector.ProfilesPanel.ContextMenuProvider = function()
+{
+}
+
+WebInspector.ProfilesPanel.ContextMenuProvider.prototype = {
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} target
+     */
+    appendApplicableItems: function(event, contextMenu, target)
+    {
+        WebInspector.panel("profiles").appendApplicableItems(event, contextMenu, target);
+    }
 }
 
 /**

@@ -28,15 +28,23 @@
 
 /**
  * @constructor
- * @extends {WebInspector.PanelDescriptor}
  */
 WebInspector.AuditsPanelDescriptor = function()
 {
-    WebInspector.PanelDescriptor.call(this, "audits", WebInspector.UIString("Audits"), "AuditsPanel", "AuditsPanel.js");
-}
-
-WebInspector.AuditsPanelDescriptor.prototype = {
-    __proto__: WebInspector.PanelDescriptor.prototype
+    WebInspector.moduleManager.registerModule(
+        {
+            name: "AuditsPanel",
+            extensions: [
+                {
+                    type: "@WebInspector.Panel",
+                    name: "audits",
+                    title: "Audits",
+                    className: "WebInspector.AuditsPanel"
+                }
+            ],
+            scripts: [ "AuditsPanel.js" ]
+        }
+    );
 }
 
 /**

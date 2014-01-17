@@ -1798,6 +1798,25 @@ WebInspector.NetworkPanel.prototype = {
 
 /**
  * @constructor
+ * @implements {WebInspector.ContextMenu.Provider}
+ */
+WebInspector.NetworkPanel.ContextMenuProvider = function()
+{
+}
+
+WebInspector.NetworkPanel.ContextMenuProvider.prototype = {
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} target
+     */
+    appendApplicableItems: function(event, contextMenu, target)
+    {
+        WebInspector.panel("network").appendApplicableItems(event, contextMenu, target);
+    }
+}
+
+/**
+ * @constructor
  * @implements {WebInspector.TimelineGrid.Calculator}
  */
 WebInspector.NetworkBaseCalculator = function()

@@ -1330,3 +1330,23 @@ WebInspector.ElementsPanel.prototype = {
 
     __proto__: WebInspector.Panel.prototype
 }
+
+/**
+ * @constructor
+ * @implements {WebInspector.ContextMenu.Provider}
+ */
+WebInspector.ElementsPanel.ContextMenuProvider = function()
+{
+}
+
+WebInspector.ElementsPanel.ContextMenuProvider.prototype = {
+    /**
+     * @param {!Event} event
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} target
+     */
+    appendApplicableItems: function(event, contextMenu, target)
+    {
+        WebInspector.panel("elements").appendApplicableItems(event, contextMenu, target);
+    }
+}

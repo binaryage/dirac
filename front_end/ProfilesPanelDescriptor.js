@@ -28,21 +28,37 @@
 
 /**
  * @constructor
- * @extends {WebInspector.PanelDescriptor}
  */
 WebInspector.ProfilesPanelDescriptor = function()
 {
-    WebInspector.PanelDescriptor.call(this, "profiles", WebInspector.UIString("Profiles"), "ProfilesPanel", "ProfilesPanel.js");
+    WebInspector.moduleManager.registerModule(
+        {
+            name: "ProfilesPanel",
+            extensions: [
+                {
+                    type: "@WebInspector.Panel",
+                    name: "profiles",
+                    title: "Profiles",
+                    className: "WebInspector.ProfilesPanel"
+                },
+                {
+                    type: "@WebInspector.ContextMenu.Provider",
+                    contextTypes: ["WebInspector.RemoteObject"],
+                    className: "WebInspector.ProfilesPanel.ContextMenuProvider"
+                }
+            ],
+            scripts: [ "ProfilesPanel.js" ]
+        }
+    );
+    this._registerShortcuts();
 }
 
 WebInspector.ProfilesPanelDescriptor.prototype = {
-    registerShortcuts: function()
+    _registerShortcuts: function()
     {
         var section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Profiles Panel"));
         section.addAlternateKeys(WebInspector.ProfilesPanelDescriptor.ShortcutKeys.StartStopRecording, WebInspector.UIString("Start/stop recording"));
-    },
-
-    __proto__: WebInspector.PanelDescriptor.prototype
+    }
 }
 
 WebInspector.ProfilesPanelDescriptor.ShortcutKeys = {

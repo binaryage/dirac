@@ -31,7 +31,6 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @implements {WebInspector.ContextMenu.Provider}
  */
 WebInspector.HandlerRegistry = function(setting)
 {
@@ -39,7 +38,19 @@ WebInspector.HandlerRegistry = function(setting)
     this._handlers = {};
     this._setting = setting;
     this._activeHandler = this._setting.get();
-    WebInspector.ContextMenu.registerProvider(this);
+
+    WebInspector.moduleManager.registerModule(
+        {
+            name: "HandlerRegistry",
+            extensions: [
+                {
+                    type: "@WebInspector.ContextMenu.Provider",
+                    contextTypes: ["WebInspector.UISourceCode", "WebInspector.Resource", "WebInspector.NetworkRequest", "Node"],
+                    className: "WebInspector.HandlerRegistry.ContextMenuProvider"
+                }
+            ]
+        }
+    );
 }
 
 WebInspector.HandlerRegistry.prototype = {
@@ -90,16 +101,6 @@ WebInspector.HandlerRegistry.prototype = {
     {
         delete this._handlers[name];
         this.dispatchEventToListeners(WebInspector.HandlerRegistry.EventTypes.HandlersUpdated);
-    },
-
-    /** 
-     * @param {!WebInspector.ContextMenu} contextMenu
-     * @param {!Object} target
-     */
-    appendApplicableItems: function(event, contextMenu, target)
-    {
-        this._appendContentProviderItems(contextMenu, target);
-        this._appendHrefItems(contextMenu, target);
     },
 
     /** 
@@ -231,6 +232,25 @@ WebInspector.HandlerSelector.prototype =
     }
 }
 
+/**
+ * @constructor
+ * @implements {WebInspector.ContextMenu.Provider}
+ */
+WebInspector.HandlerRegistry.ContextMenuProvider = function()
+{
+}
+
+WebInspector.HandlerRegistry.ContextMenuProvider.prototype = {
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} target
+     */
+    appendApplicableItems: function(event, contextMenu, target)
+    {
+        WebInspector.openAnchorLocationRegistry._appendContentProviderItems(contextMenu, target);
+        WebInspector.openAnchorLocationRegistry._appendHrefItems(contextMenu, target);
+    }
+}
 
 /**
  * @type {!WebInspector.HandlerRegistry}

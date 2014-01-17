@@ -29,30 +29,54 @@
  */
 
 var WebInspector = {
-    _panelDescriptors: function()
+    _registerPanelModules: function()
     {
-        this.panels = {};
-        WebInspector.inspectorView = new WebInspector.InspectorView();
-        WebInspector.inspectorView.show(document.body);
+        if (!WebInspector.WorkerManager.isWorkerFrontend())
+            new WebInspector.ElementsPanelDescriptor();
+        if (!WebInspector.WorkerManager.isWorkerFrontend())
+            new WebInspector.NetworkPanelDescriptor();
 
-        var elements = new WebInspector.ElementsPanelDescriptor();
-        var network = new WebInspector.NetworkPanelDescriptor();
-        var sources = new WebInspector.SourcesPanelDescriptor();
-        var timeline = new WebInspector.TimelinePanelDescriptor();
-        var profiles = new WebInspector.ProfilesPanelDescriptor();
-        var resources = new WebInspector.PanelDescriptor("resources", WebInspector.UIString("Resources"), "ResourcesPanel", "ResourcesPanel.js");
-        var audits = new WebInspector.AuditsPanelDescriptor();
-        var console = new WebInspector.PanelDescriptor("console", WebInspector.UIString("Console"), "ConsolePanel");
+        new WebInspector.SourcesPanelDescriptor();
+        new WebInspector.TimelinePanelDescriptor();
+        new WebInspector.ProfilesPanelDescriptor();
 
-        if (WebInspector.WorkerManager.isWorkerFrontend())
-            return [sources, timeline, profiles, console];
-
-        var panelDescriptors = [elements, network, sources, timeline, profiles, resources, audits, console];
-        if (WebInspector.experimentsSettings.layersPanel.isEnabled()) {
-            var layers = new WebInspector.LayersPanelDescriptor();
-            panelDescriptors.push(layers);
+        if (!WebInspector.WorkerManager.isWorkerFrontend()) {
+            WebInspector.moduleManager.registerModule(
+                {
+                    name: "ResourcesPanel",
+                    extensions: [
+                        {
+                            type: "@WebInspector.Panel",
+                            name: "resources",
+                            title: "Resources",
+                            className: "WebInspector.ResourcesPanel"
+                        }
+                    ],
+                    scripts: [ "ResourcesPanel.js" ]
+                }
+            );
         }
-        return panelDescriptors;
+
+        var audits = new WebInspector.AuditsPanelDescriptor();
+
+        if (!WebInspector.WorkerManager.isWorkerFrontend()) {
+            WebInspector.moduleManager.registerModule(
+                {
+                    name: "ConsolePanel",
+                    extensions: [
+                        {
+                            type: "@WebInspector.Panel",
+                            name: "console",
+                            title: "Console",
+                            className: "WebInspector.ConsolePanel"
+                        }
+                    ]
+                }
+            );
+        }
+
+        if (WebInspector.experimentsSettings.layersPanel.isEnabled() && !WebInspector.WorkerManager.isWorkerFrontend())
+            new WebInspector.LayersPanelDescriptor();
     },
 
     _createGlobalStatusBarItems: function()
@@ -306,10 +330,12 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     if (this._zoomLevel)
         this._requestZoom();
 
-    var panelDescriptors = this._panelDescriptors();
+    this.panels = {};
+    WebInspector.inspectorView = new WebInspector.InspectorView();
+    WebInspector.inspectorView.show(document.body);
+
+    this._registerPanelModules();
     this.advancedSearchController = new WebInspector.AdvancedSearchController();
-    for (var i = 0; i < panelDescriptors.length; ++i)
-        panelDescriptors[i].registerShortcuts();
 
     WebInspector.CSSMetadata.requestCSSShorthandData();
 
@@ -363,10 +389,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     this._createGlobalStatusBarItems();
 
-    WebInspector.startBatchUpdate();
-    for (var i = 0; i < panelDescriptors.length; ++i)
-        WebInspector.inspectorView.addPanel(panelDescriptors[i]);
-    WebInspector.endBatchUpdate();
+    this.inspectorView.addPanels();
 
     this.addMainEventListeners(document);
 

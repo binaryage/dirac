@@ -28,34 +28,33 @@
 
 /**
  * @constructor
- * @extends {WebInspector.PanelDescriptor}
- * @implements {WebInspector.ContextMenu.Provider}
  */
 WebInspector.SourcesPanelDescriptor = function()
 {
-    WebInspector.PanelDescriptor.call(this, "sources", WebInspector.UIString("Sources"), "SourcesPanel", "SourcesPanel.js");
-    WebInspector.ContextMenu.registerProvider(this);
+    WebInspector.moduleManager.registerModule(
+        {
+            name: "SourcesPanel",
+            extensions: [
+                {
+                    type: "@WebInspector.Panel",
+                    name: "sources",
+                    title: "Sources",
+                    className: "WebInspector.SourcesPanel"
+                },
+                {
+                    type: "@WebInspector.ContextMenu.Provider",
+                    contextTypes: ["WebInspector.UISourceCode", "WebInspector.RemoteObject"],
+                    className: "WebInspector.SourcesPanel.ContextMenuProvider"
+                }
+            ],
+            scripts: [ "SourcesPanel.js" ]
+        }
+    );
+    this._registerShortcuts();
 }
 
 WebInspector.SourcesPanelDescriptor.prototype = {
-    /**
-     * @param {!WebInspector.ContextMenu} contextMenu
-     * @param {!Object} target
-     */
-    appendApplicableItems: function(event, contextMenu, target)
-    {
-        var hasApplicableItems = target instanceof WebInspector.UISourceCode;
-
-        if (!hasApplicableItems && target instanceof WebInspector.RemoteObject) {
-            var remoteObject = /** @type {!WebInspector.RemoteObject} */ (target);
-            if (remoteObject.type !== "function")
-                return;
-        }
-
-        this.panel().appendApplicableItems(event, contextMenu, target);
-    },
-
-    registerShortcuts: function()
+    _registerShortcuts: function()
     {
         var section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Sources Panel"));
 
@@ -77,9 +76,7 @@ WebInspector.SourcesPanelDescriptor.prototype = {
         section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.DecreaseCSSUnitByOne, WebInspector.UIString("Decrement CSS unit by 1"));
         section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.IncreaseCSSUnitByTen, WebInspector.UIString("Increment CSS unit by 10"));
         section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.DecreaseCSSUnitByTen, WebInspector.UIString("Decrement CSS unit by 10"));
-    },
-
-    __proto__: WebInspector.PanelDescriptor.prototype
+    }
 }
 
 WebInspector.SourcesPanelDescriptor.ShortcutKeys = {
@@ -154,6 +151,5 @@ WebInspector.SourcesPanelDescriptor.ShortcutKeys = {
 
     ToggleComment: [
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Slash, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
-
     ]
 };

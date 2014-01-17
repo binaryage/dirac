@@ -28,23 +28,34 @@
 
 /**
  * @constructor
- * @extends {WebInspector.PanelDescriptor}
  */
 WebInspector.TimelinePanelDescriptor = function()
 {
-    WebInspector.PanelDescriptor.call(this, "timeline", WebInspector.UIString("Timeline"), "TimelinePanel", "TimelinePanel.js");
+    WebInspector.moduleManager.registerModule(
+        {
+            name: "TimelinePanel",
+            extensions: [
+                {
+                    type: "@WebInspector.Panel",
+                    name: "timeline",
+                    title: "Timeline",
+                    className: "WebInspector.TimelinePanel"
+                }
+            ],
+            scripts: [ "TimelinePanel.js" ]
+        }
+    );
+    this._registerShortcuts();
 }
 
 WebInspector.TimelinePanelDescriptor.prototype = {
-    registerShortcuts: function()
+    _registerShortcuts: function()
     {
         var section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Timeline Panel"));
         section.addAlternateKeys(WebInspector.TimelinePanelDescriptor.ShortcutKeys.StartStopRecording, WebInspector.UIString("Start/stop recording"));
         section.addAlternateKeys(WebInspector.TimelinePanelDescriptor.ShortcutKeys.SaveToFile, WebInspector.UIString("Save timeline data"));
         section.addAlternateKeys(WebInspector.TimelinePanelDescriptor.ShortcutKeys.LoadFromFile, WebInspector.UIString("Load timeline data"));
-    },
-
-    __proto__: WebInspector.PanelDescriptor.prototype
+    }
 }
 
 WebInspector.TimelinePanelDescriptor.ShortcutKeys = {

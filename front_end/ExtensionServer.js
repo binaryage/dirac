@@ -217,7 +217,7 @@ WebInspector.ExtensionServer.prototype = {
             return this._status.E_EXISTS(id);
 
         var page = this._expandResourcePath(port._extensionOrigin, message.page);
-        var panelDescriptor = new WebInspector.PanelDescriptor(id, message.title, undefined, undefined, new WebInspector.ExtensionPanel(id, page));
+        var panelDescriptor = new WebInspector.ExtensionServerPanelDescriptor(id, message.title, new WebInspector.ExtensionPanel(id, page));
         this._clientObjects[id] = panelDescriptor.panel();
         WebInspector.inspectorView.addPanel(panelDescriptor);
         return this._status.OK();
@@ -924,6 +924,46 @@ WebInspector.ExtensionServer.prototype = {
             contextId = context.id;
         }
         RuntimeAgent.evaluate(expression, "extension", exposeCommandLineAPI, true, contextId, returnByValue, false, callback);
+    }
+}
+
+/**
+ * @constructor
+ * @param {string} name
+ * @param {string} title
+ * @param {!WebInspector.Panel} panel
+ * @implements {WebInspector.PanelDescriptor}
+ */
+WebInspector.ExtensionServerPanelDescriptor = function(name, title, panel)
+{
+    this._name = name;
+    this._title = title;
+    this._panel = panel;
+}
+
+WebInspector.ExtensionServerPanelDescriptor.prototype = {
+    /**
+     * @return {string}
+     */
+    name: function()
+    {
+        return this._name;
+    },
+
+    /**
+     * @return {string}
+     */
+    title: function()
+    {
+        return this._title;
+    },
+
+    /**
+     * @return {!WebInspector.Panel}
+     */
+    panel: function()
+    {
+        return this._panel;
     }
 }
 

@@ -28,33 +28,34 @@
 
 /**
  * @constructor
- * @extends {WebInspector.PanelDescriptor}
- * @implements {WebInspector.ContextMenu.Provider}
  * @implements {WebInspector.ViewFactory}
  */
 WebInspector.ElementsPanelDescriptor = function()
 {
-    WebInspector.PanelDescriptor.call(this, "elements", WebInspector.UIString("Elements"), "ElementsPanel", "ElementsPanel.js");
-    WebInspector.ContextMenu.registerProvider(this);
+    WebInspector.moduleManager.registerModule(
+        {
+            name: "ElementsPanel",
+            extensions: [
+                {
+                    type: "@WebInspector.Panel",
+                    name: "elements",
+                    title: "Elements",
+                    className: "WebInspector.ElementsPanel"
+                },
+                {
+                    type: "@WebInspector.ContextMenu.Provider",
+                    contextTypes: ["WebInspector.RemoteObject", "WebInspector.DOMNode"],
+                    className: "WebInspector.ElementsPanel.ContextMenuProvider"
+                }
+            ],
+            scripts: [ "ElementsPanel.js" ]
+        }
+    );
+    this._registerShortcuts();
 }
 
 WebInspector.ElementsPanelDescriptor.prototype = {
-    /** 
-     * @param {!WebInspector.ContextMenu} contextMenu
-     * @param {!Object} target
-     */
-    appendApplicableItems: function(event, contextMenu, target)
-    {
-        if (target instanceof WebInspector.RemoteObject) {
-            var remoteObject = /** @type {!WebInspector.RemoteObject} */ (target);
-            if (remoteObject.subtype !== "node")
-                return;
-        } else if (!(target instanceof WebInspector.DOMNode))
-            return;
-        this.panel().appendApplicableItems(event, contextMenu, target);
-    },
-
-    registerShortcuts: function()
+    _registerShortcuts: function()
     {
         var elementsSection = WebInspector.shortcutsScreen.section(WebInspector.UIString("Elements Panel"));
 
@@ -120,10 +121,8 @@ WebInspector.ElementsPanelDescriptor.prototype = {
      */
     createView: function(id)
     {
-        return this.panel().createView(id);
-    },
-
-    __proto__: WebInspector.PanelDescriptor.prototype
+        return WebInspector.panel("elements").createView(id);
+    }
 }
 
 WebInspector.ElementsPanelDescriptor.ShortcutKeys = {

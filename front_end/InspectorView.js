@@ -103,6 +103,21 @@ WebInspector.InspectorView.Constraints = {
 };
 
 WebInspector.InspectorView.prototype = {
+    addPanels: function()
+    {
+        WebInspector.startBatchUpdate();
+        WebInspector.moduleManager.extensions(WebInspector.Panel).forEach(processPanelExtensions.bind(this));
+        /**
+         * @param {!WebInspector.ModuleManager.Extension} extension
+         * @this {!WebInspector.InspectorView}
+         */
+        function processPanelExtensions(extension)
+        {
+            this.addPanel(new WebInspector.ModuleManagerExtensionPanelDescriptor(extension));
+        }
+        WebInspector.endBatchUpdate();
+    },
+
     /**
      * @param {!Element} element
      */

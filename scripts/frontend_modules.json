@@ -6,6 +6,7 @@
             "Color.js",
             "DOMExtension.js",
             "Geometry.js",
+            "ModuleManager.js",
             "Object.js",
             "ParsedURL.js",
             "Platform.js",

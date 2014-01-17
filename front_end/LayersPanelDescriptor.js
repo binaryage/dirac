@@ -28,13 +28,21 @@
 
 /**
  * @constructor
- * @extends {WebInspector.PanelDescriptor}
  */
 WebInspector.LayersPanelDescriptor = function()
 {
-    WebInspector.PanelDescriptor.call(this, "layers", WebInspector.UIString("Layers"), "LayersPanel", "LayersPanel.js");
-}
-
-WebInspector.LayersPanelDescriptor.prototype = {
-    __proto__: WebInspector.PanelDescriptor.prototype
+    WebInspector.moduleManager.registerModule(
+        {
+            name: "LayersPanel",
+            extensions: [
+                {
+                    type: "@WebInspector.Panel",
+                    name: "layers",
+                    title: "Layers",
+                    className: "WebInspector.LayersPanel"
+                }
+            ],
+            scripts: [ "LayersPanel.js" ]
+        }
+    );
 }

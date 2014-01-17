@@ -1797,3 +1797,22 @@ WebInspector.DrawerEditorView = function()
 WebInspector.DrawerEditorView.prototype = {
     __proto__: WebInspector.View.prototype
 }
+
+/**
+ * @constructor
+ * @implements {WebInspector.ContextMenu.Provider}
+ */
+WebInspector.SourcesPanel.ContextMenuProvider = function()
+{
+}
+
+WebInspector.SourcesPanel.ContextMenuProvider.prototype = {
+    /**
+     * @param {!WebInspector.ContextMenu} contextMenu
+     * @param {!Object} target
+     */
+    appendApplicableItems: function(event, contextMenu, target)
+    {
+        WebInspector.panel("sources").appendApplicableItems(event, contextMenu, target);
+    }
+}
