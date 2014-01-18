@@ -375,11 +375,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     this.overridesSupport = new WebInspector.OverridesSupport();
     this.overridesSupport.applyInitialOverrides();
-    if (this.overridesSupport.hasActiveOverrides()) {
-        if (!WebInspector.settings.showEmulationViewInDrawer.get())
-            WebInspector.settings.showEmulationViewInDrawer.set(true);
-        WebInspector.inspectorView.showViewInDrawer("emulation");
-    }
 
     new WebInspector.DebuggerScriptMapping(this.workspace, this.networkWorkspaceProvider);
     this.liveEditSupport = new WebInspector.LiveEditSupport(this.workspace);
@@ -389,6 +384,12 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this._createGlobalStatusBarItems();
 
     this.inspectorView.addPanels();
+
+    if (this.overridesSupport.hasActiveOverrides()) {
+        if (!WebInspector.settings.showEmulationViewInDrawer.get())
+            WebInspector.settings.showEmulationViewInDrawer.set(true);
+        WebInspector.inspectorView.showViewInDrawer("emulation");
+    }
 
     this.addMainEventListeners(document);
 
