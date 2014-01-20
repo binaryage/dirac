@@ -105,6 +105,10 @@
     flex: auto;
 }
 
+.timeline-view-stack {
+    flex: auto;
+}
+
 #timeline-container .webkit-html-external-link,
 #timeline-container .webkit-html-resource-link {
     color: inherit;
