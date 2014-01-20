@@ -45,6 +45,14 @@ WebInspector.UISourceCodeFrame = function(uiSourceCode)
 }
 
 WebInspector.UISourceCodeFrame.prototype = {
+    /**
+     * @return {!WebInspector.UISourceCode}
+     */
+    uiSourceCode: function()
+    {
+        return this._uiSourceCode;
+    },
+
     _enableAutocompletionIfNeeded: function()
     {
         this.textEditor.setCompletionDictionary(WebInspector.settings.textEditorAutocompletion.get() ? new WebInspector.SampleCompletionDictionary() : null);

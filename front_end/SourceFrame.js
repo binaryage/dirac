@@ -93,7 +93,8 @@ WebInspector.SourceFrame.createSearchRegex = function(query, modifiers)
 
 WebInspector.SourceFrame.Events = {
     ScrollChanged: "ScrollChanged",
-    SelectionChanged: "SelectionChanged"
+    SelectionChanged: "SelectionChanged",
+    JumpHappened: "JumpHappened"
 }
 
 WebInspector.SourceFrame.prototype = {
@@ -734,6 +735,18 @@ WebInspector.SourceFrame.prototype = {
     {
     },
 
+    /**
+     * @param {?WebInspector.TextRange} from
+     * @param {?WebInspector.TextRange} to
+     */
+    onJumpToPosition: function(from, to)
+    {
+        this.dispatchEventToListeners(WebInspector.SourceFrame.Events.JumpHappened, {
+            from: from,
+            to: to
+        });
+    },
+
     inheritScrollPositions: function(sourceFrame)
     {
         this._textEditor.inheritScrollPositions(sourceFrame._textEditor);
@@ -870,5 +883,14 @@ WebInspector.TextEditorDelegateForSourceFrame.prototype = {
     {
         var targetLocation = WebInspector.ParsedURL.completeURL(this._sourceFrame._url, hrefValue);
         return WebInspector.linkifyURLAsNode(targetLocation || hrefValue, hrefValue, undefined, isExternal);
+    },
+
+    /**
+     * @param {?WebInspector.TextRange} from
+     * @param {?WebInspector.TextRange} to
+     */
+    onJumpToPosition: function(from, to)
+    {
+        this._sourceFrame.onJumpToPosition(from, to);
     }
 }

@@ -275,6 +275,33 @@ WebInspector.TextEditor.prototype = {
      * @param {?WebInspector.CompletionDictionary} dictionary
      */
     setCompletionDictionary: function(dictionary) { },
+
+    /**
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @return {?WebInspector.TextEditorPositionHandle}
+     */
+    textEditorPositionHandle: function(lineNumber, columnNumber) { }
+}
+
+/**
+ * @interface
+ */
+WebInspector.TextEditorPositionHandle = function()
+{
+}
+
+WebInspector.TextEditorPositionHandle.prototype = {
+    /**
+     * @return {?{lineNumber: number, columnNumber: number}}
+     */
+    resolve: function() { },
+
+    /**
+     * @param {!WebInspector.TextEditorPositionHandle} positionHandle
+     * @return {boolean}
+     */
+    equal: function(positionHandle) { }
 }
 
 /**
@@ -320,5 +347,11 @@ WebInspector.TextEditorDelegate.prototype = {
      * @param {boolean} isExternal
      * @return {!Element}
      */
-    createLink: function(hrefValue, isExternal) { }
+    createLink: function(hrefValue, isExternal) { },
+
+    /**
+     * @param {?WebInspector.TextRange} from
+     * @param {?WebInspector.TextRange} to
+     */
+    onJumpToPosition: function(from, to) { }
 }

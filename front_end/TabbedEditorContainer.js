@@ -183,7 +183,8 @@ WebInspector.TabbedEditorContainer.prototype = {
         this._currentView = this.visibleView;
         this._addScrollAndSelectionListeners();
 
-        this.dispatchEventToListeners(WebInspector.TabbedEditorContainer.Events.EditorSelected, this._currentFile);
+        var eventData = { currentFile: this._currentFile, userGesture: userGesture };
+        this.dispatchEventToListeners(WebInspector.TabbedEditorContainer.Events.EditorSelected, eventData);
     },
 
     /**

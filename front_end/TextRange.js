@@ -154,6 +154,16 @@ WebInspector.TextRange.prototype = {
     },
 
     /**
+     * @param {!WebInspector.TextRange} other
+     * @return {boolean}
+     */
+    equal: function(other)
+    {
+        return this.startLine === other.startLine && this.endLine === other.endLine &&
+            this.startColumn === other.startColumn && this.endColumn === other.endColumn;
+    },
+
+    /**
      * @param {number} lineOffset
      * @return {!WebInspector.TextRange}
      */

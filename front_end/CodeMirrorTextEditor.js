@@ -151,10 +151,20 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._codeMirror.on("beforeChange", this._beforeChange.bind(this));
     this._codeMirror.on("gutterClick", this._gutterClick.bind(this));
     this._codeMirror.on("cursorActivity", this._cursorActivity.bind(this));
+    this._codeMirror.on("beforeSelectionChange", this._beforeSelectionChange.bind(this));
     this._codeMirror.on("scroll", this._scroll.bind(this));
     this._codeMirror.on("focus", this._focus.bind(this));
     this._codeMirror.on("blur", this._blur.bind(this));
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), false);
+    /**
+     * @this {WebInspector.CodeMirrorTextEditor}
+     */
+    function updateAnticipateJumpFlag(value)
+    {
+        this._isHandlingMouseDownEvent = value;
+    }
+    this.element.addEventListener("mousedown", updateAnticipateJumpFlag.bind(this, true), true);
+    this.element.addEventListener("mousedown", updateAnticipateJumpFlag.bind(this, false), false);
 
     this.element.classList.add("fill");
     this.element.style.overflow = "hidden";
@@ -336,12 +346,18 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             }
             this._tokenHighlighter.highlightSearchResults(regex, range);
         }
+        if (!this._selectionBeforeSearch)
+            this._selectionBeforeSearch = this.selection();
         this._codeMirror.operation(innerHighlightRegex.bind(this));
     },
 
     cancelSearchResultsHighlight: function()
     {
         this._codeMirror.operation(this._tokenHighlighter.highlightSelectedTokens.bind(this._tokenHighlighter));
+        if (this._selectionBeforeSearch) {
+            this._reportJump(this._selectionBeforeSearch, this.selection());
+            delete this._selectionBeforeSearch;
+        }
     },
 
     undo: function()
@@ -807,7 +823,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._codeMirror.addLineClass(this._highlightedLine, null, "cm-highlight");
         this._clearHighlightTimeout = setTimeout(this.clearPositionHighlight.bind(this), 2000);
         if (!this.readOnly())
-            this._codeMirror.setSelection(new CodeMirror.Pos(lineNumber, columnNumber));
+            this.setSelection(WebInspector.TextRange.createFromLocation(lineNumber, columnNumber));
     },
 
     clearPositionHighlight: function()
@@ -991,6 +1007,28 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._delegate.selectionChanged(this._toRange(start, end));
         if (!this._tokenHighlighter.highlightedRegex())
             this._codeMirror.operation(this._tokenHighlighter.highlightSelectedTokens.bind(this._tokenHighlighter));
+    },
+
+    /**
+     * @param {!CodeMirror} codeMirror
+     * @param {!{head: !CodeMirror.Pos, anchor: !CodeMirror.Pos}} selection
+     */
+    _beforeSelectionChange: function(codeMirror, selection)
+    {
+        if (!this._isHandlingMouseDownEvent)
+            return;
+        this._reportJump(this.selection(), this._toRange(selection.anchor, selection.head));
+    },
+
+    /**
+     * @param {?WebInspector.TextRange} from
+     * @param {?WebInspector.TextRange} to
+     */
+    _reportJump: function(from, to)
+    {
+        if (from && to && from.equal(to))
+            return;
+        this._delegate.onJumpToPosition(from, to);
     },
 
     _scroll: function()
@@ -1183,7 +1221,55 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         return new WebInspector.TextRange(start.line, start.ch, end.line, end.ch);
     },
 
+    /**
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @return {!WebInspector.TextEditorPositionHandle}
+     */
+    textEditorPositionHandle: function(lineNumber, columnNumber)
+    {
+        return new WebInspector.CodeMirrorPositionHandle(this._codeMirror, new CodeMirror.Pos(lineNumber, columnNumber));
+    },
+
     __proto__: WebInspector.View.prototype
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.TextEditorPositionHandle}
+ * @param {!CodeMirror} codeMirror
+ * @param {!CodeMirror.Pos} pos
+ */
+WebInspector.CodeMirrorPositionHandle = function(codeMirror, pos)
+{
+    this._codeMirror = codeMirror;
+    this._lineHandle = codeMirror.getLineHandle(pos.line);
+    this._columnNumber = pos.ch;
+}
+
+WebInspector.CodeMirrorPositionHandle.prototype = {
+    /**
+     * @return {?{lineNumber: number, columnNumber: number}}
+     */
+    resolve: function()
+    {
+        var lineNumber = this._codeMirror.getLineNumber(this._lineHandle);
+        if (typeof lineNumber !== "number")
+            return null;
+        return {
+            lineNumber: lineNumber,
+            columnNumber: this._columnNumber
+        };
+    },
+
+    /**
+     * @param {!WebInspector.TextEditorPositionHandle} positionHandle
+     * @return {boolean}
+     */
+    equal: function(positionHandle)
+    {
+        return positionHandle._lineHandle === this._lineHandle && positionHandle._columnNumber == this._columnNumber && positionHandle._codeMirror === this._codeMirror;
+    }
 }
 
 /**

@@ -26,6 +26,8 @@
 
 importScript("BreakpointsSidebarPane.js");
 importScript("CallStackSidebarPane.js");
+importScript("SimpleHistoryManager.js");
+importScript("EditingLocationHistoryManager.js");
 importScript("FilePathScoreFunction.js");
 importScript("FilteredItemSelectionDialog.js");
 importScript("UISourceCodeFrame.js");
@@ -69,7 +71,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
      */
     function viewGetter()
     {
-        return this.visibleView;
+        return this;
     }
     WebInspector.GoToLineDialog.install(this, viewGetter.bind(this));
 
@@ -141,6 +143,21 @@ WebInspector.SourcesPanel = function(workspaceForTest)
         WorkerAgent.enable();
         this.sidebarPanes.workerList = new WebInspector.WorkersSidebarPane(WebInspector.workerManager);
     }
+
+    /**
+     * @this {WebInspector.SourcesPanel}
+     */
+    function currentSourceFrame()
+    {
+        var uiSourceCode = this.currentUISourceCode();
+        if (!uiSourceCode)
+            return null;
+        return this._sourceFramesByUISourceCode.get(uiSourceCode);
+    }
+
+    this._historyManager = new WebInspector.EditingLocationHistoryManager(this, currentSourceFrame.bind(this));
+    this.registerShortcuts(WebInspector.SourcesPanelDescriptor.ShortcutKeys.JumpToPreviousLocation, this._onJumpToPreviousLocation.bind(this));
+    this.registerShortcuts(WebInspector.SourcesPanelDescriptor.ShortcutKeys.JumpToNextLocation, this._onJumpToNextLocation.bind(this));
 
     this.sidebarPanes.callstack.registerShortcuts(this.registerShortcuts.bind(this));
     this.registerShortcuts(WebInspector.SourcesPanelDescriptor.ShortcutKeys.GoToMember, this._showOutlineDialog.bind(this));
@@ -221,6 +238,24 @@ WebInspector.SourcesPanel.PauseOnExceptionsStates = [
 ];
 
 WebInspector.SourcesPanel.prototype = {
+    /**
+     * @param {?Event=} event
+     */
+    _onJumpToPreviousLocation: function(event)
+    {
+        this._historyManager.rollback();
+        return true;
+    },
+
+    /**
+     * @param {?Event=} event
+     */
+    _onJumpToNextLocation: function(event)
+    {
+        this._historyManager.rollover();
+        return true;
+    },
+
     /**
      * @return {!Element}
      */
@@ -303,6 +338,7 @@ WebInspector.SourcesPanel.prototype = {
         for (var i = 0; i < uiSourceCodes.length; ++i) {
             this._navigator.removeUISourceCode(uiSourceCodes[i]);
             this._removeSourceFrame(uiSourceCodes[i]);
+            this._historyManager.removeHistoryForSourceCode(uiSourceCodes[i]);
         }
         this._editorContainer.removeUISourceCodes(uiSourceCodes);
     },
@@ -520,11 +556,12 @@ WebInspector.SourcesPanel.prototype = {
     _showSourceLocation: function(uiSourceCode, lineNumber, columnNumber, forceShowInPanel)
     {
         this._showEditor(forceShowInPanel);
+        this._historyManager.updateCurrentState();
         var sourceFrame = this._showFile(uiSourceCode);
         if (typeof lineNumber === "number")
             sourceFrame.highlightPosition(lineNumber, columnNumber);
+        this._historyManager.pushNewState();
         sourceFrame.focus();
-
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
             action: WebInspector.UserMetrics.UserActionNames.OpenSourceLink,
             url: uiSourceCode.originURL(),
@@ -541,9 +578,11 @@ WebInspector.SourcesPanel.prototype = {
         var sourceFrame = this._getOrCreateSourceFrame(uiSourceCode);
         if (this._currentUISourceCode === uiSourceCode)
             return sourceFrame;
+
         this._currentUISourceCode = uiSourceCode;
         if (!uiSourceCode.project().isServiceProject())
             this._navigator.revealUISourceCode(uiSourceCode, true);
+
         this._editorContainer.showFile(uiSourceCode);
         this._updateScriptViewStatusBarItems();
 
@@ -578,6 +617,7 @@ WebInspector.SourcesPanel.prototype = {
         }
         sourceFrame.setHighlighterType(uiSourceCode.highlighterType());
         this._sourceFramesByUISourceCode.put(uiSourceCode, sourceFrame);
+        this._historyManager.trackSourceFrameCursorJumps(sourceFrame);
         return sourceFrame;
     },
 
@@ -662,6 +702,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _executionLineChanged: function(uiLocation)
     {
+        this._historyManager.updateCurrentState();
         this._clearCurrentExecutionLine();
         this._setExecutionLine(uiLocation);
 
@@ -670,8 +711,11 @@ WebInspector.SourcesPanel.prototype = {
         if (this._skipExecutionLineRevealing)
             return;
         this._skipExecutionLineRevealing = true;
+
         var sourceFrame = this._showFile(uiSourceCode);
         sourceFrame.revealLine(uiLocation.lineNumber);
+        this._historyManager.pushNewState();
+
         if (sourceFrame.canEditSource())
             sourceFrame.setSelection(WebInspector.TextRange.createFromLocation(uiLocation.lineNumber, 0));
         sourceFrame.focus();
@@ -694,6 +738,7 @@ WebInspector.SourcesPanel.prototype = {
     {
         this._navigatorController.hideNavigatorOverlay();
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
+        this._historyManager.removeHistoryForSourceCode(uiSourceCode);
 
         if (this._currentUISourceCode === uiSourceCode)
             delete this._currentUISourceCode;
@@ -705,8 +750,14 @@ WebInspector.SourcesPanel.prototype = {
 
     _editorSelected: function(event)
     {
-        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data.currentFile);
+        var shouldUseHistoryManager = uiSourceCode !== this._currentUISourceCode && event.data.userGesture;
+        if (shouldUseHistoryManager)
+            this._historyManager.updateCurrentState();
         var sourceFrame = this._showFile(uiSourceCode);
+        if (shouldUseHistoryManager)
+            this._historyManager.pushNewState();
+
         this._navigatorController.hideNavigatorOverlay();
         if (!this._navigatorController.isNavigatorPinned())
             sourceFrame.focus();
@@ -717,7 +768,15 @@ WebInspector.SourcesPanel.prototype = {
     _sourceSelected: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data.uiSourceCode);
+
+        var shouldUseHistoryManager = uiSourceCode !== this._currentUISourceCode;
+
+        if (shouldUseHistoryManager)
+            this._historyManager.updateCurrentState();
         var sourceFrame = this._showFile(uiSourceCode);
+        if (shouldUseHistoryManager)
+            this._historyManager.pushNewState();
+
         this._navigatorController.hideNavigatorOverlay();
         if (sourceFrame && (!this._navigatorController.isNavigatorPinned() || event.data.focusSource))
             sourceFrame.focus();
@@ -1692,7 +1751,9 @@ WebInspector.SourcesPanel.prototype = {
     {
         if (!this.canHighlightPosition())
             return;
+        this._historyManager.updateCurrentState();
         this.visibleView.highlightPosition(line, column);
+        this._historyManager.pushNewState();
     },
 
     /**

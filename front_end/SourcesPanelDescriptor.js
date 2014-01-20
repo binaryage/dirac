@@ -80,6 +80,8 @@ WebInspector.SourcesPanelDescriptor.prototype = {
         section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.DecreaseCSSUnitByOne, WebInspector.UIString("Decrement CSS unit by 1"));
         section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.IncreaseCSSUnitByTen, WebInspector.UIString("Increment CSS unit by 10"));
         section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.DecreaseCSSUnitByTen, WebInspector.UIString("Decrement CSS unit by 10"));
+        section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.JumpToPreviousLocation, WebInspector.UIString("Jump to previous editing location"));
+        section.addAlternateKeys(WebInspector.SourcesPanelDescriptor.ShortcutKeys.JumpToNextLocation, WebInspector.UIString("Jump to next editing location"));
     }
 }
 
@@ -155,5 +157,13 @@ WebInspector.SourcesPanelDescriptor.ShortcutKeys = {
 
     ToggleComment: [
         WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Slash, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
-    ]
+    ],
+
+    JumpToPreviousLocation: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Minus, WebInspector.KeyboardShortcut.Modifiers.Alt)
+    ],
+
+    JumpToNextLocation: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Plus, WebInspector.KeyboardShortcut.Modifiers.Alt)
+    ],
 };
