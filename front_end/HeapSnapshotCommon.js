@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,22 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-WebInspector = {};
-
-importScripts("AllocationProfile.js");
-importScripts("HeapSnapshot.js");
-importScripts("HeapSnapshotCommon.js");
-importScripts("HeapSnapshotLoader.js");
-importScripts("HeapSnapshotWorkerDispatcher.js");
-importScripts("JSHeapSnapshot.js");
-importScripts("TextUtils.js");
-importScripts("UIString.js");
-importScripts("utilities.js");
-
-function postMessageWrapper(message)
-{
-    postMessage(message);
-}
-
-var dispatcher = new WebInspector.HeapSnapshotWorkerDispatcher(this, postMessageWrapper);
-addEventListener("message", dispatcher.dispatchMessage.bind(dispatcher), false);
+WebInspector.HeapSnapshotProgressEvent = {
+    Update: "ProgressUpdate"
+};

@@ -52,6 +52,15 @@ WebInspector.HeapSnapshotGridNode.Events = {
     PopulateComplete: "PopulateComplete"
 }
 
+/**
+ * @param {!Array.<string>} fieldNames
+ * @return {!Object}
+ */
+WebInspector.HeapSnapshotGridNode.createComparator = function(fieldNames)
+{
+    return {fieldName1: fieldNames[0], ascending1: fieldNames[1], fieldName2: fieldNames[2], ascending2: fieldNames[3]};
+}
+
 WebInspector.HeapSnapshotGridNode.prototype = {
     /**
      * @return {!WebInspector.HeapSnapshotProviderProxy}
@@ -627,7 +636,7 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
             retainedSize: ["retainedSize", sortAscending, "!edgeName", true],
             distance: ["distance", sortAscending, "_name", true]
         }[sortColumnIdentifier] || ["!edgeName", true, "retainedSize", false];
-        return WebInspector.HeapSnapshotFilteredOrderedIterator.prototype.createComparator(sortFields);
+        return WebInspector.HeapSnapshotGridNode.createComparator(sortFields);
     },
 
     _emptyData: function()
@@ -726,7 +735,7 @@ WebInspector.HeapSnapshotInstanceNode.prototype = {
             shallowSize: ["selfSize", sortAscending, "!edgeName", true],
             retainedSize: ["retainedSize", sortAscending, "!edgeName", true]
         }[sortColumnIdentifier] || ["!edgeName", true, "retainedSize", false];
-        return WebInspector.HeapSnapshotFilteredOrderedIterator.prototype.createComparator(sortFields);
+        return WebInspector.HeapSnapshotGridNode.createComparator(sortFields);
     },
 
     _emptyData: function()
@@ -857,7 +866,7 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
             shallowSize: ["selfSize", sortAscending, "id", true],
             retainedSize: ["retainedSize", sortAscending, "id", true]
         }[sortColumnIdentifier];
-        return WebInspector.HeapSnapshotFilteredOrderedIterator.prototype.createComparator(sortFields);
+        return WebInspector.HeapSnapshotGridNode.createComparator(sortFields);
     },
 
     _childHashForEntity: function(node)
@@ -1053,7 +1062,7 @@ WebInspector.HeapSnapshotDiffNode.prototype = {
             removedSize: ["selfSize", sortAscending, "id", true],
             sizeDelta: ["selfSize", sortAscending, "id", true]
         }[sortColumnIdentifier];
-        return WebInspector.HeapSnapshotFilteredOrderedIterator.prototype.createComparator(sortFields);
+        return WebInspector.HeapSnapshotGridNode.createComparator(sortFields);
     },
 
     _signForDelta: function(delta)
@@ -1169,7 +1178,7 @@ WebInspector.HeapSnapshotDominatorObjectNode.prototype = {
             shallowSize: ["selfSize", sortAscending, "id", true],
             retainedSize: ["retainedSize", sortAscending, "id", true]
         }[sortColumnIdentifier];
-        return WebInspector.HeapSnapshotFilteredOrderedIterator.prototype.createComparator(sortFields);
+        return WebInspector.HeapSnapshotGridNode.createComparator(sortFields);
     },
 
     _emptyData: function()

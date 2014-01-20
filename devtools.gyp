@@ -71,6 +71,7 @@
                         },
                         {
                             'files': [
+                                '<@(devtools_heap_snapshot_worker_js_files)',
                                 '<@(devtools_temp_storage_shared_worker_js_files)',
                             ],
                         }],
@@ -421,12 +422,7 @@
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_file)',
-                            'front_end/AllocationProfile.js',
-                            'front_end/HeapSnapshot.js',
-                            'front_end/HeapSnapshotLoader.js',
-                            'front_end/HeapSnapshotWorkerDispatcher.js',
-                            'front_end/JSHeapSnapshot.js',
-                            'front_end/utilities.js',
+                            '<@(devtools_heap_snapshot_worker_js_files)',
                         ],
                         'search_path': 'front_end',
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/HeapSnapshotWorker.js'],

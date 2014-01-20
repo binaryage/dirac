@@ -519,10 +519,6 @@ WebInspector.HeapSnapshotProgress = function(dispatcher)
     this._dispatcher = dispatcher;
 }
 
-WebInspector.HeapSnapshotProgress.Event = {
-    Update: "ProgressUpdate"
-};
-
 WebInspector.HeapSnapshotProgress.prototype = {
     /**
      * @param {string} status
@@ -550,7 +546,7 @@ WebInspector.HeapSnapshotProgress.prototype = {
     {
         // May be undefined in tests.
         if (this._dispatcher)
-            this._dispatcher.sendEvent(WebInspector.HeapSnapshotProgress.Event.Update, text);
+            this._dispatcher.sendEvent(WebInspector.HeapSnapshotProgressEvent.Update, text);
     }
 }
 
@@ -1739,11 +1735,6 @@ WebInspector.HeapSnapshotFilteredOrderedIterator.prototype = {
         this._sortedSuffixLength = 0;
         this.rewind();
     }
-}
-
-WebInspector.HeapSnapshotFilteredOrderedIterator.prototype.createComparator = function(fieldNames)
-{
-    return {fieldName1: fieldNames[0], ascending1: fieldNames[1], fieldName2: fieldNames[2], ascending2: fieldNames[3]};
 }
 
 /**

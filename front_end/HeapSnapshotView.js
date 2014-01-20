@@ -90,7 +90,7 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.dominatorDataGrid.show(this.dominatorView.element);
     this.dominatorDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
-    if (WebInspector.HeapSnapshot.enableAllocationProfiler) {
+    if (WebInspector.HeapSnapshotView.enableAllocationProfiler) {
         this.allocationView = new WebInspector.View();
         this.allocationView.element.classList.add("view");
         this.allocationDataGrid = new WebInspector.AllocationDataGrid();
@@ -126,7 +126,7 @@ WebInspector.HeapSnapshotView = function(parent, profile)
                   {title: WebInspector.UIString("Containment"), view: this.containmentView, grid: this.containmentDataGrid}];
     if (WebInspector.settings.showAdvancedHeapSnapshotProperties.get())
         this.views.push({title: WebInspector.UIString("Dominators"), view: this.dominatorView, grid: this.dominatorDataGrid});
-    if (WebInspector.HeapSnapshot.enableAllocationProfiler)
+    if (WebInspector.HeapSnapshotView.enableAllocationProfiler)
         this.views.push({title: WebInspector.UIString("Allocation"), view: this.allocationView, grid: this.allocationDataGrid});
     this.views.current = 0;
     for (var i = 0; i < this.views.length; ++i)
@@ -147,6 +147,8 @@ WebInspector.HeapSnapshotView = function(parent, profile)
 
     this._refreshView();
 }
+
+WebInspector.HeapSnapshotView.enableAllocationProfiler = false;
 
 WebInspector.HeapSnapshotView.prototype = {
     _refreshView: function()
@@ -1272,7 +1274,7 @@ WebInspector.HeapProfileHeader.prototype = {
      */
     _handleWorkerEvent: function(eventName, data)
     {
-        if (WebInspector.HeapSnapshotProgress.Event.Update !== eventName)
+        if (WebInspector.HeapSnapshotProgressEvent.Update !== eventName)
             return;
         this._updateSubtitle(data);
     },

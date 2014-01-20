@@ -378,7 +378,7 @@ WebInspector.TimelineModelLoader.prototype = {
         var index;
         do {
             index = lastIndex;
-            lastIndex = WebInspector.findBalancedCurlyBrackets(data, index);
+            lastIndex = WebInspector.TextUtils.findBalancedCurlyBrackets(data, index);
         } while (lastIndex !== -1)
 
         var json = data.slice(0, index) + "]";

@@ -99,6 +99,10 @@ WebInspector.HeapSnapshotWorkerDispatcher.prototype = {
                     }
                     break;
                 }
+                case "enableAllocationProfiler": {
+                    WebInspector.HeapSnapshot.enableAllocationProfiler = true;
+                    return;
+                }
             }
         } catch (e) {
             response.error = e.toString();

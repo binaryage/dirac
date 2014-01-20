@@ -1204,17 +1204,13 @@ WebInspector.CanvasProfilerPanel.prototype = {
 
 
 importScript("ProfileDataGridTree.js");
-importScript("AllocationProfile.js");
 importScript("BottomUpProfileDataGridTree.js");
 importScript("CPUProfileView.js");
-importScript("HeapSnapshot.js");
+importScript("HeapSnapshotCommon.js");
 importScript("HeapSnapshotProxy.js");
 importScript("HeapSnapshotDataGrids.js");
 importScript("HeapSnapshotGridNodes.js");
-importScript("HeapSnapshotLoader.js");
 importScript("HeapSnapshotView.js");
-importScript("HeapSnapshotWorkerDispatcher.js");
-importScript("JSHeapSnapshot.js");
 importScript("ProfileLauncherView.js");
 importScript("TopDownProfileDataGridTree.js");
 importScript("CanvasProfileView.js");

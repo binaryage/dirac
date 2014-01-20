@@ -345,6 +345,7 @@
             "CPUProfileView.js",
             "FlameChart.js",
             "HeapSnapshot.js",
+            "HeapSnapshotCommon.js",
             "HeapSnapshotDataGrids.js",
             "HeapSnapshotGridNodes.js",
             "HeapSnapshotLoader.js",
