@@ -91,6 +91,14 @@ WebInspector.HeapSnapshotWorkerDispatcher.prototype = {
                     response.result = object[data.methodName].apply(object, data.methodArguments);
                     break;
                 }
+                case "evaluateForTest": {
+                    try {
+                        response.result = eval(data.source)
+                    } catch (e) {
+                        response.result = e.toString();
+                    }
+                    break;
+                }
             }
         } catch (e) {
             response.error = e.toString();

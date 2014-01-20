@@ -68,6 +68,13 @@ WebInspector.HeapSnapshotWorkerProxy.prototype = {
         this._postMessage({callId: this._nextCallId++, disposition: "dispose", objectId: objectId});
     },
 
+    evaluateForTest: function(script, callback)
+    {
+        var callId = this._nextCallId++;
+        this._callbacks[callId] = callback;
+        this._postMessage({callId: callId, disposition: "evaluateForTest", source: script});
+    },
+
     callGetter: function(callback, objectId, getterName)
     {
         var callId = this._nextCallId++;
