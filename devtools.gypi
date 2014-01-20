@@ -54,6 +54,7 @@
             'front_end/CookieParser.js',
             'front_end/CookiesTable.js',
             'front_end/CountersGraph.js',
+            'front_end/CPUProfilerModel.js',
             'front_end/CSSFormatter.js',
             'front_end/CSSMetadata.js',
             'front_end/CSSStyleModel.js',

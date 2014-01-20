@@ -30,6 +30,7 @@
             "ContentProviderBasedProjectDelegate.js",
             "ContentProviders.js",
             "CookieParser.js",
+            "CPUProfilerModel.js",
             "CSSFormatter.js",
             "CSSMetadata.js",
             "CSSStyleModel.js",

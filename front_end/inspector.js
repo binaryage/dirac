@@ -497,7 +497,7 @@ WebInspector.documentClick = function(event)
         if (WebInspector.showAnchorLocation(anchor))
             return;
 
-        const profileMatch = WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp.exec(anchor.href);
+        const profileMatch = WebInspector.CPUProfilerModel.ProfileURLRegExp.exec(anchor.href);
         if (profileMatch) {
             WebInspector.showPanel("profiles").showProfile(profileMatch[1], profileMatch[2]);
             return;

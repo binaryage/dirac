@@ -635,7 +635,7 @@ WebInspector.CPUProfileView.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileType}
- * @implements {WebInspector.CPUProfilerModelDelegate}
+ * @implements {WebInspector.CPUProfilerModel.Delegate}
  */
 WebInspector.CPUProfileType = function()
 {
