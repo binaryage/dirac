@@ -79,7 +79,6 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     this._detailsSplitView.element.classList.remove("fill");
     this._detailsSplitView.element.classList.add("timeline-details-split");
     this._detailsSplitView.sidebarElement().classList.add("timeline-details");
-    this._detailsSplitView.show(this.element);
     this._detailsSplitView.mainElement().classList.add("vbox");
     this._detailsSplitView.setMainElementConstraints(undefined, 40);
     this._detailsView = new WebInspector.TimelineDetailsView();
@@ -141,6 +140,8 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
         this._overviewControl = new WebInspector.TimelineMemoryOverview(this._model);
         break;
     }
+
+    this._detailsSplitView.show(this.element);
 }
 
 WebInspector.TimelineView.Events = {
@@ -890,6 +891,7 @@ WebInspector.TimelineView.prototype = {
         var lastVisibleLine = Math.max(0, Math.floor((visibleBottom - headerHeight) / rowHeight));
         if (this._automaticallySizeWindow && recordsInWindow.length > lastVisibleLine) {
             this._automaticallySizeWindow = false;
+            this._selectRecord(null);
             // If we're at the top, always use real timeline start as a left window bound so that expansion arrow padding logic works.
             var windowStartTime = startIndex ? recordsInWindow[startIndex].startTime : this._model.minimumRecordTime();
             this._setWindowTimes(windowStartTime, recordsInWindow[Math.max(0, lastVisibleLine - 1)].endTime);
