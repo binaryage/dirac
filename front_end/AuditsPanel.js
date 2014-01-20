@@ -518,6 +518,7 @@ WebInspector.AuditRules = {};
  */
 WebInspector.AuditCategories = {};
 
+importScript("AuditCategory.js");
 importScript("AuditCategories.js");
 importScript("AuditController.js");
 importScript("AuditFormatters.js");

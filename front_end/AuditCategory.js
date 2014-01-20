@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -27,22 +27,34 @@
  */
 
 /**
- * @constructor
+ * @interface
  */
-WebInspector.AuditsPanelDescriptor = function()
+WebInspector.AuditCategory = function()
 {
-    WebInspector.moduleManager.registerModule(
-        {
-            name: "AuditsPanel",
-            extensions: [
-                {
-                    type: "@WebInspector.Panel",
-                    name: "audits",
-                    title: "Audits",
-                    className: "WebInspector.AuditsPanel"
-                }
-            ],
-            scripts: [ "AuditsPanel.js" ]
-        }
-    );
+}
+
+WebInspector.AuditCategory.prototype = {
+    /**
+     * @return {string}
+     */
+    get id()
+    {
+    },
+
+    /**
+     * @return {string}
+     */
+    get displayName()
+    {
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.NetworkRequest>} requests
+     * @param {function(!WebInspector.AuditRuleResult)} ruleResultCallback
+     * @param {function()} categoryDoneCallback
+     * @param {!WebInspector.Progress} progress
+     */
+    run: function(requests, ruleResultCallback, categoryDoneCallback, progress)
+    {
+    }
 }

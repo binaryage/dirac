@@ -275,6 +275,7 @@
         "dependencies": ["components"],
         "sources": [
             "AuditCategories.js",
+            "AuditCategory.js",
             "AuditController.js",
             "AuditFormatters.js",
             "AuditLauncherView.js",
@@ -307,7 +308,7 @@
     },
     {
         "name": "extensions",
-        "dependencies": ["components"],
+        "dependencies": ["components", "audits"],
         "sources": [
             "ExtensionAPI.js",
             "ExtensionAuditCategory.js",

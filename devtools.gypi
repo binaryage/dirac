@@ -343,6 +343,7 @@
         ],
         'devtools_audits_js_files': [
             'front_end/AuditCategories.js',
+            'front_end/AuditCategory.js',
             'front_end/AuditController.js',
             'front_end/AuditFormatters.js',
             'front_end/AuditLauncherView.js',

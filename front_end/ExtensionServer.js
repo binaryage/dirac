@@ -560,6 +560,7 @@ WebInspector.ExtensionServer.prototype = {
         if (WebInspector.panel("audits").getCategory(category.id))
             return this._status.E_EXISTS(category.id);
         this._clientObjects[message.id] = category;
+        // FIXME: register module manager extension instead of waking up audits module.
         WebInspector.panel("audits").addCategory(category);
     },
 
