@@ -585,15 +585,10 @@ WebInspector._registerShortcuts = function()
     section.addAlternateKeys(keys, WebInspector.UIString("Show general settings"));
 }
 
-WebInspector.documentKeyDown = function(event)
+WebInspector.postDocumentKeyDown = function(event)
 {
-    if (WebInspector.currentFocusElement() && WebInspector.currentFocusElement().handleKeyEvent) {
-        WebInspector.currentFocusElement().handleKeyEvent(event);
-        if (event.handled) {
-            event.consume(true);
-            return;
-        }
-    }
+    if (event.handled)
+        return;
 
     if (WebInspector.inspectorView.currentPanel()) {
         WebInspector.inspectorView.currentPanel().handleShortcut(event);
@@ -644,6 +639,7 @@ WebInspector.documentKeyDown = function(event)
             if (isValidZoomShortcut) {
                 WebInspector._zoomIn();
                 event.consume(true);
+                return;
             }
             break;
         case 109: // -
@@ -651,6 +647,7 @@ WebInspector.documentKeyDown = function(event)
             if (isValidZoomShortcut) {
                 WebInspector._zoomOut();
                 event.consume(true);
+                return;
             }
             break;
         case 48: // 0
@@ -659,28 +656,19 @@ WebInspector.documentKeyDown = function(event)
             if (isValidZoomShortcut && !event.shiftKey) {
                 WebInspector._resetZoom();
                 event.consume(true);
+                return;
             }
             break;
     }
 
-}
-
-WebInspector.postDocumentKeyDown = function(event)
-{
-    const helpKey = WebInspector.isMac() ? "U+003F" : "U+00BF"; // "?" for both platforms
-
-    if (event.keyIdentifier === "F1" ||
-        (event.keyIdentifier === helpKey && event.shiftKey && (!WebInspector.isBeingEdited(event.target) || event.metaKey))) {
+    if (event.keyCode === WebInspector.KeyboardShortcut.Keys.F1.code ||
+        (event.keyCode === WebInspector.KeyboardShortcut.Keys.QuestionMark.code && event.shiftKey && (!WebInspector.isBeingEdited(event.target) || event.metaKey))) {
         this.settingsController.showSettingsScreen(WebInspector.SettingsScreen.Tabs.General);
         event.consume(true);
         return;
     }
 
-    const Esc = "U+001B";
-
-    if (event.handled)
-        return;
-
+    var Esc = "U+001B";
     var doNotOpenDrawerOnEsc = WebInspector.experimentsSettings.doNotOpenDrawerOnEsc.isEnabled();
     if (event.keyIdentifier === Esc) {
         if (this.inspectorView.drawer().visible())
@@ -926,7 +914,6 @@ WebInspector.evaluateInConsole = function(expression, showResultOnly)
 
 WebInspector.addMainEventListeners = function(doc)
 {
-    doc.addEventListener("keydown", this.documentKeyDown.bind(this), true);
     doc.addEventListener("keydown", this.postDocumentKeyDown.bind(this), false);
     doc.addEventListener("beforecopy", this.documentCanCopy.bind(this), true);
     doc.addEventListener("copy", this.documentCopy.bind(this), false);

@@ -59,6 +59,7 @@ WebInspector.KeyboardShortcut.Keys = {
     Backspace: { code: 8, name: "\u21a4" },
     Tab: { code: 9, name: { mac: "\u21e5", other: "Tab" } },
     Enter: { code: 13, name: { mac: "\u21a9", other: "Enter" } },
+    Ctrl: { code: 17, name: "Ctrl" },
     Esc: { code: 27, name: { mac: "\u238b", other: "Esc" } },
     Space: { code: 32, name: "Space" },
     PageUp: { code: 33,  name: { mac: "\u21de", other: "PageUp" } },      // also NUM_NORTH_EAST
@@ -71,6 +72,8 @@ WebInspector.KeyboardShortcut.Keys = {
     Down: { code: 40, name: "\u2193" },           // also NUM_SOUTH
     Delete: { code: 46, name: "Del" },
     Zero: { code: 48, name: "0" },
+    H: { code: 72, name: "H" },
+    Meta: { code: 91, name: "Meta" },
     F1: { code: 112, name: "F1" },
     F2: { code: 113, name: "F2" },
     F3: { code: 114, name: "F3" },
@@ -89,13 +92,11 @@ WebInspector.KeyboardShortcut.Keys = {
     Minus: { code: 189, name: "-" },
     Period: { code: 190, name: "." },
     Slash: { code: 191, name: "/" },
+    QuestionMark: { code: 191, name: "?" },
     Apostrophe: { code: 192, name: "`" },
+    Tilde: { code: 192, name: "Tilde" },
     Backslash: { code: 220, name: "\\" },
     SingleQuote: { code: 222, name: "\'" },
-    H: { code: 72, name: "H" },
-    Ctrl: { code: 17, name: "Ctrl" },
-    Meta: { code: 91, name: "Meta" },
-    Tilde: { code: 192, name: "Tilde" },
     get CtrlOrMeta()
     {
         // "default" command/ctrl key for platform, Command on Mac, Ctrl on other platforms
