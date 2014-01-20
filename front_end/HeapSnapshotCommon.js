@@ -90,3 +90,39 @@ WebInspector.HeapSnapshotCommon.DiffForClass = function()
     /** @type {number} */
     this.sizeDelta;
 }
+
+/**
+ * @constructor
+ */
+WebInspector.HeapSnapshotCommon.ComparatorConfig = function()
+{
+    /** @type {string} */
+    this.fieldName1;
+    /** @type {boolean} */
+    this.ascending1;
+    /** @type {string} */
+    this.fieldName2;
+    /** @type {boolean} */
+    this.ascending2;
+}
+
+/**
+ * @constructor
+ */
+WebInspector.HeapSnapshotCommon.WorkerCommand = function()
+{
+    /** @type {number} */
+    this.callId;
+    /** @type {string} */
+    this.disposition;
+    /** @type {number} */
+    this.objectId;
+    /** @type {number} */
+    this.newObjectId;
+    /** @type {string} */
+    this.methodName;
+    /** @type {!Array.<*>} */
+    this.methodArguments;
+    /** @type {string} */
+    this.source;
+}

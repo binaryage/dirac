@@ -1438,8 +1438,10 @@ function importScript(scriptName)
     xhr.send(null);
     if (!xhr.responseText)
         throw "empty response arrived for script '" + scriptName + "'";
-    var sourceURL = WebInspector.ParsedURL.completeURL(window.location.href, scriptName); 
-    window.eval(xhr.responseText + "\n//# sourceURL=" + sourceURL);
+    var baseUrl = location.href;
+    baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/"));
+    var sourceURL = baseUrl + "/" + scriptName;
+    eval(xhr.responseText + "\n//# sourceURL=" + sourceURL);
 }
 
 var loadScript = importScript;

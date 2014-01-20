@@ -31,7 +31,6 @@
 /**
  * @constructor
  * @param {!WebInspector.HeapSnapshotWorkerDispatcher} dispatcher
- * @implements {WebInspector.OutputStream}
  */
 WebInspector.HeapSnapshotLoader = function(dispatcher)
 {

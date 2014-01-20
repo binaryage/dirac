@@ -59,7 +59,7 @@ WebInspector.HeapSnapshotWorkerDispatcher.prototype = {
 
     dispatchMessage: function(event)
     {
-        var data = event.data;
+        var data = /** @type {!WebInspector.HeapSnapshotCommon.WorkerCommand } */(event.data);
         var response = {callId: data.callId};
         try {
             switch (data.disposition) {

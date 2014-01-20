@@ -335,6 +335,7 @@
     },
     {
         "name": "temp_storage_shared_worker",
+        "standalone": true,
         "dependencies": [],
         "sources": [
             "TempStorageSharedWorker.js"
@@ -363,6 +364,7 @@
     },
     {
         "name": "heap_snapshot_worker",
+        "standalone": true,
         "dependencies": [],
         "sources": [
             "AllocationProfile.js",

@@ -1748,6 +1748,13 @@ WebInspector.HeapSnapshotEdgesProvider = function(snapshot, filter, edgesIter)
 }
 
 WebInspector.HeapSnapshotEdgesProvider.prototype = {
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.ComparatorConfig} comparator
+     * @param {number} leftBound
+     * @param {number} rightBound
+     * @param {number} windowLeft
+     * @param {number} windowRight
+     */
     sort: function(comparator, leftBound, rightBound, windowLeft, windowRight)
     {
         var fieldName1 = comparator.fieldName1;
