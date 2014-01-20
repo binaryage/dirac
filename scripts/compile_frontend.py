@@ -175,6 +175,23 @@ modules_by_name = {}
 for module in modules:
     modules_by_name[module["name"]] = module
 
+standalone_modules = []
+for module in modules:
+    if "standalone" in module:
+        standalone_modules.append(module)
+
+
+def verify_standalone_modules():
+    standalone_module_names = {}
+    for standalone_module in standalone_modules:
+        standalone_module_names[standalone_module["name"]] = True
+    for module in modules:
+        for dependency in module["dependencies"]:
+            if dependency in standalone_module_names:
+                print "ERROR: Standalone module %s cannot be in dependencies of %s" % (dependency, module["name"])
+
+verify_standalone_modules()
+
 
 def nice_child():
     os.nice(10)
@@ -239,13 +256,20 @@ if process_recursively:
             outputs.append(out)
         print "\n".join(outputs)
 else:
-    command = compiler_command
-    command += "    --externs " + devtools_frontend_path + "/externs.js" + " \\\n"
-    command += "    --externs " + protocol_externs_path
-    for module in modules:
-        command += dump_module(module["name"], False, {})
-    print "Compiling front_end..."
-    frontEndCompileProc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
+    def compile_standalone_module(standalone_module):
+        command = compiler_command
+        command += "    --externs " + devtools_frontend_path + "/externs.js" + " \\\n"
+        command += "    --externs " + protocol_externs_path
+        standalone_module_name = standalone_module["name"]
+        for module_name in standalone_module["dependencies"] + [standalone_module_name]:
+            command += dump_module(module_name, False, {})
+        print "Compiling %s..." % standalone_module_name
+        return (standalone_module_name, subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True))
+
+    standalone_compilers = []
+    for standalone_module in standalone_modules:
+        standalone_compilers.append(compile_standalone_module(standalone_module))
 
     def unclosure_injected_script(sourceFileName, outFileName):
         sourceFile = open(sourceFileName, "r")
@@ -289,8 +313,9 @@ else:
 
     print
 
-    (frontEndCompileOut, _) = frontEndCompileProc.communicate()
-    print "front_end compilation output:\n", frontEndCompileOut
+    for (name, process) in standalone_compilers:
+        (moduleCompileOut, _) = process.communicate()
+        print "%s compilation output: %s\n" % (name, moduleCompileOut)
 
     (injectedScriptCompileOut, _) = injectedScriptCompileProc.communicate()
     print "InjectedScriptSource.js and InjectedScriptCanvasModuleSource.js compilation output:\n", injectedScriptCompileOut

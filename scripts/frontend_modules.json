@@ -343,20 +343,14 @@
         "name": "profiler",
         "dependencies": ["components", "workers"],
         "sources": [
-            "AllocationProfile.js",
             "BottomUpProfileDataGridTree.js",
             "CPUProfileView.js",
             "FlameChart.js",
-            "HeapSnapshot.js",
             "HeapSnapshotCommon.js",
             "HeapSnapshotDataGrids.js",
             "HeapSnapshotGridNodes.js",
-            "HeapSnapshotLoader.js",
             "HeapSnapshotProxy.js",
             "HeapSnapshotView.js",
-            "HeapSnapshotWorker.js",
-            "HeapSnapshotWorkerDispatcher.js",
-            "JSHeapSnapshot.js",
             "ProfileDataGridTree.js",
             "ProfilesPanel.js",
             "ProfilesPanelDescriptor.js",
@@ -367,11 +361,53 @@
         ]
     },
     {
+        "name": "heap_snapshot_worker",
+        "dependencies": [],
+        "sources": [
+            "AllocationProfile.js",
+            "HeapSnapshot.js",
+            "HeapSnapshotCommon.js",
+            "HeapSnapshotLoader.js",
+            "HeapSnapshotWorker.js",
+            "HeapSnapshotWorkerDispatcher.js",
+            "JSHeapSnapshot.js",
+            "TextUtils.js",
+            "UIString.js",
+            "utilities.js"
+        ]
+    },
+    {
         "name": "host_stub",
         "dependencies": ["components", "profiler", "timeline"],
         "sources": [
             "InspectorFrontendAPI.js",
             "InspectorFrontendHostStub.js"
         ]
+    },
+    {
+        "name": "front_end",
+        "standalone": true,
+        "dependencies": [
+            "common",
+            "sdk",
+            "ui",
+            "components",
+            "elements",
+            "network",
+            "resources",
+            "workers",
+            "scripts",
+            "console",
+            "timeline",
+            "audits",
+            "codemirror",
+            "layers",
+            "extensions",
+            "settings",
+            "tests",
+            "profiler",
+            "host_stub"
+        ],
+        "sources": []
     }
 ]

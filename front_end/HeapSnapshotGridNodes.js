@@ -769,6 +769,9 @@ WebInspector.HeapSnapshotInstanceNode.prototype = {
 
 /**
  * @constructor
+ * @param {string} className
+ * @param {!WebInspector.HeapSnapshotCommon.Aggregate} aggregate
+ * @param {string} aggregatesKey
  * @extends {WebInspector.HeapSnapshotGridNode}
  */
 WebInspector.HeapSnapshotConstructorNode = function(tree, className, aggregate, aggregatesKey)
@@ -1000,6 +1003,8 @@ WebInspector.HeapSnapshotDiffNodesProvider.prototype = {
 
 /**
  * @constructor
+ * @param {string} className
+ * @param {!WebInspector.HeapSnapshotCommon.DiffForClass} diffForClass
  * @extends {WebInspector.HeapSnapshotGridNode}
  */
 WebInspector.HeapSnapshotDiffNode = function(tree, className, diffForClass)

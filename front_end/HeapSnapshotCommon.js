@@ -31,3 +31,62 @@
 WebInspector.HeapSnapshotProgressEvent = {
     Update: "ProgressUpdate"
 };
+
+WebInspector.HeapSnapshotCommon = {
+}
+
+/**
+ * @constructor
+ */
+WebInspector.HeapSnapshotCommon.AllocationNodeCallers = function()
+{
+     /** @type {!Array.<!{id: string, name: string, scriptName: string, line: number, column: number, count: number, size: number, hasChildren: boolean}>} */
+    this.nodesWithSingleCaller;
+    /** @type {!Array.<!{id: string, name: string, scriptName: string, line: number, column: number, count: number, size: number, hasChildren: boolean}>} */
+    this.branchingCallers;
+}
+
+/**
+ * @constructor
+ */
+WebInspector.HeapSnapshotCommon.Aggregate = function()
+{
+    /** @type {number} */
+    this.count;
+    /** @type {number} */
+    this.distance;
+    /** @type {number} */
+    this.self;
+    /** @type {number} */
+    this.maxRet;
+    /** @type {number} */
+    this.type;
+    /** @type {string} */
+    this.name;
+    /** @type {!Array.<number>} */
+    this.idxs;
+}
+
+/**
+ * @constructor
+ */
+WebInspector.HeapSnapshotCommon.DiffForClass = function()
+{
+    /** @type {number} */
+    this.addedCount;
+    /** @type {number} */
+    this.removedCount;
+    /** @type {number} */
+    this.addedSize;
+    /** @type {number} */
+    this.removedSize;
+    /** @type {!Array.<number>} */
+    this.deletedIndexes;
+    /** @type {!Array.<number>} */
+    this.addedIndexes;
+
+    /** @type {number} */
+    this.countDelta;
+    /** @type {number} */
+    this.sizeDelta;
+}

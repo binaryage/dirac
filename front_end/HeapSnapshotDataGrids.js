@@ -977,6 +977,7 @@ WebInspector.AllocationGridNode.prototype = {
         this._dataGrid._snapshot.allocationNodeCallers(this.data.id, didReceiveCallers.bind(this));
 
         /**
+         * @param {!WebInspector.HeapSnapshotCommon.AllocationNodeCallers} callers
          * @this {WebInspector.AllocationGridNode}
          */
         function didReceiveCallers(callers)
