@@ -72,7 +72,7 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
 WebInspector.JavaScriptSourceFrame.prototype = {
     _registerShortcuts: function()
     {
-        var shortcutKeys = WebInspector.SourcesPanelDescriptor.ShortcutKeys;
+        var shortcutKeys = WebInspector.ShortcutsScreen.SourcesPanelShortcuts;
         for (var i = 0; i < shortcutKeys.EvaluateSelectionInConsole.length; ++i) {
             var keyDescriptor = shortcutKeys.EvaluateSelectionInConsole[i];
             this.addShortcut(keyDescriptor.key, this._evaluateSelectionInConsole.bind(this));

@@ -50,21 +50,6 @@ WebInspector.ProfilesPanelDescriptor = function()
             scripts: [ "ProfilesPanel.js" ]
         }
     );
-    this._registerShortcuts();
-}
-
-WebInspector.ProfilesPanelDescriptor.prototype = {
-    _registerShortcuts: function()
-    {
-        var section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Profiles Panel"));
-        section.addAlternateKeys(WebInspector.ProfilesPanelDescriptor.ShortcutKeys.StartStopRecording, WebInspector.UIString("Start/stop recording"));
-    }
-}
-
-WebInspector.ProfilesPanelDescriptor.ShortcutKeys = {
-    StartStopRecording: [
-        WebInspector.KeyboardShortcut.makeDescriptor("e", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
-    ]
 }
 
 WebInspector.ProfilesPanelDescriptor.ProfileURLRegExp = /webkit-profile:\/\/(.+)\/(.+)/;

@@ -45,29 +45,4 @@ WebInspector.TimelinePanelDescriptor = function()
             scripts: [ "TimelinePanel.js" ]
         }
     );
-    this._registerShortcuts();
-}
-
-WebInspector.TimelinePanelDescriptor.prototype = {
-    _registerShortcuts: function()
-    {
-        var section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Timeline Panel"));
-        section.addAlternateKeys(WebInspector.TimelinePanelDescriptor.ShortcutKeys.StartStopRecording, WebInspector.UIString("Start/stop recording"));
-        section.addAlternateKeys(WebInspector.TimelinePanelDescriptor.ShortcutKeys.SaveToFile, WebInspector.UIString("Save timeline data"));
-        section.addAlternateKeys(WebInspector.TimelinePanelDescriptor.ShortcutKeys.LoadFromFile, WebInspector.UIString("Load timeline data"));
-    }
-}
-
-WebInspector.TimelinePanelDescriptor.ShortcutKeys = {
-    StartStopRecording: [
-        WebInspector.KeyboardShortcut.makeDescriptor("e", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
-    ],
-
-    SaveToFile: [
-        WebInspector.KeyboardShortcut.makeDescriptor("s", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
-    ],
-
-    LoadFromFile: [
-        WebInspector.KeyboardShortcut.makeDescriptor("o", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
-    ]
 }

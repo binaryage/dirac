@@ -308,6 +308,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     // set order of some sections explicitly
     WebInspector.shortcutsScreen.section(WebInspector.UIString("Console"));
     WebInspector.shortcutsScreen.section(WebInspector.UIString("Elements Panel"));
+    WebInspector.ShortcutsScreen.registerShortcuts();
 
     this.console = new WebInspector.ConsoleModel();
     this.console.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._resetErrorAndWarningCounts, this);

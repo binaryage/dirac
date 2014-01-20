@@ -211,3 +211,247 @@ WebInspector.ShortcutsSection.prototype = {
         return result;
     }
 }
+
+WebInspector.ShortcutsScreen.registerShortcuts = function()
+{
+    // Elements panel
+    var elementsSection = WebInspector.shortcutsScreen.section(WebInspector.UIString("Elements Panel"));
+
+    var navigate = WebInspector.ShortcutsScreen.ElementsPanelShortcuts.NavigateUp.concat(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.NavigateDown);
+    elementsSection.addRelatedKeys(navigate, WebInspector.UIString("Navigate elements"));
+
+    var expandCollapse = WebInspector.ShortcutsScreen.ElementsPanelShortcuts.Expand.concat(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.Collapse);
+    elementsSection.addRelatedKeys(expandCollapse, WebInspector.UIString("Expand/collapse"));
+
+    elementsSection.addAlternateKeys(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.EditAttribute, WebInspector.UIString("Edit attribute"));
+    elementsSection.addAlternateKeys(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.HideElement, WebInspector.UIString("Hide element"));
+    elementsSection.addAlternateKeys(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.ToggleEditAsHTML, WebInspector.UIString("Toggle edit as HTML"));
+
+    var stylesPaneSection = WebInspector.shortcutsScreen.section(WebInspector.UIString("Styles Pane"));
+
+    var nextPreviousProperty = WebInspector.ShortcutsScreen.ElementsPanelShortcuts.NextProperty.concat(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.PreviousProperty);
+    stylesPaneSection.addRelatedKeys(nextPreviousProperty, WebInspector.UIString("Next/previous property"));
+
+    stylesPaneSection.addRelatedKeys(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.IncrementValue, WebInspector.UIString("Increment value"));
+    stylesPaneSection.addRelatedKeys(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.DecrementValue, WebInspector.UIString("Decrement value"));
+
+    stylesPaneSection.addAlternateKeys(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.IncrementBy10, WebInspector.UIString("Increment by %f", 10));
+    stylesPaneSection.addAlternateKeys(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.DecrementBy10, WebInspector.UIString("Decrement by %f", 10));
+
+    stylesPaneSection.addAlternateKeys(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.IncrementBy100, WebInspector.UIString("Increment by %f", 100));
+    stylesPaneSection.addAlternateKeys(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.DecrementBy100, WebInspector.UIString("Decrement by %f", 100));
+
+    stylesPaneSection.addAlternateKeys(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.IncrementBy01, WebInspector.UIString("Increment by %f", 0.1));
+    stylesPaneSection.addAlternateKeys(WebInspector.ShortcutsScreen.ElementsPanelShortcuts.DecrementBy01, WebInspector.UIString("Decrement by %f", 0.1));
+
+
+    // Sources panel
+    var section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Sources Panel"));
+
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.PauseContinue, WebInspector.UIString("Pause/Continue"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepOver, WebInspector.UIString("Step over"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepInto, WebInspector.UIString("Step into"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepIntoSelection, WebInspector.UIString("Step into selection"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepOut, WebInspector.UIString("Step out"));
+
+    var nextAndPrevFrameKeys = WebInspector.ShortcutsScreen.SourcesPanelShortcuts.NextCallFrame.concat(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.PrevCallFrame);
+    section.addRelatedKeys(nextAndPrevFrameKeys, WebInspector.UIString("Next/previous call frame"));
+
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.EvaluateSelectionInConsole, WebInspector.UIString("Evaluate selection in console"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.AddSelectionToWatch, WebInspector.UIString("Add selection to watch"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToMember, WebInspector.UIString("Go to member"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.ToggleBreakpoint, WebInspector.UIString("Toggle breakpoint"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.ToggleComment, WebInspector.UIString("Toggle comment"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.IncreaseCSSUnitByOne, WebInspector.UIString("Increment CSS unit by 1"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.DecreaseCSSUnitByOne, WebInspector.UIString("Decrement CSS unit by 1"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.IncreaseCSSUnitByTen, WebInspector.UIString("Increment CSS unit by 10"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.DecreaseCSSUnitByTen, WebInspector.UIString("Decrement CSS unit by 10"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToPreviousLocation, WebInspector.UIString("Jump to previous editing location"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToNextLocation, WebInspector.UIString("Jump to next editing location"));
+
+    // Timeline panel
+    section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Timeline Panel"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.TimelinePanelShortcuts.StartStopRecording, WebInspector.UIString("Start/stop recording"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.TimelinePanelShortcuts.SaveToFile, WebInspector.UIString("Save timeline data"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.TimelinePanelShortcuts.LoadFromFile, WebInspector.UIString("Load timeline data"));
+
+
+    // Profiles panel
+    section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Profiles Panel"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.ProfilesPanelShortcuts.StartStopRecording, WebInspector.UIString("Start/stop recording"));
+}
+
+WebInspector.ShortcutsScreen.ElementsPanelShortcuts = {
+    NavigateUp: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Up)
+    ],
+
+    NavigateDown: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Down)
+    ],
+
+    Expand: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Right)
+    ],
+
+    Collapse: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Left)
+    ],
+
+    EditAttribute: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Enter)
+    ],
+
+    HideElement: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.H)
+    ],
+
+    ToggleEditAsHTML: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F2)
+    ],
+
+    NextProperty: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Tab)
+    ],
+
+    PreviousProperty: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Tab, WebInspector.KeyboardShortcut.Modifiers.Shift)
+    ],
+
+    IncrementValue: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Up)
+    ],
+
+    DecrementValue: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Down)
+    ],
+
+    IncrementBy10: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.PageUp),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Up, WebInspector.KeyboardShortcut.Modifiers.Shift)
+    ],
+
+    DecrementBy10: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.PageDown),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Down, WebInspector.KeyboardShortcut.Modifiers.Shift)
+    ],
+
+    IncrementBy100: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.PageUp, WebInspector.KeyboardShortcut.Modifiers.Shift)
+    ],
+
+    DecrementBy100: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.PageDown, WebInspector.KeyboardShortcut.Modifiers.Shift)
+    ],
+
+    IncrementBy01: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.PageUp, WebInspector.KeyboardShortcut.Modifiers.Alt)
+    ],
+
+    DecrementBy01: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.PageDown, WebInspector.KeyboardShortcut.Modifiers.Alt)
+    ]
+};
+
+WebInspector.ShortcutsScreen.SourcesPanelShortcuts = {
+    IncreaseCSSUnitByOne: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Up, WebInspector.KeyboardShortcut.Modifiers.Alt)
+    ],
+
+    DecreaseCSSUnitByOne: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Down, WebInspector.KeyboardShortcut.Modifiers.Alt)
+    ],
+
+    IncreaseCSSUnitByTen: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.PageUp, WebInspector.KeyboardShortcut.Modifiers.Alt)
+    ],
+
+    DecreaseCSSUnitByTen: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.PageDown, WebInspector.KeyboardShortcut.Modifiers.Alt)
+    ],
+
+    RunSnippet: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Enter, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
+    PauseContinue: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F8),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Backslash, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
+    StepOver: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F10),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.SingleQuote, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
+    StepInto: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F11),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Semicolon, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
+    StepIntoSelection: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F11, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F11, WebInspector.KeyboardShortcut.Modifiers.Shift | WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
+    StepOut: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.F11, WebInspector.KeyboardShortcut.Modifiers.Shift),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Semicolon, WebInspector.KeyboardShortcut.Modifiers.Shift | WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
+    EvaluateSelectionInConsole: [
+        WebInspector.KeyboardShortcut.makeDescriptor("e", WebInspector.KeyboardShortcut.Modifiers.Shift | WebInspector.KeyboardShortcut.Modifiers.Ctrl)
+    ],
+
+    AddSelectionToWatch: [
+        WebInspector.KeyboardShortcut.makeDescriptor("a", WebInspector.KeyboardShortcut.Modifiers.Shift | WebInspector.KeyboardShortcut.Modifiers.Ctrl)
+    ],
+
+    GoToMember: [
+        WebInspector.KeyboardShortcut.makeDescriptor("o", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta | WebInspector.KeyboardShortcut.Modifiers.Shift)
+    ],
+
+    ToggleBreakpoint: [
+        WebInspector.KeyboardShortcut.makeDescriptor("b", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
+    NextCallFrame: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Period, WebInspector.KeyboardShortcut.Modifiers.Ctrl)
+    ],
+
+    PrevCallFrame: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Comma, WebInspector.KeyboardShortcut.Modifiers.Ctrl)
+    ],
+
+    ToggleComment: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Slash, WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
+    JumpToPreviousLocation: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Minus, WebInspector.KeyboardShortcut.Modifiers.Alt)
+    ],
+
+    JumpToNextLocation: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Plus, WebInspector.KeyboardShortcut.Modifiers.Alt)
+    ]
+};
+
+WebInspector.ShortcutsScreen.TimelinePanelShortcuts = {
+    StartStopRecording: [
+        WebInspector.KeyboardShortcut.makeDescriptor("e", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
+    SaveToFile: [
+        WebInspector.KeyboardShortcut.makeDescriptor("s", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ],
+
+    LoadFromFile: [
+        WebInspector.KeyboardShortcut.makeDescriptor("o", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ]
+};
+
+WebInspector.ShortcutsScreen.ProfilesPanelShortcuts = {
+    StartStopRecording: [
+        WebInspector.KeyboardShortcut.makeDescriptor("e", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ]
+}

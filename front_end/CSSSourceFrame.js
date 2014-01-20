@@ -42,7 +42,7 @@ WebInspector.CSSSourceFrame = function(uiSourceCode)
 WebInspector.CSSSourceFrame.prototype = {
     _registerShortcuts: function()
     {
-        var shortcutKeys = WebInspector.SourcesPanelDescriptor.ShortcutKeys;
+        var shortcutKeys = WebInspector.ShortcutsScreen.SourcesPanelShortcuts;
         for (var i = 0; i < shortcutKeys.IncreaseCSSUnitByOne.length; ++i)
             this.addShortcut(shortcutKeys.IncreaseCSSUnitByOne[i].key, this._handleUnitModification.bind(this, 1));
         for (var i = 0; i < shortcutKeys.DecreaseCSSUnitByOne.length; ++i)

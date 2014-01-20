@@ -480,7 +480,7 @@ WebInspector.ProfilesPanel.prototype = {
 
     _registerShortcuts: function()
     {
-        this.registerShortcuts(WebInspector.ProfilesPanelDescriptor.ShortcutKeys.StartStopRecording, this.toggleRecordButton.bind(this));
+        this.registerShortcuts(WebInspector.ShortcutsScreen.ProfilesPanelShortcuts.StartStopRecording, this.toggleRecordButton.bind(this));
     },
 
     _configureCpuProfilerSamplingInterval: function()

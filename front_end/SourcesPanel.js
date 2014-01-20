@@ -156,12 +156,12 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     }
 
     this._historyManager = new WebInspector.EditingLocationHistoryManager(this, currentSourceFrame.bind(this));
-    this.registerShortcuts(WebInspector.SourcesPanelDescriptor.ShortcutKeys.JumpToPreviousLocation, this._onJumpToPreviousLocation.bind(this));
-    this.registerShortcuts(WebInspector.SourcesPanelDescriptor.ShortcutKeys.JumpToNextLocation, this._onJumpToNextLocation.bind(this));
+    this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToPreviousLocation, this._onJumpToPreviousLocation.bind(this));
+    this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToNextLocation, this._onJumpToNextLocation.bind(this));
 
     this.sidebarPanes.callstack.registerShortcuts(this.registerShortcuts.bind(this));
-    this.registerShortcuts(WebInspector.SourcesPanelDescriptor.ShortcutKeys.GoToMember, this._showOutlineDialog.bind(this));
-    this.registerShortcuts(WebInspector.SourcesPanelDescriptor.ShortcutKeys.ToggleBreakpoint, this._toggleBreakpoint.bind(this));
+    this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToMember, this._showOutlineDialog.bind(this));
+    this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.ToggleBreakpoint, this._toggleBreakpoint.bind(this));
 
     this._extensionSidebarPanes = [];
 
@@ -1098,13 +1098,13 @@ WebInspector.SourcesPanel.prototype = {
         // Run snippet.
         title = WebInspector.UIString("Run snippet (%s).");
         handler = this._runSnippet.bind(this);
-        this._runSnippetButton = this._createButtonAndRegisterShortcuts("scripts-run-snippet", title, handler, WebInspector.SourcesPanelDescriptor.ShortcutKeys.RunSnippet);
+        this._runSnippetButton = this._createButtonAndRegisterShortcuts("scripts-run-snippet", title, handler, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.RunSnippet);
         debugToolbar.appendChild(this._runSnippetButton.element);
         this._runSnippetButton.element.classList.add("hidden");
 
         // Continue.
         handler = this._togglePause.bind(this);
-        this._pauseButton = this._createButtonAndRegisterShortcuts("scripts-pause", "", handler, WebInspector.SourcesPanelDescriptor.ShortcutKeys.PauseContinue);
+        this._pauseButton = this._createButtonAndRegisterShortcuts("scripts-pause", "", handler, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.PauseContinue);
         debugToolbar.appendChild(this._pauseButton.element);
 
         // Long resume.
@@ -1115,22 +1115,22 @@ WebInspector.SourcesPanel.prototype = {
         // Step over.
         title = WebInspector.UIString("Step over next function call (%s).");
         handler = this._stepOverClicked.bind(this);
-        this._stepOverButton = this._createButtonAndRegisterShortcuts("scripts-step-over", title, handler, WebInspector.SourcesPanelDescriptor.ShortcutKeys.StepOver);
+        this._stepOverButton = this._createButtonAndRegisterShortcuts("scripts-step-over", title, handler, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepOver);
         debugToolbar.appendChild(this._stepOverButton.element);
 
         // Step into.
         title = WebInspector.UIString("Step into next function call (%s).");
         handler = this._stepIntoClicked.bind(this);
-        this._stepIntoButton = this._createButtonAndRegisterShortcuts("scripts-step-into", title, handler, WebInspector.SourcesPanelDescriptor.ShortcutKeys.StepInto);
+        this._stepIntoButton = this._createButtonAndRegisterShortcuts("scripts-step-into", title, handler, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepInto);
         debugToolbar.appendChild(this._stepIntoButton.element);
 
         // Step into selection (keyboard shortcut only).
-        this.registerShortcuts(WebInspector.SourcesPanelDescriptor.ShortcutKeys.StepIntoSelection, this._stepIntoSelectionClicked.bind(this))
+        this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepIntoSelection, this._stepIntoSelectionClicked.bind(this))
 
         // Step out.
         title = WebInspector.UIString("Step out of current function (%s).");
         handler = this._stepOutClicked.bind(this);
-        this._stepOutButton = this._createButtonAndRegisterShortcuts("scripts-step-out", title, handler, WebInspector.SourcesPanelDescriptor.ShortcutKeys.StepOut);
+        this._stepOutButton = this._createButtonAndRegisterShortcuts("scripts-step-out", title, handler, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepOut);
         debugToolbar.appendChild(this._stepOutButton.element);
 
         // Toggle Breakpoints
