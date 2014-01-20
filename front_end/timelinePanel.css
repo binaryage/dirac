@@ -93,6 +93,10 @@
     overflow-x: hidden;
 }
 
+.timeline-records-view {
+    overflow: hidden !important;
+}
+
 .timeline-details-split {
     flex: auto;
 }
@@ -502,6 +506,7 @@
 
 #memory-graphs-container .split-view-contents-first {
     background-color: rgb(236, 236, 236);
+    overflow-y: hidden;
 }
 
 #memory-graphs-container .sidebar-tree-section {

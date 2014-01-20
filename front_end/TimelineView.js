@@ -100,6 +100,7 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     this._stackView = new WebInspector.StackView(false);
     this._stackView.show(this._searchableView.element);
     this._recordsViewMainElement = this._stackView.appendView(this._recordsView, "timeline-records").mainElement();
+    this._recordsViewMainElement.classList.add("timeline-records-view");
     this._recordsViewMainElement.appendChild(this._timelineGrid.gridHeaderElement);
 
     if (this._currentMode === WebInspector.TimelinePanel.Mode.Memory) {
