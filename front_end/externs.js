@@ -344,10 +344,6 @@ WebInspector.Events = {
     InspectorClosing: "InspectorClosing"
 }
 
-/** @type {!WebInspector.SettingsController} */
-WebInspector.settingsController;
-
-
 /**
  * @return {number}
  */
@@ -589,13 +585,6 @@ CodeMirror.keyMap;
 
 WebInspector.suggestReload = function() { }
 WebInspector.reload = function() { }
-
-WebInspector.settings.continuousPainting = /** type {WebInspector.Setting} */ { }
-WebInspector.settings.showDebugBorders = /** type {WebInspector.Setting} */ { }
-WebInspector.settings.showScrollBottleneckRects = /** type {WebInspector.Setting} */ { }
-WebInspector.settings.forceCompositingMode = /** type {WebInspector.Setting} */ { }
-WebInspector.settings.showFPSCounter = /** type {WebInspector.Setting} */ { }
-WebInspector.settings.showPaintRects = /** type {WebInspector.Setting} */ { }
 
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;

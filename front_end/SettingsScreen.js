@@ -1170,3 +1170,6 @@ WebInspector.EditableSettingsList.prototype = {
 
     __proto__: WebInspector.SettingsList.prototype
 }
+
+/** @type {!WebInspector.SettingsController} */
+WebInspector.settingsController;
