@@ -93,7 +93,9 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     this._searchableView = new WebInspector.SearchableView(this);
     this._detailsSplitView.setMainView(this._searchableView);
 
+    this._views = [];
     this._recordsView = this._createRecordsView();
+    this._views.push(this._recordsView);
 
     this._stackView = new WebInspector.StackView(false);
     this._stackView.show(this._searchableView.element);
@@ -103,8 +105,9 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     if (this._currentMode === WebInspector.TimelinePanel.Mode.Memory) {
         // Create memory statistics as a bottom memory splitter child.
         this._memoryStatistics = new WebInspector.CountersGraph(this, this._model);
+        this._views.push(this._memoryStatistics);
+        this._memoryStatistics.addEventListener(WebInspector.TimelineView.Events.SidebarResized, this._sidebarResized, this);
         this._stackView.appendView(this._memoryStatistics, "timeline-memory");
-        this._memoryStatistics.setMainTimelineGrid(this._timelineGrid);
     }
 
     this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
@@ -137,6 +140,10 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
         this._overviewControl = new WebInspector.TimelineMemoryOverview(this._model);
         break;
     }
+}
+
+WebInspector.TimelineView.Events = {
+    SidebarResized: "SidebarResized"
 }
 
 WebInspector.TimelineView.commonUIFilters = function()
@@ -522,13 +529,14 @@ WebInspector.TimelineView.prototype = {
         return hasVisibleRecords || records.some(isAdoptedRecord);
     },
 
-    _sidebarResized: function()
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _sidebarResized: function(event)
     {
-        var width = this._recordsView.sidebarWidth();
+        var width = /** @type {number} */(event.data);
+        this.setSidebarWidth(width);
         this._panel.setSidebarWidth(width);
-        if (this._currentMode === WebInspector.TimelinePanel.Mode.Memory)
-            this._memoryStatistics.setSidebarWidth(width);
-        this._timelineGrid.gridHeaderElement.style.left = width + "px";
     },
 
     /**
@@ -536,8 +544,9 @@ WebInspector.TimelineView.prototype = {
      */
     setSidebarWidth: function(width)
     {
-        if (this._currentMode === WebInspector.TimelinePanel.Mode.Memory)
-            this._recordsView.setSidebarWidth(width);
+        this._timelineGrid.gridHeaderElement.style.left = width + "px";
+        for (var i = 0; i < this._views.length; ++i)
+            this._views[i].setSidebarWidth(width);
     },
 
     _onViewportResize: function()

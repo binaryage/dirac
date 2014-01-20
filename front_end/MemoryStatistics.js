@@ -185,14 +185,6 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TimelineGrid} timelineGrid
-     */
-    setMainTimelineGrid: function(timelineGrid)
-    {
-        this._mainTimelineGrid = timelineGrid;
-    },
-
-    /**
      * @return {number}
      */
     height: function()
@@ -205,11 +197,7 @@ WebInspector.MemoryStatistics.prototype = {
      */
     setSidebarWidth: function(width)
     {
-        if (this._ignoreSidebarResize)
-            return;
-        this._ignoreSidebarResize = true;
         this._memorySidebarView.setSidebarWidth(width);
-        this._ignoreSidebarResize = false;
     },
 
     /**
@@ -217,11 +205,8 @@ WebInspector.MemoryStatistics.prototype = {
      */
     _sidebarResized: function(event)
     {
-        if (this._ignoreSidebarResize)
-            return;
-        this._ignoreSidebarResize = true;
-        this._timelineView.setSidebarWidth(/** @type {number} */(event.data));
-        this._ignoreSidebarResize = false;
+        this.dispatchEventToListeners(WebInspector.TimelineView.Events.SidebarResized, /** @type {number} */(event.data));
+        this.onResize();
     },
 
     _canvasHeight: function()
@@ -231,7 +216,7 @@ WebInspector.MemoryStatistics.prototype = {
 
     onResize: function()
     {
-        var width = this._mainTimelineGrid.dividersElement.offsetWidth + 1;
+        var width = this._canvasContainer.offsetWidth + 1;
 
         this._canvas.style.width = width + "px";
         this._timelineGrid.dividersElement.style.width = width + "px";
@@ -239,7 +224,7 @@ WebInspector.MemoryStatistics.prototype = {
 
         this._canvas.width = width;
         this._canvas.height = parentElement.clientHeight - 15;
-        this.draw();
+        this.refresh();
     },
 
     /**
@@ -382,14 +367,9 @@ WebInspector.MemoryStatistics.prototype = {
 
     refresh: function()
     {
-        this._refreshDividers();
+        this._timelineGrid.updateDividers(this._timelineView.calculator);
         this.draw();
         this._refreshCurrentValues();
-    },
-
-    _refreshDividers: function()
-    {
-        this._timelineGrid.updateDividers(this._timelineView.calculator);
     },
 
     _setVerticalClip: function(originY, height)
