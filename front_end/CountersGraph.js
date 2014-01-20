@@ -214,24 +214,15 @@ WebInspector.CountersGraph.prototype = {
         function addStatistics(record)
         {
             var counters = record["counters"];
-            var isGPURecord = record.data && typeof record.data["usedGPUMemoryBytes"] !== "undefined";
-            if (isGPURecord) {
-                counters = counters || {
-                    "startTime": record.startTime,
-                    "endTime": record.endTime
-                };
-                counters["usedGPUMemoryKBytes"] = Math.round(record.data["usedGPUMemoryBytes"] / 1024);
-            }
             if (!counters)
                 return;
-
             var time = record.endTime || record.startTime;
             var counter = new WebInspector.CountersGraph.Counter(
                 time,
                 counters["documents"],
                 counters["nodes"],
                 counters["jsEventListeners"],
-                counters["usedGPUMemoryKBytes"]
+                counters["gpuMemoryUsedKB"]
             );
 
             function compare(record, time)
@@ -240,7 +231,7 @@ WebInspector.CountersGraph.prototype = {
             }
             var index = findInsertionLocation(this._counters, time, compare);
             this._counters.splice(index, 0, counter);
-            if (isGPURecord) {
+            if ("gpuMemoryUsedKB" in counters) {
                 // Populate missing values from preceeding records.
                 // FIXME: Refactor the code to make each WebInspector.CountersGraph.Counter
                 // be responsible for a single graph to avoid such synchronizations.
