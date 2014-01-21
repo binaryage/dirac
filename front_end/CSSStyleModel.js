@@ -560,7 +560,7 @@ WebInspector.CSSStyleModel.prototype = {
         var header = this._styleSheetIdToHeader[styleSheetId];
         console.assert(header);
         this._pendingCommandsMajorState.push(majorChange);
-        header.setContent(styleSheetId, newText, callback.bind(this));
+        header.setContent(newText, callback.bind(this));
 
         /**
          * @param {?Protocol.Error} error
@@ -1581,16 +1581,15 @@ WebInspector.CSSStyleSheetHeader.prototype = {
     },
 
     /**
-     * @param {!CSSAgent.StyleSheetId} styleSheetId
      * @param {string} newText
      * @param {function(?Protocol.Error)} callback
      */
-    setContent: function(styleSheetId, newText, callback)
+    setContent: function(newText, callback)
     {
         newText = this._trimSourceURL(newText);
         if (this.hasSourceURL)
             newText += "\n/*# sourceURL=" + this.sourceURL + " */";
-        CSSAgent.setStyleSheetText(styleSheetId, newText, callback);
+        CSSAgent.setStyleSheetText(this.id, newText, callback);
     },
 }
 
