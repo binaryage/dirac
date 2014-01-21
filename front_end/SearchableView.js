@@ -272,8 +272,8 @@ WebInspector.SearchableView.prototype = {
     handleFindNextShortcut: function()
     {
         if (!this._searchIsVisible)
-            return true;
-        this._searchProvider.jumpToPreviousSearchResult();
+            return false;
+        this._searchProvider.jumpToNextSearchResult();
         return true;
     },
 
@@ -283,8 +283,8 @@ WebInspector.SearchableView.prototype = {
     handleFindPreviousShortcut: function()
     {
         if (!this._searchIsVisible)
-            return true;
-        this._searchProvider.jumpToNextSearchResult();
+            return false;
+        this._searchProvider.jumpToPreviousSearchResult();
         return true;
     },
 
