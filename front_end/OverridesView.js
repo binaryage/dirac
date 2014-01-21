@@ -353,10 +353,10 @@ WebInspector.OverridesView.DeviceTab._phones = [
 ];
 
 WebInspector.OverridesView.DeviceTab._tablets = [
-    ["Amazon Amazon Kindle Fire HD 7\"",
+    ["Amazon Amazon Kindle Fire HD 7\u2033",
      "Mozilla/5.0 (Linux; U; Android 2.3.4; en-us; Kindle Fire HD Build/GINGERBREAD) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1",
      "1280x800x1.5"],
-    ["Amazon Amazon Kindle Fire HD 8.9\"",
+    ["Amazon Amazon Kindle Fire HD 8.9\u2033",
      "Mozilla/5.0 (Linux; U; Android 2.3.4; en-us; Kindle Fire HD Build/GINGERBREAD) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533.1",
      "1920x1200x1.5"],
     ["Amazon Amazon Kindle Fire",
@@ -672,6 +672,12 @@ WebInspector.OverridesView.UserAgentTab = function()
 }
 
 WebInspector.OverridesView.UserAgentTab._userAgents = [
+    ["Chrome 31 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.16 Safari/537.36"],
+    ["Chrome 31 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36"],
+
+    ["Opera 18 \u2014 Windows", "Mozilla/5.0 (Windows NT 6.1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36 OPR/18.0.1284.68"],
+    ["Opera 18 \u2014 Mac", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1650.63 Safari/537.36 OPR/18.0.1284.68"],
+
     ["Internet Explorer 10", "Mozilla/5.0 (compatible; MSIE 10.0; Windows NT 6.2; Trident/6.0)"],
     ["Internet Explorer 9", "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)"],
     ["Internet Explorer 8", "Mozilla/4.0 (compatible; MSIE 8.0; Windows NT 6.0; Trident/4.0)"],
