@@ -55,7 +55,6 @@
             'front_end/CookiesTable.js',
             'front_end/CountersGraph.js',
             'front_end/CPUProfilerModel.js',
-            'front_end/CSSFormatter.js',
             'front_end/CSSMetadata.js',
             'front_end/CSSStyleModel.js',
             'front_end/CSSStyleSheetMapping.js',
@@ -108,7 +107,6 @@
             'front_end/inspector.js',
             'front_end/IsolatedFileSystem.js',
             'front_end/IsolatedFileSystemManager.js',
-            'front_end/JavaScriptFormatter.js',
             'front_end/jsdifflib.js',
             'front_end/KeyboardShortcut.js',
             'front_end/LayersPanelDescriptor.js',
@@ -149,7 +147,6 @@
             'front_end/ScreencastView.js',
             'front_end/Script.js',
             'front_end/ScriptFormatter.js',
-            'front_end/ScriptFormatterWorker.js',
             'front_end/ScriptSnippetModel.js',
             'front_end/SearchableView.js',
             'front_end/SettingsScreen.js',
@@ -483,6 +480,12 @@
         ],
         'devtools_temp_storage_shared_worker_js_files': [
             'front_end/TempStorageSharedWorker.js',
+        ],
+        'devtools_script_formatter_worker_js_files': [
+            'front_end/CSSFormatter.js',
+            'front_end/JavaScriptFormatter.js',
+            'front_end/ScriptFormatterWorker.js',
+            'front_end/utilities.js',
         ],
     },
 }

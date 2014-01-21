@@ -31,7 +31,6 @@
             "ContentProviders.js",
             "CookieParser.js",
             "CPUProfilerModel.js",
-            "CSSFormatter.js",
             "CSSMetadata.js",
             "CSSStyleModel.js",
             "CSSStyleSheetMapping.js",
@@ -51,7 +50,6 @@
             "InspectorBackend.js",
             "IsolatedFileSystemManager.js",
             "IsolatedFileSystem.js",
-            "JavaScriptFormatter.js",
             "Linkifier.js",
             "NetworkLog.js",
             "NetworkUISourceCodeProvider.js",
@@ -61,7 +59,6 @@
             "SASSSourceMapping.js",
             "Script.js",
             "ScriptFormatter.js",
-            "ScriptFormatterWorker.js",
             "ScriptSnippetModel.js",
             "SimpleWorkspaceProvider.js",
             "SnippetStorage.js",
@@ -385,6 +382,18 @@
         "sources": [
             "InspectorFrontendAPI.js",
             "InspectorFrontendHostStub.js"
+        ]
+    },
+    {
+        "name": "script_formatter_worker",
+        "standalone": true,
+        "dependencies": [],
+        "sources": [
+            "CSSFormatter.js",
+            "CodeMirrorUtils.js",
+            "JavaScriptFormatter.js",
+            "ScriptFormatterWorker.js",
+            "utilities.js"
         ]
     },
     {

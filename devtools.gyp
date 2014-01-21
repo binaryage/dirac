@@ -61,41 +61,44 @@
             'copies': [
                 {
                     'destination': '<(PRODUCT_DIR)/resources/inspector',
-                    'files': [
-                        '<@(devtools_files)',
-                        '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
-                    ],
                     'conditions': [
-                        ['debug_devtools==0', {
-                            'files/': [['exclude', '\\.(js|css|html)$']],
-                        },
-                        {
+                        ['debug_devtools==1', {
                             'files': [
+                                '<@(devtools_files)',
+                                '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
                                 '<@(devtools_heap_snapshot_worker_js_files)',
                                 '<@(devtools_temp_storage_shared_worker_js_files)',
+                                '<@(devtools_script_formatter_worker_js_files)',
                             ],
+                        },
+                        {
+                            'files': [],
                         }],
                     ],
                 },
                 {
                     'destination': '<(PRODUCT_DIR)/resources/inspector/UglifyJS',
-                    'files': [
-                        '<@(devtools_uglify_files)',
-                    ],
                     'conditions': [
-                        ['debug_devtools==0', {
-                            'files/': [['exclude', '\\.(js|css|html)$']],
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_uglify_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
                         }],
                     ],
                 },
                 {
                     'destination': '<(PRODUCT_DIR)/resources/inspector/cm',
-                    'files': [
-                        '<@(devtools_cm_files)',
-                    ],
                     'conditions': [
-                        ['debug_devtools==0', {
-                            'files/': [['exclude', '\\.(js|css|html)$']],
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_cm_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
                         }],
                     ],
                 },
