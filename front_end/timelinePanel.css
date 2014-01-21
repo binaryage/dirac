@@ -608,12 +608,13 @@
 .timeline-utilization-strips {
     height: 19px;
     padding: 1px 0;
+    justify-content: center;
 }
 
 .timeline-utilization-strip {
     z-index: 350;
     overflow: hidden;
-    flex: auto;
+    flex: 0 1 12px;
     position: relative;
 }
 
