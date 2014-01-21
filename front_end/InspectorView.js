@@ -58,7 +58,7 @@ WebInspector.InspectorView = function()
     this._devtoolsElement.classList.add("vbox");
 
     this._tabbedPane = new WebInspector.TabbedPane();
-    this._tabbedPane.setRetainTabOrder(true);
+    this._tabbedPane.setRetainTabOrder(true, WebInspector.moduleManager.orderComparator(WebInspector.Panel, "name", "order"));
     this._splitView.setSidebarView(this._tabbedPane);
 
     this._toolbarElement = document.createElement("div");

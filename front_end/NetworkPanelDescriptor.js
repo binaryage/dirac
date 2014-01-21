@@ -40,6 +40,7 @@ WebInspector.NetworkPanelDescriptor = function()
                     type: "@WebInspector.Panel",
                     name: "network",
                     title: "Network",
+                    order: 1,
                     className: "WebInspector.NetworkPanel"
                 },
                 {

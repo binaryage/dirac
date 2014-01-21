@@ -39,6 +39,7 @@ WebInspector.TimelinePanelDescriptor = function()
                     type: "@WebInspector.Panel",
                     name: "timeline",
                     title: "Timeline",
+                    order: 3,
                     className: "WebInspector.TimelinePanel"
                 }
             ],

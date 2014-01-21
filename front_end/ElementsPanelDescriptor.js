@@ -39,6 +39,7 @@ WebInspector.ElementsPanelDescriptor = function()
                     type: "@WebInspector.Panel",
                     name: "elements",
                     title: "Elements",
+                    order: 0,
                     className: "WebInspector.ElementsPanel"
                 },
                 {

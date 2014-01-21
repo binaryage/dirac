@@ -85,6 +85,39 @@ WebInspector.ModuleManager.prototype = {
             return extension.instance();
         }
         return this.extensions(type).filter(instantiate).map(instantiate);
+    },
+
+    /**
+     * @param {string|!Function} type
+     * @param {string} nameProperty
+     * @param {string} orderProperty
+     * @return {function(string, string):number}
+     */
+    orderComparator: function(type, nameProperty, orderProperty)
+    {
+        var extensions = this.extensions(type);
+        var orderForName = {};
+        for (var i = 0; i < extensions.length; ++i) {
+            var descriptor = extensions[i].descriptor();
+            orderForName[descriptor[nameProperty]] = descriptor[orderProperty];
+        }
+
+        /**
+         * @param {string} name1
+         * @param {string} name2
+         * @return {number}
+         */
+        function result(name1, name2)
+        {
+            if (name1 in orderForName && name2 in orderForName)
+                return orderForName[name1] - orderForName[name2];
+            if (name1 in orderForName)
+                return -1;
+            if (name2 in orderForName)
+                return 1;
+            return name1.compareTo(name2);
+        }
+        return result;
     }
 }
 

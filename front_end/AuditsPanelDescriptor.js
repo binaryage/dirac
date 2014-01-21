@@ -39,6 +39,7 @@ WebInspector.AuditsPanelDescriptor = function()
                     type: "@WebInspector.Panel",
                     name: "audits",
                     title: "Audits",
+                    order: 6,
                     className: "WebInspector.AuditsPanel"
                 }
             ],

@@ -95,12 +95,12 @@ WebInspector.TabbedPane.prototype = {
 
     /**
      * @param {boolean} retainTabOrder
-     * @param {function(string):(number|string)=} tabOrderFunction
+     * @param {function(string, string):number=} tabOrderComparator
      */
-    setRetainTabOrder: function(retainTabOrder, tabOrderFunction)
+    setRetainTabOrder: function(retainTabOrder, tabOrderComparator)
     {
         this._retainTabOrder = retainTabOrder;
-        this._tabOrderFunction = tabOrderFunction;
+        this._tabOrderComparator = tabOrderComparator;
     },
 
     /**
@@ -171,14 +171,10 @@ WebInspector.TabbedPane.prototype = {
          */
         function comparator(tab1, tab2)
         {
-            var order1 = this._tabOrderFunction(tab1.id);
-            var order2 = this._tabOrderFunction(tab2.id);
-            if (order1 > order2)
-                return 1;
-            return order1 < order2 ? -1 : 0;
+            return this._tabOrderComparator(tab1.id, tab2.id);
         }
 
-        if (this._retainTabOrder && this._tabOrderFunction)
+        if (this._retainTabOrder && this._tabOrderComparator)
             this._tabs.splice(insertionIndexForObjectInListSortedByFunction(tab, this._tabs, comparator.bind(this)), 0, tab);
         else
             this._tabs.push(tab);

@@ -39,6 +39,7 @@ WebInspector.SourcesPanelDescriptor = function()
                     type: "@WebInspector.Panel",
                     name: "sources",
                     title: "Sources",
+                    order: 2,
                     className: "WebInspector.SourcesPanel"
                 },
                 {

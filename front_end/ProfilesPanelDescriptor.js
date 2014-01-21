@@ -39,6 +39,7 @@ WebInspector.ProfilesPanelDescriptor = function()
                     type: "@WebInspector.Panel",
                     name: "profiles",
                     title: "Profiles",
+                    order: 4,
                     className: "WebInspector.ProfilesPanel"
                 },
                 {

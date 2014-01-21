@@ -232,6 +232,17 @@ String.prototype.endsWith = function(substring)
 }
 
 /**
+ * @return {number}
+ */
+String.prototype.hashCode = function()
+{
+    var result = 0;
+    for (var i = 0; i < this.length; ++i)
+        result = result * 31 + this.charCodeAt();
+    return result;
+}
+
+/**
  * @param {string} a
  * @param {string} b
  * @return {number}

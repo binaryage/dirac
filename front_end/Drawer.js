@@ -49,7 +49,7 @@ WebInspector.Drawer = function(inspectorView)
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.closeableTabs = false;
     this._tabbedPane.markAsRoot();
-    this._tabbedPane.setRetainTabOrder(true, this._tabOrderFunction.bind(this));
+    this._tabbedPane.setRetainTabOrder(true, WebInspector.moduleManager.orderComparator(WebInspector.Drawer.ViewFactory, "name", "order"));
 
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabClosed, this._updateTabStrip, this);
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
@@ -83,23 +83,6 @@ WebInspector.Drawer.prototype = {
                 this._tabbedPane.appendTab(id, title, new WebInspector.View());
             }
         }
-    },
-
-    /**
-     * @param {string} id
-     * @return {number|string}
-     */
-    _tabOrderFunction: function(id)
-    {
-        var factory = this._viewFactories[id];
-        if (!factory)
-            return id;
-
-        var descriptor = factory.descriptor();
-        var order = descriptor["order"];
-        if (!("order" in descriptor))
-            return descriptor["name"];
-        return descriptor["order"];
     },
 
     /**
@@ -201,7 +184,7 @@ WebInspector.Drawer.prototype = {
      */
     show: function(immediately)
     {
-        this.showView(this._tabbedPane.selectedTabId, immediately);
+        this.showView(this._lastSelectedViewSetting.get(), immediately);
     },
 
     showOnLoadIfNecessary: function()

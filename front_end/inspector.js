@@ -49,6 +49,7 @@ var WebInspector = {
                             type: "@WebInspector.Panel",
                             name: "resources",
                             title: "Resources",
+                            order: 5,
                             className: "WebInspector.ResourcesPanel"
                         }
                     ],
@@ -68,6 +69,7 @@ var WebInspector = {
                         type: "@WebInspector.Panel",
                         name: "console",
                         title: "Console",
+                        order: 10,
                         className: "WebInspector.ConsolePanel"
                     },
                     {
@@ -382,6 +384,9 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     new WebInspector.CSSStyleSheetMapping(this.cssModel, this.workspace, this.networkWorkspaceProvider);
     new WebInspector.PresentationConsoleMessageHelper(this.workspace);
 
+    // Create settings before loading modules.
+    WebInspector.settings.initializeBackendSettings();
+
     this._registerPanelModules();
 
     this.panels = {};
@@ -413,8 +418,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     this.cpuProfilerModel = new WebInspector.CPUProfilerModel();
     HeapProfilerAgent.enable();
-
-    WebInspector.settings.initializeBackendSettings();
 
     if (WebInspector.settings.showPaintRects.get() || WebInspector.settings.showDebugBorders.get() || WebInspector.settings.continuousPainting.get() ||
             WebInspector.settings.showFPSCounter.get() || WebInspector.settings.showScrollBottleneckRects.get()) {
