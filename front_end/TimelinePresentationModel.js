@@ -1174,6 +1174,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         fragment.appendChild(pie.element);
 
         var contentHelper = new WebInspector.TimelineDetailsContentHelper(true);
+        contentHelper.appendTextRow(WebInspector.UIString("Started at"), Number.secondsToString(this._startTimeOffset));
 
         if (this.coalesced)
             return fragment;
