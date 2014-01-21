@@ -29,7 +29,6 @@
 
 /**
  * @constructor
- * @implements {WebInspector.ViewFactory}
  * @param {!WebInspector.InspectorView} inspectorView
  */
 WebInspector.Drawer = function(inspectorView)
@@ -47,13 +46,10 @@ WebInspector.Drawer = function(inspectorView)
     this._toggleDrawerButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show drawer."), "console-status-bar-item");
     this._toggleDrawerButton.addEventListener("click", this.toggle, this);
 
-    this._viewFactories = [];
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.closeableTabs = false;
     this._tabbedPane.markAsRoot();
-
-    // Register console early for it to be the first in the list.
-    this.registerView("console", WebInspector.UIString("Console"), this);
+    this._tabbedPane.setRetainTabOrder(true, this._tabOrderFunction.bind(this));
 
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabClosed, this._updateTabStrip, this);
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
@@ -61,9 +57,63 @@ WebInspector.Drawer = function(inspectorView)
     this._tabbedPane.element.createChild("div", "drawer-resizer");
     this._showDrawerOnLoadSetting = WebInspector.settings.createSetting("WebInspector.Drawer.showOnLoad", false);
     this._lastSelectedViewSetting = WebInspector.settings.createSetting("WebInspector.Drawer.lastSelectedView", "console");
+    this._initialize();
 }
 
 WebInspector.Drawer.prototype = {
+    _initialize: function()
+    {
+        this._viewFactories = {};
+        var extensions = WebInspector.moduleManager.extensions(WebInspector.Drawer.ViewFactory);
+
+        for (var i = 0; i < extensions.length; ++i) {
+            var descriptor = extensions[i].descriptor();
+            var id = descriptor["name"];
+            var title = WebInspector.UIString(descriptor["title"]);
+            var settingName = descriptor["setting"];
+            var setting = settingName ? /** @type {!WebInspector.Setting|undefined} */ (WebInspector.settings[settingName]) : null;
+
+            this._viewFactories[id] = extensions[i];
+
+            if (setting) {
+                setting.addChangeListener(this._toggleSettingBasedView.bind(this, id, title, setting));
+                if (setting.get())
+                    this._tabbedPane.appendTab(id, title, new WebInspector.View());
+            } else {
+                this._tabbedPane.appendTab(id, title, new WebInspector.View());
+            }
+        }
+    },
+
+    /**
+     * @param {string} id
+     * @return {number|string}
+     */
+    _tabOrderFunction: function(id)
+    {
+        var factory = this._viewFactories[id];
+        if (!factory)
+            return id;
+
+        var descriptor = factory.descriptor();
+        var order = descriptor["order"];
+        if (!("order" in descriptor))
+            return descriptor["name"];
+        return descriptor["order"];
+    },
+
+    /**
+     * @param {string} id
+     * @param {string} title
+     * @param {!WebInspector.Setting} setting
+     */
+    _toggleSettingBasedView: function(id, title, setting)
+    {
+        this._tabbedPane.closeTab(id);
+        if (setting.get())
+            this._tabbedPane.appendTab(id, title, new WebInspector.View());
+    },
+
     /**
      * @return {!Element}
      */
@@ -102,38 +152,6 @@ WebInspector.Drawer.prototype = {
 
     /**
      * @param {string} id
-     * @param {string} title
-     * @param {!WebInspector.ViewFactory} factory
-     */
-    registerView: function(id, title, factory)
-    {
-        if (this._tabbedPane.hasTab(id))
-            this._tabbedPane.closeTab(id);
-        this._viewFactories[id] = factory;
-        this._tabbedPane.appendTab(id, title, new WebInspector.View());
-    },
-
-    /**
-     * @param {string} id
-     */
-    unregisterView: function(id)
-    {
-        if (this._tabbedPane.hasTab(id))
-            this._tabbedPane.closeTab(id);
-        delete this._viewFactories[id];
-    },
-
-    /**
-     * @param {string=} id
-     * @return {?WebInspector.View}
-     */
-    createView: function(id)
-    {
-        return WebInspector.panel("console").createView(id);
-    },
-
-    /**
-     * @param {string} id
      */
     closeView: function(id)
     {
@@ -148,10 +166,13 @@ WebInspector.Drawer.prototype = {
     {
         if (!this._toggleDrawerButton.enabled())
             return;
-        if (this._viewFactories[id])
-            this._tabbedPane.changeTabView(id, this._viewFactories[id].createView(id));
+        var viewFactory = this._viewFactory(id);
+        if (viewFactory)
+            this._tabbedPane.changeTabView(id, viewFactory.createView());
         this._innerShow(immediately);
         this._tabbedPane.selectTab(id, true);
+        // In case this id is already selected, anyways persist it as the last saved value.
+        this._lastSelectedViewSetting.set(id);
         this._updateTabStrip();
     },
 
@@ -366,13 +387,17 @@ WebInspector.Drawer.prototype = {
         this._tabbedPane.doResize();
     },
 
-    _tabSelected: function()
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _tabSelected: function(event)
     {
         var tabId = this._tabbedPane.selectedTabId;
-        if (!this._tabbedPane.isTabCloseable(tabId))
+        if (event.data["isUserGesture"] && !this._tabbedPane.isTabCloseable(tabId))
             this._lastSelectedViewSetting.set(tabId);
-        if (this._viewFactories[tabId])
-            this._tabbedPane.changeTabView(tabId, this._viewFactories[tabId].createView(tabId));
+        var viewFactory = this._viewFactory(tabId);
+        if (viewFactory)
+            this._tabbedPane.changeTabView(tabId, viewFactory.createView());
     },
 
     toggle: function()
@@ -397,5 +422,50 @@ WebInspector.Drawer.prototype = {
     selectedViewId: function()
     {
         return this._tabbedPane.selectedTabId;
+    },
+
+    /**
+     * @return {?WebInspector.Drawer.ViewFactory}
+     */
+    _viewFactory: function(id)
+    {
+        return this._viewFactories[id] ? /** @type {!WebInspector.Drawer.ViewFactory} */ (this._viewFactories[id].instance()) : null;
+    }
+}
+
+/**
+ * @interface
+ */
+WebInspector.Drawer.ViewFactory = function()
+{
+}
+
+WebInspector.Drawer.ViewFactory.prototype = {
+    /**
+     * @return {!WebInspector.View}
+     */
+    createView: function() {}
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.Drawer.ViewFactory}
+ * @param {function(new:T)} constructor
+ * @template T
+ */
+WebInspector.Drawer.SingletonViewFactory = function(constructor)
+{
+    this._constructor = constructor;
+}
+
+WebInspector.Drawer.SingletonViewFactory.prototype = {
+    /**
+     * @return {!WebInspector.View}
+     */
+    createView: function()
+    {
+        if (!this._instance)
+            this._instance = /** @type {!WebInspector.View} */(new this._constructor());
+        return this._instance;
     }
 }

@@ -40,7 +40,6 @@ importScript("StylesSidebarPane.js");
 
 /**
  * @constructor
- * @implements {WebInspector.ViewFactory}
  * @implements {WebInspector.Searchable}
  * @extends {WebInspector.Panel}
  */
@@ -192,25 +191,6 @@ WebInspector.ElementsPanel.prototype = {
     {
         this.treeOutline.updateSelection();
         this.updateBreadcrumbSizes();
-    },
-
-    /**
-     * @param {string=} id
-     * @return {?WebInspector.View}
-     */
-    createView: function(id)
-    {
-        if (id === "emulation") {
-            if (!this._overridesView)
-                this._overridesView = new WebInspector.OverridesView();
-            return this._overridesView;
-        }
-        if (id === "rendering") {
-            if (!this._renderingView)
-                this._renderingView = new WebInspector.RenderingOptionsView();
-            return this._renderingView;
-        }
-        return null;
     },
 
     /**
@@ -1349,4 +1329,32 @@ WebInspector.ElementsPanel.ContextMenuProvider.prototype = {
     {
         WebInspector.panel("elements").appendApplicableItems(event, contextMenu, target);
     }
+}
+
+
+/**
+ * @constructor
+ * @extends {WebInspector.Drawer.SingletonViewFactory}
+ */
+WebInspector.ElementsPanel.OverridesViewFactory = function()
+{
+    WebInspector.Drawer.SingletonViewFactory.call(this, WebInspector.OverridesView);
+}
+
+WebInspector.ElementsPanel.OverridesViewFactory.prototype = {
+    __proto__: WebInspector.Drawer.SingletonViewFactory.prototype
+}
+
+
+/**
+ * @constructor
+ * @extends {WebInspector.Drawer.SingletonViewFactory}
+ */
+WebInspector.ElementsPanel.RenderingViewFactory = function()
+{
+    WebInspector.Drawer.SingletonViewFactory.call(this, WebInspector.RenderingOptionsView);
+}
+
+WebInspector.ElementsPanel.RenderingViewFactory.prototype = {
+    __proto__: WebInspector.Drawer.SingletonViewFactory.prototype
 }

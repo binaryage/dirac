@@ -94,11 +94,13 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @param {boolean} retainTabsOrder
+     * @param {boolean} retainTabOrder
+     * @param {function(string):(number|string)=} tabOrderFunction
      */
-    setRetainTabsOrder: function(retainTabsOrder)
+    setRetainTabOrder: function(retainTabOrder, tabOrderFunction)
     {
-        this._retainTabsOrder = retainTabsOrder;
+        this._retainTabOrder = retainTabOrder;
+        this._tabOrderFunction = tabOrderFunction;
     },
 
     /**
@@ -161,7 +163,26 @@ WebInspector.TabbedPane.prototype = {
         tab.setDelegate(this._delegate);
         this._tabsById[id] = tab;
 
-        this._tabs.push(tab);
+        /**
+         * @param {!WebInspector.TabbedPaneTab} tab1
+         * @param {!WebInspector.TabbedPaneTab} tab2
+         * @this {WebInspector.TabbedPane}
+         * @return {number}
+         */
+        function comparator(tab1, tab2)
+        {
+            var order1 = this._tabOrderFunction(tab1.id);
+            var order2 = this._tabOrderFunction(tab2.id);
+            if (order1 > order2)
+                return 1;
+            return order1 < order2 ? -1 : 0;
+        }
+
+        if (this._retainTabOrder && this._tabOrderFunction)
+            this._tabs.splice(insertionIndexForObjectInListSortedByFunction(tab, this._tabs, comparator.bind(this)), 0, tab);
+        else
+            this._tabs.push(tab);
+
         this._tabsHistory.push(tab);
 
         if (this._tabsHistory[0] === tab)
@@ -465,7 +486,7 @@ WebInspector.TabbedPane.prototype = {
         {
             return tab1.title.localeCompare(tab2.title);
         }
-        if (!this._retainTabsOrder)
+        if (!this._retainTabOrder)
             tabsToShow.sort(compareFunction);
 
         var selectedIndex = -1;
@@ -586,7 +607,7 @@ WebInspector.TabbedPane.prototype = {
         var totalTabsWidth = 0;
         var tabCount = tabsOrdered.length;
         for (var i = 0; i < tabCount; ++i) {
-            var tab = this._retainTabsOrder ? tabsOrdered[i] : tabsHistory[i];
+            var tab = this._retainTabOrder ? tabsOrdered[i] : tabsHistory[i];
             totalTabsWidth += tab.width();
             var minimalRequiredWidth = totalTabsWidth;
             if (i !== tabCount - 1)

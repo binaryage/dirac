@@ -69,6 +69,13 @@ var WebInspector = {
                         name: "console",
                         title: "Console",
                         className: "WebInspector.ConsolePanel"
+                    },
+                    {
+                        type: "@WebInspector.Drawer.ViewFactory",
+                        name: "console",
+                        title: "Console",
+                        order: "0",
+                        className: "WebInspector.ConsolePanel.ViewFactory"
                     }
                 ]
             }
@@ -330,15 +337,8 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     if (this._zoomLevel)
         this._requestZoom();
 
-    this.panels = {};
-    WebInspector.inspectorView = new WebInspector.InspectorView();
-    WebInspector.inspectorView.show(document.body);
-
-    this._registerPanelModules();
     this.advancedSearchController = new WebInspector.AdvancedSearchController();
-
     WebInspector.CSSMetadata.requestCSSShorthandData();
-
     this.consoleView = new WebInspector.ConsoleView(WebInspector.WorkerManager.isWorkerFrontend());
 
     InspectorBackend.registerInspectorDispatcher(this);
@@ -382,9 +382,12 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     new WebInspector.CSSStyleSheetMapping(this.cssModel, this.workspace, this.networkWorkspaceProvider);
     new WebInspector.PresentationConsoleMessageHelper(this.workspace);
 
-    this._createGlobalStatusBarItems();
+    this._registerPanelModules();
 
-    this.inspectorView.addPanels();
+    this.panels = {};
+    WebInspector.inspectorView = new WebInspector.InspectorView();
+    WebInspector.inspectorView.show(document.body);
+    this._createGlobalStatusBarItems();
 
     if (this.overridesSupport.hasActiveOverrides()) {
         if (!WebInspector.settings.showEmulationViewInDrawer.get())

@@ -28,7 +28,6 @@
 
 /**
  * @constructor
- * @implements {WebInspector.ViewFactory}
  */
 WebInspector.ElementsPanelDescriptor = function()
 {
@@ -46,52 +45,25 @@ WebInspector.ElementsPanelDescriptor = function()
                     type: "@WebInspector.ContextMenu.Provider",
                     contextTypes: ["WebInspector.RemoteObject", "WebInspector.DOMNode"],
                     className: "WebInspector.ElementsPanel.ContextMenuProvider"
+                },
+                {
+                    type: "@WebInspector.Drawer.ViewFactory",
+                    name: "emulation",
+                    title: "Emulation",
+                    order: "10",
+                    setting: "showEmulationViewInDrawer",
+                    className: "WebInspector.ElementsPanel.OverridesViewFactory"
+                },
+                {
+                    type: "@WebInspector.Drawer.ViewFactory",
+                    name: "rendering",
+                    title: "Rendering",
+                    order: "11",
+                    setting: "showRenderingViewInDrawer",
+                    className: "WebInspector.ElementsPanel.RenderingViewFactory"
                 }
             ],
             scripts: [ "ElementsPanel.js" ]
         }
     );
-    this._init();
-}
-
-WebInspector.ElementsPanelDescriptor.prototype = {
-    _init: function()
-    {
-        /**
-         * Install emulation view.
-         * @this {WebInspector.ElementsPanelDescriptor}
-         */
-        function toggleEmulationView()
-        {
-            if (WebInspector.settings.showEmulationViewInDrawer.get())
-                WebInspector.inspectorView.registerViewInDrawer("emulation", WebInspector.UIString("Emulation"), this);
-            else
-                WebInspector.inspectorView.unregisterViewInDrawer("emulation");
-        }
-        WebInspector.settings.showEmulationViewInDrawer.addChangeListener(toggleEmulationView, this);
-        toggleEmulationView.call(this);
-
-        /**
-         * Install rendering view.
-         * @this {WebInspector.ElementsPanelDescriptor}
-         */
-        function toggleRenderingView()
-        {
-            if (WebInspector.settings.showRenderingViewInDrawer.get())
-                WebInspector.inspectorView.registerViewInDrawer("rendering", WebInspector.UIString("Rendering"), this);
-            else
-                WebInspector.inspectorView.unregisterViewInDrawer("rendering");
-        }
-        WebInspector.settings.showRenderingViewInDrawer.addChangeListener(toggleRenderingView, this);
-        toggleRenderingView.call(this);
-    },
-
-    /**
-     * @param {string=} id
-     * @return {?WebInspector.View}
-     */
-    createView: function(id)
-    {
-        return WebInspector.panel("elements").createView(id);
-    }
 }

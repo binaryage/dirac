@@ -58,7 +58,7 @@ WebInspector.InspectorView = function()
     this._devtoolsElement.classList.add("vbox");
 
     this._tabbedPane = new WebInspector.TabbedPane();
-    this._tabbedPane.setRetainTabsOrder(true);
+    this._tabbedPane.setRetainTabOrder(true);
     this._splitView.setSidebarView(this._tabbedPane);
 
     this._toolbarElement = document.createElement("div");
@@ -93,6 +93,8 @@ WebInspector.InspectorView = function()
     this._lastActivePanelSetting = WebInspector.settings.createSetting("lastActivePanel", "elements");
 
     this._updateSplitView();
+
+    this._initialize();
 }
 
 WebInspector.InspectorView.Constraints = {
@@ -103,7 +105,7 @@ WebInspector.InspectorView.Constraints = {
 };
 
 WebInspector.InspectorView.prototype = {
-    addPanels: function()
+    _initialize: function()
     {
         WebInspector.startBatchUpdate();
         WebInspector.moduleManager.extensions(WebInspector.Panel).forEach(processPanelExtensions.bind(this));
@@ -243,24 +245,6 @@ WebInspector.InspectorView.prototype = {
     showCloseableViewInDrawer: function(id, title, view)
     {
         this._drawer.showCloseableView(id, title, view);
-    },
-
-    /**
-     * @param {string} id
-     * @param {string} title
-     * @param {!WebInspector.ViewFactory} factory
-     */
-    registerViewInDrawer: function(id, title, factory)
-    {
-        this._drawer.registerView(id, title, factory);
-    },
-
-    /**
-     * @param {string} id
-     */
-    unregisterViewInDrawer: function(id)
-    {
-        this._drawer.unregisterView(id);
     },
 
     /**

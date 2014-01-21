@@ -492,21 +492,6 @@ WebInspector.View._assert = function(condition, message)
 }
 
 /**
- * @interface
- */
-WebInspector.ViewFactory = function()
-{
-}
-
-WebInspector.ViewFactory.prototype = {
-    /**
-     * @param {string=} id
-     * @return {?WebInspector.View}
-     */
-    createView: function(id) {}
-}
-
-/**
  * @constructor
  * @extends {WebInspector.View}
  * @param {function()} resizeCallback

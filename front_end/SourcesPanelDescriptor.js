@@ -49,6 +49,13 @@ WebInspector.SourcesPanelDescriptor = function()
                 {
                     type: "@WebInspector.SearchScope",
                     className: "WebInspector.SourcesSearchScope"
+                },
+                {
+                    type: "@WebInspector.Drawer.ViewFactory",
+                    name: "search",
+                    title: "Search",
+                    order: "1",
+                    className: "WebInspector.AdvancedSearchController.ViewFactory"
                 }
             ],
             scripts: [ "SourcesPanel.js" ]

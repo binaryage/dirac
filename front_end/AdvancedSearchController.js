@@ -28,7 +28,6 @@
 
 /**
  * @constructor
- * @implements {WebInspector.ViewFactory}
  */
 WebInspector.AdvancedSearchController = function()
 {
@@ -38,7 +37,6 @@ WebInspector.AdvancedSearchController = function()
     WebInspector.settings.advancedSearchConfig = WebInspector.settings.createSetting("advancedSearchConfig", new WebInspector.SearchConfig("", true, false));
 
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, this._frameNavigated, this);
-    WebInspector.inspectorView.registerViewInDrawer("search", WebInspector.UIString("Search"), this);
 }
 
 /**
@@ -53,17 +51,6 @@ WebInspector.AdvancedSearchController.createShortcut = function()
 }
 
 WebInspector.AdvancedSearchController.prototype = {
-    /**
-     * @param {string=} id
-     * @return {?WebInspector.View}
-     */
-    createView: function(id)
-    {
-        if (!this._searchView)
-            this._searchView = new WebInspector.SearchView(this);
-        return this._searchView;
-    },
-
     /**
      * @param {!KeyboardEvent} event
      * @return {boolean}
@@ -216,6 +203,26 @@ WebInspector.AdvancedSearchController.prototype = {
     {
         // FIXME: implement multiple search scopes.
         return /** @type {!Array.<!WebInspector.SearchScope>} */ (WebInspector.moduleManager.instances(WebInspector.SearchScope));
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.Drawer.ViewFactory}
+ */
+WebInspector.AdvancedSearchController.ViewFactory = function()
+{
+}
+
+WebInspector.AdvancedSearchController.ViewFactory.prototype = {
+    /**
+     * @return {!WebInspector.View}
+     */
+    createView: function()
+    {
+        if (!WebInspector.advancedSearchController._searchView)
+            WebInspector.advancedSearchController._searchView = new WebInspector.SearchView(WebInspector.advancedSearchController);
+        return WebInspector.advancedSearchController._searchView;
     }
 }
 
