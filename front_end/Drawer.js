@@ -206,6 +206,10 @@ WebInspector.Drawer.prototype = {
         this._tabbedPane.show(this._drawerContentsElement);
 
         var height = this._constrainHeight(this._savedHeight);
+        // While loading, window may be zero height. Do not corrupt desired drawer height in this case.
+        // FIXME: making Drawer a view and placing it inside SplitView eliminates the need for this.
+        if (window.innerHeight == 0)
+            height = this._savedHeight;
         var animations = [
             {element: this.element, start: {"flex-basis": 23}, end: {"flex-basis": height}},
         ];
