@@ -543,6 +543,12 @@ WebInspector.SearchScope.prototype = {
      */
     performSearch: function(searchConfig, progress, searchResultCallback, searchFinishedCallback) { },
 
+    /**
+     * @param {!WebInspector.ProgressIndicator} progressIndicator
+     * @param {function(boolean)} callback
+     */
+    performIndexing: function(progressIndicator, callback) { },
+
     stopSearch: function() { },
 
     /**
