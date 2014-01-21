@@ -396,7 +396,7 @@ WebInspector.UISourceCode.prototype = {
     {
         if (this._savedWithFileManager || this.project().canSetFileContent() || !this._isEditable)
             return false;
-        if (WebInspector.extensionServer.hasSubscribers(WebInspector.extensionAPI.Events.ResourceContentCommitted))
+        if (this._project.workspace().hasResourceContentTrackingExtensions())
             return false;
         return !!this._hasCommittedChanges;
     },

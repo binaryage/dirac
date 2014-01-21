@@ -636,10 +636,7 @@ WebInspector.ExtensionServer.prototype = {
             WebInspector.notifications,
             WebInspector.SourceFrame.Events.SelectionChanged,
             this._notifySourceFrameSelectionChanged);
-        this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.ResourceContentCommitted,
-            WebInspector.workspace,
-            WebInspector.Workspace.Events.UISourceCodeContentCommitted,
-            this._notifyUISourceCodeContentCommitted);
+        this._registerResourceContentCommittedHandler(this._notifyUISourceCodeContentCommitted);
 
         /**
          * @this {WebInspector.ExtensionServer}
@@ -826,8 +823,8 @@ WebInspector.ExtensionServer.prototype = {
 
     _registerSubscriptionHandler: function(eventTopic, onSubscribeFirst, onUnsubscribeLast)
     {
-        this._subscriptionStartHandlers[eventTopic] =  onSubscribeFirst;
-        this._subscriptionStopHandlers[eventTopic] =  onUnsubscribeLast;
+        this._subscriptionStartHandlers[eventTopic] = onSubscribeFirst;
+        this._subscriptionStopHandlers[eventTopic] = onUnsubscribeLast;
     },
 
     _registerAutosubscriptionHandler: function(eventTopic, eventTarget, frontendEventType, handler)
@@ -835,6 +832,31 @@ WebInspector.ExtensionServer.prototype = {
         this._registerSubscriptionHandler(eventTopic,
             eventTarget.addEventListener.bind(eventTarget, frontendEventType, handler, this),
             eventTarget.removeEventListener.bind(eventTarget, frontendEventType, handler, this));
+    },
+
+    _registerResourceContentCommittedHandler: function(handler)
+    {
+        /**
+         * @this {WebInspector.ExtensionServer}
+         */
+        function addFirstEventListener()
+        {
+            WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, handler, this);
+            WebInspector.workspace.setHasResourceContentTrackingExtensions(true);
+        }
+
+        /**
+         * @this {WebInspector.ExtensionServer}
+         */
+        function removeLastEventListener()
+        {
+            WebInspector.workspace.setHasResourceContentTrackingExtensions(false);
+            WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeContentCommitted, handler, this);
+        }
+
+        this._registerSubscriptionHandler(WebInspector.extensionAPI.Events.ResourceContentCommitted,
+            addFirstEventListener.bind(this),
+            removeLastEventListener.bind(this));
     },
 
     _expandResourcePath: function(extensionPath, resourcePath)

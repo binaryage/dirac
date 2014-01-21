@@ -265,6 +265,14 @@ WebInspector.Project.prototype = {
     },
 
     /**
+     * @return {!WebInspector.Workspace}
+     */
+    workspace: function()
+    {
+        return this._workspace;
+    },
+
+    /**
      * @param {string} path
      * @return {?WebInspector.UISourceCode}
      */
@@ -495,6 +503,7 @@ WebInspector.Workspace = function(fileSystemMapping)
     this._fileSystemMapping = fileSystemMapping;
     /** @type {!Object.<string, !WebInspector.Project>} */
     this._projects = {};
+    this._hasResourceContentTrackingExtensions = false;
 }
 
 WebInspector.Workspace.Events = {
@@ -696,6 +705,22 @@ WebInspector.Workspace.prototype = {
     {
         this._fileSystemMapping.removeMappingForURL(uiSourceCode.url);
         WebInspector.suggestReload();
+    },
+
+    /**
+     * @param {boolean} hasExtensions
+     */
+    setHasResourceContentTrackingExtensions: function(hasExtensions)
+    {
+        this._hasResourceContentTrackingExtensions = hasExtensions;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    hasResourceContentTrackingExtensions: function()
+    {
+        return this._hasResourceContentTrackingExtensions;
     },
 
     __proto__: WebInspector.Object.prototype
