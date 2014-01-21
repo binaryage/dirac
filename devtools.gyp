@@ -253,7 +253,6 @@
                 '--output_js_dir', '<(SHARED_INTERMEDIATE_DIR)/blink',
               ],
               'message': 'Generating Inspector protocol frontend sources from protocol.json',
-              'msvs_cygwin_shell': 1,
             },
           ]
         },
