@@ -1477,6 +1477,7 @@ WebInspector.BackendSnapshotLoader.prototype = {
     finishTransfer: function()
     {
         this._header._receiver.close(this._didFinishTransfer.bind(this));
+        this._header._receiver = null;
         this._totalNumberOfChunks = this._numberOfChunks;
     },
 
