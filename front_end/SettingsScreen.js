@@ -304,7 +304,7 @@ WebInspector.GenericSettingsTab = function()
 
     var checkbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Enable CSS source maps"), WebInspector.settings.cssSourceMapsEnabled);
     p.appendChild(checkbox);
-    var fieldset = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.cssSourceMapsEnabled);
+    var fieldset = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.cssSourceMapsEnabled);
     var autoReloadCSSCheckbox = fieldset.createChild("input");
     fieldset.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Auto-reload generated CSS"), WebInspector.settings.cssReloadEnabled, false, autoReloadCSSCheckbox));
     checkbox.appendChild(fieldset);
@@ -322,7 +322,7 @@ WebInspector.GenericSettingsTab = function()
     p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show whitespace characters"), WebInspector.settings.showWhitespacesInEditor));
     if (WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled()) {
         checkbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Skip stepping through sources with particular names"), WebInspector.settings.skipStackFramesSwitch);
-        fieldset = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.skipStackFramesSwitch);
+        fieldset = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.skipStackFramesSwitch);
         fieldset.appendChild(this._createInputSetting(WebInspector.UIString("Pattern"), WebInspector.settings.skipStackFramesPattern, false, 1000, "100px", WebInspector.SettingsScreen.regexValidator));
         checkbox.appendChild(fieldset);
         p.appendChild(checkbox);
