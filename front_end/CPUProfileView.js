@@ -33,7 +33,7 @@ WebInspector.CPUProfileView = function(profileHeader)
     WebInspector.View.call(this);
 
     this.element.classList.add("profile-view");
-    
+
     this.showSelfTimeAsPercent = WebInspector.settings.createSetting("cpuProfilerShowSelfTimeAsPercent", true);
     this.showTotalTimeAsPercent = WebInspector.settings.createSetting("cpuProfilerShowTotalTimeAsPercent", true);
     this.showAverageTimeAsPercent = WebInspector.settings.createSetting("cpuProfilerShowAverageTimeAsPercent", true);
@@ -593,17 +593,17 @@ WebInspector.CPUProfileView.prototype = {
         var head = this.profileHead;
         head.parent = null;
         head.head = null;
-        var nodesToTraverse = [ { parent: head, children: head.children } ];
-        while (nodesToTraverse.length > 0) {
-            var pair = nodesToTraverse.pop();
-            var parent = pair.parent;
-            var children = pair.children;
+        var nodesToTraverse = [ head ];
+        while (nodesToTraverse.length) {
+            var parent = nodesToTraverse.pop();
+            var children = parent.children;
             var length = children.length;
             for (var i = 0; i < length; ++i) {
-                children[i].head = head;
-                children[i].parent = parent;
-                if (children[i].children.length > 0)
-                    nodesToTraverse.push({ parent: children[i], children: children[i].children });
+                var child = children[i];
+                child.head = head;
+                child.parent = parent;
+                if (child.children.length)
+                    nodesToTraverse.push(child);
             }
         }
     },
@@ -622,7 +622,7 @@ WebInspector.CPUProfileView.prototype = {
         var topLevelNodes = this.profileHead.children;
         for (var i = 0; i < topLevelNodes.length; i++) {
             var node = topLevelNodes[i];
-            if (node.functionName == "(garbage collector)") {
+            if (node.functionName === "(garbage collector)") {
                 this._gcNode = node;
                 break;
             }
