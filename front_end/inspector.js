@@ -29,62 +29,17 @@
  */
 
 var WebInspector = {
-    _registerPanelModules: function()
+    _registerModules: function()
     {
-        if (!WebInspector.WorkerManager.isWorkerFrontend())
-            new WebInspector.ElementsPanelDescriptor();
-        if (!WebInspector.WorkerManager.isWorkerFrontend())
-            new WebInspector.NetworkPanelDescriptor();
-
-        new WebInspector.SourcesPanelDescriptor();
-        new WebInspector.TimelinePanelDescriptor();
-        new WebInspector.ProfilesPanelDescriptor();
-
-        if (!WebInspector.WorkerManager.isWorkerFrontend()) {
-            WebInspector.moduleManager.registerModule(
-                {
-                    name: "ResourcesPanel",
-                    extensions: [
-                        {
-                            type: "@WebInspector.Panel",
-                            name: "resources",
-                            title: "Resources",
-                            order: 5,
-                            className: "WebInspector.ResourcesPanel"
-                        }
-                    ],
-                    scripts: [ "ResourcesPanel.js" ]
-                }
-            );
+        var configuration;
+        if (WebInspector.WorkerManager.isWorkerFrontend()) {
+            configuration = ["sources", "timeline", "profiles", "console"];
+        } else {
+            configuration = ["elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console"];
+            if (WebInspector.experimentsSettings.layersPanel.isEnabled())
+                configuration.push("layers");
         }
-
-        if (!WebInspector.WorkerManager.isWorkerFrontend())
-            new WebInspector.AuditsPanelDescriptor();
-
-        WebInspector.moduleManager.registerModule(
-            {
-                name: "ConsolePanel",
-                extensions: [
-                    {
-                        type: "@WebInspector.Panel",
-                        name: "console",
-                        title: "Console",
-                        order: 10,
-                        className: "WebInspector.ConsolePanel"
-                    },
-                    {
-                        type: "@WebInspector.Drawer.ViewFactory",
-                        name: "console",
-                        title: "Console",
-                        order: "0",
-                        className: "WebInspector.ConsolePanel.ViewFactory"
-                    }
-                ]
-            }
-        );
-
-        if (WebInspector.experimentsSettings.layersPanel.isEnabled() && !WebInspector.WorkerManager.isWorkerFrontend())
-            new WebInspector.LayersPanelDescriptor();
+        WebInspector.moduleManager.registerModules(configuration);
     },
 
     _createGlobalStatusBarItems: function()
@@ -387,7 +342,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     // Create settings before loading modules.
     WebInspector.settings.initializeBackendSettings();
 
-    this._registerPanelModules();
+    this._registerModules();
 
     this.panels = {};
     WebInspector.inspectorView = new WebInspector.InspectorView();

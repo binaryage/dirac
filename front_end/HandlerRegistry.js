@@ -39,18 +39,7 @@ WebInspector.HandlerRegistry = function(setting)
     this._setting = setting;
     this._activeHandler = this._setting.get();
 
-    WebInspector.moduleManager.registerModule(
-        {
-            name: "HandlerRegistry",
-            extensions: [
-                {
-                    type: "@WebInspector.ContextMenu.Provider",
-                    contextTypes: ["WebInspector.UISourceCode", "WebInspector.Resource", "WebInspector.NetworkRequest", "Node"],
-                    className: "WebInspector.HandlerRegistry.ContextMenuProvider"
-                }
-            ]
-        }
-    );
+    WebInspector.moduleManager.registerModule("handler-registry");
 }
 
 WebInspector.HandlerRegistry.prototype = {

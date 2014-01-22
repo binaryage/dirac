@@ -30,8 +30,9 @@
 
 /**
  * @constructor
+ * @param {!Array.<!WebInspector.ModuleManager.ModuleDescriptor>} descriptors
  */
-WebInspector.ModuleManager = function()
+WebInspector.ModuleManager = function(descriptors)
 {
     /**
      * @type {!Array.<!WebInspector.ModuleManager.Module>}
@@ -41,15 +42,34 @@ WebInspector.ModuleManager = function()
      * @type {!Array.<!WebInspector.ModuleManager.Extension>}
      */
     this._extensions = [];
+
+
+    /**
+     * @type {!Object.<string, !WebInspector.ModuleManager.ModuleDescriptor>}
+     */
+    this._descriptorsMap = {};
+    for (var i = 0; i < descriptors.length; ++i)
+        this._descriptorsMap[descriptors[i]["name"]] = descriptors[i];
 }
 
 WebInspector.ModuleManager.prototype = {
     /**
-     * @param {!Object} json
+     * @param {!Array.<string>} configuration
      */
-    registerModule: function(json)
+    registerModules: function(configuration)
     {
-        this._modules.push(new WebInspector.ModuleManager.Module(this, /** @type {!WebInspector.ModuleManager.ModuleDescriptor} */ (json)));
+        for (var i = 0; i < configuration.length; ++i)
+            this.registerModule(configuration[i]);
+    },
+
+    /**
+     * @param {string} moduleName
+     */
+    registerModule: function(moduleName)
+    {
+        if (!this._descriptorsMap[moduleName])
+            throw new Error("Module is not defined: " + moduleName + " " + new Error().stack);
+        this._modules.push(new WebInspector.ModuleManager.Module(this, this._descriptorsMap[moduleName]));
     },
 
     /**
@@ -285,4 +305,4 @@ WebInspector.ModuleManager.Extension.prototype = {
     }
 }
 
-WebInspector.moduleManager = new WebInspector.ModuleManager();
+WebInspector.moduleManager = new WebInspector.ModuleManager(allDescriptors);
