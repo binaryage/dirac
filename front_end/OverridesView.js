@@ -172,7 +172,7 @@ WebInspector.OverridesView.Tab.prototype = {
      */
     _createSettingCheckbox: function(name, setting, callback)
     {
-        var checkbox = WebInspector.SettingsTab.createCheckbox(name, setting.get.bind(setting), listener, true);
+        var checkbox = WebInspector.SettingsUI.createCheckbox(name, setting.get.bind(setting), listener, true);
 
         function listener(value)
         {
@@ -529,7 +529,7 @@ WebInspector.OverridesView.ViewportTab.prototype = {
      */
     _createDeviceMetricsElement: function(metrics)
     {
-        var fieldsetElement = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.overrideDeviceMetrics);
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.overrideDeviceMetrics);
         if (WebInspector.isInspectingDevice())
             fieldsetElement.disabled = true;
         fieldsetElement.id = "metrics-override-section";
@@ -612,8 +612,8 @@ WebInspector.OverridesView.ViewportTab.prototype = {
 
     _createMediaEmulationElement: function()
     {
-        var checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("CSS media"), WebInspector.settings.overrideCSSMedia, true);
-        var fieldsetElement = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.overrideCSSMedia);
+        var checkbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("CSS media"), WebInspector.settings.overrideCSSMedia, true);
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.overrideCSSMedia);
         if (WebInspector.isInspectingDevice())
             fieldsetElement.disabled = true;
         checkbox.appendChild(fieldsetElement);
@@ -717,7 +717,7 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
         var userAgent = WebInspector.settings.userAgent.get();
         var userAgents = WebInspector.OverridesView.UserAgentTab._userAgents.concat([[WebInspector.UIString("Other"), "Other"]]);
 
-        var fieldsetElement = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.overrideUserAgent);
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.overrideUserAgent);
         if (WebInspector.isInspectingDevice())
             fieldsetElement.disabled = true;
 
@@ -883,7 +883,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
      */
     _createGeolocationOverrideElement: function(geolocation)
     {
-        var fieldsetElement = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.overrideGeolocation);
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.overrideGeolocation);
         fieldsetElement.id = "geolocation-override-section";
 
         var tableElement = fieldsetElement.createChild("table");
@@ -980,7 +980,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
      */
     _createDeviceOrientationOverrideElement: function(deviceOrientation)
     {
-        var fieldsetElement = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.overrideDeviceOrientation);
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.overrideDeviceOrientation);
         fieldsetElement.id = "device-orientation-override-section";
         var tableElement = fieldsetElement.createChild("table");
         var rowElement = tableElement.createChild("tr");

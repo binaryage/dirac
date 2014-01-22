@@ -148,6 +148,7 @@
             'front_end/SettingsScreen.js',
             'front_end/Section.js',
             'front_end/Settings.js',
+            'front_end/SettingsUI.js',
             'front_end/ShortcutsScreen.js',
             'front_end/ShowMoreDataGridNode.js',
             'front_end/SidebarOverlay.js',

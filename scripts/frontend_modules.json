@@ -111,6 +111,7 @@
             "PropertiesSection.js",
             "SearchableView.js",
             "Section.js",
+            "SettingsUI.js",
             "SidebarOverlay.js",
             "SidebarPane.js",
             "SidebarTreeElement.js",

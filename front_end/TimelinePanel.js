@@ -188,7 +188,7 @@ WebInspector.TimelinePanel.prototype = {
         this._statusBarButtons.push(this._glueParentButton);
         panelStatusBarElement.appendChild(this._glueParentButton.element);
 
-        panelStatusBarElement.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Capture stacks"), WebInspector.settings.timelineCaptureStacks, true, undefined,
+        panelStatusBarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Capture stacks"), WebInspector.settings.timelineCaptureStacks, true, undefined,
                                                WebInspector.UIString("Capture JavaScript stack on every timeline event")));
 
         this._statusTextContainer = panelStatusBarElement.createChild("div");

@@ -166,72 +166,6 @@ WebInspector.SettingsTab = function(name, id)
     this.containerElement = this.element.createChild("div", "help-container-wrapper").createChild("div", "settings-tab help-content help-container");
 }
 
-/**
- * @param {string} name
- * @param {function(): *} getter
- * @param {function(*)} setter
- * @param {boolean=} omitParagraphElement
- * @param {!Element=} inputElement
- * @param {string=} tooltip
- * @return {!Element}
- */
-WebInspector.SettingsTab.createCheckbox = function(name, getter, setter, omitParagraphElement, inputElement, tooltip)
-{
-    var input = inputElement || document.createElement("input");
-    input.type = "checkbox";
-    input.name = name;
-    input.checked = getter();
-
-    function listener()
-    {
-        setter(input.checked);
-    }
-    input.addEventListener("click", listener, false);
-
-    var label = document.createElement("label");
-    label.appendChild(input);
-    label.appendChild(document.createTextNode(name));
-    if (tooltip)
-        label.title = tooltip;
-
-    if (omitParagraphElement)
-        return label;
-
-    var p = document.createElement("p");
-    p.appendChild(label);
-    return p;
-}
-
-/**
- * @param {string} name
- * @param {!WebInspector.Setting} setting
- * @param {boolean=} omitParagraphElement
- * @param {!Element=} inputElement
- * @param {string=} tooltip
- * @return {!Element}
- */
-WebInspector.SettingsTab.createSettingCheckbox = function(name, setting, omitParagraphElement, inputElement, tooltip)
-{
-    return WebInspector.SettingsTab.createCheckbox(name, setting.get.bind(setting), setting.set.bind(setting), omitParagraphElement, inputElement, tooltip);
-}
-
-/**
- * @param {!WebInspector.Setting} setting
- * @return {!Element}
- */
-WebInspector.SettingsTab.createSettingFieldset = function(setting)
-{
-    var fieldset = document.createElement("fieldset");
-    fieldset.disabled = !setting.get();
-    setting.addChangeListener(settingChanged);
-    return fieldset;
-
-    function settingChanged()
-    {
-        fieldset.disabled = !setting.get();
-    }
-}
-
 WebInspector.SettingsTab.prototype = {
     /**
      *  @param {string=} name
@@ -337,19 +271,19 @@ WebInspector.GenericSettingsTab = function()
     WebInspector.SettingsTab.call(this, WebInspector.UIString("General"), "general-tab-content");
 
     var p = this._appendSection();
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Disable cache (while DevTools is open)"), WebInspector.settings.cacheDisabled));
-    var disableJSElement = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Disable JavaScript"), WebInspector.settings.javaScriptDisabled);
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Disable cache (while DevTools is open)"), WebInspector.settings.cacheDisabled));
+    var disableJSElement = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Disable JavaScript"), WebInspector.settings.javaScriptDisabled);
     p.appendChild(disableJSElement);
     WebInspector.settings.javaScriptDisabled.addChangeListener(this._javaScriptDisabledChanged, this);
     this._disableJSCheckbox = disableJSElement.getElementsByTagName("input")[0];
     this._updateScriptDisabledCheckbox();
 
     p = this._appendSection(WebInspector.UIString("Appearance"));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show 'Emulation' view in console drawer."), WebInspector.settings.showEmulationViewInDrawer));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show 'Emulation' view in console drawer."), WebInspector.settings.showEmulationViewInDrawer));
     this._appendDrawerNote(p.lastElementChild);
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show 'Rendering' view in console drawer."), WebInspector.settings.showRenderingViewInDrawer));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show 'Rendering' view in console drawer."), WebInspector.settings.showRenderingViewInDrawer));
     this._appendDrawerNote(p.lastElementChild);
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Split panels vertically when docked to right"), WebInspector.settings.splitVerticallyWhenDockedToRight));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Split panels vertically when docked to right"), WebInspector.settings.splitVerticallyWhenDockedToRight));
 
     p = this._appendSection(WebInspector.UIString("Elements"));
     var colorFormatElement = this._createSelectSetting(WebInspector.UIString("Color format"), [
@@ -359,20 +293,20 @@ WebInspector.GenericSettingsTab = function()
             [ "HSL: hsl(300, 80%, 90%)", WebInspector.Color.Format.HSL ]
         ], WebInspector.settings.colorFormat);
     p.appendChild(colorFormatElement);
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show user agent styles"), WebInspector.settings.showUserAgentStyles));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Word wrap"), WebInspector.settings.domWordWrap));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show Shadow DOM"), WebInspector.settings.showShadowDOM));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show rulers"), WebInspector.settings.showMetricsRulers));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show user agent styles"), WebInspector.settings.showUserAgentStyles));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Word wrap"), WebInspector.settings.domWordWrap));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show Shadow DOM"), WebInspector.settings.showShadowDOM));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show rulers"), WebInspector.settings.showMetricsRulers));
 
     p = this._appendSection(WebInspector.UIString("Sources"));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Search in content scripts"), WebInspector.settings.searchInContentScripts));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Enable JavaScript source maps"), WebInspector.settings.jsSourceMapsEnabled));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Search in content scripts"), WebInspector.settings.searchInContentScripts));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Enable JavaScript source maps"), WebInspector.settings.jsSourceMapsEnabled));
 
-    var checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Enable CSS source maps"), WebInspector.settings.cssSourceMapsEnabled);
+    var checkbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Enable CSS source maps"), WebInspector.settings.cssSourceMapsEnabled);
     p.appendChild(checkbox);
     var fieldset = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.cssSourceMapsEnabled);
     var autoReloadCSSCheckbox = fieldset.createChild("input");
-    fieldset.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Auto-reload generated CSS"), WebInspector.settings.cssReloadEnabled, false, autoReloadCSSCheckbox));
+    fieldset.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Auto-reload generated CSS"), WebInspector.settings.cssReloadEnabled, false, autoReloadCSSCheckbox));
     checkbox.appendChild(fieldset);
 
     var indentationElement = this._createSelectSetting(WebInspector.UIString("Default indentation"), [
@@ -382,12 +316,12 @@ WebInspector.GenericSettingsTab = function()
             [ WebInspector.UIString("Tab character"), WebInspector.TextUtils.Indent.TabCharacter ]
         ], WebInspector.settings.textEditorIndent);
     p.appendChild(indentationElement);
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Detect indentation"), WebInspector.settings.textEditorAutoDetectIndent));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Autocompletion"), WebInspector.settings.textEditorAutocompletion));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Bracket matching"), WebInspector.settings.textEditorBracketMatching));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show whitespace characters"), WebInspector.settings.showWhitespacesInEditor));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Detect indentation"), WebInspector.settings.textEditorAutoDetectIndent));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Autocompletion"), WebInspector.settings.textEditorAutocompletion));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Bracket matching"), WebInspector.settings.textEditorBracketMatching));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show whitespace characters"), WebInspector.settings.showWhitespacesInEditor));
     if (WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled()) {
-        checkbox = WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Skip stepping through sources with particular names"), WebInspector.settings.skipStackFramesSwitch);
+        checkbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Skip stepping through sources with particular names"), WebInspector.settings.skipStackFramesSwitch);
         fieldset = WebInspector.SettingsTab.createSettingFieldset(WebInspector.settings.skipStackFramesSwitch);
         fieldset.appendChild(this._createInputSetting(WebInspector.UIString("Pattern"), WebInspector.settings.skipStackFramesPattern, false, 1000, "100px", WebInspector.SettingsScreen.regexValidator));
         checkbox.appendChild(fieldset);
@@ -397,12 +331,12 @@ WebInspector.GenericSettingsTab = function()
     WebInspector.settings.skipStackFramesPattern.addChangeListener(this._skipStackFramesSwitchOrPatternChanged, this);
 
     p = this._appendSection(WebInspector.UIString("Profiler"));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Show advanced heap snapshot properties"), WebInspector.settings.showAdvancedHeapSnapshotProperties));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("High resolution CPU profiling"), WebInspector.settings.highResolutionCpuProfiling));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show advanced heap snapshot properties"), WebInspector.settings.showAdvancedHeapSnapshotProperties));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("High resolution CPU profiling"), WebInspector.settings.highResolutionCpuProfiling));
 
     p = this._appendSection(WebInspector.UIString("Console"));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Log XMLHttpRequests"), WebInspector.settings.monitoringXHREnabled));
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(WebInspector.UIString("Preserve log upon navigation"), WebInspector.settings.preserveConsoleLog));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Log XMLHttpRequests"), WebInspector.settings.monitoringXHREnabled));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Preserve log upon navigation"), WebInspector.settings.preserveConsoleLog));
 
     if (WebInspector.extensionServer.hasExtensions()) {
         var handlerSelector = new WebInspector.HandlerSelector(WebInspector.openAnchorLocationRegistry);
@@ -412,7 +346,7 @@ WebInspector.GenericSettingsTab = function()
 
     p = this._appendSection();
     var panelShortcutTitle = WebInspector.UIString("Enable %s + 1-9 shortcut to switch panels", WebInspector.isMac() ? "Cmd" : "Ctrl");
-    p.appendChild(WebInspector.SettingsTab.createSettingCheckbox(panelShortcutTitle, WebInspector.settings.shortcutPanelSwitch));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(panelShortcutTitle, WebInspector.settings.shortcutPanelSwitch));
 }
 
 WebInspector.GenericSettingsTab.prototype = {
