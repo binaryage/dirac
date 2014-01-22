@@ -61,7 +61,7 @@ WebInspector.DOMSyntaxHighlighter.prototype = {
 
         /**
          * @param {string} token
-         * @param {string} tokenType
+         * @param {?string} tokenType
          * @param {number} column
          * @param {number} newColumn
          * @this {WebInspector.DOMSyntaxHighlighter}

@@ -112,15 +112,25 @@ FormatterWorker.outline = function(params)
     }
 
     /**
+     * @param {?string} tokenType
+     * @return {boolean}
+     */
+    function isJavaScriptIdentifier(tokenType)
+    {
+        if (!tokenType)
+            return false;
+        return tokenType.startsWith("variable") || tokenType.startsWith("property") || tokenType === "def";
+    }
+
+    /**
      * @param {string} tokenValue
-     * @param {string} tokenType
+     * @param {?string} tokenType
      * @param {number} column
      * @param {number} newColumn
      */
     function processToken(tokenValue, tokenType, column, newColumn)
     {
-        var convertedType = tokenType ? WebInspector.CodeMirrorUtils.convertTokenType(tokenType) : null;
-        if (convertedType === "javascript-ident") {
+        if (isJavaScriptIdentifier(tokenType)) {
             previousIdentifier = tokenValue;
             if (tokenValue && previousToken === "function") {
                 // A named function: "function f...".
@@ -128,7 +138,7 @@ FormatterWorker.outline = function(params)
                 addedFunction = true;
                 previousIdentifier = null;
             }
-        } else if (convertedType === "javascript-keyword") {
+        } else if (tokenType === "keyword") {
             if (tokenValue === "function") {
                 if (previousIdentifier && (previousToken === "=" || previousToken === ":")) {
                     // Anonymous function assigned to an identifier: "...f = function..."
@@ -138,7 +148,7 @@ FormatterWorker.outline = function(params)
                     previousIdentifier = null;
                 }
             }
-        } else if (tokenValue === "." && previousTokenType === "javascript-ident")
+        } else if (tokenValue === "." && isJavaScriptIdentifier(previousTokenType))
             previousIdentifier += ".";
         else if (tokenValue === "(" && addedFunction)
             isReadingArguments = true;
@@ -156,7 +166,7 @@ FormatterWorker.outline = function(params)
         if (tokenValue.trim().length) {
             // Skip whitespace tokens.
             previousToken = tokenValue;
-            previousTokenType = convertedType;
+            previousTokenType = tokenType;
         }
         processedChunkCharacters += newColumn - column;
 
@@ -245,7 +255,7 @@ FormatterWorker.HTMLFormatter.prototype = {
          * @this {FormatterWorker.HTMLFormatter}
          */
         function processToken(tokenValue, tokenType, tokenStart, tokenEnd) {
-            if (tokenType !== "xml-tag")
+            if (tokenType !== "tag")
                 return;
             if (tokenValue.toLowerCase() === "<script") {
                 scriptOpened = true;

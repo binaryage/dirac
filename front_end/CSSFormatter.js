@@ -73,14 +73,14 @@ FormatterWorker.CSSFormatter.prototype = {
     /**
      * @param {number} startLine
      * @param {string} token
-     * @param {string} type
+     * @param {?string} type
      * @param {number} startColumn
      */
     _tokenCallback: function(startLine, token, type, startColumn)
     {
         if (startLine !== this._lastLine)
             this._state.eatWhitespace = true;
-        if (/^css-property/.test(type) && !this._state.inPropertyValue)
+        if (/^property/.test(type) && !this._state.inPropertyValue)
             this._state.seenProperty = true;
         this._lastLine = startLine;
         var isWhitespace = /^\s+$/.test(token);
@@ -122,7 +122,7 @@ FormatterWorker.CSSFormatter.prototype = {
 
         this._builder.addToken(token, startPosition, startLine, startColumn);
 
-        if (type === "css-comment" && !this._state.inPropertyValue && !this._state.seenProperty)
+        if (type === "comment" && !this._state.inPropertyValue && !this._state.seenProperty)
             this._builder.addNewLine();
         if (token === ";" && this._state.inPropertyValue) {
             this._state.inPropertyValue = false;

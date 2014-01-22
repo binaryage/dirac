@@ -296,7 +296,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var lineNumber = textPosition.startLine;
         var line = this.textEditor.line(lineNumber);
         var tokenContent = line.substring(token.startColumn, token.endColumn + 1);
-        if (token.type !== "javascript-ident" && (token.type !== "javascript-keyword" || tokenContent !== "this"))
+
+        var isIdentifier = token.type.startsWith("js-variable") || token.type.startsWith("js-property") || token.type == "js-def";
+        if (!isIdentifier && (token.type !== "js-keyword" || tokenContent !== "this"))
             return null;
 
         var leftCorner = this.textEditor.cursorPositionToCoordinates(lineNumber, token.startColumn);

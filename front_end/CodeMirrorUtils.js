@@ -31,7 +31,7 @@
 WebInspector.CodeMirrorUtils = {
     /**
      * @param {string} mimeType
-     * @return {function(string, function(string, string, number, number))}
+     * @return {function(string, function(string, ?string, number, number))}
      */
     createTokenizer: function(mimeType)
     {
@@ -48,58 +48,5 @@ WebInspector.CodeMirrorUtils = {
             }
         }
         return tokenize;
-    },
-
-    /**
-     * @param {string} tokenType
-     * @return {?string}
-     */
-    convertTokenType: function(tokenType)
-    {
-        if (tokenType.startsWith("js-variable") || tokenType.startsWith("js-property") || tokenType === "js-def")
-            return "javascript-ident";
-        if (tokenType === "js-string-2")
-            return "javascript-regexp";
-        if (tokenType === "js-number" || tokenType === "js-comment" || tokenType === "js-string" || tokenType === "js-keyword")
-            return "javascript-" + tokenType.substring("js-".length);
-        if (tokenType === "css-number")
-            return "css-number";
-        return null;
-    },
-
-    /**
-     * @param {string} modeName
-     * @param {string} tokenPrefix
-     */
-    overrideModeWithPrefixedTokens: function(modeName, tokenPrefix)
-    {
-        var oldModeName = modeName + "-old";
-        if (CodeMirror.modes[oldModeName])
-            return;
-
-        CodeMirror.defineMode(oldModeName, CodeMirror.modes[modeName]);
-        CodeMirror.defineMode(modeName, modeConstructor);
-
-        function modeConstructor(config, parserConfig)
-        {
-            var innerConfig = {};
-            for (var i in parserConfig)
-                innerConfig[i] = parserConfig[i];
-            innerConfig.name = oldModeName;
-            var codeMirrorMode = CodeMirror.getMode(config, innerConfig);
-            codeMirrorMode.name = modeName;
-            codeMirrorMode.token = tokenOverride.bind(null, codeMirrorMode.token);
-            return codeMirrorMode;
-        }
-
-        function tokenOverride(superToken, stream, state)
-        {
-            var token = superToken(stream, state);
-            return token ? tokenPrefix + token : token;
-        }
     }
 }
-
-WebInspector.CodeMirrorUtils.overrideModeWithPrefixedTokens("css", "css-");
-WebInspector.CodeMirrorUtils.overrideModeWithPrefixedTokens("javascript", "js-");
-WebInspector.CodeMirrorUtils.overrideModeWithPrefixedTokens("xml", "xml-");

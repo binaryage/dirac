@@ -509,13 +509,10 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var token = this._codeMirror.getTokenAt(new CodeMirror.Pos(lineNumber, (column || 0) + 1));
         if (!token || !token.type)
             return null;
-        var convertedType = WebInspector.CodeMirrorUtils.convertTokenType(token.type);
-        if (!convertedType)
-            return null;
         return {
             startColumn: token.start,
             endColumn: token.end - 1,
-            type: convertedType
+            type: token.type
         };
     },
 
@@ -1684,3 +1681,39 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
         return metrics ? new AnchorBox(metrics.x, metrics.y, 0, metrics.height) : null;
     },
 }
+
+/**
+ * @param {string} modeName
+ * @param {string} tokenPrefix
+ */
+WebInspector.CodeMirrorTextEditor._overrideModeWithPrefixedTokens = function(modeName, tokenPrefix)
+{
+    var oldModeName = modeName + "-old";
+    if (CodeMirror.modes[oldModeName])
+        return;
+
+    CodeMirror.defineMode(oldModeName, CodeMirror.modes[modeName]);
+    CodeMirror.defineMode(modeName, modeConstructor);
+
+    function modeConstructor(config, parserConfig)
+    {
+        var innerConfig = {};
+        for (var i in parserConfig)
+            innerConfig[i] = parserConfig[i];
+        innerConfig.name = oldModeName;
+        var codeMirrorMode = CodeMirror.getMode(config, innerConfig);
+        codeMirrorMode.name = modeName;
+        codeMirrorMode.token = tokenOverride.bind(null, codeMirrorMode.token);
+        return codeMirrorMode;
+    }
+
+    function tokenOverride(superToken, stream, state)
+    {
+        var token = superToken(stream, state);
+        return token ? tokenPrefix + token : token;
+    }
+}
+
+WebInspector.CodeMirrorTextEditor._overrideModeWithPrefixedTokens("css", "css-");
+WebInspector.CodeMirrorTextEditor._overrideModeWithPrefixedTokens("javascript", "js-");
+WebInspector.CodeMirrorTextEditor._overrideModeWithPrefixedTokens("xml", "xml-");
