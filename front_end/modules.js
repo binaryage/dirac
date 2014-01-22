@@ -60,7 +60,12 @@ var allDescriptors = [
                 order: "11",
                 setting: "showRenderingViewInDrawer",
                 className: "WebInspector.ElementsPanel.RenderingViewFactory"
-            }
+            },
+            {
+                type: "@WebInspector.Renderer",
+                contextTypes: ["WebInspector.DOMNode"],
+                className: "WebInspector.ElementsTreeOutline.Renderer"
+            },
         ],
         scripts: [ "ElementsPanel.js" ]
     },

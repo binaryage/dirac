@@ -2598,3 +2598,31 @@ WebInspector.ElementsTreeUpdater.UpdateEntry = function(isUpdated, parent)
     if (parent)
         this.parent = parent;
 }
+
+/**
+ * @constructor
+ * @implements {WebInspector.Renderer}
+ */
+WebInspector.ElementsTreeOutline.Renderer = function()
+{
+}
+
+WebInspector.ElementsTreeOutline.Renderer.prototype = {
+    /**
+     * @param {!Object} object
+     * @return {?Element}
+     */
+    render: function(object)
+    {
+        if (!(object instanceof WebInspector.DOMNode))
+            return null;
+        var treeOutline = new WebInspector.ElementsTreeOutline(false, false);
+        treeOutline.rootDOMNode = /** @type {!WebInspector.DOMNode} */ (object);
+        treeOutline.element.classList.add("outline-disclosure");
+        if (!treeOutline.children[0].hasChildren)
+            treeOutline.element.classList.add("single-node");
+        treeOutline.setVisible(true);
+        treeOutline.element.treeElementForTest = treeOutline.children[0];
+        return treeOutline.element;
+    }
+}

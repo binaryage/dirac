@@ -123,7 +123,7 @@ WebInspector.TimelineDispatcher.prototype = {
     {
         if (consoleTimeline) {
             // Wake up timeline panel module.
-            WebInspector.panel("timeline");
+            WebInspector.moduleManager.loadModule("timeline");
         }
         this._started = true;
         this._manager.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineStarted, consoleTimeline);

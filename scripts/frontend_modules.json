@@ -13,7 +13,6 @@
             "Platform.js",
             "Progress.js",
             "Settings.js",
-            "SimpleHistoryManager.js",
             "TextRange.js",
             "UIString.js",
             "UserMetrics.js",
@@ -92,7 +91,6 @@
             "Checkbox.js",
             "ContextMenu.js",
             "CompletionDictionary.js",
-            "DOMSyntaxHighlighter.js",
             "DataGrid.js",
             "Dialog.js",
             "DockController.js",
@@ -145,7 +143,6 @@
             "CookiesTable.js",
             "DOMBreakpointsSidebarPane.js",
             "DOMPresentationUtils.js",
-            "ElementsTreeOutline.js",
             "FontView.js",
             "HelpScreenUntilReload.js",
             "ImageView.js",
@@ -159,12 +156,22 @@
         ]
     },
     {
-        "name": "elements",
+        "name": "codemirror",
         "dependencies": ["components"],
+        "sources": [
+            "CodeMirrorTextEditor.js",
+            "CodeMirrorUtils.js"
+        ]
+    },
+    {
+        "name": "elements",
+        "dependencies": ["components", "codemirror"],
         "sources": [
             "CSSNamedFlowCollectionsView.js",
             "CSSNamedFlowView.js",
+            "DOMSyntaxHighlighter.js",
             "ElementsPanel.js",
+            "ElementsTreeOutline.js",
             "EventListenersSidebarPane.js",
             "MetricsSidebarPane.js",
             "OverridesView.js",
@@ -215,7 +222,7 @@
         ]
     },
     {
-        "name": "scripts",
+        "name": "sources",
         "dependencies": ["components", "workers"],
         "sources": [
             "BreakpointsSidebarPane.js",
@@ -229,6 +236,7 @@
             "NavigatorView.js",
             "RevisionHistoryView.js",
             "ScopeChainSidebarPane.js",
+            "SimpleHistoryManager.js",
             "SourcesNavigator.js",
             "SourcesPanel.js",
             "SourcesSearchScope.js",
@@ -277,14 +285,6 @@
             "AuditResultView.js",
             "AuditRules.js",
             "AuditsPanel.js"
-        ]
-    },
-    {
-        "name": "codemirror",
-        "dependencies": ["components"],
-        "sources": [
-            "CodeMirrorTextEditor.js",
-            "CodeMirrorUtils.js"
         ]
     },
     {
@@ -399,15 +399,15 @@
             "sdk",
             "ui",
             "components",
+            "codemirror",
             "elements",
             "network",
             "resources",
             "workers",
-            "scripts",
+            "sources",
             "console",
             "timeline",
             "audits",
-            "codemirror",
             "layers",
             "extensions",
             "settings",

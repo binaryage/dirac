@@ -30,6 +30,8 @@
 
 importScript("CSSNamedFlowCollectionsView.js");
 importScript("CSSNamedFlowView.js");
+importScript("DOMSyntaxHighlighter.js");
+importScript("ElementsTreeOutline.js");
 importScript("EventListenersSidebarPane.js");
 importScript("MetricsSidebarPane.js");
 importScript("OverridesView.js");

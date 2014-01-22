@@ -252,7 +252,7 @@ WebInspector.ContextMenu.prototype = {
      */
     appendApplicableItems: function(target)
     {
-        WebInspector.moduleManager.extensions(WebInspector.ContextMenu.Provider).forEach(processProviders.bind(this));
+        WebInspector.moduleManager.extensions(WebInspector.ContextMenu.Provider, target).forEach(processProviders.bind(this));
 
         /**
          * @param {!WebInspector.ModuleManager.Extension} extension
@@ -260,8 +260,6 @@ WebInspector.ContextMenu.prototype = {
          */
         function processProviders(extension)
         {
-            if (!extension.isApplicable(target))
-                return;
             var provider = /** @type {!WebInspector.ContextMenu.Provider} */ (extension.instance());
             this.appendSeparator();
             provider.appendApplicableItems(this._event, this, target);

@@ -281,7 +281,6 @@ WebInspector.ConsoleMessage.MessageLevel = {
     Debug: "debug"
 }
 
-
 /**
  * @constructor
  * @implements {ConsoleAgent.Dispatcher}

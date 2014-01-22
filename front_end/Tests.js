@@ -611,6 +611,7 @@ TestSuite.prototype.testTimelineFrames = function()
 TestSuite.prototype.testPageOverlayUpdate = function()
 {
     var test = this;
+    WebInspector.panel("elements");
 
     function populatePage()
     {

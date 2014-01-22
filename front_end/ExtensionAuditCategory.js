@@ -203,11 +203,12 @@ WebInspector.ExtensionAuditFormatters = {
         {
             if (!nodeId)
                 return;
-            var treeOutline = new WebInspector.ElementsTreeOutline(false, false);
-            treeOutline.rootDOMNode = WebInspector.domAgent.nodeForId(nodeId);
-            treeOutline.element.classList.add("outline-disclosure");
-            treeOutline.setVisible(true);
-            parentElement.appendChild(treeOutline.element);
+            var node = WebInspector.domAgent.nodeForId(nodeId);
+            var renderers = WebInspector.moduleManager.extensions(WebInspector.Renderer, node);
+            if (renderers.length)
+                parentElement.appendChild(renderers[0].instance().render(node));
+            else
+                console.error("No renderer for node found");
         }
         /**
          * @param {!WebInspector.RemoteObject} remoteObject

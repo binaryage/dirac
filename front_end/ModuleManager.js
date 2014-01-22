@@ -39,6 +39,10 @@ WebInspector.ModuleManager = function(descriptors)
      */
     this._modules = [];
     /**
+     * @type {!Object.<string, !WebInspector.ModuleManager.Module>}
+     */
+    this._modulesMap = {};
+    /**
      * @type {!Array.<!WebInspector.ModuleManager.Extension>}
      */
     this._extensions = [];
@@ -69,14 +73,25 @@ WebInspector.ModuleManager.prototype = {
     {
         if (!this._descriptorsMap[moduleName])
             throw new Error("Module is not defined: " + moduleName + " " + new Error().stack);
-        this._modules.push(new WebInspector.ModuleManager.Module(this, this._descriptorsMap[moduleName]));
+        var module = new WebInspector.ModuleManager.Module(this, this._descriptorsMap[moduleName]);
+        this._modules.push(module);
+        this._modulesMap[moduleName] = module;
+    },
+
+    /**
+     * @param {string} moduleName
+     */
+    loadModule: function(moduleName)
+    {
+        this._modulesMap[moduleName]._load();
     },
 
     /**
      * @param {string|!Function} type
+     * @param {?Object=} context
      * @return {!Array.<!WebInspector.ModuleManager.Extension>}
      */
-    extensions: function(type)
+    extensions: function(type, context)
     {
         /**
          * @param {!WebInspector.ModuleManager.Extension} extension
@@ -84,9 +99,10 @@ WebInspector.ModuleManager.prototype = {
          */
         function filter(extension)
         {
-            return extension._type === type || extension._typeClass === type;
+            if (extension._type !== type && extension._typeClass !== type)
+                return false;
+            return !context || extension.isApplicable(context);
         }
-
         return this._extensions.filter(filter);
     },
 

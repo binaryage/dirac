@@ -476,14 +476,12 @@ WebInspector.ConsoleMessageImpl.prototype = {
                 this._formatParameterAsObject(object, elem, false);
                 return;
             }
-            var treeOutline = new WebInspector.ElementsTreeOutline(false, false);
-            treeOutline.setVisible(true);
-            treeOutline.rootDOMNode = WebInspector.domAgent.nodeForId(nodeId);
-            treeOutline.element.classList.add("outline-disclosure");
-            if (!treeOutline.children[0].hasChildren)
-                treeOutline.element.classList.add("single-node");
-            elem.appendChild(treeOutline.element);
-            treeOutline.element.treeElementForTest = treeOutline.children[0];
+            var node = WebInspector.domAgent.nodeForId(nodeId);
+            var renderers = WebInspector.moduleManager.extensions(WebInspector.Renderer, node);
+            if (renderers.length)
+                elem.appendChild(renderers[0].instance().render(node));
+            else
+                console.error("No renderer for node found");
         }
         object.pushNodeToFrontend(printNode.bind(this));
     },

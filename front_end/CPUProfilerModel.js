@@ -63,7 +63,7 @@ WebInspector.CPUProfilerModel.prototype = {
     consoleProfileFinished: function(id, scriptLocation, cpuProfile, title)
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
-        WebInspector.inspectorView.panel("profiles");
+        WebInspector.moduleManager.loadModule("profiles");
         this._delegate.consoleProfileFinished(id, scriptLocation, cpuProfile, title);
     },
 
@@ -75,7 +75,7 @@ WebInspector.CPUProfilerModel.prototype = {
     consoleProfileStarted: function(id, scriptLocation, title)
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
-        WebInspector.inspectorView.panel("profiles");
+        WebInspector.moduleManager.loadModule("profiles");
         this._delegate.consoleProfileStarted(id, scriptLocation, title);
     },
 
