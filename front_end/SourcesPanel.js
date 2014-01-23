@@ -81,7 +81,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     const initialDebugSidebarWidth = 225;
     const minimumDebugSidebarWidthPercent = 0.5;
     this.createSidebarView(this.element, WebInspector.SidebarView.SidebarPosition.End, initialDebugSidebarWidth);
-    this.splitView.element.id = "scripts-split-view";
     this.splitView.setSidebarElementConstraints(Preferences.minScriptsSidebarWidth);
     this.splitView.setMainElementConstraints(minimumDebugSidebarWidthPercent);
 
@@ -1089,7 +1088,6 @@ WebInspector.SourcesPanel.prototype = {
     _createDebugToolbar: function()
     {
         var debugToolbar = document.createElement("div");
-        debugToolbar.className = "status-bar";
         debugToolbar.id = "scripts-debug-toolbar";
 
         var title, handler;
@@ -1688,43 +1686,56 @@ WebInspector.SourcesPanel.prototype = {
 
         this.splitView.setVertical(!vertically);
 
+        // Update resizer widgets.
         if (!vertically) {
             this.splitView.uninstallResizer(this._statusBarContainerElement);
-            this.sidebarPaneView = new WebInspector.SidebarPaneStack();
-            for (var pane in this.sidebarPanes)
-                this.sidebarPaneView.addPane(this.sidebarPanes[pane]);
-            this._extensionSidebarPanesContainer = this.sidebarPaneView;
-            this.splitView.sidebarElement().appendChild(this.debugToolbar);
             this.editorView.element.appendChild(this._toggleDebuggerSidebarButton.element);
             this.splitView.mainElement().appendChild(this._debugSidebarResizeWidgetElement);
         } else {
             this.splitView.installResizer(this._statusBarContainerElement);
-            this.sidebarPaneView = new WebInspector.SplitView(true, this.name + "PanelSplitSidebarRatio", 0.5);
-
-            var group1 = new WebInspector.SidebarPaneStack();
-            this.sidebarPaneView.setFirstView(group1);
-            group1.element.id = "scripts-sidebar-stack-pane";
-            group1.addPane(this.sidebarPanes.callstack);
-            group1.addPane(this.sidebarPanes.jsBreakpoints);
-            group1.addPane(this.sidebarPanes.domBreakpoints);
-            group1.addPane(this.sidebarPanes.xhrBreakpoints);
-            group1.addPane(this.sidebarPanes.eventListenerBreakpoints);
-            if (this.sidebarPanes.workerList)
-                group1.addPane(this.sidebarPanes.workerList);
-
-            var group2 = new WebInspector.SidebarTabbedPane();
-            this.sidebarPaneView.setSecondView(group2);
-            group2.addPane(this.sidebarPanes.scopechain);
-            group2.addPane(this.sidebarPanes.watchExpressions);
-            this._extensionSidebarPanesContainer = group2;
-            this.sidebarPaneView.firstElement().appendChild(this.debugToolbar);
             this._statusBarContainerElement.appendChild(this._debugSidebarResizeWidgetElement);
             this._statusBarContainerElement.appendChild(this._toggleDebuggerSidebarButton.element)
+        }
+
+        // Create vertical box with stack.
+        var vbox = new WebInspector.View();
+        vbox.element.classList.add("fill", "vbox");
+        vbox.element.appendChild(this.debugToolbar);
+        var sidebarPaneStack = new WebInspector.SidebarPaneStack();
+        sidebarPaneStack.element.classList.add("flex-auto");
+        sidebarPaneStack.show(vbox.element);
+
+        if (!vertically) {
+            // Populate the only stack.
+            for (var pane in this.sidebarPanes)
+                sidebarPaneStack.addPane(this.sidebarPanes[pane]);
+            this._extensionSidebarPanesContainer = sidebarPaneStack;
+
+            this.sidebarPaneView = vbox;
+        } else {
+            var splitView = new WebInspector.SplitView(true, this.name + "PanelSplitSidebarRatio", 0.5);
+            splitView.setFirstView(vbox);
+
+            // Populate the left stack.
+            sidebarPaneStack.addPane(this.sidebarPanes.callstack);
+            sidebarPaneStack.addPane(this.sidebarPanes.jsBreakpoints);
+            sidebarPaneStack.addPane(this.sidebarPanes.domBreakpoints);
+            sidebarPaneStack.addPane(this.sidebarPanes.xhrBreakpoints);
+            sidebarPaneStack.addPane(this.sidebarPanes.eventListenerBreakpoints);
+            if (this.sidebarPanes.workerList)
+                sidebarPaneStack.addPane(this.sidebarPanes.workerList);
+
+            var tabbedPane = new WebInspector.SidebarTabbedPane();
+            splitView.setSecondView(tabbedPane);
+            tabbedPane.addPane(this.sidebarPanes.scopechain);
+            tabbedPane.addPane(this.sidebarPanes.watchExpressions);
+            this._extensionSidebarPanesContainer = tabbedPane;
+
+            this.sidebarPaneView = splitView;
         }
         for (var i = 0; i < this._extensionSidebarPanes.length; ++i)
             this._extensionSidebarPanesContainer.addPane(this._extensionSidebarPanes[i]);
 
-        this.sidebarPaneView.element.id = "scripts-debug-sidebar-contents";
         this.splitView.setSidebarView(this.sidebarPaneView);
 
         this.sidebarPanes.scopechain.expand();

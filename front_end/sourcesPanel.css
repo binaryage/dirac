@@ -48,11 +48,10 @@
 }
 
 #scripts-debug-toolbar {
-    position: relative;
-    margin-top: -1px;
-    height: 24px;
+    flex: 0 0 23px;
     border-bottom: 1px solid rgb(202, 202, 202);
     background-color: rgb(236, 236, 236);
+    overflow: hidden;
 }
 
 #scripts-editor-toolbar {
@@ -179,12 +178,6 @@ button.status-bar-item.scripts-debugger-show-hide-button.toggled-left {
     right: 0;
 }
 
-div.sidebar-pane-stack#scripts-debug-sidebar-contents,
-#scripts-sidebar-stack-pane {
-    top: 23px;
-    overflow: auto;
-}
-
 .workers-list > li {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -246,4 +239,8 @@ a.worker-item:hover {
     height: 16px !important;
     -webkit-transform: rotate(90deg);
     right: 0 !important;
+}
+
+.panel.sources .sidebar-pane-stack {
+    overflow: auto;
 }

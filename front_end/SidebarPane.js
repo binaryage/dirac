@@ -160,7 +160,7 @@ WebInspector.SidebarPaneTitle.prototype = {
 WebInspector.SidebarPaneStack = function()
 {
     WebInspector.View.call(this);
-    this.element.className = "sidebar-pane-stack fill";
+    this.element.className = "sidebar-pane-stack";
     this.registerRequiredCSS("sidebarPane.css");
 }
 

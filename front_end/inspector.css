@@ -50,6 +50,10 @@ input[type="text"]:focus {
     flex-direction: column;
 }
 
+.flex-auto {
+    flex: auto;
+}
+
 .inline-block {
     display: inline-block;
 }
