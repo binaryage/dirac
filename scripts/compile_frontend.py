@@ -44,13 +44,14 @@ scripts_path = os.path.dirname(os.path.abspath(__file__))
 devtools_path = os.path.dirname(scripts_path)
 inspector_path = os.path.dirname(devtools_path) + "/core/inspector"
 devtools_frontend_path = devtools_path + "/front_end"
-protocol_externs_path = devtools_frontend_path + "/protocol_externs.js"
+protocol_externs_file = devtools_frontend_path + "/protocol_externs.js"
 webgl_rendering_context_idl_path = os.path.dirname(devtools_path) + "/core/html/canvas/WebGLRenderingContext.idl"
 closure_compiler_jar = scripts_path + "/closure/compiler.jar"
+closure_runner_jar = scripts_path + "/compiler-runner/closure-runner.jar"
 jsdoc_validator_jar = scripts_path + "/jsdoc-validator/jsdoc-validator.jar"
-java_exec = "java -Xms512m -server -XX:+TieredCompilation"
+java_exec = "java -Xms1024m -server -XX:+TieredCompilation"
 
-generate_protocol_externs.generate_protocol_externs(protocol_externs_path, devtools_path + "/protocol.json")
+generate_protocol_externs.generate_protocol_externs(protocol_externs_file, devtools_path + "/protocol.json")
 
 jsmodule_name_prefix = "jsmodule_"
 js_modules_name = "frontend_modules.json"
@@ -83,24 +84,9 @@ type_checked_jsdoc_tags_list = ["param", "return", "type", "enum"]
 type_checked_jsdoc_tags_or = "|".join(type_checked_jsdoc_tags_list)
 
 # Basic regex for invalid JsDoc types: an object type name ([A-Z][A-Za-z0-9.]+[A-Za-z0-9]) not preceded by '!', '?', ':' (this, new), or '.' (object property).
-invalid_type_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*\{.*(?<![!?:.A-Za-z0-9])([A-Z][A-Za-z0-9.]+[A-Za-z0-9]).*\}")
+invalid_type_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*\{.*(?<![!?:.A-Za-z0-9])([A-Z][A-Za-z0-9.]+[A-Za-z0-9])[^/]*\}")
 
 invalid_type_designator_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*.*([?!])=?\}")
-
-
-def total_memory_mb():
-    try:
-        totalMemory = os.popen("free -m").readlines()[1].split()[1]
-        return int(totalMemory)
-    except:
-        print "Failed to get total memory size."
-        return 0
-
-
-def can_parallelize_module_compilation():
-    # Use a heuristic based on the actual total memory normally consumed by the script.
-    return os.environ.get("FORCE_PARALLEL_DEVTOOLS_COMPILATION", "") == "1" or total_memory_mb() > 8192
-
 
 def verify_importScript_usage():
     for module in modules:
@@ -171,6 +157,14 @@ verify_importScript_usage()
 print "Verifying JSDoc comments..."
 verify_jsdoc()
 
+modules_dir = tempfile.mkdtemp()
+common_closure_args = " --summary_detail_level 3 --compilation_level SIMPLE_OPTIMIZATIONS --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/" % modules_dir
+
+compiler_args_file = tempfile.NamedTemporaryFile(mode='wt', delete=False)
+closure_runner_command = "%s -jar %s --compiler-args-file %s" % (java_exec, closure_runner_jar, compiler_args_file.name)
+
+spawned_compiler_command = "%s -jar %s %s \\\n" % (java_exec, closure_compiler_jar, common_closure_args)
+
 modules_by_name = {}
 for module in modules:
     modules_by_name[module["name"]] = module
@@ -193,9 +187,6 @@ def verify_standalone_modules():
 verify_standalone_modules()
 
 
-def nice_child():
-    os.nice(10)
-
 def dump_module(name, recursively, processed_modules):
     if name in processed_modules:
         return ""
@@ -205,7 +196,7 @@ def dump_module(name, recursively, processed_modules):
     if recursively:
         for dependency in module["dependencies"]:
             command += dump_module(dependency, recursively, processed_modules)
-    command += " \\\n    --module " + jsmodule_name_prefix + module["name"] + ":"
+    command += " --module " + jsmodule_name_prefix + module["name"] + ":"
     command += str(len(module["sources"]))
     firstDependency = True
     for dependency in module["dependencies"]:
@@ -216,115 +207,76 @@ def dump_module(name, recursively, processed_modules):
         firstDependency = False
         command += jsmodule_name_prefix + dependency
     for script in module["sources"]:
-        command += " \\\n        --js " + devtools_frontend_path + "/" + script
+        command += " --js " + devtools_frontend_path + "/" + script
     return command
 
-modules_dir = tempfile.mkdtemp()
-compiler_command = "%s -jar %s --summary_detail_level 3 --compilation_level SIMPLE_OPTIMIZATIONS \
-    --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/ \\\n" % (java_exec, closure_compiler_jar, modules_dir)
 
-process_recursively = len(sys.argv) > 1
-if process_recursively:
-    module_name = sys.argv[1]
-    if module_name != "all":
-        modules = []
-        for i in range(1, len(sys.argv)):
-            modules.append(modules_by_name[sys.argv[i]])
+print "Compiling frontend..."
 
-    can_parallelize = can_parallelize_module_compilation()
-    if can_parallelize:
-        print "Compiling modules in parallel..."
-        processes = []
-    else:
-        print "Compiling modules sequentially..."
+for module in modules:
+    closure_args = common_closure_args
+    closure_args += " --externs " + devtools_frontend_path + "/externs.js"
+    closure_args += " --externs " + protocol_externs_file
+    closure_args += dump_module(module["name"], True, {})
+    compiler_args_file.write("%s %s\n" % (module["name"], closure_args))
 
-    for module in modules:
-        echo_command = "echo '='; echo -e \"= Compiling \\\"%s\\\"...\"; echo '='; echo;" % module["name"]
-        command = echo_command + compiler_command
-        command += "    --externs " + devtools_frontend_path + "/externs.js" + " \\\n"
-        command += "    --externs " + protocol_externs_path
-        command += dump_module(module["name"], True, {})
-        if can_parallelize:
-            proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True, preexec_fn=nice_child)
-            processes.append(proc)
-        else:
-            os.system(command)
-    if can_parallelize:
-        outputs = []
-        for proc in processes:
-            (out, _) = proc.communicate()
-            outputs.append(out)
-        print "\n".join(outputs)
-else:
+compiler_args_file.close()
+modular_compiler_proc = subprocess.Popen(closure_runner_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
-    def compile_standalone_module(standalone_module):
-        command = compiler_command
-        command += "    --externs " + devtools_frontend_path + "/externs.js" + " \\\n"
-        command += "    --externs " + protocol_externs_path
-        standalone_module_name = standalone_module["name"]
-        for module_name in standalone_module["dependencies"] + [standalone_module_name]:
-            command += dump_module(module_name, False, {})
-        print "Compiling %s..." % standalone_module_name
-        return (standalone_module_name, subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True))
 
-    standalone_compilers = []
-    for standalone_module in standalone_modules:
-        standalone_compilers.append(compile_standalone_module(standalone_module))
+def unclosure_injected_script(sourceFileName, outFileName):
+    sourceFile = open(sourceFileName, "r")
+    source = sourceFile.read()
+    sourceFile.close()
 
-    def unclosure_injected_script(sourceFileName, outFileName):
-        sourceFile = open(sourceFileName, "r")
-        source = sourceFile.read()
-        sourceFile.close()
+    def replace_function(matchobj):
+        return re.sub(r"@param", "param", matchobj.group(1) or "") + "\n//" + matchobj.group(2)
 
-        def replace_function(matchobj):
-            return re.sub(r"@param", "param", matchobj.group(1) or "") + "\n//" + matchobj.group(2)
+    # Comment out the closure function and its jsdocs
+    source = re.sub(r"(/\*\*(?:[\s\n]*\*\s*@param[^\n]+\n)+\s*\*/\s*)?\n(\(function)", replace_function, source, count=1)
 
-        # Comment out the closure function and its jsdocs
-        source = re.sub(r"(/\*\*(?:[\s\n]*\*\s*@param[^\n]+\n)+\s*\*/\s*)?\n(\(function)", replace_function, source, count=1)
+    # Comment out its return statement
+    source = re.sub(r"\n(\s*return\s+[^;]+;\s*\n\}\)\s*)$", "\n/*\\1*/", source)
 
-        # Comment out its return statement
-        source = re.sub(r"\n(\s*return\s+[^;]+;\s*\n\}\)\s*)$", "\n/*\\1*/", source)
+    outFileName = open(outFileName, "w")
+    outFileName.write(source)
+    outFileName.close()
 
-        outFileName = open(outFileName, "w")
-        outFileName.write(source)
-        outFileName.close()
+injectedScriptSourceTmpFile = inspector_path + "/" + "InjectedScriptSourceTmp.js"
+injectedScriptCanvasModuleSourceTmpFile = inspector_path + "/" + "InjectedScriptCanvasModuleSourceTmp.js"
 
-    injectedScriptSourceTmpFile = inspector_path + "/" + "InjectedScriptSourceTmp.js"
-    injectedScriptCanvasModuleSourceTmpFile = inspector_path + "/" + "InjectedScriptCanvasModuleSourceTmp.js"
+unclosure_injected_script(inspector_path + "/" + "InjectedScriptSource.js", injectedScriptSourceTmpFile)
+unclosure_injected_script(inspector_path + "/" + "InjectedScriptCanvasModuleSource.js", injectedScriptCanvasModuleSourceTmpFile)
 
-    unclosure_injected_script(inspector_path + "/" + "InjectedScriptSource.js", injectedScriptSourceTmpFile)
-    unclosure_injected_script(inspector_path + "/" + "InjectedScriptCanvasModuleSource.js", injectedScriptCanvasModuleSourceTmpFile)
+print "Compiling InjectedScriptSource.js and InjectedScriptCanvasModuleSource.js..."
+command = spawned_compiler_command
+command += "    --externs " + inspector_path + "/" + "InjectedScriptExterns.js" + " \\\n"
+command += "    --externs " + protocol_externs_file + " \\\n"
+command += "    --module " + jsmodule_name_prefix + "injected_script" + ":1" + " \\\n"
+command += "        --js " + injectedScriptSourceTmpFile + " \\\n"
+command += "    --module " + jsmodule_name_prefix + "injected_canvas_script" + ":1:" + jsmodule_name_prefix + "injected_script" + " \\\n"
+command += "        --js " + injectedScriptCanvasModuleSourceTmpFile + " \\\n"
+command += "\n"
 
-    print "Compiling InjectedScriptSource.js and InjectedScriptCanvasModuleSource.js..."
-    command = compiler_command
-    command += "    --externs " + inspector_path + "/" + "InjectedScriptExterns.js" + " \\\n"
-    command += "    --externs " + protocol_externs_path + " \\\n"
-    command += "    --module " + jsmodule_name_prefix + "injected_script" + ":1" + " \\\n"
-    command += "        --js " + injectedScriptSourceTmpFile + " \\\n"
-    command += "    --module " + jsmodule_name_prefix + "injected_canvas_script" + ":1:" + jsmodule_name_prefix + "injected_script" + " \\\n"
-    command += "        --js " + injectedScriptCanvasModuleSourceTmpFile + " \\\n"
-    command += "\n"
+injectedScriptCompileProc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
-    injectedScriptCompileProc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+print "Checking generated code in InjectedScriptCanvasModuleSource.js..."
+check_injected_webgl_calls_command = "%s/check_injected_webgl_calls_info.py %s %s/InjectedScriptCanvasModuleSource.js" % (scripts_path, webgl_rendering_context_idl_path, inspector_path)
+canvasModuleCompileProc = subprocess.Popen(check_injected_webgl_calls_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
-    print "Checking generated code in InjectedScriptCanvasModuleSource.js..."
-    check_injected_webgl_calls_command = "%s/check_injected_webgl_calls_info.py %s %s/InjectedScriptCanvasModuleSource.js" % (scripts_path, webgl_rendering_context_idl_path, inspector_path)
-    canvasModuleCompileProc = subprocess.Popen(check_injected_webgl_calls_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+print
 
-    print
+(moduleCompileOut, _) = modular_compiler_proc.communicate()
+print "Modular compilation output:\n%s" % moduleCompileOut
 
-    for (name, process) in standalone_compilers:
-        (moduleCompileOut, _) = process.communicate()
-        print "%s compilation output: %s\n" % (name, moduleCompileOut)
+(injectedScriptCompileOut, _) = injectedScriptCompileProc.communicate()
+print "InjectedScriptSource.js and InjectedScriptCanvasModuleSource.js compilation output:\n", injectedScriptCompileOut
 
-    (injectedScriptCompileOut, _) = injectedScriptCompileProc.communicate()
-    print "InjectedScriptSource.js and InjectedScriptCanvasModuleSource.js compilation output:\n", injectedScriptCompileOut
+(canvasModuleCompileOut, _) = canvasModuleCompileProc.communicate()
+print "InjectedScriptCanvasModuleSource.js generated code check output:\n", canvasModuleCompileOut
 
-    (canvasModuleCompileOut, _) = canvasModuleCompileProc.communicate()
-    print "InjectedScriptCanvasModuleSource.js generated code check output:\n", canvasModuleCompileOut
-
-    os.system("rm " + injectedScriptSourceTmpFile)
-    os.system("rm " + injectedScriptCanvasModuleSourceTmpFile)
-
-shutil.rmtree(modules_dir)
-os.system("rm " + protocol_externs_path)
+os.remove(injectedScriptSourceTmpFile)
+os.remove(injectedScriptCanvasModuleSourceTmpFile)
+os.remove(compiler_args_file.name)
+os.remove(protocol_externs_file)
+shutil.rmtree(modules_dir, True)
