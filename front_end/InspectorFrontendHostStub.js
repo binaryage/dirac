@@ -107,7 +107,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
         this._windowVisible = false;
     },
 
-    requestSetDockSide: function(side)
+    setIsDocked: function(isDocked)
     {
     },
 
@@ -281,10 +281,10 @@ InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
         "openInNewTab",
         "removeFileSystem",
         "requestFileSystems",
-        "requestSetDockSide",
         "save",
         "searchInPath",
         "setContentsInsets",
+        "setIsDocked",
         "stopIndexing"
     ];
 

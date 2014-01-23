@@ -275,10 +275,10 @@ InspectorFrontendHostAPI.prototype.port = function() {}
 InspectorFrontendHostAPI.prototype.recordActionTaken = function(actionCode) {}
 InspectorFrontendHostAPI.prototype.recordPanelShown = function(panelCode) {}
 InspectorFrontendHostAPI.prototype.recordSettingChanged = function(settingCode) {}
-InspectorFrontendHostAPI.prototype.requestSetDockSide = function(dockSide) {}
 InspectorFrontendHostAPI.prototype.sendMessageToBackend = function(message) {}
 InspectorFrontendHostAPI.prototype.sendMessageToEmbedder = function(message) {}
 InspectorFrontendHostAPI.prototype.setInjectedScriptForOrigin = function(origin, script) {}
+InspectorFrontendHostAPI.prototype.setIsDocked = function(isDocked) {}
 InspectorFrontendHostAPI.prototype.setZoomFactor = function(zoom) {}
 InspectorFrontendHostAPI.prototype.supportsFileSystems = function() {}
 /** @type {InspectorFrontendHostAPI} */

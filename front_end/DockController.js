@@ -88,7 +88,7 @@ WebInspector.DockController.prototype = {
 
         this._dockSide = dockSide;
         if (WebInspector.queryParamsObject["can_dock"])
-            InspectorFrontendHost.requestSetDockSide(dockSide);
+            InspectorFrontendHost.setIsDocked(dockSide !== WebInspector.DockController.State.Undocked);
 
         this._updateUI();
         this.dispatchEventToListeners(WebInspector.DockController.Events.DockSideChanged, this._dockSide);
