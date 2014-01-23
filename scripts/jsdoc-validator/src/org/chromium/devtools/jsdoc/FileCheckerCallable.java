@@ -6,6 +6,7 @@ import com.google.javascript.rhino.head.ast.AstNode;
 import com.google.javascript.rhino.head.ast.AstRoot;
 
 import org.chromium.devtools.jsdoc.checks.ProtoFollowsExtendsAnnotationCheck;
+import org.chromium.devtools.jsdoc.checks.RequiredReturnAnnotationCheck;
 import org.chromium.devtools.jsdoc.checks.RequiredThisAnnotationCheck;
 import org.chromium.devtools.jsdoc.checks.ValidationCheck;
 
@@ -29,12 +30,13 @@ class FileCheckerCallable implements Callable<ValidatorContext> {
     }
 
     @Override
-    public ValidatorContext call() throws Exception {
+    public ValidatorContext call() {
         try {
             ValidatorContext context = new ValidatorContext(readScriptText(), fileName);
             AstRoot node = parseScript(context);
             ValidationCheckDispatcher dispatcher = new ValidationCheckDispatcher(context);
             dispatcher.registerCheck(new ProtoFollowsExtendsAnnotationCheck());
+            dispatcher.registerCheck(new RequiredReturnAnnotationCheck());
             dispatcher.registerCheck(new RequiredThisAnnotationCheck());
             node.visit(dispatcher);
             dispatcher.flush();
