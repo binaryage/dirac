@@ -1423,10 +1423,6 @@ iframe.panel.extension {
     white-space: nowrap;
 }
 
-.placard.grouped {
-    padding-left: 36px;
-}
-
 .placard:nth-of-type(2n) {
     background-color: rgb(234, 243, 255);
 }
@@ -1469,6 +1465,17 @@ iframe.panel.extension {
 
 .placard .subtitle a {
     color: inherit;
+}
+
+.placard-label {
+    text-align: center;
+}
+
+.placard-label .title,
+.placard-label .subtitle {
+    font-style: italic;
+    font-weight: bold;
+    color: #999;
 }
 
 .section {
