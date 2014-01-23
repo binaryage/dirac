@@ -94,6 +94,7 @@
             'front_end/HAREntry.js',
             'front_end/HandlerRegistry.js',
             'front_end/HelpScreen.js',
+            'front_end/HelpScreenUntilReload.js',
             'front_end/ImageView.js',
             'front_end/IndexedDBModel.js',
             'front_end/InspectElementModeController.js',
