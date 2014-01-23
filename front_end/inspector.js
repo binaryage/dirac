@@ -906,20 +906,4 @@ WebInspector.setInspectedTabId = function(tabId)
     WebInspector._inspectedTabId = tabId;
 }
 
-/**
- * @return {string}
- */
-WebInspector.getSelectionBackgroundColor = function()
-{
-    return InspectorFrontendHost.getSelectionBackgroundColor();
-}
-
-/**
- * @return {string}
- */
-WebInspector.getSelectionForegroundColor = function()
-{
-    return InspectorFrontendHost.getSelectionForegroundColor();
-}
-
 window.DEBUG = true;

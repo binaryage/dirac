@@ -108,9 +108,20 @@ WebInspector.ModuleManager.prototype = {
 
     /**
      * @param {string|!Function} type
+     * @param {?Object=} context
+     * @return {?WebInspector.ModuleManager.Extension}
+     */
+    extension: function(type, context)
+    {
+        return this.extensions(type, context)[0] || null;
+    },
+
+    /**
+     * @param {string|!Function} type
+     * @param {?Object=} context
      * @return {!Array.<!Object>}
      */
-    instances: function(type)
+    instances: function(type, context)
     {
         /**
          * @param {!WebInspector.ModuleManager.Extension} extension
@@ -120,7 +131,17 @@ WebInspector.ModuleManager.prototype = {
         {
             return extension.instance();
         }
-        return this.extensions(type).filter(instantiate).map(instantiate);
+        return this.extensions(type, context).filter(instantiate).map(instantiate);
+    },
+
+    /**
+     * @param {string|!Function} type
+     * @return {?Object}
+     */
+    instance: function(type, context)
+    {
+        var extension = this.extension(type, context);
+        return extension ? extension.instance() : null;
     },
 
     /**
@@ -319,6 +340,35 @@ WebInspector.ModuleManager.Extension.prototype = {
         }
         return this._instance;
     }
+}
+
+/**
+ * @interface
+ */
+WebInspector.Renderer = function()
+{
+}
+
+WebInspector.Renderer.prototype = {
+    /**
+     * @param {!Object} object
+     * @return {?Element}
+     */
+    render: function(object) {}
+}
+
+/**
+ * @interface
+ */
+WebInspector.Revealer = function()
+{
+}
+
+WebInspector.Revealer.prototype = {
+    /**
+     * @param {!Object} object
+     */
+    reveal: function(object) {}
 }
 
 WebInspector.moduleManager = new WebInspector.ModuleManager(allDescriptors);

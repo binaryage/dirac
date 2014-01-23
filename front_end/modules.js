@@ -66,6 +66,11 @@ var allDescriptors = [
                 contextTypes: ["WebInspector.DOMNode"],
                 className: "WebInspector.ElementsTreeOutline.Renderer"
             },
+            {
+                type: "@WebInspector.Revealer",
+                contextTypes: ["WebInspector.DOMNode"],
+                className: "WebInspector.ElementsPanel.DOMNodeRevealer"
+            }
         ],
         scripts: [ "ElementsPanel.js" ]
     },
@@ -112,6 +117,11 @@ var allDescriptors = [
                 title: "Search",
                 order: "1",
                 className: "WebInspector.AdvancedSearchController.ViewFactory"
+            },
+            {
+                type: "@WebInspector.Revealer",
+                contextTypes: ["WebInspector.UILocation"],
+                className: "WebInspector.SourcesPanel.UILocationRevealer"
             }
         ],
         scripts: [ "SourcesPanel.js" ]

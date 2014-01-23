@@ -375,9 +375,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         if (WebInspector.CodeMirrorTextEditor._selectionStyleInjected)
             return;
         WebInspector.CodeMirrorTextEditor._selectionStyleInjected = true;
-        var backgroundColor = WebInspector.getSelectionBackgroundColor();
+        var backgroundColor = InspectorFrontendHost.getSelectionBackgroundColor();
         var backgroundColorRule = backgroundColor ? ".CodeMirror .CodeMirror-selected { background-color: " + backgroundColor + ";}" : "";
-        var foregroundColor = WebInspector.getSelectionForegroundColor();
+        var foregroundColor = InspectorFrontendHost.getSelectionForegroundColor();
         var foregroundColorRule = foregroundColor ? ".CodeMirror .CodeMirror-selectedtext:not(.CodeMirror-persist-highlight) { color: " + foregroundColor + "!important;}" : "";
         if (!foregroundColorRule && !backgroundColorRule)
             return;

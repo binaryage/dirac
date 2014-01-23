@@ -1353,7 +1353,7 @@ WebInspector.StylePropertiesSection.prototype = {
             var styleSheetHeader = WebInspector.cssModel.styleSheetHeaderForId(this.rule.id.styleSheetId);
             var uiLocation = styleSheetHeader.rawLocationToUILocation(this.rule.lineNumberInSource(index), this.rule.columnNumberInSource(index));
             if (uiLocation)
-                WebInspector.panel("sources").showUILocation(uiLocation);
+                uiLocation.reveal();
             return;
         }
         this._startEditingOnMouseEvent();
@@ -2382,10 +2382,8 @@ WebInspector.StylePropertyTreeElement.prototype = {
         console.assert(this.section().navigable);
         var propertyNameClicked = element === this.nameElement;
         var uiLocation = this.property.uiLocation(propertyNameClicked);
-        if (!uiLocation)
-            return;
-
-        WebInspector.panel("sources").showUILocation(uiLocation);
+        if (uiLocation)
+            uiLocation.reveal();
     },
 
     /**

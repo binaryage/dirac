@@ -234,6 +234,12 @@ InspectorFrontendHostAPI.prototype.addFileSystem = function(callback) {}
 InspectorFrontendHostAPI.prototype.append = function(url, content, callback) {}
 /** @param {!Function=} callback callback */
 InspectorFrontendHostAPI.prototype.indexPath = function(requestId, fileSystemPath, callback) {}
+/** @return {string} */
+InspectorFrontendHostAPI.prototype.getSelectionBackgroundColor = function() {}
+/** @return {string} */
+InspectorFrontendHostAPI.prototype.getSelectionForegroundColor = function() {}
+/** @return {boolean} */
+InspectorFrontendHost.isUnderTest = function() {}
 /**
  * @param top
  * @param left

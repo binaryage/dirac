@@ -1109,21 +1109,6 @@ WebInspector.invokeOnceAfterBatchUpdate = function(object, method)
 }
 
 /**
- * @interface
- */
-WebInspector.Renderer = function()
-{
-}
-
-WebInspector.Renderer.prototype = {
-    /**
-     * @param {!Object} object
-     * @return {?Element}
-     */
-    render: function(object) {}
-}
-
-/**
  * This bogus view is needed to load/unload CodeMirror-related CSS on demand.
  *
  * @constructor

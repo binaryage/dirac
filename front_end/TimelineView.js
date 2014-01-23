@@ -908,7 +908,7 @@ WebInspector.TimelineView.prototype = {
 
         // Resize gaps first.
         this._topGapElement.style.height = (startIndex * rowHeight) + "px";
-        this._recordsView.sidebarElement().firstChild.style.flexBasis = (startIndex * rowHeight + headerHeight) + "px";
+        this._recordsView.sidebarElement().firstElementChild.style.flexBasis = (startIndex * rowHeight + headerHeight) + "px";
         this._bottomGapElement.style.height = (recordsInWindow.length - endIndex) * rowHeight + "px";
         var rowsHeight = headerHeight + recordsInWindow.length * rowHeight;
         var totalHeight = Math.max(this._containerElementHeight, rowsHeight);

@@ -715,6 +715,13 @@ WebInspector.DOMNode.prototype = {
                 return WebInspector.ParsedURL.completeURL(frameOwnerCandidate.baseURL, url);
         }
         return null;
+    },
+
+    reveal: function()
+    {
+        var revealer = WebInspector.moduleManager.instance(WebInspector.Revealer, this);
+        if (revealer)
+            revealer.reveal(this);
     }
 }
 

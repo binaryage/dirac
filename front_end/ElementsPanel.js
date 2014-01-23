@@ -1360,3 +1360,22 @@ WebInspector.ElementsPanel.RenderingViewFactory = function()
 WebInspector.ElementsPanel.RenderingViewFactory.prototype = {
     __proto__: WebInspector.Drawer.SingletonViewFactory.prototype
 }
+
+/**
+ * @constructor
+ * @implements {WebInspector.Revealer}
+ */
+WebInspector.ElementsPanel.DOMNodeRevealer = function()
+{
+}
+
+WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
+    /**
+     * @param {!Object} node
+     */
+    reveal: function(node)
+    {
+        if (node instanceof WebInspector.DOMNode)
+            /** @type {!WebInspector.ElementsPanel} */ (WebInspector.showPanel("elements")).revealAndSelectNode(node.id);
+    }
+}

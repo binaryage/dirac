@@ -61,7 +61,7 @@ var InspectorFrontendAPI = {
         InspectorFrontendAPI._runOnceLoaded(function() {
             var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(url);
             if (uiSourceCode) {
-                WebInspector.showPanel("sources").showUISourceCode(uiSourceCode, lineNumber, columnNumber);
+                new WebInspector.UILocation(uiSourceCode, lineNumber, columnNumber).reveal();
                 return;
             }
 
@@ -72,7 +72,7 @@ var InspectorFrontendAPI = {
             {
                 var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
                 if (uiSourceCode.url === url) {
-                    WebInspector.showPanel("sources").showUISourceCode(uiSourceCode, lineNumber, columnNumber);
+                    new WebInspector.UILocation(uiSourceCode, lineNumber, columnNumber).reveal();
                     WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, listener);
                 }
             }

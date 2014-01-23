@@ -691,7 +691,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
-     * @param {!{tasks: !Array.<!{startTime: number, endTime: number}>, firstTaskIndex: number, lastTaskIndex: number}} info
+     * @param {!{name: string, tasks: !Array.<!{startTime: number, endTime: number}>, firstTaskIndex: number, lastTaskIndex: number}} info
      * @return {!Element}
      */
     generateMainThreadBarPopupContent: function(info)
@@ -1334,18 +1334,14 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     },
 
     /**
-     * @param {!WebInspector.DOMAgent} node
+     * @param {!WebInspector.DOMNode} node
      */
     _createNodeAnchor: function(node)
     {
         var span = document.createElement("span");
         span.classList.add("node-link");
-        span.addEventListener("click", onClick, false);
+        span.addEventListener("click", node.reveal.bind(node), false);
         WebInspector.DOMPresentationUtils.decorateNodeLabel(node, span);
-        function onClick()
-        {
-            /** @type {!WebInspector.ElementsPanel} */ (WebInspector.showPanel("elements")).revealAndSelectNode(node.id);
-        }
         return span;
     },
 

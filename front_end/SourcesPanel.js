@@ -1875,3 +1875,22 @@ WebInspector.SourcesPanel.ContextMenuProvider.prototype = {
         WebInspector.panel("sources").appendApplicableItems(event, contextMenu, target);
     }
 }
+
+/**
+ * @constructor
+ * @implements {WebInspector.Revealer}
+ */
+WebInspector.SourcesPanel.UILocationRevealer = function()
+{
+}
+
+WebInspector.SourcesPanel.UILocationRevealer.prototype = {
+    /**
+     * @param {!Object} uiLocation
+     */
+    reveal: function(uiLocation)
+    {
+        if (uiLocation instanceof WebInspector.UILocation)
+            /** @type {!WebInspector.SourcesPanel} */ (WebInspector.showPanel("sources")).showUILocation(uiLocation);
+    }
+}

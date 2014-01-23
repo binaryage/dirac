@@ -477,9 +477,9 @@ WebInspector.ConsoleMessageImpl.prototype = {
                 return;
             }
             var node = WebInspector.domAgent.nodeForId(nodeId);
-            var renderers = WebInspector.moduleManager.extensions(WebInspector.Renderer, node);
-            if (renderers.length)
-                elem.appendChild(renderers[0].instance().render(node));
+            var renderer = WebInspector.moduleManager.instance(WebInspector.Renderer, node);
+            if (renderer)
+                elem.appendChild(renderer.render(node));
             else
                 console.error("No renderer for node found");
         }

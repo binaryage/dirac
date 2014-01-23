@@ -134,6 +134,14 @@
         ]
     },
     {
+        "name": "codemirror",
+        "dependencies": ["common", "ui"],
+        "sources": [
+            "CodeMirrorTextEditor.js",
+            "CodeMirrorUtils.js"
+        ]
+    },
+    {
         "name": "components",
         "dependencies": ["sdk", "ui"],
         "sources": [
@@ -143,24 +151,28 @@
             "CookiesTable.js",
             "DOMBreakpointsSidebarPane.js",
             "DOMPresentationUtils.js",
-            "FontView.js",
             "HelpScreenUntilReload.js",
-            "ImageView.js",
             "NativeBreakpointsSidebarPane.js",
             "InspectElementModeController.js",
             "ObjectPopoverHelper.js",
             "ObjectPropertiesSection.js",
-            "ScreencastView.js",
-            "SourceFrame.js",
-            "ResourceView.js"
+            "ScreencastView.js"
         ]
     },
     {
-        "name": "codemirror",
-        "dependencies": ["components"],
+        "name": "source_frame",
+        "dependencies": ["components", "codemirror"],
         "sources": [
-            "CodeMirrorTextEditor.js",
-            "CodeMirrorUtils.js"
+            "SourceFrame.js"
+        ]
+    },
+    {
+        "name": "resource_views",
+        "dependencies": ["source_frame"],
+        "sources": [
+            "FontView.js",
+            "ImageView.js",
+            "ResourceView.js"
         ]
     },
     {
@@ -183,7 +195,7 @@
     },
     {
         "name": "network",
-        "dependencies": ["components"],
+        "dependencies": ["components", "resource_views"],
         "sources": [
             "NetworkItemView.js",
             "RequestCookiesView.js",
@@ -200,7 +212,7 @@
     },
     {
         "name": "resources",
-        "dependencies": ["components"],
+        "dependencies": ["components", "resource_views"],
         "sources": [
             "ApplicationCacheItemsView.js",
             "CookieItemsView.js",
@@ -223,7 +235,7 @@
     },
     {
         "name": "sources",
-        "dependencies": ["components", "workers"],
+        "dependencies": ["components", "source_frame", "workers"],
         "sources": [
             "BreakpointsSidebarPane.js",
             "CSSSourceFrame.js",
@@ -301,7 +313,7 @@
     },
     {
         "name": "extensions",
-        "dependencies": ["components", "audits"],
+        "dependencies": ["components", "audits", "elements", "sources"],
         "sources": [
             "ExtensionAPI.js",
             "ExtensionAuditCategory.js",
@@ -398,8 +410,10 @@
             "common",
             "sdk",
             "ui",
-            "components",
             "codemirror",
+            "components",
+            "source_frame",
+            "resource_views",
             "elements",
             "network",
             "resources",
