@@ -729,6 +729,9 @@ WebInspector.StylesSidebarPane.prototype = {
         this.addBlankSection().startEditingSelector();
     },
 
+    /**
+     * @return {!WebInspector.BlankStylePropertiesSection}
+     */
     addBlankSection: function()
     {
         var blankSection = new WebInspector.BlankStylePropertiesSection(this, this.node ? WebInspector.DOMPresentationUtils.appropriateSelectorFor(this.node, true) : "");
@@ -1040,6 +1043,10 @@ WebInspector.StylePropertiesSection.prototype = {
         // Overriding with empty body.
     },
 
+    /**
+     * @param {string} propertyName
+     * @return {boolean}
+     */
     isPropertyInherited: function(propertyName)
     {
         if (this.isInherited) {
@@ -1053,6 +1060,7 @@ WebInspector.StylePropertiesSection.prototype = {
     /**
      * @param {string} propertyName
      * @param {boolean=} isShorthand
+     * @return {boolean}
      */
     isPropertyOverloaded: function(propertyName, isShorthand)
     {
@@ -1081,6 +1089,9 @@ WebInspector.StylePropertiesSection.prototype = {
         return true;
     },
 
+    /**
+     * @return {?WebInspector.StylePropertiesSection}
+     */
     nextEditableSibling: function()
     {
         var curSection = this;
@@ -1097,6 +1108,9 @@ WebInspector.StylePropertiesSection.prototype = {
         return (curSection && curSection.editable) ? curSection : null;
     },
 
+    /**
+     * @return {?WebInspector.StylePropertiesSection}
+     */
     previousEditableSibling: function()
     {
         var curSection = this;
@@ -1259,6 +1273,7 @@ WebInspector.StylePropertiesSection.prototype = {
 
     /**
      * @param {number=} index
+     * @return {!WebInspector.StylePropertyTreeElement}
      */
     addNewBlankProperty: function(index)
     {
@@ -1756,6 +1771,9 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         return this._inherited;
     },
 
+    /**
+     * @return {boolean}
+     */
     hasIgnorableError: function()
     {
         return !this.parsedOk && WebInspector.StylesSidebarPane._ignoreErrorsForProperty(this.property);
@@ -2865,11 +2883,18 @@ WebInspector.StylePropertyTreeElement.prototype = {
         this.property.setText(styleText, majorChange, overwriteProperty, callback.bind(this, userOperationFinishedCallback.bind(null, this._parentPane, updateInterface), this.originalPropertyText));
     },
 
+    /**
+     * @return {boolean}
+     */
     ondblclick: function()
     {
         return true; // handled
     },
 
+    /**
+     * @param {?Event} event
+     * @return {boolean}
+     */
     isEventWithinDisclosureTriangle: function(event)
     {
         return event.target === this._expandElement;
@@ -2899,6 +2924,10 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt = function(cssCompletions, side
 }
 
 WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
+    /**
+     * @param {?Event} event
+     * @return {boolean}
+     */
     onKeyDown: function(event)
     {
         switch (event.keyIdentifier) {
@@ -2931,7 +2960,10 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
         WebInspector.TextPrompt.prototype.onMouseWheel.call(this, event);
     },
 
-    /** @override */
+    /**
+     * @override
+     * @return {boolean}
+     */
     tabKeyPressed: function()
     {
         this.acceptAutoComplete();
@@ -2942,6 +2974,7 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
 
     /**
      * @param {?Event} event
+     * @return {boolean}
      */
     _handleNameOrValueUpDown: function(event)
     {

@@ -54,11 +54,11 @@ WebInspector.HeapSnapshotGridNode.Events = {
 
 /**
  * @param {!Array.<string>} fieldNames
- * @return {!Object}
+ * @return {!WebInspector.HeapSnapshotCommon.ComparatorConfig}
  */
 WebInspector.HeapSnapshotGridNode.createComparator = function(fieldNames)
 {
-    return {fieldName1: fieldNames[0], ascending1: fieldNames[1], fieldName2: fieldNames[2], ascending2: fieldNames[3]};
+    return /** @type {!WebInspector.HeapSnapshotCommon.ComparatorConfig} */ ({fieldName1: fieldNames[0], ascending1: fieldNames[1], fieldName2: fieldNames[2], ascending2: fieldNames[3]});
 }
 
 WebInspector.HeapSnapshotGridNode.prototype = {
@@ -80,6 +80,10 @@ WebInspector.HeapSnapshotGridNode.prototype = {
         return this._providerObject;
     },
 
+    /**
+     * @param {string} columnIdentifier
+     * @return {!Element}
+     */
     createCell: function(columnIdentifier)
     {
         var cell = WebInspector.DataGridNode.prototype.createCell.call(this, columnIdentifier);
@@ -124,6 +128,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
 
     /**
      * @param {number} nodePosition
+     * @return {?WebInspector.DataGridNode}
      */
     childForPosition: function(nodePosition)
     {
@@ -413,6 +418,10 @@ WebInspector.HeapSnapshotGenericObjectNode = function(tree, node)
 };
 
 WebInspector.HeapSnapshotGenericObjectNode.prototype = {
+    /**
+     * @param {string} columnIdentifier
+     * @return {!Element}
+     */
     createCell: function(columnIdentifier)
     {
         var cell = columnIdentifier !== "object" ? this._createValueCell(columnIdentifier) : this._createObjectCell();
@@ -546,6 +555,11 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
         this._provider().isEmpty(isEmptyCallback.bind(this));
     },
 
+    /**
+     * @param {string} fullName
+     * @param {boolean} hasObjectId
+     * @return {string}
+     */
     shortenWindowURL: function(fullName, hasObjectId)
     {
         var startPos = fullName.indexOf("/");
@@ -627,6 +641,9 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
         return prefix + childNode._referenceType + "#" + childNode._referenceName;
     },
 
+    /**
+     * @return {!WebInspector.HeapSnapshotCommon.ComparatorConfig}
+     */
     comparator: function()
     {
         var sortAscending = this._dataGrid.isSortOrderAscending();
@@ -701,6 +718,9 @@ WebInspector.HeapSnapshotInstanceNode = function(tree, baseSnapshot, snapshot, n
 };
 
 WebInspector.HeapSnapshotInstanceNode.prototype = {
+    /**
+     * @return {!WebInspector.HeapSnapshotProviderProxy}
+     */
     createProvider: function()
     {
         var showHiddenData = WebInspector.settings.showAdvancedHeapSnapshotProperties.get();
@@ -724,6 +744,9 @@ WebInspector.HeapSnapshotInstanceNode.prototype = {
         return childNode._referenceType + "#" + childNode._referenceName;
     },
 
+    /**
+     * @return {!WebInspector.HeapSnapshotCommon.ComparatorConfig}
+     */
     comparator: function()
     {
         var sortAscending = this._dataGrid.isSortOrderAscending();
@@ -847,6 +870,10 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
         this.expandWithoutPopulate(didExpand.bind(this));
     },
 
+    /**
+     * @param {string} columnIdentifier
+     * @return {!Element}
+     */
     createCell: function(columnIdentifier)
     {
         var cell = columnIdentifier !== "object" ? this._createValueCell(columnIdentifier) : WebInspector.HeapSnapshotGridNode.prototype.createCell.call(this, columnIdentifier);
@@ -860,6 +887,9 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
         return new WebInspector.HeapSnapshotInstanceNode(this._dataGrid, null, this._dataGrid.snapshot, item);
     },
 
+    /**
+     * @return {!WebInspector.HeapSnapshotCommon.ComparatorConfig}
+     */
     comparator: function()
     {
         var sortAscending = this._dataGrid.isSortOrderAscending();
@@ -1069,6 +1099,9 @@ WebInspector.HeapSnapshotDiffNode.prototype = {
         return childNode.snapshotNodeId;
     },
 
+    /**
+     * @return {!WebInspector.HeapSnapshotCommon.ComparatorConfig}
+     */
     comparator: function()
     {
         var sortAscending = this._dataGrid.isSortOrderAscending();
@@ -1135,7 +1168,7 @@ WebInspector.HeapSnapshotDominatorObjectNode.prototype = {
 
     /**
      * @param {number} snapshotObjectId
-     * @param {function(?WebInspector.HeapSnapshotDominatorObjectNode)} callback
+     * @param {function(?WebInspector.DataGridNode)} callback
      */
     retrieveChildBySnapshotObjectId: function(snapshotObjectId, callback)
     {
@@ -1189,6 +1222,9 @@ WebInspector.HeapSnapshotDominatorObjectNode.prototype = {
         return childNode.snapshotNodeId;
     },
 
+    /**
+     * @return {!WebInspector.HeapSnapshotCommon.ComparatorConfig}
+     */
     comparator: function()
     {
         var sortAscending = this._dataGrid.isSortOrderAscending();

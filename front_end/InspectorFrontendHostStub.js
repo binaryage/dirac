@@ -235,6 +235,9 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     {
     },
 
+    /**
+     * @return {number}
+     */
     zoomFactor: function()
     {
         return 1;

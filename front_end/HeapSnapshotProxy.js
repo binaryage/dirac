@@ -84,6 +84,14 @@ WebInspector.HeapSnapshotWorkerProxy.prototype = {
         this._postMessage({callId: callId, disposition: "getter", objectId: objectId, methodName: getterName});
     },
 
+    /**
+     * @param {?function(...[?])} callback
+     * @param {string} objectId
+     * @param {string} methodName
+     * @param {function(new:T, ...[?])} proxyConstructor
+     * @return {?Object}
+     * @template T
+     */
     callFactoryMethod: function(callback, objectId, methodName, proxyConstructor)
     {
         var callId = this._nextCallId++;
@@ -108,6 +116,11 @@ WebInspector.HeapSnapshotWorkerProxy.prototype = {
         }
     },
 
+    /**
+     * @param {function(*)} callback
+     * @param {string} objectId
+     * @param {string} methodName
+     */
     callMethod: function(callback, objectId, methodName)
     {
         var callId = this._nextCallId++;
@@ -193,6 +206,10 @@ WebInspector.HeapSnapshotProxyObject = function(worker, objectId)
 }
 
 WebInspector.HeapSnapshotProxyObject.prototype = {
+    /**
+     * @param {string} workerMethodName
+     * @param {!Array.<*>} args
+     */
     _callWorker: function(workerMethodName, args)
     {
         args.splice(1, 0, this._objectId);
@@ -210,20 +227,35 @@ WebInspector.HeapSnapshotProxyObject.prototype = {
     },
 
     /**
+     * @param {?function(...[?])} callback
+     * @param {string} methodName
+     * @param {function (new:WebInspector.HeapSnapshotProviderProxy, ...[?])} proxyConstructor
      * @param {...*} var_args
+     * @return {?WebInspector.HeapSnapshotProviderProxy}
+     * @template T
      */
     callFactoryMethod: function(callback, methodName, proxyConstructor, var_args)
     {
         return this._callWorker("callFactoryMethod", Array.prototype.slice.call(arguments, 0));
     },
 
+    /**
+     * @param {function(T)|undefined} callback
+     * @param {string} getterName
+     * @return {*}
+     * @template T
+     */
     callGetter: function(callback, getterName)
     {
         return this._callWorker("callGetter", Array.prototype.slice.call(arguments, 0));
     },
 
     /**
+     * @param {function(T)|undefined} callback
+     * @param {string} methodName
      * @param {...*} var_args
+     * @return {*}
+     * @template T
      */
     callMethod: function(callback, methodName, var_args)
     {
@@ -310,6 +342,8 @@ WebInspector.HeapSnapshotLoaderProxy.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotProxyObject}
+ * @param {!WebInspector.HeapSnapshotWorkerProxy} worker
+ * @param {string} objectId
  */
 WebInspector.HeapSnapshotProxy = function(worker, objectId)
 {
@@ -342,41 +376,76 @@ WebInspector.HeapSnapshotProxy.prototype = {
         this.callMethod(callback, "dominatorIdsForNode", nodeIndex);
     },
 
+    /**
+     * @param {number} nodeIndex
+     * @param {boolean} showHiddenData
+     * @return {?WebInspector.HeapSnapshotProviderProxy}
+     */
     createEdgesProvider: function(nodeIndex, showHiddenData)
     {
         return this.callFactoryMethod(null, "createEdgesProvider", WebInspector.HeapSnapshotProviderProxy, nodeIndex, showHiddenData);
     },
 
+    /**
+     * @param {number} nodeIndex
+     * @param {boolean} showHiddenData
+     * @return {?WebInspector.HeapSnapshotProviderProxy}
+     */
     createRetainingEdgesProvider: function(nodeIndex, showHiddenData)
     {
         return this.callFactoryMethod(null, "createRetainingEdgesProvider", WebInspector.HeapSnapshotProviderProxy, nodeIndex, showHiddenData);
     },
 
+    /**
+     * @param {string} baseSnapshotId
+     * @param {string} className
+     * @return {?WebInspector.HeapSnapshotProviderProxy}
+     */
     createAddedNodesProvider: function(baseSnapshotId, className)
     {
         return this.callFactoryMethod(null, "createAddedNodesProvider", WebInspector.HeapSnapshotProviderProxy, baseSnapshotId, className);
     },
 
+    /**
+     * @param {!Array.<number>} nodeIndexes
+     * @return {?WebInspector.HeapSnapshotProviderProxy}
+     */
     createDeletedNodesProvider: function(nodeIndexes)
     {
         return this.callFactoryMethod(null, "createDeletedNodesProvider", WebInspector.HeapSnapshotProviderProxy, nodeIndexes);
     },
 
+    /**
+     * @param {function(*):boolean} filter
+     * @return {?WebInspector.HeapSnapshotProviderProxy}
+     */
     createNodesProvider: function(filter)
     {
         return this.callFactoryMethod(null, "createNodesProvider", WebInspector.HeapSnapshotProviderProxy, filter);
     },
 
+    /**
+     * @param {string} className
+     * @param {string} aggregatesKey
+     * @return {?WebInspector.HeapSnapshotProviderProxy}
+     */
     createNodesProviderForClass: function(className, aggregatesKey)
     {
         return this.callFactoryMethod(null, "createNodesProviderForClass", WebInspector.HeapSnapshotProviderProxy, className, aggregatesKey);
     },
 
+    /**
+     * @param {number} nodeIndex
+     * @return {?WebInspector.HeapSnapshotProviderProxy}
+     */
     createNodesProviderForDominator: function(nodeIndex)
     {
         return this.callFactoryMethod(null, "createNodesProviderForDominator", WebInspector.HeapSnapshotProviderProxy, nodeIndex);
     },
 
+    /**
+     * @param {function(number)} callback
+     */
     maxJsNodeId: function(callback)
     {
         this.callMethod(callback, "maxJsNodeId");

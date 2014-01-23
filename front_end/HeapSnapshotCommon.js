@@ -40,9 +40,9 @@ WebInspector.HeapSnapshotCommon = {
  */
 WebInspector.HeapSnapshotCommon.AllocationNodeCallers = function()
 {
-     /** @type {!Array.<!{id: string, name: string, scriptName: string, line: number, column: number, count: number, size: number, hasChildren: boolean}>} */
+    /** @type {!Array.<!WebInspector.HeapSnapshotCommon.SerializedTraceTop>} */
     this.nodesWithSingleCaller;
-    /** @type {!Array.<!{id: string, name: string, scriptName: string, line: number, column: number, count: number, size: number, hasChildren: boolean}>} */
+    /** @type {!Array.<!WebInspector.HeapSnapshotCommon.SerializedTraceTop>} */
     this.branchingCallers;
 }
 
@@ -65,6 +65,37 @@ WebInspector.HeapSnapshotCommon.Aggregate = function()
     this.name;
     /** @type {!Array.<number>} */
     this.idxs;
+}
+
+/**
+ * @constructor
+ */
+WebInspector.HeapSnapshotCommon.AggregateForDiff = function() {
+    /** @type {!Array.<number>} */
+    this.indexes = [];
+    /** @type {!Array.<string>} */
+    this.ids = [];
+    /** @type {!Array.<number>} */
+    this.selfSizes = [];
+}
+
+/**
+ * @constructor
+ */
+WebInspector.HeapSnapshotCommon.Diff = function()
+{
+    /** @type {number} */
+    this.addedCount = 0;
+    /** @type {number} */
+    this.removedCount = 0;
+    /** @type {number} */
+    this.addedSize = 0;
+    /** @type {number} */
+    this.removedSize = 0;
+    /** @type {!Array.<number>} */
+    this.deletedIndexes = [];
+    /** @type {!Array.<number>} */
+    this.addedIndexes = [];
 }
 
 /**
@@ -144,4 +175,27 @@ WebInspector.HeapSnapshotCommon.ItemsRange = function(startPosition, endPosition
     this.totalLength = totalLength;
     /** @type {!Array.<*>} */
     this.items = items;
+}
+
+/**
+ * @constructor
+ */
+WebInspector.HeapSnapshotCommon.SerializedTraceTop = function()
+{
+    /** @type {string} */
+    this.id;
+    /** @type {string} */
+    this.name;
+    /** @type {string} */
+    this.scriptName;
+    /** @type {number} */
+    this.line;
+    /** @type {number} */
+    this.column;
+    /** @type {number} */
+    this.count;
+    /** @type {number} */
+    this.size;
+    /** @type {boolean} */
+    this.hasChildren;
 }

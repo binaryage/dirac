@@ -132,6 +132,9 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
         delete this._lastSortAscending;
     },
 
+    /**
+     * @return {!Array.<!WebInspector.HeapSnapshotGridNode>}
+     */
     topLevelNodes: function()
     {
         return this.rootNode().children;
@@ -282,6 +285,9 @@ WebInspector.HeapSnapshotViewportDataGrid = function(columns)
 }
 
 WebInspector.HeapSnapshotViewportDataGrid.prototype = {
+    /**
+     * @return {!Array.<!WebInspector.HeapSnapshotGridNode>}
+     */
     topLevelNodes: function()
     {
         return this._topLevelNodes;

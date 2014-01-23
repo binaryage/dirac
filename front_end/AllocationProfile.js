@@ -112,7 +112,7 @@ WebInspector.AllocationProfile.prototype = {
     },
 
     /**
-     * @return {!Array.<!{id: string, name: string, scriptName: string, line: number, column: number, count: number, size: number, hasChildren: boolean}>}
+     * @return {!Array.<!WebInspector.HeapSnapshotCommon.SerializedTraceTop>}
      */
     serializeTraceTops: function()
     {
@@ -141,7 +141,7 @@ WebInspector.AllocationProfile.prototype = {
 
     /**
      * @param {string} nodeId
-     * @return {!{nodesWithSingleCaller: !Array.<!{id: string, name: string, scriptName: string, line: number, column: number, count: number, size: number, hasChildren: boolean}>, branchingCallers: !Array.<!{id: string, name: string, scriptName: string, line: number, column: number, count: number, size: number, hasChildren: boolean}>}}
+     * @return {!WebInspector.HeapSnapshotCommon.AllocationNodeCallers}
      */
     serializeCallers: function(nodeId)
     {
@@ -164,10 +164,10 @@ WebInspector.AllocationProfile.prototype = {
         for (var i = 0; i < callers.length; i++) {
             branchingCallers.push(this._serializeCaller(callers[i]));
         }
-        return {
+        return /** @type {!WebInspector.HeapSnapshotCommon.AllocationNodeCallers} */ ({
             nodesWithSingleCaller: nodesWithSingleCaller,
             branchingCallers: branchingCallers
-        };
+        });
     },
 
     _serializeCaller: function(node)

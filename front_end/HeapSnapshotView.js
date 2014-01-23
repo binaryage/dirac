@@ -351,16 +351,25 @@ WebInspector.HeapSnapshotView.prototype = {
         this._jumpToSearchResult(this._currentSearchResultIndex);
     },
 
+    /**
+     * @return {boolean}
+     */
     showingFirstSearchResult: function()
     {
         return (this._currentSearchResultIndex === 0);
     },
 
+    /**
+     * @return {boolean}
+     */
     showingLastSearchResult: function()
     {
         return (this._searchResults && this._currentSearchResultIndex === (this._searchResults.length - 1));
     },
 
+    /**
+     * @return {number}
+     */
     currentSearchResultIndex: function() {
         return this._currentSearchResultIndex;
     },
@@ -1171,6 +1180,7 @@ WebInspector.HeapProfileHeader = function(type, title, uid, maxJSObjectId)
 WebInspector.HeapProfileHeader.prototype = {
     /**
      * @override
+     * @return {!WebInspector.ProfileSidebarTreeElement}
      */
     createSidebarTreeElement: function()
     {
@@ -1180,6 +1190,7 @@ WebInspector.HeapProfileHeader.prototype = {
     /**
      * @override
      * @param {!WebInspector.ProfilesPanel} profilesPanel
+     * @return {!WebInspector.HeapSnapshotView}
      */
     createView: function(profilesPanel)
     {
@@ -1242,11 +1253,17 @@ WebInspector.HeapProfileHeader.prototype = {
         }
     },
 
+    /**
+     * @return {string}
+     */
     snapshotConstructorName: function()
     {
         return "JSHeapSnapshot";
     },
 
+    /**
+     * @return {function (new:WebInspector.HeapSnapshotProxy, !WebInspector.HeapSnapshotWorkerProxy, string)}
+     */
     snapshotProxyConstructor: function()
     {
         return WebInspector.HeapSnapshotProxy;
@@ -1880,6 +1897,7 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
 
     /**
      * @param {number} time
+     * @return {number}
      */
     computePosition: function(time)
     {
@@ -1896,21 +1914,33 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
         return Number.secondsToString((value + this._minimumBoundaries) / 1000, hires);
     },
 
+    /**
+     * @return {number}
+     */
     maximumBoundary: function()
     {
         return this._maximumBoundaries;
     },
 
+    /**
+     * @return {number}
+     */
     minimumBoundary: function()
     {
         return this._minimumBoundaries;
     },
 
+    /**
+     * @return {number}
+     */
     zeroTime: function()
     {
         return this._minimumBoundaries;
     },
 
+    /**
+     * @return {number}
+     */
     boundarySpan: function()
     {
         return this._maximumBoundaries - this._minimumBoundaries;

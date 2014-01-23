@@ -457,6 +457,9 @@ WebInspector.TimelineView.prototype = {
         this._panel.setWindow(windowBoundaries.left, windowBoundaries.right);
     },
 
+    /**
+     * @return {!{windowStartTime: number, windowEndTime: number}}
+     */
     windowTimes: function()
     {
         return {windowStartTime: this._windowStartTime, windowEndTime: this._windowEndTime};
