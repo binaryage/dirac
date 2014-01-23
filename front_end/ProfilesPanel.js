@@ -200,12 +200,11 @@ WebInspector.ProfileType.prototype = {
     {
         if (this._profileBeingRecorded === profile)
             this._profileBeingRecorded = null;
-        for (var i = 0; i < this._profiles.length; ++i) {
-            if (this._profiles[i].uid === profile.uid) {
-                this._profiles.splice(i, 1);
-                break;
-            }
-        }
+        var index = this._profiles.indexOf(profile);
+        if (index === -1)
+            return;
+        this._profiles.splice(index, 1);
+        this._disposeProfile(profile);
     },
 
     _clearTempStorage: function()
@@ -226,18 +225,19 @@ WebInspector.ProfileType.prototype = {
     _reset: function()
     {
         var profiles = this._profiles.slice(0);
-        for (var i = 0; i < profiles.length; ++i) {
-            var profile = profiles[i];
-            var view = profile.existingView();
-            if (view) {
-                view.detach();
-                if ("dispose" in view)
-                    view.dispose();
-            }
-            this.dispatchEventToListeners(WebInspector.ProfileType.Events.RemoveProfileHeader, profile);
-        }
+        for (var i = 0; i < profiles.length; ++i)
+            this._disposeProfile(profiles[i]);
         this.treeElement.removeChildren();
         this._profiles = [];
+    },
+
+    /**
+     * @param {!WebInspector.ProfileHeader} profile
+     */
+    _disposeProfile: function(profile)
+    {
+        this.dispatchEventToListeners(WebInspector.ProfileType.Events.RemoveProfileHeader, profile);
+        profile.dispose();
     },
 
     __proto__: WebInspector.Object.prototype
@@ -755,8 +755,6 @@ WebInspector.ProfilesPanel.prototype = {
     {
         if (profile.profileType()._profileBeingRecorded === profile)
             this._profileBeingRecordedRemoved();
-        profile.dispose();
-        profile.profileType().removeProfile(profile);
 
         var sidebarParent = profile.profileType().treeElement;
         var profileTitleKey = this._makeTitleKey(profile.title, profile.profileType().id);
@@ -1064,7 +1062,7 @@ WebInspector.ProfileSidebarTreeElement.prototype = {
      */
     ondelete: function()
     {
-        this.treeOutline.panel._removeProfileHeader(this.profile);
+        this.profile.profileType().removeProfile(this.profile);
         return true;
     },
 

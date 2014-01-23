@@ -65,7 +65,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
         return 100;
     },
 
-    dispose: function()
+    _disposeAllNodes: function()
     {
         var children = this.topLevelNodes();
         for (var i = 0, l = children.length; i < l; ++i)
@@ -383,6 +383,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
 
     removeTopLevelNodes: function()
     {
+        this._disposeAllNodes();
         this.rootNode().removeChildren();
         this._topLevelNodes = [];
     },
@@ -690,7 +691,6 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
             this._requestInProgress = this._nextRequest;
             this._nextRequest = null;
         }
-        this.dispose();
         this.removeTopLevelNodes();
         this.resetSortingCache();
         for (var constructor in aggregates)
@@ -786,7 +786,6 @@ WebInspector.HeapSnapshotDiffDataGrid.prototype = {
     setBaseDataSource: function(baseSnapshot)
     {
         this.baseSnapshot = baseSnapshot;
-        this.dispose();
         this.removeTopLevelNodes();
         this.resetSortingCache();
         if (this.baseSnapshot === this.snapshot) {

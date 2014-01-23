@@ -48,12 +48,16 @@ WebInspector.HeapSnapshotWorkerProxy = function(eventHandler)
 
 WebInspector.HeapSnapshotWorkerProxy.prototype = {
     /**
+     * @param {string} snapshotConstructorName
+     * @param {function(new:T, ...[?])} proxyConstructor
+     * @param {function(!WebInspector.HeapSnapshotProxy)} snapshotReceivedCallback
      * @return {!WebInspector.HeapSnapshotLoaderProxy}
+     * @template T
      */
-    createLoader: function(snapshotConstructorName, proxyConstructor)
+    createLoader: function(snapshotConstructorName, proxyConstructor, snapshotReceivedCallback)
     {
         var objectId = this._nextObjectId++;
-        var proxy = new WebInspector.HeapSnapshotLoaderProxy(this, objectId, snapshotConstructorName, proxyConstructor);
+        var proxy = new WebInspector.HeapSnapshotLoaderProxy(this, objectId, snapshotConstructorName, proxyConstructor, snapshotReceivedCallback);
         this._postMessage({callId: this._nextCallId++, disposition: "create", objectId: objectId, methodName: "WebInspector.HeapSnapshotLoader"});
         return proxy;
     },
@@ -271,24 +275,20 @@ WebInspector.HeapSnapshotProxyObject.prototype = {
  * @constructor
  * @extends {WebInspector.HeapSnapshotProxyObject}
  * @implements {WebInspector.OutputStream}
+ * @param {string} snapshotConstructorName
+ * @param {function(new:T, ...[?])} proxyConstructor
+ * @param {function(!WebInspector.HeapSnapshotProxy)} snapshotReceivedCallback
+ * @template T
  */
-WebInspector.HeapSnapshotLoaderProxy = function(worker, objectId, snapshotConstructorName, proxyConstructor)
+WebInspector.HeapSnapshotLoaderProxy = function(worker, objectId, snapshotConstructorName, proxyConstructor, snapshotReceivedCallback)
 {
     WebInspector.HeapSnapshotProxyObject.call(this, worker, objectId);
     this._snapshotConstructorName = snapshotConstructorName;
     this._proxyConstructor = proxyConstructor;
-    this._pendingSnapshotConsumers = [];
+    this._snapshotReceivedCallback = snapshotReceivedCallback;
 }
 
 WebInspector.HeapSnapshotLoaderProxy.prototype = {
-    /**
-     * @param {function(!WebInspector.HeapSnapshotProxy)} callback
-     */
-    addConsumer: function(callback)
-    {
-        this._pendingSnapshotConsumers.push(callback);
-    },
-
     /**
      * @param {string} chunk
      * @param {function(!WebInspector.OutputStream)=} callback
@@ -323,13 +323,12 @@ WebInspector.HeapSnapshotLoaderProxy.prototype = {
         }
 
         /**
+         * @param {!WebInspector.HeapSnapshotProxy} snapshotProxy
          * @this {WebInspector.HeapSnapshotLoaderProxy}
          */
         function notifyPendingConsumers(snapshotProxy)
         {
-            for (var i = 0; i < this._pendingSnapshotConsumers.length; ++i)
-                this._pendingSnapshotConsumers[i](snapshotProxy);
-            this._pendingSnapshotConsumers = [];
+            this._snapshotReceivedCallback(snapshotProxy);
         }
 
         this.callMethod(buildSnapshot.bind(this), "close");
@@ -463,7 +462,7 @@ WebInspector.HeapSnapshotProxy.prototype = {
 
     dispose: function()
     {
-        this.disposeWorker();
+        throw new Error("Should never be called");
     },
 
     get nodeCount()
