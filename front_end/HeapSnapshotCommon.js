@@ -126,3 +126,22 @@ WebInspector.HeapSnapshotCommon.WorkerCommand = function()
     /** @type {string} */
     this.source;
 }
+
+/**
+ * @constructor
+ * @param {number} startPosition
+ * @param {number} endPosition
+ * @param {number} totalLength
+ * @param {!Array.<*>} items
+ */
+WebInspector.HeapSnapshotCommon.ItemsRange = function(startPosition, endPosition, totalLength, items)
+{
+    /** @type {number} */
+    this.startPosition = startPosition;
+    /** @type {number} */
+    this.endPosition = endPosition;
+    /** @type {number} */
+    this.totalLength = totalLength;
+    /** @type {!Array.<*>} */
+    this.items = items;
+}

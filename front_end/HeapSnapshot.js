@@ -1687,6 +1687,7 @@ WebInspector.HeapSnapshotFilteredOrderedIterator.prototype = {
     /**
      * @param {number} begin
      * @param {number} end
+     * @return {!WebInspector.HeapSnapshotCommon.ItemsRange}
      */
     serializeItemsRange: function(begin, end)
     {
@@ -1709,12 +1710,7 @@ WebInspector.HeapSnapshotFilteredOrderedIterator.prototype = {
         var result = new Array(count);
         for (var i = 0 ; i < count && this.hasNext(); ++i, this.next())
             result[i] = this.item().serialize();
-        result.length = i;
-        result.totalLength = this._iterationOrder.length;
-
-        result.startPosition = startPosition;
-        result.endPosition = this._position;
-        return result;
+        return new WebInspector.HeapSnapshotCommon.ItemsRange(startPosition, this._position, this._iterationOrder.length, result);
     },
 
     sortAll: function()

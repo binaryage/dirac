@@ -454,6 +454,11 @@ WebInspector.HeapSnapshotProviderProxy.prototype = {
         this.callMethod(callback, "isEmpty");
     },
 
+    /**
+     * @param {number} startPosition
+     * @param {number} endPosition
+     * @param {function(!WebInspector.HeapSnapshotCommon.ItemsRange)} callback
+     */
     serializeItemsRange: function(startPosition, endPosition, callback)
     {
         this.callMethod(callback, "serializeItemsRange", startPosition, endPosition);

@@ -233,24 +233,26 @@ WebInspector.HeapSnapshotGridNode.prototype = {
         }
 
         /**
+         * @param {!WebInspector.HeapSnapshotCommon.ItemsRange} itemsRange
          * @this {WebInspector.HeapSnapshotGridNode}
          */
-        function childrenRetrieved(items)
+        function childrenRetrieved(itemsRange)
         {
             var itemIndex = 0;
-            var itemPosition = items.startPosition;
+            var itemPosition = itemsRange.startPosition;
+            var items = itemsRange.items;
             var insertionIndex = 0;
 
             if (!this._retrievedChildrenRanges.length) {
-                if (items.startPosition > 0) {
+                if (itemsRange.startPosition > 0) {
                     this._retrievedChildrenRanges.push({from: 0, to: 0});
-                    insertShowMoreButton.call(this, 0, items.startPosition, insertionIndex++);
+                    insertShowMoreButton.call(this, 0, itemsRange.startPosition, insertionIndex++);
                 }
-                this._retrievedChildrenRanges.push({from: items.startPosition, to: items.endPosition});
+                this._retrievedChildrenRanges.push({from: itemsRange.startPosition, to: itemsRange.endPosition});
                 for (var i = 0, l = items.length; i < l; ++i)
                     insertRetrievedChild.call(this, items[i], insertionIndex++);
-                if (items.endPosition < items.totalLength)
-                    insertShowMoreButton.call(this, items.endPosition, items.totalLength, insertionIndex++);
+                if (itemsRange.endPosition < itemsRange.totalLength)
+                    insertShowMoreButton.call(this, itemsRange.endPosition, itemsRange.totalLength, insertionIndex++);
             } else {
                 var rangeIndex = 0;
                 var found = false;
@@ -263,16 +265,16 @@ WebInspector.HeapSnapshotGridNode.prototype = {
                     }
                     insertionIndex += range.to - range.from;
                     // Skip the button if there is one.
-                    if (range.to < items.totalLength)
+                    if (range.to < itemsRange.totalLength)
                         insertionIndex += 1;
                     ++rangeIndex;
                 }
 
-                if (!found || items.startPosition < range.from) {
+                if (!found || itemsRange.startPosition < range.from) {
                     // Update previous button.
-                    this.children[insertionIndex - 1].setEndPosition(items.startPosition);
-                    insertShowMoreButton.call(this, items.startPosition, found ? range.from : items.totalLength, insertionIndex);
-                    range = {from: items.startPosition, to: items.startPosition};
+                    this.children[insertionIndex - 1].setEndPosition(itemsRange.startPosition);
+                    insertShowMoreButton.call(this, itemsRange.startPosition, found ? range.from : itemsRange.totalLength, insertionIndex);
+                    range = {from: itemsRange.startPosition, to: itemsRange.startPosition};
                     if (!found)
                         rangeIndex = this._retrievedChildrenRanges.length;
                     this._retrievedChildrenRanges.splice(rangeIndex, 0, range);
@@ -283,7 +285,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
                 // Also it is always true here that range.from <= itemPosition <= range.to
 
                 // Stretch the range right bound to include all new items.
-                while (range.to < items.endPosition) {
+                while (range.to < itemsRange.endPosition) {
                     // Skip already added nodes.
                     var skipCount = range.to - itemPosition;
                     insertionIndex += skipCount;
@@ -292,9 +294,9 @@ WebInspector.HeapSnapshotGridNode.prototype = {
 
                     // We're at the position before button: ...<?node>x<button>
                     var nextRange = this._retrievedChildrenRanges[rangeIndex + 1];
-                    var newEndOfRange = nextRange ? nextRange.from : items.totalLength;
-                    if (newEndOfRange > items.endPosition)
-                        newEndOfRange = items.endPosition;
+                    var newEndOfRange = nextRange ? nextRange.from : itemsRange.totalLength;
+                    if (newEndOfRange > itemsRange.endPosition)
+                        newEndOfRange = itemsRange.endPosition;
                     while (itemPosition < newEndOfRange) {
                         insertRetrievedChild.call(this, items[itemIndex++], insertionIndex++);
                         ++itemPosition;
@@ -308,10 +310,10 @@ WebInspector.HeapSnapshotGridNode.prototype = {
                     } else {
                         range.to = newEndOfRange;
                         // Remove or update next button.
-                        if (newEndOfRange === items.totalLength)
+                        if (newEndOfRange === itemsRange.totalLength)
                             this.removeChild(this.children[insertionIndex]);
                         else
-                            this.children[insertionIndex].setStartPosition(items.endPosition);
+                            this.children[insertionIndex].setStartPosition(itemsRange.endPosition);
                     }
                 }
             }
@@ -940,9 +942,15 @@ WebInspector.HeapSnapshotDiffNodesProvider.prototype = {
         callback(false);
     },
 
+    /**
+     * @param {number} beginPosition
+     * @param {number} endPosition
+     * @param {!function(!WebInspector.HeapSnapshotCommon.ItemsRange)} callback
+     */
     serializeItemsRange: function(beginPosition, endPosition, callback)
     {
         /**
+         * @param {!WebInspector.HeapSnapshotCommon.ItemsRange} items
          * @this {WebInspector.HeapSnapshotDiffNodesProvider}
          */
         function didReceiveAllItems(items)
@@ -952,38 +960,45 @@ WebInspector.HeapSnapshotDiffNodesProvider.prototype = {
         }
 
         /**
+         * @param {!WebInspector.HeapSnapshotCommon.ItemsRange} addedItems
+         * @param {!WebInspector.HeapSnapshotCommon.ItemsRange} itemsRange
          * @this {WebInspector.HeapSnapshotDiffNodesProvider}
          */
-        function didReceiveDeletedItems(addedItems, items)
+        function didReceiveDeletedItems(addedItems, itemsRange)
         {
-            if (!addedItems.length)
-                addedItems.startPosition = this._addedCount + items.startPosition;
+            var items = itemsRange.items;
+            if (!addedItems.items.length)
+                addedItems.startPosition = this._addedCount + itemsRange.startPosition;
             for (var i = 0; i < items.length; i++) {
                 items[i].isAddedNotRemoved = false;
-                addedItems.push(items[i]);
+                addedItems.items.push(items[i]);
             }
-            addedItems.endPosition = this._addedCount + items.endPosition;
+            addedItems.endPosition = this._addedCount + itemsRange.endPosition;
             didReceiveAllItems.call(this, addedItems);
         }
 
         /**
+         * @param {!WebInspector.HeapSnapshotCommon.ItemsRange} itemsRange
          * @this {WebInspector.HeapSnapshotDiffNodesProvider}
          */
-        function didReceiveAddedItems(items)
+        function didReceiveAddedItems(itemsRange)
         {
+            var items = itemsRange.items;
             for (var i = 0; i < items.length; i++)
                 items[i].isAddedNotRemoved = true;
-            if (items.endPosition < endPosition)
-                return this._deletedNodesProvider.serializeItemsRange(0, endPosition - items.endPosition, didReceiveDeletedItems.bind(this, items));
+            if (itemsRange.endPosition < endPosition)
+                return this._deletedNodesProvider.serializeItemsRange(0, endPosition - itemsRange.endPosition, didReceiveDeletedItems.bind(this, itemsRange));
 
-            items.totalLength = this._addedCount + this._removedCount;
-            didReceiveAllItems.call(this, items);
+            itemsRange.totalLength = this._addedCount + this._removedCount;
+            didReceiveAllItems.call(this, itemsRange);
         }
 
-        if (beginPosition < this._addedCount)
+        if (beginPosition < this._addedCount) {
             this._addedNodesProvider.serializeItemsRange(beginPosition, endPosition, didReceiveAddedItems.bind(this));
-        else
-            this._deletedNodesProvider.serializeItemsRange(beginPosition - this._addedCount, endPosition - this._addedCount, didReceiveDeletedItems.bind(this, []));
+        } else {
+            var emptyRange = new WebInspector.HeapSnapshotCommon.ItemsRange(0, 0, 0, []);
+            this._deletedNodesProvider.serializeItemsRange(beginPosition - this._addedCount, endPosition - this._addedCount, didReceiveDeletedItems.bind(this, emptyRange));
+        }
     },
 
     sortAndRewind: function(comparator, callback)
