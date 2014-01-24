@@ -29,28 +29,25 @@
  */
 
 /**
+ * @constructor
+ * @extends {WebInspector.SidebarView}
  * @param {!WebInspector.TimelineView} timelineView
  * @param {!WebInspector.TimelineModel} model
- * @constructor
- * @extends {WebInspector.View}
  */
 WebInspector.MemoryStatistics = function(timelineView, model)
 {
-    WebInspector.View.call(this);
+    WebInspector.SidebarView.call(this, WebInspector.SidebarView.SidebarPosition.Start, undefined);
+    this.element.classList.add("fill");
+    this.element.id = "memory-graphs-container";
+
     this._timelineView = timelineView;
 
-    this.element.classList.add("fill");
     this._counters = [];
 
     model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
     model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
 
-    this._memorySidebarView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Start, undefined);
-    this._memorySidebarView.element.id = "memory-graphs-container";
-
-    this._memorySidebarView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._sidebarResized.bind(this));
-
-    this._canvasContainer = this._memorySidebarView.mainElement();
+    this._canvasContainer = this.mainElement();
     this._canvasContainer.id = "memory-graphs-canvas-container";
     this._createCurrentValuesBar();
     this._canvas = this._canvasContainer.createChild("canvas", "fill");
@@ -66,9 +63,8 @@ WebInspector.MemoryStatistics = function(timelineView, model)
     this._canvasContainer.appendChild(this._timelineGrid.dividersElement);
 
     // Populate sidebar
-    this._memorySidebarView.sidebarElement().createChild("div", "sidebar-tree sidebar-tree-section").textContent = WebInspector.UIString("COUNTERS");
+    this.sidebarElement().createChild("div", "sidebar-tree sidebar-tree-section").textContent = WebInspector.UIString("COUNTERS");
     this._counterUI = this._createCounterUIList();
-    this._memorySidebarView.show(this.element);
 }
 
 /**
@@ -130,7 +126,7 @@ WebInspector.CounterUIBase = function(memoryCountersPane, title, graphColor, val
 {
     this._memoryCountersPane = memoryCountersPane;
     this.valueGetter = valueGetter;
-    var container = memoryCountersPane._memorySidebarView.sidebarElement().createChild("div", "memory-counter-sidebar-info");
+    var container = memoryCountersPane.sidebarElement().createChild("div", "memory-counter-sidebar-info");
     var swatchColor = graphColor;
     this._swatch = new WebInspector.SwatchCheckbox(WebInspector.UIString(title), swatchColor);
     this._swatch.addEventListener(WebInspector.SwatchCheckbox.Events.Changed, this._toggleCounterGraph.bind(this));
@@ -189,24 +185,7 @@ WebInspector.MemoryStatistics.prototype = {
      */
     height: function()
     {
-        return this._memorySidebarView.element.offsetHeight;
-    },
-
-    /**
-     * @param {number} width
-     */
-    setSidebarWidth: function(width)
-    {
-        this._memorySidebarView.setSidebarWidth(width);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _sidebarResized: function(event)
-    {
-        this.dispatchEventToListeners(WebInspector.TimelineView.Events.SidebarResized, /** @type {number} */(event.data));
-        this.onResize();
+        return this.element.offsetHeight;
     },
 
     _canvasHeight: function()
@@ -216,8 +195,9 @@ WebInspector.MemoryStatistics.prototype = {
 
     onResize: function()
     {
-        var width = this._canvasContainer.offsetWidth + 1;
+        WebInspector.SidebarView.prototype.onResize.call(this);
 
+        var width = this._canvasContainer.offsetWidth + 1;
         this._canvas.style.width = width + "px";
         this._timelineGrid.dividersElement.style.width = width + "px";
         var parentElement = this._canvas.parentElement;
@@ -404,5 +384,5 @@ WebInspector.MemoryStatistics.prototype = {
         throw new Error("Not implemented");
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.SidebarView.prototype
 }

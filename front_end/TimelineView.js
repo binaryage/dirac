@@ -108,7 +108,7 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
         // Create memory statistics as a bottom memory splitter child.
         this._memoryStatistics = new WebInspector.CountersGraph(this, this._model);
         this._views.push(this._memoryStatistics);
-        this._memoryStatistics.addEventListener(WebInspector.TimelineView.Events.SidebarResized, this._sidebarResized, this);
+        this._memoryStatistics.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._sidebarResized, this);
         this._stackView.appendView(this._memoryStatistics, "timeline-memory");
     }
 
@@ -144,10 +144,6 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     }
 
     this._detailsSplitView.show(this.element);
-}
-
-WebInspector.TimelineView.Events = {
-    SidebarResized: "SidebarResized"
 }
 
 WebInspector.TimelineView.commonUIFilters = function()
