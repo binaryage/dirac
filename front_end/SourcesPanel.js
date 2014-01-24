@@ -361,7 +361,6 @@ WebInspector.SourcesPanel.prototype = {
 
         this._paused = true;
         this._waitingToPause = false;
-        this._stepping = false;
 
         this._updateDebuggerButtons();
 
@@ -425,7 +424,6 @@ WebInspector.SourcesPanel.prototype = {
     {
         this._paused = false;
         this._waitingToPause = false;
-        this._stepping = false;
 
         this._clearInterface();
         this._toggleDebuggerSidebarButton.setEnabled(true);
@@ -929,7 +927,6 @@ WebInspector.SourcesPanel.prototype = {
             this._waitingToPause = false;
             WebInspector.debuggerModel.resume();
         } else {
-            this._stepping = false;
             this._waitingToPause = true;
             // Make sure pauses didn't stick skipped.
             WebInspector.debuggerModel.skipAllPauses(false);
@@ -967,7 +964,6 @@ WebInspector.SourcesPanel.prototype = {
 
         delete this._skipExecutionLineRevealing;
         this._paused = false;
-        this._stepping = true;
 
         this._clearInterface();
 
@@ -985,7 +981,6 @@ WebInspector.SourcesPanel.prototype = {
 
         delete this._skipExecutionLineRevealing;
         this._paused = false;
-        this._stepping = true;
 
         this._clearInterface();
 
@@ -1017,7 +1012,6 @@ WebInspector.SourcesPanel.prototype = {
 
         delete this._skipExecutionLineRevealing;
         this._paused = false;
-        this._stepping = true;
         this._clearInterface();
         WebInspector.debuggerModel.stepIntoSelection(rawLocation);
     },
@@ -1032,7 +1026,6 @@ WebInspector.SourcesPanel.prototype = {
 
         delete this._skipExecutionLineRevealing;
         this._paused = false;
-        this._stepping = true;
 
         this._clearInterface();
 
@@ -1062,7 +1055,6 @@ WebInspector.SourcesPanel.prototype = {
 
         delete this._skipExecutionLineRevealing;
         this._paused = false;
-        this._stepping = true;
         this._clearInterface();
         WebInspector.debuggerModel.continueToLocation(rawLocation);
     },
