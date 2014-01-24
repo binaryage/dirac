@@ -90,8 +90,7 @@ WebInspector.StylesSidebarPane.PseudoIdNames = [
     "-webkit-media-controls-play-button", "-webkit-media-controls-mute-button", "-webkit-media-controls-timeline",
     "-webkit-media-controls-timeline-container", "-webkit-media-controls-volume-slider",
     "-webkit-media-controls-volume-slider-container", "-webkit-media-controls-current-time-display",
-    "-webkit-media-controls-time-remaining-display", "-webkit-media-controls-seek-back-button", "-webkit-media-controls-seek-forward-button",
-    "-webkit-media-controls-fullscreen-button", "-webkit-media-controls-rewind-button", "-webkit-media-controls-return-to-realtime-button",
+    "-webkit-media-controls-time-remaining-display", "-webkit-media-controls-fullscreen-button",
     "-webkit-media-controls-toggle-closed-captions-button", "-webkit-media-controls-status-display", "-webkit-scrollbar-thumb",
     "-webkit-scrollbar-button", "-webkit-scrollbar-track", "-webkit-scrollbar-track-piece", "-webkit-scrollbar-corner",
     "-webkit-resizer", "-webkit-inner-spin-button", "-webkit-outer-spin-button"
