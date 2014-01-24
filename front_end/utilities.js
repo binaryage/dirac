@@ -1461,7 +1461,7 @@ function importScript(scriptName)
     xhr.send(null);
     if (!xhr.responseText)
         throw "empty response arrived for script '" + scriptName + "'";
-    var baseUrl = location.href;
+    var baseUrl = location.origin + location.pathname;
     baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/"));
     var sourceURL = baseUrl + "/" + scriptName;
     eval(xhr.responseText + "\n//# sourceURL=" + sourceURL);
