@@ -287,6 +287,18 @@ String.naturalOrderComparator = function(a, b)
 }
 
 /**
+ * @param {string} name
+ * @param {number=} arrayLength
+ * @return {boolean}
+ */
+String.isArrayIndexPropertyName = function(name, arrayLength)
+{
+    // Array index check according to the ES5-15.4.
+    var index = name >>> 0;
+    return String(index) === name && index !== 0xffffffff && (typeof arrayLength === "undefined" || index < arrayLength);
+}
+
+/**
  * @param {number} num
  * @param {number} min
  * @param {number} max

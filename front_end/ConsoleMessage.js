@@ -363,7 +363,9 @@ WebInspector.ConsoleMessageImpl.prototype = {
             titleElement.createTextChild(description);
         if (includePreview && obj.preview) {
             titleElement.classList.add("console-object-preview");
-            var lossless = this._appendObjectPreview(obj, description, titleElement);
+            if (description)
+                titleElement.createTextChild(" ");
+            var lossless = this._appendObjectPreview(obj, titleElement);
             if (lossless) {
                 elem.appendChild(titleElement);
                 return;
@@ -379,37 +381,127 @@ WebInspector.ConsoleMessageImpl.prototype = {
 
     /**
      * @param {!WebInspector.RemoteObject} obj
-     * @param {string} description
      * @param {!Element} titleElement
      * @return {boolean} true iff preview captured all information.
      */
-    _appendObjectPreview: function(obj, description, titleElement)
+    _appendObjectPreview: function(obj, titleElement)
     {
         var preview = obj.preview;
         var isArray = obj.subtype === "array";
+        var arrayLength = isArray ? obj.arrayLength() : undefined;
+        var properties = preview.properties;
 
-        if (description)
-            titleElement.createTextChild(" ");
-        titleElement.createTextChild(isArray ? "[" : "{");
-        for (var i = 0; i < preview.properties.length; ++i) {
-            if (i > 0)
-                titleElement.createTextChild(", ");
-
-            var property = preview.properties[i];
+        var elements = [];
+        for (var i = 0; i < properties.length; ++i) {
+            var property = properties[i];
             var name = property.name;
-            if (!isArray || name != i) {
-                if (/^\s|\s$|^$|\n/.test(name))
-                    name = "\"" + name.replace(/\n/g, "\u21B5") + "\"";
-                titleElement.createChild("span", "name").textContent = name;
-                titleElement.createTextChild(": ");
+            elements.push({
+                name: name,
+                element: this._renderPropertyPreviewOrAccessor(obj, [property])
+            });
+        }
+
+        this._appendArrayOrObjectPropertyElements(titleElement, elements, preview.overflow, arrayLength);
+        return preview.lossless;
+    },
+
+    /**
+     * @param {!Element} parent
+     * @param {!Array.<{name: string, element: !Element}>} propertyElements
+     * @param {boolean} overflow
+     * @param {number=} arrayLength
+     */
+    _appendArrayOrObjectPropertyElements: function(parent, propertyElements, overflow, arrayLength)
+    {
+        const maxFlatArrayLength = 100;
+
+        /**
+         * @param {{name: string, element: !Element}} a
+         * @param {{name: string, element: !Element}} b
+         * @return {number}
+         */
+        function comparator(a, b)
+        {
+            var isIndex1 = String.isArrayIndexPropertyName(a.name, arrayLength);
+            var isIndex2 = String.isArrayIndexPropertyName(b.name, arrayLength);
+            if (isIndex1 && isIndex2)
+                return Number(a.name) - Number(b.name);
+            if (isIndex1)
+                return -1;
+            if (isIndex2)
+                return 1;
+            return 0;
+        }
+
+        var isArray = typeof arrayLength === "number";
+        if (isArray)
+            propertyElements.stableSort(comparator);
+        var isFlatArray = isArray && (arrayLength <= maxFlatArrayLength);
+
+        parent.createTextChild(isArray ? "[" : "{");
+        var firstElement = true;
+        var lastNonEmptyArrayIndex = -1;
+
+        function appendCommaIfNeeded()
+        {
+            if (firstElement)
+                firstElement = false;
+            else
+                parent.createTextChild(", ");
+        }
+
+        /**
+         * @param {number=} index
+         */
+        function appendUndefinedArrayElements(index)
+        {
+            if (typeof index !== "number")
+                return;
+            var undefinedRange = index - lastNonEmptyArrayIndex - 1;
+            lastNonEmptyArrayIndex = index;
+            if (undefinedRange < 1)
+                return;
+            appendCommaIfNeeded();
+            var span = parent.createChild("span", "console-formatted-undefined");
+            span.textContent = WebInspector.UIString("undefined × %d", undefinedRange);
+        }
+
+        /**
+         * @param {string} name
+         */
+        function appendPropertyName(name)
+        {
+            if (/^\s|\s$|^$|\n/.test(name))
+                name = "\"" + name.replace(/\n/g, "\u21B5") + "\"";
+            parent.createChild("span", "name").textContent = name;
+            parent.createTextChild(": ");
+        }
+
+        for (var i = 0, n = propertyElements.length; i < n; ++i) {
+            var name = propertyElements[i].name;
+            var element = propertyElements[i].element;
+            var isIndex = String.isArrayIndexPropertyName(name, arrayLength);
+            var index = isIndex ? Number(name) : 0;
+
+            if (isFlatArray) {
+                appendUndefinedArrayElements(isIndex ? index : arrayLength);
+                appendCommaIfNeeded();
+                if (!isIndex)
+                    appendPropertyName(name);
+            } else {
+                appendCommaIfNeeded();
+                if (!isArray || !isIndex || index !== i)
+                    appendPropertyName(name);
             }
 
-            titleElement.appendChild(this._renderPropertyPreviewOrAccessor(obj, [property]));
+            parent.appendChild(element);
         }
-        if (preview.overflow)
-            titleElement.createChild("span").textContent = "\u2026";
-        titleElement.createTextChild(isArray ? "]" : "}");
-        return preview.lossless;
+        if (isFlatArray)
+            appendUndefinedArrayElements(arrayLength);
+
+        if (overflow)
+            parent.createChild("span").textContent = "\u2026";
+        parent.createTextChild(isArray ? "]" : "}");
     },
 
     /**
@@ -510,7 +602,7 @@ WebInspector.ConsoleMessageImpl.prototype = {
         if (this._isOutdated || array.arrayLength() > maxFlatArrayLength)
             this._formatParameterAsObject(array, elem, false);
         else
-            array.getOwnProperties(this._printArray.bind(this, array, elem));
+            array.getAllProperties(false, this._printArray.bind(this, array, elem));
     },
 
     /**
@@ -593,51 +685,36 @@ WebInspector.ConsoleMessageImpl.prototype = {
      */
     _printArray: function(array, elem, properties)
     {
-        if (!properties)
+        if (!properties) {
+            // Fall back to object formatting.
+            this._formatParameterAsObject(array, elem, false);
             return;
+        }
+        const maxNonIndexElements = 5;
+        var arrayLength = array.arrayLength();
 
         var elements = [];
+        var nonIndexElements = 0;
         for (var i = 0; i < properties.length; ++i) {
             var property = properties[i];
             var name = property.name;
-            if (isNaN(name))
-                continue;
-            if (property.getter)
-                elements[name] = this._formatAsAccessorProperty(array, [name], true);
-            else if (property.value)
-                elements[name] = this._formatAsArrayEntry(property.value);
-        }
-
-        elem.appendChild(document.createTextNode("["));
-        var lastNonEmptyIndex = -1;
-
-        function appendUndefined(elem, index)
-        {
-            if (index - lastNonEmptyIndex <= 1)
-                return;
-            var span = elem.createChild("span", "console-formatted-undefined");
-            span.textContent = WebInspector.UIString("undefined × %d", index - lastNonEmptyIndex - 1);
-        }
-
-        var length = array.arrayLength();
-        for (var i = 0; i < length; ++i) {
-            var element = elements[i];
-            if (!element)
-                continue;
-
-            if (i - lastNonEmptyIndex > 1) {
-                appendUndefined(elem, i);
-                elem.appendChild(document.createTextNode(", "));
+            if (!String.isArrayIndexPropertyName(name, arrayLength)) {
+                if (name === "length" || !property.enumerable)
+                    continue;
+                if (++nonIndexElements > maxNonIndexElements)
+                    continue;
             }
-
-            elem.appendChild(element);
-            lastNonEmptyIndex = i;
-            if (i < length - 1)
-                elem.appendChild(document.createTextNode(", "));
+            var element = null;
+            if (property.getter)
+                element = this._formatAsAccessorProperty(array, [name], true);
+            else if (property.value)
+                element = this._formatAsArrayEntry(property.value);
+            if (element)
+                elements.push({ name: name, element: element });
         }
-        appendUndefined(elem, length);
 
-        elem.appendChild(document.createTextNode("]"));
+        var overflow = (nonIndexElements > maxNonIndexElements);
+        this._appendArrayOrObjectPropertyElements(elem, elements, overflow, arrayLength);
     },
 
     /**
