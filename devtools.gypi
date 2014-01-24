@@ -293,6 +293,7 @@
             'front_end/UISourceCodeFrame.js',
             'front_end/WatchExpressionsSidebarPane.js',
             'front_end/WorkersSidebarPane.js',
+            'front_end/ThreadsToolbar.js',
         ],
         'devtools_timeline_js_files': [
             'front_end/MemoryStatistics.js',

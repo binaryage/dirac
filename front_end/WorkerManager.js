@@ -35,6 +35,7 @@
 WebInspector.WorkerManager = function()
 {
     this._workerIdToWindow = {};
+    this._reset();
     InspectorBackend.registerWorkerDispatcher(new WebInspector.WorkerDispatcher(this));
 }
 
@@ -116,24 +117,38 @@ WebInspector.WorkerManager._calculateWorkerInspectorTitle = function()
 }
 
 WebInspector.WorkerManager.Events = {
-    WorkerAdded: "worker-added",
-    WorkerRemoved: "worker-removed",
-    WorkersCleared: "workers-cleared",
+    WorkerAdded: "WorkerAdded",
+    WorkerRemoved: "WorkerRemoved",
+    WorkersCleared: "WorkersCleared",
+    WorkerSelectionChanged: "WorkerSelectionChanged",
 }
 
 WebInspector.WorkerManager.prototype = {
+
+    _reset: function()
+    {
+        /** @type {!Object.<number, string>} */
+        this._threadUrlByThreadId = {0: WebInspector.UIString("Thread: Main")};
+        this._threadsList = [0];
+        this._selectedThreadId = 0;
+    },
+
     _workerCreated: function(workerId, url, inspectorConnected)
-     {
+    {
         if (inspectorConnected)
             this._openInspectorWindow(workerId, true);
+        this._threadsList.push(workerId);
+        this._threadUrlByThreadId[workerId] = url;
         this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkerAdded, {workerId: workerId, url: url, inspectorConnected: inspectorConnected});
      },
 
     _workerTerminated: function(workerId)
-     {
+    {
         this.closeWorkerInspector(workerId);
+        this._threadsList.remove(workerId);
+        delete this._threadUrlByThreadId[workerId];
         this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkerRemoved, workerId);
-     },
+    },
 
     _sendMessageToWorkerInspector: function(workerId, message)
     {
@@ -190,6 +205,8 @@ WebInspector.WorkerManager.prototype = {
     {
         for (var workerId in this._workerIdToWindow)
             this.closeWorkerInspector(workerId);
+
+        this._reset();
         this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkersCleared);
     },
 
@@ -224,6 +241,39 @@ WebInspector.WorkerManager.prototype = {
         var screen = new WebInspector.WorkerTerminatedScreen();
         WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, screen.hide, screen);
         screen.showModal();
+    },
+
+    /**
+     * @return {!Array.<number>}
+     */
+    threadsList: function()
+    {
+        return this._threadsList;
+    },
+
+    /**
+     * @param {number} threadId
+     * @return {string}
+     */
+    threadUrl: function(threadId)
+    {
+        return this._threadUrlByThreadId[threadId];
+    },
+
+    /**
+     * @param {number} threadId
+     */
+    setSelectedThreadId: function(threadId)
+    {
+        this._selectedThreadId = threadId;
+    },
+
+    /**
+     * @return {number}
+     */
+    selectedThreadId: function()
+    {
+        return this._selectedThreadId;
     },
 
     __proto__: WebInspector.Object.prototype

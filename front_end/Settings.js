@@ -287,6 +287,7 @@ WebInspector.ExperimentsSettings = function()
     this.showEditorInDrawer = this._createExperiment("showEditorInDrawer", "Show editor in drawer");
     this.gpuTimeline = this._createExperiment("gpuTimeline", "Show GPU data on timeline");
     this.applyCustomStylesheet = this._createExperiment("applyCustomStylesheet", "Allow custom UI themes");
+    this.workersInMainWindow = this._createExperiment("workersInMainWindow", "Show workers in main window");
 
     this._cleanUpSetting();
 }

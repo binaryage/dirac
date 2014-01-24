@@ -43,6 +43,7 @@ importScript("StyleSheetOutlineDialog.js");
 importScript("TabbedEditorContainer.js");
 importScript("WatchExpressionsSidebarPane.js");
 importScript("WorkersSidebarPane.js");
+importScript("ThreadsToolbar.js");
 
 /**
  * @constructor
@@ -77,6 +78,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     var helpSection = WebInspector.shortcutsScreen.section(WebInspector.UIString("Sources Panel"));
     this.debugToolbar = this._createDebugToolbar();
+    this.threadsToolbar = new WebInspector.ThreadsToolbar();
 
     const initialDebugSidebarWidth = 225;
     const minimumDebugSidebarWidthPercent = 0.5;
@@ -1088,7 +1090,7 @@ WebInspector.SourcesPanel.prototype = {
     _createDebugToolbar: function()
     {
         var debugToolbar = document.createElement("div");
-        debugToolbar.id = "scripts-debug-toolbar";
+        debugToolbar.className = "scripts-debug-toolbar";
 
         var title, handler;
         var platformSpecificModifier = WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta;
@@ -1701,6 +1703,7 @@ WebInspector.SourcesPanel.prototype = {
         var vbox = new WebInspector.View();
         vbox.element.classList.add("fill", "vbox");
         vbox.element.appendChild(this.debugToolbar);
+        vbox.element.appendChild(this.threadsToolbar.element);
         var sidebarPaneStack = new WebInspector.SidebarPaneStack();
         sidebarPaneStack.element.classList.add("flex-auto");
         sidebarPaneStack.show(vbox.element);

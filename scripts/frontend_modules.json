@@ -256,7 +256,8 @@
             "TabbedEditorContainer.js",
             "UISourceCodeFrame.js",
             "WatchExpressionsSidebarPane.js",
-            "WorkersSidebarPane.js"
+            "WorkersSidebarPane.js",
+            "ThreadsToolbar.js"
         ]
     },
     {

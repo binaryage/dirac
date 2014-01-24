@@ -47,7 +47,7 @@
     background-color: rgb(66, 129, 235);
 }
 
-#scripts-debug-toolbar {
+.scripts-debug-toolbar {
     flex: 0 0 23px;
     border-bottom: 1px solid rgb(202, 202, 202);
     background-color: rgb(236, 236, 236);
@@ -243,4 +243,9 @@ a.worker-item:hover {
 
 .panel.sources .sidebar-pane-stack {
     overflow: auto;
+}
+
+.threads-toolbar {
+    padding-left: 10px;
+    margin-top: -1px;
 }
