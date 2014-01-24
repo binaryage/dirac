@@ -420,6 +420,8 @@ WebInspector.InspectorView.prototype = {
             }
         } else {
             this._splitView.showOnlySecond();
+            this._splitView.uninstallResizer(this._tabbedPane.headerElement());
+            this._splitView.uninstallResizer(this._splitView.resizerElement());
         }
     },
 
