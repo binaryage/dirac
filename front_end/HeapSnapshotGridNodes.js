@@ -674,6 +674,7 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
             break;
         case "internal":
         case "hidden":
+        case "weak":
             nameClass = "console-formatted-null";
             break;
         case "element":
