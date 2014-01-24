@@ -189,7 +189,7 @@ WebInspector.NetworkLogView.prototype = {
     {
         var columns = [];
         columns.push({
-            id: "name", 
+            id: "name",
             titleDOMFragment: this._makeHeaderFragment(WebInspector.UIString("Name"), WebInspector.UIString("Path")),
             title: WebInspector.UIString("Name"),
             sortable: true,
@@ -1129,6 +1129,11 @@ WebInspector.NetworkLogView.prototype = {
                 row.enableStyleClass("offscreen", !rowIsVisible);
                 row.rowIsVisible = rowIsVisible;
             }
+            var rowIsOdd = !!(unfilteredRowIndex & 1);
+            if (rowIsOdd !== row.rowIsOdd) {
+                row.enableStyleClass("odd", rowIsOdd);
+                row.rowIsOdd = rowIsOdd;
+            }
             unfilteredRowIndex++;
         }
     },
@@ -1725,7 +1730,7 @@ WebInspector.NetworkPanel.prototype = {
         this._networkLogView.searchCanceled();
     },
 
-    /** 
+    /**
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      * @this {WebInspector.NetworkPanel}
