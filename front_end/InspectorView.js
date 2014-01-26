@@ -54,12 +54,13 @@ WebInspector.InspectorView = function()
     this._zoomFactor = WebInspector.zoomFactor();
     WebInspector.settings.zoomLevel.addChangeListener(this._onZoomChanged, this);
 
-    this._devtoolsElement = this._splitView.sidebarElement();
-    this._devtoolsElement.classList.add("vbox");
+    this._devtoolsView = new WebInspector.View();
+    this._devtoolsView.element.className = "vbox fill";
+    this._splitView.setSidebarView(this._devtoolsView);
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.setRetainTabOrder(true, WebInspector.moduleManager.orderComparator(WebInspector.Panel, "name", "order"));
-    this._splitView.setSidebarView(this._tabbedPane);
+    this._tabbedPane.show(this._devtoolsView.element);
 
     this._toolbarElement = document.createElement("div");
     this._toolbarElement.className = "toolbar toolbar-background";
@@ -149,7 +150,7 @@ WebInspector.InspectorView.prototype = {
      */
     devtoolsElement: function()
     {
-        return this._devtoolsElement;
+        return this._devtoolsView.element;
     },
 
     /**
@@ -408,17 +409,24 @@ WebInspector.InspectorView.prototype = {
     {
         var dockSide = WebInspector.dockController.dockSide();
         if (dockSide !== WebInspector.DockController.State.Undocked) {
-            this._splitView.showBoth();
-            var vertical = dockSide === WebInspector.DockController.State.DockedToRight;
+            var vertical = WebInspector.dockController.isVertical();
             this._splitView.setVertical(vertical);
             if (vertical) {
+                this._splitView.setSecondIsSidebar(dockSide === WebInspector.DockController.State.DockedToRight);
                 this._splitView.uninstallResizer(this._tabbedPane.headerElement());
                 this._splitView.installResizer(this._splitView.resizerElement());
             } else {
+                this._splitView.setSecondIsSidebar(true);
                 this._splitView.uninstallResizer(this._splitView.resizerElement());
                 this._splitView.installResizer(this._tabbedPane.headerElement());
             }
+            this._splitView.setMainView(this._overlayView);
+            this._splitView.setSidebarView(this._devtoolsView);
+            this._splitView.showBoth();
         } else {
+            this._splitView.setSecondIsSidebar(true);
+            this._splitView.setMainView(this._overlayView);
+            this._splitView.setSidebarView(this._devtoolsView);
             this._splitView.showOnlySecond();
             this._splitView.uninstallResizer(this._tabbedPane.headerElement());
             this._splitView.uninstallResizer(this._splitView.resizerElement());
@@ -441,11 +449,13 @@ WebInspector.InspectorView.prototype = {
     _setContentsInsets: function()
     {
         delete this._setContentsInsetsId;
-        // Leave 3px room for resizer.
         var sidebarSize = Math.ceil(this._splitView.sidebarSize() * WebInspector.zoomFactor());
         var bottom = this._splitView.isVertical() ? 0 : sidebarSize;
-        var right = this._splitView.isVertical() ? sidebarSize + 3 : 0;
-        InspectorFrontendHost.setContentsInsets(0, 0, bottom, right);
+        // Leave 3px room for resizer.
+        var vertical = this._splitView.isVertical() ? sidebarSize + 3 : 0;
+        var right = this._splitView.isSidebarSecond() ? vertical : 0;
+        var left = this._splitView.isSidebarSecond() ? 0 : vertical;
+        InspectorFrontendHost.setContentsInsets(0, left, bottom, right);
     },
 
     _onZoomChanged: function()

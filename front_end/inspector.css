@@ -588,6 +588,10 @@ button.status-bar-item.dock-status-bar-item.toggled-right .glyph {
     -webkit-mask-position: -256px -48px;
 }
 
+button.status-bar-item.dock-status-bar-item.toggled-left .glyph {
+    -webkit-mask-position: -32px -120px;
+}
+
 body.undocked .alternate-status-bar-buttons-bar {
     margin-left: 1px;
 }
@@ -2855,4 +2859,8 @@ body.undocked .toolbar-close-button-item {
 
 body.dock-to-bottom #inspector-split-view > .split-view-resizer {
     display: none;
+}
+
+#inspector-split-view > .split-view-sidebar {
+    position: relative;
 }

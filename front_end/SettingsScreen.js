@@ -283,7 +283,8 @@ WebInspector.GenericSettingsTab = function()
     this._appendDrawerNote(p.lastElementChild);
     p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show 'Rendering' view in console drawer."), WebInspector.settings.showRenderingViewInDrawer));
     this._appendDrawerNote(p.lastElementChild);
-    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Split panels vertically when docked to right"), WebInspector.settings.splitVerticallyWhenDockedToRight));
+    var splitVerticallyTitle = WebInspector.UIString("Split panels vertically when docked to %s", WebInspector.experimentsSettings.dockToLeft.isEnabled() ? "left or right" : "right");
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(splitVerticallyTitle, WebInspector.settings.splitVerticallyWhenDockedToRight));
 
     p = this._appendSection(WebInspector.UIString("Elements"));
     var colorFormatElement = this._createSelectSetting(WebInspector.UIString("Color format"), [

@@ -1662,8 +1662,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _dockSideChanged: function()
     {
-        var dockSide = WebInspector.dockController.dockSide();
-        var vertically = dockSide === WebInspector.DockController.State.DockedToRight && WebInspector.settings.splitVerticallyWhenDockedToRight.get();
+        var vertically = WebInspector.dockController.isVertical() && WebInspector.settings.splitVerticallyWhenDockedToRight.get();
         this._splitVertically(vertically);
     },
 

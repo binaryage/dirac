@@ -288,6 +288,7 @@ WebInspector.ExperimentsSettings = function()
     this.gpuTimeline = this._createExperiment("gpuTimeline", "Show GPU data on timeline");
     this.applyCustomStylesheet = this._createExperiment("applyCustomStylesheet", "Allow custom UI themes");
     this.workersInMainWindow = this._createExperiment("workersInMainWindow", "Show workers in main window");
+    this.dockToLeft = this._createExperiment("dockToLeft", "Enable dock to left mode");
 
     this._cleanUpSetting();
 }

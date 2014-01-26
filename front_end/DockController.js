@@ -42,10 +42,16 @@ WebInspector.DockController = function()
 
     WebInspector.settings.currentDockState = WebInspector.settings.createSetting("currentDockState", "");
     WebInspector.settings.lastDockState = WebInspector.settings.createSetting("lastDockState", "");
+    var states = [WebInspector.DockController.State.DockedToBottom, WebInspector.DockController.State.Undocked, WebInspector.DockController.State.DockedToRight];
+    var titles = [WebInspector.UIString("Dock to main window."), WebInspector.UIString("Undock into separate window."), WebInspector.UIString("Dock to main window.")];
+    if (WebInspector.experimentsSettings.dockToLeft.isEnabled()) {
+        states.push(WebInspector.DockController.State.DockedToLeft);
+        titles.push(WebInspector.UIString("Dock to main window."));
+    }
     this._dockToggleButton = new WebInspector.StatusBarStatesSettingButton(
         "dock-status-bar-item",
-        [WebInspector.DockController.State.DockedToBottom, WebInspector.DockController.State.Undocked, WebInspector.DockController.State.DockedToRight],
-        [WebInspector.UIString("Dock to main window."), WebInspector.UIString("Undock into separate window."), WebInspector.UIString("Dock to main window.")],
+        states,
+        titles,
         WebInspector.settings.currentDockState,
         WebInspector.settings.lastDockState,
         this._dockSideChanged.bind(this));
@@ -54,6 +60,7 @@ WebInspector.DockController = function()
 WebInspector.DockController.State = {
     DockedToBottom: "bottom",
     DockedToRight: "right",
+    DockedToLeft: "left",
     Undocked: "undocked"
 }
 
@@ -79,6 +86,14 @@ WebInspector.DockController.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isVertical: function()
+    {
+        return this._dockSide === WebInspector.DockController.State.DockedToRight || this._dockSide === WebInspector.DockController.State.DockedToLeft;
+    },
+
+    /**
      * @param {string} dockSide
      */
     _dockSideChanged: function(dockSide)
@@ -101,16 +116,25 @@ WebInspector.DockController.prototype = {
         case WebInspector.DockController.State.DockedToBottom:
             body.classList.remove("undocked");
             body.classList.remove("dock-to-right");
+            body.classList.remove("dock-to-left");
             body.classList.add("dock-to-bottom");
             break;
         case WebInspector.DockController.State.DockedToRight: 
             body.classList.remove("undocked");
             body.classList.add("dock-to-right");
+            body.classList.remove("dock-to-left");
             body.classList.remove("dock-to-bottom");
             break;
-        case WebInspector.DockController.State.Undocked: 
+        case WebInspector.DockController.State.DockedToLeft:
+            body.classList.remove("undocked");
+            body.classList.remove("dock-to-right");
+            body.classList.add("dock-to-left");
+            body.classList.remove("dock-to-bottom");
+            break;
+        case WebInspector.DockController.State.Undocked:
             body.classList.add("undocked");
             body.classList.remove("dock-to-right");
+            body.classList.remove("dock-to-left");
             body.classList.remove("dock-to-bottom");
             break;
         }
