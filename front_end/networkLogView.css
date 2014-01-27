@@ -103,7 +103,7 @@
     height: 41px;
 }
 
-.network-log-grid.data-grid tr.odd {
+.network-log-grid.data-grid tr.odd:not(.selected) {
     background-color: #f3f3f3;
 }
 
