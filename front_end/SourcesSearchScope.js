@@ -213,6 +213,7 @@ WebInspector.SourcesSearchScope.prototype = {
 
     /**
      * @param {!WebInspector.SearchConfig} searchConfig
+     * @return {!WebInspector.FileBasedSearchResultsPane}
      */
     createSearchResultsPane: function(searchConfig)
     {

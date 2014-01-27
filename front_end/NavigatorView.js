@@ -798,7 +798,7 @@ WebInspector.NavigatorTreeNode.prototype = {
     /**
      * @return {!TreeElement}
      */
-    treeElement: function() { },
+    treeElement: function() { throw "Not implemented"; },
 
     dispose: function() { },
 

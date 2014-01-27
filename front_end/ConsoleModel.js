@@ -202,7 +202,7 @@ WebInspector.ConsoleMessage.prototype = {
      */
     clone: function()
     {
-        // Implemented by concrete instances
+        throw "Not implemented";
     },
 
     /**
@@ -210,7 +210,7 @@ WebInspector.ConsoleMessage.prototype = {
      */
     location: function()
     {
-        // Implemented by concrete instances
+        throw "Not implemented";
     },
 
     /**

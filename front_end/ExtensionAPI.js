@@ -249,12 +249,12 @@ Network.prototype = {
             }
             callback(result);
         }
-        return extensionServer.sendRequest({ command: commands.GetHAR }, callback && callbackWrapper);
+        extensionServer.sendRequest({ command: commands.GetHAR }, callback && callbackWrapper);
     },
 
     addRequestHeaders: function(headers)
     {
-        return extensionServer.sendRequest({ command: commands.AddRequestHeaders, headers: headers, extensionId: window.location.hostname });
+        extensionServer.sendRequest({ command: commands.AddRequestHeaders, headers: headers, extensionId: window.location.hostname });
     }
 }
 
@@ -476,6 +476,9 @@ function ExtensionPanelImpl(id)
 }
 
 ExtensionPanelImpl.prototype = {
+    /**
+     * @return {!Object}
+     */
     createStatusBarButton: function(iconPath, tooltipText, disabled)
     {
         var id = "button-" + extensionServer.nextObjectId();
@@ -579,6 +582,9 @@ function Audits()
 }
 
 Audits.prototype = {
+    /**
+     * @return {!AuditCategory}
+     */
     addCategory: function(displayName, resultCount)
     {
         var id = "extension-audit-category-" + extensionServer.nextObjectId();
@@ -643,6 +649,9 @@ AuditResultImpl.prototype = {
         extensionServer.sendRequest(request);
     },
 
+    /**
+     * @return {!Object}
+     */
     createResult: function()
     {
         return new AuditResultNode(Array.prototype.slice.call(arguments));
@@ -658,11 +667,17 @@ AuditResultImpl.prototype = {
         extensionServer.sendRequest({ command: commands.StopAuditCategoryRun, resultId: this._id });
     },
 
+    /**
+     * @type {!Object.<string, string>}
+     */
     get Severity()
     {
         return apiPrivate.audits.Severity;
     },
 
+    /**
+     * @return {!{type: string, arguments: !Array.<string|number>}}
+     */
     createResourceLink: function(url, lineNumber)
     {
         return {
@@ -671,6 +686,9 @@ AuditResultImpl.prototype = {
         };
     },
 
+    /**
+     * @return {!{type: string, arguments: !Array.<string|number>}}
+     */
     _nodeFactory: function(type)
     {
         return {
@@ -691,6 +709,9 @@ function AuditResultNode(contents)
 }
 
 AuditResultNode.prototype = {
+    /**
+     * @return {!Object}
+     */
     addChild: function()
     {
         var node = new AuditResultNode(Array.prototype.slice.call(arguments));
@@ -735,9 +756,12 @@ InspectedWindow.prototype = {
             console.warn("Passing userAgent as string parameter to inspectedWindow.reload() is deprecated. " +
                          "Use inspectedWindow.reload({ userAgent: value}) instead.");
         }
-        return extensionServer.sendRequest({ command: commands.Reload, options: options });
+        extensionServer.sendRequest({ command: commands.Reload, options: options });
     },
 
+    /**
+     * @return {?Object}
+     */
     eval: function(expression, evaluateOptions)
     {
         var callback = extractCallbackArgument(arguments);
@@ -754,7 +778,8 @@ InspectedWindow.prototype = {
         };
         if (typeof evaluateOptions === "object")
             request.evaluateOptions = evaluateOptions;
-        return extensionServer.sendRequest(request, callback && callbackWrapper);
+        extensionServer.sendRequest(request, callback && callbackWrapper);
+        return null;
     },
 
     getResources: function(callback)
@@ -767,7 +792,7 @@ InspectedWindow.prototype = {
         {
             callback(resources.map(wrapResource));
         }
-        return extensionServer.sendRequest({ command: commands.GetPageResources }, callback && callbackWrapper);
+        extensionServer.sendRequest({ command: commands.GetPageResources }, callback && callbackWrapper);
     }
 }
 
@@ -798,12 +823,12 @@ ResourceImpl.prototype = {
             callback(response.content, response.encoding);
         }
 
-        return extensionServer.sendRequest({ command: commands.GetResourceContent, url: this._url }, callback && callbackWrapper);
+        extensionServer.sendRequest({ command: commands.GetResourceContent, url: this._url }, callback && callbackWrapper);
     },
 
     setContent: function(content, commit, callback)
     {
-        return extensionServer.sendRequest({ command: commands.SetResourceContent, url: this._url, content: content, commit: commit }, callback);
+        extensionServer.sendRequest({ command: commands.SetResourceContent, url: this._url, content: content, commit: commit }, callback);
     }
 }
 
@@ -864,9 +889,12 @@ ExtensionServerClient.prototype = {
     {
         if (typeof callback === "function")
             message.requestId = this._registerCallback(callback);
-        return this._port.postMessage(message);
+        this._port.postMessage(message);
     },
 
+    /**
+     * @return {boolean}
+     */
     hasHandler: function(command)
     {
         return !!this._handlers[command];
@@ -882,6 +910,9 @@ ExtensionServerClient.prototype = {
         delete this._handlers[command];
     },
 
+    /**
+     * @return {string}
+     */
     nextObjectId: function()
     {
         return injectedScriptId + "_" + ++this._lastObjectId;

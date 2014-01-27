@@ -938,7 +938,7 @@ WebInspector.LiveLocation.prototype = {
      */
     uiLocation: function()
     {
-        // Should be overridden by subclasses.
+        throw "Not implemented";
     },
 
     dispose: function()

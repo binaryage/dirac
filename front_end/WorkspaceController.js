@@ -56,6 +56,9 @@ WebInspector.WorkspaceController.prototype = {
             return;
         this._fileSystemRefreshTimeout = setTimeout(refreshFileSystems.bind(this), 1000);
 
+        /**
+         * @this {WebInspector.WorkspaceController}
+         */
         function refreshFileSystems()
         {
             delete this._fileSystemRefreshTimeout;
