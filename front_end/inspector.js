@@ -372,7 +372,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.domStorageModel = new WebInspector.DOMStorageModel();
 
     this.cpuProfilerModel = new WebInspector.CPUProfilerModel();
-    HeapProfilerAgent.enable();
 
     if (WebInspector.settings.showPaintRects.get() || WebInspector.settings.showDebugBorders.get() || WebInspector.settings.continuousPainting.get() ||
             WebInspector.settings.showFPSCounter.get() || WebInspector.settings.showScrollBottleneckRects.get()) {
