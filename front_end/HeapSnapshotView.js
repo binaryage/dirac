@@ -922,7 +922,6 @@ WebInspector.HeapSnapshotProfileType.prototype = {
             return;
         profile.title = profileHeader.title;
         profile.uid = profileHeader.uid;
-        profile.maxJSObjectId = profileHeader.maxJSObjectId || 0;
 
         profile.sidebarElement.mainTitle = profile.title;
         profile.sidebarElement.subtitle = "";
@@ -1166,12 +1165,11 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
  * @param {!WebInspector.ProfileType} type
  * @param {string} title
  * @param {number=} uid
- * @param {number=} maxJSObjectId
  */
-WebInspector.HeapProfileHeader = function(type, title, uid, maxJSObjectId)
+WebInspector.HeapProfileHeader = function(type, title, uid)
 {
     WebInspector.ProfileHeader.call(this, type, title, uid);
-    this.maxJSObjectId = maxJSObjectId;
+    this.maxJSObjectId = -1;
     /**
      * @type {?WebInspector.HeapSnapshotWorkerProxy}
      */
@@ -1351,20 +1349,10 @@ WebInspector.HeapProfileHeader.prototype = {
             return;
         this._receiver = null;
         this._snapshotProxy = snapshotProxy;
+        this.maxJSObjectId = snapshotProxy.maxJSObjectId();
         this._didCompleteSnapshotTransfer();
         this._workerProxy.startCheckingForLongRunningCalls();
         this.notifySnapshotReceived();
-
-        /**
-         * @this {WebInspector.HeapProfileHeader}
-         */
-        function didGetMaxNodeId(id)
-        {
-           this.maxJSObjectId = id;
-        }
-
-        if (this.fromFile())
-            snapshotProxy.maxJsNodeId(didGetMaxNodeId.bind(this));
     },
 
     notifySnapshotReceived: function()

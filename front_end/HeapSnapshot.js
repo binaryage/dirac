@@ -1797,11 +1797,31 @@ WebInspector.HeapSnapshot.prototype = {
     },
 
     /**
-     * @return {!{nodeCount: number, rootNodeIndex: number, totalSize: number, uid: string}}
+     * @return {number}
+     */
+    _maxJsNodeId: function()
+    {
+        var nodeFieldCount = this._nodeFieldCount;
+        var nodes = this._nodes;
+        var nodesLength = nodes.length;
+        var id = 0;
+        for (var nodeIndex = this._nodeIdOffset; nodeIndex < nodesLength; nodeIndex += nodeFieldCount) {
+            var nextId = nodes[nodeIndex];
+            // JS objects have odd ids, skip native objects.
+            if (nextId % 2 === 0)
+                continue;
+            if (id < nextId)
+                id = nextId;
+        }
+        return id;
+    },
+
+    /**
+     * @return {!WebInspector.HeapSnapshotCommon.StaticData}
      */
     updateStaticData: function()
     {
-        return {nodeCount: this.nodeCount, rootNodeIndex: this._rootNodeIndex, totalSize: this.totalSize, uid: this.uid};
+        return new WebInspector.HeapSnapshotCommon.StaticData(this.nodeCount, this._rootNodeIndex, this.totalSize, this.uid, this._maxJsNodeId());
     }
 };
 

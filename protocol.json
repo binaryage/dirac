@@ -3520,8 +3520,7 @@
                 "description": "Profile header.",
                 "properties": [
                     { "name": "title", "type": "string", "description": "Profile title." },
-                    { "name": "uid", "type": "integer", "description": "Unique identifier of the profile." },
-                    { "name": "maxJSObjectId", "type": "integer", "optional": true, "description": "Last seen JS object Id." }
+                    { "name": "uid", "type": "integer", "description": "Unique identifier of the profile." }
                 ]
             },
             {

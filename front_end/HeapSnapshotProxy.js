@@ -319,16 +319,7 @@ WebInspector.HeapSnapshotLoaderProxy.prototype = {
         function updateStaticData(snapshotProxy)
         {
             this.dispose();
-            snapshotProxy.updateStaticData(notifyPendingConsumers.bind(this));
-        }
-
-        /**
-         * @param {!WebInspector.HeapSnapshotProxy} snapshotProxy
-         * @this {WebInspector.HeapSnapshotLoaderProxy}
-         */
-        function notifyPendingConsumers(snapshotProxy)
-        {
-            this._snapshotReceivedCallback(snapshotProxy);
+            snapshotProxy.updateStaticData(this._snapshotReceivedCallback.bind(this));
         }
 
         this.callMethod(buildSnapshot.bind(this), "close");
@@ -347,6 +338,8 @@ WebInspector.HeapSnapshotLoaderProxy.prototype = {
 WebInspector.HeapSnapshotProxy = function(worker, objectId)
 {
     WebInspector.HeapSnapshotProxyObject.call(this, worker, objectId);
+    /** @type {?WebInspector.HeapSnapshotCommon.StaticData} */
+    this._staticData = null;
 }
 
 WebInspector.HeapSnapshotProxy.prototype = {
@@ -442,14 +435,6 @@ WebInspector.HeapSnapshotProxy.prototype = {
         return this.callFactoryMethod(null, "createNodesProviderForDominator", WebInspector.HeapSnapshotProviderProxy, nodeIndex);
     },
 
-    /**
-     * @param {function(number)} callback
-     */
-    maxJsNodeId: function(callback)
-    {
-        this.callMethod(callback, "maxJsNodeId");
-    },
-
     allocationTracesTops: function(callback)
     {
         this.callMethod(callback, "allocationTracesTops");
@@ -478,6 +463,7 @@ WebInspector.HeapSnapshotProxy.prototype = {
     updateStaticData: function(callback)
     {
         /**
+         * @param {!WebInspector.HeapSnapshotCommon.StaticData} staticData
          * @this {WebInspector.HeapSnapshotProxy}
          */
         function dataReceived(staticData)
@@ -496,6 +482,14 @@ WebInspector.HeapSnapshotProxy.prototype = {
     get uid()
     {
         return this._staticData.uid;
+    },
+
+    /**
+     * @return {number}
+     */
+    maxJSObjectId: function()
+    {
+        return this._staticData.maxJSObjectId;
     },
 
     __proto__: WebInspector.HeapSnapshotProxyObject.prototype
