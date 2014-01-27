@@ -198,8 +198,6 @@ WebInspector.ProfileType.prototype = {
      */
     removeProfile: function(profile)
     {
-        if (this._profileBeingRecorded === profile)
-            this._profileBeingRecorded = null;
         var index = this._profiles.indexOf(profile);
         if (index === -1)
             return;
@@ -238,6 +236,8 @@ WebInspector.ProfileType.prototype = {
     {
         this.dispatchEventToListeners(WebInspector.ProfileType.Events.RemoveProfileHeader, profile);
         profile.dispose();
+        if (this._profileBeingRecorded === profile)
+            this._profileBeingRecorded = null;
     },
 
     __proto__: WebInspector.Object.prototype
