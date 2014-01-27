@@ -413,6 +413,7 @@ WebInspector.ProfilesPanel = function(name, type)
     this._profileTypeStatusBarItemsContainer = this._statusBarElement.createChild("div");
     this._profileViewStatusBarItemsContainer = this._statusBarElement.createChild("div");
 
+    this._profileGroups = {};
     if (singleProfileMode) {
         this._launcherView = this._createLauncherView();
         this._registerProfileType(/** @type {!WebInspector.ProfileType} */ (type));
@@ -422,15 +423,13 @@ WebInspector.ProfilesPanel = function(name, type)
         this._launcherView = new WebInspector.MultiProfileLauncherView(this);
         this._launcherView.addEventListener(WebInspector.MultiProfileLauncherView.EventTypes.ProfileTypeSelected, this._onProfileTypeSelected, this);
 
-        this._registerProfileType(new WebInspector.CPUProfileType());
-        this._registerProfileType(new WebInspector.HeapSnapshotProfileType());
-        this._registerProfileType(new WebInspector.TrackingHeapSnapshotProfileType(this));
-        if (!WebInspector.WorkerManager.isWorkerFrontend() && WebInspector.experimentsSettings.canvasInspection.isEnabled())
-            this._registerProfileType(new WebInspector.CanvasProfileType());
+        var types = WebInspector.ProfileTypeRegistry.instance.profileTypes();
+        for (var i = 0; i < types.length; i++)
+            this._registerProfileType(types[i]);
         this._launcherView.restoreSelectedProfileType();
     }
-
-    this._reset();
+    this.profilesItemTreeElement.select();
+    this._showLauncherView();
 
     this._createFileSelectorElement();
     this.element.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
@@ -439,6 +438,46 @@ WebInspector.ProfilesPanel = function(name, type)
     this._configureCpuProfilerSamplingInterval();
     WebInspector.settings.highResolutionCpuProfiling.addChangeListener(this._configureCpuProfilerSamplingInterval, this);
 }
+
+
+/**
+ * @constructor
+ */
+WebInspector.ProfileTypeRegistry = function() {
+    this._profileTypes = [];
+
+    this.cpuProfileType = new WebInspector.CPUProfileType();
+    this._addProfileType(this.cpuProfileType);
+    this.heapSnapshotProfileType = new WebInspector.HeapSnapshotProfileType();
+    this._addProfileType(this.heapSnapshotProfileType);
+    this.trackingHeapSnapshotProfileType = new WebInspector.TrackingHeapSnapshotProfileType();
+    this._addProfileType(this.trackingHeapSnapshotProfileType);
+
+    if (!WebInspector.WorkerManager.isWorkerFrontend() && WebInspector.experimentsSettings.canvasInspection.isEnabled()) {
+        this.canvasProfileType = new WebInspector.CanvasProfileType();
+        this._addProfileType(this.canvasProfileType);
+    }
+}
+
+WebInspector.ProfileTypeRegistry.prototype = {
+    /**
+     * @param {!WebInspector.ProfileType} profileType
+     */
+    _addProfileType: function(profileType)
+    {
+        this._profileTypes.push(profileType);
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.ProfileType>}
+     */
+    profileTypes: function()
+    {
+        return this._profileTypes;
+    }
+}
+
+
 
 WebInspector.ProfilesPanel.prototype = {
     /**
@@ -651,6 +690,10 @@ WebInspector.ProfilesPanel.prototype = {
         profileType.addEventListener(WebInspector.ProfileType.Events.ViewUpdated, this._updateProfileTypeSpecificUI, this);
         profileType.addEventListener(WebInspector.ProfileType.Events.AddProfileHeader, onAddProfileHeader, this);
         profileType.addEventListener(WebInspector.ProfileType.Events.RemoveProfileHeader, onRemoveProfileHeader, this);
+
+        var profiles = profileType.getProfiles();
+        for (var i = 0; i < profiles.length; i++)
+            this._addProfileHeader(profiles[i]);
     },
 
     /**
@@ -1155,7 +1198,7 @@ WebInspector.ProfilesSidebarTreeElement.prototype = {
  */
 WebInspector.CPUProfilerPanel = function()
 {
-    WebInspector.ProfilesPanel.call(this, "cpu-profiler", new WebInspector.CPUProfileType());
+    WebInspector.ProfilesPanel.call(this, "cpu-profiler", WebInspector.ProfileTypeRegistry.instance.cpuProfileType);
 }
 
 WebInspector.CPUProfilerPanel.prototype = {
@@ -1169,10 +1212,10 @@ WebInspector.CPUProfilerPanel.prototype = {
  */
 WebInspector.HeapProfilerPanel = function()
 {
-    var heapSnapshotProfileType = new WebInspector.HeapSnapshotProfileType();
+    var heapSnapshotProfileType = WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
     WebInspector.ProfilesPanel.call(this, "heap-profiler", heapSnapshotProfileType);
     this._singleProfileMode = false;
-    this._registerProfileType(new WebInspector.TrackingHeapSnapshotProfileType(this));
+    this._registerProfileType(WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType);
     this._launcherView.addEventListener(WebInspector.MultiProfileLauncherView.EventTypes.ProfileTypeSelected, this._onProfileTypeSelected, this);
     this._launcherView._profileTypeChanged(heapSnapshotProfileType);
 }
@@ -1193,7 +1236,7 @@ WebInspector.HeapProfilerPanel.prototype = {
  */
 WebInspector.CanvasProfilerPanel = function()
 {
-    WebInspector.ProfilesPanel.call(this, "canvas-profiler", new WebInspector.CanvasProfileType());
+    WebInspector.ProfilesPanel.call(this, "canvas-profiler", WebInspector.ProfileTypeRegistry.instance.canvasProfileType);
 }
 
 WebInspector.CanvasProfilerPanel.prototype = {
@@ -1213,3 +1256,5 @@ importScript("ProfileLauncherView.js");
 importScript("TopDownProfileDataGridTree.js");
 importScript("CanvasProfileView.js");
 importScript("CanvasReplayStateView.js");
+
+WebInspector.ProfileTypeRegistry.instance = new WebInspector.ProfileTypeRegistry();

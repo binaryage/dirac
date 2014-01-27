@@ -993,12 +993,10 @@ WebInspector.HeapSnapshotProfileType.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotProfileType}
- * @param {!WebInspector.ProfilesPanel} profilesPanel
  */
-WebInspector.TrackingHeapSnapshotProfileType = function(profilesPanel)
+WebInspector.TrackingHeapSnapshotProfileType = function()
 {
     WebInspector.ProfileType.call(this, WebInspector.TrackingHeapSnapshotProfileType.TypeId, WebInspector.UIString("Record Heap Allocations"));
-    this._profilesPanel = profilesPanel;
     WebInspector.HeapProfilerDispatcher._dispatcher.register(this);
 }
 
