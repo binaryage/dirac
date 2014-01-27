@@ -82,6 +82,7 @@ body.inactive .resources.panel .sidebar li.selected .selection {
     bottom: 23px;
     left: 0;
     right: 0;
+    display: flex;
 }
 
 .resources-status-bar {
@@ -127,7 +128,7 @@ li.selected .base-storage-tree-element-subtitle {
 }
 
 .storage-view.visible {
-    display: block;
+    display: flex;
 }
 
 .storage-view {
@@ -136,7 +137,7 @@ li.selected .base-storage-tree-element-subtitle {
 
 .storage-view .data-grid:not(.inline) {
     border: none;
-    height: 100%;
+    flex: auto;
 }
 
 .storage-view .storage-table-error {

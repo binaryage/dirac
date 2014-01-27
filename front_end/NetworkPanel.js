@@ -49,7 +49,6 @@ importScript("ResourceWebSocketFrameView.js");
 WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
 {
     WebInspector.View.call(this);
-    this.element.classList.add("vbox", "fill");
     this.registerRequiredCSS("networkLogView.css");
     this.registerRequiredCSS("filter.css");
 
@@ -1483,8 +1482,6 @@ WebInspector.NetworkPanel = function()
     this.registerRequiredCSS("networkPanel.css");
     this._injectStyles();
 
-    this.element.classList.add("vbox");
-
     this._panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
     this._filterBar = new WebInspector.FilterBar();
     this._filtersContainer = this.element.createChild("div", "network-filters-header hidden");
@@ -1496,7 +1493,6 @@ WebInspector.NetworkPanel = function()
     this._contentsElement = this._searchableView.element;
 
     this.createSidebarView(this._contentsElement);
-    this.splitView.element.classList.remove("fill");
     this.splitView.hideMainElement();
 
     var defaultColumnsVisibility = WebInspector.NetworkLogView._defaultColumnsVisibility;

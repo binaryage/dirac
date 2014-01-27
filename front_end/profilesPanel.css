@@ -72,12 +72,12 @@
 }
 
 .profile-view.visible {
-    display: block;
+    display: flex;
 }
 
 .profile-view .data-grid {
     border: none;
-    height: 100%;
+    flex: auto;
 }
 
 .profile-view .data-grid th.average-column {

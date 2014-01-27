@@ -37,7 +37,6 @@ WebInspector.RevisionHistoryView = function()
     WebInspector.View.call(this);
     this.registerRequiredCSS("revisionHistory.css");
     this.element.classList.add("revision-history-drawer");
-    this.element.classList.add("fill");
     this.element.classList.add("outline-disclosure");
     this._uiSourceCodeItems = new Map();
 

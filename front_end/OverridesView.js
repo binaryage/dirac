@@ -37,7 +37,7 @@ WebInspector.OverridesView = function()
     WebInspector.View.call(this);
     this.registerRequiredCSS("overrides.css");
     this.registerRequiredCSS("helpScreen.css");
-    this.element.classList.add("overrides-view", "fill", "vbox");
+    this.element.classList.add("overrides-view");
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.shrinkableTabs = false;

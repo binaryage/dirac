@@ -237,7 +237,7 @@ WebInspector.SearchView = function(controller)
 
     this._controller = controller;
 
-    this.element.className = "search-view vbox";
+    this.element.classList.add("search-view");
 
     this._searchPanelElement = this.element.createChild("div", "search-drawer-header");
     this._searchPanelElement.addEventListener("keydown", this._onKeyDown.bind(this), false);

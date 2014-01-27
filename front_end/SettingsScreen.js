@@ -158,7 +158,7 @@ WebInspector.SettingsScreen.prototype = {
 WebInspector.SettingsTab = function(name, id)
 {
     WebInspector.View.call(this);
-    this.element.className = "settings-tab-container";
+    this.element.classList.add("settings-tab-container");
     if (id)
         this.element.id = id;
     var header = this.element.createChild("header");

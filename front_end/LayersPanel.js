@@ -68,7 +68,6 @@ WebInspector.LayersPanel = function()
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.LayerSnapshotRequested, this._onSnapshotRequested, this);
 
     this._tabbedPane = new WebInspector.TabbedPane();
-    this._tabbedPane.element.classList.add("fill");
     this._tabbedPane.show(this._rightSplitView.secondElement());
 
     this._layerDetailsView = new WebInspector.LayerDetailsView(this._model);

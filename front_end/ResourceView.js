@@ -114,7 +114,6 @@ WebInspector.ResourceSourceFrameFallback = function(resource)
 {
     WebInspector.View.call(this);
     this._resource = resource;
-    this.element.classList.add("fill");
     this.element.classList.add("script-view");
     this._content = this.element.createChild("div", "script-view-fallback monospace");
 }

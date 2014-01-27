@@ -125,15 +125,10 @@ button.status-bar-item.scripts-navigator-show-hide-button.toggled-overlay {
 .script-view {
     display: none;
     overflow: hidden;
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
 }
 
 .script-view.visible {
-    display: block;
+    display: flex;
 }
 
 .dedicated-worker-item {

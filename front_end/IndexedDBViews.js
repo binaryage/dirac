@@ -38,7 +38,6 @@ WebInspector.IDBDatabaseView = function(database)
     WebInspector.View.call(this);
     this.registerRequiredCSS("indexedDBViews.css");
 
-    this.element.classList.add("fill");
     this.element.classList.add("indexed-db-database-view");
 
     this._headersListElement = this.element.createChild("ol", "outline-disclosure");

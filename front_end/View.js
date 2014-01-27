@@ -31,6 +31,7 @@
 WebInspector.View = function()
 {
     this.element = document.createElement("div");
+    this.element.className = "view";
     this.element.__view = this;
     this._visible = true;
     this._isRoot = false;
@@ -510,7 +511,6 @@ WebInspector.ViewWithResizeCallback.prototype = {
 
     __proto__: WebInspector.View.prototype
 }
-
 
 Element.prototype.appendChild = function(child)
 {

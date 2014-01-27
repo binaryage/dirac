@@ -40,14 +40,23 @@ input[type="text"]:focus {
     bottom: 0;
 }
 
+.view {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    flex: auto;
+}
+
 .hbox {
-    display: flex !important;
-    flex-direction: row;
+    display: flex;
+    flex-direction: row !important;
+    position: relative;
 }
 
 .vbox {
-    display: flex !important;
-    flex-direction: column;
+    display: flex;
+    flex-direction: column !important;
+    position: relative;
 }
 
 .flex-auto {

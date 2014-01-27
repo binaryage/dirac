@@ -37,7 +37,6 @@ WebInspector.FlameChart = function(dataProvider)
 {
     WebInspector.View.call(this);
     this.registerRequiredCSS("flameChart.css");
-    this.element.className = "fill";
     this.element.id = "cpu-flame-chart";
 
     this._overviewPane = new WebInspector.FlameChart.OverviewPane(dataProvider);

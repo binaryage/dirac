@@ -50,7 +50,6 @@ WebInspector.ScreencastView._HttpRegex = /^https?:\/\/(.+)/;
 WebInspector.ScreencastView.prototype = {
     initialize: function()
     {
-        this.element.classList.add("fill");
         this.element.classList.add("screencast");
 
         this._createNavigationBar();

@@ -39,9 +39,6 @@ WebInspector.SearchableView = function(searchable)
     WebInspector.View.call(this);
 
     this._searchProvider = searchable;
-
-    this.element.classList.add("vbox");
-    this.element.style.flex = "auto";
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
 
     this._footerElementContainer = this.element.createChild("div", "inspector-footer status-bar hidden");

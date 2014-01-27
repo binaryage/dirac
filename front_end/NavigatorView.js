@@ -44,7 +44,6 @@ WebInspector.NavigatorView = function()
     scriptsOutlineElement.classList.add("navigator");
     scriptsOutlineElement.appendChild(scriptsTreeElement);
 
-    this.element.classList.add("fill");
     this.element.classList.add("navigator-container");
     this.element.appendChild(scriptsOutlineElement);
     this.setDefaultFocusedElement(this._scriptsTree.element);

@@ -85,12 +85,7 @@
 
 .network-item-view {
     display: none;
-    position: absolute;
     background: white;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
 }
 
 .network-item-view.visible {
@@ -192,10 +187,11 @@
 }
 
 .resource-cookies-view.visible {
-    display: block;
+    display: flex;
 }
 
 .resource-cookies-view .data-grid {
+    flex: auto;
     height: 100%;
 }
 

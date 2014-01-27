@@ -39,7 +39,7 @@ WebInspector.HelpScreen = function(title)
     this.markAsRoot();
     this.registerRequiredCSS("helpScreen.css");
 
-    this.element.className = "help-window-outer";
+    this.element.classList.add("help-window-outer");
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
     this.element.tabIndex = 0;
 

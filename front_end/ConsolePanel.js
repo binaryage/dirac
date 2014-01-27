@@ -88,7 +88,7 @@ WebInspector.ConsolePanel.ViewFactory.prototype = {
 WebInspector.ConsolePanel.WrapperView = function()
 {
     WebInspector.View.call(this);
-    this.element.className = "fill console-view-wrapper";
+    this.element.classList.add("console-view-wrapper");
 
     this._view = WebInspector.consoleView;
     // FIXME: this won't be needed once drawer becomes a view.

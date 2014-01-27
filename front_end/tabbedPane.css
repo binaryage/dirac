@@ -37,6 +37,7 @@
     overflow: auto;
     flex: auto;
     display: flex;
+    flex-direction: column;
 }
 
 .tabbed-pane-content.has-no-tabs {

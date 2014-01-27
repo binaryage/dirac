@@ -165,6 +165,10 @@ button.overrides-swap {
     margin-bottom: 10px;
 }
 
+.overrides-device, .overrides-viewport, .overrides-user-agent, .overrides-sensors {
+    flex: none !important;
+}
+
 .overrides-sensors input {
     text-align: right;
 }

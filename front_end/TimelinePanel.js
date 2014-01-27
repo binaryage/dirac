@@ -50,7 +50,6 @@ WebInspector.TimelinePanel = function()
     WebInspector.Panel.call(this, "timeline");
     this.registerRequiredCSS("timelinePanel.css");
     this.registerRequiredCSS("filter.css");
-    this.element.classList.add("vbox");
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), false);
 
     // Create model.

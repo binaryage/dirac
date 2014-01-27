@@ -38,7 +38,6 @@
 WebInspector.CookiesTable = function(expandable, refreshCallback, selectedCallback)
 {
     WebInspector.View.call(this);
-    this.element.className = "fill";
 
     var readOnly = expandable;
     this._refreshCallback = refreshCallback;

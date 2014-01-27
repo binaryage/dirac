@@ -58,13 +58,11 @@ WebInspector.ElementsPanel = function()
     const initialSidebarHeight = 325;
     const minimumContentHeightPercent = 0.34;
     this.createSidebarView(this.element, WebInspector.SidebarView.SidebarPosition.End, initialSidebarWidth, initialSidebarHeight);
-    this.splitView.sidebarElement().classList.add("vbox");
     this.splitView.setSidebarElementConstraints(Preferences.minElementsSidebarWidth, Preferences.minElementsSidebarHeight);
     this.splitView.setMainElementConstraints(minimumContentWidthPercent, minimumContentHeightPercent);
     this.splitView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._updateTreeOutlineVisibleWidth.bind(this));
 
     this._searchableView = new WebInspector.SearchableView(this);
-    this.splitView.mainElement().classList.add("vbox");
     this.splitView.setMainView(this._searchableView);
     var stackElement = this._searchableView.element;
 

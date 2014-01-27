@@ -102,9 +102,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     var tabbedEditorPlaceholderText = WebInspector.isMac() ? WebInspector.UIString("Hit Cmd+O to open a file") : WebInspector.UIString("Hit Ctrl+O to open a file");
 
-    this.editorView.mainElement().classList.add("vbox");
-    this.editorView.sidebarElement().classList.add("vbox");
-
     this.sourcesView = new WebInspector.SourcesView();
 
     this._searchableView = new WebInspector.SearchableView(this);
@@ -1692,7 +1689,6 @@ WebInspector.SourcesPanel.prototype = {
 
         // Create vertical box with stack.
         var vbox = new WebInspector.View();
-        vbox.element.classList.add("fill", "vbox");
         vbox.element.appendChild(this.debugToolbar);
         vbox.element.appendChild(this.threadsToolbar.element);
         var sidebarPaneStack = new WebInspector.SidebarPaneStack();
@@ -1792,7 +1788,6 @@ WebInspector.SourcesView = function()
     WebInspector.View.call(this);
     this.registerRequiredCSS("sourcesView.css");
     this.element.id = "sources-panel-sources-view";
-    this.element.classList.add("vbox");
     this.element.addEventListener("dragenter", this._onDragEnter.bind(this), true);
     this.element.addEventListener("dragover", this._onDragOver.bind(this), true);
 }
@@ -1855,7 +1850,6 @@ WebInspector.DrawerEditorView = function()
 {
     WebInspector.View.call(this);
     this.element.id = "drawer-editor-view";
-    this.element.classList.add("vbox");
 }
 
 WebInspector.DrawerEditorView.prototype = {

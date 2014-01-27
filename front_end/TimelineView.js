@@ -76,10 +76,8 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
 
     // Create top level properties splitter.
     this._detailsSplitView = new WebInspector.SplitView(false, "timeline-details");
-    this._detailsSplitView.element.classList.remove("fill");
     this._detailsSplitView.element.classList.add("timeline-details-split");
     this._detailsSplitView.sidebarElement().classList.add("timeline-details");
-    this._detailsSplitView.mainElement().classList.add("vbox");
     this._detailsSplitView.setMainElementConstraints(undefined, 40);
     this._detailsView = new WebInspector.TimelineDetailsView();
     this._detailsSplitView.setSidebarView(this._detailsView);
@@ -201,13 +199,11 @@ WebInspector.TimelineView.prototype = {
         this._containerElement.addEventListener("scroll", this._onScroll.bind(this), false);
 
         // Create records list in the records sidebar.
-        recordsView.sidebarElement().classList.add("vbox");
         recordsView.sidebarElement().createChild("div", "timeline-records-title").textContent = WebInspector.UIString("RECORDS");
         this._sidebarListElement = recordsView.sidebarElement().createChild("div", "timeline-records-list");
 
         // Create grid in the records main area.
         this._gridContainer = new WebInspector.ViewWithResizeCallback(this._onViewportResize.bind(this));
-        this._gridContainer.element.classList.add("fill");
         this._gridContainer.element.id = "resources-container-content";
         recordsView.setMainView(this._gridContainer);
         this._timelineGrid = new WebInspector.TimelineGrid();
@@ -1872,8 +1868,7 @@ WebInspector.TimelineWindowFilter.prototype = {
 WebInspector.TimelineDetailsView = function()
 {
     WebInspector.View.call(this);
-    this.element = document.createElement("div");
-    this.element.className = "timeline-details-view fill vbox";
+    this.element.classList.add("timeline-details-view");
     this._titleElement = this.element.createChild("div", "timeline-details-view-title");
     this._titleElement.textContent = WebInspector.UIString("DETAILS");
     this._contentElement = this.element.createChild("div", "timeline-details-view-body");

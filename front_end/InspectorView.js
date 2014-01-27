@@ -36,7 +36,7 @@ WebInspector.InspectorView = function()
 {
     WebInspector.View.call(this);
     this.markAsRoot();
-    this.element.classList.add("fill", "vbox", "inspector-view");
+    this.element.classList.add("inspector-view");
     this.element.setAttribute("spellcheck", false);
 
     // We can use split view either for docking or screencast, but not together.
@@ -55,7 +55,6 @@ WebInspector.InspectorView = function()
     WebInspector.settings.zoomLevel.addChangeListener(this._onZoomChanged, this);
 
     this._devtoolsView = new WebInspector.View();
-    this._devtoolsView.element.className = "vbox fill";
     this._splitView.setSidebarView(this._devtoolsView);
 
     this._tabbedPane = new WebInspector.TabbedPane();
@@ -538,7 +537,6 @@ WebInspector.InspectorView.prototype = {
 WebInspector.InspectorView.OverlayView = function()
 {
     WebInspector.View.call(this);
-    this.element.className = "fill";
 }
 
 WebInspector.InspectorView.OverlayView.prototype = {

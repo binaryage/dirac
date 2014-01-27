@@ -36,7 +36,6 @@
 WebInspector.Layers3DView = function(model)
 {
     WebInspector.View.call(this);
-    this.element.classList.add("fill");
     this.element.classList.add("layers-3d-view");
     this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("Not in the composited mode.\nConsider forcing composited mode in Settings."));
     this._model = model;

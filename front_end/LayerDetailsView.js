@@ -36,7 +36,6 @@
 WebInspector.LayerDetailsView = function(model)
 {
     WebInspector.View.call(this);
-    this.element.classList.add("fill");
     this.element.classList.add("layer-details-view");
     this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("Select a layer to see its details"));
     this._createTable();

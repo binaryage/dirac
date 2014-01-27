@@ -37,7 +37,7 @@
 WebInspector.PaintProfilerView = function(model, layers3DView)
 {
     WebInspector.View.call(this);
-    this.element.classList.add("fill", "paint-profiler-view");
+    this.element.classList.add("paint-profiler-view");
 
     this._model = model;
     this._layers3DView = layers3DView;

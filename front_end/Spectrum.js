@@ -35,7 +35,7 @@ WebInspector.Spectrum = function()
     WebInspector.View.call(this);
     this.registerRequiredCSS("spectrum.css");
 
-    this.element.className = "spectrum-container";
+    this.element.classList.add("spectrum-container");
     this.element.tabIndex = 0;
 
     var topElement = this.element.createChild("div", "spectrum-top");

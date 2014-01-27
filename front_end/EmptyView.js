@@ -41,7 +41,7 @@ WebInspector.EmptyView = function(text)
 WebInspector.EmptyView.prototype = {
     wasShown: function()
     {
-        this.element.className = "empty-view";
+        this.element.classList.add("empty-view");
         this.element.textContent = this._text;
     },
 

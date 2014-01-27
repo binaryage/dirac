@@ -288,7 +288,6 @@ WebInspector.TimelineOverviewCalculator.prototype = {
 WebInspector.TimelineOverviewBase = function(model)
 {
     WebInspector.View.call(this);
-    this.element.classList.add("fill");
 
     this._model = model;
     this._canvas = this.element.createChild("canvas", "fill");

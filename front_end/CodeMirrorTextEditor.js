@@ -166,7 +166,6 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this.element.addEventListener("mousedown", updateAnticipateJumpFlag.bind(this, true), true);
     this.element.addEventListener("mousedown", updateAnticipateJumpFlag.bind(this, false), false);
 
-    this.element.classList.add("fill");
     this.element.style.overflow = "hidden";
     this.element.firstChild.classList.add("source-code");
     this.element.firstChild.classList.add("fill");

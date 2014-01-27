@@ -39,12 +39,10 @@ WebInspector.SplitView = function(isVertical, sidebarSizeSettingName, defaultSid
     WebInspector.View.call(this);
 
     this.registerRequiredCSS("splitView.css");
-
     this.element.classList.add("split-view");
-    this.element.classList.add("fill");
 
-    this._firstElement = this.element.createChild("div", "split-view-contents scroll-target split-view-contents-first");
-    this._secondElement = this.element.createChild("div", "split-view-contents scroll-target split-view-contents-second");
+    this._firstElement = this.element.createChild("div", "split-view-contents scroll-target split-view-contents-first vbox");
+    this._secondElement = this.element.createChild("div", "split-view-contents scroll-target split-view-contents-second vbox");
 
     this._resizerElement = this.element.createChild("div", "split-view-resizer");
     this._onDragStartBound = this._onDragStart.bind(this);

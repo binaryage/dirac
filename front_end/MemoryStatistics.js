@@ -37,7 +37,6 @@
 WebInspector.MemoryStatistics = function(timelineView, model)
 {
     WebInspector.SidebarView.call(this, WebInspector.SidebarView.SidebarPosition.Start, undefined);
-    this.element.classList.add("fill");
     this.element.id = "memory-graphs-container";
 
     this._timelineView = timelineView;

@@ -372,9 +372,6 @@ WebInspector.ProfilesPanel = function()
 
     this.createSidebarViewWithTree();
 
-    this.splitView.mainElement().classList.add("vbox");
-    this.splitView.sidebarElement().classList.add("vbox");
-
     this._searchableView = new WebInspector.SearchableView(this);
     this.splitView.setMainView(this._searchableView);
 
