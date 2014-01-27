@@ -28,25 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-/**
- * @param {string} methodName
- */
-function dispatchMethodByName(methodName)
-{
-    var callId = ++lastCallId;
-    var argsArray = Array.prototype.slice.call(arguments, 1);
-    var callback = argsArray[argsArray.length - 1];
-    if (typeof callback === "function") {
-        argsArray.pop();
-        InspectorFrontendHost._callbacks[callId] = callback;
-    }
-
-    var message = { "id": callId, "method": methodName };
-    if (argsArray.length)
-        message.params = argsArray;
-    InspectorFrontendHost.sendMessageToEmbedder(JSON.stringify(message));
-}
-
 if (!window.InspectorFrontendHost) {
 
 /**
@@ -128,14 +109,6 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     },
 
     setInjectedScriptForOrigin: function(origin, script)
-    {
-    },
-
-    loaded: function()
-    {
-    },
-
-    localizedStringsURL: function()
     {
     },
 
@@ -254,40 +227,4 @@ WebInspector.InspectorFrontendHostStub.prototype = {
 
 InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
 
-} else if (InspectorFrontendHost.sendMessageToEmbedder) {
-  // Install message-based handlers with callbacks.
-    var lastCallId = 0;
-    InspectorFrontendHost._callbacks = [];
-
-    /**
-     * @param {number} id
-     * @param {?string} error
-     */
-    InspectorFrontendHost.embedderMessageAck = function(id, error)
-    {
-        var callback = InspectorFrontendHost._callbacks[id];
-        delete InspectorFrontendHost._callbacks[id];
-        if (callback)
-            callback(error);
-    }
-
-    var methodList = [
-        "addFileSystem",
-        "append",
-        "bringToFront",
-        "closeWindow",
-        "indexPath",
-        "moveWindowBy",
-        "openInNewTab",
-        "removeFileSystem",
-        "requestFileSystems",
-        "save",
-        "searchInPath",
-        "setContentsInsets",
-        "setIsDocked",
-        "stopIndexing"
-    ];
-
-    for (var i = 0; i < methodList.length; ++i)
-        InspectorFrontendHost[methodList[i]] = dispatchMethodByName.bind(null, methodList[i]);
 }

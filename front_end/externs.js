@@ -268,8 +268,6 @@ InspectorFrontendHostAPI.prototype.copyText = function(text) {}
 InspectorFrontendHostAPI.prototype.inspectedURLChanged = function(url) {}
 InspectorFrontendHostAPI.prototype.isolatedFileSystem = function(fileSystemId, registeredName) {}
 InspectorFrontendHostAPI.prototype.upgradeDraggedFileSystemPermissions = function(DOMFileSystem) {}
-InspectorFrontendHostAPI.prototype.loaded = function() {}
-InspectorFrontendHostAPI.prototype.localizedStringsURL = function() {}
 InspectorFrontendHostAPI.prototype.platform = function() {}
 InspectorFrontendHostAPI.prototype.port = function() {}
 InspectorFrontendHostAPI.prototype.recordActionTaken = function(actionCode) {}
@@ -281,8 +279,10 @@ InspectorFrontendHostAPI.prototype.setInjectedScriptForOrigin = function(origin,
 InspectorFrontendHostAPI.prototype.setIsDocked = function(isDocked) {}
 InspectorFrontendHostAPI.prototype.setZoomFactor = function(zoom) {}
 InspectorFrontendHostAPI.prototype.supportsFileSystems = function() {}
+InspectorFrontendHostAPI.prototype.zoomFactor = function() {}
 /** @type {InspectorFrontendHostAPI} */
 var InspectorFrontendHost;
+InspectorFrontendHost.embedderMessageAck = function(id, error) {}
 
 /** @constructor */
 function SourceMapV3()
