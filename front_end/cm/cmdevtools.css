@@ -52,7 +52,7 @@
 .cm-breakpoint .CodeMirror-linenumber {
   color: white;
   border-width: 1px 4px 1px 1px !important;
-  -webkit-border-image: url(Images/breakpoint2.png) 1 4 1 1;
+  -webkit-border-image: url(Images/breakpoint.png) 1 4 1 1;
   margin: 0px 0px 0px 3px !important;
   padding-right: 3px;
   padding-left: 1px;
@@ -61,15 +61,15 @@
 }
 
 .cm-breakpoint.cm-breakpoint-conditional .CodeMirror-linenumber {
-  -webkit-border-image: url(Images/breakpointConditional2.png) 1 4 1 1;
+  -webkit-border-image: url(Images/breakpointConditional.png) 1 4 1 1;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .cm-breakpoint .CodeMirror-linenumber {
-  -webkit-border-image: url(Images/breakpoint2_2x.png) 2 8 2 2;
+  -webkit-border-image: url(Images/breakpoint_2x.png) 2 8 2 2;
 }
 .cm-breakpoint.cm-breakpoint-conditional .CodeMirror-linenumber {
-  -webkit-border-image: url(Images/breakpointConditional2_2x.png) 2 8 2 2;
+  -webkit-border-image: url(Images/breakpointConditional_2x.png) 2 8 2 2;
 }
 } /* media */
 

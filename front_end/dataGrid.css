@@ -171,7 +171,7 @@
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .data-grid th.sort-ascending > div::after,
 .data-grid th.sort-descending > div::after {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -215,7 +215,7 @@ body.inactive .data-grid th.sort-descending {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .data-grid tr.parent td.disclosure::before {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 

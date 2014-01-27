@@ -133,7 +133,7 @@
 .audit-result-view .severity-severe,
 .audit-result-view .severity-warning,
 .audit-result-view .severity-info {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -167,7 +167,7 @@
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .audit-result-tree li.parent::before {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 

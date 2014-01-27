@@ -179,7 +179,7 @@ li.selected .base-storage-tree-element-subtitle {
 .database-user-query::before,
 .database-query-prompt::before,
 .database-query-result::before {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 

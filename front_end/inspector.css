@@ -367,7 +367,7 @@ body.undocked.platform-mac.inactive .toolbar-background {
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .close-button,
 .close-button-gray {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -485,7 +485,7 @@ body.remote .toolbar-item .close-button {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .long-click-glyph {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -548,7 +548,7 @@ button.status-bar-item.extension {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .status-bar-select-arrow {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -581,7 +581,7 @@ select.status-bar-item {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .status-bar-item > .glyph {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -723,7 +723,7 @@ body.remote .dock-status-bar-item {
 .red-ball,
 .green-ball,
 .orange-ball {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -933,7 +933,7 @@ body.platform-linux .source-code {
 .console-user-command::before,
 #console-prompt::before,
 .console-group-title::before {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -1008,7 +1008,7 @@ body.platform-linux .source-code {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .console-group-title::before {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -1068,7 +1068,7 @@ body.platform-linux .source-code {
 .console-warning-level::before,
 .console-debug-level::before,
 .console-info-level::before {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -1413,7 +1413,7 @@ iframe.panel.extension {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .outline-disclosure li.parent::before {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -1533,7 +1533,7 @@ iframe.panel.extension {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .section > .header::before {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -1648,7 +1648,7 @@ iframe.panel.extension {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .properties-tree li.parent::before {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -2047,7 +2047,7 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .sidebar-tree-item .disclosure-button {
-    -webkit-mask-image: url(Images/statusbarButtonGlyphs2x.png);
+    -webkit-mask-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
@@ -2567,7 +2567,7 @@ body.platform-mac .search-drawer-header input[type="checkbox"].search-config-che
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 #search-results-pane-file-based li.parent::before {
-    background-image: url(Images/statusbarButtonGlyphs2x.png);
+    background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
 
