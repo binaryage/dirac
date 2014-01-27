@@ -154,7 +154,7 @@ WebInspector.HeapSnapshotView.enableAllocationProfiler = false;
 WebInspector.HeapSnapshotView.prototype = {
     _refreshView: function()
     {
-        this.profile.load(profileCallback.bind(this));
+        this._profile.load(profileCallback.bind(this));
 
         /**
          * @this {WebInspector.HeapSnapshotView}
@@ -182,28 +182,18 @@ WebInspector.HeapSnapshotView.prototype = {
         return [this.viewSelect.element, this.baseSelect.element, this.filterSelect.element, this.selectedSizeText.element];
     },
 
-    get profile()
-    {
-        return this._profile;
-    },
-
-    get baseProfile()
-    {
-        return this._profile.profileType().getProfile(this._baseProfileUid);
-    },
-
     wasShown: function()
     {
         // FIXME: load base and current snapshots in parallel
-        this.profile.load(profileCallback.bind(this));
+        this._profile.load(profileCallback.bind(this));
 
         /**
          * @this {WebInspector.HeapSnapshotView}
          */
         function profileCallback() {
-            this.profile._wasShown();
-            if (this.baseProfile)
-                this.baseProfile.load(function() { });
+            this._profile._wasShown();
+            if (this._baseProfile)
+                this._baseProfile.load(function() { });
         }
     },
 
@@ -383,14 +373,14 @@ WebInspector.HeapSnapshotView.prototype = {
 
     _changeBase: function()
     {
-        if (this._baseProfileUid === this._profiles()[this.baseSelect.selectedIndex()].uid)
+        if (this._baseProfile=== this._profiles()[this.baseSelect.selectedIndex()])
             return;
 
-        this._baseProfileUid = this._profiles()[this.baseSelect.selectedIndex()].uid;
+        this._baseProfile = this._profiles()[this.baseSelect.selectedIndex()];
         var dataGrid = /** @type {!WebInspector.HeapSnapshotDiffDataGrid} */ (this.dataGrid);
         // Change set base data source only if main data source is already set.
         if (dataGrid.snapshot)
-            this.baseProfile.load(dataGrid.setBaseDataSource.bind(dataGrid));
+            this._baseProfile.load(dataGrid.setBaseDataSource.bind(dataGrid));
 
         if (!this.currentQuery || !this._searchFinishedCallback || !this._searchResults)
             return;
@@ -467,7 +457,7 @@ WebInspector.HeapSnapshotView.prototype = {
     _inspectedObjectChanged: function(event)
     {
         var selectedNode = event.target.selectedNode;
-        if (!this.profile.fromFile() && selectedNode instanceof WebInspector.HeapSnapshotGenericObjectNode)
+        if (!this._profile.fromFile() && selectedNode instanceof WebInspector.HeapSnapshotGenericObjectNode)
             ConsoleAgent.addInspectedHeapObject(selectedNode.snapshotNodeId);
     },
 
@@ -527,7 +517,7 @@ WebInspector.HeapSnapshotView.prototype = {
         if (dataGrid.snapshot)
             return;
 
-        this.profile.load(didLoadSnapshot.bind(this));
+        this._profile.load(didLoadSnapshot.bind(this));
 
         /**
          * @this {WebInspector.HeapSnapshotView}
@@ -539,9 +529,9 @@ WebInspector.HeapSnapshotView.prototype = {
             if (dataGrid.snapshot !== snapshotProxy)
                 dataGrid.setDataSource(snapshotProxy);
             if (dataGrid === this.diffDataGrid) {
-                if (!this._baseProfileUid)
-                    this._baseProfileUid = this._profiles()[this.baseSelect.selectedIndex()].uid;
-                this.baseProfile.load(didLoadBaseSnaphot.bind(this));
+                if (!this._baseProfile)
+                    this._baseProfile = this._profiles()[this.baseSelect.selectedIndex()];
+                this._baseProfile.load(didLoadBaseSnaphot.bind(this));
             }
         }
 
@@ -625,7 +615,7 @@ WebInspector.HeapSnapshotView.prototype = {
 
     _resolveObjectForPopover: function(element, showCallback, objectGroupName)
     {
-        if (this.profile.fromFile())
+        if (this._profile.fromFile())
             return;
         element.node.queryObjectContent(showCallback, objectGroupName);
     },
@@ -723,8 +713,8 @@ WebInspector.HeapSnapshotView.prototype = {
         var profile = event.data;
         if (this._profile === profile) {
             this.detach();
-            this.profile.profileType().removeEventListener(WebInspector.ProfileType.Events.AddProfileHeader, this._onProfileHeaderAdded, this);
-            this.profile.profileType().removeEventListener(WebInspector.ProfileType.Events.RemoveProfileHeader, this._onProfileHeaderRemoved, this);
+            this._profile.profileType().removeEventListener(WebInspector.ProfileType.Events.AddProfileHeader, this._onProfileHeaderAdded, this);
+            this._profile.profileType().removeEventListener(WebInspector.ProfileType.Events.RemoveProfileHeader, this._onProfileHeaderRemoved, this);
         } else {
             this._updateControls();
         }
