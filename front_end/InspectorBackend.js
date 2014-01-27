@@ -234,7 +234,7 @@ InspectorBackendClass.prototype = {
             var domainName = method[0];
             var functionName = method[1];
             if (!(domainName in this._domainDispatchers)) {
-                console.error("Protocol Error: the message " + messageObject.method + " is for non-existing domain '" + domainName + "'");
+                console.error("Protocol Error: the message is for non-existing domain '" + domainName + "'");
                 return;
             }
             var dispatcher = this._domainDispatchers[domainName];

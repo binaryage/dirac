@@ -436,7 +436,6 @@ WebInspector.ProfileTypeRegistry = function() {
     this._addProfileType(this.heapSnapshotProfileType);
     this.trackingHeapSnapshotProfileType = new WebInspector.TrackingHeapSnapshotProfileType();
     this._addProfileType(this.trackingHeapSnapshotProfileType);
-    HeapProfilerAgent.enable();
 
     if (!WebInspector.WorkerManager.isWorkerFrontend() && WebInspector.experimentsSettings.canvasInspection.isEnabled()) {
         this.canvasProfileType = new WebInspector.CanvasProfileType();
