@@ -2814,6 +2814,7 @@ button.record-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
 
 .inspector-view {
     overflow: hidden;
+    position: absolute !important;
 }
 
 .inspector-footer.status-bar {

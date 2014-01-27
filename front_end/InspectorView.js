@@ -36,7 +36,7 @@ WebInspector.InspectorView = function()
 {
     WebInspector.View.call(this);
     this.markAsRoot();
-    this.element.classList.add("inspector-view");
+    this.element.classList.add("fill", "inspector-view");
     this.element.setAttribute("spellcheck", false);
 
     // We can use split view either for docking or screencast, but not together.

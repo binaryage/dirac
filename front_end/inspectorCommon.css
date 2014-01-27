@@ -16,7 +16,6 @@ body {
     tab-size: 4;
     -webkit-user-select: none;
     color: #222;
-    display: flex;
 }
 
 body.platform-linux {
