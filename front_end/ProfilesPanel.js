@@ -362,15 +362,10 @@ WebInspector.ProfileHeader.prototype = {
  * @constructor
  * @implements {WebInspector.Searchable}
  * @extends {WebInspector.Panel}
- * @param {string=} name
- * @param {!WebInspector.ProfileType=} type
  */
-WebInspector.ProfilesPanel = function(name, type)
+WebInspector.ProfilesPanel = function()
 {
-    // If the name is not specified the ProfilesPanel works in multi-profile mode.
-    var singleProfileMode = typeof name !== "undefined";
-    name = name || "profiles";
-    WebInspector.Panel.call(this, name);
+    WebInspector.Panel.call(this, "profiles");
     this.registerRequiredCSS("panelEnablerView.css");
     this.registerRequiredCSS("heapProfiler.css");
     this.registerRequiredCSS("profilesPanel.css");
@@ -386,7 +381,6 @@ WebInspector.ProfilesPanel = function(name, type)
     this.profilesItemTreeElement = new WebInspector.ProfilesSidebarTreeElement(this);
     this.sidebarTree.appendChild(this.profilesItemTreeElement);
 
-    this._singleProfileMode = singleProfileMode;
     this._profileTypesByIdMap = {};
 
     this.profileViews = document.createElement("div");
@@ -414,20 +408,13 @@ WebInspector.ProfilesPanel = function(name, type)
     this._profileViewStatusBarItemsContainer = this._statusBarElement.createChild("div");
 
     this._profileGroups = {};
-    if (singleProfileMode) {
-        this._launcherView = this._createLauncherView();
-        this._registerProfileType(/** @type {!WebInspector.ProfileType} */ (type));
-        this._selectedProfileType = type;
-        this._updateProfileTypeSpecificUI();
-    } else {
-        this._launcherView = new WebInspector.MultiProfileLauncherView(this);
-        this._launcherView.addEventListener(WebInspector.MultiProfileLauncherView.EventTypes.ProfileTypeSelected, this._onProfileTypeSelected, this);
+    this._launcherView = new WebInspector.MultiProfileLauncherView(this);
+    this._launcherView.addEventListener(WebInspector.MultiProfileLauncherView.EventTypes.ProfileTypeSelected, this._onProfileTypeSelected, this);
 
-        var types = WebInspector.ProfileTypeRegistry.instance.profileTypes();
-        for (var i = 0; i < types.length; i++)
-            this._registerProfileType(types[i]);
-        this._launcherView.restoreSelectedProfileType();
-    }
+    var types = WebInspector.ProfileTypeRegistry.instance.profileTypes();
+    for (var i = 0; i < types.length; i++)
+        this._registerProfileType(types[i]);
+    this._launcherView.restoreSelectedProfileType();
     this.profilesItemTreeElement.select();
     this._showLauncherView();
 
@@ -667,7 +654,7 @@ WebInspector.ProfilesPanel.prototype = {
         this._profileTypesByIdMap[profileType.id] = profileType;
         this._launcherView.addProfileType(profileType);
         profileType.treeElement = new WebInspector.SidebarSectionTreeElement(profileType.treeItemTitle, null, true);
-        profileType.treeElement.hidden = !this._singleProfileMode;
+        profileType.treeElement.hidden = true;
         this.sidebarTree.appendChild(profileType.treeElement);
         profileType.treeElement.childrenListElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), true);
 
@@ -824,7 +811,7 @@ WebInspector.ProfilesPanel.prototype = {
         if (!sidebarParent.children.length) {
             this.profilesItemTreeElement.select();
             this._showLauncherView();
-            sidebarParent.hidden = !this._singleProfileMode;
+            sidebarParent.hidden = true;
         }
     },
 
@@ -1189,58 +1176,6 @@ WebInspector.ProfilesSidebarTreeElement.prototype = {
     },
 
     __proto__: WebInspector.SidebarTreeElement.prototype
-}
-
-
-/**
- * @constructor
- * @extends {WebInspector.ProfilesPanel}
- */
-WebInspector.CPUProfilerPanel = function()
-{
-    WebInspector.ProfilesPanel.call(this, "cpu-profiler", WebInspector.ProfileTypeRegistry.instance.cpuProfileType);
-}
-
-WebInspector.CPUProfilerPanel.prototype = {
-    __proto__: WebInspector.ProfilesPanel.prototype
-}
-
-
-/**
- * @constructor
- * @extends {WebInspector.ProfilesPanel}
- */
-WebInspector.HeapProfilerPanel = function()
-{
-    var heapSnapshotProfileType = WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType;
-    WebInspector.ProfilesPanel.call(this, "heap-profiler", heapSnapshotProfileType);
-    this._singleProfileMode = false;
-    this._registerProfileType(WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType);
-    this._launcherView.addEventListener(WebInspector.MultiProfileLauncherView.EventTypes.ProfileTypeSelected, this._onProfileTypeSelected, this);
-    this._launcherView._profileTypeChanged(heapSnapshotProfileType);
-}
-
-WebInspector.HeapProfilerPanel.prototype = {
-    _createLauncherView: function()
-    {
-        return new WebInspector.MultiProfileLauncherView(this);
-    },
-
-    __proto__: WebInspector.ProfilesPanel.prototype
-}
-
-
-/**
- * @constructor
- * @extends {WebInspector.ProfilesPanel}
- */
-WebInspector.CanvasProfilerPanel = function()
-{
-    WebInspector.ProfilesPanel.call(this, "canvas-profiler", WebInspector.ProfileTypeRegistry.instance.canvasProfileType);
-}
-
-WebInspector.CanvasProfilerPanel.prototype = {
-    __proto__: WebInspector.ProfilesPanel.prototype
 }
 
 
