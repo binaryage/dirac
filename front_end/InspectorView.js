@@ -49,7 +49,7 @@ WebInspector.InspectorView = function()
     this._splitView.element.id = "inspector-split-view";
     this._splitView.show(this.element);
 
-    this._overlayView = new WebInspector.ViewWithResizeCallback(this._onOverlayResized.bind(this));
+    this._overlayView = new WebInspector.InspectorView.OverlayView();
     this._splitView.setMainView(this._overlayView);
     this._zoomFactor = WebInspector.zoomFactor();
     WebInspector.settings.zoomLevel.addChangeListener(this._onZoomChanged, this);
@@ -412,10 +412,15 @@ WebInspector.InspectorView.prototype = {
             var vertical = WebInspector.dockController.isVertical();
             this._splitView.setVertical(vertical);
             if (vertical) {
+                if (dockSide === WebInspector.DockController.State.DockedToRight)
+                    this._overlayView.setMargins(false, true, false, false);
+                else
+                    this._overlayView.setMargins(false, false, false, true);
                 this._splitView.setSecondIsSidebar(dockSide === WebInspector.DockController.State.DockedToRight);
                 this._splitView.uninstallResizer(this._tabbedPane.headerElement());
                 this._splitView.installResizer(this._splitView.resizerElement());
             } else {
+                this._overlayView.setMargins(false, false, false, false);
                 this._splitView.setSecondIsSidebar(true);
                 this._splitView.uninstallResizer(this._splitView.resizerElement());
                 this._splitView.installResizer(this._tabbedPane.headerElement());
@@ -424,6 +429,7 @@ WebInspector.InspectorView.prototype = {
             this._splitView.setSidebarView(this._devtoolsView);
             this._splitView.showBoth();
         } else {
+            this._overlayView.setMargins(false, false, false, false);
             this._splitView.setSecondIsSidebar(true);
             this._splitView.setMainView(this._overlayView);
             this._splitView.setSidebarView(this._devtoolsView);
@@ -431,31 +437,6 @@ WebInspector.InspectorView.prototype = {
             this._splitView.uninstallResizer(this._tabbedPane.headerElement());
             this._splitView.uninstallResizer(this._splitView.resizerElement());
         }
-    },
-
-    _onOverlayResized: function()
-    {
-        var dockSide = WebInspector.dockController.dockSide();
-        if (dockSide !== WebInspector.DockController.State.Undocked) {
-            if (this._setContentsInsetsId)
-                window.cancelAnimationFrame(this._setContentsInsetsId);
-            this._setContentsInsetsId = window.requestAnimationFrame(this._setContentsInsets.bind(this));
-        }
-
-        // FIXME: make drawer a view.
-        this._drawer.resize();
-    },
-
-    _setContentsInsets: function()
-    {
-        delete this._setContentsInsetsId;
-        var sidebarSize = Math.ceil(this._splitView.sidebarSize() * WebInspector.zoomFactor());
-        var bottom = this._splitView.isVertical() ? 0 : sidebarSize;
-        // Leave 3px room for resizer.
-        var vertical = this._splitView.isVertical() ? sidebarSize + 3 : 0;
-        var right = this._splitView.isSidebarSecond() ? vertical : 0;
-        var left = this._splitView.isSidebarSecond() ? 0 : vertical;
-        InspectorFrontendHost.setContentsInsets(0, left, bottom, right);
     },
 
     _onZoomChanged: function()
@@ -549,6 +530,66 @@ WebInspector.InspectorView.prototype = {
 
     __proto__: WebInspector.View.prototype
 };
+
+/**
+ * @constructor
+ * @extends {WebInspector.View}
+ */
+WebInspector.InspectorView.OverlayView = function()
+{
+    WebInspector.View.call(this);
+    this.element.className = "fill";
+}
+
+WebInspector.InspectorView.OverlayView.prototype = {
+    /**
+     * @param {boolean} top
+     * @param {boolean} right
+     * @param {boolean} bottom
+     * @param {boolean} left
+     */
+    setMargins: function(top, right, bottom, left)
+    {
+        var marginValue = Math.round(3 * WebInspector.zoomFactor()) + "px ";
+        var margings = top ? marginValue : "0 ";
+        margings += right ? marginValue : "0 ";
+        margings += bottom ? marginValue : "0 ";
+        margings += left ? marginValue : "0 ";
+        this.element.style.margin = margings;
+    },
+
+    onResize: function()
+    {
+        var dockSide = WebInspector.dockController.dockSide();
+        if (dockSide !== WebInspector.DockController.State.Undocked) {
+            if (this._setContentsInsetsId)
+                window.cancelAnimationFrame(this._setContentsInsetsId);
+            this._setContentsInsetsId = window.requestAnimationFrame(this._setContentsInsets.bind(this));
+        }
+
+        // FIXME: make drawer a view.
+        WebInspector.inspectorView._drawer.resize();
+    },
+
+    _setContentsInsets: function()
+    {
+        delete this._setContentsInsetsId;
+
+        var dockSide = WebInspector.dockController.dockSide();
+        var zoomFactor = WebInspector.zoomFactor();
+        var totalWidth = document.body.offsetWidth;
+        var totalHeight = document.body.offsetHeight;
+        var boundingRect = this.element.getBoundingClientRect();
+
+        InspectorFrontendHost.setContentsInsets(
+            Math.round(boundingRect.top * zoomFactor),
+            Math.round(boundingRect.left * zoomFactor),
+            Math.round((totalHeight - boundingRect.bottom) * zoomFactor),
+            Math.round((totalWidth - boundingRect.right) * zoomFactor));
+    },
+
+    __proto__: WebInspector.View.prototype
+}
 
 /**
  * @type {!WebInspector.InspectorView}
