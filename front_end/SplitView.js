@@ -515,7 +515,8 @@ WebInspector.SplitView.prototype = {
     {
         resizerElement.addEventListener("mousedown", this._onDragStartBound, false);
         resizerElement.style.setProperty("cursor", this._isVertical ? "ew-resize" : "ns-resize");
-        this._resizerElements.push(resizerElement);
+        if (this._resizerElements.indexOf(resizerElement) === -1)
+            this._resizerElements.push(resizerElement);
     },
 
     /**

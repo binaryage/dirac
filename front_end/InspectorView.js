@@ -465,6 +465,7 @@ WebInspector.InspectorView.prototype = {
         if (view.parentView() !== this._overlayView)
             view.show(this._overlayView.element);
         this._splitView.setVertical(vertical);
+        this._splitView.installResizer(this._splitView.resizerElement());
         this._splitView.showBoth();
     },
 
