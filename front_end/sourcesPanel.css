@@ -31,11 +31,11 @@
     -webkit-mask-position: -256px 0;
 }
 
-.scripts-pause-on-exceptions-status-bar-item.toggled-uncaught .glyph {
+.scripts-pause-on-exceptions-status-bar-item.toggled-all .glyph {
     background-color: rgb(66, 129, 235);
 }
 
-.scripts-pause-on-exceptions-status-bar-item.toggled-all .glyph {
+.scripts-pause-on-exceptions-status-bar-item.toggled-uncaught .glyph {
     background-color: purple;
 }
 

@@ -48,8 +48,6 @@ WebInspector.DebuggerModel = function()
     WebInspector.settings.pauseOnExceptionStateString = WebInspector.settings.createSetting("pauseOnExceptionStateString", WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
     WebInspector.settings.pauseOnExceptionStateString.addChangeListener(this._pauseOnExceptionStateChanged, this);
 
-    WebInspector.settings.lastPauseOnExceptionState = WebInspector.settings.createSetting("lastPauseOnExceptionState", WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions);
-
     WebInspector.settings.enableAsyncStackTraces.addChangeListener(this._asyncStackTracesStateChanged, this);
 
     this.enableDebugger();
@@ -57,11 +55,7 @@ WebInspector.DebuggerModel = function()
     WebInspector.DebuggerModel.applySkipStackFrameSettings();
 }
 
-/**
- * Keep these in sync with WebCore::ScriptDebugServer
- *
- * @enum {string}
- */
+// Keep these in sync with WebCore::ScriptDebugServer
 WebInspector.DebuggerModel.PauseOnExceptionsState = {
     DontPauseOnExceptions : "none",
     PauseOnAllExceptions : "all",
