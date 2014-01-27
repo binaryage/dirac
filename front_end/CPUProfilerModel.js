@@ -101,8 +101,6 @@ WebInspector.CPUProfilerModel.prototype = {
     __proto__: WebInspector.Object.prototype
 }
 
-WebInspector.CPUProfilerModel.ProfileURLRegExp = /webkit-profile:\/\/(.+)\/(.+)/;
-
 /** @interface */
 WebInspector.CPUProfilerModel.Delegate = function() {};
 

@@ -1089,11 +1089,17 @@ body.platform-linux .source-code {
     color: rgb(0, 128, 255);
 }
 
+#console-messages .link {
+    text-decoration: underline;
+}
+
+#console-messages .link,
 #console-messages a {
     color: rgb(33%, 33%, 33%);
     cursor: pointer;
 }
 
+#console-messages .link:hover,
 #console-messages a:hover {
     color: rgb(15%, 15%, 15%);
 }

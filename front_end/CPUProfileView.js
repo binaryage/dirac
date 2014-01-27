@@ -703,7 +703,8 @@ WebInspector.CPUProfileType.prototype = {
             resolvedTitle = WebInspector.UIString("Profile %s", this._nextAnonymousConsoleProfileNumber++);
             this._anonymousConsoleProfileIdToTitle[id] = resolvedTitle;
         }
-        this._addMessageToConsole(WebInspector.ConsoleMessage.MessageType.Profile, scriptLocation, resolvedTitle);
+        var messageElement = document.createTextNode(WebInspector.UIString("Profile '%s' started.", resolvedTitle));
+        this._addMessageToConsole(WebInspector.ConsoleMessage.MessageType.Profile, scriptLocation, messageElement);
     },
 
     /**
@@ -714,7 +715,6 @@ WebInspector.CPUProfileType.prototype = {
      */
     consoleProfileFinished: function(protocolId, scriptLocation, cpuProfile, title)
     {
-        // Make sure ProfilesPanel is initialized and CPUProfileType is created.
         var resolvedTitle = title;
         if (typeof title === "undefined") {
             resolvedTitle = this._anonymousConsoleProfileIdToTitle[protocolId];
@@ -726,16 +726,27 @@ WebInspector.CPUProfileType.prototype = {
         profile.setProtocolProfile(cpuProfile);
         this.addProfile(profile);
 
-        resolvedTitle += "#" + id;
-        this._addMessageToConsole(WebInspector.ConsoleMessage.MessageType.ProfileEnd, scriptLocation, resolvedTitle);
+        var messageElement = document.createElement("span");
+        messageElement.createTextChild("Profile '");
+        var a = messageElement.createChild("span", "link");
+        a.title = resolvedTitle;
+        a.textContent = resolvedTitle;
+        a.addEventListener("click", onClick.bind(this), true);
+        function onClick(event)
+        {
+            WebInspector.showPanel("profiles").showProfile(WebInspector.CPUProfileType.TypeId, id);
+        }
+        messageElement.createTextChild("' finished.");
+
+        this._addMessageToConsole(WebInspector.ConsoleMessage.MessageType.ProfileEnd, scriptLocation, messageElement);
     },
 
     /**
      * @param {string} type
      * @param {!DebuggerAgent.Location} scriptLocation
-     * @param {string} title
+     * @param {!Node} messageElement
      */
-    _addMessageToConsole: function(type, scriptLocation, title)
+    _addMessageToConsole: function(type, scriptLocation, messageElement)
     {
         var rawLocation = new WebInspector.DebuggerModel.Location(scriptLocation.scriptId, scriptLocation.lineNumber, scriptLocation.columnNumber || 0);
         var uiLocation = WebInspector.debuggerModel.rawLocationToUILocation(rawLocation);
@@ -745,11 +756,13 @@ WebInspector.CPUProfileType.prototype = {
         var message = WebInspector.ConsoleMessage.create(
             WebInspector.ConsoleMessage.MessageSource.ConsoleAPI,
             WebInspector.ConsoleMessage.MessageLevel.Debug,
-            title,
+            "",
             type,
             url || undefined,
             scriptLocation.lineNumber,
             scriptLocation.columnNumber);
+
+        message.setMessageElement(messageElement);
         WebInspector.console.addMessage(message);
     },
 

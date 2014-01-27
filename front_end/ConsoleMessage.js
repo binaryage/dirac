@@ -89,76 +89,79 @@ WebInspector.ConsoleMessageImpl.prototype = {
         }
     },
 
+    /**
+     * @override
+     * @param {!Node} messageElement
+     */
+    setMessageElement: function(messageElement)
+    {
+        this._messageElement = messageElement;
+    },
+
     _formatMessage: function()
     {
         this._formattedMessage = document.createElement("span");
         this._formattedMessage.className = "console-message-text source-code";
 
-        if (this.source === WebInspector.ConsoleMessage.MessageSource.ConsoleAPI) {
-            switch (this.type) {
-                case WebInspector.ConsoleMessage.MessageType.Trace:
-                    this._messageElement = this._format(this._parameters || ["console.trace()"]);
-                    break;
-                case WebInspector.ConsoleMessage.MessageType.Clear:
-                    this._messageElement = document.createTextNode(WebInspector.UIString("Console was cleared"));
-                    this._formattedMessage.classList.add("console-info");
-                    break;
-                case WebInspector.ConsoleMessage.MessageType.Assert:
-                    var args = [WebInspector.UIString("Assertion failed:")];
-                    if (this._parameters)
-                        args = args.concat(this._parameters);
-                    this._messageElement = this._format(args);
-                    break;
-                case WebInspector.ConsoleMessage.MessageType.Dir:
-                    var obj = this._parameters ? this._parameters[0] : undefined;
-                    var args = ["%O", obj];
-                    this._messageElement = this._format(args);
-                    break;
-                case WebInspector.ConsoleMessage.MessageType.Profile:
-                    this._messageElement = document.createTextNode(WebInspector.UIString("Profile '%s' started.", this._messageText));
-                    break;
-                case WebInspector.ConsoleMessage.MessageType.ProfileEnd:
-                    var hashIndex = this._messageText.lastIndexOf("#");
-                    var title = this._messageText.substring(0, hashIndex);
-                    var uid = this._messageText.substring(hashIndex + 1);
-                    var format = WebInspector.UIString("Profile '%s' finished.", "%_");
-                    var link = WebInspector.linkifyURLAsNode("webkit-profile://CPU/" + uid, title);
-                    this._messageElement = document.createElement("span");
-                    this._formatWithSubstitutionString(format, [link], this._messageElement);
-                    break;
-                default:
-                    var args = this._parameters || [this._messageText];
-                    this._messageElement = this._format(args);
-            }
-        } else if (this.source === WebInspector.ConsoleMessage.MessageSource.Network) {
-            if (this._request) {
-                this._stackTrace = this._request.initiator.stackTrace;
-                if (this._request.initiator && this._request.initiator.url) {
-                    this.url = this._request.initiator.url;
-                    this.line = this._request.initiator.lineNumber;
+        if (!this._messageElement) {
+            if (this.source === WebInspector.ConsoleMessage.MessageSource.ConsoleAPI) {
+                switch (this.type) {
+                    case WebInspector.ConsoleMessage.MessageType.Trace:
+                        this._messageElement = this._format(this._parameters || ["console.trace()"]);
+                        break;
+                    case WebInspector.ConsoleMessage.MessageType.Clear:
+                        this._messageElement = document.createTextNode(WebInspector.UIString("Console was cleared"));
+                        this._formattedMessage.classList.add("console-info");
+                        break;
+                    case WebInspector.ConsoleMessage.MessageType.Assert:
+                        var args = [WebInspector.UIString("Assertion failed:")];
+                        if (this._parameters)
+                            args = args.concat(this._parameters);
+                        this._messageElement = this._format(args);
+                        break;
+                    case WebInspector.ConsoleMessage.MessageType.Dir:
+                        var obj = this._parameters ? this._parameters[0] : undefined;
+                        var args = ["%O", obj];
+                        this._messageElement = this._format(args);
+                        break;
+                    case WebInspector.ConsoleMessage.MessageType.Profile:
+                    case WebInspector.ConsoleMessage.MessageType.ProfileEnd:
+                        console.assert(false);
+                        break;
+                    default:
+                        var args = this._parameters || [this._messageText];
+                        this._messageElement = this._format(args);
                 }
-                this._messageElement = document.createElement("span");
-                if (this.level === WebInspector.ConsoleMessage.MessageLevel.Error) {
-                    this._messageElement.appendChild(document.createTextNode(this._request.requestMethod + " "));
-                    this._messageElement.appendChild(WebInspector.linkifyRequestAsNode(this._request));
-                    if (this._request.failed)
-                        this._messageElement.appendChild(document.createTextNode(" " + this._request.localizedFailDescription));
-                    else
-                        this._messageElement.appendChild(document.createTextNode(" " + this._request.statusCode + " (" + this._request.statusText + ")"));
+            } else if (this.source === WebInspector.ConsoleMessage.MessageSource.Network) {
+                if (this._request) {
+                    this._stackTrace = this._request.initiator.stackTrace;
+                    if (this._request.initiator && this._request.initiator.url) {
+                        this.url = this._request.initiator.url;
+                        this.line = this._request.initiator.lineNumber;
+                    }
+                    this._messageElement = document.createElement("span");
+                    if (this.level === WebInspector.ConsoleMessage.MessageLevel.Error) {
+                        this._messageElement.appendChild(document.createTextNode(this._request.requestMethod + " "));
+                        this._messageElement.appendChild(WebInspector.linkifyRequestAsNode(this._request));
+                        if (this._request.failed)
+                            this._messageElement.appendChild(document.createTextNode(" " + this._request.localizedFailDescription));
+                        else
+                            this._messageElement.appendChild(document.createTextNode(" " + this._request.statusCode + " (" + this._request.statusText + ")"));
+                    } else {
+                        var fragment = WebInspector.linkifyStringAsFragmentWithCustomLinkifier(this._messageText, WebInspector.linkifyRequestAsNode.bind(null, this._request));
+                        this._messageElement.appendChild(fragment);
+                    }
                 } else {
-                    var fragment = WebInspector.linkifyStringAsFragmentWithCustomLinkifier(this._messageText, WebInspector.linkifyRequestAsNode.bind(null, this._request));
-                    this._messageElement.appendChild(fragment);
+                    if (this.url) {
+                        var isExternal = !WebInspector.resourceForURL(this.url) && !WebInspector.workspace.uiSourceCodeForURL(this.url);
+                        this._anchorElement = WebInspector.linkifyURLAsNode(this.url, this.url, "console-message-url", isExternal);
+                    }
+                    this._messageElement = this._format([this._messageText]);
                 }
             } else {
-                if (this.url) {
-                    var isExternal = !WebInspector.resourceForURL(this.url) && !WebInspector.workspace.uiSourceCodeForURL(this.url);
-                    this._anchorElement = WebInspector.linkifyURLAsNode(this.url, this.url, "console-message-url", isExternal);
-                }
-                this._messageElement = this._format([this._messageText]);
+                var args = this._parameters || [this._messageText];
+                this._messageElement = this._format(args);
             }
-        } else {
-            var args = this._parameters || [this._messageText];
-            this._messageElement = this._format(args);
         }
 
         if (this.source !== WebInspector.ConsoleMessage.MessageSource.Network || this._request) {

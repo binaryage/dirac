@@ -185,6 +185,13 @@ WebInspector.ConsoleMessage = function(source, level, url, line, column, repeatC
 
 WebInspector.ConsoleMessage.prototype = {
     /**
+     * @param {!Node} messageElement
+     */
+    setMessageElement: function(messageElement)
+    {
+    },
+
+    /**
      * @return {boolean}
      */
     isErrorOrWarning: function()

@@ -454,12 +454,6 @@ WebInspector.documentClick = function(event)
         if (WebInspector.showAnchorLocation(anchor))
             return;
 
-        const profileMatch = WebInspector.CPUProfilerModel.ProfileURLRegExp.exec(anchor.href);
-        if (profileMatch) {
-            WebInspector.showPanel("profiles").showProfile(profileMatch[1], profileMatch[2]);
-            return;
-        }
-
         var parsedURL = anchor.href.asParsedURL();
         if (parsedURL && parsedURL.scheme === "webkit-link-action") {
             if (parsedURL.host === "show-panel") {
