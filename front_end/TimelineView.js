@@ -409,7 +409,7 @@ WebInspector.TimelineView.prototype = {
             this._frameContainer.addEventListener("dblclick", this._onFrameDoubleClicked.bind(this), false);
         }
 
-        var dividers = [ this._frameContainer ];
+        var dividers = [];
 
         for (var i = 0; i < frames.length; ++i) {
             var frame = frames[i];
@@ -437,6 +437,7 @@ WebInspector.TimelineView.prototype = {
             }
         }
         this._timelineGrid.addEventDividers(dividers);
+        this._timelineGrid.gridHeaderElement.appendChild(this._frameContainer);
     },
 
     _onFrameDoubleClicked: function(event)
@@ -810,8 +811,11 @@ WebInspector.TimelineView.prototype = {
                 if  (frames.length && frames.length < maxFramesForFrameBars) {
                     this._timelineGrid.removeDividers();
                     this._updateFrameBars(frames);
-                } else
+                } else {
+                    if (this._frameContainer)
+                        this._frameContainer.remove();
                     this._timelineGrid.updateDividers(this._calculator);
+                }
             } else
                 this._timelineGrid.updateDividers(this._calculator);
             this._refreshAllUtilizationBars();

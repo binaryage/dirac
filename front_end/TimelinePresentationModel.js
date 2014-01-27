@@ -1009,8 +1009,11 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     get title()
     {
-        return this.type === WebInspector.TimelineModel.RecordType.TimeStamp ? this._record.data["message"] :
-            WebInspector.TimelinePresentationModel.recordStyle(this._record).title;
+        if (this.type === WebInspector.TimelineModel.RecordType.TimeStamp)
+            return this._record.data["message"];
+        if (WebInspector.TimelinePresentationModel.isEventDivider(this))
+            return WebInspector.UIString("%s at %s", WebInspector.TimelinePresentationModel.recordStyle(this._record).title, Number.secondsToString(this._startTimeOffset, true));
+        return WebInspector.TimelinePresentationModel.recordStyle(this._record).title;
     },
 
     /**

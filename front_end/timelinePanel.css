@@ -592,7 +592,7 @@
     color: black;
     text-align: center;
     padding-top: 3px;
-    z-index: 350;
+    z-index: 220;
     pointer-events: auto;
 }
 
@@ -612,7 +612,7 @@
 }
 
 .timeline-utilization-strip {
-    z-index: 350;
+    z-index: 250;
     overflow: hidden;
     flex: 0 1 12px;
     position: relative;
