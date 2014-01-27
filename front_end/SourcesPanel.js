@@ -156,6 +156,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._historyManager = new WebInspector.EditingLocationHistoryManager(this, currentSourceFrame.bind(this));
     this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToPreviousLocation, this._onJumpToPreviousLocation.bind(this));
     this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToNextLocation, this._onJumpToNextLocation.bind(this));
+    this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.CloseEditorTab, this._onCloseEditorTab.bind(this));
 
     this.sidebarPanes.callstack.registerShortcuts(this.registerShortcuts.bind(this));
     this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToMember, this._showOutlineDialog.bind(this));
@@ -229,6 +230,18 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 }
 
 WebInspector.SourcesPanel.prototype = {
+    /**
+     * @param {?Event=} event
+     */
+    _onCloseEditorTab: function(event)
+    {
+        var uiSourceCode = this.currentUISourceCode();
+        if (!uiSourceCode)
+            return false;
+        this._editorContainer.closeFile(uiSourceCode);
+        return true;
+    },
+
     /**
      * @param {?Event=} event
      */

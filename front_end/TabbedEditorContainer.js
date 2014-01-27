@@ -111,6 +111,17 @@ WebInspector.TabbedEditorContainer.prototype = {
     },
 
     /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     */
+    closeFile: function(uiSourceCode)
+    {
+        var tabId = this._tabIds.get(uiSourceCode);
+        if (!tabId)
+            return;
+        this._closeTabs([tabId]);
+    },
+
+    /**
      * @return {!Array.<!WebInspector.UISourceCode>}
      */
     historyUISourceCodes: function()
