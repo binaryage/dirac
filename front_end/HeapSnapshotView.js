@@ -1133,15 +1133,11 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
 
     /**
      * @override
-     * @param {!WebInspector.ProfileHeader} profile
      */
-    removeProfile: function(profile)
+    profileBeingRecordedRemoved: function()
     {
-        if (this._profileBeingRecorded === profile) {
-            this._stopRecordingProfile();
-            this._profileSamples = null;
-        }
-        WebInspector.HeapSnapshotProfileType.prototype.removeProfile.call(this, profile);
+        this._stopRecordingProfile();
+        this._profileSamples = null;
     },
 
     __proto__: WebInspector.HeapSnapshotProfileType.prototype

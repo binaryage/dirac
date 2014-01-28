@@ -220,6 +220,10 @@ WebInspector.ProfileType.prototype = {
         return this._profileBeingRecorded;
     },
 
+    profileBeingRecordedRemoved: function()
+    {
+    },
+
     _reset: function()
     {
         var profiles = this._profiles.slice(0);
@@ -236,8 +240,10 @@ WebInspector.ProfileType.prototype = {
     {
         this.dispatchEventToListeners(WebInspector.ProfileType.Events.RemoveProfileHeader, profile);
         profile.dispose();
-        if (this._profileBeingRecorded === profile)
+        if (this._profileBeingRecorded === profile) {
+            this.profileBeingRecordedRemoved();
             this._profileBeingRecorded = null;
+        }
     },
 
     __proto__: WebInspector.Object.prototype

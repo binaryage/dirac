@@ -827,11 +827,9 @@ WebInspector.CPUProfileType.prototype = {
     /**
      * @override
      */
-    removeProfile: function(profile)
+    profileBeingRecordedRemoved: function()
     {
-        if (this._profileBeingRecorded === profile)
-            this.stopRecordingProfile();
-        WebInspector.ProfileType.prototype.removeProfile.call(this, profile);
+        this.stopRecordingProfile();
     },
 
     __proto__: WebInspector.ProfileType.prototype
