@@ -446,8 +446,7 @@ WebInspector.TimelineView.prototype = {
 
     _updateWindowBoundaries: function()
     {
-        var windowBoundaries = this.overviewControl().windowBoundaries(this._windowStartTime, this._windowEndTime);
-        this._panel.setWindow(windowBoundaries.left, windowBoundaries.right);
+        this._panel.setWindowTimes(this._windowStartTime, this._windowEndTime);
     },
 
     /**
@@ -459,12 +458,10 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
-     * @param {?Object} windowTimes
+     * @param {!Object} windowTimes
      */
     setWindowTimes: function(windowTimes)
     {
-        if (!windowTimes)
-            return;
         this._setWindowTimes(windowTimes.windowStartTime, windowTimes.windowEndTime);
     },
 
@@ -477,8 +474,7 @@ WebInspector.TimelineView.prototype = {
         this._windowStartTime = startTime;
         this._windowEndTime = endTime;
         this._windowFilter.setWindowTimes(startTime, endTime);
-        var windowBoundaries = this.overviewControl().windowBoundaries(startTime, endTime);
-        this._panel.setWindow(windowBoundaries.left, windowBoundaries.right);
+        this._panel.setWindowTimes(startTime, endTime);
     },
 
     _repopulateRecords: function()
@@ -752,15 +748,14 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
-     * @param {number} left
-     * @param {number} right
+     * @param {number} startTime
+     * @param {number} endTime
      */
-    windowChanged: function(left, right)
+    windowTimesChanged: function(startTime, endTime)
     {
-        var windowTimes = this.overviewControl().windowTimes(left, right);
-        this._windowStartTime = windowTimes.startTime;
-        this._windowEndTime = windowTimes.endTime;
-        this._windowFilter.setWindowTimes(windowTimes.startTime, windowTimes.endTime);
+        this._windowStartTime = startTime;
+        this._windowEndTime = endTime;
+        this._windowFilter.setWindowTimes(startTime, endTime);
         this._invalidateAndScheduleRefresh(false, true);
         this._selectRecord(null);
     },
@@ -898,8 +893,6 @@ WebInspector.TimelineView.prototype = {
             this._setWindowTimes(windowStartTime, recordsInWindow[Math.max(0, lastVisibleLine - 1)].endTime);
             recordsInWindow = this._presentationModel.filteredRecords();
             endIndex = Math.min(recordsInWindow.length, lastVisibleLine);
-        } else {
-            this._updateWindowBoundaries();
         }
 
         // Resize gaps first.

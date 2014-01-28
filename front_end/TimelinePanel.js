@@ -99,18 +99,21 @@ WebInspector.TimelinePanel.prototype = {
         this._topPaneSidebarElement.style.flexBasis = width + "px";
     },
 
-    _onWindowChanged: function()
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onWindowChanged: function(event)
     {
-        this._currentView.windowChanged(this._overviewPane.windowLeft(), this._overviewPane.windowRight());
+        this._currentView.windowTimesChanged(event.data.startTime, event.data.endTime);
     },
 
     /**
-     * @param {number} left
-     * @param {number} right
+     * @param {number} startTime
+     * @param {number} endTime
      */
-    setWindow: function(left, right)
+    setWindowTimes: function(startTime, endTime)
     {
-        this._overviewPane.setWindow(left, right);
+        this._overviewPane.setWindowTimes(startTime, endTime);
     },
 
     /**
@@ -348,7 +351,8 @@ WebInspector.TimelinePanel.prototype = {
         }
         this._currentView = this._viewForMode(mode);
         this._updateFiltersBar();
-        this._currentView.setWindowTimes(windowTimes);
+        if (windowTimes)
+            this._currentView.setWindowTimes(windowTimes);
         this._overviewPane.setOverviewControl(this._currentView.overviewControl());
         this._currentView.show(this.element);
         this._glueParentButton.setEnabled(this._currentView.supportsGlueParentMode());
