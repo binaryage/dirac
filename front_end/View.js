@@ -310,9 +310,7 @@ WebInspector.View.prototype = {
 
     doResize: function()
     {
-        if (!this.isShowing())
-            return;
-        this._callOnVisibleChildren(this._processOnResize);
+        this._processOnResize();
     },
 
     registerRequiredCSS: function(cssFile)

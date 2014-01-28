@@ -425,7 +425,7 @@ WebInspector.windowResize = function(event)
 {
     this._adjustExternalZoomFactor();
     if (WebInspector.inspectorView)
-        WebInspector.inspectorView.doResize();
+        WebInspector.inspectorView.onResize();
     if (WebInspector.settingsController)
         WebInspector.settingsController.resize();
 }

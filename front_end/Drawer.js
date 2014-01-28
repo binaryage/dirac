@@ -366,7 +366,6 @@ WebInspector.Drawer.prototype = {
 
     _updateTabStrip: function()
     {
-        // FIXME: make drawer a view.
         this._tabbedPane.onResize();
         this._tabbedPane.doResize();
     },
