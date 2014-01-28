@@ -679,3 +679,7 @@
     width: 0;
     opacity: 0;
 }
+
+li.child-editing .styles-clipboard-only {
+    display: none;
+}
