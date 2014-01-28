@@ -70,5 +70,7 @@ WebInspector.PieChart.prototype = {
         innerSliceElement.style.backgroundColor = color;
         innerSliceElement.style.webkitTransform = "rotate(" + Number(sliceAngle).toFixed(2) + "deg)";
         this._lastAngle += sliceAngle;
+        if (this._lastAngle > 360)
+            console.assert("Pie chard slices are greater than total.");
     }
 }

@@ -735,8 +735,7 @@ WebInspector.TimelineView.prototype = {
         aggregatedStats["idle"] = Math.max(0, (endTime - startTime) / 1000 - aggregatedTotal);
 
         var fragment = document.createDocumentFragment();
-        var pie = WebInspector.TimelinePresentationModel.generatePieChart(aggregatedStats);
-        fragment.appendChild(pie.element);
+        fragment.appendChild(WebInspector.TimelinePresentationModel.generatePieChart(aggregatedStats));
 
         if (this._frameMode && this._lastFrameStatistics) {
             var title = WebInspector.UIString("%s \u2013 %s (%d frames)", Number.secondsToString(this._lastFrameStatistics.startOffset, true), Number.secondsToString(this._lastFrameStatistics.endOffset, true), this._lastFrameStatistics.frameCount);

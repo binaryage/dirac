@@ -1165,19 +1165,10 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     _generatePopupContentSynchronously: function()
     {
         var fragment = document.createDocumentFragment();
-        var pie = WebInspector.TimelinePresentationModel.generatePieChart(this._aggregatedStats, this.category.name);
-        // Insert self time.
-        if (!this.coalesced && this._children.length) {
-            pie.pieChart.addSlice(this._selfTime, this.category.fillColorStop1);
-            var rowElement = document.createElement("div");
-            pie.footerElement.insertBefore(rowElement, pie.footerElement.firstChild);
-            rowElement.createChild("div", "timeline-aggregated-category timeline-" + this.category.name);
-            rowElement.createTextChild(WebInspector.UIString("%s %s (Self)", Number.secondsToString(this._selfTime, true), this.category.title));
-        }
-        fragment.appendChild(pie.element);
-
-        var contentHelper = new WebInspector.TimelineDetailsContentHelper(true);
-        contentHelper.appendTextRow(WebInspector.UIString("Started at"), Number.secondsToString(this._startTimeOffset));
+        if (!this.coalesced && this._children.length)
+            fragment.appendChild(WebInspector.TimelinePresentationModel.generatePieChart(this._aggregatedStats, this.category, this._selfTime));
+        else
+            fragment.appendChild(WebInspector.TimelinePresentationModel.generatePieChart(this._aggregatedStats));
 
         if (this.coalesced)
             return fragment;
@@ -1188,6 +1179,10 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         var callSiteStackTraceLabel;
         var callStackLabel;
         var relatedNodeLabel;
+
+        var contentHelper = new WebInspector.TimelineDetailsContentHelper(true);
+        contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.secondsToString(this._selfTime, true));
+        contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.secondsToString(this._startTimeOffset));
 
         switch (this.type) {
             case recordTypes.GCEvent:
@@ -1564,38 +1559,56 @@ WebInspector.TimelinePresentationModel._generateAggregatedInfo = function(aggreg
 
 /**
  * @param {!Object} aggregatedStats
- * @param {string=} firstCategoryName
- * @return {!{pieChart: !WebInspector.PieChart, element: !Element, footerElement: !Element}}
+ * @param {!WebInspector.TimelineCategory=} selfCategory
+ * @param {number=} selfTime
+ * @return {!Element}
  */
-WebInspector.TimelinePresentationModel.generatePieChart = function(aggregatedStats, firstCategoryName)
+WebInspector.TimelinePresentationModel.generatePieChart = function(aggregatedStats, selfCategory, selfTime)
 {
     var element = document.createElement("div");
     element.className = "timeline-aggregated-info";
 
     var total = 0;
-    var categoryNames = [];
-    if (firstCategoryName)
-        categoryNames.push(firstCategoryName);
-    for (var categoryName in WebInspector.TimelinePresentationModel.categories()) {
-        if (aggregatedStats[categoryName]) {
-            total += aggregatedStats[categoryName];
-            if (firstCategoryName !== categoryName)
-                categoryNames.push(categoryName);
-        }
-    }
+    for (var categoryName in aggregatedStats)
+        total += aggregatedStats[categoryName];
 
     var pieChart = new WebInspector.PieChart(total);
     element.appendChild(pieChart.element);
     var footerElement = element.createChild("div", "timeline-aggregated-info-legend");
 
-    for (var i = 0; i < categoryNames.length; ++i) {
-        var category = WebInspector.TimelinePresentationModel.categories()[categoryNames[i]];
-        pieChart.addSlice(aggregatedStats[category.name], category.fillColorStop0);
+    // In case of self time, first add self, then children of the same category.
+    if (selfCategory && selfTime) {
+        // Self.
+        pieChart.addSlice(selfTime, selfCategory.fillColorStop1);
         var rowElement = footerElement.createChild("div");
-        rowElement.createChild("div", "timeline-aggregated-category timeline-" + category.name);
-        rowElement.createTextChild(WebInspector.UIString("%s %s", Number.secondsToString(aggregatedStats[category.name], true), category.title));
+        rowElement.createChild("div", "timeline-aggregated-category timeline-" + selfCategory.name);
+        rowElement.createTextChild(WebInspector.UIString("%s %s (Self)", Number.secondsToString(selfTime, true), selfCategory.title));
+
+        // Children of the same category.
+        var categoryTime = aggregatedStats[selfCategory.name];
+        var value = categoryTime - selfTime;
+        if (value > 0) {
+            pieChart.addSlice(value, selfCategory.fillColorStop0);
+            rowElement = footerElement.createChild("div");
+            rowElement.createChild("div", "timeline-aggregated-category timeline-" + selfCategory.name);
+            rowElement.createTextChild(WebInspector.UIString("%s %s (Children)", Number.secondsToString(value, true), selfCategory.title));
+        }
     }
-    return { pieChart: pieChart, element: element, footerElement: footerElement };
+
+    // Add other categories.
+    for (var categoryName in WebInspector.TimelinePresentationModel.categories()) {
+        var category = WebInspector.TimelinePresentationModel.categories()[categoryName];
+         if (category === selfCategory)
+             continue;
+         var value = aggregatedStats[category.name];
+         if (!value)
+             continue;
+         pieChart.addSlice(value, category.fillColorStop0);
+         var rowElement = footerElement.createChild("div");
+         rowElement.createChild("div", "timeline-aggregated-category timeline-" + category.name);
+         rowElement.createTextChild(WebInspector.UIString("%s %s", Number.secondsToString(value, true), category.title));
+    }
+    return element;
 }
 
 WebInspector.TimelinePresentationModel.generatePopupContentForFrame = function(frame)
