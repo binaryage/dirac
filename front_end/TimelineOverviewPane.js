@@ -138,25 +138,36 @@ WebInspector.TimelineOverviewPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Event} event
+     * @return {number}
      */
-    _onWindowChanged: function(event)
+    windowLeft: function()
     {
-        if (this._ignoreWindowChangedEvent)
-            return;
-        var windowTimes = this._overviewControl.windowTimes(this._overviewGrid.windowLeft(), this._overviewGrid.windowLeft());
-        this.dispatchEventToListeners(WebInspector.TimelineOverviewPane.Events.WindowChanged, windowTimes);
+        return this._overviewGrid.windowLeft();
     },
 
     /**
-     * @param {number} startTime
-     * @param {number} endTime
+     * @return {number}
      */
-    setWindowTimes: function(startTime, endTime)
+    windowRight: function()
     {
-        var windowBoundaries = this._overviewControl.windowBoundaries(startTime, endTime);
+        return this._overviewGrid.windowRight();
+    },
+
+    _onWindowChanged: function()
+    {
+        if (this._ignoreWindowChangedEvent)
+            return;
+        this.dispatchEventToListeners(WebInspector.TimelineOverviewPane.Events.WindowChanged);
+    },
+
+    /**
+     * @param {number} left
+     * @param {number} right
+     */
+    setWindow: function(left, right)
+    {
         this._ignoreWindowChangedEvent = true;
-        this._overviewGrid.setWindow(windowBoundaries.left, windowBoundaries.right);
+        this._overviewGrid.setWindow(left, right);
         this._overviewGrid.setResizeEnabled(this._model.records.length);
         this._ignoreWindowChangedEvent = false;
     },
