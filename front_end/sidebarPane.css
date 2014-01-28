@@ -53,8 +53,7 @@
 }
 
 .sidebar-pane.visible > .body {
-    display: flex;
-    flex-direction: column;
+    display: block;
 }
 
 .sidebar-pane .section .properties {
