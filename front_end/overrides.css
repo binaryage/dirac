@@ -30,7 +30,7 @@
 
 
 .overrides-view .tabbed-pane {
-    flex-direction: row;
+    flex-direction: row !important;
 }
 
 .overrides-view .tabbed-pane-header {
@@ -113,7 +113,7 @@
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
-    padding-top: 3px;
+    margin-top: 10px;
 }
 
 .overrides-viewport {
