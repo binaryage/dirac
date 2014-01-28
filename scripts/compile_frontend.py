@@ -101,11 +101,11 @@ def verify_importScript_usage():
 
 
 def dump_all_checked_files():
-    file_list = []
+    files = {}
     for module in modules:
         for source in module["sources"]:
-            file_list.append(devtools_frontend_path + "/" + source)
-    return " ".join(file_list)
+            files[devtools_frontend_path + "/" + source] = True
+    return " ".join(files.keys())
 
 
 def verify_jsdoc_extra():
