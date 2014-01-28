@@ -116,9 +116,7 @@ WebInspector.RuntimeModel.prototype = {
     _executionContextCreated: function(context)
     {
         var contextList = this._frameIdToContextList[context.frameId];
-        // FIXME(85708): this should never happen
-        if (!contextList)
-            return;
+        console.assert(contextList);
         contextList._addExecutionContext(new WebInspector.ExecutionContext(context.id, context.name, context.isPageContext));
     },
 
