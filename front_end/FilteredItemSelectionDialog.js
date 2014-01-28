@@ -118,7 +118,8 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     {
         if (!this._delegate.itemCount())
             return;
-        this._delegate.selectItem(this._filteredItems[this._selectedIndexInFiltered], this._promptElement.value.trim());
+        var selectedIndex = this._selectedIndexInFiltered < this._filteredItems.length ? this._filteredItems[this._selectedIndexInFiltered] : null;
+        this._delegate.selectItem(selectedIndex, this._promptElement.value.trim());
     },
 
     _itemsLoaded: function()
@@ -456,7 +457,7 @@ WebInspector.SelectionDialogContentProvider.prototype = {
     },
 
     /**
-     * @param {number} itemIndex
+     * @param {?number} itemIndex
      * @param {string} promptValue
      */
     selectItem: function(itemIndex, promptValue)
@@ -580,11 +581,13 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
     },
 
     /**
-     * @param {number} itemIndex
+     * @param {?number} itemIndex
      * @param {string} promptValue
      */
     selectItem: function(itemIndex, promptValue)
     {
+        if (itemIndex === null)
+            return;
         var lineNumber = this._functionItems[itemIndex].line;
         if (!isNaN(lineNumber) && lineNumber >= 0)
             this._selectItemCallback(lineNumber, this._functionItems[itemIndex].column);
@@ -624,8 +627,9 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     /**
      * @param {?WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber
+     * @param {number=} columnNumber
      */
-    uiSourceCodeSelected: function(uiSourceCode, lineNumber)
+    uiSourceCodeSelected: function(uiSourceCode, lineNumber, columnNumber)
     {
         // Overridden by subclasses
     },
@@ -689,7 +693,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     {
         query = this.rewriteQuery(query);
         var uiSourceCode = this._uiSourceCodes[itemIndex];
-        titleElement.textContent = uiSourceCode.displayName() + (this._queryLineNumber ? this._queryLineNumber : "");
+        titleElement.textContent = uiSourceCode.displayName() + (this._queryLineNumberAndColumnNumber || "");
         subtitleElement.textContent = uiSourceCode.fullDisplayName().trimEnd(100);
 
         var indexes = [];
@@ -708,20 +712,23 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     },
 
     /**
-     * @param {number} itemIndex
+     * @param {?number} itemIndex
      * @param {string} promptValue
      */
     selectItem: function(itemIndex, promptValue)
     {
-        if (/^:\d+$/.test(promptValue.trimRight())) {
-            var lineNumber = parseInt(promptValue.trimRight().substring(1), 10) - 1;
-            if (!isNaN(lineNumber) && lineNumber >= 0)
-                this.uiSourceCodeSelected(null, lineNumber);
+        var parsedExpression = promptValue.trim().match(/^([^:]*)(:\d+)?(:\d+)?$/);
+        if (!parsedExpression)
             return;
-        }
-        var lineNumberMatch = promptValue.match(/[^:]+\:([\d]*)$/);
-        var lineNumber = lineNumberMatch ? Math.max(parseInt(lineNumberMatch[1], 10) - 1, 0) : undefined;
-        this.uiSourceCodeSelected(this._uiSourceCodes[itemIndex], lineNumber);
+
+        var lineNumber;
+        var columnNumber;
+        if (parsedExpression[2])
+            lineNumber = parseInt(parsedExpression[2].substr(1), 10) - 1;
+        if (parsedExpression[3])
+            columnNumber = parseInt(parsedExpression[3].substr(1), 10) - 1;
+        var uiSourceCode = itemIndex !== null ? this._uiSourceCodes[itemIndex] : null;
+        this.uiSourceCodeSelected(uiSourceCode, lineNumber, columnNumber);
     },
 
     /**
@@ -733,8 +740,8 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
         if (!query)
             return query;
         query = query.trim();
-        var lineNumberMatch = query.match(/([^:]+)(\:[\d]*)$/);
-        this._queryLineNumber = lineNumberMatch ? lineNumberMatch[2] : "";
+        var lineNumberMatch = query.match(/^([^:]+)((?::[^:]*){0,2})$/);
+        this._queryLineNumberAndColumnNumber = lineNumberMatch ? lineNumberMatch[2] : "";
         return lineNumberMatch ? lineNumberMatch[1] : query;
     },
 
@@ -775,14 +782,15 @@ WebInspector.OpenResourceDialog.prototype = {
     /**
      * @param {?WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber
+     * @param {number=} columnNumber
      */
-    uiSourceCodeSelected: function(uiSourceCode, lineNumber)
+    uiSourceCodeSelected: function(uiSourceCode, lineNumber, columnNumber)
     {
         if (!uiSourceCode)
             uiSourceCode = this._panel.currentUISourceCode();
         if (!uiSourceCode)
             return;
-        this._panel.showUISourceCode(uiSourceCode, lineNumber);
+        this._panel.showUISourceCode(uiSourceCode, lineNumber, columnNumber);
     },
 
     /**
@@ -841,8 +849,9 @@ WebInspector.SelectUISourceCodeForProjectTypeDialog.prototype = {
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber
+     * @param {number=} columnNumber
      */
-    uiSourceCodeSelected: function(uiSourceCode, lineNumber)
+    uiSourceCodeSelected: function(uiSourceCode, lineNumber, columnNumber)
     {
         this._callback(uiSourceCode);
     },

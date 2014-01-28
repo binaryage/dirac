@@ -805,11 +805,10 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     highlightPosition: function(lineNumber, columnNumber)
     {
-        if (lineNumber < 0)
-            return;
-        lineNumber = Math.min(lineNumber, this._codeMirror.lineCount() - 1);
-        if (typeof columnNumber !== "number" || columnNumber < 0 || columnNumber > this._codeMirror.getLine(lineNumber).length)
+        lineNumber = Number.constrain(lineNumber, 0, this._codeMirror.lineCount() - 1);
+        if (typeof columnNumber !== "number")
             columnNumber = 0;
+        columnNumber = Number.constrain(columnNumber, 0, this._codeMirror.getLine(lineNumber).length);
 
         this.clearPositionHighlight();
         this._highlightedLine = this._codeMirror.getLineHandle(lineNumber);
