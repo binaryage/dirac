@@ -29,7 +29,6 @@
 
 .sidebar-pane {
     position: relative;
-    flex: none;
 }
 
 .sidebar-pane > .body {
