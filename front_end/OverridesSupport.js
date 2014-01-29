@@ -38,6 +38,7 @@ WebInspector.OverridesSupport = function()
     this._deviceMetricsOverrideEnabled = false;
     this._emulateViewportEnabled = false;
     this._userAgent = "";
+    this.maybeHasActiveOverridesChanged();
 
     WebInspector.settings.overrideUserAgent.addChangeListener(this._userAgentChanged, this);
     WebInspector.settings.userAgent.addChangeListener(this._userAgentChanged, this);
@@ -61,6 +62,7 @@ WebInspector.OverridesSupport = function()
 
 WebInspector.OverridesSupport.Events = {
     OverridesWarningUpdated: "OverridesWarningUpdated",
+    HasActiveOverridesChanged: "HasActiveOverridesChanged",
 }
 
 /**
@@ -435,6 +437,7 @@ WebInspector.OverridesSupport.prototype = {
         NetworkAgent.setUserAgentOverride(userAgent);
         this._updateUserAgentWarningMessage(this._userAgent !== userAgent ? WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering.") : "");
         this._userAgent = userAgent;
+        this.maybeHasActiveOverridesChanged();
     },
 
     _deviceMetricsChanged: function()
@@ -455,6 +458,7 @@ WebInspector.OverridesSupport.prototype = {
         }
 
         PageAgent.setDeviceMetricsOverride(dipWidth, dipHeight, metrics.deviceScaleFactor, WebInspector.settings.emulateViewport.get(), WebInspector.settings.deviceFitWindow.get(), metrics.textAutosizing, metrics.fontScaleFactor(), apiCallback.bind(this));
+        this.maybeHasActiveOverridesChanged();
 
         /**
          * @param {?Protocol.Error} error
@@ -493,6 +497,7 @@ WebInspector.OverridesSupport.prototype = {
             GeolocationAgent.setGeolocationOverride();
         else
             GeolocationAgent.setGeolocationOverride(geolocation.latitude, geolocation.longitude, 150);
+        this.maybeHasActiveOverridesChanged();
     },
 
     _deviceOrientationChanged: function()
@@ -506,6 +511,7 @@ WebInspector.OverridesSupport.prototype = {
 
         var deviceOrientation = WebInspector.OverridesSupport.DeviceOrientation.parseSetting(WebInspector.settings.deviceOrientationOverride.get());
         PageAgent.setDeviceOrientationOverride(deviceOrientation.alpha, deviceOrientation.beta, deviceOrientation.gamma);
+        this.maybeHasActiveOverridesChanged();
     },
 
     _emulateTouchEventsChanged: function()
@@ -514,12 +520,14 @@ WebInspector.OverridesSupport.prototype = {
             return;
 
         WebInspector.domAgent.emulateTouchEventObjects(WebInspector.settings.emulateTouchEvents.get());
+        this.maybeHasActiveOverridesChanged();
     },
 
     _cssMediaChanged: function()
     {
         PageAgent.setEmulatedMedia(WebInspector.settings.overrideCSSMedia.get() ? WebInspector.settings.emulatedCSSMedia.get() : "");
         WebInspector.cssModel.mediaQueryResultChanged();
+        this.maybeHasActiveOverridesChanged();
     },
 
     /**
@@ -527,9 +535,18 @@ WebInspector.OverridesSupport.prototype = {
      */
     hasActiveOverrides: function()
     {
-        return WebInspector.settings.overrideUserAgent.get() || WebInspector.settings.overrideDeviceMetrics.get() ||
+        return this._hasActiveOverrides;
+    },
+
+    maybeHasActiveOverridesChanged: function()
+    {
+        var hasActiveOverrides = WebInspector.settings.overrideUserAgent.get() || WebInspector.settings.overrideDeviceMetrics.get() ||
             WebInspector.settings.overrideGeolocation.get() || WebInspector.settings.overrideDeviceOrientation.get() ||
             WebInspector.settings.emulateTouchEvents.get() || WebInspector.settings.overrideCSSMedia.get();
+        if (this._hasActiveOverrides !== hasActiveOverrides) {
+            this._hasActiveOverrides = hasActiveOverrides;
+            this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.HasActiveOverridesChanged);
+        }
     },
 
     _onMainFrameNavigated: function()

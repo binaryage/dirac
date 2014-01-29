@@ -240,11 +240,11 @@ WebInspector.OverridesView.DeviceTab = function()
     emulateButton.textContent = WebInspector.UIString("Emulate");
     emulateButton.addEventListener("click", this._emulateButtonClicked.bind(this), false);
     emulateButton.disabled = WebInspector.isInspectingDevice();
-    this._emulateButton = emulateButton;
 
     var resetButton = buttonsBar.createChild("button", "settings-tab-text-button");
     resetButton.textContent = WebInspector.UIString("Reset");
     resetButton.addEventListener("click", this._resetButtonClicked.bind(this), false);
+    this._resetButton = resetButton;
 
     this._viewportValueLabel = this.element.createChild("div", "overrides-device-value-label");
     this._viewportValueLabel.textContent = WebInspector.UIString("Viewport:");
@@ -255,6 +255,8 @@ WebInspector.OverridesView.DeviceTab = function()
     this._userAgentValueElement = this._userAgentLabel.createChild("span", "overrides-device-value");
 
     this._updateValueLabels();
+    WebInspector.overridesSupport.addEventListener(WebInspector.OverridesSupport.Events.HasActiveOverridesChanged, this._hasActiveOverridesChanged, this);
+    this._hasActiveOverridesChanged();
 }
 
 // Third element lists device metrics separated by 'x':
@@ -410,6 +412,11 @@ WebInspector.OverridesView.DeviceTab.prototype = {
     _resetButtonClicked: function()
     {
         WebInspector.overridesSupport.reset();
+    },
+
+    _hasActiveOverridesChanged: function()
+    {
+        this._resetButton.disabled = !WebInspector.overridesSupport.hasActiveOverrides();
     },
 
     _deviceSelected: function()
