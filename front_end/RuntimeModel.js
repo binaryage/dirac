@@ -81,25 +81,34 @@ WebInspector.RuntimeModel.prototype = {
         return this._frameIdToContextList[frame.id];
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _frameAdded: function(event)
     {
-        var frame = event.data;
+        var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
         var context = new WebInspector.FrameExecutionContextList(frame);
         this._frameIdToContextList[frame.id] = context;
         this.dispatchEventToListeners(WebInspector.RuntimeModel.Events.FrameExecutionContextListAdded, context);
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _frameNavigated: function(event)
     {
-        var frame = event.data;
+        var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
         var context = this._frameIdToContextList[frame.id];
         if (context)
             context._frameNavigated(frame);
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _frameDetached: function(event)
     {
-        var frame = event.data;
+        var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
         var context = this._frameIdToContextList[frame.id];
         if (!context)
             return;
@@ -389,6 +398,7 @@ WebInspector.ExecutionContext.comparator = function(a, b)
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {!WebInspector.ResourceTreeFrame} frame
  */
 WebInspector.FrameExecutionContextList = function(frame)
 {
@@ -403,6 +413,9 @@ WebInspector.FrameExecutionContextList.EventTypes = {
 
 WebInspector.FrameExecutionContextList.prototype =
 {
+    /**
+     * @param {!WebInspector.ResourceTreeFrame} frame
+     */
     _frameNavigated: function(frame)
     {
         this._frame = frame;
@@ -450,16 +463,25 @@ WebInspector.FrameExecutionContextList.prototype =
         return null;
     },
 
+    /**
+     * @return {string}
+     */
     get frameId()
     {
         return this._frame.id;
     },
 
+    /**
+     * @return {string}
+     */
     get url()
     {
         return this._frame.url;
     },
 
+    /**
+     * @return {string}
+     */
     get displayName()
     {
         if (!this._frame.parentFrame)
