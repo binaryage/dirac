@@ -122,9 +122,11 @@ WebInspector.HeapSnapshotView = function(parent, profile)
 
     this.viewSelect = new WebInspector.StatusBarComboBox(this._onSelectedViewChanged.bind(this));
 
-    this.views = [{title: WebInspector.UIString("Summary"), view: this.constructorsView, grid: this.constructorsDataGrid},
-                  {title: WebInspector.UIString("Comparison"), view: this.diffView, grid: this.diffDataGrid},
-                  {title: WebInspector.UIString("Containment"), view: this.containmentView, grid: this.containmentDataGrid}];
+    this.views = [{title: WebInspector.UIString("Summary"), view: this.constructorsView, grid: this.constructorsDataGrid}];
+
+    if (profile.profileType() !== WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType)
+        this.views.push({title: WebInspector.UIString("Comparison"), view: this.diffView, grid: this.diffDataGrid});
+    this.views.push({title: WebInspector.UIString("Containment"), view: this.containmentView, grid: this.containmentDataGrid});
     if (WebInspector.settings.showAdvancedHeapSnapshotProperties.get())
         this.views.push({title: WebInspector.UIString("Dominators"), view: this.dominatorView, grid: this.dominatorDataGrid});
     if (WebInspector.HeapSnapshotView.enableAllocationProfiler)
@@ -139,7 +141,7 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.baseSelect.element.classList.add("hidden");
     this._updateBaseOptions();
 
-    this.filterSelect = new WebInspector.StatusBarComboBox(this._changeFilter.bind(this));
+    this._filterSelect = new WebInspector.StatusBarComboBox(this._changeFilter.bind(this));
     this._updateFilterOptions();
 
     this.selectedSizeText = new WebInspector.StatusBarText("");
@@ -179,7 +181,11 @@ WebInspector.HeapSnapshotView.prototype = {
 
     get statusBarItems()
     {
-        return [this.viewSelect.element, this.baseSelect.element, this.filterSelect.element, this.selectedSizeText.element];
+        var result = [this.viewSelect.element];
+        if (this._profile.profileType() !== WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType)
+            result.push(this.baseSelect.element, this._filterSelect.element);
+        result.push(this.selectedSizeText.element);
+        return result;
     },
 
     wasShown: function()
@@ -394,12 +400,12 @@ WebInspector.HeapSnapshotView.prototype = {
 
     _changeFilter: function()
     {
-        var profileIndex = this.filterSelect.selectedIndex() - 1;
+        var profileIndex = this._filterSelect.selectedIndex() - 1;
         this.dataGrid.filterSelectIndexChanged(this._profiles(), profileIndex);
 
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
             action: WebInspector.UserMetrics.UserActionNames.HeapSnapshotFilterChanged,
-            label: this.filterSelect.selectedOption().label
+            label: this._filterSelect.selectedOption().label
         });
 
         if (!this.currentQuery || !this._searchFinishedCallback || !this._searchResults)
@@ -563,9 +569,9 @@ WebInspector.HeapSnapshotView.prototype = {
                 this._trackingOverviewGrid.update();
                 this.viewsContainer.classList.add("reserve-80px-at-top");
             }
-            this.filterSelect.element.classList.remove("hidden");
+            this._filterSelect.element.classList.remove("hidden");
         } else {
-            this.filterSelect.element.classList.add("hidden");
+            this._filterSelect.element.classList.add("hidden");
             if (this._trackingOverviewGrid) {
                 this._trackingOverviewGrid.element.classList.add("hidden");
                 this.viewsContainer.classList.remove("reserve-80px-at-top");
@@ -675,19 +681,19 @@ WebInspector.HeapSnapshotView.prototype = {
     {
         var list = this._profiles();
         // We're assuming that snapshots can only be added.
-        if (this.filterSelect.size() - 1 === list.length)
+        if (this._filterSelect.size() - 1 === list.length)
             return;
 
-        if (!this.filterSelect.size())
-            this.filterSelect.createOption(WebInspector.UIString("All objects"));
+        if (!this._filterSelect.size())
+            this._filterSelect.createOption(WebInspector.UIString("All objects"));
 
-        for (var i = this.filterSelect.size() - 1, n = list.length; i < n; ++i) {
+        for (var i = this._filterSelect.size() - 1, n = list.length; i < n; ++i) {
             var title = list[i].title;
             if (!i)
                 title = WebInspector.UIString("Objects allocated before %s", title);
             else
                 title = WebInspector.UIString("Objects allocated between %s and %s", list[i - 1].title, title);
-            this.filterSelect.createOption(title);
+            this._filterSelect.createOption(title);
         }
     },
 
