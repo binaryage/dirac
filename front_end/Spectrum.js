@@ -56,6 +56,7 @@ WebInspector.Spectrum = function()
     this._alphaElement.setAttribute("type", "range");
     this._alphaElement.setAttribute("min", "0");
     this._alphaElement.setAttribute("max", "100");
+    this._alphaElement.addEventListener("input", alphaDrag.bind(this), false);
     this._alphaElement.addEventListener("change", alphaDrag.bind(this), false);
 
     var swatchElement = document.createElement("span");
