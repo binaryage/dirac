@@ -106,7 +106,7 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
         // Create memory statistics as a bottom memory splitter child.
         this._memoryStatistics = new WebInspector.CountersGraph(this, this._model);
         this._views.push(this._memoryStatistics);
-        this._memoryStatistics.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._sidebarResized, this);
+        this._memoryStatistics.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
         this._stackView.appendView(this._memoryStatistics, "timeline-memory");
     }
 
@@ -191,7 +191,7 @@ WebInspector.TimelineView.prototype = {
     {
         // Create records sidebar as a top memory splitter child.
         var recordsView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Start, "timeline-split");
-        recordsView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._sidebarResized, this);
+        recordsView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
         recordsView.setSecondIsSidebar(false);
         this._containerElement = recordsView.element;
         this._containerElement.tabIndex = 0;

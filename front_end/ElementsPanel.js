@@ -60,7 +60,7 @@ WebInspector.ElementsPanel = function()
     this.createSidebarView(this.element, WebInspector.SidebarView.SidebarPosition.End, initialSidebarWidth, initialSidebarHeight);
     this.splitView.setSidebarElementConstraints(Preferences.minElementsSidebarWidth, Preferences.minElementsSidebarHeight);
     this.splitView.setMainElementConstraints(minimumContentWidthPercent, minimumContentHeightPercent);
-    this.splitView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this._updateTreeOutlineVisibleWidth.bind(this));
+    this.splitView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._updateTreeOutlineVisibleWidth.bind(this));
 
     this._searchableView = new WebInspector.SearchableView(this);
     this.splitView.setMainView(this._searchableView);
@@ -136,6 +136,7 @@ WebInspector.ElementsPanel.prototype = {
             width -= this.splitView.sidebarWidth();
         this.treeOutline.setVisibleWidth(width);
         this.updateBreadcrumbSizes();
+        this.treeOutline.updateSelection();
     },
 
     /**
@@ -189,8 +190,7 @@ WebInspector.ElementsPanel.prototype = {
 
     onResize: function()
     {
-        this.treeOutline.updateSelection();
-        this.updateBreadcrumbSizes();
+        this._updateTreeOutlineVisibleWidth();
     },
 
     /**
@@ -1114,11 +1114,6 @@ WebInspector.ElementsPanel.prototype = {
         event.clipboardData.clearData();
         event.preventDefault();
         this.selectedDOMNode().copyNode();
-    },
-
-    sidebarResized: function(event)
-    {
-        this.treeOutline.updateSelection();
     },
 
     revealAndSelectNode: function(nodeId)

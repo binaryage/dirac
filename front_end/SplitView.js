@@ -67,6 +67,10 @@ WebInspector.SplitView = function(isVertical, sidebarSizeSettingName, defaultSid
     this.installResizer(this._resizerElement);
 }
 
+WebInspector.SplitView.Events = {
+    SidebarSizeChanged: "SidebarSizeChanged"
+}
+
 WebInspector.SplitView.prototype = {
     /**
      * @return {boolean}
@@ -382,6 +386,7 @@ WebInspector.SplitView.prototype = {
         // No need to recalculate this._sidebarSize and this._totalSize again.
         if (!fromOnResize)
             this.doResize();
+        this.dispatchEventToListeners(WebInspector.SplitView.Events.SidebarSizeChanged, this.sidebarSize());
     },
 
     /**

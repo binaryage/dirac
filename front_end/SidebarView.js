@@ -44,10 +44,6 @@ WebInspector.SidebarView = function(sidebarPosition, sidebarWidthSettingName, de
     this.setSecondIsSidebar(sidebarPosition === WebInspector.SidebarView.SidebarPosition.End);
 }
 
-WebInspector.SidebarView.EventTypes = {
-    Resized: "Resized"
-}
-
 /**
  * @enum {string}
  */
@@ -71,12 +67,6 @@ WebInspector.SidebarView.prototype = {
     sidebarWidth: function()
     {
         return this.sidebarSize();
-    },
-
-    onResize: function()
-    {
-        WebInspector.SplitView.prototype.onResize.call(this);
-        this.dispatchEventToListeners(WebInspector.SidebarView.EventTypes.Resized, this.sidebarWidth());
     },
 
     hideMainElement: function()

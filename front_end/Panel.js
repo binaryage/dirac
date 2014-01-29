@@ -104,7 +104,6 @@ WebInspector.Panel.prototype = {
 
         this.splitView = new WebInspector.SidebarView(position, this._sidebarWidthSettingName(), defaultWidth, defaultHeight);
         this.splitView.show(parentElement);
-        this.splitView.addEventListener(WebInspector.SidebarView.EventTypes.Resized, this.sidebarResized.bind(this));
     },
 
     /**
@@ -136,13 +135,6 @@ WebInspector.Panel.prototype = {
     // Should be implemented by ancestors.
 
     get statusBarItems()
-    {
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    sidebarResized: function(event)
     {
     },
 
