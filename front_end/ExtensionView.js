@@ -38,7 +38,7 @@
 WebInspector.ExtensionView = function(id, src, className)
 {
     WebInspector.View.call(this);
-    this.element.classList.add("extension-view");
+    this.element.className = "extension-view fill" // Override flex;
 
     this._id = id;
     this._iframe = document.createElement("iframe");
