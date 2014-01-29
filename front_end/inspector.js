@@ -762,6 +762,7 @@ WebInspector.inspect = function(payload, hints)
         function callback(nodeId)
         {
             WebInspector._updateFocusedNode(nodeId);
+            InspectorFrontendHost.inspectElementCompleted();
             object.release();
         }
         object.pushNodeToFrontend(callback);

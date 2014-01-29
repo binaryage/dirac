@@ -104,6 +104,10 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     {
     },
 
+    inspectElementCompleted: function()
+    {
+    },
+
     moveWindowBy: function(x, y)
     {
     },

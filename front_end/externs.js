@@ -247,6 +247,7 @@ InspectorFrontendHost.isUnderTest = function() {}
  * @param right
  */
 InspectorFrontendHostAPI.prototype.setContentsInsets = function(top, left, bottom, right) {}
+InspectorFrontendHostAPI.prototype.inspectElementCompleted = function() {}
 /** @param {!Function=} callback callback */
 InspectorFrontendHostAPI.prototype.moveWindowBy = function(x, y, callback) {}
 /** @param {!Function=} callback callback */
