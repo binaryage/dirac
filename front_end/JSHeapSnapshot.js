@@ -701,7 +701,7 @@ WebInspector.JSHeapSnapshotEdge.prototype = {
 
     _hasStringName: function()
     {
-        return !this.isElement() && !this.isHidden() && !this.isWeak();
+        return !this.isElement() && !this.isHidden();
     },
 
     _name: function()
