@@ -734,7 +734,9 @@ WebInspector.CPUProfileType.prototype = {
         a.addEventListener("click", onClick.bind(this), true);
         function onClick(event)
         {
-            WebInspector.showPanel("profiles").showProfile(WebInspector.CPUProfileType.TypeId, id);
+            var profile = WebInspector.ProfileTypeRegistry.instance.cpuProfileType.getProfile(id);
+            if (profile)
+                WebInspector.showPanel("profiles").showProfile(profile);
         }
         messageElement.createTextChild("' finished.");
 
@@ -809,7 +811,7 @@ WebInspector.CPUProfileType.prototype = {
             this._profileBeingRecorded.sidebarElement.mainTitle = title;
             var recordedProfile = this._profileBeingRecorded;
             this._profileBeingRecorded = null;
-            WebInspector.panels.profiles._showProfile(recordedProfile);
+            WebInspector.panels.profiles.showProfile(recordedProfile);
         }
         ProfilerAgent.stop(didStopProfiling.bind(this));
     },

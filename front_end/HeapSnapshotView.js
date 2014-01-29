@@ -926,7 +926,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
         this._profileSamples = null;
         this._profileBeingRecorded = null;
 
-        WebInspector.panels.profiles._showProfile(profile);
+        WebInspector.panels.profiles.showProfile(profile);
         profile.existingView()._refreshView();
     },
 
