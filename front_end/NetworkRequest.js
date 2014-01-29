@@ -59,11 +59,14 @@ WebInspector.NetworkRequest = function(requestId, url, documentURL, frameId, loa
     this._frames = [];
 
     this._responseHeaderValues = {};
+
+    this._remoteAddress = "";
 }
 
 WebInspector.NetworkRequest.Events = {
     FinishedLoading: "FinishedLoading",
     TimingChanged: "TimingChanged",
+    RemoteAddressChanged: "RemoteAddressChanged",
     RequestHeadersChanged: "RequestHeadersChanged",
     ResponseHeadersChanged: "ResponseHeadersChanged",
 }
@@ -141,6 +144,24 @@ WebInspector.NetworkRequest.prototype = {
     get loaderId()
     {
         return this._loaderId;
+    },
+
+    /**
+     * @param {string} ip
+     * @param {number} port
+     */
+    setRemoteAddress: function(ip, port)
+    {
+        this._remoteAddress = ip + ":" + port;
+        this.dispatchEventToListeners(WebInspector.NetworkRequest.Events.RemoteAddressChanged, this);
+    },
+
+    /**
+     * @return {string}
+     */
+    remoteAddress: function()
+    {
+        return this._remoteAddress;
     },
 
     /**

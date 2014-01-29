@@ -179,6 +179,8 @@ WebInspector.NetworkDispatcher.prototype = {
 
         networkRequest.connectionReused = response.connectionReused;
         networkRequest.connectionId = response.connectionId;
+        if (response.remoteIPAddress)
+            networkRequest.setRemoteAddress(response.remoteIPAddress, response.remotePort || -1);
 
         if (response.fromDiskCache)
             networkRequest.cached = true;

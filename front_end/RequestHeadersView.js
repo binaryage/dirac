@@ -48,6 +48,11 @@ WebInspector.RequestHeadersView = function(request)
     this._headersTreeOutline = new TreeOutline(this._headersListElement);
     this._headersTreeOutline.expandTreeElementsWhenArrowing = true;
 
+    this._remoteAddressTreeElement = new TreeElement("", null, false);
+    this._remoteAddressTreeElement.selectable = false;
+    this._remoteAddressTreeElement.hidden = true;
+    this._headersTreeOutline.appendChild(this._remoteAddressTreeElement);
+
     this._urlTreeElement = new TreeElement("", null, false);
     this._urlTreeElement.selectable = false;
     this._headersTreeOutline.appendChild(this._urlTreeElement);
@@ -98,6 +103,7 @@ WebInspector.RequestHeadersView.prototype = {
 
     wasShown: function()
     {
+        this._request.addEventListener(WebInspector.NetworkRequest.Events.RemoteAddressChanged, this._refreshRemoteAddress, this);
         this._request.addEventListener(WebInspector.NetworkRequest.Events.RequestHeadersChanged, this._refreshRequestHeaders, this);
         this._request.addEventListener(WebInspector.NetworkRequest.Events.ResponseHeadersChanged, this._refreshResponseHeaders, this);
         this._request.addEventListener(WebInspector.NetworkRequest.Events.FinishedLoading, this._refreshHTTPInformation, this);
@@ -107,10 +113,12 @@ WebInspector.RequestHeadersView.prototype = {
         this._refreshRequestHeaders();
         this._refreshResponseHeaders();
         this._refreshHTTPInformation();
+        this._refreshRemoteAddress();
     },
 
     willHide: function()
     {
+        this._request.removeEventListener(WebInspector.NetworkRequest.Events.RemoteAddressChanged, this._refreshRemoteAddress, this);
         this._request.removeEventListener(WebInspector.NetworkRequest.Events.RequestHeadersChanged, this._refreshRequestHeaders, this);
         this._request.removeEventListener(WebInspector.NetworkRequest.Events.ResponseHeadersChanged, this._refreshResponseHeaders, this);
         this._request.removeEventListener(WebInspector.NetworkRequest.Events.FinishedLoading, this._refreshHTTPInformation, this);
@@ -446,6 +454,15 @@ WebInspector.RequestHeadersView.prototype = {
     {
         this._populateTreeElementWithSourceText(headersTreeElement, headersText);
         this._refreshHeadersTitle(title, headersTreeElement, count);
+    },
+
+    _refreshRemoteAddress: function()
+    {
+        var remoteAddress = this._request.remoteAddress();
+        var treeElement = this._remoteAddressTreeElement;
+        treeElement.hidden = !remoteAddress;
+        if (remoteAddress)
+            treeElement.title = this._formatHeader(WebInspector.UIString("Remote Address"), remoteAddress);
     },
 
     /**

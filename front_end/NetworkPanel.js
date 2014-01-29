@@ -92,7 +92,7 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
 WebInspector.NetworkLogView.HTTPSchemas = {"http": true, "https": true, "ws": true, "wss": true};
 WebInspector.NetworkLogView._responseHeaderColumns = ["Cache-Control", "Connection", "Content-Encoding", "Content-Length", "ETag", "Keep-Alive", "Last-Modified", "Server", "Vary"];
 WebInspector.NetworkLogView._defaultColumnsVisibility = {
-    method: true, status: true, scheme: false, domain: false, type: true, initiator: true, cookies: false, setCookies: false, size: true, time: true,
+    method: true, status: true, scheme: false, domain: false, remoteAddress: false, type: true, initiator: true, cookies: false, setCookies: false, size: true, time: true,
     "Cache-Control": false, "Connection": false, "Content-Encoding": false, "Content-Length": false, "ETag": false, "Keep-Alive": false, "Last-Modified": false, "Server": false, "Vary": false
 };
 WebInspector.NetworkLogView._defaultRefreshDelay = 500;
@@ -223,6 +223,14 @@ WebInspector.NetworkLogView.prototype = {
             title: WebInspector.UIString("Domain"),
             sortable: true,
             weight: 6
+        });
+
+        columns.push({
+            id: "remoteAddress",
+            title: WebInspector.UIString("Remote Address"),
+            sortable: true,
+            weight: 10,
+            align: WebInspector.DataGrid.Align.Right
         });
 
         columns.push({
@@ -369,6 +377,7 @@ WebInspector.NetworkLogView.prototype = {
         this._sortingFunctions.status = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "statusCode", false);
         this._sortingFunctions.scheme = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "scheme", false);
         this._sortingFunctions.domain = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "domain", false);
+        this._sortingFunctions.remoteAddress = WebInspector.NetworkDataGridNode.RemoteAddressComparator;
         this._sortingFunctions.type = WebInspector.NetworkDataGridNode.RequestPropertyComparator.bind(null, "mimeType", false);
         this._sortingFunctions.initiator = WebInspector.NetworkDataGridNode.InitiatorComparator;
         this._sortingFunctions.cookies = WebInspector.NetworkDataGridNode.RequestCookiesCountComparator;
@@ -2162,6 +2171,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._statusCell = this._createDivInTD("status");
         this._schemeCell = this._createDivInTD("scheme");
         this._domainCell = this._createDivInTD("domain");
+        this._remoteAddressCell = this._createDivInTD("remoteAddress");
         this._typeCell = this._createDivInTD("type");
         this._initiatorCell = this._createDivInTD("initiator");
         this._cookiesCell = this._createDivInTD("cookies");
@@ -2277,6 +2287,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._refreshStatusCell();
         this._refreshSchemeCell();
         this._refreshDomainCell();
+        this._refreshRemoteAddressCell();
         this._refreshTypeCell();
         this._refreshInitiatorCell();
         this._refreshCookiesCell();
@@ -2387,6 +2398,11 @@ WebInspector.NetworkDataGridNode.prototype = {
     _refreshDomainCell: function()
     {
         this._domainCell.setTextAndTitle(this._request.domain);
+    },
+
+    _refreshRemoteAddressCell: function()
+    {
+        this._remoteAddressCell.setTextAndTitle(this._request.remoteAddress());
     },
 
     _refreshTypeCell: function()
@@ -2590,6 +2606,17 @@ WebInspector.NetworkDataGridNode.NameComparator = function(a, b)
     if (aFileName > bFileName)
         return 1;
     if (bFileName > aFileName)
+        return -1;
+    return 0;
+}
+
+WebInspector.NetworkDataGridNode.RemoteAddressComparator = function(a, b)
+{
+    var aRemoteAddress = a._request.remoteAddress();
+    var bRemoteAddress = b._request.remoteAddress();
+    if (aRemoteAddress > bRemoteAddress)
+        return 1;
+    if (bRemoteAddress > aRemoteAddress)
         return -1;
     return 0;
 }
