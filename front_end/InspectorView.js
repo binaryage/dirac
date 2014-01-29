@@ -400,7 +400,6 @@ WebInspector.InspectorView.prototype = {
     onResize: function()
     {
         // FIXME: make drawer a view.
-        this.doResize();
         this._drawer.resize();
     },
 
