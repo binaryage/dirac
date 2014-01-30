@@ -297,6 +297,9 @@ WebInspector.SplitView.prototype = {
      */
     showBoth: function(animate)
     {
+        if (!this._isShowingOne)
+            animate = false;
+
         this._cancelAnimation();
         this._firstElement.classList.remove("hidden");
         this._firstElement.classList.remove("maximized");
