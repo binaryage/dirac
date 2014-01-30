@@ -41,8 +41,6 @@ WebInspector.MemoryStatistics = function(timelineView, model)
 
     this._timelineView = timelineView;
 
-    this._counters = [];
-
     model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
     model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
 
@@ -63,16 +61,75 @@ WebInspector.MemoryStatistics = function(timelineView, model)
 
     // Populate sidebar
     this.sidebarElement().createChild("div", "sidebar-tree sidebar-tree-section").textContent = WebInspector.UIString("COUNTERS");
-    this._counterUI = this._createCounterUIList();
+    this._createAllCounters();
 }
 
 /**
  * @constructor
- * @param {number} time
+ * @param {string} counterName
  */
-WebInspector.MemoryStatistics.Counter = function(time)
+WebInspector.MemoryStatistics.Counter = function(counterName)
 {
-    this.time = time;
+    this.counterName = counterName;
+    this.times = [];
+    this.values = [];
+}
+
+WebInspector.MemoryStatistics.Counter.prototype = {
+    /**
+     * @param {number} time
+     * @param {!TimelineAgent.Counters} counters
+     */
+    appendSample: function(time, counters)
+    {
+        if (!(this.counterName in counters))
+            return;
+        this.times.push(time);
+        this.values.push(counters[this.counterName]);
+    },
+
+    reset: function()
+    {
+        this.times = [];
+        this.values = [];
+    },
+
+    /**
+     * @param {!WebInspector.TimelineCalculator} calculator
+     */
+    _calculateVisibleIndexes: function(calculator)
+    {
+        // FIXME: these 1000 constants shouldn't be here.
+        var start = calculator.minimumBoundary() * 1000;
+        var end = calculator.maximumBoundary() * 1000;
+
+        // Maximum index of element whose time <= start.
+        this._minimumIndex = Number.constrain(this.times.upperBound(start) - 1, 0, this.times.length - 1);
+
+        // Minimum index of element whose time >= end.
+        this._maximumIndex = Number.constrain(this.times.lowerBound(end), 0, this.times.length - 1);
+
+        // Current window bounds.
+        this._minTime = start;
+        this._maxTime = end;
+    },
+
+    /**
+     * @param {number} width
+     */
+    _calculateXValues: function(width)
+    {
+        if (!this.values.length)
+            return;
+
+        var xFactor = width / (this._maxTime - this._minTime);
+
+        this.x = new Array(this.values.length);
+        this.x[this._minimumIndex] = 0;
+        for (var i = this._minimumIndex + 1; i < this._maximumIndex; i++)
+             this.x[i] = xFactor * (this.times[i] - this._minTime);
+        this.x[this._maximumIndex] = width;
+    }
 }
 
 /**
@@ -120,11 +177,15 @@ WebInspector.SwatchCheckbox.prototype = {
 
 /**
  * @constructor
+ * @param {!WebInspector.MemoryStatistics} memoryCountersPane
+ * @param {string} title
+ * @param {string} graphColor
+ * @param {!WebInspector.MemoryStatistics.Counter} counter
  */
-WebInspector.CounterUIBase = function(memoryCountersPane, title, graphColor, valueGetter)
+WebInspector.CounterUIBase = function(memoryCountersPane, title, graphColor, counter)
 {
     this._memoryCountersPane = memoryCountersPane;
-    this.valueGetter = valueGetter;
+    this.counter = counter;
     var container = memoryCountersPane.sidebarElement().createChild("div", "memory-counter-sidebar-info");
     var swatchColor = graphColor;
     this._swatch = new WebInspector.SwatchCheckbox(WebInspector.UIString(title), swatchColor);
@@ -132,7 +193,7 @@ WebInspector.CounterUIBase = function(memoryCountersPane, title, graphColor, val
     container.appendChild(this._swatch.element);
 
     this._value = null;
-    this.graphColor =graphColor;
+    this.graphColor = graphColor;
     this.strokeColor = graphColor;
     this.graphYValues = [];
 }
@@ -147,9 +208,33 @@ WebInspector.CounterUIBase.prototype = {
         this._memoryCountersPane.refresh();
     },
 
-    updateCurrentValue: function(countersEntry)
+    /**
+     * @param {number} x
+     * @return {number}
+     */
+    _recordIndexAt: function(x)
     {
-        this._value.textContent = Number.bytesToString(this.valueGetter(countersEntry));
+        // FIXME: looks like a place for binary search.
+        var counter = this.counter;
+        var i;
+        for (i = counter._minimumIndex + 1; i <= counter._maximumIndex; i++) {
+            var statX = counter.x[i];
+            if (x < statX)
+                break;
+        }
+        i--;
+        return i;
+    },
+
+    /**
+     * @param {number} x
+     */
+    updateCurrentValue: function(x)
+    {
+        if (!this.counter.values.length)
+            return;
+        var index = this._recordIndexAt(x);
+        this._value.textContent = WebInspector.UIString(this._currentValueLabel, this.counter.values[index]);
     },
 
     clearCurrentValueAndMarker: function(ctx)
@@ -169,14 +254,15 @@ WebInspector.MemoryStatistics.prototype = {
         throw new Error("Not implemented");
     },
 
-    _createCounterUIList: function()
+    _createAllCounters: function()
     {
         throw new Error("Not implemented");
     },
 
     _onRecordsCleared: function()
     {
-        this._counters = [];
+        for (var i = 0; i < this._counters.length; ++i)
+            this._counters[i].reset();
     },
 
     /**
@@ -216,32 +302,13 @@ WebInspector.MemoryStatistics.prototype = {
 
     draw: function()
     {
-        this._calculateVisibleIndexes();
-        this._calculateXValues();
+        for (var i = 0; i < this._counters.length; ++i) {
+            this._counters[i]._calculateVisibleIndexes(this._timelineView.calculator);
+            this._counters[i]._calculateXValues(this._canvas.width);
+        }
         this._clear();
 
         this._setVerticalClip(10, this._canvas.height - 20);
-    },
-
-    _calculateVisibleIndexes: function()
-    {
-        var calculator = this._timelineView.calculator;
-        var start = calculator.minimumBoundary() * 1000;
-        var end = calculator.maximumBoundary() * 1000;
-        function comparator(value, sample)
-        {
-            return value - sample.time;
-        }
-
-        // Maximum index of element whose time <= start.
-        this._minimumIndex = Number.constrain(this._counters.upperBound(start, comparator) - 1, 0, this._counters.length - 1);
-
-        // Minimum index of element whose time >= end.
-        this._maximumIndex = Number.constrain(this._counters.lowerBound(end, comparator), 0, this._counters.length - 1);
-
-        // Current window bounds.
-        this._minTime = start;
-        this._maxTime = end;
     },
 
     /**
@@ -250,16 +317,27 @@ WebInspector.MemoryStatistics.prototype = {
      _onClick: function(event)
     {
         var x = event.x - event.target.offsetParent.offsetLeft;
-        var i = this._recordIndexAt(x);
-        var counter = this._counters[i];
-        if (counter)
-            this._timelineView.revealRecordAt(counter.time / 1000);
+        var minDistance = Infinity;
+        var bestTime;
+        for (var i = 0; i < this._counterUI.length; ++i) {
+            var counterUI = this._counterUI[i];
+            if (!counterUI.counter.times.length)
+                continue;
+            var index = counterUI._recordIndexAt(x);
+            var distance = Math.abs(x - counterUI.counter.x[index]);
+            if (distance < minDistance) {
+                minDistance = distance;
+                bestTime = counterUI.counter.times[index];
+            }
+        }
+        if (bestTime !== undefined)
+            this._timelineView.revealRecordAt(bestTime / 1000);
     },
 
     /**
      * @param {!MouseEvent} event
      */
-     _onMouseOut: function(event)
+    _onMouseOut: function(event)
     {
         delete this._markerXPosition;
 
@@ -279,7 +357,7 @@ WebInspector.MemoryStatistics.prototype = {
     /**
      * @param {!MouseEvent} event
      */
-     _onMouseOver: function(event)
+    _onMouseOver: function(event)
     {
         this._onMouseMove(event);
     },
@@ -287,9 +365,9 @@ WebInspector.MemoryStatistics.prototype = {
     /**
      * @param {!MouseEvent} event
      */
-     _onMouseMove: function(event)
+    _onMouseMove: function(event)
     {
-        var x = event.x - event.target.offsetParent.offsetLeft
+        var x = event.x - event.target.offsetParent.offsetLeft;
         this._markerXPosition = x;
         this._refreshCurrentValues();
     },
@@ -300,38 +378,21 @@ WebInspector.MemoryStatistics.prototype = {
             return;
         if (this._markerXPosition === undefined)
             return;
-        if (this._maximumIndex === -1)
-            return;
-        var i = this._recordIndexAt(this._markerXPosition);
 
-        this._updateCurrentValue(this._counters[i]);
-
-        this._highlightCurrentPositionOnGraphs(this._markerXPosition, i);
+        for (var i = 0; i < this._counterUI.length; ++i)
+            this._counterUI[i].updateCurrentValue(this._markerXPosition);
+        this._highlightCurrentPositionOnGraphs();
     },
 
-    _updateCurrentValue: function(counterEntry)
-    {
-        for (var j = 0; j < this._counterUI.length; j++)
-            this._counterUI[j].updateCurrentValue(counterEntry);
-    },
-
-    _recordIndexAt: function(x)
-    {
-        var i;
-        for (i = this._minimumIndex + 1; i <= this._maximumIndex; i++) {
-            var statX = this._counters[i].x;
-            if (x < statX)
-                break;
-        }
-        i--;
-        return i;
-    },
-
-    _highlightCurrentPositionOnGraphs: function(x, index)
+    _highlightCurrentPositionOnGraphs: function()
     {
         var ctx = this._canvas.getContext("2d");
-        this._restoreImageUnderMarker(ctx);
-        this._drawMarker(ctx, x, index);
+        for (var i = 0; i < this._counterUI.length; ++i)
+            this._counterUI[i].restoreImageUnderMarker(ctx);
+        for (var i = 0; i < this._counterUI.length; ++i)
+            this._counterUI[i].saveImageUnderMarker(ctx, this._markerXPosition);
+        for (var i = 0; i < this._counterUI.length; ++i)
+            this._counterUI[i].drawMarker(ctx, this._markerXPosition);
     },
 
     _restoreImageUnderMarker: function(ctx)
@@ -355,20 +416,6 @@ WebInspector.MemoryStatistics.prototype = {
     {
         this._originY = originY;
         this._clippedHeight = height;
-    },
-
-    _calculateXValues: function()
-    {
-        if (!this._counters.length)
-            return;
-
-        var width = this._canvas.width;
-        var xFactor = width / (this._maxTime - this._minTime);
-
-        this._counters[this._minimumIndex].x = 0;
-        for (var i = this._minimumIndex + 1; i < this._maximumIndex; i++)
-             this._counters[i].x = xFactor * (this._counters[i].time - this._minTime);
-        this._counters[this._maximumIndex].x = width;
     },
 
     _clear: function()

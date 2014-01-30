@@ -46,40 +46,20 @@ WebInspector.CountersGraph = function(timelineView, model)
  * @param {string} title
  * @param {string} currentValueLabel
  * @param {!string} color
- * @param {function(!WebInspector.CountersGraph.Counter):number} valueGetter
+ * @param {!WebInspector.MemoryStatistics.Counter} counter
  */
-WebInspector.CounterUI = function(memoryCountersPane, title, currentValueLabel, color, valueGetter)
+WebInspector.CounterUI = function(memoryCountersPane, title, currentValueLabel, color, counter)
 {
-    WebInspector.CounterUIBase.call(this, memoryCountersPane, title, color, valueGetter)
+    WebInspector.CounterUIBase.call(this, memoryCountersPane, title, color, counter)
     this._range = this._swatch.element.createChild("span");
 
     this._value = memoryCountersPane._currentValuesBar.createChild("span", "memory-counter-value");
     this._value.style.color = color;
     this._currentValueLabel = currentValueLabel;
+    this._markerRadius = 2;
 
     this.graphColor = color;
     this.graphYValues = [];
-}
-
-/**
- * @constructor
- * @extends {WebInspector.MemoryStatistics.Counter}
- * @param {number} time
- * @param {number} documentCount
- * @param {number} nodeCount
- * @param {number} listenerCount
- */
-WebInspector.CountersGraph.Counter = function(time, documentCount, nodeCount, listenerCount, usedGPUMemoryKBytes)
-{
-    WebInspector.MemoryStatistics.Counter.call(this, time);
-    this.documentCount = documentCount;
-    this.nodeCount = nodeCount;
-    this.listenerCount = listenerCount;
-    this.usedGPUMemoryKBytes = usedGPUMemoryKBytes;
-}
-
-WebInspector.CountersGraph.Counter.prototype = {
-    __proto__: WebInspector.MemoryStatistics.Counter.prototype
 }
 
 WebInspector.CounterUI.prototype = {
@@ -92,11 +72,9 @@ WebInspector.CounterUI.prototype = {
         this._range.textContent = WebInspector.UIString("[%d:%d]", minValue, maxValue);
     },
 
-    updateCurrentValue: function(countersEntry)
-    {
-        this._value.textContent = WebInspector.UIString(this._currentValueLabel, this.valueGetter(countersEntry));
-    },
-
+    /**
+     * @param {!CanvasRenderingContext2D} ctx
+     */
     clearCurrentValueAndMarker: function(ctx)
     {
         this._value.textContent = "";
@@ -106,12 +84,13 @@ WebInspector.CounterUI.prototype = {
     /**
      * @param {!CanvasRenderingContext2D} ctx
      * @param {number} x
-     * @param {number} y
-     * @param {number} radius
      */
-    saveImageUnderMarker: function(ctx, x, y, radius)
+    saveImageUnderMarker: function(ctx, x)
     {
-        const w = radius + 1;
+        if (!this.counter.values.length)
+            return;
+        var w = this._markerRadius + 1;
+        var y = this.graphYValues[this._recordIndexAt(x)];
         var imageData = ctx.getImageData(x - w, y - w, 2 * w, 2 * w);
         this._imageUnderMarker = {
             x: x - w,
@@ -137,6 +116,27 @@ WebInspector.CounterUI.prototype = {
         delete this._imageUnderMarker;
     },
 
+    /**
+     * @param {!CanvasRenderingContext2D} ctx
+     * @param {number} x
+     */
+    drawMarker: function(ctx, x)
+    {
+        if (!this.visible)
+            return;
+        if (!this.counter.values.length)
+            return;
+        var y = this.graphYValues[this._recordIndexAt(x)];
+        ctx.beginPath();
+        ctx.arc(x + 0.5, y + 0.5, this._markerRadius, 0, Math.PI * 2, true);
+        ctx.lineWidth = 1;
+        ctx.fillStyle = this.graphColor;
+        ctx.strokeStyle = this.graphColor;
+        ctx.fill();
+        ctx.stroke();
+        ctx.closePath();
+    },
+
     __proto__: WebInspector.CounterUIBase.prototype
 }
 
@@ -157,35 +157,28 @@ WebInspector.CountersGraph.prototype = {
         return this._currentValuesBar;
     },
 
-    /**
-     * @return {!Array.<!WebInspector.CounterUI>}
-     */
-    _createCounterUIList: function()
+    _createAllCounters: function()
     {
-        function getDocumentCount(entry)
-        {
-            return entry.documentCount;
-        }
-        function getNodeCount(entry)
-        {
-            return entry.nodeCount;
-        }
-        function getListenerCount(entry)
-        {
-            return entry.listenerCount;
-        }
-        function getUsedGPUMemoryKBytes(entry)
-        {
-            return entry.usedGPUMemoryKBytes;
-        }
-        var counterUIs = [
-            new WebInspector.CounterUI(this, "Documents", "Documents: %d", "#d00", getDocumentCount),
-            new WebInspector.CounterUI(this, "Nodes", "Nodes: %d", "#0a0", getNodeCount),
-            new WebInspector.CounterUI(this, "Listeners", "Listeners: %d", "#00d", getListenerCount)
-        ];
+        this._counters = [];
+        this._counterUI = [];
+        this._createCounter(WebInspector.UIString("Documents"), WebInspector.UIString("Documents: %d"), "#d00", "documents");
+        this._createCounter(WebInspector.UIString("Nodes"), WebInspector.UIString("Nodes: %d"), "#0a0", "nodes");
+        this._createCounter(WebInspector.UIString("Listeners"), WebInspector.UIString("Listeners: %d"), "#00d", "jsEventListeners");
         if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
-            counterUIs.push(new WebInspector.CounterUI(this, "GPU Memory", "GPU Memory [KB]: %d", "#c0c", getUsedGPUMemoryKBytes));
-        return counterUIs;
+            this._createCounter(WebInspector.UIString("GPU Memory"), WebInspector.UIString("GPU Memory [KB]: %d"), "#c0c", "gpuMemoryUsedKB");
+    },
+
+    /**
+     * @param {string} uiName
+     * @param {string} uiValueTemplate
+     * @param {string} color
+     * @param {string} protocolName
+     */
+    _createCounter: function(uiName, uiValueTemplate, color, protocolName)
+    {
+        var counter = new WebInspector.MemoryStatistics.Counter(protocolName);
+        this._counters.push(counter);
+        this._counterUI.push(new WebInspector.CounterUI(this, uiName, uiValueTemplate, color, counter));
     },
 
     /**
@@ -194,64 +187,18 @@ WebInspector.CountersGraph.prototype = {
     _onRecordAdded: function(event)
     {
         /**
-         * @param {!Array.<!T>} array
-         * @param {!S} item
-         * @param {!function(!T,!S):!number} comparator
-         * @return {!number}
-         * @template T,S
-         */
-        function findInsertionLocation(array, item, comparator)
-        {
-            var index = array.length;
-            while (index > 0 && comparator(array[index - 1], item) > 0)
-                --index;
-            return index;
-        }
-
-        /**
-         * @this {WebInspector.CountersGraph}
+         * @this {!WebInspector.CountersGraph}
          */
         function addStatistics(record)
         {
-            var counters = record["counters"];
+            var counters = record.counters;
             if (!counters)
                 return;
             var time = record.endTime || record.startTime;
-            var counter = new WebInspector.CountersGraph.Counter(
-                time,
-                counters["documents"],
-                counters["nodes"],
-                counters["jsEventListeners"],
-                counters["gpuMemoryUsedKB"]
-            );
-
-            function compare(record, time)
-            {
-                return record.time - time;
-            }
-            var index = findInsertionLocation(this._counters, time, compare);
-            this._counters.splice(index, 0, counter);
-            if ("gpuMemoryUsedKB" in counters) {
-                // Populate missing values from preceeding records.
-                // FIXME: Refactor the code to make each WebInspector.CountersGraph.Counter
-                // be responsible for a single graph to avoid such synchronizations.
-                for (var i = index - 1; i >= 0 && typeof this._counters[i].usedGPUMemoryKBytes === "undefined"; --i) { }
-                var usedGPUMemoryKBytes = this._counters[i >= 0 ? i : index].usedGPUMemoryKBytes;
-                for (i = Math.max(i, 0); i < index; ++i)
-                    this._counters[i].usedGPUMemoryKBytes = usedGPUMemoryKBytes;
-                var copyFrom = index > 0 ? index - 1 : index + 1;
-                if (copyFrom < this._counters.length) {
-                    this._counters[index].documentCount = this._counters[copyFrom].documentCount;
-                    this._counters[index].nodeCount = this._counters[copyFrom].nodeCount;
-                    this._counters[index].listenerCount = this._counters[copyFrom].listenerCount;
-                } else {
-                    this._counters[index].documentCount =  0;
-                    this._counters[index].nodeCount = 0;
-                    this._counters[index].listenerCount = 0;
-                }
-            }
+            for (var i = 0; i < this._counters.length; ++i)
+                this._counters[i].appendSample(time, counters);
         }
-        WebInspector.TimelinePresentationModel.forAllRecords([event.data], null, addStatistics.bind(this));
+        WebInspector.TimelinePresentationModel.forAllRecords([/** @type {!TimelineAgent.TimelineEvent} */ (event.data)], null, addStatistics.bind(this));
     },
 
     draw: function()
@@ -259,61 +206,6 @@ WebInspector.CountersGraph.prototype = {
         WebInspector.MemoryStatistics.prototype.draw.call(this);
         for (var i = 0; i < this._counterUI.length; i++)
             this._drawGraph(this._counterUI[i]);
-    },
-
-    /**
-     * @param {!CanvasRenderingContext2D} ctx
-     */
-    _restoreImageUnderMarker: function(ctx)
-    {
-        for (var i = 0; i < this._counterUI.length; i++) {
-            var counterUI = this._counterUI[i];
-            if (!counterUI.visible)
-                continue;
-            counterUI.restoreImageUnderMarker(ctx);
-        }
-    },
-
-    /**
-     * @param {!CanvasRenderingContext2D} ctx
-     * @param {number} x
-     * @param {number} index
-     */
-    _saveImageUnderMarker: function(ctx, x, index)
-    {
-        const radius = 2;
-        for (var i = 0; i < this._counterUI.length; i++) {
-            var counterUI = this._counterUI[i];
-            if (!counterUI.visible)
-                continue;
-            var y = counterUI.graphYValues[index];
-            counterUI.saveImageUnderMarker(ctx, x, y, radius);
-        }
-    },
-
-    /**
-     * @param {!CanvasRenderingContext2D} ctx
-     * @param {number} x
-     * @param {number} index
-     */
-    _drawMarker: function(ctx, x, index)
-    {
-        this._saveImageUnderMarker(ctx, x, index);
-        const radius = 2;
-        for (var i = 0; i < this._counterUI.length; i++) {
-            var counterUI = this._counterUI[i];
-            if (!counterUI.visible)
-                continue;
-            var y = counterUI.graphYValues[index];
-            ctx.beginPath();
-            ctx.arc(x + 0.5, y + 0.5, radius, 0, Math.PI * 2, true);
-            ctx.lineWidth = 1;
-            ctx.fillStyle = counterUI.graphColor;
-            ctx.strokeStyle = counterUI.graphColor;
-            ctx.fill();
-            ctx.stroke();
-            ctx.closePath();
-        }
     },
 
     /**
@@ -326,15 +218,16 @@ WebInspector.CountersGraph.prototype = {
         var width = canvas.width;
         var height = this._clippedHeight;
         var originY = this._originY;
-        var valueGetter = counterUI.valueGetter;
+        var counter = counterUI.counter;
+        var values = counter.values;
 
-        if (!this._counters.length)
+        if (!values.length)
             return;
 
         var maxValue;
         var minValue;
-        for (var i = this._minimumIndex; i <= this._maximumIndex; i++) {
-            var value = valueGetter(this._counters[i]);
+        for (var i = counter._minimumIndex; i <= counter._maximumIndex; i++) {
+            var value = values[i];
             if (minValue === undefined || value < minValue)
                 minValue = value;
             if (maxValue === undefined || value > maxValue)
@@ -357,13 +250,13 @@ WebInspector.CountersGraph.prototype = {
         ctx.save();
         ctx.translate(0.5, 0.5);
         ctx.beginPath();
-        var value = valueGetter(this._counters[this._minimumIndex]) || 0;
+        var value = values[counter._minimumIndex];
         var currentY = Math.round(originY + height - (value - minValue) * yFactor);
         ctx.moveTo(0, currentY);
-        for (var i = this._minimumIndex; i <= this._maximumIndex; i++) {
-             var x = Math.round(this._counters[i].x);
+        for (var i = counter._minimumIndex; i <= counter._maximumIndex; i++) {
+             var x = Math.round(counter.x[i]);
              ctx.lineTo(x, currentY);
-             var currentValue = valueGetter(this._counters[i]);
+             var currentValue = values[i];
              if (typeof currentValue !== "undefined")
                 value = currentValue;
              currentY = Math.round(originY + height - (value - minValue) * yFactor);
