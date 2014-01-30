@@ -133,6 +133,11 @@ WebInspector.Drawer.prototype = {
     {
         if (!this._toggleDrawerButton.enabled())
             return;
+        if (!this._tabbedPane.hasTab(id)) {
+            // Hidden tab.
+            this._innerShow(immediate);
+            return;
+        }
         var viewFactory = this._viewFactory(id);
         if (viewFactory)
             this._tabbedPane.changeTabView(id, viewFactory.createView());
