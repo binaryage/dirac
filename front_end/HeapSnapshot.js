@@ -724,14 +724,12 @@ WebInspector.HeapSnapshot = function(profile, progress)
 
     this._init();
 
-    if (WebInspector.HeapSnapshot.enableAllocationProfiler) {
+    if (profile.snapshot.trace_function_count) {
         this._progress.updateStatus("Buiding allocation statistics\u2026");
         this._allocationProfile = new WebInspector.AllocationProfile(profile);
         this._progress.updateStatus("Done");
     }
 }
-
-WebInspector.HeapSnapshot.enableAllocationProfiler = false;
 
 /**
  * @constructor

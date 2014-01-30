@@ -289,6 +289,7 @@ WebInspector.ExperimentsSettings = function()
     this.applyCustomStylesheet = this._createExperiment("applyCustomStylesheet", "Allow custom UI themes");
     this.workersInMainWindow = this._createExperiment("workersInMainWindow", "Show workers in main window");
     this.dockToLeft = this._createExperiment("dockToLeft", "Enable dock to left mode");
+    this.allocationProfiler = this._createExperiment("allocationProfiler", "Enable JavaScript heap allocation profiler");
 
     this._cleanUpSetting();
 }

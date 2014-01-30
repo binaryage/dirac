@@ -3519,7 +3519,10 @@
                 "name": "disable"
             },
             {
-                "name": "startTrackingHeapObjects"
+                "name": "startTrackingHeapObjects",
+                "parameters": [
+                    { "name": "trackAllocations", "type": "boolean", "optional": true }
+                ]
             },
             {
                 "name": "stopTrackingHeapObjects",

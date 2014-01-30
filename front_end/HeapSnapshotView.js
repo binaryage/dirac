@@ -89,7 +89,7 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.dominatorDataGrid.show(this.dominatorView.element);
     this.dominatorDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
-    if (WebInspector.HeapSnapshotView.enableAllocationProfiler) {
+    if (WebInspector.experimentsSettings.allocationProfiler.isEnabled() && profile.profileType() === WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType) {
         this.allocationView = new WebInspector.View();
         this.allocationView.element.classList.add("view");
         this.allocationDataGrid = new WebInspector.AllocationDataGrid();
@@ -127,7 +127,7 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.views.push({title: WebInspector.UIString("Containment"), view: this.containmentView, grid: this.containmentDataGrid});
     if (WebInspector.settings.showAdvancedHeapSnapshotProperties.get())
         this.views.push({title: WebInspector.UIString("Dominators"), view: this.dominatorView, grid: this.dominatorDataGrid});
-    if (WebInspector.HeapSnapshotView.enableAllocationProfiler)
+    if (this.allocationView)
         this.views.push({title: WebInspector.UIString("Allocation"), view: this.allocationView, grid: this.allocationDataGrid});
     this.views.current = 0;
     for (var i = 0; i < this.views.length; ++i)
@@ -148,8 +148,6 @@ WebInspector.HeapSnapshotView = function(parent, profile)
 
     this._refreshView();
 }
-
-WebInspector.HeapSnapshotView.enableAllocationProfiler = false;
 
 WebInspector.HeapSnapshotView.prototype = {
     _refreshView: function()
@@ -1075,7 +1073,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
         this._profileBeingRecorded._profileSamples = this._profileSamples;
         this._recording = true;
         this.addProfile(this._profileBeingRecorded);
-        HeapProfilerAgent.startTrackingHeapObjects();
+        HeapProfilerAgent.startTrackingHeapObjects(WebInspector.experimentsSettings.allocationProfiler.isEnabled());
         this.dispatchEventToListeners(WebInspector.TrackingHeapSnapshotProfileType.TrackingStarted);
     },
 

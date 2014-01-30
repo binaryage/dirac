@@ -42,8 +42,6 @@ WebInspector.HeapSnapshotWorkerProxy = function(eventHandler)
     this._previousCallbacks = [];
     this._worker = new Worker("HeapSnapshotWorker.js");
     this._worker.onmessage = this._messageReceived.bind(this);
-    if (WebInspector.HeapSnapshotView.allocationProfilerEnabled)
-        this._postMessage({disposition: "enableAllocationProfiler"});
 }
 
 WebInspector.HeapSnapshotWorkerProxy.prototype = {

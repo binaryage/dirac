@@ -195,7 +195,8 @@ WebInspector.HeapSnapshotLoader.prototype = {
                     return;
                 this._snapshot.edges = this._array;
                 this._array = null;
-                if (WebInspector.HeapSnapshot.enableAllocationProfiler)
+                // If there is allocation info parse it, otherwise jump straight to strings.
+                if (this._snapshot.snapshot.trace_function_count)
                     this._state = "find-trace-function-infos";
                 else
                     this._state = "find-strings";
