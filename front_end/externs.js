@@ -279,7 +279,6 @@ InspectorFrontendHostAPI.prototype.sendMessageToEmbedder = function(message) {}
 InspectorFrontendHostAPI.prototype.setInjectedScriptForOrigin = function(origin, script) {}
 InspectorFrontendHostAPI.prototype.setIsDocked = function(isDocked) {}
 InspectorFrontendHostAPI.prototype.setZoomFactor = function(zoom) {}
-InspectorFrontendHostAPI.prototype.supportsFileSystems = function() {}
 InspectorFrontendHostAPI.prototype.zoomFactor = function() {}
 /** @type {InspectorFrontendHostAPI} */
 var InspectorFrontendHost;

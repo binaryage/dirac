@@ -640,8 +640,6 @@ WebInspector.Workspace.prototype = {
      */
     hasMappingForURL: function(url)
     {
-        if (!InspectorFrontendHost.supportsFileSystems())
-            return false;
         return this._fileSystemMapping.hasMappingForURL(url);
     },
 
@@ -663,8 +661,6 @@ WebInspector.Workspace.prototype = {
      */
     uiSourceCodeForURL: function(url)
     {
-        if (!InspectorFrontendHost.supportsFileSystems())
-            return this._networkUISourceCodeForURL(url);
         var file = this._fileSystemMapping.fileForURL(url);
         if (!file)
             return this._networkUISourceCodeForURL(url);

@@ -162,14 +162,6 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     {
     },
 
-    /**
-     * @return {boolean}
-     */
-    supportsFileSystems: function()
-    {
-        return false;
-    },
-
     requestFileSystems: function()
     {
     },
