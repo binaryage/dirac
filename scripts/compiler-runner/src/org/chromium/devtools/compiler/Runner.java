@@ -10,8 +10,9 @@ import org.kohsuke.args4j.Option;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ import java.util.regex.Pattern;
  */
 public class Runner {
     protected final Flags flags = new Flags();
-    private PrintStream err;
+    private final PrintStream err;
     private boolean isConfigValid;
 
     public Runner(String[] args, PrintStream err) {
@@ -148,7 +149,9 @@ public class Runner {
 
     private List<CompilerInstanceDescriptor> getDescriptors() {
         List<CompilerInstanceDescriptor> result = new ArrayList<>();
-        try (BufferedReader reader = new BufferedReader(new FileReader(flags.compilerArgsFile))) {
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(
+                        new FileInputStream(flags.compilerArgsFile), "UTF-8"))) {
             int lineIndex = 0;
             while (true) {
                 ++lineIndex;
@@ -212,7 +215,7 @@ public class Runner {
         }
     }
 
-    private class CompilerRunner implements Callable<Integer> {
+    private static class CompilerRunner implements Callable<Integer> {
         private final CompilerInstanceDescriptor descriptor;
         private final PrintStream errStream;
 
@@ -223,7 +226,12 @@ public class Runner {
 
         @Override
         public Integer call() throws Exception {
-            return new LocalCommandLineRunner(prepareArgs(), System.out, errStream).execute();
+            LocalCommandLineRunner runner =
+                    new LocalCommandLineRunner(prepareArgs(), System.out, errStream);
+            if (!runner.shouldRunCompiler()) {
+                return -1;
+            }
+            return runner.execute();
         }
 
         private String[] prepareArgs() {
