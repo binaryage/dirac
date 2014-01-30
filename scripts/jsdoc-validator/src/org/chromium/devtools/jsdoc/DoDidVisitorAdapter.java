@@ -28,6 +28,8 @@ public abstract class DoDidVisitorAdapter implements DoDidNodeVisitor, NodeVisit
      * This method MUST be called after {@code foo.visit(doDidVisitorAdapter)} has finished.
      */
     public void flush() {
-        didVisit(nodeStack.remove());
+        while (!nodeStack.isEmpty()) {
+            didVisit(nodeStack.remove());
+        }
     }
 }

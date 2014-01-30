@@ -5,10 +5,7 @@ import com.google.javascript.rhino.head.IRFactory;
 import com.google.javascript.rhino.head.ast.AstNode;
 import com.google.javascript.rhino.head.ast.AstRoot;
 
-import org.chromium.devtools.jsdoc.checks.ProtoFollowsExtendsAnnotationCheck;
-import org.chromium.devtools.jsdoc.checks.RequiredReturnAnnotationCheck;
-import org.chromium.devtools.jsdoc.checks.RequiredThisAnnotationCheck;
-import org.chromium.devtools.jsdoc.checks.ValidationCheck;
+import org.chromium.devtools.jsdoc.checks.ContextTrackingValidationCheck;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -21,7 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-class FileCheckerCallable implements Callable<ValidatorContext> {
+public class FileCheckerCallable implements Callable<ValidatorContext> {
 
     private final String fileName;
 
@@ -35,9 +32,7 @@ class FileCheckerCallable implements Callable<ValidatorContext> {
             ValidatorContext context = new ValidatorContext(readScriptText(), fileName);
             AstRoot node = parseScript(context);
             ValidationCheckDispatcher dispatcher = new ValidationCheckDispatcher(context);
-            dispatcher.registerCheck(new ProtoFollowsExtendsAnnotationCheck());
-            dispatcher.registerCheck(new RequiredReturnAnnotationCheck());
-            dispatcher.registerCheck(new RequiredThisAnnotationCheck());
+            dispatcher.registerCheck(new ContextTrackingValidationCheck());
             node.visit(dispatcher);
             dispatcher.flush();
             return context;
@@ -72,7 +67,7 @@ class FileCheckerCallable implements Callable<ValidatorContext> {
 
     private static class ValidationCheckDispatcher extends DoDidVisitorAdapter {
         private final List<ValidationCheck> checks = new ArrayList<>(2);
-        private ValidatorContext context;
+        private final ValidatorContext context;
 
         public ValidationCheckDispatcher(ValidatorContext context) {
             this.context = context;
@@ -94,14 +89,6 @@ class FileCheckerCallable implements Callable<ValidatorContext> {
         public void didVisit(AstNode node) {
             for (ValidationCheck check : checks) {
                 check.didVisit(node);
-            }
-        }
-
-        @Override
-        public void flush() {
-            super.flush();
-            for (ValidationCheck check : checks) {
-                check.didTraverseTree();
             }
         }
     }

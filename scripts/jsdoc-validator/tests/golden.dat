@@ -1,0 +1,165 @@
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:8: ERROR - No __proto__ assigned for type DerivedNoProto having @extends
+ * @extends {Base}
+             ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:19: ERROR - __proto__ value is not a prototype
+    __proto__: Base
+               ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:28: ERROR - __proto__ defined for interface InterfaceWithProto
+    __proto__: Base.prototype
+    ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:37: ERROR - No @extends annotation for ProtoNoExtends extending Base
+    __proto__: Base.prototype
+               ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:47: ERROR - Supertype does not match Base declared in @extends for ProtoNotSameAsExtends (line 42)
+    __proto__: Object.prototype
+               ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:52: ERROR - No __proto__ assigned for type ProtoNotObjectLiteral having @extends
+ * @extends {Base}
+             ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:56: ERROR - @extends found for type ProtoNotObjectLiteral but its prototype is not an object containing __proto__
+ProtoNotObjectLiteral.prototype = Object;
+                                  ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:1: ERROR - @return annotation is required for API functions that return value
+function badFuncNoAnnotation() {
+         ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:8: ERROR - @return annotation found, yet function does not return value
+function badFuncAnnotatedButNoReturn() // ERROR - no @return annotation.
+         ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:15: ERROR - @return annotation found, yet function does not return value
+function badFuncAnnotatedButNoReturnValue() // ERROR - no returned value.
+         ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:29: ERROR - invalid @returns annotation found - should be @return instead
+ * @returns {number}
+   ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:37: ERROR - invalid @returns annotation found - please remove, as function does not return value
+ * @returns {number}
+   ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:45: ERROR - invalid @returns annotation found - please remove, as function does not return value
+ * @returns {number}
+   ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:62: ERROR - @return annotation is required for API functions that return value
+    badApiMethodNoAnnotation: function() // ERROR - public method.
+    ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:91: ERROR - @return annotation found, yet function does not return value
+    badMethodDoesNotReturnValue: function() // ERROR - does not return value.
+    ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:99: ERROR - @return annotation found, yet function does not return value
+    badMethodDoesNotReturn: function() // ERROR - does not return.
+    ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:105: ERROR - invalid @returns annotation found - should be @return instead
+     * @returns {number}
+       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:113: ERROR - invalid @returns annotation found - please remove, as function does not return value
+     * @returns {number}
+       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:121: ERROR - invalid @returns annotation found - please remove, as function does not return value
+     * @returns {number}
+       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:141: ERROR - @return annotation is required for API functions that return value
+    badApiMethodNoAnnotation: function() // ERROR - public method.
+    ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:162: ERROR - @return annotation found, yet function does not return value
+    badMethodDoesNotReturnValue: function() // ERROR - does not return value.
+    ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:170: ERROR - @return annotation found, yet function does not return value
+    badMethodDoesNotReturn: function() // ERROR - does not return.
+    ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:176: ERROR - invalid @returns annotation found - should be @return instead
+     * @returns {number}
+       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:184: ERROR - invalid @returns annotation found - please remove, as function does not return value
+     * @returns {number}
+       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:192: ERROR - invalid @returns annotation found - please remove, as function does not return value
+     * @returns {number}
+       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:212: ERROR - invalid @returns annotation found - should be @return instead
+     * @returns {number}
+       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:233: ERROR - @return annotation is required for API functions that return value
+    badApiMethodNoAnnotation: function() // ERROR - public method.
+    ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:254: ERROR - @return annotation found, yet function does not return value
+    badMethodDoesNotReturnValue: function() // ERROR - does not return value.
+    ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:262: ERROR - @return annotation found, yet function does not return value
+    badMethodDoesNotReturn: function() // ERROR - does not return.
+    ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:268: ERROR - invalid @returns annotation found - should be @return instead
+     * @returns {number}
+       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:276: ERROR - invalid @returns annotation found - please remove, as function does not return value
+     * @returns {number}
+       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:284: ERROR - invalid @returns annotation found - please remove, as function does not return value
+     * @returns {number}
+       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:19: ERROR - @this annotation is required for functions referencing 'this'
+        function badInnerCallback() {
+                 ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:24: ERROR - @this annotation is required for functions referencing 'this'
+    function badCallbackInCtor() {
+             ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:54: ERROR - @this annotation is required for functions referencing 'this'
+        function badCallbackInMethod() {
+                 ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:73: ERROR - @this annotation is required for functions referencing 'this'
+        function badInnerCallback() {
+                 ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:78: ERROR - @this annotation is required for functions referencing 'this'
+    function badCallbackInCtor() {
+             ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:98: ERROR - @this annotation is required for functions referencing 'this'
+        function badCallbackInMethod() {
+                 ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:121: ERROR - @this annotation is required for functions referencing 'this'
+        function badInnerCallback() {
+                 ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:126: ERROR - @this annotation is required for functions referencing 'this'
+    function badCallbackInCtor() {
+             ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:146: ERROR - @this annotation is required for functions referencing 'this'
+        function badCallbackInMethod() {
+                 ^
+
+Total errors: 41

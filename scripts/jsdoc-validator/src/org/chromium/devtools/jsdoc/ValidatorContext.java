@@ -32,6 +32,9 @@ public class ValidatorContext {
     }
 
     public String getNodeText(AstNode node) {
+        if (node == null) {
+            return null;
+        }
         return scriptText.text.substring(
                 node.getAbsolutePosition(), node.getAbsolutePosition() + node.getLength());
     }
@@ -66,7 +69,7 @@ public class ValidatorContext {
         }
         positionMarker.append('^');
         int errorAbsolutePosition = node.getAbsolutePosition() + offsetInNodeText;
-        String message = String.format("%s:%d: ERROR - %s\n%s\n%s\n",
+        String message = String.format("%s:%d: ERROR - %s%n%s%n%s%n",
                 scriptFileName,
                 position.line,
                 errorMessage,

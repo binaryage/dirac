@@ -1,7 +1,6 @@
-package org.chromium.devtools.jsdoc.checks;
+package org.chromium.devtools.jsdoc;
 
-import org.chromium.devtools.jsdoc.DoDidNodeVisitor;
-import org.chromium.devtools.jsdoc.ValidatorContext;
+import com.google.javascript.rhino.head.ast.AstNode;
 
 /**
  * A base class for all JSDoc validation checks.
@@ -10,13 +9,11 @@ public abstract class ValidationCheck implements DoDidNodeVisitor {
 
     private ValidatorContext context;
 
-    public void didTraverseTree() { }
-
-    protected ValidatorContext getContext() {
-        return context;
+    protected String getNodeText(AstNode node) {
+        return context.getNodeText(node);
     }
 
-    public void setContext(ValidatorContext context) {
+    protected void setContext(ValidatorContext context) {
         if (this.context != null) {
             throw new RuntimeException("ValidatorContext already set");
         }

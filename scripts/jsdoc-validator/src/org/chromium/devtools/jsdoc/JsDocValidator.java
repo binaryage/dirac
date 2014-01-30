@@ -16,8 +16,8 @@ import java.util.concurrent.Future;
 public class JsDocValidator {
 
     private void run(String[] args) {
-        ExecutorService executor =
-                Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
+        int threadCount = Math.min(args.length, Runtime.getRuntime().availableProcessors());
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
         try {
             runWithExecutor(args, executor);
         } finally {
@@ -38,10 +38,7 @@ public class JsDocValidator {
                 if (context != null) {
                     contexts.add(context);
                 }
-            } catch (InterruptedException e) {
-                System.err.println("ERROR - " + e.getMessage());
-                e.printStackTrace(System.err);
-            } catch (ExecutionException e) {
+            } catch (InterruptedException | ExecutionException e) {
                 System.err.println("ERROR - " + e.getMessage());
                 e.printStackTrace(System.err);
             }
@@ -86,6 +83,40 @@ public class JsDocValidator {
                 return result;
             }
             return Integer.compare(record.position, other.record.position);
+        }
+
+        @Override
+        public int hashCode() {
+            return 17 + fileName.hashCode() * 3 + this.record.hashCode() * 5;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            LogEntry other = (LogEntry) obj;
+            if (fileName != other.fileName
+                    && (fileName != null && !fileName.equals(other.fileName))) {
+                return false;
+            }
+
+            if (record == other.record) {
+                return true;
+            }
+            if (record != null) {
+                if (other.record == null) {
+                    return false;
+                }
+                return record.position == other.record.position;
+            }
+            return false;
         }
     }
 }
