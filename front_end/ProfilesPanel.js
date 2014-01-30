@@ -402,7 +402,7 @@ WebInspector.ProfilesPanel = function()
     this._statusBarButtons.appendChild(this.recordButton.element);
 
     this.clearResultsButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear all profiles."), "clear-status-bar-item");
-    this.clearResultsButton.addEventListener("click", this._clearProfiles, this);
+    this.clearResultsButton.addEventListener("click", this._reset, this);
     this._statusBarButtons.appendChild(this.clearResultsButton.element);
 
     this._profileTypeStatusBarItemsContainer = this._statusBarElement.createChild("div");
@@ -638,12 +638,6 @@ WebInspector.ProfilesPanel.prototype = {
         this._profileViewStatusBarItemsContainer.removeChildren();
         this._launcherView.show(this.profileViews);
         this.visibleView = this._launcherView;
-    },
-
-    _clearProfiles: function()
-    {
-        HeapProfilerAgent.clearProfiles();
-        this._reset();
     },
 
     _garbageCollectButtonClicked: function()

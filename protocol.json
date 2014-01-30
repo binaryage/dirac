@@ -3506,18 +3506,9 @@
         "hidden": true,
         "types": [
             {
-                "id": "ProfileHeader",
-                "type": "object",
-                "description": "Profile header.",
-                "properties": [
-                    { "name": "title", "type": "string", "description": "Profile title." },
-                    { "name": "uid", "type": "integer", "description": "Unique identifier of the profile." }
-                ]
-            },
-            {
                 "id": "HeapSnapshotObjectId",
                 "type": "string",
-                "description": "Heap snashot object id."
+                "description": "Heap snapshot object id."
             }
         ],
         "commands": [
@@ -3536,21 +3527,6 @@
                     { "name": "reportProgress", "type": "boolean", "optional": true, "description": "If true 'reportHeapSnapshotProgress' events will be generated while snapshot is being taken when the tracking is stopped." }
                 ]
 
-            },
-            {
-                "name": "getHeapSnapshot",
-                "parameters": [
-                    { "name": "uid", "type": "integer" }
-                ]
-            },
-            {
-                "name": "removeProfile",
-                "parameters": [
-                    { "name": "uid", "type": "integer" }
-                ]
-            },
-            {
-                "name": "clearProfiles"
             },
             {
                 "name": "takeHeapSnapshot",
@@ -3583,15 +3559,8 @@
         ],
         "events": [
             {
-                "name": "addProfileHeader",
-                "parameters": [
-                    { "name": "header", "$ref": "ProfileHeader" }
-                ]
-            },
-            {
                 "name": "addHeapSnapshotChunk",
                 "parameters": [
-                    { "name": "uid", "type": "integer" },
                     { "name": "chunk", "type": "string" }
                 ]
             },

@@ -773,19 +773,10 @@ WebInspector.HeapProfilerDispatcher.prototype = {
     },
 
     /**
-     * @param {!HeapProfilerAgent.ProfileHeader} profileHeader
-     */
-    addProfileHeader: function(profileHeader)
-    {
-        this._genericCaller("addProfileHeader");
-    },
-
-    /**
      * @override
-     * @param {number} uid
      * @param {string} chunk
      */
-    addHeapSnapshotChunk: function(uid, chunk)
+    addHeapSnapshotChunk: function(chunk)
     {
         this._genericCaller("addHeapSnapshotChunk");
     },
@@ -927,33 +918,10 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     },
 
     /**
-     * @param {!HeapProfilerAgent.ProfileHeader} profileHeader
-     */
-    addProfileHeader: function(profileHeader)
-    {
-        var profile = this.profileBeingRecorded();
-        if (!profile)
-            return;
-        profile.title = profileHeader.title;
-        profile.uid = profileHeader.uid;
-
-        profile.sidebarElement.mainTitle = profile.title;
-        profile.sidebarElement.subtitle = "";
-        profile.sidebarElement.wait = false;
-
-        this._profileSamples = null;
-        this._profileBeingRecorded = null;
-
-        WebInspector.panels.profiles.showProfile(profile);
-        profile.existingView()._refreshView();
-    },
-
-    /**
      * @override
-     * @param {number} uid
      * @param {string} chunk
      */
-    addHeapSnapshotChunk: function(uid, chunk)
+    addHeapSnapshotChunk: function(chunk)
     {
         if (!this.profileBeingRecorded())
             return;
@@ -983,17 +951,6 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     resetProfiles: function()
     {
         this._reset();
-    },
-
-    /**
-     * @override
-     * @param {!WebInspector.ProfileHeader} profile
-     */
-    removeProfile: function(profile)
-    {
-        if (this._profileBeingRecorded !== profile && !profile.fromFile())
-            HeapProfilerAgent.removeProfile(profile.uid);
-        WebInspector.ProfileType.prototype.removeProfile.call(this, profile);
     },
 
     _snapshotReceived: function(profile)
