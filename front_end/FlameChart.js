@@ -355,6 +355,7 @@ WebInspector.FlameChart.OverviewPaneInterface.prototype = {
 WebInspector.FlameChart.OverviewPane = function(dataProvider)
 {
     WebInspector.View.call(this);
+    this.element.classList.add("flame-chart-overview-pane");
     this._overviewContainer = this.element.createChild("div", "overview-container");
     this._overviewGrid = new WebInspector.OverviewGrid("flame-chart");
     this._overviewGrid.element.classList.add("fill");

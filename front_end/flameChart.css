@@ -7,15 +7,15 @@
 }
 
 .chart-container {
-    overflow: hidden;
-    position: absolute;
-    top: 80px;
-    width: 100%;
-    bottom: 0;
+    flex: auto;
 }
 
 #flame-chart-overview-grid .resources-dividers-label-bar {
     pointer-events: auto;
+}
+
+.flame-chart-overview-pane {
+    flex: 0 0 80px !important;
 }
 
 #flame-chart-overview-container {
