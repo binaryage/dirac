@@ -32,11 +32,13 @@
  * @constructor
  * @extends {WebInspector.TimelineOverviewBase}
  * @param {!WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineFrameModel} frameModel
  */
-WebInspector.TimelineFrameOverview = function(model)
+WebInspector.TimelineFrameOverview = function(model, frameModel)
 {
     WebInspector.TimelineOverviewBase.call(this, model);
     this.element.id = "timeline-overview-frames";
+    this._frameModel = frameModel;
     this.reset();
 
     this._outerPadding = 4 * window.devicePixelRatio;
@@ -62,9 +64,6 @@ WebInspector.TimelineFrameOverview.prototype = {
         this._recordsPerBar = 1;
         /** @type {!Array.<!{startTime:number, endTime:number}>} */
         this._barTimes = [];
-        this._mainThreadFrames = [];
-        this._backgroundFrames = [];
-        this._framesById = {};
     },
 
     update: function()
@@ -75,20 +74,22 @@ WebInspector.TimelineFrameOverview.prototype = {
         var backgroundFramesHeight = 15 * window.devicePixelRatio;
         var mainThreadFramesHeight = this._canvas.height - backgroundFramesHeight;
         const minBarWidth = 4 * window.devicePixelRatio;
-        var frameCount = this._backgroundFrames.length || this._mainThreadFrames.length;
+        var mainThreadFrames = this._frameModel.mainThreadFrames();
+        var backgroundFrames = this._frameModel.backgroundFrames();
+        var frameCount = backgroundFrames.length || mainThreadFrames.length;
         var framesPerBar = Math.max(1, frameCount * minBarWidth / this._canvas.width);
 
         var mainThreadVisibleFrames;
         var backgroundVisibleFrames;
-        if (this._backgroundFrames.length) {
-            backgroundVisibleFrames = this._aggregateFrames(this._backgroundFrames, framesPerBar);
+        if (backgroundFrames.length) {
+            backgroundVisibleFrames = this._aggregateFrames(backgroundFrames, framesPerBar);
             mainThreadVisibleFrames = new Array(backgroundVisibleFrames.length);
             for (var i = 0; i < backgroundVisibleFrames.length; ++i) {
                 var frameId = backgroundVisibleFrames[i].mainThreadFrameId;
-                mainThreadVisibleFrames[i] = frameId && this._framesById[frameId];
+                mainThreadVisibleFrames[i] = frameId && this._frameModel.frameById(frameId);
             }
         } else {
-            mainThreadVisibleFrames = this._aggregateFrames(this._mainThreadFrames, framesPerBar);
+            mainThreadVisibleFrames = this._aggregateFrames(mainThreadFrames, framesPerBar);
         }
 
         this._context.save();
@@ -112,21 +113,6 @@ WebInspector.TimelineFrameOverview.prototype = {
             scale = (backgroundFramesHeight - this._topPadding) / (1.0 / targetFPS);
             this._renderBars(backgroundVisibleFrames, scale, backgroundFramesHeight);
         }
-    },
-
-    /**
-     * @param {!WebInspector.TimelineFrame} frame
-     */
-    addFrame: function(frame)
-    {
-        var frames;
-        if (frame.isBackground) {
-            frames = this._backgroundFrames;
-        } else {
-            frames = this._mainThreadFrames;
-            this._framesById[frame.id] = frame;
-        }
-        frames.push(frame);
     },
 
     /**
@@ -182,7 +168,7 @@ WebInspector.TimelineFrameOverview.prototype = {
      */
     _frameDuration: function(frame)
     {
-        var relatedFrame = frame.mainThreadFrameId && this._framesById[frame.mainThreadFrameId];
+        var relatedFrame = frame.mainThreadFrameId && this._frameModel.frameById(frame.mainThreadFrameId);
         return frame.duration + (relatedFrame ? relatedFrame.duration : 0);
     },
 

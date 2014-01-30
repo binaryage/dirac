@@ -298,7 +298,7 @@
         'devtools_timeline_js_files': [
             'front_end/MemoryStatistics.js',
             'front_end/PieChart.js',
-            'front_end/TimelineFrameController.js',
+            'front_end/TimelineFrameModel.js',
             'front_end/TimelineModel.js',
             'front_end/TimelinePresentationModel.js',
             'front_end/TimelineOverviewPane.js',

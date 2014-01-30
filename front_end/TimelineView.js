@@ -132,9 +132,9 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
         this._overviewControl = new WebInspector.TimelineEventOverview(this._model);
         break;
     case WebInspector.TimelinePanel.Mode.Frames:
-        this._overviewControl = new WebInspector.TimelineFrameOverview(this._model);
+        this._frameModel = new WebInspector.TimelineFrameModel(this._model);
+        this._overviewControl = new WebInspector.TimelineFrameOverview(this._model, this._frameModel);
         this._presentationModel.setGlueRecords(false);
-        this._frameController = new WebInspector.TimelineFrameController(this._model, this._overviewControl, this._presentationModel);
         break;
     case WebInspector.TimelinePanel.Mode.Memory:
         this._overviewControl = new WebInspector.TimelineMemoryOverview(this._model);
@@ -435,6 +435,32 @@ WebInspector.TimelineView.prototype = {
         this._timelineGrid.addEventDividers(dividers);
         this._timelineGrid.gridHeaderElement.appendChild(this._frameContainer);
     },
+
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     * @return {!Array.<!WebInspector.TimelineFrame>}
+     */
+    _filteredFrames: function(startTime, endTime)
+    {
+        if (!this._frameModel)
+            return [];
+        function compareStartTime(value, object)
+        {
+            return value - object.startTime;
+        }
+        function compareEndTime(value, object)
+        {
+            return value - object.endTime;
+        }
+        var frames = this._frameModel.mainThreadFrames();
+        var firstFrame = insertionIndexForObjectInListSortedByFunction(startTime, frames, compareStartTime);
+        var lastFrame = insertionIndexForObjectInListSortedByFunction(endTime, frames, compareEndTime);
+        while (lastFrame < frames.length && frames[lastFrame].endTime <= endTime)
+            ++lastFrame;
+        return frames.slice(firstFrame, lastFrame);
+    },
+
 
     _onFrameDoubleClicked: function(event)
     {
@@ -794,7 +820,7 @@ WebInspector.TimelineView.prototype = {
         this._updateRecordsCounter(recordsInWindowCount);
         if (!this._boundariesAreValid) {
             this._updateEventDividers();
-            var frames = this._frameController && this._presentationModel.filteredFrames(this.windowStartTime(), this.windowEndTime());
+            var frames = this._filteredFrames(this.windowStartTime(), this.windowEndTime());
             if (frames) {
                 this._updateFrameStatistics(frames);
                 const maxFramesForFrameBars = 30;

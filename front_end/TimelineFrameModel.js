@@ -30,37 +30,63 @@
 
 /**
  * @constructor
+ * @extends {WebInspector.Object}
  * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.TimelineFrameOverview} frameOverview
- * @param {!WebInspector.TimelinePresentationModel} presentationModel
  */
-WebInspector.TimelineFrameController = function(model, frameOverview, presentationModel)
+WebInspector.TimelineFrameModel = function(model)
 {
-    this._lastMainThreadFrame = null;
-    this._lastBackgroundFrame = null;
+    this._reset();
     this._model = model;
-    this._frameOverview = frameOverview;
-    this._presentationModel = presentationModel;
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
+    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._reset, this);
 
-    this._frameOverview.reset();
     var records = model.records;
     for (var i = 0; i < records.length; ++i)
         this._addRecord(records[i]);
-    this._frameOverview.update();
 }
 
-WebInspector.TimelineFrameController.prototype = {
+WebInspector.TimelineFrameModel.Events = {
+    FrameAdded: "FrameAdded"
+}
+
+WebInspector.TimelineFrameModel.prototype = {
+    /**
+     * @return {!Array.<!WebInspector.TimelineFrame>}
+     */
+    mainThreadFrames: function()
+    {
+        return this._mainThreadFrames;
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.TimelineFrame>}
+     */
+    backgroundFrames: function()
+    {
+        return this._backgroundFrames;
+    },
+
+    /**
+     * @param {string} frameId
+     * @return {?WebInspector.TimelineFrame}
+     */
+    frameById: function(frameId)
+    {
+        return this._frameById[frameId];
+    },
+
+    _reset: function()
+    {
+        this._backgroundFrames = [];
+        this._mainThreadFrames = [];
+        this._frameById = {};
+        this._lastMainThreadFrame = null;
+        this._lastBackgroundFrame = null;
+    },
+
     _onRecordAdded: function(event)
     {
         this._addRecord(event.data);
-    },
-
-    _onRecordsCleared: function()
-    {
-        this._lastMainThreadFrame = null;
-        this._lastBackgroundFrame = null;
     },
 
     _addRecord: function(record)
@@ -127,9 +153,12 @@ WebInspector.TimelineFrameController.prototype = {
             var paintDuration = this._paintEndTime - this._paintStartTime;
             if (paintDuration)
                 frame.timeByCategory[WebInspector.TimelinePresentationModel.categories().painting.name] = paintDuration;
+            this._backgroundFrames.push(frame);
+        } else {
+            this._mainThreadFrames.push(frame);
+            this._frameById[frame.id] = frame;
         }
-        this._frameOverview.addFrame(frame);
-        this._presentationModel.addFrame(frame);
+        this.dispatchEventToListeners(WebInspector.TimelineFrameModel.Events.FrameAdded, frame);
     },
 
     /**
@@ -165,8 +194,10 @@ WebInspector.TimelineFrameController.prototype = {
     dispose: function()
     {
         this._model.removeEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
-        this._model.removeEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
-    }
+        this._model.removeEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._reset, this);
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
 
 /**

@@ -276,7 +276,7 @@
             "MemoryStatistics.js",
             "PieChart.js",
             "TimelineEventOverview.js",
-            "TimelineFrameController.js",
+            "TimelineFrameModel.js",
             "TimelineFrameOverview.js",
             "TimelineMemoryOverview.js",
             "TimelineModel.js",

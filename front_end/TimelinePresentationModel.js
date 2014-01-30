@@ -265,14 +265,6 @@ WebInspector.TimelinePresentationModel.prototype = {
         return this._rootRecord;
     },
 
-    /**
-     * @return {!Array.<!WebInspector.TimelinePresentationModel.Record>}
-     */
-    frames: function()
-    {
-        return this._frames;
-    },
-
     reset: function()
     {
         this._linkifier.reset();
@@ -284,21 +276,11 @@ WebInspector.TimelinePresentationModel.prototype = {
         this._eventDividerRecords = [];
         this._timeRecords = {};
         this._timeRecordStack = [];
-        this._frames = [];
         this._minimumRecordTime = -1;
         this._layoutInvalidateStack = {};
         this._lastScheduleStyleRecalculation = {};
         this._webSocketCreateRecords = {};
         this._coalescingBuckets = {};
-    },
-
-    /**
-     * @param {!WebInspector.TimelineFrame} frame
-     */
-    addFrame: function(frame)
-    {
-        if (!frame.isBackground)
-            this._frames.push(frame);
     },
 
     /**
@@ -646,28 +628,6 @@ WebInspector.TimelinePresentationModel.prototype = {
 
         this._filteredRecords = recordsInWindow;
         return recordsInWindow;
-    },
-
-    /**
-     * @param {number} startTime
-     * @param {number} endTime
-     * @return {!Array.<!WebInspector.TimelinePresentationModel.Record>}
-     */
-    filteredFrames: function(startTime, endTime)
-    {
-        function compareStartTime(value, object)
-        {
-            return value - object.startTime;
-        }
-        function compareEndTime(value, object)
-        {
-            return value - object.endTime;
-        }
-        var firstFrame = insertionIndexForObjectInListSortedByFunction(startTime, this._frames, compareStartTime);
-        var lastFrame = insertionIndexForObjectInListSortedByFunction(endTime, this._frames, compareEndTime);
-        while (lastFrame < this._frames.length && this._frames[lastFrame].endTime <= endTime)
-            ++lastFrame;
-        return this._frames.slice(firstFrame, lastFrame);
     },
 
     /**
