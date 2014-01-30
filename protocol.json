@@ -3602,7 +3602,8 @@
                 "name": "reportHeapSnapshotProgress",
                 "parameters": [
                     { "name": "done", "type": "integer" },
-                    { "name": "total", "type": "integer" }
+                    { "name": "total", "type": "integer" },
+                    { "name": "finished", "type": "boolean", "optional": true }
                 ]
             },
             {

@@ -794,8 +794,9 @@ WebInspector.HeapProfilerDispatcher.prototype = {
      * @override
      * @param {number} done
      * @param {number} total
+     * @param {boolean=} finished
      */
-    reportHeapSnapshotProgress: function(done, total)
+    reportHeapSnapshotProgress: function(done, total, finished)
     {
         this._genericCaller("reportHeapSnapshotProgress");
     },
@@ -815,11 +816,15 @@ WebInspector.HeapProfilerDispatcher._dispatcher = new WebInspector.HeapProfilerD
  * @constructor
  * @extends {WebInspector.ProfileType}
  * @implements {HeapProfilerAgent.Dispatcher}
+ * @param {string=} id
+ * @param {string=} title
  */
-WebInspector.HeapSnapshotProfileType = function()
+WebInspector.HeapSnapshotProfileType = function(id, title)
 {
-    WebInspector.ProfileType.call(this, WebInspector.HeapSnapshotProfileType.TypeId, WebInspector.UIString("Take Heap Snapshot"));
+    WebInspector.ProfileType.call(this, id || WebInspector.HeapSnapshotProfileType.TypeId, title || WebInspector.UIString("Take Heap Snapshot"));
     WebInspector.HeapProfilerDispatcher._dispatcher.register(this);
+
+    this._nextSnapshotId = 1;
 }
 
 WebInspector.HeapSnapshotProfileType.TypeId = "HEAP";
@@ -901,9 +906,24 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     {
         if (this.profileBeingRecorded())
             return;
-        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(this, WebInspector.UIString("Snapshotting\u2026"));
+        var id = this._nextSnapshotId++;
+        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(this, WebInspector.UIString("Snapshotting\u2026"), id);
         this.addProfile(this._profileBeingRecorded);
-        HeapProfilerAgent.takeHeapSnapshot(true, callback);
+        /**
+         * @param {?string} error
+         * @this {WebInspector.HeapSnapshotProfileType}
+         */
+        function didTakeHeapSnapshot(error)
+        {
+            var profile = this._profileBeingRecorded;
+            profile.title = WebInspector.UIString("Snapshot %d", profile.uid);
+            profile._finishLoad();
+            this._profileBeingRecorded = null;
+            WebInspector.panels.profiles.showProfile(profile);
+            profile.existingView()._refreshView();
+            callback();
+        }
+        HeapProfilerAgent.takeHeapSnapshot(true, didTakeHeapSnapshot.bind(this));
     },
 
     /**
@@ -935,23 +955,26 @@ WebInspector.HeapSnapshotProfileType.prototype = {
      */
     addHeapSnapshotChunk: function(uid, chunk)
     {
-        var profile = this.getProfile(uid);
-        if (profile)
-            profile.transferChunk(chunk);
+        if (!this.profileBeingRecorded())
+            return;
+        this.profileBeingRecorded().transferChunk(chunk);
     },
 
     /**
      * @override
      * @param {number} done
      * @param {number} total
+     * @param {boolean=} finished
      */
-    reportHeapSnapshotProgress: function(done, total)
+    reportHeapSnapshotProgress: function(done, total, finished)
     {
         var profile = this.profileBeingRecorded();
         if (!profile)
             return;
         profile.sidebarElement.subtitle = WebInspector.UIString("%.0f%", (done / total) * 100);
         profile.sidebarElement.wait = true;
+        if (finished)
+            profile._prepareToLoad();
     },
 
     /**
@@ -990,8 +1013,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
  */
 WebInspector.TrackingHeapSnapshotProfileType = function()
 {
-    WebInspector.ProfileType.call(this, WebInspector.TrackingHeapSnapshotProfileType.TypeId, WebInspector.UIString("Record Heap Allocations"));
-    WebInspector.HeapProfilerDispatcher._dispatcher.register(this);
+    WebInspector.HeapSnapshotProfileType.call(this, WebInspector.TrackingHeapSnapshotProfileType.TypeId, WebInspector.UIString("Record Heap Allocations"));
 }
 
 WebInspector.TrackingHeapSnapshotProfileType.TypeId = "HEAP-RECORD";
@@ -1102,7 +1124,29 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
 
     _stopRecordingProfile: function()
     {
-        HeapProfilerAgent.stopTrackingHeapObjects(true);
+
+        var profile = this._profileBeingRecorded;
+        var title = WebInspector.UIString("Snapshotting\u2026");
+        profile.title = title;
+        profile.sidebarElement.mainTitle = title;
+        /**
+         * @param {?string} error
+         * @this {WebInspector.HeapSnapshotProfileType}
+         */
+        function didTakeHeapSnapshot(error)
+        {
+            profile.uid = this._nextSnapshotId++;
+            var title = WebInspector.UIString("Snapshot %d", profile.uid);
+            profile.title = title;
+            profile.sidebarElement.mainTitle = title;
+            profile._finishLoad();
+            this._profileSamples = null;
+            this._profileBeingRecorded = null;
+            WebInspector.panels.profiles.showProfile(profile);
+            profile.existingView()._refreshView();
+        }
+
+        HeapProfilerAgent.stopTrackingHeapObjects(true, didTakeHeapSnapshot.bind(this));
         this._recording = false;
         this.dispatchEventToListeners(WebInspector.TrackingHeapSnapshotProfileType.TrackingStopped);
     },
@@ -1211,36 +1255,29 @@ WebInspector.HeapProfileHeader.prototype = {
             callback(this._snapshotProxy);
             return;
         }
-
-        this._numberOfChunks = 0;
-        if (!this._receiver) {
-            this._setupWorker();
-            this._transferHandler = new WebInspector.BackendSnapshotLoader(this);
-            this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026");
-            this.sidebarElement.wait = true;
-            this._transferSnapshot();
-        }
-        console.assert(this._receiver);
         this._loadCallbacks.push(callback);
     },
 
-    _transferSnapshot: function()
+    _prepareToLoad: function()
     {
-        /**
-         * @this {WebInspector.HeapProfileHeader}
-         */
-        function finishTransfer()
-        {
-            if (this._transferHandler) {
-                this._transferHandler.finishTransfer();
-                this._totalNumberOfChunks = this._transferHandler._totalNumberOfChunks;
-            }
-            if (this._bufferedWriter) {
-                this._bufferedWriter.close(this._didWriteToTempFile.bind(this));
-                this._bufferedWriter = null;
-            }
+        console.assert(!this._receiver, "Already loading");
+        this._numberOfChunks = 0;
+        this._setupWorker();
+        this._transferHandler = new WebInspector.BackendSnapshotLoader(this);
+        this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026");
+        this.sidebarElement.wait = true;
+    },
+
+    _finishLoad: function()
+    {
+        if (this._transferHandler) {
+            this._transferHandler.finishTransfer();
+            this._totalNumberOfChunks = this._transferHandler._totalNumberOfChunks;
         }
-        HeapProfilerAgent.getHeapSnapshot(this.uid, finishTransfer.bind(this));
+        if (this._bufferedWriter) {
+            this._bufferedWriter.close(this._didWriteToTempFile.bind(this));
+            this._bufferedWriter = null;
+        }
     },
 
     _didWriteToTempFile: function(tempFile)
