@@ -1718,6 +1718,10 @@ li.editing-sub-part .delete-button {
     display: none !important;
 }
 
+.sidebar-tabbed-pane .watch-expressions {
+    margin-top: 17px;
+}
+
 .properties-tree.watch-expressions {
     padding-left: 0 !important;
 }
@@ -1767,11 +1771,6 @@ li.editing-sub-part .delete-button {
     position: absolute;
     right: 8px;
     display: none;
-}
-
-.sidebar-tabbed-pane .watch-expressions li:first-child .delete-button {
-    right: 55px;
-    top: 3px;
 }
 
 .section .properties li.hovered .delete-button {
