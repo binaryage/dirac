@@ -66,7 +66,6 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.constructorsView.element.appendChild(this._createToolbarWithClassNameFilter());
 
     this.constructorsDataGrid = new WebInspector.HeapSnapshotConstructorsDataGrid();
-    this.constructorsDataGrid.element.classList.add("class-view-grid");
     this.constructorsDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
     this.constructorsDataGrid.show(this.constructorsView.element);
     this.constructorsDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
@@ -80,7 +79,6 @@ WebInspector.HeapSnapshotView = function(parent, profile)
     this.diffView.element.appendChild(this._createToolbarWithClassNameFilter());
 
     this.diffDataGrid = new WebInspector.HeapSnapshotDiffDataGrid();
-    this.diffDataGrid.element.classList.add("class-view-grid");
     this.diffDataGrid.show(this.diffView.element);
     this.diffDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 

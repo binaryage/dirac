@@ -67,14 +67,6 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
     display: block;
 }
 
-.heap-snapshot-view .view {
-    display: none;
-}
-
-.heap-snapshot-view .view.visible {
-    display: block;
-}
-
 .heap-snapshot-view .data-grid tr:empty {
     height: 16px;
     visibility: hidden;
@@ -166,11 +158,7 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
 }
 
 .heap-snapshot-view .data-grid {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    flex: auto;
 }
 
 .heap-snapshot-view .views-container {
@@ -186,11 +174,7 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
 }
 
 .heap-snapshot-view .views-container .view {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    height: 100%;
 }
 
 .heap-snapshot-view .retaining-paths-view {
@@ -201,18 +185,9 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
     right: 0;
 }
 
-.heap-snapshot-view .class-view-grid {
-    top: 22px;
-}
-
 .heap-snapshot-view .class-view-toolbar {
-    height: 22px;
+    flex: 0 0 22px;
     background-color: #DDD;
-    display: block;
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 0;
 }
 
 .heap-snapshot-view .class-view-toolbar input.class-name-filter {
