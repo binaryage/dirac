@@ -770,58 +770,12 @@ body.remote .dock-status-bar-item {
     margin-left: 6px;
 }
 
-.drawer {
-    display: none;
-    flex: 0 0 200px;
-    position: relative;
-    background-color: white;
-    z-index: 1;
-}
-
-#drawer-contents {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    display: flex;
-}
-
 #drawer-contents > .tabbed-pane > .tabbed-pane-header {
     background-color: rgb(236, 236, 236);
-    border-top: 1px solid rgb(124, 124, 124);
-    border-bottom: 1px solid rgb(203, 203, 203);
-}
-
-body.inactive #drawer-contents .tabbed-pane-header {
-    border-top: 1px solid rgb(64%, 64%, 64%);
 }
 
 #drawer-contents .tabbed-pane-header .tabbed-pane-header-tab {
     cursor: default;
-}
-
-.drawer-resizer {
-    position: absolute;
-    right: 0;
-    top: 8px;
-    content: url(Images/statusbarResizerVertical.png);
-    height: 8px;
-    pointer-events: none;
-}
-
-#drawer-footer {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    font-size: 11px;
-    height: 23px;
-    background-color: rgb(236, 236, 236);
-}
-
-body.drawer-visible .drawer {
-    display: block;
 }
 
 body.platform-mac .monospace,
@@ -2869,10 +2823,6 @@ body.platform-mac .progress-bar-container progress {
 }
 
 body.undocked .toolbar-close-button-item {
-    display: none;
-}
-
-body.dock-to-bottom #inspector-split-view > .split-view-resizer {
     display: none;
 }
 

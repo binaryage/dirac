@@ -90,9 +90,12 @@ WebInspector.SidebarView.prototype = {
             this.showOnlySecond();
     },
 
-    showSidebarElement: function()
+    /**
+     * @param {boolean=} animate
+     */
+    showSidebarElement: function(animate)
     {
-        this.showBoth();
+        this.showBoth(animate);
     },
 
     /**

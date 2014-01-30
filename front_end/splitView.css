@@ -78,6 +78,10 @@
     z-index: 1500;
 }
 
+.split-view.split-view-no-resizer > .split-view-resizer {
+    display: none;
+}
+
 .sidebar-overlay {
     position: absolute;
     top: 0;

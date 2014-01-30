@@ -110,12 +110,13 @@ WebInspector.SplitView.prototype = {
     },
   
     /**
+     * @param {boolean=} animate
      * @param {boolean=} fromOnResize
      */
-    _updateLayout: function(fromOnResize)
+    _updateLayout: function(animate, fromOnResize)
     {
         delete this._totalSize; // Lazy update.
-        this._innerSetSidebarSize(this._lastSidebarSize(), false, fromOnResize);
+        this._innerSetSidebarSize(this._lastSidebarSize(), false, animate, fromOnResize);
     },
 
     /**
@@ -187,11 +188,27 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
+     * @return {!WebInspector.View}
+     */
+    mainView: function()
+    {
+        return this.isSidebarSecond() ? this._firstView : this._secondView;
+    },
+
+    /**
      * @return {!Element}
      */
     sidebarElement: function()
     {
         return this.isSidebarSecond() ? this.secondElement() : this.firstElement();
+    },
+
+    /**
+     * @return {!WebInspector.View}
+     */
+    sidebarView: function()
+    {
+        return this.isSidebarSecond() ? this._secondView : this._firstView;
     },
 
     /**
@@ -248,6 +265,7 @@ WebInspector.SplitView.prototype = {
      */
     _showOnly: function(sideA, sideB)
     {
+        this._cancelAnimation();
         sideA.classList.remove("hidden");
         sideA.classList.add("maximized");
         sideB.classList.add("hidden");
@@ -274,8 +292,12 @@ WebInspector.SplitView.prototype = {
         this._resizerElement.style.removeProperty("margin-bottom");
     },
 
-    showBoth: function()
+    /**
+     * @param {boolean=} animate
+     */
+    showBoth: function(animate)
     {
+        this._cancelAnimation();
         this._firstElement.classList.remove("hidden");
         this._firstElement.classList.remove("maximized");
         this._secondElement.classList.remove("hidden");
@@ -289,7 +311,7 @@ WebInspector.SplitView.prototype = {
         this._isShowingOne = false;
         this._sidebarSize = -1;
         this.setResizable(true);
-        this._updateLayout();
+        this._updateLayout(animate);
     },
 
     /**
@@ -332,9 +354,10 @@ WebInspector.SplitView.prototype = {
     /**
      * @param {number} size
      * @param {boolean=} ignoreConstraints
+     * @param {boolean=} animate
      * @param {boolean=} fromOnResize
      */
-    _innerSetSidebarSize: function(size, ignoreConstraints, fromOnResize)
+    _innerSetSidebarSize: function(size, ignoreConstraints, animate, fromOnResize)
     {
         if (this._isShowingOne) {
             this._sidebarSize = size;
@@ -359,23 +382,30 @@ WebInspector.SplitView.prototype = {
         else
             sizeValue = size + "px";
 
+        this.sidebarElement().style.flexBasis = sizeValue;
+
         if (!this._resizerElementSize)
             this._resizerElementSize = this._isVertical ? this._resizerElement.offsetWidth : this._resizerElement.offsetHeight;
 
-        this.sidebarElement().style.flexBasis = sizeValue;
+        var animatedMarginPropertyName;
+        // Position resizer.
         if (this._isVertical) {
             if (this._secondIsSidebar) {
+                animatedMarginPropertyName = "margin-right";
                 this._resizerElement.style.right = sizeValue;
                 this._resizerElement.style.marginRight = -this._resizerElementSize / 2 + "px";
             } else {
+                animatedMarginPropertyName = "margin-left";
                 this._resizerElement.style.left = sizeValue;
                 this._resizerElement.style.marginLeft = -this._resizerElementSize / 2 + "px";
             }
         } else {
             if (this._secondIsSidebar) {
+                animatedMarginPropertyName = "margin-bottom";
                 this._resizerElement.style.bottom = sizeValue;
                 this._resizerElement.style.marginBottom = -this._resizerElementSize / 2 + "px";
             } else {
+                animatedMarginPropertyName = "margin-top";
                 this._resizerElement.style.top = sizeValue;
                 this._resizerElement.style.marginTop = -this._resizerElementSize / 2 + "px";
             }
@@ -383,10 +413,87 @@ WebInspector.SplitView.prototype = {
 
         this._sidebarSize = size;
 
-        // No need to recalculate this._sidebarSize and this._totalSize again.
-        if (!fromOnResize)
-            this.doResize();
-        this.dispatchEventToListeners(WebInspector.SplitView.Events.SidebarSizeChanged, this.sidebarSize());
+        if (animate) {
+            this._animate(animatedMarginPropertyName, size);
+        } else {
+            // No need to recalculate this._sidebarSize and this._totalSize again.
+            if (!fromOnResize)
+                this.doResize();
+            this.dispatchEventToListeners(WebInspector.SplitView.Events.SidebarSizeChanged, this.sidebarSize());
+        }
+    },
+
+    /**
+     * @param {string} animatedMarginPropertyName
+     * @param {number} size
+     */
+    _animate: function(animatedMarginPropertyName, size)
+    {
+        var animationTime = 50;
+
+        var mainView = this.mainView();
+        var sidebarView = this.sidebarView();
+
+        // This order of things is important.
+        // 1. Resize main element early and force layout.
+        this.element.style.setProperty(animatedMarginPropertyName, "-" + size + "px");
+        suppressUnused(this._firstElement.offsetWidth);
+        suppressUnused(this._secondElement.offsetWidth);
+
+        // 2. Issue onresize to the sidebar element, its size won't change.
+        if (sidebarView) {
+            sidebarView.onResize();
+            sidebarView.doResize();
+        }
+
+        // 3. Configure and run animation
+        this.element.style.setProperty("transition", animatedMarginPropertyName + " " + animationTime + "ms linear");
+
+        var boundAnimationFrame;
+        var startTime;
+        /**
+         * @this {WebInspector.SplitView}
+         */
+        function animationFrame()
+        {
+            delete this._animationFrameHandle;
+
+            if (!startTime) {
+                // Kick animation on first frame.
+                this.element.style.setProperty(animatedMarginPropertyName, "0");
+                startTime = window.performance.now();
+            } else if (window.performance.now() < startTime + animationTime) {
+                // Process regular animation frame.
+                if (mainView) {
+                     mainView.onResize();
+                     mainView.doResize();
+                }
+            } else {
+                // Complete animation.
+                this._cancelAnimation();
+                if (mainView) {
+                     mainView.onResize();
+                     mainView.doResize();
+                }
+                this.dispatchEventToListeners(WebInspector.SplitView.Events.SidebarSizeChanged, this.sidebarSize());
+                return;
+            }
+            this._animationFrameHandle = window.requestAnimationFrame(boundAnimationFrame);
+        }
+        boundAnimationFrame = animationFrame.bind(this);
+        this._animationFrameHandle = window.requestAnimationFrame(boundAnimationFrame);
+    },
+
+    _cancelAnimation: function()
+    {
+        if (this._animationFrameHandle)
+            window.cancelAnimationFrame(this._animationFrameHandle);
+        delete this._animationFrameHandle;
+        this.element.style.removeProperty("margin-top");
+        this.element.style.removeProperty("margin-right");
+        this.element.style.removeProperty("margin-bottom");
+        this.element.style.removeProperty("margin-left");
+        this.element.style.removeProperty("transition");
     },
 
     /**
@@ -464,7 +571,7 @@ WebInspector.SplitView.prototype = {
 
     onResize: function()
     {
-        this._updateLayout(true);
+        this._updateLayout(false, true);
     },
 
     /**
@@ -514,6 +621,11 @@ WebInspector.SplitView.prototype = {
         this._callOnVisibleChildren(doSaveSidebarSizeRecursively);
     },
 
+    hideDefaultResizer: function()
+    {
+        this.element.classList.add("split-view-no-resizer");
+    },
+
     /**
      * @param {!Element} resizerElement
      */
@@ -540,6 +652,9 @@ WebInspector.SplitView.prototype = {
      */
     _onDragStart: function(event)
     {
+        // Only handle drags of the nodes specified.
+        if (this._resizerElements.indexOf(event.target) === -1)
+            return;
         WebInspector.elementDragStart(this._startResizerDragging.bind(this), this._resizerDragging.bind(this), this._endResizerDragging.bind(this), this._isVertical ? "ew-resize" : "ns-resize", event);
     },
 

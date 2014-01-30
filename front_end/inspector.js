@@ -68,7 +68,7 @@ var WebInspector = {
 
     showConsole: function()
     {
-        if (this.consoleView.isShowing() && !WebInspector.inspectorView.drawer().isHiding())
+        if (this.consoleView.isShowing())
             return;
         this.inspectorView.showViewInDrawer("console");
     },
@@ -625,10 +625,10 @@ WebInspector.postDocumentKeyDown = function(event)
     var Esc = "U+001B";
     var doNotOpenDrawerOnEsc = WebInspector.experimentsSettings.doNotOpenDrawerOnEsc.isEnabled();
     if (event.keyIdentifier === Esc) {
-        if (this.inspectorView.drawer().visible())
-            this.inspectorView.drawer().hide();
+        if (this.inspectorView.drawerVisible())
+            this.inspectorView.closeDrawer();
         else if (!doNotOpenDrawerOnEsc)
-            this.inspectorView.drawer().show();
+            this.inspectorView.showDrawer();
     }
 
     if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Tilde.code && event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey)

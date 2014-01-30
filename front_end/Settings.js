@@ -31,7 +31,7 @@
 
 var Preferences = {
     maxInlineTextChildLength: 80,
-    minConsoleHeight: 25,
+    minDrawerHeight: 25,
     minSidebarWidth: 100,
     minSidebarHeight: 75,
     minElementsSidebarWidth: 200,

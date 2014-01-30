@@ -155,11 +155,6 @@ WebInspector.ElementsPanel.prototype = {
         return this._searchableView;
     },
 
-    statusBarResized: function()
-    {
-        this.updateBreadcrumbSizes();
-    },
-
     wasShown: function()
     {
         // Attach heavy component lazily

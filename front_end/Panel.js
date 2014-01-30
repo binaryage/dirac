@@ -138,10 +138,6 @@ WebInspector.Panel.prototype = {
     {
     },
 
-    statusBarResized: function()
-    {
-    },
-
     /**
      * @param {!Element} anchor
      * @return {boolean}

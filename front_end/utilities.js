@@ -1515,3 +1515,10 @@ CallbackBarrier.prototype = {
             this._outgoingCallback();
     }
 }
+
+/**
+ * @param {*} value
+ */
+function suppressUnused(value)
+{
+}

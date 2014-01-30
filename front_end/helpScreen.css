@@ -106,6 +106,10 @@ body.platform-mac .help-container {
     -webkit-column-width: 361px;
 }
 
+.help-no-columns {
+    -webkit-column-width: initial !important;
+}
+
 .help-block {
     display: block;
     padding-bottom: 9px;

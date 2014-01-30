@@ -39,6 +39,9 @@ WebInspector.InspectorView = function()
     this.element.classList.add("fill", "inspector-view");
     this.element.setAttribute("spellcheck", false);
 
+    this._zoomFactor = WebInspector.zoomFactor();
+    WebInspector.settings.zoomLevel.addChangeListener(this._onZoomChanged, this);
+
     // We can use split view either for docking or screencast, but not together.
     var settingName = WebInspector.queryParamsObject["can_dock"] ? "InspectorView.splitView" : "InspectorView.screencastSplitView";
     this._splitView = new WebInspector.SplitView(false, settingName, 300, 300);
@@ -49,18 +52,25 @@ WebInspector.InspectorView = function()
     this._splitView.element.id = "inspector-split-view";
     this._splitView.show(this.element);
 
+    // Main part of main split is overlay view.
     this._overlayView = new WebInspector.InspectorView.OverlayView();
     this._splitView.setMainView(this._overlayView);
-    this._zoomFactor = WebInspector.zoomFactor();
-    WebInspector.settings.zoomLevel.addChangeListener(this._onZoomChanged, this);
 
+    // Sidebar of main split is artificial element used for positioning.
     this._devtoolsView = new WebInspector.View();
     this._splitView.setSidebarView(this._devtoolsView);
 
+    // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
+    this._drawerSplitView = new WebInspector.SplitView(false, "Inspector.drawerSplitView", 200, 200);
+    this._drawerSplitView.setSidebarElementConstraints(Preferences.minDrawerHeight, Preferences.minDrawerHeight);
+    this._drawerSplitView.show(this._devtoolsView.element);
+
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.setRetainTabOrder(true, WebInspector.moduleManager.orderComparator(WebInspector.Panel, "name", "order"));
-    this._tabbedPane.show(this._devtoolsView.element);
+    this._drawerSplitView.setMainView(this._tabbedPane);
+    this._drawer = new WebInspector.Drawer(this._drawerSplitView);
 
+    // Patch tabbed pane header with toolbar actions.
     this._toolbarElement = document.createElement("div");
     this._toolbarElement.className = "toolbar toolbar-background";
     var headerElement = this._tabbedPane.headerElement();
@@ -78,7 +88,6 @@ WebInspector.InspectorView = function()
     closeButtonElement.addEventListener("click", WebInspector.close.bind(WebInspector), true);
     this._rightToolbarElement.appendChild(this._closeButtonToolbarItem);
 
-    this._drawer = new WebInspector.Drawer(this);
     this.appendToRightToolbar(this._drawer.toggleButtonElement());
 
     this._history = [];
@@ -94,7 +103,7 @@ WebInspector.InspectorView = function()
 
     this._updateSplitView();
 
-    this._initialize();
+    this._loadPanelDesciptors();
 }
 
 WebInspector.InspectorView.Constraints = {
@@ -105,7 +114,7 @@ WebInspector.InspectorView.Constraints = {
 };
 
 WebInspector.InspectorView.prototype = {
-    _initialize: function()
+    _loadPanelDesciptors: function()
     {
         WebInspector.startBatchUpdate();
         WebInspector.moduleManager.extensions(WebInspector.Panel).forEach(processPanelExtensions.bind(this));
@@ -134,14 +143,6 @@ WebInspector.InspectorView.prototype = {
     appendToRightToolbar: function(element)
     {
         this._rightToolbarElement.insertBefore(element, this._closeButtonToolbarItem);
-    },
-
-    /**
-     * @return {!WebInspector.Drawer}
-     */
-    drawer: function()
-    {
-        return this._drawer;
     },
 
     /**
@@ -247,6 +248,19 @@ WebInspector.InspectorView.prototype = {
         this._drawer.showCloseableView(id, title, view);
     },
 
+    showDrawer: function()
+    {
+        this._drawer.showDrawer();
+    },
+
+    /**
+     * @return {boolean}
+     */
+    drawerVisible: function()
+    {
+        return this._drawer.isShowing();
+    },
+
     /**
      * @param {string} id
      */
@@ -265,7 +279,7 @@ WebInspector.InspectorView.prototype = {
 
     closeDrawer: function()
     {
-        this._drawer.hide();
+        this._drawer.closeDrawer();
     },
 
     /**
@@ -397,12 +411,6 @@ WebInspector.InspectorView.prototype = {
         this._historyIterator = this._history.length - 1;
     },
 
-    onResize: function()
-    {
-        // FIXME: make drawer a view.
-        this._drawer.resize();
-    },
-
     _updateSplitView: function()
     {
         var dockSide = WebInspector.dockController.dockSide();
@@ -410,6 +418,7 @@ WebInspector.InspectorView.prototype = {
             var vertical = WebInspector.dockController.isVertical();
             this._splitView.setVertical(vertical);
             if (vertical) {
+                // Docked to side.
                 if (dockSide === WebInspector.DockController.State.DockedToRight)
                     this._overlayView.setMargins(false, true, false, false);
                 else
@@ -418,9 +427,10 @@ WebInspector.InspectorView.prototype = {
                 this._splitView.uninstallResizer(this._tabbedPane.headerElement());
                 this._splitView.installResizer(this._splitView.resizerElement());
             } else {
+                // Docked to bottom.
                 this._overlayView.setMargins(false, false, false, false);
                 this._splitView.setSecondIsSidebar(true);
-                this._splitView.uninstallResizer(this._splitView.resizerElement());
+                this._splitView.installResizer(this._splitView.resizerElement());
                 this._splitView.installResizer(this._tabbedPane.headerElement());
             }
             this._splitView.setMainView(this._overlayView);
@@ -564,9 +574,6 @@ WebInspector.InspectorView.OverlayView.prototype = {
                 window.cancelAnimationFrame(this._setContentsInsetsId);
             this._setContentsInsetsId = window.requestAnimationFrame(this._setContentsInsets.bind(this));
         }
-
-        // FIXME: make drawer a view.
-        WebInspector.inspectorView._drawer.resize();
     },
 
     _setContentsInsets: function()

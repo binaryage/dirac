@@ -653,7 +653,7 @@ WebInspector.HeapSnapshotView.prototype = {
 
     _updateRetainmentViewHeight: function(height)
     {
-        height = Number.constrain(height, Preferences.minConsoleHeight, this.element.clientHeight - Preferences.minConsoleHeight);
+        height = Number.constrain(height, Preferences.minDrawerHeight, this.element.clientHeight - Preferences.minDrawerHeight);
         this.viewsContainer.style.bottom = (height + this.retainmentViewHeader.clientHeight) + "px";
         if (this._trackingOverviewGrid && this.currentView === this.constructorsView)
             this.viewsContainer.classList.add("reserve-80px-at-top");

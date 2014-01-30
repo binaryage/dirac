@@ -38,7 +38,7 @@ WebInspector.RenderingOptionsView = function()
     this.registerRequiredCSS("helpScreen.css");
     this.element.classList.add("help-indent-labels");
 
-    var div = this.element.createChild("div", "settings-tab help-content help-container");
+    var div = this.element.createChild("div", "settings-tab help-content help-container help-no-columns");
     div.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show paint rectangles"), WebInspector.settings.showPaintRects));
     div.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show composited layer borders"), WebInspector.settings.showDebugBorders));
     div.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show FPS meter"), WebInspector.settings.showFPSCounter));

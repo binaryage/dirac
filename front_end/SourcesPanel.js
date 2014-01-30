@@ -1342,7 +1342,7 @@ WebInspector.SourcesPanel.prototype = {
         this._toggleDebuggerSidebarButton.state = show ? "right" : "left";
         this._toggleDebuggerSidebarButton.title = show ? WebInspector.UIString("Hide debugger") : WebInspector.UIString("Show debugger");
         if (show)
-            this.splitView.showSidebarElement();
+            this.splitView.showSidebarElement(true);
         else
             this.splitView.hideSidebarElement();
         this._debugSidebarResizeWidgetElement.enableStyleClass("hidden", !show);
