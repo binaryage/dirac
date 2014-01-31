@@ -812,8 +812,6 @@ WebInspector.HeapSnapshotProfileType = function(id, title)
 {
     WebInspector.ProfileType.call(this, id || WebInspector.HeapSnapshotProfileType.TypeId, title || WebInspector.UIString("Take Heap Snapshot"));
     WebInspector.HeapProfilerDispatcher._dispatcher.register(this);
-
-    this._nextSnapshotId = 1;
 }
 
 WebInspector.HeapSnapshotProfileType.TypeId = "HEAP";
@@ -895,8 +893,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     {
         if (this.profileBeingRecorded())
             return;
-        var id = this._nextSnapshotId++;
-        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(this, WebInspector.UIString("Snapshotting\u2026"), id);
+        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(this, WebInspector.UIString("Snapshotting\u2026"));
         this.addProfile(this._profileBeingRecorded);
         /**
          * @param {?string} error
@@ -1090,7 +1087,6 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
          */
         function didTakeHeapSnapshot(error)
         {
-            profile.uid = this._nextSnapshotId++;
             var title = WebInspector.UIString("Snapshot %d", profile.uid);
             profile.title = title;
             profile.sidebarElement.mainTitle = title;
@@ -1149,13 +1145,12 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileHeader}
- * @param {!WebInspector.ProfileType} type
+ * @param {!WebInspector.HeapSnapshotProfileType} type
  * @param {string} title
- * @param {number=} uid
  */
-WebInspector.HeapProfileHeader = function(type, title, uid)
+WebInspector.HeapProfileHeader = function(type, title)
 {
-    WebInspector.ProfileHeader.call(this, type, title, uid);
+    WebInspector.ProfileHeader.call(this, type, title);
     this.maxJSObjectId = -1;
     /**
      * @type {?WebInspector.HeapSnapshotWorkerProxy}
@@ -1246,22 +1241,6 @@ WebInspector.HeapProfileHeader.prototype = {
         }
     },
 
-    /**
-     * @return {string}
-     */
-    snapshotConstructorName: function()
-    {
-        return "JSHeapSnapshot";
-    },
-
-    /**
-     * @return {function (new:WebInspector.HeapSnapshotProxy, !WebInspector.HeapSnapshotWorkerProxy, string)}
-     */
-    snapshotProxyConstructor: function()
-    {
-        return WebInspector.HeapSnapshotProxy;
-    },
-
     _setupWorker: function()
     {
         /**
@@ -1274,7 +1253,7 @@ WebInspector.HeapProfileHeader.prototype = {
         console.assert(!this._workerProxy, "HeapSnapshotWorkerProxy already exists");
         this._workerProxy = new WebInspector.HeapSnapshotWorkerProxy(this._handleWorkerEvent.bind(this));
         this._workerProxy.addEventListener("wait", setProfileWait, this);
-        this._receiver = this._workerProxy.createLoader(this.snapshotConstructorName(), this.snapshotProxyConstructor(), this._snapshotReceived.bind(this));
+        this._receiver = this._workerProxy.createLoader(this.uid, this._snapshotReceived.bind(this));
     },
 
     /**

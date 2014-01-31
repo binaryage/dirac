@@ -46,16 +46,14 @@ WebInspector.HeapSnapshotWorkerProxy = function(eventHandler)
 
 WebInspector.HeapSnapshotWorkerProxy.prototype = {
     /**
-     * @param {string} snapshotConstructorName
-     * @param {function(new:T, ...[?])} proxyConstructor
+     * @param {number} profileUid
      * @param {function(!WebInspector.HeapSnapshotProxy)} snapshotReceivedCallback
      * @return {!WebInspector.HeapSnapshotLoaderProxy}
-     * @template T
      */
-    createLoader: function(snapshotConstructorName, proxyConstructor, snapshotReceivedCallback)
+    createLoader: function(profileUid, snapshotReceivedCallback)
     {
         var objectId = this._nextObjectId++;
-        var proxy = new WebInspector.HeapSnapshotLoaderProxy(this, objectId, snapshotConstructorName, proxyConstructor, snapshotReceivedCallback);
+        var proxy = new WebInspector.HeapSnapshotLoaderProxy(this, objectId, profileUid, snapshotReceivedCallback);
         this._postMessage({callId: this._nextCallId++, disposition: "create", objectId: objectId, methodName: "WebInspector.HeapSnapshotLoader"});
         return proxy;
     },
@@ -200,6 +198,7 @@ WebInspector.HeapSnapshotWorkerProxy.prototype = {
 
 /**
  * @constructor
+ * @param {number} objectId
  */
 WebInspector.HeapSnapshotProxyObject = function(worker, objectId)
 {
@@ -231,7 +230,7 @@ WebInspector.HeapSnapshotProxyObject.prototype = {
     /**
      * @param {?function(...[?])} callback
      * @param {string} methodName
-     * @param {function (new:WebInspector.HeapSnapshotProviderProxy, ...[?])} proxyConstructor
+     * @param {function (new:T, ...[?])} proxyConstructor
      * @param {...*} var_args
      * @return {?WebInspector.HeapSnapshotProviderProxy}
      * @template T
@@ -273,16 +272,14 @@ WebInspector.HeapSnapshotProxyObject.prototype = {
  * @constructor
  * @extends {WebInspector.HeapSnapshotProxyObject}
  * @implements {WebInspector.OutputStream}
- * @param {string} snapshotConstructorName
- * @param {function(new:T, ...[?])} proxyConstructor
+ * @param {number} objectId
+ * @param {number} profileUid
  * @param {function(!WebInspector.HeapSnapshotProxy)} snapshotReceivedCallback
- * @template T
  */
-WebInspector.HeapSnapshotLoaderProxy = function(worker, objectId, snapshotConstructorName, proxyConstructor, snapshotReceivedCallback)
+WebInspector.HeapSnapshotLoaderProxy = function(worker, objectId, profileUid, snapshotReceivedCallback)
 {
     WebInspector.HeapSnapshotProxyObject.call(this, worker, objectId);
-    this._snapshotConstructorName = snapshotConstructorName;
-    this._proxyConstructor = proxyConstructor;
+    this._profileUid = profileUid;
     this._snapshotReceivedCallback = snapshotReceivedCallback;
 }
 
@@ -308,15 +305,17 @@ WebInspector.HeapSnapshotLoaderProxy.prototype = {
         {
             if (callback)
                 callback();
-            this.callFactoryMethod(updateStaticData.bind(this), "buildSnapshot", this._proxyConstructor, this._snapshotConstructorName);
+            this.callFactoryMethod(updateStaticData.bind(this), "buildSnapshot", WebInspector.HeapSnapshotProxy);
         }
 
         /**
+         * @param {!WebInspector.HeapSnapshotProxy} snapshotProxy
          * @this {WebInspector.HeapSnapshotLoaderProxy}
          */
         function updateStaticData(snapshotProxy)
         {
             this.dispose();
+            snapshotProxy.setProfileUid(this._profileUid);
             snapshotProxy.updateStaticData(this._snapshotReceivedCallback.bind(this));
         }
 
@@ -331,7 +330,7 @@ WebInspector.HeapSnapshotLoaderProxy.prototype = {
  * @constructor
  * @extends {WebInspector.HeapSnapshotProxyObject}
  * @param {!WebInspector.HeapSnapshotWorkerProxy} worker
- * @param {string} objectId
+ * @param {number} objectId
  */
 WebInspector.HeapSnapshotProxy = function(worker, objectId)
 {
@@ -479,7 +478,12 @@ WebInspector.HeapSnapshotProxy.prototype = {
 
     get uid()
     {
-        return this._staticData.uid;
+        return this._profileUid;
+    },
+
+    setProfileUid: function(profileUid)
+    {
+        this._profileUid = profileUid;
     },
 
     /**
@@ -497,6 +501,8 @@ WebInspector.HeapSnapshotProxy.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotProxyObject}
+ * @param {!WebInspector.HeapSnapshotWorkerProxy} worker
+ * @param {number} objectId
  */
 WebInspector.HeapSnapshotProviderProxy = function(worker, objectId)
 {

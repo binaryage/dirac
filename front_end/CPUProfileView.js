@@ -640,7 +640,6 @@ WebInspector.CPUProfileType = function()
 {
     WebInspector.ProfileType.call(this, WebInspector.CPUProfileType.TypeId, WebInspector.UIString("Collect JavaScript CPU Profile"));
     this._recording = false;
-    this._nextProfileId = 1;
 
     this._nextAnonymousConsoleProfileNumber = 1;
     this._anonymousConsoleProfileIdToTitle = {};
@@ -721,8 +720,7 @@ WebInspector.CPUProfileType.prototype = {
             delete this._anonymousConsoleProfileIdToTitle[protocolId];
         }
 
-        var id = this._nextProfileId++;
-        var profile = new WebInspector.CPUProfileHeader(this, resolvedTitle, id);
+        var profile = new WebInspector.CPUProfileHeader(this, resolvedTitle);
         profile.setProtocolProfile(cpuProfile);
         this.addProfile(profile);
 
@@ -731,10 +729,10 @@ WebInspector.CPUProfileType.prototype = {
         var a = messageElement.createChild("span", "link");
         a.title = resolvedTitle;
         a.textContent = resolvedTitle;
-        a.addEventListener("click", onClick.bind(this), true);
-        function onClick(event)
+        a.addEventListener("click", onClick.bind(this, profile.uid), true);
+        function onClick(profileUid, event)
         {
-            var profile = WebInspector.ProfileTypeRegistry.instance.cpuProfileType.getProfile(id);
+            var profile = WebInspector.ProfileTypeRegistry.instance.cpuProfileType.getProfile(profileUid);
             if (profile)
                 WebInspector.showPanel("profiles").showProfile(profile);
         }
@@ -780,8 +778,7 @@ WebInspector.CPUProfileType.prototype = {
     {
         if (this._profileBeingRecorded)
             return;
-        var id = this._nextProfileId++;
-        this._profileBeingRecorded = new WebInspector.CPUProfileHeader(this, WebInspector.UIString("Recording\u2026"), id);
+        this._profileBeingRecorded = new WebInspector.CPUProfileHeader(this, WebInspector.UIString("Recording\u2026"));
         this.addProfile(this._profileBeingRecorded);
 
         this._recording = true;
@@ -844,11 +841,10 @@ WebInspector.CPUProfileType.prototype = {
  * @implements {WebInspector.OutputStreamDelegate}
  * @param {!WebInspector.CPUProfileType} type
  * @param {string} title
- * @param {number=} uid
  */
-WebInspector.CPUProfileHeader = function(type, title, uid)
+WebInspector.CPUProfileHeader = function(type, title)
 {
-    WebInspector.ProfileHeader.call(this, type, title, uid);
+    WebInspector.ProfileHeader.call(this, type, title);
     this._tempFile = null;
 }
 

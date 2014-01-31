@@ -626,7 +626,6 @@ WebInspector.CanvasProfileView.prototype = {
 WebInspector.CanvasProfileType = function()
 {
     WebInspector.ProfileType.call(this, WebInspector.CanvasProfileType.TypeId, WebInspector.UIString("Capture Canvas Frame"));
-    this._nextProfileUid = 1;
     this._recording = false;
     this._lastProfileHeader = null;
 
@@ -728,8 +727,8 @@ WebInspector.CanvasProfileType.prototype = {
     {
         if (error || this._lastProfileHeader && this._lastProfileHeader.traceLogId() === traceLogId)
             return;
-        var profileHeader = new WebInspector.CanvasProfileHeader(this, WebInspector.UIString("Trace Log %d", this._nextProfileUid), this._nextProfileUid, traceLogId, frameId);
-        ++this._nextProfileUid;
+        var profileHeader = new WebInspector.CanvasProfileHeader(this, "", traceLogId, frameId);
+        profileHeader.title = WebInspector.UIString("Trace Log %d", profileHeader.title);
         this._lastProfileHeader = profileHeader;
         this.addProfile(profileHeader);
         profileHeader._updateCapturingStatus();
@@ -752,15 +751,6 @@ WebInspector.CanvasProfileType.prototype = {
     decorationElement: function()
     {
         return this._decorationElement;
-    },
-
-    /**
-     * @override
-     */
-    _reset: function()
-    {
-        WebInspector.ProfileType.prototype._reset.call(this);
-        this._nextProfileUid = 1;
     },
 
     /**
@@ -997,13 +987,12 @@ WebInspector.CanvasDispatcher.prototype = {
  * @extends {WebInspector.ProfileHeader}
  * @param {!WebInspector.CanvasProfileType} type
  * @param {string} title
- * @param {number=} uid
  * @param {!CanvasAgent.TraceLogId=} traceLogId
  * @param {!PageAgent.FrameId=} frameId
  */
-WebInspector.CanvasProfileHeader = function(type, title, uid, traceLogId, frameId)
+WebInspector.CanvasProfileHeader = function(type, title, traceLogId, frameId)
 {
-    WebInspector.ProfileHeader.call(this, type, title, uid);
+    WebInspector.ProfileHeader.call(this, type, title);
     /** @type {!CanvasAgent.TraceLogId} */
     this._traceLogId = traceLogId || "";
     this._frameId = frameId;

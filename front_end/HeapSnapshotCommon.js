@@ -204,11 +204,10 @@ WebInspector.HeapSnapshotCommon.SerializedTraceTop = function()
  * @param {number} nodeCount
  * @param {number} rootNodeIndex
  * @param {number} totalSize
- * @param {string} uid
  * @param {number} maxJSObjectId
  * @constructor
  */
-WebInspector.HeapSnapshotCommon.StaticData = function(nodeCount, rootNodeIndex, totalSize, uid, maxJSObjectId)
+WebInspector.HeapSnapshotCommon.StaticData = function(nodeCount, rootNodeIndex, totalSize, maxJSObjectId)
 {
     /** @type {number} */
     this.nodeCount = nodeCount;
@@ -216,8 +215,6 @@ WebInspector.HeapSnapshotCommon.StaticData = function(nodeCount, rootNodeIndex, 
     this.rootNodeIndex = rootNodeIndex;
     /** @type {number} */
     this.totalSize = totalSize;
-    /** @type {string} */
-    this.uid = uid;
     /** @type {number} */
     this.maxJSObjectId = maxJSObjectId;
 }

@@ -706,7 +706,6 @@ WebInspector.HeapSnapshotProgress.prototype = {
  */
 WebInspector.HeapSnapshot = function(profile, progress)
 {
-    this.uid = profile.snapshot.uid;
     this._nodes = profile.nodes;
     this._containmentEdges = profile.edges;
     /** @type {!HeapSnapshotMetainfo} */
@@ -753,7 +752,6 @@ function HeapSnapshotHeader()
 {
     // New format.
     this.title = "";
-    this.uid = 0;
     this.meta = new HeapSnapshotMetainfo();
     this.node_count = 0;
     this.edge_count = 0;
@@ -1819,7 +1817,7 @@ WebInspector.HeapSnapshot.prototype = {
      */
     updateStaticData: function()
     {
-        return new WebInspector.HeapSnapshotCommon.StaticData(this.nodeCount, this._rootNodeIndex, this.totalSize, this.uid, this._maxJsNodeId());
+        return new WebInspector.HeapSnapshotCommon.StaticData(this.nodeCount, this._rootNodeIndex, this.totalSize, this._maxJsNodeId());
     }
 };
 

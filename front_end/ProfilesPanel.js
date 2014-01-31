@@ -39,6 +39,7 @@ WebInspector.ProfileType = function(id, name)
     this.treeElement = null;
     /** @type {?WebInspector.ProfileHeader} */
     this._profileBeingRecorded = null;
+    this._nextProfileUid = 1;
 
     window.addEventListener("unload", this._clearTempStorage.bind(this), false);
 }
@@ -231,6 +232,8 @@ WebInspector.ProfileType.prototype = {
             this._disposeProfile(profiles[i]);
         this.treeElement.removeChildren();
         this._profiles = [];
+
+        this._nextProfileUid = 1;
     },
 
     /**
@@ -253,13 +256,12 @@ WebInspector.ProfileType.prototype = {
  * @constructor
  * @param {!WebInspector.ProfileType} profileType
  * @param {string} title
- * @param {number=} uid
  */
-WebInspector.ProfileHeader = function(profileType, title, uid)
+WebInspector.ProfileHeader = function(profileType, title)
 {
     this._profileType = profileType;
     this.title = title;
-    this.uid = (uid === undefined) ? -1 : uid;
+    this.uid = profileType._nextProfileUid++;
     this._fromFile = false;
 }
 
@@ -360,7 +362,6 @@ WebInspector.ProfileHeader.prototype = {
     setFromFile: function()
     {
         this._fromFile = true;
-        this.uid = "From file #" + WebInspector.ProfileHeader._nextProfileFromFileUid++;
     }
 }
 
@@ -1034,7 +1035,7 @@ WebInspector.ProfileSidebarTreeElement = function(profile, className)
 
 WebInspector.ProfileSidebarTreeElement.prototype = {
     /**
-     * @param {WebInspector.ProfilesPanel} panel
+     * @param {!WebInspector.ProfilesPanel} panel
      */
     setPanel: function(panel)
     {

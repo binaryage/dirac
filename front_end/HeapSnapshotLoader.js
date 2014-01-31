@@ -58,15 +58,12 @@ WebInspector.HeapSnapshotLoader.prototype = {
     },
 
     /**
-     * @param {string} constructorName
-     * @return {T}
-     * @template T
+     * @return {!WebInspector.JSHeapSnapshot}
      */
     buildSnapshot: function(constructorName)
     {
         this._progress.updateStatus("Processing snapshot\u2026");
-        var constructor = WebInspector[constructorName];
-        var result = new constructor(this._snapshot, this._progress);
+        var result = new WebInspector.JSHeapSnapshot(this._snapshot, this._progress);
         this._reset();
         return result;
     },
