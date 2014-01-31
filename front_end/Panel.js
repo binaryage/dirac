@@ -166,28 +166,27 @@ WebInspector.PanelWithSidebarTree = function(name, defaultWidth)
     this._panelSplitView.setMainElementConstraints(0.5, 0.5);
     this._panelSplitView.show(this.element);
 
-    var sidebarView = new WebInspector.View();
-    sidebarView.element.classList.add("sidebar");
-    var sidebarTreeElement = sidebarView.element.createChild("ol", "sidebar-tree");
-    this._panelSplitView.setSidebarView(sidebarView);
+    var sidebarElement = this._panelSplitView.sidebarElement();
+    sidebarElement.classList.add("sidebar");
+    var sidebarTreeElement = sidebarElement.createChild("ol", "sidebar-tree");
     this.sidebarTree = new TreeOutline(sidebarTreeElement);
 }
 
 WebInspector.PanelWithSidebarTree.prototype = {
     /**
-     * @return {!WebInspector.View}
+     * @return {!Element}
      */
-    sidebarView: function()
+    sidebarElement: function()
     {
-        return this._panelSplitView.sidebarView();
+        return this._panelSplitView.sidebarElement();
     },
 
     /**
-     * @param {!WebInspector.View} view
+     * @return {!Element} element
      */
-    setMainView: function(view)
+    mainElement: function()
     {
-        this._panelSplitView.setMainView(view);
+        return this._panelSplitView.mainElement();
     },
 
     /**

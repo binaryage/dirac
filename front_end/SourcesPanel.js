@@ -93,10 +93,10 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     this.editorView.setSidebarElementConstraints(Preferences.minScriptsSidebarWidth);
     this.editorView.setMainElementConstraints(minimumViewsContainerWidthPercent);
-    this._splitView.setMainView(this.editorView);
+    this.editorView.show(this._splitView.mainElement());
 
     this._navigator = new WebInspector.SourcesNavigator();
-    this.editorView.setSidebarView(this._navigator.view);
+    this._navigator.view.show(this.editorView.sidebarElement());
 
     var tabbedEditorPlaceholderText = WebInspector.isMac() ? WebInspector.UIString("Hit Cmd+O to open a file") : WebInspector.UIString("Hit Ctrl+O to open a file");
 
@@ -274,7 +274,7 @@ WebInspector.SourcesPanel.prototype = {
     wasShown: function()
     {
         WebInspector.inspectorView.closeViewInDrawer("editor");
-        this.editorView.setMainView(this.sourcesView);
+        this.sourcesView.show(this.editorView.mainElement());
         WebInspector.Panel.prototype.wasShown.call(this);
         this._navigatorController.wasShown();
 
@@ -1650,7 +1650,7 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPaneView = vbox;
         } else {
             var splitView = new WebInspector.SplitView(true, true, this.name + "PanelSplitSidebarRatio", 0.5);
-            splitView.setFirstView(vbox);
+            vbox.show(splitView.firstElement());
 
             // Populate the left stack.
             sidebarPaneStack.addPane(this.sidebarPanes.callstack);
@@ -1662,7 +1662,7 @@ WebInspector.SourcesPanel.prototype = {
                 sidebarPaneStack.addPane(this.sidebarPanes.workerList);
 
             var tabbedPane = new WebInspector.SidebarTabbedPane();
-            splitView.setSecondView(tabbedPane);
+            tabbedPane.show(splitView.secondElement());
             tabbedPane.addPane(this.sidebarPanes.scopechain);
             tabbedPane.addPane(this.sidebarPanes.watchExpressions);
             this._extensionSidebarPanesContainer = tabbedPane;
@@ -1672,7 +1672,7 @@ WebInspector.SourcesPanel.prototype = {
         for (var i = 0; i < this._extensionSidebarPanes.length; ++i)
             this._extensionSidebarPanesContainer.addPane(this._extensionSidebarPanes[i]);
 
-        this._splitView.setSidebarView(this.sidebarPaneView);
+        this.sidebarPaneView.show(this._splitView.sidebarElement());
 
         this.sidebarPanes.scopechain.expand();
         this.sidebarPanes.jsBreakpoints.expand();

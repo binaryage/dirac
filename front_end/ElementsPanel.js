@@ -65,7 +65,7 @@ WebInspector.ElementsPanel = function()
     this._splitView.show(this.element);
 
     this._searchableView = new WebInspector.SearchableView(this);
-    this._splitView.setMainView(this._searchableView);
+    this._searchableView.show(this._splitView.mainElement());
     var stackElement = this._searchableView.element;
 
     this.contentElement = stackElement.createChild("div");
@@ -1251,11 +1251,11 @@ WebInspector.ElementsPanel.prototype = {
             var splitView = new WebInspector.SplitView(true, true, "StylesPaneSplitRatio", 0.5);
             splitView.show(compositePane.bodyElement);
 
-            splitView.setFirstView(this.sidebarPanes.styles);
+            this.sidebarPanes.styles.show(splitView.firstElement());
             splitView.firstElement().appendChild(this.sidebarPanes.styles.titleElement);
             this.sidebarPanes.styles.setExpandCallback(expandComposite);
 
-            splitView.setSecondView(computedPane);
+            computedPane.show(splitView.secondElement());
             computedPane.setExpandCallback(expandComposite);
 
             this.sidebarPaneView.addPane(compositePane);
@@ -1285,7 +1285,7 @@ WebInspector.ElementsPanel.prototype = {
         for (var i = 0; i < this._extensionSidebarPanes.length; ++i)
             this._extensionSidebarPanesContainer.addPane(this._extensionSidebarPanes[i]);
 
-        this._splitView.setSidebarView(this.sidebarPaneView);
+        this.sidebarPaneView.show(this._splitView.sidebarElement());
         this.sidebarPanes.styles.expand();
     },
 

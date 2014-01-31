@@ -80,7 +80,7 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     this._detailsSplitView.sidebarElement().classList.add("timeline-details");
     this._detailsSplitView.setMainElementConstraints(undefined, 40);
     this._detailsView = new WebInspector.TimelineDetailsView();
-    this._detailsSplitView.setSidebarView(this._detailsView);
+    this._detailsView.show(this._detailsSplitView.sidebarElement());
     this._detailsSplitView.installResizer(this._detailsView.titleElement());
 
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
@@ -89,7 +89,7 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
 
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.element.classList.add("searchable-view");
-    this._detailsSplitView.setMainView(this._searchableView);
+    this._searchableView.show(this._detailsSplitView.mainElement());
 
     this._views = [];
     this._recordsView = this._createRecordsView();
@@ -204,7 +204,7 @@ WebInspector.TimelineView.prototype = {
         // Create grid in the records main area.
         this._gridContainer = new WebInspector.ViewWithResizeCallback(this._onViewportResize.bind(this));
         this._gridContainer.element.id = "resources-container-content";
-        recordsView.setMainView(this._gridContainer);
+        this._gridContainer.show(recordsView.mainElement());
         this._timelineGrid = new WebInspector.TimelineGrid();
         this._itemsGraphsElement = this._timelineGrid.itemsGraphsElement;
         this._itemsGraphsElement.id = "timeline-graphs";

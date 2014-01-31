@@ -54,11 +54,11 @@ WebInspector.InspectorView = function()
 
     // Main part of main split is overlay view.
     this._overlayView = new WebInspector.InspectorView.OverlayView();
-    this._splitView.setMainView(this._overlayView);
+    this._overlayView.show(this._splitView.mainElement());
 
     // Sidebar of main split is artificial element used for positioning.
     this._devtoolsView = new WebInspector.View();
-    this._splitView.setSidebarView(this._devtoolsView);
+    this._devtoolsView.show(this._splitView.sidebarElement());
 
     // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
     this._drawerSplitView = new WebInspector.SplitView(false, true, "Inspector.drawerSplitView", 200, 200);
@@ -67,7 +67,7 @@ WebInspector.InspectorView = function()
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.setRetainTabOrder(true, WebInspector.moduleManager.orderComparator(WebInspector.Panel, "name", "order"));
-    this._drawerSplitView.setMainView(this._tabbedPane);
+    this._tabbedPane.show(this._drawerSplitView.mainElement());
     this._drawer = new WebInspector.Drawer(this._drawerSplitView);
 
     // Patch tabbed pane header with toolbar actions.
@@ -443,14 +443,15 @@ WebInspector.InspectorView.prototype = {
                 this._splitView.installResizer(this._splitView.resizerElement());
                 this._splitView.installResizer(this._tabbedPane.headerElement());
             }
-            this._splitView.setMainView(this._overlayView);
-            this._splitView.setSidebarView(this._devtoolsView);
+
+            this._overlayView.show(this._splitView.mainElement());
+            this._devtoolsView.show(this._splitView.sidebarElement());
             this._splitView.showBoth();
         } else {
             this._overlayView.setMargins(false, false, false, false);
             this._splitView.setSecondIsSidebar(true);
-            this._splitView.setMainView(this._overlayView);
-            this._splitView.setSidebarView(this._devtoolsView);
+            this._overlayView.show(this._splitView.mainElement());
+            this._devtoolsView.show(this._splitView.sidebarElement());
             this._splitView.showOnlySecond();
             this._splitView.uninstallResizer(this._tabbedPane.headerElement());
             this._splitView.uninstallResizer(this._splitView.resizerElement());

@@ -48,7 +48,7 @@ WebInspector.ResourcesPanel = function(database)
 
     WebInspector.settings.resourcesLastSelectedItem = WebInspector.settings.createSetting("resourcesLastSelectedItem", {});
 
-    this.sidebarView().element.classList.add("outline-disclosure", "filter-all", "children", "small");
+    this.sidebarElement().classList.add("filter-all", "children", "small", "outline-disclosure");
     this.sidebarTree.element.classList.remove("sidebar-tree");
 
     this.resourcesListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Frames"), "Frames", ["frame-storage-tree-item"]);
@@ -81,7 +81,7 @@ WebInspector.ResourcesPanel = function(database)
     this.storageViews = mainView.element.createChild("div", "resources-main diff-container");
     var statusBarContainer = mainView.element.createChild("div", "resources-status-bar");
     this.storageViewStatusBarItemsContainer = statusBarContainer.createChild("div", "status-bar");
-    this.setMainView(mainView);
+    mainView.show(this.mainElement());
 
     /** @type {!Map.<!WebInspector.Database, !Object.<string, !WebInspector.DatabaseTableView>>} */
     this._databaseTableViews = new Map();
@@ -98,8 +98,8 @@ WebInspector.ResourcesPanel = function(database)
     /** @type {!Object.<string, boolean>} */
     this._domains = {};
 
-    this.sidebarView().element.addEventListener("mousemove", this._onmousemove.bind(this), false);
-    this.sidebarView().element.addEventListener("mouseout", this._onmouseout.bind(this), false);
+    this.sidebarElement().addEventListener("mousemove", this._onmousemove.bind(this), false);
+    this.sidebarElement().addEventListener("mouseout", this._onmouseout.bind(this), false);
 
     /**
      * @return {!WebInspector.View}

@@ -100,7 +100,7 @@ WebInspector.NavigatorOverlayController.prototype = {
         this._editorView.element.appendChild(this._navigatorShowHideButton.element);
 
         this._innerHideNavigatorOverlay();
-        this._parentSidebarView.setSidebarView(this._navigatorView);
+        this._navigatorView.show(this._parentSidebarView.sidebarElement());
         this._parentSidebarView.showBoth();
         this._navigatorView.focus();
         WebInspector.settings.navigatorHidden.set(false);

@@ -39,7 +39,7 @@ WebInspector.Drawer = function(splitView)
 
     this._splitView = splitView;
     splitView.hideDefaultResizer();
-    splitView.setSidebarView(this);
+    this.show(splitView.sidebarElement());
     splitView.showOnlyFirst();
 
     this._toggleDrawerButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show drawer."), "console-status-bar-item");

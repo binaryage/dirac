@@ -1514,14 +1514,14 @@ WebInspector.NetworkPanel = function()
     networkLogColumnsVisibilitySetting.set(columnsVisibility);
 
     this._networkLogView = new WebInspector.NetworkLogView(this._filterBar, networkLogColumnsVisibilitySetting);
-    this._splitView.setSidebarView(this._networkLogView);
+    this._networkLogView.show(this._splitView.sidebarElement());
 
     var viewsContainerView = new WebInspector.View();
     this._viewsContainerElement = viewsContainerView.element;
     this._viewsContainerElement.id = "network-views";
     if (!this._networkLogView.useLargeRows)
         this._viewsContainerElement.classList.add("small");
-    this._splitView.setMainView(viewsContainerView);
+    viewsContainerView.show(this._splitView.mainElement());
 
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.ViewCleared, this._onViewCleared, this);
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.RowSizeChanged, this._onRowSizeChanged, this);

@@ -85,7 +85,7 @@ WebInspector.FileSystemView.prototype = {
         if (this._visibleView)
             this._visibleView.detach();
         this._visibleView = view;
-        this.setMainView(view);
+        view.show(this.mainElement());
     },
 
     _refresh: function()

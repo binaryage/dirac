@@ -152,7 +152,7 @@ WebInspector.AuditsPanel.prototype = {
         this._visibleView = x;
 
         if (x)
-            this.setMainView(x);
+            x.show(this.mainElement());
     },
 
     wasShown: function()
