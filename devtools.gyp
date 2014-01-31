@@ -38,6 +38,7 @@
             'type': 'none',
             'dependencies': [
                 'devtools_html',
+                'supported_css_properties',
                 'frontend_protocol_sources',
             ],
             'conditions': [
@@ -66,6 +67,7 @@
                             'files': [
                                 '<@(devtools_files)',
                                 '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
+                                '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js',
                                 '<@(devtools_heap_snapshot_worker_js_files)',
                                 '<@(devtools_temp_storage_shared_worker_js_files)',
                                 '<@(devtools_script_formatter_worker_js_files)',
@@ -211,6 +213,7 @@
                         'input_pages': [
                             '<@(devtools_files)',
                             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
+                            '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js',
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
                         ],
                         'images': [
@@ -256,6 +259,32 @@
             },
           ]
         },
+        {
+          'target_name': 'supported_css_properties',
+          'type': 'none',
+          'actions': [
+            {
+              'action_name': 'generateSupportedCSSProperties',
+              'inputs': [
+                # The python script in action below.
+                'scripts/generate_supported_css.py',
+                # Input files for the script.
+                '../core/css/CSSPropertyNames.in',
+                '../core/css/SVGCSSPropertyNames.in',
+                '../core/css/CSSShorthands.in',
+              ],
+              'outputs': [
+                '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js',
+              ],
+              'action': [
+                'python',
+                '<@(_inputs)',
+                '<@(_outputs)',
+              ],
+              'message': 'Generating supported CSS properties for front end',
+            },
+          ]
+        },
     ], # targets
     'conditions': [
         ['debug_devtools==0', {
@@ -265,6 +294,7 @@
                     'type': 'none',
                     'dependencies': [
                         'devtools_html',
+                        'supported_css_properties',
                         'frontend_protocol_sources'
                     ],
                     'actions': [{
@@ -275,7 +305,8 @@
                             '<@(_script_name)',
                             '<@(_input_page)',
                             '<@(devtools_files)',
-                            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js'
+                            '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
+                            '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js'
                         ],
                         'search_path': [
                             'front_end',

@@ -2515,14 +2515,6 @@
                 ]
             },
             {
-                "id": "CSSPropertyInfo",
-                "type": "object",
-                "properties": [
-                    { "name": "name", "type": "string", "description": "Property name." },
-                    { "name": "longhands", "type": "array", "optional": true, "items": { "type": "string" }, "description": "Longhand property names." }
-                ]
-            },
-            {
                 "id": "CSSComputedStyleProperty",
                 "type": "object",
                 "properties": [
@@ -2745,13 +2737,6 @@
                     { "name": "rule", "$ref": "CSSRule", "description": "The newly created rule." }
                 ],
                 "description": "Creates a new empty rule with the given <code>selector</code> in a special \"inspector\" stylesheet in the owner document of the context node."
-            },
-            {
-                "name": "getSupportedCSSProperties",
-                "returns": [
-                    { "name": "cssProperties", "type": "array", "items": { "$ref": "CSSPropertyInfo" }, "description": "Supported property metainfo." }
-                ],
-                "description": "Returns all supported CSS property names."
             },
             {
                 "name": "forcePseudoState",

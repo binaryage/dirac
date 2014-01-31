@@ -295,7 +295,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
         this._requestZoom();
 
     this.advancedSearchController = new WebInspector.AdvancedSearchController();
-    WebInspector.CSSMetadata.requestCSSShorthandData();
     this.consoleView = new WebInspector.ConsoleView(WebInspector.WorkerManager.isWorkerFrontend());
 
     InspectorBackend.registerInspectorDispatcher(this);

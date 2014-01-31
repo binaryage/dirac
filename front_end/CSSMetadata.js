@@ -32,7 +32,7 @@
 
 /**
  * @constructor
- * @param {!Array.<!CSSAgent.CSSPropertyInfo|string>} properties
+ * @param {!Array.<!{name: string, longhands: !Array.<string>}|string>} properties
  */
 WebInspector.CSSMetadata = function(properties)
 {
@@ -45,7 +45,6 @@ WebInspector.CSSMetadata = function(properties)
             this._values.push(property);
             continue;
         }
-
         var propertyName = property.name;
         this._values.push(propertyName);
 
@@ -720,14 +719,9 @@ WebInspector.CSSMetadata.descriptor = function(propertyName)
     return entry || null;
 }
 
-WebInspector.CSSMetadata.requestCSSShorthandData = function()
+WebInspector.CSSMetadata.initializeWithSupportedProperties = function(properties)
 {
-    function propertyNamesCallback(error, properties)
-    {
-        if (!error)
-            WebInspector.CSSMetadata.cssPropertiesMetainfo = new WebInspector.CSSMetadata(properties);
-    }
-    CSSAgent.getSupportedCSSProperties(propertyNamesCallback);
+    WebInspector.CSSMetadata.cssPropertiesMetainfo = new WebInspector.CSSMetadata(properties);
 }
 
 WebInspector.CSSMetadata.cssPropertiesMetainfoKeySet = function()
@@ -998,3 +992,5 @@ WebInspector.CSSMetadata.prototype = {
         return this._shorthands[longhand];
     }
 }
+
+WebInspector.CSSMetadata.initializeWithSupportedProperties([]);
