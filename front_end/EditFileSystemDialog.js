@@ -57,7 +57,7 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
 
     var blockHeader = contents.createChild("div", "block-header");
     blockHeader.textContent = WebInspector.UIString("Mappings");
-    this._fileMappingsSection = contents.createChild("div", "file-mappings-section");
+    this._fileMappingsSection = contents.createChild("div", "section file-mappings-section");
     this._fileMappingsListContainer = this._fileMappingsSection.createChild("div", "settings-list-container");
     var entries = WebInspector.isolatedFileSystemManager.mapping().mappingEntries(this._fileSystemPath);
 
@@ -73,7 +73,7 @@ WebInspector.EditFileSystemDialog = function(fileSystemPath)
 
     blockHeader = contents.createChild("div", "block-header");
     blockHeader.textContent = WebInspector.UIString("Excluded folders");
-    this._excludedFolderListSection = contents.createChild("div", "excluded-folders-section");
+    this._excludedFolderListSection = contents.createChild("div", "section excluded-folders-section");
     this._excludedFolderListContainer = this._excludedFolderListSection.createChild("div", "settings-list-container");
     var excludedFolderEntries = WebInspector.isolatedFileSystemManager.mapping().excludedFolders(fileSystemPath);
 
@@ -113,12 +113,14 @@ WebInspector.EditFileSystemDialog.prototype = {
         if (!this._dialogElement || !this._relativeToElement)
             return;
 
-        const width = 540;
+        const minWidth = 200;
         const minHeight = 150;
         var maxHeight = this._relativeToElement.offsetHeight - 10;
         maxHeight = Math.max(minHeight, maxHeight);
+        var maxWidth = Math.min(540, this._relativeToElement.offsetWidth - 10);
+        maxWidth = Math.max(minWidth, maxWidth);
         this._dialogElement.style.maxHeight = maxHeight + "px";
-        this._dialogElement.style.width = width + "px";
+        this._dialogElement.style.width = maxWidth + "px";
 
         WebInspector.DialogDelegate.prototype.position(this._dialogElement, this._relativeToElement);
     },

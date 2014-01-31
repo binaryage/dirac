@@ -47,6 +47,7 @@ WebInspector.InspectorView = function()
     this._splitView = new WebInspector.SplitView(false, true, settingName, 300, 300);
     this._updateConstraints();
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._updateSplitView.bind(this));
+    this._splitView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this.dispatchEventToListeners.bind(this, WebInspector.InspectorView.Events.DevToolsElementBoundingBoxChanged));
 
     this._splitView.element.id = "inspector-split-view";
     this._splitView.show(this.element);
@@ -110,6 +111,10 @@ WebInspector.InspectorView.Constraints = {
     OverlayHeight: 50,
     DevToolsWidth: 150,
     DevToolsHeight: 50
+};
+
+WebInspector.InspectorView.Events = {
+    DevToolsElementBoundingBoxChanged: "DevToolsElementBoundingBoxChanged"
 };
 
 WebInspector.InspectorView.prototype = {
@@ -408,6 +413,12 @@ WebInspector.InspectorView.prototype = {
         if (!this._history.length || this._history[this._history.length - 1] !== panelName)
             this._history.push(panelName);
         this._historyIterator = this._history.length - 1;
+    },
+
+    doResize: function()
+    {
+        WebInspector.View.prototype.doResize.call(this);
+        this.dispatchEventToListeners(WebInspector.InspectorView.Events.DevToolsElementBoundingBoxChanged);
     },
 
     _updateSplitView: function()

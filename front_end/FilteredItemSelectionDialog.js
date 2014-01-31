@@ -82,11 +82,14 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         var height = Math.max(relativeToElement.offsetHeight * 2 / 3, minHeight);
 
         this.element.style.width = width + "px";
-
+        var container = WebInspector.inspectorView.devtoolsElement();
+        var box = relativeToElement.boxInWindow(window).relativeToElement(container);
         const shadowPadding = 20; // shadow + padding
-        element.positionAt(
-            relativeToElement.totalOffsetLeft() + Math.max((relativeToElement.offsetWidth - width - 2 * shadowPadding) / 2, shadowPadding),
-            relativeToElement.totalOffsetTop() + Math.max((relativeToElement.offsetHeight - height - 2 * shadowPadding) / 2, shadowPadding));
+        var positionX = box.x + Math.max((box.width - width - 2 * shadowPadding) / 2, shadowPadding);
+        positionX = Math.max(shadowPadding, Math.min(container.offsetWidth - width - 2 * shadowPadding, positionX));
+        var positionY = box.y + Math.max((box.height - height - 2 * shadowPadding) / 2, shadowPadding);
+        positionY = Math.max(shadowPadding, Math.min(container.offsetHeight - height - 2 * shadowPadding, positionY));
+        element.positionAt(positionX, positionY, container);
         this._dialogHeight = height;
 
         this._updateShowMatchingItems();

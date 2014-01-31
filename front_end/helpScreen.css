@@ -658,7 +658,6 @@ body.platform-mac .help-content input[type=radio] {
     flex: 1 1 auto;
     padding: 0 17px;
     overflow: auto;
-    margin-bottom: 10px;
 }
 
 .settings-dialog .block-header {
@@ -688,4 +687,8 @@ body.platform-mac .help-content input[type=radio] {
 .help-field-note {
     opacity: 0.6;
     padding-left: 19px;
+}
+
+.edit-file-system-dialog .section {
+    min-width: 400px;
 }
