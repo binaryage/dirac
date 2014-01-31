@@ -82,7 +82,7 @@ WebInspector.NavigatorOverlayController.prototype = {
         this._editorView.element.classList.add("navigator-hidden");
         this._navigatorSidebarResizeWidgetElement.classList.add("hidden");
 
-        this._parentSidebarView.showOnlySecond();
+        this._parentSidebarView.hideSidebar();
         this._navigatorView.detach();
         this._editorView.focus();
 

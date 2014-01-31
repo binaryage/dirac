@@ -48,13 +48,13 @@ WebInspector.StackView.prototype = {
     appendView: function(view, sidebarSizeSettingName, defaultSidebarWidth, defaultSidebarHeight)
     {
         var splitView = new WebInspector.SplitView(this._isVertical, true, sidebarSizeSettingName, defaultSidebarWidth, defaultSidebarHeight);
-        view.show(splitView.firstElement());
-        splitView.showOnlyFirst();
+        view.show(splitView.mainElement());
+        splitView.hideSidebar();
 
         if (!this._currentSplitView) {
             splitView.show(this.element);
         } else {
-            splitView.show(this._currentSplitView.secondElement());
+            splitView.show(this._currentSplitView.sidebarElement());
             this._currentSplitView.showBoth();
         }
 

@@ -59,13 +59,13 @@ WebInspector.LayersPanel = function()
     this._rightSplitView.show(this.mainElement());
 
     this._layers3DView = new WebInspector.Layers3DView(this._model);
-    this._layers3DView.show(this._rightSplitView.firstElement());
+    this._layers3DView.show(this._rightSplitView.mainElement());
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.LayerSelected, this._onLayerSelected, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.LayerHovered, this._onLayerHovered, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.LayerSnapshotRequested, this._onSnapshotRequested, this);
 
     this._tabbedPane = new WebInspector.TabbedPane();
-    this._tabbedPane.show(this._rightSplitView.secondElement());
+    this._tabbedPane.show(this._rightSplitView.sidebarElement());
 
     this._layerDetailsView = new WebInspector.LayerDetailsView(this._model);
     this._tabbedPane.appendTab(WebInspector.LayersPanel.DetailsViewTabs.Details, WebInspector.UIString("Details"), this._layerDetailsView);

@@ -926,8 +926,8 @@ WebInspector.TimelineView.prototype = {
         var rowsHeight = headerHeight + recordsInWindow.length * rowHeight;
         var totalHeight = Math.max(this._containerElementHeight, rowsHeight);
 
-        this._recordsView.firstElement().style.height = totalHeight + "px";
-        this._recordsView.secondElement().style.height = totalHeight + "px";
+        this._recordsView.mainElement().style.height = totalHeight + "px";
+        this._recordsView.sidebarElement().style.height = totalHeight + "px";
         this._recordsView.resizerElement().style.height = totalHeight + "px";
 
         // Update visible rows.

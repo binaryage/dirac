@@ -1251,11 +1251,11 @@ WebInspector.ElementsPanel.prototype = {
             var splitView = new WebInspector.SplitView(true, true, "StylesPaneSplitRatio", 0.5);
             splitView.show(compositePane.bodyElement);
 
-            this.sidebarPanes.styles.show(splitView.firstElement());
-            splitView.firstElement().appendChild(this.sidebarPanes.styles.titleElement);
+            this.sidebarPanes.styles.show(splitView.mainElement());
+            splitView.mainElement().appendChild(this.sidebarPanes.styles.titleElement);
             this.sidebarPanes.styles.setExpandCallback(expandComposite);
 
-            computedPane.show(splitView.secondElement());
+            computedPane.show(splitView.sidebarElement());
             computedPane.setExpandCallback(expandComposite);
 
             this.sidebarPaneView.addPane(compositePane);

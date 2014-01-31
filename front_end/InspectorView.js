@@ -443,16 +443,10 @@ WebInspector.InspectorView.prototype = {
                 this._splitView.installResizer(this._splitView.resizerElement());
                 this._splitView.installResizer(this._tabbedPane.headerElement());
             }
-
-            this._overlayView.show(this._splitView.mainElement());
-            this._devtoolsView.show(this._splitView.sidebarElement());
             this._splitView.showBoth();
         } else {
             this._overlayView.setMargins(false, false, false, false);
-            this._splitView.setSecondIsSidebar(true);
-            this._overlayView.show(this._splitView.mainElement());
-            this._devtoolsView.show(this._splitView.sidebarElement());
-            this._splitView.showOnlySecond();
+            this._splitView.hideMain();
             this._splitView.uninstallResizer(this._tabbedPane.headerElement());
             this._splitView.uninstallResizer(this._splitView.resizerElement());
         }
@@ -491,7 +485,7 @@ WebInspector.InspectorView.prototype = {
 
     hideScreencastView: function()
     {
-        this._splitView.showOnlySecond();
+        this._splitView.hideMain();
     },
 
     /**

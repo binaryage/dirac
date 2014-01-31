@@ -41,8 +41,8 @@ WebInspector.FileSystemView = function(fileSystem)
 
     var directoryTreeElement = this.element.createChild("ol", "filesystem-directory-tree");
     this._directoryTree = new TreeOutline(directoryTreeElement);
-    this.firstElement().appendChild(directoryTreeElement);
-    this.firstElement().classList.add("outline-disclosure", "sidebar");
+    this.sidebarElement().appendChild(directoryTreeElement);
+    this.sidebarElement().classList.add("outline-disclosure", "sidebar");
 
     var rootItem = new WebInspector.FileSystemView.EntryTreeElement(this, fileSystem.root);
     rootItem.expanded = true;

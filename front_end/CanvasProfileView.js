@@ -49,15 +49,15 @@ WebInspector.CanvasProfileView = function(profile)
     this._replayInfoSplitView.show(this.element);
 
     this._imageSplitView = new WebInspector.SplitView(false, true, "canvasProfileViewSplitLocation", 300);
-    this._imageSplitView.show(this._replayInfoSplitView.firstElement());
+    this._imageSplitView.show(this._replayInfoSplitView.mainElement());
 
-    var replayImageContainer = this._imageSplitView.firstElement().createChild("div");
+    var replayImageContainer = this._imageSplitView.mainElement().createChild("div");
     replayImageContainer.id = "canvas-replay-image-container";
     this._replayImageElement = replayImageContainer.createChild("img", "canvas-replay-image");
     this._debugInfoElement = replayImageContainer.createChild("div", "canvas-debug-info hidden");
     this._spinnerIcon = replayImageContainer.createChild("img", "canvas-spinner-icon hidden");
 
-    var replayLogContainer = this._imageSplitView.secondElement();
+    var replayLogContainer = this._imageSplitView.sidebarElement();
     var controlsContainer = replayLogContainer.createChild("div", "status-bar");
     var logGridContainer = replayLogContainer.createChild("div", "canvas-replay-log");
 
@@ -75,7 +75,7 @@ WebInspector.CanvasProfileView = function(profile)
     this._installReplayInfoSidebarWidgets(controlsContainer);
 
     this._replayStateView = new WebInspector.CanvasReplayStateView(this._traceLogPlayer);
-    this._replayStateView.show(this._replayInfoSplitView.secondElement());
+    this._replayStateView.show(this._replayInfoSplitView.sidebarElement());
 
     /** @type {!Object.<string, boolean>} */
     this._replayContexts = {};
@@ -164,7 +164,7 @@ WebInspector.CanvasProfileView.prototype = {
         } else {
             this._toggleReplayStateSidebarButton.state = "left";
             this._toggleReplayStateSidebarButton.title = WebInspector.UIString("Show sidebar.");
-            this._replayInfoSplitView.showOnlyFirst();
+            this._replayInfoSplitView.hideSidebar();
         }
         this._replayInfoResizeWidgetElement.enableStyleClass("hidden", !show);
     },

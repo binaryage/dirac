@@ -516,13 +516,13 @@ WebInspector.ViewWithResizeCallback.prototype = {
 
 Element.prototype.appendChild = function(child)
 {
-    WebInspector.View._assert(!child.__view, "Attempt to add view via regular DOM operation.");
+    WebInspector.View._assert(!child.__view || child.parentElement === this, "Attempt to add view via regular DOM operation.");
     return WebInspector.View._originalAppendChild.call(this, child);
 }
 
 Element.prototype.insertBefore = function(child, anchor)
 {
-    WebInspector.View._assert(!child.__view, "Attempt to add view via regular DOM operation.");
+    WebInspector.View._assert(!child.__view || child.parentElement === this, "Attempt to add view via regular DOM operation.");
     return WebInspector.View._originalInsertBefore.call(this, child, anchor);
 }
 

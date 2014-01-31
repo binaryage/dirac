@@ -1503,7 +1503,7 @@ WebInspector.NetworkPanel = function()
 
     this._splitView = new WebInspector.SplitView(true, false, "networkSidebarWidth");
     this._splitView.show(this._contentsElement);
-    this._splitView.showOnlyFirst();
+    this._splitView.hideMain();
 
     var defaultColumnsVisibility = WebInspector.NetworkLogView._defaultColumnsVisibility;
     var networkLogColumnsVisibilitySetting = WebInspector.settings.createSetting("networkLogColumnsVisibility", defaultColumnsVisibility);
@@ -1692,7 +1692,7 @@ WebInspector.NetworkPanel.prototype = {
         if (this._viewingRequestMode) {
             this._viewingRequestMode = false;
             this.element.classList.remove("viewing-resource");
-            this._splitView.showOnlyFirst();
+            this._splitView.hideMain();
         }
 
         this._networkLogView.switchToDetailedView();

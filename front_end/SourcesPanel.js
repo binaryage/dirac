@@ -1342,7 +1342,7 @@ WebInspector.SourcesPanel.prototype = {
         if (show)
             this._splitView.showBoth(true);
         else
-            this._splitView.showOnlyFirst();
+            this._splitView.hideSidebar();
         this._debugSidebarResizeWidgetElement.enableStyleClass("hidden", !show);
         WebInspector.settings.debuggerSidebarHidden.set(!show);
     },
@@ -1650,7 +1650,7 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPaneView = vbox;
         } else {
             var splitView = new WebInspector.SplitView(true, true, this.name + "PanelSplitSidebarRatio", 0.5);
-            vbox.show(splitView.firstElement());
+            vbox.show(splitView.mainElement());
 
             // Populate the left stack.
             sidebarPaneStack.addPane(this.sidebarPanes.callstack);
@@ -1662,7 +1662,7 @@ WebInspector.SourcesPanel.prototype = {
                 sidebarPaneStack.addPane(this.sidebarPanes.workerList);
 
             var tabbedPane = new WebInspector.SidebarTabbedPane();
-            tabbedPane.show(splitView.secondElement());
+            tabbedPane.show(splitView.sidebarElement());
             tabbedPane.addPane(this.sidebarPanes.scopechain);
             tabbedPane.addPane(this.sidebarPanes.watchExpressions);
             this._extensionSidebarPanesContainer = tabbedPane;
