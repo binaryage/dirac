@@ -75,7 +75,7 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     //  -------------------------------
 
     // Create top level properties splitter.
-    this._detailsSplitView = new WebInspector.SplitView(false, "timeline-details");
+    this._detailsSplitView = new WebInspector.SplitView(false, true, "timeline-details");
     this._detailsSplitView.element.classList.add("timeline-details-split");
     this._detailsSplitView.sidebarElement().classList.add("timeline-details");
     this._detailsSplitView.setMainElementConstraints(undefined, 40);
@@ -185,14 +185,13 @@ WebInspector.TimelineView.commonUIFilters = function()
 
 WebInspector.TimelineView.prototype = {
     /**
-     * @return {!WebInspector.SidebarView}
+     * @return {!WebInspector.SplitView}
      */
     _createRecordsView: function()
     {
         // Create records sidebar as a top memory splitter child.
-        var recordsView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Start, "timeline-split");
+        var recordsView = new WebInspector.SplitView(true, false, "timeline-split");
         recordsView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
-        recordsView.setSecondIsSidebar(false);
         this._containerElement = recordsView.element;
         this._containerElement.tabIndex = 0;
         this._containerElement.id = "timeline-container";
@@ -568,12 +567,12 @@ WebInspector.TimelineView.prototype = {
     {
         this._timelineGrid.gridHeaderElement.style.left = width + "px";
         for (var i = 0; i < this._views.length; ++i)
-            this._views[i].setSidebarWidth(width);
+            this._views[i].setSidebarSize(width);
     },
 
     _onViewportResize: function()
     {
-        this._resize(this._recordsView.sidebarWidth());
+        this._resize(this._recordsView.sidebarSize());
     },
 
     /**

@@ -28,7 +28,7 @@
 
 /**
  * @constructor
- * @param {!WebInspector.SidebarView} parentSidebarView
+ * @param {!WebInspector.SplitView} parentSidebarView
  * @param {!WebInspector.View} navigatorView
  * @param {!WebInspector.View} editorView
  */
@@ -82,7 +82,7 @@ WebInspector.NavigatorOverlayController.prototype = {
         this._editorView.element.classList.add("navigator-hidden");
         this._navigatorSidebarResizeWidgetElement.classList.add("hidden");
 
-        this._parentSidebarView.hideSidebarElement();
+        this._parentSidebarView.showOnlySecond();
         this._navigatorView.detach();
         this._editorView.focus();
 
@@ -100,8 +100,8 @@ WebInspector.NavigatorOverlayController.prototype = {
         this._editorView.element.appendChild(this._navigatorShowHideButton.element);
 
         this._innerHideNavigatorOverlay();
-        this._parentSidebarView.showSidebarElement();
         this._parentSidebarView.setSidebarView(this._navigatorView);
+        this._parentSidebarView.showBoth();
         this._navigatorView.focus();
         WebInspector.settings.navigatorHidden.set(false);
     },

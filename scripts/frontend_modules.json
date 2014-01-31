@@ -113,7 +113,6 @@
             "SidebarOverlay.js",
             "SidebarPane.js",
             "SidebarTreeElement.js",
-            "SidebarView.js",
             "ShortcutsScreen.js",
             "ShowMoreDataGridNode.js",
             "SoftContextMenu.js",

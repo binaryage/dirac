@@ -39,19 +39,17 @@ importScript("FileSystemView.js");
 
 /**
  * @constructor
- * @extends {WebInspector.Panel}
+ * @extends {WebInspector.PanelWithSidebarTree}
  */
 WebInspector.ResourcesPanel = function(database)
 {
-    WebInspector.Panel.call(this, "resources");
+    WebInspector.PanelWithSidebarTree.call(this, "resources");
     this.registerRequiredCSS("resourcesPanel.css");
 
     WebInspector.settings.resourcesLastSelectedItem = WebInspector.settings.createSetting("resourcesLastSelectedItem", {});
 
-    this.createSidebarViewWithTree();
-    this.splitView.sidebarElement().classList.add("outline-disclosure", "filter-all", "children", "small");
-
-    this.sidebarTreeElement.classList.remove("sidebar-tree");
+    this.sidebarView().element.classList.add("outline-disclosure", "filter-all", "children", "small");
+    this.sidebarTree.element.classList.remove("sidebar-tree");
 
     this.resourcesListTreeElement = new WebInspector.StorageCategoryTreeElement(this, WebInspector.UIString("Frames"), "Frames", ["frame-storage-tree-item"]);
     this.sidebarTree.appendChild(this.resourcesListTreeElement);
@@ -79,11 +77,11 @@ WebInspector.ResourcesPanel = function(database)
         this.sidebarTree.appendChild(this.fileSystemListTreeElement);
     }
 
-    var mainElement = this.splitView.mainElement();
-    this.storageViews = mainElement.createChild("div", "resources-main");
-    var statusBarContainer = mainElement.createChild("div", "resources-status-bar");
+    var mainView = new WebInspector.View();
+    this.storageViews = mainView.element.createChild("div", "resources-main diff-container");
+    var statusBarContainer = mainView.element.createChild("div", "resources-status-bar");
     this.storageViewStatusBarItemsContainer = statusBarContainer.createChild("div", "status-bar");
-    this.storageViews.classList.add("diff-container");
+    this.setMainView(mainView);
 
     /** @type {!Map.<!WebInspector.Database, !Object.<string, !WebInspector.DatabaseTableView>>} */
     this._databaseTableViews = new Map();
@@ -100,8 +98,8 @@ WebInspector.ResourcesPanel = function(database)
     /** @type {!Object.<string, boolean>} */
     this._domains = {};
 
-    this.splitView.sidebarElement().addEventListener("mousemove", this._onmousemove.bind(this), false);
-    this.splitView.sidebarElement().addEventListener("mouseout", this._onmouseout.bind(this), false);
+    this.sidebarView().element.addEventListener("mousemove", this._onmousemove.bind(this), false);
+    this.sidebarView().element.addEventListener("mouseout", this._onmouseout.bind(this), false);
 
     /**
      * @return {!WebInspector.View}
@@ -777,7 +775,7 @@ WebInspector.ResourcesPanel.prototype = {
         }
     },
 
-    __proto__: WebInspector.Panel.prototype
+    __proto__: WebInspector.PanelWithSidebarTree.prototype
 }
 
 /**

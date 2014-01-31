@@ -55,6 +55,7 @@ function TreeOutline(listNode, nonFocusable)
     this._treeElementsMap = new Map();
     /** @type {!Map.<!Object, boolean>} */
     this._expandedStateMap = new Map();
+    this.element = listNode;
 }
 
 TreeOutline.prototype.setFocusable = function(focusable)

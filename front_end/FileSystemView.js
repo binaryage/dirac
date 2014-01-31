@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SidebarView}
+ * @extends {WebInspector.SplitView}
  * @param {!WebInspector.FileSystemModel.FileSystem} fileSystem
  */
 WebInspector.FileSystemView = function(fileSystem)
 {
-    WebInspector.SidebarView.call(this, WebInspector.SidebarView.SidebarPosition.Start, "FileSystemViewSidebarWidth");
+    WebInspector.SplitView.call(this, true, false, "FileSystemViewSidebarWidth");
     this.element.classList.add("file-system-view");
     this.element.classList.add("storage-view");
 
@@ -104,7 +104,7 @@ WebInspector.FileSystemView.prototype = {
         this._directoryTree.selectedTreeElement.deleteEntry();
     },
 
-    __proto__: WebInspector.SidebarView.prototype
+    __proto__: WebInspector.SplitView.prototype
 }
 
 /**

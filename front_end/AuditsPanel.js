@@ -30,15 +30,13 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Panel}
+ * @extends {WebInspector.PanelWithSidebarTree}
  */
 WebInspector.AuditsPanel = function()
 {
-    WebInspector.Panel.call(this, "audits");
+    WebInspector.PanelWithSidebarTree.call(this, "audits");
     this.registerRequiredCSS("panelEnablerView.css");
     this.registerRequiredCSS("auditsPanel.css");
-
-    this.createSidebarViewWithTree();
 
     this.auditsTreeElement = new WebInspector.SidebarSectionTreeElement("", {}, true);
     this.sidebarTree.appendChild(this.auditsTreeElement);
@@ -154,7 +152,7 @@ WebInspector.AuditsPanel.prototype = {
         this._visibleView = x;
 
         if (x)
-            this.splitView.setMainView(x);
+            this.setMainView(x);
     },
 
     wasShown: function()
@@ -170,7 +168,7 @@ WebInspector.AuditsPanel.prototype = {
         this.auditResultsTreeElement.removeChildren();
     },
 
-    __proto__: WebInspector.Panel.prototype
+    __proto__: WebInspector.PanelWithSidebarTree.prototype
 }
 
 /**

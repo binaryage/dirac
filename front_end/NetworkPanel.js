@@ -1501,8 +1501,9 @@ WebInspector.NetworkPanel = function()
     this._searchableView.show(this.element);
     this._contentsElement = this._searchableView.element;
 
-    this.createSidebarView(this._contentsElement);
-    this.splitView.hideMainElement();
+    this._splitView = new WebInspector.SplitView(true, false, "networkSidebarWidth");
+    this._splitView.show(this._contentsElement);
+    this._splitView.showOnlyFirst();
 
     var defaultColumnsVisibility = WebInspector.NetworkLogView._defaultColumnsVisibility;
     var networkLogColumnsVisibilitySetting = WebInspector.settings.createSetting("networkLogColumnsVisibility", defaultColumnsVisibility);
@@ -1513,13 +1514,14 @@ WebInspector.NetworkPanel = function()
     networkLogColumnsVisibilitySetting.set(columnsVisibility);
 
     this._networkLogView = new WebInspector.NetworkLogView(this._filterBar, networkLogColumnsVisibilitySetting);
-    this.splitView.setSidebarView(this._networkLogView);
+    this._splitView.setSidebarView(this._networkLogView);
 
-    this._viewsContainerElement = this.splitView.mainElement();
+    var viewsContainerView = new WebInspector.View();
+    this._viewsContainerElement = viewsContainerView.element;
     this._viewsContainerElement.id = "network-views";
-    this._viewsContainerElement.classList.add("hidden");
     if (!this._networkLogView.useLargeRows)
         this._viewsContainerElement.classList.add("small");
+    this._splitView.setMainView(viewsContainerView);
 
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.ViewCleared, this._onViewCleared, this);
     this._networkLogView.addEventListener(WebInspector.NetworkLogView.EventTypes.RowSizeChanged, this._onRowSizeChanged, this);
@@ -1690,7 +1692,7 @@ WebInspector.NetworkPanel.prototype = {
         if (this._viewingRequestMode) {
             this._viewingRequestMode = false;
             this.element.classList.remove("viewing-resource");
-            this.splitView.hideMainElement();
+            this._splitView.showOnlyFirst();
         }
 
         this._networkLogView.switchToDetailedView();
@@ -1705,7 +1707,7 @@ WebInspector.NetworkPanel.prototype = {
         this._viewingRequestMode = true;
 
         this.element.classList.add("viewing-resource");
-        this.splitView.showMainElement();
+        this._splitView.showBoth();
         this._networkLogView.allowPopover = false;
         this._networkLogView._allowRequestSelection = true;
         this._networkLogView.switchToBriefView();

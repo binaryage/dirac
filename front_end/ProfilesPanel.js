@@ -367,19 +367,20 @@ WebInspector.ProfileHeader.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.Searchable}
- * @extends {WebInspector.Panel}
+ * @extends {WebInspector.PanelWithSidebarTree}
  */
 WebInspector.ProfilesPanel = function()
 {
-    WebInspector.Panel.call(this, "profiles");
+    WebInspector.PanelWithSidebarTree.call(this, "profiles");
     this.registerRequiredCSS("panelEnablerView.css");
     this.registerRequiredCSS("heapProfiler.css");
     this.registerRequiredCSS("profilesPanel.css");
 
-    this.createSidebarViewWithTree();
-
     this._searchableView = new WebInspector.SearchableView(this);
-    this.splitView.setMainView(this._searchableView);
+
+    var mainView = new WebInspector.View();
+    this._searchableView.show(mainView.element);
+    this.setMainView(mainView);
 
     this.profilesItemTreeElement = new WebInspector.ProfilesSidebarTreeElement(this);
     this.sidebarTree.appendChild(this.profilesItemTreeElement);
@@ -389,12 +390,12 @@ WebInspector.ProfilesPanel = function()
     this.profileViews.classList.add("vbox");
     this._searchableView.element.appendChild(this.profileViews);
 
-    var statusBarContainer = this.splitView.mainElement().createChild("div", "profiles-status-bar");
+    var statusBarContainer = mainView.element.createChild("div", "profiles-status-bar");
     this._statusBarElement = statusBarContainer.createChild("div", "status-bar");
 
-    var sidebarTreeBox = this.splitView.sidebarElement().createChild("div", "profiles-sidebar-tree-box");
-    sidebarTreeBox.appendChild(this.sidebarTreeElement);
-    var statusBarContainerLeft = this.splitView.sidebarElement().createChild("div", "profiles-status-bar");
+    var sidebarTreeBox = this.sidebarView().element.createChild("div", "profiles-sidebar-tree-box");
+    sidebarTreeBox.appendChild(this.sidebarTree.element);
+    var statusBarContainerLeft = this.sidebarView().element.createChild("div", "profiles-status-bar");
     this._statusBarButtons = statusBarContainerLeft.createChild("div", "status-bar");
 
     this.recordButton = new WebInspector.StatusBarButton("", "record-profile-status-bar-item");
@@ -617,7 +618,7 @@ WebInspector.ProfilesPanel.prototype = {
             this.recordButton.title = this._selectedProfileType.buttonTooltip;
         this._launcherView.profileFinished();
 
-        this.sidebarTreeElement.classList.remove("some-expandable");
+        this.sidebarTree.element.classList.remove("some-expandable");
 
         this._launcherView.detach();
         this.profileViews.removeChildren();
@@ -700,7 +701,7 @@ WebInspector.ProfilesPanel.prototype = {
         if (this.visibleView instanceof WebInspector.HeapSnapshotView) {
             this.visibleView.populateContextMenu(contextMenu, event);
         }
-        if (element !== this.element || event.srcElement === this.splitView.sidebarElement()) {
+        if (element !== this.element || event.srcElement === this.sidebarView().element) {
             contextMenu.appendItem(WebInspector.UIString("Load\u2026"), this._fileSelectorElement.click.bind(this._fileSelectorElement));
         }
         contextMenu.show();
@@ -754,7 +755,7 @@ WebInspector.ProfilesPanel.prototype = {
                 group[0]._profilesTreeElement.small = true;
                 group[0]._profilesTreeElement.mainTitle = WebInspector.UIString("Run %d", 1);
 
-                this.sidebarTreeElement.classList.add("some-expandable");
+                this.sidebarTree.element.classList.add("some-expandable");
             }
 
             if (group.length >= 2) {
@@ -765,6 +766,7 @@ WebInspector.ProfilesPanel.prototype = {
         }
 
         var profileTreeElement = profile.createSidebarTreeElement();
+        profileTreeElement.setPanel(this);
         profile.sidebarElement = profileTreeElement;
         profileTreeElement.small = small;
         if (alternateTitle)
@@ -995,7 +997,7 @@ WebInspector.ProfilesPanel.prototype = {
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Summary view" : "Reveal in Summary View"), revealInView.bind(this, "Summary"));
     },
 
-    __proto__: WebInspector.Panel.prototype
+    __proto__: WebInspector.PanelWithSidebarTree.prototype
 }
 
 /**
@@ -1031,10 +1033,18 @@ WebInspector.ProfileSidebarTreeElement = function(profile, className)
 }
 
 WebInspector.ProfileSidebarTreeElement.prototype = {
+    /**
+     * @param {WebInspector.ProfilesPanel} panel
+     */
+    setPanel: function(panel)
+    {
+        this._panel = panel;
+    },
+
     onselect: function()
     {
         if (!this._suppressOnSelect)
-            this.treeOutline.panel.showProfile(this.profile);
+            this._panel.showProfile(this.profile);
     },
 
     /**

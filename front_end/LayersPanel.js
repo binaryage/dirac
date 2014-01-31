@@ -36,18 +36,15 @@ importScript("PaintProfilerView.js");
 
 /**
  * @constructor
- * @extends {WebInspector.Panel}
+ * @extends {WebInspector.PanelWithSidebarTree}
  */
 WebInspector.LayersPanel = function()
 {
-    WebInspector.Panel.call(this, "layers");
+    WebInspector.PanelWithSidebarTree.call(this, "layers", 225);
     this.registerRequiredCSS("layersPanel.css");
 
-    const initialLayerTreeSidebarWidth = 225;
-    const minimumMainWidthPercent = 0.5;
-    this.createSidebarViewWithTree();
-    this.splitView.sidebarElement().classList.add("outline-disclosure");
-    this.sidebarTreeElement.classList.remove("sidebar-tree");
+    this.sidebarView().element.classList.add("outline-disclosure");
+    this.sidebarTree.element.classList.remove("sidebar-tree");
 
     this._model = new WebInspector.LayerTreeModel();
     this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._onLayerTreeUpdated, this);
@@ -58,8 +55,8 @@ WebInspector.LayersPanel = function()
     this._layerTree.addEventListener(WebInspector.LayerTree.Events.LayerSelected, this._onLayerSelected, this);
     this._layerTree.addEventListener(WebInspector.LayerTree.Events.LayerHovered, this._onLayerHovered, this);
 
-    this._rightSplitView = new WebInspector.SplitView(false, "layerDetailsSplitView");
-    this.splitView.setMainView(this._rightSplitView);
+    this._rightSplitView = new WebInspector.SplitView(false, true, "layerDetailsSplitView");
+    this.setMainView(this._rightSplitView);
 
     this._layers3DView = new WebInspector.Layers3DView(this._model);
     this._layers3DView.show(this._rightSplitView.firstElement());
@@ -85,7 +82,7 @@ WebInspector.LayersPanel.prototype = {
     wasShown: function()
     {
         WebInspector.Panel.prototype.wasShown.call(this);
-        this.sidebarTreeElement.focus();
+        this.sidebarTree.element.focus();
         this._model.enable();
     },
 
@@ -166,5 +163,5 @@ WebInspector.LayersPanel.prototype = {
         this._layers3DView.hoverLayer(layer);
     },
 
-    __proto__: WebInspector.Panel.prototype
+    __proto__: WebInspector.PanelWithSidebarTree.prototype
 }

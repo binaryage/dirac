@@ -30,13 +30,14 @@
 
 /**
  * @constructor
- * @extends {WebInspector.SidebarView}
+ * @extends {WebInspector.SplitView}
  * @param {!WebInspector.TimelineView} timelineView
  * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.MemoryStatistics = function(timelineView, model)
 {
-    WebInspector.SidebarView.call(this, WebInspector.SidebarView.SidebarPosition.Start, undefined);
+    WebInspector.SplitView.call(this, true, false);
+
     this.element.id = "memory-graphs-container";
 
     this._timelineView = timelineView;
@@ -280,7 +281,7 @@ WebInspector.MemoryStatistics.prototype = {
 
     onResize: function()
     {
-        WebInspector.SidebarView.prototype.onResize.call(this);
+        WebInspector.SplitView.prototype.onResize.call(this);
 
         var width = this._canvasContainer.offsetWidth + 1;
         this._canvas.style.width = width + "px";
@@ -430,5 +431,5 @@ WebInspector.MemoryStatistics.prototype = {
         throw new Error("Not implemented");
     },
 
-    __proto__: WebInspector.SidebarView.prototype
+    __proto__: WebInspector.SplitView.prototype
 }

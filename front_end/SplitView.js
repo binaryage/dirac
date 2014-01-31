@@ -30,11 +30,12 @@
  * @constructor
  * @extends {WebInspector.View}
  * @param {boolean} isVertical
+ * @param {boolean}  secondIsSidebar
  * @param {string=} sidebarSizeSettingName
  * @param {number=} defaultSidebarWidth
  * @param {number=} defaultSidebarHeight
  */
-WebInspector.SplitView = function(isVertical, sidebarSizeSettingName, defaultSidebarWidth, defaultSidebarHeight)
+WebInspector.SplitView = function(isVertical, secondIsSidebar, sidebarSizeSettingName, defaultSidebarWidth, defaultSidebarHeight)
 {
     WebInspector.View.call(this);
 
@@ -59,7 +60,7 @@ WebInspector.SplitView = function(isVertical, sidebarSizeSettingName, defaultSid
     
     this._sidebarSizeSettingName = sidebarSizeSettingName;
 
-    this.setSecondIsSidebar(true);
+    this.setSecondIsSidebar(secondIsSidebar);
 
     this._innerSetVertical(isVertical);
 

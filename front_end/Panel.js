@@ -40,8 +40,6 @@ WebInspector.Panel = function(name)
     this._panelName = name;
 
     this._shortcuts = /** !Object.<number, function(Event=):boolean> */ ({});
-
-    WebInspector.settings[this._sidebarWidthSettingName()] = WebInspector.settings.createSetting(this._sidebarWidthSettingName(), undefined);
 }
 
 // Should by in sync with style declarations.
@@ -62,7 +60,7 @@ WebInspector.Panel.prototype = {
      */
     defaultFocusedElement: function()
     {
-        return this.sidebarTreeElement || this.element;
+        return this.element;
     },
 
     /**
@@ -88,52 +86,7 @@ WebInspector.Panel.prototype = {
     {
     },
 
-    /**
-     * @param {!Element=} parentElement
-     * @param {string=} position
-     * @param {number=} defaultWidth
-     * @param {number=} defaultHeight
-     */
-    createSidebarView: function(parentElement, position, defaultWidth, defaultHeight)
-    {
-        if (this.splitView)
-            return;
-
-        if (!parentElement)
-            parentElement = this.element;
-
-        this.splitView = new WebInspector.SidebarView(position, this._sidebarWidthSettingName(), defaultWidth, defaultHeight);
-        this.splitView.show(parentElement);
-    },
-
-    /**
-     * @param {!Element=} parentElement
-     * @param {string=} position
-     * @param {number=} defaultWidth
-     */
-    createSidebarViewWithTree: function(parentElement, position, defaultWidth)
-    {
-        if (this.splitView)
-            return;
-
-        this.createSidebarView(parentElement, position);
-
-        this.sidebarTreeElement = document.createElement("ol");
-        this.sidebarTreeElement.className = "sidebar-tree";
-        this.splitView.sidebarElement().appendChild(this.sidebarTreeElement);
-        this.splitView.sidebarElement().classList.add("sidebar");
-
-        this.sidebarTree = new TreeOutline(this.sidebarTreeElement);
-        this.sidebarTree.panel = this;
-    },
-
-    _sidebarWidthSettingName: function()
-    {
-        return this._panelName + "SidebarWidth";
-    },
-
     // Should be implemented by ancestors.
-
     get statusBarItems()
     {
     },
@@ -198,6 +151,54 @@ WebInspector.Panel.prototype = {
     },
 
     __proto__: WebInspector.View.prototype
+}
+
+/**
+ * @extends {WebInspector.Panel}
+ * @param {number=} defaultWidth
+ * @constructor
+ */
+WebInspector.PanelWithSidebarTree = function(name, defaultWidth)
+{
+    WebInspector.Panel.call(this, name);
+
+    this._panelSplitView = new WebInspector.SplitView(true, false, this._panelName + "SidebarWidth", defaultWidth || Preferences.minSidebarWidth);
+    this._panelSplitView.setMainElementConstraints(0.5, 0.5);
+    this._panelSplitView.show(this.element);
+
+    var sidebarView = new WebInspector.View();
+    sidebarView.element.classList.add("sidebar");
+    var sidebarTreeElement = sidebarView.element.createChild("ol", "sidebar-tree");
+    this._panelSplitView.setSidebarView(sidebarView);
+    this.sidebarTree = new TreeOutline(sidebarTreeElement);
+}
+
+WebInspector.PanelWithSidebarTree.prototype = {
+    /**
+     * @return {!WebInspector.View}
+     */
+    sidebarView: function()
+    {
+        return this._panelSplitView.sidebarView();
+    },
+
+    /**
+     * @param {!WebInspector.View} view
+     */
+    setMainView: function(view)
+    {
+        this._panelSplitView.setMainView(view);
+    },
+
+    /**
+     * @return {!Element}
+     */
+    defaultFocusedElement: function()
+    {
+        return this.sidebarTree.element || this.element;
+    },
+
+    __proto__: WebInspector.Panel.prototype
 }
 
 /**

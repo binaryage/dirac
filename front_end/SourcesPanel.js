@@ -81,21 +81,19 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.threadsToolbar = new WebInspector.ThreadsToolbar();
 
     const initialDebugSidebarWidth = 225;
-    const minimumDebugSidebarWidthPercent = 0.5;
-    this.createSidebarView(this.element, WebInspector.SidebarView.SidebarPosition.End, initialDebugSidebarWidth);
-    this.splitView.setSidebarElementConstraints(Preferences.minScriptsSidebarWidth);
-    this.splitView.setMainElementConstraints(minimumDebugSidebarWidthPercent);
+    this._splitView = new WebInspector.SplitView(true, true, "sourcesSidebarWidth", initialDebugSidebarWidth);
+    this._splitView.show(this.element);
 
     // Create scripts navigator
     const initialNavigatorWidth = 225;
     const minimumViewsContainerWidthPercent = 0.5;
-    this.editorView = new WebInspector.SidebarView(WebInspector.SidebarView.SidebarPosition.Start, "scriptsPanelNavigatorSidebarWidth", initialNavigatorWidth);
+    this.editorView = new WebInspector.SplitView(true, false, "scriptsPanelNavigatorSidebarWidth", initialNavigatorWidth);
     this.editorView.element.id = "scripts-editor-split-view";
     this.editorView.element.tabIndex = 0;
 
     this.editorView.setSidebarElementConstraints(Preferences.minScriptsSidebarWidth);
     this.editorView.setMainElementConstraints(minimumViewsContainerWidthPercent);
-    this.splitView.setMainView(this.editorView);
+    this._splitView.setMainView(this.editorView);
 
     this._navigator = new WebInspector.SourcesNavigator();
     this.editorView.setSidebarView(this._navigator.view);
@@ -123,7 +121,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     this._debugSidebarResizeWidgetElement = document.createElementWithClass("div", "resizer-widget");
     this._debugSidebarResizeWidgetElement.id = "scripts-debug-sidebar-resizer-widget";
-    this.splitView.installResizer(this._debugSidebarResizeWidgetElement);
+    this._splitView.installResizer(this._debugSidebarResizeWidgetElement);
 
     this.sidebarPanes = {};
     this.sidebarPanes.watchExpressions = new WebInspector.WatchExpressionsSidebarPane();
@@ -1315,9 +1313,9 @@ WebInspector.SourcesPanel.prototype = {
         this._toggleDebuggerSidebarButton = new WebInspector.StatusBarButton("", "right-sidebar-show-hide-button scripts-debugger-show-hide-button", 3);
         this._toggleDebuggerSidebarButton.addEventListener("click", clickHandler, this);
 
-        if (this.splitView.isVertical()) {
+        if (this._splitView.isVertical()) {
             this.editorView.element.appendChild(this._toggleDebuggerSidebarButton.element);
-            this.splitView.mainElement().appendChild(this._debugSidebarResizeWidgetElement);
+            this._splitView.mainElement().appendChild(this._debugSidebarResizeWidgetElement);
         } else {
             this._statusBarContainerElement.appendChild(this._debugSidebarResizeWidgetElement);
             this._statusBarContainerElement.appendChild(this._toggleDebuggerSidebarButton.element);
@@ -1342,9 +1340,9 @@ WebInspector.SourcesPanel.prototype = {
         this._toggleDebuggerSidebarButton.state = show ? "right" : "left";
         this._toggleDebuggerSidebarButton.title = show ? WebInspector.UIString("Hide debugger") : WebInspector.UIString("Show debugger");
         if (show)
-            this.splitView.showSidebarElement(true);
+            this._splitView.showBoth(true);
         else
-            this.splitView.hideSidebarElement();
+            this._splitView.showOnlyFirst();
         this._debugSidebarResizeWidgetElement.enableStyleClass("hidden", !show);
         WebInspector.settings.debuggerSidebarHidden.set(!show);
     },
@@ -1616,21 +1614,21 @@ WebInspector.SourcesPanel.prototype = {
      */
     _splitVertically: function(vertically)
     {
-        if (this.sidebarPaneView && vertically === !this.splitView.isVertical())
+        if (this.sidebarPaneView && vertically === !this._splitView.isVertical())
             return;
 
         if (this.sidebarPaneView)
             this.sidebarPaneView.detach();
 
-        this.splitView.setVertical(!vertically);
+        this._splitView.setVertical(!vertically);
 
         // Update resizer widgets.
         if (!vertically) {
-            this.splitView.uninstallResizer(this._statusBarContainerElement);
+            this._splitView.uninstallResizer(this._statusBarContainerElement);
             this.editorView.element.appendChild(this._toggleDebuggerSidebarButton.element);
-            this.splitView.mainElement().appendChild(this._debugSidebarResizeWidgetElement);
+            this._splitView.mainElement().appendChild(this._debugSidebarResizeWidgetElement);
         } else {
-            this.splitView.installResizer(this._statusBarContainerElement);
+            this._splitView.installResizer(this._statusBarContainerElement);
             this._statusBarContainerElement.appendChild(this._debugSidebarResizeWidgetElement);
             this._statusBarContainerElement.appendChild(this._toggleDebuggerSidebarButton.element)
         }
@@ -1651,7 +1649,7 @@ WebInspector.SourcesPanel.prototype = {
 
             this.sidebarPaneView = vbox;
         } else {
-            var splitView = new WebInspector.SplitView(true, this.name + "PanelSplitSidebarRatio", 0.5);
+            var splitView = new WebInspector.SplitView(true, true, this.name + "PanelSplitSidebarRatio", 0.5);
             splitView.setFirstView(vbox);
 
             // Populate the left stack.
@@ -1674,7 +1672,7 @@ WebInspector.SourcesPanel.prototype = {
         for (var i = 0; i < this._extensionSidebarPanes.length; ++i)
             this._extensionSidebarPanesContainer.addPane(this._extensionSidebarPanes[i]);
 
-        this.splitView.setSidebarView(this.sidebarPaneView);
+        this._splitView.setSidebarView(this.sidebarPaneView);
 
         this.sidebarPanes.scopechain.expand();
         this.sidebarPanes.jsBreakpoints.expand();

@@ -57,13 +57,15 @@ WebInspector.ElementsPanel = function()
     const minimumContentWidthPercent = 0.34;
     const initialSidebarHeight = 325;
     const minimumContentHeightPercent = 0.34;
-    this.createSidebarView(this.element, WebInspector.SidebarView.SidebarPosition.End, initialSidebarWidth, initialSidebarHeight);
-    this.splitView.setSidebarElementConstraints(Preferences.minElementsSidebarWidth, Preferences.minElementsSidebarHeight);
-    this.splitView.setMainElementConstraints(minimumContentWidthPercent, minimumContentHeightPercent);
-    this.splitView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._updateTreeOutlineVisibleWidth.bind(this));
+
+    this._splitView = new WebInspector.SplitView(true, true, "elementsSidebarWidth", initialSidebarWidth, initialSidebarHeight);
+    this._splitView.setSidebarElementConstraints(Preferences.minElementsSidebarWidth, Preferences.minElementsSidebarHeight);
+    this._splitView.setMainElementConstraints(minimumContentWidthPercent, minimumContentHeightPercent);
+    this._splitView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._updateTreeOutlineVisibleWidth.bind(this));
+    this._splitView.show(this.element);
 
     this._searchableView = new WebInspector.SearchableView(this);
-    this.splitView.setMainView(this._searchableView);
+    this._splitView.setMainView(this._searchableView);
     var stackElement = this._searchableView.element;
 
     this.contentElement = stackElement.createChild("div");
@@ -75,7 +77,7 @@ WebInspector.ElementsPanel = function()
     WebInspector.settings.domWordWrap.addChangeListener(this._domWordWrapSettingChanged.bind(this));
 
     this.contentElement.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
-    this.splitView.sidebarElement().addEventListener("contextmenu", this._sidebarContextMenuEventFired.bind(this), false);
+    this._splitView.sidebarElement().addEventListener("contextmenu", this._sidebarContextMenuEventFired.bind(this), false);
 
     this.treeOutline = new WebInspector.ElementsTreeOutline(true, true, this._populateContextMenu.bind(this), this._setPseudoClassForNodeId.bind(this));
     this.treeOutline.wireToDomAgent();
@@ -131,9 +133,9 @@ WebInspector.ElementsPanel.prototype = {
         if (!this.treeOutline)
             return;
 
-        var width = this.splitView.element.offsetWidth;
-        if (this.splitView.isVertical())
-            width -= this.splitView.sidebarWidth();
+        var width = this._splitView.element.offsetWidth;
+        if (this._splitView.isVertical())
+            width -= this._splitView.sidebarSize();
         this.treeOutline.setVisibleWidth(width);
         this.updateBreadcrumbSizes();
         this.treeOutline.updateSelection();
@@ -1189,15 +1191,15 @@ WebInspector.ElementsPanel.prototype = {
      */
     _splitVertically: function(vertically)
     {
-        if (this.sidebarPaneView && vertically === !this.splitView.isVertical())
+        if (this.sidebarPaneView && vertically === !this._splitView.isVertical())
             return;
 
         if (this.sidebarPaneView) {
             this.sidebarPaneView.detach();
-            this.splitView.uninstallResizer(this.sidebarPaneView.headerElement());
+            this._splitView.uninstallResizer(this.sidebarPaneView.headerElement());
         }
 
-        this.splitView.setVertical(!vertically);
+        this._splitView.setVertical(!vertically);
 
         var computedPane = new WebInspector.SidebarPane(WebInspector.UIString("Computed"));
         computedPane.element.classList.add("composite");
@@ -1237,7 +1239,7 @@ WebInspector.ElementsPanel.prototype = {
         this.sidebarPaneView = new WebInspector.SidebarTabbedPane();
 
         if (vertically) {
-            this.splitView.installResizer(this.sidebarPaneView.headerElement());
+            this._splitView.installResizer(this.sidebarPaneView.headerElement());
             this.sidebarPanes.metrics.show(computedPane.bodyElement, this.sidebarPanes.computedStyle.element);
             this.sidebarPanes.metrics.setExpandCallback(expandComputed);
 
@@ -1246,7 +1248,7 @@ WebInspector.ElementsPanel.prototype = {
             compositePane.element.classList.add("fill");
             var expandComposite = compositePane.expand.bind(compositePane);
 
-            var splitView = new WebInspector.SplitView(true, "StylesPaneSplitRatio", 0.5);
+            var splitView = new WebInspector.SplitView(true, true, "StylesPaneSplitRatio", 0.5);
             splitView.show(compositePane.bodyElement);
 
             splitView.setFirstView(this.sidebarPanes.styles);
@@ -1283,7 +1285,7 @@ WebInspector.ElementsPanel.prototype = {
         for (var i = 0; i < this._extensionSidebarPanes.length; ++i)
             this._extensionSidebarPanesContainer.addPane(this._extensionSidebarPanes[i]);
 
-        this.splitView.setSidebarView(this.sidebarPaneView);
+        this._splitView.setSidebarView(this.sidebarPaneView);
         this.sidebarPanes.styles.expand();
     },
 

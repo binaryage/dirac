@@ -152,7 +152,6 @@
             'front_end/ShowMoreDataGridNode.js',
             'front_end/SidebarOverlay.js',
             'front_end/SidebarPane.js',
-            'front_end/SidebarView.js',
             'front_end/SidebarTreeElement.js',
             'front_end/SimpleWorkspaceProvider.js',
             'front_end/SnippetStorage.js',
