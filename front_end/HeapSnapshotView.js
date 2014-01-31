@@ -1169,7 +1169,6 @@ WebInspector.HeapProfileHeader = function(type, title)
      */
     this._loadCallbacks = [];
     this._totalNumberOfChunks = 0;
-    this._transferHandler = null;
     this._bufferedWriter = null;
 }
 
@@ -1211,19 +1210,14 @@ WebInspector.HeapProfileHeader.prototype = {
     _prepareToLoad: function()
     {
         console.assert(!this._receiver, "Already loading");
-        this._numberOfChunks = 0;
         this._setupWorker();
-        this._transferHandler = new WebInspector.BackendSnapshotLoader(this);
         this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026");
         this.sidebarElement.wait = true;
     },
 
     _finishLoad: function()
     {
-        if (this._transferHandler) {
-            this._transferHandler.finishTransfer();
-            this._totalNumberOfChunks = this._transferHandler._totalNumberOfChunks;
-        }
+        this._receiver.close(function() {});
         if (this._bufferedWriter) {
             this._bufferedWriter.close(this._didWriteToTempFile.bind(this));
             this._bufferedWriter = null;
@@ -1299,7 +1293,9 @@ WebInspector.HeapProfileHeader.prototype = {
         if (!this._bufferedWriter)
             this._bufferedWriter = new WebInspector.BufferedTempFileWriter("heap-profiler", this.uid);
         this._bufferedWriter.write(chunk);
-        this._transferHandler.transferChunk(chunk);
+
+        ++this._totalNumberOfChunks;
+        this._receiver.write(chunk, function() {});
     },
 
     _snapshotReceived: function(snapshotProxy)
@@ -1395,74 +1391,6 @@ WebInspector.HeapProfileHeader.prototype = {
 
     __proto__: WebInspector.ProfileHeader.prototype
 }
-
-
-/**
- * @constructor
- * @param {!WebInspector.HeapProfileHeader} header
- * @param {string} title
- */
-WebInspector.SnapshotTransferHandler = function(header, title)
-{
-    this._numberOfChunks = 0;
-    this._savedChunks = 0;
-    this._header = header;
-    this._totalNumberOfChunks = 0;
-    this._title = title;
-}
-
-
-WebInspector.SnapshotTransferHandler.prototype = {
-    /**
-     * @param {string} chunk
-     */
-    transferChunk: function(chunk)
-    {
-        ++this._numberOfChunks;
-        this._header._receiver.write(chunk, this._didTransferChunk.bind(this));
-    },
-
-    finishTransfer: function()
-    {
-    },
-
-    _didTransferChunk: function()
-    {
-        this._updateProgress(++this._savedChunks, this._totalNumberOfChunks);
-    },
-
-    _updateProgress: function(value, total)
-    {
-    }
-}
-
-
-/**
- * @constructor
- * @param {!WebInspector.HeapProfileHeader} header
- * @extends {WebInspector.SnapshotTransferHandler}
- */
-WebInspector.BackendSnapshotLoader = function(header)
-{
-    WebInspector.SnapshotTransferHandler.call(this, header, "Loading\u2026 %d\%");
-}
-
-
-WebInspector.BackendSnapshotLoader.prototype = {
-    finishTransfer: function()
-    {
-        this._header._receiver.close(this._didFinishTransfer.bind(this));
-        this._totalNumberOfChunks = this._numberOfChunks;
-    },
-
-    _didFinishTransfer: function()
-    {
-        console.assert(this._totalNumberOfChunks === this._savedChunks, "Not all chunks were transfered.");
-    },
-
-    __proto__: WebInspector.SnapshotTransferHandler.prototype
-}
-
 
 /**
  * @constructor
