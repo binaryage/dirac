@@ -22,7 +22,7 @@
 
 .data-grid .data-container {
     position: absolute;
-    top: 16px;
+    top: 18px;
     bottom: 0;
     left: 0;
     right: 0;
@@ -45,11 +45,11 @@
 
 .data-grid th {
     text-align: left;
-    background-image: url(Images/glossyHeader.png);
-    background-repeat: repeat-x;
-    border-left: 1px solid rgb(179, 179, 179);
-    border-bottom: 1px solid rgb(179, 179, 179);
-    height: 15px;
+    background-color: rgb(236, 236, 236);
+    border: 1px solid rgb(179, 179, 179);
+    border-right: none;
+    height: 16px;
+    line-height: 16px;
     font-weight: normal;
     vertical-align: middle;
     padding: 0 4px;
@@ -140,18 +140,7 @@
 }
 
 .data-grid th.sortable:active {
-    background-image: url(Images/glossyHeaderPressed.png);
-}
-.data-grid th.sort-ascending,
-.data-grid th.sort-descending {
-    border-left: 1px solid rgb(107, 140, 196);
-    border-bottom: 1px solid rgb(107, 140, 196);
-    background-image: url(Images/glossyHeaderSelected.png);
-    background-repeat: repeat-x;
-}
-
-.data-grid th.sortable.sort-ascending:active, .data-grid th.sortable.sort-descending:active {
-    background-image: url(Images/glossyHeaderSelectedPressed.png);
+    background-color: rgba(0, 0, 0, 0.15);
 }
 
 .data-grid th.sort-ascending > div::after,
@@ -183,16 +172,13 @@
     background-position: -20px -96px;
 }
 
+.data-grid th:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
 .data-grid button {
     line-height: 18px;
     color: inherit;
-}
-
-body.inactive .data-grid th.sort-ascending,
-body.inactive .data-grid th.sort-descending {
-    background-image: url(Images/glossyHeader.png);
-    border-left: 1px solid rgb(179, 179, 179);
-    border-bottom: 1px solid rgb(179, 179, 179);
 }
 
 .data-grid tr.parent td.disclosure::before {

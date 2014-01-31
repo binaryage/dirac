@@ -80,7 +80,7 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
     visibility: hidden;
 }
 
-.heap-snapshot-view .data-grid tr:not(.filler):hover {
+.heap-snapshot-view .data-grid tr:not(.filler):hover td {
     background-color: rgba(0, 0, 0, 0.05);
 }
 
@@ -196,7 +196,7 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
 
 .heap-snapshot-view .class-view-toolbar {
     flex: 0 0 22px;
-    background-color: #DDD;
+    background-color: rgb(236, 236, 236);
 }
 
 .heap-snapshot-view .class-view-toolbar input.class-name-filter {
@@ -210,7 +210,8 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
 }
 
 .heap-snapshot-view .retainers-view-header {
-    background-image: url(Images/statusbarResizerVertical.png), -webkit-linear-gradient(rgb(253,253,253), rgb(230,230,230) 75%, rgb(230,230,230));
+    background-image: url(Images/statusbarResizerVertical.png);
+    background-color: rgb(236, 236, 236);
     border-top: 1px solid rgb(202, 202, 202);
     background-repeat: no-repeat;
     background-position: right center, center;
