@@ -34,12 +34,12 @@
 WebInspector.ThreadsToolbar = function()
 {
     this.element = document.createElement("div");
-    this.element.className = "status-bar scripts-debug-toolbar threads-toolbar";
+    this.element.className = "status-bar scripts-debug-toolbar threads-toolbar hidden";
     this._comboBox = new WebInspector.StatusBarComboBox(this._onComboBoxSelectionChange.bind(this));
     this.element.appendChild(this._comboBox.element);
 
-    this._reset();
-    if (WebInspector.experimentsSettings.workersInMainWindow.isEnabled()) {
+    if (WebInspector.experimentsSettings.workersInMainWindow.isEnabled() && !WebInspector.WorkerManager.isWorkerFrontend()) {
+        this._reset();
         WebInspector.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerAdded, this._workerAdded, this);
         WebInspector.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerRemoved, this._workerRemoved, this);
         WebInspector.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkersCleared, this._workersCleared, this);
