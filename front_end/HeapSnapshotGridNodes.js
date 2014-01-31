@@ -100,8 +100,8 @@ WebInspector.HeapSnapshotGridNode.prototype = {
 
     dispose: function()
     {
-        if (this._provider())
-            this._provider().dispose();
+        if (this._providerObject)
+            this._providerObject.dispose();
         for (var node = this.children[0]; node; node = node.traverseNextNode(true, this, true))
             if (node.dispose)
                 node.dispose();
