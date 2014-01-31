@@ -2661,13 +2661,6 @@
                 "hidden": true
             },
             {
-                "name": "getAllStyleSheets",
-                "returns": [
-                    { "name": "headers", "type": "array", "items": { "$ref": "CSSStyleSheetHeader" }, "description": "Descriptor entries for all available stylesheets." }
-                ],
-                "description": "Returns metainfo entries for all known stylesheets."
-            },
-            {
                 "name": "getStyleSheet",
                 "parameters": [
                     { "name": "styleSheetId", "$ref": "StyleSheetId" }

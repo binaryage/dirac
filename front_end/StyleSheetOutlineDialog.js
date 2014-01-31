@@ -102,26 +102,14 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
 
     _requestItems: function()
     {
-        /**
-         * @param {?Protocol.Error} error
-         * @param {!Array.<!CSSAgent.CSSStyleSheetHeader>} infos
-         * @this {WebInspector.StyleSheetOutlineDialog}
-         */
-        function didGetAllStyleSheets(error, infos)
-        {
-            if (error)
+        var styleSheets = WebInspector.cssModel.allStyleSheets();
+        for (var i = 0; i < styleSheets.length; ++i) {
+            var styleSheet = styleSheets[i];
+            if (styleSheet.sourceURL === this._uiSourceCode.url) {
+                WebInspector.CSSStyleSheet.createForId(styleSheet.id, didGetStyleSheet.bind(this));
                 return;
-
-            for (var i = 0; i < infos.length; ++i) {
-                var info = infos[i];
-                if (info.sourceURL === this._uiSourceCode.url) {
-                    WebInspector.CSSStyleSheet.createForId(info.styleSheetId, didGetStyleSheet.bind(this));
-                    return;
-                }
             }
         }
-
-        CSSAgent.getAllStyleSheets(didGetAllStyleSheets.bind(this));
 
         /**
          * @param {?WebInspector.CSSStyleSheet} styleSheet

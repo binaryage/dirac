@@ -171,6 +171,14 @@ WebInspector.CSSStyleModel.prototype = {
     },
 
     /**
+     * @return {!Array.<!WebInspector.CSSStyleSheetHeader>}
+     */
+    allStyleSheets: function()
+    {
+        return Object.values(this._styleSheetIdToHeader);
+    },
+
+    /**
      * @param {!DOMAgent.NodeId} nodeId
      * @param {function(?WebInspector.CSSStyleDeclaration, ?WebInspector.CSSStyleDeclaration)} userCallback
      */

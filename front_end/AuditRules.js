@@ -479,25 +479,16 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
                 continuation(styleSheets);
         }
 
-        /**
-         * @param {?Protocol.Error} error
-         * @param {!Array.<!CSSAgent.CSSStyleSheetHeader>} styleSheetInfos
-         */
-        function allStylesCallback(error, styleSheetInfos)
-        {
-            if (progress.isCanceled())
-                return;
-
-            if (error || !styleSheetInfos || !styleSheetInfos.length)
-                return evalCallback([]);
-            var styleSheets = [];
-            for (var i = 0; i < styleSheetInfos.length; ++i) {
-                var info = styleSheetInfos[i];
-                WebInspector.CSSStyleSheet.createForId(info.styleSheetId, styleSheetCallback.bind(null, styleSheets, info.sourceURL, i == styleSheetInfos.length - 1 ? evalCallback : null));
-            }
+        var styleSheetInfos = WebInspector.cssModel.allStyleSheets();
+        if (!styleSheetInfos || !styleSheetInfos.length) {
+            evalCallback([]);
+            return;
         }
-
-        CSSAgent.getAllStyleSheets(allStylesCallback);
+        var styleSheets = [];
+        for (var i = 0; i < styleSheetInfos.length; ++i) {
+            var info = styleSheetInfos[i];
+            WebInspector.CSSStyleSheet.createForId(info.id, styleSheetCallback.bind(null, styleSheets, info.sourceURL, i == styleSheetInfos.length - 1 ? evalCallback : null));
+        }
     },
 
     __proto__: WebInspector.AuditRule.prototype
@@ -1149,27 +1140,18 @@ WebInspector.AuditRules.CSSRuleBase.prototype = {
      */
     doRun: function(requests, result, callback, progress)
     {
-        CSSAgent.getAllStyleSheets(sheetsCallback.bind(this));
+        var headers = WebInspector.cssModel.allStyleSheets();
 
-        /**
-         * @param {?Protocol.Error} error
-         * @param {!Array.<!CSSAgent.CSSStyleSheetHeader>} headers
-         * @this {WebInspector.AuditRules.CSSRuleBase}
-         */
-        function sheetsCallback(error, headers)
-        {
-            if (error)
-                return callback(null);
+        if (!headers.length) {
+            callback(null);
+            return;
+        }
+        for (var i = 0; i < headers.length; ++i) {
+            var header = headers[i];
+            if (header.disabled)
+                continue; // Do not check disabled stylesheets.
 
-            if (!headers.length)
-                return callback(null);
-            for (var i = 0; i < headers.length; ++i) {
-                var header = headers[i];
-                if (header.disabled)
-                    continue; // Do not check disabled stylesheets.
-
-                this._visitStyleSheet(header.styleSheetId, i === headers.length - 1 ? finishedCallback : null, result, progress);
-            }
+            this._visitStyleSheet(header.id, i === headers.length - 1 ? finishedCallback : null, result, progress);
         }
 
         function finishedCallback()
