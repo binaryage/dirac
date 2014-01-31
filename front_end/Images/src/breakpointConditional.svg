@@ -1,59 +1,6 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<!-- Created with Inkscape (http://www.inkscape.org/) -->
-
-<svg
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
-   width="26"
-   height="11"
-   id="svg2"
-   version="1.1"
-   inkscape:version="0.48.3.1 r9886"
-   sodipodi:docname="breakpointConditional.svg"
-   inkscape:export-filename="/usr/local/google/home/vsevik/chromium/src/third_party/WebKit/Source/devtools/front_end/Images/breakpointConditional_2x.png"
-   inkscape:export-xdpi="180"
-   inkscape:export-ydpi="180">
-  <defs
-     id="defs4" />
-  <sodipodi:namedview
-     id="base"
-     pagecolor="#ffffff"
-     bordercolor="#666666"
-     borderopacity="1.0"
-     inkscape:pageopacity="0.0"
-     inkscape:pageshadow="2"
-     inkscape:zoom="18.101934"
-     inkscape:cx="19.882429"
-     inkscape:cy="-2.1669873"
-     inkscape:document-units="px"
-     inkscape:current-layer="svg2"
-     showgrid="true"
-     inkscape:snap-grids="true"
-     inkscape:snap-page="false"
-     inkscape:window-width="1920"
-     inkscape:window-height="1118"
-     inkscape:window-x="0"
-     inkscape:window-y="27"
-     inkscape:window-maximized="1"
-     inkscape:showpageshadow="false"
-     fit-margin-top="0"
-     fit-margin-left="0"
-     fit-margin-right="0"
-     fit-margin-bottom="0">
-    <inkscape:grid
-       type="xygrid"
-       id="grid2985"
-       empspacing="5"
-       visible="true"
-       enabled="true"
-       snapvisiblegridlinesonly="true" />
-  </sodipodi:namedview>
-  <path
-     style="fill:#ef9d0d;fill-opacity:1;fill-rule:nonzero;stroke:#a36c01;stroke-width:1;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
-     d="m 22.8,0.5 2.7,5 -2.7,5 -22.3,0 0,-10 z"
-     id="rect3816-2"
-     inkscape:connector-curvature="0"
-     sodipodi:nodetypes="cccccc" />
-</svg>
+<?xml version="1.0" encoding="utf-8"?><svg height="11" version="1.1" width="26" xmlns="http://www.w3.org/2000/svg" xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+><defs
+/><sodipodi:namedview showgrid="true"
+><inkscape:grid empspacing="5" enabled="true" id="grid2985" snapvisiblegridlinesonly="true" type="xygrid" visible="true"/></sodipodi:namedview
+><path d="m22.8 0.5 2.7 5-2.7 5-22.3 0 0-10z" fill="#ef9d0d" stroke="#a36c01"/></svg
+>
