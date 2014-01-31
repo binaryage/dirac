@@ -204,7 +204,7 @@ WebInspector.Drawer.prototype = {
         this._toggleDrawerButton.title = WebInspector.UIString("Show console.");
 
         WebInspector.restoreFocusFromElement(this.element);
-        this._splitView.hideSidebar();
+        this._splitView.hideSidebar(true);
     },
 
     /**

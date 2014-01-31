@@ -1342,7 +1342,7 @@ WebInspector.SourcesPanel.prototype = {
         if (show)
             this._splitView.showBoth(true);
         else
-            this._splitView.hideSidebar();
+            this._splitView.hideSidebar(true);
         this._debugSidebarResizeWidgetElement.enableStyleClass("hidden", !show);
         WebInspector.settings.debuggerSidebarHidden.set(!show);
     },

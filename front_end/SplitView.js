@@ -187,32 +187,53 @@ WebInspector.SplitView.prototype = {
         return this._resizerElement;
     },
 
-    hideMain: function()
+    /**
+     * @param {boolean=} animate
+     */
+    hideMain: function(animate)
     {
-        this._showOnly(this._sidebarView, this._mainView);
+        this._showOnly(this._sidebarView, this._mainView, animate);
     },
 
-    hideSidebar: function()
+    /**
+     * @param {boolean=} animate
+     */
+    hideSidebar: function(animate)
     {
-        this._showOnly(this._mainView, this._sidebarView);
+        this._showOnly(this._mainView, this._sidebarView, animate);
     },
 
     /**
      * @param {!WebInspector.View} sideToShow
      * @param {!WebInspector.View} sideToHide
+     * @param {boolean=} animate
      */
-    _showOnly: function(sideToShow, sideToHide)
+    _showOnly: function(sideToShow, sideToHide, animate)
     {
         this._cancelAnimation();
-        sideToShow.show(this.element);
-        sideToHide.detach();
-        sideToShow.element.classList.add("maximized");
-        sideToHide.element.classList.remove("maximized");
-        this._removeAllLayoutProperties();
+
+        /**
+         * @this {WebInspector.SplitView}
+         */
+        function callback()
+        {
+            sideToShow.show(this.element);
+            sideToHide.detach();
+            sideToShow.element.classList.add("maximized");
+            sideToHide.element.classList.remove("maximized");
+            this._removeAllLayoutProperties();
+        }
+
+        if (animate) {
+            this._animate(true, callback.bind(this));
+        } else {
+            callback.call(this);
+            this.doResize();
+        }
+
         this._isShowingOne = true;
         this._sidebarSize = -1;
         this.setResizable(false);
-        this.doResize();
     },
 
     _removeAllLayoutProperties: function()
@@ -326,25 +347,20 @@ WebInspector.SplitView.prototype = {
         if (!this._resizerElementSize)
             this._resizerElementSize = this._isVertical ? this._resizerElement.offsetWidth : this._resizerElement.offsetHeight;
 
-        var animatedMarginPropertyName;
         // Position resizer.
         if (this._isVertical) {
             if (this._secondIsSidebar) {
-                animatedMarginPropertyName = "margin-right";
                 this._resizerElement.style.right = sizeValue;
                 this._resizerElement.style.marginRight = -this._resizerElementSize / 2 + "px";
             } else {
-                animatedMarginPropertyName = "margin-left";
                 this._resizerElement.style.left = sizeValue;
                 this._resizerElement.style.marginLeft = -this._resizerElementSize / 2 + "px";
             }
         } else {
             if (this._secondIsSidebar) {
-                animatedMarginPropertyName = "margin-bottom";
                 this._resizerElement.style.bottom = sizeValue;
                 this._resizerElement.style.marginBottom = -this._resizerElementSize / 2 + "px";
             } else {
-                animatedMarginPropertyName = "margin-top";
                 this._resizerElement.style.top = sizeValue;
                 this._resizerElement.style.marginTop = -this._resizerElementSize / 2 + "px";
             }
@@ -353,7 +369,7 @@ WebInspector.SplitView.prototype = {
         this._sidebarSize = size;
 
         if (animate) {
-            this._animate(animatedMarginPropertyName, size);
+            this._animate(false);
         } else {
             // No need to recalculate this._sidebarSize and this._totalSize again.
             if (!fromOnResize)
@@ -363,21 +379,34 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @param {string} animatedMarginPropertyName
-     * @param {number} size
+     * @param {boolean} reverse
+     * @param {function()=} callback
      */
-    _animate: function(animatedMarginPropertyName, size)
+    _animate: function(reverse, callback)
     {
         var animationTime = 50;
+        this._animationCallback = callback;
+
+        var animatedMarginPropertyName;
+        if (this._isVertical)
+            animatedMarginPropertyName = this._secondIsSidebar ? "margin-right" : "margin-left";
+        else
+            animatedMarginPropertyName = this._secondIsSidebar ? "margin-bottom" : "margin-top";
+
+        var marginFrom = reverse ? "0" : "-" + this._sidebarSize + "px";
+        var marginTo = reverse ? "-" + this._sidebarSize + "px" : "0";
 
         // This order of things is important.
         // 1. Resize main element early and force layout.
-        this.element.style.setProperty(animatedMarginPropertyName, "-" + size + "px");
-        suppressUnused(this._mainElement.offsetWidth);
-        suppressUnused(this._sidebarElement.offsetWidth);
+        this.element.style.setProperty(animatedMarginPropertyName, marginFrom);
+        if (!reverse) {
+            suppressUnused(this._mainElement.offsetWidth);
+            suppressUnused(this._sidebarElement.offsetWidth);
+        }
 
         // 2. Issue onresize to the sidebar element, its size won't change.
-        this._sidebarView.doResize();
+        if (!reverse)
+            this._sidebarView.doResize();
 
         // 3. Configure and run animation
         this.element.style.setProperty("transition", animatedMarginPropertyName + " " + animationTime + "ms linear");
@@ -393,7 +422,7 @@ WebInspector.SplitView.prototype = {
 
             if (!startTime) {
                 // Kick animation on first frame.
-                this.element.style.setProperty(animatedMarginPropertyName, "0");
+                this.element.style.setProperty(animatedMarginPropertyName, marginTo);
                 startTime = window.performance.now();
             } else if (window.performance.now() < startTime + animationTime) {
                 // Process regular animation frame.
@@ -413,14 +442,20 @@ WebInspector.SplitView.prototype = {
 
     _cancelAnimation: function()
     {
-        if (this._animationFrameHandle)
-            window.cancelAnimationFrame(this._animationFrameHandle);
-        delete this._animationFrameHandle;
         this.element.style.removeProperty("margin-top");
         this.element.style.removeProperty("margin-right");
         this.element.style.removeProperty("margin-bottom");
         this.element.style.removeProperty("margin-left");
         this.element.style.removeProperty("transition");
+
+        if (this._animationFrameHandle) {
+            window.cancelAnimationFrame(this._animationFrameHandle);
+            delete this._animationFrameHandle;
+        }
+        if (this._animationCallback) {
+            this._animationCallback();
+            delete this._animationCallback;
+        }
     },
 
     /**
