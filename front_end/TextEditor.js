@@ -355,3 +355,16 @@ WebInspector.TextEditorDelegate.prototype = {
      */
     onJumpToPosition: function(from, to) { }
 }
+
+/**
+ * @interface
+ */
+WebInspector.TokenizerFactory = function() { }
+
+WebInspector.TokenizerFactory.prototype = {
+    /**
+     * @param {string} mimeType
+     * @return {function(string, function(string, ?string, number, number))}
+     */
+    createTokenizer: function(mimeType) { }
+}

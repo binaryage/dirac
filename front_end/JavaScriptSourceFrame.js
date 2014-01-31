@@ -435,8 +435,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
                 this._setBreakpoint(lineNumber, newText, true);
         }
 
-        var config = new WebInspector.EditingConfig(finishEditing.bind(this, true), finishEditing.bind(this, false));
-        WebInspector.startEditing(this._conditionEditorElement, config);
+        var config = new WebInspector.InplaceEditor.Config(finishEditing.bind(this, true), finishEditing.bind(this, false));
+        WebInspector.InplaceEditor.startEditing(this._conditionEditorElement, config);
         this._conditionEditorElement.value = breakpoint ? breakpoint.condition() : "";
         this._conditionEditorElement.select();
     },

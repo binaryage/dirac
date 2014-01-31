@@ -99,6 +99,7 @@
             "FilterBar.js",
             "GoToLineDialog.js",
             "HelpScreen.js",
+            "InplaceEditor.js",
             "InspectorView.js",
             "KeyboardShortcut.js",
             "OverviewGrid.js",
@@ -397,7 +398,6 @@
         "dependencies": [],
         "sources": [
             "CSSFormatter.js",
-            "CodeMirrorUtils.js",
             "JavaScriptFormatter.js",
             "ScriptFormatterWorker.js",
             "utilities.js"

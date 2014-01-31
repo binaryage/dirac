@@ -333,8 +333,8 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
             }
         }
 
-        var config = new WebInspector.EditingConfig(finishEditing.bind(this, true), finishEditing.bind(this, false));
-        WebInspector.startEditing(inputElement, config);
+        var config = new WebInspector.InplaceEditor.Config(finishEditing.bind(this, true), finishEditing.bind(this, false));
+        WebInspector.InplaceEditor.startEditing(inputElement, config);
     },
 
     _setBreakpoint: function(url, enabled)
@@ -452,7 +452,7 @@ WebInspector.XHRBreakpointsSidebarPane.prototype = {
                 element.classList.remove("hidden");
         }
 
-        WebInspector.startEditing(inputElement, new WebInspector.EditingConfig(finishEditing.bind(this, true), finishEditing.bind(this, false)));
+        WebInspector.InplaceEditor.startEditing(inputElement, new WebInspector.InplaceEditor.Config(finishEditing.bind(this, true), finishEditing.bind(this, false)));
     },
 
     highlightBreakpoint: function(url)

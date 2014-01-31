@@ -329,8 +329,8 @@ WebInspector.MetricsSidebarPane.prototype = {
 
         this._isEditingMetrics = true;
 
-        var config = new WebInspector.EditingConfig(this.editingCommitted.bind(this), this.editingCancelled.bind(this), context);
-        WebInspector.startEditing(targetElement, config);
+        var config = new WebInspector.InplaceEditor.Config(this.editingCommitted.bind(this), this.editingCancelled.bind(this), context);
+        WebInspector.InplaceEditor.startEditing(targetElement, config);
 
         window.getSelection().setBaseAndExtent(targetElement, 0, targetElement, 1);
     },

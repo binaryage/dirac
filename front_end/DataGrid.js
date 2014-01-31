@@ -291,7 +291,7 @@ WebInspector.DataGrid.prototype = {
         this._editingNode.select();
 
         var element = this._editingNode._element.children[columnOrdinal];
-        WebInspector.startEditing(element, this._startEditingConfig(element));
+        WebInspector.InplaceEditor.startEditing(element, this._startEditingConfig(element));
         window.getSelection().setBaseAndExtent(element, 0, element, 1);
     },
 
@@ -313,7 +313,7 @@ WebInspector.DataGrid.prototype = {
             return this._startEditingColumnOfDataGridNode(this._editingNode, this._nextEditableColumn(-1));
 
         this._editing = true;
-        WebInspector.startEditing(element, this._startEditingConfig(element));
+        WebInspector.InplaceEditor.startEditing(element, this._startEditingConfig(element));
 
         window.getSelection().setBaseAndExtent(element, 0, element, 1);
     },
@@ -325,7 +325,7 @@ WebInspector.DataGrid.prototype = {
 
     _startEditingConfig: function(element)
     {
-        return new WebInspector.EditingConfig(this._editingCommitted.bind(this), this._editingCancelled.bind(this), element.textContent);
+        return new WebInspector.InplaceEditor.Config(this._editingCommitted.bind(this), this._editingCancelled.bind(this), element.textContent);
     },
 
     _editingCommitted: function(element, newText, oldText, context, moveDirection)

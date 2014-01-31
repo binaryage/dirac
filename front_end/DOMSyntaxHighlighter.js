@@ -33,7 +33,6 @@
  */
 WebInspector.DOMSyntaxHighlighter = function(mimeType, stripExtraWhitespace)
 {
-    loadScript("CodeMirrorTextEditor.js");
     this._mimeType = mimeType;
     this._stripExtraWhitespace = stripExtraWhitespace;
 }
@@ -79,7 +78,7 @@ WebInspector.DOMSyntaxHighlighter.prototype = {
             plainTextStart = newColumn;
         }
 
-        var tokenize = WebInspector.CodeMirrorUtils.createTokenizer(this._mimeType);
+        var tokenize = WebInspector.moduleManager.instance(WebInspector.TokenizerFactory).createTokenizer(this._mimeType);
         for (var i = lines[0].length ? 0 : 1; i < lines.length; ++i) {
             var line = lines[i];
             var plainTextStart = 0;

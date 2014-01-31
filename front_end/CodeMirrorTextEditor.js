@@ -177,7 +177,6 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this.element.addEventListener("keydown", this._handlePostKeyDown.bind(this), false);
     this.element.tabIndex = 0;
 
-    this._setupSelectionColor();
     this._setupWhitespaceHighlight();
 }
 
@@ -367,23 +366,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     redo: function()
     {
         this._codeMirror.redo();
-    },
-
-    _setupSelectionColor: function()
-    {
-        if (WebInspector.CodeMirrorTextEditor._selectionStyleInjected)
-            return;
-        WebInspector.CodeMirrorTextEditor._selectionStyleInjected = true;
-        var backgroundColor = InspectorFrontendHost.getSelectionBackgroundColor();
-        var backgroundColorRule = backgroundColor ? ".CodeMirror .CodeMirror-selected { background-color: " + backgroundColor + ";}" : "";
-        var foregroundColor = InspectorFrontendHost.getSelectionForegroundColor();
-        var foregroundColorRule = foregroundColor ? ".CodeMirror .CodeMirror-selectedtext:not(.CodeMirror-persist-highlight) { color: " + foregroundColor + "!important;}" : "";
-        if (!foregroundColorRule && !backgroundColorRule)
-            return;
-
-        var style = document.createElement("style");
-        style.textContent = backgroundColorRule + foregroundColorRule;
-        document.head.appendChild(style);
     },
 
     _setupWhitespaceHighlight: function()
@@ -1715,3 +1697,16 @@ WebInspector.CodeMirrorTextEditor._overrideModeWithPrefixedTokens = function(mod
 WebInspector.CodeMirrorTextEditor._overrideModeWithPrefixedTokens("css", "css-");
 WebInspector.CodeMirrorTextEditor._overrideModeWithPrefixedTokens("javascript", "js-");
 WebInspector.CodeMirrorTextEditor._overrideModeWithPrefixedTokens("xml", "xml-");
+
+(function() {
+    var backgroundColor = InspectorFrontendHost.getSelectionBackgroundColor();
+    var backgroundColorRule = backgroundColor ? ".CodeMirror .CodeMirror-selected { background-color: " + backgroundColor + ";}" : "";
+    var foregroundColor = InspectorFrontendHost.getSelectionForegroundColor();
+    var foregroundColorRule = foregroundColor ? ".CodeMirror .CodeMirror-selectedtext:not(.CodeMirror-persist-highlight) { color: " + foregroundColor + "!important;}" : "";
+    if (!foregroundColorRule && !backgroundColorRule)
+        return;
+
+    var style = document.createElement("style");
+    style.textContent = backgroundColorRule + foregroundColorRule;
+    document.head.appendChild(style);
+})();

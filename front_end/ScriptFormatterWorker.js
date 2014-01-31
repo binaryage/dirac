@@ -34,8 +34,28 @@ importScripts("cm/javascript.js");
 importScripts("cm/xml.js");
 importScripts("cm/htmlmixed.js");
 WebInspector = {};
-FormatterWorker = {};
-importScripts("CodeMirrorUtils.js");
+FormatterWorker = {
+    /**
+     * @param {string} mimeType
+     * @return {function(string, function(string, ?string, number, number))}
+     */
+    createTokenizer: function(mimeType)
+    {
+        var mode = CodeMirror.getMode({indentUnit: 2}, mimeType);
+        var state = CodeMirror.startState(mode);
+        function tokenize(line, callback)
+        {
+            var stream = new CodeMirror.StringStream(line);
+            while (!stream.eol()) {
+                var style = mode.token(stream, state);
+                var value = stream.current();
+                callback(value, style, stream.start, stream.start + value.length);
+                stream.start = stream.pos;
+            }
+        }
+        return tokenize;
+    }
+};
 
 /**
  * @typedef {{indentString: string, content: string, mimeType: string}}
@@ -105,7 +125,7 @@ FormatterWorker.outline = function(params)
     var isReadingArguments = false;
     var argumentsText = "";
     var currentFunction = null;
-    var tokenizer = WebInspector.CodeMirrorUtils.createTokenizer("text/javascript");
+    var tokenizer = FormatterWorker.createTokenizer("text/javascript");
     for (var i = 0; i < lines.length; ++i) {
         var line = lines[i];
         tokenizer(line, processToken);
@@ -249,7 +269,7 @@ FormatterWorker.HTMLFormatter.prototype = {
 
         var scriptOpened = false;
         var styleOpened = false;
-        var tokenizer = WebInspector.CodeMirrorUtils.createTokenizer("text/html");
+        var tokenizer = FormatterWorker.createTokenizer("text/html");
 
         /**
          * @this {FormatterWorker.HTMLFormatter}

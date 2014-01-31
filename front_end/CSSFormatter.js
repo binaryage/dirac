@@ -45,7 +45,7 @@ FormatterWorker.CSSFormatter.prototype = {
     format: function()
     {
         this._lineEndings = this._lineEndings(this._content);
-        var tokenize = WebInspector.CodeMirrorUtils.createTokenizer("text/css");
+        var tokenize = FormatterWorker.createTokenizer("text/css");
         var lines = this._content.split("\n");
 
         for (var i = 0; i < lines.length; ++i) {

@@ -93,6 +93,20 @@ var allDescriptors = [
         scripts: [ "NetworkPanel.js" ]
     },
     {
+        name: "codemirror",
+        extensions: [
+            {
+                type: "@WebInspector.InplaceEditor",
+                className: "WebInspector.CodeMirrorUtils"
+            },
+            {
+              type: "@WebInspector.TokenizerFactory",
+              className: "WebInspector.CodeMirrorUtils.TokenizerFactory"
+            },
+        ],
+        scripts: [ "CodeMirrorTextEditor.js" ]
+    },
+    {
         name: "sources",
         extensions: [
             {

@@ -1522,7 +1522,7 @@ WebInspector.ElementsTreeElement.prototype = {
         // Remove zero-width spaces that were added by nodeTitleInfo.
         removeZeroWidthSpaceRecursive(attribute);
 
-        var config = new WebInspector.EditingConfig(this._attributeEditingCommitted.bind(this), this._editingCancelled.bind(this), attributeName);
+        var config = new WebInspector.InplaceEditor.Config(this._attributeEditingCommitted.bind(this), this._editingCancelled.bind(this), attributeName);
         
         function handleKeyDownEvents(event)
         {
@@ -1543,7 +1543,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
         config.customFinishHandler = handleKeyDownEvents.bind(this);
 
-        this._editing = WebInspector.startEditing(attribute, config);
+        this._editing = WebInspector.InplaceEditor.startEditing(attribute, config);
 
         window.getSelection().setBaseAndExtent(elementForSelection, 0, elementForSelection, 1);
 
@@ -1567,8 +1567,8 @@ WebInspector.ElementsTreeElement.prototype = {
         var container = textNodeElement.enclosingNodeOrSelfWithClass("webkit-html-text-node");
         if (container)
             container.textContent = textNode.nodeValue(); // Strip the CSS or JS highlighting if present.
-        var config = new WebInspector.EditingConfig(this._textNodeEditingCommitted.bind(this, textNode), this._editingCancelled.bind(this));
-        this._editing = WebInspector.startEditing(textNodeElement, config);
+        var config = new WebInspector.InplaceEditor.Config(this._textNodeEditingCommitted.bind(this, textNode), this._editingCancelled.bind(this));
+        this._editing = WebInspector.InplaceEditor.startEditing(textNodeElement, config);
         window.getSelection().setBaseAndExtent(textNodeElement, 0, textNodeElement, 1);
 
         return true;
@@ -1626,8 +1626,8 @@ WebInspector.ElementsTreeElement.prototype = {
 
         tagNameElement.addEventListener('keyup', keyupListener, false);
 
-        var config = new WebInspector.EditingConfig(editingComitted.bind(this), editingCancelled.bind(this), tagName);
-        this._editing = WebInspector.startEditing(tagNameElement, config);
+        var config = new WebInspector.InplaceEditor.Config(editingComitted.bind(this), editingCancelled.bind(this), tagName);
+        this._editing = WebInspector.InplaceEditor.startEditing(tagNameElement, config);
         window.getSelection().setBaseAndExtent(tagNameElement, 0, tagNameElement, 1);
         return true;
     },
@@ -1702,9 +1702,9 @@ WebInspector.ElementsTreeElement.prototype = {
             this.treeOutline.element.focus();
         }
 
-        var config = new WebInspector.EditingConfig(commit.bind(this), dispose.bind(this));
+        var config = new WebInspector.InplaceEditor.Config(commit.bind(this), dispose.bind(this));
         config.setMultilineOptions(initialValue, { name: "xml", htmlMode: true }, "web-inspector-html", WebInspector.settings.domWordWrap.get(), true);
-        this._editing = WebInspector.startEditing(this._htmlEditElement, config);
+        this._editing = WebInspector.InplaceEditor.startEditing(this._htmlEditElement, config);
         this._editing.setWidth(this.treeOutline._visibleWidth);
         this.treeOutline._multilineEditing = this._editing;
     },

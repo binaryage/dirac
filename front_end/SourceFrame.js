@@ -44,7 +44,7 @@ WebInspector.SourceFrame = function(contentProvider)
 
     var textEditorDelegate = new WebInspector.TextEditorDelegateForSourceFrame(this);
 
-    loadScript("CodeMirrorTextEditor.js");
+    WebInspector.moduleManager.loadModule("codemirror");
     this._textEditor = new WebInspector.CodeMirrorTextEditor(this._url, textEditorDelegate);
 
     this._currentSearchResultIndex = -1;
