@@ -164,15 +164,25 @@ WebInspector.DOMPresentationUtils.buildImagePreviewContents = function(imageURL,
  * @param {boolean=} justSelector
  * @return {string}
  */
-WebInspector.DOMPresentationUtils.appropriateSelectorFor = function(node, justSelector)
+WebInspector.DOMPresentationUtils.fullQualifiedSelector = function(node, justSelector)
+{
+    if (node.nodeType() !== Node.ELEMENT_NODE)
+        return node.localName() || node.nodeName().toLowerCase();
+    return WebInspector.DOMPresentationUtils.cssPath(node, justSelector);
+}
+
+/**
+ * @param {!WebInspector.DOMNode} node
+ * @return {string}
+ */
+WebInspector.DOMPresentationUtils.simpleSelector = function(node)
 {
     var lowerCaseName = node.localName() || node.nodeName().toLowerCase();
     if (node.nodeType() !== Node.ELEMENT_NODE)
         return lowerCaseName;
     if (lowerCaseName === "input" && node.getAttribute("type") && !node.getAttribute("id") && !node.getAttribute("class"))
         return lowerCaseName + "[type=\"" + node.getAttribute("type") + "\"]";
-
-    return WebInspector.DOMPresentationUtils.cssPath(node, justSelector);
+    return WebInspector.DOMPresentationUtils._cssPathStep(node, false, true).value;
 }
 
 /**
@@ -188,7 +198,7 @@ WebInspector.DOMPresentationUtils.cssPath = function(node, optimized)
     var steps = [];
     var contextNode = node;
     while (contextNode) {
-        var step = WebInspector.DOMPresentationUtils._cssPathValue(contextNode, optimized);
+        var step = WebInspector.DOMPresentationUtils._cssPathStep(contextNode, !!optimized, contextNode === node);
         if (!step)
             break; // Error - bail out early.
         steps.push(step);
@@ -203,10 +213,11 @@ WebInspector.DOMPresentationUtils.cssPath = function(node, optimized)
 
 /**
  * @param {!WebInspector.DOMNode} node
- * @param {boolean=} optimized
+ * @param {boolean} optimized
+ * @param {boolean} isTargetNode
  * @return {?WebInspector.DOMNodePathStep}
  */
-WebInspector.DOMPresentationUtils._cssPathValue = function(node, optimized)
+WebInspector.DOMPresentationUtils._cssPathStep = function(node, optimized, isTargetNode)
 {
     if (node.nodeType() !== Node.ELEMENT_NODE)
         return null;
@@ -351,6 +362,8 @@ WebInspector.DOMPresentationUtils._cssPathValue = function(node, optimized)
     }
 
     var result = nodeName;
+    if (isTargetNode && nodeName.toLowerCase() === "input" && node.getAttribute("type") && !node.getAttribute("id") && !node.getAttribute("class"))
+        result += "[type=\"" + node.getAttribute("type") + "\"]";
     if (needsNthChild) {
         result += ":nth-child(" + (ownIndex + 1) + ")";
     } else if (needsClassNames) {

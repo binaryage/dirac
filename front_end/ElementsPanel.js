@@ -223,7 +223,7 @@ WebInspector.ElementsPanel.prototype = {
 
         WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
             action: WebInspector.UserMetrics.UserActionNames.ForcedElementState,
-            selector: WebInspector.DOMPresentationUtils.appropriateSelectorFor(node, false),
+            selector: WebInspector.DOMPresentationUtils.fullQualifiedSelector(node, false),
             enabled: enable,
             state: pseudoClass
         });

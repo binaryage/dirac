@@ -733,7 +733,7 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     addBlankSection: function()
     {
-        var blankSection = new WebInspector.BlankStylePropertiesSection(this, this.node ? WebInspector.DOMPresentationUtils.appropriateSelectorFor(this.node, true) : "");
+        var blankSection = new WebInspector.BlankStylePropertiesSection(this, this.node ? WebInspector.DOMPresentationUtils.fullQualifiedSelector(this.node, true) : "");
 
         var elementStyleSection = this.sections[0][1];
         this._sectionsContainer.insertBefore(blankSection.element, elementStyleSection.element.nextSibling);
