@@ -484,16 +484,7 @@ WebInspector.FrameExecutionContextList.prototype =
      */
     get displayName()
     {
-        if (!this._frame.parentFrame)
-            return "<top frame>";
-        var name = this._frame.name || "";
-        var subtitle = new WebInspector.ParsedURL(this._frame.url).displayName;
-        if (subtitle) {
-            if (!name)
-                return subtitle;
-            return name + "( " + subtitle + " )";
-        }
-        return "<iframe>";
+        return this._frame.displayName();
     },
 
     __proto__: WebInspector.Object.prototype

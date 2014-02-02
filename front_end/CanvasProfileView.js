@@ -643,9 +643,9 @@ WebInspector.CanvasProfileType = function()
     this._frameSelector = new WebInspector.StatusBarComboBox(this._dispatchViewUpdatedEvent.bind(this));
     this._frameSelector.element.title = WebInspector.UIString("Frame containing the canvases to capture.");
     this._frameSelector.element.classList.add("hidden");
-    WebInspector.runtimeModel.contextLists().forEach(this._addFrame, this);
-    WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.FrameExecutionContextListAdded, this._frameAdded, this);
-    WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.FrameExecutionContextListRemoved, this._frameRemoved, this);
+    WebInspector.resourceTreeModel.frames().forEach(this._addFrame, this);
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, this._frameAdded, this);
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameRemoved, this);
 
     this._dispatcher = new WebInspector.CanvasDispatcher(this);
     this._canvasAgentEnabled = false;
@@ -840,19 +840,19 @@ WebInspector.CanvasProfileType.prototype = {
      */
     _frameAdded: function(event)
     {
-        var contextList = /** @type {!WebInspector.FrameExecutionContextList} */ (event.data);
-        this._addFrame(contextList);
+        var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
+        this._addFrame(frame);
     },
 
     /**
-     * @param {!WebInspector.FrameExecutionContextList} contextList
+     * @param {!WebInspector.ResourceTreeFrame} frame
      */
-    _addFrame: function(contextList)
+    _addFrame: function(frame)
     {
-        var frameId = contextList.frameId;
+        var frameId = frame.id;
         var option = document.createElement("option");
-        option.text = contextList.displayName;
-        option.title = contextList.url;
+        option.text = frame.displayName();
+        option.title = frame.url;
         option.value = frameId;
 
         this._frameOptions[frameId] = option;
@@ -868,8 +868,8 @@ WebInspector.CanvasProfileType.prototype = {
      */
     _frameRemoved: function(event)
     {
-        var contextList = /** @type {!WebInspector.FrameExecutionContextList} */ (event.data);
-        var frameId = contextList.frameId;
+        var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
+        var frameId = frame.id;
         var option = this._frameOptions[frameId];
         if (option && this._framesWithCanvases[frameId]) {
             this._frameSelector.removeOption(option);

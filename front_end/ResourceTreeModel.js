@@ -685,6 +685,22 @@ WebInspector.ResourceTreeFrame.prototype = {
                 return true;
         }
         return false;
+    },
+
+    /**
+     * @return {string}
+     */
+    displayName: function()
+    {
+        if (!this._parentFrame)
+            return WebInspector.UIString("<top frame>");
+        var subtitle = new WebInspector.ParsedURL(this._url).displayName;
+        if (subtitle) {
+            if (!this._name)
+                return subtitle;
+            return this._name + "( " + subtitle + " )";
+        }
+        return WebInspector.UIString("<iframe>");
     }
 }
 
