@@ -109,7 +109,7 @@ WebInspector.InspectorView = function()
 WebInspector.InspectorView.Constraints = {
     OverlayWidth: 50,
     OverlayHeight: 50,
-    DevToolsWidth: 150,
+    DevToolsWidth: 180,
     DevToolsHeight: 50
 };
 
