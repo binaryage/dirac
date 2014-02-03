@@ -280,7 +280,6 @@
             'front_end/FilePathScoreFunction.js',
             'front_end/FilteredItemSelectionDialog.js',
             'front_end/JavaScriptSourceFrame.js',
-            'front_end/NavigatorOverlayController.js',
             'front_end/NavigatorView.js',
             'front_end/RevisionHistoryView.js',
             'front_end/ScopeChainSidebarPane.js',

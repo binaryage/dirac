@@ -244,7 +244,6 @@
             "FilePathScoreFunction.js",
             "FilteredItemSelectionDialog.js",
             "JavaScriptSourceFrame.js",
-            "NavigatorOverlayController.js",
             "NavigatorView.js",
             "RevisionHistoryView.js",
             "ScopeChainSidebarPane.js",

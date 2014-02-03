@@ -1052,7 +1052,7 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
         this.parent.treeElement().expand();
         this._treeElement.reveal();
         if (select)
-            this._treeElement.select();
+            this._treeElement.select(true);
     },
 
     /**
