@@ -30,6 +30,7 @@
  
 .tabbed-pane {
     flex: auto;
+    overflow: hidden;
 }
 
 .tabbed-pane-content {
