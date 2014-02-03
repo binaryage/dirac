@@ -2264,6 +2264,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
             newStyle.parentRule = this.style.parentRule;
             this.style = newStyle;
             this._styleRule.style = newStyle;
+            this.section().rule.style = newStyle;
 
             var section = this.section();
             if (section && section.pane)
