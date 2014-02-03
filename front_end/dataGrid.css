@@ -22,7 +22,7 @@
 
 .data-grid .data-container {
     position: absolute;
-    top: 18px;
+    top: 17px;
     bottom: 0;
     left: 0;
     right: 0;
@@ -47,6 +47,7 @@
     text-align: left;
     background-color: rgb(236, 236, 236);
     border: 1px solid rgb(179, 179, 179);
+    border-top: none;
     border-right: none;
     height: 16px;
     line-height: 16px;

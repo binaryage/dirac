@@ -51,6 +51,10 @@
     display: block;
 }
 
+.network.panel .panel-status-bar {
+    border-bottom: 1px solid rgb(179, 179, 179);
+}
+
 .network.panel .sidebar {
     position: absolute;
     top: 0;

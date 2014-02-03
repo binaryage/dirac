@@ -195,8 +195,9 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
 }
 
 .heap-snapshot-view .class-view-toolbar {
-    flex: 0 0 22px;
+    flex: 0 0 23px;
     background-color: rgb(236, 236, 236);
+    border-bottom: 1px solid rgb(179, 179, 179);
 }
 
 .heap-snapshot-view .class-view-toolbar input.class-name-filter {
@@ -213,9 +214,10 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
     background-image: url(Images/statusbarResizerVertical.png);
     background-color: rgb(236, 236, 236);
     border-top: 1px solid rgb(202, 202, 202);
+    border-bottom: 1px solid rgb(179, 179, 179);
     background-repeat: no-repeat;
     background-position: right center, center;
-    height: 23px;
+    height: 21px;
     display: block;
     position: absolute;
     left: 0;
