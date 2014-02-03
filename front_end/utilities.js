@@ -80,6 +80,29 @@ String.prototype.lineEndings = function()
 }
 
 /**
+ * @return {number}
+ */
+String.prototype.lineCount = function()
+{
+    var lineEndings = this.lineEndings();
+    return lineEndings.length;
+}
+
+/**
+ * @return {string}
+ */
+String.prototype.lineAt = function(lineNumber)
+{
+    var lineEndings = this.lineEndings();
+    var lineStart = lineNumber > 0 ? lineEndings[lineNumber - 1] + 1 : 0;
+    var lineEnd = lineEndings[lineNumber];
+    var lineContent = this.substring(lineStart, lineEnd);
+    if (lineContent.length > 0 && lineContent.charAt(lineContent.length - 1) === "\r")
+        lineContent = lineContent.substring(0, lineContent.length - 1);
+    return lineContent;
+}
+
+/**
  * @param {string} chars
  * @return {string}
  */

@@ -111,10 +111,15 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
          */
         function didRequestContent(content)
         {
-            var lineEndings = content.lineEndings();
-            if (uiLocation.lineNumber < lineEndings.length)
-                snippetElement.textContent = content.substring(lineEndings[uiLocation.lineNumber - 1], lineEndings[uiLocation.lineNumber]);
+            var lineNumber = uiLocation.lineNumber
+            var columnNumber = uiLocation.columnNumber;
+            if (lineNumber < content.lineCount()) {
+                var lineText = content.lineAt(lineNumber);
+                var maxSnippetLength = 200;
+                snippetElement.textContent = lineText.substr(columnNumber).trimEnd(maxSnippetLength);
+            }
         }
+
         uiLocation.uiSourceCode.requestContent(didRequestContent.bind(this));
 
         element._data = uiLocation;
