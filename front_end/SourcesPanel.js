@@ -382,7 +382,7 @@ WebInspector.SourcesPanel.prototype = {
          */
         function didGetUILocation(uiLocation)
         {
-            var breakpoint = WebInspector.breakpointManager.findBreakpoint(uiLocation.uiSourceCode, uiLocation.lineNumber);
+            var breakpoint = WebInspector.breakpointManager.findBreakpointOnLine(uiLocation.uiSourceCode, uiLocation.lineNumber);
             if (!breakpoint)
                 return;
             this.sidebarPanes.jsBreakpoints.highlightBreakpoint(breakpoint);

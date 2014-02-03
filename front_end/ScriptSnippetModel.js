@@ -352,7 +352,7 @@ WebInspector.ScriptSnippetModel.prototype = {
         for (var i = 0; i < breakpointLocations.length; ++i) {
             var uiLocation = breakpointLocations[i].uiLocation;
             var breakpoint = breakpointLocations[i].breakpoint;
-            WebInspector.breakpointManager.setBreakpoint(uiSourceCode, uiLocation.lineNumber, breakpoint.condition(), breakpoint.enabled());
+            WebInspector.breakpointManager.setBreakpoint(uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber, breakpoint.condition(), breakpoint.enabled());
         }
     },
 
