@@ -118,9 +118,6 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
 
     this._expandOffset = 15;
 
-    this._windowStartTime = 0;
-    this._windowEndTime = Infinity;
-
     this._allRecordsCount = 0;
 
     this._presentationModel.setGlueRecords(glueRecordsSetting.get());
@@ -252,22 +249,6 @@ WebInspector.TimelineView.prototype = {
     {
         this._presentationModel.setGlueRecords(this._glueRecordsSetting.get());
         this._repopulateRecords();
-    },
-
-    /**
-     * @return {number}
-     */
-    windowStartTime: function()
-    {
-        return this._windowStartTime || this._model.minimumRecordTime();
-    },
-
-    /**
-     * @return {number}
-     */
-    windowEndTime: function()
-    {
-        return this._windowEndTime < Infinity ? this._windowEndTime : this._model.maximumRecordTime();
     },
 
     /**
@@ -466,40 +447,7 @@ WebInspector.TimelineView.prototype = {
         var frameBar = event.target.enclosingNodeOrSelfWithClass("timeline-frame-strip");
         if (!frameBar)
             return;
-        this._setWindowTimes(frameBar._frame.startTime, frameBar._frame.endTime);
-    },
-
-    _updateWindowBoundaries: function()
-    {
-        this._panel.setWindowTimes(this._windowStartTime, this._windowEndTime);
-    },
-
-    /**
-     * @return {!{windowStartTime: number, windowEndTime: number}}
-     */
-    windowTimes: function()
-    {
-        return {windowStartTime: this._windowStartTime, windowEndTime: this._windowEndTime};
-    },
-
-    /**
-     * @param {!Object} windowTimes
-     */
-    setWindowTimes: function(windowTimes)
-    {
-        this._setWindowTimes(windowTimes.windowStartTime, windowTimes.windowEndTime);
-    },
-
-    /**
-     * @param {number} startTime
-     * @param {number} endTime
-     */
-    _setWindowTimes: function(startTime, endTime)
-    {
-        this._windowStartTime = startTime;
-        this._windowEndTime = endTime;
-        this._windowFilter.setWindowTimes(startTime, endTime);
-        this._panel.setWindowTimes(startTime, endTime);
+        this._panel.setWindowTimes(frameBar._frame.startTime, frameBar._frame.endTime);
     },
 
     _repopulateRecords: function()
@@ -529,7 +477,7 @@ WebInspector.TimelineView.prototype = {
 
         if (record.type === WebInspector.TimelineModel.RecordType.GPUTask) {
             this._gpuTasks.push(record);
-            return WebInspector.TimelineModel.startTimeInSeconds(record) < this._windowEndTime;
+            return WebInspector.TimelineModel.startTimeInSeconds(record) < this._panel.windowEndTime();
         }
 
         var records = this._presentationModel.addRecord(record);
@@ -601,9 +549,6 @@ WebInspector.TimelineView.prototype = {
 
     _onRecordsCleared: function()
     {
-        this._windowStartTime = 0;
-        this._windowEndTime = Infinity;
-
         this._resetView();
         this.overviewControl().reset();
         this._windowFilter.reset();
@@ -624,7 +569,6 @@ WebInspector.TimelineView.prototype = {
 
         this._repopulateRecords();
         this._updateSelectionDetails();
-        this._updateWindowBoundaries();
 
         if (!WebInspector.TimelinePanel._categoryStylesInitialized) {
             WebInspector.TimelinePanel._categoryStylesInitialized = true;
@@ -706,8 +650,8 @@ WebInspector.TimelineView.prototype = {
 
     _updateSelectionDetails: function()
     {
-        var startTime = this.windowStartTime() * 1000;
-        var endTime = this.windowEndTime() * 1000;
+        var startTime = this._panel.windowStartTime() * 1000;
+        var endTime = this._panel.windowEndTime() * 1000;
         // Return early in case 0 selection window.
         if (startTime < 0)
             return;
@@ -775,10 +719,8 @@ WebInspector.TimelineView.prototype = {
      * @param {number} startTime
      * @param {number} endTime
      */
-    windowTimesChanged: function(startTime, endTime)
+    setWindowTimes: function(startTime, endTime)
     {
-        this._windowStartTime = startTime;
-        this._windowEndTime = endTime;
         this._windowFilter.setWindowTimes(startTime, endTime);
         this._invalidateAndScheduleRefresh(false, true);
         this._selectRecord(null);
@@ -810,16 +752,17 @@ WebInspector.TimelineView.prototype = {
             clearTimeout(this._refreshTimeout);
             delete this._refreshTimeout;
         }
-
+        var windowStartTime = this._panel.windowStartTime();
+        var windowEndTime = this._panel.windowEndTime();
         this._timelinePaddingLeft = this._expandOffset;
-        this._calculator.setWindow(this.windowStartTime(), this.windowEndTime());
+        this._calculator.setWindow(windowStartTime, windowEndTime);
         this._calculator.setDisplayWindow(this._timelinePaddingLeft, this._graphRowsElementWidth);
 
         var recordsInWindowCount = this._refreshRecords();
         this._updateRecordsCounter(recordsInWindowCount);
         if (!this._boundariesAreValid) {
             this._updateEventDividers();
-            var frames = this._filteredFrames(this.windowStartTime(), this.windowEndTime());
+            var frames = this._filteredFrames(windowStartTime, windowEndTime);
             if (frames) {
                 this._updateFrameStatistics(frames);
                 const maxFramesForFrameBars = 30;
@@ -837,7 +780,6 @@ WebInspector.TimelineView.prototype = {
         }
         if (this._currentMode === WebInspector.TimelinePanel.Mode.Memory)
             this._memoryStatistics.refresh();
-        this._updateWindowBoundaries();
         this._boundariesAreValid = true;
     },
 
@@ -914,7 +856,9 @@ WebInspector.TimelineView.prototype = {
             this._selectRecord(null);
             // If we're at the top, always use real timeline start as a left window bound so that expansion arrow padding logic works.
             var windowStartTime = startIndex ? recordsInWindow[startIndex].startTime : this._model.minimumRecordTime();
-            this._setWindowTimes(windowStartTime, recordsInWindow[Math.max(0, lastVisibleLine - 1)].endTime);
+            var windowEndTime = recordsInWindow[Math.max(0, lastVisibleLine - 1)].endTime;
+            this._panel.setWindowTimes(windowStartTime, windowEndTime);
+            this._windowFilter.setWindowTimes(windowStartTime, windowEndTime);
             recordsInWindow = this._presentationModel.filteredRecords();
             endIndex = Math.min(recordsInWindow.length, lastVisibleLine);
         }
@@ -1016,9 +960,9 @@ WebInspector.TimelineView.prototype = {
         var widthAdjustment = minWidth / 2;
 
         var width = this._graphRowsElementWidth;
-        var boundarySpan = this.windowEndTime() - this.windowStartTime();
+        var boundarySpan = this._panel.windowEndTime() - this._panel.windowStartTime();
         var scale = boundarySpan / (width - minWidth - this._timelinePaddingLeft);
-        var startTime = (this.windowStartTime() - this._timelinePaddingLeft * scale) * 1000;
+        var startTime = (this._panel.windowStartTime() - this._timelinePaddingLeft * scale) * 1000;
         var endTime = startTime + width * scale * 1000;
 
         /**

@@ -52,10 +52,14 @@ WebInspector.TimelinePanel = function()
     this.registerRequiredCSS("filter.css");
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), false);
 
+    this._windowStartTime = 0;
+    this._windowEndTime = Infinity;
+
     // Create model.
     this._model = new WebInspector.TimelineModel();
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
+    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
 
     this._presentationModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", WebInspector.TimelinePanel.Mode.Events);
     this._glueRecordsSetting = WebInspector.settings.createSetting("timelineGlueRecords", false);
@@ -92,6 +96,30 @@ WebInspector.TimelinePanel.durationFilterPresetsMs = [0, 1, 15];
 
 WebInspector.TimelinePanel.prototype = {
     /**
+     * @return {number}
+     */
+    windowStartTime: function()
+    {
+        if (this._windowStartTime)
+            return this._windowStartTime;
+        if (this._model.minimumRecordTime() != -1)
+            return this._model.minimumRecordTime();
+        return 0;
+    },
+
+    /**
+     * @return {number}
+     */
+    windowEndTime: function()
+    {
+        if (this._windowEndTime < Infinity)
+            return this._windowEndTime;
+        if (this._model.maximumRecordTime() != -1)
+            return this._model.maximumRecordTime();
+        return Infinity;
+    },
+
+    /**
      * @param {number} width
      */
     setSidebarWidth: function(width)
@@ -104,16 +132,20 @@ WebInspector.TimelinePanel.prototype = {
      */
     _onWindowChanged: function(event)
     {
-        this._currentView.windowTimesChanged(event.data.startTime, event.data.endTime);
+        this._windowStartTime = event.data.startTime;
+        this._windowEndTime = event.data.endTime;
+        this._currentView.setWindowTimes(this._windowStartTime, this._windowEndTime);
     },
 
     /**
-     * @param {number} startTime
-     * @param {number} endTime
+     * @param {number} windowStartTime
+     * @param {number} windowEndTime
      */
-    setWindowTimes: function(startTime, endTime)
+    setWindowTimes: function(windowStartTime, windowEndTime)
     {
-        this._overviewPane.setWindowTimes(startTime, endTime);
+        this._windowStartTime = windowStartTime;
+        this._windowEndTime = windowEndTime;
+        this._overviewPane.setWindowTimes(windowStartTime, windowEndTime);
     },
 
     /**
@@ -344,17 +376,13 @@ WebInspector.TimelinePanel.prototype = {
         this.element.classList.remove("timeline-" + this._presentationModeSetting.get().toLowerCase() + "-view");
         this._presentationModeSetting.set(mode);
         this.element.classList.add("timeline-" + mode.toLowerCase() + "-view");
-        var windowTimes = null;
-        if (this._currentView) {
+        if (this._currentView)
             this._currentView.detach();
-            windowTimes = this._currentView.windowTimes();
-        }
         this._currentView = this._viewForMode(mode);
         this._updateFiltersBar();
-        if (windowTimes)
-            this._currentView.setWindowTimes(windowTimes);
-        this._overviewPane.setOverviewControl(this._currentView.overviewControl());
+        this._currentView.setWindowTimes(this.windowStartTime(), this.windowEndTime());
         this._currentView.show(this.element);
+        this._overviewPane.setOverviewControl(this._currentView.overviewControl());
         this._glueParentButton.setEnabled(this._currentView.supportsGlueParentMode());
     },
 
@@ -404,6 +432,11 @@ WebInspector.TimelinePanel.prototype = {
     _onClearButtonClick: function()
     {
         this._model.reset();
+    },
+
+    _onRecordsCleared: function()
+    {
+        this.setWindowTimes(0, Infinity);
     },
 
     _onRecordingStarted: function()
