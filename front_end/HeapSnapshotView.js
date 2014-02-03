@@ -1018,8 +1018,6 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
         this.dispatchEventToListeners(WebInspector.TrackingHeapSnapshotProfileType.HeapStatsUpdate, this._profileSamples);
         var profile = this._profileBeingRecorded;
         profile.sidebarElement.wait = true;
-        if (profile.sidebarElement && !profile.sidebarElement.wait)
-            profile.sidebarElement.wait = true;
     },
 
     /**
