@@ -869,11 +869,7 @@ WebInspector.inspect = function(payload, hints)
         return;
     }
 
-    if (hints.databaseId)
-        WebInspector.showPanel("resources").selectDatabase(WebInspector.databaseModel.databaseForId(hints.databaseId));
-    else if (hints.domStorageId)
-        WebInspector.showPanel("resources").selectDOMStorage(WebInspector.domStorageModel.storageForId(hints.domStorageId));
-    else if (hints.copyToClipboard)
+    if (hints.copyToClipboard)
         InspectorFrontendHost.copyText(object.value);
     object.release();
 }
