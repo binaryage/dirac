@@ -58,6 +58,7 @@ WebInspector.CounterUI = function(memoryCountersPane, title, currentValueLabel, 
     this._currentValueLabel = currentValueLabel;
     this._marker = memoryCountersPane._canvasContainer.createChild("div", "memory-counter-marker");
     this._marker.style.backgroundColor = color;
+    this.clearCurrentValueAndMarker();
 
     this.graphColor = color;
     this.graphYValues = [];
