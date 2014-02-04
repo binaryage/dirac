@@ -1016,7 +1016,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
     _setBoxOrientation: function(deviceOrientation)
     {
         var matrix = new WebKitCSSMatrix();
-        this._boxMatrix = matrix.rotate(deviceOrientation.beta, deviceOrientation.gamma, deviceOrientation.alpha);
+        this._boxMatrix = matrix.rotate(-deviceOrientation.beta, deviceOrientation.gamma, -deviceOrientation.alpha);
         this._boxElement.style.webkitTransform = this._boxMatrix.toString();
     },
 
@@ -1039,7 +1039,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
         this._currentMatrix = rotationMatrix.multiply(this._boxMatrix)
         this._boxElement.style.webkitTransform = this._currentMatrix;
         var eulerAngles = WebInspector.Geometry.EulerAngles.fromRotationMatrix(this._currentMatrix);
-        var newOrientation = new WebInspector.OverridesSupport.DeviceOrientation(eulerAngles.alpha, eulerAngles.beta, eulerAngles.gamma);
+        var newOrientation = new WebInspector.OverridesSupport.DeviceOrientation(-eulerAngles.alpha, -eulerAngles.beta, eulerAngles.gamma);
         this._setDeviceOrientation(newOrientation, WebInspector.OverridesView.SensorsTab.DeviceOrientationModificationSource.UserDrag);
         return false;
     },
