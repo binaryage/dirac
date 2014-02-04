@@ -301,7 +301,7 @@ WebInspector.MemoryStatistics.prototype = {
      */
     _onClick: function(event)
     {
-        var x = event.x - event.target.offsetParent.offsetLeft;
+        var x = event.x - this._canvasContainer.offsetParent.offsetLeft;
         var minDistance = Infinity;
         var bestTime;
         for (var i = 0; i < this._counterUI.length; ++i) {
