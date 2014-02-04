@@ -97,11 +97,10 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ProfilesPanel} profilesPanel
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {?Event} event
      */
-    populateContextMenu: function(profilesPanel, contextMenu, event)
+    populateContextMenu: function(contextMenu, event)
     {
         var td = event.target.enclosingNodeOrSelfWithNodeName("td");
         if (!td)
@@ -109,11 +108,11 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
         var node = td.heapSnapshotNode;
         function revealInDominatorsView()
         {
-                profilesPanel.showObject(node.snapshotNodeId, "Dominators");
+            WebInspector.panels.profiles.showObject(node.snapshotNodeId, "Dominators");
         }
         function revealInSummaryView()
         {
-                profilesPanel.showObject(node.snapshotNodeId, "Summary");
+            WebInspector.panels.profiles.showObject(node.snapshotNodeId, "Summary");
         }
         if(node && node.showRetainingEdges) {
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Summary view" : "Reveal in Summary View"), revealInSummaryView.bind(this));

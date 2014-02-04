@@ -31,16 +31,14 @@
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {!WebInspector.ProfilesPanel} parent
  * @param {!WebInspector.HeapProfileHeader} profile
  */
-WebInspector.HeapSnapshotView = function(parent, profile)
+WebInspector.HeapSnapshotView = function(profile)
 {
     WebInspector.View.call(this);
 
     this.element.classList.add("heap-snapshot-view");
 
-    this.parent = parent;
     profile.profileType().addEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, this._onReceivSnapshot, this);
     profile.profileType().addEventListener(WebInspector.ProfileType.Events.RemoveProfileHeader, this._onProfileHeaderRemoved, this);
 
@@ -446,7 +444,7 @@ WebInspector.HeapSnapshotView.prototype = {
      */
     populateContextMenu: function(contextMenu, event)
     {
-        this.dataGrid.populateContextMenu(this.parent, contextMenu, event);
+        this.dataGrid.populateContextMenu(contextMenu, event);
     },
 
     _selectionChanged: function(event)
@@ -908,7 +906,6 @@ WebInspector.HeapSnapshotProfileType.prototype = {
             profile._finishLoad();
             this._profileBeingRecorded = null;
             WebInspector.panels.profiles.showProfile(profile);
-            profile.existingView()._refreshView();
             callback();
         }
         HeapProfilerAgent.takeHeapSnapshot(true, didTakeHeapSnapshot.bind(this));
@@ -1087,7 +1084,6 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
             this._profileSamples = null;
             this._profileBeingRecorded = null;
             WebInspector.panels.profiles.showProfile(profile);
-            profile.existingView()._refreshView();
         }
 
         HeapProfilerAgent.stopTrackingHeapObjects(true, didTakeHeapSnapshot.bind(this));
@@ -1177,12 +1173,11 @@ WebInspector.HeapProfileHeader.prototype = {
 
     /**
      * @override
-     * @param {!WebInspector.ProfilesPanel} profilesPanel
      * @return {!WebInspector.HeapSnapshotView}
      */
-    createView: function(profilesPanel)
+    createView: function()
     {
-        return new WebInspector.HeapSnapshotView(profilesPanel, this);
+        return new WebInspector.HeapSnapshotView(this);
     },
 
     /**

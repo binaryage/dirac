@@ -921,10 +921,9 @@ WebInspector.CPUProfileHeader.prototype = {
 
     /**
      * @override
-     * @param {!WebInspector.ProfilesPanel} profilesPanel
      * @return {!WebInspector.CPUProfileView}
      */
-    createView: function(profilesPanel)
+    createView: function()
     {
         return new WebInspector.CPUProfileView(this);
     },

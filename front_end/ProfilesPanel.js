@@ -309,29 +309,9 @@ WebInspector.ProfileHeader.prototype = {
     },
 
     /**
-     * @return {?WebInspector.View}
-     */
-    existingView: function()
-    {
-        return this._view;
-    },
-
-    /**
-     * @param {!WebInspector.ProfilesPanel} panel
      * @return {!WebInspector.View}
      */
-    view: function(panel)
-    {
-        if (!this._view)
-            this._view = this.createView(panel);
-        return this._view;
-    },
-
-    /**
-     * @param {!WebInspector.ProfilesPanel} panel
-     * @return {!WebInspector.View}
-     */
-    createView: function(panel)
+    createView: function()
     {
         throw new Error("Not implemented.");
     },
@@ -438,6 +418,7 @@ WebInspector.ProfilesPanel = function()
     this._launcherView = new WebInspector.MultiProfileLauncherView(this);
     this._launcherView.addEventListener(WebInspector.MultiProfileLauncherView.EventTypes.ProfileTypeSelected, this._onProfileTypeSelected, this);
 
+    this._profileToView = [];
     this._typeIdToSidebarSection = {};
     var types = WebInspector.ProfileTypeRegistry.instance.profileTypes();
     for (var i = 0; i < types.length; i++)
@@ -753,6 +734,10 @@ WebInspector.ProfilesPanel.prototype = {
         if (profile.profileType()._profileBeingRecorded === profile)
             this._profileBeingRecordedRemoved();
 
+        var i = this._indexOfViewForProfile(profile);
+        if (i !== -1)
+            this._profileToView.splice(i, 1);
+
         var profileType = profile.profileType();
         var typeId = profileType.id;
         var sectionIsEmpty = this._typeIdToSidebarSection[typeId].removeProfileHeader(profile);
@@ -774,7 +759,7 @@ WebInspector.ProfilesPanel.prototype = {
         if (!profile || (profile.profileType().profileBeingRecorded() === profile) && !profile.profileType().hasTemporaryView())
             return null;
 
-        var view = profile.view(this);
+        var view = this._viewForProfile(profile);
         if (view === this.visibleView)
             return view;
 
@@ -810,7 +795,7 @@ WebInspector.ProfilesPanel.prototype = {
             // FIXME: allow to choose snapshot if there are several options.
             if (profile.maxJSObjectId >= snapshotObjectId) {
                 this.showProfile(profile);
-                var view = profile.view(this);
+                var view = this._viewForProfile(profile);
                 view.changeView(viewName, function() {
                     function didHighlightObject(found) {
                         if (!found)
@@ -821,6 +806,33 @@ WebInspector.ProfilesPanel.prototype = {
                 break;
             }
         }
+    },
+
+    /**
+     * @param {!WebInspector.ProfileHeader} profile
+     * @return {!WebInspector.View}
+     */
+    _viewForProfile: function(profile)
+    {
+        var index = this._indexOfViewForProfile(profile);
+        if (index !== -1)
+            return this._profileToView[index].view;
+        var view = profile.createView();
+        this._profileToView.push({ profile: profile, view: view});
+        return view;
+    },
+
+    /**
+     * @param {!WebInspector.ProfileHeader} profile
+     * @return {number}
+     */
+    _indexOfViewForProfile: function(profile)
+    {
+        for (var i = 0; i < this._profileToView.length; i++) {
+            if (this._profileToView[i].profile === profile)
+                return i;
+        }
+        return -1;
     },
 
     closeVisibleView: function()
