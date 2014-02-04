@@ -113,7 +113,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
         {
             var lineNumber = uiLocation.lineNumber
             var columnNumber = uiLocation.columnNumber;
-            var contentString = String(content);
+            var contentString = new String(content);
             if (lineNumber < contentString.lineCount()) {
                 var lineText = contentString.lineAt(lineNumber);
                 var maxSnippetLength = 200;
