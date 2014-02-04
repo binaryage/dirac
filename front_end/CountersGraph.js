@@ -56,7 +56,8 @@ WebInspector.CounterUI = function(memoryCountersPane, title, currentValueLabel, 
     this._value = memoryCountersPane._currentValuesBar.createChild("span", "memory-counter-value");
     this._value.style.color = color;
     this._currentValueLabel = currentValueLabel;
-    this._markerRadius = 2;
+    this._marker = memoryCountersPane._canvasContainer.createChild("div", "memory-counter-marker");
+    this._marker.style.backgroundColor = color;
 
     this.graphColor = color;
     this.graphYValues = [];
@@ -72,71 +73,6 @@ WebInspector.CounterUI.prototype = {
         this._range.textContent = WebInspector.UIString("[%d:%d]", minValue, maxValue);
     },
 
-    /**
-     * @param {!CanvasRenderingContext2D} ctx
-     */
-    clearCurrentValueAndMarker: function(ctx)
-    {
-        this._value.textContent = "";
-        this.restoreImageUnderMarker(ctx);
-    },
-
-    /**
-     * @param {!CanvasRenderingContext2D} ctx
-     * @param {number} x
-     */
-    saveImageUnderMarker: function(ctx, x)
-    {
-        if (!this.counter.values.length)
-            return;
-        var w = this._markerRadius + 1;
-        var y = this.graphYValues[this._recordIndexAt(x)];
-        var imageData = ctx.getImageData(x - w, y - w, 2 * w, 2 * w);
-        this._imageUnderMarker = {
-            x: x - w,
-            y: y - w,
-            imageData: imageData
-        };
-    },
-
-    /**
-     * @param {!CanvasRenderingContext2D} ctx
-     */
-    restoreImageUnderMarker: function(ctx)
-    {
-        if (!this.visible)
-            return;
-        if (this._imageUnderMarker)
-            ctx.putImageData(this._imageUnderMarker.imageData, this._imageUnderMarker.x, this._imageUnderMarker.y);
-        this.discardImageUnderMarker();
-    },
-
-    discardImageUnderMarker: function()
-    {
-        delete this._imageUnderMarker;
-    },
-
-    /**
-     * @param {!CanvasRenderingContext2D} ctx
-     * @param {number} x
-     */
-    drawMarker: function(ctx, x)
-    {
-        if (!this.visible)
-            return;
-        if (!this.counter.values.length)
-            return;
-        var y = this.graphYValues[this._recordIndexAt(x)];
-        ctx.beginPath();
-        ctx.arc(x + 0.5, y + 0.5, this._markerRadius, 0, Math.PI * 2, true);
-        ctx.lineWidth = 1;
-        ctx.fillStyle = this.graphColor;
-        ctx.strokeStyle = this.graphColor;
-        ctx.fill();
-        ctx.stroke();
-        ctx.closePath();
-    },
-
     __proto__: WebInspector.CounterUIBase.prototype
 }
 
@@ -144,17 +80,9 @@ WebInspector.CounterUI.prototype = {
 WebInspector.CountersGraph.prototype = {
     _createCurrentValuesBar: function()
     {
-        this._currentValuesBar = this._canvasContainer.createChild("div");
+        this._currentValuesBar = this._graphsContainer.createChild("div");
         this._currentValuesBar.id = "counter-values-bar";
-        this._canvasContainer.classList.add("dom-counters");
-    },
-
-    /**
-     * @return {!Element}
-     */
-    resizeElement: function()
-    {
-        return this._currentValuesBar;
+        this._graphsContainer.classList.add("dom-counters");
     },
 
     _createAllCounters: function()
@@ -269,12 +197,6 @@ WebInspector.CountersGraph.prototype = {
         ctx.stroke();
         ctx.closePath();
         ctx.restore();
-    },
-
-    _discardImageUnderMarker: function()
-    {
-        for (var i = 0; i < this._counterUI.length; i++)
-            this._counterUI[i].discardImageUnderMarker();
     },
 
     __proto__: WebInspector.MemoryStatistics.prototype

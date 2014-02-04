@@ -497,17 +497,19 @@
     bottom: 5px;
 }
 
-#memory-counters-graph {
-    border-right: 1px solid rgb(196, 196, 196);
-}
-
 #memory-graphs-canvas-container {
     overflow: hidden;
+    flex: auto;
+    position: relative;
 }
 
-#memory-graphs-canvas-container.dom-counters .resources-dividers,
-#memory-counters-graph {
-    top: 17px;
+#memory-graphs-canvas-container .memory-counter-marker {
+    position: absolute;
+    border-radius: 3px;
+    width: 5px;
+    height: 5px;
+    margin-left: -3px;
+    margin-top: -2px;
 }
 
 #memory-graphs-container .split-view-contents-first {
@@ -524,7 +526,7 @@
     white-space: nowrap;
 }
 
-.memory-counter-sidebar-info .swatch{
+.memory-counter-sidebar-info .swatch {
     background-image: none;
     border: 1px solid rgba(0,0,0,0.3);
     opacity: 0.5;
@@ -543,10 +545,11 @@
 }
 
 #counter-values-bar {
+    flex: 0 0 18px;
     border-bottom: solid 1px lightgray;
     width: 100%;
-    height: 17px;
     overflow: hidden;
+    line-height: 18px;
 }
 
 .timeline .resources-event-divider {

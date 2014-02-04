@@ -45,17 +45,17 @@ WebInspector.MemoryStatistics = function(timelineView, model)
     model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
     model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
 
-    this._canvasContainer = this.mainElement();
-    this._canvasContainer.id = "memory-graphs-canvas-container";
+    this._graphsContainer = this.mainElement();
     this._createCurrentValuesBar();
+    this._canvasContainer = this._graphsContainer.createChild("div");
+    this._canvasContainer.id = "memory-graphs-canvas-container";
     this._canvas = this._canvasContainer.createChild("canvas", "fill");
     this._canvas.id = "memory-counters-graph";
-    this._lastMarkerXPosition = 0;
 
-    this._canvas.addEventListener("mouseover", this._onMouseOver.bind(this), true);
-    this._canvas.addEventListener("mousemove", this._onMouseMove.bind(this), true);
-    this._canvas.addEventListener("mouseout", this._onMouseOut.bind(this), true);
-    this._canvas.addEventListener("click", this._onClick.bind(this), true);
+    this._canvasContainer.addEventListener("mouseover", this._onMouseMove.bind(this), true);
+    this._canvasContainer.addEventListener("mousemove", this._onMouseMove.bind(this), true);
+    this._canvasContainer.addEventListener("mouseout", this._onMouseOut.bind(this), true);
+    this._canvasContainer.addEventListener("click", this._onClick.bind(this), true);
     // We create extra timeline grid here to reuse its event dividers.
     this._timelineGrid = new WebInspector.TimelineGrid();
     this._canvasContainer.appendChild(this._timelineGrid.dividersElement);
@@ -202,10 +202,7 @@ WebInspector.CounterUIBase = function(memoryCountersPane, title, graphColor, cou
 WebInspector.CounterUIBase.prototype = {
     _toggleCounterGraph: function(event)
     {
-        if (this._swatch.checked)
-            this._value.classList.remove("hidden");
-        else
-            this._value.classList.add("hidden");
+        this._value.classList.toggle("hidden", !this._swatch.checked);
         this._memoryCountersPane.refresh();
     },
 
@@ -232,15 +229,20 @@ WebInspector.CounterUIBase.prototype = {
      */
     updateCurrentValue: function(x)
     {
-        if (!this.counter.values.length)
+        if (!this.visible || !this.counter.values.length)
             return;
         var index = this._recordIndexAt(x);
         this._value.textContent = WebInspector.UIString(this._currentValueLabel, this.counter.values[index]);
+        var y = this.graphYValues[index];
+        this._marker.style.left = x + "px";
+        this._marker.style.top = y + "px";
+        this._marker.classList.remove("hidden");
     },
 
-    clearCurrentValueAndMarker: function(ctx)
+    clearCurrentValueAndMarker: function()
     {
         this._value.textContent = "";
+        this._marker.classList.add("hidden");
     },
 
     get visible()
@@ -260,45 +262,28 @@ WebInspector.MemoryStatistics.prototype = {
         throw new Error("Not implemented");
     },
 
-    _onRecordsCleared: function()
-    {
-        for (var i = 0; i < this._counters.length; ++i)
-            this._counters[i].reset();
-    },
-
-    /**
-     * @return {number}
-     */
-    height: function()
-    {
-        return this.element.offsetHeight;
-    },
-
-    _canvasHeight: function()
-    {
-        throw new Error("Not implemented");
-    },
-
-    onResize: function()
-    {
-        WebInspector.SplitView.prototype.onResize.call(this);
-
-        var width = this._canvasContainer.offsetWidth + 1;
-        this._canvas.style.width = width + "px";
-        this._timelineGrid.dividersElement.style.width = width + "px";
-        var parentElement = this._canvas.parentElement;
-
-        this._canvas.width = width;
-        this._canvas.height = parentElement.clientHeight - 15;
-        this.refresh();
-    },
-
     /**
      * @param {!WebInspector.Event} event
      */
     _onRecordAdded: function(event)
     {
         throw new Error("Not implemented");
+    },
+
+    _onRecordsCleared: function()
+    {
+        for (var i = 0; i < this._counters.length; ++i)
+            this._counters[i].reset();
+    },
+
+    onResize: function()
+    {
+        WebInspector.SplitView.prototype.onResize.call(this);
+
+        var parentElement = this._canvas.parentElement;
+        this._canvas.width = parentElement.clientWidth;
+        this._canvas.height = parentElement.clientHeight;
+        this.refresh();
     },
 
     draw: function()
@@ -308,14 +293,13 @@ WebInspector.MemoryStatistics.prototype = {
             this._counters[i]._calculateXValues(this._canvas.width);
         }
         this._clear();
-
         this._setVerticalClip(10, this._canvas.height - 20);
     },
 
     /**
      * @param {!MouseEvent} event
      */
-     _onClick: function(event)
+    _onClick: function(event)
     {
         var x = event.x - event.target.offsetParent.offsetLeft;
         var minDistance = Infinity;
@@ -341,26 +325,13 @@ WebInspector.MemoryStatistics.prototype = {
     _onMouseOut: function(event)
     {
         delete this._markerXPosition;
-
-        var ctx = this._canvas.getContext("2d");
-        this._clearCurrentValueAndMarker(ctx);
+        this._clearCurrentValueAndMarker();
     },
 
-    /**
-     * @param {!CanvasRenderingContext2D} ctx
-     */
-    _clearCurrentValueAndMarker: function(ctx)
+    _clearCurrentValueAndMarker: function()
     {
         for (var i = 0; i < this._counterUI.length; i++)
-            this._counterUI[i].clearCurrentValueAndMarker(ctx);
-    },
-
-    /**
-     * @param {!MouseEvent} event
-     */
-    _onMouseOver: function(event)
-    {
-        this._onMouseMove(event);
+            this._counterUI[i].clearCurrentValueAndMarker();
     },
 
     /**
@@ -368,42 +339,17 @@ WebInspector.MemoryStatistics.prototype = {
      */
     _onMouseMove: function(event)
     {
-        var x = event.x - event.target.offsetParent.offsetLeft;
+        var x = event.x - this._canvasContainer.offsetParent.offsetLeft;
         this._markerXPosition = x;
         this._refreshCurrentValues();
     },
 
     _refreshCurrentValues: function()
     {
-        if (!this._counters.length)
-            return;
         if (this._markerXPosition === undefined)
             return;
-
         for (var i = 0; i < this._counterUI.length; ++i)
             this._counterUI[i].updateCurrentValue(this._markerXPosition);
-        this._highlightCurrentPositionOnGraphs();
-    },
-
-    _highlightCurrentPositionOnGraphs: function()
-    {
-        var ctx = this._canvas.getContext("2d");
-        for (var i = 0; i < this._counterUI.length; ++i)
-            this._counterUI[i].restoreImageUnderMarker(ctx);
-        for (var i = 0; i < this._counterUI.length; ++i)
-            this._counterUI[i].saveImageUnderMarker(ctx, this._markerXPosition);
-        for (var i = 0; i < this._counterUI.length; ++i)
-            this._counterUI[i].drawMarker(ctx, this._markerXPosition);
-    },
-
-    _restoreImageUnderMarker: function(ctx)
-    {
-        throw new Error("Not implemented");
-    },
-
-    _drawMarker: function(ctx, x, index)
-    {
-        throw new Error("Not implemented");
     },
 
     refresh: function()
@@ -413,6 +359,10 @@ WebInspector.MemoryStatistics.prototype = {
         this._refreshCurrentValues();
     },
 
+    /**
+     * @param {number} originY
+     * @param {number} height
+     */
     _setVerticalClip: function(originY, height)
     {
         this._originY = originY;
@@ -423,12 +373,6 @@ WebInspector.MemoryStatistics.prototype = {
     {
         var ctx = this._canvas.getContext("2d");
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
-        this._discardImageUnderMarker();
-    },
-
-    _discardImageUnderMarker: function()
-    {
-        throw new Error("Not implemented");
     },
 
     __proto__: WebInspector.SplitView.prototype
