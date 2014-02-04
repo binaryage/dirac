@@ -48,7 +48,6 @@ WebInspector.Drawer = function(splitView)
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.closeableTabs = false;
     this._tabbedPane.setRetainTabOrder(true, WebInspector.moduleManager.orderComparator(WebInspector.Drawer.ViewFactory, "name", "order"));
-    this._tabbedPane.show(this.element);
 
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     splitView.installResizer(this._tabbedPane.headerElement());
@@ -80,6 +79,7 @@ WebInspector.Drawer.prototype = {
                 this._tabbedPane.appendTab(id, title, new WebInspector.View());
             }
         }
+        this._tabbedPane.show(this.element);
     },
 
     /**

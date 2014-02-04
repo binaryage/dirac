@@ -181,7 +181,7 @@ WebInspector.TabbedPane.prototype = {
 
         this._tabsHistory.push(tab);
 
-        if (this._tabsHistory[0] === tab)
+        if (this._tabsHistory[0] === tab && this.isShowing())
             this.selectTab(tab.id, userGesture);
 
         this._updateTabElements();
@@ -368,6 +368,16 @@ WebInspector.TabbedPane.prototype = {
     headerResized: function()
     {
         this._updateTabElements();
+    },
+
+    /**
+     * @param {?Element} parentElement
+     * @param {!Element=} insertBefore
+     */
+    show: function(parentElement, insertBefore)
+    {
+        WebInspector.View.prototype.show.call(this, parentElement, insertBefore);
+        this.selectTab(this._currentTab || this._tabsHistory[0]);
     },
 
     _updateTabElements: function()
