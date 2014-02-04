@@ -136,10 +136,8 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.sidebarPanes.xhrBreakpoints = new WebInspector.XHRBreakpointsSidebarPane();
     this.sidebarPanes.eventListenerBreakpoints = new WebInspector.EventListenerBreakpointsSidebarPane();
 
-    if (Capabilities.canInspectWorkers && !WebInspector.WorkerManager.isWorkerFrontend()) {
-        WorkerAgent.enable();
-        this.sidebarPanes.workerList = new WebInspector.WorkersSidebarPane(WebInspector.workerManager);
-    }
+    if (Capabilities.canInspectWorkers && !WebInspector.isWorkerFrontend())
+        this.sidebarPanes.workerList = new WebInspector.WorkersSidebarPane();
 
     /**
      * @this {WebInspector.SourcesPanel}

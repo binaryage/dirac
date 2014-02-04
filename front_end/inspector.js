@@ -32,7 +32,7 @@ var WebInspector = {
     _registerModules: function()
     {
         var configuration;
-        if (WebInspector.WorkerManager.isWorkerFrontend()) {
+        if (WebInspector.isWorkerFrontend()) {
             configuration = ["sources", "timeline", "profiles", "console", "codemirror"];
         } else {
             configuration = ["elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "codemirror"];
@@ -64,6 +64,77 @@ var WebInspector = {
     isInspectingDevice: function()
     {
         return !!WebInspector.queryParamsObject["remoteFrontend"];
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isDedicatedWorkerFrontend: function()
+    {
+        return !!WebInspector.queryParamsObject["dedicatedWorkerId"];
+    },
+
+    _calculateWorkerInspectorTitle: function()
+    {
+        var expression = "location.href";
+        if (WebInspector.queryParamsObject["isSharedWorker"])
+            expression += " + (this.name ? ' (' + this.name + ')' : '')";
+        RuntimeAgent.evaluate.invoke({expression:expression, doNotPauseOnExceptionsAndMuteConsole:true, returnByValue: true}, evalCallback.bind(this));
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {!RuntimeAgent.RemoteObject} result
+         * @param {boolean=} wasThrown
+         */
+        function evalCallback(error, result, wasThrown)
+        {
+            if (error || wasThrown) {
+                console.error(error);
+                return;
+            }
+            InspectorFrontendHost.inspectedURLChanged(result.value);
+        }
+    },
+
+    _initializeDedicatedWorkerFrontend: function(workerId)
+    {
+        function receiveMessage(event)
+        {
+            var message = event.data;
+            InspectorBackend.dispatch(message);
+        }
+        window.addEventListener("message", receiveMessage, true);
+
+
+        InspectorBackend.sendMessageObjectToBackend = function(message)
+        {
+            window.opener.postMessage({workerId: workerId, command: "sendMessageToBackend", message: message}, "*");
+        }
+    },
+
+    _loadCompletedForWorkers: function()
+    {
+        // Make sure script execution of dedicated worker is resumed and then paused
+        // on the first script statement in case we autoattached to it.
+        if (WebInspector.queryParamsObject["workerPaused"]) {
+            DebuggerAgent.pause();
+            RuntimeAgent.run(calculateTitle);
+        } else if (WebInspector.isWorkerFrontend())
+            calculateTitle();
+
+        function calculateTitle()
+        {
+            WebInspector._calculateWorkerInspectorTitle();
+        }
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isWorkerFrontend: function()
+    {
+        return !!WebInspector.queryParamsObject["dedicatedWorkerId"] ||
+                !!WebInspector.queryParamsObject["isSharedWorker"];
     },
 
     showConsole: function()
@@ -207,7 +278,7 @@ WebInspector.loaded = function()
     InspectorBackend.loadFromJSONIfNeeded("../protocol.json");
     WebInspector.dockController = new WebInspector.DockController();
 
-    if (WebInspector.WorkerManager.isDedicatedWorkerFrontend()) {
+    if (WebInspector.isDedicatedWorkerFrontend()) {
         // Do not create socket for the worker front-end.
         WebInspector.doLoadedDone();
         return;
@@ -256,7 +327,9 @@ WebInspector.doLoadedDone = function()
     if (WebInspector.queryParamsObject.toolbarColor && WebInspector.queryParamsObject.textColor)
         WebInspector.setToolbarColors(WebInspector.queryParamsObject.toolbarColor, WebInspector.queryParamsObject.textColor);
 
-    WebInspector.WorkerManager.loaded();
+    var workerId = WebInspector.queryParamsObject["dedicatedWorkerId"];
+    if (workerId)
+        this._initializeDedicatedWorkerFrontend(workerId);
 
     PageAgent.canScreencast(WebInspector._initializeCapability.bind(WebInspector, "canScreencast", null));
     WorkerAgent.canInspectWorkers(WebInspector._initializeCapability.bind(WebInspector, "canInspectWorkers", WebInspector._doLoadedDoneWithCapabilities.bind(WebInspector)));
@@ -285,6 +358,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.networkLog = new WebInspector.NetworkLog();
     this.domAgent = new WebInspector.DOMAgent();
     this.domAgent.addEventListener(WebInspector.DOMAgent.Events.InspectNodeRequested, this._inspectNodeRequested, this);
+    this.workerManager = new WebInspector.WorkerManager(Capabilities.canInspectWorkers);
     this.runtimeModel = new WebInspector.RuntimeModel(this.resourceTreeModel);
 
     this._zoomLevel = WebInspector.settings.zoomLevel.get();
@@ -295,7 +369,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
         this._requestZoom();
 
     this.advancedSearchController = new WebInspector.AdvancedSearchController();
-    this.consoleView = new WebInspector.ConsoleView(WebInspector.WorkerManager.isWorkerFrontend());
+    this.consoleView = new WebInspector.ConsoleView(WebInspector.isWorkerFrontend());
 
     InspectorBackend.registerInspectorDispatcher(this);
 
@@ -307,8 +381,10 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.timelineManager = new WebInspector.TimelineManager();
     this.tracingAgent = new WebInspector.TracingAgent();
 
-    if (!WebInspector.WorkerManager.isWorkerFrontend())
+    if (!WebInspector.isWorkerFrontend()) {
         this.inspectElementModeController = new WebInspector.InspectElementModeController();
+        this.workerFrontendManager = new WebInspector.WorkerFrontendManager();
+    }
 
     this.settingsController = new WebInspector.SettingsController();
 
@@ -384,7 +460,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     }
     showRulersChanged();
 
-    WebInspector.WorkerManager.loadCompleted();
+    this._loadCompletedForWorkers()
     InspectorFrontendAPI.loadCompleted();
 
     if (Capabilities.canScreencast)

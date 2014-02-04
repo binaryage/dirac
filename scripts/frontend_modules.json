@@ -55,6 +55,7 @@
             "NetworkUISourceCodeProvider.js",
             "OverridesSupport.js",
             "PresentationConsoleMessageHelper.js",
+            "WorkerManager.js",
             "RuntimeModel.js",
             "SASSSourceMapping.js",
             "Script.js",
@@ -230,7 +231,7 @@
         "name": "workers",
         "dependencies": ["components"],
         "sources": [
-            "WorkerManager.js"
+            "WorkerFrontendManager.js"
         ]
     },
     {
@@ -348,7 +349,7 @@
     },
     {
         "name": "profiler",
-        "dependencies": ["components", "workers"],
+        "dependencies": ["components"],
         "sources": [
             "BottomUpProfileDataGridTree.js",
             "CPUProfileView.js",

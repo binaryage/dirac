@@ -422,6 +422,16 @@ WebInspector.SourceJavaScriptTokenizer.Keywords = {}
  */
 WebInspector.isInspectingDevice = function() {}
 
+/**
+ * @return {boolean}
+ */
+WebInspector.isWorkerFrontend = function() {}
+
+/**
+ * @return {boolean}
+ */
+WebInspector.isDedicatedWorkerFrontend = function() {}
+
 var InspectorTest = {}
 
 /* jsdifflib API */

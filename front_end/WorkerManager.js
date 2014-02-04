@@ -31,88 +31,15 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {boolean} canInspectWorkers
  */
-WebInspector.WorkerManager = function()
+WebInspector.WorkerManager = function(canInspectWorkers)
 {
-    this._workerIdToWindow = {};
     this._reset();
-    InspectorBackend.registerWorkerDispatcher(new WebInspector.WorkerDispatcher(this));
-}
-
-WebInspector.WorkerManager.isWorkerFrontend = function()
-{
-    return !!WebInspector.queryParamsObject["dedicatedWorkerId"] ||
-           !!WebInspector.queryParamsObject["isSharedWorker"];
-}
-
-WebInspector.WorkerManager.isDedicatedWorkerFrontend = function()
-{
-    return !!WebInspector.queryParamsObject["dedicatedWorkerId"];
-}
-
-WebInspector.WorkerManager.loaded = function()
-{
-    var workerId = WebInspector.queryParamsObject["dedicatedWorkerId"];
-    if (workerId)
-        WebInspector.WorkerManager._initializeDedicatedWorkerFrontend(workerId);
-    else
-        WebInspector.workerManager = new WebInspector.WorkerManager();
-}
-
-WebInspector.WorkerManager.loadCompleted = function()
-{
-    // Make sure script execution of dedicated worker is resumed and then paused
-    // on the first script statement in case we autoattached to it.
-    if (WebInspector.queryParamsObject["workerPaused"]) {
-        DebuggerAgent.pause();
-        RuntimeAgent.run(calculateTitle);
-    } else if (WebInspector.WorkerManager.isWorkerFrontend())
-        calculateTitle();
-
-    function calculateTitle()
-    {
-        WebInspector.WorkerManager._calculateWorkerInspectorTitle();
-    }
-
-    if (WebInspector.workerManager)
-        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, WebInspector.workerManager._mainFrameNavigated, WebInspector.workerManager);
-}
-
-WebInspector.WorkerManager._initializeDedicatedWorkerFrontend = function(workerId)
-{
-    function receiveMessage(event)
-    {
-        var message = event.data;
-        InspectorBackend.dispatch(message);
-    }
-    window.addEventListener("message", receiveMessage, true);
-
-
-    InspectorBackend.sendMessageObjectToBackend = function(message)
-    {
-        window.opener.postMessage({workerId: workerId, command: "sendMessageToBackend", message: message}, "*");
-    }
-}
-
-WebInspector.WorkerManager._calculateWorkerInspectorTitle = function()
-{
-    var expression = "location.href";
-    if (WebInspector.queryParamsObject["isSharedWorker"])
-        expression += " + (this.name ? ' (' + this.name + ')' : '')";
-    RuntimeAgent.evaluate.invoke({expression:expression, doNotPauseOnExceptionsAndMuteConsole:true, returnByValue: true}, evalCallback.bind(this));
-    
-    /**
-     * @param {?Protocol.Error} error
-     * @param {!RuntimeAgent.RemoteObject} result
-     * @param {boolean=} wasThrown
-     */
-    function evalCallback(error, result, wasThrown)
-    {
-        if (error || wasThrown) {
-            console.error(error);
-            return;
-        }
-        InspectorFrontendHost.inspectedURLChanged(result.value);
+    if (canInspectWorkers) {
+        WorkerAgent.enable();
+        InspectorBackend.registerWorkerDispatcher(new WebInspector.WorkerDispatcher(this));
+        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     }
 }
 
@@ -121,22 +48,25 @@ WebInspector.WorkerManager.Events = {
     WorkerRemoved: "WorkerRemoved",
     WorkersCleared: "WorkersCleared",
     WorkerSelectionChanged: "WorkerSelectionChanged",
+    WorkerDisconnected: "WorkerDisconnected",
+    MessageFromWorker: "MessageFromWorker",
 }
+
+WebInspector.WorkerManager.MainThreadId = 0;
 
 WebInspector.WorkerManager.prototype = {
 
     _reset: function()
     {
         /** @type {!Object.<number, string>} */
-        this._threadUrlByThreadId = {0: WebInspector.UIString("Thread: Main")};
-        this._threadsList = [0];
-        this._selectedThreadId = 0;
+        this._threadUrlByThreadId = {};
+        this._threadUrlByThreadId[WebInspector.WorkerManager.MainThreadId] = WebInspector.UIString("Thread: Main");
+        this._threadsList = [WebInspector.WorkerManager.MainThreadId];
+        this._selectedThreadId = WebInspector.WorkerManager.MainThreadId;
     },
 
     _workerCreated: function(workerId, url, inspectorConnected)
     {
-        if (inspectorConnected)
-            this._openInspectorWindow(workerId, true);
         this._threadsList.push(workerId);
         this._threadUrlByThreadId[workerId] = url;
         this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkerAdded, {workerId: workerId, url: url, inspectorConnected: inspectorConnected});
@@ -144,103 +74,25 @@ WebInspector.WorkerManager.prototype = {
 
     _workerTerminated: function(workerId)
     {
-        this.closeWorkerInspector(workerId);
         this._threadsList.remove(workerId);
         delete this._threadUrlByThreadId[workerId];
         this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkerRemoved, workerId);
     },
 
-    _sendMessageToWorkerInspector: function(workerId, message)
+    _dispatchMessageFromWorker: function(workerId, message)
     {
-        var workerInspectorWindow = this._workerIdToWindow[workerId];
-        if (workerInspectorWindow)
-            workerInspectorWindow.postMessage(message, "*");
-    },
-
-    openWorkerInspector: function(workerId)
-    {
-        var existingInspector = this._workerIdToWindow[workerId];
-        if (existingInspector) {
-            existingInspector.focus();
-            return;
-        }
-
-        this._openInspectorWindow(workerId, false);
-        WorkerAgent.connectToWorker(workerId);
-    },
-
-    _openInspectorWindow: function(workerId, workerIsPaused)
-    {
-        var search = window.location.search;
-        var hash = window.location.hash;
-        var url = window.location.href;
-        // Make sure hash is in rear
-        url = url.replace(hash, "");
-        url += (search ? "&dedicatedWorkerId=" : "?dedicatedWorkerId=") + workerId;
-        if (workerIsPaused)
-            url += "&workerPaused=true";
-        url = url.replace("docked=true&", "");
-        url = url.replace("can_dock=true&", "");
-        url += hash;
-        var width = WebInspector.settings.workerInspectorWidth.get();
-        var height = WebInspector.settings.workerInspectorHeight.get();
-        // Set location=0 just to make sure the front-end will be opened in a separate window, not in new tab.
-        var workerInspectorWindow = window.open(url, undefined, "location=0,width=" + width + ",height=" + height);
-        workerInspectorWindow.addEventListener("resize", this._onWorkerInspectorResize.bind(this, workerInspectorWindow), false);
-        this._workerIdToWindow[workerId] = workerInspectorWindow;
-        workerInspectorWindow.addEventListener("beforeunload", this._workerInspectorClosing.bind(this, workerId), true);
-
-        // Listen to beforeunload in detached state and to the InspectorClosing event in case of attached inspector.
-        window.addEventListener("unload", this._pageInspectorClosing.bind(this), true);
-    },
-
-    closeWorkerInspector: function(workerId)
-    {
-        var workerInspectorWindow = this._workerIdToWindow[workerId];
-        if (workerInspectorWindow)
-            workerInspectorWindow.close();
-    },
-
-    _mainFrameNavigated: function(event)
-    {
-        for (var workerId in this._workerIdToWindow)
-            this.closeWorkerInspector(workerId);
-
-        this._reset();
-        this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkersCleared);
-    },
-
-    _pageInspectorClosing: function()
-    {
-        this._ignoreWorkerInspectorClosing = true;
-        for (var workerId in this._workerIdToWindow) {
-            this._workerIdToWindow[workerId].close();
-            WorkerAgent.disconnectFromWorker(parseInt(workerId, 10));
-        }
-    },
-
-    _onWorkerInspectorResize: function(workerInspectorWindow)
-    {
-        var doc = workerInspectorWindow.document;
-        WebInspector.settings.workerInspectorWidth.set(doc.width);
-        WebInspector.settings.workerInspectorHeight.set(doc.height);
-    },
-
-    _workerInspectorClosing: function(workerId, event)
-    {
-        if (event.target.location.href === "about:blank")
-            return;
-        if (this._ignoreWorkerInspectorClosing)
-            return;
-        delete this._workerIdToWindow[workerId];
-        WorkerAgent.disconnectFromWorker(workerId);
+        this.dispatchEventToListeners(WebInspector.WorkerManager.Events.MessageFromWorker, {workerId: workerId, message: message})
     },
 
     _disconnectedFromWorker: function()
     {
-        var screen = new WebInspector.WorkerTerminatedScreen();
-        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, screen.hide, screen);
-        screen.showModal();
+        this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkerDisconnected)
+    },
+
+    _mainFrameNavigated: function(event)
+    {
+        this._reset();
+        this.dispatchEventToListeners(WebInspector.WorkerManager.Events.WorkersCleared);
     },
 
     /**
@@ -286,20 +138,9 @@ WebInspector.WorkerManager.prototype = {
 WebInspector.WorkerDispatcher = function(workerManager)
 {
     this._workerManager = workerManager;
-    window.addEventListener("message", this._receiveMessage.bind(this), true);
 }
 
 WebInspector.WorkerDispatcher.prototype = {
-    _receiveMessage: function(event)
-    {
-        var workerId = event.data["workerId"];
-        workerId = parseInt(workerId, 10);
-        var command = event.data.command;
-        var message = event.data.message;
-
-        if (command == "sendMessageToBackend")
-            WorkerAgent.sendMessageToWorker(workerId, message);
-    },
 
     workerCreated: function(workerId, url, inspectorConnected)
     {
@@ -313,7 +154,7 @@ WebInspector.WorkerDispatcher.prototype = {
 
     dispatchMessageFromWorker: function(workerId, message)
     {
-        this._workerManager._sendMessageToWorkerInspector(workerId, message);
+        this._workerManager._dispatchMessageFromWorker(workerId, message);
     },
 
     disconnectedFromWorker: function()
@@ -323,26 +164,6 @@ WebInspector.WorkerDispatcher.prototype = {
 }
 
 /**
- * @constructor
- * @extends {WebInspector.HelpScreen}
+ * @type {!WebInspector.WorkerManager}
  */
-WebInspector.WorkerTerminatedScreen = function()
-{
-    WebInspector.HelpScreen.call(this, WebInspector.UIString("Inspected worker terminated"));
-    var p = this.contentElement.createChild("p");
-    p.classList.add("help-section");
-    p.textContent = WebInspector.UIString("Inspected worker has terminated. Once it restarts we will attach to it automatically.");
-}
-
-WebInspector.WorkerTerminatedScreen.prototype = {
-    /**
-     * @override
-     */
-    willHide: function()
-    {
-        WebInspector.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this.hide, this);
-        WebInspector.HelpScreen.prototype.willHide.call(this);
-    },
-
-    __proto__: WebInspector.HelpScreen.prototype
-}
+WebInspector.workerManager;

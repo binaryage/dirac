@@ -38,8 +38,8 @@ WebInspector.ThreadsToolbar = function()
     this._comboBox = new WebInspector.StatusBarComboBox(this._onComboBoxSelectionChange.bind(this));
     this.element.appendChild(this._comboBox.element);
 
-    if (WebInspector.experimentsSettings.workersInMainWindow.isEnabled() && !WebInspector.WorkerManager.isWorkerFrontend()) {
-        this._reset();
+    this._reset();
+    if (WebInspector.experimentsSettings.workersInMainWindow.isEnabled()) {
         WebInspector.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerAdded, this._workerAdded, this);
         WebInspector.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerRemoved, this._workerRemoved, this);
         WebInspector.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkersCleared, this._workersCleared, this);
