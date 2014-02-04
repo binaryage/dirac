@@ -370,14 +370,11 @@ WebInspector.TabbedPane.prototype = {
         this._updateTabElements();
     },
 
-    /**
-     * @param {?Element} parentElement
-     * @param {!Element=} insertBefore
-     */
-    show: function(parentElement, insertBefore)
+    wasShown: function()
     {
-        WebInspector.View.prototype.show.call(this, parentElement, insertBefore);
-        this.selectTab(this._currentTab || this._tabsHistory[0]);
+        var effectiveTab = this._currentTab || this._tabsHistory[0];
+        if (effectiveTab)
+            this.selectTab(effectiveTab.id);
     },
 
     _updateTabElements: function()
