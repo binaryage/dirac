@@ -64,32 +64,8 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     this._boundariesAreValid = true;
     this._scrollTop = 0;
 
-    // Create layout componets.
-
-    // |-------------------------------|
-    // |    |           |              |
-    // |    |  Records  |              |
-    // |    |           |    Details   |
-    // |----------------|              |
-    // |    |  Memory   |              |
-    //  -------------------------------
-
-    // Create top level properties splitter.
-    this._detailsSplitView = new WebInspector.SplitView(false, true, "timeline-details");
-    this._detailsSplitView.element.classList.add("timeline-details-split");
-    this._detailsSplitView.sidebarElement().classList.add("timeline-details");
-    this._detailsSplitView.setMainElementConstraints(undefined, 40);
-    this._detailsView = new WebInspector.TimelineDetailsView();
-    this._detailsView.show(this._detailsSplitView.sidebarElement());
-    this._detailsSplitView.installResizer(this._detailsView.titleElement());
-
-    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
-    WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
-    this._dockSideChanged();
-
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.element.classList.add("searchable-view");
-    this._searchableView.show(this._detailsSplitView.mainElement());
 
     this._views = [];
     this._recordsView = this._createRecordsView();
@@ -138,7 +114,7 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
         break;
     }
 
-    this._detailsSplitView.show(this.element);
+    this._searchableView.show(this.element);
 }
 
 WebInspector.TimelineView.commonUIFilters = function()
@@ -322,18 +298,6 @@ WebInspector.TimelineView.prototype = {
         var categories = WebInspector.TimelinePresentationModel.categories();
         categories[name].hidden = !this._filters._categoryFiltersUI[name].checked();
         this._invalidateAndScheduleRefresh(true, true);
-    },
-
-    _dockSideChanged: function()
-    {
-        var dockSide = WebInspector.dockController.dockSide();
-        var vertically = false;
-        if (dockSide === WebInspector.DockController.State.DockedToBottom)
-            vertically = true;
-        else
-            vertically = !WebInspector.settings.splitVerticallyWhenDockedToRight.get();
-        this._detailsSplitView.setVertical(vertically);
-        this._detailsView.setVertical(vertically);
     },
 
     _rootRecord: function()
@@ -644,7 +608,7 @@ WebInspector.TimelineView.prototype = {
          */
         function showCallback(element)
         {
-            this._detailsView.setContent(record.title, element);
+            this._panel.setDetailsContent(record.title, element);
         }
     },
 
@@ -712,7 +676,7 @@ WebInspector.TimelineView.prototype = {
         } else {
             var title = WebInspector.UIString("%s \u2013 %s", this._calculator.formatTime(0, true), this._calculator.formatTime(this._calculator.boundarySpan(), true));
         }
-        this._detailsView.setContent(title, fragment);
+        this._panel.setDetailsContent(title, fragment);
     },
 
     /**

@@ -79,7 +79,21 @@ WebInspector.TimelinePanel = function()
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._willReloadPage, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
 
+    // Create top level properties splitter.
+    this._detailsSplitView = new WebInspector.SplitView(false, true, "timeline-details");
+    this._detailsSplitView.element.classList.add("timeline-details-split");
+    this._detailsSplitView.sidebarElement().classList.add("timeline-details");
+    this._detailsSplitView.setMainElementConstraints(undefined, 40);
+    this._detailsView = new WebInspector.TimelineDetailsView();
+    this._detailsSplitView.installResizer(this._detailsView.titleElement());
+    this._detailsView.show(this._detailsSplitView.sidebarElement());
+
+    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
+    WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
+    this._dockSideChanged();
+
     this._selectPresentationMode(this._presentationModeSetting.get());
+    this._detailsSplitView.show(this.element);
 }
 
 WebInspector.TimelinePanel.Mode = {
@@ -95,6 +109,27 @@ WebInspector.TimelinePanel.headerHeight = 20;
 WebInspector.TimelinePanel.durationFilterPresetsMs = [0, 1, 15];
 
 WebInspector.TimelinePanel.prototype = {
+    _dockSideChanged: function()
+    {
+        var dockSide = WebInspector.dockController.dockSide();
+        var vertically = false;
+        if (dockSide === WebInspector.DockController.State.DockedToBottom)
+            vertically = true;
+        else
+            vertically = !WebInspector.settings.splitVerticallyWhenDockedToRight.get();
+        this._detailsSplitView.setVertical(vertically);
+        this._detailsView.setVertical(vertically);
+    },
+
+    /**
+     * @param {string} title
+     * @param {!DocumentFragment} content
+     */
+    setDetailsContent: function(title, content)
+    {
+        this._detailsView.setContent(title, content);
+    },
+
     /**
      * @return {number}
      */
@@ -381,7 +416,7 @@ WebInspector.TimelinePanel.prototype = {
         this._currentView = this._viewForMode(mode);
         this._updateFiltersBar();
         this._currentView.setWindowTimes(this.windowStartTime(), this.windowEndTime());
-        this._currentView.show(this.element);
+        this._currentView.show(this._detailsSplitView.mainElement());
         this._overviewPane.setOverviewControl(this._currentView.overviewControl());
         this._glueParentButton.setEnabled(this._currentView.supportsGlueParentMode());
     },
