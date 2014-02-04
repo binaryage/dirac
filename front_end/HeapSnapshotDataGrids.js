@@ -497,7 +497,9 @@ WebInspector.HeapSnapshotContainmentDataGrid.prototype = {
 
     sortingChanged: function()
     {
-        this.rootNode().sort();
+        var rootNode = this.rootNode();
+        if (rootNode.hasChildren)
+            rootNode.sort();
     },
 
     __proto__: WebInspector.HeapSnapshotSortableDataGrid.prototype
