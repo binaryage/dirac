@@ -1648,7 +1648,7 @@ WebInspector.TimelinePresentationModel.createStyleRuleForCategory = function(cat
         ".timeline-details-view .timeline-" + category.name + ", " +
         ".timeline-category-" + category.name + " .timeline-tree-icon"
 
-    return selector + " { background-image: -webkit-linear-gradient(" +
+    return selector + " { background-image: linear-gradient(" +
        category.fillColorStop0 + ", " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + ");" +
        " border-color: " + category.borderColor +
        "}";

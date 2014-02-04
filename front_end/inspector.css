@@ -79,7 +79,7 @@ input[type="text"]:focus {
 }
 
 .toolbar-background {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(191, 191, 191)), to(rgb(151, 151, 151)));
+    background-image: linear-gradient(to bottom, rgb(191, 191, 191), rgb(151, 151, 151));
     padding: 1px 0 0 1px;
     border-bottom: 1px solid rgb(80, 80, 80);
     background-origin: padding-box;
@@ -125,7 +125,7 @@ select {
 }
 
 body.inactive .toolbar-background {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(233, 233, 233)), to(rgb(207, 207, 207)));
+    background-image: linear-gradient(to bottom, rgb(233, 233, 233), rgb(207, 207, 207));
     border-bottom: 1px solid rgb(64%, 64%, 64%);
 }
 
@@ -147,32 +147,32 @@ body.platform-windows.inactive .toolbar-background {
 }
 
 body.undocked.platform-mac-leopard .toolbar-background {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(175, 175, 175)), to(rgb(151, 151, 151))) !important;
+    background-image: linear-gradient(to bottom, rgb(175, 175, 175), rgb(151, 151, 151)) !important;
     color: #333 !important;
 }
 
 body.undocked.platform-mac-leopard.inactive .toolbar-background {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(221, 221, 221)), to(rgb(207, 207, 207))) !important;
+    background-image: linear-gradient(to bottom, rgb(221, 221, 221), rgb(207, 207, 207)) !important;
     color: #555 !important;
 }
 
 body.undocked.platform-mac-snowleopard .toolbar-background {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(189, 189, 189)), to(rgb(167, 167, 167))) !important;
+    background-image: linear-gradient(to bottom, rgb(189, 189, 189), rgb(167, 167, 167)) !important;
     color: #333 !important;
 }
 
 body.undocked.platform-mac-snowleopard.inactive .toolbar-background {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(228, 228, 228)), to(rgb(216, 216, 216))) !important;
+    background-image: linear-gradient(to bottom, rgb(228, 228, 228), rgb(216, 216, 216)) !important;
     color: #555 !important;
 }
 
 body.undocked.platform-mac .toolbar-background {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(208, 208, 208)), to(rgb(200, 200, 200))) !important;
+    background-image: linear-gradient(to bottom, rgb(208, 208, 208), rgb(200, 200, 200)) !important;
     color: #333 !important;
 }
 
 body.undocked.platform-mac.inactive .toolbar-background {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(238, 238, 238)), to(rgb(224, 224, 224))) !important;
+    background-image: linear-gradient(to bottom, rgb(238, 238, 238), rgb(224, 224, 224)) !important;
     color: #555 !important;
 }
 
@@ -219,18 +219,18 @@ body.undocked.platform-mac.inactive .toolbar-background {
 }
 
 .scrollable-content::-webkit-scrollbar-thumb:vertical {
-    background: -webkit-gradient(linear, left top, right top, from(rgb(192, 192, 192)), to(rgb(192, 192, 192)), color-stop(40%, rgb(214, 214, 214)));
+    background: linear-gradient(to right, rgb(192, 192, 192), rgb(214, 214, 214) 40%, rgb(192, 192, 192));
     border-radius: 5px;
     min-height: 20px;
 }
 
 .scrollable-content::-webkit-scrollbar-thumb:vertical:hover,
 .scrollable-content::-webkit-scrollbar-thumb:vertical:active {
-    background: -webkit-gradient(linear, left top, right top, from(rgb(230, 230, 230)), to(rgb(230, 230, 230)), color-stop(40%, rgb(252, 252, 252)));
+    background: linear-gradient(to right, rgb(230, 230, 230), rgb(252, 252, 252) 40%, rgb(230, 230, 230));
 }
 
 .scrollable-content::-webkit-scrollbar-track:vertical {
-    background: -webkit-gradient(linear, left top, right top, from(rgb(128, 128, 128)), to(rgb(164, 164, 164)), color-stop(25%, rgb(164, 164, 164)));
+    background: linear-gradient(to right, rgb(128, 128, 128), rgb(164, 164, 164) 25%, rgb(164, 164, 164));
     border-radius: 5px;
 }
 
@@ -256,7 +256,7 @@ body.undocked.platform-mac.inactive .toolbar-background {
 
 .toolbar-search-navigation-controls {
     vertical-align: top;
-    background-image: -webkit-linear-gradient(rgb(228, 228, 228), rgb(206, 206, 206));
+    background-image: linear-gradient(rgb(228, 228, 228), rgb(206, 206, 206));
 }
 
 .toolbar-search-navigation {
@@ -288,13 +288,13 @@ body.undocked.platform-mac.inactive .toolbar-background {
     border: 1px solid rgb(163, 163, 163);
     border-radius: 8px;
     margin: 0;
-    background-image: -webkit-linear-gradient(rgb(241, 241, 241), rgb(220, 220, 220));
+    background-image: linear-gradient(rgb(241, 241, 241), rgb(220, 220, 220));
     width: 100%;
     height: 20px;
 }
 
 .toolbar-search button:active {
-    background-image: -webkit-linear-gradient(rgb(185, 185, 185), rgb(156, 156, 156));
+    background-image: linear-gradient(rgb(185, 185, 185), rgb(156, 156, 156));
 }
 
 .toolbar-search-control {
@@ -324,7 +324,7 @@ body.undocked.platform-mac.inactive .toolbar-background {
 }
 
 .toolbar-search-navigation.toolbar-search-navigation-prev.enabled:active {
-    background-image: url(Images/searchPrev.png), -webkit-linear-gradient(rgb(168, 168, 168), rgb(116, 116, 116));
+    background-image: url(Images/searchPrev.png), linear-gradient(rgb(168, 168, 168), rgb(116, 116, 116));
 }
 
 .toolbar-search-navigation.toolbar-search-navigation-next {
@@ -333,7 +333,7 @@ body.undocked.platform-mac.inactive .toolbar-background {
 }
 
 .toolbar-search-navigation.toolbar-search-navigation-next.enabled:active {
-    background-image: url(Images/searchNext.png), -webkit-linear-gradient(rgb(168, 168, 168), rgb(116, 116, 116));
+    background-image: url(Images/searchNext.png), linear-gradient(rgb(168, 168, 168), rgb(116, 116, 116));
 }
 
 .search-results-matches {
@@ -1402,14 +1402,14 @@ iframe.panel.extension {
 
 .placard.selected {
     border-top: 1px solid rgb(172, 172, 172);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(182, 182, 182)), to(rgb(162, 162, 162)));
+    background-image: linear-gradient(to bottom, rgb(182, 182, 182), rgb(162, 162, 162));
     background-origin: padding-box;
     background-clip: padding-box;
 }
 
 :focus .placard.selected {
     border-top: 1px solid rgb(70, 103, 215);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(92, 147, 213)), to(rgb(56, 121, 217)));
+    background-image: linear-gradient(to bottom, rgb(92, 147, 213), rgb(56, 121, 217));
 }
 
 .placard .title {
@@ -1797,14 +1797,14 @@ body.inactive .sidebar {
     background-color: transparent;
     border: 1px solid rgb(165, 165, 165);
     background-color: rgb(237, 237, 237);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(252, 252, 252)), to(rgb(223, 223, 223)));
+    background-image: linear-gradient(to bottom, rgb(252, 252, 252), rgb(223, 223, 223));
     border-radius: 12px;
     -webkit-appearance: none;
 }
 
 .pane-title-button:active {
     background-color: rgb(215, 215, 215);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(194, 194, 194)), to(rgb(239, 239, 239)));
+    background-image: linear-gradient(to bottom, rgb(194, 194, 194), rgb(239, 239, 239));
 }
 
 button.show-all-nodes {
@@ -1816,7 +1816,7 @@ button.show-all-nodes {
     background-color: transparent;
     border: 1px solid rgb(165, 165, 165);
     background-color: rgb(237, 237, 237);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(252, 252, 252)), to(rgb(223, 223, 223)));
+    background-image: linear-gradient(to bottom, rgb(252, 252, 252), rgb(223, 223, 223));
     border-radius: 12px;
     -webkit-appearance: none;
 }
@@ -1825,12 +1825,12 @@ body.inactive button.show-all-nodes {
     color: rgb(130, 130, 130);
     border-color: rgb(212, 212, 212);
     background-color: rgb(239, 239, 239);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(250, 250, 250)), to(rgb(235, 235, 235)));
+    background-image: linear-gradient(to bottom, rgb(250, 250, 250), rgb(235, 235, 235));
 }
 
 button.show-all-nodes:active {
     background-color: rgb(215, 215, 215);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(194, 194, 194)), to(rgb(239, 239, 239)));
+    background-image: linear-gradient(to bottom, rgb(194, 194, 194), rgb(239, 239, 239));
 }
 
 button.enable-toggle-status-bar-item .glyph {
@@ -2389,7 +2389,7 @@ body.inactive .sidebar-tree-item.selected {
 body.platform-mac .soft-context-menu-item-mouse-over {
     border-top: 1px solid rgb(90, 131, 236);
     border-bottom: 1px solid rgb(18, 88, 233);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(100, 140, 243)), to(rgb(36, 101, 243)));
+    background-image: linear-gradient(to bottom, rgb(100, 140, 243), rgb(36, 101, 243));
 }
 
 .soft-context-menu-item-checkmark {

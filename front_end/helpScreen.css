@@ -59,18 +59,18 @@
 }
 
 .help-window-main .help-container-wrapper::-webkit-scrollbar-thumb:vertical {
-    background: -webkit-gradient(linear, left top, right top, from(rgb(128, 128, 128)), to(rgb(128, 128, 128)), color-stop(40%, rgb(96, 96, 96)));
+    background: linear-gradient(to right, rgb(128, 128, 128), rgb(96, 96, 96) 40%, rgb(128, 128, 128));
     border-radius: 5px;
     min-height: 20px;
 }
 
 .help-window-main .help-container-wrapper::-webkit-scrollbar-thumb:vertical:hover,
 .help-window-main .help-container-wrapper::-webkit-scrollbar-thumb:vertical:active {
-    background: -webkit-gradient(linear, left top, right top, from(rgb(176, 176, 176)), to(rgb(176, 176, 176)), color-stop(40%, rgb(144, 144, 144)));
+    background: linear-gradient(to right, rgb(176, 176, 176), rgb(144, 144, 144) 40%, rgb(176, 176, 176));
 }
 
 .help-window-main .help-container-wrapper::-webkit-scrollbar-track:vertical {
-    background: -webkit-gradient(linear, left top, right top, from(rgb(10, 10, 10)), to(rgb(32, 32, 32)), color-stop(25%, rgb(32, 32, 32)));
+    background: linear-gradient(to right, rgb(10, 10, 10), rgb(32, 32, 32) 25%, rgb(32, 32, 32));
     border-radius: 5px;
 }
 
@@ -461,7 +461,7 @@ body.platform-mac .help-content input[type=radio] {
 }
 
 .settings-tab-text-button {
-    background-image: -webkit-linear-gradient(hsl(0, 0%, 93%), hsl(0, 0%, 93%) 38%, hsl(0, 0%, 87%));
+    background-image: linear-gradient(hsl(0, 0%, 93%), hsl(0, 0%, 93%) 38%, hsl(0, 0%, 87%));
     border: 1px solid hsla(0, 0%, 0%, 0.25);
     border-radius: 2px;
     box-shadow: 0 1px 0 hsla(0, 0%, 0%, 0.08), inset 0 1px 2px hsla(0, 100%, 100%, 0.75);
@@ -475,21 +475,21 @@ body.platform-mac .help-content input[type=radio] {
 }
 
 .settings-tab-text-button:disabled {
-    background-image: -webkit-linear-gradient(#f1f1f1, #f1f1f1 38%, #e6e6e6);
+    background-image: linear-gradient(#f1f1f1, #f1f1f1 38%, #e6e6e6);
     border-color: rgba(80, 80, 80, 0.2);
     box-shadow: 0 1px 0 rgba(80, 80, 80, 0.08), inset 0 1px 2px rgba(255, 255, 255, 0.75);
     color: #aaa;
 }
 
 .settings-tab-text-button:not(:disabled):hover {
-    background-image: -webkit-linear-gradient(hsl(0, 0%, 94%), hsl(0, 0%, 94%) 38%, hsl(0, 0%, 88%));
+    background-image: linear-gradient(hsl(0, 0%, 94%), hsl(0, 0%, 94%) 38%, hsl(0, 0%, 88%));
     border-color: hsla(0, 0%, 0%, 0.3);
     box-shadow: 0 1px 0 hsla(0, 0%, 0%, 0.12), inset 0 1px 2px hsla(0, 100%, 100%, 0.95);
     color: hsl(0, 0%, 0%);
 }
 
 .settings-tab-text-button:not(:disabled):active {
-    background-image: -webkit-linear-gradient(hsl(0, 0%, 91%), hsl(0, 0%, 91%) 38%, hsl(0, 0%, 84%));
+    background-image: linear-gradient(hsl(0, 0%, 91%), hsl(0, 0%, 91%) 38%, hsl(0, 0%, 84%));
     box-shadow: none;
     text-shadow: none;
 }

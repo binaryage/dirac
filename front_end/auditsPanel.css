@@ -85,7 +85,7 @@
 
 .audit-launcher-view button:active {
     background-color: rgb(215, 215, 215);
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(194, 194, 194)), to(rgb(239, 239, 239)));
+    background-image: linear-gradient(to bottom, rgb(194, 194, 194), rgb(239, 239, 239));
 }
 
 .panel-enabler-view.audit-launcher-view label {

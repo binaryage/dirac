@@ -227,33 +227,33 @@
 
 .resource-timing-view .network-timing-bar.blocking,
 .resource-timing-view .network-timing-bar.proxy {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(242, 242, 194)), to(rgb(204, 204, 102)));
+    background-image: linear-gradient(to bottom, rgb(242, 242, 194), rgb(204, 204, 102));
     border-left: 1px solid rgb(204, 204, 102);
 }
 
 .resource-timing-view .network-timing-bar.dns {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(194, 242, 194)), to(rgb(102, 204, 102)));
+    background-image: linear-gradient(to bottom, rgb(194, 242, 194), rgb(102, 204, 102));
     border-left: 1px solid rgb(102, 204, 102);
 }
 
 .resource-timing-view .network-timing-bar.connecting,
 .resource-timing-view .network-timing-bar.ssl {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(194, 242, 242)), to(rgb(102, 204, 204)));
+    background-image: linear-gradient(to bottom, rgb(194, 242, 242), rgb(102, 204, 204));
     border-left: 1px solid rgb(102, 204, 204);
 }
 
 .resource-timing-view .network-timing-bar.sending {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(194, 194, 242)), to(rgb(102, 102, 204)));
+    background-image: linear-gradient(to bottom, rgb(194, 194, 242), rgb(102, 102, 204));
     border-left: 1px solid rgb(102, 102, 204);
 }
 
 .resource-timing-view .network-timing-bar.waiting {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(242, 194, 242)), to(rgb(204, 102, 204)));
+    background-image: linear-gradient(to bottom, rgb(242, 194, 242), rgb(204, 102, 204));
     border-left: 1px solid rgb(204, 102, 204);
 }
 
 .resource-timing-view .network-timing-bar.receiving {
-    background-image: -webkit-gradient(linear, left top, left bottom, from(rgb(242, 194, 194)), to(rgb(204, 102, 102)));
+    background-image: linear-gradient(to bottom, rgb(242, 194, 194), rgb(204, 102, 102));
     border-left: 1px solid rgb(204, 102, 102);
 }
 
