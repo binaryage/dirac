@@ -893,8 +893,10 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     {
         if (this.profileBeingRecorded())
             return;
-        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(this, WebInspector.UIString("Snapshotting\u2026"));
+        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(this);
         this.addProfile(this._profileBeingRecorded);
+        this._profileBeingRecorded.updateStatus(WebInspector.UIString("Snapshotting\u2026"));
+
         /**
          * @param {?string} error
          * @this {WebInspector.HeapSnapshotProfileType}
@@ -934,8 +936,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
         var profile = this.profileBeingRecorded();
         if (!profile)
             return;
-        profile.sidebarElement.subtitle = WebInspector.UIString("%.0f%", (done / total) * 100);
-        profile.sidebarElement.wait = true;
+        profile.updateStatus(WebInspector.UIString("%.0f%", (done / total) * 100), true);
         if (finished)
             profile._prepareToLoad();
     },
@@ -1016,8 +1017,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
         if (profileSamples.totalTime < timestamp - profileSamples.timestamps[0])
             profileSamples.totalTime *= 2;
         this.dispatchEventToListeners(WebInspector.TrackingHeapSnapshotProfileType.HeapStatsUpdate, this._profileSamples);
-        var profile = this._profileBeingRecorded;
-        profile.sidebarElement.wait = true;
+        this._profileBeingRecorded.updateStatus(null, true);
     },
 
     /**
@@ -1056,7 +1056,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
     {
         if (this.profileBeingRecorded())
             return;
-        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(this, WebInspector.UIString("Recording\u2026"));
+        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(this);
         this._lastSeenIndex = -1;
         this._profileSamples = {
             'sizes': [],
@@ -1068,26 +1068,21 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
         this._profileBeingRecorded._profileSamples = this._profileSamples;
         this._recording = true;
         this.addProfile(this._profileBeingRecorded);
+        this._profileBeingRecorded.updateStatus(WebInspector.UIString("Recording\u2026"));
         HeapProfilerAgent.startTrackingHeapObjects(WebInspector.experimentsSettings.allocationProfiler.isEnabled());
         this.dispatchEventToListeners(WebInspector.TrackingHeapSnapshotProfileType.TrackingStarted);
     },
 
     _stopRecordingProfile: function()
     {
-
         var profile = this._profileBeingRecorded;
-        var title = WebInspector.UIString("Snapshotting\u2026");
-        profile.title = title;
-        profile.sidebarElement.mainTitle = title;
+        profile.updateStatus(WebInspector.UIString("Snapshotting\u2026"));
         /**
          * @param {?string} error
          * @this {WebInspector.HeapSnapshotProfileType}
          */
         function didTakeHeapSnapshot(error)
         {
-            var title = WebInspector.UIString("Snapshot %d", profile.uid);
-            profile.title = title;
-            profile.sidebarElement.mainTitle = title;
             profile._finishLoad();
             this._profileSamples = null;
             this._profileBeingRecorded = null;
@@ -1144,11 +1139,11 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
  * @constructor
  * @extends {WebInspector.ProfileHeader}
  * @param {!WebInspector.HeapSnapshotProfileType} type
- * @param {string} title
+ * @param {string=} title
  */
 WebInspector.HeapProfileHeader = function(type, title)
 {
-    WebInspector.ProfileHeader.call(this, type, title);
+    WebInspector.ProfileHeader.call(this, type, title || WebInspector.UIString("Snapshot %d", type._nextProfileUid));
     this.maxJSObjectId = -1;
     /**
      * @type {?WebInspector.HeapSnapshotWorkerProxy}
@@ -1209,8 +1204,7 @@ WebInspector.HeapProfileHeader.prototype = {
     {
         console.assert(!this._receiver, "Already loading");
         this._setupWorker();
-        this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026");
-        this.sidebarElement.wait = true;
+        this.updateStatus(WebInspector.UIString("Loading\u2026"), true);
     },
 
     _finishLoad: function()
@@ -1240,7 +1234,7 @@ WebInspector.HeapProfileHeader.prototype = {
          */
         function setProfileWait(event)
         {
-            this.sidebarElement.wait = event.data;
+            this.updateStatus(null, event.data);
         }
         console.assert(!this._workerProxy, "HeapSnapshotWorkerProxy already exists");
         this._workerProxy = new WebInspector.HeapSnapshotWorkerProxy(this._handleWorkerEvent.bind(this));
@@ -1256,7 +1250,8 @@ WebInspector.HeapProfileHeader.prototype = {
     {
         if (WebInspector.HeapSnapshotProgressEvent.Update !== eventName)
             return;
-        this._updateSubtitle(data);
+        var subtitle = /** @type {string} */ (data);
+        this.updateStatus(subtitle);
     },
 
     /**
@@ -1270,17 +1265,11 @@ WebInspector.HeapProfileHeader.prototype = {
         this._wasDisposed = true;
     },
 
-    _updateSubtitle: function(value)
-    {
-        this.sidebarElement.subtitle = value;
-    },
-
     _didCompleteSnapshotTransfer: function()
     {
         if (!this._snapshotProxy)
             return;
-        this.sidebarElement.subtitle = Number.bytesToString(this._snapshotProxy.totalSize);
-        this.sidebarElement.wait = false;
+        this.updateStatus(Number.bytesToString(this._snapshotProxy.totalSize), false);
     },
 
     /**
@@ -1364,7 +1353,7 @@ WebInspector.HeapProfileHeader.prototype = {
     _updateSaveProgress: function(value, total)
     {
         var percentValue = ((total ? (value / total) : 0) * 100).toFixed(0);
-        this._updateSubtitle(WebInspector.UIString("Saving\u2026 %d\%", percentValue));
+        this.updateStatus(WebInspector.UIString("Saving\u2026 %d\%", percentValue));
     },
 
     /**
@@ -1373,10 +1362,8 @@ WebInspector.HeapProfileHeader.prototype = {
      */
     loadFromFile: function(file)
     {
-        this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026");
-        this.sidebarElement.wait = true;
+        this.updateStatus(WebInspector.UIString("Loading\u2026"), true);
         this._setupWorker();
-
         var delegate = new WebInspector.HeapSnapshotLoadFromFileDelegate(this);
         var fileReader = this._createFileReader(file, delegate);
         fileReader.start(this._receiver);
@@ -1420,18 +1407,20 @@ WebInspector.HeapSnapshotLoadFromFileDelegate.prototype = {
      */
     onError: function (reader, e)
     {
+        var subtitle;
         switch(e.target.error.code) {
         case e.target.error.NOT_FOUND_ERR:
-            this._snapshotHeader._updateSubtitle(WebInspector.UIString("'%s' not found.", reader.fileName()));
-        break;
-        case e.target.error.NOT_READABLE_ERR:
-            this._snapshotHeader._updateSubtitle(WebInspector.UIString("'%s' is not readable", reader.fileName()));
-        break;
-        case e.target.error.ABORT_ERR:
+            subtitle = WebInspector.UIString("'%s' not found.", reader.fileName());
             break;
+        case e.target.error.NOT_READABLE_ERR:
+            subtitle = WebInspector.UIString("'%s' is not readable", reader.fileName());
+            break;
+        case e.target.error.ABORT_ERR:
+            return;
         default:
-            this._snapshotHeader._updateSubtitle(WebInspector.UIString("'%s' error %d", reader.fileName(), e.target.error.code));
+            subtitle = WebInspector.UIString("'%s' error %d", reader.fileName(), e.target.error.code);
         }
+        this._snapshotHeader.updateStatus(subtitle);
     }
 }
 

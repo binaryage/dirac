@@ -727,8 +727,7 @@ WebInspector.CanvasProfileType.prototype = {
     {
         if (error || this._lastProfileHeader && this._lastProfileHeader.traceLogId() === traceLogId)
             return;
-        var profileHeader = new WebInspector.CanvasProfileHeader(this, "", traceLogId, frameId);
-        profileHeader.title = WebInspector.UIString("Trace Log %d", profileHeader.title);
+        var profileHeader = new WebInspector.CanvasProfileHeader(this, traceLogId, frameId);
         this._lastProfileHeader = profileHeader;
         this.addProfile(profileHeader);
         profileHeader._updateCapturingStatus();
@@ -986,13 +985,12 @@ WebInspector.CanvasDispatcher.prototype = {
  * @constructor
  * @extends {WebInspector.ProfileHeader}
  * @param {!WebInspector.CanvasProfileType} type
- * @param {string} title
  * @param {!CanvasAgent.TraceLogId=} traceLogId
  * @param {!PageAgent.FrameId=} frameId
  */
-WebInspector.CanvasProfileHeader = function(type, title, traceLogId, frameId)
+WebInspector.CanvasProfileHeader = function(type, traceLogId, frameId)
 {
-    WebInspector.ProfileHeader.call(this, type, title);
+    WebInspector.ProfileHeader.call(this, type, WebInspector.UIString("Trace Log %d", traceLogId));
     /** @type {!CanvasAgent.TraceLogId} */
     this._traceLogId = traceLogId || "";
     this._frameId = frameId;
@@ -1061,7 +1059,7 @@ WebInspector.CanvasProfileHeader.prototype = {
      */
     _updateCapturingStatus: function(traceLog)
     {
-        if (!this.sidebarElement || !this._traceLogId)
+        if (!this._traceLogId)
             return;
 
         if (traceLog) {
@@ -1069,8 +1067,8 @@ WebInspector.CanvasProfileHeader.prototype = {
             this._traceLogSize = traceLog.totalAvailableCalls;
         }
 
-        this.sidebarElement.subtitle = this._alive ? WebInspector.UIString("Capturing\u2026 %d calls", this._traceLogSize) : WebInspector.UIString("Captured %d calls", this._traceLogSize);
-        this.sidebarElement.wait = this._alive;
+        var subtitle = this._alive ? WebInspector.UIString("Capturing\u2026 %d calls", this._traceLogSize) : WebInspector.UIString("Captured %d calls", this._traceLogSize);
+        this.updateStatus(subtitle, this._alive);
 
         if (this._alive) {
             clearTimeout(this._requestStatusTimer);

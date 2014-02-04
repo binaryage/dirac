@@ -778,9 +778,9 @@ WebInspector.CPUProfileType.prototype = {
     {
         if (this._profileBeingRecorded)
             return;
-        this._profileBeingRecorded = new WebInspector.CPUProfileHeader(this, WebInspector.UIString("Recording\u2026"));
+        this._profileBeingRecorded = new WebInspector.CPUProfileHeader(this);
         this.addProfile(this._profileBeingRecorded);
-
+        this._profileBeingRecorded.updateStatus(WebInspector.UIString("Recording\u2026"));
         this._recording = true;
         WebInspector.cpuProfilerModel.setRecording(true);
         WebInspector.userMetrics.ProfilesCPUProfileTaken.record();
@@ -802,10 +802,7 @@ WebInspector.CPUProfileType.prototype = {
             if (!this._profileBeingRecorded)
                 return;
             this._profileBeingRecorded.setProtocolProfile(profile);
-
-            var title = WebInspector.UIString("Profile %d", this._profileBeingRecorded.uid);
-            this._profileBeingRecorded.title = title;
-            this._profileBeingRecorded.sidebarElement.mainTitle = title;
+            this._profileBeingRecorded.updateStatus("");
             var recordedProfile = this._profileBeingRecorded;
             this._profileBeingRecorded = null;
             WebInspector.panels.profiles.showProfile(recordedProfile);
@@ -840,11 +837,11 @@ WebInspector.CPUProfileType.prototype = {
  * @implements {WebInspector.OutputStream}
  * @implements {WebInspector.OutputStreamDelegate}
  * @param {!WebInspector.CPUProfileType} type
- * @param {string} title
+ * @param {string=} title
  */
 WebInspector.CPUProfileHeader = function(type, title)
 {
-    WebInspector.ProfileHeader.call(this, type, title);
+    WebInspector.ProfileHeader.call(this, type, title || WebInspector.UIString("Profile %d", type._nextProfileUid));
     this._tempFile = null;
 }
 
@@ -852,7 +849,7 @@ WebInspector.CPUProfileHeader.prototype = {
     onTransferStarted: function()
     {
         this._jsonifiedProfile = "";
-        this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026 %s", Number.bytesToString(this._jsonifiedProfile.length));
+        this.updateStatus(WebInspector.UIString("Loading\u2026 %s", Number.bytesToString(this._jsonifiedProfile.length)));
     },
 
     /**
@@ -860,15 +857,15 @@ WebInspector.CPUProfileHeader.prototype = {
      */
     onChunkTransferred: function(reader)
     {
-        this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026 %d\%", Number.bytesToString(this._jsonifiedProfile.length));
+        this.updateStatus(WebInspector.UIString("Loading\u2026 %d\%", Number.bytesToString(this._jsonifiedProfile.length)));
     },
 
     onTransferFinished: function()
     {
-        this.sidebarElement.subtitle = WebInspector.UIString("Parsing\u2026");
+        this.updateStatus(WebInspector.UIString("Parsing\u2026"));
         this._profile = JSON.parse(this._jsonifiedProfile);
         this._jsonifiedProfile = null;
-        this.sidebarElement.subtitle = WebInspector.UIString("Loaded");
+        this.updateStatus(WebInspector.UIString("Loaded"));
 
         if (this._profileType._profileBeingRecorded === this)
             this._profileType._profileBeingRecorded = null;
@@ -879,18 +876,20 @@ WebInspector.CPUProfileHeader.prototype = {
      */
     onError: function(reader, e)
     {
+        var subtitle;
         switch(e.target.error.code) {
         case e.target.error.NOT_FOUND_ERR:
-            this.sidebarElement.subtitle = WebInspector.UIString("'%s' not found.", reader.fileName());
-        break;
-        case e.target.error.NOT_READABLE_ERR:
-            this.sidebarElement.subtitle = WebInspector.UIString("'%s' is not readable", reader.fileName());
-        break;
-        case e.target.error.ABORT_ERR:
+            subtitle = WebInspector.UIString("'%s' not found.", reader.fileName());
             break;
+        case e.target.error.NOT_READABLE_ERR:
+            subtitle = WebInspector.UIString("'%s' is not readable", reader.fileName());
+            break;
+        case e.target.error.ABORT_ERR:
+            return;
         default:
-            this.sidebarElement.subtitle = WebInspector.UIString("'%s' error %d", reader.fileName(), e.target.error.code);
+            subtitle = WebInspector.UIString("'%s' error %d", reader.fileName(), e.target.error.code);
         }
+        this.updateStatus(subtitle);
     },
 
     /**
@@ -969,9 +968,7 @@ WebInspector.CPUProfileHeader.prototype = {
      */
     loadFromFile: function(file)
     {
-        this.sidebarElement.subtitle = WebInspector.UIString("Loading\u2026");
-        this.sidebarElement.wait = true;
-
+        this.updateStatus(WebInspector.UIString("Loading\u2026"), true);
         var fileReader = new WebInspector.ChunkedFileReader(file, 10000000, this);
         fileReader.start(this);
     },
