@@ -231,7 +231,6 @@ WebInspector.OverridesView.DeviceTab = function()
         this._deviceSelectElement.selectedIndex = devices.length - 1;
 
     this._deviceSelectElement.addEventListener("change", this._deviceSelected.bind(this), false);
-    this._deviceSelectElement.addEventListener("dblclick", this._emulateButtonClicked.bind(this), false);
     this._deviceSelectElement.addEventListener("keypress", this._keyPressed.bind(this), false);
     this._deviceSelectElement.disabled = WebInspector.isInspectingDevice();
 
