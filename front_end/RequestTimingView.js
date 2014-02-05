@@ -45,6 +45,7 @@ WebInspector.RequestTimingView.prototype = {
     wasShown: function()
     {
         this._request.addEventListener(WebInspector.NetworkRequest.Events.TimingChanged, this._refresh, this);
+        this._request.addEventListener(WebInspector.NetworkRequest.Events.FinishedLoading, this._refresh, this);
 
         if (!this._request.timing) {
             if (!this._emptyView) {
@@ -66,6 +67,7 @@ WebInspector.RequestTimingView.prototype = {
     willHide: function()
     {
         this._request.removeEventListener(WebInspector.NetworkRequest.Events.TimingChanged, this._refresh, this);
+        this._request.removeEventListener(WebInspector.NetworkRequest.Events.FinishedLoading, this._refresh, this);
     },
 
     _refresh: function()
@@ -97,8 +99,20 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
         rows.push(row);
     }
 
+    function firstPositive(numbers)
+    {
+        for (var i = 0; i < numbers.length; ++i) {
+            if (numbers[i] > 0)
+                return numbers[i];
+        }
+        return undefined;
+    }
+
     var timing = request.timing;
-    var blocking = timing.dnsStart > 0 ? timing.dnsStart : timing.connectStart > 0 ? timing.connectStart : timing.sendStart;
+    var blocking = firstPositive([timing.dnsStart, timing.connectStart, timing.sendStart]);
+    var endTime = firstPositive([request.endTime, request.responseReceivedTime, timing.requestTime]);
+    var total = (endTime - timing.requestTime) * 1000;
+
     if (blocking > 0)
         addRow(WebInspector.UIString("Blocking"), "blocking", 0, blocking);
 
@@ -116,10 +130,11 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
 
     addRow(WebInspector.UIString("Sending"), "sending", timing.sendStart, timing.sendEnd);
     addRow(WebInspector.UIString("Waiting"), "waiting", timing.sendEnd, timing.receiveHeadersEnd);
-    addRow(WebInspector.UIString("Receiving"), "receiving", (request.responseReceivedTime - timing.requestTime) * 1000, (request.endTime - timing.requestTime) * 1000);
+
+    if (request.endTime !== -1)
+        addRow(WebInspector.UIString("Receiving"), "receiving", (request.responseReceivedTime - timing.requestTime) * 1000, total);
 
     const chartWidth = 200;
-    var total = (request.endTime - timing.requestTime) * 1000;
     var scale = chartWidth / total;
 
     for (var i = 0; i < rows.length; ++i) {
@@ -156,5 +171,12 @@ WebInspector.RequestTimingView.createTimingTable = function(request)
 
         tr.appendChild(td);
     }
+
+    if (!request.finished) {
+        var cell = tableElement.createChild("tr").createChild("td", "caution");
+        cell.colSpan = 2;
+        cell.createTextChild(WebInspector.UIString("CAUTION: request is not finished yet!"));
+    }
+
     return tableElement;
 }

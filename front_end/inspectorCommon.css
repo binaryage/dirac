@@ -196,6 +196,12 @@ iframe.view {
     padding: 0;
 }
 
+.network-timing-table td.caution {
+    font-weight: bold;
+    color: rgb(255, 128, 0);
+    padding: 2px 0;
+}
+
 .network-timing-row {
     position: relative;
     height: 16px;

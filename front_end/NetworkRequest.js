@@ -209,6 +209,7 @@ WebInspector.NetworkRequest.prototype = {
             if (this._responseReceivedTime > x)
                 this._responseReceivedTime = x;
         }
+        this.dispatchEventToListeners(WebInspector.NetworkRequest.Events.TimingChanged, this);
     },
 
     /**
