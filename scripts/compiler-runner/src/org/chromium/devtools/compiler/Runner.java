@@ -14,11 +14,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -105,42 +103,24 @@ public class Runner {
 
     private void runWithExecutor(
             List<CompilerInstanceDescriptor> descriptors, ExecutorService executor) {
-        List<Future<Integer>> futures = new ArrayList<>(descriptors.size());
-        List<ByteArrayOutputStream> errStreams = new ArrayList<>(descriptors.size());
+        List<Future<CompilerRunner>> futures = new ArrayList<>(descriptors.size());
         for (CompilerInstanceDescriptor descriptor : descriptors) {
-            ByteArrayOutputStream errStream = new ByteArrayOutputStream(512);
-            errStreams.add(errStream);
-            PrintStream printStream;
-            try {
-                printStream = new PrintStream(errStream, false, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                System.err.println("ERROR - " + e.getMessage());
-                return;
-            }
-            printStream.append(descriptor.moduleName + " module:\n");
-            futures.add(executor.submit(new CompilerRunner(descriptor, printStream)));
+            CompilerRunner task = new CompilerRunner(descriptor, new ByteArrayOutputStream(512));
+            futures.add(executor.submit(task));
         }
 
-        for (Future<Integer> future : futures) {
+        for (Future<CompilerRunner> future : futures) {
             try {
-                int result = future.get();
+                CompilerRunner task = future.get();
+                int result = task.result;
                 if (result != 0) {
                     System.err.println("ERROR: Compiler returned " + result);
                 }
-            } catch (InterruptedException e) {
-                System.err.println("ERROR - " + e.getMessage());
-            } catch (ExecutionException e) {
-                System.err.println("ERROR - " + e.getMessage());
-            }
-        }
-
-        for (ByteArrayOutputStream errStream : errStreams) {
-            try {
-                errStream.flush();
-                System.err.println(errStream.toString("UTF-8"));
-            } catch (UnsupportedEncodingException e) {
-                System.err.println("ERROR - " + e.getMessage());
-            } catch (IOException e) {
+                task.errStream.flush();
+                System.err.println("@@ START_MODULE:" + task.descriptor.moduleName + " @@");
+                System.err.println(task.errStream.toString("UTF-8"));
+                System.err.println("@@ END_MODULE @@");
+            } catch (Exception e) {
                 System.err.println("ERROR - " + e.getMessage());
             }
         }
@@ -215,23 +195,27 @@ public class Runner {
         }
     }
 
-    private static class CompilerRunner implements Callable<Integer> {
+    private static class CompilerRunner implements Callable<CompilerRunner> {
         private final CompilerInstanceDescriptor descriptor;
-        private final PrintStream errStream;
+        private final ByteArrayOutputStream errStream;
+        private int result;
 
-        public CompilerRunner(CompilerInstanceDescriptor descriptor, PrintStream errStream) {
+        public CompilerRunner(
+                CompilerInstanceDescriptor descriptor, ByteArrayOutputStream errStream) {
             this.descriptor = descriptor;
             this.errStream = errStream;
         }
 
         @Override
-        public Integer call() throws Exception {
+        public CompilerRunner call() throws Exception {
+            PrintStream errPrintStream = new PrintStream(errStream, false, "UTF-8");
             LocalCommandLineRunner runner =
-                    new LocalCommandLineRunner(prepareArgs(), System.out, errStream);
+                    new LocalCommandLineRunner(prepareArgs(), System.out, errPrintStream);
             if (!runner.shouldRunCompiler()) {
-                return -1;
+                this.result = -1;
             }
-            return runner.execute();
+            this.result = runner.execute();
+            return this;
         }
 
         private String[] prepareArgs() {

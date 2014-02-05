@@ -169,6 +169,16 @@ modules_by_name = {}
 for module in modules:
     modules_by_name[module["name"]] = module
 
+dependents_by_module_name = {}
+for module in modules:
+    name = module["name"]
+    for dep in module["dependencies"]:
+        list = dependents_by_module_name.get(dep)
+        if not list:
+            list = []
+            dependents_by_module_name[dep] = list
+        list.append(name)
+
 standalone_modules = []
 for module in modules:
     if "standalone" in module:
@@ -267,7 +277,43 @@ canvasModuleCompileProc = subprocess.Popen(check_injected_webgl_calls_command, s
 print
 
 (moduleCompileOut, _) = modular_compiler_proc.communicate()
-print "Modular compilation output:\n%s" % moduleCompileOut
+print "Modular compilation output:"
+
+start_module_regex = re.compile(r"^@@ START_MODULE:(.+) @@$")
+end_module_regex = re.compile(r"^@@ END_MODULE @@$")
+
+in_module = False
+module_output = []
+skipped_modules = {}
+
+
+def skip_dependents(module_name):
+    for skipped_module in dependents_by_module_name.get(module_name, []):
+        skipped_modules[skipped_module] = True
+
+# pylint: disable=E1103
+for line in moduleCompileOut.splitlines():
+    if not in_module:
+        match = re.search(start_module_regex, line)
+        if not match:
+            continue
+        in_module = True
+        module_name = match.group(1)
+        skip_module = skipped_modules.get(module_name)
+        if skip_module:
+            skip_dependents(module_name)
+        module_output = ["Skipping module %s...\n" % module_name if skip_module else "Module %s:" % module_name]
+    else:
+        match = re.search(end_module_regex, line)
+        if not match:
+            if not skip_module:
+                module_output.append(line)
+                if "ERROR" in line or "WARNING" in line:
+                    skip_dependents(module_name)
+            continue
+
+        in_module = False
+        print os.linesep.join(module_output)
 
 (injectedScriptCompileOut, _) = injectedScriptCompileProc.communicate()
 print "InjectedScriptSource.js and InjectedScriptCanvasModuleSource.js compilation output:\n", injectedScriptCompileOut
