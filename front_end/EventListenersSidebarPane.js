@@ -198,24 +198,19 @@ WebInspector.EventListenerBar.prototype = {
         {
             var properties = [];
 
-            if (this.eventListener.type)
-                properties.push(WebInspector.RemoteObjectProperty.fromPrimitiveValue("type", this.eventListener.type));
-            if (typeof this.eventListener.useCapture !== "undefined")
-                properties.push(WebInspector.RemoteObjectProperty.fromPrimitiveValue("useCapture", this.eventListener.useCapture));
-            if (typeof this.eventListener.isAttribute !== "undefined")
-                properties.push(WebInspector.RemoteObjectProperty.fromPrimitiveValue("isAttribute", this.eventListener.isAttribute));
+            properties.push(WebInspector.RemoteObjectProperty.fromPrimitiveValue("type", this.eventListener.type));
+            properties.push(WebInspector.RemoteObjectProperty.fromPrimitiveValue("useCapture", this.eventListener.useCapture));
+            properties.push(WebInspector.RemoteObjectProperty.fromPrimitiveValue("isAttribute", this.eventListener.isAttribute));
             if (nodeObject)
                 properties.push(new WebInspector.RemoteObjectProperty("node", nodeObject));
             if (typeof this.eventListener.handler !== "undefined") {
                 var remoteObject = WebInspector.RemoteObject.fromPayload(this.eventListener.handler);
                 properties.push(new WebInspector.RemoteObjectProperty("handler", remoteObject));
             }
-            if (typeof this.eventListener.handlerBody !== "undefined")
-                properties.push(WebInspector.RemoteObjectProperty.fromPrimitiveValue("listenerBody", this.eventListener.handlerBody));
+            properties.push(WebInspector.RemoteObjectProperty.fromPrimitiveValue("listenerBody", this.eventListener.handlerBody));
             if (this.eventListener.sourceName)
                 properties.push(WebInspector.RemoteObjectProperty.fromPrimitiveValue("sourceName", this.eventListener.sourceName));
-            if (this.eventListener.location)
-                properties.push(WebInspector.RemoteObjectProperty.fromPrimitiveValue("lineNumber", this.eventListener.location.lineNumber + 1));
+            properties.push(WebInspector.RemoteObjectProperty.fromPrimitiveValue("lineNumber", this.eventListener.location.lineNumber + 1));
 
             this.updateProperties(properties);
         }
@@ -244,26 +239,15 @@ WebInspector.EventListenerBar.prototype = {
 
     _setFunctionSubtitle: function(linkifier)
     {
-        // Requires that Function.toString() return at least the function's signature.
-        if (this.eventListener.location) {
-            this.subtitleElement.removeChildren();
-            var urlElement;
-            if (this.eventListener.location.scriptId)
-                urlElement = linkifier.linkifyRawLocation(this.eventListener.location);
-            if (!urlElement) {
-                var url = this.eventListener.sourceName;
-                var lineNumber = this.eventListener.location.lineNumber;
-                var columnNumber = 0;
-                urlElement = linkifier.linkifyLocation(url, lineNumber, columnNumber);
-            }
-            this.subtitleElement.appendChild(urlElement);
-        } else {
-            var match = this.eventListener.handlerBody.match(/function ([^\(]+?)\(/);
-            if (match)
-                this.subtitleElement.textContent = match[1];
-            else
-                this.subtitleElement.textContent = WebInspector.UIString("(anonymous function)");
+        this.subtitleElement.removeChildren();
+        var urlElement = linkifier.linkifyRawLocation(this.eventListener.location);
+        if (!urlElement) {
+            var url = this.eventListener.sourceName;
+            var lineNumber = this.eventListener.location.lineNumber;
+            var columnNumber = 0;
+            urlElement = linkifier.linkifyLocation(url, lineNumber, columnNumber);
         }
+        this.subtitleElement.appendChild(urlElement);
     },
 
     __proto__: WebInspector.ObjectPropertiesSection.prototype
