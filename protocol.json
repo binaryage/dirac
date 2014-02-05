@@ -425,13 +425,11 @@
                     { "name": "beta", "type": "number", "description": "Mock beta"},
                     { "name": "gamma", "type": "number", "description": "Mock gamma"}
                 ],
-                "redirect": "DeviceOrientation",
                 "hidden": true
             },
             {
                 "name": "clearDeviceOrientationOverride",
                 "description": "Clears the overridden Device Orientation.",
-                "redirect": "DeviceOrientation",
                 "hidden": true
             },
             {
@@ -4035,25 +4033,6 @@
             {
                 "name": "clearGeolocationOverride",
                 "description": "Clears the overriden Geolocation Position and Error."
-            }
-        ]
-    },
-    {
-        "domain": "DeviceOrientation",
-        "hidden": true,
-        "commands": [
-            {
-                "name": "setDeviceOrientationOverride",
-                "description": "Overrides the Device Orientation.",
-                "parameters": [
-                    { "name": "alpha", "type": "number", "description": "Mock alpha"},
-                    { "name": "beta", "type": "number", "description": "Mock beta"},
-                    { "name": "gamma", "type": "number", "description": "Mock gamma"}
-                ]
-            },
-            {
-                "name": "clearDeviceOrientationOverride",
-                "description": "Clears the overridden Device Orientation."
             }
         ]
     },
