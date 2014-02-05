@@ -197,6 +197,7 @@ body.platform-mac .help-key {
 
 .settings-tab label {
     padding-right: 4px;
+    display: flex;
 }
 
 #general-tab-content .help-block fieldset legend {
@@ -229,22 +230,7 @@ body.platform-mac .help-key {
 }
 
 .help-content input[type=checkbox] {
-    height: 13px;
-    width: 13px;
-    margin: 0 7px 0 0;
-    vertical-align: -2px;
-}
-
-body.platform-mac .help-content input[type=checkbox] {
-    vertical-align: -1px;
-}
-
-.help-content input[type=radio] {
-    vertical-align: -2px;
-}
-
-body.platform-mac .help-content input[type=radio] {
-    vertical-align: -1px;
+    margin-right: 7px;
 }
 
 .help-content select {

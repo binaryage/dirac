@@ -32,6 +32,12 @@ input[type="text"]:focus {
     outline: auto 5px -webkit-focus-ring-color;
 }
 
+input[type="checkbox"] {
+    height: 13px;
+    width: 13px;
+    margin: auto 3px;
+}
+
 .fill {
     position: absolute;
     top: 0;
@@ -254,6 +260,10 @@ body.undocked.platform-mac.inactive .toolbar-background {
     padding: 0 5px 0 0;
 }
 
+.toolbar-search td > span {
+    display: flex;
+}
+
 .toolbar-search-navigation-controls {
     vertical-align: top;
     background-image: linear-gradient(rgb(228, 228, 228), rgb(206, 206, 206));
@@ -274,14 +284,7 @@ body.undocked.platform-mac.inactive .toolbar-background {
 }
 
 .toolbar-search label {
-    vertical-align: bottom;
-}
-
-.toolbar-search input[type="checkbox"] {
-    position: relative;
-    margin-top: -1px;
-    margin-left: 15px;
-    top: 2px;
+    margin: auto 0;
 }
 
 .toolbar-search button {
@@ -403,14 +406,16 @@ body.remote .toolbar-item .close-button {
     position: relative;
 }
 
-.panel-status-bar label {
-    margin: 2px 20px 0 0;
+.panel-status-bar > div {
+    margin: auto 0;
 }
 
-.panel-status-bar label > input {
-    height: 13px;
-    width: 13px;
-    vertical-align: -2px;
+.panel-status-bar label {
+    margin: auto 0;
+    margin-right: 20px;
+    display: flex;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .status-bar {
@@ -446,7 +451,9 @@ body.remote .toolbar-item .close-button {
 .status-bar-text {
     padding-left: 5px;
     padding-right: 15px;
-    padding-top: 3px;
+    height: auto;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 #drawer-view-anchor {
@@ -566,7 +573,9 @@ select.status-bar-item {
 }
 
 .status-bar-item.checkbox {
-    margin: 2px 0 0 0;
+    margin: auto 0;
+    height: auto;
+    display: flex;
 }
 
 .status-bar-item > .glyph {
@@ -2418,6 +2427,7 @@ body.platform-mac .soft-context-menu-item-mouse-over {
 .search-drawer-header {
     flex: none;
     padding: 4px;
+    display: flex;
 }
 
 .search-drawer-header input[type="text"].search-config-search {
@@ -2440,20 +2450,10 @@ body.platform-mac .search-drawer-header input[type="search"].search-config-searc
 }
 
 .search-drawer-header label.search-config-label {
+    margin: auto 0;
     margin-left: 8px;
     color: #303030;
-}
-
-.search-drawer-header input[type="checkbox"].search-config-checkbox {
-    vertical-align: bottom;
-}
-
-body:not(.platform-mac) .search-drawer-header input[type="checkbox"].search-config-checkbox {
-    margin-bottom: 5px;
-}
-
-body.platform-mac .search-drawer-header input[type="checkbox"].search-config-checkbox {
-    margin-bottom: 4px;
+    display: flex;
 }
 
 #bottom-status-bar-container {

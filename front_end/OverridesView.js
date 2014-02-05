@@ -458,7 +458,7 @@ WebInspector.OverridesView.ViewportTab = function()
 
     this.element.appendChild(checkbox);
     this.element.appendChild(this._createDeviceMetricsElement(metrics));
-    this.element.appendChild(this._createMediaEmulationElement());
+    this.element.appendChild(this._createMediaEmulationFragment());
 
     var footnote = this.element.createChild("p", "help-footnote");
     var footnoteLink = footnote.createChild("a");
@@ -617,13 +617,12 @@ WebInspector.OverridesView.ViewportTab.prototype = {
             this._textAutosizingOverrideCheckbox.checked = metrics.textAutosizing || false;
     },
 
-    _createMediaEmulationElement: function()
+    _createMediaEmulationFragment: function()
     {
         var checkbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("CSS media"), WebInspector.settings.overrideCSSMedia, true);
         var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.overrideCSSMedia);
         if (WebInspector.isInspectingDevice())
             fieldsetElement.disabled = true;
-        checkbox.appendChild(fieldsetElement);
 
         var mediaSelectElement = fieldsetElement.createChild("select");
         var mediaTypes = WebInspector.CSSStyleModel.MediaTypes;
@@ -643,7 +642,10 @@ WebInspector.OverridesView.ViewportTab.prototype = {
         }
 
         mediaSelectElement.addEventListener("change", this._emulateMediaChanged.bind(this, mediaSelectElement), false);
-        return checkbox;
+        var fragment = document.createDocumentFragment();
+        fragment.appendChild(checkbox);
+        fragment.appendChild(fieldsetElement);
+        return fragment;
     },
 
     _emulateMediaChanged: function(select)

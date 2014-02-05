@@ -221,6 +221,10 @@ a.worker-item:hover {
     background-position: -202px -107px;
 }
 
+.sources-status-bar {
+    display: flex;
+}
+
 .sources-status-bar div.resizer-widget {
     width: 18px;
     height: 16px;

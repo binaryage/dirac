@@ -53,6 +53,11 @@
     height: 20px;
 }
 
+#sources-panel-sources-view .sources-status-bar .status-bar-item.status-bar-text {
+    margin: auto 0;
+    height: auto;
+}
+
 #sources-panel-sources-view .source-frame-cursor-position {
     -webkit-user-select: text;
 }

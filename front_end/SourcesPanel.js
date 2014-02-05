@@ -169,7 +169,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._scriptViewStatusBarItemsContainer.className = "inline-block";
 
     this._scriptViewStatusBarTextContainer = document.createElement("div");
-    this._scriptViewStatusBarTextContainer.className = "inline-block";
+    this._scriptViewStatusBarTextContainer.className = "hbox";
 
     this._statusBarContainerElement = this.sourcesView.element.createChild("div", "sources-status-bar");
     this._statusBarContainerElement.appendChild(this._toggleFormatSourceButton.element);

@@ -132,9 +132,13 @@ button.overrides-swap {
     height: 20px;
 }
 
+.overrides-view label {
+    display: flex;
+    height: auto;
+}
+
 .overrides-viewport label {
-    display: block;
-    margin-bottom: 5px;
+    margin-bottom: 10px;
 }
 
 .overrides-viewport table {
@@ -161,7 +165,6 @@ button.overrides-swap {
 }
 
 .overrides-sensors > label {
-    display: block;
     margin-bottom: 10px;
 }
 

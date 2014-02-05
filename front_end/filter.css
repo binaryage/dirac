@@ -30,7 +30,6 @@
 
 .filter-text-filter {
     display: flex;
-    margin-top: 1px;
     margin-left: 1px;
     margin-right: 1px;
     flex: 0 0 100px;
@@ -40,16 +39,20 @@
     flex: 0 0 155px;
 }
 
+.filter-text-filter label {
+    margin: auto 0;
+}
+
 .filter-bitset-filter {
-    line-height: 19px;
-    padding-right: 10px !important;
+    padding: 0 10px !important;
     overflow: hidden;
+    display: flex !important;
 }
 
 .filter-bitset-filter li {
     display: inline-block;
-    margin: 2px;
-    padding: 0px 6px;
+    margin: auto 2px;
+    padding: 4px 6px;
     background: transparent;
     text-shadow: rgba(255, 255, 255, 0.5) 0 1px 0;
     border-radius: 8px;
@@ -59,7 +62,7 @@
     background-color: #ccc;
     height: 16px;
     width: 1px;
-    vertical-align: middle;
+    margin: auto 2px;
     display: inline-block;
 }
 
@@ -68,10 +71,6 @@
 .filter-bitset-filter li:active {
     color: white;
     text-shadow: rgba(0, 0, 0, 0.4) 0 1px 0;
-}
-
-.filter-bitset-filter li.all {
-    margin: 1px 8px;
 }
 
 .filter-bitset-filter li:hover {
@@ -93,12 +92,17 @@
 }
 
 .filter-checkbox-filter {
-    line-height: 22px;
     padding-left: 4px;
     padding-right: 2px;
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
+    display: flex;
+}
+
+.filter-checkbox-filter > label {
+    display: flex;
+    margin: auto 0;
 }
 
 .filter-text-invalid {
@@ -108,14 +112,13 @@
 .filter-checkbox-filter .checkbox-filter-checkbox {
     width: 10px;
     height: 10px;
-    margin: 0 3px 0 3px;
+    margin: auto 3px;
     padding: 0;
     border-radius: 2px;
     border: solid 1px;
     display: inline-block;
     overflow: visible;
     opacity: 0.8;
-    vertical-align: -1px;
 }
 
 
