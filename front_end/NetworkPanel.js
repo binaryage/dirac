@@ -2305,8 +2305,16 @@ WebInspector.NetworkDataGridNode.prototype = {
             this._timelineCell.classList.add("resource-cached");
 
         this._element.classList.add("network-item");
-        this._element.enableStyleClass("network-error-row", this._request.failed || (this._request.statusCode >= 400));
+        this._element.enableStyleClass("network-error-row", this._isFailed());
         this._updateElementStyleClasses(this._element);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    _isFailed: function()
+    {
+        return !!this._request.failed || (this._request.statusCode >= 400);
     },
 
     /**
@@ -2358,37 +2366,30 @@ WebInspector.NetworkDataGridNode.prototype = {
     _refreshStatusCell: function()
     {
         this._statusCell.removeChildren();
+        this._statusCell.enableStyleClass("network-dim-cell", !this._isFailed() && (this._request.cached || !this._request.statusCode));
 
-        if (this._request.failed) {
-            var failText = this._request.canceled ? WebInspector.UIString("(canceled)") : WebInspector.UIString("(failed)");
+        if (this._request.failed && !this._request.canceled) {
+            var failText = WebInspector.UIString("(failed)");
             if (this._request.localizedFailDescription) {
                 this._statusCell.appendChild(document.createTextNode(failText));
                 this._appendSubtitle(this._statusCell, this._request.localizedFailDescription);
                 this._statusCell.title = failText + " " + this._request.localizedFailDescription;
             } else
                 this._statusCell.setTextAndTitle(failText);
-            this._statusCell.classList.add("network-dim-cell");
-            return;
-        }
-
-        this._statusCell.classList.remove("network-dim-cell");
-
-        if (this._request.statusCode) {
+        } else if (this._request.statusCode) {
             this._statusCell.appendChild(document.createTextNode("" + this._request.statusCode));
             this._appendSubtitle(this._statusCell, this._request.statusText);
             this._statusCell.title = this._request.statusCode + " " + this._request.statusText;
-            if (this._request.cached)
-                this._statusCell.classList.add("network-dim-cell");
+        } else if (this._request.parsedURL.isDataURL()) {
+            this._statusCell.setTextAndTitle(WebInspector.UIString("(data)"));
+        } else if (this._request.isPingRequest()) {
+            this._statusCell.setTextAndTitle(WebInspector.UIString("(ping)"));
+        } else if (this._request.canceled) {
+            this._statusCell.setTextAndTitle(WebInspector.UIString("(canceled)"));
+        } else if (this._request.finished) {
+            this._statusCell.setTextAndTitle(WebInspector.UIString("Finished"));
         } else {
-            if (this._request.parsedURL.isDataURL())
-                this._statusCell.setTextAndTitle(WebInspector.UIString("(data)"));
-            else if (this._request.isPingRequest())
-                this._statusCell.setTextAndTitle(WebInspector.UIString("(ping)"));
-            else if (this._request.finished)
-                this._statusCell.setTextAndTitle(WebInspector.UIString("Finished"));
-            else
-                this._statusCell.setTextAndTitle(WebInspector.UIString("(pending)"));
-            this._statusCell.classList.add("network-dim-cell");
+            this._statusCell.setTextAndTitle(WebInspector.UIString("(pending)"));
         }
     },
 
