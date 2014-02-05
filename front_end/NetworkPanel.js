@@ -1041,10 +1041,16 @@ WebInspector.NetworkLogView.prototype = {
         NetworkAgent.replayXHR(requestId);
     },
 
+    _harRequests: function()
+    {
+        var httpRequests = this._requests.filter(WebInspector.NetworkLogView.HTTPRequestsFilter);
+        return httpRequests.filter(WebInspector.NetworkLogView.NonSourceMapRequestsFilter);
+    },
+
     _copyAll: function()
     {
         var harArchive = {
-            log: (new WebInspector.HARLog(this._requests.filter(WebInspector.NetworkLogView.HTTPRequestsFilter))).build()
+            log: (new WebInspector.HARLog(this._harRequests())).build()
         };
         InspectorFrontendHost.copyText(JSON.stringify(harArchive, null, 2));
     },
@@ -1089,7 +1095,7 @@ WebInspector.NetworkLogView.prototype = {
             var progressIndicator = new WebInspector.ProgressIndicator();
             this._progressBarContainer.appendChild(progressIndicator.element);
             var harWriter = new WebInspector.HARWriter();
-            harWriter.write(stream, this._requests.filter(WebInspector.NetworkLogView.HTTPRequestsFilter), progressIndicator);
+            harWriter.write(stream, this._harRequests(), progressIndicator);
         }
     },
 
@@ -1470,6 +1476,14 @@ WebInspector.NetworkLogView.HTTPRequestsFilter = function(request)
     return request.parsedURL.isValid && (request.scheme in WebInspector.NetworkLogView.HTTPSchemas);
 }
 
+/**
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView.NonSourceMapRequestsFilter = function(request)
+{
+    return !WebInspector.SourceMap.hasSourceMapRequestHeader(request);
+}
 
 WebInspector.NetworkLogView.EventTypes = {
     ViewCleared: "ViewCleared",
