@@ -34,9 +34,6 @@ var Preferences = {
     minDrawerHeight: 25,
     minSidebarWidth: 100,
     minSidebarHeight: 75,
-    minElementsSidebarWidth: 50,
-    minElementsSidebarHeight: 50,
-    minScriptsSidebarWidth: 200,
     applicationTitle: "Developer Tools - %s",
     experimentsEnabled: false
 }

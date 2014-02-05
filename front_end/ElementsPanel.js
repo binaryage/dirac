@@ -59,7 +59,7 @@ WebInspector.ElementsPanel = function()
     const minimumContentHeightPercent = 0.34;
 
     this._splitView = new WebInspector.SplitView(true, true, "elementsSidebarWidth", initialSidebarWidth, initialSidebarHeight);
-    this._splitView.setSidebarElementConstraints(Preferences.minElementsSidebarWidth, Preferences.minElementsSidebarHeight);
+    this._splitView.setSidebarElementConstraints(Preferences.minSidebarWidth, Preferences.minSidebarHeight);
     this._splitView.setMainElementConstraints(minimumContentWidthPercent, minimumContentHeightPercent);
     this._splitView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._updateTreeOutlineVisibleWidth.bind(this));
     this._splitView.show(this.element);

@@ -81,6 +81,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     const initialDebugSidebarWidth = 225;
     this._splitView = new WebInspector.SplitView(true, true, "sourcesSidebarWidth", initialDebugSidebarWidth);
+    this._splitView.setSidebarElementConstraints(200, 25);
     this._splitView.show(this.element);
     if (WebInspector.settings.debuggerSidebarHidden.get())
         this._splitView.hideSidebar();
@@ -94,7 +95,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.editorView.element.id = "scripts-editor-split-view";
     this.editorView.element.tabIndex = 0;
 
-    this.editorView.setSidebarElementConstraints(Preferences.minScriptsSidebarWidth);
+    this.editorView.setSidebarElementConstraints(Preferences.minSidebarWidth);
     this.editorView.setMainElementConstraints(minimumViewsContainerWidthPercent);
     this.editorView.show(this._splitView.mainElement());
 

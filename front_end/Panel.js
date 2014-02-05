@@ -162,8 +162,8 @@ WebInspector.PanelWithSidebarTree = function(name, defaultWidth)
 {
     WebInspector.Panel.call(this, name);
 
-    this._panelSplitView = new WebInspector.SplitView(true, false, this._panelName + "SidebarWidth", defaultWidth || Preferences.minSidebarWidth);
-    this._panelSplitView.setMainElementConstraints(0.5, 0.5);
+    this._panelSplitView = new WebInspector.SplitView(true, false, this._panelName + "SidebarWidth", defaultWidth || 200);
+    this._panelSplitView.setSidebarElementConstraints(Preferences.minSidebarWidth);
     this._panelSplitView.show(this.element);
 
     var sidebarElement = this._panelSplitView.sidebarElement();
