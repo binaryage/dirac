@@ -32,7 +32,6 @@
 
 .split-view-contents {
     overflow: auto;
-    cursor: default;
     display: flex;
     position: relative;
     flex-direction: column;
