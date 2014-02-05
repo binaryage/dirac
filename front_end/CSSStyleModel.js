@@ -1161,8 +1161,6 @@ WebInspector.CSSProperty.prototype = {
     },
 
     /**
-     * Replaces "propertyName: propertyValue [!important];" in the stylesheet by an arbitrary propertyText.
-     *
      * @param {string} propertyText
      * @param {boolean} majorChange
      * @param {boolean} overwrite
@@ -1190,7 +1188,6 @@ WebInspector.CSSProperty.prototype = {
             if (!error) {
                 if (majorChange)
                     WebInspector.domAgent.markUndoableState();
-                this.text = propertyText;
                 var style = WebInspector.CSSStyleDeclaration.parsePayload(stylePayload);
                 var newProperty = style.allProperties[this.index];
 
@@ -1198,7 +1195,6 @@ WebInspector.CSSProperty.prototype = {
                     newProperty.setDisabled(false, enabledCallback);
                     return;
                 }
-
                 if (userCallback)
                     userCallback(style);
             } else {
@@ -1238,33 +1234,15 @@ WebInspector.CSSProperty.prototype = {
     {
         if (!this.ownerStyle && userCallback)
             userCallback(null);
-        if (disabled === this.disabled && userCallback)
-            userCallback(this.ownerStyle);
-
-        /**
-         * @param {?string} error
-         * @param {!CSSAgent.CSSStyle} stylePayload
-         */
-        function callback(error, stylePayload)
-        {
-            WebInspector.cssModel._pendingCommandsMajorState.pop();
-            if (error) {
-                if (userCallback)
-                    userCallback(null);
-                return;
-            }
-            WebInspector.domAgent.markUndoableState();
-            if (userCallback) {
-                var style = WebInspector.CSSStyleDeclaration.parsePayload(stylePayload);
-                userCallback(style);
-            }
+        if (disabled === this.disabled) {
+            if (userCallback)
+                userCallback(this.ownerStyle);
+            return;
         }
-
-        if (!this.ownerStyle.id)
-            throw "No owner style id";
-
-        WebInspector.cssModel._pendingCommandsMajorState.push(false);
-        CSSAgent.toggleProperty(this.ownerStyle.id, this.index, disabled, callback.bind(this));
+        if (disabled)
+            this.setText("/* " + this.text + " */", true, true, userCallback);
+        else
+            this.setText(this.text.substring(2, this.text.length - 2).trim(), true, true, userCallback);
     },
 
     /**
