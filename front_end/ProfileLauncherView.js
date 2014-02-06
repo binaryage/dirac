@@ -47,6 +47,10 @@ WebInspector.ProfileLauncherView = function(profilesPanel)
 
     this._controlButton = this._contentElement.createChild("button", "control-profiling");
     this._controlButton.addEventListener("click", this._controlButtonClicked.bind(this), false);
+
+    this._loadButton = this._contentElement.createChild("button", "load-profile");
+    this._loadButton.textContent = WebInspector.UIString("Load");
+    this._loadButton.addEventListener("click", this._loadButtonClicked.bind(this), false);
 }
 
 WebInspector.ProfileLauncherView.prototype = {
@@ -68,6 +72,11 @@ WebInspector.ProfileLauncherView.prototype = {
     _controlButtonClicked: function()
     {
         this._panel.toggleRecordButton();
+    },
+
+    _loadButtonClicked: function()
+    {
+        this._panel.showLoadFromFileDialog();
     },
 
     _updateControls: function()

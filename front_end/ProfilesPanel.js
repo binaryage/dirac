@@ -715,6 +715,11 @@ WebInspector.ProfilesPanel.prototype = {
         contextMenu.show();
     },
 
+    showLoadFromFileDialog: function()
+    {
+        this._fileSelectorElement.click();
+    },
+
     /**
      * @param {!WebInspector.ProfileHeader} profile
      */

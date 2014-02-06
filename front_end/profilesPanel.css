@@ -174,6 +174,11 @@
 
 .control-profiling {
     -webkit-align-self: flex-start;
+    margin-right: 50px;
+}
+
+.profile-launcher-view > .profile-launcher-view-content > .load-profile {
+    margin-left: 20px;
 }
 
 .profile-launcher-view-content h1 {
@@ -194,11 +199,6 @@
     color: grey;
     margin-top: 1px;
     margin-left: 22px;
-}
-
-.panel-enabler-view.profile-launcher-view button:not(.status-bar-item) {
-    color: rgb(6, 6, 6);
-    margin: 0 0 16px;
 }
 
 .profile-launcher-view-content button.running:not(.status-bar-item) {
