@@ -91,24 +91,14 @@ WebInspector.SidebarTreeElement = function(className, title, subtitle, represent
         this.disclosureButton.className = "disclosure-button";
     }
 
-    if (!this.iconElement) {
-        this.iconElement = document.createElement("img");
-        this.iconElement.className = "icon";
-    }
+    this.iconElement = document.createElementWithClass("img", "icon");
+    this.statusElement = document.createElementWithClass("div", "status");
+    this.titlesElement = document.createElementWithClass("div", "titles");
 
-    this.statusElement = document.createElement("div");
-    this.statusElement.className = "status";
+    this.titleContainer = this.titlesElement.createChild("span", "title-container");
+    this.titleElement = this.titleContainer.createChild("span", "title");
 
-    this.titlesElement = document.createElement("div");
-    this.titlesElement.className = "titles";
-
-    this.titleElement = document.createElement("span");
-    this.titleElement.className = "title";
-    this.titlesElement.appendChild(this.titleElement);
-
-    this.subtitleElement = document.createElement("span");
-    this.subtitleElement.className = "subtitle";
-    this.titlesElement.appendChild(this.subtitleElement);
+    this.subtitleElement = this.titlesElement.createChild("span", "subtitle");
 
     this.className = className;
     this.mainTitle = title;

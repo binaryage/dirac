@@ -278,7 +278,8 @@ WebInspector.ProfileHeader.StatusUpdate = function(subtitle, wait)
 }
 
 WebInspector.ProfileHeader.Events = {
-    UpdateStatus: "UpdateStatus"
+    UpdateStatus: "UpdateStatus",
+    ProfileReceived: "ProfileReceived"
 }
 
 WebInspector.ProfileHeader.prototype = {
@@ -1124,9 +1125,25 @@ WebInspector.ProfileSidebarTreeElement = function(profile, className)
     WebInspector.SidebarTreeElement.call(this, className, profile.title, "", profile, false);
     this.refreshTitles();
     profile.addEventListener(WebInspector.ProfileHeader.Events.UpdateStatus, this._updateStatus, this);
+    if (profile.canSaveToFile())
+        this._createSaveLink();
+    else
+        profile.addEventListener(WebInspector.ProfileHeader.Events.ProfileReceived, this._onProfileReceived, this);
 }
 
 WebInspector.ProfileSidebarTreeElement.prototype = {
+    _createSaveLink: function()
+    {
+        this._saveLinkElement = this.titleContainer.createChild("span", "save-link");
+        this._saveLinkElement.textContent = WebInspector.UIString("Save");
+        this._saveLinkElement.addEventListener("click", this._saveProfile.bind(this), false);
+    },
+
+    _onProfileReceived: function(event)
+    {
+        this._createSaveLink();
+    },
+
     /**
      * @param {!WebInspector.Event} event
      */
@@ -1142,6 +1159,7 @@ WebInspector.ProfileSidebarTreeElement.prototype = {
     dispose: function()
     {
         this.profile.removeEventListener(WebInspector.ProfileHeader.Events.UpdateStatus, this._updateStatus, this);
+        this.profile.removeEventListener(WebInspector.ProfileHeader.Events.ProfileReceived, this._onProfileReceived, this);
     },
 
     onselect: function()
@@ -1172,6 +1190,11 @@ WebInspector.ProfileSidebarTreeElement.prototype = {
             contextMenu.appendItem(WebInspector.UIString("Save\u2026"), profile.saveToFile.bind(profile));
         contextMenu.appendItem(WebInspector.UIString("Delete"), this.ondelete.bind(this));
         contextMenu.show();
+    },
+
+    _saveProfile: function(event)
+    {
+        this.profile.saveToFile();
     },
 
     __proto__: WebInspector.SidebarTreeElement.prototype

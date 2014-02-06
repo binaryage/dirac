@@ -1298,6 +1298,8 @@ WebInspector.HeapProfileHeader.prototype = {
             this._loadCallbacks[i](this._snapshotProxy);
         this._loadCallbacks = null;
         this._profileType._snapshotReceived(this);
+        if (this.canSaveToFile())
+            this.dispatchEventToListeners(WebInspector.ProfileHeader.Events.ProfileReceived);
     },
 
     // Hook point for tests.
@@ -1311,7 +1313,7 @@ WebInspector.HeapProfileHeader.prototype = {
      */
     canSaveToFile: function()
     {
-        return !this.fromFile() && !this._bufferedWriter && !this._failedToCreateTempFile;
+        return !this.fromFile() && this._snapshotProxy;
     },
 
     /**

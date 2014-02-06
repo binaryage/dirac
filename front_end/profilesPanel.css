@@ -66,6 +66,16 @@
     content: url(Images/profileGroupIcon.png);
 }
 
+.sidebar-tree-item .title-container > .save-link {
+    text-decoration: underline;
+    margin-left: auto;
+    display: none;
+}
+
+.sidebar-tree-item.selected .title-container > .save-link {
+    display: block;
+}
+
 .profile-view {
     display: none;
     overflow: hidden;

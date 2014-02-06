@@ -2127,6 +2127,8 @@ body.inactive .sidebar-tree-item.selected {
 }
 
 .sidebar-tree-item .titles {
+    display: flex;
+    flex-direction: column;
     position: relative;
     top: 5px;
     line-height: 12px;
@@ -2134,6 +2136,10 @@ body.inactive .sidebar-tree-item.selected {
     text-overflow: ellipsis;
     overflow: hidden;
     white-space: nowrap;
+}
+
+.titles > .title-container {
+    display: flex;
 }
 
 .sidebar-tree-item .titles.no-subtitle {

@@ -934,7 +934,7 @@ WebInspector.CPUProfileHeader.prototype = {
      */
     canSaveToFile: function()
     {
-        return !!this._tempFile;
+        return !this.fromFile() && this._protocolProfile;
     },
 
     saveToFile: function()
@@ -956,7 +956,15 @@ WebInspector.CPUProfileHeader.prototype = {
                 else
                     fileOutputStream.close();
             }
-            this._tempFile.read(didRead.bind(this));
+            if (this._failedToCreateTempFile) {
+                WebInspector.log("Failed to open temp file with heap snapshot",
+                                 WebInspector.ConsoleMessage.MessageLevel.Error);
+                fileOutputStream.close();
+            } else if (this._tempFile) {
+                this._tempFile.read(didRead.bind(this));
+            } else {
+                this._onTempFileReady = onOpenForSave.bind(this, accepted);
+            }
         }
         this._fileName = this._fileName || "CPU-" + new Date().toISO8601Compact() + this._profileType.fileExtension();
         fileOutputStream.open(this._fileName, onOpenForSave.bind(this));
@@ -988,6 +996,8 @@ WebInspector.CPUProfileHeader.prototype = {
     {
         this._protocolProfile = cpuProfile;
         this._saveProfileDataToTempFile(cpuProfile);
+        if (this.canSaveToFile())
+            this.dispatchEventToListeners(WebInspector.ProfileHeader.Events.ProfileReceived);
     },
 
     /**
@@ -1014,8 +1024,31 @@ WebInspector.CPUProfileHeader.prototype = {
     _writeToTempFile: function(tempFile, serializedData)
     {
         this._tempFile = tempFile;
-        if (tempFile)
-            tempFile.write(serializedData, tempFile.finishWriting.bind(tempFile));
+        if (!tempFile) {
+            this._failedToCreateTempFile = true;
+            this._notifyTempFileReady();
+            return;
+        }
+        /**
+         * @param {boolean} success
+         * @this {WebInspector.CPUProfileHeader}
+         */
+        function didWriteToTempFile(success)
+        {
+            if (!success)
+                this._failedToCreateTempFile = true;
+            tempFile.finishWriting();
+            this._notifyTempFileReady();
+        }
+        tempFile.write(serializedData, didWriteToTempFile.bind(this));
+    },
+
+    _notifyTempFileReady: function()
+    {
+        if (this._onTempFileReady) {
+            this._onTempFileReady();
+            this._onTempFileReady = null;
+        }
     },
 
     __proto__: WebInspector.ProfileHeader.prototype
