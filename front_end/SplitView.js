@@ -43,10 +43,12 @@ WebInspector.SplitView = function(isVertical, secondIsSidebar, sidebarSizeSettin
     this.element.classList.add("split-view");
 
     this._mainView = new WebInspector.View();
+    this._mainView.makeLayoutBoundary();
     this._mainElement = this._mainView.element;
     this._mainElement.className = "split-view-contents scroll-target split-view-main vbox"; // Override
 
     this._sidebarView = new WebInspector.View();
+    this._sidebarView.makeLayoutBoundary();
     this._sidebarElement = this._sidebarView.element;
     this._sidebarElement.className = "split-view-contents scroll-target split-view-sidebar vbox"; // Override
 

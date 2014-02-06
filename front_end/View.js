@@ -53,6 +53,11 @@ WebInspector.View.prototype = {
         this._isRoot = true;
     },
 
+    makeLayoutBoundary: function()
+    {
+        this._isLayoutBoundary = true;
+    },
+
     /**
      * @return {?WebInspector.View}
      */
@@ -124,6 +129,7 @@ WebInspector.View.prototype = {
             return;
         this.storeScrollPositions();
 
+        this._discardCachedSize();
         this._callOnVisibleChildren(this._processWillHide);
         this._notify(this.willHide);
         this._isShowing = false;
@@ -141,8 +147,43 @@ WebInspector.View.prototype = {
             return;
         if (!this.isShowing())
             return;
+        this._discardCachedSize();
         this._notify(this.onResize);
         this._callOnVisibleChildren(this._processOnResize);
+    },
+
+    _cacheSize: function()
+    {
+        this._prepareCacheSize();
+        this._applyCacheSize();
+    },
+
+    _prepareCacheSize: function()
+    {
+        if (this._isLayoutBoundary) {
+            this._cachedOffsetWidth = this.element.offsetWidth;
+            this._cachedOffsetHeight = this.element.offsetHeight;
+        }
+        this._callOnVisibleChildren(this._prepareCacheSize);
+    },
+
+    _applyCacheSize: function()
+    {
+        if (this._isLayoutBoundary) {
+            this.element.style.setProperty("width", this._cachedOffsetWidth + "px");
+            this.element.style.setProperty("height", this._cachedOffsetHeight + "px");
+            delete this._cachedOffsetWidth;
+            delete this._cachedOffsetHeight;
+        }
+        this._callOnVisibleChildren(this._applyCacheSize);
+    },
+
+    _discardCachedSize: function()
+    {
+        if (!this._isLayoutBoundary)
+            return;
+        this.element.style.removeProperty("width");
+        this.element.style.removeProperty("height");
     },
 
     /**
@@ -213,8 +254,10 @@ WebInspector.View.prototype = {
                 WebInspector.View._originalAppendChild.call(parentElement, this.element);
         }
 
-        if (this._parentIsShowing())
+        if (this._parentIsShowing()) {
             this._processWasShown();
+            this._cacheSize();
+        }
     },
 
     /**
@@ -312,7 +355,9 @@ WebInspector.View.prototype = {
     {
         if (!this.isShowing())
             return;
+        this._discardCachedSize();
         this._callOnVisibleChildren(this._processOnResize);
+        this._cacheSize();
     },
 
     registerRequiredCSS: function(cssFile)
