@@ -116,18 +116,17 @@
 .profile-node-file {
     float: right;
     color: gray;
-    margin-top: -1px;
 }
 
 .profile-warn-marker {
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 144px;
-    background-position: -201px -105px;
-    padding-left: 12px;
+    background-position: -202px -107px;
     width: 10px;
     height: 10px;
     vertical-align: -1px;
     margin-right: 2px;
+    display: inline-block;
 }
 
 .data-grid tr.selected .profile-node-file {

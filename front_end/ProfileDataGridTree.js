@@ -60,13 +60,11 @@ WebInspector.ProfileDataGridNode.prototype = {
         var data = {};
 
         if (this._deoptReason) {
-            var div = document.createElement("div");
-            var marker = div.createChild("span");
-            marker.className = "profile-warn-marker";
+            var content = document.createDocumentFragment();
+            var marker = content.createChild("span", "profile-warn-marker");
             marker.title = WebInspector.UIString("Not optimized: %s", this._deoptReason);
-            var functionName = div.createChild("span");
-            functionName.textContent = this.functionName;
-            data["function"] = div;
+            content.createTextChild(this.functionName);
+            data["function"] = content;
         } else
             data["function"] = this.functionName;
 

@@ -104,7 +104,7 @@
 .data-grid td {
     vertical-align: top;
     height: 16px; /* Keep in sync with .data-grid table.data @ background-size */
-    line-height: 13px;
+    line-height: 14px;
     padding: 1px 4px;
     white-space: nowrap;
     overflow: hidden;
