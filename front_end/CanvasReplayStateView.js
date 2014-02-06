@@ -384,16 +384,14 @@ WebInspector.CanvasReplayStateView.prototype = {
      */
     _updateDataGridHighlights: function(nodes)
     {
-        for (var i = 0, n = this._highlightedGridNodes.length; i < n; ++i) {
-            var node = this._highlightedGridNodes[i];
-            node.element.classList.remove("canvas-grid-node-highlighted");
-        }
+        for (var i = 0, n = this._highlightedGridNodes.length; i < n; ++i)
+            this._highlightedGridNodes[i].element.classList.remove("canvas-grid-node-highlighted");
 
         this._highlightedGridNodes = nodes;
 
         for (var i = 0, n = this._highlightedGridNodes.length; i < n; ++i) {
             var node = this._highlightedGridNodes[i];
-            node.element.classList.add("canvas-grid-node-highlighted");
+            WebInspector.runCSSAnimationOnce(node.element, "canvas-grid-node-highlighted");
             node.reveal();
         }
     },

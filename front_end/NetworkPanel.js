@@ -1362,7 +1362,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _highlightNode: function(node)
     {
-        node.element.classList.add("highlighted-row");
+        WebInspector.runCSSAnimationOnce(node.element, "highlighted-row");
         this._highlightedNode = node;
     },
 
@@ -1634,8 +1634,8 @@ WebInspector.NetworkPanel.prototype = {
         var request = this._requestByAnchor(anchor);
         if (!request)
             return false;
-        this.revealAndHighlightRequest(request)
         WebInspector.inspectorView.setCurrentPanel(this);
+        this.revealAndHighlightRequest(request);
         return true;
     },
 

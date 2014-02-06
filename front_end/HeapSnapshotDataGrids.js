@@ -155,15 +155,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
         var prevNode = this._highlightedNode;
         this._clearCurrentHighlight();
         this._highlightedNode = node;
-        this._highlightedNode.element.classList.add("highlighted-row");
-        // If highlighted node hasn't changed reinsert it to make the highlight animation restart.
-        if (node === prevNode) {
-            var element = node.element;
-            var parent = element.parentElement;
-            var nextSibling = element.nextSibling;
-            parent.removeChild(element);
-            parent.insertBefore(element, nextSibling);
-        }
+        WebInspector.runCSSAnimationOnce(this._highlightedNode.element, "highlighted-row");
     },
 
     nodeWasDetached: function(node)

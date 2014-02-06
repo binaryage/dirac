@@ -607,6 +607,25 @@ WebInspector.highlightSearchResults = function(element, resultRanges, changes)
 
 /**
  * @param {!Element} element
+ * @param {string} className
+ */
+WebInspector.runCSSAnimationOnce = function(element, className)
+{
+    function animationEndCallback()
+    {
+        element.classList.remove(className);
+        element.removeEventListener("animationend", animationEndCallback, false);
+    }
+
+    if (element.classList.contains(className))
+        element.classList.remove(className);
+
+    element.addEventListener("animationend", animationEndCallback, false);
+    element.classList.add(className);
+}
+
+/**
+ * @param {!Element} element
  * @param {!Array.<!WebInspector.SourceRange>} resultRanges
  * @param {string} styleClass
  * @param {!Array.<!Object>=} changes
