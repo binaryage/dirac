@@ -76,7 +76,7 @@
     display: block;
 }
 
-.profile-view {
+.cpu-profile-view {
     display: none;
     overflow: hidden;
     position: absolute;
@@ -86,40 +86,40 @@
     bottom: 0;
 }
 
-.profile-view.visible {
+.cpu-profile-view.visible {
     display: flex;
 }
 
-.profile-view .data-grid {
+.cpu-profile-view .data-grid {
     border: none;
     flex: auto;
 }
 
-.profile-view .data-grid th.average-column {
+.cpu-profile-view .data-grid th.average-column {
     text-align: center;
 }
 
-.profile-view .data-grid td.average-column {
+.cpu-profile-view .data-grid td.average-column {
     text-align: right;
 }
 
-.profile-view .data-grid th.self-column {
+.cpu-profile-view .data-grid th.self-column {
     text-align: center;
 }
 
-.profile-view .data-grid td.self-column {
+.cpu-profile-view .data-grid td.self-column {
     text-align: right;
 }
 
-.profile-view .data-grid th.total-column {
+.cpu-profile-view .data-grid th.total-column {
     text-align: center;
 }
 
-.profile-view .data-grid td.total-column {
+.cpu-profile-view .data-grid td.total-column {
     text-align: right;
 }
 
-.profile-view .data-grid .calls-column {
+.cpu-profile-view .data-grid .calls-column {
     text-align: center;
 }
 

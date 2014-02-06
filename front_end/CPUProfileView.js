@@ -32,7 +32,7 @@ WebInspector.CPUProfileView = function(profileHeader)
 {
     WebInspector.View.call(this);
 
-    this.element.classList.add("profile-view");
+    this.element.classList.add("cpu-profile-view");
 
     this.showSelfTimeAsPercent = WebInspector.settings.createSetting("cpuProfilerShowSelfTimeAsPercent", true);
     this.showTotalTimeAsPercent = WebInspector.settings.createSetting("cpuProfilerShowTotalTimeAsPercent", true);
