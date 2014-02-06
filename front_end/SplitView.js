@@ -180,6 +180,24 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
+     * @return {string}
+     */
+    sidebarSide: function()
+    {
+        return this._isVertical ?
+            (this._secondIsSidebar ? "right" : "left") :
+            (this._secondIsSidebar ? "bottom" : "top");
+    },
+
+    /**
+     * @return {number}
+     */
+    desiredSidebarSize: function()
+    {
+        return this._lastSidebarSize();
+    },
+
+    /**
      * @return {!Element}
      */
     resizerElement: function()

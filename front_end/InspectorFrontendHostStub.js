@@ -94,13 +94,11 @@ WebInspector.InspectorFrontendHostStub.prototype = {
 
     /**
      * Requests inspected page to be placed atop of the inspector frontend
-     * with passed insets from the frontend sides.
-     * @param {number} top
-     * @param {number} left
-     * @param {number} bottom
-     * @param {number} right
+     * with passed insets from the frontend sides, respecting minimum size passed.
+     * @param {{top: number, left: number, right: number, bottom: number}} insets
+     * @param {{width: number, height: number}} minSize
      */
-    setContentsInsets: function(top, left, bottom, right)
+    setContentsResizingStrategy: function(insets, minSize)
     {
     },
 

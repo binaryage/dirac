@@ -241,12 +241,12 @@ InspectorFrontendHostAPI.prototype.getSelectionForegroundColor = function() {}
 /** @return {boolean} */
 InspectorFrontendHost.isUnderTest = function() {}
 /**
- * @param top
- * @param left
- * @param bottom
- * @param right
+ * Requests inspected page to be placed atop of the inspector frontend
+ * with passed insets from the frontend sides, respecting minimum size passed.
+ * @param {{top: number, left: number, right: number, bottom: number}} insets
+ * @param {{width: number, height: number}} minSize
  */
-InspectorFrontendHostAPI.prototype.setContentsInsets = function(top, left, bottom, right) {}
+InspectorFrontendHostAPI.prototype.setContentsResizingStrategy = function(insets, minSize) {}
 InspectorFrontendHostAPI.prototype.inspectElementCompleted = function() {}
 /** @param {!Function=} callback callback */
 InspectorFrontendHostAPI.prototype.moveWindowBy = function(x, y, callback) {}

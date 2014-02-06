@@ -53,7 +53,7 @@ WebInspector.InspectorView = function()
     this._splitView.show(this.element);
 
     // Main part of main split is overlay view.
-    this._overlayView = new WebInspector.InspectorView.OverlayView();
+    this._overlayView = new WebInspector.InspectorView.OverlayView(this._splitView);
     this._overlayView.show(this._splitView.mainElement());
 
     // Sidebar of main split is artificial element used for positioning.
@@ -456,8 +456,10 @@ WebInspector.InspectorView.prototype = {
     {
         this._updateConstraints();
         var zoomFactor = WebInspector.zoomFactor();
-        if (zoomFactor !== this._zoomFactor)
+        if (zoomFactor !== this._zoomFactor) {
             this._splitView.setSidebarSize(this._splitView.sidebarSize() * this._zoomFactor / zoomFactor, true);
+            this._overlayView.updateMargins();
+        }
         this._zoomFactor = zoomFactor;
     },
 
@@ -547,11 +549,14 @@ WebInspector.InspectorView.prototype = {
 
 /**
  * @constructor
+ * @param {!WebInspector.SplitView} splitView
  * @extends {WebInspector.View}
  */
-WebInspector.InspectorView.OverlayView = function()
+WebInspector.InspectorView.OverlayView = function(splitView)
 {
     WebInspector.View.call(this);
+    this._margins = {top: 0, left: 0, right: 0, bottom: 0};
+    this._splitView = splitView;
 }
 
 WebInspector.InspectorView.OverlayView.prototype = {
@@ -563,12 +568,18 @@ WebInspector.InspectorView.OverlayView.prototype = {
      */
     setMargins: function(top, right, bottom, left)
     {
-        var marginValue = Math.round(3 * WebInspector.zoomFactor()) + "px ";
-        var margings = top ? marginValue : "0 ";
-        margings += right ? marginValue : "0 ";
-        margings += bottom ? marginValue : "0 ";
-        margings += left ? marginValue : "0 ";
-        this.element.style.margin = margings;
+        this._margins = { top: top, right: right, bottom: bottom, left: left };
+        this.updateMargins();
+    },
+
+    updateMargins: function()
+    {
+        var marginValue = Math.round(3 / WebInspector.zoomFactor()) + "px ";
+        var margins = this._margins.top ? marginValue : "0 ";
+        margins += this._margins.right ? marginValue : "0 ";
+        margins += this._margins.bottom ? marginValue : "0 ";
+        margins += this._margins.left ? marginValue : "0 ";
+        this.element.style.margin = margins;
     },
 
     onResize: function()
@@ -585,17 +596,27 @@ WebInspector.InspectorView.OverlayView.prototype = {
     {
         delete this._setContentsInsetsId;
 
-        var dockSide = WebInspector.dockController.dockSide();
         var zoomFactor = WebInspector.zoomFactor();
-        var totalWidth = document.body.offsetWidth;
-        var totalHeight = document.body.offsetHeight;
-        var boundingRect = this.element.getBoundingClientRect();
+        var marginValue = Math.round(3 / WebInspector.zoomFactor());
+        var insets = {
+            top: this._margins.top ? marginValue : 0,
+            left: this._margins.left ? marginValue : 0,
+            right: this._margins.right ? marginValue : 0,
+            bottom: this._margins.bottom ? marginValue : 0};
 
-        InspectorFrontendHost.setContentsInsets(
-            Math.round(boundingRect.top * zoomFactor),
-            Math.round(boundingRect.left * zoomFactor),
-            Math.round((totalHeight - boundingRect.bottom) * zoomFactor),
-            Math.round((totalWidth - boundingRect.right) * zoomFactor));
+        var minSize = {
+            width: WebInspector.InspectorView.Constraints.OverlayWidth - Math.round(insets.left * zoomFactor) - Math.round(insets.right * zoomFactor),
+            height: WebInspector.InspectorView.Constraints.OverlayHeight - Math.round(insets.top * zoomFactor) - Math.round(insets.bottom * zoomFactor)};
+
+        insets[this._splitView.sidebarSide()] += this._splitView.desiredSidebarSize();
+
+        var zoomedInsets = {
+            top: Math.round(insets.top * zoomFactor),
+            left: Math.round(insets.left * zoomFactor),
+            bottom: Math.round(insets.bottom * zoomFactor),
+            right: Math.round(insets.right * zoomFactor)};
+
+        InspectorFrontendHost.setContentsResizingStrategy(zoomedInsets, minSize);
     },
 
     __proto__: WebInspector.View.prototype
