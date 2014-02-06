@@ -70,6 +70,7 @@ WebInspector.TimelinePanel = function()
     this._topPane.element.id = "timeline-overview-panel";
     this._topPane.show(this.element);
     this._topPane.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
+    this._topPane.setResizable(false);
     this._createPresentationSelector();
 
     // Create top overview component.
