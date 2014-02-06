@@ -66,12 +66,16 @@ WebInspector.TimelinePanel = function()
 
     this._createStatusBarItems();
 
+    this._topPane = new WebInspector.SplitView(true, false);
+    this._topPane.element.id = "timeline-overview-panel";
+    this._topPane.show(this.element);
+    this._topPane.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
     this._createPresentationSelector();
 
     // Create top overview component.
     this._overviewPane = new WebInspector.TimelineOverviewPane(this._model);
     this._overviewPane.addEventListener(WebInspector.TimelineOverviewPane.Events.WindowChanged, this._onWindowChanged.bind(this));
-    this._overviewPane.show(this._presentationSelector.element);
+    this._overviewPane.show(this._topPane.mainElement());
 
     this._createFileSelector();
     this._registerShortcuts();
@@ -155,11 +159,21 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @param {!WebInspector.Event} event
+     */
+    _sidebarResized: function(event)
+    {
+        var width = /** @type {number} */ (event.data);
+        this.setSidebarWidth(width);
+    },
+
+    /**
      * @param {number} width
      */
     setSidebarWidth: function(width)
     {
-        this._topPaneSidebarElement.style.flexBasis = width + "px";
+        this._topPane.setSidebarSize(width);
+        this._currentView.setSidebarWidth(width);
     },
 
     /**
@@ -208,15 +222,10 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._views = {};
 
-        this._presentationSelector = new WebInspector.View();
-        this._presentationSelector.element.classList.add("hbox");
-        this._presentationSelector.element.id = "timeline-overview-panel";
-        this._presentationSelector.show(this.element);
+        var topPaneSidebarElement = this._topPane.sidebarElement();
+        topPaneSidebarElement.id = "timeline-overview-sidebar";
 
-        this._topPaneSidebarElement = this._presentationSelector.element.createChild("div");
-        this._topPaneSidebarElement.id = "timeline-overview-sidebar";
-
-        var overviewTreeElement = this._topPaneSidebarElement.createChild("ol", "sidebar-tree vbox");
+        var overviewTreeElement = topPaneSidebarElement.createChild("ol", "sidebar-tree vbox");
         var topPaneSidebarTree = new TreeOutline(overviewTreeElement);
 
         this._overviewItems = {};

@@ -282,6 +282,7 @@
 #timeline-overview-pane {
     flex: auto;
     position: relative;
+    overflow: hidden;
 }
 
 #timeline-overview-container {
@@ -424,7 +425,7 @@
 }
 
 #timeline-overview-sidebar .sidebar-tree {
-    height: 100%;
+    flex: auto;
 }
 
 #timeline-overview-sidebar .sidebar-tree-item {
