@@ -85,7 +85,11 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
 }
 
 .heap-snapshot-view .data-grid tr.selected {
-    background-color: rgba(56, 121, 217, 0.1) !important;
+    background-color: rgba(56, 121, 217);
+    color: inherit;
+}
+
+.heap-snapshot-view .data-grid tr.selected span.percent-column {
     color: inherit;
 }
 
@@ -157,7 +161,7 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
     white-space: nowrap;
 }
 
-.heap-snapshot-view .console-formatted-id {
+.heap-snapshot-view tr:not(.selected) .console-formatted-id {
     color: grey;
 }
 

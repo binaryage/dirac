@@ -1147,7 +1147,7 @@ ol.watch-expressions > li.hovered {
     position: relative;
     display: inline-block;
     vertical-align: top;
-    color: #222;
+    color: inherit;
 }
 
 .console-formatted-node:hover {
