@@ -586,24 +586,28 @@ Object.defineProperty(Array.prototype, "lowerBound",
     /**
      * Return index of the leftmost element that is equal or greater
      * than the specimen object. If there's no such element (i.e. all
-     * elements are smaller than the specimen) returns array.length.
+     * elements are smaller than the specimen) returns right bound.
      * The function works for sorted array.
+     * When specified, |left| (inclusive) and |right| (exclusive) indices
+     * define the search window.
      *
      * @param {!T} object
      * @param {function(!T,!S):number=} comparator
+     * @param {number=} left
+     * @param {number=} right
      * @return {number}
      * @this {Array.<!S>}
      * @template T,S
      */
-    value: function(object, comparator)
+    value: function(object, comparator, left, right)
     {
         function defaultComparator(a, b)
         {
             return a < b ? -1 : (a > b ? 1 : 0);
         }
         comparator = comparator || defaultComparator;
-        var l = 0;
-        var r = this.length;
+        var l = left || 0;
+        var r = right !== undefined ? right : this.length;
         while (l < r) {
             var m = (l + r) >> 1;
             if (comparator(object, this[m]) > 0)
@@ -620,24 +624,28 @@ Object.defineProperty(Array.prototype, "upperBound",
     /**
      * Return index of the leftmost element that is greater
      * than the specimen object. If there's no such element (i.e. all
-     * elements are smaller than the specimen) returns array.length.
+     * elements are smaller or equal to the specimen) returns right bound.
      * The function works for sorted array.
+     * When specified, |left| (inclusive) and |right| (exclusive) indices
+     * define the search window.
      *
      * @param {!T} object
      * @param {function(!T,!S):number=} comparator
+     * @param {number=} left
+     * @param {number=} right
      * @return {number}
      * @this {Array.<!S>}
      * @template T,S
      */
-    value: function(object, comparator)
+    value: function(object, comparator, left, right)
     {
         function defaultComparator(a, b)
         {
             return a < b ? -1 : (a > b ? 1 : 0);
         }
         comparator = comparator || defaultComparator;
-        var l = 0;
-        var r = this.length;
+        var l = left || 0;
+        var r = right !== undefined ? right : this.length;
         while (l < r) {
             var m = (l + r) >> 1;
             if (comparator(object, this[m]) >= 0)
@@ -1364,9 +1372,9 @@ StringMap.prototype = {
  * @param {function(?string)=} callback
  * @return {?string}
  */
-function loadXHR(url, async, callback) 
+function loadXHR(url, async, callback)
 {
-    function onReadyStateChanged() 
+    function onReadyStateChanged()
     {
         if (xhr.readyState !== XMLHttpRequest.DONE)
             return;
@@ -1376,7 +1384,7 @@ function loadXHR(url, async, callback)
             return;
         }
 
-        callback(null); 
+        callback(null);
    }
 
     var xhr = new XMLHttpRequest();
@@ -1386,7 +1394,7 @@ function loadXHR(url, async, callback)
     xhr.send(null);
 
     if (!async) {
-        if (xhr.status === 200) 
+        if (xhr.status === 200)
             return xhr.responseText;
         return null;
     }

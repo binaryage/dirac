@@ -212,16 +212,7 @@ WebInspector.CounterUIBase.prototype = {
      */
     _recordIndexAt: function(x)
     {
-        // FIXME: looks like a place for binary search.
-        var counter = this.counter;
-        var i;
-        for (i = counter._minimumIndex + 1; i <= counter._maximumIndex; i++) {
-            var statX = counter.x[i];
-            if (x < statX)
-                break;
-        }
-        i--;
-        return i;
+        return this.counter.x.upperBound(x, null, this.counter._minimumIndex + 1, this.counter._maximumIndex + 1) - 1;
     },
 
     /**
