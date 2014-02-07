@@ -280,7 +280,7 @@
 }
 
 #timeline-overview-pane {
-    flex: auto;
+    flex: 0 0 80px;
     position: relative;
     overflow: hidden;
 }
@@ -290,6 +290,7 @@
     flex: auto;
     position: relative;
     height: 80px;
+    overflow: hidden;
 }
 
 #timeline-overview-container canvas {

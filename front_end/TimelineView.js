@@ -67,24 +67,9 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.element.classList.add("searchable-view");
 
-    this._views = [];
     this._recordsView = this._createRecordsView();
-    this._views.push(this._recordsView);
-
-    this._stackView = new WebInspector.StackView(false);
-    this._stackView.show(this._searchableView.element);
-    this._stackView.element.classList.add("timeline-view-stack");
-    this._recordsViewMainElement = this._stackView.appendView(this._recordsView, "timeline-records").mainElement();
-    this._recordsViewMainElement.classList.add("timeline-records-view");
-    this._recordsViewMainElement.appendChild(this._timelineGrid.gridHeaderElement);
-
-    if (this._currentMode === WebInspector.TimelinePanel.Mode.Memory) {
-        // Create memory statistics as a bottom memory splitter child.
-        this._memoryStatistics = new WebInspector.CountersGraph(this, this._model);
-        this._views.push(this._memoryStatistics);
-        this._memoryStatistics.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
-        this._stackView.appendView(this._memoryStatistics, "timeline-memory");
-    }
+    this._recordsView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
+    this._recordsView.show(this._searchableView.element);
 
     this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
 
@@ -100,18 +85,9 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     this._glueRecordsSetting = glueRecordsSetting;
     this._glueRecordsSetting.addChangeListener(this._onGlueRecordsSettingChanged, this);
 
-    switch (mode) {
-    case WebInspector.TimelinePanel.Mode.Events:
-        this._overviewControl = new WebInspector.TimelineEventOverview(this._model);
-        break;
-    case WebInspector.TimelinePanel.Mode.Frames:
-        this._frameModel = new WebInspector.TimelineFrameModel(this._model);
-        this._overviewControl = new WebInspector.TimelineFrameOverview(this._model, this._frameModel);
+    if (mode === WebInspector.TimelinePanel.Mode.Frames) {
+        this.frameModel = new WebInspector.TimelineFrameModel(this._model);
         this._presentationModel.setGlueRecords(false);
-        break;
-    case WebInspector.TimelinePanel.Mode.Memory:
-        this._overviewControl = new WebInspector.TimelineMemoryOverview(this._model);
-        break;
     }
 
     this._searchableView.show(this.element);
@@ -162,9 +138,7 @@ WebInspector.TimelineView.prototype = {
      */
     _createRecordsView: function()
     {
-        // Create records sidebar as a top memory splitter child.
         var recordsView = new WebInspector.SplitView(true, false, "timeline-split");
-        recordsView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
         this._containerElement = recordsView.element;
         this._containerElement.tabIndex = 0;
         this._containerElement.id = "timeline-container";
@@ -225,14 +199,6 @@ WebInspector.TimelineView.prototype = {
     {
         this._presentationModel.setGlueRecords(this._glueRecordsSetting.get());
         this._repopulateRecords();
-    },
-
-    /**
-     * @return {!WebInspector.TimelineOverviewBase}
-     */
-    overviewControl: function()
-    {
-        return this._overviewControl;
     },
 
     get calculator()
@@ -387,7 +353,7 @@ WebInspector.TimelineView.prototype = {
      */
     _filteredFrames: function(startTime, endTime)
     {
-        if (!this._frameModel)
+        if (!this.frameModel)
             return [];
         function compareStartTime(value, object)
         {
@@ -397,7 +363,7 @@ WebInspector.TimelineView.prototype = {
         {
             return value - object.endTime;
         }
-        var frames = this._frameModel.mainThreadFrames();
+        var frames = this.frameModel.mainThreadFrames();
         var firstFrame = insertionIndexForObjectInListSortedByFunction(startTime, frames, compareStartTime);
         var lastFrame = insertionIndexForObjectInListSortedByFunction(endTime, frames, compareEndTime);
         while (lastFrame < frames.length && frames[lastFrame].endTime <= endTime)
@@ -463,23 +429,19 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
+     * @param {number} width
+     */
+    setSidebarSize: function(width)
+    {
+        this._recordsView.setSidebarSize(width);
+    },
+
+    /**
      * @param {!WebInspector.Event} event
      */
     _sidebarResized: function(event)
     {
-        var width = /** @type {number} */(event.data);
-        this.setSidebarWidth(width);
-        this._panel.setSidebarWidth(width);
-    },
-
-    /**
-     * @param {number} width
-     */
-    setSidebarWidth: function(width)
-    {
-        this._timelineGrid.gridHeaderElement.style.left = width + "px";
-        for (var i = 0; i < this._views.length; ++i)
-            this._views[i].setSidebarSize(width);
+        this.dispatchEventToListeners(WebInspector.SplitView.Events.SidebarSizeChanged, event.data);
     },
 
     _onViewportResize: function()
@@ -514,7 +476,6 @@ WebInspector.TimelineView.prototype = {
     _onRecordsCleared: function()
     {
         this._resetView();
-        this.overviewControl().reset();
         this._windowFilter.reset();
         this._invalidateAndScheduleRefresh(true, true);
     },
@@ -742,8 +703,6 @@ WebInspector.TimelineView.prototype = {
                 this._timelineGrid.updateDividers(this._calculator);
             this._refreshAllUtilizationBars();
         }
-        if (this._currentMode === WebInspector.TimelinePanel.Mode.Memory)
-            this._memoryStatistics.refresh();
         this._boundariesAreValid = true;
     },
 

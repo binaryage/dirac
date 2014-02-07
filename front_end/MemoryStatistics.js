@@ -47,9 +47,11 @@ WebInspector.MemoryStatistics = function(timelineView, model)
 
     this._graphsContainer = this.mainElement();
     this._createCurrentValuesBar();
-    this._canvasContainer = this._graphsContainer.createChild("div");
-    this._canvasContainer.id = "memory-graphs-canvas-container";
-    this._canvas = this._canvasContainer.createChild("canvas", "fill");
+    this._canvasView = new WebInspector.ViewWithResizeCallback(this._resize.bind(this));
+    this._canvasView.show(this._graphsContainer);
+    this._canvasContainer = this._canvasView.element;
+
+    this._canvas = this._canvasContainer.createChild("canvas");
     this._canvas.id = "memory-counters-graph";
 
     this._canvasContainer.addEventListener("mouseover", this._onMouseMove.bind(this), true);
@@ -265,16 +267,35 @@ WebInspector.MemoryStatistics.prototype = {
     {
         for (var i = 0; i < this._counters.length; ++i)
             this._counters[i].reset();
+        this.refresh();
     },
 
-    onResize: function()
+    _resize: function()
     {
-        WebInspector.SplitView.prototype.onResize.call(this);
-
         var parentElement = this._canvas.parentElement;
         this._canvas.width = parentElement.clientWidth;
         this._canvas.height = parentElement.clientHeight;
         this.refresh();
+    },
+
+    setWindowTimes: function()
+    {
+        this.scheduleRefresh();
+    },
+
+    scheduleRefresh: function()
+    {
+        if (this._refreshTimer)
+            return;
+        this._refreshTimer = setTimeout(this.refresh.bind(this), 300);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    supportsGlueParentMode: function()
+    {
+        return true;
     },
 
     draw: function()
@@ -288,7 +309,7 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {!MouseEvent} event
+     * @param {?Event} event
      */
     _onClick: function(event)
     {
@@ -311,7 +332,7 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {!MouseEvent} event
+     * @param {?Event} event
      */
     _onMouseOut: function(event)
     {
@@ -326,7 +347,7 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {!MouseEvent} event
+     * @param {?Event} event
      */
     _onMouseMove: function(event)
     {
@@ -345,6 +366,7 @@ WebInspector.MemoryStatistics.prototype = {
 
     refresh: function()
     {
+        delete this._refreshTimer;
         this._timelineGrid.updateDividers(this._timelineView.calculator);
         this.draw();
         this._refreshCurrentValues();

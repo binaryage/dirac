@@ -35,6 +35,7 @@ WebInspector.StackView = function(isVertical)
 {
     WebInspector.View.call(this);
     this._isVertical = isVertical;
+    this._currentSplitView = null;
 }
 
 WebInspector.StackView.prototype = {
@@ -60,6 +61,12 @@ WebInspector.StackView.prototype = {
 
         this._currentSplitView = splitView;
         return splitView;
+    },
+
+    detachChildViews: function()
+    {
+        WebInspector.View.prototype.detachChildViews.call(this);
+        this._currentSplitView = null;
     },
 
     __proto__: WebInspector.View.prototype

@@ -128,6 +128,7 @@ WebInspector.CountersGraph.prototype = {
                 this._counters[i].appendSample(time, counters);
         }
         WebInspector.TimelinePresentationModel.forAllRecords([/** @type {!TimelineAgent.TimelineEvent} */ (event.data)], null, addStatistics.bind(this));
+        this.scheduleRefresh();
     },
 
     draw: function()

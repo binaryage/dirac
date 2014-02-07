@@ -93,6 +93,10 @@ WebInspector.TimelinePanel = function()
     this._detailsSplitView.installResizer(this._detailsView.titleElement());
     this._detailsView.show(this._detailsSplitView.sidebarElement());
 
+    this._stackView = new WebInspector.StackView(false);
+    this._stackView.show(this._detailsSplitView.mainElement());
+    this._stackView.element.classList.add("timeline-view-stack");
+
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._dockSideChanged.bind(this));
     WebInspector.settings.splitVerticallyWhenDockedToRight.addChangeListener(this._dockSideChanged.bind(this));
     this._dockSideChanged();
@@ -165,16 +169,9 @@ WebInspector.TimelinePanel.prototype = {
     _sidebarResized: function(event)
     {
         var width = /** @type {number} */ (event.data);
-        this.setSidebarWidth(width);
-    },
-
-    /**
-     * @param {number} width
-     */
-    setSidebarWidth: function(width)
-    {
         this._topPane.setSidebarSize(width);
-        this._currentView.setSidebarWidth(width);
+        for (var i = 0; i < this._currentViews.length; ++i)
+            this._currentViews[i].setSidebarSize(width);
     },
 
     /**
@@ -184,7 +181,8 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._windowStartTime = event.data.startTime;
         this._windowEndTime = event.data.endTime;
-        this._currentView.setWindowTimes(this._windowStartTime, this._windowEndTime);
+        for (var i = 0; i < this._currentViews.length; ++i)
+            this._currentViews[i].setWindowTimes(this._windowStartTime, this._windowEndTime);
     },
 
     /**
@@ -201,27 +199,40 @@ WebInspector.TimelinePanel.prototype = {
     /**
      * @param {string} mode
      */
-    _viewForMode: function(mode)
+    _viewsForMode: function(mode)
     {
-        var view = this._views[mode];
-        if (!view) {
+        var views = this._viewsMap[mode];
+        if (!views) {
+            var timelineView = new WebInspector.TimelineView(this, this._model, this._glueRecordsSetting, mode);
+            timelineView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
+            views = {
+                mainViews: [timelineView]
+            };
             switch (mode) {
             case WebInspector.TimelinePanel.Mode.Events:
+                views.overviewView = new WebInspector.TimelineEventOverview(this._model);
+                break;
             case WebInspector.TimelinePanel.Mode.Frames:
+                views.overviewView = new WebInspector.TimelineFrameOverview(this._model, timelineView.frameModel);
+                break;
             case WebInspector.TimelinePanel.Mode.Memory:
-                view = new WebInspector.TimelineView(this, this._model, this._glueRecordsSetting, mode);
-                this._views[mode] = view;
+                views.overviewView = new WebInspector.TimelineMemoryOverview(this._model);
+
+                var memoryStatistics = new WebInspector.CountersGraph(timelineView, this._model);
+                memoryStatistics.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
+                views.mainViews.push(memoryStatistics);
                 break;
             default:
                 console.assert(false, "Unknown mode: " + mode);
             }
+            this._viewsMap[mode] = views;
         }
-        return view;
+        return views;
     },
 
     _createPresentationSelector: function()
     {
-        this._views = {};
+        this._viewsMap = {};
 
         var topPaneSidebarElement = this._topPane.sidebarElement();
         topPaneSidebarElement.id = "timeline-overview-sidebar";
@@ -284,7 +295,7 @@ WebInspector.TimelinePanel.prototype = {
     _updateFiltersBar: function()
     {
         this._filterBar.clear();
-        var hasFilters = this._currentView.createUIFilters(this._filterBar);
+        var hasFilters = this._currentViews[0].createUIFilters(this._filterBar);
         this._filterBar.filterButton().setEnabled(hasFilters);
     },
 
@@ -301,7 +312,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     searchableView: function()
     {
-        return this._currentView.searchableView();
+        return this._currentViews[0].searchableView();
     },
 
     _onFiltersToggled: function(event)
@@ -336,7 +347,7 @@ WebInspector.TimelinePanel.prototype = {
         this._operationInProgress = !!indicator;
         for (var i = 0; i < this._statusBarButtons.length; ++i)
             this._statusBarButtons[i].setEnabled(!this._operationInProgress);
-        this._glueParentButton.setEnabled(!this._operationInProgress && !this._currentView.supportsGlueParentMode());
+        this._glueParentButton.setEnabled(!this._operationInProgress && !this._glueMode);
         this._statusTextContainer.enableStyleClass("hidden", !!indicator);
         this._miscStatusBarItems.removeChildren();
         if (indicator)
@@ -421,14 +432,20 @@ WebInspector.TimelinePanel.prototype = {
         this.element.classList.remove("timeline-" + this._presentationModeSetting.get().toLowerCase() + "-view");
         this._presentationModeSetting.set(mode);
         this.element.classList.add("timeline-" + mode.toLowerCase() + "-view");
-        if (this._currentView)
-            this._currentView.detach();
-        this._currentView = this._viewForMode(mode);
+        this._stackView.detachChildViews();
+        var views = this._viewsForMode(mode);
+        this._currentViews = views.mainViews;
         this._updateFiltersBar();
-        this._currentView.setWindowTimes(this.windowStartTime(), this.windowEndTime());
-        this._currentView.show(this._detailsSplitView.mainElement());
-        this._overviewPane.setOverviewControl(this._currentView.overviewControl());
-        this._glueParentButton.setEnabled(this._currentView.supportsGlueParentMode());
+        this._glueMode = true;
+        for (var i = 0; i < this._currentViews.length; ++i) {
+            var view = this._currentViews[i];
+            view.setWindowTimes(this.windowStartTime(), this.windowEndTime());
+            this._stackView.appendView(view, "timeline-view");
+            this._glueMode = this._glueMode && view.supportsGlueParentMode();
+        }
+        this._overviewControl = views.overviewView;
+        this._overviewPane.setOverviewControl(this._overviewControl);
+        this._glueParentButton.setEnabled(this._glueMode);
     },
 
     /**
@@ -482,6 +499,7 @@ WebInspector.TimelinePanel.prototype = {
     _onRecordsCleared: function()
     {
         this.setWindowTimes(0, Infinity);
+        this._overviewControl.reset();
     },
 
     _onRecordingStarted: function()
