@@ -88,7 +88,17 @@ invalid_type_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*\{.
 
 invalid_type_designator_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*.*([?!])=?\}")
 
+error_warning_regex = re.compile(r"(?:WARNING|ERROR)")
+
+errors_found = False
+
+
+def hasErrors(output):
+    return re.search(error_warning_regex, output) != None
+
+
 def verify_importScript_usage():
+    errors_found = False
     for module in modules:
         for file_name in module['sources']:
             if file_name in allowed_import_statements_files:
@@ -98,6 +108,8 @@ def verify_importScript_usage():
             sourceFile.close()
             if "importScript(" in source:
                 print "ERROR: importScript function is allowed in module header files only (found in %s)" % file_name
+                errors_found = True
+    return errors_found
 
 
 def dump_all_checked_files():
@@ -109,10 +121,11 @@ def dump_all_checked_files():
 
 
 def verify_jsdoc_extra():
-    os.system("%s -jar %s %s" % (java_exec, jsdoc_validator_jar, dump_all_checked_files()))
+    return subprocess.Popen("%s -jar %s %s" % (java_exec, jsdoc_validator_jar, dump_all_checked_files()), stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
 
 def verify_jsdoc():
+    errors_found = False
     for module in modules:
         for file_name in module['sources']:
             lineIndex = 0
@@ -123,21 +136,26 @@ def verify_jsdoc():
                     lineIndex += 1
                     if not line:
                         continue
-                    verify_jsdoc_line(full_file_name, lineIndex, line)
-    verify_jsdoc_extra()
+                    if verify_jsdoc_line(full_file_name, lineIndex, line):
+                        errors_found = True
+    return errors_found
 
 
 def verify_jsdoc_line(fileName, lineIndex, line):
     def print_error(message, errorPosition):
         print "%s:%s: ERROR - %s\n%s\n%s\n" % (fileName, lineIndex, message, line, " " * errorPosition + "^")
 
+    errors_found = False
     match = re.search(invalid_type_regex, line)
     if match:
         print_error("Type '%s' nullability not marked explicitly with '?' (nullable) or '!' (non-nullable)" % match.group(1), match.start(1))
+        errors_found = True
 
     match = re.search(invalid_type_designator_regex, line)
     if (match):
         print_error("Type nullability indicator misplaced, should precede type", match.start(1))
+        errors_found = True
+    return errors_found
 
 
 def check_java_path():
@@ -152,10 +170,11 @@ def check_java_path():
 check_java_path()
 
 print "Verifying 'importScript' function usage..."
-verify_importScript_usage()
+errors_found |= verify_importScript_usage()
 
 print "Verifying JSDoc comments..."
-verify_jsdoc()
+errors_found |= verify_jsdoc()
+jsdocValidatorProc = verify_jsdoc_extra()
 
 modules_dir = tempfile.mkdtemp()
 common_closure_args = " --summary_detail_level 3 --compilation_level SIMPLE_OPTIMIZATIONS --warning_level VERBOSE --language_in ECMASCRIPT5 --accept_const_keyword --module_output_path_prefix %s/" % modules_dir
@@ -193,6 +212,7 @@ def verify_standalone_modules():
         for dependency in module["dependencies"]:
             if dependency in standalone_module_names:
                 print "ERROR: Standalone module %s cannot be in dependencies of %s" % (dependency, module["name"])
+                errors_found = True
 
 verify_standalone_modules()
 
@@ -219,7 +239,6 @@ def dump_module(name, recursively, processed_modules):
     for script in module["sources"]:
         command += " --js " + devtools_frontend_path + "/" + script
     return command
-
 
 print "Compiling frontend..."
 
@@ -276,6 +295,11 @@ canvasModuleCompileProc = subprocess.Popen(check_injected_webgl_calls_command, s
 
 print
 
+(jsdocValidatorOut, _) = jsdocValidatorProc.communicate()
+if jsdocValidatorOut:
+    print ("JSDoc validator output:\n%s" % jsdocValidatorOut)
+    errors_found = True
+
 (moduleCompileOut, _) = modular_compiler_proc.communicate()
 print "Modular compilation output:"
 
@@ -283,9 +307,8 @@ start_module_regex = re.compile(r"^@@ START_MODULE:(.+) @@$")
 end_module_regex = re.compile(r"^@@ END_MODULE @@$")
 
 in_module = False
-module_output = []
 skipped_modules = {}
-
+error_count = 0
 
 def skip_dependents(module_name):
     for skipped_module in dependents_by_module_name.get(module_name, []):
@@ -308,18 +331,28 @@ for line in moduleCompileOut.splitlines():
         if not match:
             if not skip_module:
                 module_output.append(line)
-                if "ERROR" in line or "WARNING" in line:
+                if hasErrors(line):
+                    error_count += 1
                     skip_dependents(module_name)
             continue
 
         in_module = False
         print os.linesep.join(module_output)
 
+if error_count:
+    print "Total Closure errors: %d\n" % error_count
+    errors_found = True
+
 (injectedScriptCompileOut, _) = injectedScriptCompileProc.communicate()
 print "InjectedScriptSource.js and InjectedScriptCanvasModuleSource.js compilation output:\n", injectedScriptCompileOut
+errors_found |= hasErrors(injectedScriptCompileOut)
 
 (canvasModuleCompileOut, _) = canvasModuleCompileProc.communicate()
 print "InjectedScriptCanvasModuleSource.js generated code check output:\n", canvasModuleCompileOut
+errors_found |= hasErrors(canvasModuleCompileOut)
+
+if errors_found:
+    print "ERRORS DETECTED"
 
 os.remove(injectedScriptSourceTmpFile)
 os.remove(injectedScriptCanvasModuleSourceTmpFile)
