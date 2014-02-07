@@ -53,6 +53,60 @@ WebInspector.Linkifier = function(formatter)
     this._liveLocations = [];
 }
 
+/**
+ * @param {!WebInspector.Linkifier.LinkHandler} handler
+ */
+WebInspector.Linkifier.setLinkHandler = function(handler)
+{
+    WebInspector.Linkifier._linkHandler = handler;
+}
+
+/**
+ * @param {string} url
+ * @param {number=} lineNumber
+ * @return {boolean}
+ */
+WebInspector.Linkifier.handleLink = function(url, lineNumber)
+{
+    if (!WebInspector.Linkifier._linkHandler)
+        return false;
+    return WebInspector.Linkifier._linkHandler.handleLink(url, lineNumber)
+}
+
+/**
+ * @param {!Object} revealable
+ * @param {string} text
+ * @param {string} fallbackHref
+ * @param {number=} fallbackLineNumber
+ * @param {string=} title
+ * @param {string=} classes
+ * @return {!Element}
+ */
+WebInspector.Linkifier.linkifyUsingRevealer = function(revealable, text, fallbackHref, fallbackLineNumber, title, classes)
+{
+    var a = document.createElement("a");
+    a.className = (classes || "") + " webkit-html-resource-link";
+    a.textContent = text.trimMiddle(WebInspector.Linkifier.MaxLengthForDisplayedURLs);
+    a.title = title || text;
+    a.href = fallbackHref;
+    a.lineNumber = fallbackLineNumber;
+
+    /**
+     * @param {?Event} event
+     * @this {Object}
+     */
+    function clickHandler(event)
+    {
+        event.consume(true);
+        if (WebInspector.Linkifier.handleLink(fallbackHref, fallbackLineNumber))
+            return;
+
+        WebInspector.Revealer.reveal(this);
+    }
+    a.addEventListener("click", clickHandler.bind(revealable), false);
+    return a;
+}
+
 WebInspector.Linkifier.prototype = {
     /**
      * @param {string} sourceURL
@@ -79,7 +133,7 @@ WebInspector.Linkifier.prototype = {
         var script = WebInspector.debuggerModel.scriptForId(rawLocation.scriptId);
         if (!script)
             return null;
-        var anchor = WebInspector.linkifyURLAsNode("", "", classes, false);
+        var anchor = this._createAnchor(classes);
         var liveLocation = script.createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor));
         this._liveLocations.push(liveLocation);
         return anchor;
@@ -93,11 +147,36 @@ WebInspector.Linkifier.prototype = {
      */
     linkifyCSSLocation: function(styleSheetId, rawLocation, classes)
     {
-        var anchor = WebInspector.linkifyURLAsNode("", "", classes, false);
+        var anchor = this._createAnchor(classes);
         var liveLocation = WebInspector.cssModel.createLiveLocation(styleSheetId, rawLocation, this._updateAnchor.bind(this, anchor));
         if (!liveLocation)
             return null;
         this._liveLocations.push(liveLocation);
+        return anchor;
+    },
+
+    /**
+     * @param {string=} classes
+     * @return {!Element}
+     */
+    _createAnchor: function(classes)
+    {
+        var anchor = document.createElement("a");
+        anchor.className = (classes || "") + " webkit-html-resource-link";
+
+        /**
+         * @param {?Event} event
+         */
+        function clickHandler(event)
+        {
+            event.consume(true);
+            if (!anchor.__uiLocation)
+                return;
+            if (WebInspector.Linkifier.handleLink(anchor.__uiLocation.url(), anchor.__uiLocation.lineNumber))
+                return;
+            WebInspector.Revealer.reveal(anchor.__uiLocation);
+        }
+        anchor.addEventListener("click", clickHandler, false);
         return anchor;
     },
 
@@ -114,11 +193,7 @@ WebInspector.Linkifier.prototype = {
      */
     _updateAnchor: function(anchor, uiLocation)
     {
-        anchor.preferredPanel = "sources";
-        anchor.href = sanitizeHref(uiLocation.uiSourceCode.originURL());
-        anchor.uiSourceCode = uiLocation.uiSourceCode;
-        anchor.lineNumber = uiLocation.lineNumber;
-        anchor.columnNumber = uiLocation.columnNumber;
+        anchor.__uiLocation = uiLocation;
         this._formatter.formatLiveAnchor(anchor, uiLocation);
     }
 }
@@ -184,3 +259,19 @@ WebInspector.Linkifier.DefaultCSSFormatter.prototype = {
  * @type {number}
  */
 WebInspector.Linkifier.MaxLengthForDisplayedURLs = 150;
+
+/**
+ * @interface
+ */
+WebInspector.Linkifier.LinkHandler = function()
+{
+}
+
+WebInspector.Linkifier.LinkHandler.prototype = {
+    /**
+     * @param {string} url
+     * @param {number=} lineNumber
+     * @return {boolean}
+     */
+    handleLink: function(url, lineNumber) {}
+}

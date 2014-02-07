@@ -103,6 +103,16 @@ WebInspector.ConsoleMessageImpl.prototype = {
         this._formattedMessage = document.createElement("span");
         this._formattedMessage.className = "console-message-text source-code";
 
+        /**
+         * @param {string} title
+         * @return {!Element}
+         * @this {WebInspector.NetworkRequest}
+         */
+        function linkifyRequest(title)
+        {
+            return WebInspector.Linkifier.linkifyUsingRevealer(this, title, this.url);
+        }
+
         if (!this._messageElement) {
             if (this.source === WebInspector.ConsoleMessage.MessageSource.ConsoleAPI) {
                 switch (this.type) {
@@ -142,13 +152,13 @@ WebInspector.ConsoleMessageImpl.prototype = {
                     this._messageElement = document.createElement("span");
                     if (this.level === WebInspector.ConsoleMessage.MessageLevel.Error) {
                         this._messageElement.appendChild(document.createTextNode(this._request.requestMethod + " "));
-                        this._messageElement.appendChild(WebInspector.linkifyRequestAsNode(this._request));
+                        this._messageElement.appendChild(WebInspector.Linkifier.linkifyUsingRevealer(this._request, this._request.url, this._request.url));
                         if (this._request.failed)
                             this._messageElement.appendChild(document.createTextNode(" " + this._request.localizedFailDescription));
                         else
                             this._messageElement.appendChild(document.createTextNode(" " + this._request.statusCode + " (" + this._request.statusText + ")"));
                     } else {
-                        var fragment = WebInspector.linkifyStringAsFragmentWithCustomLinkifier(this._messageText, WebInspector.linkifyRequestAsNode.bind(null, this._request));
+                        var fragment = WebInspector.linkifyStringAsFragmentWithCustomLinkifier(this._messageText, linkifyRequest.bind(this._request));
                         this._messageElement.appendChild(fragment);
                     }
                 } else {

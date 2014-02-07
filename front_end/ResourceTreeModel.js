@@ -400,7 +400,7 @@ WebInspector.ResourceTreeModel.prototype = {
 
     /**
      * @param {string} url
-     * @return {!WebInspector.Resource}
+     * @return {?WebInspector.Resource}
      */
     resourceForURL: function(url)
     {
@@ -666,7 +666,7 @@ WebInspector.ResourceTreeFrame.prototype = {
             }
         }
         this._callForFrameResources(filter);
-        return result;
+        return result || null;
     },
 
     /**

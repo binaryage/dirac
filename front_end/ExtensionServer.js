@@ -302,10 +302,25 @@ WebInspector.ExtensionServer.prototype = {
 
     _onOpenResource: function(message)
     {
-        var a = document.createElement("a");
-        a.href = message.url;
-        a.lineNumber = message.lineNumber;
-        return WebInspector.showAnchorLocation(a) ? this._status.OK() : this._status.E_NOTFOUND(message.url);
+        var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(message.url);
+        if (uiSourceCode) {
+            WebInspector.Revealer.reveal(new WebInspector.UILocation(uiSourceCode, message.lineNumber, 0));
+            return this._status.OK();
+        }
+
+        var resource = WebInspector.resourceForURL(message.url);
+        if (resource) {
+            WebInspector.Revealer.reveal(resource, message.lineNumber);
+            return this._status.OK();
+        }
+
+        var request = WebInspector.networkLog.requestForURL(message.url);
+        if (request) {
+            WebInspector.Revealer.reveal(request);
+            return this._status.OK();
+        }
+
+        return this._status.E_NOTFOUND(message.url);
     },
 
     _onSetOpenResourceHandler: function(message, port)

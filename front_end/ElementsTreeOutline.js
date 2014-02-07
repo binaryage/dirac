@@ -1010,7 +1010,7 @@ WebInspector.ElementsTreeElement.prototype = {
 
     _preventFollowingLinksOnDoubleClick: function()
     {
-        var links = this.listItemElement.querySelectorAll("li > .webkit-html-tag > .webkit-html-attribute > .webkit-html-external-link, li > .webkit-html-tag > .webkit-html-attribute > .webkit-html-resource-link");
+        var links = this.listItemElement.querySelectorAll("li .webkit-html-tag > .webkit-html-attribute > .webkit-html-external-link, li .webkit-html-tag > .webkit-html-attribute > .webkit-html-resource-link");
         if (!links)
             return;
 

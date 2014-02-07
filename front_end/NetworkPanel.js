@@ -720,7 +720,7 @@ WebInspector.NetworkLogView.prototype = {
             this._dataGrid.scrollToLastRow();
     },
 
-    _onRecordButtonClicked: function(e)
+    _onRecordButtonClicked: function()
     {
         if (!this._recordButton.toggled)
             this._reset();
@@ -757,14 +757,6 @@ WebInspector.NetworkLogView.prototype = {
     get requests()
     {
         return this._requests;
-    },
-
-    /**
-     * @return {!WebInspector.NetworkRequest}
-     */
-    requestById: function(id)
-    {
-        return this._requestsById[id];
     },
 
     _onRequestStarted: function(event)
@@ -1239,7 +1231,7 @@ WebInspector.NetworkLogView.prototype = {
      */
     _highlightNthMatchedRequestForSearch: function(matchedRequestIndex, reveal)
     {
-        var request = this.requestById(this._matchedRequests[matchedRequestIndex]);
+        var request = this._requestsById[this._matchedRequests[matchedRequestIndex]];
         if (!request)
             return;
         this._removeAllHighlights();
@@ -1613,32 +1605,8 @@ WebInspector.NetworkPanel.prototype = {
     },
 
     /**
-     * @return {!WebInspector.NetworkRequest}
+     * @param {!WebInspector.NetworkRequest} request
      */
-    requestById: function(id)
-    {
-        return this._networkLogView.requestById(id);
-    },
-
-    _requestByAnchor: function(anchor)
-    {
-        return anchor.requestId ? this.requestById(anchor.requestId) : this._networkLogView._requestsByURL[anchor.href];
-    },
-
-    /**
-     * @param {!Element} anchor
-     * @return {boolean}
-     */
-    showAnchorLocation: function(anchor)
-    {
-        var request = this._requestByAnchor(anchor);
-        if (!request)
-            return false;
-        WebInspector.inspectorView.setCurrentPanel(this);
-        this.revealAndHighlightRequest(request);
-        return true;
-    },
-
     revealAndHighlightRequest: function(request)
     {
         this._toggleGridMode();
@@ -1838,6 +1806,25 @@ WebInspector.NetworkPanel.ContextMenuProvider.prototype = {
     appendApplicableItems: function(event, contextMenu, target)
     {
         WebInspector.panel("network").appendApplicableItems(event, contextMenu, target);
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.Revealer}
+ */
+WebInspector.NetworkPanel.RequestRevealer = function()
+{
+}
+
+WebInspector.NetworkPanel.RequestRevealer.prototype = {
+    /**
+     * @param {!Object} request
+     */
+    reveal: function(request)
+    {
+        if (request instanceof WebInspector.NetworkRequest)
+            /** @type {!WebInspector.NetworkPanel} */ (WebInspector.showPanel("network")).revealAndHighlightRequest(request);
     }
 }
 

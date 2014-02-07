@@ -970,7 +970,6 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
                     // The "linkedStylesheet" case.
                     anchor = WebInspector.linkifyResourceAsNode(media.sourceURL, undefined, "subtitle", media.sourceURL);
                 }
-                anchor.preferredPanel = "sources";
                 anchor.style.float = "right";
                 refElement.appendChild(anchor);
             }
@@ -1040,6 +1039,11 @@ WebInspector.StylePropertiesSection.prototype = {
     collapse: function()
     {
         // Overriding with empty body.
+    },
+
+    handleClick: function()
+    {
+        // Avoid consuming events.
     },
 
     /**
@@ -1296,7 +1300,6 @@ WebInspector.StylePropertiesSection.prototype = {
         function linkifyUncopyable(url, line)
         {
             var link = WebInspector.linkifyResourceAsNode(url, line, "", url + ":" + (line + 1));
-            link.preferredPanel = "sources";
             link.classList.add("webkit-html-resource-link");
             link.setAttribute("data-uncopyable", link.textContent);
             link.textContent = "";
@@ -1351,8 +1354,7 @@ WebInspector.StylePropertiesSection.prototype = {
             var index = event.target._selectorIndex;
             var styleSheetHeader = WebInspector.cssModel.styleSheetHeaderForId(this.rule.id.styleSheetId);
             var uiLocation = styleSheetHeader.rawLocationToUILocation(this.rule.lineNumberInSource(index), this.rule.columnNumberInSource(index));
-            if (uiLocation)
-                uiLocation.reveal();
+            WebInspector.Revealer.reveal(uiLocation);
             return;
         }
         this._startEditingOnMouseEvent();
@@ -2380,9 +2382,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
     {
         console.assert(this.section().navigable);
         var propertyNameClicked = element === this.nameElement;
-        var uiLocation = this.property.uiLocation(propertyNameClicked);
-        if (uiLocation)
-            uiLocation.reveal();
+        WebInspector.Revealer.reveal(this.property.uiLocation(propertyNameClicked));
     },
 
     /**

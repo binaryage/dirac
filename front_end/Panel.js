@@ -92,15 +92,6 @@ WebInspector.Panel.prototype = {
     },
 
     /**
-     * @param {!Element} anchor
-     * @return {boolean}
-     */
-    showAnchorLocation: function(anchor)
-    {
-        return false;
-    },
-
-    /**
      * @return {!Array.<!Element>}
      */
     elementsToRestoreScrollPositionsFor: function()

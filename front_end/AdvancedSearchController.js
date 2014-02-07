@@ -623,12 +623,7 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
      */
     _createAnchor: function(uiSourceCode, lineNumber, columnNumber)
     {
-        var anchor = document.createElement("a");
-        anchor.preferredPanel = "sources";
-        anchor.href = sanitizeHref(uiSourceCode.originURL());
-        anchor.uiSourceCode = uiSourceCode;
-        anchor.lineNumber = lineNumber;
-        return anchor;
+        return WebInspector.Linkifier.linkifyUsingRevealer(new WebInspector.UILocation(uiSourceCode, lineNumber, columnNumber), "", uiSourceCode.url, lineNumber);
     },
 
     /**

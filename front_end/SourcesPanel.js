@@ -477,24 +477,6 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @param {!Element} anchor
-     * @return {boolean}
-     */
-    showAnchorLocation: function(anchor)
-    {
-        if (!anchor.uiSourceCode) {
-            var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(anchor.href);
-            if (uiSourceCode)
-                anchor.uiSourceCode = uiSourceCode;
-        }
-        if (!anchor.uiSourceCode)
-            return false;
-
-        this._showSourceLocation(anchor.uiSourceCode, anchor.lineNumber, anchor.columnNumber);
-        return true;
-    },
-
-    /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber
      * @param {number=} columnNumber

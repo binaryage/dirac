@@ -394,6 +394,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     var openAnchorLocationSetting = WebInspector.settings.createSetting("openLinkHandler", autoselectPanel);
     this.openAnchorLocationRegistry = new WebInspector.HandlerRegistry(openAnchorLocationSetting);
     this.openAnchorLocationRegistry.registerHandler(autoselectPanel, function() { return false; });
+    WebInspector.Linkifier.setLinkHandler(new WebInspector.HandlerRegistry.LinkHandler());
 
     new WebInspector.WorkspaceController(this.workspace);
 
@@ -513,7 +514,7 @@ WebInspector.close = function(event)
 WebInspector.documentClick = function(event)
 {
     var anchor = event.target.enclosingNodeOrSelfWithNodeName("a");
-    if (!anchor || (anchor.target === "_blank"))
+    if (!anchor || !anchor.href || (anchor.target === "_blank"))
         return;
 
     // Prevent the link from navigating, since we don't do any navigation by following links normally.
@@ -525,19 +526,24 @@ WebInspector.documentClick = function(event)
             return;
         if (WebInspector.openAnchorLocationRegistry.dispatch({ url: anchor.href, lineNumber: anchor.lineNumber}))
             return;
-        if (WebInspector.showAnchorLocation(anchor))
-            return;
 
-        var parsedURL = anchor.href.asParsedURL();
-        if (parsedURL && parsedURL.scheme === "webkit-link-action") {
-            if (parsedURL.host === "show-panel") {
-                var panel = parsedURL.path.substring(1);
-                if (WebInspector.panel(panel))
-                    WebInspector.showPanel(panel);
-            }
+        var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(anchor.href);
+        if (uiSourceCode) {
+            WebInspector.Revealer.reveal(new WebInspector.UILocation(uiSourceCode, anchor.lineNumber || 0, anchor.columnNumber || 0));
             return;
         }
 
+        var resource = WebInspector.resourceForURL(anchor.href);
+        if (resource) {
+            WebInspector.Revealer.reveal(resource);
+            return;
+        }
+
+        var request = WebInspector.networkLog.requestForURL(anchor.href);
+        if (request) {
+            WebInspector.Revealer.reveal(request);
+            return;
+        }
         InspectorFrontendHost.openInNewTab(anchor.href);
     }
 
@@ -902,36 +908,6 @@ WebInspector._updateFocusedNode = function(nodeId)
     WebInspector.showPanel("elements").revealAndSelectNode(nodeId);
 }
 
-WebInspector.showAnchorLocation = function(anchor)
-{
-    var preferredPanel = this.panels[anchor.preferredPanel];
-    if (preferredPanel && WebInspector._showAnchorLocationInPanel(anchor, preferredPanel))
-        return true;
-    if (WebInspector._showAnchorLocationInPanel(anchor, this.panel("sources")))
-        return true;
-    if (WebInspector._showAnchorLocationInPanel(anchor, this.panel("resources")))
-        return true;
-    if (WebInspector._showAnchorLocationInPanel(anchor, this.panel("network")))
-        return true;
-    return false;
-}
-
-WebInspector._showAnchorLocationInPanel = function(anchor, panel)
-{
-    if (!panel)
-        return false;
-
-    var result = panel.showAnchorLocation(anchor);
-    if (result) {
-        // FIXME: support webkit-html-external-link links here.
-        if (anchor.classList.contains("webkit-html-external-link")) {
-            anchor.classList.remove("webkit-html-external-link");
-            anchor.classList.add("webkit-html-resource-link");
-        }
-    }
-    return result;
-}
-
 WebInspector.evaluateInConsole = function(expression, showResultOnly)
 {
     this.showConsole();
@@ -944,7 +920,7 @@ WebInspector.addMainEventListeners = function(doc)
     doc.addEventListener("beforecopy", this.documentCanCopy.bind(this), true);
     doc.addEventListener("copy", this.documentCopy.bind(this), false);
     doc.addEventListener("contextmenu", this.contextMenuEventFired.bind(this), true);
-    doc.addEventListener("click", this.documentClick.bind(this), true);
+    doc.addEventListener("click", this.documentClick.bind(this), false);
 }
 
 WebInspector.Zoom = {

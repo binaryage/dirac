@@ -411,20 +411,6 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     /**
-     * @param {!Element} anchor
-     * @return {boolean}
-     */
-    showAnchorLocation: function(anchor)
-    {
-        var resource = WebInspector.resourceForURL(anchor.href);
-        if (!resource)
-            return false;
-        WebInspector.inspectorView.setCurrentPanel(this);
-        this.showResource(resource, anchor.lineNumber);
-        return true;
-    },
-
-    /**
      * @param {!WebInspector.Resource} resource
      * @param {number=} line
      * @param {number=} column
@@ -776,6 +762,26 @@ WebInspector.ResourcesPanel.prototype = {
     },
 
     __proto__: WebInspector.PanelWithSidebarTree.prototype
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.Revealer}
+ */
+WebInspector.ResourcesPanel.ResourceRevealer = function()
+{
+}
+
+WebInspector.ResourcesPanel.ResourceRevealer.prototype = {
+    /**
+     * @param {!Object} resource
+     * @param {number=} lineNumber
+     */
+    reveal: function(resource, lineNumber)
+    {
+        if (resource instanceof WebInspector.Resource)
+            /** @type {!WebInspector.ResourcesPanel} */ (WebInspector.showPanel("resources")).showResource(resource, lineNumber);
+    }
 }
 
 /**

@@ -880,13 +880,6 @@ WebInspector.UILocation.prototype = {
         if (typeof this.lineNumber === "number")
             linkText += ":" + (this.lineNumber + 1);
         return linkText;
-    },
-
-    reveal: function()
-    {
-        var revealer = WebInspector.moduleManager.instance(WebInspector.Revealer, this);
-        if (revealer)
-            revealer.reveal(this);
     }
 }
 

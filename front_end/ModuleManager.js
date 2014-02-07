@@ -364,6 +364,19 @@ WebInspector.Revealer = function()
 {
 }
 
+/**
+ * @param {?Object} revealable
+ * @param {number=} lineNumber
+ */
+WebInspector.Revealer.reveal = function(revealable, lineNumber)
+{
+    if (!revealable)
+        return;
+    var revealer = WebInspector.moduleManager.instance(WebInspector.Revealer, revealable);
+    if (revealer)
+        revealer.reveal(revealable, lineNumber);
+}
+
 WebInspector.Revealer.prototype = {
     /**
      * @param {!Object} object

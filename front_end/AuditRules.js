@@ -1279,7 +1279,6 @@ WebInspector.AuditRules.VendorPrefixedCSSProperties.prototype = {
                 this._styleSheetResult = result.addChild(rule.sourceURL ? WebInspector.linkifyResourceAsNode(rule.sourceURL) : WebInspector.UIString("<unknown>"));
             if (!this._ruleResult) {
                 var anchor = WebInspector.linkifyURLAsNode(rule.sourceURL, rule.selectorText);
-                anchor.preferredPanel = "resources";
                 anchor.lineNumber = rule.lineNumberInSource();
                 this._ruleResult = this._styleSheetResult.addChild(anchor);
             }

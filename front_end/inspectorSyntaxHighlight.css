@@ -99,6 +99,12 @@
     color: #00e;
 }
 
+.webkit-html-resource-link {
+    /* Required for consistency with view-source.css, since anchors may not have href attributes */
+    text-decoration: underline;
+    cursor: pointer;
+}
+
 .webkit-html-external-link {
     /* Keep this in sync with view-source.css (.webkit-html-external-link) */
     text-decoration: none;

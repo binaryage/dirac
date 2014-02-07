@@ -242,6 +242,26 @@ WebInspector.HandlerRegistry.ContextMenuProvider.prototype = {
 }
 
 /**
+ * @constructor
+ * @implements {WebInspector.Linkifier.LinkHandler}
+ */
+WebInspector.HandlerRegistry.LinkHandler = function()
+{
+}
+
+WebInspector.HandlerRegistry.LinkHandler.prototype = {
+    /**
+     * @param {string} url
+     * @param {number=} lineNumber
+     * @return {boolean}
+     */
+    handleLink: function(url, lineNumber)
+    {
+        return WebInspector.openAnchorLocationRegistry.dispatch({ url: url, lineNumber: lineNumber});
+    }
+}
+
+/**
  * @type {!WebInspector.HandlerRegistry}
  */
 WebInspector.openAnchorLocationRegistry;

@@ -88,6 +88,11 @@ var allDescriptors = [
                 type: "@WebInspector.ContextMenu.Provider",
                 contextTypes: ["WebInspector.NetworkRequest", "WebInspector.Resource", "WebInspector.UISourceCode"],
                 className: "WebInspector.NetworkPanel.ContextMenuProvider"
+            },
+            {
+                type: "@WebInspector.Revealer",
+                contextTypes: ["WebInspector.NetworkRequest"],
+                className: "WebInspector.NetworkPanel.RequestRevealer"
             }
         ],
         scripts: [ "NetworkPanel.js" ]
@@ -180,6 +185,11 @@ var allDescriptors = [
                 title: "Resources",
                 order: 5,
                 className: "WebInspector.ResourcesPanel"
+            },
+            {
+                type: "@WebInspector.Revealer",
+                contextTypes: ["WebInspector.Resource"],
+                className: "WebInspector.ResourcesPanel.ResourceRevealer"
             }
         ],
         scripts: [ "ResourcesPanel.js" ]

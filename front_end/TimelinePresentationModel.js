@@ -1298,7 +1298,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     {
         var span = document.createElement("span");
         span.classList.add("node-link");
-        span.addEventListener("click", node.reveal.bind(node), false);
+        span.addEventListener("click", WebInspector.Revealer.reveal.bind(WebInspector.Revealer, node, undefined), false);
         WebInspector.DOMPresentationUtils.decorateNodeLabel(node, span);
         return span;
     },
