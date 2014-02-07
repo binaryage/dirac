@@ -129,7 +129,6 @@ WebInspector.View.prototype = {
             return;
         this.storeScrollPositions();
 
-        this._discardCachedSize();
         this._callOnVisibleChildren(this._processWillHide);
         this._notify(this.willHide);
         this._isShowing = false;
@@ -147,9 +146,17 @@ WebInspector.View.prototype = {
             return;
         if (!this.isShowing())
             return;
-        this._discardCachedSize();
         this._notify(this.onResize);
         this._callOnVisibleChildren(this._processOnResize);
+    },
+
+    _processDiscardCachedSize: function()
+    {
+        if (this._isLayoutBoundary) {
+            this.element.style.removeProperty("width");
+            this.element.style.removeProperty("height");
+        }
+        this._callOnVisibleChildren(this._processDiscardCachedSize);
     },
 
     _cacheSize: function()
@@ -176,14 +183,6 @@ WebInspector.View.prototype = {
             delete this._cachedOffsetHeight;
         }
         this._callOnVisibleChildren(this._applyCacheSize);
-    },
-
-    _discardCachedSize: function()
-    {
-        if (!this._isLayoutBoundary)
-            return;
-        this.element.style.removeProperty("width");
-        this.element.style.removeProperty("height");
     },
 
     /**
@@ -269,8 +268,10 @@ WebInspector.View.prototype = {
         if (!parentElement)
             return;
 
-        if (this._parentIsShowing())
+        if (this._parentIsShowing()) {
+            this._processDiscardCachedSize();
             this._processWillHide();
+        }
 
         if (this._hideOnDetach && !overrideHideOnDetach) {
             this.element.classList.remove("visible");
@@ -355,8 +356,10 @@ WebInspector.View.prototype = {
     {
         if (!this.isShowing())
             return;
-        this._discardCachedSize();
-        this._callOnVisibleChildren(this._processOnResize);
+        this._processDiscardCachedSize();
+        // No matter what notification we are in, dispatching onResize is not needed.
+        if (!this._inNotification())
+            this._callOnVisibleChildren(this._processOnResize);
         this._cacheSize();
     },
 

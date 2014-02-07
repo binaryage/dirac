@@ -127,12 +127,11 @@ WebInspector.SplitView.prototype = {
   
     /**
      * @param {boolean=} animate
-     * @param {boolean=} fromOnResize
      */
-    _updateLayout: function(animate, fromOnResize)
+    _updateLayout: function(animate)
     {
         delete this._totalSize; // Lazy update.
-        this._innerSetSidebarSize(this._lastSidebarSize(), false, animate, fromOnResize);
+        this._innerSetSidebarSize(this._lastSidebarSize(), false, animate);
     },
 
     /**
@@ -335,9 +334,8 @@ WebInspector.SplitView.prototype = {
      * @param {number} size
      * @param {boolean=} ignoreConstraints
      * @param {boolean=} animate
-     * @param {boolean=} fromOnResize
      */
-    _innerSetSidebarSize: function(size, ignoreConstraints, animate, fromOnResize)
+    _innerSetSidebarSize: function(size, ignoreConstraints, animate)
     {
         if (this._isShowingOne) {
             this._sidebarSize = size;
@@ -392,8 +390,7 @@ WebInspector.SplitView.prototype = {
             this._animate(false);
         } else {
             // No need to recalculate this._sidebarSize and this._totalSize again.
-            if (!fromOnResize)
-                this.doResize();
+            this.doResize();
             this.dispatchEventToListeners(WebInspector.SplitView.Events.SidebarSizeChanged, this.sidebarSize());
         }
     },
@@ -553,7 +550,7 @@ WebInspector.SplitView.prototype = {
 
     onResize: function()
     {
-        this._updateLayout(false, true);
+        this._updateLayout();
     },
 
     /**
