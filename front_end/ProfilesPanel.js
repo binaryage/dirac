@@ -824,6 +824,7 @@ WebInspector.ProfilesPanel.prototype = {
         if (index !== -1)
             return this._profileToView[index].view;
         var view = profile.createView();
+        view.element.classList.add("profile-view");
         this._profileToView.push({ profile: profile, view: view});
         return view;
     },
@@ -910,7 +911,7 @@ WebInspector.ProfilesPanel.prototype = {
         this._searchableView.updateSearchMatchesCount(0);
     },
 
-    /** 
+    /**
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */

@@ -71,17 +71,9 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
     border: none;
 }
 
-.heap-snapshot-view .data-grid table.data {
-    background-image: none;
-}
-
 .heap-snapshot-view .data-grid tr:empty {
     height: 16px;
     visibility: hidden;
-}
-
-.heap-snapshot-view .data-grid tr:not(.filler):hover td {
-    background-color: rgba(0, 0, 0, 0.1);
 }
 
 .heap-snapshot-view .data-grid tr.selected span {
