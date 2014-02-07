@@ -321,7 +321,7 @@ WebInspector.ConsoleView.prototype = {
         function scrollIntoView()
         {
             delete this._scrollIntoViewTimer;
-            this.messagesElement.scrollTop = this.messagesElement.scrollHeight - this.messagesElement.clientHeight;
+            this.messagesElement.scrollTop = this.messagesElement.scrollHeight;
         }
         this._scrollIntoViewTimer = setTimeout(scrollIntoView.bind(this), 20);
     },
