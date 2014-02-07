@@ -379,9 +379,9 @@ WebInspector.IndexedDBModel.prototype = {
                 return;
             var entries = [];
             for (var i = 0; i < dataEntries.length; ++i) {
-                var key = WebInspector.RemoteObject.fromPayload(dataEntries[i].key);
-                var primaryKey = WebInspector.RemoteObject.fromPayload(dataEntries[i].primaryKey);
-                var value = WebInspector.RemoteObject.fromPayload(dataEntries[i].value);
+                var key = WebInspector.RemoteObject.fromLocalObject(JSON.parse(dataEntries[i].key));
+                var primaryKey = WebInspector.RemoteObject.fromLocalObject(JSON.parse(dataEntries[i].primaryKey));
+                var value = WebInspector.RemoteObject.fromLocalObject(JSON.parse(dataEntries[i].value));
                 entries.push(new WebInspector.IndexedDBModel.Entry(key, primaryKey, value));
             }
             callback(entries, hasMore);

@@ -1418,9 +1418,9 @@
                 "type": "object",
                 "description": "Data entry.",
                 "properties": [
-                    { "name": "key", "$ref": "Runtime.RemoteObject", "description": "Key." },
-                    { "name": "primaryKey", "$ref": "Runtime.RemoteObject", "description": "Primary key." },
-                    { "name": "value", "$ref": "Runtime.RemoteObject", "description": "Value." }
+                    { "name": "key", "type": "string", "description": "JSON-stringified key object." },
+                    { "name": "primaryKey", "type": "string", "description": "JSON-stringified primary key object." },
+                    { "name": "value", "type": "string", "description": "JSON-stringified value object." }
                 ]
             },
             {
