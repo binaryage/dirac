@@ -50,7 +50,7 @@ WebInspector.MemoryStatistics = function(timelineView, model)
     this._canvasView = new WebInspector.ViewWithResizeCallback(this._resize.bind(this));
     this._canvasView.show(this._graphsContainer);
     this._canvasContainer = this._canvasView.element;
-
+    this._canvasContainer.id = "memory-graphs-canvas-container";
     this._canvas = this._canvasContainer.createChild("canvas");
     this._canvas.id = "memory-counters-graph";
 

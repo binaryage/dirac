@@ -505,6 +505,10 @@
     position: relative;
 }
 
+#memory-counters-graph {
+    flex: auto;
+}
+
 #memory-graphs-canvas-container .memory-counter-marker {
     position: absolute;
     border-radius: 3px;
