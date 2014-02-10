@@ -59,6 +59,14 @@ WebInspector.TimelineFrameOverview = function(model, frameModel)
 }
 
 WebInspector.TimelineFrameOverview.prototype = {
+    /**
+     * @return {!Object.<string, !CanvasGradient>}
+     */
+    categoryFillStyles: function()
+    {
+        return this._fillStyles;
+    },
+
     reset: function()
     {
         this._recordsPerBar = 1;

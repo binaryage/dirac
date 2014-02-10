@@ -1053,6 +1053,21 @@ WebInspector.CPUProfileHeader.prototype = {
 }
 
 /**
+ * @return {!WebInspector.FlameChart.ColorGenerator}
+ */
+WebInspector.CPUProfileView.colorGenerator = function()
+{
+    if (!WebInspector.CPUProfileView._colorGenerator) {
+        var colorGenerator = new WebInspector.FlameChart.ColorGenerator();
+        colorGenerator.colorPairForID("(idle)::0", 50);
+        colorGenerator.colorPairForID("(program)::0", 50);
+        colorGenerator.colorPairForID("(garbage collector)::0", 50);
+        WebInspector.CPUProfileView._colorGenerator = colorGenerator;
+    }
+    return WebInspector.CPUProfileView._colorGenerator;
+}
+
+/**
  * @constructor
  * @implements {WebInspector.FlameChartDataProvider}
  */
@@ -1060,23 +1075,30 @@ WebInspector.CPUFlameChartDataProvider = function(cpuProfileView)
 {
     WebInspector.FlameChartDataProvider.call(this);
     this._cpuProfileView = cpuProfileView;
+    this._colorGenerator = WebInspector.CPUProfileView.colorGenerator();
 }
 
 WebInspector.CPUFlameChartDataProvider.prototype = {
     /**
-     * @param {!WebInspector.FlameChart.ColorGenerator} colorGenerator
      * @return {?WebInspector.FlameChart.TimelineData}
      */
-    timelineData: function(colorGenerator)
+    timelineData: function()
     {
-        return this._timelineData || this._calculateTimelineData(colorGenerator);
+        return this._timelineData || this._calculateTimelineData();
     },
 
     /**
-     * @param {!WebInspector.FlameChart.ColorGenerator} colorGenerator
+     * @return {!WebInspector.FlameChart.ColorGenerator}
+     */
+    colorGenerator: function()
+    {
+        return this._colorGenerator;
+    },
+
+    /**
      * @return {?WebInspector.FlameChart.TimelineData}
      */
-    _calculateTimelineData: function(colorGenerator)
+    _calculateTimelineData: function()
     {
         if (!this._cpuProfileView.profileHead)
             return null;
@@ -1155,8 +1177,9 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
                 continue;
             }
 
+            var colorGenerator = this._colorGenerator;
             while (node) {
-                var colorPair = colorGenerator._colorPairForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
+                var colorPair = colorGenerator.colorPairForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
                 var indexesForColor = colorEntryIndexes[colorPair.index];
                 if (!indexesForColor)
                     indexesForColor = colorEntryIndexes[colorPair.index] = [];

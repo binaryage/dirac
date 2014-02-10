@@ -55,8 +55,13 @@ WebInspector.FlameChart.DividersBarHeight = 20;
  */
 WebInspector.FlameChart.defaultColorGenerator = function()
 {
-    if (!WebInspector.FlameChart._colorGenerator)
-         WebInspector.FlameChart._colorGenerator = new WebInspector.FlameChart.ColorGenerator();
+    if (!WebInspector.FlameChart._colorGenerator) {
+        var colorGenerator = new WebInspector.FlameChart.ColorGenerator();
+        colorGenerator.colorPairForID("(idle)::0", 50);
+        colorGenerator.colorPairForID("(program)::0", 50);
+        colorGenerator.colorPairForID("(garbage collector)::0", 50);
+        WebInspector.FlameChart._colorGenerator = colorGenerator;
+    }
     return WebInspector.FlameChart._colorGenerator;
 }
 
@@ -118,10 +123,14 @@ WebInspector.FlameChart.TimelineData;
 
 WebInspector.FlameChartDataProvider.prototype = {
     /**
-     * @param {!WebInspector.FlameChart.ColorGenerator} colorGenerator
      * @return {?WebInspector.FlameChart.TimelineData}
      */
-    timelineData: function(colorGenerator) { },
+    timelineData: function() { },
+
+    /**
+     * @return {!WebInspector.FlameChart.ColorGenerator}
+     */
+    colorGenerator: function() { },
 
     /**
      * @param {number} entryIndex
@@ -306,17 +315,27 @@ WebInspector.FlameChart.ColorGenerator = function()
     this._colorPairs = {};
     this._colorIndexes = [];
     this._currentColorIndex = 0;
-    this._colorPairForID("(idle)::0", 50);
-    this._colorPairForID("(program)::0", 50);
-    this._colorPairForID("(garbage collector)::0", 50);
 }
 
 WebInspector.FlameChart.ColorGenerator.prototype = {
     /**
+     * @param {string} id
+     * @param {string|!CanvasGradient} highlighted
+     * @param {string|!CanvasGradient} normal
+     */
+    setColorPairForID: function(id, highlighted, normal)
+    {
+        var colorPair = {index: this._currentColorIndex++, highlighted: highlighted, normal: normal};
+        this._colorPairs[id] = colorPair;
+        this._colorIndexes[colorPair.index] = colorPair;
+    },
+
+    /**
      * @param {!string} id
      * @param {number=} sat
+     * @return {!Object}
      */
-    _colorPairForID: function(id, sat)
+    colorPairForID: function(id, sat)
     {
         if (typeof sat !== "number")
             sat = 100;
@@ -344,7 +363,7 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
     _createPair: function(index, sat)
     {
         var hue = (index * 7 + 12 * (index % 2)) % 360;
-        return {index: index, highlighted: "hsla(" + hue + ", " + sat + "%, 33%, 0.7)", normal: "hsla(" + hue + ", " + sat + "%, 66%, 0.7)"}
+        return {index: index, highlighted: "hsla(" + hue + ", " + sat + "%, 33%, 0.7)", normal: "hsla(" + hue + ", " + sat + "%, 66%, 0.7)"};
     }
 }
 
@@ -424,7 +443,7 @@ WebInspector.FlameChart.OverviewPane.prototype = {
      */
     _timelineData: function()
     {
-        return this._dataProvider.timelineData(WebInspector.FlameChart.defaultColorGenerator());
+        return this._dataProvider.timelineData();
     },
 
     onResize: function()
@@ -572,7 +591,7 @@ WebInspector.FlameChart.MainPane.prototype = {
      */
     _timelineData: function()
     {
-        return this._dataProvider.timelineData(WebInspector.FlameChart._colorGenerator);
+        return this._dataProvider.timelineData();
     },
 
     /**
@@ -744,7 +763,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         var entryTitles = timelineData.entryTitles;
         var entryDeoptFlags = timelineData.entryDeoptFlags;
 
-        var colorGenerator = WebInspector.FlameChart._colorGenerator;
+        var colorGenerator = this._dataProvider.colorGenerator();
         var titleIndexes = new Uint32Array(timelineData.entryTotalTimes);
         var lastTitleIndex = 0;
         var dotsWidth = context.measureText("\u2026").width;

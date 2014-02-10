@@ -224,7 +224,7 @@ WebInspector.TimelinePanel.prototype = {
             case WebInspector.TimelinePanel.Mode.FlameChart:
                 var frameModel = new WebInspector.TimelineFrameModel(this._model)
                 views.overviewView = new WebInspector.TimelineFrameOverview(this._model, frameModel);
-                var dataProvider = new WebInspector.TimelineFlameChartDataProvider(this._model, WebInspector.FlameChart.defaultColorGenerator());
+                var dataProvider = new WebInspector.TimelineFlameChartDataProvider(this._model, WebInspector.TimelineFlameChart.colorGenerator(views.overviewView.categoryFillStyles()));
                 views.mainViews = [new WebInspector.TimelineFlameChart(this._model, dataProvider)];
                 break;
             default:

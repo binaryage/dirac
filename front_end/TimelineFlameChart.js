@@ -59,10 +59,9 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
-     * @param {!WebInspector.FlameChart.ColorGenerator} colorGenerator
      * @return {!WebInspector.FlameChart.TimelineData}
      */
-    timelineData: function(colorGenerator)
+    timelineData: function()
     {
         if (!this._timelineData) {
             this._resetData();
@@ -110,7 +109,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         timelineData.entryTotalTimes[index] = endTime - record.startTime;
         timelineData.entryDeoptFlags[index] = 0;
 
-        var colorPair = this._colorGenerator._colorPairForID(record.type);
+        var colorPair = this._colorGenerator.colorPairForID(WebInspector.TimelinePresentationModel.categoryForRecord(record).name);
         var indexesForColor = timelineData.colorEntryIndexes[colorPair.index];
         if (!indexesForColor)
             indexesForColor = timelineData.colorEntryIndexes[colorPair.index] = [];
@@ -162,6 +161,22 @@ WebInspector.TimelineFlameChart = function(model, dataProvider)
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._mainView._scheduleUpdate, this._mainView);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._recordsCleared, this);
+}
+
+/**
+ * @param {!Object.<string, !CanvasGradient>} fillStyles
+ */
+WebInspector.TimelineFlameChart.colorGenerator = function(fillStyles)
+{
+    if (!WebInspector.TimelineFlameChart._colorGenerator) {
+        var colorGenerator = new WebInspector.FlameChart.ColorGenerator();
+        for (var category in fillStyles) {
+            if (fillStyles.hasOwnProperty(category))
+                colorGenerator.setColorPairForID(category, fillStyles[category], fillStyles[category]);
+        }
+        WebInspector.TimelineFlameChart._colorGenerator = colorGenerator;
+    }
+    return WebInspector.TimelineFlameChart._colorGenerator;
 }
 
 WebInspector.TimelineFlameChart.prototype = {
