@@ -226,6 +226,7 @@ CodeMirror.commands.undoAndReveal = function(codemirror)
     codemirror.execCommand("undo");
     var cursor = codemirror.getCursor("start");
     codemirror._codeMirrorTextEditor._innerRevealLine(cursor.line, scrollInfo);
+    codemirror._codeMirrorTextEditor._autocompleteController.finishAutocomplete();
 }
 
 CodeMirror.commands.redoAndReveal = function(codemirror)
@@ -234,6 +235,7 @@ CodeMirror.commands.redoAndReveal = function(codemirror)
     codemirror.execCommand("redo");
     var cursor = codemirror.getCursor("start");
     codemirror._codeMirrorTextEditor._innerRevealLine(cursor.line, scrollInfo);
+    codemirror._codeMirrorTextEditor._autocompleteController.finishAutocomplete();
 }
 
 WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 2000;
