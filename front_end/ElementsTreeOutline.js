@@ -2234,7 +2234,7 @@ WebInspector.ElementsTreeElement.prototype = {
      */
     _showInlineText: function()
     {
-        if (this._node.templateContent() || (WebInspector.ElementsTreeOutline.showShadowDOM() && this._node.hasShadowRoots()) || this._node.hasPseudoElements())
+        if (this._node.importedDocument() || this._node.templateContent() || (WebInspector.ElementsTreeOutline.showShadowDOM() && this._node.hasShadowRoots()) || this._node.hasPseudoElements())
             return false;
         if (this._node.nodeType() !== Node.ELEMENT_NODE)
             return false;
@@ -2398,6 +2398,8 @@ WebInspector.ElementsTreeElement.prototype = {
     _visibleChildren: function()
     {
         var visibleChildren = WebInspector.ElementsTreeOutline.showShadowDOM() ? this._node.shadowRoots() : [];
+        if (this._node.importedDocument())
+            visibleChildren.push(this._node.importedDocument());
         if (this._node.templateContent())
             visibleChildren.push(this._node.templateContent());
         var pseudoElements = this._node.pseudoElements();
@@ -2416,6 +2418,8 @@ WebInspector.ElementsTreeElement.prototype = {
     _visibleChildCount: function()
     {
         var childCount = this._node.childNodeCount();
+        if (this._node.importedDocument())
+            ++childCount;
         if (this._node.templateContent())
             ++childCount;
         if (WebInspector.ElementsTreeOutline.showShadowDOM())

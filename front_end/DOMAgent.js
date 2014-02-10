@@ -83,6 +83,11 @@ WebInspector.DOMNode = function(domAgent, doc, isInShadowTree, payload) {
         this._templateContent.parentNode = this;
     }
 
+    if (payload.importedDocument) {
+        this._importedDocument = new WebInspector.DOMNode(this._domAgent, this.ownerDocument, true, payload.importedDocument);
+        this._importedDocument.parentNode = this;
+    }
+
     if (payload.children)
         this._setChildrenPayload(payload.children);
 
@@ -162,11 +167,19 @@ WebInspector.DOMNode.prototype = {
     },
 
     /**
-     * @return {!WebInspector.DOMNode}
+     * @return {?WebInspector.DOMNode}
      */
     templateContent: function()
     {
         return this._templateContent;
+    },
+
+    /**
+     * @return {?WebInspector.DOMNode}
+     */
+    importedDocument: function()
+    {
+        return this._importedDocument;
     },
 
     /**
