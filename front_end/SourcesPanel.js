@@ -77,6 +77,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     var helpSection = WebInspector.shortcutsScreen.section(WebInspector.UIString("Sources Panel"));
     this.debugToolbar = this._createDebugToolbar();
+    this._debugToolbarDrawer = this._createDebugToolbarDrawer();
     this.threadsToolbar = new WebInspector.ThreadsToolbar();
 
     const initialDebugSidebarWidth = 225;
@@ -186,11 +187,11 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.SourceFrame>} */
     this._sourceFramesByUISourceCode = new Map();
     this._updateDebuggerButtons();
-    this._pauseOnExceptionStateChanged();
+    this._pauseOnExceptionEnabledChanged();
     if (WebInspector.debuggerModel.isPaused())
         this._showDebuggerPausedDetails();
 
-    WebInspector.settings.pauseOnExceptionStateString.addChangeListener(this._pauseOnExceptionStateChanged, this);
+    WebInspector.settings.pauseOnExceptionEnabled.addChangeListener(this._pauseOnExceptionEnabledChanged, this);
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, this._debuggerWasEnabled, this);
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasDisabled, this._debuggerWasDisabled, this);
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
@@ -764,21 +765,12 @@ WebInspector.SourcesPanel.prototype = {
         WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement(), searchText);
     },
 
-    _pauseOnExceptionStateChanged: function()
+    _pauseOnExceptionEnabledChanged: function()
     {
-        var pauseOnExceptionsState = WebInspector.settings.pauseOnExceptionStateString.get();
-        switch (pauseOnExceptionsState) {
-        case WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions:
-            this._pauseOnExceptionButton.title = WebInspector.UIString("Don't pause on exceptions.\nClick to Pause on all exceptions.");
-            break;
-        case WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions:
-            this._pauseOnExceptionButton.title = WebInspector.UIString("Pause on all exceptions.\nClick to Pause on uncaught exceptions.");
-            break;
-        case WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions:
-            this._pauseOnExceptionButton.title = WebInspector.UIString("Pause on uncaught exceptions.\nClick to Not pause on exceptions.");
-            break;
-        }
-        this._pauseOnExceptionButton.state = pauseOnExceptionsState;
+        var enabled = WebInspector.settings.pauseOnExceptionEnabled.get();
+        this._pauseOnExceptionButton.toggled = enabled;
+        this._pauseOnExceptionButton.title = WebInspector.UIString(enabled ? "Don't pause on exceptions." : "Pause on exceptions.");
+        this._debugToolbarDrawer.enableStyleClass("expanded", enabled);
     },
 
     _updateDebuggerButtons: function()
@@ -819,12 +811,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _togglePauseOnExceptions: function()
     {
-        var nextStateMap = {};
-        var stateEnum = WebInspector.DebuggerModel.PauseOnExceptionsState;
-        nextStateMap[stateEnum.DontPauseOnExceptions] = stateEnum.PauseOnAllExceptions;
-        nextStateMap[stateEnum.PauseOnAllExceptions] = stateEnum.PauseOnUncaughtExceptions;
-        nextStateMap[stateEnum.PauseOnUncaughtExceptions] = stateEnum.DontPauseOnExceptions;
-        WebInspector.settings.pauseOnExceptionStateString.set(nextStateMap[this._pauseOnExceptionButton.state]);
+        WebInspector.settings.pauseOnExceptionEnabled.set(!this._pauseOnExceptionButton.toggled);
     },
 
     /**
@@ -1054,11 +1041,23 @@ WebInspector.SourcesPanel.prototype = {
         debugToolbar.appendChild(this._toggleBreakpointsButton.element);
 
         // Pause on Exception
-        this._pauseOnExceptionButton = new WebInspector.StatusBarButton("", "scripts-pause-on-exceptions-status-bar-item", 3);
+        this._pauseOnExceptionButton = new WebInspector.StatusBarButton("", "scripts-pause-on-exceptions-status-bar-item");
         this._pauseOnExceptionButton.addEventListener("click", this._togglePauseOnExceptions, this);
         debugToolbar.appendChild(this._pauseOnExceptionButton.element);
 
         return debugToolbar;
+    },
+
+    _createDebugToolbarDrawer: function()
+    {
+        var debugToolbarDrawer = document.createElement("div");
+        debugToolbarDrawer.className = "scripts-debug-toolbar-drawer";
+
+        var label = WebInspector.UIString("Pause On Caught Exceptions");
+        var setting = WebInspector.settings.pauseOnCaughtException;
+        debugToolbarDrawer.appendChild(WebInspector.SettingsUI.createSettingCheckbox(label, setting, true));
+
+        return debugToolbarDrawer;
     },
 
     /**
@@ -1624,6 +1623,7 @@ WebInspector.SourcesPanel.prototype = {
 
         // Create vertical box with stack.
         var vbox = new WebInspector.View();
+        vbox.element.appendChild(this._debugToolbarDrawer);
         vbox.element.appendChild(this.debugToolbar);
         vbox.element.appendChild(this.threadsToolbar.element);
         var sidebarPaneStack = new WebInspector.SidebarPaneStack();

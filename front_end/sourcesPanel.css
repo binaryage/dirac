@@ -31,12 +31,8 @@
     -webkit-mask-position: -256px 0;
 }
 
-.scripts-pause-on-exceptions-status-bar-item.toggled-all .glyph {
+.scripts-pause-on-exceptions-status-bar-item.toggled-on .glyph {
     background-color: rgb(66, 129, 235);
-}
-
-.scripts-pause-on-exceptions-status-bar-item.toggled-uncaught .glyph {
-    background-color: purple;
 }
 
 .evaluate-snippet-status-bar-item .glyph {
@@ -48,10 +44,31 @@
 }
 
 .scripts-debug-toolbar {
-    flex: 0 0 23px;
-    border-bottom: 1px solid rgb(202, 202, 202);
+    position: absolute;
+    top: 0;
+    width: 100%;
     background-color: rgb(236, 236, 236);
     overflow: hidden;
+}
+
+.scripts-debug-toolbar-drawer {
+    flex: 0 0 46px;
+    -webkit-transition: margin-top 0.1s ease-in-out;
+    margin-top: -23px;
+    line-height: 23px;
+    padding-top: 22px;
+    border-bottom: 1px solid rgb(202, 202, 202);
+    background-color: white;
+    overflow: hidden;
+}
+
+.scripts-debug-toolbar-drawer.expanded {
+    margin-top: 0;
+}
+
+.scripts-debug-toolbar-drawer > label {
+    display: flex;
+    padding-left: 3px;
 }
 
 #scripts-editor-toolbar {

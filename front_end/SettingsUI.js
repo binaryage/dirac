@@ -50,7 +50,7 @@ WebInspector.SettingsUI.createCheckbox = function(name, getter, setter, omitPara
     {
         setter(input.checked);
     }
-    input.addEventListener("click", listener, false);
+    input.addEventListener("change", listener, false);
 
     var label = document.createElement("label");
     label.appendChild(input);

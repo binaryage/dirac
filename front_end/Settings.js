@@ -112,6 +112,8 @@ WebInspector.Settings = function()
     this.skipStackFramesPattern = this.createSetting("skipStackFramesPattern", "");
     this.showEmulationViewInDrawer = this.createSetting("showEmulationViewInDrawer", true);
     this.showRenderingViewInDrawer = this.createSetting("showRenderingViewInDrawer", true);
+    this.pauseOnExceptionEnabled = this.createSetting("pauseOnExceptionEnabled", false);
+    this.pauseOnCaughtException = this.createSetting("pauseOnCaughtException", false);
     this.enableAsyncStackTraces = this.createSetting("enableAsyncStackTraces", false);
 }
 

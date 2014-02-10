@@ -45,8 +45,8 @@ WebInspector.DebuggerModel = function()
 
     this._breakpointsActive = true;
 
-    WebInspector.settings.pauseOnExceptionStateString = WebInspector.settings.createSetting("pauseOnExceptionStateString", WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions);
-    WebInspector.settings.pauseOnExceptionStateString.addChangeListener(this._pauseOnExceptionStateChanged, this);
+    WebInspector.settings.pauseOnExceptionEnabled.addChangeListener(this._pauseOnExceptionStateChanged, this);
+    WebInspector.settings.pauseOnCaughtException.addChangeListener(this._pauseOnExceptionStateChanged, this);
 
     WebInspector.settings.enableAsyncStackTraces.addChangeListener(this._asyncStackTracesStateChanged, this);
 
@@ -55,7 +55,11 @@ WebInspector.DebuggerModel = function()
     WebInspector.DebuggerModel.applySkipStackFrameSettings();
 }
 
-// Keep these in sync with WebCore::ScriptDebugServer
+/**
+ * Keep these in sync with WebCore::ScriptDebugServer
+ *
+ * @enum {string}
+ */
 WebInspector.DebuggerModel.PauseOnExceptionsState = {
     DontPauseOnExceptions : "none",
     PauseOnAllExceptions : "all",
@@ -160,7 +164,15 @@ WebInspector.DebuggerModel.prototype = {
 
     _pauseOnExceptionStateChanged: function()
     {
-        DebuggerAgent.setPauseOnExceptions(WebInspector.settings.pauseOnExceptionStateString.get());
+        var state;
+        if (!WebInspector.settings.pauseOnExceptionEnabled.get()) {
+            state = WebInspector.DebuggerModel.PauseOnExceptionsState.DontPauseOnExceptions;
+        } else if (WebInspector.settings.pauseOnCaughtException.get()) {
+            state = WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnAllExceptions;
+        } else {
+            state = WebInspector.DebuggerModel.PauseOnExceptionsState.PauseOnUncaughtExceptions;
+        }
+        DebuggerAgent.setPauseOnExceptions(state);
     },
 
     _asyncStackTracesStateChanged: function()
