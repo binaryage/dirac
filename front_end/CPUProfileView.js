@@ -1065,7 +1065,7 @@ WebInspector.CPUFlameChartDataProvider = function(cpuProfileView)
 WebInspector.CPUFlameChartDataProvider.prototype = {
     /**
      * @param {!WebInspector.FlameChart.ColorGenerator} colorGenerator
-     * @return {!Object}
+     * @return {?WebInspector.FlameChart.TimelineData}
      */
     timelineData: function(colorGenerator)
     {
@@ -1074,7 +1074,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
     /**
      * @param {!WebInspector.FlameChart.ColorGenerator} colorGenerator
-     * @return {?Object}
+     * @return {?WebInspector.FlameChart.TimelineData}
      */
     _calculateTimelineData: function(colorGenerator)
     {
@@ -1209,7 +1209,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             entryDeoptFlags: entryDeoptFlags
         };
 
-        return this._timelineData;
+        return /** @type {!WebInspector.FlameChart.TimelineData} */ (this._timelineData);
     },
 
     /**

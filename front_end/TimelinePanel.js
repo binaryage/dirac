@@ -39,6 +39,7 @@ importScript("TimelineFrameModel.js");
 importScript("TimelineEventOverview.js");
 importScript("TimelineFrameOverview.js");
 importScript("TimelineMemoryOverview.js");
+importScript("TimelineFlameChart.js");
 importScript("TimelineView.js");
 
 /**
@@ -108,7 +109,8 @@ WebInspector.TimelinePanel = function()
 WebInspector.TimelinePanel.Mode = {
     Events: "Events",
     Frames: "Frames",
-    Memory: "Memory"
+    Memory: "Memory",
+    FlameChart: "FlameChart"
 };
 
 // Define row and header height, should be in sync with styles for timeline graphs.
@@ -204,7 +206,6 @@ WebInspector.TimelinePanel.prototype = {
         var views = this._viewsMap[mode];
         if (!views) {
             var timelineView = new WebInspector.TimelineView(this, this._model, this._glueRecordsSetting, mode);
-            timelineView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
             views = {
                 mainViews: [timelineView]
             };
@@ -217,14 +218,20 @@ WebInspector.TimelinePanel.prototype = {
                 break;
             case WebInspector.TimelinePanel.Mode.Memory:
                 views.overviewView = new WebInspector.TimelineMemoryOverview(this._model);
-
                 var memoryStatistics = new WebInspector.CountersGraph(timelineView, this._model);
-                memoryStatistics.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
                 views.mainViews.push(memoryStatistics);
+                break;
+            case WebInspector.TimelinePanel.Mode.FlameChart:
+                var frameModel = new WebInspector.TimelineFrameModel(this._model)
+                views.overviewView = new WebInspector.TimelineFrameOverview(this._model, frameModel);
+                var dataProvider = new WebInspector.TimelineFlameChartDataProvider(this._model, WebInspector.FlameChart.defaultColorGenerator());
+                views.mainViews = [new WebInspector.TimelineFlameChart(this._model, dataProvider)];
                 break;
             default:
                 console.assert(false, "Unknown mode: " + mode);
             }
+            for (var i = 0; i < views.mainViews.length; ++i)
+                views.mainViews[i].addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
             this._viewsMap[mode] = views;
         }
         return views;
@@ -242,6 +249,8 @@ WebInspector.TimelinePanel.prototype = {
 
         this._overviewItems = {};
         for (var mode in WebInspector.TimelinePanel.Mode) {
+            if (mode === WebInspector.TimelinePanel.Mode.FlameChart && !WebInspector.experimentsSettings.timelineFlameChart.isEnabled())
+                continue;
             this._overviewItems[mode] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-" + mode.toLowerCase(), WebInspector.UIString(mode));
             var item = this._overviewItems[mode];
             item.onselect = this._onModeChanged.bind(this, mode);

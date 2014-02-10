@@ -46,9 +46,16 @@ WebInspector.FlameChart = function(dataProvider)
     this._mainPane.show(this.element);
     this._mainPane.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected, this);
     this._overviewPane._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
+}
 
-    if (!WebInspector.FlameChart._colorGenerator)
-        WebInspector.FlameChart._colorGenerator = new WebInspector.FlameChart.ColorGenerator();
+/**
+ * @return {!WebInspector.FlameChart.ColorGenerator}
+ */
+WebInspector.FlameChart.defaultColorGenerator = function()
+{
+     if (!WebInspector.FlameChart._colorGenerator)
+         WebInspector.FlameChart._colorGenerator = new WebInspector.FlameChart.ColorGenerator();
+    return WebInspector.FlameChart._colorGenerator;
 }
 
 WebInspector.FlameChart.prototype = {
@@ -93,10 +100,24 @@ WebInspector.FlameChartDataProvider = function()
 {
 }
 
+/** @typedef {!{
+        maxStackDepth: number,
+        totalTime: number,
+        entryLevels: !Array.<number>,
+        entryTotalTimes: !Array.<number>,
+        entrySelfTimes: !Array.<number>,
+        entryOffsets: !Array.<number>,
+        colorEntryIndexes: !Array.<number>,
+        entryTitles: !Array.<string>,
+        entryDeoptFlags: !Array.<number>
+    }}
+ */
+WebInspector.FlameChart.TimelineData;
+
 WebInspector.FlameChartDataProvider.prototype = {
     /**
      * @param {!WebInspector.FlameChart.ColorGenerator} colorGenerator
-     * @return {!Object}
+     * @return {?WebInspector.FlameChart.TimelineData}
      */
     timelineData: function(colorGenerator) { },
 
@@ -114,7 +135,7 @@ WebInspector.FlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {!Object}
+     * @return {?Object}
      */
     entryData: function(entryIndex) { }
 }
@@ -393,12 +414,15 @@ WebInspector.FlameChart.OverviewPane.prototype = {
         var timelineData = this._timelineData();
         if (!timelineData)
             return;
-        this._overviewGrid.setWindow(timeLeft / timelineData._totalTime, timeRight / timelineData._totalTime);
+        this._overviewGrid.setWindow(timeLeft / timelineData.totalTime, timeRight / timelineData.totalTime);
     },
 
+    /**
+     * @return {?WebInspector.FlameChart.TimelineData}
+     */
     _timelineData: function()
     {
-        return this._dataProvider.timelineData(WebInspector.FlameChart._colorGenerator);
+        return this._dataProvider.timelineData(WebInspector.FlameChart.defaultColorGenerator());
     },
 
     onResize: function()
@@ -445,7 +469,7 @@ WebInspector.FlameChart.OverviewPane.prototype = {
 }
 
 /**
- * @param {!Object} timelineData
+ * @param {!WebInspector.FlameChart.TimelineData} timelineData
  * @param {!number} width
  */
 WebInspector.FlameChart.OverviewPane.calculateDrawData = function(timelineData, width)
@@ -468,7 +492,7 @@ WebInspector.FlameChart.OverviewPane.calculateDrawData = function(timelineData, 
 }
 
 /**
- * @param {!Object} timelineData
+ * @param {!WebInspector.FlameChart.TimelineData} timelineData
  * @param {!Object} context
  * @param {!number} width
  * @param {!number} height
@@ -507,24 +531,24 @@ WebInspector.FlameChart.OverviewPane.drawOverviewCanvas = function(timelineData,
  * @constructor
  * @extends {WebInspector.View}
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
- * @param {!WebInspector.FlameChart.OverviewPaneInterface} overviewPane
+ * @param {?WebInspector.FlameChart.OverviewPaneInterface} overviewPane
  */
 WebInspector.FlameChart.MainPane = function(dataProvider, overviewPane)
 {
     WebInspector.View.call(this);
+    this.element.classList.add("flame-chart-main-pane");
     this._overviewPane = overviewPane;
-    this._chartContainer = this.element.createChild("div", "chart-container");
     this._timelineGrid = new WebInspector.TimelineGrid();
-    this._chartContainer.appendChild(this._timelineGrid.element);
+    this.element.appendChild(this._timelineGrid.element);
     this._calculator = new WebInspector.FlameChart.Calculator();
 
-    this._canvas = this._chartContainer.createChild("canvas");
+    this._canvas = this.element.createChild("canvas");
     this._canvas.addEventListener("mousemove", this._onMouseMove.bind(this));
     this._canvas.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
     this._canvas.addEventListener("click", this._onClick.bind(this), false);
     WebInspector.installDragHandle(this._canvas, this._startCanvasDragging.bind(this), this._canvasDragging.bind(this), this._endCanvasDragging.bind(this), "move", null);
 
-    this._entryInfo = this._chartContainer.createChild("div", "entry-info");
+    this._entryInfo = this.element.createChild("div", "profile-entry-info");
 
     this._dataProvider = dataProvider;
 
@@ -538,6 +562,9 @@ WebInspector.FlameChart.MainPane = function(dataProvider, overviewPane)
 }
 
 WebInspector.FlameChart.MainPane.prototype = {
+    /**
+     * @return {?WebInspector.FlameChart.TimelineData}
+     */
     _timelineData: function()
     {
         return this._dataProvider.timelineData(WebInspector.FlameChart._colorGenerator);
@@ -590,7 +617,8 @@ WebInspector.FlameChart.MainPane.prototype = {
         if (windowRight === this._windowRight)
             return;
         windowShift = windowRight - this._dragStartWindowRight;
-        this._overviewPane.setWindow(this._dragStartWindowLeft + windowShift, this._dragStartWindowRight + windowShift);
+        if (this._overviewPane)
+            this._overviewPane.setWindow(this._dragStartWindowLeft + windowShift, this._dragStartWindowRight + windowShift);
         this._wasDragged = true;
     },
 
@@ -631,7 +659,8 @@ WebInspector.FlameChart.MainPane.prototype = {
         if (this._highlightedEntryIndex === -1)
             return;
         var data = this._dataProvider.entryData(this._highlightedEntryIndex);
-        this.dispatchEventToListeners(WebInspector.FlameChart.Events.EntrySelected, data);
+        if (data)
+            this.dispatchEventToListeners(WebInspector.FlameChart.Events.EntrySelected, data);
     },
 
     /**
@@ -639,6 +668,8 @@ WebInspector.FlameChart.MainPane.prototype = {
      */
     _onMouseWheel: function(e)
     {
+        if (!this._overviewPane)
+            return;
         if (e.wheelDeltaY) {
             const zoomFactor = 1.1;
             const mouseWheelZoomSpeed = 1 / 120;
@@ -871,7 +902,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         this._timeWindowLeft = this._windowLeft * this._totalTime;
         this._timeWindowRight = this._windowRight * this._totalTime;
 
-        this._pixelWindowWidth = this._chartContainer.clientWidth - this._paddingLeft;
+        this._pixelWindowWidth = this.element.clientWidth - this._paddingLeft;
         this._totalPixels = Math.floor(this._pixelWindowWidth / this._windowWidth);
         this._pixelWindowLeft = Math.floor(this._totalPixels * this._windowLeft);
         this._pixelWindowRight = Math.floor(this._totalPixels * this._windowRight);
@@ -899,7 +930,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         if (!this._timelineData())
             return;
         this._updateBoundaries();
-        this.draw(this._chartContainer.clientWidth, this._chartContainer.clientHeight);
+        this.draw(this.element.clientWidth, this.element.clientHeight);
         this._calculator._updateBoundaries(this);
         this._timelineGrid.element.style.width = this.element.clientWidth;
         this._timelineGrid.updateDividers(this._calculator);

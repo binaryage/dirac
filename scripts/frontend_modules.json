@@ -152,6 +152,7 @@
             "CookiesTable.js",
             "DOMBreakpointsSidebarPane.js",
             "DOMPresentationUtils.js",
+            "FlameChart.js",
             "HelpScreenUntilReload.js",
             "NativeBreakpointsSidebarPane.js",
             "InspectElementModeController.js",
@@ -281,6 +282,7 @@
             "TimelineMemoryOverview.js",
             "TimelineModel.js",
             "TimelineOverviewPane.js",
+            "TimelineFlameChart.js",
             "TimelinePanel.js",
             "TimelinePresentationModel.js",
             "TimelineView.js"
@@ -353,7 +355,6 @@
         "sources": [
             "BottomUpProfileDataGridTree.js",
             "CPUProfileView.js",
-            "FlameChart.js",
             "HeapSnapshotCommon.js",
             "HeapSnapshotDataGrids.js",
             "HeapSnapshotGridNodes.js",

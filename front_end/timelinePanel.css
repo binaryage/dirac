@@ -840,3 +840,7 @@
 .timeline-aggregated-info .pie-chart {
     margin-left: 20px;
 }
+
+.flame-chart-main-pane {
+    overflow: hidden;
+}

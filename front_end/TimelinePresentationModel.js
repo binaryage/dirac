@@ -155,8 +155,8 @@ WebInspector.TimelinePresentationModel.isEventDivider = function(record)
 
 /**
  * @param {!Array.<*>} recordsArray
- * @param {?function(*)} preOrderCallback
- * @param {function(*)=} postOrderCallback
+ * @param {?function(*)|?function(*,number)} preOrderCallback
+ * @param {function(*)|function(*,number)=} postOrderCallback
  */
 WebInspector.TimelinePresentationModel.forAllRecords = function(recordsArray, preOrderCallback, postOrderCallback)
 {
@@ -168,15 +168,15 @@ WebInspector.TimelinePresentationModel.forAllRecords = function(recordsArray, pr
         var records = entry.array;
         if (entry.index < records.length) {
              var record = records[entry.index];
-             if (preOrderCallback && preOrderCallback(record))
+             if (preOrderCallback && preOrderCallback(record, stack.length))
                  return;
              if (record.children)
                  stack.push({array: record.children, index: 0, record: record});
-             else if (postOrderCallback && postOrderCallback(record))
+             else if (postOrderCallback && postOrderCallback(record, stack.length))
                 return;
              ++entry.index;
         } else {
-            if (entry.record && postOrderCallback && postOrderCallback(entry.record))
+            if (entry.record && postOrderCallback && postOrderCallback(entry.record, stack.length))
                 return;
             stack.pop();
         }

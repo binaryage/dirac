@@ -229,6 +229,7 @@ body.inactive .profile-launcher-view-content button.running:not(.status-bar-item
 .profile-canvas-decoration .warning-icon-small {
     margin-right: 4px;
 }
+
 .profile-canvas-decoration {
     color: red;
     margin: -14px 0 13px 22px;
@@ -237,4 +238,10 @@ body.inactive .profile-launcher-view-content button.running:not(.status-bar-item
 
 .profile-canvas-decoration button {
     margin: 0 0 0 10px !important;
+}
+
+.profile-entry-info {
+    position: absolute;
+    top: 20px;
+    left: 20px;
 }
