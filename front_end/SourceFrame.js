@@ -57,7 +57,6 @@ WebInspector.SourceFrame = function(contentProvider)
     this._textEditor.setReadOnly(!this.canEditSource());
 
     this._shortcuts = {};
-    this.addShortcut(WebInspector.KeyboardShortcut.makeKey("s", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta), this._commitEditing.bind(this));
     this.element.addEventListener("keydown", this._handleKeyDown.bind(this), false);
 
     this._sourcePosition = new WebInspector.StatusBarText("", "source-frame-cursor-position");
@@ -760,13 +759,6 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
-     * @param {string} text
-     */
-    commitEditing: function(text)
-    {
-    },
-
-    /**
      * @param {!WebInspector.TextRange} textRange
      */
     selectionChanged: function(textRange)
@@ -811,16 +803,6 @@ WebInspector.SourceFrame.prototype = {
         var handler = this._shortcuts[shortcutKey];
         if (handler && handler())
             e.consume(true);
-    },
-
-    _commitEditing: function()
-    {
-        if (this._textEditor.readOnly())
-            return false;
-
-        var content = this._textEditor.text();
-        this.commitEditing(content);
-        return true;
     },
 
     __proto__: WebInspector.View.prototype
