@@ -42,18 +42,20 @@ WebInspector.FlameChart = function(dataProvider)
     this._overviewPane = new WebInspector.FlameChart.OverviewPane(dataProvider);
     this._overviewPane.show(this.element);
 
-    this._mainPane = new WebInspector.FlameChart.MainPane(dataProvider, this._overviewPane);
+    this._mainPane = new WebInspector.FlameChart.MainPane(dataProvider, this._overviewPane, false);
     this._mainPane.show(this.element);
     this._mainPane.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected, this);
     this._overviewPane._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
 }
+
+WebInspector.FlameChart.DividersBarHeight = 20;
 
 /**
  * @return {!WebInspector.FlameChart.ColorGenerator}
  */
 WebInspector.FlameChart.defaultColorGenerator = function()
 {
-     if (!WebInspector.FlameChart._colorGenerator)
+    if (!WebInspector.FlameChart._colorGenerator)
          WebInspector.FlameChart._colorGenerator = new WebInspector.FlameChart.ColorGenerator();
     return WebInspector.FlameChart._colorGenerator;
 }
@@ -443,14 +445,14 @@ WebInspector.FlameChart.OverviewPane.prototype = {
         var timelineData = this._timelineData();
         if (!timelineData)
             return;
-        this._resetCanvas(this._overviewContainer.clientWidth, this._overviewContainer.clientHeight - 20);
+        this._resetCanvas(this._overviewContainer.clientWidth, this._overviewContainer.clientHeight - WebInspector.FlameChart.DividersBarHeight);
         this._overviewCalculator._updateBoundaries(this);
         this._overviewGrid.updateDividers(this._overviewCalculator);
         WebInspector.FlameChart.OverviewPane.drawOverviewCanvas(
             timelineData,
             this._overviewCanvas.getContext("2d"),
             this._overviewContainer.clientWidth,
-            this._overviewContainer.clientHeight - 20
+            this._overviewContainer.clientHeight - WebInspector.FlameChart.DividersBarHeight
         );
     },
 
@@ -532,12 +534,15 @@ WebInspector.FlameChart.OverviewPane.drawOverviewCanvas = function(timelineData,
  * @extends {WebInspector.View}
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
  * @param {?WebInspector.FlameChart.OverviewPaneInterface} overviewPane
+ * @param {boolean} isTopDown
  */
-WebInspector.FlameChart.MainPane = function(dataProvider, overviewPane)
+WebInspector.FlameChart.MainPane = function(dataProvider, overviewPane, isTopDown)
 {
     WebInspector.View.call(this);
     this.element.classList.add("flame-chart-main-pane");
     this._overviewPane = overviewPane;
+    this._isTopDown = isTopDown;
+
     this._timelineGrid = new WebInspector.TimelineGrid();
     this.element.appendChild(this._timelineGrid.element);
     this._calculator = new WebInspector.FlameChart.Calculator();
@@ -693,7 +698,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         if (!timelineData)
             return -1;
         var cursorTime = (x + this._pixelWindowLeft - this._paddingLeft) * this._pixelToTime;
-        var cursorLevel = Math.floor((this._canvas.height / window.devicePixelRatio - y) / this._barHeight);
+        var cursorLevel = this._isTopDown ? Math.floor(y / this._barHeight - 1) : Math.floor((this._canvas.height / window.devicePixelRatio - y) / this._barHeight);
 
         var entryOffsets = timelineData.entryOffsets;
         var entryTotalTimes = timelineData.entryTotalTimes;
@@ -751,12 +756,12 @@ WebInspector.FlameChart.MainPane.prototype = {
         for (var i = 0; i < timelineData.maxStackDepth; ++i)
             marksField.push(new Uint16Array(width));
 
-        var barHeight = this._barHeight;
+        var barHeight = this._isTopDown ? -this._barHeight : this._barHeight;
         var barX = 0;
         var barWidth = 0;
         var barRight = 0;
         var barLevel = 0;
-        var bHeight = height - barHeight;
+        var bHeight = this._isTopDown ? WebInspector.FlameChart.DividersBarHeight : height - this._barHeight;
         context.strokeStyle = "black";
         var colorPair;
         var entryIndex = 0;
@@ -790,7 +795,7 @@ WebInspector.FlameChart.MainPane.prototype = {
                     context.beginPath();
                     context.fillStyle = colorPair.highlighted;
                 }
-                context.rect(barX, bHeight - barLevel * barHeight, barWidth, barHeight);
+                context.rect(barX, bHeight - barLevel * barHeight, barWidth, this._barHeight);
                 if (entryIndex === this._highlightedEntryIndex) {
                     context.fill();
                     context.beginPath();
@@ -802,7 +807,7 @@ WebInspector.FlameChart.MainPane.prototype = {
             context.fill();
         }
 
-        var font = (barHeight - 4) + "px " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
+        var font = (this._barHeight - 4) + "px " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
         var boldFont = "bold " + font;
         var isBoldFontSelected = false;
         context.font = font;
@@ -810,7 +815,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         context.fillStyle = "#333";
         this._dotsWidth = context.measureText("\u2026").width;
 
-        var textBaseHeight = bHeight + barHeight - 4;
+        var textBaseHeight = bHeight + this._barHeight - 4;
         for (var i = 0; i < lastTitleIndex; ++i) {
             entryIndex = titleIndexes[i];
             if (isBoldFontSelected) {

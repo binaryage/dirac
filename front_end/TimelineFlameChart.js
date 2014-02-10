@@ -158,7 +158,7 @@ WebInspector.TimelineFlameChart = function(model, dataProvider)
 {
     WebInspector.View.call(this);
     this._model = model;
-    this._mainView = new WebInspector.FlameChart.MainPane(dataProvider, null);
+    this._mainView = new WebInspector.FlameChart.MainPane(dataProvider, null, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._mainView._scheduleUpdate, this._mainView);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._recordsCleared, this);
