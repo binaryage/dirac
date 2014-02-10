@@ -238,7 +238,8 @@ WebInspector.SearchableView.prototype = {
     closeSearch: function()
     {
         this.cancelSearch();
-        WebInspector.setCurrentFocusElement(WebInspector.previousFocusElement());
+        if (WebInspector.currentFocusElement().isDescendant(this._footerElementContainer))
+            WebInspector.setCurrentFocusElement(WebInspector.previousFocusElement());
     },
 
     _toggleSearchBar: function(toggled)
