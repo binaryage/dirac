@@ -42,6 +42,11 @@
     background-color: rgba(0, 0, 0, 0.1);
 }
 
+.profiles.panel .status-bar {
+    border-bottom: 1px solid rgb(202, 202, 202);
+    border-top: none;
+}
+
 .profiles-status-bar {
     background-color: rgb(236, 236, 236);
     flex: 0 0 23px;
