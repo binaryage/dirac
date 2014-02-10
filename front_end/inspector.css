@@ -36,6 +36,7 @@ input[type="checkbox"] {
     height: 13px;
     width: 13px;
     margin: auto 3px;
+    flex-shrink: 0;
 }
 
 .fill {
