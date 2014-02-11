@@ -39,7 +39,7 @@ WebInspector.FilterBar = function()
     this._element.className = "hbox";
 
     this._filterButton = new WebInspector.StatusBarButton(WebInspector.UIString("Filter"), "filters-toggle", 3);
-    this._filterButton.element.addEventListener("mousedown", this._handleFilterButtonClick.bind(this), false);
+    this._filterButton.element.addEventListener("click", this._handleFilterButtonClick.bind(this), false);
 
     this._filters = [];
 }
@@ -126,6 +126,14 @@ WebInspector.FilterBar.prototype = {
         this._filtersShown = !this._filtersShown;
         this._updateFilterButton();
         this.dispatchEventToListeners(WebInspector.FilterBar.Events.FiltersToggled, this._filtersShown);
+        if (this._filtersShown) {
+            for (var i = 0; i < this._filters.length; ++i) {
+                if (this._filters[i] instanceof WebInspector.TextFilterUI) {
+                    var textFilterUI = /** @type {!WebInspector.TextFilterUI} */ (this._filters[i]);
+                    textFilterUI.focus();
+                }
+            }
+        }
     },
 
     clear: function()
@@ -252,6 +260,11 @@ WebInspector.TextFilterUI.prototype = {
     _onInput: function(event)
     {
         this._valueChanged();
+    },
+
+    focus: function()
+    {
+        this._filterInputElement.focus();
     },
 
     _valueChanged: function() {
