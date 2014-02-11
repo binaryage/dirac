@@ -289,7 +289,6 @@ WebInspector.ExperimentsSettings = function()
     this.workersInMainWindow = this._createExperiment("workersInMainWindow", "Show workers in main window");
     this.dockToLeft = this._createExperiment("dockToLeft", "Enable dock to left mode");
     this.allocationProfiler = this._createExperiment("allocationProfiler", "Enable JavaScript heap allocation profiler");
-    this.asyncStackTraces = this._createExperiment("asyncStackTraces", "Enable support for async stack traces");
     this.timelineFlameChart = this._createExperiment("timelineFlameChart", "Enable FlameChart mode in Timeline");
 
     this._cleanUpSetting();
