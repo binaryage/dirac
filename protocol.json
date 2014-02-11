@@ -1005,6 +1005,7 @@
                     { "name": "remoteIPAddress", "type": "string", "optional": true, "hidden": true, "description": "Remote IP address." },
                     { "name": "remotePort", "type": "integer", "optional": true, "hidden": true, "description": "Remote port."},
                     { "name": "fromDiskCache", "type": "boolean", "optional": true, "description": "Specifies that the request was served from the disk cache." },
+                    { "name": "encodedDataLength", "type": "number", "optional": false, "description": "Total number of bytes received for this request so far." },
                     { "name": "timing", "$ref": "ResourceTiming", "optional": true, "description": "Timing information for the given request." }
                 ]
             },
@@ -1199,7 +1200,8 @@
                 "description": "Fired when HTTP request has finished loading.",
                 "parameters": [
                     { "name": "requestId", "$ref": "RequestId", "description": "Request identifier." },
-                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." }
+                    { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp." },
+                    { "name": "encodedDataLength", "type": "number", "description": "Total number of bytes received for this request." }
                 ]
             },
             {

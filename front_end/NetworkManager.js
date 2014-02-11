@@ -170,6 +170,8 @@ WebInspector.NetworkDispatcher.prototype = {
         networkRequest.statusCode = response.status;
         networkRequest.statusText = response.statusText;
         networkRequest.responseHeaders = this._headersMapToHeadersArray(response.headers);
+        if (response.encodedDataLength >= 0)
+            networkRequest.setTransferSize(response.encodedDataLength);
         if (response.headersText)
             networkRequest.responseHeadersText = response.headersText;
         if (response.requestHeaders) {
@@ -341,13 +343,14 @@ WebInspector.NetworkDispatcher.prototype = {
     /**
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!NetworkAgent.Timestamp} finishTime
+     * @param {number} encodedDataLength
      */
-    loadingFinished: function(requestId, finishTime)
+    loadingFinished: function(requestId, finishTime, encodedDataLength)
     {
         var networkRequest = this._inflightRequestsById[requestId];
         if (!networkRequest)
             return;
-        this._finishNetworkRequest(networkRequest, finishTime);
+        this._finishNetworkRequest(networkRequest, finishTime, encodedDataLength);
     },
 
     /**
@@ -365,7 +368,7 @@ WebInspector.NetworkDispatcher.prototype = {
         networkRequest.failed = true;
         networkRequest.canceled = canceled;
         networkRequest.localizedFailDescription = localizedDescription;
-        this._finishNetworkRequest(networkRequest, time);
+        this._finishNetworkRequest(networkRequest, time, -1);
     },
 
     /**
@@ -476,7 +479,7 @@ WebInspector.NetworkDispatcher.prototype = {
         var networkRequest = this._inflightRequestsById[requestId];
         if (!networkRequest)
             return;
-        this._finishNetworkRequest(networkRequest, time);
+        this._finishNetworkRequest(networkRequest, time, -1);
     },
 
     /**
@@ -493,7 +496,7 @@ WebInspector.NetworkDispatcher.prototype = {
         delete originalNetworkRequest.redirects;
         if (previousRedirects.length > 0)
             originalNetworkRequest.redirectSource = previousRedirects[previousRedirects.length - 1];
-        this._finishNetworkRequest(originalNetworkRequest, time);
+        this._finishNetworkRequest(originalNetworkRequest, time, -1);
         var newNetworkRequest = this._createNetworkRequest(requestId, originalNetworkRequest.frameId, originalNetworkRequest.loaderId,
              redirectURL, originalNetworkRequest.documentURL, originalNetworkRequest.initiator);
         newNetworkRequest.redirects = previousRedirects.concat(originalNetworkRequest);
@@ -521,11 +524,14 @@ WebInspector.NetworkDispatcher.prototype = {
     /**
      * @param {!WebInspector.NetworkRequest} networkRequest
      * @param {!NetworkAgent.Timestamp} finishTime
+     * @param {number} encodedDataLength
      */
-    _finishNetworkRequest: function(networkRequest, finishTime)
+    _finishNetworkRequest: function(networkRequest, finishTime, encodedDataLength)
     {
         networkRequest.endTime = finishTime;
         networkRequest.finished = true;
+        if (encodedDataLength >= 0)
+            networkRequest.setTransferSize(encodedDataLength);
         this._dispatchEventToListeners(WebInspector.NetworkManager.EventTypes.RequestFinished, networkRequest);
         delete this._inflightRequestsById[networkRequest.requestId];
         delete this._inflightRequestsByURL[networkRequest.url];
