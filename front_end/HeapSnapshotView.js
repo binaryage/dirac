@@ -61,7 +61,6 @@ WebInspector.HeapSnapshotView = function(profile)
 
     this.constructorsView = new WebInspector.View();
     this.constructorsView.element.classList.add("view");
-    this.constructorsView.element.appendChild(this._createToolbarWithClassNameFilter());
 
     this.constructorsDataGrid = new WebInspector.HeapSnapshotConstructorsDataGrid();
     this.constructorsDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
@@ -74,7 +73,6 @@ WebInspector.HeapSnapshotView = function(profile)
 
     this.diffView = new WebInspector.View();
     this.diffView.element.classList.add("view");
-    this.diffView.element.appendChild(this._createToolbarWithClassNameFilter());
 
     this.diffDataGrid = new WebInspector.HeapSnapshotDiffDataGrid();
     this.diffDataGrid.show(this.diffView.element);
@@ -140,6 +138,9 @@ WebInspector.HeapSnapshotView = function(profile)
     this._filterSelect = new WebInspector.StatusBarComboBox(this._changeFilter.bind(this));
     this._updateFilterOptions();
 
+    this._classNameFilter = new WebInspector.StatusBarInput("Class filter");
+    this._classNameFilter.setOnChangeHandler(this._onClassFilterChanged.bind(this));
+
     this.selectedSizeText = new WebInspector.StatusBarText("");
 
     this._popoverHelper = new WebInspector.ObjectPopoverHelper(this.element, this._getHoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), undefined, true);
@@ -175,7 +176,7 @@ WebInspector.HeapSnapshotView.prototype = {
 
     get statusBarItems()
     {
-        var result = [this.viewSelect.element];
+        var result = [this.viewSelect.element, this._classNameFilter.element];
         if (this._profile.profileType() !== WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType)
             result.push(this.baseSelect.element, this._filterSelect.element);
         result.push(this.selectedSizeText.element);
@@ -412,22 +413,12 @@ WebInspector.HeapSnapshotView.prototype = {
         this.performSearch(this.currentQuery, this._searchFinishedCallback);
     },
 
-    _createToolbarWithClassNameFilter: function()
+    /**
+     * @param {string} value
+     */
+    _onClassFilterChanged: function(value)
     {
-        var toolbar = document.createElement("div");
-        toolbar.classList.add("class-view-toolbar");
-        var classNameFilter = document.createElement("input");
-        classNameFilter.classList.add("class-name-filter");
-        classNameFilter.setAttribute("placeholder", WebInspector.UIString("Class filter"));
-        classNameFilter.addEventListener("keyup", this._changeNameFilter.bind(this, classNameFilter), false);
-        toolbar.appendChild(classNameFilter);
-        return toolbar;
-    },
-
-    _changeNameFilter: function(classNameInputElement)
-    {
-        var filter = classNameInputElement.value;
-        this.dataGrid.changeNameFilter(filter);
+        this.dataGrid.changeNameFilter(value);
     },
 
     /**
@@ -552,24 +543,15 @@ WebInspector.HeapSnapshotView.prototype = {
 
     _updateSelectorsVisibility: function()
     {
-        if (this.currentView === this.diffView)
-            this.baseSelect.element.classList.remove("hidden");
-        else
-            this.baseSelect.element.classList.add("hidden");
+        this.baseSelect.visible = (this.currentView === this.diffView);
+        this._filterSelect.visible = (this.currentView === this.constructorsView);
+        this._classNameFilter.visible = (this.currentView === this.constructorsView || this.currentView === this.diffView);
 
-        if (this.currentView === this.constructorsView) {
-            if (this._trackingOverviewGrid) {
-                this._trackingOverviewGrid.element.classList.remove("hidden");
+        if (this._trackingOverviewGrid) {
+            this._trackingOverviewGrid.element.classList.toggle("hidden", this.currentView !== this.constructorsView);
+            this.viewsContainer.classList.toggle("reserve-80px-at-top", this.currentView === this.constructorsView);
+            if (this.currentView === this.constructorsView)
                 this._trackingOverviewGrid.update();
-                this.viewsContainer.classList.add("reserve-80px-at-top");
-            }
-            this._filterSelect.element.classList.remove("hidden");
-        } else {
-            this._filterSelect.element.classList.add("hidden");
-            if (this._trackingOverviewGrid) {
-                this._trackingOverviewGrid.element.classList.add("hidden");
-                this.viewsContainer.classList.remove("reserve-80px-at-top");
-            }
         }
     },
 

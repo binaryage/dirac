@@ -438,7 +438,6 @@ body.remote .toolbar-item .close-button {
 
 .status-bar-item {
     display: inline-block;
-    cursor: default;
     height: 22px;
     padding: 0;
     margin-left: -1px;
@@ -559,6 +558,20 @@ button.status-bar-item.extension {
     background-image: url(Images/statusbarButtonGlyphs_2x.png);
 }
 } /* media */
+
+input.status-bar-item {
+    width: 200px;
+    height: 20px;
+    padding: 3px;
+    margin: 1px 3px;
+    background-color: white;
+    border: solid 1px rgb(236, 236, 236);
+}
+
+input.status-bar-item:focus,
+input.status-bar-item:hover {
+    border: solid 1px rgb(202, 202, 202);
+}
 
 select.status-bar-item {
     min-width: 48px;
