@@ -50,21 +50,6 @@ WebInspector.FlameChart = function(dataProvider)
 
 WebInspector.FlameChart.DividersBarHeight = 20;
 
-/**
- * @return {!WebInspector.FlameChart.ColorGenerator}
- */
-WebInspector.FlameChart.defaultColorGenerator = function()
-{
-    if (!WebInspector.FlameChart._colorGenerator) {
-        var colorGenerator = new WebInspector.FlameChart.ColorGenerator();
-        colorGenerator.colorPairForID("(idle)::0", 50);
-        colorGenerator.colorPairForID("(program)::0", 50);
-        colorGenerator.colorPairForID("(garbage collector)::0", 50);
-        WebInspector.FlameChart._colorGenerator = colorGenerator;
-    }
-    return WebInspector.FlameChart._colorGenerator;
-}
-
 WebInspector.FlameChart.prototype = {
     /**
      * @param {!WebInspector.Event} event

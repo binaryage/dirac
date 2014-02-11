@@ -33,11 +33,13 @@
  * @implements {WebInspector.FlameChartDataProvider}
  * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.FlameChart.ColorGenerator} colorGenerator
+ * @param {boolean} mainThread
  */
-WebInspector.TimelineFlameChartDataProvider = function(model, colorGenerator)
+WebInspector.TimelineFlameChartDataProvider = function(model, colorGenerator, mainThread)
 {
     WebInspector.FlameChartDataProvider.call(this);
     this._model = model;
+    this._mainThread = mainThread;
     this._colorGenerator = colorGenerator;
     this._resetData();
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this.invalidate, this);
@@ -96,16 +98,18 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var endTime = record.endTime || record.startTime - startTime;
         this._endTime = Math.max(this._endTime, endTime);
 
-        if (record.type === WebInspector.TimelineModel.RecordType.GPUTask)
-            return;
-
-        if (record.type === WebInspector.TimelineModel.RecordType.Program)
-            return;
+        if (this._mainThread) {
+            if (record.type === WebInspector.TimelineModel.RecordType.GPUTask || !!record.thread)
+                return;
+        } else {
+            if (record.type === WebInspector.TimelineModel.RecordType.Program || !record.thread)
+                return;
+        }
 
         var index = timelineData.entryTitles.length;
         timelineData.entryTitles[index] = record.type;
         timelineData.entryOffsets[index] = record.startTime - startTime;
-        timelineData.entryLevels[index] = depth - 2;
+        timelineData.entryLevels[index] = depth - 1;
         timelineData.entryTotalTimes[index] = endTime - record.startTime;
         timelineData.entryDeoptFlags[index] = 0;
 
