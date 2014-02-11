@@ -31,10 +31,7 @@
 // WebKit Web Facing API
 
 /** @type {boolean} */
-Event.prototype.isMetaOrCtrlForTest = false;
-/** @param {...*} vararg */
-Event.prototype.initWebKitWheelEvent = function(vararg) {}
-Event.prototype.stopImmediatePropagation = function() {}
+Event.prototype.isMetaOrCtrlForTest;
 
 /**
  * @constructor
@@ -49,36 +46,11 @@ window.KeyboardEvent = function(eventType, properties) {}
  */
 KeyboardEvent.DOM_KEY_LOCATION_NUMPAD;
 
-/** @param {?Element} element */
-window.getComputedStyle = function(element) {}
 /** @param {*} message */
 function postMessage(message) {}
 
 /** @type {*} */
-window.testRunner = null;
-
-/**
- * @constructor
- */
-function WebKitMutation(callback)
-{
-    this.type = "";
-    /** @type {Node} */ this.target = null;
-    /** @type {!Array.<!Node>} */ this.addedNodes = [];
-    /** @type {!Array.<!Node>} */ this.removedNodes = [];
-}
-
-/**
- * @constructor
- * @param {function(!Array.<!WebKitMutation>)} callback
- */
-function WebKitMutationObserver(callback) {}
-/** 
- * @param {!Node} container
- * @param {!Object} options
- */
-WebKitMutationObserver.prototype.observe = function(container, options) {}
-WebKitMutationObserver.prototype.disconnect = function() {}
+window.testRunner ;
 
 /**
  * @param {string} eventName
@@ -201,13 +173,6 @@ Array.prototype.intersectOrdered = function(array, comparator) {}
  */
 Array.prototype.mergeOrdered = function(array, comparator) {}
 
-DOMApplicationCache.prototype.UNCACHED = 0;
-DOMApplicationCache.prototype.IDLE = 1;
-DOMApplicationCache.prototype.CHECKING = 2;
-DOMApplicationCache.prototype.DOWNLOADING = 3;
-DOMApplicationCache.prototype.UPDATEREADY = 4;
-DOMApplicationCache.prototype.OBSOLETE = 5;
-
 // File System API
 /**
  * @constructor
@@ -218,9 +183,6 @@ function DOMFileSystem() {}
  * @type {DirectoryEntry}
  */
 DOMFileSystem.prototype.root = null;
-
-/** @type {Node} */
-Range.prototype.startContainer;
 
 // Inspector Backend
 var InspectorBackend = {}
@@ -284,31 +246,6 @@ InspectorFrontendHostAPI.prototype.zoomFactor = function() {}
 var InspectorFrontendHost;
 InspectorFrontendHost.embedderMessageAck = function(id, error) {}
 
-/** @constructor */
-function SourceMapV3()
-{
-    /** @type {number} */ this.version;
-    /** @type {string} */ this.file;
-    /** @type {!Array.<string>} */ this.sources;
-    /** @type {!Array.<!SourceMapV3.Section>} */ this.sections;
-    /** @type {string} */ this.mappings;
-    /** @type {string} */ this.sourceRoot;
-}
-
-/** @constructor */
-SourceMapV3.Section = function()
-{
-    /** @type {SourceMapV3} */ this.map;
-    /** @type {SourceMapV3.Offset} */ this.offset;
-}
-
-/** @constructor */
-SourceMapV3.Offset = function()
-{
-    /** @type {number} */ this.line;
-    /** @type {number} */ this.column;
-}
-
 // FIXME: remove everything below.
 var FormatterWorker = {}
 var WebInspector = {}
@@ -371,9 +308,6 @@ function Resource() {}
 function Timeline() {}
 
 var extensionServer;
-
-/** @type {string} */
-Location.prototype.origin = "";
 
 /**
  * @constructor
