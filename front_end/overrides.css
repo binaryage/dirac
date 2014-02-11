@@ -133,7 +133,7 @@ button.overrides-swap {
 }
 
 .overrides-view label {
-    display: block;
+    display: flex;
     height: auto;
 }
 

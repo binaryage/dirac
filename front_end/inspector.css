@@ -316,6 +316,7 @@ body.undocked.platform-mac.inactive .toolbar-background {
     height: 20px;
     border-radius: 2px;
     width: 100%;
+    margin: auto 0;
 }
 
 .toolbar-search-navigation.enabled:active {
@@ -431,8 +432,7 @@ body.remote .toolbar-item .close-button {
 }
 
 .status-bar > div {
-    display: inline-block;
-    vertical-align: top;
+    display: inline-flex;
     overflow: visible;
 }
 
@@ -452,6 +452,7 @@ body.remote .toolbar-item .close-button {
     padding-left: 5px;
     padding-right: 15px;
     height: auto;
+    margin: auto 0;
     white-space: nowrap;
     overflow: hidden;
 }
@@ -536,21 +537,20 @@ button.status-bar-item.extension {
 }
 
 .status-bar-select-container {
-    display: inline-block;
+    display: inline-flex;
+    flex-shrink: 0;
 }
 
 .status-bar-select-arrow {
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 144px;
     opacity: 0.7;
-    width: 10px;
-    height: 10px;
-    background-position: -20px -96px;
+    width: 12px;
+    height: 12px;
+    background-position: -18px -96px;
     display: inline-block;
     pointer-events: none;
-    position: relative;
-    top: 3px;
-    left: -3px;
+    margin: auto 0;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
@@ -583,7 +583,7 @@ select.status-bar-item {
     padding: 0 15px 0 5px;
     margin-right: -10px;
     position: relative;
-    line-height: 20px;
+    line-height: 22px;
 }
 
 .status-bar-item.checkbox {
