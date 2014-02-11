@@ -1825,6 +1825,6 @@ WebInspector.SourcesPanel.UILocationRevealer.prototype = {
     reveal: function(uiLocation)
     {
         if (uiLocation instanceof WebInspector.UILocation)
-            /** @type {!WebInspector.SourcesPanel} */ (WebInspector.showPanel("sources")).showUILocation(uiLocation);
+            /** @type {!WebInspector.SourcesPanel} */ (WebInspector.panel("sources")).showUILocation(uiLocation);
     }
 }
