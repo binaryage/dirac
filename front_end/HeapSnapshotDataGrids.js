@@ -48,6 +48,7 @@ WebInspector.HeapSnapshotSortableDataGrid = function(columns)
      * @type {boolean}
      */
     this._populatedAndSorted = false;
+    this._nameFilter = "";
     this.addEventListener("sorting complete", this._sortingComplete, this);
     this.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this.sortingChanged, this);
 }
@@ -174,12 +175,17 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
 
     changeNameFilter: function(filter)
     {
-        filter = filter.toLowerCase();
+        this._nameFilter = filter.toLowerCase();
+        this._applyNameFilter();
+    },
+
+    _applyNameFilter: function()
+    {
         var children = this.topLevelNodes();
         for (var i = 0, l = children.length; i < l; ++i) {
             var node = children[i];
             if (node.depth === 0)
-                node.revealed = node._name.toLowerCase().indexOf(filter) !== -1;
+                node.revealed = node._name.toLowerCase().indexOf(this._nameFilter) !== -1;
         }
         this.updateVisibleNodes();
     },
@@ -689,6 +695,7 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
         for (var constructor in aggregates)
             this.appendTopLevelNode(new WebInspector.HeapSnapshotConstructorNode(this, constructor, aggregates[constructor], key));
         this.sortingChanged();
+        this._applyNameFilter();
         this._lastKey = key;
     },
 
