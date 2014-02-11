@@ -562,7 +562,7 @@ WebInspector.SplitView.prototype = {
         if (!this._resizable)
             return false;
 
-        this._saveSidebarSizeRecursively();
+        this._saveSidebarSize();
         this._dragOffset = (this._secondIsSidebar ? this.totalSize() - this._sidebarSize : this._sidebarSize) - (this._isVertical ? event.pageX : event.pageY);
         return true;
     },
@@ -584,20 +584,7 @@ WebInspector.SplitView.prototype = {
     _endResizerDragging: function(event)
     {
         delete this._dragOffset;
-        this._saveSidebarSizeRecursively();
-    },
-
-    _saveSidebarSizeRecursively: function()
-    {
-        /** @this {WebInspector.View} */
-        function doSaveSidebarSizeRecursively()
-        {
-            if (this._saveSidebarSize)
-                this._saveSidebarSize();
-            this._callOnVisibleChildren(doSaveSidebarSizeRecursively);
-        }
         this._saveSidebarSize();
-        this._callOnVisibleChildren(doSaveSidebarSizeRecursively);
     },
 
     hideDefaultResizer: function()
