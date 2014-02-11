@@ -35,7 +35,7 @@
 }
 
 .profile-view .data-grid table.data {
-    background-image: none;
+    background: white;
 }
 
 .profile-view .data-grid tr:not(.filler):hover td {
