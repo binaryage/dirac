@@ -249,6 +249,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     wasShown: function()
     {
+        if (this._wasOnceShown)
+            return;
+        this._wasOnceShown = true;
         this._codeMirror.refresh();
     },
 
