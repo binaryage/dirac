@@ -63,6 +63,7 @@ WebInspector.InspectorView = function()
     // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
     this._drawerSplitView = new WebInspector.SplitView(false, true, "Inspector.drawerSplitView", 200, 200);
     this._drawerSplitView.setSidebarElementConstraints(Preferences.minDrawerHeight, Preferences.minDrawerHeight);
+    this._drawerSplitView.setMainElementConstraints(25, 25);
     this._drawerSplitView.show(this._devtoolsView.element);
 
     this._tabbedPane = new WebInspector.TabbedPane();
