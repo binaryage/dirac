@@ -276,6 +276,7 @@ WebInspector.ExperimentsSettings = function()
     this._enabledForTest = {};
 
     // Add currently running experiments here.
+    this.asyncStackTraces = this._createExperiment("asyncStackTraces", "Enable support for async stack traces");
     this.fileSystemInspection = this._createExperiment("fileSystemInspection", "FileSystem inspection");
     this.canvasInspection = this._createExperiment("canvasInspection ", "Canvas inspection");
     this.cssRegions = this._createExperiment("cssRegions", "CSS Regions Support");

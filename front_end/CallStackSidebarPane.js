@@ -33,11 +33,12 @@ WebInspector.CallStackSidebarPane = function()
     this.bodyElement.addEventListener("keydown", this._keyDown.bind(this), true);
     this.bodyElement.tabIndex = 0;
 
-    var asyncCheckbox = this.titleElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Async"), WebInspector.settings.enableAsyncStackTraces, true, undefined, WebInspector.UIString("Capture async stack traces")));
-    asyncCheckbox.classList.add("scripts-callstack-async");
-    asyncCheckbox.addEventListener("click", consumeEvent, false);
-
-    WebInspector.settings.enableAsyncStackTraces.addChangeListener(this._asyncStackTracesStateChanged, this);
+    if (WebInspector.experimentsSettings.asyncStackTraces.isEnabled()) {
+        var asyncCheckbox = this.titleElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Async"), WebInspector.settings.enableAsyncStackTraces, true, undefined, WebInspector.UIString("Capture async stack traces")));
+        asyncCheckbox.classList.add("scripts-callstack-async");
+        asyncCheckbox.addEventListener("click", consumeEvent, false);
+        WebInspector.settings.enableAsyncStackTraces.addChangeListener(this._asyncStackTracesStateChanged, this);
+    }
 }
 
 WebInspector.CallStackSidebarPane.Events = {
