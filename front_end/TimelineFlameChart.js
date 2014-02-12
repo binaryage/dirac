@@ -41,7 +41,6 @@ WebInspector.TimelineFlameChartDataProvider = function(model, colorGenerator, ma
     this._model = model;
     this._mainThread = mainThread;
     this._colorGenerator = colorGenerator;
-    this._resetData();
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this.invalidate, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this.invalidate, this);
 }
@@ -78,7 +77,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         this._endTime = 0;
         this._timelineData = {
             maxStackDepth: 5,
-            totalTime: 0,
+            totalTime: 1000,
             entryLevels: [],
             entryTotalTimes: [],
             entrySelfTimes: [],
@@ -97,6 +96,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var startTime = this._startTime;
         var endTime = record.endTime || record.startTime - startTime;
         this._endTime = Math.max(this._endTime, endTime);
+        timelineData.totalTime = Math.max(1000, this._endTime - this._startTime);
 
         if (this._mainThread) {
             if (record.type === WebInspector.TimelineModel.RecordType.GPUTask || !!record.thread)
@@ -119,8 +119,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             indexesForColor = timelineData.colorEntryIndexes[colorPair.index] = [];
         indexesForColor.push(index);
 
-        this._timelineData.maxStackDepth = Math.max(this._timelineData.maxStackDepth, depth + 1);
-        this._timelineData.totalTime = this._endTime - this._startTime;
+        timelineData.maxStackDepth = Math.max(timelineData.maxStackDepth, depth + 1);
     },
 
     /**
@@ -154,17 +153,20 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.View}
+ * @param {!WebInspector.TimelinePanel} panel
  * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
  */
-WebInspector.TimelineFlameChart = function(model, dataProvider)
+WebInspector.TimelineFlameChart = function(panel, model, dataProvider)
 {
     WebInspector.View.call(this);
+    this._panel = panel;
     this._model = model;
     this._mainView = new WebInspector.FlameChart.MainPane(dataProvider, null, true);
     this._mainView.show(this.element);
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._mainView._scheduleUpdate, this._mainView);
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._recordsCleared, this);
+    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
+    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
+    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
 }
 
 /**
@@ -184,9 +186,24 @@ WebInspector.TimelineFlameChart.colorGenerator = function(fillStyles)
 }
 
 WebInspector.TimelineFlameChart.prototype = {
-    _recordsCleared: function()
+    _onRecordsCleared: function()
     {
         this._mainView.changeWindow(0, 1);
+    },
+
+    _onRecordingStarted: function()
+    {
+        this._gotFirstRecord = false;
+    },
+
+    _onRecordAdded: function()
+    {
+        if (!this._gotFirstRecord) {
+            this._gotFirstRecord = true;
+            var minimumRecordTime = this._model.minimumRecordTime();
+            this._panel.setWindowTimes(minimumRecordTime, minimumRecordTime + 1000);
+        }
+        this._mainView._scheduleUpdate();
     },
 
     /**

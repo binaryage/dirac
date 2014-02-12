@@ -228,8 +228,8 @@ WebInspector.TimelinePanel.prototype = {
                 var dataProviderMain = new WebInspector.TimelineFlameChartDataProvider(this._model, colorGenerator, true);
                 var dataProviderBackground = new WebInspector.TimelineFlameChartDataProvider(this._model, colorGenerator, false);
                 views.mainViews = [
-                    new WebInspector.TimelineFlameChart(this._model, dataProviderMain),
-                    new WebInspector.TimelineFlameChart(this._model, dataProviderBackground)
+                    new WebInspector.TimelineFlameChart(this, this._model, dataProviderMain),
+                    new WebInspector.TimelineFlameChart(this, this._model, dataProviderBackground)
                 ];
                 break;
             default:

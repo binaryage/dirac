@@ -844,3 +844,7 @@
 .flame-chart-main-pane {
     overflow: hidden;
 }
+
+.timeline-flamechart-view #timeline-overview-grid {
+    display: none;
+}

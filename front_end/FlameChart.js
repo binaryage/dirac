@@ -936,9 +936,15 @@ WebInspector.FlameChart.MainPane.prototype = {
     update: function()
     {
         this._updateTimerId = 0;
-        if (!this._timelineData())
+        if (!this._timelineData()) {
+            this._timelineGrid.hideDividers();
             return;
+        }
         this._updateBoundaries();
+        if (this._timelineData().entryLevels.length)
+            this._timelineGrid.showDividers();
+        else
+            this._timelineGrid.hideDividers();
         this.draw(this.element.clientWidth, this.element.clientHeight);
         this._calculator._updateBoundaries(this);
         this._timelineGrid.element.style.width = this.element.clientWidth;

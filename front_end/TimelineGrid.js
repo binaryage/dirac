@@ -198,6 +198,16 @@ WebInspector.TimelineGrid.prototype = {
         this._eventDividersElement.classList.remove("hidden");
     },
 
+    hideDividers: function()
+    {
+        this._dividersElement.classList.add("hidden");
+    },
+
+    showDividers: function()
+    {
+        this._dividersElement.classList.remove("hidden");
+    },
+
     hideCurtains: function()
     {
         this._leftCurtainElement.classList.add("hidden");
