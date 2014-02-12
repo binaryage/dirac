@@ -109,12 +109,12 @@ FormatterWorker._chunkCount = function(totalLength, chunkSize)
 /**
  * @param {!Object} params
  */
-FormatterWorker.outline = function(params)
+FormatterWorker.javaScriptOutline = function(params)
 {
-    const chunkSize = 100000; // characters per data chunk
-    const totalLength = params.content.length;
-    const lines = params.content.split("\n");
-    const chunkCount = FormatterWorker._chunkCount(totalLength, chunkSize);
+    var chunkSize = 100000; // characters per data chunk
+    var totalLength = params.content.length;
+    var lines = params.content.split("\n");
+    var chunkCount = FormatterWorker._chunkCount(totalLength, chunkSize);
     var outlineChunk = [];
     var previousIdentifier = null;
     var previousToken = null;
@@ -198,6 +198,89 @@ FormatterWorker.outline = function(params)
     }
 
     postMessage({ chunk: outlineChunk, total: chunkCount, index: chunkCount });
+}
+
+FormatterWorker.CSSParserStates = {
+    Initial: "Initial",
+    Selector: "Selector",
+    AtRule: "AtRule",
+};
+
+FormatterWorker.cssOutline = function(params)
+{
+    var chunkSize = 100000; // characters per data chunk
+    var totalLength = params.content.length;
+    var lines = params.content.split("\n");
+    var chunkCount = FormatterWorker._chunkCount(totalLength, chunkSize);
+    var rules = [];
+    var processedChunkCharacters = 0;
+    var currentChunk = 0;
+
+    var state = FormatterWorker.CSSParserStates.Initial;
+    var rule;
+    var property;
+
+    /**
+     * @param {string} tokenValue
+     * @param {?string} tokenType
+     * @param {number} column
+     * @param {number} newColumn
+     */
+    function processToken(tokenValue, tokenType, column, newColumn)
+    {
+        switch (state) {
+        case FormatterWorker.CSSParserStates.Initial:
+            if (tokenType === "qualifier" || tokenType === "builtin" || tokenType === "tag") {
+                rule = {
+                    selectorText: tokenValue,
+                    lineNumber: lineNumber,
+                    columNumber: column,
+                };
+                state = FormatterWorker.CSSParserStates.Selector;
+            } else if (tokenType === "def") {
+                rule = {
+                    atRule: tokenValue,
+                    lineNumber: lineNumber,
+                    columNumber: column,
+                };
+                state = FormatterWorker.CSSParserStates.AtRule;
+            }
+            break;
+        case FormatterWorker.CSSParserStates.Selector:
+            if (tokenValue === "{" && tokenType === null) {
+                rule.selectorText = rule.selectorText.trim();
+                rules.push(rule);
+                state = FormatterWorker.CSSParserStates.Initial;
+            } else {
+                rule.selectorText += tokenValue;
+            }
+            break;
+        case FormatterWorker.CSSParserStates.AtRule:
+            if ((tokenValue === ";" || tokenValue === "{") && tokenType === null) {
+                rule.atRule = rule.atRule.trim();
+                rules.push(rule);
+                state = FormatterWorker.CSSParserStates.Initial;
+            } else {
+                rule.atRule += tokenValue;
+            }
+            break;
+        default:
+            console.assert(false, "Unknown CSS parser state.");
+        }
+        processedChunkCharacters += newColumn - column;
+        if (processedChunkCharacters > chunkSize) {
+            postMessage({ chunk: rules, total: chunkCount, index: currentChunk++ });
+            rules = [];
+            processedChunkCharacters = 0;
+        }
+    }
+    var tokenizer = FormatterWorker.createTokenizer("text/css");
+    var lineNumber;
+    for (lineNumber = 0; lineNumber < lines.length; ++lineNumber) {
+        var line = lines[lineNumber];
+        tokenizer(line, processToken);
+    }
+    postMessage({ chunk: rules, total: chunkCount, index: currentChunk++ });
 }
 
 /**

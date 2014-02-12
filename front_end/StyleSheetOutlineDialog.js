@@ -29,18 +29,17 @@
 /**
  * @constructor
  * @extends {WebInspector.SelectionDialogContentProvider}
- * @param {!WebInspector.View} view
  * @param {!WebInspector.UISourceCode} uiSourceCode
  * @param {function(number, number)} selectItemCallback
  */
-WebInspector.StyleSheetOutlineDialog = function(view, uiSourceCode, selectItemCallback)
+WebInspector.StyleSheetOutlineDialog = function(uiSourceCode, selectItemCallback)
 {
     WebInspector.SelectionDialogContentProvider.call(this);
     this._selectItemCallback = selectItemCallback;
     this._rules = [];
-    this._view = view;
-    this._uiSourceCode = uiSourceCode;
-    this._requestItems();
+    this._outlineWorker = new Worker("ScriptFormatterWorker.js");
+    this._outlineWorker.onmessage = this._didBuildOutlineChunk.bind(this);
+    this._outlineWorker.postMessage({ method: "cssOutline", params: { content: uiSourceCode.workingCopy() } });
 }
 
 /**
@@ -52,12 +51,28 @@ WebInspector.StyleSheetOutlineDialog.show = function(view, uiSourceCode, selectI
 {
     if (WebInspector.Dialog.currentInstance())
         return null;
-    var delegate = new WebInspector.StyleSheetOutlineDialog(view, uiSourceCode, selectItemCallback);
+    var delegate = new WebInspector.StyleSheetOutlineDialog(uiSourceCode, selectItemCallback);
     var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(delegate);
     WebInspector.Dialog.show(view.element, filteredItemSelectionDialog);
 }
 
 WebInspector.StyleSheetOutlineDialog.prototype = {
+    /**
+     * @param {!MessageEvent} event
+     */
+    _didBuildOutlineChunk: function(event)
+    {
+        var data = /** @type {!WebInspector.StyleSheetOutlineDialog.MessageEventData} */ (event.data);
+        var chunk = data.chunk;
+        for (var i = 0; i < chunk.length; ++i)
+            this._rules.push(chunk[i]);
+
+        if (data.total === data.index)
+            this.dispose();
+
+        this.refresh();
+    },
+
     /**
      * @return {number}
      */
@@ -72,7 +87,8 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
      */
     itemKeyAt: function(itemIndex)
     {
-        return this._rules[itemIndex].selectorText;
+        var rule = this._rules[itemIndex];
+        return rule.selectorText || rule.atRule;
     },
 
     /**
@@ -83,7 +99,7 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
     itemScoreAt: function(itemIndex, query)
     {
         var rule = this._rules[itemIndex];
-        return -rule.rawLocation.lineNumber;
+        return -rule.lineNumber;
     },
 
     /**
@@ -95,34 +111,9 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
     renderItem: function(itemIndex, query, titleElement, subtitleElement)
     {
         var rule = this._rules[itemIndex];
-        titleElement.textContent = rule.selectorText;
+        titleElement.textContent = rule.selectorText || rule.atRule;
         this.highlightRanges(titleElement, query);
-        subtitleElement.textContent = ":" + (rule.rawLocation.lineNumber + 1);
-    },
-
-    _requestItems: function()
-    {
-        var styleSheets = WebInspector.cssModel.allStyleSheets();
-        for (var i = 0; i < styleSheets.length; ++i) {
-            var styleSheet = styleSheets[i];
-            if (styleSheet.sourceURL === this._uiSourceCode.url) {
-                WebInspector.CSSStyleSheet.createForId(styleSheet.id, didGetStyleSheet.bind(this));
-                return;
-            }
-        }
-
-        /**
-         * @param {?WebInspector.CSSStyleSheet} styleSheet
-         * @this {WebInspector.StyleSheetOutlineDialog}
-         */
-        function didGetStyleSheet(styleSheet)
-        {
-            if (!styleSheet)
-                return;
-
-            this._rules = styleSheet.rules;
-            this.refresh();
-        }
+        subtitleElement.textContent = ":" + (rule.lineNumber + 1);
     },
 
     /**
@@ -132,10 +123,23 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
     selectItem: function(itemIndex, promptValue)
     {
         var rule = this._rules[itemIndex];
-        var lineNumber = rule.rawLocation.lineNumber;
+        var lineNumber = rule.lineNumber;
         if (!isNaN(lineNumber) && lineNumber >= 0)
-            this._selectItemCallback(lineNumber, rule.rawLocation.columnNumber);
+            this._selectItemCallback(lineNumber, rule.columnNumber);
+    },
+
+    dispose: function()
+    {
+        if (this._outlineWorker) {
+            this._outlineWorker.terminate();
+            delete this._outlineWorker;
+        }
     },
 
     __proto__: WebInspector.SelectionDialogContentProvider.prototype
 }
+
+/**
+ * @typedef {{index: number, total: number, chunk: !Array.<!{selectorText: ?string, atRule: ?string, lineNumber: number, columnNumber: number}>}}
+ */
+WebInspector.StyleSheetOutlineDialog.MessageEventData;

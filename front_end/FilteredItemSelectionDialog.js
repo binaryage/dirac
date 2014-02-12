@@ -490,48 +490,42 @@ WebInspector.SelectionDialogContentProvider.prototype = {
  * @constructor
  * @extends {WebInspector.SelectionDialogContentProvider}
  * @param {!WebInspector.View} view
- * @param {!WebInspector.ContentProvider} contentProvider
+ * @param {!WebInspector.UISourceCode} uiSourceCode
  * @param {function(number, number)} selectItemCallback
  */
-WebInspector.JavaScriptOutlineDialog = function(view, contentProvider, selectItemCallback)
+WebInspector.JavaScriptOutlineDialog = function(view, uiSourceCode, selectItemCallback)
 {
     WebInspector.SelectionDialogContentProvider.call(this);
 
     this._functionItems = [];
     this._view = view;
     this._selectItemCallback = selectItemCallback;
-    contentProvider.requestContent(this._contentAvailable.bind(this));
+    this._outlineWorker = new Worker("ScriptFormatterWorker.js");
+    this._outlineWorker.onmessage = this._didBuildOutlineChunk.bind(this);
+    this._outlineWorker.postMessage({ method: "javaScriptOutline", params: { content: uiSourceCode.workingCopy() } });
 }
 
 /**
  * @param {!WebInspector.View} view
- * @param {!WebInspector.ContentProvider} contentProvider
+ * @param {!WebInspector.UISourceCode} uiSourceCode
  * @param {function(number, number)} selectItemCallback
  */
-WebInspector.JavaScriptOutlineDialog.show = function(view, contentProvider, selectItemCallback)
+WebInspector.JavaScriptOutlineDialog.show = function(view, uiSourceCode, selectItemCallback)
 {
     if (WebInspector.Dialog.currentInstance())
         return null;
-    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.JavaScriptOutlineDialog(view, contentProvider, selectItemCallback));
+    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.JavaScriptOutlineDialog(view, uiSourceCode, selectItemCallback));
     WebInspector.Dialog.show(view.element, filteredItemSelectionDialog);
 }
 
 WebInspector.JavaScriptOutlineDialog.prototype = {
     /**
-     * @param {?string} content
+     * @param {!MessageEvent} event
      */
-    _contentAvailable: function(content)
-    {
-        this._outlineWorker = new Worker("ScriptFormatterWorker.js");
-        this._outlineWorker.onmessage = this._didBuildOutlineChunk.bind(this);
-        const method = "outline";
-        this._outlineWorker.postMessage({ method: method, params: { content: content } });
-    },
-
     _didBuildOutlineChunk: function(event)
     {
-        var data = event.data;
-        var chunk = data["chunk"];
+        var data = /** @type {!WebInspector.JavaScriptOutlineDialog.MessageEventData} */ (event.data);
+        var chunk = data.chunk;
         for (var i = 0; i < chunk.length; ++i)
             this._functionItems.push(chunk[i]);
 
@@ -886,3 +880,8 @@ WebInspector.SelectUISourceCodeForProjectTypeDialog.show = function(name, type, 
     filteredItemSelectionDialog.renderAsTwoRows();
     WebInspector.Dialog.show(relativeToElement, filteredItemSelectionDialog);
 }
+
+/**
+ * @typedef {{index: number, total: number, chunk: !Array.<!{selectorText: string, lineNumber: number, columnNumber: number}>}}
+ */
+WebInspector.JavaScriptOutlineDialog.MessageEventData;
