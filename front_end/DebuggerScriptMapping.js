@@ -30,14 +30,15 @@
 
 /**
  * @constructor
+ * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.Workspace} workspace
  * @param {!WebInspector.SimpleWorkspaceProvider} networkWorkspaceProvider
  */
-WebInspector.DebuggerScriptMapping = function(workspace, networkWorkspaceProvider)
+WebInspector.DebuggerScriptMapping = function(debuggerModel, workspace, networkWorkspaceProvider)
 {
-    this._defaultMapping = new WebInspector.DefaultScriptMapping(workspace);
-    this._resourceMapping = new WebInspector.ResourceScriptMapping(workspace);
-    this._compilerMapping = new WebInspector.CompilerScriptMapping(workspace, networkWorkspaceProvider);
+    this._defaultMapping = new WebInspector.DefaultScriptMapping(debuggerModel, workspace);
+    this._resourceMapping = new WebInspector.ResourceScriptMapping(debuggerModel, workspace);
+    this._compilerMapping = new WebInspector.CompilerScriptMapping(debuggerModel, workspace, networkWorkspaceProvider);
     this._snippetMapping = WebInspector.scriptSnippetModel.scriptMapping;
 
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);

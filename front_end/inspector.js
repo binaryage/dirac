@@ -410,7 +410,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.overridesSupport = new WebInspector.OverridesSupport();
     this.overridesSupport.applyInitialOverrides();
 
-    new WebInspector.DebuggerScriptMapping(this.workspace, this.networkWorkspaceProvider);
+    new WebInspector.DebuggerScriptMapping(this.debuggerModel, this.workspace, this.networkWorkspaceProvider);
     this.liveEditSupport = new WebInspector.LiveEditSupport(this.workspace);
     new WebInspector.CSSStyleSheetMapping(this.cssModel, this.workspace, this.networkWorkspaceProvider);
     new WebInspector.PresentationConsoleMessageHelper(this.workspace);

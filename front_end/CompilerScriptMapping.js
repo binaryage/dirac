@@ -31,11 +31,13 @@
 /**
  * @constructor
  * @implements {WebInspector.ScriptSourceMapping}
+ * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.Workspace} workspace
  * @param {!WebInspector.SimpleWorkspaceProvider} networkWorkspaceProvider
  */
-WebInspector.CompilerScriptMapping = function(workspace, networkWorkspaceProvider)
+WebInspector.CompilerScriptMapping = function(debuggerModel, workspace, networkWorkspaceProvider)
 {
+    this._debuggerModel = debuggerModel;
     this._workspace = workspace;
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
     this._networkWorkspaceProvider = networkWorkspaceProvider;
@@ -49,7 +51,7 @@ WebInspector.CompilerScriptMapping = function(workspace, networkWorkspaceProvide
     this._scriptForSourceMap = new Map();
     /** @type {!StringMap.<!WebInspector.SourceMap>} */
     this._sourceMapForURL = new StringMap();
-    WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
+    debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 }
 
 WebInspector.CompilerScriptMapping.prototype = {
@@ -91,7 +93,7 @@ WebInspector.CompilerScriptMapping.prototype = {
         var script = /** @type {!WebInspector.Script} */ (this._scriptForSourceMap.get(sourceMap));
         console.assert(script);
         var entry = sourceMap.findEntryReversed(uiSourceCode.url, lineNumber);
-        return WebInspector.debuggerModel.createRawLocation(script, /** @type {number} */ (entry[0]), /** @type {number} */ (entry[1]));
+        return this._debuggerModel.createRawLocation(script, /** @type {number} */ (entry[0]), /** @type {number} */ (entry[1]));
     },
 
     /**

@@ -31,14 +31,16 @@
 /**
  * @constructor
  * @implements {WebInspector.ScriptSourceMapping}
+ * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.Workspace} workspace
  */
-WebInspector.DefaultScriptMapping = function(workspace)
+WebInspector.DefaultScriptMapping = function(debuggerModel, workspace)
 {
+    this._debuggerModel = debuggerModel;
     this._projectDelegate = new WebInspector.DebuggerProjectDelegate();
     this._workspace = workspace;
     this._workspace.addProject(this._projectDelegate);
-    WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
+    debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     this._debuggerReset();
 }
 
@@ -50,7 +52,7 @@ WebInspector.DefaultScriptMapping.prototype = {
     rawLocationToUILocation: function(rawLocation)
     {
         var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (rawLocation);
-        var script = WebInspector.debuggerModel.scriptForId(debuggerModelLocation.scriptId);
+        var script = this._debuggerModel.scriptForId(debuggerModelLocation.scriptId);
         var uiSourceCode = this._uiSourceCodeForScriptId[script.scriptId];
         var lineNumber = debuggerModelLocation.lineNumber;
         var columnNumber = debuggerModelLocation.columnNumber || 0;
@@ -66,8 +68,8 @@ WebInspector.DefaultScriptMapping.prototype = {
     uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
         var scriptId = this._scriptIdForUISourceCode.get(uiSourceCode);
-        var script = WebInspector.debuggerModel.scriptForId(scriptId);
-        return WebInspector.debuggerModel.createRawLocation(script, lineNumber, columnNumber);
+        var script = this._debuggerModel.scriptForId(scriptId);
+        return this._debuggerModel.createRawLocation(script, lineNumber, columnNumber);
     },
 
     /**

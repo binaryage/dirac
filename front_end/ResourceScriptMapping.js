@@ -31,14 +31,16 @@
 /**
  * @constructor
  * @implements {WebInspector.ScriptSourceMapping}
+ * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.Workspace} workspace
  */
-WebInspector.ResourceScriptMapping = function(workspace)
+WebInspector.ResourceScriptMapping = function(debuggerModel, workspace)
 {
+    this._debuggerModel = debuggerModel;
     this._workspace = workspace;
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
 
-    WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
+    debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     this._initialize();
 }
 
@@ -50,7 +52,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     rawLocationToUILocation: function(rawLocation)
     {
         var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (rawLocation);
-        var script = WebInspector.debuggerModel.scriptForId(debuggerModelLocation.scriptId);
+        var script = this._debuggerModel.scriptForId(debuggerModelLocation.scriptId);
         var uiSourceCode = this._workspaceUISourceCodeForScript(script);
         if (!uiSourceCode)
             return null;
@@ -70,7 +72,7 @@ WebInspector.ResourceScriptMapping.prototype = {
     {
         var scripts = this._scriptsForUISourceCode(uiSourceCode);
         console.assert(scripts.length);
-        return WebInspector.debuggerModel.createRawLocation(scripts[0], lineNumber, columnNumber);
+        return this._debuggerModel.createRawLocation(scripts[0], lineNumber, columnNumber);
     },
 
     /**
@@ -301,7 +303,7 @@ WebInspector.ResourceScriptFile.prototype = {
         if (!this._script)
             return;
         var source = this._uiSourceCode.workingCopy();
-        WebInspector.debuggerModel.setScriptSource(this._script.scriptId, source, innerCallback.bind(this));
+        this._resourceScriptMapping._debuggerModel.setScriptSource(this._script.scriptId, source, innerCallback.bind(this));
     },
 
     /**
