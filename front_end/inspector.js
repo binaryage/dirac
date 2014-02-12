@@ -425,12 +425,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     WebInspector.inspectorView.show(document.body);
     this._createGlobalStatusBarItems();
 
-    if (this.overridesSupport.hasActiveOverrides()) {
-        if (!WebInspector.settings.showEmulationViewInDrawer.get())
-            WebInspector.settings.showEmulationViewInDrawer.set(true);
-        WebInspector.inspectorView.showViewInDrawer("emulation");
-    }
-
     this.addMainEventListeners(document);
 
     window.addEventListener("resize", this.windowResize.bind(this), true);
@@ -443,29 +437,42 @@ WebInspector._doLoadedDoneWithCapabilities = function()
 
     this.console.enableAgent();
 
-    InspectorAgent.enable(WebInspector.inspectorView.showInitialPanel.bind(WebInspector.inspectorView));
     this.databaseModel = new WebInspector.DatabaseModel();
     this.domStorageModel = new WebInspector.DOMStorageModel();
-
     this.cpuProfilerModel = new WebInspector.CPUProfilerModel();
 
-    if (WebInspector.settings.showPaintRects.get() || WebInspector.settings.showDebugBorders.get() || WebInspector.settings.continuousPainting.get() ||
-            WebInspector.settings.showFPSCounter.get() || WebInspector.settings.showScrollBottleneckRects.get()) {
-        WebInspector.settings.showRenderingViewInDrawer.set(true);
-    }
-
-    WebInspector.settings.showMetricsRulers.addChangeListener(showRulersChanged);
-    function showRulersChanged()
+    InspectorAgent.enable(inspectorAgentEnableCallback.bind(this));
+    /**
+     * @this {WebInspector}
+     */
+    function inspectorAgentEnableCallback()
     {
-        PageAgent.setShowViewportSizeOnResize(true, WebInspector.settings.showMetricsRulers.get());
+        WebInspector.inspectorView.showInitialPanel();
+
+        if (WebInspector.overridesSupport.hasActiveOverrides()) {
+            if (!WebInspector.settings.showEmulationViewInDrawer.get())
+                WebInspector.settings.showEmulationViewInDrawer.set(true);
+            WebInspector.inspectorView.showViewInDrawer("emulation", true);
+        }
+
+        if (WebInspector.settings.showPaintRects.get() || WebInspector.settings.showDebugBorders.get() || WebInspector.settings.continuousPainting.get() ||
+                WebInspector.settings.showFPSCounter.get() || WebInspector.settings.showScrollBottleneckRects.get()) {
+            WebInspector.settings.showRenderingViewInDrawer.set(true);
+        }
+
+        WebInspector.settings.showMetricsRulers.addChangeListener(showRulersChanged);
+        function showRulersChanged()
+        {
+            PageAgent.setShowViewportSizeOnResize(true, WebInspector.settings.showMetricsRulers.get());
+        }
+        showRulersChanged();
+
+        if (Capabilities.canScreencast)
+            this._screencastView.initialize();
     }
-    showRulersChanged();
 
     this._loadCompletedForWorkers()
     InspectorFrontendAPI.loadCompleted();
-
-    if (Capabilities.canScreencast)
-        this._screencastView.initialize();
     WebInspector.notifications.dispatchEventToListeners(WebInspector.Events.InspectorLoaded);
 }
 

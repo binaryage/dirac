@@ -268,10 +268,11 @@ WebInspector.InspectorView.prototype = {
 
     /**
      * @param {string} id
+     * @param {boolean=} immediate
      */
-    showViewInDrawer: function(id)
+    showViewInDrawer: function(id, immediate)
     {
-        this._drawer.showView(id);
+        this._drawer.showView(id, immediate);
     },
 
     /**
