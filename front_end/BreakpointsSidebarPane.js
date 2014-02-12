@@ -25,12 +25,14 @@
 
 /**
  * @constructor
+ * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.BreakpointManager} breakpointManager
  * @extends {WebInspector.SidebarPane}
  */
-WebInspector.JavaScriptBreakpointsSidebarPane = function(breakpointManager, showSourceLineDelegate)
+WebInspector.JavaScriptBreakpointsSidebarPane = function(debuggerModel, breakpointManager, showSourceLineDelegate)
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Breakpoints"));
+    this._debuggerModel = debuggerModel;
     this.registerRequiredCSS("breakpointsList.css");
 
     this._breakpointManager = breakpointManager;
@@ -61,11 +63,11 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
     _emptyElementContextMenu: function(event)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
-        var breakpointActive = WebInspector.debuggerModel.breakpointsActive();
+        var breakpointActive = this._debuggerModel.breakpointsActive();
         var breakpointActiveTitle = breakpointActive ?
             WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Deactivate breakpoints" : "Deactivate Breakpoints") :
             WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Activate breakpoints" : "Activate Breakpoints");
-        contextMenu.appendItem(breakpointActiveTitle, WebInspector.debuggerModel.setBreakpointsActive.bind(WebInspector.debuggerModel, !breakpointActive));
+        contextMenu.appendItem(breakpointActiveTitle, this._debuggerModel.setBreakpointsActive.bind(this._debuggerModel, !breakpointActive));
         contextMenu.show();
     },
 
@@ -203,11 +205,11 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
         }
 
         contextMenu.appendSeparator();
-        var breakpointActive = WebInspector.debuggerModel.breakpointsActive();
+        var breakpointActive = this._debuggerModel.breakpointsActive();
         var breakpointActiveTitle = breakpointActive ?
             WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Deactivate breakpoints" : "Deactivate Breakpoints") :
             WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Activate breakpoints" : "Activate Breakpoints");
-        contextMenu.appendItem(breakpointActiveTitle, WebInspector.debuggerModel.setBreakpointsActive.bind(WebInspector.debuggerModel, !breakpointActive));
+        contextMenu.appendItem(breakpointActiveTitle, this._debuggerModel.setBreakpointsActive.bind(this._debuggerModel, !breakpointActive));
 
         function enabledBreakpointCount(breakpoints)
         {
