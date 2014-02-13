@@ -184,10 +184,6 @@ function DOMFileSystem() {}
  */
 DOMFileSystem.prototype.root = null;
 
-// Inspector Backend
-var InspectorBackend = {}
-InspectorBackend.runAfterPendingDispatches = function(message) {}
-
 /** @interface */
 function InspectorFrontendHostAPI() {}
 /** @param {!Function=} callback callback */

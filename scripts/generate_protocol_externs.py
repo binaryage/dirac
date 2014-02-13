@@ -92,6 +92,8 @@ def generate_protocol_externs(output_path, input_path):
 
     output_file.write(
 """
+var InspectorBackend = {}
+
 var Protocol = {};
 /** @typedef {string}*/
 Protocol.Error;
