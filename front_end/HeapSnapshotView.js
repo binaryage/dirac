@@ -162,6 +162,8 @@ WebInspector.HeapSnapshotView.prototype = {
             var profileIndex = list.indexOf(this._profile);
             this.baseSelect.setSelectedIndex(Math.max(0, profileIndex - 1));
             this.dataGrid.setDataSource(heapSnapshotProxy);
+            if (this._trackingOverviewGrid)
+                this._trackingOverviewGrid._updateGrid();
         }
     },
 
