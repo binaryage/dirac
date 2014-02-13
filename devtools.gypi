@@ -437,7 +437,6 @@
             'front_end/Images/sessionStorage.png',
             'front_end/Images/settingsListRemove.png',
             'front_end/Images/settingsListRemove_2x.png',
-            'front_end/Images/spinner.gif',
             'front_end/Images/spinnerActive.gif',
             'front_end/Images/spinnerActiveSelected.gif',
             'front_end/Images/spinnerInactive.gif',
