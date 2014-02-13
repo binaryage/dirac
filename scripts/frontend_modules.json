@@ -131,6 +131,7 @@
             "UIUtils.js",
             "View.js",
             "ViewportControl.js",
+            "ZoomManager.js",
             "treeoutline.js"
         ]
     },

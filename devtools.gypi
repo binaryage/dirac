@@ -188,6 +188,7 @@
             'front_end/WorkerFrontendManager.js',
             'front_end/Workspace.js',
             'front_end/WorkspaceController.js',
+            'front_end/ZoomManager.js',
             'front_end/dialog.css',
             'front_end/inspector.css',
             'front_end/tabbedPane.css',

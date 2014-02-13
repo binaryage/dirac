@@ -39,15 +39,14 @@ WebInspector.InspectorView = function()
     this.element.classList.add("fill", "inspector-view");
     this.element.setAttribute("spellcheck", false);
 
-    this._zoomFactor = WebInspector.zoomFactor();
-    WebInspector.settings.zoomLevel.addChangeListener(this._onZoomChanged, this);
+    window.addEventListener("resize", this._onWindowResize.bind(this), true);
+    WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
 
     // We can use split view either for docking or screencast, but not together.
     var settingName = WebInspector.queryParamsObject["can_dock"] ? "InspectorView.splitView" : "InspectorView.screencastSplitView";
     this._splitView = new WebInspector.SplitView(false, true, settingName, 300, 300);
     this._updateConstraints();
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._updateSplitView.bind(this));
-    this._splitView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this.dispatchEventToListeners.bind(this, WebInspector.InspectorView.Events.DevToolsElementBoundingBoxChanged));
 
     this._splitView.element.id = "inspector-split-view";
     this._splitView.show(this.element);
@@ -57,7 +56,7 @@ WebInspector.InspectorView = function()
     this._overlayView.show(this._splitView.mainElement());
 
     // Sidebar of main split is artificial element used for positioning.
-    this._devtoolsView = new WebInspector.View();
+    this._devtoolsView = new WebInspector.ViewWithResizeCallback(this._onDevToolsViewResized.bind(this));
     this._devtoolsView.show(this._splitView.sidebarElement());
 
     // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
@@ -417,10 +416,14 @@ WebInspector.InspectorView.prototype = {
         this._historyIterator = this._history.length - 1;
     },
 
-    doResize: function()
+    _onDevToolsViewResized: function()
     {
-        WebInspector.View.prototype.doResize.call(this);
         this.dispatchEventToListeners(WebInspector.InspectorView.Events.DevToolsElementBoundingBoxChanged);
+    },
+
+    _onWindowResize: function()
+    {
+        this.doResize();
     },
 
     _updateSplitView: function()
@@ -454,20 +457,17 @@ WebInspector.InspectorView.prototype = {
         }
     },
 
-    _onZoomChanged: function()
+    _onZoomChanged: function(event)
     {
         this._updateConstraints();
-        var zoomFactor = WebInspector.zoomFactor();
-        if (zoomFactor !== this._zoomFactor) {
-            this._splitView.setSidebarSize(this._splitView.sidebarSize() * this._zoomFactor / zoomFactor, true);
-            this._overlayView.updateMargins();
-        }
-        this._zoomFactor = zoomFactor;
+        var data = /** @type {{from: number, to: number}} */ (event.data);
+        this._splitView.setSidebarSize(this._splitView.sidebarSize() * data.from / data.to, true);
+        this._overlayView.updateMargins();
     },
 
     _updateConstraints: function()
     {
-        var zoomFactor = WebInspector.zoomFactor();
+        var zoomFactor = WebInspector.zoomManager.zoomFactor();
         this._splitView.setSidebarElementConstraints(WebInspector.InspectorView.Constraints.DevToolsWidth / zoomFactor,
             WebInspector.InspectorView.Constraints.DevToolsHeight / zoomFactor);
         this._splitView.setMainElementConstraints(WebInspector.InspectorView.Constraints.OverlayWidth / zoomFactor,
@@ -576,7 +576,7 @@ WebInspector.InspectorView.OverlayView.prototype = {
 
     updateMargins: function()
     {
-        var marginValue = Math.round(3 / WebInspector.zoomFactor()) + "px ";
+        var marginValue = Math.round(3 / WebInspector.zoomManager.zoomFactor()) + "px ";
         var margins = this._margins.top ? marginValue : "0 ";
         margins += this._margins.right ? marginValue : "0 ";
         margins += this._margins.bottom ? marginValue : "0 ";
@@ -598,8 +598,8 @@ WebInspector.InspectorView.OverlayView.prototype = {
     {
         delete this._setContentsInsetsId;
 
-        var zoomFactor = WebInspector.zoomFactor();
-        var marginValue = Math.round(3 / WebInspector.zoomFactor());
+        var zoomFactor = WebInspector.zoomManager.zoomFactor();
+        var marginValue = Math.round(3 / zoomFactor);
         var insets = {
             top: this._margins.top ? marginValue : 0,
             left: this._margins.left ? marginValue : 0,

@@ -149,8 +149,8 @@ WebInspector.ScreencastView.prototype = {
             this._isCasting = false;
             return;
         }
-        dimensions.width *= WebInspector.zoomFactor();
-        dimensions.height *= WebInspector.zoomFactor();
+        dimensions.width *= WebInspector.zoomManager.zoomFactor();
+        dimensions.height *= WebInspector.zoomManager.zoomFactor();
         PageAgent.startScreencast("jpeg", 80, Math.min(maxImageDimension, dimensions.width), Math.min(maxImageDimension, dimensions.height));
         WebInspector.domAgent.setHighlighter(this);
     },

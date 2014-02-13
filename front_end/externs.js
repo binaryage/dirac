@@ -273,14 +273,8 @@ WebInspector.evaluateInConsole = function(expression, showResultOnly) {}
 WebInspector.queryParamsObject = {}
 
 WebInspector.Events = {
-    InspectorLoaded: "InspectorLoaded",
-    InspectorClosing: "InspectorClosing"
+    InspectorLoaded: "InspectorLoaded"
 }
-
-/**
- * @return {number}
- */
-WebInspector.zoomFactor = function() {}
 
 /** Extensions API */
 

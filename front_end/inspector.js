@@ -169,54 +169,6 @@ var WebInspector = {
             callback();
     },
 
-    _zoomIn: function()
-    {
-        this._zoomLevel = Math.min(this._zoomLevel + 1, WebInspector.Zoom.Table.length - WebInspector.Zoom.DefaultOffset - 1);
-        this._requestZoom();
-    },
-
-    _zoomOut: function()
-    {
-        this._zoomLevel = Math.max(this._zoomLevel - 1, -WebInspector.Zoom.DefaultOffset);
-        this._requestZoom();
-    },
-
-    _resetZoom: function()
-    {
-        this._zoomLevel = 0;
-        this._requestZoom();
-    },
-
-    _adjustExternalZoomFactor: function()
-    {
-        var realZoomFactor = InspectorFrontendHost.zoomFactor();
-        var expectedZoomFactor = this.zoomFactor();
-        if (Math.abs(realZoomFactor - expectedZoomFactor) > 1e-3) {
-            // Unexpected zoom factor means that it was overriden by external zoom.
-            WebInspector.settings.externalZoomFactor.set(realZoomFactor);
-            this._requestZoom();
-        }
-    },
-
-    /**
-     * @return {number}
-     * @this {WebInspector}
-     */
-    zoomFactor: function()
-    {
-        // For backwards compatibility, zoomLevel takes integers (with 0 being default zoom).
-        var index = this._zoomLevel + WebInspector.Zoom.DefaultOffset;
-        index = Math.min(WebInspector.Zoom.Table.length - 1, index);
-        index = Math.max(0, index);
-        return WebInspector.Zoom.Table[index] * WebInspector.settings.externalZoomFactor.get();
-    },
-
-    _requestZoom: function()
-    {
-        WebInspector.settings.zoomLevel.set(this._zoomLevel);
-        InspectorFrontendHost.setZoomFactor(this.zoomFactor());
-    },
-
     _debuggerPaused: function()
     {
         this.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
@@ -361,12 +313,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.workerManager = new WebInspector.WorkerManager(Capabilities.canInspectWorkers);
     this.runtimeModel = new WebInspector.RuntimeModel(this.resourceTreeModel);
 
-    this._zoomLevel = WebInspector.settings.zoomLevel.get();
-    // FIXME: when user changes external zoom factor, and after that opens inspector,
-    // we should somehow rescale zoom-dependent settings, e.g. inspectorView split size.
-    WebInspector.settings.externalZoomFactor.set(InspectorFrontendHost.zoomFactor());
-    if (this._zoomLevel)
-        this._requestZoom();
+    this.zoomManager = new WebInspector.ZoomManager();
 
     this.advancedSearchController = new WebInspector.AdvancedSearchController();
     this.consoleView = new WebInspector.ConsoleView(WebInspector.isWorkerFrontend());
@@ -506,9 +453,6 @@ WebInspector.dispatch = function(message) {
 
 WebInspector.windowResize = function(event)
 {
-    this._adjustExternalZoomFactor();
-    if (WebInspector.inspectorView)
-        WebInspector.inspectorView.doResize();
     if (WebInspector.settingsController)
         WebInspector.settingsController.resize();
 }
@@ -668,37 +612,6 @@ WebInspector.postDocumentKeyDown = function(event)
             if (!WebInspector.isMac()) {
                 WebInspector.resourceTreeModel.reloadPage(event.ctrlKey || event.shiftKey);
                 event.consume(true);
-            }
-            break;
-    }
-
-    var isValidZoomShortcut = WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) &&
-        !event.altKey &&
-        !InspectorFrontendHost.isStub;
-    switch (event.keyCode) {
-        case 107: // +
-        case 187: // +
-            if (isValidZoomShortcut) {
-                WebInspector._zoomIn();
-                event.consume(true);
-                return;
-            }
-            break;
-        case 109: // -
-        case 189: // -
-            if (isValidZoomShortcut) {
-                WebInspector._zoomOut();
-                event.consume(true);
-                return;
-            }
-            break;
-        case 48: // 0
-        case 96: // Numpad 0
-            // Zoom reset shortcut does not allow "Shift" when handled by the browser.
-            if (isValidZoomShortcut && !event.shiftKey) {
-                WebInspector._resetZoom();
-                event.consume(true);
-                return;
             }
             break;
     }
@@ -928,11 +841,6 @@ WebInspector.addMainEventListeners = function(doc)
     doc.addEventListener("copy", this.documentCopy.bind(this), false);
     doc.addEventListener("contextmenu", this.contextMenuEventFired.bind(this), true);
     doc.addEventListener("click", this.documentClick.bind(this), false);
-}
-
-WebInspector.Zoom = {
-    Table: [0.25, 0.33, 0.5, 0.66, 0.75, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2, 2.5, 3, 4, 5],
-    DefaultOffset: 6
 }
 
 
