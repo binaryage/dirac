@@ -30,7 +30,7 @@
  * @constructor
  * @extends {WebInspector.View}
  * @param {boolean} isVertical
- * @param {boolean}  secondIsSidebar
+ * @param {boolean} secondIsSidebar
  * @param {string=} sidebarSizeSettingName
  * @param {number=} defaultSidebarWidth
  * @param {number=} defaultSidebarHeight
@@ -124,7 +124,7 @@ WebInspector.SplitView.prototype = {
         delete this._resizerElementSize;
         this._sidebarSize = -1;
     },
-  
+
     /**
      * @param {boolean=} animate
      */

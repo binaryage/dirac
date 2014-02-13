@@ -63,10 +63,6 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
     bottom: 0;
 }
 
-.heap-snapshot-view.visible {
-    display: block;
-}
-
 .heap-snapshot-view .data-grid {
     border: none;
 }
@@ -157,43 +153,18 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
     flex: auto;
 }
 
-.heap-snapshot-view .views-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 173px;
-}
-
-.reserve-80px-at-top {
-    top: 80px !important;
-}
-
-.heap-snapshot-view .views-container .view {
-    height: 100%;
-}
-
-.heap-snapshot-view .retaining-paths-view {
-    height: 150px;
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
+.heap-snapshot-view .heap-tracking-overview {
+    flex: 0 0 80px;
+    height: 80px;
 }
 
 .heap-snapshot-view .retainers-view-header {
     background-image: url(Images/statusbarResizerVertical.png);
     background-color: rgb(236, 236, 236);
-    border-top: 1px solid rgb(202, 202, 202);
     border-bottom: 1px solid rgb(179, 179, 179);
     background-repeat: no-repeat;
     background-position: right center, center;
     height: 21px;
-    display: block;
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 150px;
 }
 
 .heap-snapshot-view .retainers-view-header .title > span {
@@ -202,6 +173,10 @@ body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
     vertical-align: middle;
     margin-left: 4px;
     margin-right: 8px;
+}
+
+.heap-snapshot-view .retainers-view-header * {
+    pointer-events: none;
 }
 
 .heap-snapshot-view tr:not(.selected) td.object-column span.highlight {

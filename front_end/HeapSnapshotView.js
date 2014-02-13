@@ -48,19 +48,18 @@ WebInspector.HeapSnapshotView = function(profile)
         this._trackingOverviewGrid.show(this.element);
     }
 
-    this.viewsContainer = document.createElement("div");
-    this.viewsContainer.classList.add("views-container");
-    this.element.appendChild(this.viewsContainer);
+    this.viewsContainer = new WebInspector.SplitView(false, true, "heapSnapshotRetainersViewSize", 200, 200);
+    this.viewsContainer.show(this.element);
+    this.viewsContainer.setMainElementConstraints(50, 50);
+    this.viewsContainer.setSidebarElementConstraints(70, 70);
 
     this.containmentView = new WebInspector.View();
-    this.containmentView.element.classList.add("view");
     this.containmentDataGrid = new WebInspector.HeapSnapshotContainmentDataGrid();
     this.containmentDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
     this.containmentDataGrid.show(this.containmentView.element);
     this.containmentDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
     this.constructorsView = new WebInspector.View();
-    this.constructorsView.element.classList.add("view");
 
     this.constructorsDataGrid = new WebInspector.HeapSnapshotConstructorsDataGrid();
     this.constructorsDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
@@ -69,17 +68,15 @@ WebInspector.HeapSnapshotView = function(profile)
 
     this.dataGrid = /** @type {!WebInspector.HeapSnapshotSortableDataGrid} */ (this.constructorsDataGrid);
     this.currentView = this.constructorsView;
-    this.currentView.show(this.viewsContainer);
+    this.currentView.show(this.viewsContainer.mainElement());
 
     this.diffView = new WebInspector.View();
-    this.diffView.element.classList.add("view");
 
     this.diffDataGrid = new WebInspector.HeapSnapshotDiffDataGrid();
     this.diffDataGrid.show(this.diffView.element);
     this.diffDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
     this.dominatorView = new WebInspector.View();
-    this.dominatorView.element.classList.add("view");
     this.dominatorDataGrid = new WebInspector.HeapSnapshotDominatorsDataGrid();
     this.dominatorDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
     this.dominatorDataGrid.show(this.dominatorView.element);
@@ -87,31 +84,26 @@ WebInspector.HeapSnapshotView = function(profile)
 
     if (WebInspector.experimentsSettings.allocationProfiler.isEnabled() && profile.profileType() === WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType) {
         this.allocationView = new WebInspector.View();
-        this.allocationView.element.classList.add("view");
         this.allocationDataGrid = new WebInspector.AllocationDataGrid();
         this.allocationDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
         this.allocationDataGrid.show(this.allocationView.element);
         this.allocationDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
     }
 
-    this.retainmentViewHeader = document.createElement("div");
-    this.retainmentViewHeader.classList.add("retainers-view-header");
-    WebInspector.installDragHandle(this.retainmentViewHeader, this._startRetainersHeaderDragging.bind(this), this._retainersHeaderDragging.bind(this), this._endRetainersHeaderDragging.bind(this), "ns-resize");
-    var retainingPathsTitleDiv = document.createElement("div");
-    retainingPathsTitleDiv.className = "title";
-    var retainingPathsTitle = document.createElement("span");
+    this.retainmentViewHeader = document.createElementWithClass("div", "retainers-view-header");
+    var retainingPathsTitleDiv = this.retainmentViewHeader.createChild("div", "title");
+    var retainingPathsTitle = retainingPathsTitleDiv.createChild("span");
     retainingPathsTitle.textContent = WebInspector.UIString("Object's retaining tree");
-    retainingPathsTitleDiv.appendChild(retainingPathsTitle);
-    this.retainmentViewHeader.appendChild(retainingPathsTitleDiv);
-    this.element.appendChild(this.retainmentViewHeader);
+    this.viewsContainer.hideDefaultResizer();
+    this.viewsContainer.installResizer(this.retainmentViewHeader);
 
     this.retainmentView = new WebInspector.View();
-    this.retainmentView.element.classList.add("view");
     this.retainmentView.element.classList.add("retaining-paths-view");
+    this.retainmentView.element.appendChild(this.retainmentViewHeader);
     this.retainmentDataGrid = new WebInspector.HeapSnapshotRetainmentDataGrid();
     this.retainmentDataGrid.show(this.retainmentView.element);
     this.retainmentDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._inspectedObjectChanged, this);
-    this.retainmentView.show(this.element);
+    this.retainmentView.show(this.viewsContainer.sidebarElement());
     this.retainmentDataGrid.reset();
 
     this.viewSelect = new WebInspector.StatusBarComboBox(this._onSelectedViewChanged.bind(this));
@@ -206,12 +198,6 @@ WebInspector.HeapSnapshotView.prototype = {
         this._popoverHelper.hidePopover();
         if (this.helpPopover && this.helpPopover.isShowing())
             this.helpPopover.hide();
-    },
-
-    onResize: function()
-    {
-        var height = this.retainmentView.element.clientHeight;
-        this._updateRetainmentViewHeight(height);
     },
 
     searchCanceled: function()
@@ -551,7 +537,6 @@ WebInspector.HeapSnapshotView.prototype = {
 
         if (this._trackingOverviewGrid) {
             this._trackingOverviewGrid.element.classList.toggle("hidden", this.currentView !== this.constructorsView);
-            this.viewsContainer.classList.toggle("reserve-80px-at-top", this.currentView === this.constructorsView);
             if (this.currentView === this.constructorsView)
                 this._trackingOverviewGrid.update();
         }
@@ -567,7 +552,7 @@ WebInspector.HeapSnapshotView.prototype = {
         var view = this.views[this.views.current];
         this.currentView = view.view;
         this.dataGrid = view.grid;
-        this.currentView.show(this.viewsContainer);
+        this.currentView.show(this.viewsContainer.mainElement());
         this.refreshVisibleData();
         this.dataGrid.updateWidths();
 
@@ -602,44 +587,6 @@ WebInspector.HeapSnapshotView.prototype = {
         if (this._profile.fromFile())
             return;
         element.node.queryObjectContent(showCallback, objectGroupName);
-    },
-
-    /**
-     * @return {boolean}
-     */
-    _startRetainersHeaderDragging: function(event)
-    {
-        if (!this.isShowing())
-            return false;
-
-        this._previousDragPosition = event.pageY;
-        return true;
-    },
-
-    _retainersHeaderDragging: function(event)
-    {
-        var height = this.retainmentView.element.clientHeight;
-        height += this._previousDragPosition - event.pageY;
-        this._previousDragPosition = event.pageY;
-        this._updateRetainmentViewHeight(height);
-        event.consume(true);
-    },
-
-    _endRetainersHeaderDragging: function(event)
-    {
-        delete this._previousDragPosition;
-        event.consume();
-    },
-
-    _updateRetainmentViewHeight: function(height)
-    {
-        height = Number.constrain(height, Preferences.minDrawerHeight, this.element.clientHeight - Preferences.minDrawerHeight);
-        this.viewsContainer.style.bottom = (height + this.retainmentViewHeader.clientHeight) + "px";
-        if (this._trackingOverviewGrid && this.currentView === this.constructorsView)
-            this.viewsContainer.classList.add("reserve-80px-at-top");
-        this.retainmentView.element.style.height = height + "px";
-        this.retainmentViewHeader.style.bottom = height + "px";
-        this.currentView.doResize();
     },
 
     _updateBaseOptions: function()
@@ -1455,6 +1402,7 @@ WebInspector.HeapTrackingOverviewGrid = function(heapProfileHeader)
     WebInspector.View.call(this);
     this.registerRequiredCSS("flameChart.css");
     this.element.id = "heap-recording-view";
+    this.element.classList.add("heap-tracking-overview");
 
     this._overviewContainer = this.element.createChild("div", "overview-container");
     this._overviewGrid = new WebInspector.OverviewGrid("heap-recording");
