@@ -132,7 +132,6 @@ WebInspector.HeapSnapshotView = function(profile)
     this._profile = profile;
 
     this.baseSelect = new WebInspector.StatusBarComboBox(this._changeBase.bind(this));
-    this.baseSelect.element.classList.add("hidden");
     this._updateBaseOptions();
 
     this._filterSelect = new WebInspector.StatusBarComboBox(this._changeFilter.bind(this));
@@ -145,6 +144,7 @@ WebInspector.HeapSnapshotView = function(profile)
 
     this._popoverHelper = new WebInspector.ObjectPopoverHelper(this.element, this._getHoverAnchor.bind(this), this._resolveObjectForPopover.bind(this), undefined, true);
 
+    this._updateSelectorsVisibility();
     this._refreshView();
 }
 
