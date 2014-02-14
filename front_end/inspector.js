@@ -191,6 +191,18 @@ WebInspector.Events = {
         var pair = params[i].split("=");
         WebInspector.queryParamsObject[pair[0]] = pair[1];
     }
+
+    // Patch settings from the URL param (for tests).
+    var settingsParam = WebInspector.queryParamsObject["settings"];
+    if (settingsParam) {
+        try {
+            var settings = JSON.parse(window.decodeURI(settingsParam));
+            for (var key in settings)
+                localStorage[key] = settings[key];
+        } catch(e) {
+            // Ignore malformed settings.
+        }
+    }
 })();}
 
 WebInspector.suggestReload = function()
