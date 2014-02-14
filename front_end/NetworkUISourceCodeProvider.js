@@ -100,7 +100,7 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
     _resourceAdded: function(event)
     {
         var resource = /** @type {!WebInspector.Resource} */ (event.data);
-        this._addFile(resource.url, resource);
+        this._addFile(resource.url, new WebInspector.NetworkUISourceCodeProvider.FallbackResource(resource));
     },
 
     /**
@@ -136,6 +136,107 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
         this._processedURLs = {};
         this._networkWorkspaceProvider.reset();
         this._populate();
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ContentProvider}
+ * @param {!WebInspector.Resource} resource
+ */
+WebInspector.NetworkUISourceCodeProvider.FallbackResource = function(resource)
+{
+    this._resource = resource;
+}
+
+WebInspector.NetworkUISourceCodeProvider.FallbackResource.prototype = {
+
+    /**
+     * @return {string}
+     */
+    contentURL: function()
+    {
+        return this._resource.contentURL();
+    },
+
+    /**
+     * @return {!WebInspector.ResourceType}
+     */
+    contentType: function()
+    {
+        return this._resource.contentType();
+    },
+
+    /**
+     * @param {function(?string)} callback
+     */
+    requestContent: function(callback)
+    {
+        /**
+         * @this {WebInspector.NetworkUISourceCodeProvider.FallbackResource}
+         */
+        function loadFallbackContent()
+        {
+            var scripts = WebInspector.debuggerModel.scriptsForSourceURL(this._resource.url);
+            if (!scripts.length) {
+                callback(null);
+                return;
+            }
+
+            var contentProvider;
+            if (this._resource.type === WebInspector.resourceTypes.Document)
+                contentProvider = new WebInspector.ConcatenatedScriptsContentProvider(scripts);
+            else if (this._resource.type === WebInspector.resourceTypes.Script)
+                contentProvider = scripts[0];
+
+            console.assert(contentProvider, "Resource content request failed. " + this._resource.url);
+
+            contentProvider.requestContent(callback);
+        }
+
+        /**
+         * @param {?string} content
+         * @this {WebInspector.NetworkUISourceCodeProvider.FallbackResource}
+         */
+        function requestContentLoaded(content)
+        {
+            if (content)
+                callback(content)
+            else
+                loadFallbackContent.call(this);
+        }
+
+        this._resource.requestContent(requestContentLoaded.bind(this));
+    },
+
+    /**
+     * @param {string} query
+     * @param {boolean} caseSensitive
+     * @param {boolean} isRegex
+     * @param {function(!Array.<!WebInspector.ContentProvider.SearchMatch>)} callback
+     */
+    searchInContent: function(query, caseSensitive, isRegex, callback)
+    {
+        /**
+         * @param {?string} content
+         */
+        function documentContentLoaded(content)
+        {
+            if (content === null) {
+                callback([]);
+                return;
+            }
+
+            var result = WebInspector.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex);
+            callback(result);
+        }
+
+        if (this.contentType() === WebInspector.resourceTypes.Document) {
+            this.requestContent(documentContentLoaded);
+            return;
+        }
+
+        this._resource.searchInContent(query, caseSensitive, isRegex, callback);
     }
 }
 

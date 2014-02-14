@@ -267,22 +267,8 @@ WebInspector.Resource.prototype = {
         }
 
         if (this.type === WebInspector.resourceTypes.Document) {
-            this.requestContent(documentContentLoaded);
+            callback([]);
             return;
-        }
-
-        /**
-         * @param {?string} content
-         */
-        function documentContentLoaded(content)
-        {
-            if (content === null) {
-                callback([]);
-                return;
-            }
-
-            var result = WebInspector.ContentProvider.performSearchInContent(content, query, caseSensitive, isRegex);
-            callback(result);
         }
 
         if (this.frameId)
@@ -334,7 +320,7 @@ WebInspector.Resource.prototype = {
         function contentLoaded(error, content, contentEncoded)
         {
             if (error || content === null) {
-                loadFallbackContent.call(this, error);
+                replyWithContent.call(this, null, false);
                 return;
             }
             replyWithContent.call(this, content, contentEncoded);
@@ -365,43 +351,6 @@ WebInspector.Resource.prototype = {
         function resourceContentLoaded(error, content, contentEncoded)
         {
             contentLoaded.call(this, error, content, contentEncoded);
-        }
-        
-        /**
-         * @param {?Protocol.Error} error
-         * @this {WebInspector.Resource}
-         */
-        function loadFallbackContent(error)
-        {
-            var scripts = WebInspector.debuggerModel.scriptsForSourceURL(this.url);
-            if (!scripts.length) {
-                console.error("Resource content request failed: " + error);
-                replyWithContent.call(this, null, false);
-                return;
-            }
-
-            var contentProvider;
-            if (this.type === WebInspector.resourceTypes.Document)
-                contentProvider = new WebInspector.ConcatenatedScriptsContentProvider(scripts);
-            else if (this.type === WebInspector.resourceTypes.Script)
-                contentProvider = scripts[0];
-
-            if (!contentProvider) {
-                console.error("Resource content request failed: " + error);
-                replyWithContent.call(this, null, false);
-                return;
-            }
-
-            contentProvider.requestContent(fallbackContentLoaded.bind(this));
-        }
-
-        /**
-         * @param {?string} content
-         * @this {WebInspector.Resource}
-         */
-        function fallbackContentLoaded(content)
-        {
-            replyWithContent.call(this, content, false);
         }
 
         if (this.request) {
