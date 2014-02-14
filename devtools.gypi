@@ -116,6 +116,7 @@
             'front_end/NetworkLog.js',
             'front_end/NetworkRequest.js',
             'front_end/NetworkUISourceCodeProvider.js',
+            'front_end/NotificationService.js',
             'front_end/Object.js',
             'front_end/ObjectPopoverHelper.js',
             'front_end/ObjectPropertiesSection.js',

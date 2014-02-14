@@ -53,6 +53,7 @@
             "Linkifier.js",
             "NetworkLog.js",
             "NetworkUISourceCodeProvider.js",
+            "NotificationService.js",
             "OverridesSupport.js",
             "PresentationConsoleMessageHelper.js",
             "WorkerManager.js",
@@ -315,7 +316,7 @@
     },
     {
         "name": "extensions",
-        "dependencies": ["components", "audits", "elements", "sources"],
+        "dependencies": ["components", "audits", "sources"],
         "sources": [
             "ExtensionAPI.js",
             "ExtensionAuditCategory.js",

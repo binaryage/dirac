@@ -183,5 +183,3 @@ WebInspector.EventTarget.prototype = {
      */
     dispatchEventToListeners: function(eventType, eventData) { },
 }
-
-WebInspector.notifications = new WebInspector.Object();

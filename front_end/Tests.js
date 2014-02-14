@@ -629,12 +629,12 @@ TestSuite.prototype.testPageOverlayUpdate = function()
     {
         test.evaluateInConsole_(populatePage.toString() + "; populatePage();" +
                                 "inspect(document.getElementById('div1'))", function() {});
-        WebInspector.notifications.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step2);
+        WebInspector.notifications.addEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, step2);
     }
 
     function step2()
     {
-        WebInspector.notifications.removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step2);
+        WebInspector.notifications.removeEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, step2);
         test.recordTimeline(onTimelineRecorded);
         setTimeout(step3, 500);
     }
@@ -642,12 +642,12 @@ TestSuite.prototype.testPageOverlayUpdate = function()
     function step3()
     {
         test.evaluateInConsole_("inspect(document.getElementById('div2'))", function() {});
-        WebInspector.notifications.addEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step4);
+        WebInspector.notifications.addEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, step4);
     }
 
     function step4()
     {
-        WebInspector.notifications.removeEventListener(WebInspector.ElementsTreeOutline.Events.SelectedNodeChanged, step4);
+        WebInspector.notifications.removeEventListener(WebInspector.NotificationService.Events.SelectedNodeChanged, step4);
         test.stopTimeline();
     }
 
