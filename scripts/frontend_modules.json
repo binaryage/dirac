@@ -329,7 +329,7 @@
     },
     {
         "name": "settings",
-        "dependencies": ["components", "extensions"],
+        "dependencies": ["components"],
         "sources": [
             "SettingsScreen.js",
             "EditFileSystemDialog.js"
