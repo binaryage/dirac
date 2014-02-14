@@ -555,3 +555,48 @@ WebInspector.TimelinePanel.prototype = {
 
     __proto__: WebInspector.Panel.prototype
 }
+
+/**
+ * @constructor
+ * @extends {WebInspector.View}
+ */
+WebInspector.TimelineDetailsView = function()
+{
+    WebInspector.View.call(this);
+    this.element.classList.add("timeline-details-view");
+    this._titleElement = this.element.createChild("div", "timeline-details-view-title");
+    this._titleElement.textContent = WebInspector.UIString("DETAILS");
+    this._contentElement = this.element.createChild("div", "timeline-details-view-body");
+}
+
+WebInspector.TimelineDetailsView.prototype = {
+    /**
+     * @return {!Element}
+     */
+    titleElement: function()
+    {
+        return this._titleElement;
+    },
+
+    /**
+     * @param {string} title
+     * @param {!Node} node
+     */
+    setContent: function(title, node)
+    {
+        this._titleElement.textContent = WebInspector.UIString("DETAILS: %s", title);
+        this._contentElement.removeChildren();
+        this._contentElement.appendChild(node);
+    },
+
+    /**
+     * @param {boolean} vertical
+     */
+    setVertical: function(vertical)
+    {
+        this._contentElement.enableStyleClass("hbox", !vertical);
+        this._contentElement.enableStyleClass("vbox", vertical);
+    },
+
+    __proto__: WebInspector.View.prototype
+}
