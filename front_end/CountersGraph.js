@@ -65,6 +65,11 @@ WebInspector.CounterUI = function(memoryCountersPane, title, currentValueLabel, 
 }
 
 WebInspector.CounterUI.prototype = {
+    reset: function()
+    {
+        this._range.textContent = "";
+    },
+
     /**
      * @param {number} minValue
      * @param {number} maxValue

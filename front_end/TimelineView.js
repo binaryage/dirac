@@ -478,6 +478,7 @@ WebInspector.TimelineView.prototype = {
         this._resetView();
         this._windowFilter.reset();
         this._invalidateAndScheduleRefresh(true, true);
+        this._updateSelectionDetails();
     },
 
     /**

@@ -267,6 +267,10 @@ WebInspector.MemoryStatistics.prototype = {
     {
         for (var i = 0; i < this._counters.length; ++i)
             this._counters[i].reset();
+
+        for (var i = 0; i < this._counterUI.length; ++i)
+            this._counterUI[i].reset();
+
         this.refresh();
     },
 
