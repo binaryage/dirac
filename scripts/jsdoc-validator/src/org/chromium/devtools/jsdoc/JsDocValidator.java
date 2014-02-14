@@ -40,7 +40,6 @@ public class JsDocValidator {
                 }
             } catch (InterruptedException | ExecutionException e) {
                 System.err.println("ERROR - " + e.getMessage());
-                e.printStackTrace(System.err);
             }
         }
 
