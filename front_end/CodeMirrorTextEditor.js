@@ -858,12 +858,13 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var parentElement = this.element.parentElement;
         if (!parentElement || !this.isShowing())
             return;
-        var scrollInfo = this._codeMirror.getScrollInfo();
+        var scrollLeft = this._codeMirror.doc.scrollLeft;
+        var scrollTop = this._codeMirror.doc.scrollTop;
         var width = parentElement.offsetWidth;
         var height = parentElement.offsetHeight;
         this._codeMirror.setSize(width, height);
         this._updatePaddingBottom(width, height);
-        this._codeMirror.scrollTo(scrollInfo.left, scrollInfo.top);
+        this._codeMirror.scrollTo(scrollLeft, scrollTop);
     },
 
     onResize: function()

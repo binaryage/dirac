@@ -517,6 +517,9 @@ CodeMirror.StringStream.prototype = {
 /** @type {Object.<string, !Object.<string, string>>} */
 CodeMirror.keyMap;
 
+/** @type {{scrollLeft: number, scrollTop: number}} */
+CodeMirror.doc;
+
 WebInspector.suggestReload = function() { }
 WebInspector.reload = function() { }
 
