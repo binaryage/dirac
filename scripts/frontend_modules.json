@@ -182,8 +182,6 @@
         "name": "elements",
         "dependencies": ["components", "codemirror"],
         "sources": [
-            "CSSNamedFlowCollectionsView.js",
-            "CSSNamedFlowView.js",
             "DOMSyntaxHighlighter.js",
             "ElementsPanel.js",
             "ElementsTreeOutline.js",

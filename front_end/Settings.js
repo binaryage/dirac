@@ -277,7 +277,6 @@ WebInspector.ExperimentsSettings = function()
     this.asyncStackTraces = this._createExperiment("asyncStackTraces", "Enable support for async stack traces");
     this.fileSystemInspection = this._createExperiment("fileSystemInspection", "FileSystem inspection");
     this.canvasInspection = this._createExperiment("canvasInspection ", "Canvas inspection");
-    this.cssRegions = this._createExperiment("cssRegions", "CSS Regions Support");
     this.frameworksDebuggingSupport = this._createExperiment("frameworksDebuggingSupport", "Enable frameworks debugging support");
     this.layersPanel = this._createExperiment("layersPanel", "Show Layers panel");
     this.stepIntoSelection = this._createExperiment("stepIntoSelection", "Show step-in candidates while debugging.");
