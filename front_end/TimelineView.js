@@ -1660,7 +1660,7 @@ WebInspector.TimelineCategoryFilter.prototype = {
      */
     accept: function(record)
     {
-        return !record.category.hidden && record.type !== WebInspector.TimelineModel.RecordType.BeginFrame;
+        return !record.category.hidden;
     }
 }
 

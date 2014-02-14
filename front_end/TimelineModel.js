@@ -53,8 +53,10 @@ WebInspector.TimelineModel.RecordType = {
 
     GPUTask: "GPUTask",
 
+    RequestMainThreadFrame: "RequestMainThreadFrame",
     BeginFrame: "BeginFrame",
     ActivateLayerTree: "ActivateLayerTree",
+    DrawFrame: "DrawFrame",
     ScheduleStyleRecalculation: "ScheduleStyleRecalculation",
     RecalculateStyles: "RecalculateStyles",
     InvalidateLayout: "InvalidateLayout",
