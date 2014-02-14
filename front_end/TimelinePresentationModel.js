@@ -284,6 +284,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         this._lastScheduleStyleRecalculation = {};
         this._webSocketCreateRecords = {};
         this._coalescingBuckets = {};
+        this._mergingBuffer = new WebInspector.TimelineMergingRecordBuffer();
     },
 
     /**
@@ -294,15 +295,15 @@ WebInspector.TimelinePresentationModel.prototype = {
     {
         if (this._minimumRecordTime === -1 || record.startTime < this._minimumRecordTime)
             this._minimumRecordTime = WebInspector.TimelineModel.startTimeInSeconds(record);
-
         var records;
         if (record.type === WebInspector.TimelineModel.RecordType.Program)
             records = this._foldSyncTimeRecords(record.children || []);
         else
             records = [record];
-        var result = Array(records.length);
-        for (var i = 0; i < records.length; ++i)
-            result[i] = this._innerAddRecord(this._rootRecord, records[i]);
+        var mergedRecords = this._mergingBuffer.process(record.thread, records);
+        var result = new Array(mergedRecords.length);
+        for (var i = 0; i < mergedRecords.length; ++i)
+            result[i] = this._innerAddRecord(this._rootRecord, mergedRecords[i]);
         return result;
     },
 
@@ -703,10 +704,7 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
     this._children = [];
     if (!hidden && parentRecord) {
         this.parent = parentRecord;
-        if (this.isBackground)
-            WebInspector.TimelinePresentationModel.insertRetrospectiveRecord(parentRecord, this);
-        else
-            parentRecord.children.push(this);
+        parentRecord.children.push(this);
     }
     if (origin)
         this._origin = origin;

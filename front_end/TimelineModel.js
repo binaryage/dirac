@@ -535,3 +535,45 @@ WebInspector.TimelineSaver.prototype = {
         stream.write(data.join(separator), this._writeNextChunk.bind(this));
     }
 }
+
+/**
+ * @constructor
+ */
+WebInspector.TimelineMergingRecordBuffer = function()
+{
+    this._backgroundRecordsBuffer = [];
+}
+
+/**
+ * @constructor
+ */
+WebInspector.TimelineMergingRecordBuffer.prototype = {
+    /**
+     * @param {string} thread
+     * @param {!Array.<!TimelineAgent.TimelineEvent>} records
+     * @return {!Array.<!TimelineAgent.TimelineEvent>}
+     */
+    process: function(thread, records)
+    {
+        if (thread) {
+            this._backgroundRecordsBuffer = this._backgroundRecordsBuffer.concat(records);
+            return [];
+        }
+        var outputIndex = 0;
+        var result = new Array(this._backgroundRecordsBuffer.length + records.length);
+        var mainThreadRecord = 0;
+        var backgroundRecord = 0;
+        while  (backgroundRecord < this._backgroundRecordsBuffer.length && mainThreadRecord < records.length) {
+            if (this._backgroundRecordsBuffer[backgroundRecord].startTime < records[mainThreadRecord].startTime)
+                result[outputIndex++] = this._backgroundRecordsBuffer[backgroundRecord++];
+            else
+                result[outputIndex++] = records[mainThreadRecord++];
+        }
+        for (;mainThreadRecord < records.length; ++mainThreadRecord)
+            result[outputIndex++] = records[mainThreadRecord];
+        for (;backgroundRecord < this._backgroundRecordsBuffer.length; ++backgroundRecord)
+            result[outputIndex++] = this._backgroundRecordsBuffer[backgroundRecord];
+        this._backgroundRecordsBuffer = [];
+        return result;
+    }
+};

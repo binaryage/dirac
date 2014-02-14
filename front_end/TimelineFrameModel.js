@@ -82,30 +82,38 @@ WebInspector.TimelineFrameModel.prototype = {
         this._frameById = {};
         this._lastMainThreadFrame = null;
         this._lastBackgroundFrame = null;
+        this._mergingBuffer = new WebInspector.TimelineMergingRecordBuffer();
     },
 
     _onRecordAdded: function(event)
     {
-        this._addRecord(event.data);
-    },
-
-    _addRecord: function(record)
-    {
-        var records;
-        var programRecord;
-        if (record.type === WebInspector.TimelineModel.RecordType.Program) {
-            programRecord = record;
-            if (this._lastMainThreadFrame)
-                this._lastMainThreadFrame.timeByCategory["other"] += WebInspector.TimelineModel.durationInSeconds(programRecord);
-            records = record["children"] || [];
-        } else
-            records = [record];
-        records.forEach(this._innerAddRecord.bind(this, programRecord));
+        var record = /** @type {!TimelineAgent.TimelineEvent} */(event.data);
+        this._addRecord(record);
     },
 
     /**
-     * @param {!Object} programRecord
-     * @param {!Object} record
+     * @param {!TimelineAgent.TimelineEvent} record
+     */
+    _addRecord: function(record)
+    {
+        var programRecord = null;
+        var records;
+        if (record.type === WebInspector.TimelineModel.RecordType.Program) {
+            programRecord = record;
+            records = record.children || [];
+            if (this._lastMainThreadFrame)
+                this._lastMainThreadFrame.timeByCategory["other"] += WebInspector.TimelineModel.durationInSeconds(programRecord);
+        } else {
+            records = [record];
+        }
+        var mergedRecords = this._mergingBuffer.process(record.thread, records);
+        for (var i = 0; i < mergedRecords.length; ++i)
+            this._innerAddRecord(mergedRecords[i].thread ? null : programRecord, mergedRecords[i]);
+    },
+
+    /**
+     * @param {?TimelineAgent.TimelineEvent} programRecord
+     * @param {!TimelineAgent.TimelineEvent} record
      */
     _innerAddRecord: function(programRecord, record)
     {
