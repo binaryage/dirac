@@ -363,7 +363,7 @@ WebInspector.TimelineView.prototype = {
         {
             return value - object.endTime;
         }
-        var frames = this.frameModel.mainThreadFrames();
+        var frames = this.frameModel.frames();
         var firstFrame = insertionIndexForObjectInListSortedByFunction(startTime, frames, compareStartTime);
         var lastFrame = insertionIndexForObjectInListSortedByFunction(endTime, frames, compareEndTime);
         while (lastFrame < frames.length && frames[lastFrame].endTime <= endTime)
@@ -1407,7 +1407,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         for (var currentRecord = record.parent ? record.parent.parent : null; currentRecord; currentRecord = currentRecord.parent)
             paddingLeft += 12 / (Math.max(1, step++));
         this.element.style.paddingLeft = paddingLeft + "px";
-        if (record.isBackground)
+        if (record.isBackground())
             this.element.classList.add("background");
 
         this._typeElement.textContent = record.title;
@@ -1540,7 +1540,7 @@ WebInspector.TimelineRecordGraphRow.prototype = {
     {
         this._record = record;
         this.element.className = "timeline-graph-side timeline-category-" + record.category.name;
-        if (record.isBackground)
+        if (record.isBackground())
             this.element.classList.add("background");
 
         var barPosition = calculator.computeBarGraphWindowPosition(record);

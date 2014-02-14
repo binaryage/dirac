@@ -996,7 +996,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     /**
      * @return {boolean}
      */
-    get isBackground()
+    isBackground: function()
     {
         return !!this._record.thread;
     },
@@ -1581,7 +1581,6 @@ WebInspector.TimelinePresentationModel.generatePopupContentForFrame = function(f
     contentHelper.appendTextRow(WebInspector.UIString("Duration"), durationText);
     contentHelper.appendTextRow(WebInspector.UIString("FPS"), Math.floor(1 / durationInSeconds));
     contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.secondsToString(frame.cpuTime, true));
-    contentHelper.appendTextRow(WebInspector.UIString("Thread"), frame.isBackground ? WebInspector.UIString("background") : WebInspector.UIString("main"));
     contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"),
         WebInspector.TimelinePresentationModel._generateAggregatedInfo(frame.timeByCategory));
     return contentHelper.contentTable();

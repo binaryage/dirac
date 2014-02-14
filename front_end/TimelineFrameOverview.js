@@ -79,48 +79,18 @@ WebInspector.TimelineFrameOverview.prototype = {
         this.resetCanvas();
         this._barTimes = [];
 
-        var backgroundFramesHeight = 15 * window.devicePixelRatio;
-        var mainThreadFramesHeight = this._canvas.height - backgroundFramesHeight;
         const minBarWidth = 4 * window.devicePixelRatio;
-        var mainThreadFrames = this._frameModel.mainThreadFrames();
-        var backgroundFrames = this._frameModel.backgroundFrames();
-        var frameCount = backgroundFrames.length || mainThreadFrames.length;
-        var framesPerBar = Math.max(1, frameCount * minBarWidth / this._canvas.width);
-
-        var mainThreadVisibleFrames;
-        var backgroundVisibleFrames;
-        if (backgroundFrames.length) {
-            backgroundVisibleFrames = this._aggregateFrames(backgroundFrames, framesPerBar);
-            mainThreadVisibleFrames = new Array(backgroundVisibleFrames.length);
-            for (var i = 0; i < backgroundVisibleFrames.length; ++i) {
-                var frameId = backgroundVisibleFrames[i].mainThreadFrameId;
-                mainThreadVisibleFrames[i] = frameId && this._frameModel.frameById(frameId);
-            }
-        } else {
-            mainThreadVisibleFrames = this._aggregateFrames(mainThreadFrames, framesPerBar);
-        }
+        var frames = this._frameModel.frames();
+        var framesPerBar = Math.max(1, frames.length * minBarWidth / this._canvas.width);
+        var visibleFrames = this._aggregateFrames(frames, framesPerBar);
 
         this._context.save();
-        this._setCanvasWindow(0, backgroundFramesHeight, this._canvas.width, mainThreadFramesHeight);
-        var scale = (mainThreadFramesHeight - this._topPadding) / this._computeTargetFrameLength(mainThreadVisibleFrames);
-        this._renderBars(mainThreadVisibleFrames, scale, mainThreadFramesHeight);
+        var scale = (this._canvas.height - this._topPadding) / this._computeTargetFrameLength(visibleFrames);
+        this._renderBars(frames, scale, this._canvas.height);
         this._context.fillStyle = this._frameTopShadeGradient;
         this._context.fillRect(0, 0, this._canvas.width, this._topPadding);
-        this._drawFPSMarks(scale, mainThreadFramesHeight);
+        this._drawFPSMarks(scale, this._canvas.height);
         this._context.restore();
-
-        var bottom = backgroundFramesHeight + 0.5;
-        this._context.strokeStyle = "rgba(120, 120, 120, 0.8)";
-        this._context.beginPath();
-        this._context.moveTo(0, bottom);
-        this._context.lineTo(this._canvas.width, bottom);
-        this._context.stroke();
-
-        if (backgroundVisibleFrames) {
-            const targetFPS = 30.0;
-            scale = (backgroundFramesHeight - this._topPadding) / (1.0 / targetFPS);
-            this._renderBars(backgroundVisibleFrames, scale, backgroundFramesHeight);
-        }
     },
 
     /**
@@ -156,7 +126,7 @@ WebInspector.TimelineFrameOverview.prototype = {
 
             for (var lastFrame = Math.min(Math.floor((barNumber + 1) * framesPerBar), frames.length);
                  currentFrame < lastFrame; ++currentFrame) {
-                var duration = this._frameDuration(frames[currentFrame]);
+                var duration = frames[currentFrame].duration;
                 if (!longestFrame || longestDuration < duration) {
                     longestFrame = frames[currentFrame];
                     longestDuration = duration;
@@ -172,15 +142,6 @@ WebInspector.TimelineFrameOverview.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TimelineFrame} frame
-     */
-    _frameDuration: function(frame)
-    {
-        var relatedFrame = frame.mainThreadFrameId && this._frameModel.frameById(frame.mainThreadFrameId);
-        return frame.duration + (relatedFrame ? relatedFrame.duration : 0);
-    },
-
-    /**
      * @param {!Array.<!WebInspector.TimelineFrame>} frames
      * @return {number}
      */
@@ -193,9 +154,9 @@ WebInspector.TimelineFrameOverview.prototype = {
         }
         var medianFrameLength = durations.qselect(Math.floor(durations.length / 2));
 
-        // Optimize appearance for 30fps. However, if at least half frames won't fit at this scale,
-        // fall back to using autoscale.
-        const targetFPS = 30;
+        // Optimize appearance for 30fps, but leave some space so it's evident when a frame overflows.
+        // However, if at least half frames won't fit at this scale, fall back to using autoscale.
+        const targetFPS = 20;
         var result = 1.0 / targetFPS;
         if (result >= medianFrameLength)
             return result;
@@ -288,18 +249,20 @@ WebInspector.TimelineFrameOverview.prototype = {
     _renderBar: function(left, width, windowHeight, frame, scale)
     {
         var categories = Object.keys(WebInspector.TimelinePresentationModel.categories());
-        if (!categories.length)
-            return;
         var x = Math.floor(left) + 0.5;
         width = Math.floor(width);
+
+        var totalCPUTime = frame.cpuTime;
+        var normalizedScale = scale;
+        if (totalCPUTime > frame.duration)
+            normalizedScale *= frame.duration / totalCPUTime;
 
         for (var i = 0, bottomOffset = windowHeight; i < categories.length; ++i) {
             var category = categories[i];
             var duration = frame.timeByCategory[category];
-
             if (!duration)
                 continue;
-            var height = Math.round(duration * scale);
+            var height = Math.round(duration * normalizedScale);
             var y = Math.floor(bottomOffset - height) + 0.5;
 
             this._context.save();
