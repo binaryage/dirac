@@ -535,8 +535,7 @@ WebInspector.HeapSnapshotNode.prototype = {
      */
     retainedSize: function()
     {
-        var snapshot = this._snapshot;
-        return snapshot._nodes[this.nodeIndex + snapshot._nodeRetainedSizeOffset];
+        return this._snapshot._retainedSizes[this._ordinal()];
     },
 
     /**
@@ -1470,19 +1469,16 @@ WebInspector.HeapSnapshot.prototype = {
         var nodeSelfSizeOffset = this._nodeSelfSizeOffset;
         var nodeFieldCount = this._nodeFieldCount;
         var dominatorsTree = this._dominatorsTree;
-        // Reuse now unused edge_count field to store retained size.
-        var nodeRetainedSizeOffset = this._nodeRetainedSizeOffset = this._nodeEdgeCountOffset;
-        delete this._nodeEdgeCountOffset;
+        var retainedSizes = this._retainedSizes = new Float64Array(nodeCount);
 
-        for (var nodeIndex = 0, l = nodes.length; nodeIndex < l; nodeIndex += nodeFieldCount)
-            nodes[nodeIndex + nodeRetainedSizeOffset] = nodes[nodeIndex + nodeSelfSizeOffset];
+        for (var nodeOrdinal = 0; nodeOrdinal < nodeCount; ++nodeOrdinal)
+            retainedSizes[nodeOrdinal] = nodes[nodeOrdinal * nodeFieldCount + nodeSelfSizeOffset];
 
         // Propagate retained sizes for each node excluding root.
         for (var postOrderIndex = 0; postOrderIndex < nodeCount - 1; ++postOrderIndex) {
             var nodeOrdinal = postOrderIndex2NodeOrdinal[postOrderIndex];
-            var nodeIndex = nodeOrdinal * nodeFieldCount;
-            var dominatorIndex = dominatorsTree[nodeOrdinal] * nodeFieldCount;
-            nodes[dominatorIndex + nodeRetainedSizeOffset] += nodes[nodeIndex + nodeRetainedSizeOffset];
+            var dominatorOrdinal = dominatorsTree[nodeOrdinal];
+            retainedSizes[dominatorOrdinal] += retainedSizes[nodeOrdinal];
         }
     },
 
