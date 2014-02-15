@@ -210,6 +210,18 @@ WebInspector.InspectorFrontendHostStub.prototype = {
         return 1;
     },
 
+    zoomIn: function()
+    {
+    },
+
+    zoomOut: function()
+    {
+    },
+
+    resetZoom: function()
+    {
+    },
+
     /**
      * @return {boolean}
      */

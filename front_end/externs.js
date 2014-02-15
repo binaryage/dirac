@@ -238,6 +238,9 @@ InspectorFrontendHostAPI.prototype.setInjectedScriptForOrigin = function(origin,
 InspectorFrontendHostAPI.prototype.setIsDocked = function(isDocked) {}
 InspectorFrontendHostAPI.prototype.setZoomFactor = function(zoom) {}
 InspectorFrontendHostAPI.prototype.zoomFactor = function() {}
+InspectorFrontendHostAPI.prototype.zoomIn = function() {}
+InspectorFrontendHostAPI.prototype.zoomOut = function() {}
+InspectorFrontendHostAPI.prototype.resetZoom = function() {}
 /** @type {InspectorFrontendHostAPI} */
 var InspectorFrontendHost;
 InspectorFrontendHost.embedderMessageAck = function(id, error) {}

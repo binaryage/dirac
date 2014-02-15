@@ -583,6 +583,29 @@ WebInspector._registerShortcuts = function()
     section.addAlternateKeys(keys, WebInspector.UIString("Show general settings"));
 }
 
+WebInspector.handleZoomEvent = function(event)
+{
+    switch (event.keyCode) {
+    case 107: // +
+    case 187: // +
+        InspectorFrontendHost.zoomIn();
+        return true;
+    case 109: // -
+    case 189: // -
+        InspectorFrontendHost.zoomOut();
+        return true;
+    case 48: // 0
+    case 96: // Numpad 0
+        // Zoom reset shortcut does not allow "Shift" when handled by the browser.
+        if (!event.shiftKey) {
+            InspectorFrontendHost.resetZoom();
+            return true;
+        }
+        break;
+    }
+    return false;
+};
+
 WebInspector.postDocumentKeyDown = function(event)
 {
     if (event.handled)
@@ -626,6 +649,14 @@ WebInspector.postDocumentKeyDown = function(event)
                 event.consume(true);
             }
             break;
+    }
+
+    var isValidZoomShortcut = WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) &&
+        !event.altKey &&
+        !InspectorFrontendHost.isStub;
+    if (isValidZoomShortcut && WebInspector.handleZoomEvent(event)) {
+        event.consume(true);
+        return;
     }
 
     if (event.keyCode === WebInspector.KeyboardShortcut.Keys.F1.code ||
