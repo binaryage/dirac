@@ -43,7 +43,6 @@ WebInspector.MemoryStatistics = function(timelineView, model)
     this._timelineView = timelineView;
 
     model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
-    model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
 
     this._graphsContainer = this.mainElement();
     this._createCurrentValuesBar();
@@ -263,7 +262,7 @@ WebInspector.MemoryStatistics.prototype = {
         throw new Error("Not implemented");
     },
 
-    _onRecordsCleared: function()
+    reset: function()
     {
         for (var i = 0; i < this._counters.length; ++i)
             this._counters[i].reset();

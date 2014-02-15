@@ -49,7 +49,6 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     this._currentMode = mode;
     this._calculator = new WebInspector.TimelineCalculator(this._model);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onTimelineEventRecorded, this);
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
 
     // Create presentation model.
     this._presentationModel = new WebInspector.TimelinePresentationModel();
@@ -475,7 +474,7 @@ WebInspector.TimelineView.prototype = {
         this._gpuTasks = [];
     },
 
-    _onRecordsCleared: function()
+    reset: function()
     {
         this._resetView();
         this._windowFilter.reset();

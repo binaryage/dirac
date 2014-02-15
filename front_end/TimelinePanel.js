@@ -214,6 +214,7 @@ WebInspector.TimelinePanel.prototype = {
                 views.overviewView = new WebInspector.TimelineEventOverview(this._model);
                 break;
             case WebInspector.TimelinePanel.Mode.Frames:
+                this._frameModel = timelineView.frameModel;
                 views.overviewView = new WebInspector.TimelineFrameOverview(this._model, timelineView.frameModel);
                 break;
             case WebInspector.TimelinePanel.Mode.Memory:
@@ -222,8 +223,8 @@ WebInspector.TimelinePanel.prototype = {
                 views.mainViews.push(memoryStatistics);
                 break;
             case WebInspector.TimelinePanel.Mode.FlameChart:
-                var frameModel = new WebInspector.TimelineFrameModel(this._model)
-                views.overviewView = new WebInspector.TimelineFrameOverview(this._model, frameModel);
+                this._frameModel = new WebInspector.TimelineFrameModel(this._model)
+                views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this._frameModel);
                 var colorGenerator = WebInspector.TimelineFlameChart.colorGenerator(views.overviewView.categoryFillStyles());
                 var dataProviderMain = new WebInspector.TimelineFlameChartDataProvider(this._model, colorGenerator, true);
                 var dataProviderBackground = new WebInspector.TimelineFlameChartDataProvider(this._model, colorGenerator, false);
@@ -513,6 +514,10 @@ WebInspector.TimelinePanel.prototype = {
     _onRecordsCleared: function()
     {
         this.setWindowTimes(0, Infinity);
+        if (this._frameModel)
+            this._frameModel.reset();
+        for (var i = 0; i < this._currentViews.length; ++i)
+            this._currentViews[i].reset();
         this._overviewControl.reset();
     },
 

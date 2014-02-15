@@ -41,12 +41,16 @@ WebInspector.TimelineFlameChartDataProvider = function(model, colorGenerator, ma
     this._model = model;
     this._mainThread = mainThread;
     this._colorGenerator = colorGenerator;
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this.invalidate, this);
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this.invalidate, this);
+    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._invalidate, this);
 }
 
 WebInspector.TimelineFlameChartDataProvider.prototype = {
-    invalidate: function()
+    reset: function()
+    {
+        this._invalidate();
+    },
+
+    _invalidate: function()
     {
         this._timelineData = null;
     },
@@ -162,11 +166,11 @@ WebInspector.TimelineFlameChart = function(panel, model, dataProvider)
     WebInspector.View.call(this);
     this._panel = panel;
     this._model = model;
+    this._dataProvider = dataProvider;
     this._mainView = new WebInspector.FlameChart.MainPane(dataProvider, null, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
 }
 
 /**
@@ -186,8 +190,9 @@ WebInspector.TimelineFlameChart.colorGenerator = function(fillStyles)
 }
 
 WebInspector.TimelineFlameChart.prototype = {
-    _onRecordsCleared: function()
+    reset: function()
     {
+        this._dataProvider.reset();
         this._mainView.changeWindow(0, 1);
     },
 

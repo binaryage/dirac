@@ -35,11 +35,10 @@
  */
 WebInspector.TimelineFrameModel = function(model)
 {
-    this._reset();
     this._model = model;
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._reset, this);
 
+    this.reset();
     var records = model.records;
     for (var i = 0; i < records.length; ++i)
         this._addRecord(records[i]);
@@ -58,7 +57,7 @@ WebInspector.TimelineFrameModel.prototype = {
         return this._frames;
     },
 
-    _reset: function()
+    reset: function()
     {
         this._frames = [];
         this._lastFrame = null;
@@ -235,7 +234,6 @@ WebInspector.TimelineFrameModel.prototype = {
     dispose: function()
     {
         this._model.removeEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
-        this._model.removeEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._reset, this);
     },
 
     __proto__: WebInspector.Object.prototype
