@@ -70,6 +70,7 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     this._recordsView = this._createRecordsView();
     this._recordsView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
     this._recordsView.show(this._searchableView.element);
+    this._searchableView.element.appendChild(this._timelineGrid.gridHeaderElement);
 
     this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
 
@@ -457,6 +458,7 @@ WebInspector.TimelineView.prototype = {
         this._closeRecordDetails();
         this._graphRowsElementWidth = this._graphRowsElement.offsetWidth;
         this._containerElementHeight = this._containerElement.clientHeight;
+        this._timelineGrid.gridHeaderElement.style.left = sidebarWidth + "px";
         this._timelineGrid.gridHeaderElement.style.width = this._itemsGraphsElement.offsetWidth + "px";
         this._scheduleRefresh(false, true);
     },
