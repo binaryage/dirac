@@ -285,6 +285,8 @@ WebInspector.GenericSettingsTab = function()
     this._appendDrawerNote(p.lastElementChild);
     var splitVerticallyTitle = WebInspector.UIString("Split panels vertically when docked to %s", WebInspector.experimentsSettings.dockToLeft.isEnabled() ? "left or right" : "right");
     p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(splitVerticallyTitle, WebInspector.settings.splitVerticallyWhenDockedToRight));
+    var panelShortcutTitle = WebInspector.UIString("Enable %s + 1-9 shortcut to switch panels", WebInspector.isMac() ? "Cmd" : "Ctrl");
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(panelShortcutTitle, WebInspector.settings.shortcutPanelSwitch));
 
     p = this._appendSection(WebInspector.UIString("Elements"));
     var colorFormatElement = this._createSelectSetting(WebInspector.UIString("Color format"), [
@@ -346,8 +348,18 @@ WebInspector.GenericSettingsTab = function()
     }
 
     p = this._appendSection();
-    var panelShortcutTitle = WebInspector.UIString("Enable %s + 1-9 shortcut to switch panels", WebInspector.isMac() ? "Cmd" : "Ctrl");
-    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(panelShortcutTitle, WebInspector.settings.shortcutPanelSwitch));
+
+    var restoreDefaults = p.createChild("input", "settings-tab-text-button");
+    restoreDefaults.type = "button";
+    restoreDefaults.value = WebInspector.UIString("Restore defaults and reload");
+    restoreDefaults.addEventListener("click", restoreAndReload);
+
+    function restoreAndReload()
+    {
+        if (window.localStorage)
+            window.localStorage.clear();
+        WebInspector.reload();
+    }
 }
 
 WebInspector.GenericSettingsTab.prototype = {
