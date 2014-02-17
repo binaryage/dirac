@@ -223,7 +223,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
      */
     findFilesMatchingSearchRequest: function(queries, fileQueries, caseSensitive, isRegex, progress, callback)
     {
-        var result = [];
+        var result = null;
         var queriesToRun = queries.slice();
         if (!queriesToRun.length)
             queriesToRun.push("");
@@ -531,7 +531,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     {
         this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.Reset, null);
     },
-    
+
     __proto__: WebInspector.Object.prototype
 }
 

@@ -717,29 +717,20 @@ function mergeOrIntersect(array1, array2, comparator, mergeNotIntersect)
     var result = [];
     var i = 0;
     var j = 0;
-    while (i < array1.length || j < array2.length) {
-        if (i === array1.length) {
-            result = result.concat(array2.slice(j));
-            j = array2.length;
-        } else if (j === array2.length) {
-            result = result.concat(array1.slice(i));
-            i = array1.length;
-        } else {
-            var compareValue = comparator(array1[i], array2[j])
-             if (compareValue < 0) {
-                 if (mergeNotIntersect)
-                    result.push(array1[i]);
-                 ++i;
-             } else if (compareValue > 0) {
-                 if (mergeNotIntersect)
-                     result.push(array2[j]);
-                 ++j;
-             } else {
-                 result.push(array1[i]);
-                 ++i;
-                 ++j;
-             }
-        }
+    while (i < array1.length && j < array2.length) {
+        var compareValue = comparator(array1[i], array2[j]);
+        if (mergeNotIntersect || !compareValue)
+            result.push(compareValue <= 0 ? array1[i] : array2[j]);
+        if (compareValue <= 0)
+            i++;
+        if (compareValue >= 0)
+            j++;
+    }
+    if (mergeNotIntersect) {
+        while (i < array1.length)
+            result.push(array1[i++]);
+        while (j < array2.length)
+            result.push(array2[j++]);
     }
     return result;
 }
