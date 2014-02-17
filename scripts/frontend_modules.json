@@ -154,6 +154,7 @@
             "CookiesTable.js",
             "DOMBreakpointsSidebarPane.js",
             "DOMPresentationUtils.js",
+            "ExtensionServerProxy.js",
             "FlameChart.js",
             "HelpScreenUntilReload.js",
             "NativeBreakpointsSidebarPane.js",

@@ -1474,7 +1474,7 @@ function importScript(scriptName)
     var baseUrl = location.origin + location.pathname;
     baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/"));
     var sourceURL = baseUrl + "/" + scriptName;
-    eval(xhr.responseText + "\n//# sourceURL=" + sourceURL);
+    self.eval(xhr.responseText + "\n//# sourceURL=" + sourceURL);
 }
 
 var loadScript = importScript;

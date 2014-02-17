@@ -28,8 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
+importScript("ExtensionRegistryStub.js");
+importScript("ExtensionAPI.js");
+importScript("ExtensionAuditCategory.js");
+
 /**
  * @constructor
+ * @implements {WebInspector.ExtensionServerAPI}
  */
 WebInspector.ExtensionServer = function()
 {
@@ -74,8 +80,9 @@ WebInspector.ExtensionServer = function()
     this._registerHandler(commands.Unsubscribe, this._onUnsubscribe.bind(this));
     this._registerHandler(commands.UpdateButton, this._onUpdateButton.bind(this));
     this._registerHandler(commands.UpdateAuditProgress, this._onUpdateAuditProgress.bind(this));
-
     window.addEventListener("message", this._onWindowMessage.bind(this), false);
+
+    this._initExtensions();
 }
 
 WebInspector.ExtensionServer.prototype = {
@@ -633,7 +640,7 @@ WebInspector.ExtensionServer.prototype = {
             port.postMessage({ command: "callback", requestId: requestId, result: result });
     },
 
-    initExtensions: function()
+    _initExtensions: function()
     {
         this._registerAutosubscriptionHandler(WebInspector.extensionAPI.Events.ConsoleMessageAdded,
             WebInspector.console, WebInspector.ConsoleModel.Events.MessageAdded, this._notifyConsoleMessageAdded);
@@ -695,11 +702,6 @@ WebInspector.ExtensionServer.prototype = {
         WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged,
             this._inspectedURLChanged, this);
 
-        this._initDone = true;
-        if (this._pendingExtensions) {
-            this._pendingExtensions.forEach(this._innerAddExtension, this);
-            delete this._pendingExtensions;
-        }
         InspectorExtensionRegistry.getExtensionsAsync();
     },
 
@@ -760,32 +762,17 @@ WebInspector.ExtensionServer.prototype = {
     },
 
     /**
-     * @param {!Array.<!ExtensionDescriptor>} extensions
+     * @param {!Array.<!ExtensionDescriptor>} extensionInfos
      */
-    _addExtensions: function(extensions)
+    addExtensions: function(extensionInfos)
     {
-        extensions.forEach(this._addExtension, this);
+        extensionInfos.forEach(this._addExtension, this);
     },
 
     /**
      * @param {!ExtensionDescriptor} extensionInfo
      */
     _addExtension: function(extensionInfo)
-    {
-        if (this._initDone) {
-            this._innerAddExtension(extensionInfo);
-            return;
-        }
-        if (this._pendingExtensions)
-            this._pendingExtensions.push(extensionInfo);
-        else
-            this._pendingExtensions = [extensionInfo];
-    },
-
-    /**
-     * @param {!ExtensionDescriptor} extensionInfo
-     */
-    _innerAddExtension: function(extensionInfo)
     {
         const urlOriginRegExp = new RegExp("([^:]+:\/\/[^/]*)\/"); // Can't use regexp literal here, MinJS chokes on it.
         var startPage = extensionInfo.startPage;
@@ -799,7 +786,7 @@ WebInspector.ExtensionServer.prototype = {
             }
             var extensionOrigin = originMatch[1];
             if (!this._registeredExtensions[extensionOrigin]) {
-                // See ExtensionAPI.js and ExtensionCommon.js for details.
+                // See ExtensionAPI.js for details.
                 InspectorFrontendHost.setInjectedScriptForOrigin(extensionOrigin, buildExtensionAPIInjectedScript(extensionInfo));
                 this._registeredExtensions[extensionOrigin] = { name: name };
             }
@@ -814,12 +801,6 @@ WebInspector.ExtensionServer.prototype = {
         return true;
     },
 
-    _onWindowMessage: function(event)
-    {
-        if (event.data === "registerExtension")
-            this._registerExtension(event.origin, event.ports[0]);
-    },
-
     _registerExtension: function(origin, port)
     {
         if (!this._registeredExtensions.hasOwnProperty(origin)) {
@@ -830,6 +811,12 @@ WebInspector.ExtensionServer.prototype = {
         port._extensionOrigin = origin;
         port.addEventListener("message", this._onmessage.bind(this), false);
         port.start();
+    },
+
+    _onWindowMessage: function(event)
+    {
+        if (event.data === "registerExtension")
+            this._registerExtension(event.origin, event.ports[0]);
     },
 
     _onmessage: function(event)
@@ -1057,20 +1044,8 @@ WebInspector.ExtensionStatus = function()
  */
 WebInspector.ExtensionStatus.Record;
 
-WebInspector.addExtensions = function(extensions)
-{
-    WebInspector.extensionServer._addExtensions(extensions);
-}
-
 WebInspector.extensionAPI = {};
 defineCommonExtensionSymbols(WebInspector.extensionAPI);
 
-WebInspector.extensionServer = new WebInspector.ExtensionServer();
-
-window.addExtension = function(page, name)
-{
-    WebInspector.extensionServer._addExtension({
-        startPage: page,
-        name: name,
-    });
-}
+importScript("ExtensionPanel.js");
+importScript("ExtensionView.js");

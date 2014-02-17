@@ -325,12 +325,6 @@ WebInspector.showPanel = function(panel)
 }
 
 /**
- * @param {!ExtensionDescriptor} extensionInfo
- * @return {string}
- */
-function buildPlatformExtensionAPI(extensionInfo) {}
-
-/**
  * @type {string} 
  */
 WebInspector.inspectedPageDomain;
@@ -525,6 +519,7 @@ CodeMirror.doc;
 
 WebInspector.suggestReload = function() { }
 WebInspector.reload = function() { }
+WebInspector._inspectedTabId;
 
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;

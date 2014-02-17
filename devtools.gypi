@@ -62,7 +62,6 @@
             'front_end/DataGrid.js',
             'front_end/DebuggerModel.js',
             'front_end/DebuggerScriptMapping.js',
-            'front_end/DevToolsExtensionAPI.js',
             'front_end/Tests.js',
             'front_end/Dialog.js',
             'front_end/DOMAgent.js',
@@ -75,12 +74,7 @@
             'front_end/Drawer.js',
             'front_end/EditFileSystemDialog.js',
             'front_end/EmptyView.js',
-            'front_end/ExtensionAPI.js',
-            'front_end/ExtensionAuditCategory.js',
-            'front_end/ExtensionPanel.js',
-            'front_end/ExtensionRegistryStub.js',
-            'front_end/ExtensionServer.js',
-            'front_end/ExtensionView.js',
+            'front_end/ExtensionServerProxy.js',
             'front_end/FileManager.js',
             'front_end/FileSystemMapping.js',
             'front_end/FileSystemModel.js',
@@ -248,6 +242,14 @@
             'front_end/RenderingOptionsView.js',
             'front_end/StylesSidebarPane.js',
         ],
+        'devtools_extensions_js_files': [
+            'front_end/ExtensionAPI.js',
+            'front_end/ExtensionAuditCategory.js',
+            'front_end/ExtensionPanel.js',
+            'front_end/ExtensionRegistryStub.js',
+            'front_end/ExtensionServer.js',
+            'front_end/ExtensionView.js',
+        ],
         'devtools_resources_js_files': [
             'front_end/ApplicationCacheItemsView.js',
             'front_end/DOMStorageItemsView.js',
@@ -371,6 +373,7 @@
         ],
         'devtools_modules_js_files': [
             '<@(devtools_elements_js_files)',
+            '<@(devtools_extensions_js_files)',
             '<@(devtools_resources_js_files)',
             '<@(devtools_network_js_files)',
             '<@(devtools_scripts_js_files)',
@@ -459,7 +462,6 @@
         ],
         'devtools_extension_api_files': [
             'front_end/ExtensionAPI.js',
-            'front_end/DevToolsExtensionAPI.js'
         ],
         'devtools_temp_storage_shared_worker_js_files': [
             'front_end/TempStorageSharedWorker.js',

@@ -35,7 +35,7 @@ var WebInspector = {
         if (WebInspector.isWorkerFrontend()) {
             configuration = ["sources", "timeline", "profiles", "console", "codemirror"];
         } else {
-            configuration = ["elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "codemirror"];
+            configuration = ["elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "codemirror", "extensions"];
             if (WebInspector.experimentsSettings.layersPanel.isEnabled())
                 configuration.push("layers");
         }
@@ -380,7 +380,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     errorWarningCount.addEventListener("click", this.showConsole.bind(this), false);
     this._updateErrorAndWarningCounts();
 
-    this.extensionServer.initExtensions();
+    WebInspector.extensionServerProxy.setFrontendReady();
 
     this.console.enableAgent();
 
@@ -872,25 +872,6 @@ WebInspector.addMainEventListeners = function(doc)
     doc.addEventListener("copy", this.documentCopy.bind(this), false);
     doc.addEventListener("contextmenu", this.contextMenuEventFired.bind(this), true);
     doc.addEventListener("click", this.documentClick.bind(this), false);
-}
-
-
-// Ex-DevTools.js content
-
-/**
- * @param {!ExtensionDescriptor} extensionInfo
- * @return {string}
- */
-function buildPlatformExtensionAPI(extensionInfo)
-{
-    return "var extensionInfo = " + JSON.stringify(extensionInfo) + ";" +
-       "var tabId = " + WebInspector._inspectedTabId + ";" +
-       platformExtensionAPI.toString();
-}
-
-WebInspector.setInspectedTabId = function(tabId)
-{
-    WebInspector._inspectedTabId = tabId;
 }
 
 window.DEBUG = true;

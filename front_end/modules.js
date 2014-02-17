@@ -227,6 +227,16 @@ var allDescriptors = [
         ]
     },
     {
+        extensions: [
+            {
+                type: "@WebInspector.ExtensionServerAPI",
+                className: "WebInspector.ExtensionServer"
+            }
+        ],
+        name: "extensions",
+        scripts: [ "ExtensionServer.js" ]
+    },
+    {
         name: "layers",
         extensions: [
             {

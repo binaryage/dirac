@@ -971,6 +971,56 @@ return new InspectorExtensionAPI();
 }
 
 /**
+ * @suppress {checkVars, checkTypes}
+ */
+function platformExtensionAPI(coreAPI)
+{
+    function getTabId()
+    {
+        return tabId;
+    }
+    chrome = window.chrome || {};
+    // Override chrome.devtools as a workaround for a error-throwing getter being exposed
+    // in extension pages loaded into a non-extension process (only happens for remote client
+    // extensions)
+    var devtools_descriptor = Object.getOwnPropertyDescriptor(chrome, "devtools");
+    if (!devtools_descriptor || devtools_descriptor.get)
+        Object.defineProperty(chrome, "devtools", { value: {}, enumerable: true });
+    // Only expose tabId on chrome.devtools.inspectedWindow, not webInspector.inspectedWindow.
+    chrome.devtools.inspectedWindow = {};
+    chrome.devtools.inspectedWindow.__defineGetter__("tabId", getTabId);
+    chrome.devtools.inspectedWindow.__proto__ = coreAPI.inspectedWindow;
+    chrome.devtools.network = coreAPI.network;
+    chrome.devtools.panels = coreAPI.panels;
+
+    // default to expose experimental APIs for now.
+    if (extensionInfo.exposeExperimentalAPIs !== false) {
+        chrome.experimental = chrome.experimental || {};
+        chrome.experimental.devtools = chrome.experimental.devtools || {};
+
+        var properties = Object.getOwnPropertyNames(coreAPI);
+        for (var i = 0; i < properties.length; ++i) {
+            var descriptor = Object.getOwnPropertyDescriptor(coreAPI, properties[i]);
+            Object.defineProperty(chrome.experimental.devtools, properties[i], descriptor);
+        }
+        chrome.experimental.devtools.inspectedWindow = chrome.devtools.inspectedWindow;
+    }
+    if (extensionInfo.exposeWebInspectorNamespace)
+        window.webInspector = coreAPI;
+}
+
+/**
+ * @param {!ExtensionDescriptor} extensionInfo
+ * @return {string}
+ */
+function buildPlatformExtensionAPI(extensionInfo)
+{
+    return "var extensionInfo = " + JSON.stringify(extensionInfo) + ";" +
+       "var tabId = " + WebInspector._inspectedTabId + ";" +
+       platformExtensionAPI.toString();
+}
+
+/**
  * @param {!ExtensionDescriptor} extensionInfo
  * @return {string}
  */
