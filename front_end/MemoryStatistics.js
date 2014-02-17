@@ -84,10 +84,13 @@ WebInspector.MemoryStatistics.Counter.prototype = {
      */
     appendSample: function(time, counters)
     {
-        if (!(this.counterName in counters))
+        var value = counters[this.counterName];
+        if (value === undefined)
+            return;
+        if (this.values.length && this.values.peekLast() === value)
             return;
         this.times.push(time);
-        this.values.push(counters[this.counterName]);
+        this.values.push(value);
     },
 
     reset: function()
