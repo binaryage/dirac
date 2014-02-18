@@ -2524,6 +2524,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         var proxyElement = this._prompt.attachAndStartEditing(selectElement, blurListener.bind(this, context));
 
         proxyElement.addEventListener("keydown", this.editingNameValueKeyDown.bind(this, context), false);
+        proxyElement.addEventListener("keypress", this.editingNameValueKeyPress.bind(this, context), false);
         if (isEditingName)
             proxyElement.addEventListener("paste", pasteHandler.bind(this, context), false);
 
@@ -2538,27 +2539,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
         var isEditingName = context.isEditingName;
         var result;
 
-        function shouldCommitValueSemicolon(text, cursorPosition)
-        {
-            // FIXME: should this account for semicolons inside comments?
-            var openQuote = "";
-            for (var i = 0; i < cursorPosition; ++i) {
-                var ch = text[i];
-                if (ch === "\\" && openQuote !== "")
-                    ++i; // skip next character inside string
-                else if (!openQuote && (ch === "\"" || ch === "'"))
-                    openQuote = ch;
-                else if (openQuote === ch)
-                    openQuote = "";
-            }
-            return !openQuote;
-        }
-
-        // FIXME: the ":"/";" detection does not work for non-US layouts due to the event being keydown rather than keypress.
-        var isFieldInputTerminated = (event.keyCode === WebInspector.KeyboardShortcut.Keys.Semicolon.code) &&
-            (isEditingName ? event.shiftKey : (!event.shiftKey && shouldCommitValueSemicolon(event.target.textContent, event.target.selectionLeftOffset())));
-        if (isEnterKey(event) || isFieldInputTerminated) {
-            // Enter or colon (for name)/semicolon outside of string (for value).
+        if (isEnterKey(event)) {
             event.preventDefault();
             result = "forward";
         } else if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Esc.code || event.keyIdentifier === "U+001B")
@@ -2592,6 +2573,34 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
         if (!isEditingName)
             this._applyFreeFlowStyleTextEdit(false);
+    },
+
+    editingNameValueKeyPress: function(context, event)
+    {
+        function shouldCommitValueSemicolon(text, cursorPosition)
+        {
+            // FIXME: should this account for semicolons inside comments?
+            var openQuote = "";
+            for (var i = 0; i < cursorPosition; ++i) {
+                var ch = text[i];
+                if (ch === "\\" && openQuote !== "")
+                    ++i; // skip next character inside string
+                else if (!openQuote && (ch === "\"" || ch === "'"))
+                    openQuote = ch;
+                else if (openQuote === ch)
+                    openQuote = "";
+            }
+            return !openQuote;
+        }
+
+        var keyChar = String.fromCharCode(event.charCode);
+        var isFieldInputTerminated = (context.isEditingName ? keyChar === ":" : keyChar === ";" && shouldCommitValueSemicolon(event.target.textContent, event.target.selectionLeftOffset()));
+        if (isFieldInputTerminated) {
+            // Enter or colon (for name)/semicolon outside of string (for value).
+            event.consume(true);
+            this.editingCommitted(event.target.textContent, context, "forward");
+            return;
+        }
     },
 
     _applyFreeFlowStyleTextEdit: function(now)
