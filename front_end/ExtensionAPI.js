@@ -364,16 +364,21 @@ function ExtensionViewImpl(id)
         else
             this._fire();
     }
-    this.onShown = new EventSink(events.ViewShown + id, dispatchShowEvent);
-    this.onHidden = new EventSink(events.ViewHidden + id);
+
+    if (id) {
+        this.onShown = new EventSink(events.ViewShown + id, dispatchShowEvent);
+        this.onHidden = new EventSink(events.ViewHidden + id);
+    }
 }
 
 /**
  * @constructor
  * @extends {ExtensionViewImpl}
+ * @param {string} hostPanelName
  */
 function PanelWithSidebarImpl(hostPanelName)
 {
+    ExtensionViewImpl.call(this, null);
     this._hostPanelName = hostPanelName;
     this.onSelectionChanged = new EventSink(events.PanelObjectSelected + hostPanelName);
 }

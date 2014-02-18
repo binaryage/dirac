@@ -903,6 +903,7 @@ WebInspector.ConsoleViewFilter.prototype = {
  */
 WebInspector.ConsoleCommand = function(text)
 {
+    WebInspector.ConsoleMessage.call(this, WebInspector.ConsoleMessage.MessageSource.JS, WebInspector.ConsoleMessage.MessageType.Command, "");
     this.text = text;
     this.type = WebInspector.ConsoleMessage.MessageType.Command;
 }
