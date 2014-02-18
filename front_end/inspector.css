@@ -1808,10 +1808,6 @@ li.editing-sub-part .delete-button {
 
 .sidebar {
     overflow-x: hidden;
-    background-color: rgb(214, 221, 229);
-}
-
-body.inactive .sidebar {
     background-color: rgb(232, 232, 232);
 }
 
