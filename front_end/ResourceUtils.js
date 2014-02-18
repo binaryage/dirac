@@ -174,7 +174,9 @@ WebInspector.linkifyURLAsNode = function(url, linkText, classes, isExternal, too
     classes += isExternal ? "webkit-html-external-link" : "webkit-html-resource-link";
 
     var a = document.createElement("a");
-    a.href = sanitizeHref(url);
+    var href = sanitizeHref(url);
+    if (href !== null)
+        a.href = href;
     a.className = classes;
     if (typeof tooltipText === "undefined")
         a.title = url;
