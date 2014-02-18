@@ -559,20 +559,16 @@ WebInspector.TimelineMergingRecordBuffer.prototype = {
             this._backgroundRecordsBuffer = this._backgroundRecordsBuffer.concat(records);
             return [];
         }
-        var outputIndex = 0;
-        var result = new Array(this._backgroundRecordsBuffer.length + records.length);
-        var mainThreadRecord = 0;
-        var backgroundRecord = 0;
-        while  (backgroundRecord < this._backgroundRecordsBuffer.length && mainThreadRecord < records.length) {
-            if (this._backgroundRecordsBuffer[backgroundRecord].startTime < records[mainThreadRecord].startTime)
-                result[outputIndex++] = this._backgroundRecordsBuffer[backgroundRecord++];
-            else
-                result[outputIndex++] = records[mainThreadRecord++];
+        /**
+         * @param {!TimelineAgent.TimelineEvent} a
+         * @param {!TimelineAgent.TimelineEvent} b
+         */
+        function recordTimestampComparator(a, b)
+        {
+            // Never return 0, as the merge function will squash identical entries.
+            return a.startTime < b.startTime ? -1 : 1;
         }
-        for (;mainThreadRecord < records.length; ++mainThreadRecord)
-            result[outputIndex++] = records[mainThreadRecord];
-        for (;backgroundRecord < this._backgroundRecordsBuffer.length; ++backgroundRecord)
-            result[outputIndex++] = this._backgroundRecordsBuffer[backgroundRecord];
+        var result = this._backgroundRecordsBuffer.mergeOrdered(records, recordTimestampComparator);
         this._backgroundRecordsBuffer = [];
         return result;
     }
