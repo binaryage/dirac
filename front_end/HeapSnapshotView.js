@@ -1003,14 +1003,16 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
 
     _stopRecordingProfile: function()
     {
-        var profile = this._profileBeingRecorded;
-        profile.updateStatus(WebInspector.UIString("Snapshotting\u2026"));
+        this._profileBeingRecorded.updateStatus(WebInspector.UIString("Snapshotting\u2026"));
         /**
          * @param {?string} error
          * @this {WebInspector.HeapSnapshotProfileType}
          */
         function didTakeHeapSnapshot(error)
         {
+            var profile = this._profileBeingRecorded;
+            if (!profile)
+                return;
             profile._finishLoad();
             this._profileSamples = null;
             this._profileBeingRecorded = null;
