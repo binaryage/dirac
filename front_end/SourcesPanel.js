@@ -43,6 +43,9 @@ importScript("TabbedEditorContainer.js");
 importScript("WatchExpressionsSidebarPane.js");
 importScript("WorkersSidebarPane.js");
 importScript("ThreadsToolbar.js");
+importScript("ScriptFormatterEditorAction.js");
+importScript("InplaceFormatterEditorAction.js");
+importScript("ScriptFormatter.js");
 
 /**
  * @constructor
@@ -164,10 +167,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     this._extensionSidebarPanes = [];
 
-    this._toggleFormatSourceButton = new WebInspector.StatusBarButton(WebInspector.UIString("Pretty print"), "sources-toggle-pretty-print-status-bar-item");
-    this._toggleFormatSourceButton.toggled = false;
-    this._toggleFormatSourceButton.addEventListener("click", this._toggleFormatSource, this);
-
     this._scriptViewStatusBarItemsContainer = document.createElement("div");
     this._scriptViewStatusBarItemsContainer.className = "inline-block";
 
@@ -175,7 +174,18 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._scriptViewStatusBarTextContainer.className = "hbox";
 
     this._statusBarContainerElement = this.sourcesView.element.createChild("div", "sources-status-bar");
-    this._statusBarContainerElement.appendChild(this._toggleFormatSourceButton.element);
+
+    /**
+     * @this {WebInspector.SourcesPanel}
+     * @param {!WebInspector.SourcesPanel.EditorAction} EditorAction
+     */
+    function appendButtonForExtension(EditorAction)
+    {
+        this._statusBarContainerElement.appendChild(EditorAction.button(this));
+    }
+    var editorActions = /** @type {!Array.<!WebInspector.SourcesPanel.EditorAction>} */ (WebInspector.moduleManager.instances(WebInspector.SourcesPanel.EditorAction));
+    editorActions.forEach(appendButtonForExtension.bind(this));
+
     this._statusBarContainerElement.appendChild(this._scriptViewStatusBarItemsContainer);
     this._statusBarContainerElement.appendChild(this._scriptViewStatusBarTextContainer);
 
@@ -227,6 +237,11 @@ WebInspector.SourcesPanel = function(workspaceForTest)
             WebInspector.panels.sources.showUISourceCode(unsavedSourceCodes[i]);
     }
     window.addEventListener("beforeunload", handleBeforeUnload.bind(this), true);
+}
+
+WebInspector.SourcesPanel.Events = {
+    EditorClosed: "EditorClosed",
+    EditorSelected: "EditorSelected",
 }
 
 WebInspector.SourcesPanel.prototype = {
@@ -313,8 +328,6 @@ WebInspector.SourcesPanel.prototype = {
      */
     _addUISourceCode: function(uiSourceCode)
     {
-        if (this._toggleFormatSourceButton.toggled)
-            uiSourceCode.setFormatted(true);
         if (uiSourceCode.project().isServiceProject())
             return;
         this._navigator.addUISourceCode(uiSourceCode);
@@ -657,6 +670,14 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
+     * @return {?WebInspector.UISourceCode}
+     */
+    selectedUISourceCode: function()
+    {
+        return this._currentUISourceCode;
+    },
+
+    /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     _removeSourceFrame: function(uiSourceCode)
@@ -722,12 +743,20 @@ WebInspector.SourcesPanel.prototype = {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
         this._historyManager.removeHistoryForSourceCode(uiSourceCode);
 
-        if (this._currentUISourceCode === uiSourceCode)
+        var wasSelected = false;
+        if (this._currentUISourceCode === uiSourceCode) {
             delete this._currentUISourceCode;
+            wasSelected = true;
+        }
 
         // SourcesNavigator does not need to update on EditorClosed.
         this._updateScriptViewStatusBarItems();
         this._searchableView.resetSearch();
+
+        var data = {};
+        data.uiSourceCode = uiSourceCode;
+        data.wasSelected = wasSelected;
+        this.dispatchEventToListeners(WebInspector.SourcesPanel.Events.EditorClosed, data);
     },
 
     _editorSelected: function(event)
@@ -742,6 +771,8 @@ WebInspector.SourcesPanel.prototype = {
 
         this._searchableView.setReplaceable(!!sourceFrame && sourceFrame.canEditSource());
         this._searchableView.resetSearch();
+
+        this.dispatchEventToListeners(WebInspector.SourcesPanel.Events.EditorSelected, uiSourceCode);
     },
 
     _sourceSelected: function(event)
@@ -1215,23 +1246,6 @@ WebInspector.SourcesPanel.prototype = {
             var rawLocation = stepIntoMarkup.getRawPosition(currentPosition);
             this.doStepIntoSelection(rawLocation);
         }
-    },
-
-    _toggleFormatSource: function()
-    {
-        delete this._skipExecutionLineRevealing;
-        this._toggleFormatSourceButton.toggled = !this._toggleFormatSourceButton.toggled;
-        var uiSourceCodes = this._workspace.uiSourceCodes();
-        for (var i = 0; i < uiSourceCodes.length; ++i)
-            uiSourceCodes[i].setFormatted(this._toggleFormatSourceButton.toggled);
-
-        var currentFile = this._editorContainer.currentFile();
-
-        WebInspector.notifications.dispatchEventToListeners(WebInspector.UserMetrics.UserAction, {
-            action: WebInspector.UserMetrics.UserActionNames.TogglePrettyPrint,
-            enabled: this._toggleFormatSourceButton.toggled,
-            url: currentFile ? currentFile.originURL() : null
-        });
     },
 
     addToWatch: function(expression)
@@ -1822,4 +1836,19 @@ WebInspector.SourcesPanel.UILocationRevealer.prototype = {
         if (uiLocation instanceof WebInspector.UILocation)
             /** @type {!WebInspector.SourcesPanel} */ (WebInspector.panel("sources")).showUILocation(uiLocation);
     }
+}
+
+/**
+ * @interface
+ */
+WebInspector.SourcesPanel.EditorAction = function()
+{
+}
+
+WebInspector.SourcesPanel.EditorAction.prototype = {
+    /**
+     * @param {!WebInspector.SourcesPanel} panel
+     * @return {!Element}
+     */
+    button: function(panel) { }
 }

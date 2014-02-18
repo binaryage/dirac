@@ -61,8 +61,7 @@ WebInspector.BreakpointManager._sourceFileId = function(uiSourceCode)
 {
     if (!uiSourceCode.url)
         return "";
-    var deobfuscatedPrefix = uiSourceCode.formatted() ? "deobfuscated:" : "";
-    return deobfuscatedPrefix + uiSourceCode.uri();
+    return uiSourceCode.uri();
 }
 
 /**
@@ -129,19 +128,8 @@ WebInspector.BreakpointManager.prototype = {
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
         this._restoreBreakpoints(uiSourceCode);
-        if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script || uiSourceCode.contentType() === WebInspector.resourceTypes.Document) {
+        if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script || uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
             uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.SourceMappingChanged, this._uiSourceCodeMappingChanged, this);
-            uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.FormattedChanged, this._uiSourceCodeFormatted, this);
-        }
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _uiSourceCodeFormatted: function(event)
-    {
-        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.target);
-        this._restoreBreakpoints(uiSourceCode);
     },
 
     /**
@@ -174,7 +162,6 @@ WebInspector.BreakpointManager.prototype = {
             breakpoints[i]._resetLocations();
         var sourceFileId = WebInspector.BreakpointManager._sourceFileId(uiSourceCode);
         delete this._sourceFilesWithRestoredBreakpoints[sourceFileId];
-        uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.FormattedChanged, this._uiSourceCodeFormatted, this);
         uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.SourceMappingChanged, this._uiSourceCodeMappingChanged, this);
         this._breakpointsForPrimaryUISourceCode.remove(uiSourceCode);
     },

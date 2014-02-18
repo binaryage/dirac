@@ -213,7 +213,7 @@ WebInspector.Project.prototype = {
      */
     isServiceProject: function()
     {
-        return this._projectDelegate.type() === WebInspector.projectTypes.Debugger || this._projectDelegate.type() === WebInspector.projectTypes.LiveEdit;
+        return this._projectDelegate.type() === WebInspector.projectTypes.Debugger || this._projectDelegate.type() === WebInspector.projectTypes.Formatter || this._projectDelegate.type() === WebInspector.projectTypes.LiveEdit;
     },
 
     _fileAdded: function(event)
@@ -487,6 +487,7 @@ WebInspector.Project.prototype = {
 
 WebInspector.projectTypes = {
     Debugger: "debugger",
+    Formatter: "formatter",
     LiveEdit: "liveedit",
     Network: "network",
     Snippets: "snippets",

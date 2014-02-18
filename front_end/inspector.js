@@ -35,7 +35,7 @@ var WebInspector = {
         if (WebInspector.isWorkerFrontend()) {
             configuration = ["sources", "timeline", "profiles", "console", "codemirror"];
         } else {
-            configuration = ["elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "codemirror", "extensions"];
+            configuration = ["elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "codemirror", "extensions", "sources-formatter-actions"];
             if (WebInspector.experimentsSettings.layersPanel.isEnabled())
                 configuration.push("layers");
         }

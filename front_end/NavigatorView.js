@@ -969,7 +969,6 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
         this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.TitleChanged, this._titleChanged, this);
         this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
         this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
-        this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.FormattedChanged, this._formattedChanged, this);
 
         return this._treeElement;
     },
@@ -1003,7 +1002,6 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
         this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.TitleChanged, this._titleChanged, this);
         this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
         this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
-        this._uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.FormattedChanged, this._formattedChanged, this);
     },
 
     _titleChanged: function(event)
@@ -1017,11 +1015,6 @@ WebInspector.NavigatorUISourceCodeTreeNode.prototype = {
     },
 
     _workingCopyCommitted: function(event)
-    {
-        this.updateTitle();
-    },
-
-    _formattedChanged: function(event)
     {
         this.updateTitle();
     },

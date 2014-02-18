@@ -258,5 +258,18 @@ var allDescriptors = [
                 className: "WebInspector.HandlerRegistry.ContextMenuProvider"
             }
         ]
+    },
+    {
+        name: "sources-formatter-actions",
+        extensions: [
+            {
+                type: "@WebInspector.SourcesPanel.EditorAction",
+                className: "WebInspector.InplaceFormatterEditorAction"
+            },
+            {
+                type: "@WebInspector.SourcesPanel.EditorAction",
+                className: "WebInspector.ScriptFormatterEditorAction"
+            }
+        ]
     }
 ];

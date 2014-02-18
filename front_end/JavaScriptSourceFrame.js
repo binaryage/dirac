@@ -628,11 +628,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         }
     },
 
-    beforeFormattedChange: function()
-    {
-        this.clearExecutionLine();
-    },
-
     onTextEditorContentLoaded: function()
     {
         if (typeof this._executionLineNumber === "number")

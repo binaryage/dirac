@@ -804,8 +804,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this.revealLine(lineNumber);
         this._codeMirror.addLineClass(this._highlightedLine, null, "cm-highlight");
         this._clearHighlightTimeout = setTimeout(this.clearPositionHighlight.bind(this), 2000);
-        if (!this.readOnly())
-            this.setSelection(WebInspector.TextRange.createFromLocation(lineNumber, columnNumber));
+        this.setSelection(WebInspector.TextRange.createFromLocation(lineNumber, columnNumber));
     },
 
     clearPositionHighlight: function()

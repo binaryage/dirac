@@ -292,6 +292,14 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
+     * @return {!WebInspector.TextRange}
+     */
+    selection: function()
+    {
+        return this.textEditor.selection();
+    },
+
+    /**
      * @param {!WebInspector.TextRange} textRange
      */
     setSelection: function(textRange)

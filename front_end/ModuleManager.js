@@ -99,7 +99,7 @@ WebInspector.ModuleManager.prototype = {
          */
         function filter(extension)
         {
-            if (extension._type !== type && extension._typeClass !== type)
+            if (extension._type !== type && extension._typeClass() !== type)
                 return false;
             return !context || extension.isApplicable(context);
         }
@@ -278,8 +278,7 @@ WebInspector.ModuleManager.Extension = function(module, descriptor)
     this._descriptor = descriptor;
 
     this._type = descriptor.type;
-    if (this._type.startsWith("@"))
-        this._typeClass = /** @template T @type function(new:T) */ (window.eval(this._type.substring(1)));
+    this._hasTypeClass = !!this._type.startsWith("@");
 
     /**
      * @type {?string}
@@ -302,6 +301,23 @@ WebInspector.ModuleManager.Extension.prototype = {
     module: function()
     {
         return this._module;
+    },
+
+    /**
+     * @return {?function(new:Object)}
+     */
+    _typeClass: function()
+    {
+        if (!this._hasTypeClass)
+            return null;
+        if (this._cachedTypeClass)
+            return this._cachedTypeClass;
+        try {
+            this._cachedTypeClass = /** @type function(new:Object) */ (window.eval(this._type.substring(1)));
+            return this._cachedTypeClass;
+        } catch (e) {
+        }
+        return null;
     },
 
     /**

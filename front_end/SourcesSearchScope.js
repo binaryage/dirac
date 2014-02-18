@@ -46,12 +46,7 @@ WebInspector.SourcesSearchScope.prototype = {
     {
         this.stopSearch();
 
-        function filterOutServiceProjects(project)
-        {
-            return !project.isServiceProject();
-        }
-
-        var projects = this._workspace.projects().filter(filterOutServiceProjects);
+        var projects = this._workspace.projects().filter(this._filterOutServiceProjects);
         var barrier = new CallbackBarrier();
         var compositeProgress = new WebInspector.CompositeProgress(progress);
         progress.addEventListener(WebInspector.Progress.Events.Canceled, indexingCanceled.bind(this));
@@ -70,6 +65,14 @@ WebInspector.SourcesSearchScope.prototype = {
     },
 
     /**
+     * @param {!WebInspector.Project} project
+     */
+    _filterOutServiceProjects: function(project)
+    {
+        return !project.isServiceProject() || project.type() === WebInspector.projectTypes.Formatter;
+    },
+
+    /**
      * @param {!WebInspector.SearchConfig} searchConfig
      * @param {!WebInspector.Progress} progress
      * @param {function(!WebInspector.FileBasedSearchResultsPane.SearchResult)} searchResultCallback
@@ -82,15 +85,7 @@ WebInspector.SourcesSearchScope.prototype = {
         this._searchFinishedCallback = searchFinishedCallback;
         this._searchConfig = searchConfig;
 
-        /**
-         * @param {!WebInspector.Project} project
-         */
-        function filterOutServiceProjects(project)
-        {
-            return !project.isServiceProject();
-        }
-
-        var projects = this._workspace.projects().filter(filterOutServiceProjects);
+        var projects = this._workspace.projects().filter(this._filterOutServiceProjects);
         var barrier = new CallbackBarrier();
         var compositeProgress = new WebInspector.CompositeProgress(progress);
         for (var i = 0; i < projects.length; ++i) {

@@ -51,8 +51,6 @@ WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, 
     this._isEditable = isEditable;
     /** @type {!Array.<function(?string)>} */
     this._requestContentCallbacks = [];
-    /** @type {!Set.<!WebInspector.LiveLocation>} */
-    this._liveLocations = new Set();
     /** @type {!Array.<!WebInspector.PresentationConsoleMessage>} */
     this._consoleMessages = [];
     
@@ -60,11 +58,9 @@ WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, 
     this.history = [];
     if (this.isEditable() && this._url)
         this._restoreRevisionHistory();
-    this._formatterMapping = new WebInspector.IdentityFormatterSourceMapping();
 }
 
 WebInspector.UISourceCode.Events = {
-    FormattedChanged: "FormattedChanged",
     WorkingCopyChanged: "WorkingCopyChanged",
     WorkingCopyCommitted: "WorkingCopyCommitted",
     TitleChanged: "TitleChanged",
@@ -650,11 +646,6 @@ WebInspector.UISourceCode.prototype = {
         this._requestContentCallbacks = [];
         for (var i = 0; i < callbacks.length; ++i)
             callbacks[i](content);
-
-        if (this._formatOnLoad) {
-            delete this._formatOnLoad;
-            this.setFormatted(true);
-        }
     },
 
     /**
@@ -674,43 +665,7 @@ WebInspector.UISourceCode.prototype = {
     {
         if (!this._sourceMapping)
             return null;
-        var location = this._formatterMapping.formattedToOriginal(lineNumber, columnNumber);
-        return this._sourceMapping.uiLocationToRawLocation(this, location[0], location[1]);
-    },
-
-    /**
-     * @param {!WebInspector.LiveLocation} liveLocation
-     */
-    addLiveLocation: function(liveLocation)
-    {
-        this._liveLocations.add(liveLocation);
-    },
-
-    /**
-     * @param {!WebInspector.LiveLocation} liveLocation
-     */
-    removeLiveLocation: function(liveLocation)
-    {
-        this._liveLocations.remove(liveLocation);
-    },
-
-    updateLiveLocations: function()
-    {
-        var items = this._liveLocations.items();
-        for (var i = 0; i < items.length; ++i)
-            items[i].update();
-    },
-
-    /**
-     * @param {!WebInspector.UILocation} uiLocation
-     * @return {!WebInspector.UILocation}
-     */
-    overrideLocation: function(uiLocation)
-    {
-        var location = this._formatterMapping.originalToFormatted(uiLocation.lineNumber, uiLocation.columnNumber);
-        uiLocation.lineNumber = location[0];
-        uiLocation.columnNumber = location[1];
-        return uiLocation;
+        return this._sourceMapping.uiLocationToRawLocation(this, lineNumber, columnNumber);
     },
 
     /**
@@ -743,80 +698,6 @@ WebInspector.UISourceCode.prototype = {
     {
         this._consoleMessages = [];
         this.dispatchEventToListeners(WebInspector.UISourceCode.Events.ConsoleMessagesCleared);
-    },
-
-    /**
-     * @return {boolean}
-     */
-    formatted: function()
-    {
-        return !!this._formatted;
-    },
-
-    /**
-     * @param {boolean} formatted
-     */
-    setFormatted: function(formatted)
-    {
-        if (!this.contentLoaded()) {
-            this._formatOnLoad = formatted;
-            return;
-        }
-
-        if (this._formatted === formatted)
-            return;
-
-        if (this.isDirty())
-            return;
-
-        this._formatted = formatted;
-
-        // Re-request content
-        this._contentLoaded = false;
-        this._content = false;
-        this.requestContent(didGetContent.bind(this));
-  
-        /**
-         * @this {WebInspector.UISourceCode}
-         * @param {?string} content
-         */
-        function didGetContent(content)
-        {
-            var formatter;
-            if (!formatted)
-                formatter = new WebInspector.IdentityFormatter();
-            else
-                formatter = WebInspector.Formatter.createFormatter(this.contentType());
-            formatter.formatContent(this.highlighterType(), content || "", formattedChanged.bind(this));
-  
-            /**
-             * @this {WebInspector.UISourceCode}
-             * @param {string} content
-             * @param {!WebInspector.FormatterSourceMapping} formatterMapping
-             */
-            function formattedChanged(content, formatterMapping)
-            {
-                this._content = content;
-                this._innerResetWorkingCopy();
-                var oldFormatter = this._formatterMapping;
-                this._formatterMapping = formatterMapping;
-                this.dispatchEventToListeners(WebInspector.UISourceCode.Events.FormattedChanged, {
-                    content: content,
-                    oldFormatter: oldFormatter,
-                    newFormatter: this._formatterMapping,
-                });
-                this.updateLiveLocations();
-            }
-        }
-    },
-
-    /**
-     * @return {?WebInspector.Formatter} formatter
-     */
-    createFormatter: function()
-    {
-        // overridden by subclasses.
-        return null;
     },
 
     /**
@@ -899,23 +780,16 @@ WebInspector.LiveLocation = function(rawLocation, updateDelegate)
 {
     this._rawLocation = rawLocation;
     this._updateDelegate = updateDelegate;
-    this._uiSourceCodes = [];
 }
 
 WebInspector.LiveLocation.prototype = {
     update: function()
     {
         var uiLocation = this.uiLocation();
-        if (uiLocation) {
-            var uiSourceCode = uiLocation.uiSourceCode;
-            if (this._uiSourceCodes.indexOf(uiSourceCode) === -1) {
-                uiSourceCode.addLiveLocation(this);
-                this._uiSourceCodes.push(uiSourceCode);
-            }
-            var oneTime = this._updateDelegate(uiLocation);
-            if (oneTime)
-                this.dispose();
-        }
+        if (!uiLocation)
+            return;
+        if (this._updateDelegate(uiLocation))
+            this.dispose();
     },
 
     /**
@@ -936,9 +810,7 @@ WebInspector.LiveLocation.prototype = {
 
     dispose: function()
     {
-        for (var i = 0; i < this._uiSourceCodes.length; ++i)
-            this._uiSourceCodes[i].removeLiveLocation(this);
-        this._uiSourceCodes = [];
+        // Overridden by subclasses.
     }
 }
 

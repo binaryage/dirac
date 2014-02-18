@@ -426,7 +426,6 @@ WebInspector.TabbedEditorContainer.prototype = {
         uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._uiSourceCodeWorkingCopyChanged, this);
         uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._uiSourceCodeWorkingCopyCommitted, this);
         uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.SavedStateUpdated, this._uiSourceCodeSavedStateUpdated, this);
-        uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.FormattedChanged, this._uiSourceCodeFormattedChanged, this);
     },
 
     /**
@@ -438,7 +437,6 @@ WebInspector.TabbedEditorContainer.prototype = {
         uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._uiSourceCodeWorkingCopyChanged, this);
         uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._uiSourceCodeWorkingCopyCommitted, this);
         uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.SavedStateUpdated, this._uiSourceCodeSavedStateUpdated, this);
-        uiSourceCode.removeEventListener(WebInspector.UISourceCode.Events.FormattedChanged, this._uiSourceCodeFormattedChanged, this);
     },
 
     /**
@@ -477,12 +475,6 @@ WebInspector.TabbedEditorContainer.prototype = {
     },
 
     _uiSourceCodeSavedStateUpdated: function(event)
-    {
-        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.target);
-        this._updateFileTitle(uiSourceCode);
-    },
-
-    _uiSourceCodeFormattedChanged: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.target);
         this._updateFileTitle(uiSourceCode);

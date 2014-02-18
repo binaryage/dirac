@@ -355,6 +355,8 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     addContentProvider: function(parentPath, name, url, contentProvider, isEditable, isContentScript)
     {
         var path = parentPath ? parentPath + "/" + name : name;
+        if (this._contentProviders[path])
+            return path;
         var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, url, url, contentProvider.contentType(), isEditable, isContentScript);
         this._contentProviders[path] = contentProvider;
         this._isContentScriptMap[path] = isContentScript || false;

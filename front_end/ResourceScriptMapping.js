@@ -98,6 +98,8 @@ WebInspector.ResourceScriptMapping.prototype = {
     _uiSourceCodeAddedToWorkspace: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
+        if (uiSourceCode.project().isServiceProject())
+            return;
         if (!uiSourceCode.url)
             return;
 
@@ -311,8 +313,6 @@ WebInspector.ResourceScriptFile.prototype = {
      */
     _isDiverged: function()
     {
-        if (this._uiSourceCode.formatted())
-            return false;
         if (this._uiSourceCode.isDirty())
             return true;
         if (!this._script)

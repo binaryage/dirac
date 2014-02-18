@@ -61,7 +61,6 @@
             "RuntimeModel.js",
             "SASSSourceMapping.js",
             "Script.js",
-            "ScriptFormatter.js",
             "ScriptSnippetModel.js",
             "SimpleWorkspaceProvider.js",
             "SnippetStorage.js",
@@ -251,6 +250,7 @@
             "NavigatorView.js",
             "RevisionHistoryView.js",
             "ScopeChainSidebarPane.js",
+            "ScriptFormatter.js",
             "SimpleHistoryManager.js",
             "SourcesNavigator.js",
             "SourcesPanel.js",
@@ -261,6 +261,14 @@
             "WatchExpressionsSidebarPane.js",
             "WorkersSidebarPane.js",
             "ThreadsToolbar.js"
+        ]
+    },
+    {
+        "name": "formatter_editor_actions",
+        "dependencies": ["sources"],
+        "sources": [
+            "ScriptFormatterEditorAction.js",
+            "InplaceFormatterEditorAction.js"
         ]
     },
     {

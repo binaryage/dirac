@@ -230,7 +230,7 @@ WebInspector.Script.prototype = {
         for (var i = this._sourceMappings.length - 1; !uiLocation && i >= 0; --i)
             uiLocation = this._sourceMappings[i].rawLocationToUILocation(rawLocation);
         console.assert(uiLocation, "Script raw location can not be mapped to any ui location.");
-        return uiLocation.uiSourceCode.overrideLocation(uiLocation);
+        return /** @type {!WebInspector.UILocation} */ (uiLocation);
     },
 
     /**
@@ -240,6 +240,16 @@ WebInspector.Script.prototype = {
     {
         this._sourceMappings.push(sourceMapping);
         this.updateLocations();
+    },
+
+    /**
+     * @return {!WebInspector.SourceMapping}
+     */
+    popSourceMapping: function()
+    {
+        var sourceMapping = this._sourceMappings.pop();
+        this.updateLocations();
+        return sourceMapping;
     },
 
     updateLocations: function()

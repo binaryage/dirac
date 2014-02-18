@@ -1277,11 +1277,11 @@ WebInspector.CSSStyleSheetHeader.prototype = {
      */
     rawLocationToUILocation: function(lineNumber, columnNumber)
     {
-        var uiLocation;
+        var uiLocation = null;
         var rawLocation = new WebInspector.CSSLocation(this.resourceURL(), lineNumber, columnNumber);
         for (var i = this._sourceMappings.length - 1; !uiLocation && i >= 0; --i)
             uiLocation = this._sourceMappings[i].rawLocationToUILocation(rawLocation);
-        return uiLocation ? uiLocation.uiSourceCode.overrideLocation(uiLocation) : null;
+        return uiLocation;
     },
 
     /**
