@@ -32,6 +32,7 @@
             "CookieParser.js",
             "CPUProfilerModel.js",
             "CSSMetadata.js",
+            "CSSParser.js",
             "CSSStyleModel.js",
             "CSSStyleSheetMapping.js",
             "BreakpointManager.js",

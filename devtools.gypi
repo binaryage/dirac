@@ -56,6 +56,7 @@
             'front_end/CountersGraph.js',
             'front_end/CPUProfilerModel.js',
             'front_end/CSSMetadata.js',
+            'front_end/CSSParser.js',
             'front_end/CSSStyleModel.js',
             'front_end/CSSStyleSheetMapping.js',
             'front_end/Database.js',

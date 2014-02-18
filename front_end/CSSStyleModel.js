@@ -1415,44 +1415,6 @@ WebInspector.CSSStyleSheetHeader.prototype = {
 
 /**
  * @constructor
- * @param {!CSSAgent.StyleSheetId} styleSheetId
- * @param {!Array.<!CSSAgent.CSSRule>} payload
- */
-WebInspector.CSSStyleSheet = function(styleSheetId, payload)
-{
-    this.id = styleSheetId;
-    this.rules = [];
-    this.styles = {};
-    for (var i = 0; i < payload.length; ++i) {
-        var rule = WebInspector.CSSRule.parsePayload(payload[i]);
-        this.rules.push(rule);
-        if (rule.style)
-            this.styles[rule.style.id] = rule.style;
-    }
-}
-
-/**
- * @param {!CSSAgent.StyleSheetId} styleSheetId
- * @param {function(?WebInspector.CSSStyleSheet)} userCallback
- */
-WebInspector.CSSStyleSheet.createForId = function(styleSheetId, userCallback)
-{
-    /**
-     * @param {?string} error
-     * @param {!CSSAgent.CSSStyleSheetBody} styleSheetPayload
-     */
-    function callback(error, styleSheetPayload)
-    {
-        if (error)
-            userCallback(null);
-        else
-            userCallback(new WebInspector.CSSStyleSheet(styleSheetId, styleSheetPayload.rules));
-    }
-    CSSAgent.getStyleSheet(styleSheetId, callback);
-}
-
-/**
- * @constructor
  * @implements {CSSAgent.Dispatcher}
  * @param {!WebInspector.CSSStyleModel} cssModel
  */

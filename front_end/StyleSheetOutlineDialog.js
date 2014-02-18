@@ -36,10 +36,9 @@ WebInspector.StyleSheetOutlineDialog = function(uiSourceCode, selectItemCallback
 {
     WebInspector.SelectionDialogContentProvider.call(this);
     this._selectItemCallback = selectItemCallback;
-    this._rules = [];
-    this._outlineWorker = new Worker("ScriptFormatterWorker.js");
-    this._outlineWorker.onmessage = this._didBuildOutlineChunk.bind(this);
-    this._outlineWorker.postMessage({ method: "cssOutline", params: { content: uiSourceCode.workingCopy() } });
+    this._cssParser = new WebInspector.CSSParser();
+    this._cssParser.addEventListener(WebInspector.CSSParser.Events.RulesParsed, this.refresh.bind(this));
+    this._cssParser.parse(uiSourceCode.workingCopy());
 }
 
 /**
@@ -58,27 +57,11 @@ WebInspector.StyleSheetOutlineDialog.show = function(view, uiSourceCode, selectI
 
 WebInspector.StyleSheetOutlineDialog.prototype = {
     /**
-     * @param {!MessageEvent} event
-     */
-    _didBuildOutlineChunk: function(event)
-    {
-        var data = /** @type {!WebInspector.StyleSheetOutlineDialog.MessageEventData} */ (event.data);
-        var chunk = data.chunk;
-        for (var i = 0; i < chunk.length; ++i)
-            this._rules.push(chunk[i]);
-
-        if (data.total === data.index)
-            this.dispose();
-
-        this.refresh();
-    },
-
-    /**
      * @return {number}
      */
     itemCount: function()
     {
-        return this._rules.length;
+        return this._cssParser.rules().length;
     },
 
     /**
@@ -87,7 +70,7 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
      */
     itemKeyAt: function(itemIndex)
     {
-        var rule = this._rules[itemIndex];
+        var rule = this._cssParser.rules()[itemIndex];
         return rule.selectorText || rule.atRule;
     },
 
@@ -98,7 +81,7 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
      */
     itemScoreAt: function(itemIndex, query)
     {
-        var rule = this._rules[itemIndex];
+        var rule = this._cssParser.rules()[itemIndex];
         return -rule.lineNumber;
     },
 
@@ -110,7 +93,7 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
      */
     renderItem: function(itemIndex, query, titleElement, subtitleElement)
     {
-        var rule = this._rules[itemIndex];
+        var rule = this._cssParser.rules()[itemIndex];
         titleElement.textContent = rule.selectorText || rule.atRule;
         this.highlightRanges(titleElement, query);
         subtitleElement.textContent = ":" + (rule.lineNumber + 1);
@@ -122,7 +105,7 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
      */
     selectItem: function(itemIndex, promptValue)
     {
-        var rule = this._rules[itemIndex];
+        var rule = this._cssParser.rules()[itemIndex];
         var lineNumber = rule.lineNumber;
         if (!isNaN(lineNumber) && lineNumber >= 0)
             this._selectItemCallback(lineNumber, rule.columnNumber);
@@ -130,16 +113,8 @@ WebInspector.StyleSheetOutlineDialog.prototype = {
 
     dispose: function()
     {
-        if (this._outlineWorker) {
-            this._outlineWorker.terminate();
-            delete this._outlineWorker;
-        }
+        this._cssParser.dispose();
     },
 
     __proto__: WebInspector.SelectionDialogContentProvider.prototype
 }
-
-/**
- * @typedef {{index: number, total: number, chunk: !Array.<!{selectorText: ?string, atRule: ?string, lineNumber: number, columnNumber: number}>}}
- */
-WebInspector.StyleSheetOutlineDialog.MessageEventData;

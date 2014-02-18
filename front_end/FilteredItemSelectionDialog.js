@@ -529,7 +529,7 @@ WebInspector.JavaScriptOutlineDialog.prototype = {
         for (var i = 0; i < chunk.length; ++i)
             this._functionItems.push(chunk[i]);
 
-        if (data.total === data.index)
+        if (data.total === data.index + 1)
             this.dispose();
 
         this.refresh();

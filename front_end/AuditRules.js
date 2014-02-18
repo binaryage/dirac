@@ -116,6 +116,9 @@ WebInspector.AuditRules.GzipRule.prototype = {
         callback(result);
     },
 
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     */
     _isCompressed: function(request)
     {
         var encodingHeader = request.responseHeaderValue("Content-Encoding");
@@ -125,6 +128,9 @@ WebInspector.AuditRules.GzipRule.prototype = {
         return /\b(?:gzip|deflate)\b/.test(encodingHeader);
     },
 
+    /**
+     * @param {!WebInspector.NetworkRequest} request
+     */
     _shouldCompress: function(request)
     {
         return request.type.isTextType() && request.parsedURL.host && request.resourceSize !== undefined && request.resourceSize > 150;
@@ -267,11 +273,15 @@ WebInspector.AuditRules.ParallelizeDownloadRule.prototype = {
      */
     doRun: function(requests, result, callback, progress)
     {
+        /**
+         * @param {string} a
+         * @param {string} b
+         */
         function hostSorter(a, b)
         {
             var aCount = domainToResourcesMap[a].length;
             var bCount = domainToResourcesMap[b].length;
-            return (aCount < bCount) ? 1 : (aCount == bCount) ? 0 : -1;
+            return (aCount < bCount) ? 1 : (aCount === bCount) ? 0 : -1;
         }
 
         var domainToResourcesMap = WebInspector.AuditRules.getDomainToResourcesMap(
@@ -348,15 +358,10 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
      */
     doRun: function(requests, result, callback, progress)
     {
-        var self = this;
-
         /**
-         * @param {!Array.<!WebInspector.CSSStyleSheet>} styleSheets
+         * @param {!Array.<!WebInspector.AuditRules.ParsedStyleSheet>} styleSheets
          */
         function evalCallback(styleSheets) {
-            if (progress.isCanceled())
-                return;
-
             if (!styleSheets.length)
                 return callback(null);
 
@@ -376,7 +381,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
             var foundSelectors = {};
 
             /**
-             * @param {!Array.<!WebInspector.CSSStyleSheet>} styleSheets
+             * @param {!Array.<!WebInspector.AuditRules.ParsedStyleSheet>} styleSheets
              */
             function selectorsCallback(styleSheets)
             {
@@ -404,7 +409,7 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
                         continue;
 
                     var resource = WebInspector.resourceForURL(styleSheet.sourceURL);
-                    var isInlineBlock = resource && resource.request && resource.request.type == WebInspector.resourceTypes.Document;
+                    var isInlineBlock = resource && resource.request && resource.request.type === WebInspector.resourceTypes.Document;
                     var url = !isInlineBlock ? WebInspector.AuditRuleResult.linkifyDisplayName(styleSheet.sourceURL) : WebInspector.UIString("Inline block #%d", ++inlineBlockOrdinal);
                     var pctUnused = Math.round(100 * unusedRules.length / styleSheet.rules.length);
                     if (!summary)
@@ -460,38 +465,90 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
             WebInspector.domAgent.requestDocument(documentLoaded.bind(null, selectors));
         }
 
-        /**
-         * @param {!Array.<!WebInspector.CSSStyleSheet>} styleSheets
-         * @param {string} sourceURL
-         * @param {?function(!Array.<!WebInspector.CSSStyleSheet>)} continuation
-         * @param {?WebInspector.CSSStyleSheet} styleSheet
-         */
-        function styleSheetCallback(styleSheets, sourceURL, continuation, styleSheet)
-        {
-            if (progress.isCanceled())
-                return;
-
-            if (styleSheet) {
-                styleSheet.sourceURL = sourceURL;
-                styleSheets.push(styleSheet);
-            }
-            if (continuation)
-                continuation(styleSheets);
-        }
-
         var styleSheetInfos = WebInspector.cssModel.allStyleSheets();
         if (!styleSheetInfos || !styleSheetInfos.length) {
             evalCallback([]);
             return;
         }
-        var styleSheets = [];
-        for (var i = 0; i < styleSheetInfos.length; ++i) {
-            var info = styleSheetInfos[i];
-            WebInspector.CSSStyleSheet.createForId(info.id, styleSheetCallback.bind(null, styleSheets, info.sourceURL, i == styleSheetInfos.length - 1 ? evalCallback : null));
-        }
+        var styleSheetProcessor = new WebInspector.AuditRules.StyleSheetProcessor(styleSheetInfos, progress, evalCallback);
+        styleSheetProcessor.run();
     },
 
     __proto__: WebInspector.AuditRule.prototype
+}
+
+/**
+ * @typedef {!{sourceURL: string, rules: !Array.<!WebInspector.CSSParser.StyleRule>}}
+ */
+WebInspector.AuditRules.ParsedStyleSheet;
+
+/**
+ * @constructor
+ * @param {!Array.<!WebInspector.CSSStyleSheetHeader>} styleSheetHeaders
+ * @param {!WebInspector.Progress} progress
+ * @param {!function(!Array.<!WebInspector.AuditRules.ParsedStyleSheet>)} styleSheetsParsedCallback
+ */
+WebInspector.AuditRules.StyleSheetProcessor = function(styleSheetHeaders, progress, styleSheetsParsedCallback)
+{
+    this._styleSheetHeaders = styleSheetHeaders;
+    this._progress = progress;
+    this._styleSheets = [];
+    this._styleSheetsParsedCallback = styleSheetsParsedCallback;
+}
+
+WebInspector.AuditRules.StyleSheetProcessor.prototype = {
+    run: function()
+    {
+        this._parser = new WebInspector.CSSParser();
+        this._processNextStyleSheet();
+    },
+
+    _terminateWorker: function()
+    {
+        if (this._parser) {
+            this._parser.dispose();
+            delete this._parser;
+        }
+    },
+
+    _finish: function()
+    {
+        this._terminateWorker();
+        this._styleSheetsParsedCallback(this._styleSheets);
+    },
+
+    _processNextStyleSheet: function()
+    {
+        if (!this._styleSheetHeaders.length) {
+            this._finish();
+            return;
+        }
+        this._currentStyleSheetHeader = this._styleSheetHeaders.shift();
+        this._parser.fetchAndParse(this._currentStyleSheetHeader, this._onStyleSheetParsed.bind(this));
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.CSSParser.Rule>} rules
+     */
+    _onStyleSheetParsed: function(rules)
+    {
+        if (this._progress.isCanceled()) {
+            this._terminateWorker();
+            return;
+        }
+
+        var styleRules = [];
+        for (var i = 0; i < rules.length; ++i) {
+            var rule = rules[i];
+            if (rule.selectorText)
+                styleRules.push(rule);
+        }
+        this._styleSheets.push({
+            sourceURL: this._currentStyleSheetHeader.sourceURL,
+            rules: styleRules
+        });
+        this._processNextStyleSheet();
+    },
 }
 
 /**
@@ -629,7 +686,7 @@ WebInspector.AuditRules.CacheControlRule.prototype = {
         if (this.responseHeaderMatch(request, "Cache-Control", "public"))
             return true;
 
-        return request.url.indexOf("?") == -1 && !this.responseHeaderMatch(request, "Cache-Control", "private");
+        return request.url.indexOf("?") === -1 && !this.responseHeaderMatch(request, "Cache-Control", "private");
     },
 
     /**
@@ -1146,81 +1203,102 @@ WebInspector.AuditRules.CSSRuleBase.prototype = {
             callback(null);
             return;
         }
+        var activeHeaders = []
         for (var i = 0; i < headers.length; ++i) {
-            var header = headers[i];
-            if (header.disabled)
-                continue; // Do not check disabled stylesheets.
-
-            this._visitStyleSheet(header.id, i === headers.length - 1 ? finishedCallback : null, result, progress);
+            if (!headers[i].disabled)
+                activeHeaders.push(headers[i]);
         }
 
-        function finishedCallback()
-        {
-            callback(result);
-        }
+        var styleSheetProcessor = new WebInspector.AuditRules.StyleSheetProcessor(activeHeaders, progress, this._styleSheetsLoaded.bind(this, result, callback, progress));
+        styleSheetProcessor.run();
     },
 
-    _visitStyleSheet: function(styleSheetId, callback, result, progress)
+    /**
+     * @param {!WebInspector.AuditRuleResult} result
+     * @param {function(!WebInspector.AuditRuleResult)} callback
+     * @param {!WebInspector.Progress} progress
+     * @param {!Array.<!WebInspector.AuditRules.ParsedStyleSheet>} styleSheets
+     */
+    _styleSheetsLoaded: function(result, callback, progress, styleSheets)
     {
-        WebInspector.CSSStyleSheet.createForId(styleSheetId, sheetCallback.bind(this));
-
-        /**
-         * @param {?WebInspector.CSSStyleSheet} styleSheet
-         * @this {WebInspector.AuditRules.CSSRuleBase}
-         */
-        function sheetCallback(styleSheet)
-        {
-            if (progress.isCanceled())
-                return;
-
-            if (!styleSheet) {
-                if (callback)
-                    callback();
-                return;
-            }
-
-            this.visitStyleSheet(styleSheet, result);
-
-            for (var i = 0; i < styleSheet.rules.length; ++i)
-                this._visitRule(styleSheet, styleSheet.rules[i], result);
-
-            this.didVisitStyleSheet(styleSheet, result);
-
-            if (callback)
-                callback();
-        }
+        for (var i = 0; i < styleSheets.length; ++i)
+            this._visitStyleSheet(styleSheets[i], result);
+        callback(result);
     },
 
+    /**
+     * @param {!WebInspector.AuditRules.ParsedStyleSheet} styleSheet
+     * @param {!WebInspector.AuditRuleResult} result
+     */
+    _visitStyleSheet: function(styleSheet, result)
+    {
+        this.visitStyleSheet(styleSheet, result);
+
+        for (var i = 0; i < styleSheet.rules.length; ++i)
+            this._visitRule(styleSheet, styleSheet.rules[i], result);
+
+        this.didVisitStyleSheet(styleSheet, result);
+    },
+
+    /**
+     * @param {!WebInspector.AuditRules.ParsedStyleSheet} styleSheet
+     * @param {!WebInspector.CSSParser.StyleRule} rule
+     * @param {!WebInspector.AuditRuleResult} result
+     */
     _visitRule: function(styleSheet, rule, result)
     {
         this.visitRule(styleSheet, rule, result);
-        var allProperties = rule.style.allProperties;
+        var allProperties = rule.properties;
         for (var i = 0; i < allProperties.length; ++i)
-            this.visitProperty(styleSheet, allProperties[i], result);
+            this.visitProperty(styleSheet, rule, allProperties[i], result);
         this.didVisitRule(styleSheet, rule, result);
     },
 
+    /**
+     * @param {!WebInspector.AuditRules.ParsedStyleSheet} styleSheet
+     * @param {!WebInspector.AuditRuleResult} result
+     */
     visitStyleSheet: function(styleSheet, result)
     {
         // Subclasses can implement.
     },
 
+    /**
+     * @param {!WebInspector.AuditRules.ParsedStyleSheet} styleSheet
+     * @param {!WebInspector.AuditRuleResult} result
+     */
     didVisitStyleSheet: function(styleSheet, result)
     {
         // Subclasses can implement.
     },
-    
+
+    /**
+     * @param {!WebInspector.AuditRules.ParsedStyleSheet} styleSheet
+     * @param {!WebInspector.CSSParser.StyleRule} rule
+     * @param {!WebInspector.AuditRuleResult} result
+     */
     visitRule: function(styleSheet, rule, result)
     {
         // Subclasses can implement.
     },
 
+    /**
+     * @param {!WebInspector.AuditRules.ParsedStyleSheet} styleSheet
+     * @param {!WebInspector.CSSParser.StyleRule} rule
+     * @param {!WebInspector.AuditRuleResult} result
+     */
     didVisitRule: function(styleSheet, rule, result)
     {
         // Subclasses can implement.
     },
-    
-    visitProperty: function(styleSheet, property, result)
+
+    /**
+     * @param {!WebInspector.AuditRules.ParsedStyleSheet} styleSheet
+     * @param {!WebInspector.CSSParser.StyleRule} rule
+     * @param {!WebInspector.CSSParser.Property} property
+     * @param {!WebInspector.AuditRuleResult} result
+     */
+    visitProperty: function(styleSheet, rule, property, result)
     {
         // Subclasses can implement.
     },
@@ -1245,11 +1323,17 @@ WebInspector.AuditRules.VendorPrefixedCSSProperties.supportedProperties = [
 ].keySet();
 
 WebInspector.AuditRules.VendorPrefixedCSSProperties.prototype = {
+    /**
+     * @param {!WebInspector.AuditRules.ParsedStyleSheet} styleSheet
+     */
     didVisitStyleSheet: function(styleSheet)
     {
         delete this._styleSheetResult;
     },
 
+    /**
+     * @param {!WebInspector.CSSParser.StyleRule} rule
+     */
     visitRule: function(rule)
     {
         this._mentionedProperties = {};
@@ -1261,25 +1345,25 @@ WebInspector.AuditRules.VendorPrefixedCSSProperties.prototype = {
         delete this._mentionedProperties;
     },
 
-    visitProperty: function(styleSheet, property, result)
+    /**
+     * @param {!WebInspector.AuditRules.ParsedStyleSheet} styleSheet
+     * @param {!WebInspector.CSSParser.StyleRule} rule
+     * @param {!WebInspector.CSSParser.Property} property
+     * @param {!WebInspector.AuditRuleResult} result
+     */
+    visitProperty: function(styleSheet, rule, property, result)
     {
         if (!property.name.startsWith(this._webkitPrefix))
             return;
 
         var normalPropertyName = property.name.substring(this._webkitPrefix.length).toLowerCase(); // Start just after the "-webkit-" prefix.
         if (WebInspector.AuditRules.VendorPrefixedCSSProperties.supportedProperties[normalPropertyName] && !this._mentionedProperties[normalPropertyName]) {
-            var style = property.ownerStyle;
-            var liveProperty = style.getLiveProperty(normalPropertyName);
-            if (liveProperty && !liveProperty.styleBased)
-                return; // WebCore can provide normal versions of prefixed properties automatically, so be careful to skip only normal source-based properties.
-
-            var rule = style.parentRule;
             this._mentionedProperties[normalPropertyName] = true;
             if (!this._styleSheetResult)
-                this._styleSheetResult = result.addChild(rule.sourceURL ? WebInspector.linkifyResourceAsNode(rule.sourceURL) : WebInspector.UIString("<unknown>"));
+                this._styleSheetResult = result.addChild(styleSheet.sourceURL ? WebInspector.linkifyResourceAsNode(styleSheet.sourceURL) : WebInspector.UIString("<unknown>"));
             if (!this._ruleResult) {
-                var anchor = WebInspector.linkifyURLAsNode(rule.sourceURL, rule.selectorText);
-                anchor.lineNumber = rule.lineNumberInSource();
+                var anchor = WebInspector.linkifyURLAsNode(styleSheet.sourceURL, rule.selectorText);
+                anchor.lineNumber = rule.lineNumber;
                 this._ruleResult = this._styleSheetResult.addChild(anchor);
             }
             ++result.violationCount;
