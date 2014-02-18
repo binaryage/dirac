@@ -34,19 +34,11 @@
 }
 
 .heap-snapshot-sidebar-tree-item.wait .icon {
-    content: url(Images/spinnerActive.gif);
+    content: url(Images/spinner.gif);
 }
 
 .heap-snapshot-sidebar-tree-item.wait.selected .icon {
-    content: url(Images/spinnerActiveSelected.gif);
-}
-
-body.inactive .heap-snapshot-sidebar-tree-item.wait .icon {
-    content: url(Images/spinnerInactive.gif);
-}
-
-body.inactive .heap-snapshot-sidebar-tree-item.wait.selected .icon {
-    content: url(Images/spinnerInactiveSelected.gif);
+    content: url(Images/spinnerSelected.gif);
 }
 
 .heap-snapshot-sidebar-tree-item.small .icon {

@@ -64,7 +64,7 @@
 }
 
 .canvas-spinner-icon {
-    content: url(Images/spinnerActiveSelected.gif);
+    content: url(Images/spinnerSelected.gif);
     position: absolute;
     width: 16px;
     right: 4px;
