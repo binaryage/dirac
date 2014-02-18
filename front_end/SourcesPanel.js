@@ -117,7 +117,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._editorContainer.show(this._searchableView.element);
 
     this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.SourceSelected, this._sourceSelected, this);
-    this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.ItemSearchStarted, this._itemSearchStarted, this);
     this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.ItemCreationRequested, this._itemCreationRequested, this);
     this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.ItemRenamingRequested, this._itemRenamingRequested, this);
 
@@ -759,12 +758,6 @@ WebInspector.SourcesPanel.prototype = {
 
         if (sourceFrame && event.data.focusSource)
             sourceFrame.focus();
-    },
-
-    _itemSearchStarted: function(event)
-    {
-        var searchText = /** @type {string} */ (event.data);
-        WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement(), searchText);
     },
 
     _pauseOnExceptionEnabledChanged: function()

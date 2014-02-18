@@ -37,7 +37,6 @@ WebInspector.NavigatorView = function()
 
     var scriptsTreeElement = document.createElement("ol");
     this._scriptsTree = new WebInspector.NavigatorTreeOutline(scriptsTreeElement);
-    this._scriptsTree.childrenListElement.addEventListener("keypress", this._treeKeyPress.bind(this), true);
 
     var scriptsOutlineElement = document.createElement("div");
     scriptsOutlineElement.classList.add("outline-disclosure");
@@ -62,7 +61,6 @@ WebInspector.NavigatorView = function()
 
 WebInspector.NavigatorView.Events = {
     ItemSelected: "ItemSelected",
-    ItemSearchStarted: "ItemSearchStarted",
     ItemRenamingRequested: "ItemRenamingRequested",
     ItemCreationRequested: "ItemCreationRequested"
 }
@@ -385,21 +383,6 @@ WebInspector.NavigatorView.prototype = {
 
         contextMenu.show();
     },
-
-    /**
-     * @param {?Event} event
-     */
-   _treeKeyPress: function(event)
-   {
-        if (WebInspector.isBeingEdited(this._scriptsTree.childrenListElement))
-            return;
-
-        var searchText = String.fromCharCode(event.charCode);
-        if (searchText.trim() !== searchText)
-            return;
-        this.dispatchEventToListeners(WebInspector.NavigatorView.Events.ItemSearchStarted, searchText);
-        event.consume(true);
-   },
 
     __proto__: WebInspector.View.prototype
 }
