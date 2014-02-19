@@ -49,6 +49,7 @@
     width: 100%;
     background-color: rgb(236, 236, 236);
     overflow: hidden;
+    white-space: nowrap;
 }
 
 .scripts-debug-toolbar-drawer {

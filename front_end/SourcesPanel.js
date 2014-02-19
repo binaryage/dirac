@@ -86,7 +86,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     const initialDebugSidebarWidth = 225;
     this._splitView = new WebInspector.SplitView(true, true, "sourcesSidebarWidth", initialDebugSidebarWidth);
     this._splitView.setMainElementConstraints(200, 25);
-    this._splitView.setSidebarElementConstraints(200, 25);
+    this._splitView.setSidebarElementConstraints(WebInspector.SourcesPanel.minToolbarWidth, 25);
 
     this._splitView.show(this.element);
     if (WebInspector.settings.debuggerSidebarHidden.get())
@@ -238,6 +238,8 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     }
     window.addEventListener("beforeunload", handleBeforeUnload.bind(this), true);
 }
+
+WebInspector.SourcesPanel.minToolbarWidth = 215;
 
 WebInspector.SourcesPanel.Events = {
     EditorClosed: "EditorClosed",
@@ -1648,6 +1650,7 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPaneView = vbox;
         } else {
             var splitView = new WebInspector.SplitView(true, true, this.name + "PanelSplitSidebarRatio", 0.5);
+            splitView.setMainElementConstraints(WebInspector.SourcesPanel.minToolbarWidth, 25);
             vbox.show(splitView.mainElement());
 
             // Populate the left stack.
