@@ -41,11 +41,18 @@ WebInspector.TimelineFlameChartDataProvider = function(model, colorGenerator, ma
     this._model = model;
     this._mainThread = mainThread;
     this._colorGenerator = colorGenerator;
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._invalidate, this);
 }
 
 WebInspector.TimelineFlameChartDataProvider.prototype = {
     reset: function()
+    {
+        this._invalidate();
+    },
+
+    /**
+     * @param {!TimelineAgent.TimelineEvent} record
+     */
+    addRecord: function(record)
     {
         this._invalidate();
     },
@@ -170,7 +177,6 @@ WebInspector.TimelineFlameChart = function(panel, model, dataProvider)
     this._mainView = new WebInspector.FlameChart.MainPane(dataProvider, null, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
 }
 
 /**
@@ -205,8 +211,12 @@ WebInspector.TimelineFlameChart.prototype = {
         this._gotFirstRecord = false;
     },
 
-    _onRecordAdded: function()
+    /**
+     * @param {!TimelineAgent.TimelineEvent} record
+     */
+    addRecord: function(record)
     {
+        this._dataProvider.addRecord(record);
         if (!this._gotFirstRecord) {
             this._gotFirstRecord = true;
             var minimumRecordTime = this._model.minimumRecordTime();

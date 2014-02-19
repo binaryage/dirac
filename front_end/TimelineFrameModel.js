@@ -36,12 +36,11 @@
 WebInspector.TimelineFrameModel = function(model)
 {
     this._model = model;
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
 
     this.reset();
     var records = model.records;
     for (var i = 0; i < records.length; ++i)
-        this._addRecord(records[i]);
+        this.addRecord(records[i]);
 }
 
 WebInspector.TimelineFrameModel.Events = {
@@ -68,16 +67,10 @@ WebInspector.TimelineFrameModel.prototype = {
         this._mergingBuffer = new WebInspector.TimelineMergingRecordBuffer();
     },
 
-    _onRecordAdded: function(event)
-    {
-        var record = /** @type {!TimelineAgent.TimelineEvent} */(event.data);
-        this._addRecord(record);
-    },
-
     /**
      * @param {!TimelineAgent.TimelineEvent} record
      */
-    _addRecord: function(record)
+    addRecord: function(record)
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
         var programRecord = record.type === recordTypes.Program ? record : null;
@@ -229,11 +222,6 @@ WebInspector.TimelineFrameModel.prototype = {
                 return result;
         }
         return null;
-    },
-
-    dispose: function()
-    {
-        this._model.removeEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
     },
 
     __proto__: WebInspector.Object.prototype

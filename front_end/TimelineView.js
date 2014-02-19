@@ -48,7 +48,6 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     this._model = model;
     this._currentMode = mode;
     this._calculator = new WebInspector.TimelineCalculator(this._model);
-    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onTimelineEventRecorded, this);
 
     // Create presentation model.
     this._presentationModel = new WebInspector.TimelinePresentationModel();
@@ -390,9 +389,12 @@ WebInspector.TimelineView.prototype = {
         this._invalidateAndScheduleRefresh(false, false);
     },
 
-    _onTimelineEventRecorded: function(event)
+    /**
+     * @param {!TimelineAgent.TimelineEvent} record
+     */
+    addRecord: function(record)
     {
-        if (this._innerAddRecordToTimeline(/** @type {!TimelineAgent.TimelineEvent} */(event.data)))
+        if (this._innerAddRecordToTimeline(record))
             this._invalidateAndScheduleRefresh(false, false);
     },
 

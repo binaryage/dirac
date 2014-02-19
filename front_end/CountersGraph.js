@@ -116,9 +116,9 @@ WebInspector.CountersGraph.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Event} event
+     * @param {!TimelineAgent.TimelineEvent} record
      */
-    _onRecordAdded: function(event)
+    addRecord: function(record)
     {
         /**
          * @this {!WebInspector.CountersGraph}
@@ -132,7 +132,7 @@ WebInspector.CountersGraph.prototype = {
             for (var i = 0; i < this._counters.length; ++i)
                 this._counters[i].appendSample(time, counters);
         }
-        WebInspector.TimelinePresentationModel.forAllRecords([/** @type {!TimelineAgent.TimelineEvent} */ (event.data)], null, addStatistics.bind(this));
+        WebInspector.TimelinePresentationModel.forAllRecords([record], null, addStatistics.bind(this));
         this.scheduleRefresh();
     },
 

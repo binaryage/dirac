@@ -47,7 +47,6 @@ WebInspector.TimelineOverviewPane = function(model)
 
     this._overviewCalculator = new WebInspector.TimelineOverviewCalculator();
 
-    model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
     model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._reset, this);
     this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
 }
@@ -119,9 +118,11 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewGrid.addEventDividers(dividers);
     },
 
-    _onRecordAdded: function(event)
+    /**
+     * @param {!TimelineAgent.TimelineEvent} record
+     */
+    addRecord: function(record)
     {
-        var record = event.data;
         var eventDividers = this._eventDividers;
         function addEventDividers(record)
         {

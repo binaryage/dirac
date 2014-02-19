@@ -61,6 +61,7 @@ WebInspector.TimelinePanel = function()
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
+    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
 
     this._presentationModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", WebInspector.TimelinePanel.Mode.Events);
     this._glueRecordsSetting = WebInspector.settings.createSetting("timelineGlueRecords", false);
@@ -537,6 +538,16 @@ WebInspector.TimelinePanel.prototype = {
     {
         this.toggleTimelineButton.title = WebInspector.UIString("Record");
         this.toggleTimelineButton.toggled = false;
+    },
+
+    _onRecordAdded: function(event)
+    {
+        var record = event.data;
+        if (this._frameModel)
+            this._frameModel.addRecord(record);
+        for (var i = 0; i < this._currentViews.length; ++i)
+            this._currentViews[i].addRecord(record);
+        this._overviewPane.addRecord(record);
     },
 
     /**
