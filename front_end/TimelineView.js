@@ -490,12 +490,15 @@ WebInspector.TimelineView.prototype = {
         return [this._containerElement];
     },
 
+    refreshRecords: function()
+    {
+        this._repopulateRecords();
+        this._updateSelectionDetails();
+    },
+
     wasShown: function()
     {
         WebInspector.View.prototype.wasShown.call(this);
-
-        this._repopulateRecords();
-        this._updateSelectionDetails();
 
         if (!WebInspector.TimelinePanel._categoryStylesInitialized) {
             WebInspector.TimelinePanel._categoryStylesInitialized = true;

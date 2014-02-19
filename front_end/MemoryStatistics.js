@@ -378,6 +378,10 @@ WebInspector.MemoryStatistics.prototype = {
         this._refreshCurrentValues();
     },
 
+    refreshRecords: function()
+    {
+    },
+
     /**
      * @param {number} originY
      * @param {number} height

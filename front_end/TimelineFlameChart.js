@@ -190,6 +190,10 @@ WebInspector.TimelineFlameChart.colorGenerator = function(fillStyles)
 }
 
 WebInspector.TimelineFlameChart.prototype = {
+    refreshRecords: function()
+    {
+    },
+
     reset: function()
     {
         this._dataProvider.reset();

@@ -457,6 +457,7 @@ WebInspector.TimelinePanel.prototype = {
             view.setWindowTimes(this.windowStartTime(), this.windowEndTime());
             this._stackView.appendView(view, "timeline-view");
             this._glueMode = this._glueMode && view.supportsGlueParentMode();
+            view.refreshRecords();
         }
         this._overviewControl = views.overviewView;
         this._overviewPane.setOverviewControl(this._overviewControl);
