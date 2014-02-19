@@ -38,6 +38,12 @@ WebInspector.EventListenersSidebarPane = function()
 
     this.sections = [];
 
+    var refreshButton = document.createElement("button");
+    refreshButton.className = "pane-title-button refresh";
+    refreshButton.addEventListener("click", this._refreshButtonClicked.bind(this), false);
+    refreshButton.title = WebInspector.UIString("Refresh");
+    this.titleElement.appendChild(refreshButton);
+
     this.settingsSelectElement = document.createElement("select");
     this.settingsSelectElement.className = "select-filter";
 
@@ -126,6 +132,13 @@ WebInspector.EventListenersSidebarPane.prototype = {
     willHide: function()
     {
         delete this._selectedNode;
+    },
+
+    _refreshButtonClicked: function()
+    {
+        if (!this._selectedNode)
+            return;
+        this.update(this._selectedNode);
     },
 
     _changeSetting: function()
