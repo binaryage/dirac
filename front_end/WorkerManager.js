@@ -167,3 +167,27 @@ WebInspector.WorkerDispatcher.prototype = {
  * @type {!WebInspector.WorkerManager}
  */
 WebInspector.workerManager;
+
+/**
+ * @constructor
+ * @extends {InspectorBackendClass.Connection}
+ * @param {number} workerId
+ */
+WebInspector.WorkerConnection = function(workerId)
+{
+    InspectorBackendClass.Connection.call(this);
+    this._workerId = workerId;
+}
+
+WebInspector.WorkerConnection.prototype = {
+
+    /**
+     * @param {!Object} messageObject
+     */
+    sendMessage: function(messageObject)
+    {
+        window.opener.postMessage({workerId: this._workerId, command: "sendMessageToBackend", message: messageObject}, "*");
+    },
+
+    __proto__: InspectorBackendClass.Connection.prototype
+}

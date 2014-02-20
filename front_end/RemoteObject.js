@@ -338,7 +338,7 @@ WebInspector.RemoteObjectImpl.prototype = {
             return;
         }
 
-        RuntimeAgent.evaluate.invoke({expression:value, doNotPauseOnExceptionsAndMuteConsole:true}, evaluatedCallback.bind(this));
+        RuntimeAgent.invoke_evaluate({expression:value, doNotPauseOnExceptionsAndMuteConsole:true}, evaluatedCallback.bind(this));
 
         /**
          * @param {?Protocol.Error} error

@@ -110,7 +110,7 @@ var InspectorFrontendAPI = {
 
     dispatchMessage: function(messageObject)
     {
-        InspectorBackend.dispatch(messageObject);
+        InspectorBackend.connection().dispatch(messageObject);
     },
 
     // Callbacks to the methods called from within initialized front-end.

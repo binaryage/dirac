@@ -79,7 +79,7 @@ var WebInspector = {
         var expression = "location.href";
         if (WebInspector.queryParamsObject["isSharedWorker"])
             expression += " + (this.name ? ' (' + this.name + ')' : '')";
-        RuntimeAgent.evaluate.invoke({expression:expression, doNotPauseOnExceptionsAndMuteConsole:true, returnByValue: true}, evalCallback.bind(this));
+        RuntimeAgent.invoke_evaluate({expression:expression, doNotPauseOnExceptionsAndMuteConsole:true, returnByValue: true}, evalCallback.bind(this));
 
         /**
          * @param {?Protocol.Error} error
@@ -104,12 +104,6 @@ var WebInspector = {
             InspectorBackend.dispatch(message);
         }
         window.addEventListener("message", receiveMessage, true);
-
-
-        InspectorBackend.sendMessageObjectToBackend = function(message)
-        {
-            window.opener.postMessage({workerId: workerId, command: "sendMessageToBackend", message: message}, "*");
-        }
     },
 
     _loadCompletedForWorkers: function()
@@ -283,6 +277,9 @@ WebInspector.doLoadedDone = function()
     if (workerId)
         this._initializeDedicatedWorkerFrontend(workerId);
 
+    var connection = workerId ? new WebInspector.WorkerConnection(workerId) : new InspectorBackendClass.MainConnection();
+    InspectorBackend.setConnection(connection);
+
     PageAgent.canScreencast(WebInspector._initializeCapability.bind(WebInspector, "canScreencast", null));
     WorkerAgent.canInspectWorkers(WebInspector._initializeCapability.bind(WebInspector, "canInspectWorkers", WebInspector._doLoadedDoneWithCapabilities.bind(WebInspector)));
 }
@@ -447,7 +444,7 @@ WebInspector.dispatchQueueIsEmpty = function() {
 WebInspector.dispatch = function(message) {
     messagesToDispatch.push(message);
     setTimeout(function() {
-        InspectorBackend.dispatch(messagesToDispatch.shift());
+        InspectorBackend.connection().dispatch(messagesToDispatch.shift());
     }, 0);
 }
 

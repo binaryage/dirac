@@ -45,5 +45,5 @@ WebInspector.evaluateForTestInFrontend = function(callId, script)
         }
         RuntimeAgent.evaluate("didEvaluateForTestInFrontend(" + callId + ", " + message + ")", "test");
     }
-    InspectorBackend.runAfterPendingDispatches(invokeMethod);
+    InspectorBackend.connection().runAfterPendingDispatches(invokeMethod);
 }
