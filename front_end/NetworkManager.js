@@ -414,6 +414,11 @@ WebInspector.NetworkDispatcher.prototype = {
         networkRequest.statusCode = response.status;
         networkRequest.statusText = response.statusText;
         networkRequest.responseHeaders = this._headersMapToHeadersArray(response.headers);
+        networkRequest.responseHeadersText = response.headersText;
+        if (response.requestHeaders)
+            networkRequest.setRequestHeaders(this._headersMapToHeadersArray(response.requestHeaders));
+        if (response.requestHeadersText)
+            networkRequest.setRequestHeadersText(response.requestHeadersText);
         networkRequest.responseReceivedTime = time;
 
         this._updateNetworkRequest(networkRequest);
