@@ -1077,48 +1077,48 @@ WebInspector.ElementsTreeElement.prototype = {
             this.removeChildren();
         }
 
-        var treeElement = this;
-        var treeChildIndex = 0;
-        var elementToSelect;
-
         /**
          * @this {WebInspector.ElementsTreeElement}
+         * @return {?WebInspector.ElementsTreeElement}
          */
         function updateChildrenOfNode()
         {
-            var treeOutline = treeElement.treeOutline;
+            var treeOutline = this.treeOutline;
             var visibleChildren = this._visibleChildren();
+            var treeChildIndex = 0;
+            var elementToSelect = null;
 
             for (var i = 0; i < visibleChildren.length; ++i) {
                 var child = visibleChildren[i];
-                var currentTreeElement = treeElement.children[treeChildIndex];
+                var currentTreeElement = this.children[treeChildIndex];
                 if (!currentTreeElement || currentTreeElement._node !== child) {
                     // Find any existing element that is later in the children list.
                     var existingTreeElement = null;
-                    for (var j = (treeChildIndex + 1), size = treeElement.expandedChildCount; j < size; ++j) {
-                        if (treeElement.children[j]._node === child) {
-                            existingTreeElement = treeElement.children[j];
+                    for (var j = (treeChildIndex + 1), size = this.expandedChildCount; j < size; ++j) {
+                        if (this.children[j]._node === child) {
+                            existingTreeElement = this.children[j];
                             break;
                         }
                     }
 
-                    if (existingTreeElement && existingTreeElement.parent === treeElement) {
+                    if (existingTreeElement && existingTreeElement.parent === this) {
                         // If an existing element was found and it has the same parent, just move it.
-                        treeElement.moveChild(existingTreeElement, treeChildIndex);
+                        this.moveChild(existingTreeElement, treeChildIndex);
                     } else {
                         // No existing element found, insert a new element.
-                        if (treeChildIndex < treeElement.expandedChildrenLimit) {
-                            var newElement = treeElement.insertChildElement(child, treeChildIndex);
+                        if (treeChildIndex < this.expandedChildrenLimit) {
+                            var newElement = this.insertChildElement(child, treeChildIndex);
                             if (child === selectedNode)
                                 elementToSelect = newElement;
-                            if (treeElement.expandedChildCount > treeElement.expandedChildrenLimit)
-                                treeElement.expandedChildrenLimit++;
+                            if (this.expandedChildCount > this.expandedChildrenLimit)
+                                this.expandedChildrenLimit++;
                         }
                     }
                 }
 
                 ++treeChildIndex;
             }
+            return elementToSelect;
         }
 
         // Remove any tree elements that no longer have this node (or this node's contentDocument) as their parent.
@@ -1139,7 +1139,8 @@ WebInspector.ElementsTreeElement.prototype = {
             this.removeChildAtIndex(i);
         }
 
-        updateChildrenOfNode.call(this);
+        var elementToSelect = updateChildrenOfNode.call(this);
+        this.updateTitle();
         this._adjustCollapsedRange();
 
         var lastChild = this.children[this.children.length - 1];
@@ -2135,7 +2136,7 @@ WebInspector.ElementsTreeElement.prototype = {
                 this._buildTagDOM(info.titleDOM, tagName, false, false, linkify);
 
                 var showInlineText = this._showInlineText() && !this.hasChildren;
-                if (!this.expanded && (!showInlineText && (this.treeOutline.isXMLMimeType || !WebInspector.ElementsTreeElement.ForbiddenClosingTagElements[tagName]))) {
+                if (!this.expanded && !showInlineText && (this.treeOutline.isXMLMimeType || !WebInspector.ElementsTreeElement.ForbiddenClosingTagElements[tagName])) {
                     if (this.hasChildren) {
                         var textNodeElement = info.titleDOM.createChild("span", "webkit-html-text-node bogus");
                         textNodeElement.textContent = "\u2026";
@@ -2514,8 +2515,12 @@ WebInspector.ElementsTreeUpdater.prototype = {
     _childNodeCountUpdated: function(event)
     {
         var treeElement = this._treeOutline.findTreeElement(event.data);
-        if (treeElement)
+        if (treeElement) {
+            var oldHasChildren = treeElement.hasChildren;
             treeElement._updateHasChildren();
+            if (treeElement.hasChildren !== oldHasChildren)
+                treeElement.updateTitle();
+        }
     },
 
     _updateModifiedNodesSoon: function()
