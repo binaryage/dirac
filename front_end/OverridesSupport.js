@@ -415,18 +415,23 @@ WebInspector.OverridesSupport.prototype = {
 
     applyInitialOverrides: function()
     {
-        this._deviceMetricsChangedListenerMuted = true;
-        this._userAgentChangedListenerMuted = true;
-        this._userAgentChanged();
-        this._deviceMetricsChanged();
-        this._deviceOrientationChanged();
-        this._geolocationPositionChanged();
-        this._emulateTouchEventsChanged();
-        this._cssMediaChanged();
-        delete this._deviceMetricsChangedListenerMuted;
-        delete this._userAgentChangedListenerMuted;
-        this._deviceMetricsChanged();
-        this._userAgentChanged();
+        if (WebInspector.settings.overrideDeviceOrientation.get())
+            this._deviceOrientationChanged();
+
+        if (WebInspector.settings.overrideGeolocation.get())
+            this._geolocationPositionChanged();
+
+        if (WebInspector.settings.emulateTouchEvents.get())
+            this._emulateTouchEventsChanged();
+
+        if (WebInspector.settings.overrideCSSMedia.get())
+            this._cssMediaChanged();
+
+        if (WebInspector.settings.overrideDeviceMetrics.get())
+            this._deviceMetricsChanged();
+
+        if (WebInspector.settings.overrideUserAgent.get())
+            this._userAgentChanged();
     },
 
     _userAgentChanged: function()
