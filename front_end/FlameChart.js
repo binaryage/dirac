@@ -42,7 +42,7 @@ WebInspector.FlameChart = function(dataProvider)
     this._overviewPane = new WebInspector.FlameChart.OverviewPane(dataProvider);
     this._overviewPane.show(this.element);
 
-    this._mainPane = new WebInspector.FlameChart.MainPane(dataProvider, this._overviewPane, false);
+    this._mainPane = new WebInspector.FlameChart.MainPane(dataProvider, this._overviewPane, false, false);
     this._mainPane.show(this.element);
     this._mainPane.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected, this);
     this._overviewPane._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
@@ -539,13 +539,15 @@ WebInspector.FlameChart.OverviewPane.drawOverviewCanvas = function(timelineData,
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
  * @param {?WebInspector.FlameChart.OverviewPaneInterface} overviewPane
  * @param {boolean} isTopDown
+ * @param {boolean} timeBasedWindow
  */
-WebInspector.FlameChart.MainPane = function(dataProvider, overviewPane, isTopDown)
+WebInspector.FlameChart.MainPane = function(dataProvider, overviewPane, isTopDown, timeBasedWindow)
 {
     WebInspector.View.call(this);
     this.element.classList.add("flame-chart-main-pane");
     this._overviewPane = overviewPane;
     this._isTopDown = isTopDown;
+    this._timeBasedWindow = timeBasedWindow;
 
     this._timelineGrid = new WebInspector.TimelineGrid();
     this.element.appendChild(this._timelineGrid.element);
@@ -564,6 +566,8 @@ WebInspector.FlameChart.MainPane = function(dataProvider, overviewPane, isTopDow
     this._windowLeft = 0.0;
     this._windowRight = 1.0;
     this._windowWidth = 1.0;
+    this._timeWindowLeft = 0;
+    this._timeWindowRight = Infinity;
     this._barHeight = 15;
     this._minWidth = 1;
     this._paddingLeft = 15;
@@ -585,10 +589,23 @@ WebInspector.FlameChart.MainPane.prototype = {
      */
     changeWindow: function(windowLeft, windowRight)
     {
+        console.assert(!this._timeBasedWindow);
         this._windowLeft = windowLeft;
         this._windowRight = windowRight;
         this._windowWidth = this._windowRight - this._windowLeft;
 
+        this._scheduleUpdate();
+    },
+
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    setWindowTimes: function(startTime, endTime)
+    {
+        console.assert(this._timeBasedWindow);
+        this._timeWindowLeft = startTime * 1000;
+        this._timeWindowRight = endTime * 1000;
         this._scheduleUpdate();
     },
 
@@ -908,8 +925,20 @@ WebInspector.FlameChart.MainPane.prototype = {
     _updateBoundaries: function()
     {
         this._totalTime = this._timelineData().totalTime;
-        this._timeWindowLeft = this._windowLeft * this._totalTime;
-        this._timeWindowRight = this._windowRight * this._totalTime;
+        if (this._timeBasedWindow) {
+            if (this._timeWindowRight !== Infinity) {
+                this._windowLeft = this._timeWindowLeft / this._totalTime;
+                this._windowRight = this._timeWindowRight / this._totalTime;
+                this._windowWidth = this._windowRight - this._windowLeft;
+            } else {
+                this._windowLeft = 0;
+                this._windowRight = 1;
+                this._windowWidth = 1;
+            }
+        } else {
+            this._timeWindowLeft = this._windowLeft * this._totalTime;
+            this._timeWindowRight = this._windowRight * this._totalTime;
+        }
 
         this._pixelWindowWidth = this.element.clientWidth - this._paddingLeft;
         this._totalPixels = Math.floor(this._pixelWindowWidth / this._windowWidth);

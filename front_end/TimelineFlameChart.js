@@ -174,7 +174,7 @@ WebInspector.TimelineFlameChart = function(panel, model, dataProvider)
     this._panel = panel;
     this._model = model;
     this._dataProvider = dataProvider;
-    this._mainView = new WebInspector.FlameChart.MainPane(dataProvider, null, true);
+    this._mainView = new WebInspector.FlameChart.MainPane(dataProvider, null, true, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
 }
@@ -202,27 +202,31 @@ WebInspector.TimelineFlameChart.prototype = {
 
     reset: function()
     {
+        this._automaticallySizeWindow = true;
         this._dataProvider.reset();
-        this._mainView.changeWindow(0, 1);
+        this._mainView.setWindowTimes(0, Infinity);
     },
 
     _onRecordingStarted: function()
     {
-        this._gotFirstRecord = false;
+        this._automaticallySizeWindow = true;
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} record
+     * @param {!TimelineAgent.TimelineEvent} rawRecord
      */
-    addRecord: function(record)
+    addRecord: function(rawRecord)
     {
-        this._dataProvider.addRecord(record);
-        if (!this._gotFirstRecord) {
-            this._gotFirstRecord = true;
+        this._dataProvider.addRecord(rawRecord);
+        if (this._automaticallySizeWindow) {
             var minimumRecordTime = this._model.minimumRecordTime();
-            this._panel.setWindowTimes(minimumRecordTime, minimumRecordTime + 1000);
+            if ((rawRecord.startTime / 1000) > (minimumRecordTime + 1)) {
+                this._automaticallySizeWindow = false;
+                this._panel.setWindowTimes(minimumRecordTime, minimumRecordTime + 1);
+                this.setWindowTimes(minimumRecordTime, minimumRecordTime + 1);
+            }
+            this._mainView._scheduleUpdate();
         }
-        this._mainView._scheduleUpdate();
     },
 
     /**
@@ -231,12 +235,19 @@ WebInspector.TimelineFlameChart.prototype = {
      */
     setWindowTimes: function(startTime, endTime)
     {
+        this._startTime = startTime;
+        this._endTime = endTime;
+        this._updateWindow();
+    },
+
+    _updateWindow: function()
+    {
         var minimumRecordTime = this._model.minimumRecordTime();
         var timeRange = this._model.maximumRecordTime() - minimumRecordTime;
         if (timeRange === 0)
-            this._mainView.changeWindow(0, 1);
+            this._mainView.setWindowTimes(0, Infinity);
         else
-            this._mainView.changeWindow((startTime - minimumRecordTime) / timeRange, (endTime - minimumRecordTime) / timeRange);
+            this._mainView.setWindowTimes(this._startTime - minimumRecordTime, this._endTime - minimumRecordTime);
     },
 
     /**
