@@ -105,7 +105,7 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @param {!AnchorBox=} anchorBox
+     * @param {?AnchorBox=} anchorBox
      */
     _updateBoxPosition: function(anchorBox)
     {
@@ -191,15 +191,14 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @param {string=} text
      * @param {boolean=} isIntermediateSuggestion
      */
-    _applySuggestion: function(text, isIntermediateSuggestion)
+    _applySuggestion: function(isIntermediateSuggestion)
     {
-        if (!this.visible() || !(text || this._selectedElement))
+        if (!this.visible() || !this._selectedElement)
             return false;
 
-        var suggestion = text || this._selectedElement.textContent;
+        var suggestion = this._selectedElement.textContent;
         if (!suggestion)
             return false;
 
@@ -208,12 +207,11 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @param {string=} text
      * @return {boolean}
      */
-    acceptSuggestion: function(text)
+    acceptSuggestion: function()
     {
-        var result = this._applySuggestion(text, false);
+        var result = this._applySuggestion();
         this.hide();
         if (!result)
             return false;
@@ -244,17 +242,17 @@ WebInspector.SuggestBox.prototype = {
             index = Number.constrain(index, 0, this._length - 1);
 
         this._selectItem(index);
-        this._applySuggestion(undefined, true);
+        this._applySuggestion(true);
         return true;
     },
 
     /**
-     * @param {string} text
      * @param {?Event} event
      */
-    _onItemMouseDown: function(text, event)
+    _onItemMouseDown: function(event)
     {
-        this.acceptSuggestion(text);
+        this._selectedElement = event.currentTarget;
+        this.acceptSuggestion();
         event.consume(true);
     },
 
@@ -276,7 +274,7 @@ WebInspector.SuggestBox.prototype = {
             var suffixElement = element.createChild("span", "suffix");
             suffixElement.textContent = text;
         }
-        element.addEventListener("mousedown", this._onItemMouseDown.bind(this, text), false);
+        element.addEventListener("mousedown", this._onItemMouseDown.bind(this), false);
         return element;
     },
 
@@ -345,7 +343,7 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @param {!AnchorBox} anchorBox
+     * @param {?AnchorBox} anchorBox
      * @param {!Array.<string>} completions
      * @param {number} selectedIndex
      * @param {boolean} canShowForSingleItem
