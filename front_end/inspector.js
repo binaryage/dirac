@@ -429,25 +429,6 @@ var windowLoaded = function()
 
 window.addEventListener("DOMContentLoaded", windowLoaded, false);
 
-// We'd like to enforce asynchronous interaction between the inspector controller and the frontend.
-// It is needed to prevent re-entering the backend code.
-// Also, native dispatches do not guarantee setTimeouts to be serialized, so we
-// enforce serialization using 'messagesToDispatch' queue. It is also important that JSC debugger
-// tests require that each command was dispatch within individual timeout callback, so we don't batch them.
-
-var messagesToDispatch = [];
-
-WebInspector.dispatchQueueIsEmpty = function() {
-    return messagesToDispatch.length == 0;
-}
-
-WebInspector.dispatch = function(message) {
-    messagesToDispatch.push(message);
-    setTimeout(function() {
-        InspectorBackend.connection().dispatch(messagesToDispatch.shift());
-    }, 0);
-}
-
 WebInspector.windowResize = function(event)
 {
     if (WebInspector.settingsController)
