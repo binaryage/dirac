@@ -101,7 +101,7 @@ var WebInspector = {
         function receiveMessage(event)
         {
             var message = event.data;
-            InspectorBackend.dispatch(message);
+            InspectorBackend.connection().dispatch(message);
         }
         window.addEventListener("message", receiveMessage, true);
     },
@@ -241,7 +241,7 @@ WebInspector.loaded = function()
 
     if (ws) {
         WebInspector.socket = new WebSocket(ws);
-        WebInspector.socket.onmessage = function(message) { InspectorBackend.dispatch(message.data); }
+        WebInspector.socket.onmessage = function(message) { InspectorBackend.connection().dispatch(message.data); }
         WebInspector.socket.onerror = function(error) { console.error(error); }
         WebInspector.socket.onopen = function() {
             InspectorFrontendHost.sendMessageToBackend = WebInspector.socket.send.bind(WebInspector.socket);
