@@ -133,8 +133,10 @@ var WebInspector = {
 
     showConsole: function()
     {
-        if (this.consoleView.isShowing())
+        if (this.consoleView.isShowing()) {
+            this.consoleView.focus();
             return;
+        }
         this.inspectorView.showViewInDrawer("console");
     },
 

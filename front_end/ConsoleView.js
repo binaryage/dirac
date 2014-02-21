@@ -282,6 +282,8 @@ WebInspector.ConsoleView.prototype = {
 
     focus: function()
     {
+        if (this.promptElement === WebInspector.currentFocusElement())
+            return;
         WebInspector.setCurrentFocusElement(this.promptElement);
         this.prompt.moveCaretToEndOfPrompt();
     },
