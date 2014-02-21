@@ -111,6 +111,7 @@ WebInspector.TimelinePresentationModel._initRecordStyles = function()
     recordStyles[recordTypes.WebSocketSendHandshakeRequest] = { title: WebInspector.UIString("Send WebSocket Handshake"), category: categories["scripting"] };
     recordStyles[recordTypes.WebSocketReceiveHandshakeResponse] = { title: WebInspector.UIString("Receive WebSocket Handshake"), category: categories["scripting"] };
     recordStyles[recordTypes.WebSocketDestroy] = { title: WebInspector.UIString("Destroy WebSocket"), category: categories["scripting"] };
+    recordStyles[recordTypes.EmbedderCallback] = { title: WebInspector.UIString("Embedder Callback"), category: categories["scripting"] };
 
     WebInspector.TimelinePresentationModel._recordStylesMap = recordStyles;
     return recordStyles;
@@ -871,6 +872,10 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
                 this.webSocketProtocol = webSocketCreateRecord.webSocketProtocol;
         }
         break;
+
+    case recordTypes.EmbedderCallback:
+        this.embedderCallbackName = record.data["callbackName"];
+        break;
     }
 }
 
@@ -1255,6 +1260,9 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                 if (typeof this.data["message"] !== "undefined")
                     contentHelper.appendTextRow(WebInspector.UIString("Message"), this.data["message"]);
                 break;
+            case recordTypes.EmbedderCallback:
+                contentHelper.appendTextRow(WebInspector.UIString("Callback Function"), this.embedderCallbackName);
+                break;
             default:
                 if (this.detailsNode())
                     contentHelper.appendElementRow(WebInspector.UIString("Details"), this.detailsNode().childNodes[1].cloneNode());
@@ -1393,6 +1401,9 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         case WebInspector.TimelineModel.RecordType.Time:
         case WebInspector.TimelineModel.RecordType.TimeEnd:
             details = this.data["message"];
+            break;
+        case WebInspector.TimelineModel.RecordType.EmbedderCallback:
+            details = this.data["callbackName"];
             break;
         default:
             details = this.scriptName ? this._linkifyLocation(this.scriptName, this.scriptLine, 0) : (this._linkifyTopCallFrame() || null);

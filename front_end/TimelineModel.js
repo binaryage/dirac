@@ -105,6 +105,8 @@ WebInspector.TimelineModel.RecordType = {
     WebSocketSendHandshakeRequest : "WebSocketSendHandshakeRequest",
     WebSocketReceiveHandshakeResponse : "WebSocketReceiveHandshakeResponse",
     WebSocketDestroy : "WebSocketDestroy",
+
+    EmbedderCallback : "EmbedderCallback",
 }
 
 WebInspector.TimelineModel.Events = {
