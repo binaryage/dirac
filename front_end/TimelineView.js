@@ -35,10 +35,10 @@
  * @extends {WebInspector.View}
  * @param {!WebInspector.TimelinePanel} panel
  * @param {!WebInspector.TimelineModel} model
+ * @param {?WebInspector.TimelineFrameModel} frameModel
  * @param {!WebInspector.Setting} glueRecordsSetting
- * @param {string} mode
  */
-WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
+WebInspector.TimelineView = function(panel, model, frameModel, glueRecordsSetting)
 {
     WebInspector.View.call(this);
     this.element.classList.add("timeline-view");
@@ -46,7 +46,7 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
 
     this._panel = panel;
     this._model = model;
-    this._currentMode = mode;
+    this._frameModel = frameModel;
     this._calculator = new WebInspector.TimelineCalculator(this._model);
 
     // Create presentation model.
@@ -58,7 +58,6 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
     this._presentationModel.addFilter(new WebInspector.TimelineCategoryFilter());
     this._presentationModel.addFilter(this._durationFilter);
 
-    this._frameMode = mode === WebInspector.TimelinePanel.Mode.Frames;
     this._boundariesAreValid = true;
     this._scrollTop = 0;
 
@@ -80,14 +79,9 @@ WebInspector.TimelineView = function(panel, model, glueRecordsSetting, mode)
 
     this._allRecordsCount = 0;
 
-    this._presentationModel.setGlueRecords(glueRecordsSetting.get());
+    this._presentationModel.setGlueRecords(!this._frameModel && glueRecordsSetting.get());
     this._glueRecordsSetting = glueRecordsSetting;
     this._glueRecordsSetting.addChangeListener(this._onGlueRecordsSettingChanged, this);
-
-    if (mode === WebInspector.TimelinePanel.Mode.Frames) {
-        this.frameModel = new WebInspector.TimelineFrameModel(this._model);
-        this._presentationModel.setGlueRecords(false);
-    }
 
     this._searchableView.show(this.element);
 }
@@ -191,7 +185,7 @@ WebInspector.TimelineView.prototype = {
      */
     supportsGlueParentMode: function()
     {
-        return !this._frameMode;
+        return !this._frameModel;
     },
 
     _onGlueRecordsSettingChanged: function()
@@ -344,32 +338,6 @@ WebInspector.TimelineView.prototype = {
         this._timelineGrid.addEventDividers(dividers);
         this._timelineGrid.gridHeaderElement.appendChild(this._frameContainer);
     },
-
-    /**
-     * @param {number} startTime
-     * @param {number} endTime
-     * @return {!Array.<!WebInspector.TimelineFrame>}
-     */
-    _filteredFrames: function(startTime, endTime)
-    {
-        if (!this.frameModel)
-            return [];
-        function compareStartTime(value, object)
-        {
-            return value - object.startTime;
-        }
-        function compareEndTime(value, object)
-        {
-            return value - object.endTime;
-        }
-        var frames = this.frameModel.frames();
-        var firstFrame = insertionIndexForObjectInListSortedByFunction(startTime, frames, compareStartTime);
-        var lastFrame = insertionIndexForObjectInListSortedByFunction(endTime, frames, compareEndTime);
-        while (lastFrame < frames.length && frames[lastFrame].endTime <= endTime)
-            ++lastFrame;
-        return frames.slice(firstFrame, lastFrame);
-    },
-
 
     _onFrameDoubleClicked: function(event)
     {
@@ -694,8 +662,8 @@ WebInspector.TimelineView.prototype = {
         this._updateRecordsCounter(recordsInWindowCount);
         if (!this._boundariesAreValid) {
             this._updateEventDividers();
-            var frames = this._filteredFrames(windowStartTime, windowEndTime);
-            if (frames) {
+            if (this._frameModel) {
+                var frames = this._frameModel.filteredFrames(windowStartTime, windowEndTime);
                 this._updateFrameStatistics(frames);
                 const maxFramesForFrameBars = 30;
                 if  (frames.length && frames.length < maxFramesForFrameBars) {

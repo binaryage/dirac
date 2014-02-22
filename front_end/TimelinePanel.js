@@ -200,32 +200,40 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @return {!WebInspector.TimelineFrameModel}
+     */
+    frameModel: function()
+    {
+        this._frameModel = this._frameModel || new WebInspector.TimelineFrameModel(this._model);
+        return this._frameModel;
+    },
+
+    /**
      * @param {string} mode
      */
     _viewsForMode: function(mode)
     {
         var views = this._viewsMap[mode];
         if (!views) {
-            var timelineView = new WebInspector.TimelineView(this, this._model, this._glueRecordsSetting, mode);
-            views = {
-                mainViews: [timelineView]
-            };
+            views = {};
             switch (mode) {
             case WebInspector.TimelinePanel.Mode.Events:
                 views.overviewView = new WebInspector.TimelineEventOverview(this._model);
+                views.mainViews = [new WebInspector.TimelineView(this, this._model, null, this._glueRecordsSetting)];
                 break;
             case WebInspector.TimelinePanel.Mode.Frames:
-                this._frameModel = timelineView.frameModel;
-                views.overviewView = new WebInspector.TimelineFrameOverview(this._model, timelineView.frameModel);
+                views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this.frameModel());
+                views.mainViews = [new WebInspector.TimelineView(this, this._model, this.frameModel(), this._glueRecordsSetting)];
                 break;
             case WebInspector.TimelinePanel.Mode.Memory:
                 views.overviewView = new WebInspector.TimelineMemoryOverview(this._model);
+                var timelineView = new WebInspector.TimelineView(this, this._model, null, this._glueRecordsSetting);
+                views.mainViews = [timelineView];
                 var memoryStatistics = new WebInspector.CountersGraph(timelineView, this._model);
                 views.mainViews.push(memoryStatistics);
                 break;
             case WebInspector.TimelinePanel.Mode.FlameChart:
-                this._frameModel = new WebInspector.TimelineFrameModel(this._model)
-                views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this._frameModel);
+                views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this.frameModel());
                 var colorGenerator = WebInspector.TimelineFlameChart.colorGenerator(views.overviewView.categoryFillStyles());
                 var dataProviderMain = new WebInspector.TimelineFlameChartDataProvider(this._model, colorGenerator, true);
                 var dataProviderBackground = new WebInspector.TimelineFlameChartDataProvider(this._model, colorGenerator, false);

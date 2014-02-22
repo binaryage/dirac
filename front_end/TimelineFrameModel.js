@@ -56,6 +56,27 @@ WebInspector.TimelineFrameModel.prototype = {
         return this._frames;
     },
 
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     * @return {!Array.<!WebInspector.TimelineFrame>}
+     */
+    filteredFrames: function(startTime, endTime)
+    {
+        function compareStartTime(value, object)
+        {
+            return value - object.startTime;
+        }
+        function compareEndTime(value, object)
+        {
+            return value - object.endTime;
+        }
+        var frames = this._frames;
+        var firstFrame = insertionIndexForObjectInListSortedByFunction(startTime, frames, compareStartTime);
+        var lastFrame = insertionIndexForObjectInListSortedByFunction(endTime, frames, compareEndTime, true);
+        return frames.slice(firstFrame, lastFrame);
+    },
+
     reset: function()
     {
         this._frames = [];
