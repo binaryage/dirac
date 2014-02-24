@@ -1688,6 +1688,14 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator = function()
 
 WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
     /**
+     * @return {number}
+     */
+    paddingLeft: function()
+    {
+        return 0;
+    },
+
+    /**
      * @param {!WebInspector.HeapTrackingOverviewGrid} chart
      */
     _updateBoundaries: function(chart)

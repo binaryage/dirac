@@ -84,6 +84,7 @@ WebInspector.TimelineGrid.prototype = {
     },
 
     /**
+     * @param {!WebInspector.TimelineGrid.Calculator} calculator
      * @return {boolean}
      */
     updateDividers: function(calculator)
@@ -113,7 +114,7 @@ WebInspector.TimelineGrid.prototype = {
         var lastDividerTime = calculator.maximumBoundary();
         // Add some extra space past the right boundary as the rightmost divider label text
         // may be partially shown rather than just pop up when a new rightmost divider gets into the view.
-        if (calculator.paddingLeft > 0)
+        if (calculator.paddingLeft() > 0)
             lastDividerTime = lastDividerTime + minGridSlicePx / pixelsPerTime;
         dividersCount = Math.ceil((lastDividerTime - firstDividerTime) / gridSliceTime);
 
@@ -121,7 +122,7 @@ WebInspector.TimelineGrid.prototype = {
         var divider = this._dividersElement.firstChild;
         var dividerLabelBar = this._dividersLabelBarElement.firstChild;
 
-        var skipLeftmostDividers = calculator.paddingLeft === 0;
+        var skipLeftmostDividers = calculator.paddingLeft() === 0;
 
         if (!gridSliceTime)
             dividersCount = 0;
@@ -241,10 +242,15 @@ WebInspector.TimelineGrid.Calculator = function() { }
 
 WebInspector.TimelineGrid.Calculator.prototype = {
     /**
+     * @return {number}
+     */
+    paddingLeft: function() { },
+
+    /**
      * @param {number} time
      * @return {number}
      */
-    computePosition: function(time) { return 0; },
+    computePosition: function(time) { },
 
     /**
      * @param {number} time

@@ -1242,12 +1242,20 @@ WebInspector.TimelineCalculator._minWidth = 5;
 
 WebInspector.TimelineCalculator.prototype = {
     /**
+     * @return {number}
+     */
+    paddingLeft: function()
+    {
+        return this._paddingLeft;
+    },
+
+    /**
      * @param {number} time
      * @return {number}
      */
     computePosition: function(time)
     {
-        return (time - this._minimumBoundary) / this.boundarySpan() * this._workingArea + this.paddingLeft;
+        return (time - this._minimumBoundary) / this.boundarySpan() * this._workingArea + this._paddingLeft;
     },
 
     /**
@@ -1296,7 +1304,7 @@ WebInspector.TimelineCalculator.prototype = {
     setDisplayWindow: function(paddingLeft, clientWidth)
     {
         this._workingArea = clientWidth - WebInspector.TimelineCalculator._minWidth - paddingLeft;
-        this.paddingLeft = paddingLeft;
+        this._paddingLeft = paddingLeft;
     },
 
     /**

@@ -1950,7 +1950,14 @@ WebInspector.NetworkBaseCalculator.prototype = {
     setDisplayWindow: function(clientWidth)
     {
         this._workingArea = clientWidth;
-        this.paddingLeft = 0;
+    },
+
+    /**
+     * @return {number}
+     */
+    paddingLeft: function()
+    {
+        return 0;
     }
 }
 

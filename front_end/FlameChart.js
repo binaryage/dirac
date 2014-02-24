@@ -142,9 +142,18 @@ WebInspector.FlameChartDataProvider.prototype = {
  */
 WebInspector.FlameChart.Calculator = function()
 {
+    this._paddingLeft = 0;
 }
 
 WebInspector.FlameChart.Calculator.prototype = {
+    /**
+     * @return {number}
+     */
+    paddingLeft: function()
+    {
+        return this._paddingLeft;
+    },
+
     /**
      * @param {!WebInspector.FlameChart.MainPane} mainPane
      */
@@ -158,8 +167,8 @@ WebInspector.FlameChart.Calculator.prototype = {
         var totalTime = mainPane._timelineData().totalTime;
         this._minimumBoundaries = mainPane._windowLeft * totalTime;
         this._maximumBoundaries = mainPane._windowRight * totalTime;
-        this.paddingLeft = mainPane._paddingLeft;
-        this._width = mainPane._canvas.width - this.paddingLeft;
+        this._paddingLeft = mainPane._paddingLeft;
+        this._width = mainPane._canvas.width - this._paddingLeft;
         this._timeToPixel = this._width / this.boundarySpan();
     },
 
@@ -169,7 +178,7 @@ WebInspector.FlameChart.Calculator.prototype = {
      */
     computePosition: function(time)
     {
-        return (time - this._minimumBoundaries) * this._timeToPixel + this.paddingLeft;
+        return (time - this._minimumBoundaries) * this._timeToPixel + this._paddingLeft;
     },
 
     /**
@@ -225,6 +234,14 @@ WebInspector.FlameChart.OverviewCalculator = function()
 }
 
 WebInspector.FlameChart.OverviewCalculator.prototype = {
+    /**
+     * @return {number}
+     */
+    paddingLeft: function()
+    {
+        return 0;
+    },
+
     /**
      * @param {!WebInspector.FlameChart.OverviewPane} overviewPane
      */
