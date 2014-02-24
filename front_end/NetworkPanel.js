@@ -2038,11 +2038,11 @@ WebInspector.NetworkTimeCalculator.prototype = {
     {
         var rightLabel = "";
         if (request.responseReceivedTime !== -1 && request.endTime !== -1)
-            rightLabel = this.formatTime(request.endTime - request.responseReceivedTime);
+            rightLabel = Number.secondsToString(request.endTime - request.responseReceivedTime);
 
         var hasLatency = request.latency > 0;
         if (hasLatency)
-            var leftLabel = this.formatTime(request.latency);
+            var leftLabel = Number.secondsToString(request.latency);
         else
             var leftLabel = rightLabel;
 
@@ -2050,7 +2050,7 @@ WebInspector.NetworkTimeCalculator.prototype = {
             return {left: leftLabel, right: rightLabel};
 
         if (hasLatency && rightLabel) {
-            var total = this.formatTime(request.duration);
+            var total = Number.secondsToString(request.duration);
             var tooltip = WebInspector.UIString("%s latency, %s download (%s total)", leftLabel, rightLabel, total);
         } else if (hasLatency)
             var tooltip = WebInspector.UIString("%s latency", leftLabel);
@@ -2126,7 +2126,7 @@ WebInspector.NetworkTransferTimeCalculator.prototype = {
      */
     formatTime: function(value)
     {
-        return Number.secondsToString(value);
+        return Number.secondsToString(value - this.zeroTime());
     },
 
     _lowerBound: function(request)

@@ -189,7 +189,7 @@ WebInspector.FlameChart.Calculator.prototype = {
     formatTime: function(value, hires)
     {
         var format = "%." + this._decimalDigits + "f\u2009ms";
-        return WebInspector.UIString(format, value + this._minimumBoundaries);
+        return WebInspector.UIString(format, value);
     },
 
     /**

@@ -610,7 +610,7 @@ WebInspector.TimelineView.prototype = {
             var title = WebInspector.UIString("%s \u2013 %s (%d frames)", Number.secondsToString(this._lastFrameStatistics.startOffset, true), Number.secondsToString(this._lastFrameStatistics.endOffset, true), this._lastFrameStatistics.frameCount);
             fragment.appendChild(WebInspector.TimelinePresentationModel.generatePopupContentForFrameStatistics(this._lastFrameStatistics));
         } else {
-            var title = WebInspector.UIString("%s \u2013 %s", this._calculator.formatTime(0, true), this._calculator.formatTime(this._calculator.boundarySpan(), true));
+            var title = WebInspector.UIString("%s \u2013 %s", this._calculator.formatTime(this._calculator.minimumBoundary(), true), this._calculator.formatTime(this._calculator.maximumBoundary(), true));
         }
         this._panel.setDetailsContent(title, fragment);
     },
@@ -1314,7 +1314,7 @@ WebInspector.TimelineCalculator.prototype = {
      */
     formatTime: function(value, hires)
     {
-        return Number.secondsToString(value + this._minimumBoundary - this._model.minimumRecordTime(), hires);
+        return Number.secondsToString(value - this.zeroTime(), hires);
     },
 
     /**

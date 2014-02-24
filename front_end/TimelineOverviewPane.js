@@ -258,7 +258,7 @@ WebInspector.TimelineOverviewCalculator.prototype = {
      */
     formatTime: function(value, hires)
     {
-        return Number.secondsToString(value, hires);
+        return Number.secondsToString(value - this.zeroTime(), hires);
     },
 
     /**

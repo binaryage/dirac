@@ -1721,7 +1721,7 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
      */
     formatTime: function(value, hires)
     {
-        return Number.secondsToString((value + this._minimumBoundaries) / 1000, hires);
+        return Number.secondsToString(value / 1000, hires);
     },
 
     /**

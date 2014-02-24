@@ -146,7 +146,7 @@ WebInspector.TimelineGrid.prototype = {
                 this._dividersLabelBarElement.appendChild(dividerLabelBar);
             }
 
-            dividerLabelBar._labelElement.textContent = calculator.formatTime(firstDividerTime + gridSliceTime * i - calculator.minimumBoundary());
+            dividerLabelBar._labelElement.textContent = calculator.formatTime(firstDividerTime + gridSliceTime * i);
             var percentLeft = 100 * left / dividersElementClientWidth;
             divider.style.left = percentLeft + "%";
             dividerLabelBar.style.left = percentLeft + "%";
