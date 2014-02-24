@@ -79,6 +79,7 @@
     background-origin: padding;
     background-clip: padding;
     margin-top: -1px;
+    white-space: nowrap;
 }
 
 .sidebar-pane-title:active {

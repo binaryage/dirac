@@ -111,6 +111,7 @@ body.inactive .panel-enabler-view button:not(.status-bar-item),
 .panel-enabler-view input[type="radio"] {
     height: 17px;
     width: 17px;
+    min-width: 17px;
     border: 1px solid rgb(165, 165, 165);
     background-image: linear-gradient(to bottom, rgb(252, 252, 252), rgb(223, 223, 223));
     border-radius: 8px;
