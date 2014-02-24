@@ -82,7 +82,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         var height = Math.max(relativeToElement.offsetHeight * 2 / 3, minHeight);
 
         this.element.style.width = width + "px";
-        var container = WebInspector.inspectorView.devtoolsElement();
+        var container = WebInspector.Dialog.modalHostView().element;
         var box = relativeToElement.boxInWindow(window).relativeToElement(container);
         const shadowPadding = 20; // shadow + padding
         var positionX = box.x + Math.max((box.width - width - 2 * shadowPadding) / 2, shadowPadding);

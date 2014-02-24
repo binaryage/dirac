@@ -55,8 +55,6 @@ WebInspector.Dialog = function(relativeToElement, delegate)
     delegate.show(this._element);
 
     this._position();
-    this._containerResizeHandler = this._position.bind(this);
-    WebInspector.inspectorView.addEventListener(WebInspector.InspectorView.Events.DevToolsElementBoundingBoxChanged, this._containerResizeHandler);
     this._delegate.focus();
 }
 
@@ -97,7 +95,6 @@ WebInspector.Dialog.prototype = {
 
         delete WebInspector.Dialog._instance;
         this._glassPane.dispose();
-        WebInspector.inspectorView.removeEventListener(WebInspector.InspectorView.Events.DevToolsElementBoundingBoxChanged, this._containerResizeHandler);
     },
 
     _onGlassPaneFocus: function(event)
@@ -157,7 +154,7 @@ WebInspector.DialogDelegate.prototype = {
      */
     position: function(element, relativeToElement)
     {
-        var container = WebInspector.inspectorView.devtoolsElement();
+        var container = WebInspector.Dialog._modalHostView.element;
         var box = relativeToElement.boxInWindow(window).relativeToElement(container);
 
         var positionX = box.x + (relativeToElement.offsetWidth - element.offsetWidth) / 2;
@@ -178,4 +175,31 @@ WebInspector.DialogDelegate.prototype = {
 
     __proto__: WebInspector.Object.prototype
 }
+
+/** @type {?WebInspector.View} */
+WebInspector.Dialog._modalHostView = null;
+
+/**
+ * @param {!WebInspector.View} view
+ */
+WebInspector.Dialog.setModalHostView = function(view)
+{
+    WebInspector.Dialog._modalHostView = view;
+};
+
+/**
+ * FIXME: make utility method in Dialog, so clients use it instead of this getter.
+ * Method should be like Dialog.showModalElement(position params, reposition callback).
+ * @return {?WebInspector.View}
+ */
+WebInspector.Dialog.modalHostView = function()
+{
+    return WebInspector.Dialog._modalHostView;
+};
+
+WebInspector.Dialog.modalHostRepositioned = function()
+{
+    if (WebInspector.Dialog._instance)
+        WebInspector.Dialog._instance._position();
+};
 

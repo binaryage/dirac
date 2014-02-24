@@ -154,7 +154,7 @@ WebInspector.Popover.prototype = {
         // Skinny tooltips are not pretty, their arrow location is not nice.
         preferredWidth = Math.max(preferredWidth, 50);
         // Position relative to main DevTools element.
-        const container = WebInspector.inspectorView.devtoolsElement();
+        const container = WebInspector.Dialog.modalHostView().element;
         const totalWidth = container.offsetWidth;
         const totalHeight = container.offsetHeight;
 
