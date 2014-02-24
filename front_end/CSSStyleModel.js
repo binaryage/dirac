@@ -989,7 +989,7 @@ WebInspector.CSSProperty.parsePayload = function(ownerStyle, index, payload)
     // implicit: false
     // status: "style"
     var result = new WebInspector.CSSProperty(
-        ownerStyle, index, payload.name, payload.value, payload.priority || "", payload.status || "style", ("parsedOk" in payload) ? !!payload.parsedOk : true, !!payload.implicit, payload.text, payload.range);
+        ownerStyle, index, payload.name, payload.value, payload.priority || "", payload.status || "", ("parsedOk" in payload) ? !!payload.parsedOk : true, !!payload.implicit, payload.text, payload.range);
     return result;
 }
 
@@ -1016,7 +1016,7 @@ WebInspector.CSSProperty.prototype = {
 
     get styleBased()
     {
-        return this.status === "style";
+        return !this.status;
     },
 
     get inactive()
