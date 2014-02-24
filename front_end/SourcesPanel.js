@@ -62,8 +62,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.registerRequiredCSS("sourcesPanel.css");
     this.registerRequiredCSS("textPrompt.css"); // Watch Expressions autocomplete.
 
-    WebInspector.settings.navigatorHidden = WebInspector.settings.createSetting("navigatorHidden", false);
-    WebInspector.settings.debuggerSidebarHidden = WebInspector.settings.createSetting("debuggerSidebarHidden", false);
     WebInspector.settings.showEditorInDrawer = WebInspector.settings.createSetting("showEditorInDrawer", true);
 
     this._workspace = workspaceForTest || WebInspector.workspace;
@@ -85,19 +83,17 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     const initialDebugSidebarWidth = 225;
     this._splitView = new WebInspector.SplitView(true, true, "sourcesPanelSplitViewState", initialDebugSidebarWidth);
+    this._splitView.enableShowModeSaving();
     this._splitView.setMainElementConstraints(200, 25);
     this._splitView.setSidebarElementConstraints(WebInspector.SourcesPanel.minToolbarWidth, 25);
 
     this._splitView.show(this.element);
-    if (WebInspector.settings.debuggerSidebarHidden.get())
-        this._splitView.hideSidebar();
 
     // Create scripts navigator
     const initialNavigatorWidth = 225;
     const minimumViewsContainerWidthPercent = 0.5;
     this.editorView = new WebInspector.SplitView(true, false, "sourcesPanelNavigatorSplitViewState", initialNavigatorWidth);
-    if (WebInspector.settings.navigatorHidden.get())
-        this.editorView.hideSidebar();
+    this.editorView.enableShowModeSaving();
     this.editorView.element.id = "scripts-editor-split-view";
     this.editorView.element.tabIndex = 0;
 
@@ -1299,7 +1295,7 @@ WebInspector.SourcesPanel.prototype = {
         this._toggleNavigatorSidebarButton = new WebInspector.StatusBarButton("", "left-sidebar-show-hide-button", 3);
         this._toggleNavigatorSidebarButton.addEventListener("click", navigatorHandler, this);
         this.sourcesView.element.appendChild(this._toggleNavigatorSidebarButton.element);
-        this._enableNavigatorSidebar(!WebInspector.settings.navigatorHidden.get());
+        this._enableNavigatorSidebar(this.editorView.showMode() !== WebInspector.SplitView.ShowMode.OnlyMain);
 
         this._toggleDebuggerSidebarButton = new WebInspector.StatusBarButton("", "right-sidebar-show-hide-button scripts-debugger-show-hide-button", 3);
         this._toggleDebuggerSidebarButton.addEventListener("click", debuggerHandler, this);
@@ -1312,7 +1308,7 @@ WebInspector.SourcesPanel.prototype = {
             this._statusBarContainerElement.appendChild(this._toggleDebuggerSidebarButton.element);
         }
 
-        this._enableDebuggerSidebar(!WebInspector.settings.debuggerSidebarHidden.get());
+        this._enableDebuggerSidebar(this._splitView.showMode() !== WebInspector.SplitView.ShowMode.OnlyMain);
 
         /**
          * @this {WebInspector.SourcesPanel}
@@ -1342,7 +1338,6 @@ WebInspector.SourcesPanel.prototype = {
             this.editorView.showBoth(true);
         else
             this.editorView.hideSidebar(true);
-        WebInspector.settings.navigatorHidden.set(!show);
     },
 
     /**
@@ -1357,7 +1352,6 @@ WebInspector.SourcesPanel.prototype = {
         else
             this._splitView.hideSidebar(true);
         this._debugSidebarResizeWidgetElement.enableStyleClass("hidden", !show);
-        WebInspector.settings.debuggerSidebarHidden.set(!show);
     },
 
     /**

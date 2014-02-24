@@ -40,7 +40,6 @@ WebInspector.Drawer = function(splitView)
     this._splitView = splitView;
     splitView.hideDefaultResizer();
     this.show(splitView.sidebarElement());
-    splitView.hideSidebar();
 
     this._toggleDrawerButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show drawer."), "console-status-bar-item");
     this._toggleDrawerButton.addEventListener("click", this.toggle, this);
@@ -51,7 +50,6 @@ WebInspector.Drawer = function(splitView)
 
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     splitView.installResizer(this._tabbedPane.headerElement());
-    this._showDrawerOnLoadSetting = WebInspector.settings.createSetting("WebInspector.Drawer.showOnLoad", false);
     this._lastSelectedViewSetting = WebInspector.settings.createSetting("WebInspector.Drawer.lastSelectedView", "console");
     this._initializeViewFactories();
 }
@@ -131,8 +129,6 @@ WebInspector.Drawer.prototype = {
      */
     showView: function(id, immediate)
     {
-        if (!this._toggleDrawerButton.enabled())
-            return;
         if (!this._tabbedPane.hasTab(id)) {
             // Hidden tab.
             this._innerShow(immediate);
@@ -154,8 +150,6 @@ WebInspector.Drawer.prototype = {
      */
     showCloseableView: function(id, title, view)
     {
-        if (!this._toggleDrawerButton.enabled())
-            return;
         if (!this._tabbedPane.hasTab(id)) {
             this._tabbedPane.appendTab(id, title, view, undefined, false, true);
         } else {
@@ -171,10 +165,17 @@ WebInspector.Drawer.prototype = {
         this.showView(this._lastSelectedViewSetting.get());
     },
 
-    showOnLoadIfNecessary: function()
+    wasShown: function()
     {
-        if (this._showDrawerOnLoadSetting.get())
-            this.showView(this._lastSelectedViewSetting.get(), true);
+        this.showView(this._lastSelectedViewSetting.get());
+        this._toggleDrawerButton.toggled = true;
+        this._toggleDrawerButton.title = WebInspector.UIString("Hide drawer.");
+    },
+
+    willHide: function()
+    {
+        this._toggleDrawerButton.toggled = false;
+        this._toggleDrawerButton.title = WebInspector.UIString("Show drawer.");
     },
 
     /**
@@ -182,12 +183,8 @@ WebInspector.Drawer.prototype = {
      */
     _innerShow: function(immediate)
     {
-        if (this._toggleDrawerButton.toggled)
+        if (this.isShowing())
             return;
-
-        this._showDrawerOnLoadSetting.set(true);
-        this._toggleDrawerButton.toggled = true;
-        this._toggleDrawerButton.title = WebInspector.UIString("Hide drawer.");
 
         this._splitView.showBoth(!immediate);
 
@@ -197,11 +194,8 @@ WebInspector.Drawer.prototype = {
 
     closeDrawer: function()
     {
-        if (!this._toggleDrawerButton.toggled)
+        if (!this.isShowing())
             return;
-        this._showDrawerOnLoadSetting.set(false);
-        this._toggleDrawerButton.toggled = false;
-        this._toggleDrawerButton.title = WebInspector.UIString("Show console.");
 
         WebInspector.restoreFocusFromElement(this.element);
         this._splitView.hideSidebar(true);

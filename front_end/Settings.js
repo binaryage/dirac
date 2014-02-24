@@ -428,7 +428,7 @@ WebInspector.VersionController = function()
 {
 }
 
-WebInspector.VersionController.currentVersion = 5;
+WebInspector.VersionController.currentVersion = 6;
 
 WebInspector.VersionController.prototype = {
     updateVersion: function()
@@ -528,6 +528,36 @@ WebInspector.VersionController.prototype = {
             var newSetting = WebInspector.settings.createSetting(newName, {});
             if (newValue)
                 newSetting.set(newValue);
+        }
+    },
+
+    _updateVersionFrom5To6: function()
+    {
+        if (!window.localStorage)
+            return;
+
+        var settingNames = {
+            "debuggerSidebarHidden": "sourcesPanelSplitViewState",
+            "navigatorHidden": "sourcesPanelNavigatorSplitViewState",
+            "WebInspector.Drawer.showOnLoad": "Inspector.drawerSplitViewState"
+        };
+
+        for (var oldName in settingNames) {
+            var newName = settingNames[oldName];
+
+            var oldSetting = WebInspector.settings.createSetting(oldName, undefined).get();
+            var invert = "WebInspector.Drawer.showOnLoad" === oldName;
+            var hidden = !!oldSetting !== invert;
+            delete window.localStorage[oldName];
+            var showMode = hidden ? "OnlyMain" : "Both";
+
+            var newSetting = WebInspector.settings.createSetting(newName, null);
+            var newValue = newSetting.get() || {};
+            newValue.vertical = newValue.vertical || {};
+            newValue.vertical.showMode = showMode;
+            newValue.horizontal = newValue.horizontal || {};
+            newValue.horizontal.showMode = showMode;
+            newSetting.set(newValue);
         }
     },
 
