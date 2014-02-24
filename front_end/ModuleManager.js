@@ -47,6 +47,10 @@ WebInspector.ModuleManager = function(descriptors)
      */
     this._extensions = [];
 
+    /**
+     * @type {!Object.<string, !function(new:Object)>}
+     */
+    this._cachedTypeClasses = {};
 
     /**
      * @type {!Object.<string, !WebInspector.ModuleManager.ModuleDescriptor>}
@@ -175,7 +179,22 @@ WebInspector.ModuleManager.prototype = {
             return name1.compareTo(name2);
         }
         return result;
+    },
+
+    /**
+     * @return {?function(new:Object)}
+     */
+    resolve: function(typeName)
+    {
+        if (!this._cachedTypeClasses[typeName]) {
+            try {
+                this._cachedTypeClasses[typeName] = /** @type function(new:Object) */ (window.eval(typeName.substring(1)));
+            } catch (e) {
+            }
+        }
+        return this._cachedTypeClasses[typeName];
     }
+
 }
 
 /**
@@ -310,14 +329,7 @@ WebInspector.ModuleManager.Extension.prototype = {
     {
         if (!this._hasTypeClass)
             return null;
-        if (this._cachedTypeClass)
-            return this._cachedTypeClass;
-        try {
-            this._cachedTypeClass = /** @type function(new:Object) */ (window.eval(this._type.substring(1)));
-            return this._cachedTypeClass;
-        } catch (e) {
-        }
-        return null;
+        return this._module._manager.resolve(this._type);
     },
 
     /**
