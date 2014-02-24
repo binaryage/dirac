@@ -35,7 +35,7 @@
  */
 WebInspector.FileSystemView = function(fileSystem)
 {
-    WebInspector.SplitView.call(this, true, false, "FileSystemViewSidebarWidth");
+    WebInspector.SplitView.call(this, true, false, "fileSystemViewSplitViewState");
     this.element.classList.add("file-system-view");
     this.element.classList.add("storage-view");
 

@@ -31,11 +31,11 @@
  * @extends {WebInspector.View}
  * @param {boolean} isVertical
  * @param {boolean} secondIsSidebar
- * @param {string=} sidebarSizeSettingName
+ * @param {string=} settingName
  * @param {number=} defaultSidebarWidth
  * @param {number=} defaultSidebarHeight
  */
-WebInspector.SplitView = function(isVertical, secondIsSidebar, sidebarSizeSettingName, defaultSidebarWidth, defaultSidebarHeight)
+WebInspector.SplitView = function(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight)
 {
     WebInspector.View.call(this);
 
@@ -73,7 +73,7 @@ WebInspector.SplitView = function(isVertical, secondIsSidebar, sidebarSizeSettin
         0 < this._savedSidebarHeight && this._savedSidebarHeight < 1)
         this._useFraction = true;
 
-    this._sidebarSizeSettingName = sidebarSizeSettingName;
+    this._settingName = settingName;
 
     this.setSecondIsSidebar(secondIsSidebar);
 
@@ -82,6 +82,9 @@ WebInspector.SplitView = function(isVertical, secondIsSidebar, sidebarSizeSettin
     // Should be called after isVertical has the right value.
     this.installResizer(this._resizerElement);
 }
+
+/** @typedef {{size: number}} */
+WebInspector.SplitView.SettingForOrientation;
 
 WebInspector.SplitView.Events = {
     SidebarSizeChanged: "SidebarSizeChanged"
@@ -627,16 +630,24 @@ WebInspector.SplitView.prototype = {
     /**
      * @return {?WebInspector.Setting}
      */
-    _sizeSetting: function()
+    _setting: function()
     {
-        if (!this._sidebarSizeSettingName)
+        if (!this._settingName)
             return null;
 
-        var settingName = this._sidebarSizeSettingName + (this._isVertical ? "" : "H");
-        if (!WebInspector.settings[settingName])
-            WebInspector.settings[settingName] = WebInspector.settings.createSetting(settingName, undefined);
+        if (!WebInspector.settings[this._settingName])
+            WebInspector.settings[this._settingName] = WebInspector.settings.createSetting(this._settingName, {});
 
-        return WebInspector.settings[settingName];
+        return WebInspector.settings[this._settingName];
+    },
+
+    /**
+     * @return {?WebInspector.SplitView.SettingForOrientation}
+     */
+    _settingForOrientation: function()
+    {
+        var state = this._setting() ? this._setting().get() : {};
+        return this._isVertical ? state.vertical : state.horizontal;
     },
 
     /**
@@ -644,8 +655,8 @@ WebInspector.SplitView.prototype = {
      */
     _lastSidebarSize: function()
     {
-        var sizeSetting = this._sizeSetting();
-        var size = sizeSetting ? sizeSetting.get() : 0;
+        var settingForOrientation = this._settingForOrientation();
+        var size = settingForOrientation ? settingForOrientation.size : 0;
         if (!size)
              size = this._isVertical ? this._savedSidebarWidth : this._savedSidebarHeight;
         if (this._useFraction)
@@ -667,9 +678,17 @@ WebInspector.SplitView.prototype = {
         else
             this._savedSidebarHeight = size;
 
-        var sizeSetting = this._sizeSetting();
-        if (sizeSetting)
-            sizeSetting.set(size);
+        var setting = this._setting();
+        if (!setting)
+            return;
+        var state = setting.get();
+        var orientationState = (this._isVertical ? state.vertical : state.horizontal) || {};
+        orientationState.size = size;
+        if (this._isVertical)
+            state.vertical = orientationState;
+        else
+            state.horizontal = orientationState;
+        setting.set(state);
     },
 
     __proto__: WebInspector.View.prototype

@@ -48,7 +48,7 @@ WebInspector.HeapSnapshotView = function(profile)
         this._trackingOverviewGrid.show(this.element);
     }
 
-    this.viewsContainer = new WebInspector.SplitView(false, true, "heapSnapshotRetainersViewSize", 200, 200);
+    this.viewsContainer = new WebInspector.SplitView(false, true, "heapSnapshotSplitViewState", 200, 200);
     this.viewsContainer.show(this.element);
     this.viewsContainer.setMainElementConstraints(50, 50);
     this.viewsContainer.setSidebarElementConstraints(70, 70);

@@ -1520,7 +1520,7 @@ WebInspector.NetworkPanel = function()
     this._searchableView.show(this.element);
     this._contentsElement = this._searchableView.element;
 
-    this._splitView = new WebInspector.SplitView(true, false, "networkSidebarWidth");
+    this._splitView = new WebInspector.SplitView(true, false, "networkPanelSplitViewState");
     this._splitView.show(this._contentsElement);
     this._splitView.hideMain();
 

@@ -55,7 +55,7 @@ WebInspector.LayersPanel = function()
     this._layerTree.addEventListener(WebInspector.LayerTree.Events.LayerSelected, this._onLayerSelected, this);
     this._layerTree.addEventListener(WebInspector.LayerTree.Events.LayerHovered, this._onLayerHovered, this);
 
-    this._rightSplitView = new WebInspector.SplitView(false, true, "layerDetailsSplitView");
+    this._rightSplitView = new WebInspector.SplitView(false, true, "layerDetailsSplitViewState");
     this._rightSplitView.show(this.mainElement());
 
     this._layers3DView = new WebInspector.Layers3DView(this._model);

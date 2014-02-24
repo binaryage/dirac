@@ -43,7 +43,7 @@ WebInspector.InspectorView = function()
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
 
     // We can use split view either for docking or screencast, but not together.
-    var settingName = WebInspector.queryParamsObject["can_dock"] ? "InspectorView.splitView" : "InspectorView.screencastSplitView";
+    var settingName = WebInspector.queryParamsObject["can_dock"] ? "InspectorView.splitViewState" : "InspectorView.screencastSplitViewState";
     this._splitView = new WebInspector.SplitView(false, true, settingName, 300, 300);
     this._updateConstraints();
     WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._updateSplitView.bind(this));
@@ -60,7 +60,7 @@ WebInspector.InspectorView = function()
     this._devtoolsView.show(this._splitView.sidebarElement());
 
     // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
-    this._drawerSplitView = new WebInspector.SplitView(false, true, "Inspector.drawerSplitView", 200, 200);
+    this._drawerSplitView = new WebInspector.SplitView(false, true, "Inspector.drawerSplitViewState", 200, 200);
     this._drawerSplitView.setSidebarElementConstraints(Preferences.minDrawerHeight, Preferences.minDrawerHeight);
     this._drawerSplitView.setMainElementConstraints(25, 25);
     this._drawerSplitView.show(this._devtoolsView.element);

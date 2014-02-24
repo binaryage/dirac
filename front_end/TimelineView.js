@@ -131,7 +131,7 @@ WebInspector.TimelineView.prototype = {
      */
     _createRecordsView: function()
     {
-        var recordsView = new WebInspector.SplitView(true, false, "timeline-split");
+        var recordsView = new WebInspector.SplitView(true, false, "timelinePanelRecorsSplitViewState");
         this._containerElement = recordsView.element;
         this._containerElement.tabIndex = 0;
         this._containerElement.id = "timeline-container";

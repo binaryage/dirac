@@ -84,7 +84,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.threadsToolbar = new WebInspector.ThreadsToolbar();
 
     const initialDebugSidebarWidth = 225;
-    this._splitView = new WebInspector.SplitView(true, true, "sourcesSidebarWidth", initialDebugSidebarWidth);
+    this._splitView = new WebInspector.SplitView(true, true, "sourcesPanelSplitViewState", initialDebugSidebarWidth);
     this._splitView.setMainElementConstraints(200, 25);
     this._splitView.setSidebarElementConstraints(WebInspector.SourcesPanel.minToolbarWidth, 25);
 
@@ -95,7 +95,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     // Create scripts navigator
     const initialNavigatorWidth = 225;
     const minimumViewsContainerWidthPercent = 0.5;
-    this.editorView = new WebInspector.SplitView(true, false, "scriptsPanelNavigatorSidebarWidth", initialNavigatorWidth);
+    this.editorView = new WebInspector.SplitView(true, false, "sourcesPanelNavigatorSplitViewState", initialNavigatorWidth);
     if (WebInspector.settings.navigatorHidden.get())
         this.editorView.hideSidebar();
     this.editorView.element.id = "scripts-editor-split-view";
@@ -1649,7 +1649,7 @@ WebInspector.SourcesPanel.prototype = {
 
             this.sidebarPaneView = vbox;
         } else {
-            var splitView = new WebInspector.SplitView(true, true, this.name + "PanelSplitSidebarRatio", 0.5);
+            var splitView = new WebInspector.SplitView(true, true, "sourcesPanelDebuggerSidebarSplitViewState", 0.5);
             splitView.setMainElementConstraints(WebInspector.SourcesPanel.minToolbarWidth, 25);
             vbox.show(splitView.mainElement());
 

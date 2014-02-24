@@ -87,7 +87,7 @@ WebInspector.TimelinePanel = function()
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
 
     // Create top level properties splitter.
-    this._detailsSplitView = new WebInspector.SplitView(false, true, "timeline-details");
+    this._detailsSplitView = new WebInspector.SplitView(false, true, "timelinePanelDetailsSplitViewState");
     this._detailsSplitView.element.classList.add("timeline-details-split");
     this._detailsSplitView.sidebarElement().classList.add("timeline-details");
     this._detailsSplitView.setMainElementConstraints(undefined, 40);
@@ -464,7 +464,7 @@ WebInspector.TimelinePanel.prototype = {
         for (var i = 0; i < this._currentViews.length; ++i) {
             var view = this._currentViews[i];
             view.setWindowTimes(this.windowStartTime(), this.windowEndTime());
-            this._stackView.appendView(view, "timeline-view");
+            this._stackView.appendView(view, "timelinePanelTimelineStackSplitViewState");
             this._glueMode = this._glueMode && view.supportsGlueParentMode();
             view.refreshRecords();
         }

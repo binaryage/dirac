@@ -428,7 +428,7 @@ WebInspector.VersionController = function()
 {
 }
 
-WebInspector.VersionController.currentVersion = 4;
+WebInspector.VersionController.currentVersion = 5;
 
 WebInspector.VersionController.prototype = {
     updateVersion: function()
@@ -477,6 +477,58 @@ WebInspector.VersionController.prototype = {
     {
         var advancedMode = WebInspector.settings.createSetting("showHeaSnapshotObjectsHiddenProperties", false).get();
         WebInspector.settings.showAdvancedHeapSnapshotProperties.set(advancedMode);
+    },
+
+    _updateVersionFrom4To5: function()
+    {
+        if (!window.localStorage)
+            return;
+        var settingNames = {
+            "FileSystemViewSidebarWidth": "fileSystemViewSplitViewState",
+            "canvasProfileViewReplaySplitLocation": "canvasProfileViewReplaySplitViewState",
+            "canvasProfileViewSplitLocation": "canvasProfileViewSplitViewState",
+            "elementsSidebarWidth": "elementsPanelSplitViewState",
+            "StylesPaneSplitRatio": "stylesPaneSplitViewState",
+            "heapSnapshotRetainersViewSize": "heapSnapshotSplitViewState",
+            "InspectorView.splitView": "InspectorView.splitViewState",
+            "InspectorView.screencastSplitView": "InspectorView.screencastSplitViewState",
+            "Inspector.drawerSplitView": "Inspector.drawerSplitViewState",
+            "layerDetailsSplitView": "layerDetailsSplitViewState",
+            "networkSidebarWidth": "networkPanelSplitViewState",
+            "sourcesSidebarWidth": "sourcesPanelSplitViewState",
+            "scriptsPanelNavigatorSidebarWidth": "sourcesPanelNavigatorSplitViewState",
+            "sourcesPanelSplitSidebarRatio": "sourcesPanelDebuggerSidebarSplitViewState",
+            "timeline-details": "timelinePanelDetailsSplitViewState",
+            "timeline-split": "timelinePanelRecorsSplitViewState",
+            "timeline-view": "timelinePanelTimelineStackSplitViewState",
+            "auditsSidebarWidth": "auditsPanelSplitViewState",
+            "layersSidebarWidth": "layersPanelSplitViewState",
+            "profilesSidebarWidth": "profilesPanelSplitViewState",
+            "resourcesSidebarWidth": "resourcesPanelSplitViewState"
+        };
+        for (var oldName in settingNames) {
+            var newName = settingNames[oldName];
+            var oldNameH = oldName + "H";
+
+            var newValue = null;
+            var oldSetting = WebInspector.settings.createSetting(oldName, undefined).get();
+            if (oldSetting) {
+                newValue = newValue || {};
+                newValue.vertical = {};
+                newValue.vertical.size = oldSetting;
+                delete window.localStorage[oldName];
+            }
+            var oldSettingH = WebInspector.settings.createSetting(oldNameH, undefined).get();
+            if (oldSettingH) {
+                newValue = newValue || {};
+                newValue.horizontal = {};
+                newValue.horizontal.size = oldSettingH;
+                delete window.localStorage[oldNameH];
+            }
+            var newSetting = WebInspector.settings.createSetting(newName, {});
+            if (newValue)
+                newSetting.set(newValue);
+        }
     },
 
     /**

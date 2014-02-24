@@ -44,11 +44,11 @@ WebInspector.CanvasProfileView = function(profile)
     this._linkifier = new WebInspector.Linkifier();
 
     const defaultReplayLogWidthPercent = 0.34;
-    this._replayInfoSplitView = new WebInspector.SplitView(true, true, "canvasProfileViewReplaySplitLocation", defaultReplayLogWidthPercent);
+    this._replayInfoSplitView = new WebInspector.SplitView(true, true, "canvasProfileViewReplaySplitViewState", defaultReplayLogWidthPercent);
     this._replayInfoSplitView.setMainElementConstraints(defaultReplayLogWidthPercent, defaultReplayLogWidthPercent);
     this._replayInfoSplitView.show(this.element);
 
-    this._imageSplitView = new WebInspector.SplitView(false, true, "canvasProfileViewSplitLocation", 300);
+    this._imageSplitView = new WebInspector.SplitView(false, true, "canvasProfileViewSplitViewState", 300);
     this._imageSplitView.show(this._replayInfoSplitView.mainElement());
 
     var replayImageContainer = this._imageSplitView.mainElement().createChild("div");
