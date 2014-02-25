@@ -61,7 +61,7 @@
 }
 
 .suggest-box-content-item.selected {
-    background-color: rgb(212, 212, 212);
+    background-color: rgba(56, 121, 217, 0.1);
 }
 
 .suggest-box-content-item:hover:not(.selected) {

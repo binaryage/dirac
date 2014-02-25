@@ -99,6 +99,7 @@
             "Drawer.js",
             "EmptyView.js",
             "FilterBar.js",
+            "FilterSuggestionBuilder.js",
             "GoToLineDialog.js",
             "HelpScreen.js",
             "InplaceEditor.js",
