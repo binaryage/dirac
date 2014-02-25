@@ -257,8 +257,9 @@ WebInspector.MemoryStatistics.prototype = {
 
     /**
      * @param {!TimelineAgent.TimelineEvent} record
+     * @param {!Array.<!WebInspector.TimelinePresentationModel.Record>} presentationRecords
      */
-    addRecord: function(record)
+    addRecord: function(record, presentationRecords)
     {
         throw new Error("Not implemented");
     },
@@ -394,6 +395,15 @@ WebInspector.MemoryStatistics.prototype = {
     {
         var ctx = this._canvas.getContext("2d");
         ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+    },
+
+    /**
+     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     * @param {string=} regex
+     * @param {boolean=} selectRecord
+     */
+    highlightSearchResult: function(record, regex, selectRecord)
+    {
     },
 
     __proto__: WebInspector.SplitView.prototype

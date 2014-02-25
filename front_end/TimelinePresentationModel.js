@@ -289,13 +289,34 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
+     * @return {number}
+     */
+    minimumRecordTime: function()
+    {
+        return this._minimumRecordTime;
+    },
+
+    /**
+     * @return {number}
+     */
+    maximumRecordTime: function()
+    {
+        return this._maximumRecordTime;
+    },
+
+    /**
      * @param {!TimelineAgent.TimelineEvent} record
      * @return {!Array.<!WebInspector.TimelinePresentationModel.Record>}
      */
     addRecord: function(record)
     {
-        if (this._minimumRecordTime === -1 || record.startTime < this._minimumRecordTime)
-            this._minimumRecordTime = WebInspector.TimelineModel.startTimeInSeconds(record);
+        var startTime = WebInspector.TimelineModel.startTimeInSeconds(record);
+        var endTime = WebInspector.TimelineModel.endTimeInSeconds(record);
+        if (this._minimumRecordTime === -1 || startTime < this._minimumRecordTime)
+            this._minimumRecordTime = startTime;
+        if (this._maximumRecordTime === -1 || endTime > this._maximumRecordTime)
+            this._maximumRecordTime = endTime;
+
         var records;
         if (record.type === WebInspector.TimelineModel.RecordType.Program)
             records = this._foldSyncTimeRecords(record.children || []);
@@ -1508,6 +1529,18 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     childHasWarnings: function()
     {
         return this._childHasWarnings;
+    },
+
+    /**
+     * @param {!RegExp} regExp
+     * @return {boolean}
+     */
+    testContentMatching: function(regExp)
+    {
+        var toSearchText = this.title;
+        if (this.detailsNode())
+            toSearchText += " " + this.detailsNode().textContent;
+        return regExp.test(toSearchText);
     }
 }
 

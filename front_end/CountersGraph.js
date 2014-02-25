@@ -31,6 +31,7 @@
 /**
  * @constructor
  * @extends {WebInspector.MemoryStatistics}
+ * @implements {WebInspector.TimelineModeView}
  * @param {!WebInspector.TimelineView} timelineView
  * @param {!WebInspector.TimelineModel} model
  */
@@ -117,8 +118,9 @@ WebInspector.CountersGraph.prototype = {
 
     /**
      * @param {!TimelineAgent.TimelineEvent} record
+     * @param {!Array.<!WebInspector.TimelinePresentationModel.Record>} presentationRecords
      */
-    addRecord: function(record)
+    addRecord: function(record, presentationRecords)
     {
         /**
          * @this {!WebInspector.CountersGraph}

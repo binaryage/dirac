@@ -164,6 +164,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.View}
+ * @implements {WebInspector.TimelineModeView}
  * @param {!WebInspector.TimelinePanel} panel
  * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
@@ -214,8 +215,9 @@ WebInspector.TimelineFlameChart.prototype = {
 
     /**
      * @param {!TimelineAgent.TimelineEvent} rawRecord
+     * @param {!Array.<!WebInspector.TimelinePresentationModel.Record>} presentationRecords
      */
-    addRecord: function(rawRecord)
+    addRecord: function(rawRecord, presentationRecords)
     {
         this._dataProvider.addRecord(rawRecord);
         if (this._automaticallySizeWindow) {
@@ -258,25 +260,20 @@ WebInspector.TimelineFlameChart.prototype = {
         return false;
     },
 
-    setSidebarSize: function()
+    /**
+     * @param {number} width
+     */
+    setSidebarSize: function(width)
     {
     },
 
     /**
-     * @param {!WebInspector.FilterBar} filterBar
-     * @return {boolean}
+     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     * @param {string=} regex
+     * @param {boolean=} selectRecord
      */
-    createUIFilters: function(filterBar)
+    highlightSearchResult: function(record, regex, selectRecord)
     {
-        return false;
-    },
-
-    /**
-     * @return {?WebInspector.View}
-     */
-    searchableView: function()
-    {
-        return null;
     },
 
     __proto__: WebInspector.View.prototype
