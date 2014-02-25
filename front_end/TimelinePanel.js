@@ -63,7 +63,6 @@ WebInspector.TimelinePanel = function()
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
-    this._allRecordsCount = 0;
 
     // Create presentation model.
     this._presentationModel = new WebInspector.TimelinePresentationModel();
@@ -200,7 +199,6 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._windowStartTime = event.data.startTime;
         this._windowEndTime = event.data.endTime;
-        this._updateRecordsCounter();
         this._windowFilter.setWindowTimes(this._windowStartTime, this._windowEndTime);
         for (var i = 0; i < this._currentViews.length; ++i)
             this._currentViews[i].setWindowTimes(this._windowStartTime, this._windowEndTime);
@@ -322,10 +320,6 @@ WebInspector.TimelinePanel.prototype = {
 
         panelStatusBarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Capture stacks"), WebInspector.settings.timelineCaptureStacks, true, undefined,
                                                WebInspector.UIString("Capture JavaScript stack on every timeline event")));
-
-        this._statusTextContainer = panelStatusBarElement.createChild("div");
-        this._recordsCounter = new WebInspector.StatusBarText("", "timeline-records-counter");
-        this._statusTextContainer.appendChild(this._recordsCounter.element);
 
         this._miscStatusBarItems = panelStatusBarElement.createChild("div", "status-bar-item");
 
@@ -454,7 +448,6 @@ WebInspector.TimelinePanel.prototype = {
         for (var i = 0; i < this._statusBarButtons.length; ++i)
             this._statusBarButtons[i].setEnabled(!this._operationInProgress);
         this._glueParentButton.setEnabled(!this._operationInProgress && !this._glueMode);
-        this._statusTextContainer.enableStyleClass("hidden", !!indicator);
         this._miscStatusBarItems.removeChildren();
         if (indicator)
             this._miscStatusBarItems.appendChild(indicator.element);
@@ -545,7 +538,6 @@ WebInspector.TimelinePanel.prototype = {
 
     _refreshViews: function()
     {
-        this._updateRecordsCounter();
         for (var i = 0; i < this._currentViews.length; ++i) {
             var view = this._currentViews[i];
             view.refreshRecords();
@@ -623,7 +615,6 @@ WebInspector.TimelinePanel.prototype = {
 
     _onRecordsCleared: function()
     {
-        delete this._updateRecordsCounterTimer;
         this._presentationModel.reset();
         this.setWindowTimes(0, Infinity);
         this._windowFilter.reset();
@@ -632,7 +623,6 @@ WebInspector.TimelinePanel.prototype = {
         for (var i = 0; i < this._currentViews.length; ++i)
             this._currentViews[i].reset();
         this._overviewControl.reset();
-        this._allRecordsCount = 0;
     },
 
     _onRecordingStarted: function()
@@ -663,11 +653,8 @@ WebInspector.TimelinePanel.prototype = {
     _addRecord: function(record)
     {
         var presentationRecords = [];
-        if (record.type !== WebInspector.TimelineModel.RecordType.GPUTask) {
+        if (record.type !== WebInspector.TimelineModel.RecordType.GPUTask)
             presentationRecords = this._presentationModel.addRecord(record);
-            this._allRecordsCount += presentationRecords.length;
-            this._updateRecordsCounter();
-        }
 
         if (this._frameModel)
             this._frameModel.addRecord(record);
@@ -677,20 +664,6 @@ WebInspector.TimelinePanel.prototype = {
         this._overviewPane.addRecord(record);
 
         this._updateSearchHighlight(false, true);
-    },
-
-    _updateRecordsCounter: function()
-    {
-        /**
-         * @this {!WebInspector.TimelinePanel}
-         */
-        function deferredUpdate()
-        {
-            delete this._updateRecordsCounterTimer;
-            this._recordsCounter.setText(WebInspector.UIString("%d of %d records shown", this._presentationModel.filteredRecords().length, this._allRecordsCount));
-        }
-        if (!this._updateRecordsCounterTimer)
-            this._updateRecordsCounterTimer = setTimeout(deferredUpdate.bind(this), 300);
     },
 
     /**
