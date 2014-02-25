@@ -318,7 +318,7 @@ WebInspector.MemoryStatistics.prototype = {
      */
     _onClick: function(event)
     {
-        var x = event.x - this._canvasContainer.offsetParent.offsetLeft;
+        var x = event.x - this._canvasContainer.offsetParent.totalOffsetLeft();
         var minDistance = Infinity;
         var bestTime;
         for (var i = 0; i < this._counterUI.length; ++i) {
@@ -356,7 +356,7 @@ WebInspector.MemoryStatistics.prototype = {
      */
     _onMouseMove: function(event)
     {
-        var x = event.x - this._canvasContainer.offsetParent.offsetLeft;
+        var x = event.x - this._canvasContainer.offsetParent.totalOffsetLeft();
         this._markerXPosition = x;
         this._refreshCurrentValues();
     },
