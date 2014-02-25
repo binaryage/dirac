@@ -267,13 +267,13 @@ WebInspector.ProfileHeader = function(profileType, title)
 /**
  * @constructor
  * @param {?string} subtitle
- * @param {boolean} wait
+ * @param {boolean|undefined} wait
  */
 WebInspector.ProfileHeader.StatusUpdate = function(subtitle, wait)
 {
     /** @type {?string} */
     this.subtitle = subtitle;
-    /** @type {boolean} */
+    /** @type {boolean|undefined} */
     this.wait = wait;
 }
 
@@ -297,7 +297,7 @@ WebInspector.ProfileHeader.prototype = {
      */
     updateStatus: function(subtitle, wait)
     {
-        this.dispatchEventToListeners(WebInspector.ProfileHeader.Events.UpdateStatus, new WebInspector.ProfileHeader.StatusUpdate(subtitle, !!wait));
+        this.dispatchEventToListeners(WebInspector.ProfileHeader.Events.UpdateStatus, new WebInspector.ProfileHeader.StatusUpdate(subtitle, wait));
     },
 
     /**
@@ -1153,7 +1153,8 @@ WebInspector.ProfileSidebarTreeElement.prototype = {
         var statusUpdate = event.data;
         if (statusUpdate.subtitle !== null)
             this.subtitle = statusUpdate.subtitle;
-        this.wait = !!statusUpdate.wait;
+        if (typeof statusUpdate.wait === "boolean")
+            this.wait = statusUpdate.wait;
         this.refreshTitles();
     },
 
