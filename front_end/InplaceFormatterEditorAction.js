@@ -55,6 +55,8 @@ WebInspector.InplaceFormatterEditorAction.prototype = {
         this._button = new WebInspector.StatusBarButton(WebInspector.UIString("Format"), "sources-toggle-pretty-print-status-bar-item");
         this._button.toggled = false;
         this._button.addEventListener("click", this._formatSourceInPlace, this);
+        this._updateButton(null);
+
         return this._button.element;
     },
 
