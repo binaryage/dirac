@@ -55,6 +55,11 @@
     bottom: 0;
 }
 
+.heap-snapshot-view .pie-chart {
+    margin-left: 24px;
+    margin-top: 16px;
+}
+
 .heap-snapshot-view .data-grid {
     border: none;
 }
@@ -213,4 +218,35 @@ table.heap-snapshot-help {
     left: 0;
     right: 0;
     bottom: 0;
+}
+
+.heap-snapshot-stats-legend {
+    margin-left: 24px;
+}
+
+.heap-snapshot-stats-legend > div {
+    margin-top: 1px;
+    width: 170px;
+}
+
+.heap-snapshot-stats-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border: 1px solid rgba(100, 100, 100, 0.3);
+}
+
+.heap-snapshot-stats-swatch.heap-snapshot-stats-empty-swatch {
+    border: none;
+}
+
+.heap-snapshot-stats-name,
+.heap-snapshot-stats-size {
+    display: inline-block;
+    margin-left: 6px;
+}
+
+.heap-snapshot-stats-size {
+    float: right;
+    text-align: right;
 }

@@ -30,20 +30,31 @@
 
 /**
  * @constructor
- * @param {number} totalValue
+ * @param {number=} totalValue
+ * @param {function(number):string=} formatter
  */
-WebInspector.PieChart = function(totalValue)
+WebInspector.PieChart = function(totalValue, formatter)
 {
     this.element = document.createElement("div");
     this.element.className = "pie-chart";
     this.element.createChild("div", "pie-chart-background");
-    var totalString = Number.millisToString(totalValue, true);
-    this.element.createChild("div", "pie-chart-foreground").textContent = totalString;
-    this._totalValue = totalValue;
+    if (totalValue) {
+        var totalString = formatter ? formatter(totalValue) : totalValue;
+        this.element.createChild("div", "pie-chart-foreground").textContent = totalString;
+        this._totalValue = totalValue;
+    }
     this._lastAngle = 0;
 }
 
 WebInspector.PieChart.prototype = {
+    /**
+     * @param {number} value
+     */
+    setTotal: function(value)
+    {
+        this._totalValue = value;
+    },
+
     /**
      * @param {number} value
      * @param {string} color

@@ -218,3 +218,22 @@ WebInspector.HeapSnapshotCommon.StaticData = function(nodeCount, rootNodeIndex, 
     /** @type {number} */
     this.maxJSObjectId = maxJSObjectId;
 }
+
+/**
+ * @constructor
+ */
+WebInspector.HeapSnapshotCommon.Statistics = function()
+{
+    /** @type {number} */
+    this.total;
+    /** @type {number} */
+    this.v8heap;
+    /** @type {number} */
+    this.native;
+    /** @type {number} */
+    this.code;
+    /** @type {number} */
+    this.arrays;
+    /** @type {number} */
+    this.strings;
+}

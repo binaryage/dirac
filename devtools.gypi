@@ -324,6 +324,7 @@
             'front_end/HeapSnapshotProxy.js',
             'front_end/HeapSnapshotView.js',
             'front_end/HeapSnapshotWorkerDispatcher.js',
+            'front_end/PieChart.js',
             'front_end/ProfileDataGridTree.js',
             'front_end/ProfilesPanel.js',
             'front_end/ProfileLauncherView.js',

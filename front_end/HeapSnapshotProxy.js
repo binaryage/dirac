@@ -462,6 +462,14 @@ WebInspector.HeapSnapshotProxy.prototype = {
         this.callMethod(dataReceived.bind(this), "updateStaticData");
     },
 
+    /**
+     * @param {!function(!WebInspector.HeapSnapshotCommon.Statistics):void} callback
+     */
+    getStatistics: function(callback)
+    {
+        this.callMethod(callback, "getStatistics");
+    },
+
     get totalSize()
     {
         return this._staticData.totalSize;

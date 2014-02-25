@@ -1263,5 +1263,6 @@ importScript("ProfileLauncherView.js");
 importScript("TopDownProfileDataGridTree.js");
 importScript("CanvasProfileView.js");
 importScript("CanvasReplayStateView.js");
+importScript("PieChart.js");
 
 WebInspector.ProfileTypeRegistry.instance = new WebInspector.ProfileTypeRegistry();

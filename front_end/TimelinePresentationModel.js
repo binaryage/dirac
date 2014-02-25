@@ -1577,7 +1577,11 @@ WebInspector.TimelinePresentationModel.generatePieChart = function(aggregatedSta
     for (var categoryName in aggregatedStats)
         total += aggregatedStats[categoryName];
 
-    var pieChart = new WebInspector.PieChart(total);
+    function formatter(value)
+    {
+        return Number.millisToString(value, true);
+    }
+    var pieChart = new WebInspector.PieChart(total, formatter);
     element.appendChild(pieChart.element);
     var footerElement = element.createChild("div", "timeline-aggregated-info-legend");
 
@@ -1587,7 +1591,7 @@ WebInspector.TimelinePresentationModel.generatePieChart = function(aggregatedSta
         pieChart.addSlice(selfTime, selfCategory.fillColorStop1);
         var rowElement = footerElement.createChild("div");
         rowElement.createChild("div", "timeline-aggregated-category timeline-" + selfCategory.name);
-        rowElement.createTextChild(WebInspector.UIString("%s %s (Self)", Number.millisToString(selfTime, true), selfCategory.title));
+        rowElement.createTextChild(WebInspector.UIString("%s %s (Self)", formatter(selfTime), selfCategory.title));
 
         // Children of the same category.
         var categoryTime = aggregatedStats[selfCategory.name];
@@ -1596,7 +1600,7 @@ WebInspector.TimelinePresentationModel.generatePieChart = function(aggregatedSta
             pieChart.addSlice(value, selfCategory.fillColorStop0);
             rowElement = footerElement.createChild("div");
             rowElement.createChild("div", "timeline-aggregated-category timeline-" + selfCategory.name);
-            rowElement.createTextChild(WebInspector.UIString("%s %s (Children)", Number.millisToString(value, true), selfCategory.title));
+            rowElement.createTextChild(WebInspector.UIString("%s %s (Children)", formatter(value), selfCategory.title));
         }
     }
 
@@ -1611,7 +1615,7 @@ WebInspector.TimelinePresentationModel.generatePieChart = function(aggregatedSta
          pieChart.addSlice(value, category.fillColorStop0);
          var rowElement = footerElement.createChild("div");
          rowElement.createChild("div", "timeline-aggregated-category timeline-" + category.name);
-         rowElement.createTextChild(WebInspector.UIString("%s %s", Number.millisToString(value, true), category.title));
+         rowElement.createTextChild(WebInspector.UIString("%s %s", formatter(value), category.title));
     }
     return element;
 }

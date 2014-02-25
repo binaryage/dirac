@@ -397,6 +397,52 @@ WebInspector.JSHeapSnapshot.prototype = {
         }
     },
 
+    _calculateStatistics: function()
+    {
+        var nodeFieldCount = this._nodeFieldCount;
+        var nodes = this._nodes;
+        var nodesLength = nodes.length;
+        var nodeTypeOffset = this._nodeTypeOffset;
+        var nodeSizeOffset = this._nodeSelfSizeOffset;;
+        var nodeNativeType = this._nodeNativeType;
+        var nodeCodeType = this._nodeCodeType;
+        var nodeConsStringType = this._nodeConsStringType;
+        var nodeSlicedStringType = this._nodeSlicedStringType;
+        var sizeNative = 0;
+        var sizeCode = 0;
+        var sizeStrings = 0;
+        var sizeArrays = 0;
+        var node = this.rootNode();
+        for (var nodeIndex = 0; nodeIndex < nodesLength; nodeIndex += nodeFieldCount) {
+            node.nodeIndex = nodeIndex;
+            var nodeType = nodes[nodeIndex + nodeTypeOffset];
+            var nodeSize = nodes[nodeIndex + nodeSizeOffset];
+            if (nodeType === nodeNativeType)
+                sizeNative += nodeSize;
+            else if (nodeType === nodeCodeType)
+                sizeCode += nodeSize;
+            else if (nodeType === nodeConsStringType || nodeType === nodeSlicedStringType || node.type() === "string")
+                sizeStrings += nodeSize;
+            else if (node.type() === "array")
+                sizeArrays += nodeSize;
+        }
+        this._statistics = new WebInspector.HeapSnapshotCommon.Statistics();
+        this._statistics.total = this.totalSize;
+        this._statistics.v8heap = this.totalSize - sizeNative;
+        this._statistics.native = sizeNative;
+        this._statistics.code = sizeCode;
+        this._statistics.arrays = sizeArrays;
+        this._statistics.strings = sizeStrings;
+    },
+
+    /**
+     * @return {!WebInspector.HeapSnapshotCommon.Statistics}
+     */
+    getStatistics: function()
+    {
+        return this._statistics;
+    },
+
     __proto__: WebInspector.HeapSnapshot.prototype
 };
 

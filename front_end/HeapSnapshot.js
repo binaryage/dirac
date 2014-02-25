@@ -813,6 +813,8 @@ WebInspector.HeapSnapshot.prototype = {
         this._calculateRetainedSizes(result.postOrderIndex2NodeOrdinal);
         this._progress.updateStatus("Buiding dominated nodes\u2026");
         this._buildDominatedNodes();
+        this._progress.updateStatus("Calculating statistics\u2026");
+        this._calculateStatistics();
         this._progress.updateStatus("Finished processing.");
     },
 
@@ -1534,6 +1536,11 @@ WebInspector.HeapSnapshot.prototype = {
     },
 
     _calculateFlags: function()
+    {
+        throw new Error("Not implemented");
+    },
+
+    _calculateStatistics: function()
     {
         throw new Error("Not implemented");
     },

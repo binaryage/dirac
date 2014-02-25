@@ -162,7 +162,8 @@
             "NativeBreakpointsSidebarPane.js",
             "InspectElementModeController.js",
             "ObjectPopoverHelper.js",
-            "ObjectPropertiesSection.js"
+            "ObjectPropertiesSection.js",
+            "PieChart.js"
         ]
     },
     {
@@ -293,7 +294,6 @@
         "sources": [
             "CountersGraph.js",
             "MemoryStatistics.js",
-            "PieChart.js",
             "TimelineEventOverview.js",
             "TimelineFrameModel.js",
             "TimelineFrameOverview.js",

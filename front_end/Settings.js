@@ -288,6 +288,7 @@ WebInspector.ExperimentsSettings = function()
     this.dockToLeft = this._createExperiment("dockToLeft", "Enable dock to left mode");
     this.allocationProfiler = this._createExperiment("allocationProfiler", "Enable JavaScript heap allocation profiler");
     this.timelineFlameChart = this._createExperiment("timelineFlameChart", "Enable FlameChart mode in Timeline");
+    this.heapSnapshotStatistics = this._createExperiment("heapSnapshotStatistics", "Show memory breakdown statistics in heap snapshots");
 
     this._cleanUpSetting();
 }

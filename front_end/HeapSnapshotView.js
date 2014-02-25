@@ -59,6 +59,8 @@ WebInspector.HeapSnapshotView = function(profile)
     this.containmentDataGrid.show(this.containmentView.element);
     this.containmentDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
+    this.statisticsView = new WebInspector.HeapSnapshotStatisticsView();
+
     this.constructorsView = new WebInspector.View();
 
     this.constructorsDataGrid = new WebInspector.HeapSnapshotConstructorsDataGrid();
@@ -117,6 +119,8 @@ WebInspector.HeapSnapshotView = function(profile)
         this.views.push({title: WebInspector.UIString("Dominators"), view: this.dominatorView, grid: this.dominatorDataGrid});
     if (this.allocationView)
         this.views.push({title: WebInspector.UIString("Allocation"), view: this.allocationView, grid: this.allocationDataGrid});
+    if (WebInspector.experimentsSettings.heapSnapshotStatistics.isEnabled())
+        this.views.push({title: WebInspector.UIString("Statistics"), view: this.statisticsView});
     this.views.current = 0;
     for (var i = 0; i < this.views.length; ++i)
         this.viewSelect.createOption(WebInspector.UIString(this.views[i].title));
@@ -146,10 +150,12 @@ WebInspector.HeapSnapshotView.prototype = {
         this._profile.load(profileCallback.bind(this));
 
         /**
+         * @param {!WebInspector.HeapSnapshotProxy} heapSnapshotProxy
          * @this {WebInspector.HeapSnapshotView}
          */
         function profileCallback(heapSnapshotProxy)
         {
+            heapSnapshotProxy.getStatistics(this._gotStatistics.bind(this));
             var list = this._profiles();
             var profileIndex = list.indexOf(this._profile);
             this.baseSelect.setSelectedIndex(Math.max(0, profileIndex - 1));
@@ -157,6 +163,18 @@ WebInspector.HeapSnapshotView.prototype = {
             if (this._trackingOverviewGrid)
                 this._trackingOverviewGrid._updateGrid();
         }
+    },
+
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.Statistics} statistics
+     */
+    _gotStatistics: function(statistics) {
+        this.statisticsView.setTotal(statistics.total);
+        this.statisticsView.addRecord(statistics.code, WebInspector.UIString("Code"), "#f77");
+        this.statisticsView.addRecord(statistics.strings, WebInspector.UIString("Strings"), "#5e5");
+        this.statisticsView.addRecord(statistics.arrays, WebInspector.UIString("JS Arrays"), "#7af");
+        this.statisticsView.addRecord(statistics.native, WebInspector.UIString("Typed Arrays"), "#fc5");
+        this.statisticsView.addRecord(statistics.total, WebInspector.UIString("Total"));
     },
 
     _onIdsRangeChanged: function(event)
@@ -353,6 +371,8 @@ WebInspector.HeapSnapshotView.prototype = {
 
     refreshVisibleData: function()
     {
+        if (!this.dataGrid)
+            return;
         var child = this.dataGrid.rootNode().children[0];
         while (child) {
             child.refresh();
@@ -362,7 +382,7 @@ WebInspector.HeapSnapshotView.prototype = {
 
     _changeBase: function()
     {
-        if (this._baseProfile=== this._profiles()[this.baseSelect.selectedIndex()])
+        if (this._baseProfile === this._profiles()[this.baseSelect.selectedIndex()])
             return;
 
         this._baseProfile = this._profiles()[this.baseSelect.selectedIndex()];
@@ -423,7 +443,8 @@ WebInspector.HeapSnapshotView.prototype = {
      */
     populateContextMenu: function(contextMenu, event)
     {
-        this.dataGrid.populateContextMenu(contextMenu, event);
+        if (this.dataGrid)
+            this.dataGrid.populateContextMenu(contextMenu, event);
     },
 
     _selectionChanged: function(event)
@@ -493,7 +514,7 @@ WebInspector.HeapSnapshotView.prototype = {
     _updateDataSourceAndView: function()
     {
         var dataGrid = this.dataGrid;
-        if (dataGrid.snapshot)
+        if (!dataGrid || dataGrid.snapshot)
             return;
 
         this._profile.load(didLoadSnapshot.bind(this));
@@ -554,7 +575,8 @@ WebInspector.HeapSnapshotView.prototype = {
         this.dataGrid = view.grid;
         this.currentView.show(this.viewsContainer.mainElement());
         this.refreshVisibleData();
-        this.dataGrid.updateWidths();
+        if (this.dataGrid)
+            this.dataGrid.updateWidths();
 
         this._updateSelectorsVisibility();
 
@@ -1755,4 +1777,51 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
     {
         return this._maximumBoundaries - this._minimumBoundaries;
     }
+}
+
+
+/**
+ * @constructor
+ * @extends {WebInspector.View}
+ */
+WebInspector.HeapSnapshotStatisticsView = function()
+{
+    WebInspector.View.call(this);
+    this._pieChart = new WebInspector.PieChart();
+    this.element.appendChild(this._pieChart.element);
+    this._labels = this.element.createChild("div", "heap-snapshot-stats-legend");
+}
+
+WebInspector.HeapSnapshotStatisticsView.prototype = {
+    /**
+     * @param {number} value
+     */
+    setTotal: function(value)
+    {
+        this._pieChart.setTotal(value);
+    },
+
+    /**
+     * @param {number} value
+     * @param {string} name
+     * @param {string=} color
+     */
+    addRecord: function(value, name, color)
+    {
+        if (color)
+            this._pieChart.addSlice(value, color);
+
+        var node = this._labels.createChild("div");
+        var swatchDiv = node.createChild("div", "heap-snapshot-stats-swatch");
+        var nameDiv = node.createChild("div", "heap-snapshot-stats-name");
+        var sizeDiv = node.createChild("div", "heap-snapshot-stats-size");
+        if (color)
+            swatchDiv.style.backgroundColor = color;
+        else
+            swatchDiv.classList.add("heap-snapshot-stats-empty-swatch");
+        nameDiv.textContent = name;
+        sizeDiv.textContent = WebInspector.UIString("%s KB", Number.withThousandsSeparator(Math.round(value / 1024)));
+    },
+
+    __proto__: WebInspector.View.prototype
 }
