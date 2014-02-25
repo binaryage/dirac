@@ -506,6 +506,15 @@ WebInspector._focusChanged = function(event)
     WebInspector.setCurrentFocusElement(event.target);
 }
 
+WebInspector._documentBlurred = function(event)
+{
+    // We want to know when currentFocusElement loses focus to nowhere.
+    // This is the case when event.relatedTarget is null (no element is being focused)
+    // and document.activeElement is reset to default (this is not a window blur).
+    if (!event.relatedTarget && document.activeElement === document.body)
+      WebInspector.setCurrentFocusElement(null);
+}
+
 WebInspector._textInputTypes = ["text", "search", "tel", "url", "email", "password"].keySet(); 
 WebInspector._isTextEditingElement = function(element)
 {
@@ -795,6 +804,7 @@ function windowLoaded()
     window.addEventListener("focus", WebInspector._windowFocused, false);
     window.addEventListener("blur", WebInspector._windowBlurred, false);
     document.addEventListener("focus", WebInspector._focusChanged.bind(this), true);
+    document.addEventListener("blur", WebInspector._documentBlurred.bind(this), true);
     window.removeEventListener("DOMContentLoaded", windowLoaded, false);
 }
 
