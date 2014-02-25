@@ -102,11 +102,11 @@ WebInspector.DockController.prototype = {
             return;
 
         this._dockSide = dockSide;
-        if (WebInspector.queryParamsObject["can_dock"])
-            InspectorFrontendHost.setIsDocked(dockSide !== WebInspector.DockController.State.Undocked);
-
         this._updateUI();
         this.dispatchEventToListeners(WebInspector.DockController.Events.DockSideChanged, this._dockSide);
+
+        if (WebInspector.queryParamsObject["can_dock"])
+            InspectorFrontendHost.setIsDocked(dockSide !== WebInspector.DockController.State.Undocked);
     },
 
     _updateUI: function()

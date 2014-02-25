@@ -34,8 +34,9 @@
  * @param {string=} settingName
  * @param {number=} defaultSidebarWidth
  * @param {number=} defaultSidebarHeight
+ * @param {boolean=} useDip
  */
-WebInspector.SplitView = function(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight)
+WebInspector.SplitView = function(isVertical, secondIsSidebar, settingName, defaultSidebarWidth, defaultSidebarHeight, useDip)
 {
     WebInspector.View.call(this);
 
@@ -65,6 +66,7 @@ WebInspector.SplitView = function(isVertical, secondIsSidebar, settingName, defa
     this._resizerElements = [];
 
     this._resizable = true;
+    this._useDip = !!useDip;
 
     this._savedSidebarWidth = defaultSidebarWidth || 200;
     this._savedSidebarHeight = defaultSidebarHeight || this._savedSidebarWidth;
@@ -216,10 +218,12 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @return {string}
+     * @return {?string}
      */
     sidebarSide: function()
     {
+        if (this._isShowingOne)
+            return null;
         return this._isVertical ?
             (this._secondIsSidebar ? "right" : "left") :
             (this._secondIsSidebar ? "bottom" : "top");
@@ -342,11 +346,10 @@ WebInspector.SplitView.prototype = {
 
     /**
      * @param {number} size
-     * @param {boolean=} ignoreConstraints
      */
-    setSidebarSize: function(size, ignoreConstraints)
+    setSidebarSize: function(size)
     {
-        this._innerSetSidebarSize(size, ignoreConstraints);
+        this._innerSetSidebarSize(size);
         this._saveSetting();
     },
 
@@ -552,6 +555,7 @@ WebInspector.SplitView.prototype = {
      */
     _applyConstraints: function(sidebarSize)
     {
+        var zoomFactor = this._useDip ? WebInspector.zoomManager.zoomFactor() : 1;
         const minPadding = 20;
         var totalSize = this.totalSize();
         var minimumSiderbarSizeContraint = this.isVertical() ? this._minimumSidebarWidth : this._minimumSidebarHeight;
@@ -563,6 +567,8 @@ WebInspector.SplitView.prototype = {
         }
         if (typeof minimumSiderbarSizeContraint !== "number")
             from = Math.max(from, minPadding);
+        if (!fromInPercents)
+            from /= zoomFactor;
 
         var minimumMainSizeConstraint = this.isVertical() ? this._minimumMainWidth : this._minimumMainHeight;
         var minMainSize = minimumMainSizeConstraint || 0;
@@ -573,6 +579,8 @@ WebInspector.SplitView.prototype = {
         }
         if (typeof minimumMainSizeConstraint !== "number")
             minMainSize = Math.max(minMainSize, minPadding);
+        if (!toInPercents)
+            minMainSize /= zoomFactor;
 
         var to = totalSize - minMainSize;
         if (from <= to)
@@ -592,7 +600,15 @@ WebInspector.SplitView.prototype = {
 
     wasShown: function()
     {
+        if (this._useDip)
+            WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
         this._updateLayout();
+    },
+
+    willHide: function()
+    {
+        if (this._useDip)
+            WebInspector.zoomManager.removeEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
     },
 
     onResize: function()
@@ -658,6 +674,18 @@ WebInspector.SplitView.prototype = {
         resizerElement.removeEventListener("mousedown", this._onDragStartBound, false);
         resizerElement.style.removeProperty("cursor");
         this._resizerElements.remove(resizerElement);
+    },
+
+    /**
+     * @param {!Element} resizer
+     * @param {boolean} on
+     */
+    toggleResizer: function(resizer, on)
+    {
+        if (on)
+            this.installResizer(resizer);
+        else
+            this.uninstallResizer(resizer);
     },
 
     /**
@@ -753,6 +781,16 @@ WebInspector.SplitView.prototype = {
         else
             state.horizontal = orientationState;
         setting.set(state);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onZoomChanged: function(event)
+    {
+        var data = /** @type {{from: number, to: number}} */ (event.data);
+        this._innerSetSidebarSize(this.sidebarSize() * data.from / data.to, true);
+        this._saveSetting();
     },
 
     __proto__: WebInspector.View.prototype

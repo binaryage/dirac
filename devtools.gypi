@@ -95,6 +95,7 @@
             'front_end/InplaceEditor.js',
             'front_end/InplaceFormatterEditorAction.js',
             'front_end/InspectElementModeController.js',
+            'front_end/InspectedPagePlaceholder.js',
             'front_end/InspectorBackend.js',
             'front_end/InspectorFrontendAPI.js',
             'front_end/InspectorFrontendHostStub.js',

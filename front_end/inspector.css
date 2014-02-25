@@ -2781,7 +2781,7 @@ button.record-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
     max-width: 200px;
 }
 
-.inspector-view {
+.root-view {
     overflow: hidden;
     position: absolute !important;
 }
@@ -2841,6 +2841,6 @@ body.undocked .toolbar-close-button-item {
     display: none;
 }
 
-#inspector-split-view > .split-view-sidebar {
+.root-view > .split-view > .split-view-sidebar {
     position: relative;
 }

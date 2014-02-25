@@ -521,7 +521,7 @@ WebInspector.WorkspaceSettingsTab.prototype = {
      */
     _editFileSystem: function(id)
     {
-        WebInspector.EditFileSystemDialog.show(WebInspector.inspectorView.devtoolsElement(), id);
+        WebInspector.EditFileSystemDialog.show(WebInspector.inspectorView.element, id);
     },
 
     /**

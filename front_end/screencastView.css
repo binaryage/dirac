@@ -28,6 +28,10 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+.screencast {
+    overflow: hidden;
+}
+
 .screencast-navigation {
     -webkit-flex-direction: row;
     display: -webkit-flex;

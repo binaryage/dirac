@@ -35,30 +35,7 @@
 WebInspector.InspectorView = function()
 {
     WebInspector.View.call(this);
-    this.markAsRoot();
-    this.element.classList.add("fill", "inspector-view");
-    this.element.setAttribute("spellcheck", false);
-
-    window.addEventListener("resize", this._onWindowResize.bind(this), true);
-    WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
-
-    // We can use split view either for docking or screencast, but not together.
-    var settingName = WebInspector.queryParamsObject["can_dock"] ? "InspectorView.splitViewState" : "InspectorView.screencastSplitViewState";
-    this._splitView = new WebInspector.SplitView(false, true, settingName, 300, 300);
-    this._updateConstraints();
-    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._updateSplitView.bind(this));
-
-    this._splitView.element.id = "inspector-split-view";
-    this._splitView.show(this.element);
-
-    // Main part of main split is overlay view.
-    this._overlayView = new WebInspector.InspectorView.OverlayView(this._splitView);
-    this._overlayView.show(this._splitView.mainElement());
-
-    // Sidebar of main split is artificial element used for positioning.
-    this._devtoolsView = new WebInspector.ViewWithResizeCallback(this._onDevToolsViewResized.bind(this));
-    this._devtoolsView.show(this._splitView.sidebarElement());
-    WebInspector.Dialog.setModalHostView(this._devtoolsView);
+    WebInspector.Dialog.setModalHostView(this);
 
     // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
     this._drawerSplitView = new WebInspector.SplitView(false, true, "Inspector.drawerSplitViewState", 200, 200);
@@ -66,7 +43,7 @@ WebInspector.InspectorView = function()
     this._drawerSplitView.enableShowModeSaving();
     this._drawerSplitView.setSidebarElementConstraints(Preferences.minDrawerHeight, Preferences.minDrawerHeight);
     this._drawerSplitView.setMainElementConstraints(25, 25);
-    this._drawerSplitView.show(this._devtoolsView.element);
+    this._drawerSplitView.show(this.element);
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.setRetainTabOrder(true, WebInspector.moduleManager.orderComparator(WebInspector.Panel, "name", "order"));
@@ -104,16 +81,7 @@ WebInspector.InspectorView = function()
     this._closeBracketIdentifiers = ["U+005D", "U+00DD"].keySet();
     this._lastActivePanelSetting = WebInspector.settings.createSetting("lastActivePanel", "elements");
 
-    this._updateSplitView();
-
     this._loadPanelDesciptors();
-}
-
-WebInspector.InspectorView.Constraints = {
-    OverlayWidth: 50,
-    OverlayHeight: 50,
-    DevToolsWidth: 180,
-    DevToolsHeight: 50
 };
 
 WebInspector.InspectorView.prototype = {
@@ -146,14 +114,6 @@ WebInspector.InspectorView.prototype = {
     appendToRightToolbar: function(element)
     {
         this._rightToolbarElement.insertBefore(element, this._closeButtonToolbarItem);
-    },
-
-    /**
-     * @return {!Element}
-     */
-    devtoolsElement: function()
-    {
-        return this._devtoolsView.element;
     },
 
     /**
@@ -414,80 +374,17 @@ WebInspector.InspectorView.prototype = {
         this._historyIterator = this._history.length - 1;
     },
 
-    _onDevToolsViewResized: function()
+    onResize: function()
     {
         WebInspector.Dialog.modalHostRepositioned();
     },
 
-    _onWindowResize: function()
-    {
-        this.doResize();
-    },
-
-    _updateSplitView: function()
-    {
-        var dockSide = WebInspector.dockController.dockSide();
-        if (dockSide !== WebInspector.DockController.State.Undocked) {
-            var vertical = WebInspector.dockController.isVertical();
-            this._splitView.setVertical(vertical);
-            if (vertical) {
-                // Docked to side.
-                if (dockSide === WebInspector.DockController.State.DockedToRight)
-                    this._overlayView.setMargins(false, true, false, false);
-                else
-                    this._overlayView.setMargins(false, false, false, true);
-                this._splitView.setSecondIsSidebar(dockSide === WebInspector.DockController.State.DockedToRight);
-                this._splitView.uninstallResizer(this._tabbedPane.headerElement());
-                this._splitView.installResizer(this._splitView.resizerElement());
-            } else {
-                // Docked to bottom.
-                this._overlayView.setMargins(false, false, false, false);
-                this._splitView.setSecondIsSidebar(true);
-                this._splitView.installResizer(this._splitView.resizerElement());
-                this._splitView.installResizer(this._tabbedPane.headerElement());
-            }
-            this._splitView.showBoth();
-        } else {
-            this._overlayView.setMargins(false, false, false, false);
-            this._splitView.hideMain();
-            this._splitView.uninstallResizer(this._tabbedPane.headerElement());
-            this._splitView.uninstallResizer(this._splitView.resizerElement());
-        }
-    },
-
-    _onZoomChanged: function(event)
-    {
-        this._updateConstraints();
-        var data = /** @type {{from: number, to: number}} */ (event.data);
-        this._splitView.setSidebarSize(this._splitView.sidebarSize() * data.from / data.to, true);
-        this._overlayView.updateMargins();
-    },
-
-    _updateConstraints: function()
-    {
-        var zoomFactor = WebInspector.zoomManager.zoomFactor();
-        this._splitView.setSidebarElementConstraints(WebInspector.InspectorView.Constraints.DevToolsWidth / zoomFactor,
-            WebInspector.InspectorView.Constraints.DevToolsHeight / zoomFactor);
-        this._splitView.setMainElementConstraints(WebInspector.InspectorView.Constraints.OverlayWidth / zoomFactor,
-            WebInspector.InspectorView.Constraints.OverlayHeight / zoomFactor);
-    },
-
     /**
-     * @param {!WebInspector.View} view
-     * @param {boolean} vertical
+     * @return {!Element}
      */
-    showScreencastView: function(view, vertical)
+    topResizerElement: function()
     {
-        if (view.parentView() !== this._overlayView)
-            view.show(this._overlayView.element);
-        this._splitView.setVertical(vertical);
-        this._splitView.installResizer(this._splitView.resizerElement());
-        this._splitView.showBoth();
-    },
-
-    hideScreencastView: function()
-    {
-        this._splitView.hideMain();
+        return this._tabbedPane.headerElement();
     },
 
     /**
@@ -548,81 +445,23 @@ WebInspector.InspectorView.prototype = {
 };
 
 /**
- * @constructor
- * @param {!WebInspector.SplitView} splitView
- * @extends {WebInspector.View}
- */
-WebInspector.InspectorView.OverlayView = function(splitView)
-{
-    WebInspector.View.call(this);
-    this._margins = {top: 0, left: 0, right: 0, bottom: 0};
-    this._splitView = splitView;
-}
-
-WebInspector.InspectorView.OverlayView.prototype = {
-    /**
-     * @param {boolean} top
-     * @param {boolean} right
-     * @param {boolean} bottom
-     * @param {boolean} left
-     */
-    setMargins: function(top, right, bottom, left)
-    {
-        this._margins = { top: top, right: right, bottom: bottom, left: left };
-        this.updateMargins();
-    },
-
-    updateMargins: function()
-    {
-        var marginValue = Math.round(3 / WebInspector.zoomManager.zoomFactor()) + "px ";
-        var margins = this._margins.top ? marginValue : "0 ";
-        margins += this._margins.right ? marginValue : "0 ";
-        margins += this._margins.bottom ? marginValue : "0 ";
-        margins += this._margins.left ? marginValue : "0 ";
-        this.element.style.margin = margins;
-    },
-
-    onResize: function()
-    {
-        var dockSide = WebInspector.dockController.dockSide();
-        if (dockSide !== WebInspector.DockController.State.Undocked) {
-            if (this._setContentsInsetsId)
-                window.cancelAnimationFrame(this._setContentsInsetsId);
-            this._setContentsInsetsId = window.requestAnimationFrame(this._setContentsInsets.bind(this));
-        }
-    },
-
-    _setContentsInsets: function()
-    {
-        delete this._setContentsInsetsId;
-
-        var zoomFactor = WebInspector.zoomManager.zoomFactor();
-        var marginValue = Math.round(3 / zoomFactor);
-        var insets = {
-            top: this._margins.top ? marginValue : 0,
-            left: this._margins.left ? marginValue : 0,
-            right: this._margins.right ? marginValue : 0,
-            bottom: this._margins.bottom ? marginValue : 0};
-
-        var minSize = {
-            width: WebInspector.InspectorView.Constraints.OverlayWidth - Math.round(insets.left * zoomFactor) - Math.round(insets.right * zoomFactor),
-            height: WebInspector.InspectorView.Constraints.OverlayHeight - Math.round(insets.top * zoomFactor) - Math.round(insets.bottom * zoomFactor)};
-
-        insets[this._splitView.sidebarSide()] += this._splitView.desiredSidebarSize();
-
-        var zoomedInsets = {
-            top: Math.round(insets.top * zoomFactor),
-            left: Math.round(insets.left * zoomFactor),
-            bottom: Math.round(insets.bottom * zoomFactor),
-            right: Math.round(insets.right * zoomFactor)};
-
-        InspectorFrontendHost.setContentsResizingStrategy(zoomedInsets, minSize);
-    },
-
-    __proto__: WebInspector.View.prototype
-}
-
-/**
  * @type {!WebInspector.InspectorView}
  */
 WebInspector.inspectorView;
+
+/**
+ * @constructor
+ * @extends {WebInspector.View}
+ */
+WebInspector.RootView = function()
+{
+    WebInspector.View.call(this);
+    this.markAsRoot();
+    this.element.classList.add("fill", "root-view");
+    this.element.setAttribute("spellcheck", false);
+    window.addEventListener("resize", this.doResize.bind(this), true);
+};
+
+WebInspector.RootView.prototype = {
+    __proto__: WebInspector.View.prototype
+};

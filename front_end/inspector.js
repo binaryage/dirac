@@ -51,11 +51,46 @@ var WebInspector = {
         if (this.dockController.element)
             this.inspectorView.appendToRightToolbar(this.dockController.element);
 
-        if (Capabilities.canScreencast) {
-            var placeholder = document.createElement("div");
-            this._screencastView = new WebInspector.ScreencastView(placeholder);
-            this.inspectorView.appendToRightToolbar(placeholder);
+        if (this._screencastController)
+            this.inspectorView.appendToRightToolbar(this._screencastController.statusBarItem());
+    },
+
+    _createRootView: function()
+    {
+        var rootView = new WebInspector.RootView();
+
+        this._rootSplitView = new WebInspector.SplitView(false, true, WebInspector.queryParamsObject["can_dock"] ? "InspectorView.splitViewState" : "InspectorView.dummySplitViewState", 300, 300, true);
+        this._rootSplitView.show(rootView.element);
+        this._rootSplitView.setSidebarElementConstraints(180, 50);
+        this._rootSplitView.setMainElementConstraints(WebInspector.InspectedPagePlaceholder.Constraints.Width, WebInspector.InspectedPagePlaceholder.Constraints.Height);
+
+        this.inspectorView.show(this._rootSplitView.sidebarElement());
+
+        this._inspectedPagePlaceholder = new WebInspector.InspectedPagePlaceholder();
+        this._inspectedPagePlaceholder.show(this._rootSplitView.mainElement());
+
+        this.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._updateRootSplitViewOnDockSideChange, this);
+        this._updateRootSplitViewOnDockSideChange();
+
+        rootView.show(document.body);
+    },
+
+    _updateRootSplitViewOnDockSideChange: function()
+    {
+        var dockSide = WebInspector.dockController.dockSide();
+        if (dockSide === WebInspector.DockController.State.Undocked) {
+            this._rootSplitView.toggleResizer(this._rootSplitView.resizerElement(), false);
+            this._rootSplitView.toggleResizer(this.inspectorView.topResizerElement(), false);
+            this._rootSplitView.hideMain();
+            return;
         }
+
+        this._rootSplitView.setVertical(dockSide === WebInspector.DockController.State.DockedToLeft || dockSide === WebInspector.DockController.State.DockedToRight);
+        this._rootSplitView.setSecondIsSidebar(dockSide === WebInspector.DockController.State.DockedToRight || dockSide === WebInspector.DockController.State.DockedToBottom);
+        this._rootSplitView.toggleResizer(this._rootSplitView.resizerElement(), true);
+        this._rootSplitView.toggleResizer(this.inspectorView.topResizerElement(), dockSide === WebInspector.DockController.State.DockedToBottom);
+        this._inspectedPagePlaceholder.setMargins(false, dockSide === WebInspector.DockController.State.DockedToRight, false, dockSide === WebInspector.DockController.State.DockedToLeft);
+        this._rootSplitView.showBoth();
     },
 
     /**
@@ -367,8 +402,12 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this._registerModules();
 
     this.panels = {};
-    WebInspector.inspectorView = new WebInspector.InspectorView();
-    WebInspector.inspectorView.show(document.body);
+    this.inspectorView = new WebInspector.InspectorView();
+    // Screencast controller creates a root view itself.
+    if (Capabilities.canScreencast)
+        this._screencastController = new WebInspector.ScreencastController();
+    else
+        this._createRootView();
     this._createGlobalStatusBarItems();
 
     this.addMainEventListeners(document);
@@ -413,11 +452,11 @@ WebInspector._doLoadedDoneWithCapabilities = function()
         }
         showRulersChanged();
 
-        if (Capabilities.canScreencast)
-            this._screencastView.initialize();
+        if (this._screencastController)
+            this._screencastController.initialize();
     }
 
-    this._loadCompletedForWorkers()
+    this._loadCompletedForWorkers();
     InspectorFrontendAPI.loadCompleted();
     WebInspector.notifications.dispatchEventToListeners(WebInspector.Events.InspectorLoaded);
 }
