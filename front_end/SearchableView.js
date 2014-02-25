@@ -41,7 +41,7 @@ WebInspector.SearchableView = function(searchable)
     this._searchProvider = searchable;
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
 
-    this._footerElementContainer = this.element.createChild("div", "inspector-footer status-bar hidden");
+    this._footerElementContainer = this.element.createChild("div", "search-bar status-bar hidden");
     this._footerElementContainer.style.order = 100;
 
     this._footerElement = this._footerElementContainer.createChild("table", "toolbar-search");

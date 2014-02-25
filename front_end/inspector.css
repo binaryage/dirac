@@ -246,7 +246,7 @@ body.undocked.platform-mac.inactive .toolbar-background {
     border: 0;
     padding: 0 2px;
     margin: 0;
-    -webkit-flex: 1;
+    flex: 1;
 }
 
 .search-replace:focus {
@@ -2786,10 +2786,9 @@ button.record-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
     position: absolute !important;
 }
 
-.inspector-footer.status-bar {
-    flex: 0 0 auto;
+.search-bar {
+    flex: 0 0 23px;
     background-color: rgb(236, 236, 236);
-    height: auto;
 }
 
 .progress-bar-container {
