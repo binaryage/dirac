@@ -124,6 +124,8 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     this._debugSidebarResizeWidgetElement = document.createElementWithClass("div", "resizer-widget");
     this._debugSidebarResizeWidgetElement.id = "scripts-debug-sidebar-resizer-widget";
+    this._splitView.addEventListener(WebInspector.SplitView.Events.ShowModeChanged, this._updateDebugSidebarResizeWidget, this);
+    this._updateDebugSidebarResizeWidget();
     this._splitView.installResizer(this._debugSidebarResizeWidgetElement);
 
     this.sidebarPanes = {};
@@ -427,7 +429,7 @@ WebInspector.SourcesPanel.prototype = {
                 console.warn("ScriptsPanel paused, but callFrames.length is zero."); // TODO remove this once we understand this case better
         }
 
-        this._enableDebuggerSidebar(true);
+        this._splitView.showBoth();
         this._toggleDebuggerSidebarButton.setEnabled(false);
         window.focus();
         InspectorFrontendHost.bringToFront();
@@ -1292,14 +1294,10 @@ WebInspector.SourcesPanel.prototype = {
 
     _installDebuggerSidebarController: function()
     {
-        this._toggleNavigatorSidebarButton = new WebInspector.StatusBarButton("", "left-sidebar-show-hide-button", 3);
-        this._toggleNavigatorSidebarButton.addEventListener("click", navigatorHandler, this);
+        this._toggleNavigatorSidebarButton = this.editorView.createShowHideSidebarButton("navigator", "scripts-navigator-show-hide-button");
         this.sourcesView.element.appendChild(this._toggleNavigatorSidebarButton.element);
-        this._enableNavigatorSidebar(this.editorView.showMode() !== WebInspector.SplitView.ShowMode.OnlyMain);
 
-        this._toggleDebuggerSidebarButton = new WebInspector.StatusBarButton("", "right-sidebar-show-hide-button scripts-debugger-show-hide-button", 3);
-        this._toggleDebuggerSidebarButton.addEventListener("click", debuggerHandler, this);
-
+        this._toggleDebuggerSidebarButton = this._splitView.createShowHideSidebarButton("debugger", "scripts-debugger-show-hide-button");
         if (this._splitView.isVertical()) {
             this.editorView.element.appendChild(this._toggleDebuggerSidebarButton.element);
             this._splitView.mainElement().appendChild(this._debugSidebarResizeWidgetElement);
@@ -1307,51 +1305,11 @@ WebInspector.SourcesPanel.prototype = {
             this._statusBarContainerElement.appendChild(this._debugSidebarResizeWidgetElement);
             this._statusBarContainerElement.appendChild(this._toggleDebuggerSidebarButton.element);
         }
-
-        this._enableDebuggerSidebar(this._splitView.showMode() !== WebInspector.SplitView.ShowMode.OnlyMain);
-
-        /**
-         * @this {WebInspector.SourcesPanel}
-         */
-        function navigatorHandler()
-        {
-            this._enableNavigatorSidebar(this._toggleNavigatorSidebarButton.state === "right");
-        }
-
-        /**
-         * @this {WebInspector.SourcesPanel}
-         */
-        function debuggerHandler()
-        {
-            this._enableDebuggerSidebar(this._toggleDebuggerSidebarButton.state === "left");
-        }
     },
 
-    /**
-     * @param {boolean} show
-     */
-    _enableNavigatorSidebar: function(show)
+    _updateDebugSidebarResizeWidget: function()
     {
-        this._toggleNavigatorSidebarButton.state = show ? "left" : "right";
-        this._toggleNavigatorSidebarButton.title = show ? WebInspector.UIString("Hide navigator") : WebInspector.UIString("Show navigator");
-        if (show)
-            this.editorView.showBoth(true);
-        else
-            this.editorView.hideSidebar(true);
-    },
-
-    /**
-     * @param {boolean} show
-     */
-    _enableDebuggerSidebar: function(show)
-    {
-        this._toggleDebuggerSidebarButton.state = show ? "right" : "left";
-        this._toggleDebuggerSidebarButton.title = show ? WebInspector.UIString("Hide debugger") : WebInspector.UIString("Show debugger");
-        if (show)
-            this._splitView.showBoth(true);
-        else
-            this._splitView.hideSidebar(true);
-        this._debugSidebarResizeWidgetElement.enableStyleClass("hidden", !show);
+        this._debugSidebarResizeWidgetElement.classList.toggle("hidden", this._splitView.showMode() !== WebInspector.SplitView.ShowMode.Both);
     },
 
     /**

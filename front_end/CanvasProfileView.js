@@ -136,37 +136,19 @@ WebInspector.CanvasProfileView.prototype = {
     _installReplayInfoSidebarWidgets: function(controlsContainer)
     {
         this._replayInfoResizeWidgetElement = controlsContainer.createChild("div", "resizer-widget");
+        this._replayInfoSplitView.addEventListener(WebInspector.SplitView.Events.ShowModeChanged, this._updateReplayInfoResizeWidget, this);
+        this._updateReplayInfoResizeWidget();
         this._replayInfoSplitView.installResizer(this._replayInfoResizeWidgetElement);
 
-        this._toggleReplayStateSidebarButton = new WebInspector.StatusBarButton("", "right-sidebar-show-hide-button canvas-sidebar-show-hide-button", 3);
-        this._toggleReplayStateSidebarButton.addEventListener("click", clickHandler, this);
-        controlsContainer.appendChild(this._toggleReplayStateSidebarButton.element);
-        this._enableReplayInfoSidebar(false);
+        this._toggleReplayStateSidebarButton = this._replayInfoSplitView.createShowHideSidebarButton("sidebar", "canvas-sidebar-show-hide-button");
 
-        /**
-         * @this {WebInspector.CanvasProfileView}
-         */
-        function clickHandler()
-        {
-            this._enableReplayInfoSidebar(this._toggleReplayStateSidebarButton.state === "left");
-        }
+        controlsContainer.appendChild(this._toggleReplayStateSidebarButton.element);
+        this._replayInfoSplitView.hideSidebar();
     },
 
-    /**
-     * @param {boolean} show
-     */
-    _enableReplayInfoSidebar: function(show)
+    _updateReplayInfoResizeWidget: function()
     {
-        if (show) {
-            this._toggleReplayStateSidebarButton.state = "right";
-            this._toggleReplayStateSidebarButton.title = WebInspector.UIString("Hide sidebar.");
-            this._replayInfoSplitView.showBoth();
-        } else {
-            this._toggleReplayStateSidebarButton.state = "left";
-            this._toggleReplayStateSidebarButton.title = WebInspector.UIString("Show sidebar.");
-            this._replayInfoSplitView.hideSidebar();
-        }
-        this._replayInfoResizeWidgetElement.enableStyleClass("hidden", !show);
+        this._replayInfoResizeWidgetElement.classList.toggle("hidden", this._replayInfoSplitView.showMode() !== WebInspector.SplitView.ShowMode.Both);
     },
 
     /**
@@ -176,7 +158,7 @@ WebInspector.CanvasProfileView.prototype = {
     {
         var resourceLinkElement = event.target.enclosingNodeOrSelfWithClass("canvas-formatted-resource");
         if (resourceLinkElement) {
-            this._enableReplayInfoSidebar(true);
+            this._replayInfoSplitView.showBoth();
             this._replayStateView.selectResource(resourceLinkElement.__resourceId);
             event.consume(true);
             return;

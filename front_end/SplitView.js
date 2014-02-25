@@ -96,7 +96,8 @@ WebInspector.SplitView.ShowMode = {
 }
 
 WebInspector.SplitView.Events = {
-    SidebarSizeChanged: "SidebarSizeChanged"
+    SidebarSizeChanged: "SidebarSizeChanged",
+    ShowModeChanged: "ShowModeChanged"
 }
 
 WebInspector.SplitView.prototype = {
@@ -378,6 +379,8 @@ WebInspector.SplitView.prototype = {
     {
         this._showMode = showMode;
         this._saveSetting();
+        this._updateShowHideSidebarButton();
+        this.dispatchEventToListeners(WebInspector.SplitView.Events.ShowModeChanged, showMode);
     },
 
     /**
@@ -791,6 +794,44 @@ WebInspector.SplitView.prototype = {
         var data = /** @type {{from: number, to: number}} */ (event.data);
         this._innerSetSidebarSize(this.sidebarSize() * data.from / data.to, true);
         this._saveSetting();
+    },
+
+    /**
+     * @param {string} title
+     * @param {string} className
+     * @return {!WebInspector.StatusBarButton}
+     */
+    createShowHideSidebarButton: function(title, className)
+    {
+        console.assert(this.isVertical(), "Buttons for split view with horizontal split are not supported yet.");
+
+        this._showHideSidebarButtonTitle = WebInspector.UIString(title);
+        this._showHideSidebarButton = new WebInspector.StatusBarButton("", (this.isSidebarSecond() ? "right" : "left") + "-sidebar-show-hide-button " + className, 3);
+        this._showHideSidebarButton.addEventListener("click", buttonClicked.bind(this));
+        this._updateShowHideSidebarButton();
+
+        /**
+         * @this {WebInspector.SplitView}
+         * @param {!WebInspector.Event} event
+         */
+        function buttonClicked(event)
+        {
+            var show = this._isShowingOne;
+            if (show)
+                this.showBoth();
+            else
+                this.hideSidebar();
+        }
+
+        return this._showHideSidebarButton;
+    },
+
+    _updateShowHideSidebarButton: function()
+    {
+        if (!this._showHideSidebarButton)
+            return;
+        this._showHideSidebarButton.state = this._isShowingOne === this.isSidebarSecond() ? "left" : "right";
+        this._showHideSidebarButton.title = this._isShowingOne ? WebInspector.UIString("Show %s", this._showHideSidebarButtonTitle) : WebInspector.UIString("Hide %s", this._showHideSidebarButtonTitle);
     },
 
     __proto__: WebInspector.View.prototype
