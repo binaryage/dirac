@@ -721,16 +721,6 @@ WebInspector.CSSStyleDeclaration.prototype = {
 
     /**
      * @param {string} name
-     * @return {string}
-     */
-    getPropertyPriority: function(name)
-    {
-        var property = this._livePropertyMap[name];
-        return property ? property.priority : "";
-    },
-
-    /**
-     * @param {string} name
      * @return {boolean}
      */
     isPropertyImplicit: function(name)
@@ -793,7 +783,7 @@ WebInspector.CSSStyleDeclaration.prototype = {
     newBlankProperty: function(index)
     {
         index = (typeof index === "undefined") ? this.pastLastSourcePropertyIndex() : index;
-        return new WebInspector.CSSProperty(this, index, "", "", "", "active", true, false, "");
+        return new WebInspector.CSSProperty(this, index, "", "", false, "active", true, false, "");
     },
 
     /**
@@ -954,20 +944,20 @@ WebInspector.CSSRule.prototype = {
  * @param {number} index
  * @param {string} name
  * @param {string} value
- * @param {?string} priority
+ * @param {boolean} important
  * @param {string} status
  * @param {boolean} parsedOk
  * @param {boolean} implicit
  * @param {?string=} text
  * @param {!CSSAgent.SourceRange=} range
  */
-WebInspector.CSSProperty = function(ownerStyle, index, name, value, priority, status, parsedOk, implicit, text, range)
+WebInspector.CSSProperty = function(ownerStyle, index, name, value, important, status, parsedOk, implicit, text, range)
 {
     this.ownerStyle = ownerStyle;
     this.index = index;
     this.name = name;
     this.value = value;
-    this.priority = priority;
+    this.important = important;
     this.status = status;
     this.parsedOk = parsedOk;
     this.implicit = implicit;
@@ -984,12 +974,12 @@ WebInspector.CSSProperty = function(ownerStyle, index, name, value, priority, st
 WebInspector.CSSProperty.parsePayload = function(ownerStyle, index, payload)
 {
     // The following default field values are used in the payload:
-    // priority: ""
+    // important: false
     // parsedOk: true
     // implicit: false
     // status: "style"
     var result = new WebInspector.CSSProperty(
-        ownerStyle, index, payload.name, payload.value, payload.priority || "", payload.status || "", ("parsedOk" in payload) ? !!payload.parsedOk : true, !!payload.implicit, payload.text, payload.range);
+        ownerStyle, index, payload.name, payload.value, payload.important || false, payload.status || "", ("parsedOk" in payload) ? !!payload.parsedOk : true, !!payload.implicit, payload.text, payload.range);
     return result;
 }
 
@@ -1001,7 +991,7 @@ WebInspector.CSSProperty.prototype = {
 
         if (this.name === "")
             return "";
-        return this.name + ": " + this.value + (this.priority ? " !" + this.priority : "") + ";";
+        return this.name + ": " + this.value + (this.important ? " !important" : "") + ";";
     },
 
     get isLive()
@@ -1091,7 +1081,7 @@ WebInspector.CSSProperty.prototype = {
      */
     setValue: function(newValue, majorChange, overwrite, userCallback)
     {
-        var text = this.name + ": " + newValue + (this.priority ? " !" + this.priority : "") + ";"
+        var text = this.name + ": " + newValue + (this.important ? " !important" : "") + ";"
         this.setText(text, majorChange, overwrite, userCallback);
     },
 

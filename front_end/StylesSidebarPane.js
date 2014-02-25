@@ -600,15 +600,14 @@ WebInspector.StylesSidebarPane.prototype = {
                 if (foundImportantProperties.hasOwnProperty(canonicalName))
                     continue;
 
-                var isImportant = property.priority.length;
-                if (!isImportant && usedProperties.hasOwnProperty(canonicalName))
+                if (!property.important && usedProperties.hasOwnProperty(canonicalName))
                     continue;
 
                 var isKnownProperty = propertyToEffectiveRule.hasOwnProperty(canonicalName);
                 if (!isKnownProperty && styleRule.isInherited && !inheritedPropertyToNode[canonicalName])
                     inheritedPropertyToNode[canonicalName] = styleRule.parentNode;
 
-                if (isImportant) {
+                if (property.important) {
                     if (styleRule.isInherited && isKnownProperty && styleRule.parentNode !== inheritedPropertyToNode[canonicalName])
                         continue;
 
@@ -1205,7 +1204,7 @@ WebInspector.StylePropertiesSection.prototype = {
                 }
 
                 // Generate synthetic shorthand we have a value for.
-                var shorthandProperty = new WebInspector.CSSProperty(style, style.allProperties.length, shorthand, style.shorthandValue(shorthand), "", "", true, true);
+                var shorthandProperty = new WebInspector.CSSProperty(style, style.allProperties.length, shorthand, style.shorthandValue(shorthand), false, "", true, true);
                 var overloaded = property.inactive || this.isPropertyOverloaded(property.name, true);
                 var item = new WebInspector.StylePropertyTreeElement(this._parentPane, this.styleRule, style, shorthandProperty,  /* isShorthand */ true, /* inherited */ false, overloaded);
                 this.propertiesTreeOutline.appendChild(item);
@@ -1820,13 +1819,6 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         if (text.startsWith("/*"))
             text = text.substring(2).trim();
         return text;
-    },
-
-    get priority()
-    {
-        if (this.disabled)
-            return ""; // rely upon raw text to render it in the value field
-        return this.property.priority;
     },
 
     get value()
