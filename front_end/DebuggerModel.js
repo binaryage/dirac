@@ -587,15 +587,6 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
-     * @return {!DebuggerAgent.CallFrameId|undefined}
-     */
-    _selectedCallFrameId: function()
-    {
-        var callFrame = this.selectedCallFrame();
-        return callFrame ? callFrame.id : undefined;
-    },
-
-    /**
      * @param {string} code
      * @param {string} objectGroup
      * @param {boolean} includeCommandLineAPI

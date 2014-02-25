@@ -459,18 +459,6 @@ WebInspector.OverviewGrid.WindowSelector = function(parent, position)
 }
 
 WebInspector.OverviewGrid.WindowSelector.prototype = {
-    _createSelectorElement: function(parent, left, width, height)
-    {
-        var selectorElement = document.createElement("div");
-        selectorElement.className = "overview-grid-window-selector";
-        selectorElement.style.left = left + "px";
-        selectorElement.style.width = width + "px";
-        selectorElement.style.top = "0px";
-        selectorElement.style.height = height + "px";
-        parent.appendChild(selectorElement);
-        return selectorElement;
-    },
-
     _close: function(position)
     {
         position = Math.max(0, Math.min(position, this._width));

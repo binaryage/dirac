@@ -589,14 +589,6 @@ WebInspector.UISourceCode.prototype = {
     /**
      * @return {string}
      */
-    _mimeType: function()
-    {
-        return this.contentType().canonicalMimeType();
-    },
-
-    /**
-     * @return {string}
-     */
     highlighterType: function()
     {
         var lastIndexOfDot = this._name.lastIndexOf(".");

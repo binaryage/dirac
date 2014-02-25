@@ -94,24 +94,6 @@ WebInspector.TimelineFrameOverview.prototype = {
     },
 
     /**
-     * @param {number} x0
-     * @param {number} y0
-     * @param {number} width
-     * @param {number} height
-     */
-    _setCanvasWindow: function(x0, y0, width, height)
-    {
-        this._context.translate(x0, y0);
-        this._context.beginPath();
-        this._context.moveTo(0, 0);
-        this._context.lineTo(width, 0);
-        this._context.lineTo(width, height);
-        this._context.lineTo(0, height);
-        this._context.lineTo(0, 0);
-        this._context.clip();
-    },
-
-    /**
      * @param {!Array.<!WebInspector.TimelineFrame>} frames
      * @param {number} framesPerBar
      * @return {!Array.<!WebInspector.TimelineFrame>}

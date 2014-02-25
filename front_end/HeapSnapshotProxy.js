@@ -153,15 +153,6 @@ WebInspector.HeapSnapshotWorkerProxy.prototype = {
             this._previousCallbacks[callId] = true;
     },
 
-    _findFunction: function(name)
-    {
-        var path = name.split(".");
-        var result = window;
-        for (var i = 0; i < path.length; ++i)
-            result = result[path[i]];
-        return result;
-    },
-
     /**
      * @param {!MessageEvent} event
      */

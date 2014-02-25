@@ -496,14 +496,6 @@ WebInspector.ProfilesPanel.prototype = {
         this.element.appendChild(this._fileSelectorElement);
     },
 
-    /**
-     * @return {!WebInspector.ProfileLauncherView}
-     */
-    _createLauncherView: function()
-    {
-        return new WebInspector.ProfileLauncherView(this);
-    },
-
     _findProfileTypeByExtension: function(fileName)
     {
         var types = WebInspector.ProfileTypeRegistry.instance.profileTypes();

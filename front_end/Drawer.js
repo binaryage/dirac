@@ -101,21 +101,6 @@ WebInspector.Drawer.prototype = {
     },
 
     /**
-     * @param {string} tabId
-     * @param {string} title
-     * @param {!WebInspector.View} view
-     */
-    _addView: function(tabId, title, view)
-    {
-        if (!this._tabbedPane.hasTab(tabId)) {
-            this._tabbedPane.appendTab(tabId, title, view,  undefined, false);
-        } else {
-            this._tabbedPane.changeTabTitle(tabId, title);
-            this._tabbedPane.changeTabView(tabId, view);
-        }
-    },
-
-    /**
      * @param {string} id
      */
     closeView: function(id)

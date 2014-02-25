@@ -1296,14 +1296,6 @@ WebInspector.CSSStyleSheetHeader.prototype = {
     /**
      * @return {string}
      */
-    _key: function()
-    {
-        return this.frameId + ":" + this.resourceURL();
-    },
-
-    /**
-     * @return {string}
-     */
     _viaInspectorResourceURL: function()
     {
         var frame = WebInspector.resourceTreeModel.frameForId(this.frameId);

@@ -718,12 +718,6 @@ WebInspector.SettingsController.prototype =
         this._settingsScreenVisible = true;
     },
 
-    _hideSettingsScreen: function()
-    {
-        if (this._settingsScreen)
-            this._settingsScreen.hide();
-    },
-
     resize: function()
     {
         if (this._settingsScreen && this._settingsScreen.isShowing())

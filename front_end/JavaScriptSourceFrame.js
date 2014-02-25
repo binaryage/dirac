@@ -505,27 +505,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         delete this._executionCallFrame;
     },
 
-    _lineNumberAfterEditing: function(lineNumber, oldRange, newRange)
-    {
-        var shiftOffset = lineNumber <= oldRange.startLine ? 0 : newRange.linesCount - oldRange.linesCount;
-
-        // Special case of editing the line itself. We should decide whether the line number should move below or not.
-        if (lineNumber === oldRange.startLine) {
-            var whiteSpacesRegex = /^[\s\xA0]*$/;
-            for (var i = 0; lineNumber + i <= newRange.endLine; ++i) {
-                if (!whiteSpacesRegex.test(this.textEditor.line(lineNumber + i))) {
-                    shiftOffset = i;
-                    break;
-                }
-            }
-        }
-
-        var newLineNumber = Math.max(0, lineNumber + shiftOffset);
-        if (oldRange.startLine < lineNumber && lineNumber < oldRange.endLine)
-            newLineNumber = oldRange.startLine;
-        return newLineNumber;
-    },
-
     _onMouseDownAndClick: function(isMouseDown, event)
     {
         var markup = this._stepIntoMarkup;

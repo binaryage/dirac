@@ -111,14 +111,6 @@ WebInspector.IsolatedFileSystemManager.prototype = {
         this.dispatchEventToListeners(WebInspector.IsolatedFileSystemManager.Events.FileSystemAdded, isolatedFileSystem);
     },
 
-    /**
-     * @return {!Array.<string>}
-     */
-    _fileSystemPaths: function()
-    {
-        return Object.keys(this._fileSystems);
-    },
-
     _processPendingFileSystemRequests: function()
     {
         for (var fileSystemPath in this._pendingFileSystemRequests) {

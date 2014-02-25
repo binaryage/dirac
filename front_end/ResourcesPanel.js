@@ -696,15 +696,6 @@ WebInspector.ResourcesPanel.prototype = {
             this._applicationCacheViews[manifestURL].updateNetworkState(isNowOnline);
     },
 
-    _forAllResourceTreeElements: function(callback)
-    {
-        var stop = false;
-        for (var treeElement = this.resourcesListTreeElement; !stop && treeElement; treeElement = treeElement.traverseNextTreeElement(false, this.resourcesListTreeElement, true)) {
-            if (treeElement instanceof WebInspector.FrameResourceTreeElement)
-                stop = callback(treeElement);
-        }
-    },
-
     _findTreeElementForResource: function(resource)
     {
         function isAncestor(ancestor, object)

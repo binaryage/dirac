@@ -283,16 +283,6 @@ WebInspector.IDBDataView.prototype = {
     },
 
     /**
-     * @return {string}
-     */
-    _stringifyKey: function(key)
-    {
-        if (typeof(key) === "string")
-            return key;
-        return JSON.stringify(key);
-    },
-
-    /**
      * @param {boolean} force
      */
     _updateData: function(force)

@@ -108,17 +108,6 @@ WebInspector.CPUProfileView.prototype = {
         this._flameChart.selectRange(timeLeft, timeRight);
     },
 
-    _revealProfilerNode: function(event)
-    {
-        var current = this.profileDataGridTree.children[0];
-
-        while (current && current.profileNode !== event.data)
-            current = current.traverseNextNode(false, null, false);
-
-        if (current)
-            current.revealAndSelect();
-    },
-
     /**
      * @param {?ProfilerAgent.CPUProfile} profile
      */
