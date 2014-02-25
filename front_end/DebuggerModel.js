@@ -40,8 +40,8 @@ WebInspector.DebuggerModel = function()
     this._debuggerPausedDetails = null;
     /** @type {!Object.<string, !WebInspector.Script>} */
     this._scripts = {};
-    /** @type {!Object.<!string, !Array.<!WebInspector.Script>>} */
-    this._scriptsBySourceURL = {};
+    /** @type {!StringMap.<!Array.<!WebInspector.Script>>} */
+    this._scriptsBySourceURL = new StringMap();
 
     this._breakpointsActive = true;
 
@@ -276,7 +276,7 @@ WebInspector.DebuggerModel.prototype = {
     {
         // Adjust column if needed.
         var minColumnNumber = 0;
-        var scripts = this._scriptsBySourceURL[url] || [];
+        var scripts = this._scriptsBySourceURL.get(url) || [];
         for (var i = 0, l = scripts.length; i < l; ++i) {
             var script = scripts[i];
             if (lineNumber === script.lineOffset)
@@ -353,7 +353,7 @@ WebInspector.DebuggerModel.prototype = {
     _reset: function()
     {
         this._scripts = {};
-        this._scriptsBySourceURL = {};
+        this._scriptsBySourceURL.clear();
     },
 
     /**
@@ -374,13 +374,21 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
+     * @return {!Array.<!string>}
+     */
+    scriptURLs: function()
+    {
+        return this._scriptsBySourceURL.keys();
+    },
+
+    /**
      * @return {!Array.<!WebInspector.Script>}
      */
     scriptsForSourceURL: function(sourceURL)
     {
         if (!sourceURL)
             return [];
-        return this._scriptsBySourceURL[sourceURL] || [];
+        return this._scriptsBySourceURL.get(sourceURL) || [];
     },
 
     /**
@@ -505,10 +513,10 @@ WebInspector.DebuggerModel.prototype = {
         if (script.isAnonymousScript())
             return;
 
-        var scripts = this._scriptsBySourceURL[script.sourceURL];
+        var scripts = this._scriptsBySourceURL.get(script.sourceURL);
         if (!scripts) {
             scripts = [];
-            this._scriptsBySourceURL[script.sourceURL] = scripts;
+            this._scriptsBySourceURL.put(script.sourceURL, scripts);
         }
         scripts.push(script);
     },
@@ -535,7 +543,7 @@ WebInspector.DebuggerModel.prototype = {
     createRawLocationByURL: function(sourceURL, lineNumber, columnNumber)
     {
         var closestScript = null;
-        var scripts = this._scriptsBySourceURL[sourceURL] || [];
+        var scripts = this._scriptsBySourceURL.get(sourceURL) || [];
         for (var i = 0, l = scripts.length; i < l; ++i) {
             var script = scripts[i];
             if (!closestScript)

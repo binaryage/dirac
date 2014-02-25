@@ -41,7 +41,6 @@ WebInspector.ResourceScriptMapping = function(debuggerModel, workspace)
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
 
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
-    this._initialize();
 }
 
 WebInspector.ResourceScriptMapping.prototype = {
@@ -83,10 +82,6 @@ WebInspector.ResourceScriptMapping.prototype = {
         if (script.isAnonymousScript())
             return;
         script.pushSourceMapping(this);
-
-        var scriptsForSourceURL = script.isInlineScript() ? this._inlineScriptsForSourceURL : this._nonInlineScriptsForSourceURL;
-        scriptsForSourceURL.put(script.sourceURL, scriptsForSourceURL.get(script.sourceURL) || []);
-        scriptsForSourceURL.get(script.sourceURL).push(script);
 
         var uiSourceCode = this._workspaceUISourceCodeForScript(script);
         if (!uiSourceCode)
@@ -151,21 +146,9 @@ WebInspector.ResourceScriptMapping.prototype = {
      */
     _scriptsForUISourceCode: function(uiSourceCode)
     {
-        var isInlineScript;
-        switch (uiSourceCode.contentType()) {
-        case WebInspector.resourceTypes.Document:
-            isInlineScript = true;
-            break;
-        case WebInspector.resourceTypes.Script:
-            isInlineScript = false;
-            break;
-        default:
-            return [];
-        }
         if (!uiSourceCode.url)
             return [];
-        var scriptsForSourceURL = isInlineScript ? this._inlineScriptsForSourceURL : this._nonInlineScriptsForSourceURL;
-        return scriptsForSourceURL.get(uiSourceCode.url) || [];
+        return this._debuggerModel.scriptsForSourceURL(uiSourceCode.url);
     },
 
     /**
@@ -197,21 +180,13 @@ WebInspector.ResourceScriptMapping.prototype = {
         uiSourceCode.setSourceMapping(null);
     },
 
-    _initialize: function()
-    {
-        /** @type {!StringMap.<!Array.<!WebInspector.Script>>} */
-        this._inlineScriptsForSourceURL = new StringMap();
-        /** @type {!StringMap.<!Array.<!WebInspector.Script>>} */
-        this._nonInlineScriptsForSourceURL = new StringMap();
-    },
-
     _debuggerReset: function()
     {
         /**
-         * @param {!Array.<!WebInspector.Script>} scripts
          * @this {WebInspector.ResourceScriptMapping}
+         * @param {!Array.<!WebInspector.Script>} scripts
          */
-        function unbindUISourceCodesForScripts(scripts)
+        function unbindUISourceCodesFromScripts(scripts)
         {
             if (!scripts.length)
                 return;
@@ -221,9 +196,11 @@ WebInspector.ResourceScriptMapping.prototype = {
             this._unbindUISourceCodeFromScripts(uiSourceCode, scripts);
         }
 
-        this._inlineScriptsForSourceURL.values().forEach(unbindUISourceCodesForScripts.bind(this));
-        this._nonInlineScriptsForSourceURL.values().forEach(unbindUISourceCodesForScripts.bind(this));
-        this._initialize();
+        var scriptURLs = this._debuggerModel.scriptURLs();
+        for (var i = 0; i < scriptURLs.length; ++i) {
+            var scripts = this._debuggerModel.scriptsForSourceURL(scriptURLs[i]);
+            unbindUISourceCodesFromScripts.call(this, scripts);
+        }
     },
 }
 
