@@ -102,9 +102,8 @@ WebInspector.MemoryStatistics.Counter.prototype = {
      */
     _calculateVisibleIndexes: function(calculator)
     {
-        // FIXME: these 1000 constants shouldn't be here.
-        var start = calculator.minimumBoundary() * 1000;
-        var end = calculator.maximumBoundary() * 1000;
+        var start = calculator.minimumBoundary();
+        var end = calculator.maximumBoundary();
 
         // Maximum index of element whose time <= start.
         this._minimumIndex = Number.constrain(this.times.upperBound(start) - 1, 0, this.times.length - 1);
@@ -318,7 +317,7 @@ WebInspector.MemoryStatistics.prototype = {
      */
     _onClick: function(event)
     {
-        var x = event.x - this._canvasContainer.offsetParent.totalOffsetLeft();
+        var x = event.x - this._canvasContainer.totalOffsetLeft();
         var minDistance = Infinity;
         var bestTime;
         for (var i = 0; i < this._counterUI.length; ++i) {
@@ -333,7 +332,7 @@ WebInspector.MemoryStatistics.prototype = {
             }
         }
         if (bestTime !== undefined)
-            this._timelineView.revealRecordAt(bestTime / 1000);
+            this._timelineView.revealRecordAt(bestTime);
     },
 
     /**
@@ -356,7 +355,7 @@ WebInspector.MemoryStatistics.prototype = {
      */
     _onMouseMove: function(event)
     {
-        var x = event.x - this._canvasContainer.offsetParent.totalOffsetLeft();
+        var x = event.x - this._canvasContainer.totalOffsetLeft();
         this._markerXPosition = x;
         this._refreshCurrentValues();
     },

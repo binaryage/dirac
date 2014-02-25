@@ -173,7 +173,7 @@ WebInspector.TimelineGrid.prototype = {
             var time = dividerOffsets[i];
             var position = calculator.computePosition(time);
             if (i !== 0 && position - lastPosition > minWidthForTitle)
-                dividerLabelBar._labelElement.textContent = printDeltas ? Number.secondsToString(time - lastTime) : calculator.formatTime(time);
+                dividerLabelBar._labelElement.textContent = printDeltas ? calculator.formatTime(time - lastTime) : calculator.formatTime(time);
             else
                 dividerLabelBar._labelElement.textContent = "";
             dividerLabelBar._labelElement.style.width = Math.ceil(position - lastPosition) + "px";

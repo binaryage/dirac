@@ -81,7 +81,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
         WebInspector.TimelinePresentationModel.forAllRecords(records, function(r) {
             if (!r.counters || !r.counters.jsHeapSizeUsed)
                 return;
-            var x = Math.round((WebInspector.TimelineModel.endTimeInSeconds(r) - minTime) * xFactor);
+            var x = Math.round((r.endTime - minTime) * xFactor);
             var y = (r.counters.jsHeapSizeUsed - minUsedHeapSize) * yFactor;
             histogram[x] = Math.max(histogram[x] || 0, y);
         });

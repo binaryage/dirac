@@ -35,9 +35,9 @@
 WebInspector.TimelineModel = function()
 {
     this._records = [];
-    this._stringPool = new StringPool();
     this._minimumRecordTime = -1;
     this._maximumRecordTime = -1;
+    this._stringPool = {};
 
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, this._onRecordAdded, this);
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, this._onStarted, this);
@@ -116,21 +116,6 @@ WebInspector.TimelineModel.Events = {
     RecordingStopped: "RecordingStopped"
 }
 
-WebInspector.TimelineModel.startTimeInSeconds = function(record)
-{
-    return record.startTime / 1000;
-}
-
-WebInspector.TimelineModel.endTimeInSeconds = function(record)
-{
-    return (record.endTime || record.startTime) / 1000;
-}
-
-WebInspector.TimelineModel.durationInSeconds = function(record)
-{
-    return WebInspector.TimelineModel.endTimeInSeconds(record) - WebInspector.TimelineModel.startTimeInSeconds(record);
-}
-
 /**
  * @param {!Object} total
  * @param {!Object} rawRecord
@@ -141,10 +126,10 @@ WebInspector.TimelineModel.aggregateTimeForRecord = function(total, rawRecord)
     var children = rawRecord["children"] || [];
     for (var i = 0; i < children.length; ++i) {
         WebInspector.TimelineModel.aggregateTimeForRecord(total, children[i]);
-        childrenTime += WebInspector.TimelineModel.durationInSeconds(children[i]);
+        childrenTime += children[i].endTime - children[i].startTime;
     }
     var categoryName = WebInspector.TimelinePresentationModel.recordStyle(rawRecord).category.name;
-    var ownTime = WebInspector.TimelineModel.durationInSeconds(rawRecord) - childrenTime;
+    var ownTime = rawRecord.endTime - rawRecord.startTime - childrenTime;
     total[categoryName] = (total[categoryName] || 0) + ownTime;
 }
 
@@ -245,7 +230,7 @@ WebInspector.TimelineModel.prototype = {
      */
     _addRecord: function(record)
     {
-        this._stringPool.internObjectStrings(record);
+        this._internStringsAndAssignEndTime(record);
         this._records.push(record);
         this._updateBoundaries(record);
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordAdded, record);
@@ -307,7 +292,7 @@ WebInspector.TimelineModel.prototype = {
     reset: function()
     {
         this._records = [];
-        this._stringPool.reset();
+        this._stringPool = {};
         this._minimumRecordTime = -1;
         this._maximumRecordTime = -1;
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordsCleared);
@@ -334,8 +319,8 @@ WebInspector.TimelineModel.prototype = {
      */
     _updateBoundaries: function(record)
     {
-        var startTime = WebInspector.TimelineModel.startTimeInSeconds(record);
-        var endTime = WebInspector.TimelineModel.endTimeInSeconds(record);
+        var startTime = record.startTime;
+        var endTime = record.endTime;
 
         if (this._minimumRecordTime === -1 || startTime < this._minimumRecordTime)
             this._minimumRecordTime = startTime;
@@ -347,9 +332,37 @@ WebInspector.TimelineModel.prototype = {
      * @param {!Object} rawRecord
      * @return {number}
      */
-    recordOffsetInSeconds: function(rawRecord)
+    recordOffsetInMillis: function(rawRecord)
     {
-        return WebInspector.TimelineModel.startTimeInSeconds(rawRecord) - this._minimumRecordTime;
+        return rawRecord.startTime - this._minimumRecordTime;
+    },
+
+    /**
+     * @param {!TimelineAgent.TimelineEvent} record
+     */
+    _internStringsAndAssignEndTime: function(record)
+    {
+        // We'd like to dump raw protocol in tests, so add an option to not assign implicit end time.
+        if (!WebInspector.TimelineModel["_doNotAssignEndTime"]) {
+            if (typeof record.startTime === "number" && typeof record.endTime !== "number")
+                record.endTime = record.startTime;
+        }
+
+        for (var name in record) {
+            var value = record[name];
+            if (typeof value !== "string")
+                continue;
+
+            var interned = this._stringPool[value];
+            if (typeof interned === "string")
+                record[name] = interned;
+            else
+                this._stringPool[value] = value;
+        }
+
+        var children = record.children;
+        for (var i = 0; children && i < children.length; ++i)
+            this._internStringsAndAssignEndTime(children[i]);
     },
 
     __proto__: WebInspector.Object.prototype

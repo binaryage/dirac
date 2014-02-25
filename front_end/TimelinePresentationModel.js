@@ -310,8 +310,8 @@ WebInspector.TimelinePresentationModel.prototype = {
      */
     addRecord: function(record)
     {
-        var startTime = WebInspector.TimelineModel.startTimeInSeconds(record);
-        var endTime = WebInspector.TimelineModel.endTimeInSeconds(record);
+        var startTime = record.startTime;
+        var endTime = record.endTime;
         if (this._minimumRecordTime === -1 || startTime < this._minimumRecordTime)
             this._minimumRecordTime = startTime;
         if (this._maximumRecordTime === -1 || endTime > this._maximumRecordTime)
@@ -432,20 +432,20 @@ WebInspector.TimelinePresentationModel.prototype = {
      */
     _findCoalescedParent: function(record, newParent, bucket)
     {
-        const coalescingThresholdSeconds = 0.005;
+        const coalescingThresholdMillis = 5;
 
         var lastRecord = bucket ? this._coalescingBuckets[bucket] : newParent.children.peekLast();
         if (lastRecord && lastRecord.coalesced)
             lastRecord = lastRecord.children.peekLast();
-        var startTime = WebInspector.TimelineModel.startTimeInSeconds(record);
-        var endTime = WebInspector.TimelineModel.endTimeInSeconds(record);
+        var startTime = record.startTime;
+        var endTime = record.endTime;
         if (!lastRecord)
             return null;
         if (lastRecord.type !== record.type)
             return null;
-        if (lastRecord.endTime + coalescingThresholdSeconds < startTime)
+        if (lastRecord.endTime + coalescingThresholdMillis < startTime)
             return null;
-        if (endTime + coalescingThresholdSeconds < lastRecord.startTime)
+        if (endTime + coalescingThresholdMillis < lastRecord.startTime)
             return null;
         if (WebInspector.TimelinePresentationModel.coalescingKeyForRecord(record) !== WebInspector.TimelinePresentationModel.coalescingKeyForRecord(lastRecord._record))
             return null;
@@ -690,18 +690,18 @@ WebInspector.TimelinePresentationModel.prototype = {
 
         for (var i = firstTaskIndex; i <= lastTaskIndex; ++i) {
             var task = tasks[i];
-            cpuTime += WebInspector.TimelineModel.endTimeInSeconds(task) - WebInspector.TimelineModel.startTimeInSeconds(task);
+            cpuTime += task.endTime - task.startTime;
         }
-        var startTime = WebInspector.TimelineModel.startTimeInSeconds(tasks[firstTaskIndex]);
-        var endTime = WebInspector.TimelineModel.endTimeInSeconds(tasks[lastTaskIndex]);
+        var startTime = tasks[firstTaskIndex].startTime;
+        var endTime = tasks[lastTaskIndex].endTime;
         var duration = endTime - startTime;
         var offset = this._minimumRecordTime;
 
         var contentHelper = new WebInspector.TimelinePopupContentHelper(info.name);
-        var durationText = WebInspector.UIString("%s (at %s)", Number.secondsToString(duration, true),
-            Number.secondsToString(startTime - offset, true));
+        var durationText = WebInspector.UIString("%s (at %s)", Number.millisToString(duration, true),
+            Number.millisToString(startTime - offset, true));
         contentHelper.appendTextRow(WebInspector.UIString("Duration"), durationText);
-        contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.secondsToString(cpuTime, true));
+        contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.millisToString(cpuTime, true));
         contentHelper.appendTextRow(WebInspector.UIString("Message Count"), messageCount);
         return contentHelper.contentTable();
     },
@@ -999,7 +999,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         if (this.type === WebInspector.TimelineModel.RecordType.TimeStamp)
             return this._record.data["message"];
         if (WebInspector.TimelinePresentationModel.isEventDivider(this))
-            return WebInspector.UIString("%s at %s", WebInspector.TimelinePresentationModel.recordStyle(this._record).title, Number.secondsToString(this._startTimeOffset, true));
+            return WebInspector.UIString("%s at %s", WebInspector.TimelinePresentationModel.recordStyle(this._record).title, Number.millisToString(this._startTimeOffset, true));
         return WebInspector.TimelinePresentationModel.recordStyle(this._record).title;
     },
 
@@ -1008,7 +1008,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     get startTime()
     {
-        return WebInspector.TimelineModel.startTimeInSeconds(this._record);
+        return this._record.startTime;
     },
 
     /**
@@ -1016,7 +1016,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     get endTime()
     {
-        return WebInspector.TimelineModel.endTimeInSeconds(this._record);
+        return this._record.endTime;
     },
 
     /**
@@ -1168,8 +1168,8 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         var relatedNodeLabel;
 
         var contentHelper = new WebInspector.TimelineDetailsContentHelper(true);
-        contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.secondsToString(this._selfTime, true));
-        contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.secondsToString(this._startTimeOffset));
+        contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(this._selfTime, true));
+        contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString(this._startTimeOffset));
 
         switch (this.type) {
             case recordTypes.GCEvent:
@@ -1183,7 +1183,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             case recordTypes.TimerRemove:
                 contentHelper.appendTextRow(WebInspector.UIString("Timer ID"), this.data["timerId"]);
                 if (typeof this.timeout === "number") {
-                    contentHelper.appendTextRow(WebInspector.UIString("Timeout"), Number.secondsToString(this.timeout / 1000));
+                    contentHelper.appendTextRow(WebInspector.UIString("Timeout"), Number.millisToString(this.timeout));
                     contentHelper.appendTextRow(WebInspector.UIString("Repeats"), !this.singleShot);
                 }
                 break;
@@ -1268,7 +1268,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
             case recordTypes.TimeEnd:
                 contentHelper.appendTextRow(WebInspector.UIString("Message"), this.data["message"]);
                 if (typeof this.intervalDuration === "number")
-                    contentHelper.appendTextRow(WebInspector.UIString("Interval Duration"), Number.secondsToString(this.intervalDuration, true));
+                    contentHelper.appendTextRow(WebInspector.UIString("Interval Duration"), Number.millisToString(this.intervalDuration, true));
                 break;
             case recordTypes.WebSocketCreate:
             case recordTypes.WebSocketSendHandshakeRequest:
@@ -1556,7 +1556,7 @@ WebInspector.TimelinePresentationModel._generateAggregatedInfo = function(aggreg
         label.className = "timeline-aggregated-category timeline-" + index;
         cell.appendChild(label);
         var text = document.createElement("span");
-        text.textContent = Number.secondsToString(aggregatedStats[index], true);
+        text.textContent = Number.millisToString(aggregatedStats[index], true);
         cell.appendChild(text);
     }
     return cell;
@@ -1587,7 +1587,7 @@ WebInspector.TimelinePresentationModel.generatePieChart = function(aggregatedSta
         pieChart.addSlice(selfTime, selfCategory.fillColorStop1);
         var rowElement = footerElement.createChild("div");
         rowElement.createChild("div", "timeline-aggregated-category timeline-" + selfCategory.name);
-        rowElement.createTextChild(WebInspector.UIString("%s %s (Self)", Number.secondsToString(selfTime, true), selfCategory.title));
+        rowElement.createTextChild(WebInspector.UIString("%s %s (Self)", Number.millisToString(selfTime, true), selfCategory.title));
 
         // Children of the same category.
         var categoryTime = aggregatedStats[selfCategory.name];
@@ -1596,7 +1596,7 @@ WebInspector.TimelinePresentationModel.generatePieChart = function(aggregatedSta
             pieChart.addSlice(value, selfCategory.fillColorStop0);
             rowElement = footerElement.createChild("div");
             rowElement.createChild("div", "timeline-aggregated-category timeline-" + selfCategory.name);
-            rowElement.createTextChild(WebInspector.UIString("%s %s (Children)", Number.secondsToString(value, true), selfCategory.title));
+            rowElement.createTextChild(WebInspector.UIString("%s %s (Children)", Number.millisToString(value, true), selfCategory.title));
         }
     }
 
@@ -1611,7 +1611,7 @@ WebInspector.TimelinePresentationModel.generatePieChart = function(aggregatedSta
          pieChart.addSlice(value, category.fillColorStop0);
          var rowElement = footerElement.createChild("div");
          rowElement.createChild("div", "timeline-aggregated-category timeline-" + category.name);
-         rowElement.createTextChild(WebInspector.UIString("%s %s", Number.secondsToString(value, true), category.title));
+         rowElement.createTextChild(WebInspector.UIString("%s %s", Number.millisToString(value, true), category.title));
     }
     return element;
 }
@@ -1619,12 +1619,12 @@ WebInspector.TimelinePresentationModel.generatePieChart = function(aggregatedSta
 WebInspector.TimelinePresentationModel.generatePopupContentForFrame = function(frame)
 {
     var contentHelper = new WebInspector.TimelinePopupContentHelper(WebInspector.UIString("Frame"));
-    var durationInSeconds = frame.endTime - frame.startTime;
-    var durationText = WebInspector.UIString("%s (at %s)", Number.secondsToString(frame.endTime - frame.startTime, true),
-        Number.secondsToString(frame.startTimeOffset, true));
+    var durationInMillis = frame.endTime - frame.startTime;
+    var durationText = WebInspector.UIString("%s (at %s)", Number.millisToString(frame.endTime - frame.startTime, true),
+        Number.millisToString(frame.startTimeOffset, true));
     contentHelper.appendTextRow(WebInspector.UIString("Duration"), durationText);
-    contentHelper.appendTextRow(WebInspector.UIString("FPS"), Math.floor(1 / durationInSeconds));
-    contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.secondsToString(frame.cpuTime, true));
+    contentHelper.appendTextRow(WebInspector.UIString("FPS"), Math.floor(1000 / durationInMillis));
+    contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.millisToString(frame.cpuTime, true));
     contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"),
         WebInspector.TimelinePresentationModel._generateAggregatedInfo(frame.timeByCategory));
     return contentHelper.contentTable();
@@ -1640,14 +1640,14 @@ WebInspector.TimelinePresentationModel.generatePopupContentForFrameStatistics = 
      */
     function formatTimeAndFPS(time)
     {
-        return WebInspector.UIString("%s (%.0f FPS)", Number.secondsToString(time, true), 1 / time);
+        return WebInspector.UIString("%s (%.0f FPS)", Number.millisToString(time, true), 1 / time);
     }
 
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(false);
     contentHelper.appendTextRow(WebInspector.UIString("Minimum Time"), formatTimeAndFPS(statistics.minDuration));
     contentHelper.appendTextRow(WebInspector.UIString("Average Time"), formatTimeAndFPS(statistics.average));
     contentHelper.appendTextRow(WebInspector.UIString("Maximum Time"), formatTimeAndFPS(statistics.maxDuration));
-    contentHelper.appendTextRow(WebInspector.UIString("Standard Deviation"), Number.secondsToString(statistics.stddev, true));
+    contentHelper.appendTextRow(WebInspector.UIString("Standard Deviation"), Number.millisToString(statistics.stddev, true));
 
     return contentHelper.element;
 }
@@ -1710,6 +1710,7 @@ WebInspector.TimelinePresentationModel.coalescingKeyForRecord = function(rawReco
     {
     case recordTypes.EventDispatch: return rawRecord.data["type"];
     case recordTypes.Time: return rawRecord.data["message"];
+    case recordTypes.TimeEnd: return rawRecord.data["message"];
     case recordTypes.TimeStamp: return rawRecord.data["message"];
     default: return null;
     }

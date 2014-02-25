@@ -384,24 +384,24 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
 }
 
 /**
- * @param {number} seconds
+ * @param {number} ms
  * @param {boolean=} higherResolution
  * @return {string}
  */
-Number.secondsToString = function(seconds, higherResolution)
+Number.millisToString = function(ms, higherResolution)
 {
-    if (!isFinite(seconds))
+    if (!isFinite(ms))
         return "-";
 
-    if (seconds === 0)
+    if (ms === 0)
         return "0";
 
-    var ms = seconds * 1000;
     if (higherResolution && ms < 1000)
         return WebInspector.UIString("%.3f\u2009ms", ms);
     else if (ms < 1000)
         return WebInspector.UIString("%.0f\u2009ms", ms);
 
+    var seconds = ms / 1000;
     if (seconds < 60)
         return WebInspector.UIString("%.2f\u2009s", seconds);
 
@@ -415,6 +415,18 @@ Number.secondsToString = function(seconds, higherResolution)
 
     var days = hours / 24;
     return WebInspector.UIString("%.1f\u2009days", days);
+}
+
+/**
+ * @param {number} seconds
+ * @param {boolean=} higherResolution
+ * @return {string}
+ */
+Number.secondsToString = function(seconds, higherResolution)
+{
+    if (!isFinite(seconds))
+        return "-";
+    return Number.millisToString(seconds * 1000, higherResolution);
 }
 
 /**

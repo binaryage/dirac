@@ -52,12 +52,12 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     dividerOffsets: function(startTime, endTime)
     {
-        var frames = this._frameModel.filteredFrames(this._model.minimumRecordTime() + startTime / 1000, this._model.minimumRecordTime() + endTime / 1000);
+        var frames = this._frameModel.filteredFrames(this._model.minimumRecordTime() + startTime, this._model.minimumRecordTime() + endTime);
         if (frames.length > 30)
             return null;
         var offsets = [];
         for (var i = 0; i < frames.length; ++i)
-            offsets.push(frames[i].startTimeOffset * 1000);
+            offsets.push(frames[i].startTimeOffset);
         return frames.length ? offsets : null;
     },
 
@@ -239,10 +239,9 @@ WebInspector.TimelineFlameChart.prototype = {
         this._dataProvider.addRecord(rawRecord);
         if (this._automaticallySizeWindow) {
             var minimumRecordTime = this._model.minimumRecordTime();
-            if ((rawRecord.startTime / 1000) > (minimumRecordTime + 1)) {
+            if (rawRecord.startTime > (minimumRecordTime + 1000)) {
                 this._automaticallySizeWindow = false;
-                this._panel.setWindowTimes(minimumRecordTime, minimumRecordTime + 1);
-                this.setWindowTimes(minimumRecordTime, minimumRecordTime + 1);
+                this._panel.setWindowTimes(minimumRecordTime, minimumRecordTime + 1000);
             }
             this._mainView._scheduleUpdate();
         }

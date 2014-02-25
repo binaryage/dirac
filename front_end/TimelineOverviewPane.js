@@ -221,8 +221,8 @@ WebInspector.TimelineOverviewCalculator.prototype = {
      */
     computeBarGraphPercentages: function(record)
     {
-        var start = (WebInspector.TimelineModel.startTimeInSeconds(record) - this._minimumBoundary) / this.boundarySpan() * 100;
-        var end = (WebInspector.TimelineModel.endTimeInSeconds(record) - this._minimumBoundary) / this.boundarySpan() * 100;
+        var start = (record.startTime - this._minimumBoundary) / this.boundarySpan() * 100;
+        var end = (record.endTime - this._minimumBoundary) / this.boundarySpan() * 100;
         return {start: start, end: end};
     },
 
@@ -258,7 +258,7 @@ WebInspector.TimelineOverviewCalculator.prototype = {
      */
     formatTime: function(value, hires)
     {
-        return Number.secondsToString(value - this.zeroTime(), hires);
+        return Number.millisToString(value - this.zeroTime(), hires);
     },
 
     /**

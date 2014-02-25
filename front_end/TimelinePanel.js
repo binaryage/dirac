@@ -397,7 +397,7 @@ WebInspector.TimelinePanel.prototype = {
     _durationFilterChanged: function()
     {
         var duration = this._filters._durationFilterUI.value();
-        var minimumRecordDuration = +duration / 1000.0;
+        var minimumRecordDuration = parseInt(duration, 10);
         this._durationFilter.setMinimumRecordDuration(minimumRecordDuration);
         this._refreshViews();
     },

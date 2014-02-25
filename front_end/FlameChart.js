@@ -628,8 +628,8 @@ WebInspector.FlameChart.MainPane.prototype = {
     setWindowTimes: function(startTime, endTime)
     {
         console.assert(this._timeBasedWindow);
-        this._timeWindowLeft = startTime * 1000;
-        this._timeWindowRight = endTime * 1000;
+        this._timeWindowLeft = startTime;
+        this._timeWindowRight = endTime;
         this._scheduleUpdate();
     },
 

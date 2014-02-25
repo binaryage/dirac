@@ -186,7 +186,7 @@ WebInspector.TimelineView.prototype = {
 
             const minWidthForFrameInfo = 60;
             if (width > minWidthForFrameInfo)
-                frameStrip.textContent = Number.secondsToString(frame.endTime - frame.startTime, true);
+                frameStrip.textContent = Number.millisToString(frame.endTime - frame.startTime, true);
 
             this._frameContainer.appendChild(frameStrip);
 
@@ -230,7 +230,7 @@ WebInspector.TimelineView.prototype = {
 
         if (record.type === WebInspector.TimelineModel.RecordType.GPUTask) {
             this._gpuTasks.push(record);
-            return WebInspector.TimelineModel.startTimeInSeconds(record) < this._panel.windowEndTime();
+            return record.startTime < this._panel.windowEndTime();
         }
 
         var hasVisibleRecords = false;
@@ -289,13 +289,13 @@ WebInspector.TimelineView.prototype = {
         this._adjustScrollPosition(0);
         this._closeRecordDetails();
         this._automaticallySizeWindow = true;
-        this._mainThreadTasks = [];
-        this._gpuTasks = [];
     },
 
     reset: function()
     {
         this._resetView();
+        this._mainThreadTasks = [];
+        this._gpuTasks = [];
         this._invalidateAndScheduleRefresh(true, true);
         this._updateSelectionDetails();
     },
@@ -399,8 +399,8 @@ WebInspector.TimelineView.prototype = {
 
     _updateSelectionDetails: function()
     {
-        var startTime = this._panel.windowStartTime() * 1000;
-        var endTime = this._panel.windowEndTime() * 1000;
+        var startTime = this._panel.windowStartTime();
+        var endTime = this._panel.windowEndTime();
         // Return early in case 0 selection window.
         if (startTime < 0)
             return;
@@ -436,7 +436,7 @@ WebInspector.TimelineView.prototype = {
             }
             var categoryName = WebInspector.TimelinePresentationModel.categoryForRecord(rawRecord).name;
             var ownTime = Math.min(endTime, rawRecord.endTime) - Math.max(startTime, rawRecord.startTime) - childrenTime;
-            aggregatedStats[categoryName] = (aggregatedStats[categoryName] || 0) + ownTime / 1000;
+            aggregatedStats[categoryName] = (aggregatedStats[categoryName] || 0) + ownTime;
         }
 
         var taskIndex = insertionIndexForObjectInListSortedByFunction(startTime, this._mainThreadTasks, compareEndTime);
@@ -450,13 +450,13 @@ WebInspector.TimelineView.prototype = {
         var aggregatedTotal = 0;
         for (var categoryName in aggregatedStats)
             aggregatedTotal += aggregatedStats[categoryName];
-        aggregatedStats["idle"] = Math.max(0, (endTime - startTime) / 1000 - aggregatedTotal);
+        aggregatedStats["idle"] = Math.max(0, endTime - startTime - aggregatedTotal);
 
         var fragment = document.createDocumentFragment();
         fragment.appendChild(WebInspector.TimelinePresentationModel.generatePieChart(aggregatedStats));
 
         if (this._frameMode && this._lastFrameStatistics) {
-            var title = WebInspector.UIString("%s \u2013 %s (%d frames)", Number.secondsToString(this._lastFrameStatistics.startOffset, true), Number.secondsToString(this._lastFrameStatistics.endOffset, true), this._lastFrameStatistics.frameCount);
+            var title = WebInspector.UIString("%s \u2013 %s (%d frames)", Number.millisToString(this._lastFrameStatistics.startOffset, true), Number.millisToString(this._lastFrameStatistics.endOffset, true), this._lastFrameStatistics.frameCount);
             fragment.appendChild(WebInspector.TimelinePresentationModel.generatePopupContentForFrameStatistics(this._lastFrameStatistics));
         } else {
             var title = WebInspector.UIString("%s \u2013 %s", this._calculator.formatTime(this._calculator.minimumBoundary(), true), this._calculator.formatTime(this._calculator.maximumBoundary(), true));
@@ -705,8 +705,8 @@ WebInspector.TimelineView.prototype = {
         var width = this._graphRowsElementWidth;
         var boundarySpan = this._panel.windowEndTime() - this._panel.windowStartTime();
         var scale = boundarySpan / (width - minWidth - this._timelinePaddingLeft);
-        var startTime = (this._panel.windowStartTime() - this._timelinePaddingLeft * scale) * 1000;
-        var endTime = startTime + width * scale * 1000;
+        var startTime = (this._panel.windowStartTime() - this._timelinePaddingLeft * scale);
+        var endTime = startTime + width * scale;
 
         /**
          * @param {number} value
@@ -731,8 +731,8 @@ WebInspector.TimelineView.prototype = {
             if (task.startTime > endTime)
                 break;
 
-            var left = Math.max(0, this._calculator.computePosition(WebInspector.TimelineModel.startTimeInSeconds(task)) + barOffset - widthAdjustment);
-            var right = Math.min(width, this._calculator.computePosition(WebInspector.TimelineModel.endTimeInSeconds(task)) + barOffset + widthAdjustment);
+            var left = Math.max(0, this._calculator.computePosition(task.startTime) + barOffset - widthAdjustment);
+            var right = Math.min(width, this._calculator.computePosition(task.endTime || 0) + barOffset + widthAdjustment);
 
             if (lastElement) {
                 var gap = Math.floor(left) - Math.ceil(lastRight);
@@ -1058,7 +1058,7 @@ WebInspector.TimelineCalculator.prototype = {
      */
     formatTime: function(value, hires)
     {
-        return Number.secondsToString(value - this.zeroTime(), hires);
+        return Number.millisToString(value - this.zeroTime(), hires);
     },
 
     /**

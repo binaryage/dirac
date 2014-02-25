@@ -37,7 +37,7 @@ WebInspector.PieChart = function(totalValue)
     this.element = document.createElement("div");
     this.element.className = "pie-chart";
     this.element.createChild("div", "pie-chart-background");
-    var totalString = Number.secondsToString(totalValue, true);
+    var totalString = Number.millisToString(totalValue, true);
     this.element.createChild("div", "pie-chart-foreground").textContent = totalString;
     this._totalValue = totalValue;
     this._lastAngle = 0;

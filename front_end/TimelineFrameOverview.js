@@ -139,7 +139,7 @@ WebInspector.TimelineFrameOverview.prototype = {
         // Optimize appearance for 30fps, but leave some space so it's evident when a frame overflows.
         // However, if at least half frames won't fit at this scale, fall back to using autoscale.
         const targetFPS = 20;
-        var result = 1.0 / targetFPS;
+        var result = 1000.0 / targetFPS;
         if (result >= medianFrameLength)
             return result;
 
@@ -196,7 +196,7 @@ WebInspector.TimelineFrameOverview.prototype = {
         for (var i = 0; i < fpsMarks.length; ++i) {
             var fps = fpsMarks[i];
             // Draw lines one pixel above they need to be, so 60pfs line does not cross most of the frames tops.
-            var y = height - Math.floor(1.0 / fps * scale) - 0.5;
+            var y = height - Math.floor(1000.0 / fps * scale) - 0.5;
             var label = WebInspector.UIString("%d\u2009fps", fps);
             var labelWidth = this._context.measureText(label).width + 2 * labelPadding;
             var labelX = this._canvas.width;

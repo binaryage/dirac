@@ -185,8 +185,8 @@ WebInspector.TimelineFrameModel.prototype = {
     {
         var accounted = 0;
         for (var i = 0; i < programRecord.children.length; ++i)
-            accounted += WebInspector.TimelineModel.durationInSeconds(programRecord.children[i]);
-        var otherTime = WebInspector.TimelineModel.durationInSeconds(programRecord) - accounted;
+            accounted += programRecord.children[i].endTime - programRecord.children[i].startTime;
+        var otherTime = programRecord.endTime - programRecord.startTime - accounted;
         timeByCategory["other"] = (timeByCategory["other"] || 0) + otherTime;
     },
 
@@ -221,7 +221,7 @@ WebInspector.TimelineFrameModel.prototype = {
      */
     _flushFrame: function(frame, record)
     {
-        frame._setEndTime(WebInspector.TimelineModel.startTimeInSeconds(record));
+        frame._setEndTime(record.startTime);
         this._frames.push(frame);
         this.dispatchEventToListeners(WebInspector.TimelineFrameModel.Events.FrameAdded, frame);
     },
@@ -284,8 +284,8 @@ WebInspector.FrameStatistics = function(frames)
  */
 WebInspector.TimelineFrame = function(model, record)
 {
-    this.startTime = WebInspector.TimelineModel.startTimeInSeconds(record);
-    this.startTimeOffset = model._model.recordOffsetInSeconds(record);
+    this.startTime = record.startTime;
+    this.startTimeOffset = model._model.recordOffsetInMillis(record);
     this.endTime = this.startTime;
     this.duration = 0;
     this.timeByCategory = {};
