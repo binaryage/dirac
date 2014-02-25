@@ -374,14 +374,6 @@ WebInspector.DebuggerModel.prototype = {
     },
 
     /**
-     * @return {!Array.<!string>}
-     */
-    scriptURLs: function()
-    {
-        return this._scriptsBySourceURL.keys();
-    },
-
-    /**
      * @return {!Array.<!WebInspector.Script>}
      */
     scriptsForSourceURL: function(sourceURL)

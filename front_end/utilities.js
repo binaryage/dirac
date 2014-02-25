@@ -1358,6 +1358,64 @@ StringMap.prototype = {
 }
 
 /**
+ * @constructor
+ */
+var StringSet = function()
+{
+    /** @type {!StringMap.<boolean>} */
+    this._map = new StringMap();
+}
+
+StringSet.prototype = {
+    /**
+     * @param {string} value
+     */
+    put: function(value)
+    {
+        this._map.put(value, true);
+    },
+
+    /**
+     * @param {string} value
+     * @return {boolean}
+     */
+    remove: function(value)
+    {
+        return !!this._map.remove(value);
+    },
+
+    /**
+     * @return {!Array.<string>}
+     */
+    values: function()
+    {
+        return this._map.keys();
+    },
+
+    /**
+     * @param {string} value
+     * @return {boolean}
+     */
+    contains: function(value)
+    {
+        return this._map.contains(value);
+    },
+
+    /**
+     * @return {number}
+     */
+    size: function()
+    {
+        return this._map.size();
+    },
+
+    clear: function()
+    {
+        this._map.clear();
+    }
+}
+
+/**
  * @param {string} url
  * @param {boolean=} async
  * @param {function(?string)=} callback

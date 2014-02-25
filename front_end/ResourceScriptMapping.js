@@ -39,6 +39,7 @@ WebInspector.ResourceScriptMapping = function(debuggerModel, workspace)
     this._debuggerModel = debuggerModel;
     this._workspace = workspace;
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
+    this._boundURLs = new StringSet();
 
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 }
@@ -163,15 +164,14 @@ WebInspector.ResourceScriptMapping.prototype = {
         for (var i = 0; i < scripts.length; ++i)
             scripts[i].updateLocations();
         uiSourceCode.setSourceMapping(this);
+        this._boundURLs.put(uiSourceCode.url);
     },
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @param {!Array.<!WebInspector.Script>} scripts
      */
-    _unbindUISourceCodeFromScripts: function(uiSourceCode, scripts)
+    _unbindUISourceCode: function(uiSourceCode)
     {
-        console.assert(scripts.length);
         var scriptFile = /** @type {!WebInspector.ResourceScriptFile} */ (uiSourceCode.scriptFile());
         if (scriptFile) {
             scriptFile.dispose();
@@ -182,25 +182,15 @@ WebInspector.ResourceScriptMapping.prototype = {
 
     _debuggerReset: function()
     {
-        /**
-         * @this {WebInspector.ResourceScriptMapping}
-         * @param {!Array.<!WebInspector.Script>} scripts
-         */
-        function unbindUISourceCodesFromScripts(scripts)
+        var boundURLs = this._boundURLs.values();
+        for (var i = 0; i < boundURLs.length; ++i)
         {
-            if (!scripts.length)
-                return;
-            var uiSourceCode = this._workspaceUISourceCodeForScript(scripts[0]);
+            var uiSourceCode = this._workspace.uiSourceCodeForURL(boundURLs[i]);
             if (!uiSourceCode)
-                return;
-            this._unbindUISourceCodeFromScripts(uiSourceCode, scripts);
+                continue;
+            this._unbindUISourceCode(uiSourceCode);
         }
-
-        var scriptURLs = this._debuggerModel.scriptURLs();
-        for (var i = 0; i < scriptURLs.length; ++i) {
-            var scripts = this._debuggerModel.scriptsForSourceURL(scriptURLs[i]);
-            unbindUISourceCodesFromScripts.call(this, scripts);
-        }
+        this._boundURLs.clear();
     },
 }
 
