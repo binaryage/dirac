@@ -35,15 +35,32 @@
  * @param {!WebInspector.FlameChart.ColorGenerator} colorGenerator
  * @param {boolean} mainThread
  */
-WebInspector.TimelineFlameChartDataProvider = function(model, colorGenerator, mainThread)
+WebInspector.TimelineFlameChartDataProvider = function(model, frameModel, colorGenerator, mainThread)
 {
     WebInspector.FlameChartDataProvider.call(this);
     this._model = model;
+    this._frameModel = frameModel;
     this._mainThread = mainThread;
     this._colorGenerator = colorGenerator;
 }
 
 WebInspector.TimelineFlameChartDataProvider.prototype = {
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     * @return {?Array.<number>}
+     */
+    dividerOffsets: function(startTime, endTime)
+    {
+        var frames = this._frameModel.filteredFrames(this._model.minimumRecordTime() + startTime / 1000, this._model.minimumRecordTime() + endTime / 1000);
+        if (frames.length > 30)
+            return null;
+        var offsets = [];
+        for (var i = 0; i < frames.length; ++i)
+            offsets.push(frames[i].startTimeOffset * 1000);
+        return frames.length ? offsets : null;
+    },
+
     reset: function()
     {
         this._invalidate();

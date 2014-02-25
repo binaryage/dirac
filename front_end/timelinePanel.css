@@ -847,3 +847,7 @@
 .timeline-flamechart-view #timeline-overview-grid {
     display: none;
 }
+
+.timeline-flamechart-view .flame-chart-main-pane .resources-divider-label {
+    text-align: center;
+}

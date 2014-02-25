@@ -108,6 +108,13 @@ WebInspector.FlameChart.TimelineData;
 
 WebInspector.FlameChartDataProvider.prototype = {
     /**
+     * @param {number} startTime
+     * @param {number} endTime
+     * @return {?Array.<number>}
+     */
+    dividerOffsets: function(startTime, endTime) { },
+
+    /**
      * @return {?WebInspector.FlameChart.TimelineData}
      */
     timelineData: function() { },
@@ -994,7 +1001,8 @@ WebInspector.FlameChart.MainPane.prototype = {
         this.draw(this.element.clientWidth, this.element.clientHeight);
         this._calculator._updateBoundaries(this);
         this._timelineGrid.element.style.width = this.element.clientWidth;
-        this._timelineGrid.updateDividers(this._calculator);
+        var offsets = this._dataProvider.dividerOffsets(this._calculator.minimumBoundary(), this._calculator.maximumBoundary());
+        this._timelineGrid.updateDividers(this._calculator, offsets, true);
     },
 
     __proto__: WebInspector.View.prototype

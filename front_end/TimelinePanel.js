@@ -213,6 +213,8 @@ WebInspector.TimelinePanel.prototype = {
         this._windowStartTime = windowStartTime;
         this._windowEndTime = windowEndTime;
         this._overviewPane.setWindowTimes(windowStartTime, windowEndTime);
+        for (var i = 0; i < this._currentViews.length; ++i)
+            this._currentViews[i].setWindowTimes(this._windowStartTime, this._windowEndTime);
     },
 
     /**
@@ -251,8 +253,8 @@ WebInspector.TimelinePanel.prototype = {
             case WebInspector.TimelinePanel.Mode.FlameChart:
                 views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this.frameModel());
                 var colorGenerator = WebInspector.TimelineFlameChart.colorGenerator(views.overviewView.categoryFillStyles());
-                var dataProviderMain = new WebInspector.TimelineFlameChartDataProvider(this._model, colorGenerator, true);
-                var dataProviderBackground = new WebInspector.TimelineFlameChartDataProvider(this._model, colorGenerator, false);
+                var dataProviderMain = new WebInspector.TimelineFlameChartDataProvider(this._model, this.frameModel(), colorGenerator, true);
+                var dataProviderBackground = new WebInspector.TimelineFlameChartDataProvider(this._model, this.frameModel(), colorGenerator, false);
                 views.mainViews = [
                     new WebInspector.TimelineFlameChart(this, this._model, dataProviderMain),
                     new WebInspector.TimelineFlameChart(this, this._model, dataProviderBackground)

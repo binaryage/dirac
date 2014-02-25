@@ -1080,6 +1080,16 @@ WebInspector.CPUFlameChartDataProvider = function(cpuProfileView)
 
 WebInspector.CPUFlameChartDataProvider.prototype = {
     /**
+     * @param {number} startTime
+     * @param {number} endTime
+     * @return {?Array.<number>}
+     */
+    dividerOffsets: function(startTime, endTime)
+    {
+        return null;
+    },
+
+    /**
      * @return {?WebInspector.FlameChart.TimelineData}
      */
     timelineData: function()
