@@ -716,16 +716,16 @@ TestSuite.prototype.waitForTestResultsInConsole = function()
 {
     var messages = WebInspector.console.messages;
     for (var i = 0; i < messages.length; ++i) {
-        var text = messages[i].text;
+        var text = messages[i].messageText;
         if (text === "PASS")
             return;
         else if (/^FAIL/.test(text))
             this.fail(text); // This will throw.
     }
-    // Neitwer PASS nor FAIL, so wait for more messages.
+    // Neither PASS nor FAIL, so wait for more messages.
     function onConsoleMessage(event)
     {
-        var text = event.data.text;
+        var text = event.data.messageText;
         if (text === "PASS")
             this.releaseControl();
         else if (/^FAIL/.test(text))
