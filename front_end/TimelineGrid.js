@@ -176,7 +176,8 @@ WebInspector.TimelineGrid.prototype = {
                 dividerLabelBar._labelElement.textContent = printDeltas ? calculator.formatTime(time - lastTime) : calculator.formatTime(time);
             else
                 dividerLabelBar._labelElement.textContent = "";
-            dividerLabelBar._labelElement.style.width = Math.ceil(position - lastPosition) + "px";
+            if (printDeltas)
+                dividerLabelBar._labelElement.style.width = Math.ceil(position - lastPosition) + "px";
             lastPosition = position;
             lastTime = time;
             var percentLeft = 100 * position / dividersElementClientWidth;

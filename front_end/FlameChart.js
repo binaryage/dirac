@@ -29,6 +29,19 @@
  */
 
 /**
+ * @interface
+ */
+WebInspector.TimeRangeController = function() { }
+
+WebInspector.TimeRangeController.prototype = {
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    requestWindowTimes: function(startTime, endTime) { }
+}
+
+/**
  * @constructor
  * @extends {WebInspector.View}
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
@@ -95,6 +108,7 @@ WebInspector.FlameChartDataProvider = function()
 /** @typedef {!{
         maxStackDepth: number,
         totalTime: number,
+        zeroTime: number,
         entryLevels: !Array.<number>,
         entryTotalTimes: !Array.<number>,
         entrySelfTimes: !Array.<number>,
@@ -171,12 +185,13 @@ WebInspector.FlameChart.Calculator.prototype = {
             return Math.log(x) / Math.LN10;
         }
         this._decimalDigits = Math.max(0, -Math.floor(log10(mainPane._timelineGrid.gridSliceTime * 1.01)));
-        var totalTime = mainPane._timelineData().totalTime;
-        this._minimumBoundaries = mainPane._windowLeft * totalTime;
-        this._maximumBoundaries = mainPane._windowRight * totalTime;
+        this._totalTime = mainPane._timelineData().totalTime;
+        this._minimumBoundaries = mainPane._windowLeft * this._totalTime;
+        this._maximumBoundaries = mainPane._windowRight * this._totalTime;
         this._paddingLeft = mainPane._paddingLeft;
         this._width = mainPane._canvas.width - this._paddingLeft;
         this._timeToPixel = this._width / this.boundarySpan();
+        this._zeroTime = mainPane._timelineData().zeroTime;
     },
 
     /**
@@ -220,7 +235,7 @@ WebInspector.FlameChart.Calculator.prototype = {
      */
     zeroTime: function()
     {
-        return 0;
+        return this._zeroTime;
     },
 
     /**
@@ -377,30 +392,9 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
 }
 
 /**
- * @interface
- */
-WebInspector.FlameChart.OverviewPaneInterface = function()
-{
-}
-
-WebInspector.FlameChart.OverviewPaneInterface.prototype = {
-    /**
-     * @param {number} zoom
-     * @param {number} referencePoint
-     */
-    zoom: function(zoom, referencePoint) { },
-
-    /**
-     * @param {number} windowLeft
-     * @param {number} windowRight
-     */
-    setWindow: function(windowLeft, windowRight) { },
-}
-
-/**
  * @constructor
  * @extends {WebInspector.View}
- * @implements {WebInspector.FlameChart.OverviewPaneInterface}
+ * @implements {WebInspector.TimeRangeController}
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
  */
 WebInspector.FlameChart.OverviewPane = function(dataProvider)
@@ -427,12 +421,15 @@ WebInspector.FlameChart.OverviewPane.prototype = {
     },
 
     /**
-     * @param {number} windowLeft
-     * @param {number} windowRight
+     * @param {number} windowStartTime
+     * @param {number} windowEndTime
      */
-    setWindow: function(windowLeft, windowRight)
+    requestWindowTimes: function(windowStartTime, windowEndTime)
     {
-        this._overviewGrid.setWindow(windowLeft, windowRight);
+        var timelineData = this._timelineData();
+        if (!timelineData)
+            return;
+        this._overviewGrid.setWindow(windowStartTime / timelineData.totalTime, windowEndTime / timelineData.totalTime);
     },
 
     /**
@@ -561,15 +558,15 @@ WebInspector.FlameChart.OverviewPane.drawOverviewCanvas = function(timelineData,
  * @constructor
  * @extends {WebInspector.View}
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
- * @param {?WebInspector.FlameChart.OverviewPaneInterface} overviewPane
+ * @param {!WebInspector.TimeRangeController} timeRangeController
  * @param {boolean} isTopDown
  * @param {boolean} timeBasedWindow
  */
-WebInspector.FlameChart.MainPane = function(dataProvider, overviewPane, isTopDown, timeBasedWindow)
+WebInspector.FlameChart.MainPane = function(dataProvider, timeRangeController, isTopDown, timeBasedWindow)
 {
     WebInspector.View.call(this);
     this.element.classList.add("flame-chart-main-pane");
-    this._overviewPane = overviewPane;
+    this._timeRangeController = timeRangeController;
     this._isTopDown = isTopDown;
     this._timeBasedWindow = timeBasedWindow;
 
@@ -643,8 +640,8 @@ WebInspector.FlameChart.MainPane.prototype = {
         this._isDragging = true;
         this._wasDragged = false;
         this._dragStartPoint = event.pageX;
-        this._dragStartWindowLeft = this._windowLeft;
-        this._dragStartWindowRight = this._windowRight;
+        this._dragStartWindowLeft = this._timeWindowLeft;
+        this._dragStartWindowRight = this._timeWindowRight;
         this._canvas.style.cursor = "";
 
         return true;
@@ -657,18 +654,13 @@ WebInspector.FlameChart.MainPane.prototype = {
     {
         var pixelShift = this._dragStartPoint - event.pageX;
         var windowShift = pixelShift / this._totalPixels;
+        var windowTime = this._windowWidth * this._totalTime;
+        var timeShift = windowTime * pixelShift / this._pixelWindowWidth;
 
-        var windowLeft = Math.max(0, this._dragStartWindowLeft + windowShift);
-        if (windowLeft === this._windowLeft)
-            return;
-        windowShift = windowLeft - this._dragStartWindowLeft;
-
-        var windowRight = Math.min(1, this._dragStartWindowRight + windowShift);
-        if (windowRight === this._windowRight)
-            return;
-        windowShift = windowRight - this._dragStartWindowRight;
-        if (this._overviewPane)
-            this._overviewPane.setWindow(this._dragStartWindowLeft + windowShift, this._dragStartWindowRight + windowShift);
+        var windowLeft = this._dragStartWindowLeft + timeShift;
+        var windowRight = this._dragStartWindowRight + timeShift;
+        if (windowLeft >= this._zeroTime && windowRight <= this._totalTime + this._zeroTime)
+            this._timeRangeController.requestWindowTimes(windowLeft, windowRight);
         this._wasDragged = true;
     },
 
@@ -718,19 +710,32 @@ WebInspector.FlameChart.MainPane.prototype = {
      */
     _onMouseWheel: function(e)
     {
-        if (!this._overviewPane)
-            return;
+        var windowLeft = this._timeWindowLeft;
+        var windowRight = this._timeWindowRight;
         if (e.wheelDeltaY) {
-            const zoomFactor = 1.1;
             const mouseWheelZoomSpeed = 1 / 120;
-
-            var zoom = Math.pow(zoomFactor, -e.wheelDeltaY * mouseWheelZoomSpeed);
-            var referencePoint = (this._pixelWindowLeft + e.offsetX - this._paddingLeft) / this._totalPixels;
-            this._overviewPane.zoom(zoom, referencePoint);
+            var zoom = Math.pow(1.2, -e.wheelDeltaY * mouseWheelZoomSpeed) - 1;
+            var cursorTime = this._cursorTime(e.offsetX);
+            windowLeft += (this._timeWindowLeft - cursorTime) * zoom;
+            windowRight += (this._timeWindowRight - cursorTime) * zoom;
         } else {
-            var shift = Number.constrain(-1 * this._windowWidth / 4 * e.wheelDeltaX / 120, -this._windowLeft, 1 - this._windowRight);
-            this._overviewPane.setWindow(this._windowLeft + shift, this._windowRight + shift);
+            var shift = e.wheelDeltaX * this._pixelToTime;
+            shift = Number.constrain(shift, this._zeroTime - windowLeft, this._totalTime + this._zeroTime - windowRight);
+            windowLeft += shift;
+            windowRight += shift;
         }
+        windowLeft = Number.constrain(windowLeft, this._zeroTime, this._totalTime + this._zeroTime);
+        windowRight = Number.constrain(windowRight, this._zeroTime, this._totalTime + this._zeroTime);
+        this._timeRangeController.requestWindowTimes(windowLeft, windowRight);
+    },
+
+    /**
+     * @param {number} x
+     * @return {number}
+     */
+    _cursorTime: function(x)
+    {
+        return (x + this._pixelWindowLeft - this._paddingLeft) * this._pixelToTime + this._zeroTime;
     },
 
     /**
@@ -742,7 +747,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         var timelineData = this._timelineData();
         if (!timelineData)
             return -1;
-        var cursorTime = (x + this._pixelWindowLeft - this._paddingLeft) * this._pixelToTime;
+        var cursorTime = this._cursorTime(x);
         var cursorLevel = this._isTopDown ? Math.floor(y / this._barHeight - 1) : Math.floor((this._canvas.height / window.devicePixelRatio - y) / this._barHeight);
 
         var entryOffsets = timelineData.entryOffsets;
@@ -949,10 +954,11 @@ WebInspector.FlameChart.MainPane.prototype = {
     _updateBoundaries: function()
     {
         this._totalTime = this._timelineData().totalTime;
+        this._zeroTime = this._timelineData().zeroTime;
         if (this._timeBasedWindow) {
             if (this._timeWindowRight !== Infinity) {
-                this._windowLeft = this._timeWindowLeft / this._totalTime;
-                this._windowRight = this._timeWindowRight / this._totalTime;
+                this._windowLeft = (this._timeWindowLeft - this._zeroTime) / this._totalTime;
+                this._windowRight = (this._timeWindowRight - this._zeroTime) / this._totalTime;
                 this._windowWidth = this._windowRight - this._windowLeft;
             } else {
                 this._windowLeft = 0;

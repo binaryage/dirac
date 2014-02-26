@@ -95,6 +95,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (!this._timelineData) {
             this._resetData();
             WebInspector.TimelinePresentationModel.forAllRecords(this._model.records, this._appendRecord.bind(this));
+            this._timelineData.zeroTime = this._model.minimumRecordTime();
         }
         return this._timelineData;
     },
@@ -106,6 +107,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         this._timelineData = {
             maxStackDepth: 5,
             totalTime: 1000,
+            zeroTime: 0,
             entryLevels: [],
             entryTotalTimes: [],
             entrySelfTimes: [],
@@ -182,6 +184,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
  * @constructor
  * @extends {WebInspector.View}
  * @implements {WebInspector.TimelineModeView}
+ * @implements {WebInspector.TimeRangeController}
  * @param {!WebInspector.TimelinePanel} panel
  * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
@@ -192,7 +195,7 @@ WebInspector.TimelineFlameChart = function(panel, model, dataProvider)
     this._panel = panel;
     this._model = model;
     this._dataProvider = dataProvider;
-    this._mainView = new WebInspector.FlameChart.MainPane(dataProvider, null, true, true);
+    this._mainView = new WebInspector.FlameChart.MainPane(dataProvider, this, true, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
 }
@@ -214,6 +217,15 @@ WebInspector.TimelineFlameChart.colorGenerator = function(fillStyles)
 }
 
 WebInspector.TimelineFlameChart.prototype = {
+    /**
+     * @param {number} windowStartTime
+     * @param {number} windowEndTime
+     */
+    requestWindowTimes: function(windowStartTime, windowEndTime)
+    {
+        this._panel.requestWindowTimes(windowStartTime, windowEndTime);
+    },
+
     refreshRecords: function()
     {
     },
@@ -241,7 +253,7 @@ WebInspector.TimelineFlameChart.prototype = {
             var minimumRecordTime = this._model.minimumRecordTime();
             if (rawRecord.startTime > (minimumRecordTime + 1000)) {
                 this._automaticallySizeWindow = false;
-                this._panel.setWindowTimes(minimumRecordTime, minimumRecordTime + 1000);
+                this._panel.requestWindowTimes(minimumRecordTime, minimumRecordTime + 1000);
             }
             this._mainView._scheduleUpdate();
         }
@@ -265,7 +277,7 @@ WebInspector.TimelineFlameChart.prototype = {
         if (timeRange === 0)
             this._mainView.setWindowTimes(0, Infinity);
         else
-            this._mainView.setWindowTimes(this._startTime - minimumRecordTime, this._endTime - minimumRecordTime);
+            this._mainView.setWindowTimes(this._startTime, this._endTime);
     },
 
     /**

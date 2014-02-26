@@ -188,6 +188,7 @@ WebInspector.TimelinePanel.prototype = {
         this._windowStartTime = event.data.startTime;
         this._windowEndTime = event.data.endTime;
         this._windowFilter.setWindowTimes(this._windowStartTime, this._windowEndTime);
+
         for (var i = 0; i < this._currentViews.length; ++i)
             this._currentViews[i].setWindowTimes(this._windowStartTime, this._windowEndTime);
         this._updateSelectionDetails();
@@ -197,9 +198,9 @@ WebInspector.TimelinePanel.prototype = {
      * @param {number} windowStartTime
      * @param {number} windowEndTime
      */
-    setWindowTimes: function(windowStartTime, windowEndTime)
+    requestWindowTimes: function(windowStartTime, windowEndTime)
     {
-        this._overviewPane.setWindowTimes(windowStartTime, windowEndTime);
+        this._overviewPane.requestWindowTimes(windowStartTime, windowEndTime);
     },
 
     /**
@@ -578,7 +579,7 @@ WebInspector.TimelinePanel.prototype = {
     _onRecordsCleared: function()
     {
         this._presentationModel.reset();
-        this.setWindowTimes(0, Infinity);
+        this.requestWindowTimes(0, Infinity);
         this._windowFilter.reset();
         if (this._frameModel)
             this._frameModel.reset();

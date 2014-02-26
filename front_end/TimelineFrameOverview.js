@@ -52,7 +52,7 @@ WebInspector.TimelineFrameOverview = function(model, frameModel)
     this._fillStyles = {};
     var categories = WebInspector.TimelinePresentationModel.categories();
     for (var category in categories)
-        this._fillStyles[category] = WebInspector.TimelinePresentationModel.createFillStyleForCategory(this._context, this._maxInnerBarWidth, 0, categories[category]);
+        this._fillStyles[category] = categories[category].fillColorStop0;
     this._frameTopShadeGradient = this._context.createLinearGradient(0, 0, 0, this._topPadding);
     this._frameTopShadeGradient.addColorStop(0, "rgba(255, 255, 255, 0.9)");
     this._frameTopShadeGradient.addColorStop(1, "rgba(255, 255, 255, 0.2)");

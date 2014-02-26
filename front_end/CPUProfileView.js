@@ -1209,6 +1209,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         this._timelineData = {
             maxStackDepth: Math.max(maxDepth, depth),
             totalTime: this._cpuProfileView.profileHead.totalTime,
+            zeroTime: 0,
             entryNodes: entryNodes,
             entryColorIndexes: entryColorIndexes,
             entryLevels: entryLevels,

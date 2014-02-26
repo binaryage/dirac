@@ -188,7 +188,7 @@ WebInspector.TimelineView.prototype = {
         var frameBar = event.target.enclosingNodeOrSelfWithClass("timeline-frame-strip");
         if (!frameBar)
             return;
-        this._panel.setWindowTimes(frameBar._frame.startTime, frameBar._frame.endTime);
+        this._panel.requestWindowTimes(frameBar._frame.startTime, frameBar._frame.endTime);
     },
 
     /**
@@ -504,7 +504,7 @@ WebInspector.TimelineView.prototype = {
             // If we're at the top, always use real timeline start as a left window bound so that expansion arrow padding logic works.
             var windowStartTime = startIndex ? recordsInWindow[startIndex].startTime : this._presentationModel.minimumRecordTime();
             var windowEndTime = recordsInWindow[Math.max(0, lastVisibleLine - 1)].endTime;
-            this._panel.setWindowTimes(windowStartTime, windowEndTime);
+            this._panel.requestWindowTimes(windowStartTime, windowEndTime);
             recordsInWindow = this._presentationModel.filteredRecords();
             endIndex = Math.min(recordsInWindow.length, lastVisibleLine);
         }
