@@ -1371,7 +1371,7 @@ iframe.panel.extension {
 
 .outline-disclosure li.parent::before {
     float: left;
-    width: 8px;
+    width: 10px;
     padding-right: 2px;
 }
 
@@ -2527,11 +2527,12 @@ body.platform-mac .search-drawer-header input[type="search"].search-config-searc
     background-image: url(Images/statusbarButtonGlyphs.png);
     background-size: 320px 144px;
     opacity: 0.5;
-    width: 8px;
+    width: 12px;
     content: "a";
     color: transparent;
     margin-left: -5px;
     padding-right: 4px;
+    display: inline-block;
 }
 
 @media (-webkit-min-device-pixel-ratio: 1.5) {
