@@ -63,10 +63,10 @@
     bottom: 6px;
 }
 
-.canvas-spinner-icon {
-    content: url(Images/spinnerSelected.gif);
+.canvas-profile-view .spinner-icon {
     position: absolute;
     width: 16px;
+    height: 16px;
     right: 4px;
     bottom: 4px;
 }

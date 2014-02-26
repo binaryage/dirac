@@ -2057,6 +2057,42 @@ button.enable-toggle-status-bar-item.toggled-on .glyph {
     margin-right: 3px;
 }
 
+.sidebar-tree-item.wait .icon {
+    content: none;
+}
+
+.spinner-icon::before,
+.sidebar-tree-item.wait .icon::before {
+    display: block;
+    width: 24px;
+    height: 24px;
+    margin: 4px;
+    border: 3px solid grey;
+    border-radius: 12px;
+    clip: rect(0px, 15px, 15px, 0px);
+    content: "";
+    position: absolute;
+    -webkit-animation: spinner-animation 1s linear infinite;
+}
+
+.spinner-icon.small::before,
+.sidebar-tree-item.wait.small .icon::before {
+    width: 14px;
+    height: 14px;
+    margin: 1px;
+    clip: rect(0px, 9px, 9px, 0px);
+    border-width: 2px;
+}
+
+.sidebar-tree-item.wait.selected .icon::before {
+    border-color: white;
+}
+
+@-webkit-keyframes spinner-animation {
+    from { -webkit-transform: rotate(0); }
+    to { -webkit-transform: rotate(360deg); }
+}
+
 li .status {
     float: right;
     height: 16px;
