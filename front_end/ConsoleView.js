@@ -54,7 +54,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._topLevelOptionByFrameId = {};
     this._subOptionsByFrameId = {};
 
-    this._filter = new WebInspector.ConsoleViewFilter(this);
+    this._filter = new WebInspector.ConsoleViewFilter();
     this._filter.addEventListener(WebInspector.ConsoleViewFilter.Events.FilterChanged, this._updateMessageList.bind(this));
 
     if (hideContextSelector)
@@ -99,12 +99,8 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
     WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._consoleMessageAdded, this);
     WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
-    WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.RepeatCountUpdated, this._repeatCountUpdated, this);
 
     this._linkifier = new WebInspector.Linkifier();
-
-    /** @type {!Map.<!WebInspector.ConsoleMessage, !WebInspector.ConsoleViewMessage>} */
-    this._messageToViewMessage = new Map();
 
     this.prompt = new WebInspector.TextPromptWithHistory(WebInspector.runtimeModel.completionsForTextPrompt.bind(WebInspector.runtimeModel));
     this.prompt.setSuggestBoxEnabled("generic-suggest");
@@ -363,7 +359,6 @@ WebInspector.ConsoleView.prototype = {
     _consoleMessageAdded: function(event)
     {
         var message = /** @type {!WebInspector.ConsoleMessage} */ (event.data);
-        var viewMessage = this._createViewMessage(message);
         var index = message.index;
 
         if (this._urlToMessageCount[message.url])
@@ -371,7 +366,7 @@ WebInspector.ConsoleView.prototype = {
         else
             this._urlToMessageCount[message.url] = 1;
 
-        if (this._filter.shouldBeVisible(viewMessage))
+        if (this._filter.shouldBeVisible(message))
             this._showConsoleMessage(index);
         else
             this._updateFilterStatus();
@@ -380,14 +375,10 @@ WebInspector.ConsoleView.prototype = {
     _showConsoleMessage: function(index)
     {
         var message = WebInspector.console.messages[index];
-        var viewMessage = this._messageToViewMessage.get(message);
-        console.assert(viewMessage);
-        if (!viewMessage)
-            return;
 
         // this.messagesElement.isScrolledToBottom() is forcing style recalculation.
         // We just skip it if the scroll action has been scheduled.
-        if (!this._isScrollIntoViewScheduled() && ((viewMessage instanceof WebInspector.ConsoleCommandResult) || this.messagesElement.isScrolledToBottom()))
+        if (!this._isScrollIntoViewScheduled() && ((message instanceof WebInspector.ConsoleCommandResult) || this.messagesElement.isScrolledToBottom()))
             this._scheduleScrollIntoView();
 
         this._visibleMessagesIndices.push(index);
@@ -401,9 +392,9 @@ WebInspector.ConsoleView.prototype = {
                 var group = new WebInspector.ConsoleGroup(this.currentGroup);
                 this.currentGroup.messagesElement.appendChild(group.element);
                 this.currentGroup = group;
-                viewMessage.group = group;
+                message.group = group;
             }
-            this.currentGroup.addMessage(viewMessage);
+            this.currentGroup.addMessage(message);
         }
 
         if (this._searchRegex && message.matchesRegex(this._searchRegex)) {
@@ -412,31 +403,13 @@ WebInspector.ConsoleView.prototype = {
         }
     },
 
-    /**
-     * @param {!WebInspector.ConsoleMessage} message
-     * @return {!WebInspector.ConsoleViewMessage}
-     */
-    _createViewMessage: function(message)
-    {
-        var viewMessage = this._messageToViewMessage.get(message);
-        if (viewMessage)
-            return viewMessage;
-        if (message.type === WebInspector.ConsoleMessage.MessageType.Command)
-            viewMessage = new WebInspector.ConsoleCommand(message);
-        else
-            viewMessage = new WebInspector.ConsoleViewMessage(message, this._linkifier);
-        this._messageToViewMessage.put(message, viewMessage);
-        return viewMessage;
-    },
-
     _consoleCleared: function()
     {
         this._scrolledToBottom = true;
         for (var i = 0; i < this._visibleMessagesIndices.length; ++i)
-          this._messageToViewMessage.get(WebInspector.console.messages[this._visibleMessagesIndices[i]]).willHide();
+            WebInspector.console.messages[this._visibleMessagesIndices[i]].willHide();
         this._visibleMessagesIndices = [];
         this._searchResultsIndices = [];
-        this._messageToViewMessage.clear();
 
         if (this._searchRegex)
             this._searchableView.updateSearchMatchesCount(0);
@@ -448,15 +421,6 @@ WebInspector.ConsoleView.prototype = {
         this._updateFilterStatus(0);
 
         this._linkifier.reset();
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _repeatCountUpdated: function(event)
-    {
-        var message = /** @type {!WebInspector.ConsoleMessage} */ (event.data);
-        this._messageToViewMessage.get(message).updateRepeatCount();
     },
 
     _handleContextMenuEvent: function(event)
@@ -504,7 +468,7 @@ WebInspector.ConsoleView.prototype = {
         contextMenu.appendSeparator();
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Clear console" : "Clear Console"), this._requestClearMessages.bind(this));
 
-        var request = (sourceElement && sourceElement.message) ? sourceElement.message.request : null;
+        var request = (sourceElement && sourceElement.message) ? sourceElement.message.request() : null;
         if (request && request.type === WebInspector.resourceTypes.XHR) {
             contextMenu.appendSeparator();
             contextMenu.appendItem(WebInspector.UIString("Replay XHR"), NetworkAgent.replayXHR.bind(null, request.requestId));
@@ -526,11 +490,10 @@ WebInspector.ConsoleView.prototype = {
         var anchor = null;
         for (var i = 0; i < sourceMessages.length; ++i) {
             var sourceMessage = sourceMessages[i];
-            var sourceViewMessage = this._messageToViewMessage.get(sourceMessage);
             var visibleMessage = WebInspector.console.messages[this._visibleMessagesIndices[visibleMessageIndex]];
 
             if (visibleMessage === sourceMessage) {
-                if (this._filter.shouldBeVisible(sourceViewMessage)) {
+                if (this._filter.shouldBeVisible(visibleMessage)) {
                     newVisibleMessages.push(this._visibleMessagesIndices[visibleMessageIndex]);
 
                     if (this._searchRegex && sourceMessage.matchesRegex(this._searchRegex))
@@ -540,24 +503,24 @@ WebInspector.ConsoleView.prototype = {
                         anchor = group.element;
                         group = group.parentGroup || group;
                     } else if (sourceMessage.type === WebInspector.ConsoleMessage.MessageType.StartGroup || sourceMessage.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed) {
-                        group = sourceViewMessage.group;
+                        group = sourceMessage.group;
                         anchor = group.messagesElement.firstChild;
                     } else
-                        anchor = sourceViewMessage.toMessageElement();
+                        anchor = visibleMessage.toMessageElement();
                 } else {
-                    sourceViewMessage.willHide();
-                    sourceViewMessage.toMessageElement().remove();
+                    visibleMessage.willHide();
+                    visibleMessage.toMessageElement().remove();
                 }
                 ++visibleMessageIndex;
             } else {
-                if (this._filter.shouldBeVisible(sourceViewMessage)) {
+                if (this._filter.shouldBeVisible(sourceMessage)) {
 
                     if (this._searchRegex && sourceMessage.matchesRegex(this._searchRegex))
                         this._searchResultsIndices.push(i);
 
-                    group.addMessage(sourceViewMessage, anchor ? anchor.nextSibling : group.messagesElement.firstChild);
+                    group.addMessage(sourceMessage, anchor ? anchor.nextSibling : group.messagesElement.firstChild);
                     newVisibleMessages.push(i);
-                    anchor = sourceViewMessage.toMessageElement();
+                    anchor = sourceMessage.toMessageElement();
                 }
             }
         }
@@ -679,9 +642,8 @@ WebInspector.ConsoleView.prototype = {
          */
         function addMessage(url, lineNumber, columnNumber)
         {
-            var resultMessage = new WebInspector.ConsoleCommandResult(result, wasThrown, originatingCommand, this._linkifier, url, lineNumber, columnNumber);
-            this._messageToViewMessage.put(resultMessage.consoleMessage(), resultMessage);
-            WebInspector.console.addMessage(resultMessage.consoleMessage());
+            var message = new WebInspector.ConsoleCommandResult(result, wasThrown, originatingCommand, this._linkifier, url, lineNumber, columnNumber);
+            WebInspector.console.addMessage(message);
         }
 
         if (result.type !== "function") {
@@ -725,9 +687,8 @@ WebInspector.ConsoleView.prototype = {
      */
     _appendCommand: function(text, newPromptText, useCommandLineAPI, showResultOnly)
     {
-        var commandMessage;
         if (!showResultOnly) {
-            commandMessage = new WebInspector.ConsoleMessage(WebInspector.ConsoleMessage.MessageSource.JS, null, text, WebInspector.ConsoleMessage.MessageType.Command);
+            var commandMessage = new WebInspector.ConsoleCommand(text);
             WebInspector.console.addMessage(commandMessage);
         }
         this.prompt.text = newPromptText;
@@ -748,7 +709,7 @@ WebInspector.ConsoleView.prototype = {
                 WebInspector.settings.consoleHistory.set(this.prompt.historyData.slice(-30));
             }
 
-            this._printResult(result, wasThrown, /** @type {!WebInspector.ConsoleCommand} */ (this._messageToViewMessage.get(commandMessage)));
+            this._printResult(result, wasThrown, commandMessage);
         }
         WebInspector.runtimeModel.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult.bind(this));
 
@@ -830,13 +791,11 @@ WebInspector.ConsoleView.prototype = {
 }
 
 /**
- * @constructor
  * @extends {WebInspector.Object}
- * @param {!WebInspector.ConsoleView} view
+ * @constructor
  */
-WebInspector.ConsoleViewFilter = function(view)
+WebInspector.ConsoleViewFilter = function()
 {
-    this._view = view;
     this._messageURLFilters = WebInspector.settings.messageURLFilters.get();
     this._filterChanged = this.dispatchEventToListeners.bind(this, WebInspector.ConsoleViewFilter.Events.FilterChanged);
 };
@@ -903,14 +862,11 @@ WebInspector.ConsoleViewFilter.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ConsoleViewMessage|undefined} viewMessage
+     * @param {!WebInspector.ConsoleMessage} message
      * @return {boolean}
      */
-    shouldBeVisible: function(viewMessage)
+    shouldBeVisible: function(message)
     {
-        if (!viewMessage)
-            return false;
-        var message = viewMessage.consoleMessage();
         if ((message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed || message.type === WebInspector.ConsoleMessage.MessageType.EndGroup))
             return true;
 
@@ -925,7 +881,7 @@ WebInspector.ConsoleViewFilter.prototype = {
 
         if (this._filterRegex) {
             this._filterRegex.lastIndex = 0;
-            if (!viewMessage.matchesRegex(this._filterRegex))
+            if (!message.matchesRegex(this._filterRegex))
                 return false;
         }
 
@@ -946,12 +902,13 @@ WebInspector.ConsoleViewFilter.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.ConsoleViewMessage}
- * @param {!WebInspector.ConsoleMessage} message
+ * @extends {WebInspector.ConsoleMessage}
  */
-WebInspector.ConsoleCommand = function(message)
+WebInspector.ConsoleCommand = function(text)
 {
-    WebInspector.ConsoleViewMessage.call(this, message, null);
+    WebInspector.ConsoleMessage.call(this, WebInspector.ConsoleMessage.MessageSource.JS, WebInspector.ConsoleMessage.MessageType.Command, "");
+    this.text = text;
+    this.type = WebInspector.ConsoleMessage.MessageType.Command;
 }
 
 WebInspector.ConsoleCommand.prototype = {
@@ -1020,11 +977,11 @@ WebInspector.ConsoleCommand.prototype = {
         this._formattedCommand.textContent = this.text;
     },
 
-    __proto__: WebInspector.ConsoleViewMessage.prototype
+    __proto__: WebInspector.ConsoleMessage.prototype
 }
 
 /**
- * @extends {WebInspector.ConsoleViewMessage}
+ * @extends {WebInspector.ConsoleMessageImpl}
  * @constructor
  * @param {!WebInspector.RemoteObject} result
  * @param {boolean} wasThrown
@@ -1036,10 +993,9 @@ WebInspector.ConsoleCommand.prototype = {
  */
 WebInspector.ConsoleCommandResult = function(result, wasThrown, originatingCommand, linkifier, url, lineNumber, columnNumber)
 {
+    var level = (wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log);
     this.originatingCommand = originatingCommand;
-    var level = wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log;
-    var message = new WebInspector.ConsoleMessage(WebInspector.ConsoleMessage.MessageSource.JS, level, "", WebInspector.ConsoleMessage.MessageType.Result, url, lineNumber, columnNumber, undefined, undefined, [result]);
-    WebInspector.ConsoleViewMessage.call(this, message, linkifier);
+    WebInspector.ConsoleMessageImpl.call(this, WebInspector.ConsoleMessage.MessageSource.JS, level, "", linkifier, WebInspector.ConsoleMessage.MessageType.Result, url, lineNumber, columnNumber, undefined, [result]);
 }
 
 WebInspector.ConsoleCommandResult.prototype = {
@@ -1058,12 +1014,12 @@ WebInspector.ConsoleCommandResult.prototype = {
      */
     toMessageElement: function()
     {
-        var element = WebInspector.ConsoleViewMessage.prototype.toMessageElement.call(this);
+        var element = WebInspector.ConsoleMessageImpl.prototype.toMessageElement.call(this);
         element.classList.add("console-user-command-result");
         return element;
     },
 
-    __proto__: WebInspector.ConsoleViewMessage.prototype
+    __proto__: WebInspector.ConsoleMessageImpl.prototype
 }
 
 /**
@@ -1092,13 +1048,12 @@ WebInspector.ConsoleGroup = function(parentGroup)
 
 WebInspector.ConsoleGroup.prototype = {
     /**
-     * @param {!WebInspector.ConsoleViewMessage} viewMessage
+     * @param {!WebInspector.ConsoleMessage} message
      * @param {!Node=} node
      */
-    addMessage: function(viewMessage, node)
+    addMessage: function(message, node)
     {
-        var message = viewMessage.consoleMessage();
-        var element = viewMessage.toMessageElement();
+        var element = message.toMessageElement();
 
         if (message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed) {
             this.messagesElement.parentNode.insertBefore(element, this.messagesElement);
@@ -1108,10 +1063,10 @@ WebInspector.ConsoleGroup.prototype = {
                 groupElement.classList.add("collapsed");
         } else {
             this.messagesElement.insertBefore(element, node || null);
-            viewMessage.wasShown();
+            message.wasShown();
         }
 
-        if (element.previousSibling && viewMessage.originatingCommand && element.previousSibling.command === viewMessage.originatingCommand)
+        if (element.previousSibling && message.originatingCommand && element.previousSibling.command === message.originatingCommand)
             element.previousSibling.classList.add("console-adjacent-user-command-result");
     },
 
@@ -1149,3 +1104,8 @@ WebInspector.ConsoleGroup.prototype = {
  * @type {!WebInspector.ConsoleView}
  */
 WebInspector.consoleView;
+
+WebInspector.ConsoleMessage.create = function(source, level, message, type, url, line, column, repeatCount, parameters, stackTrace, requestId, isOutdated)
+{
+    return new WebInspector.ConsoleMessageImpl(source, level, message, WebInspector.consoleView._linkifier, type, url, line, column, repeatCount, parameters, stackTrace, requestId, isOutdated);
+}

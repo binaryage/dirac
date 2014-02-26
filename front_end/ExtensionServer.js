@@ -416,7 +416,7 @@ WebInspector.ExtensionServer.prototype = {
         if (!level)
             return this._status.E_BADARG("message.severity", message.severity);
 
-        var consoleMessage = new WebInspector.ConsoleMessage(
+        var consoleMessage = WebInspector.ConsoleMessage.create(
             WebInspector.ConsoleMessage.MessageSource.JS,
             level,
             message.text,
@@ -447,7 +447,7 @@ WebInspector.ExtensionServer.prototype = {
         }
         var result = {
             severity: convertLevel(message.level),
-            text: message.messageText,
+            text: message.text,
         };
         if (message.url)
             result.url = message.url;

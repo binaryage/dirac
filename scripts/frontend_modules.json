@@ -152,7 +152,7 @@
         "sources": [
             "AdvancedSearchController.js",
             "HandlerRegistry.js",
-            "ConsoleViewMessage.js",
+            "ConsoleMessage.js",
             "CookiesTable.js",
             "DOMBreakpointsSidebarPane.js",
             "DOMPresentationUtils.js",

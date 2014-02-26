@@ -233,7 +233,7 @@ WebInspector.ScriptSnippetModel.prototype = {
             }
 
             if (!scriptId) {
-                var consoleMessage = new WebInspector.ConsoleMessage(
+                var consoleMessage = WebInspector.ConsoleMessage.create(
                         WebInspector.ConsoleMessage.MessageSource.JS,
                         WebInspector.ConsoleMessage.MessageLevel.Error,
                         syntaxErrorMessage || "");
@@ -280,18 +280,8 @@ WebInspector.ScriptSnippetModel.prototype = {
     _printRunScriptResult: function(result, wasThrown)
     {
         var level = (wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log);
-        var message = new WebInspector.ConsoleMessage(
-            WebInspector.ConsoleMessage.MessageSource.JS,
-            level,
-            "",
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            [result]);
-        WebInspector.console.addMessage(message);
+        var message = WebInspector.ConsoleMessage.create(WebInspector.ConsoleMessage.MessageSource.JS, level, "", undefined, undefined, undefined, undefined, undefined, [result]);
+        WebInspector.console.addMessage(message)
     },
 
     /**

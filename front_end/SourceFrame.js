@@ -680,7 +680,7 @@ WebInspector.SourceFrame.prototype = {
 
         // Create the image element in the Inspector's document so we can use relative image URLs.
         messageLineElement.appendChild(imageElement);
-        messageLineElement.appendChild(document.createTextNode(msg.messageText));
+        messageLineElement.appendChild(document.createTextNode(msg.message));
 
         rowMessage.element = messageLineElement;
         rowMessage.repeatCount = msg.totalRepeatCount;

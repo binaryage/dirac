@@ -2340,17 +2340,7 @@ WebInspector.ElementsTreeElement.prototype = {
             if (!nodeObject)
                 return;
 
-            var message = new WebInspector.ConsoleMessage(
-                WebInspector.ConsoleMessage.MessageSource.ConsoleAPI,
-                WebInspector.ConsoleMessage.MessageLevel.Log,
-                "",
-                WebInspector.ConsoleMessage.MessageType.Dir,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                undefined,
-                [nodeObject]);
+            var message = WebInspector.ConsoleMessage.create(WebInspector.ConsoleMessage.MessageSource.ConsoleAPI, WebInspector.ConsoleMessage.MessageLevel.Log, "", WebInspector.ConsoleMessage.MessageType.Dir, undefined, undefined, undefined, undefined, [nodeObject]);
             WebInspector.console.addMessage(message);
             WebInspector.showConsole();
         }
