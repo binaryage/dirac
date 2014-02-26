@@ -770,7 +770,7 @@ WebInspector.log = function(message, messageLevel, showConsole)
     function logMessage(message)
     {
         // post the message
-        var msg = WebInspector.ConsoleMessage.create(
+        var msg = new WebInspector.ConsoleMessage(
             WebInspector.ConsoleMessage.MessageSource.Other,
             messageLevel || WebInspector.ConsoleMessage.MessageLevel.Debug,
             message);

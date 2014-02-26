@@ -60,11 +60,22 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
         if (!message.url || !message.isErrorOrWarning())
             return;
 
-        var rawLocation = message.location();
+        var rawLocation = this._rawLocation(message);
         if (rawLocation)
             this._addConsoleMessageToScript(message, rawLocation);
         else
             this._addPendingConsoleMessage(message);
+    },
+
+    /**
+     * @return {?WebInspector.DebuggerModel.Location}
+     */
+    _rawLocation: function(message)
+    {
+        // FIXME(62725): stack trace line/column numbers are one-based.
+        var lineNumber = message.stackTrace ? message.stackTrace[0].lineNumber - 1 : message.line - 1;
+        var columnNumber = message.stackTrace && message.stackTrace[0].columnNumber ? message.stackTrace[0].columnNumber - 1 : 0;
+        return WebInspector.debuggerModel.createRawLocationByURL(message.url, lineNumber, columnNumber);
     },
 
     /**
@@ -102,7 +113,7 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
         var pendingMessages = [];
         for (var i = 0; i < messages.length; i++) {
             var message = messages[i];
-            var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (message.location());
+            var rawLocation = this._rawLocation(message);
             if (script.scriptId === rawLocation.scriptId)
                 this._addConsoleMessageToScript(message, rawLocation);
             else
