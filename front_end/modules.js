@@ -138,6 +138,10 @@ var allDescriptors = [
                 className: "WebInspector.AdvancedSearchController.ViewFactory"
             },
             {
+                type: "@WebInspector.DrawerEditor",
+                className: "WebInspector.SourcesPanel.DrawerEditor"
+            },
+            {
                 type: "@WebInspector.Revealer",
                 contextTypes: ["WebInspector.UILocation"],
                 className: "WebInspector.SourcesPanel.UILocationRevealer"

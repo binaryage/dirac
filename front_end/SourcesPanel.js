@@ -106,7 +106,9 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     var tabbedEditorPlaceholderText = WebInspector.isMac() ? WebInspector.UIString("Hit Cmd+O to open a file") : WebInspector.UIString("Hit Ctrl+O to open a file");
 
+    this._drawerEditorView = new WebInspector.SourcesPanel.DrawerEditorView();
     this.sourcesView = new WebInspector.SourcesView();
+    this.sourcesView.show(this._drawerEditorView.element);
 
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.setMinimalSearchQuerySize(0);
@@ -288,9 +290,19 @@ WebInspector.SourcesPanel.prototype = {
         return this._paused;
     },
 
+    /**
+     * @return {!WebInspector.SourcesPanel.DrawerEditor}
+     */
+    _drawerEditor: function()
+    {
+        var drawerEditorInstance = WebInspector.moduleManager.instance(WebInspector.DrawerEditor);
+        console.assert(drawerEditorInstance instanceof WebInspector.SourcesPanel.DrawerEditor, "WebInspector.DrawerEditor module instance does not use WebInspector.SourcesPanel.DrawerEditor as an implementation. ");
+        return /** @type {!WebInspector.SourcesPanel.DrawerEditor} */ (drawerEditorInstance);
+    },
+
     wasShown: function()
     {
-        WebInspector.inspectorView.closeViewInDrawer("editor");
+        this._drawerEditor()._panelWasShown();
         this.sourcesView.show(this.editorView.mainElement());
         WebInspector.Panel.prototype.wasShown.call(this);
 
@@ -304,6 +316,8 @@ WebInspector.SourcesPanel.prototype = {
         this.element.removeEventListener("keyup", this._boundOnKeyUp, false);
 
         WebInspector.Panel.prototype.willHide.call(this);
+        this._drawerEditor()._panelWillHide();
+        this.sourcesView.show(this._drawerEditorView.element);
     },
 
     /**
@@ -509,13 +523,11 @@ WebInspector.SourcesPanel.prototype = {
     {
         if (this.sourcesView.isShowing())
             return;
-        if (this._canShowEditorInDrawer() && !forceShowInPanel) {
-            var drawerEditorView = new WebInspector.DrawerEditorView();
-            this.sourcesView.show(drawerEditorView.element);
-            WebInspector.inspectorView.showCloseableViewInDrawer("editor", WebInspector.UIString("Editor"), drawerEditorView);
-        } else {
+
+        if (this._shouldShowEditorInDrawer() && !forceShowInPanel)
+            this._drawerEditor()._show();
+        else
             WebInspector.showPanel("sources");
-        }
     },
 
     /**
@@ -538,9 +550,9 @@ WebInspector.SourcesPanel.prototype = {
     /**
      * @return {boolean}
      */
-    _canShowEditorInDrawer: function()
+    _shouldShowEditorInDrawer: function()
     {
-        return WebInspector.experimentsSettings.showEditorInDrawer.isEnabled() && WebInspector.settings.showEditorInDrawer.get();
+        return WebInspector.experimentsSettings.showEditorInDrawer.isEnabled() && WebInspector.settings.showEditorInDrawer.get() && WebInspector.inspectorView.isDrawerEditorShown();
     },
 
     /**
@@ -1743,17 +1755,63 @@ WebInspector.SourcesView.prototype = {
 
 /**
  * @constructor
+ * @implements {WebInspector.DrawerEditor}
+ */
+WebInspector.SourcesPanel.DrawerEditor = function()
+{
+    this._panel = WebInspector.panel("sources");
+}
+
+WebInspector.SourcesPanel.DrawerEditor.prototype = {
+    /**
+     * @return {!WebInspector.View}
+     */
+    view: function()
+    {
+        return this._panel._drawerEditorView;
+    },
+
+    installedIntoDrawer: function()
+    {
+        if (this._panel.isShowing())
+            this._panelWasShown();
+        else
+            this._panelWillHide();
+    },
+
+    _panelWasShown: function()
+    {
+        WebInspector.inspectorView.setDrawerEditorAvailable(false);
+        WebInspector.inspectorView.hideDrawerEditor();
+    },
+
+    _panelWillHide: function()
+    {
+        WebInspector.inspectorView.setDrawerEditorAvailable(true);
+        if (WebInspector.inspectorView.isDrawerEditorShown())
+            WebInspector.inspectorView.showDrawerEditor();
+    },
+
+    _show: function()
+    {
+        WebInspector.inspectorView.showDrawerEditor();
+    },
+}
+
+/**
+ * @constructor
  * @extends {WebInspector.View}
  */
-WebInspector.DrawerEditorView = function()
+WebInspector.SourcesPanel.DrawerEditorView = function()
 {
     WebInspector.View.call(this);
     this.element.id = "drawer-editor-view";
 }
 
-WebInspector.DrawerEditorView.prototype = {
+WebInspector.SourcesPanel.DrawerEditorView.prototype = {
     __proto__: WebInspector.View.prototype
 }
+
 
 /**
  * @constructor

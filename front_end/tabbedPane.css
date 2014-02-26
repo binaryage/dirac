@@ -45,6 +45,13 @@
     background-color: lightgray;
 }
 
+.tabbed-pane-placeholder {
+    font-size: 14px;
+    text-align: center;
+    margin-top: 20px;
+    text-shadow: rgba(255, 255, 255, 0.75) 0 1px 0;
+}
+
 .tabbed-pane-header {
     flex: 0 0 23px;
     border-bottom: 1px solid rgb(163, 163, 163);
@@ -101,6 +108,15 @@
 .tabbed-pane-header-tab:hover .close-button-gray,
 .tabbed-pane-header-tab.selected .close-button-gray {
     visibility: visible;
+}
+
+.tabbed-pane-header-tab-icon {
+    width: 11px;
+    height: 10px;
+    margin-top: 3px;
+    float: left;
+    display: block;
+    margin-right: 1px;
 }
 
 .tabbed-pane-header-tabs-drop-down-container {

@@ -114,41 +114,6 @@
     -webkit-mask-position: 0 -24px;
 }
 
-.status-bar-item.scripts-navigator-show-hide-button,
-.status-bar-item.scripts-debugger-show-hide-button {
-    opacity: 0.9;
-}
-
-.panel.sources .tabbed-pane-header {
-    background-color: rgb(236, 236, 236);
-}
-
-button.status-bar-item.scripts-navigator-show-hide-button {
-    left: 0;
-}
-
-button.status-bar-item.scripts-navigator-show-hide-button.toggled-overlay {
-    left: auto;
-    right: 15px;
-}
-
-.scripts-views-container {
-    position: absolute;
-    top: 23px;
-    right: 0;
-    bottom: 0;
-    left: 0;
-}
-
-.script-view {
-    display: none;
-    overflow: hidden;
-}
-
-.script-view.visible {
-    display: flex;
-}
-
 .dedicated-worker-item {
     margin: 5px 0 5px 1px;
 }
@@ -168,6 +133,18 @@ button.status-bar-item.scripts-navigator-show-hide-button.toggled-overlay {
     margin-right: 36px;
 }
 
+.panel.sources button.status-bar-item.scripts-debugger-show-hide-button {
+    display: block;
+}
+
+.panel.sources button.status-bar-item.scripts-navigator-show-hide-button {
+    display: block;
+}
+
+.panel.sources .navigator-tabbed-pane .tabbed-pane-header {
+    background-color: rgb(236, 236, 236);
+}
+
 .function-location-link {
     float: right;
     margin-left: 10px;
@@ -181,14 +158,6 @@ button.status-bar-item.scripts-navigator-show-hide-button.toggled-overlay {
 
 .function-popover-title .function-name {
     font-weight: bold;
-}
-
-button.status-bar-item.scripts-debugger-show-hide-button {
-    right: 15px;
-}
-
-button.status-bar-item.scripts-debugger-show-hide-button.toggled-left {
-    right: 0;
 }
 
 .workers-list > li {
@@ -207,55 +176,6 @@ a.worker-item {
 
 a.worker-item:hover {
     color: rgb(15%, 15%, 15%);
-}
-
-.source-frame-debugger-script {
-    background-color: rgba(255, 255, 194, 0.5);
-}
-
-.source-frame-unsaved-committed-changes {
-    background-color: rgba(255, 225, 205, 0.40);
-}
-
-.tabbed-pane-placeholder {
-    font-size: 14px;
-    text-align: center;
-    margin-top: 20px;
-    text-shadow: rgba(255, 255, 255, 0.75) 0 1px 0;
-}
-
-.tabbed-pane-header-tab-icon {
-    width: 11px;
-    height: 10px;
-    margin-top: 3px;
-    float: left;
-    display: block;
-    margin-right: 1px;
-}
-
-.editor-container-unsaved-committed-changes-icon {
-    background-image: url(Images/statusbarButtonGlyphs.png);
-    background-size: 320px 144px;
-    background-position: -202px -107px;
-}
-
-.sources-status-bar {
-    display: flex;
-}
-
-.sources-status-bar div.resizer-widget {
-    width: 18px;
-    height: 16px;
-    -webkit-transform: rotate(90deg);
-    top: 2px;
-    right: 17px;
-}
-
-.sources-status-bar .scripts-debugger-show-hide-button {
-    margin-top: 1px !important;
-    height: 16px !important;
-    -webkit-transform: rotate(90deg);
-    right: 0 !important;
 }
 
 .panel.sources .sidebar-pane-stack {

@@ -165,6 +165,33 @@ WebInspector.InspectorView.prototype = {
     {
         this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
         this._tabSelected();
+        this._drawer.initialPanelShown();
+    },
+
+    showDrawerEditor: function()
+    {
+        this._drawer.showDrawerEditor();
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isDrawerEditorShown: function()
+    {
+        return this._drawer.isDrawerEditorShown();
+    },
+
+    hideDrawerEditor: function()
+    {
+        this._drawer.hideDrawerEditor();
+    },
+
+    /**
+     * @param {boolean} available
+     */
+    setDrawerEditorAvailable: function(available)
+    {
+        this._drawer.setDrawerEditorAvailable(available);
     },
 
     _tabSelected: function()

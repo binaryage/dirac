@@ -41,12 +41,24 @@ WebInspector.Drawer = function(splitView)
     splitView.hideDefaultResizer();
     this.show(splitView.sidebarElement());
 
+    this._drawerEditorSplitView = new WebInspector.SplitView(true, true, "editorInDrawerSplitViewState", 0.5, 0.5);
+    this._drawerEditorSplitView.hideSidebar();
+    this._drawerEditorSplitView.addEventListener(WebInspector.SplitView.Events.ShowModeChanged, this._drawerEditorSplitViewShowModeChanged, this);
+    this._drawerEditorShownSetting = WebInspector.settings.createSetting("drawerEditorShown", true);
+    this._drawerEditorSplitView.show(this.element);
+
     this._toggleDrawerButton = new WebInspector.StatusBarButton(WebInspector.UIString("Show drawer."), "console-status-bar-item");
     this._toggleDrawerButton.addEventListener("click", this.toggle, this);
 
     this._tabbedPane = new WebInspector.TabbedPane();
+    this._tabbedPane.element.id = "drawer-tabbed-pane";
     this._tabbedPane.closeableTabs = false;
     this._tabbedPane.setRetainTabOrder(true, WebInspector.moduleManager.orderComparator(WebInspector.Drawer.ViewFactory, "name", "order"));
+
+    this._toggleDrawerEditorButton = this._drawerEditorSplitView.createShowHideSidebarButton("editor in drawer", "drawer-editor-show-hide-button");
+    this._tabbedPane.element.appendChild(this._toggleDrawerEditorButton.element);
+    if (!WebInspector.experimentsSettings.showEditorInDrawer.isEnabled())
+        this.setDrawerEditorAvailable(false);
 
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     splitView.installResizer(this._tabbedPane.headerElement());
@@ -77,7 +89,7 @@ WebInspector.Drawer.prototype = {
                 this._tabbedPane.appendTab(id, title, new WebInspector.View());
             }
         }
-        this._tabbedPane.show(this.element);
+        this._tabbedPane.show(this._drawerEditorSplitView.mainElement());
     },
 
     /**
@@ -155,6 +167,7 @@ WebInspector.Drawer.prototype = {
         this.showView(this._lastSelectedViewSetting.get());
         this._toggleDrawerButton.toggled = true;
         this._toggleDrawerButton.title = WebInspector.UIString("Hide drawer.");
+        this._ensureDrawerEditorEsistsIfNeeded();
     },
 
     willHide: function()
@@ -239,6 +252,81 @@ WebInspector.Drawer.prototype = {
         return this._viewFactories[id] ? /** @type {!WebInspector.Drawer.ViewFactory} */ (this._viewFactories[id].instance()) : null;
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _drawerEditorSplitViewShowModeChanged: function(event)
+    {
+        var mode = /** @type {string} */ (event.data);
+        var shown = mode === WebInspector.SplitView.ShowMode.Both;
+
+        if (this._isHidingDrawerEditor)
+            return;
+
+        this._drawerEditorShownSetting.set(shown);
+
+        if (!shown)
+            return;
+
+        this._ensureDrawerEditor();
+        this._drawerEditor.view().show(this._drawerEditorSplitView.sidebarElement());
+    },
+
+    initialPanelShown: function()
+    {
+        this._initialPanelWasShown = true;
+        this._ensureDrawerEditorEsistsIfNeeded();
+    },
+
+    _ensureDrawerEditorEsistsIfNeeded: function()
+    {
+        if (!this._initialPanelWasShown || !this.isShowing() || !this._drawerEditorShownSetting.get())
+            return;
+        this._ensureDrawerEditor();
+    },
+
+    _ensureDrawerEditor: function()
+    {
+        if (this._drawerEditor)
+            return;
+        this._drawerEditor = WebInspector.moduleManager.instance(WebInspector.DrawerEditor);
+        this._drawerEditor.installedIntoDrawer();
+    },
+
+    /**
+     * @param {boolean} available
+     */
+    setDrawerEditorAvailable: function(available)
+    {
+        if (!WebInspector.experimentsSettings.showEditorInDrawer.isEnabled())
+            available = false;
+        this._toggleDrawerEditorButton.element.enableStyleClass("hidden", !available);
+    },
+
+    showDrawerEditor: function()
+    {
+        if (!WebInspector.experimentsSettings.showEditorInDrawer.isEnabled())
+            return;
+
+        this._splitView.showBoth();
+        this._drawerEditorSplitView.showBoth();
+    },
+
+    hideDrawerEditor: function()
+    {
+        this._isHidingDrawerEditor = true;
+        this._drawerEditorSplitView.hideSidebar();
+        this._isHidingDrawerEditor = false;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isDrawerEditorShown: function()
+    {
+        return this._drawerEditorShownSetting.get();
+    },
+
     __proto__: WebInspector.View.prototype
 }
 
@@ -277,4 +365,20 @@ WebInspector.Drawer.SingletonViewFactory.prototype = {
             this._instance = /** @type {!WebInspector.View} */(new this._constructor());
         return this._instance;
     }
+}
+
+/**
+ * @interface
+ */
+WebInspector.DrawerEditor = function()
+{
+}
+
+WebInspector.DrawerEditor.prototype = {
+    /**
+     * @return {!WebInspector.View}
+     */
+    view: function() { },
+
+    installedIntoDrawer: function() { },
 }
