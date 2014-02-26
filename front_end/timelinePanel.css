@@ -385,14 +385,6 @@
     -webkit-mask-position: -128px -24px;
 }
 
-.glue-async-status-bar-item .glyph {
-    -webkit-mask-position: -128px -48px;
-}
-
-.glue-async-status-bar-item.toggled-on:disabled .glyph {
-    background-color: rgba(0, 0, 0, 0.75);
-}
-
 #resources-container-content {
     overflow: hidden;
     min-height: 100%;

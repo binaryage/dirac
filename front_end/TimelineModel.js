@@ -85,8 +85,7 @@ WebInspector.TimelineModel.RecordType = {
     MarkFirstPaint: "MarkFirstPaint",
 
     TimeStamp: "TimeStamp",
-    Time: "Time",
-    TimeEnd: "TimeEnd",
+    ConsoleTime: "ConsoleTime",
 
     ScheduleResourceRequest: "ScheduleResourceRequest",
     ResourceSendRequest: "ResourceSendRequest",
@@ -118,7 +117,7 @@ WebInspector.TimelineModel.Events = {
 
 /**
  * @param {!Object} total
- * @param {!Object} rawRecord
+ * @param {!TimelineAgent.TimelineEvent} rawRecord
  */
 WebInspector.TimelineModel.aggregateTimeForRecord = function(total, rawRecord)
 {

@@ -269,14 +269,6 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
-     * @return {boolean}
-     */
-    supportsGlueParentMode: function()
-    {
-        return false;
-    },
-
-    /**
      * @param {number} width
      */
     setSidebarSize: function(width)

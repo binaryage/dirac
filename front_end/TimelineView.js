@@ -112,14 +112,6 @@ WebInspector.TimelineView.prototype = {
         return recordsView;
     },
 
-    /**
-     * @return {boolean}
-     */
-    supportsGlueParentMode: function()
-    {
-        return !this._frameModel;
-    },
-
     get calculator()
     {
         return this._calculator;
@@ -148,7 +140,7 @@ WebInspector.TimelineView.prototype = {
             var dividerPosition = Math.round(positions.left);
             if (dividerPosition < 0 || dividerPosition >= clientWidth || dividers[dividerPosition])
                 continue;
-            var divider = WebInspector.TimelinePresentationModel.createEventDivider(record.type, record.title);
+            var divider = WebInspector.TimelinePresentationModel.createEventDivider(record.type, this._presentationModel.title(record));
             divider.style.left = dividerPosition + "px";
             dividers[dividerPosition] = divider;
         }

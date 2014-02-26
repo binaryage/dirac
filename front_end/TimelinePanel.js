@@ -73,9 +73,6 @@ WebInspector.TimelinePanel = function()
     this._presentationModel.addFilter(this._durationFilter);
 
     this._presentationModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", WebInspector.TimelinePanel.Mode.Events);
-    this._glueRecordsSetting = WebInspector.settings.createSetting("timelineGlueRecords", false);
-    this._presentationModel.setGlueRecords(!this._frameModel && this._glueRecordsSetting.get());
-    this._glueRecordsSetting.addChangeListener(this._onGlueRecordsSettingChanged, this);
 
     this._createStatusBarItems();
 
@@ -314,12 +311,6 @@ WebInspector.TimelinePanel.prototype = {
         this._statusBarButtons.push(this.garbageCollectButton);
         panelStatusBarElement.appendChild(this.garbageCollectButton.element);
 
-        this._glueParentButton = new WebInspector.StatusBarButton(WebInspector.UIString("Glue asynchronous events to causes"), "glue-async-status-bar-item");
-        this._glueParentButton.toggled = this._glueRecordsSetting.get();
-        this._glueParentButton.addEventListener("click", this._glueParentButtonClicked, this);
-        this._statusBarButtons.push(this._glueParentButton);
-        panelStatusBarElement.appendChild(this._glueParentButton.element);
-
         panelStatusBarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Capture stacks"), WebInspector.settings.timelineCaptureStacks, true, undefined,
                                                WebInspector.UIString("Capture JavaScript stack on every timeline event")));
 
@@ -449,7 +440,6 @@ WebInspector.TimelinePanel.prototype = {
         this._operationInProgress = !!indicator;
         for (var i = 0; i < this._statusBarButtons.length; ++i)
             this._statusBarButtons[i].setEnabled(!this._operationInProgress);
-        this._glueParentButton.setEnabled(!this._operationInProgress && !this._glueMode);
         this._miscStatusBarItems.removeChildren();
         if (indicator)
             this._miscStatusBarItems.appendChild(indicator.element);
@@ -528,16 +518,6 @@ WebInspector.TimelinePanel.prototype = {
         this._overviewItems[mode].revealAndSelect(false);
     },
 
-    _onGlueRecordsSettingChanged: function()
-    {
-        this._onRecordsCleared();
-        this._presentationModel.setGlueRecords(this._glueRecordsSetting.get());
-        var records = this._model.records;
-        for (var i = 0; i < records.length; ++i)
-            this._addRecord(records[i]);
-        this._refreshViews();
-    },
-
     _refreshViews: function()
     {
         for (var i = 0; i < this._currentViews.length; ++i) {
@@ -554,17 +534,14 @@ WebInspector.TimelinePanel.prototype = {
         this._stackView.detachChildViews();
         var views = this._viewsForMode(mode);
         this._currentViews = views.mainViews;
-        this._glueMode = true;
         for (var i = 0; i < this._currentViews.length; ++i) {
             var view = this._currentViews[i];
             view.setWindowTimes(this.windowStartTime(), this.windowEndTime());
             this._stackView.appendView(view, "timelinePanelTimelineStackSplitViewState");
-            this._glueMode = this._glueMode && view.supportsGlueParentMode();
             view.refreshRecords();
         }
         this._overviewControl = views.overviewView;
         this._overviewPane.setOverviewControl(this._overviewControl);
-        this._glueParentButton.setEnabled(this._glueMode);
     },
 
     /**
@@ -601,13 +578,6 @@ WebInspector.TimelinePanel.prototype = {
     _garbageCollectButtonClicked: function()
     {
         HeapProfilerAgent.collectGarbage();
-    },
-
-    _glueParentButtonClicked: function()
-    {
-        var newValue = !this._glueParentButton.toggled;
-        this._glueParentButton.toggled = newValue;
-        this._glueRecordsSetting.set(newValue);
     },
 
     _onClearButtonClick: function()
@@ -862,11 +832,6 @@ WebInspector.TimelineModeView.prototype = {
      * @param {boolean=} selectRecord
      */
     highlightSearchResult: function(record, regex, selectRecord) {},
-
-    /**
-     * @return {boolean}
-     */
-    supportsGlueParentMode: function() {},
 
     /**
      * @param {number} startTime

@@ -294,14 +294,6 @@ WebInspector.MemoryStatistics.prototype = {
         this._refreshTimer = setTimeout(this.refresh.bind(this), 300);
     },
 
-    /**
-     * @return {boolean}
-     */
-    supportsGlueParentMode: function()
-    {
-        return true;
-    },
-
     draw: function()
     {
         for (var i = 0; i < this._counters.length; ++i) {

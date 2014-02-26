@@ -36,7 +36,6 @@
 WebInspector.TimelinePresentationModel = function()
 {
     this._linkifier = new WebInspector.Linkifier();
-    this._glueRecords = false;
     this._filters = [];
     this.reset();
 }
@@ -101,8 +100,7 @@ WebInspector.TimelinePresentationModel._initRecordStyles = function()
     recordStyles[recordTypes.MarkLoad] = { title: WebInspector.UIString("Load event"), category: categories["scripting"] };
     recordStyles[recordTypes.MarkFirstPaint] = { title: WebInspector.UIString("First paint"), category: categories["painting"] };
     recordStyles[recordTypes.TimeStamp] = { title: WebInspector.UIString("Stamp"), category: categories["scripting"] };
-    recordStyles[recordTypes.Time] = { title: WebInspector.UIString("Time"), category: categories["scripting"] };
-    recordStyles[recordTypes.TimeEnd] = { title: WebInspector.UIString("Time End"), category: categories["scripting"] };
+    recordStyles[recordTypes.ConsoleTime] = { title: WebInspector.UIString("Console Time"), category: categories["scripting"] };
     recordStyles[recordTypes.ScheduleResourceRequest] = { title: WebInspector.UIString("Schedule Request"), category: categories["loading"] };
     recordStyles[recordTypes.RequestAnimationFrame] = { title: WebInspector.UIString("Request Animation Frame"), category: categories["scripting"] };
     recordStyles[recordTypes.CancelAnimationFrame] = { title: WebInspector.UIString("Cancel Animation Frame"), category: categories["scripting"] };
@@ -118,7 +116,7 @@ WebInspector.TimelinePresentationModel._initRecordStyles = function()
 }
 
 /**
- * @param {!Object} record
+ * @param {!TimelineAgent.TimelineEvent} record
  * @return {!{title: string, category: !WebInspector.TimelineCategory}}
  */
 WebInspector.TimelinePresentationModel.recordStyle = function(record)
@@ -135,11 +133,18 @@ WebInspector.TimelinePresentationModel.recordStyle = function(record)
     return result;
 }
 
+/**
+ * @param {!TimelineAgent.TimelineEvent} record
+ * @return {!WebInspector.TimelineCategory}
+ */
 WebInspector.TimelinePresentationModel.categoryForRecord = function(record)
 {
     return WebInspector.TimelinePresentationModel.recordStyle(record).category;
 }
 
+/**
+ * @param {!TimelineAgent.TimelineEvent} record
+ */
 WebInspector.TimelinePresentationModel.isEventDivider = function(record)
 {
     var recordTypes = WebInspector.TimelineModel.RecordType;
@@ -272,14 +277,11 @@ WebInspector.TimelinePresentationModel.prototype = {
     reset: function()
     {
         this._linkifier.reset();
-        this._rootRecord = new WebInspector.TimelinePresentationModel.Record(this, { type: WebInspector.TimelineModel.RecordType.Root }, null, null, null, false);
+        this._rootRecord = new WebInspector.TimelinePresentationModel.Record(this, { type: WebInspector.TimelineModel.RecordType.Root }, null, null, null);
         this._sendRequestRecords = {};
-        this._scheduledResourceRequests = {};
         this._timerRecords = {};
         this._requestAnimationFrameRecords = {};
         this._eventDividerRecords = [];
-        this._timeRecords = {};
-        this._timeRecordStack = [];
         this._minimumRecordTime = -1;
         this._layoutInvalidateStack = {};
         this._lastScheduleStyleRecalculation = {};
@@ -319,46 +321,42 @@ WebInspector.TimelinePresentationModel.prototype = {
 
         var records;
         if (record.type === WebInspector.TimelineModel.RecordType.Program)
-            records = this._foldSyncTimeRecords(record.children || []);
+            records = record.children;
         else
             records = [record];
         var mergedRecords = this._mergingBuffer.process(record.thread, records);
-        var result = new Array(mergedRecords.length);
-        for (var i = 0; i < mergedRecords.length; ++i)
-            result[i] = this._innerAddRecord(this._rootRecord, mergedRecords[i]);
+        var result = [];
+        for (var i = 0; i < mergedRecords.length; ++i) {
+            var formattedRecord = this._innerAddRecord(this._rootRecord, mergedRecords[i]);
+            if (formattedRecord)
+                result.push(formattedRecord);
+        }
         return result;
     },
 
     /**
      * @param {!WebInspector.TimelinePresentationModel.Record} parentRecord
      * @param {!TimelineAgent.TimelineEvent} record
-     * @return {!WebInspector.TimelinePresentationModel.Record}
+     * @return {?WebInspector.TimelinePresentationModel.Record}
      */
     _innerAddRecord: function(parentRecord, record)
     {
         const recordTypes = WebInspector.TimelineModel.RecordType;
-        var isHiddenRecord = record.type in WebInspector.TimelinePresentationModel._hiddenRecords;
+
         var origin;
         var coalescingBucket;
 
-        if (!isHiddenRecord) {
-            var newParentRecord = this._findParentRecord(record);
-            if (newParentRecord) {
+        // On main thread, only coalesce if the last event is of same type.
+        if (parentRecord === this._rootRecord)
+            coalescingBucket = record.thread ? record.type : "mainThread";
+        var coalescedRecord = this._findCoalescedParent(record, parentRecord, coalescingBucket);
+        if (coalescedRecord) {
+            if (!origin)
                 origin = parentRecord;
-                parentRecord = newParentRecord;
-            }
-            // On main thread, only coalesce if the last event is of same type.
-            if (parentRecord === this._rootRecord)
-                coalescingBucket = record.thread ? record.type : "mainThread";
-            var coalescedRecord = this._findCoalescedParent(record, parentRecord, coalescingBucket);
-            if (coalescedRecord) {
-                if (!origin)
-                    origin = parentRecord;
-                parentRecord = coalescedRecord;
-            }
+            parentRecord = coalescedRecord;
         }
 
-        var children = record.children;
+        var children = record.children || [];
         var scriptDetails = null;
         if (record.data && record.data["scriptName"]) {
             scriptDetails = {
@@ -378,23 +376,21 @@ WebInspector.TimelinePresentationModel.prototype = {
             }
         }
 
-        var formattedRecord = new WebInspector.TimelinePresentationModel.Record(this, record, parentRecord, origin, scriptDetails, isHiddenRecord);
+        if (WebInspector.TimelinePresentationModel.isEventDivider(record))
+            this._eventDividerRecords.push(record);
 
-        if (WebInspector.TimelinePresentationModel.isEventDivider(formattedRecord))
-            this._eventDividerRecords.push(formattedRecord);
-
-        if (isHiddenRecord)
-            return formattedRecord;
+        var formattedRecord = new WebInspector.TimelinePresentationModel.Record(this, record, parentRecord, origin, scriptDetails);
+        if (record.type in WebInspector.TimelinePresentationModel._hiddenRecords) {
+            parentRecord.children.pop();
+            return null;
+        }
 
         formattedRecord.collapsed = parentRecord === this._rootRecord;
         if (coalescingBucket)
             this._coalescingBuckets[coalescingBucket] = formattedRecord;
 
-        if (children) {
-            children = this._foldSyncTimeRecords(children);
-            for (var i = 0; i < children.length; ++i)
-                this._innerAddRecord(formattedRecord, children[i]);
-        }
+        for (var i = 0; i < children.length; ++i)
+            this._innerAddRecord(formattedRecord, children[i]);
 
         formattedRecord.calculateAggregatedStats();
         if (parentRecord.coalesced)
@@ -471,7 +467,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp)
             rawRecord.data.message = record.data.message;
 
-        var coalescedRecord = new WebInspector.TimelinePresentationModel.Record(this, rawRecord, null, null, null, false);
+        var coalescedRecord = new WebInspector.TimelinePresentationModel.Record(this, rawRecord, null, null, null);
         var parent = record.parent;
 
         coalescedRecord.coalesced = true;
@@ -501,92 +497,6 @@ WebInspector.TimelinePresentationModel.prototype = {
             parentRecord._record.endTime = record._record.endTime;
             parentRecord.lastChildEndTime = parentRecord.endTime;
         }
-    },
-
-    /**
-     * @param {!Array.<!TimelineAgent.TimelineEvent>} records
-     */
-    _foldSyncTimeRecords: function(records)
-    {
-        var recordTypes = WebInspector.TimelineModel.RecordType;
-        // Fast case -- if there are no Time records, return input as is.
-        for (var i = 0; i < records.length && records[i].type !== recordTypes.Time; ++i) {}
-        if (i === records.length)
-            return records;
-
-        var result = [];
-        var stack = [];
-        for (var i = 0; i < records.length; ++i) {
-            result.push(records[i]);
-            if (records[i].type === recordTypes.Time) {
-                stack.push(result.length - 1);
-                continue;
-            }
-            if (records[i].type !== recordTypes.TimeEnd)
-                continue;
-            while (stack.length) {
-                var begin = stack.pop();
-                if (result[begin].data.message !== records[i].data.message)
-                    continue;
-                var timeEndRecord = /** @type {!TimelineAgent.TimelineEvent} */ (result.pop());
-                var children = result.splice(begin + 1, result.length - begin);
-                result[begin] = this._createSynchronousTimeRecord(result[begin], timeEndRecord, children);
-                break;
-            }
-        }
-        return result;
-    },
-
-    /**
-     * @param {!TimelineAgent.TimelineEvent} beginRecord
-     * @param {!TimelineAgent.TimelineEvent} endRecord
-     * @param {!Array.<!TimelineAgent.TimelineEvent>} children
-     * @return {!TimelineAgent.TimelineEvent}
-     */
-    _createSynchronousTimeRecord: function(beginRecord, endRecord, children)
-    {
-        return {
-            type: beginRecord.type,
-            startTime: beginRecord.startTime,
-            endTime: endRecord.startTime,
-            stackTrace: beginRecord.stackTrace,
-            children: children,
-            data: {
-                message: beginRecord.data.message,
-                isSynchronous: true
-           },
-        };
-    },
-
-    _findParentRecord: function(record)
-    {
-        if (!this._glueRecords)
-            return null;
-        var recordTypes = WebInspector.TimelineModel.RecordType;
-
-        switch (record.type) {
-        case recordTypes.ResourceReceiveResponse:
-        case recordTypes.ResourceFinish:
-        case recordTypes.ResourceReceivedData:
-            return this._sendRequestRecords[record.data["requestId"]];
-
-        case recordTypes.ResourceSendRequest:
-            return this._rootRecord;
-
-        case recordTypes.TimerFire:
-            return this._timerRecords[record.data["timerId"]];
-
-        case recordTypes.ResourceSendRequest:
-            return this._scheduledResourceRequests[record.data["url"]];
-
-        case recordTypes.FireAnimationFrame:
-            return this._requestAnimationFrameRecords[record.data["id"]];
-        }
-    },
-
-    setGlueRecords: function(glue)
-    {
-        this._glueRecords = glue;
     },
 
     invalidateFilteredRecords: function()
@@ -657,7 +567,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.TimelinePresentationModel.Record>}
+     * @return {!Array.<!TimelineAgent.TimelineEvent>}
      */
     eventDividerRecords: function()
     {
@@ -706,6 +616,21 @@ WebInspector.TimelinePresentationModel.prototype = {
         return contentHelper.contentTable();
     },
 
+    /**
+     * @param {!TimelineAgent.TimelineEvent} record
+     * @return {string}
+     */
+    title: function(record)
+    {
+        if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp)
+            return record.data["message"];
+        if (WebInspector.TimelinePresentationModel.isEventDivider(record)) {
+            var startTime = Number.millisToString(record.startTime - this._minimumRecordTime);
+            return WebInspector.UIString("%s at %s", WebInspector.TimelinePresentationModel.recordStyle(record).title, startTime, true);
+        }
+        return WebInspector.TimelinePresentationModel.recordStyle(record).title;
+    },
+
     __proto__: WebInspector.Object.prototype
 }
 
@@ -716,15 +641,15 @@ WebInspector.TimelinePresentationModel.prototype = {
  * @param {?WebInspector.TimelinePresentationModel.Record} parentRecord
  * @param {?WebInspector.TimelinePresentationModel.Record} origin
  * @param {?Object} scriptDetails
- * @param {boolean} hidden
  */
-WebInspector.TimelinePresentationModel.Record = function(presentationModel, record, parentRecord, origin, scriptDetails, hidden)
+WebInspector.TimelinePresentationModel.Record = function(presentationModel, record, parentRecord, origin, scriptDetails)
 {
+    this._presentationModel = presentationModel;
     this._linkifier = presentationModel._linkifier;
     this._aggregatedStats = {};
-    this._record = record;
+    this._record = /** @type {!TimelineAgent.TimelineEvent} */ (record);
     this._children = [];
-    if (!hidden && parentRecord) {
+    if (parentRecord) {
         this.parent = parentRecord;
         parentRecord.children.push(this);
     }
@@ -755,10 +680,6 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
     case recordTypes.ResourceSendRequest:
         // Make resource receive record last since request was sent; make finish record last since response received.
         presentationModel._sendRequestRecords[record.data["requestId"]] = this;
-        break;
-
-    case recordTypes.ScheduleResourceRequest:
-        presentationModel._scheduledResourceRequests[record.data["url"]] = this;
         break;
 
     case recordTypes.ResourceReceiveResponse:
@@ -804,29 +725,8 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
             this.callSiteStackTrace = requestAnimationRecord.stackTrace;
         break;
 
-    case recordTypes.Time:
-        if (record.data.isSynchronous)
-            break;
+    case recordTypes.ConsoleTime:
         var message = record.data["message"];
-        var oldReference = presentationModel._timeRecords[message];
-        if (oldReference)
-            break;
-        presentationModel._timeRecords[message] = this;
-        if (origin)
-            presentationModel._timeRecordStack.push(this);
-        break;
-
-    case recordTypes.TimeEnd:
-        var message = record.data["message"];
-        var timeRecord = presentationModel._timeRecords[message];
-        delete presentationModel._timeRecords[message];
-        if (timeRecord) {
-            this.timeRecord = timeRecord;
-            timeRecord.timeEndRecord = this;
-            var intervalDuration = this.startTime - timeRecord.startTime;
-            this.intervalDuration = intervalDuration;
-            timeRecord.intervalDuration = intervalDuration;
-        }
         break;
 
     case recordTypes.ScheduleStyleRecalculation:
@@ -988,7 +888,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     get category()
     {
-        return WebInspector.TimelinePresentationModel.recordStyle(this._record).category
+        return WebInspector.TimelinePresentationModel.categoryForRecord(this._record);
     },
 
     /**
@@ -996,11 +896,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     get title()
     {
-        if (this.type === WebInspector.TimelineModel.RecordType.TimeStamp)
-            return this._record.data["message"];
-        if (WebInspector.TimelinePresentationModel.isEventDivider(this))
-            return WebInspector.UIString("%s at %s", WebInspector.TimelinePresentationModel.recordStyle(this._record).title, Number.millisToString(this._startTimeOffset, true));
-        return WebInspector.TimelinePresentationModel.recordStyle(this._record).title;
+        return this._presentationModel.title(this._record);
     },
 
     /**
@@ -1016,7 +912,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     get endTime()
     {
-        return this._record.endTime;
+        return this._record.endTime || this._record.startTime;
     },
 
     /**
@@ -1048,7 +944,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     get frameId()
     {
-        return this._record.frameId;
+        return this._record.frameId || "";
     },
 
     /**
@@ -1064,7 +960,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     get jsHeapSizeUsed()
     {
-        return this._record.counters ? this._record.counters.jsHeapSizeUsed : 0;
+        return this._record.counters ? this._record.counters.jsHeapSizeUsed | 0 : 0;
     },
 
     /**
@@ -1264,11 +1160,8 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
                 callStackLabel = WebInspector.UIString("Layout forced");
                 relatedNodeLabel = WebInspector.UIString("Layout root");
                 break;
-            case recordTypes.Time:
-            case recordTypes.TimeEnd:
+            case recordTypes.ConsoleTime:
                 contentHelper.appendTextRow(WebInspector.UIString("Message"), this.data["message"]);
-                if (typeof this.intervalDuration === "number")
-                    contentHelper.appendTextRow(WebInspector.UIString("Interval Duration"), Number.millisToString(this.intervalDuration, true));
                 break;
             case recordTypes.WebSocketCreate:
             case recordTypes.WebSocketSendHandshakeRequest:
@@ -1419,8 +1312,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         case WebInspector.TimelineModel.RecordType.ResizeImage:
             details = WebInspector.displayNameForURL(this.url);
             break;
-        case WebInspector.TimelineModel.RecordType.Time:
-        case WebInspector.TimelineModel.RecordType.TimeEnd:
+        case WebInspector.TimelineModel.RecordType.ConsoleTime:
             details = this.data["message"];
             break;
         case WebInspector.TimelineModel.RecordType.EmbedderCallback:
@@ -1712,9 +1604,8 @@ WebInspector.TimelinePresentationModel.coalescingKeyForRecord = function(rawReco
     var recordTypes = WebInspector.TimelineModel.RecordType;
     switch (rawRecord.type)
     {
+    case recordTypes.ConsoleTime: return rawRecord.data["message"];
     case recordTypes.EventDispatch: return rawRecord.data["type"];
-    case recordTypes.Time: return rawRecord.data["message"];
-    case recordTypes.TimeEnd: return rawRecord.data["message"];
     case recordTypes.TimeStamp: return rawRecord.data["message"];
     default: return null;
     }
