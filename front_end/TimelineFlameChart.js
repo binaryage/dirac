@@ -284,5 +284,12 @@ WebInspector.TimelineFlameChart.prototype = {
     {
     },
 
+    /**
+     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     */
+    setSelectedRecord: function(record)
+    {
+    },
+
     __proto__: WebInspector.View.prototype
 }

@@ -294,6 +294,11 @@ WebInspector.TimelinePresentationModel.prototype = {
         this._webSocketCreateRecords = {};
         this._coalescingBuckets = {};
         this._mergingBuffer = new WebInspector.TimelineMergingRecordBuffer();
+
+        /** @type {!Array.<!TimelineAgent.TimelineEvent>} */
+        this._mainThreadTasks =  ([]);
+        /** @type {!Array.<!TimelineAgent.TimelineEvent>} */
+        this._gpuThreadTasks = ([]);
     },
 
     /**
@@ -313,11 +318,34 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
+     * @return {!Array.<!TimelineAgent.TimelineEvent>}
+     */
+    mainThreadTasks: function()
+    {
+        return this._mainThreadTasks;
+    },
+
+    /**
+     * @return {!Array.<!TimelineAgent.TimelineEvent>}
+     */
+    gpuThreadTasks: function()
+    {
+        return this._gpuThreadTasks;
+    },
+
+    /**
      * @param {!TimelineAgent.TimelineEvent} record
      * @return {!Array.<!WebInspector.TimelinePresentationModel.Record>}
      */
     addRecord: function(record)
     {
+        if (record.type === WebInspector.TimelineModel.RecordType.Program)
+            this._mainThreadTasks.push(record);
+        if (record.type === WebInspector.TimelineModel.RecordType.GPUTask) {
+            this._gpuThreadTasks.push(record);
+            return [];
+        }
+
         var startTime = record.startTime;
         var endTime = record.endTime;
         if (this._minimumRecordTime === -1 || startTime < this._minimumRecordTime)

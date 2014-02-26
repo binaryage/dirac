@@ -146,15 +146,6 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {string} title
-     * @param {!DocumentFragment} content
-     */
-    setDetailsContent: function(title, content)
-    {
-        this._detailsView.setContent(title, content);
-    },
-
-    /**
      * @return {number}
      */
     windowStartTime: function()
@@ -199,6 +190,7 @@ WebInspector.TimelinePanel.prototype = {
         this._windowFilter.setWindowTimes(this._windowStartTime, this._windowEndTime);
         for (var i = 0; i < this._currentViews.length; ++i)
             this._currentViews[i].setWindowTimes(this._windowStartTime, this._windowEndTime);
+        this._updateSelectionDetails();
     },
 
     /**
@@ -207,11 +199,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     setWindowTimes: function(windowStartTime, windowEndTime)
     {
-        this._windowStartTime = windowStartTime;
-        this._windowEndTime = windowEndTime;
         this._overviewPane.setWindowTimes(windowStartTime, windowEndTime);
-        for (var i = 0; i < this._currentViews.length; ++i)
-            this._currentViews[i].setWindowTimes(this._windowStartTime, this._windowEndTime);
     },
 
     /**
@@ -524,6 +512,7 @@ WebInspector.TimelinePanel.prototype = {
             var view = this._currentViews[i];
             view.refreshRecords();
         }
+        this._updateSelectionDetails();
     },
 
     _onModeChanged: function(mode)
@@ -542,6 +531,7 @@ WebInspector.TimelinePanel.prototype = {
         }
         this._overviewControl = views.overviewView;
         this._overviewPane.setOverviewControl(this._overviewControl);
+        this._updateSelectionDetails();
     },
 
     /**
@@ -595,6 +585,7 @@ WebInspector.TimelinePanel.prototype = {
         for (var i = 0; i < this._currentViews.length; ++i)
             this._currentViews[i].reset();
         this._overviewControl.reset();
+        this._updateSelectionDetails();
     },
 
     _onRecordingStarted: function()
@@ -624,9 +615,7 @@ WebInspector.TimelinePanel.prototype = {
      */
     _addRecord: function(record)
     {
-        var presentationRecords = [];
-        if (record.type !== WebInspector.TimelineModel.RecordType.GPUTask)
-            presentationRecords = this._presentationModel.addRecord(record);
+        var presentationRecords = this._presentationModel.addRecord(record);
 
         if (this._frameModel)
             this._frameModel.addRecord(record);
@@ -760,6 +749,100 @@ WebInspector.TimelinePanel.prototype = {
         this._updateSearchHighlight(true, shouldJump);
     },
 
+    _updateSelectionDetails: function()
+    {
+        var startTime = this._windowStartTime;
+        var endTime = this._windowEndTime;
+        // Return early in case 0 selection window.
+        if (startTime < 0)
+            return;
+
+        var aggregatedStats = {};
+
+        /**
+         * @param {number} value
+         * @param {!TimelineAgent.TimelineEvent} task
+         * @return {number}
+         */
+        function compareEndTime(value, task)
+        {
+            return value < task.endTime ? -1 : 1;
+        }
+
+        /**
+         * @param {!TimelineAgent.TimelineEvent} rawRecord
+         */
+        function aggregateTimeForRecordWithinWindow(rawRecord)
+        {
+            if (!rawRecord.endTime || rawRecord.endTime < startTime || rawRecord.startTime > endTime)
+                return;
+
+            var childrenTime = 0;
+            var children = rawRecord.children || [];
+            for (var i = 0; i < children.length; ++i) {
+                var child = children[i];
+                if (!child.endTime || child.endTime < startTime || child.startTime > endTime)
+                    continue;
+                childrenTime += Math.min(endTime, child.endTime) - Math.max(startTime, child.startTime);
+                aggregateTimeForRecordWithinWindow(child);
+            }
+            var categoryName = WebInspector.TimelinePresentationModel.categoryForRecord(rawRecord).name;
+            var ownTime = Math.min(endTime, rawRecord.endTime) - Math.max(startTime, rawRecord.startTime) - childrenTime;
+            aggregatedStats[categoryName] = (aggregatedStats[categoryName] || 0) + ownTime;
+        }
+
+        var mainThreadTasks = this._presentationModel.mainThreadTasks();
+        var taskIndex = insertionIndexForObjectInListSortedByFunction(startTime, mainThreadTasks, compareEndTime);
+        for (; taskIndex < mainThreadTasks.length; ++taskIndex) {
+            var task = mainThreadTasks[taskIndex];
+            if (task.startTime > endTime)
+                break;
+            aggregateTimeForRecordWithinWindow(task);
+        }
+
+        var aggregatedTotal = 0;
+        for (var categoryName in aggregatedStats)
+            aggregatedTotal += aggregatedStats[categoryName];
+        aggregatedStats["idle"] = Math.max(0, endTime - startTime - aggregatedTotal);
+
+        var fragment = document.createDocumentFragment();
+        fragment.appendChild(WebInspector.TimelinePresentationModel.generatePieChart(aggregatedStats));
+        var startOffset = startTime - this._model.minimumRecordTime();
+        var endOffset = endTime - this._model.minimumRecordTime();
+        var title = WebInspector.UIString("%s \u2013 %s", Number.millisToString(startOffset), Number.millisToString(endOffset));
+        this._detailsView.setContent(title, fragment);
+    },
+
+    /**
+     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     */
+    selectRecord: function(record)
+    {
+        if (!record) {
+            this._updateSelectionDetails();
+            return;
+        }
+
+        for (var i = 0; i < this._currentViews.length; ++i) {
+            var view = this._currentViews[i];
+            view.setSelectedRecord(record);
+        }
+        if (!record) {
+            this._updateSelectionDetails();
+            return;
+        }
+        record.generatePopupContent(showCallback.bind(this));
+
+        /**
+         * @param {!DocumentFragment} element
+         * @this {WebInspector.TimelinePanel}
+         */
+        function showCallback(element)
+        {
+            this._detailsView.setContent(record.title, element);
+        }
+    },
+
     __proto__: WebInspector.Panel.prototype
 }
 
@@ -842,7 +925,12 @@ WebInspector.TimelineModeView.prototype = {
     /**
      * @param {number} width
      */
-    setSidebarSize: function(width) {}
+    setSidebarSize: function(width) {},
+
+    /**
+     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     */
+    setSelectedRecord: function(record) {}
 }
 
 /**
