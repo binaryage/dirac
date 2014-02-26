@@ -151,7 +151,7 @@ WebInspector.Resource.prototype = {
      */
     addMessage: function(msg)
     {
-        if (!msg.isErrorOrWarning() || !msg.message)
+        if (!msg.isErrorOrWarning() || !msg.messageText)
             return;
 
         if (!this._messages)

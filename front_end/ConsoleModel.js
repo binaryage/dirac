@@ -79,7 +79,7 @@ WebInspector.ConsoleModel.prototype = {
      */
     addMessage: function(msg, isFromBackend)
     {
-        if (isFromBackend && WebInspector.SourceMap.hasSourceMapRequestHeader(msg.request()))
+        if (isFromBackend && WebInspector.SourceMap.hasSourceMapRequestHeader(msg.request))
             return;
 
         msg.index = this.messages.length;
@@ -141,7 +141,6 @@ WebInspector.ConsoleModel.prototype = {
             msg.repeatDelta = count - prevRepeatCount;
             msg.repeatCount = msg.repeatCount + msg.repeatDelta;
             msg.totalRepeatCount = count;
-            msg.updateRepeatCount();
 
             this._incrementErrorWarningCount(msg);
             this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.RepeatCountUpdated, msg);
@@ -160,37 +159,39 @@ WebInspector.ConsoleModel.prototype = {
 /**
  * @constructor
  * @param {string} source
- * @param {string} level
- * @param {string=} url
+ * @param {?string} level
+ * @param {string} text
+ * @param {string=} type
+ * @param {?string=} url
  * @param {number=} line
  * @param {number=} column
  * @param {number=} repeatCount
  * @param {!NetworkAgent.RequestId=} requestId
+ * @param {!Array.<!RuntimeAgent.RemoteObject>=} parameters
+ * @param {!Array.<!ConsoleAgent.CallFrame>=} stackTrace
+ * @param {boolean=} isOutdated
  */
-WebInspector.ConsoleMessage = function(source, level, url, line, column, repeatCount, requestId)
+WebInspector.ConsoleMessage = function(source, level, text, type, url, line, column, repeatCount, requestId, parameters, stackTrace, isOutdated)
 {
     this.source = source;
     this.level = level;
+    this.messageText = text;
+    this.type = type || WebInspector.ConsoleMessage.MessageType.Log;
     this.url = url || null;
     this.line = line || 0;
     this.column = column || 0;
-    this.message = "";
+    this.parameters = parameters;
+    this.stackTrace = stackTrace;
+    this.isOutdated = isOutdated;
 
     repeatCount = repeatCount || 1;
     this.repeatCount = repeatCount;
     this.repeatDelta = repeatCount;
     this.totalRepeatCount = repeatCount;
-    this._request = requestId ? WebInspector.networkLog.requestForId(requestId) : null;
+    this.request = requestId ? WebInspector.networkLog.requestForId(requestId) : null;
 }
 
 WebInspector.ConsoleMessage.prototype = {
-    /**
-     * @param {!Node} messageElement
-     */
-    setMessageElement: function(messageElement)
-    {
-    },
-
     /**
      * @return {boolean}
      */
@@ -199,53 +200,47 @@ WebInspector.ConsoleMessage.prototype = {
         return (this.level === WebInspector.ConsoleMessage.MessageLevel.Warning || this.level === WebInspector.ConsoleMessage.MessageLevel.Error);
     },
 
-    updateRepeatCount: function()
-    {
-        // Implemented by concrete instances
-    },
-
     /**
      * @return {!WebInspector.ConsoleMessage}
      */
     clone: function()
     {
-        throw "Not implemented";
+        return new WebInspector.ConsoleMessage(this.source, this.level, this.text, this.type, this.url, this.line, this.column, this.repeatCount, this.requestId, this.parameters, this.stackTrace, this.isOutdated);
     },
 
     /**
-     * @return {!WebInspector.DebuggerModel.Location}
+     * @param {?WebInspector.ConsoleMessage} msg
+     * @return {boolean}
      */
-    location: function()
+    isEqual: function(msg)
     {
-        throw "Not implemented";
-    },
+        if (!msg)
+            return false;
 
-    /**
-     * @return {?WebInspector.NetworkRequest}
-     */
-    request: function()
-    {
-        return this._request;
+        if (this.stackTrace) {
+            if (!msg.stackTrace)
+                return false;
+            var l = this.stackTrace;
+            var r = msg.stackTrace;
+            if (l.length !== r.length)
+                return false;
+            for (var i = 0; i < l.length; i++) {
+                if (l[i].url !== r[i].url ||
+                    l[i].functionName !== r[i].functionName ||
+                    l[i].lineNumber !== r[i].lineNumber ||
+                    l[i].columnNumber !== r[i].columnNumber)
+                    return false;
+            }
+        }
+
+        return (this.source === msg.source)
+            && (this.type === msg.type)
+            && (this.level === msg.level)
+            && (this.line === msg.line)
+            && (this.url === msg.url)
+            && (this.messageText === msg.messageText)
+            && (this.request === msg.request);
     }
-}
-
-/**
- * @param {string} source
- * @param {string} level
- * @param {string} message
- * @param {string=} type
- * @param {string=} url
- * @param {number=} line
- * @param {number=} column
- * @param {number=} repeatCount
- * @param {!Array.<!RuntimeAgent.RemoteObject>=} parameters
- * @param {!ConsoleAgent.StackTrace=} stackTrace
- * @param {!NetworkAgent.RequestId=} requestId
- * @param {boolean=} isOutdated
- * @return {!WebInspector.ConsoleMessage}
- */
-WebInspector.ConsoleMessage.create = function(source, level, message, type, url, line, column, repeatCount, parameters, stackTrace, requestId, isOutdated)
-{
 }
 
 // Note: Keep these constants in sync with the ones in Console.h
@@ -304,7 +299,7 @@ WebInspector.ConsoleDispatcher.prototype = {
      */
     messageAdded: function(payload)
     {
-        var consoleMessage = WebInspector.ConsoleMessage.create(
+        var consoleMessage = new WebInspector.ConsoleMessage(
             payload.source,
             payload.level,
             payload.text,
@@ -313,9 +308,9 @@ WebInspector.ConsoleDispatcher.prototype = {
             payload.line,
             payload.column,
             payload.repeatCount,
+            payload.networkRequestId,
             payload.parameters,
             payload.stackTrace,
-            payload.networkRequestId,
             this._console._enablingConsole);
         this._console.addMessage(consoleMessage, true);
     },
