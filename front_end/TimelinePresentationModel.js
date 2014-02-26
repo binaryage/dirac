@@ -237,7 +237,7 @@ WebInspector.TimelinePresentationModel.createEventDivider = function(recordType,
     return eventDivider;
 }
 
-WebInspector.TimelinePresentationModel._hiddenRecords = { }
+WebInspector.TimelinePresentationModel._hiddenRecords = { };
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.MarkDOMContent] = 1;
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.MarkLoad] = 1;
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.MarkFirstPaint] = 1;
@@ -248,6 +248,12 @@ WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.ActivateLayerTree] = 1;
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.DrawFrame] = 1;
 WebInspector.TimelinePresentationModel._hiddenRecords[WebInspector.TimelineModel.RecordType.BeginFrame] = 1;
+
+WebInspector.TimelinePresentationModel._coalescingRecords = { };
+WebInspector.TimelinePresentationModel._coalescingRecords[WebInspector.TimelineModel.RecordType.Paint] = 1;
+WebInspector.TimelinePresentationModel._coalescingRecords[WebInspector.TimelineModel.RecordType.Rasterize] = 1;
+WebInspector.TimelinePresentationModel._coalescingRecords[WebInspector.TimelineModel.RecordType.DecodeImage] = 1;
+WebInspector.TimelinePresentationModel._coalescingRecords[WebInspector.TimelineModel.RecordType.ResizeImage] = 1;
 
 WebInspector.TimelinePresentationModel.prototype = {
     /**
@@ -421,7 +427,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     },
 
     /**
-     * @param {!Object} record
+     * @param {!TimelineAgent.TimelineEvent} record
      * @param {!Object} newParent
      * @param {string=} bucket
      * @return {?WebInspector.TimelinePresentationModel.Record}
@@ -439,11 +445,11 @@ WebInspector.TimelinePresentationModel.prototype = {
             return null;
         if (lastRecord.type !== record.type)
             return null;
+        if (!WebInspector.TimelinePresentationModel._coalescingRecords[record.type])
+            return null;
         if (lastRecord.endTime + coalescingThresholdMillis < startTime)
             return null;
         if (endTime + coalescingThresholdMillis < lastRecord.startTime)
-            return null;
-        if (WebInspector.TimelinePresentationModel.coalescingKeyForRecord(record) !== WebInspector.TimelinePresentationModel.coalescingKeyForRecord(lastRecord._record))
             return null;
         if (lastRecord.parent.coalesced)
             return lastRecord.parent;
@@ -1592,23 +1598,6 @@ WebInspector.TimelinePresentationModel.createStyleRuleForCategory = function(cat
        category.fillColorStop0 + ", " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + " 25%, " + category.fillColorStop1 + ");" +
        " border-color: " + category.borderColor +
        "}";
-}
-
-
-/**
- * @param {!Object} rawRecord
- * @return {?string}
- */
-WebInspector.TimelinePresentationModel.coalescingKeyForRecord = function(rawRecord)
-{
-    var recordTypes = WebInspector.TimelineModel.RecordType;
-    switch (rawRecord.type)
-    {
-    case recordTypes.ConsoleTime: return rawRecord.data["message"];
-    case recordTypes.EventDispatch: return rawRecord.data["type"];
-    case recordTypes.TimeStamp: return rawRecord.data["message"];
-    default: return null;
-    }
 }
 
 /**
