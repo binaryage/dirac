@@ -573,6 +573,7 @@ WebInspector.OverridesView.ViewportTab.prototype = {
         this._widthRangeInput.min = 100;
         this._widthRangeInput.max = 2000;
         this._widthRangeInput.addEventListener("change", this._rangeValueChanged.bind(this), false);
+        this._widthRangeInput.addEventListener("input", this._rangeValueChanged.bind(this), false);
         this._widthRangeInput.value = this._widthOverrideElement.value;
 
         rowElement = tableElement.createChild("tr");
