@@ -642,10 +642,17 @@ WebInspector.CSSStyleDeclaration = function(payload)
     this.__disabledProperties = {}; // DISABLED properties: { index -> CSSProperty }
     var payloadPropertyCount = payload.cssProperties.length;
 
-    var propertyIndex = 0;
+
     for (var i = 0; i < payloadPropertyCount; ++i) {
         var property = WebInspector.CSSProperty.parsePayload(this, i, payload.cssProperties[i]);
         this._allProperties.push(property);
+    }
+
+    this._computeActiveProperties();
+
+    var propertyIndex = 0;
+    for (var i = 0; i < this._allProperties.length; ++i) {
+        var property = this._allProperties[i];
         if (property.disabled)
             this.__disabledProperties[i] = property;
         if (!property.active && !property.styleBased)
@@ -695,6 +702,27 @@ WebInspector.CSSStyleDeclaration.parseComputedStylePayload = function(payload)
 }
 
 WebInspector.CSSStyleDeclaration.prototype = {
+    _computeActiveProperties: function()
+    {
+        var activeProperties = {};
+        for (var i = this._allProperties.length - 1; i >= 0; --i) {
+            var property = this._allProperties[i];
+            if (property.styleBased || property.disabled)
+                continue;
+            property._setActive(false);
+            if (!property.parsedOk)
+                continue;
+            var canonicalName = WebInspector.CSSMetadata.canonicalPropertyName(property.name);
+            var activeProperty = activeProperties[canonicalName];
+            if (!activeProperty || (!activeProperty.important && property.important))
+                activeProperties[canonicalName] = property;
+        }
+        for (var propertyName in activeProperties) {
+            var property = activeProperties[propertyName];
+            property._setActive(true);
+        }
+    },
+
     get allProperties()
     {
         return this._allProperties;
@@ -769,8 +797,7 @@ WebInspector.CSSStyleDeclaration.prototype = {
     pastLastSourcePropertyIndex: function()
     {
         for (var i = this.allProperties.length - 1; i >= 0; --i) {
-            var property = this.allProperties[i];
-            if (property.active || property.disabled)
+            if (this.allProperties[i].range)
                 return i + 1;
         }
         return 0;
@@ -783,7 +810,9 @@ WebInspector.CSSStyleDeclaration.prototype = {
     newBlankProperty: function(index)
     {
         index = (typeof index === "undefined") ? this.pastLastSourcePropertyIndex() : index;
-        return new WebInspector.CSSProperty(this, index, "", "", false, "active", true, false, "");
+        var property = new WebInspector.CSSProperty(this, index, "", "", false, false, true, false, "");
+        property._setActive(true);
+        return property;
     },
 
     /**
@@ -945,20 +974,20 @@ WebInspector.CSSRule.prototype = {
  * @param {string} name
  * @param {string} value
  * @param {boolean} important
- * @param {string} status
+ * @param {boolean} disabled
  * @param {boolean} parsedOk
  * @param {boolean} implicit
  * @param {?string=} text
  * @param {!CSSAgent.SourceRange=} range
  */
-WebInspector.CSSProperty = function(ownerStyle, index, name, value, important, status, parsedOk, implicit, text, range)
+WebInspector.CSSProperty = function(ownerStyle, index, name, value, important, disabled, parsedOk, implicit, text, range)
 {
     this.ownerStyle = ownerStyle;
     this.index = index;
     this.name = name;
     this.value = value;
     this.important = important;
-    this.status = status;
+    this.disabled = disabled;
     this.parsedOk = parsedOk;
     this.implicit = implicit;
     this.text = text;
@@ -977,13 +1006,21 @@ WebInspector.CSSProperty.parsePayload = function(ownerStyle, index, payload)
     // important: false
     // parsedOk: true
     // implicit: false
-    // status: "style"
+    // disabled: false
     var result = new WebInspector.CSSProperty(
-        ownerStyle, index, payload.name, payload.value, payload.important || false, payload.status || "", ("parsedOk" in payload) ? !!payload.parsedOk : true, !!payload.implicit, payload.text, payload.range);
+        ownerStyle, index, payload.name, payload.value, payload.important || false, payload.disabled || false, ("parsedOk" in payload) ? !!payload.parsedOk : true, !!payload.implicit, payload.text, payload.range);
     return result;
 }
 
 WebInspector.CSSProperty.prototype = {
+    /**
+     * @param {boolean} active
+     */
+    _setActive: function(active)
+    {
+        this._active = active;
+    },
+
     get propertyText()
     {
         if (this.text !== undefined)
@@ -1001,22 +1038,17 @@ WebInspector.CSSProperty.prototype = {
 
     get active()
     {
-        return this.status === "active";
+        return typeof this._active === "boolean" && this._active;
     },
 
     get styleBased()
     {
-        return !this.status;
+        return !this.range;
     },
 
     get inactive()
     {
-        return this.status === "inactive";
-    },
-
-    get disabled()
-    {
-        return this.status === "disabled";
+        return typeof this._active === "boolean" && !this._active;
     },
 
     /**
