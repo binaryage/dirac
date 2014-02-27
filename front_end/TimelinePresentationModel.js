@@ -994,7 +994,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     get jsHeapSizeUsed()
     {
-        return this._record.counters ? this._record.counters.jsHeapSizeUsed | 0 : 0;
+        return this._record.counters ? this._record.counters.jsHeapSizeUsed || 0 : 0;
     },
 
     /**
