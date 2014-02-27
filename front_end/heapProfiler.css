@@ -33,14 +33,6 @@
     content: url(Images/profileIcon.png);
 }
 
-.heap-snapshot-sidebar-tree-item.wait .icon {
-    content: url(Images/spinner.gif);
-}
-
-.heap-snapshot-sidebar-tree-item.wait.selected .icon {
-    content: url(Images/spinnerSelected.gif);
-}
-
 .heap-snapshot-sidebar-tree-item.small .icon {
     content: url(Images/profileSmallIcon.png);
 }

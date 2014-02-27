@@ -55,7 +55,7 @@ WebInspector.CanvasProfileView = function(profile)
     replayImageContainer.id = "canvas-replay-image-container";
     this._replayImageElement = replayImageContainer.createChild("img", "canvas-replay-image");
     this._debugInfoElement = replayImageContainer.createChild("div", "canvas-debug-info hidden");
-    this._spinnerIcon = replayImageContainer.createChild("img", "canvas-spinner-icon hidden");
+    this._spinnerIcon = replayImageContainer.createChild("div", "spinner-icon small hidden");
 
     var replayLogContainer = this._imageSplitView.sidebarElement();
     var controlsContainer = replayLogContainer.createChild("div", "status-bar");
