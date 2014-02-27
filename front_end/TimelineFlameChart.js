@@ -32,16 +32,20 @@
  * @constructor
  * @implements {WebInspector.FlameChartDataProvider}
  * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.FlameChart.ColorGenerator} colorGenerator
+ * @param {!WebInspector.TimelineFrameModel} frameModel
  * @param {boolean} mainThread
  */
-WebInspector.TimelineFlameChartDataProvider = function(model, frameModel, colorGenerator, mainThread)
+WebInspector.TimelineFlameChartDataProvider = function(model, frameModel, mainThread)
 {
     WebInspector.FlameChartDataProvider.call(this);
     this._model = model;
     this._frameModel = frameModel;
     this._mainThread = mainThread;
-    this._colorGenerator = colorGenerator;
+
+    this._colorGenerator = new WebInspector.FlameChart.ColorGenerator();
+    var categories = WebInspector.TimelinePresentationModel.categories();
+    for (var category in categories)
+        this._colorGenerator.setColorPairForID(category, categories[category].fillColorStop0, categories[category].fillColorStop1);
 }
 
 WebInspector.TimelineFlameChartDataProvider.prototype = {
@@ -212,33 +216,18 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
  * @implements {WebInspector.TimeRangeController}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.FlameChartDataProvider} dataProvider
+ * @param {!WebInspector.TimelineFrameModel} frameModel
+ * @param {boolean} mainThread
  */
-WebInspector.TimelineFlameChart = function(delegate, model, dataProvider)
+WebInspector.TimelineFlameChart = function(delegate, model, frameModel, mainThread)
 {
     WebInspector.View.call(this);
     this._delegate = delegate;
     this._model = model;
-    this._dataProvider = dataProvider;
-    this._mainView = new WebInspector.FlameChart.MainPane(dataProvider, this, true, true);
+    this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(model, frameModel, mainThread);
+    this._mainView = new WebInspector.FlameChart.MainPane(this._dataProvider, this, true, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
-}
-
-/**
- * @param {!Object.<string, !CanvasGradient>} fillStyles
- */
-WebInspector.TimelineFlameChart.colorGenerator = function(fillStyles)
-{
-    if (!WebInspector.TimelineFlameChart._colorGenerator) {
-        var colorGenerator = new WebInspector.FlameChart.ColorGenerator();
-        for (var category in fillStyles) {
-            if (fillStyles.hasOwnProperty(category))
-                colorGenerator.setColorPairForID(category, fillStyles[category], fillStyles[category]);
-        }
-        WebInspector.TimelineFlameChart._colorGenerator = colorGenerator;
-    }
-    return WebInspector.TimelineFlameChart._colorGenerator;
 }
 
 WebInspector.TimelineFlameChart.prototype = {
