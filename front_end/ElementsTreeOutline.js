@@ -836,7 +836,7 @@ WebInspector.ElementsTreeElement.InitialChildrenLimit = 500;
 // FIXME: Revise once HTML5 Final is published.
 WebInspector.ElementsTreeElement.ForbiddenClosingTagElements = [
     "area", "base", "basefont", "br", "canvas", "col", "command", "embed", "frame",
-    "hr", "img", "input", "isindex", "keygen", "link", "meta", "param", "source"
+    "hr", "img", "input", "keygen", "link", "meta", "param", "source"
 ].keySet();
 
 // These tags we do not allow editing their tag name.
