@@ -222,7 +222,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
     _performSorting: function(sortFunction)
     {
         this.recursiveSortingEnter();
-        var children = this._topLevelNodes;
+        var children = this.rootNode()._allChildNodes;
         this.rootNode().removeChildren();
         children.sort(sortFunction);
         for (var i = 0, l = children.length; i < l; ++i) {
@@ -272,7 +272,6 @@ WebInspector.HeapSnapshotViewportDataGrid = function(columns)
 {
     WebInspector.HeapSnapshotSortableDataGrid.call(this, columns);
     this.scrollContainer.addEventListener("scroll", this._onScroll.bind(this), true);
-    this._topLevelNodes = [];
     /**
      * @type {?WebInspector.HeapSnapshotGridNode}
      */
@@ -285,7 +284,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
      */
     topLevelNodes: function()
     {
-        return this._topLevelNodes;
+        return this._allChildrenForNode(this.rootNode());
     },
 
     appendChildAfterSorting: function(child)
@@ -296,7 +295,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
     updateVisibleNodes: function()
     {
         var scrollTop = this.scrollContainer.scrollTop;
-        var children = this._topLevelNodes;
+        var children = this.topLevelNodes();
 
         var topPadding = 0;
         for (var i = 0; i < children.length; ++i) {
@@ -321,7 +320,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
     {
         var viewPortHeight = this.scrollContainer.offsetHeight;
 
-        var children = this._topLevelNodes;
+        var children = parentNode._allChildNodes;
         var selectedNode = this.selectedNode;
 
         parentNode.removeChildren();
@@ -368,7 +367,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
 
     _revealTopLevelNode: function(nodeToReveal)
     {
-        var children = this._topLevelNodes;
+        var children = this.rootNode()._allChildNodes;
 
         var topPadding = 0;
         for (var i = 0; i < children.length; ++i) {
@@ -383,16 +382,29 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
         this._addVisibleNodes(this.rootNode(), i, 0, topPadding);
     },
 
-    appendTopLevelNode: function(node)
+    /**
+     * @param {!WebInspector.DataGridNode} node
+     * @return {!Array.<!WebInspector.DataGridNode>}
+     */
+    _allChildrenForNode: function(node)
     {
-        this._topLevelNodes.push(node);
+        return node._allChildNodes || (node._allChildNodes = []);
+    },
+
+    /**
+     * @param {!WebInspector.DataGridNode} parent
+     * @param {!WebInspector.DataGridNode} node
+     */
+    appendNode: function(parent, node)
+    {
+        this._allChildrenForNode(parent).push(node);
     },
 
     removeTopLevelNodes: function()
     {
         this._disposeAllNodes();
         this.rootNode().removeChildren();
-        this._topLevelNodes = [];
+        this.rootNode()._allChildNodes = [];
     },
 
     /**
@@ -616,7 +628,6 @@ WebInspector.HeapSnapshotConstructorsDataGrid = function()
     ];
     WebInspector.HeapSnapshotViewportDataGrid.call(this, columns);
     this._profileIndex = -1;
-    this._topLevelNodes = [];
 
     this._objectIdToSelect = null;
 }
@@ -720,7 +731,7 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
         this.removeTopLevelNodes();
         this.resetSortingCache();
         for (var constructor in aggregates)
-            this.appendTopLevelNode(new WebInspector.HeapSnapshotConstructorNode(this, constructor, aggregates[constructor], key));
+            this.appendNode(this.rootNode(), new WebInspector.HeapSnapshotConstructorNode(this, constructor, aggregates[constructor], key));
         this.sortingChanged();
         this._applyNameFilter();
         this._lastKey = key;
@@ -838,7 +849,7 @@ WebInspector.HeapSnapshotDiffDataGrid.prototype = {
             {
                 for (var className in diffByClassName) {
                     var diff = diffByClassName[className];
-                    this.appendTopLevelNode(new WebInspector.HeapSnapshotDiffNode(this, className, diff));
+                    this.appendNode(this.rootNode(), new WebInspector.HeapSnapshotDiffNode(this, className, diff));
                 }
                 this.sortingChanged();
             }
