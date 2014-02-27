@@ -656,11 +656,14 @@ WebInspector.FlameChart.MainPane.prototype = {
         var windowShift = pixelShift / this._totalPixels;
         var windowTime = this._windowWidth * this._totalTime;
         var timeShift = windowTime * pixelShift / this._pixelWindowWidth;
-
+        timeShift = Number.constrain(
+            timeShift,
+            this._zeroTime - this._dragStartWindowLeft,
+            this._zeroTime + this._totalTime - this._dragStartWindowRight
+        );
         var windowLeft = this._dragStartWindowLeft + timeShift;
         var windowRight = this._dragStartWindowRight + timeShift;
-        if (windowLeft >= this._zeroTime && windowRight <= this._totalTime + this._zeroTime)
-            this._timeRangeController.requestWindowTimes(windowLeft, windowRight);
+        this._timeRangeController.requestWindowTimes(windowLeft, windowRight);
         this._wasDragged = true;
     },
 

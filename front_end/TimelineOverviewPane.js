@@ -161,6 +161,8 @@ WebInspector.TimelineOverviewPane.prototype = {
      */
     requestWindowTimes: function(startTime, endTime)
     {
+        if (startTime === this._windowStartTime && endTime === this._windowEndTime)
+            return;
         this._windowStartTime = startTime;
         this._windowEndTime = endTime;
         var windowBoundaries = this._overviewControl.windowBoundaries(startTime, endTime);
