@@ -273,8 +273,6 @@ WebInspector.HeapSnapshotViewportDataGrid = function(columns)
     WebInspector.HeapSnapshotSortableDataGrid.call(this, columns);
     this.scrollContainer.addEventListener("scroll", this._onScroll.bind(this), true);
     this._topLevelNodes = [];
-    this._topPadding = new WebInspector.HeapSnapshotPaddingNode();
-    this._bottomPadding = new WebInspector.HeapSnapshotPaddingNode();
     /**
      * @type {?WebInspector.HeapSnapshotGridNode}
      */
@@ -300,37 +298,42 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
         var scrollTop = this.scrollContainer.scrollTop;
         var children = this._topLevelNodes;
 
-        var i = 0;
         var topPadding = 0;
-        while (i < children.length) {
+        for (var i = 0; i < children.length; ++i) {
             if (children[i].revealed) {
                 var newTop = topPadding + children[i].nodeHeight();
                 if (newTop > scrollTop)
                     break;
                 topPadding = newTop;
             }
-            ++i;
         }
 
-        this._addVisibleNodes(i, scrollTop - topPadding, topPadding);
+        this._addVisibleNodes(this.rootNode(), i, scrollTop - topPadding, topPadding);
     },
 
-    _addVisibleNodes: function(firstVisibleNodeIndex, firstNodeHiddenHeight, topPadding)
+    /**
+     * @param {!WebInspector.DataGridNode} parentNode
+     * @param {number} firstVisibleNodeIndex
+     * @param {number} firstNodeHiddenHeight
+     * @param {number} topPadding
+     */
+    _addVisibleNodes: function(parentNode, firstVisibleNodeIndex, firstNodeHiddenHeight, topPadding)
     {
         var viewPortHeight = this.scrollContainer.offsetHeight;
-        this._removePaddingRows();
 
         var children = this._topLevelNodes;
         var selectedNode = this.selectedNode;
 
-        this.rootNode().removeChildren();
+        parentNode.removeChildren();
+        this._ensurePaddingRows(parentNode);
+
         // The height of the view port + invisible top part.
         var heightToFill = viewPortHeight + firstNodeHiddenHeight;
         var filledHeight = 0;
         var i = firstVisibleNodeIndex;
         while (i < children.length && filledHeight < heightToFill) {
             if (children[i].revealed) {
-                this.rootNode().appendChild(children[i]);
+                parentNode.appendChild(children[i]);
                 filledHeight += children[i].nodeHeight();
             }
             ++i;
@@ -342,7 +345,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
             ++i;
         }
 
-        this._addPaddingRows(topPadding, bottomPadding);
+        this._updatePaddingRows(parentNode, topPadding, bottomPadding);
 
         if (selectedNode) {
             if (selectedNode.parent) {
@@ -354,23 +357,30 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
         }
     },
 
+    /**
+     * @override
+     * @return {?Element}
+     */
+    defaultAttachLocation: function()
+    {
+        return this.rootNode()._bottomPadding.element;
+    },
+
     _revealTopLevelNode: function(nodeToReveal)
     {
         var children = this._topLevelNodes;
 
-        var i = 0;
         var topPadding = 0;
-        while (i < children.length) {
+        for (var i = 0; i < children.length; ++i) {
             if (children[i] === nodeToReveal)
                 break;
             if (children[i].revealed) {
                 var newTop = topPadding + children[i].nodeHeight();
                 topPadding = newTop;
             }
-            ++i;
         }
 
-        this._addVisibleNodes(i, 0, topPadding);
+        this._addVisibleNodes(this.rootNode(), i, 0, topPadding);
     },
 
     appendTopLevelNode: function(node)
@@ -399,6 +409,10 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
         }
     },
 
+    /**
+     * @param {!Element} element
+     * @return {boolean}
+     */
     _isScrolledIntoView: function(element)
     {
         var viewportTop = this.scrollContainer.scrollTop;
@@ -408,20 +422,33 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
         return elemBottom <= viewportBottom && elemTop >= viewportTop;
     },
 
-    _addPaddingRows: function(top, bottom)
+    /**
+     * @param {!WebInspector.DataGridNode} node
+     */
+    _ensurePaddingRows: function(node)
     {
-        if (this._topPadding.element.parentNode !== this.dataTableBody)
-            this.dataTableBody.insertBefore(this._topPadding.element, this.dataTableBody.firstChild);
-        if (this._bottomPadding.element.parentNode !== this.dataTableBody)
-            this.dataTableBody.insertBefore(this._bottomPadding.element, this.dataTableBody.lastChild);
-        this._topPadding.setHeight(top);
-        this._bottomPadding.setHeight(bottom);
+        var parentElement = node == this.rootNode() ? this.dataTableBody : node.element;
+        if (!node._topPadding) {
+            node._topPadding = new WebInspector.HeapSnapshotPaddingNode();
+            parentElement.insertBefore(node._topPadding.element, parentElement.firstChild);
+        }
+        if (!node._bottomPadding) {
+            node._bottomPadding = new WebInspector.HeapSnapshotPaddingNode();
+            // At the root level lastChild is a filler node.
+            var insertLocation = node === this.rootNode() ? parentElement.lastChild : null;
+            parentElement.insertBefore(node._bottomPadding.element, insertLocation);
+        }
     },
 
-    _removePaddingRows: function()
+    /**
+     * @param {!WebInspector.DataGridNode} node
+     * @param {number} top
+     * @param {number} bottom
+     */
+    _updatePaddingRows: function(node, top, bottom)
     {
-        this._bottomPadding.removeFromTable();
-        this._topPadding.removeFromTable();
+        node._topPadding.setHeight(top);
+        node._bottomPadding.setHeight(bottom);
     },
 
     onResize: function()

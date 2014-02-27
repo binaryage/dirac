@@ -1121,6 +1121,14 @@ WebInspector.DataGrid.prototype = {
         this.dispatchEventToListeners(WebInspector.DataGrid.Events.ColumnsResized);
     },
 
+    /**
+     * @return {?Element}
+     */
+    defaultAttachLocation: function()
+    {
+        return this.dataTableBody.firstChild;
+    },
+
     ColumnResizePadding: 24,
 
     CenterResizerOverBorderAdjustment: 3,
@@ -1743,7 +1751,7 @@ WebInspector.DataGridNode.prototype = {
         if (previousNode && previousNode.element.parentNode && previousNode.element.nextSibling)
             nextNode = previousNode.element.nextSibling;
         if (!nextNode)
-            nextNode = this.dataGrid.dataTableBody.firstChild;
+            nextNode = this.dataGrid.defaultAttachLocation();
         this.dataGrid.dataTableBody.insertBefore(this.element, nextNode);
 
         if (this.expanded)
