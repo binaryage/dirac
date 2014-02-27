@@ -77,14 +77,8 @@ WebInspector.AuditCategoryResultPane = function(categoryResult)
 
     for (var i = 0; i < categoryResult.ruleResults.length; ++i) {
         var ruleResult = categoryResult.ruleResults[i];
-        var treeElement = this._appendResult(this._treeOutline, ruleResult);
+        var treeElement = this._appendResult(this._treeOutline, ruleResult, ruleResult.severity);
         treeElement.listItemElement.classList.add("audit-result");
-
-        if (ruleResult.severity) {
-            var severityElement = document.createElement("div");
-            severityElement.className = "severity-" + ruleResult.severity;
-            treeElement.listItemElement.appendChild(severityElement);
-        }
     }
     this.expand();
 }
@@ -93,8 +87,9 @@ WebInspector.AuditCategoryResultPane.prototype = {
     /**
      * @param {(!TreeOutline|!TreeElement)} parentTreeElement
      * @param {!WebInspector.AuditRuleResult} result
+     * @param {?WebInspector.AuditRule.Severity=} severity
      */
-    _appendResult: function(parentTreeElement, result)
+    _appendResult: function(parentTreeElement, result, severity)
     {
         var title = "";
 
@@ -104,7 +99,15 @@ WebInspector.AuditCategoryResultPane.prototype = {
                 title = String.sprintf("%s (%d)", title, result.violationCount);
         }
 
-        var treeElement = new TreeElement(title, null, !!result.children);
+        var titleFragment = document.createDocumentFragment();
+        if (severity) {
+            var severityElement = document.createElement("div");
+            severityElement.className = "severity-" + severity;
+            titleFragment.appendChild(severityElement);
+        }
+        titleFragment.appendChild(document.createTextNode(title));
+
+        var treeElement = new TreeElement(titleFragment, null, !!result.children);
         parentTreeElement.appendChild(treeElement);
 
         if (result.className)

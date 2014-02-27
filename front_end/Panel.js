@@ -181,6 +181,15 @@ WebInspector.PanelWithSidebarTree.prototype = {
     },
 
     /**
+     * @param {number=} minWidth
+     * @param {number=} minHeight
+     */
+    setMainElementConstraints: function(minWidth, minHeight)
+    {
+        this._panelSplitView.setMainElementConstraints(minWidth, minHeight);
+    },
+
+    /**
      * @return {!Element}
      */
     defaultFocusedElement: function()

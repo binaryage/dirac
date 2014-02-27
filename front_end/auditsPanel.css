@@ -125,9 +125,10 @@
     background-size: 320px 144px;
     display: inline-block;
     width: 10px;
+    margin-right: -10px;
     height: 10px;
-    float: left;
-    margin-left: -28px;
+    position: relative;
+    left: -28px;
     margin-top: 3px;
 }
 
