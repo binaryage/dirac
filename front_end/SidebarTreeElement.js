@@ -53,7 +53,10 @@ WebInspector.SidebarSectionTreeElement.prototype = {
 
         this._smallChildren = x;
 
-        this._childrenListNode.classList.toggle("small", this._smallChildren);
+        if (this._smallChildren)
+            this._childrenListNode.classList.add("small");
+        else
+            this._childrenListNode.classList.remove("small");
     },
 
     onattach: function()
@@ -88,7 +91,7 @@ WebInspector.SidebarTreeElement = function(className, title, subtitle, represent
         this.disclosureButton.className = "disclosure-button";
     }
 
-    this.iconElement = document.createElementWithClass("div", "icon");
+    this.iconElement = document.createElementWithClass("img", "icon");
     this.statusElement = document.createElementWithClass("div", "status");
     this.titlesElement = document.createElementWithClass("div", "titles");
 
@@ -111,8 +114,13 @@ WebInspector.SidebarTreeElement.prototype = {
     set small(x)
     {
         this._small = x;
-        if (this._listItemNode)
-            this._listItemNode.classList.toggle("small", this._small);
+
+        if (this._listItemNode) {
+            if (this._small)
+                this._listItemNode.classList.add("small");
+            else
+                this._listItemNode.classList.remove("small");
+        }
     },
 
     get mainTitle()
@@ -139,7 +147,10 @@ WebInspector.SidebarTreeElement.prototype = {
 
     set wait(x)
     {
-        this._listItemNode.classList.toggle("wait", x);
+        if (x)
+            this._listItemNode.classList.add("wait");
+        else
+            this._listItemNode.classList.remove("wait");
     },
 
     refreshTitles: function()

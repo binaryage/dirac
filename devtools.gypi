@@ -440,6 +440,8 @@
             'front_end/Images/sessionStorage.png',
             'front_end/Images/settingsListRemove.png',
             'front_end/Images/settingsListRemove_2x.png',
+            'front_end/Images/spinner.gif',
+            'front_end/Images/spinnerSelected.gif',
             'front_end/Images/statusbarButtonGlyphs.png',
             'front_end/Images/statusbarButtonGlyphs_2x.png',
             'front_end/Images/statusbarResizerHorizontal.png',
