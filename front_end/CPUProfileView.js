@@ -1068,6 +1068,30 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @return {number}
+     */
+    zeroTime: function()
+    {
+        return 0;
+    },
+
+    /**
+     * @return {number}
+     */
+    totalTime: function()
+    {
+        return this._cpuProfileView.profileHead.totalTime;
+    },
+
+    /**
+     * @return {number}
+     */
+    maxStackDepth: function()
+    {
+        return this._maxStackDepth;
+    },
+
+    /**
      * @return {?WebInspector.FlameChart.TimelineData}
      */
     timelineData: function()
@@ -1206,10 +1230,9 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             entryDeoptFlags[i] = (reason && reason !== "no reason");
         }
 
+        this._maxStackDepth = Math.max(maxDepth, depth);
+
         this._timelineData = {
-            maxStackDepth: Math.max(maxDepth, depth),
-            totalTime: this._cpuProfileView.profileHead.totalTime,
-            zeroTime: 0,
             entryNodes: entryNodes,
             entryColorIndexes: entryColorIndexes,
             entryLevels: entryLevels,

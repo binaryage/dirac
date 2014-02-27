@@ -95,19 +95,44 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (!this._timelineData) {
             this._resetData();
             WebInspector.TimelinePresentationModel.forAllRecords(this._model.records, this._appendRecord.bind(this));
-            this._timelineData.zeroTime = this._model.minimumRecordTime();
+            this._zeroTime = this._model.minimumRecordTime();
         }
         return this._timelineData;
+    },
+
+    /**
+     * @return {number}
+     */
+    zeroTime: function()
+    {
+        return this._zeroTime;
+    },
+
+    /**
+     * @return {number}
+     */
+    totalTime: function()
+    {
+        return this._totalTime;
+    },
+
+    /**
+     * @return {number}
+     */
+    maxStackDepth: function()
+    {
+        return this._maxStackDepth;
     },
 
     _resetData: function()
     {
         this._startTime = 0;
         this._endTime = 0;
+        this._maxStackDepth = 5;
+        this._totalTime = 1000;
+        this._zeroTime = 0;
+
         this._timelineData = {
-            maxStackDepth: 5,
-            totalTime: 1000,
-            zeroTime: 0,
             entryLevels: [],
             entryTotalTimes: [],
             entrySelfTimes: [],
@@ -126,7 +151,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var startTime = this._startTime;
         var endTime = record.endTime || record.startTime - startTime;
         this._endTime = Math.max(this._endTime, endTime);
-        timelineData.totalTime = Math.max(1000, this._endTime - this._startTime);
+        this._totalTime = Math.max(1000, this._endTime - this._startTime);
 
         if (this._mainThread) {
             if (record.type === WebInspector.TimelineModel.RecordType.GPUTask || !!record.thread)
@@ -149,7 +174,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             indexesForColor = timelineData.colorEntryIndexes[colorPair.index] = [];
         indexesForColor.push(index);
 
-        timelineData.maxStackDepth = Math.max(timelineData.maxStackDepth, depth + 1);
+        this._maxStackDepth = Math.max(this._maxStackDepth, depth + 1);
     },
 
     /**

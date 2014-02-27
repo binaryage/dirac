@@ -106,9 +106,6 @@ WebInspector.FlameChartDataProvider = function()
 }
 
 /** @typedef {!{
-        maxStackDepth: number,
-        totalTime: number,
-        zeroTime: number,
         entryLevels: !Array.<number>,
         entryTotalTimes: !Array.<number>,
         entrySelfTimes: !Array.<number>,
@@ -127,6 +124,21 @@ WebInspector.FlameChartDataProvider.prototype = {
      * @return {?Array.<number>}
      */
     dividerOffsets: function(startTime, endTime) { },
+
+    /**
+     * @return {number}
+     */
+    zeroTime: function() { },
+
+    /**
+     * @return {number}
+     */
+    totalTime: function() { },
+
+    /**
+     * @return {number}
+     */
+    maxStackDepth: function() { },
 
     /**
      * @return {?WebInspector.FlameChart.TimelineData}
@@ -185,13 +197,13 @@ WebInspector.FlameChart.Calculator.prototype = {
             return Math.log(x) / Math.LN10;
         }
         this._decimalDigits = Math.max(0, -Math.floor(log10(mainPane._timelineGrid.gridSliceTime * 1.01)));
-        this._totalTime = mainPane._timelineData().totalTime;
+        this._totalTime = mainPane._dataProvider.totalTime();
         this._minimumBoundaries = mainPane._windowLeft * this._totalTime;
         this._maximumBoundaries = mainPane._windowRight * this._totalTime;
         this._paddingLeft = mainPane._paddingLeft;
         this._width = mainPane._canvas.width - this._paddingLeft;
         this._timeToPixel = this._width / this.boundarySpan();
-        this._zeroTime = mainPane._timelineData().zeroTime;
+        this._zeroTime = mainPane._dataProvider.zeroTime();
     },
 
     /**
@@ -270,7 +282,7 @@ WebInspector.FlameChart.OverviewCalculator.prototype = {
     _updateBoundaries: function(overviewPane)
     {
         this._minimumBoundaries = 0;
-        var totalTime = overviewPane._timelineData().totalTime;
+        var totalTime = overviewPane._dataProvider.totalTime();
         this._maximumBoundaries = totalTime;
         this._xScaleFactor = overviewPane._overviewCanvas.width / totalTime;
     },
@@ -426,10 +438,7 @@ WebInspector.FlameChart.OverviewPane.prototype = {
      */
     requestWindowTimes: function(windowStartTime, windowEndTime)
     {
-        var timelineData = this._timelineData();
-        if (!timelineData)
-            return;
-        this._overviewGrid.setWindow(windowStartTime / timelineData.totalTime, windowEndTime / timelineData.totalTime);
+        this._overviewGrid.setWindow(windowStartTime / this._dataProvider.totalTime(), windowEndTime / this._dataProvider.totalTime());
     },
 
     /**
@@ -438,10 +447,7 @@ WebInspector.FlameChart.OverviewPane.prototype = {
      */
     _selectRange: function(timeLeft, timeRight)
     {
-        var timelineData = this._timelineData();
-        if (!timelineData)
-            return;
-        this._overviewGrid.setWindow(timeLeft / timelineData.totalTime, timeRight / timelineData.totalTime);
+        this._overviewGrid.setWindow(timeLeft / this._dataProvider.totalTime(), timeRight / this._dataProvider.totalTime());
     },
 
     /**
@@ -474,6 +480,7 @@ WebInspector.FlameChart.OverviewPane.prototype = {
         this._overviewCalculator._updateBoundaries(this);
         this._overviewGrid.updateDividers(this._overviewCalculator);
         WebInspector.FlameChart.OverviewPane.drawOverviewCanvas(
+            this._dataProvider,
             timelineData,
             this._overviewCanvas.getContext("2d"),
             this._overviewContainer.clientWidth,
@@ -496,10 +503,11 @@ WebInspector.FlameChart.OverviewPane.prototype = {
 }
 
 /**
+ * @param {!WebInspector.FlameChartDataProvider} dataProvider
  * @param {!WebInspector.FlameChart.TimelineData} timelineData
  * @param {!number} width
  */
-WebInspector.FlameChart.OverviewPane.calculateDrawData = function(timelineData, width)
+WebInspector.FlameChart.OverviewPane.calculateDrawData = function(dataProvider, timelineData, width)
 {
     var entryOffsets = timelineData.entryOffsets;
     var entryTotalTimes = timelineData.entryTotalTimes;
@@ -507,7 +515,7 @@ WebInspector.FlameChart.OverviewPane.calculateDrawData = function(timelineData, 
     var length = entryOffsets.length;
 
     var drawData = new Uint8Array(width);
-    var scaleFactor = width / timelineData.totalTime;
+    var scaleFactor = width / dataProvider.totalTime();
 
     for (var entryIndex = 0; entryIndex < length; ++entryIndex) {
         var start = Math.floor(entryOffsets[entryIndex] * scaleFactor);
@@ -519,14 +527,15 @@ WebInspector.FlameChart.OverviewPane.calculateDrawData = function(timelineData, 
 }
 
 /**
+ * @param {!WebInspector.FlameChartDataProvider} dataProvider
  * @param {!WebInspector.FlameChart.TimelineData} timelineData
  * @param {!Object} context
  * @param {!number} width
  * @param {!number} height
  */
-WebInspector.FlameChart.OverviewPane.drawOverviewCanvas = function(timelineData, context, width, height)
+WebInspector.FlameChart.OverviewPane.drawOverviewCanvas = function(dataProvider, timelineData, context, width, height)
 {
-    var drawData = WebInspector.FlameChart.OverviewPane.calculateDrawData(timelineData, width);
+    var drawData = WebInspector.FlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, width);
     if (!drawData)
         return;
 
@@ -534,7 +543,7 @@ WebInspector.FlameChart.OverviewPane.drawOverviewCanvas = function(timelineData,
     var canvasWidth = width * ratio;
     var canvasHeight = height * ratio;
 
-    var yScaleFactor = canvasHeight / (timelineData.maxStackDepth * 1.1);
+    var yScaleFactor = canvasHeight / (dataProvider.maxStackDepth() * 1.1);
     context.lineWidth = 1;
     context.translate(0.5, 0.5);
     context.strokeStyle = "rgba(20,0,0,0.4)";
@@ -806,7 +815,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         var minTextWidth = this._minTextWidth;
 
         var marksField = [];
-        for (var i = 0; i < timelineData.maxStackDepth; ++i)
+        for (var i = 0; i < this._dataProvider.maxStackDepth(); ++i)
             marksField.push(new Uint16Array(width));
 
         var barHeight = this._isTopDown ? -this._barHeight : this._barHeight;
@@ -956,8 +965,8 @@ WebInspector.FlameChart.MainPane.prototype = {
 
     _updateBoundaries: function()
     {
-        this._totalTime = this._timelineData().totalTime;
-        this._zeroTime = this._timelineData().zeroTime;
+        this._totalTime = this._dataProvider.totalTime();
+        this._zeroTime = this._dataProvider.zeroTime();
         if (this._timeBasedWindow) {
             if (this._timeWindowRight !== Infinity) {
                 this._windowLeft = (this._timeWindowLeft - this._zeroTime) / this._totalTime;
