@@ -45,6 +45,7 @@ importScript("TimelineView.js");
 /**
  * @constructor
  * @extends {WebInspector.Panel}
+ * @implements {WebInspector.TimelineModeViewDelegate}
  * @implements {WebInspector.Searchable}
  */
 WebInspector.TimelinePanel = function()
@@ -233,7 +234,7 @@ WebInspector.TimelinePanel.prototype = {
                 views.overviewView = new WebInspector.TimelineMemoryOverview(this._model);
                 var timelineView = new WebInspector.TimelineView(this, this._presentationModel, null);
                 views.mainViews = [timelineView];
-                var memoryStatistics = new WebInspector.CountersGraph(timelineView, this._model);
+                var memoryStatistics = new WebInspector.CountersGraph(this, this._presentationModel);
                 views.mainViews.push(memoryStatistics);
                 break;
             case WebInspector.TimelinePanel.Mode.FlameChart:
@@ -932,6 +933,24 @@ WebInspector.TimelineModeView.prototype = {
      * @param {?WebInspector.TimelinePresentationModel.Record} record
      */
     setSelectedRecord: function(record) {}
+}
+
+/**
+ * @interface
+ */
+WebInspector.TimelineModeViewDelegate = function() {}
+
+WebInspector.TimelineModeViewDelegate.prototype = {
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    requestWindowTimes: function(startTime, endTime) {},
+
+    /**
+     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     */
+    selectRecord: function(record) {}
 }
 
 /**

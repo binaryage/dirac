@@ -185,14 +185,14 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
  * @extends {WebInspector.View}
  * @implements {WebInspector.TimelineModeView}
  * @implements {WebInspector.TimeRangeController}
- * @param {!WebInspector.TimelinePanel} panel
+ * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
  */
-WebInspector.TimelineFlameChart = function(panel, model, dataProvider)
+WebInspector.TimelineFlameChart = function(delegate, model, dataProvider)
 {
     WebInspector.View.call(this);
-    this._panel = panel;
+    this._delegate = delegate;
     this._model = model;
     this._dataProvider = dataProvider;
     this._mainView = new WebInspector.FlameChart.MainPane(dataProvider, this, true, true);
@@ -223,7 +223,7 @@ WebInspector.TimelineFlameChart.prototype = {
      */
     requestWindowTimes: function(windowStartTime, windowEndTime)
     {
-        this._panel.requestWindowTimes(windowStartTime, windowEndTime);
+        this._delegate.requestWindowTimes(windowStartTime, windowEndTime);
     },
 
     refreshRecords: function()
@@ -253,7 +253,7 @@ WebInspector.TimelineFlameChart.prototype = {
             var minimumRecordTime = this._model.minimumRecordTime();
             if (rawRecord.startTime > (minimumRecordTime + 1000)) {
                 this._automaticallySizeWindow = false;
-                this._panel.requestWindowTimes(minimumRecordTime, minimumRecordTime + 1000);
+                this._delegate.requestWindowTimes(minimumRecordTime, minimumRecordTime + 1000);
             }
             this._mainView._scheduleUpdate();
         }

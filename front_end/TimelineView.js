@@ -33,17 +33,17 @@
  * @constructor
  * @extends {WebInspector.View}
  * @implements {WebInspector.TimelineModeView}
- * @param {!WebInspector.TimelinePanel} panel
+ * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelinePresentationModel} presentationModel
  * @param {?WebInspector.TimelineFrameModel} frameModel
  */
-WebInspector.TimelineView = function(panel, presentationModel, frameModel)
+WebInspector.TimelineView = function(delegate, presentationModel, frameModel)
 {
     WebInspector.View.call(this);
     this.element.classList.add("timeline-view");
     this.element.classList.add("hbox");
 
-    this._panel = panel;
+    this._delegate = delegate;
     this._presentationModel = presentationModel;
     this._frameModel = frameModel;
     this._calculator = new WebInspector.TimelineCalculator(this._presentationModel);
@@ -188,7 +188,7 @@ WebInspector.TimelineView.prototype = {
         var frameBar = event.target.enclosingNodeOrSelfWithClass("timeline-frame-strip");
         if (!frameBar)
             return;
-        this._panel.requestWindowTimes(frameBar._frame.startTime, frameBar._frame.endTime);
+        this._delegate.requestWindowTimes(frameBar._frame.startTime, frameBar._frame.endTime);
     },
 
     /**
@@ -209,7 +209,7 @@ WebInspector.TimelineView.prototype = {
     _innerAddRecordToTimeline: function(record, presentationRecords)
     {
         if (record.type === WebInspector.TimelineModel.RecordType.GPUTask)
-            return record.startTime < this._panel.windowEndTime();
+            return record.startTime < this._windowEndTime;
 
         var hasVisibleRecords = false;
         var presentationModel = this._presentationModel;
@@ -263,6 +263,8 @@ WebInspector.TimelineView.prototype = {
 
     _resetView: function()
     {
+        this._windowStartTime = -1;
+        this._windowEndTime = -1;
         this._boundariesAreValid = false;
         this._adjustScrollPosition(0);
         this._closeRecordDetails();
@@ -332,7 +334,7 @@ WebInspector.TimelineView.prototype = {
      */
     _selectRecord: function(record)
     {
-        this._panel.selectRecord(record);
+        this._delegate.selectRecord(record);
     },
 
     /**
@@ -372,6 +374,8 @@ WebInspector.TimelineView.prototype = {
      */
     setWindowTimes: function(startTime, endTime)
     {
+        this._windowStartTime = startTime;
+        this._windowEndTime = endTime;
         this._automaticallySizeWindow = false;
         this._invalidateAndScheduleRefresh(false, true);
         this._selectRecord(null);
@@ -403,8 +407,8 @@ WebInspector.TimelineView.prototype = {
             clearTimeout(this._refreshTimeout);
             delete this._refreshTimeout;
         }
-        var windowStartTime = this._panel.windowStartTime();
-        var windowEndTime = this._panel.windowEndTime();
+        var windowStartTime = this._windowStartTime;
+        var windowEndTime = this._windowEndTime;
         this._timelinePaddingLeft = this._expandOffset;
         this._calculator.setWindow(windowStartTime, windowEndTime);
         this._calculator.setDisplayWindow(this._timelinePaddingLeft, this._graphRowsElementWidth);
@@ -428,31 +432,6 @@ WebInspector.TimelineView.prototype = {
             this._refreshAllUtilizationBars();
         }
         this._boundariesAreValid = true;
-    },
-
-    revealRecordAt: function(time)
-    {
-        var recordToReveal;
-        function findRecordToReveal(record)
-        {
-            if (record.containsTime(time)) {
-                recordToReveal = record;
-                return true;
-            }
-            // If there is no record containing the time than use the latest one before that time.
-            if (!recordToReveal || record.endTime < time && recordToReveal.endTime < record.endTime)
-                recordToReveal = record;
-            return false;
-        }
-        WebInspector.TimelinePresentationModel.forAllRecords(this._presentationModel.rootRecord().children, null, findRecordToReveal);
-
-        // The record ends before the window left bound so scroll to the top.
-        if (!recordToReveal) {
-            this._containerElement.scrollTop = 0;
-            return;
-        }
-
-        this._selectRecord(recordToReveal);
     },
 
     /**
@@ -504,7 +483,7 @@ WebInspector.TimelineView.prototype = {
             // If we're at the top, always use real timeline start as a left window bound so that expansion arrow padding logic works.
             var windowStartTime = startIndex ? recordsInWindow[startIndex].startTime : this._presentationModel.minimumRecordTime();
             var windowEndTime = recordsInWindow[Math.max(0, lastVisibleLine - 1)].endTime;
-            this._panel.requestWindowTimes(windowStartTime, windowEndTime);
+            this._delegate.requestWindowTimes(windowStartTime, windowEndTime);
             recordsInWindow = this._presentationModel.filteredRecords();
             endIndex = Math.min(recordsInWindow.length, lastVisibleLine);
         }
@@ -605,9 +584,9 @@ WebInspector.TimelineView.prototype = {
         var widthAdjustment = minWidth / 2;
 
         var width = this._graphRowsElementWidth;
-        var boundarySpan = this._panel.windowEndTime() - this._panel.windowStartTime();
+        var boundarySpan = this._windowEndTime - this._windowStartTime;
         var scale = boundarySpan / (width - minWidth - this._timelinePaddingLeft);
-        var startTime = (this._panel.windowStartTime() - this._timelinePaddingLeft * scale);
+        var startTime = (this._windowStartTime - this._timelinePaddingLeft * scale);
         var endTime = startTime + width * scale;
 
         /**

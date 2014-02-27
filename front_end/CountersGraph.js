@@ -32,12 +32,12 @@
  * @constructor
  * @extends {WebInspector.MemoryStatistics}
  * @implements {WebInspector.TimelineModeView}
- * @param {!WebInspector.TimelineView} timelineView
- * @param {!WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineModeViewDelegate} delegate
+ * @param {!WebInspector.TimelinePresentationModel} presentationModel
  */
-WebInspector.CountersGraph = function(timelineView, model)
+WebInspector.CountersGraph = function(delegate, presentationModel)
 {
-    WebInspector.MemoryStatistics.call(this, timelineView, model);
+    WebInspector.MemoryStatistics.call(this, delegate, presentationModel);
 }
 
 /**

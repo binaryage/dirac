@@ -31,16 +31,18 @@
 /**
  * @constructor
  * @extends {WebInspector.SplitView}
- * @param {!WebInspector.TimelineView} timelineView
- * @param {!WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelineModeViewDelegate} delegate
+ * @param {!WebInspector.TimelinePresentationModel} presentationModel
  */
-WebInspector.MemoryStatistics = function(timelineView, model)
+WebInspector.MemoryStatistics = function(delegate, presentationModel)
 {
     WebInspector.SplitView.call(this, true, false);
 
     this.element.id = "memory-graphs-container";
 
-    this._timelineView = timelineView;
+    this._delegate = delegate;
+    this._presentationModel = presentationModel;
+    this._calculator = new WebInspector.TimelineCalculator(this._presentationModel);
 
     this._graphsContainer = this.mainElement();
     this._createCurrentValuesBar();
@@ -279,11 +281,18 @@ WebInspector.MemoryStatistics.prototype = {
         var parentElement = this._canvas.parentElement;
         this._canvas.width = parentElement.clientWidth;
         this._canvas.height = parentElement.clientHeight;
+        var timelinePaddingLeft = 15;
+        this._calculator.setDisplayWindow(timelinePaddingLeft, this._canvas.width);
         this.refresh();
     },
 
-    setWindowTimes: function()
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    setWindowTimes: function(startTime, endTime)
     {
+        this._calculator.setWindow(startTime, endTime);
         this.scheduleRefresh();
     },
 
@@ -297,7 +306,7 @@ WebInspector.MemoryStatistics.prototype = {
     draw: function()
     {
         for (var i = 0; i < this._counters.length; ++i) {
-            this._counters[i]._calculateVisibleIndexes(this._timelineView.calculator);
+            this._counters[i]._calculateVisibleIndexes(this._calculator);
             this._counters[i]._calculateXValues(this._canvas.width);
         }
         this._clear();
@@ -324,7 +333,29 @@ WebInspector.MemoryStatistics.prototype = {
             }
         }
         if (bestTime !== undefined)
-            this._timelineView.revealRecordAt(bestTime);
+            this._revealRecordAt(bestTime);
+    },
+
+    /**
+     * @param {number} time
+     */
+    _revealRecordAt: function(time)
+    {
+        var recordToReveal;
+        function findRecordToReveal(record)
+        {
+            if (record.containsTime(time)) {
+                recordToReveal = record;
+                return true;
+            }
+            // If there is no record containing the time than use the latest one before that time.
+            if (!recordToReveal || record.endTime < time && recordToReveal.endTime < record.endTime)
+                recordToReveal = record;
+            return false;
+        }
+        WebInspector.TimelinePresentationModel.forAllRecords(this._presentationModel.rootRecord().children, null, findRecordToReveal);
+
+        this._delegate.selectRecord(recordToReveal);
     },
 
     /**
@@ -363,7 +394,7 @@ WebInspector.MemoryStatistics.prototype = {
     refresh: function()
     {
         delete this._refreshTimer;
-        this._timelineGrid.updateDividers(this._timelineView.calculator);
+        this._timelineGrid.updateDividers(this._calculator);
         this.draw();
         this._refreshCurrentValues();
     },
