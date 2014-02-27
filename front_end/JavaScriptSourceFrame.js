@@ -106,8 +106,17 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var selection = this.textEditor.selection();
         if (!selection || selection.isEmpty())
             return false;
-        WebInspector.evaluateInConsole(this.textEditor.copyRange(selection));
+        this._evaluateInConsole(this.textEditor.copyRange(selection));
         return true;
+    },
+
+    /**
+     * @param {string} expression
+     */
+    _evaluateInConsole: function(expression)
+    {
+        WebInspector.showConsole();
+        WebInspector.consoleView.evaluateUsingTextPrompt(expression, false);
     },
 
     // View events
@@ -155,7 +164,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             var addToWatchLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add to watch" : "Add to Watch");
             contextMenu.appendItem(addToWatchLabel, this._innerAddToWatch.bind(this, selection));
             var evaluateLabel = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Evaluate in console" : "Evaluate in Console");
-            contextMenu.appendItem(evaluateLabel, WebInspector.evaluateInConsole.bind(WebInspector, selection));
+            contextMenu.appendItem(evaluateLabel, this._evaluateInConsole.bind(this, selection));
             contextMenu.appendSeparator();
         } else if (!this._uiSourceCode.isEditable() && this._uiSourceCode.contentType() === WebInspector.resourceTypes.Script) {
 

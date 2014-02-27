@@ -153,7 +153,6 @@
         "sources": [
             "AdvancedSearchController.js",
             "HandlerRegistry.js",
-            "ConsoleViewMessage.js",
             "CookiesTable.js",
             "DOMBreakpointsSidebarPane.js",
             "DOMPresentationUtils.js",
@@ -247,8 +246,17 @@
         ]
     },
     {
+        "name": "console",
+        "dependencies": ["components"],
+        "sources": [
+            "ConsoleView.js",
+            "ConsoleViewMessage.js",
+            "ConsolePanel.js"
+        ]
+    },
+    {
         "name": "sources",
-        "dependencies": ["components", "source_frame", "workers"],
+        "dependencies": ["components", "source_frame", "workers", "console"],
         "sources": [
             "BreakpointsSidebarPane.js",
             "CSSSourceFrame.js",
@@ -279,14 +287,6 @@
         "sources": [
             "ScriptFormatterEditorAction.js",
             "InplaceFormatterEditorAction.js"
-        ]
-    },
-    {
-        "name": "console",
-        "dependencies": ["components"],
-        "sources": [
-            "ConsoleView.js",
-            "ConsolePanel.js"
         ]
     },
     {

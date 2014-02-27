@@ -878,12 +878,6 @@ WebInspector._updateFocusedNode = function(nodeId)
     WebInspector.showPanel("elements").revealAndSelectNode(nodeId);
 }
 
-WebInspector.evaluateInConsole = function(expression, showResultOnly)
-{
-    this.showConsole();
-    this.consoleView.evaluateUsingTextPrompt(expression, showResultOnly);
-}
-
 WebInspector.addMainEventListeners = function(doc)
 {
     doc.addEventListener("keydown", this.postDocumentKeyDown.bind(this), false);

@@ -200,18 +200,7 @@ WebInspector.ScriptSnippetModel.prototype = {
         var evaluationIndex = this._nextEvaluationIndex(snippetId);
         uiSourceCode._evaluationIndex = evaluationIndex;
         var evaluationUrl = this._evaluationSourceURL(uiSourceCode);
-
         var expression = uiSourceCode.workingCopy();
-        
-        // In order to stop on the breakpoints during the snippet evaluation we need to compile and run it separately.
-        // If separate compilation and execution is not supported by the port we fall back to evaluation in console.
-        // In case we don't need that since debugger is already paused.
-        // We do the same when we are stopped on the call frame  since debugger is already paused and can not stop on breakpoint anymore.
-        if (WebInspector.debuggerModel.selectedCallFrame()) {
-            expression = uiSourceCode.workingCopy() + "\n//# sourceURL=" + evaluationUrl + "\n";
-            WebInspector.evaluateInConsole(expression, true);
-            return;
-        }
         
         WebInspector.showConsole();
         DebuggerAgent.compileScript(expression, evaluationUrl, compileCallback.bind(this));
