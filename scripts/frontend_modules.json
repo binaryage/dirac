@@ -97,6 +97,7 @@
             "Dialog.js",
             "DockController.js",
             "Drawer.js",
+            "DropDownMenu.js",
             "EmptyView.js",
             "FilterBar.js",
             "FilterSuggestionBuilder.js",

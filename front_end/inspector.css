@@ -2885,3 +2885,8 @@ body.undocked .toolbar-close-button-item {
 .root-view > .split-view > .split-view-sidebar {
     position: relative;
 }
+
+select.drop-down-menu {
+    border: none;
+    -webkit-appearance: none;
+}

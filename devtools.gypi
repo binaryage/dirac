@@ -73,6 +73,7 @@
             'front_end/DefaultScriptMapping.js',
             'front_end/DockController.js',
             'front_end/Drawer.js',
+            'front_end/DropDownMenu.js',
             'front_end/EditFileSystemDialog.js',
             'front_end/EmptyView.js',
             'front_end/ExtensionServerProxy.js',

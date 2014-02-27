@@ -147,16 +147,13 @@
     opacity: 0.8;
 }
 
-select.tabbed-pane-header-tabs-drop-down-select {
+.tabbed-pane-header-tabs-drop-down > select.drop-down-menu {
     position: absolute;
     top: 0;
     right: 0;
     bottom: 0;
     left: 0;
     opacity: 0;
-    border: none;
-    margin: 0;
     font-size: 75%;
-    -webkit-appearance: none;
     width: 20px;
 }

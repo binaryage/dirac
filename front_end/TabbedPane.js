@@ -444,10 +444,21 @@ WebInspector.TabbedPane.prototype = {
         dropDownContainer.classList.add("tabbed-pane-header-tabs-drop-down-container");
         var dropDownButton = dropDownContainer.createChild("div", "tabbed-pane-header-tabs-drop-down");
         dropDownButton.appendChild(document.createTextNode("\u00bb"));
-        this._tabsSelect = dropDownButton.createChild("select", "tabbed-pane-header-tabs-drop-down-select");
-        this._tabsSelect.addEventListener("change", this._tabsSelectChanged.bind(this), false);
-        this._tabsSelect.addEventListener("mousedown", consumeEvent, false);
+
+        this._dropDownMenu = new WebInspector.DropDownMenu();
+        this._dropDownMenu.addEventListener(WebInspector.DropDownMenu.Events.ItemSelected, this._dropDownMenuItemSelected, this);
+        dropDownButton.appendChild(this._dropDownMenu.element);
+
         return dropDownContainer;
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _dropDownMenuItemSelected: function(event)
+    {
+        var tabId = /** @type {string} */ (event.data);
+        this.selectTab(tabId, true);
     },
 
     _totalWidth: function()
@@ -477,7 +488,8 @@ WebInspector.TabbedPane.prototype = {
         if (this._dropDownButton.parentElement)
             this._headerContentsElement.removeChild(this._dropDownButton);
 
-        this._tabsSelect.removeChildren();
+        this._dropDownMenu.clear();
+
         var tabsToShow = [];
         for (var i = 0; i < this._tabs.length; ++i) {
             if (!this._tabs[i]._shown)
@@ -492,25 +504,17 @@ WebInspector.TabbedPane.prototype = {
         if (!this._retainTabOrder)
             tabsToShow.sort(compareFunction);
 
-        var selectedIndex = -1;
+        var selectedId = null;
         for (var i = 0; i < tabsToShow.length; ++i) {
-            var option = new Option(tabsToShow[i].title);
-            option.tab = tabsToShow[i];
-            this._tabsSelect.appendChild(option);
-            if (this._tabsHistory[0] === tabsToShow[i])
-                selectedIndex = i;
+            var tab = tabsToShow[i];
+            this._dropDownMenu.addItem(tab.id, tab.title);
+            if (this._tabsHistory[0] === tab)
+                selectedId = tab.id;
         }
-        if (this._tabsSelect.options.length) {
+        if (tabsToShow.length) {
             this._headerContentsElement.appendChild(this._dropDownButton);
-            this._tabsSelect.selectedIndex = selectedIndex;
+            this._dropDownMenu.selectItem(selectedId);
         }
-    },
-
-    _tabsSelectChanged: function()
-    {
-        var options = this._tabsSelect.options;
-        var selectedOption = options[this._tabsSelect.selectedIndex];
-        this.selectTab(selectedOption.tab.id, true);
     },
 
     _measureDropDownButton: function()
