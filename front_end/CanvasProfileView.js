@@ -972,7 +972,7 @@ WebInspector.CanvasDispatcher.prototype = {
  */
 WebInspector.CanvasProfileHeader = function(type, traceLogId, frameId)
 {
-    WebInspector.ProfileHeader.call(this, type, WebInspector.UIString("Trace Log %d", traceLogId));
+    WebInspector.ProfileHeader.call(this, type, WebInspector.UIString("Trace Log %d", type._nextProfileUid));
     /** @type {!CanvasAgent.TraceLogId} */
     this._traceLogId = traceLogId || "";
     this._frameId = frameId;
