@@ -156,10 +156,6 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     {
     },
 
-    recordSettingChanged: function(settingCode)
-    {
-    },
-
     requestFileSystems: function()
     {
     },

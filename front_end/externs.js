@@ -231,7 +231,6 @@ InspectorFrontendHostAPI.prototype.platform = function() {}
 InspectorFrontendHostAPI.prototype.port = function() {}
 InspectorFrontendHostAPI.prototype.recordActionTaken = function(actionCode) {}
 InspectorFrontendHostAPI.prototype.recordPanelShown = function(panelCode) {}
-InspectorFrontendHostAPI.prototype.recordSettingChanged = function(settingCode) {}
 InspectorFrontendHostAPI.prototype.sendMessageToBackend = function(message) {}
 InspectorFrontendHostAPI.prototype.sendMessageToEmbedder = function(message) {}
 InspectorFrontendHostAPI.prototype.setInjectedScriptForOrigin = function(origin, script) {}

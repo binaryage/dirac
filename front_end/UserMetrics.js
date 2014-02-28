@@ -37,19 +37,6 @@ WebInspector.UserMetrics = function()
         var actionCode = WebInspector.UserMetrics._ActionCodes[actionName];
         this[actionName] = new WebInspector.UserMetrics._Recorder(actionCode);
     }
-
-    function settingChanged(trueCode, falseCode, event)
-    {
-        if (event.data)
-            InspectorFrontendHost.recordSettingChanged(trueCode);
-        else
-            InspectorFrontendHost.recordSettingChanged(falseCode);
-    }
-
-    WebInspector.settings.domWordWrap.addChangeListener(settingChanged.bind(this, WebInspector.UserMetrics._SettingCodes.ElementsDOMWrapOn, WebInspector.UserMetrics._SettingCodes.ElementsDOMWrapOff));
-    WebInspector.settings.monitoringXHREnabled.addChangeListener(settingChanged.bind(this, WebInspector.UserMetrics._SettingCodes.ConsoleMonitorXHROn, WebInspector.UserMetrics._SettingCodes.ConsoleMonitorXHROff));
-    WebInspector.settings.preserveConsoleLog.addChangeListener(settingChanged.bind(this, WebInspector.UserMetrics._SettingCodes.ConsolePreserveLogOn, WebInspector.UserMetrics._SettingCodes.ConsolePreserveLogOff));
-    WebInspector.settings.resourcesLargeRows.addChangeListener(settingChanged.bind(this, WebInspector.UserMetrics._SettingCodes.NetworkShowLargeRowsOn, WebInspector.UserMetrics._SettingCodes.NetworkShowLargeRowsOff));
 }
 
 // Codes below are used to collect UMA histograms in the Chromium port.
@@ -65,17 +52,6 @@ WebInspector.UserMetrics._ActionCodes = {
     ProfilesHeapProfileTaken: 6,
     AuditsStarted: 7,
     ConsoleEvaluated: 8
-}
-
-WebInspector.UserMetrics._SettingCodes = {
-    ElementsDOMWrapOn: 1,
-    ElementsDOMWrapOff: 2,
-    ConsoleMonitorXHROn: 3,
-    ConsoleMonitorXHROff: 4,
-    ConsolePreserveLogOn: 5,
-    ConsolePreserveLogOff: 6,
-    NetworkShowLargeRowsOn: 7,
-    NetworkShowLargeRowsOff: 8
 }
 
 WebInspector.UserMetrics._PanelCodes = {
