@@ -420,7 +420,7 @@ WebInspector.NavigatorTreeOutline._treeElementsCompare = function compare(treeEl
     {
         var type = treeElement.type();
         if (type === WebInspector.NavigatorTreeOutline.Types.Domain) {
-            if (treeElement.titleText === WebInspector.inspectedPageDomain)
+            if (treeElement.titleText === WebInspector.inspectedPageDomain())
                 return 1;
             return 2;
         }

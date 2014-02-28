@@ -319,9 +319,9 @@ WebInspector.showPanel = function(panel)
 }
 
 /**
- * @type {string} 
+ * @return {string}
  */
-WebInspector.inspectedPageDomain;
+WebInspector.inspectedPageDomain = function() {};
 
 WebInspector.SourceJavaScriptTokenizer = {}
 WebInspector.SourceJavaScriptTokenizer.Keywords = {}

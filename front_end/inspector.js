@@ -187,7 +187,7 @@ var WebInspector = {
         WebInspector.inspectorView.setErrorAndWarningCounts(errors, warnings);
     },
 
-    get inspectedPageDomain()
+    inspectedPageDomain: function()
     {
         var parsedURL = WebInspector.inspectedPageURL && WebInspector.inspectedPageURL.asParsedURL();
         return parsedURL ? parsedURL.host : "";

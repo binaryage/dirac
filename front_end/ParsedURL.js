@@ -232,7 +232,7 @@ WebInspector.ParsedURL.prototype = {
         if (!this._displayName && this.host)
             this._displayName = this.host + "/";
         if (!this._displayName && this.url)
-            this._displayName = this.url.trimURL(WebInspector.inspectedPageDomain ? WebInspector.inspectedPageDomain : "");
+            this._displayName = this.url.trimURL(WebInspector.inspectedPageDomain() ? WebInspector.inspectedPageDomain() : "");
         if (this._displayName === "/")
             this._displayName = this.url;
         return this._displayName;
