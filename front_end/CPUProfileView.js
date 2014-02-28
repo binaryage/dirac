@@ -825,7 +825,7 @@ WebInspector.CPUProfileHeader.prototype = {
     onTransferStarted: function()
     {
         this._jsonifiedProfile = "";
-        this.updateStatus(WebInspector.UIString("Loading\u2026 %s", Number.bytesToString(this._jsonifiedProfile.length)));
+        this.updateStatus(WebInspector.UIString("Loading\u2026 %s", Number.bytesToString(this._jsonifiedProfile.length)), true);
     },
 
     /**
@@ -838,10 +838,10 @@ WebInspector.CPUProfileHeader.prototype = {
 
     onTransferFinished: function()
     {
-        this.updateStatus(WebInspector.UIString("Parsing\u2026"));
+        this.updateStatus(WebInspector.UIString("Parsing\u2026"), true);
         this._profile = JSON.parse(this._jsonifiedProfile);
         this._jsonifiedProfile = null;
-        this.updateStatus(WebInspector.UIString("Loaded"));
+        this.updateStatus(WebInspector.UIString("Loaded"), false);
 
         if (this._profileType._profileBeingRecorded === this)
             this._profileType._profileBeingRecorded = null;
