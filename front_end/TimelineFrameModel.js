@@ -167,7 +167,7 @@ WebInspector.TimelineFrameModel.prototype = {
         if (!this._aggregatedMainThreadWork)
             return;
 
-        WebInspector.TimelineModel.aggregateTimeForRecord(this._aggregatedMainThreadWork, record);
+        WebInspector.TimelineUIUtils.aggregateTimeForRecord(this._aggregatedMainThreadWork, record);
         if (programRecord.children[0] === record)
             this._deriveOtherTime(programRecord, this._aggregatedMainThreadWork);
 
@@ -270,7 +270,7 @@ WebInspector.FrameStatistics = function(frames)
         sumOfSquares += duration * duration;
         this.minDuration = Math.min(this.minDuration, duration);
         this.maxDuration = Math.max(this.maxDuration, duration);
-        WebInspector.TimelineModel.aggregateTimeByCategory(this.timeByCategory, frames[i].timeByCategory);
+        WebInspector.TimelineUIUtils.aggregateTimeByCategory(this.timeByCategory, frames[i].timeByCategory);
     }
     this.average = totalDuration / this.frameCount;
     var variance = sumOfSquares / this.frameCount - this.average * this.average;
@@ -309,7 +309,7 @@ WebInspector.TimelineFrame.prototype = {
     {
         if (!record.endTime)
             return;
-        WebInspector.TimelineModel.aggregateTimeForRecord(this.timeByCategory, record);
+        WebInspector.TimelineUIUtils.aggregateTimeForRecord(this.timeByCategory, record);
         this._updateCpuTime();
     },
 
@@ -318,7 +318,7 @@ WebInspector.TimelineFrame.prototype = {
      */
     _addTimeForCategories: function(timeByCategory)
     {
-        WebInspector.TimelineModel.aggregateTimeByCategory(this.timeByCategory, timeByCategory);
+        WebInspector.TimelineUIUtils.aggregateTimeByCategory(this.timeByCategory, timeByCategory);
         this._updateCpuTime();
     },
 

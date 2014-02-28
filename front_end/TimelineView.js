@@ -131,7 +131,7 @@ WebInspector.TimelineView.prototype = {
             var dividerPosition = Math.round(positions.left);
             if (dividerPosition < 0 || dividerPosition >= clientWidth || dividers[dividerPosition])
                 continue;
-            var divider = WebInspector.TimelinePresentationModel.createEventDivider(record.type, this._presentationModel.title(record));
+            var divider = WebInspector.TimelineUIUtils.createEventDivider(record.type, WebInspector.TimelineUIUtils.recordTitle(this._presentationModel, record));
             divider.style.left = dividerPosition + "px";
             dividers[dividerPosition] = divider;
         }
@@ -174,7 +174,7 @@ WebInspector.TimelineView.prototype = {
             this._frameContainer.appendChild(frameStrip);
 
             if (actualStart > 0) {
-                var frameMarker = WebInspector.TimelinePresentationModel.createEventDivider(WebInspector.TimelineModel.RecordType.BeginFrame);
+                var frameMarker = WebInspector.TimelineUIUtils.createEventDivider(WebInspector.TimelineModel.RecordType.BeginFrame);
                 frameMarker.style.left = frameStart + "px";
                 dividers.push(frameMarker);
             }
@@ -797,12 +797,12 @@ WebInspector.TimelineView.prototype = {
     {
         if (anchor.classList.contains("timeline-frame-strip")) {
             var frame = anchor._frame;
-            popover.show(WebInspector.TimelinePresentationModel.generatePopupContentForFrame(frame), anchor);
+            popover.show(WebInspector.TimelineUIUtils.generatePopupContentForFrame(frame), anchor);
         } else {
             if (anchor.row && anchor.row._record)
                 anchor.row._record.generatePopupContent(showCallback);
             else if (anchor._tasksInfo)
-                popover.show(this._presentationModel.generateMainThreadBarPopupContent(anchor._tasksInfo), anchor, null, null, WebInspector.Popover.Orientation.Bottom);
+                popover.show(WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent(this._presentationModel, anchor._tasksInfo), anchor, null, null, WebInspector.Popover.Orientation.Bottom);
         }
 
         function showCallback(popupContent)
@@ -819,9 +819,9 @@ WebInspector.TimelineView.prototype = {
     _injectCategoryStyles: function()
     {
         var style = document.createElement("style");
-        var categories = WebInspector.TimelinePresentationModel.categories();
+        var categories = WebInspector.TimelineUIUtils.categories();
 
-        style.textContent = Object.values(categories).map(WebInspector.TimelinePresentationModel.createStyleRuleForCategory).join("\n");
+        style.textContent = Object.values(categories).map(WebInspector.TimelineUIUtils.createStyleRuleForCategory).join("\n");
         document.head.appendChild(style);
     },
 

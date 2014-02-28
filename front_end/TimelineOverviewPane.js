@@ -110,7 +110,7 @@ WebInspector.TimelineOverviewPane.prototype = {
             var dividerPosition = Math.round(positions.start * 10);
             if (dividers[dividerPosition])
                 continue;
-            var divider = WebInspector.TimelinePresentationModel.createEventDivider(record.type);
+            var divider = WebInspector.TimelineUIUtils.createEventDivider(record.type);
             divider.style.left = positions.start + "%";
             dividers[dividerPosition] = divider;
         }
@@ -125,7 +125,7 @@ WebInspector.TimelineOverviewPane.prototype = {
         var eventDividers = this._eventDividers;
         function addEventDividers(record)
         {
-            if (WebInspector.TimelinePresentationModel.isEventDivider(record))
+            if (WebInspector.TimelineUIUtils.isEventDivider(record))
                 eventDividers.push(record);
         }
         WebInspector.TimelinePresentationModel.forAllRecords([record], addEventDividers);

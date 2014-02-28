@@ -40,13 +40,13 @@ WebInspector.TimelineEventOverview = function(model)
     this.element.id = "timeline-overview-events";
 
     this._fillStyles = {};
-    var categories = WebInspector.TimelinePresentationModel.categories();
+    var categories = WebInspector.TimelineUIUtils.categories();
     for (var category in categories) {
-        this._fillStyles[category] = WebInspector.TimelinePresentationModel.createFillStyleForCategory(this._context, 0, WebInspector.TimelineEventOverview._stripGradientHeight, categories[category]);
+        this._fillStyles[category] = WebInspector.TimelineUIUtils.createFillStyleForCategory(this._context, 0, WebInspector.TimelineEventOverview._stripGradientHeight, categories[category]);
         categories[category].addEventListener(WebInspector.TimelineCategory.Events.VisibilityChanged, this._onCategoryVisibilityChanged, this);
     }
 
-    this._disabledCategoryFillStyle = WebInspector.TimelinePresentationModel.createFillStyle(this._context, 0, WebInspector.TimelineEventOverview._stripGradientHeight,
+    this._disabledCategoryFillStyle = WebInspector.TimelineUIUtils.createFillStyle(this._context, 0, WebInspector.TimelineEventOverview._stripGradientHeight,
         "rgb(218, 218, 218)", "rgb(170, 170, 170)", "rgb(143, 143, 143)");
 
     this._disabledCategoryBorderStyle = "rgb(143, 143, 143)";
@@ -83,7 +83,7 @@ WebInspector.TimelineEventOverview.prototype = {
                 return;
             var recordStart = Math.floor((record.startTime - timeOffset) * scale);
             var recordEnd = Math.ceil((record.endTime - timeOffset) * scale);
-            var category = WebInspector.TimelinePresentationModel.categoryForRecord(record);
+            var category = WebInspector.TimelineUIUtils.categoryForRecord(record);
             if (category.overviewStripGroupIndex < 0)
                 return;
             var bar = lastBarByGroup[category.overviewStripGroupIndex];

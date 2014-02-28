@@ -115,33 +115,6 @@ WebInspector.TimelineModel.Events = {
     RecordingStopped: "RecordingStopped"
 }
 
-/**
- * @param {!Object} total
- * @param {!TimelineAgent.TimelineEvent} rawRecord
- */
-WebInspector.TimelineModel.aggregateTimeForRecord = function(total, rawRecord)
-{
-    var childrenTime = 0;
-    var children = rawRecord["children"] || [];
-    for (var i = 0; i < children.length; ++i) {
-        WebInspector.TimelineModel.aggregateTimeForRecord(total, children[i]);
-        childrenTime += children[i].endTime - children[i].startTime;
-    }
-    var categoryName = WebInspector.TimelinePresentationModel.recordStyle(rawRecord).category.name;
-    var ownTime = rawRecord.endTime - rawRecord.startTime - childrenTime;
-    total[categoryName] = (total[categoryName] || 0) + ownTime;
-}
-
-/**
- * @param {!Object} total
- * @param {!Object} addend
- */
-WebInspector.TimelineModel.aggregateTimeByCategory = function(total, addend)
-{
-    for (var category in addend)
-        total[category] = (total[category] || 0) + addend[category];
-}
-
 WebInspector.TimelineModel.prototype = {
     /**
      * @param {boolean=} includeCounters

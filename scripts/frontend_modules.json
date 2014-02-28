@@ -304,6 +304,7 @@
             "TimelineFlameChart.js",
             "TimelinePanel.js",
             "TimelinePresentationModel.js",
+            "TimelineUIUtils.js",
             "TimelineView.js"
         ]
     },

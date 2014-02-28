@@ -40,6 +40,7 @@ importScript("TimelineEventOverview.js");
 importScript("TimelineFrameOverview.js");
 importScript("TimelineMemoryOverview.js");
 importScript("TimelineFlameChart.js");
+importScript("TimelineUIUtils.js");
 importScript("TimelineView.js");
 
 /**
@@ -339,7 +340,7 @@ WebInspector.TimelinePanel.prototype = {
 
         this._filters._categoryFiltersUI = {};
         var categoryTypes = [];
-        var categories = WebInspector.TimelinePresentationModel.categories();
+        var categories = WebInspector.TimelineUIUtils.categories();
         for (var categoryName in categories) {
             var category = categories[categoryName];
             if (category.overviewStripGroupIndex < 0)
@@ -382,7 +383,7 @@ WebInspector.TimelinePanel.prototype = {
 
     _categoriesFilterChanged: function(name, event)
     {
-        var categories = WebInspector.TimelinePresentationModel.categories();
+        var categories = WebInspector.TimelineUIUtils.categories();
         categories[name].hidden = !this._filters._categoryFiltersUI[name].checked();
         this._refreshViews();
     },
@@ -785,7 +786,7 @@ WebInspector.TimelinePanel.prototype = {
                 childrenTime += Math.min(endTime, child.endTime) - Math.max(startTime, child.startTime);
                 aggregateTimeForRecordWithinWindow(child);
             }
-            var categoryName = WebInspector.TimelinePresentationModel.categoryForRecord(rawRecord).name;
+            var categoryName = WebInspector.TimelineUIUtils.categoryForRecord(rawRecord).name;
             var ownTime = Math.min(endTime, rawRecord.endTime) - Math.max(startTime, rawRecord.startTime) - childrenTime;
             aggregatedStats[categoryName] = (aggregatedStats[categoryName] || 0) + ownTime;
         }
@@ -805,7 +806,7 @@ WebInspector.TimelinePanel.prototype = {
         aggregatedStats["idle"] = Math.max(0, endTime - startTime - aggregatedTotal);
 
         var fragment = document.createDocumentFragment();
-        fragment.appendChild(WebInspector.TimelinePresentationModel.generatePieChart(aggregatedStats));
+        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats));
         var startOffset = startTime - this._model.minimumRecordTime();
         var endOffset = endTime - this._model.minimumRecordTime();
         var title = WebInspector.UIString("%s \u2013 %s", Number.millisToString(startOffset), Number.millisToString(endOffset));

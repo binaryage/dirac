@@ -313,6 +313,7 @@
             'front_end/TimelineFlameChart.js',
             'front_end/TimelineFrameOverview.js',
             'front_end/TimelineMemoryOverview.js',
+            'front_end/TimelineUIUtils.js',
             'front_end/TimelineView.js',
             'front_end/TimelinePanel.js',
         ],
