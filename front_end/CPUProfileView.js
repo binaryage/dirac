@@ -1241,6 +1241,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         this._maxStackDepth = Math.max(maxDepth, depth);
 
         this._timelineData = {
+            colorEntryIndexes: colorEntryIndexes,
             entryColorIndexes: entryColorIndexes,
             entryLevels: entryLevels,
             entryTotalTimes: entryTotalTimes,
