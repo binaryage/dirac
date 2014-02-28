@@ -116,7 +116,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     reset: function()
     {
         this._linkifier.reset();
-        this._rootRecord = new WebInspector.TimelinePresentationModel.Record(this, { type: WebInspector.TimelineModel.RecordType.Root }, null, null);
+        this._rootRecord = new WebInspector.TimelinePresentationModel.Record(this, { type: WebInspector.TimelineModel.RecordType.Root }, null);
         this._sendRequestRecords = {};
         this._timerRecords = {};
         this._requestAnimationFrameRecords = {};
@@ -210,22 +210,20 @@ WebInspector.TimelinePresentationModel.prototype = {
     {
         const recordTypes = WebInspector.TimelineModel.RecordType;
 
-        var origin;
+        var origin = parentRecord;
         var coalescingBucket;
 
         // On main thread, only coalesce if the last event is of same type.
         if (parentRecord === this._rootRecord)
             coalescingBucket = record.thread ? record.type : "mainThread";
         var coalescedRecord = this._findCoalescedParent(record, parentRecord, coalescingBucket);
-        if (coalescedRecord) {
-            origin = parentRecord;
+        if (coalescedRecord)
             parentRecord = coalescedRecord;
-        }
 
         if (WebInspector.TimelineUIUtils.isEventDivider(record))
             this._eventDividerRecords.push(record);
 
-        var formattedRecord = new WebInspector.TimelinePresentationModel.Record(this, record, parentRecord, origin);
+        var formattedRecord = new WebInspector.TimelinePresentationModel.Record(this, record, parentRecord);
         if (record.type in WebInspector.TimelinePresentationModel._hiddenRecords) {
             parentRecord.children.pop();
             return null;
@@ -241,29 +239,9 @@ WebInspector.TimelinePresentationModel.prototype = {
         formattedRecord.calculateAggregatedStats();
         if (parentRecord.coalesced)
             this._updateCoalescingParent(formattedRecord);
-        else if (origin)
-            this._updateAncestorStats(formattedRecord);
 
-        origin = formattedRecord.origin();
-        if (!origin.isRoot() && !origin.coalesced)
-            origin.selfTime -= formattedRecord.endTime - formattedRecord.startTime;
+        origin._selfTime -= formattedRecord.endTime - formattedRecord.startTime;
         return formattedRecord;
-    },
-
-    /**
-     * @param {!WebInspector.TimelinePresentationModel.Record} record
-     */
-    _updateAncestorStats: function(record)
-    {
-        var lastChildEndTime = record.lastChildEndTime;
-        var aggregatedStats = record.aggregatedStats;
-        for (var currentRecord = record.parent; currentRecord && !currentRecord.isRoot(); currentRecord = currentRecord.parent) {
-            currentRecord._cpuTime += record._cpuTime;
-            if (currentRecord.lastChildEndTime < lastChildEndTime)
-                currentRecord.lastChildEndTime = lastChildEndTime;
-            for (var category in aggregatedStats)
-                currentRecord.aggregatedStats[category] += aggregatedStats[category];
-        }
     },
 
     /**
@@ -313,7 +291,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp)
             rawRecord.data.message = record.data.message;
 
-        var coalescedRecord = new WebInspector.TimelinePresentationModel.Record(this, rawRecord, null, null);
+        var coalescedRecord = new WebInspector.TimelinePresentationModel.Record(this, rawRecord, null);
         var parent = record.parent;
 
         coalescedRecord.coalesced = true;
@@ -440,9 +418,8 @@ WebInspector.TimelinePresentationModel.prototype = {
  * @param {!WebInspector.TimelinePresentationModel} presentationModel
  * @param {!Object} record
  * @param {?WebInspector.TimelinePresentationModel.Record} parentRecord
- * @param {?WebInspector.TimelinePresentationModel.Record} origin
  */
-WebInspector.TimelinePresentationModel.Record = function(presentationModel, record, parentRecord, origin)
+WebInspector.TimelinePresentationModel.Record = function(presentationModel, record, parentRecord)
 {
     this._presentationModel = presentationModel;
     this._linkifier = presentationModel._linkifier;
@@ -453,8 +430,6 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
         this.parent = parentRecord;
         parentRecord.children.push(this);
     }
-    if (origin)
-        this._origin = origin;
 
     this._selfTime = this.endTime - this.startTime;
     this._lastChildEndTime = this.endTime;
@@ -617,11 +592,6 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
         return this.coalesced ? this._lastChildEndTime - this.startTime : this._selfTime;
     },
 
-    set selfTime(time)
-    {
-        this._selfTime = time;
-    },
-
     get cpuTime()
     {
         return this._cpuTime;
@@ -633,14 +603,6 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     isRoot: function()
     {
         return this.type === WebInspector.TimelineModel.RecordType.Root;
-    },
-
-    /**
-     * @return {!WebInspector.TimelinePresentationModel.Record}
-     */
-    origin: function()
-    {
-        return this._origin || this.parent;
     },
 
     /**
