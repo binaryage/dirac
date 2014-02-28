@@ -116,7 +116,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     reset: function()
     {
         this._linkifier.reset();
-        this._rootRecord = new WebInspector.TimelinePresentationModel.Record(this, { type: WebInspector.TimelineModel.RecordType.Root }, null, null, null);
+        this._rootRecord = new WebInspector.TimelinePresentationModel.Record(this, { type: WebInspector.TimelineModel.RecordType.Root }, null, null);
         this._sendRequestRecords = {};
         this._timerRecords = {};
         this._requestAnimationFrameRecords = {};
@@ -218,35 +218,14 @@ WebInspector.TimelinePresentationModel.prototype = {
             coalescingBucket = record.thread ? record.type : "mainThread";
         var coalescedRecord = this._findCoalescedParent(record, parentRecord, coalescingBucket);
         if (coalescedRecord) {
-            if (!origin)
-                origin = parentRecord;
+            origin = parentRecord;
             parentRecord = coalescedRecord;
-        }
-
-        var children = record.children || [];
-        var scriptDetails = null;
-        if (record.data && record.data["scriptName"]) {
-            scriptDetails = {
-                scriptName: record.data["scriptName"],
-                scriptLine: record.data["scriptLine"]
-            }
-        };
-
-        if ((record.type === recordTypes.TimerFire || record.type === recordTypes.FireAnimationFrame) && children && children.length) {
-            var childRecord = children[0];
-            if (childRecord.type === recordTypes.FunctionCall) {
-                scriptDetails = {
-                    scriptName: childRecord.data["scriptName"],
-                    scriptLine: childRecord.data["scriptLine"]
-                };
-                children = childRecord.children.concat(children.slice(1));
-            }
         }
 
         if (WebInspector.TimelineUIUtils.isEventDivider(record))
             this._eventDividerRecords.push(record);
 
-        var formattedRecord = new WebInspector.TimelinePresentationModel.Record(this, record, parentRecord, origin, scriptDetails);
+        var formattedRecord = new WebInspector.TimelinePresentationModel.Record(this, record, parentRecord, origin);
         if (record.type in WebInspector.TimelinePresentationModel._hiddenRecords) {
             parentRecord.children.pop();
             return null;
@@ -256,8 +235,8 @@ WebInspector.TimelinePresentationModel.prototype = {
         if (coalescingBucket)
             this._coalescingBuckets[coalescingBucket] = formattedRecord;
 
-        for (var i = 0; i < children.length; ++i)
-            this._innerAddRecord(formattedRecord, children[i]);
+        for (var i = 0; record.children && i < record.children.length; ++i)
+            this._innerAddRecord(formattedRecord, record.children[i]);
 
         formattedRecord.calculateAggregatedStats();
         if (parentRecord.coalesced)
@@ -334,7 +313,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp)
             rawRecord.data.message = record.data.message;
 
-        var coalescedRecord = new WebInspector.TimelinePresentationModel.Record(this, rawRecord, null, null, null);
+        var coalescedRecord = new WebInspector.TimelinePresentationModel.Record(this, rawRecord, null, null);
         var parent = record.parent;
 
         coalescedRecord.coalesced = true;
@@ -462,9 +441,8 @@ WebInspector.TimelinePresentationModel.prototype = {
  * @param {!Object} record
  * @param {?WebInspector.TimelinePresentationModel.Record} parentRecord
  * @param {?WebInspector.TimelinePresentationModel.Record} origin
- * @param {?Object} scriptDetails
  */
-WebInspector.TimelinePresentationModel.Record = function(presentationModel, record, parentRecord, origin, scriptDetails)
+WebInspector.TimelinePresentationModel.Record = function(presentationModel, record, parentRecord, origin)
 {
     this._presentationModel = presentationModel;
     this._linkifier = presentationModel._linkifier;
@@ -489,11 +467,12 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
             this._relatedBackendNodeId = record.data["rootNode"];
         else if (record.data["elementId"])
             this._relatedBackendNodeId = record.data["elementId"];
+        if (record.data["scriptName"]) {
+            this.scriptName = record.data["scriptName"];
+            this.scriptLine = record.data["scriptLine"];
+        }
     }
-    if (scriptDetails) {
-        this.scriptName = scriptDetails.scriptName;
-        this.scriptLine = scriptDetails.scriptLine;
-    }
+
     if (parentRecord && parentRecord.callSiteStackTrace)
         this.callSiteStackTrace = parentRecord.callSiteStackTrace;
 
