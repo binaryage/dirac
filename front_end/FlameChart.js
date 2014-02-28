@@ -362,7 +362,7 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
     {
         var colorData = {index: this._currentColorIndex++, color: color};
         this._colors[id] = colorData;
-        this._colorIndexes[color.index] = colorData;
+        this._colorIndexes[colorData.index] = colorData;
     },
 
     /**
