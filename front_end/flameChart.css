@@ -41,3 +41,10 @@
 .chart-container .entry-info .title {
     font-weight: bold;
 }
+
+.flame-chart-highlight-element {
+    background-color: black;
+    position: absolute;
+    opacity: 0.2;
+    pointer-events: none;
+}

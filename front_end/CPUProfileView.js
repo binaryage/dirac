@@ -1037,9 +1037,9 @@ WebInspector.CPUProfileView.colorGenerator = function()
 {
     if (!WebInspector.CPUProfileView._colorGenerator) {
         var colorGenerator = new WebInspector.FlameChart.ColorGenerator();
-        colorGenerator.colorPairForID("(idle)::0", 50);
-        colorGenerator.colorPairForID("(program)::0", 50);
-        colorGenerator.colorPairForID("(garbage collector)::0", 50);
+        colorGenerator.colorForID("(idle)::0", 50);
+        colorGenerator.colorForID("(program)::0", 50);
+        colorGenerator.colorForID("(garbage collector)::0", 50);
         WebInspector.CPUProfileView._colorGenerator = colorGenerator;
     }
     return WebInspector.CPUProfileView._colorGenerator;
@@ -1131,15 +1131,15 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
         /**
          * @constructor
-         * @param {!Object} colorPair
+         * @param {!Object} color
          * @param {!number} depth
          * @param {!number} duration
          * @param {!number} startTime
          * @param {!Object} node
          */
-        function ChartEntry(colorPair, depth, duration, startTime, node)
+        function ChartEntry(color, depth, duration, startTime, node)
         {
-            this.colorPair = colorPair;
+            this.color = color;
             this.depth = depth;
             this.duration = duration;
             this.startTime = startTime;
@@ -1191,12 +1191,12 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
             var colorGenerator = this._colorGenerator;
             while (node) {
-                var colorPair = colorGenerator.colorPairForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
-                var indexesForColor = colorEntryIndexes[colorPair.index];
+                var color = colorGenerator.colorForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
+                var indexesForColor = colorEntryIndexes[color.index];
                 if (!indexesForColor)
-                    indexesForColor = colorEntryIndexes[colorPair.index] = [];
+                    indexesForColor = colorEntryIndexes[color.index] = [];
 
-                var entry = new ChartEntry(colorPair, depth, samplingInterval, sampleIndex * samplingInterval, node);
+                var entry = new ChartEntry(color, depth, samplingInterval, sampleIndex * samplingInterval, node);
                 indexesForColor.push(entries.length);
                 entries.push(entry);
                 openIntervals.push({node: node, index: index});
@@ -1220,7 +1220,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         for (var i = 0; i < entries.length; ++i) {
             var entry = entries[i];
             entryNodes[i] = entry.node;
-            entryColorIndexes[i] = colorPair.index;
+            entryColorIndexes[i] = color.index;
             entryLevels[i] = entry.depth;
             entryTotalTimes[i] = entry.duration;
             entrySelfTimes[i] = entry.selfTime;

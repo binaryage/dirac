@@ -45,7 +45,7 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel, mainTh
     this._colorGenerator = new WebInspector.FlameChart.ColorGenerator();
     var categories = WebInspector.TimelinePresentationModel.categories();
     for (var category in categories)
-        this._colorGenerator.setColorPairForID(category, categories[category].fillColorStop0, categories[category].fillColorStop1);
+        this._colorGenerator.setColorForID(category, categories[category].fillColorStop1);
 }
 
 WebInspector.TimelineFlameChartDataProvider.prototype = {
@@ -172,10 +172,10 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         timelineData.entryTotalTimes[index] = endTime - record.startTime;
         timelineData.entryDeoptFlags[index] = 0;
 
-        var colorPair = this._colorGenerator.colorPairForID(WebInspector.TimelinePresentationModel.categoryForRecord(record).name);
-        var indexesForColor = timelineData.colorEntryIndexes[colorPair.index];
+        var color = this._colorGenerator.colorForID(WebInspector.TimelinePresentationModel.categoryForRecord(record).name);
+        var indexesForColor = timelineData.colorEntryIndexes[color.index];
         if (!indexesForColor)
-            indexesForColor = timelineData.colorEntryIndexes[colorPair.index] = [];
+            indexesForColor = timelineData.colorEntryIndexes[color.index] = [];
         indexesForColor.push(index);
 
         this._maxStackDepth = Math.max(this._maxStackDepth, depth + 1);

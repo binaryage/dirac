@@ -348,7 +348,7 @@ WebInspector.FlameChart.Events = {
  */
 WebInspector.FlameChart.ColorGenerator = function()
 {
-    this._colorPairs = {};
+    this._colors = {};
     this._colorIndexes = [];
     this._currentColorIndex = 0;
 }
@@ -356,14 +356,13 @@ WebInspector.FlameChart.ColorGenerator = function()
 WebInspector.FlameChart.ColorGenerator.prototype = {
     /**
      * @param {string} id
-     * @param {string|!CanvasGradient} highlighted
-     * @param {string|!CanvasGradient} normal
+     * @param {string|!CanvasGradient} color
      */
-    setColorPairForID: function(id, highlighted, normal)
+    setColorForID: function(id, color)
     {
-        var colorPair = {index: this._currentColorIndex++, highlighted: highlighted, normal: normal};
-        this._colorPairs[id] = colorPair;
-        this._colorIndexes[colorPair.index] = colorPair;
+        var colorData = {index: this._currentColorIndex++, color: color};
+        this._colors[id] = colorData;
+        this._colorIndexes[color.index] = colorData;
     },
 
     /**
@@ -371,23 +370,23 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
      * @param {number=} sat
      * @return {!Object}
      */
-    colorPairForID: function(id, sat)
+    colorForID: function(id, sat)
     {
         if (typeof sat !== "number")
             sat = 100;
-        var colorPairs = this._colorPairs;
-        var colorPair = colorPairs[id];
-        if (!colorPair) {
-            colorPairs[id] = colorPair = this._createPair(this._currentColorIndex++, sat);
-            this._colorIndexes[colorPair.index] = colorPair;
+        var colors = this._colors;
+        var color = colors[id];
+        if (!color) {
+            colors[id] = color = this._createColor(this._currentColorIndex++, sat);
+            this._colorIndexes[color.index] = color;
         }
-        return colorPair;
+        return color;
     },
 
     /**
      * @param {!number} index
      */
-    _colorPairForIndex: function(index)
+    _colorForIndex: function(index)
     {
         return this._colorIndexes[index];
     },
@@ -396,10 +395,10 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
      * @param {!number} index
      * @param {!number} sat
      */
-    _createPair: function(index, sat)
+    _createColor: function(index, sat)
     {
         var hue = (index * 7 + 12 * (index % 2)) % 360;
-        return {index: index, highlighted: "hsla(" + hue + ", " + sat + "%, 33%, 0.7)", normal: "hsla(" + hue + ", " + sat + "%, 66%, 0.7)"};
+        return {index: index, color: "hsla(" + hue + ", " + sat + "%, 66%, 0.7)"};
     }
 }
 
@@ -590,6 +589,7 @@ WebInspector.FlameChart.MainPane = function(dataProvider, timeRangeController, i
     WebInspector.installDragHandle(this._canvas, this._startCanvasDragging.bind(this), this._canvasDragging.bind(this), this._endCanvasDragging.bind(this), "move", null);
 
     this._entryInfo = this.element.createChild("div", "profile-entry-info");
+    this._highlightElement = this.element.createChild("div", "flame-chart-highlight-element");
 
     this._dataProvider = dataProvider;
 
@@ -599,6 +599,7 @@ WebInspector.FlameChart.MainPane = function(dataProvider, timeRangeController, i
     this._timeWindowLeft = 0;
     this._timeWindowRight = Infinity;
     this._barHeight = 15;
+    this._barHeightDelta = this._isTopDown ? -this._barHeight : this._barHeight;
     this._minWidth = 1;
     this._paddingLeft = 15;
     this._highlightedEntryIndex = -1;
@@ -700,7 +701,18 @@ WebInspector.FlameChart.MainPane.prototype = {
             this._canvas.style.cursor = "pointer";
 
         this._highlightedEntryIndex = entryIndex;
-        this._scheduleUpdate();
+
+        this._updateHighlightElement();
+        this._entryInfo.removeChildren();
+
+        if (this._highlightedEntryIndex === -1)
+            return;
+
+        if (!this._isDragging) {
+            var entryInfo = this._dataProvider.prepareHighlightedEntryInfo(this._highlightedEntryIndex);
+            if (entryInfo)
+                this._entryInfo.appendChild(this._buildEntryInfo(entryInfo));
+        }
     },
 
     _onClick: function()
@@ -761,7 +773,6 @@ WebInspector.FlameChart.MainPane.prototype = {
             return -1;
         var cursorTime = this._cursorTime(x);
         var cursorLevel = this._isTopDown ? Math.floor(y / this._barHeight - 1) : Math.floor((this._canvas.height / window.devicePixelRatio - y) / this._barHeight);
-
         var entryOffsets = timelineData.entryOffsets;
         var entryTotalTimes = timelineData.entryTotalTimes;
         var entryLevels = timelineData.entryLevels;
@@ -818,19 +829,18 @@ WebInspector.FlameChart.MainPane.prototype = {
         for (var i = 0; i < this._dataProvider.maxStackDepth(); ++i)
             marksField.push(new Uint16Array(width));
 
-        var barHeight = this._isTopDown ? -this._barHeight : this._barHeight;
         var barX = 0;
         var barWidth = 0;
         var barRight = 0;
         var barLevel = 0;
-        var bHeight = this._isTopDown ? WebInspector.FlameChart.DividersBarHeight : height - this._barHeight;
+        this._baseHeight = this._isTopDown ? WebInspector.FlameChart.DividersBarHeight : height - this._barHeight;
         context.strokeStyle = "black";
-        var colorPair;
+        var color;
         var entryIndex = 0;
         var entryOffset = 0;
         for (var colorIndex = 0; colorIndex < colorEntryIndexes.length; ++colorIndex) {
-            colorPair = colorGenerator._colorPairForIndex(colorIndex);
-            context.fillStyle = colorPair.normal;
+            color = colorGenerator._colorForIndex(colorIndex);
+            context.fillStyle = color.color;
             var indexes = colorEntryIndexes[colorIndex];
             if (!indexes)
                 continue;
@@ -840,29 +850,20 @@ WebInspector.FlameChart.MainPane.prototype = {
                 entryOffset = entryOffsets[entryIndex];
                 if (entryOffset > timeWindowRight)
                     break;
-                barX = Math.ceil(entryOffset * timeToPixel) - pixelWindowLeft + paddingLeft;
+                barX = this._offsetToPosition(entryOffset);
                 if (barX >= width)
                     continue;
-                barRight = Math.floor((entryOffset + entryTotalTimes[entryIndex]) * timeToPixel) - pixelWindowLeft + paddingLeft;
+                barRight = this._offsetToPosition(entryOffset + entryTotalTimes[entryIndex]);
                 if (barRight < 0)
                     continue;
                 barWidth = (barRight - barX) || minWidth;
                 barLevel = entryLevels[entryIndex];
                 var marksRow = marksField[barLevel];
-                if (barWidth <= marksRow[barX])
+                if (barWidth <= marksRow[barX]) // skip the bar if there is another bar here.
                     continue;
                 marksRow[barX] = barWidth;
-                if (entryIndex === this._highlightedEntryIndex) {
-                    context.fill();
-                    context.beginPath();
-                    context.fillStyle = colorPair.highlighted;
-                }
-                context.rect(barX, bHeight - barLevel * barHeight, barWidth, this._barHeight);
-                if (entryIndex === this._highlightedEntryIndex) {
-                    context.fill();
-                    context.beginPath();
-                    context.fillStyle = colorPair.normal;
-                }
+                var barY = this._levelToHeight(barLevel);
+                context.rect(barX, barY, barWidth, this._barHeight);
                 if (barWidth > minTextWidth)
                     titleIndexes[lastTitleIndex++] = entryIndex;
             }
@@ -877,7 +878,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         context.fillStyle = "#333";
         this._dotsWidth = context.measureText("\u2026").width;
 
-        var textBaseHeight = bHeight + this._barHeight - 4;
+        var textBaseHeight = this._baseHeight + this._barHeight - 4;
         for (var i = 0; i < lastTitleIndex; ++i) {
             entryIndex = titleIndexes[i];
             if (isBoldFontSelected) {
@@ -893,22 +894,48 @@ WebInspector.FlameChart.MainPane.prototype = {
             }
 
             entryOffset = entryOffsets[entryIndex];
-            barX = Math.floor(entryOffset * timeToPixel) - pixelWindowLeft + paddingLeft;
-            barRight = Math.ceil((entryOffset + entryTotalTimes[entryIndex]) * timeToPixel) - pixelWindowLeft + paddingLeft;
+            barX = this._offsetToPosition(entryOffset);
+            barRight = this._offsetToPosition(entryOffset + entryTotalTimes[entryIndex]);
             barWidth = (barRight - barX) || minWidth;
             var xText = Math.max(0, barX);
             var widthText = barWidth - textPaddingLeft + barX - xText;
             var title = this._prepareText(context, entryTitles[entryIndex], widthText);
             if (title)
-                context.fillText(title, xText + textPaddingLeft, textBaseHeight - entryLevels[entryIndex] * barHeight);
+                context.fillText(title, xText + textPaddingLeft, textBaseHeight - entryLevels[entryIndex] * this._barHeightDelta);
         }
 
-        this._entryInfo.removeChildren();
-        if (!this._isDragging) {
-            var entryInfo = this._dataProvider.prepareHighlightedEntryInfo(this._highlightedEntryIndex);
-            if (entryInfo)
-                this._entryInfo.appendChild(this._buildEntryInfo(entryInfo));
-        }
+        this._updateHighlightElement();
+    },
+
+    _updateHighlightElement: function()
+    {
+        if (this._highlightElement.parentElement)
+            this._highlightElement.remove();
+        var entryIndex = this._highlightedEntryIndex;
+        if (entryIndex === -1)
+            return;
+        var timelineData = this._timelineData();
+        var entryOffset = timelineData.entryOffsets[entryIndex];
+        var barX = this._offsetToPosition(entryOffset);
+        var barRight = this._offsetToPosition(entryOffset + timelineData.entryTotalTimes[entryIndex]);
+        var barWidth = (barRight - barX) || this._minWidth;
+
+        var style = this._highlightElement.style;
+        style.left = barX + "px";
+        style.width = barWidth + "px";
+        style.top = this._levelToHeight(timelineData.entryLevels[entryIndex]) + "px";
+        style.height = this._barHeight + "px";
+        this.element.appendChild(this._highlightElement);
+    },
+
+    _offsetToPosition: function(offset)
+    {
+        return Math.floor(offset * this._timeToPixel) - this._pixelWindowLeft + this._paddingLeft;
+    },
+
+    _levelToHeight: function(level)
+    {
+         return this._baseHeight - level * this._barHeightDelta;
     },
 
     _buildEntryInfo: function(entryInfo)
