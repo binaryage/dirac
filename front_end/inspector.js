@@ -887,4 +887,22 @@ WebInspector.addMainEventListeners = function(doc)
     doc.addEventListener("click", this.documentClick.bind(this), false);
 }
 
+WebInspector.fontFamily = function()
+{
+    if (WebInspector._fontFamily)
+        return WebInspector._fontFamily;
+    switch (WebInspector.platform()) {
+    case "linux":
+        this._fontFamily = "Ubuntu, Arial, sans-serif";
+        break;
+    case "mac":
+        this._fontFamily = "'Lucida Grande', sans-serif";
+        break;
+    case "windows":
+        this._fontFamily = "'Segoe UI', Tahoma, sans-serif";
+        break;
+    }
+    return WebInspector._fontFamily;
+}
+
 window.DEBUG = true;

@@ -108,16 +108,18 @@ WebInspector.FlameChartDataProvider = function()
 /** @typedef {!{
         entryLevels: !Array.<number>,
         entryTotalTimes: !Array.<number>,
-        entrySelfTimes: !Array.<number>,
         entryOffsets: !Array.<number>,
-        colorEntryIndexes: !Array.<number>,
-        entryTitles: !Array.<string>,
-        entryDeoptFlags: !Array.<number>
+        colorEntryIndexes: !Array.<number>
     }}
  */
 WebInspector.FlameChart.TimelineData;
 
 WebInspector.FlameChartDataProvider.prototype = {
+    /**
+     * @return {number}
+     */
+    barHeight: function() { },
+
     /**
      * @param {number} startTime
      * @param {number} endTime
@@ -166,7 +168,19 @@ WebInspector.FlameChartDataProvider.prototype = {
      * @param {number} entryIndex
      * @return {?Object}
      */
-    entryData: function(entryIndex) { }
+    entryData: function(entryIndex) { },
+
+    /**
+     * @param {number} entryIndex
+     * @return {?string}
+     */
+    entryTitle: function(entryIndex) { },
+
+    /**
+     * @param {number} entryIndex
+     * @return {?string}
+     */
+    entryFont: function(entryIndex) { },
 }
 
 /**
@@ -598,7 +612,7 @@ WebInspector.FlameChart.MainPane = function(dataProvider, timeRangeController, i
     this._windowWidth = 1.0;
     this._timeWindowLeft = 0;
     this._timeWindowRight = Infinity;
-    this._barHeight = 15;
+    this._barHeight = dataProvider.barHeight();
     this._barHeightDelta = this._isTopDown ? -this._barHeight : this._barHeight;
     this._minWidth = 1;
     this._paddingLeft = 15;
@@ -796,7 +810,6 @@ WebInspector.FlameChart.MainPane.prototype = {
         var timelineData = this._timelineData();
         if (!timelineData)
             return;
-
         var ratio = window.devicePixelRatio;
         this._canvas.width = width * ratio;
         this._canvas.height = height * ratio;
@@ -814,8 +827,6 @@ WebInspector.FlameChart.MainPane.prototype = {
         var entryOffsets = timelineData.entryOffsets;
         var entryLevels = timelineData.entryLevels;
         var colorEntryIndexes = timelineData.colorEntryIndexes;
-        var entryTitles = timelineData.entryTitles;
-        var entryDeoptFlags = timelineData.entryDeoptFlags;
 
         var colorGenerator = this._dataProvider.colorGenerator();
         var titleIndexes = new Uint32Array(timelineData.entryTotalTimes);
@@ -870,28 +881,21 @@ WebInspector.FlameChart.MainPane.prototype = {
             context.fill();
         }
 
-        var font = (this._barHeight - 4) + "px " + window.getComputedStyle(this.element, null).getPropertyValue("font-family");
-        var boldFont = "bold " + font;
-        var isBoldFontSelected = false;
-        context.font = font;
         context.textBaseline = "alphabetic";
         context.fillStyle = "#333";
         this._dotsWidth = context.measureText("\u2026").width;
 
         var textBaseHeight = this._baseHeight + this._barHeight - 4;
+        var lastUsedFont = "";
+        var font;
         for (var i = 0; i < lastTitleIndex; ++i) {
             entryIndex = titleIndexes[i];
-            if (isBoldFontSelected) {
-                if (!entryDeoptFlags[entryIndex]) {
-                    context.font = font;
-                    isBoldFontSelected = false;
-                }
-            } else {
-                if (entryDeoptFlags[entryIndex]) {
-                    context.font = boldFont;
-                    isBoldFontSelected = true;
-                }
-            }
+            var text = this._dataProvider.entryTitle(entryIndex);
+            if (!text || !text.length)
+                continue;
+            font = this._dataProvider.entryFont(entryIndex);
+            if (font !== lastUsedFont)
+                context.font = font;
 
             entryOffset = entryOffsets[entryIndex];
             barX = this._offsetToPosition(entryOffset);
@@ -899,7 +903,7 @@ WebInspector.FlameChart.MainPane.prototype = {
             barWidth = (barRight - barX) || minWidth;
             var xText = Math.max(0, barX);
             var widthText = barWidth - textPaddingLeft + barX - xText;
-            var title = this._prepareText(context, entryTitles[entryIndex], widthText);
+            var title = this._prepareText(context, text, widthText);
             if (title)
                 context.fillText(title, xText + textPaddingLeft, textBaseHeight - entryLevels[entryIndex] * this._barHeightDelta);
         }

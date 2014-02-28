@@ -1048,6 +1048,7 @@ WebInspector.CPUProfileView.colorGenerator = function()
 /**
  * @constructor
  * @implements {WebInspector.FlameChartDataProvider}
+ * @param {!WebInspector.CPUProfileView} cpuProfileView
  */
 WebInspector.CPUFlameChartDataProvider = function(cpuProfileView)
 {
@@ -1057,6 +1058,14 @@ WebInspector.CPUFlameChartDataProvider = function(cpuProfileView)
 }
 
 WebInspector.CPUFlameChartDataProvider.prototype = {
+    /**
+     * @return {number}
+     */
+    barHeight: function()
+    {
+        return 15;
+    },
+
     /**
      * @param {number} startTime
      * @param {number} endTime
@@ -1223,7 +1232,6 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             entryColorIndexes[i] = color.index;
             entryLevels[i] = entry.depth;
             entryTotalTimes[i] = entry.duration;
-            entrySelfTimes[i] = entry.selfTime;
             entryOffsets[i] = entry.startTime;
             entryTitles[i] = entry.node.functionName;
             var reason = entry.node.deoptReason;
@@ -1233,16 +1241,16 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         this._maxStackDepth = Math.max(maxDepth, depth);
 
         this._timelineData = {
-            entryNodes: entryNodes,
             entryColorIndexes: entryColorIndexes,
             entryLevels: entryLevels,
             entryTotalTimes: entryTotalTimes,
-            entrySelfTimes: entrySelfTimes,
             entryOffsets: entryOffsets,
-            colorEntryIndexes: colorEntryIndexes,
-            entryTitles: entryTitles,
-            entryDeoptFlags: entryDeoptFlags
         };
+
+        this._entryTitles = entryTitles;
+        this._entryNodes = entryNodes;
+        this._entrySelfTimes = entrySelfTimes;
+        this._entryDeoptFlags = entryDeoptFlags;
 
         return /** @type {!WebInspector.FlameChart.TimelineData} */ (this._timelineData);
     },
@@ -1267,7 +1275,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     prepareHighlightedEntryInfo: function(entryIndex)
     {
         var timelineData = this._timelineData;
-        var node = timelineData.entryNodes[entryIndex];
+        var node = this._entryNodes[entryIndex];
         if (!node)
             return null;
 
@@ -1280,8 +1288,8 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             entryInfo.push(row);
         }
 
-        pushEntryInfoRow(WebInspector.UIString("Name"), timelineData.entryTitles[entryIndex]);
-        var selfTime = this._millisecondsToString(timelineData.entrySelfTimes[entryIndex]);
+        pushEntryInfoRow(WebInspector.UIString("Name"), this._entryTitles[entryIndex]);
+        var selfTime = this._millisecondsToString(this._entrySelfTimes[entryIndex]);
         var totalTime = this._millisecondsToString(timelineData.entryTotalTimes[entryIndex]);
         pushEntryInfoRow(WebInspector.UIString("Self time"), selfTime);
         pushEntryInfoRow(WebInspector.UIString("Total time"), totalTime);
@@ -1301,7 +1309,29 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
      */
     canJumpToEntry: function(entryIndex)
     {
-        return this._timelineData.entryNodes[entryIndex].scriptId !== "0";
+        return this._entryNodes[entryIndex].scriptId !== "0";
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {?string}
+     */
+    entryTitle: function(entryIndex)
+    {
+        return this._entryTitles[entryIndex];
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {?string}
+     */
+    entryFont: function(entryIndex)
+    {
+        if (!this._font) {
+            this._font = (this.barHeight() - 4) + "px " + WebInspector.fontFamily();
+            this._boldFont = "bold " + this._font;
+        }
+        return this._entryDeoptFlags[entryIndex] ? this._boldFont : this._font;
     },
 
     /**
@@ -1310,7 +1340,6 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
      */
     entryData: function(entryIndex)
     {
-        return this._timelineData.entryNodes[entryIndex];
+        return this._entryNodes[entryIndex];
     }
 }
-

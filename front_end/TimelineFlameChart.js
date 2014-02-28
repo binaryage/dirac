@@ -41,6 +41,7 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel, mainTh
     this._model = model;
     this._frameModel = frameModel;
     this._mainThread = mainThread;
+    this._font = (this.barHeight() - 4) + "px " + WebInspector.fontFamily();
 
     this._colorGenerator = new WebInspector.FlameChart.ColorGenerator();
     var categories = WebInspector.TimelineUIUtils.categories();
@@ -49,6 +50,32 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel, mainTh
 }
 
 WebInspector.TimelineFlameChartDataProvider.prototype = {
+    /**
+     * @return {number}
+     */
+    barHeight: function()
+    {
+        return 15;
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {string}
+     */
+    entryFont: function(entryIndex)
+    {
+        return this._font;
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {?string}
+     */
+    entryTitle: function(entryIndex)
+    {
+        return this._entryTitles[entryIndex];
+    },
+
     /**
      * @param {number} startTime
      * @param {number} endTime
@@ -139,12 +166,10 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         this._timelineData = {
             entryLevels: [],
             entryTotalTimes: [],
-            entrySelfTimes: [],
             entryOffsets: [],
-            colorEntryIndexes: [],
-            entryTitles: [],
-            entryDeoptFlags: []
+            colorEntryIndexes: []
         };
+        this._entryTitles = [];
     },
 
     _appendRecord: function(record, depth)
@@ -165,12 +190,11 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 return;
         }
 
-        var index = timelineData.entryTitles.length;
-        timelineData.entryTitles[index] = record.type;
+        var index = this._entryTitles.length;
+        this._entryTitles[index] = record.type;
         timelineData.entryOffsets[index] = record.startTime - startTime;
         timelineData.entryLevels[index] = depth - 1;
         timelineData.entryTotalTimes[index] = endTime - record.startTime;
-        timelineData.entryDeoptFlags[index] = 0;
 
         var color = this._colorGenerator.colorForID(WebInspector.TimelineUIUtils.categoryForRecord(record).name);
         var indexesForColor = timelineData.colorEntryIndexes[color.index];
