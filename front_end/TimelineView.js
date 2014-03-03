@@ -504,7 +504,7 @@ WebInspector.TimelineView.prototype = {
             var record = recordsInWindow[i];
 
             if (i < startIndex) {
-                var lastChildIndex = i + record.visibleChildrenCount;
+                var lastChildIndex = i + record.visibleChildrenCount();
                 if (lastChildIndex >= startIndex && lastChildIndex < endIndex) {
                     var expandElement = new WebInspector.TimelineExpandableElement(this._expandElements);
                     var positions = this._calculator.computeBarGraphWindowPosition(record);
@@ -1231,12 +1231,12 @@ WebInspector.TimelineExpandableElement.prototype = {
     _update: function(record, index, left, width)
     {
         const rowHeight = WebInspector.TimelinePanel.rowHeight;
-        if (record.visibleChildrenCount || record.expandable) {
+        if (record.visibleChildrenCount() || record.expandable()) {
             this._element.style.top = index * rowHeight + "px";
             this._element.style.left = left + "px";
             this._element.style.width = Math.max(12, width + 25) + "px";
             if (!record.collapsed()) {
-                this._element.style.height = (record.visibleChildrenCount + 1) * rowHeight + "px";
+                this._element.style.height = (record.visibleChildrenCount() + 1) * rowHeight + "px";
                 this._element.classList.add("timeline-expandable-expanded");
                 this._element.classList.remove("timeline-expandable-collapsed");
             } else {
