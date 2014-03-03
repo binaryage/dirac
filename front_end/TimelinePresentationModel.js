@@ -32,10 +32,13 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {!WebInspector.TimelineModel} model
  */
-WebInspector.TimelinePresentationModel = function()
+WebInspector.TimelinePresentationModel = function(model)
 {
+    this._model = model;
     this._filters = [];
+    this._bindings = new WebInspector.TimelinePresentationModel.InterRecordBindings();
     this.reset();
 }
 
@@ -114,15 +117,10 @@ WebInspector.TimelinePresentationModel.prototype = {
 
     reset: function()
     {
-        this._rootRecord = new WebInspector.TimelinePresentationModel.Record(this, { type: WebInspector.TimelineModel.RecordType.Root }, null);
-        this._sendRequestRecords = {};
-        this._timerRecords = {};
-        this._requestAnimationFrameRecords = {};
+        var rootPayload = { type: WebInspector.TimelineModel.RecordType.Root };
+        this._rootRecord = new WebInspector.TimelinePresentationModel.Record(this._model, this._bindings, /** @type {!TimelineAgent.TimelineEvent} */ (rootPayload), null);
         this._eventDividerRecords = [];
         this._minimumRecordTime = -1;
-        this._layoutInvalidateStack = {};
-        this._lastScheduleStyleRecalculation = {};
-        this._webSocketCreateRecords = {};
         this._coalescingBuckets = {};
         this._mergingBuffer = new WebInspector.TimelineMergingRecordBuffer();
 
@@ -130,6 +128,8 @@ WebInspector.TimelinePresentationModel.prototype = {
         this._mainThreadTasks =  ([]);
         /** @type {!Array.<!TimelineAgent.TimelineEvent>} */
         this._gpuThreadTasks = ([]);
+
+        this._bindings._reset();
     },
 
     /**
@@ -221,7 +221,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         if (WebInspector.TimelineUIUtils.isEventDivider(record))
             this._eventDividerRecords.push(record);
 
-        var formattedRecord = new WebInspector.TimelinePresentationModel.Record(this, record, parentRecord);
+        var formattedRecord = new WebInspector.TimelinePresentationModel.Record(this._model, this._bindings, record, parentRecord);
         if (record.type in WebInspector.TimelinePresentationModel._hiddenRecords) {
             parentRecord.children.pop();
             return null;
@@ -289,7 +289,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp)
             rawRecord.data.message = record.data.message;
 
-        var coalescedRecord = new WebInspector.TimelinePresentationModel.Record(this, rawRecord, null);
+        var coalescedRecord = new WebInspector.TimelinePresentationModel.Record(this._model, this._bindings, rawRecord, null);
         var parent = record.parent;
 
         coalescedRecord.coalesced = true;
@@ -413,13 +413,34 @@ WebInspector.TimelinePresentationModel.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.TimelinePresentationModel} presentationModel
- * @param {!Object} record
+ */
+WebInspector.TimelinePresentationModel.InterRecordBindings = function()
+{
+    this._reset();
+}
+
+WebInspector.TimelinePresentationModel.InterRecordBindings.prototype = {
+    _reset: function()
+    {
+        this._sendRequestRecords = {};
+        this._timerRecords = {};
+        this._requestAnimationFrameRecords = {};
+        this._layoutInvalidateStack = {};
+        this._lastScheduleStyleRecalculation = {};
+        this._webSocketCreateRecords = {};
+    }
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.TimelineModel} model
+ * @param {!WebInspector.TimelinePresentationModel.InterRecordBindings} bindings
+ * @param {!TimelineAgent.TimelineEvent} record
  * @param {?WebInspector.TimelinePresentationModel.Record} parentRecord
  */
-WebInspector.TimelinePresentationModel.Record = function(presentationModel, record, parentRecord)
+WebInspector.TimelinePresentationModel.Record = function(model, bindings, record, parentRecord)
 {
-    this._presentationModel = presentationModel;
+    this._model = model;
     this._aggregatedStats = {};
     this._record = /** @type {!TimelineAgent.TimelineEvent} */ (record);
     this._children = [];
@@ -430,7 +451,7 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
 
     this._selfTime = this.endTime - this.startTime;
     this._lastChildEndTime = this.endTime;
-    this._startTimeOffset = this.startTime - presentationModel._minimumRecordTime;
+    this._startTimeOffset = this.startTime - model.minimumRecordTime();
 
     if (record.data) {
         if (record.data["url"])
@@ -452,18 +473,18 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
     switch (record.type) {
     case recordTypes.ResourceSendRequest:
         // Make resource receive record last since request was sent; make finish record last since response received.
-        presentationModel._sendRequestRecords[record.data["requestId"]] = this;
+        bindings._sendRequestRecords[record.data["requestId"]] = this;
         break;
 
     case recordTypes.ResourceReceiveResponse:
-        var sendRequestRecord = presentationModel._sendRequestRecords[record.data["requestId"]];
+        var sendRequestRecord = bindings._sendRequestRecords[record.data["requestId"]];
         if (sendRequestRecord) // False if we started instrumentation in the middle of request.
             this.url = sendRequestRecord.url;
         break;
 
     case recordTypes.ResourceReceivedData:
     case recordTypes.ResourceFinish:
-        var sendRequestRecord = presentationModel._sendRequestRecords[record.data["requestId"]];
+        var sendRequestRecord = bindings._sendRequestRecords[record.data["requestId"]];
         if (sendRequestRecord) // False for main resource.
             this.url = sendRequestRecord.url;
         break;
@@ -471,11 +492,11 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
     case recordTypes.TimerInstall:
         this.timeout = record.data["timeout"];
         this.singleShot = record.data["singleShot"];
-        presentationModel._timerRecords[record.data["timerId"]] = this;
+        bindings._timerRecords[record.data["timerId"]] = this;
         break;
 
     case recordTypes.TimerFire:
-        var timerInstalledRecord = presentationModel._timerRecords[record.data["timerId"]];
+        var timerInstalledRecord = bindings._timerRecords[record.data["timerId"]];
         if (timerInstalledRecord) {
             this.callSiteStackTrace = timerInstalledRecord.stackTrace;
             this.timeout = timerInstalledRecord.timeout;
@@ -484,11 +505,11 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
         break;
 
     case recordTypes.RequestAnimationFrame:
-        presentationModel._requestAnimationFrameRecords[record.data["id"]] = this;
+        bindings._requestAnimationFrameRecords[record.data["id"]] = this;
         break;
 
     case recordTypes.FireAnimationFrame:
-        var requestAnimationRecord = presentationModel._requestAnimationFrameRecords[record.data["id"]];
+        var requestAnimationRecord = bindings._requestAnimationFrameRecords[record.data["id"]];
         if (requestAnimationRecord)
             this.callSiteStackTrace = requestAnimationRecord.stackTrace;
         break;
@@ -498,11 +519,11 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
         break;
 
     case recordTypes.ScheduleStyleRecalculation:
-        presentationModel._lastScheduleStyleRecalculation[this.frameId] = this;
+        bindings._lastScheduleStyleRecalculation[this.frameId] = this;
         break;
 
     case recordTypes.RecalculateStyles:
-        var scheduleStyleRecalculationRecord = presentationModel._lastScheduleStyleRecalculation[this.frameId];
+        var scheduleStyleRecalculationRecord = bindings._lastScheduleStyleRecalculation[this.frameId];
         if (!scheduleStyleRecalculationRecord)
             break;
         this.callSiteStackTrace = scheduleStyleRecalculationRecord.stackTrace;
@@ -512,25 +533,21 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
         // Consider style recalculation as a reason for layout invalidation,
         // but only if we had no earlier layout invalidation records.
         var styleRecalcStack;
-        if (!presentationModel._layoutInvalidateStack[this.frameId]) {
-            for (var outerRecord = parentRecord; outerRecord; outerRecord = record.parent) {
-                if (outerRecord.type === recordTypes.RecalculateStyles) {
-                    styleRecalcStack = outerRecord.callSiteStackTrace;
-                    break;
-                }
-            }
+        if (!bindings._layoutInvalidateStack[this.frameId]) {
+            if (parentRecord.type === recordTypes.RecalculateStyles)
+                styleRecalcStack = parentRecord.callSiteStackTrace;
         }
-        presentationModel._layoutInvalidateStack[this.frameId] = styleRecalcStack || this.stackTrace;
+        bindings._layoutInvalidateStack[this.frameId] = styleRecalcStack || this.stackTrace;
         break;
 
     case recordTypes.Layout:
-        var layoutInvalidateStack = presentationModel._layoutInvalidateStack[this.frameId];
+        var layoutInvalidateStack = bindings._layoutInvalidateStack[this.frameId];
         if (layoutInvalidateStack)
             this.callSiteStackTrace = layoutInvalidateStack;
         if (this.stackTrace)
             this.addWarning(WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
 
-        presentationModel._layoutInvalidateStack[this.frameId] = null;
+        bindings._layoutInvalidateStack[this.frameId] = null;
         this.highlightQuad = record.data.root || WebInspector.TimelinePresentationModel.quadFromRectData(record.data);
         this._relatedBackendNodeId = record.data["rootNode"];
         break;
@@ -548,13 +565,13 @@ WebInspector.TimelinePresentationModel.Record = function(presentationModel, reco
         this.webSocketURL = record.data["url"];
         if (typeof record.data["webSocketProtocol"] !== "undefined")
             this.webSocketProtocol = record.data["webSocketProtocol"];
-        presentationModel._webSocketCreateRecords[record.data["identifier"]] = this;
+        bindings._webSocketCreateRecords[record.data["identifier"]] = this;
         break;
 
     case recordTypes.WebSocketSendHandshakeRequest:
     case recordTypes.WebSocketReceiveHandshakeResponse:
     case recordTypes.WebSocketDestroy:
-        var webSocketCreateRecord = presentationModel._webSocketCreateRecords[record.data["identifier"]];
+        var webSocketCreateRecord = bindings._webSocketCreateRecords[record.data["identifier"]];
         if (webSocketCreateRecord) { // False if we started instrumentation in the middle of request.
             this.webSocketURL = webSocketCreateRecord.webSocketURL;
             if (typeof webSocketCreateRecord.webSocketProtocol !== "undefined")
@@ -634,7 +651,7 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
      */
     title: function()
     {
-        return WebInspector.TimelineUIUtils.recordTitle(this._presentationModel, this._record);
+        return WebInspector.TimelineUIUtils.recordTitle(this._model, this._record);
     },
 
     /**

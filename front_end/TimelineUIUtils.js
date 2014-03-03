@@ -202,11 +202,11 @@ WebInspector.TimelineUIUtils.createEventDivider = function(recordType, title)
 
 
 /**
- * @param {!WebInspector.TimelinePresentationModel} presentationModel
+ * @param {!WebInspector.TimelineModel} model
  * @param {!{name: string, tasks: !Array.<!{startTime: number, endTime: number}>, firstTaskIndex: number, lastTaskIndex: number}} info
  * @return {!Element}
  */
-WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(presentationModel, info)
+WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(model, info)
 {
     var firstTaskIndex = info.firstTaskIndex;
     var lastTaskIndex = info.lastTaskIndex;
@@ -224,7 +224,7 @@ WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(presen
 
     var contentHelper = new WebInspector.TimelinePopupContentHelper(info.name);
     var durationText = WebInspector.UIString("%s (at %s)", Number.millisToString(duration, true),
-        Number.millisToString(startTime - presentationModel.minimumRecordTime(), true));
+        Number.millisToString(startTime - model.minimumRecordTime(), true));
     contentHelper.appendTextRow(WebInspector.UIString("Duration"), durationText);
     contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.millisToString(cpuTime, true));
     contentHelper.appendTextRow(WebInspector.UIString("Message Count"), messageCount);
@@ -232,16 +232,16 @@ WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(presen
 }
 
 /**
- * @param {!WebInspector.TimelinePresentationModel} presentationModel
+ * @param {!WebInspector.TimelineModel} model
  * @param {!TimelineAgent.TimelineEvent} record
  * @return {string}
  */
-WebInspector.TimelineUIUtils.recordTitle = function(presentationModel, record)
+WebInspector.TimelineUIUtils.recordTitle = function(model, record)
 {
     if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp)
         return record.data["message"];
     if (WebInspector.TimelineUIUtils.isEventDivider(record)) {
-        var startTime = Number.millisToString(record.startTime - presentationModel.minimumRecordTime());
+        var startTime = Number.millisToString(record.startTime - model.minimumRecordTime());
         return WebInspector.UIString("%s at %s", WebInspector.TimelineUIUtils.recordStyle(record).title, startTime, true);
     }
     return WebInspector.TimelineUIUtils.recordStyle(record).title;

@@ -34,16 +34,18 @@
  * @extends {WebInspector.View}
  * @implements {WebInspector.TimelineModeView}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
+ * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.TimelinePresentationModel} presentationModel
  * @param {?WebInspector.TimelineFrameModel} frameModel
  */
-WebInspector.TimelineView = function(delegate, presentationModel, frameModel)
+WebInspector.TimelineView = function(delegate, model, presentationModel, frameModel)
 {
     WebInspector.View.call(this);
     this.element.classList.add("timeline-view");
     this.element.classList.add("hbox");
 
     this._delegate = delegate;
+    this._model = model;
     this._presentationModel = presentationModel;
     this._frameModel = frameModel;
     this._calculator = new WebInspector.TimelineCalculator(this._presentationModel);
@@ -132,7 +134,7 @@ WebInspector.TimelineView.prototype = {
             var dividerPosition = Math.round(positions.left);
             if (dividerPosition < 0 || dividerPosition >= clientWidth || dividers[dividerPosition])
                 continue;
-            var divider = WebInspector.TimelineUIUtils.createEventDivider(record.type, WebInspector.TimelineUIUtils.recordTitle(this._presentationModel, record));
+            var divider = WebInspector.TimelineUIUtils.createEventDivider(record.type, WebInspector.TimelineUIUtils.recordTitle(this._model, record));
             divider.style.left = dividerPosition + "px";
             dividers[dividerPosition] = divider;
         }
@@ -803,7 +805,7 @@ WebInspector.TimelineView.prototype = {
             if (anchor.row && anchor.row._record)
                 anchor.row._record.generatePopupContent(this._linkifier, showCallback);
             else if (anchor._tasksInfo)
-                popover.show(WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent(this._presentationModel, anchor._tasksInfo), anchor, null, null, WebInspector.Popover.Orientation.Bottom);
+                popover.show(WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent(this._model, anchor._tasksInfo), anchor, null, null, WebInspector.Popover.Orientation.Bottom);
         }
 
         function showCallback(popupContent)

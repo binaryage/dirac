@@ -68,7 +68,7 @@ WebInspector.TimelinePanel = function()
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
 
     // Create presentation model.
-    this._presentationModel = new WebInspector.TimelinePresentationModel();
+    this._presentationModel = new WebInspector.TimelinePresentationModel(this._model);
     this._durationFilter = new WebInspector.TimelineIsLongFilter();
     this._windowFilter = new WebInspector.TimelineWindowFilter();
     this._presentationModel.addFilter(this._windowFilter);
@@ -226,15 +226,15 @@ WebInspector.TimelinePanel.prototype = {
             switch (mode) {
             case WebInspector.TimelinePanel.Mode.Events:
                 views.overviewView = new WebInspector.TimelineEventOverview(this._model);
-                views.mainViews = [new WebInspector.TimelineView(this, this._presentationModel, null)];
+                views.mainViews = [new WebInspector.TimelineView(this, this._model, this._presentationModel, null)];
                 break;
             case WebInspector.TimelinePanel.Mode.Frames:
                 views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this.frameModel());
-                views.mainViews = [new WebInspector.TimelineView(this, this._presentationModel, this.frameModel())];
+                views.mainViews = [new WebInspector.TimelineView(this, this._model, this._presentationModel, this.frameModel())];
                 break;
             case WebInspector.TimelinePanel.Mode.Memory:
                 views.overviewView = new WebInspector.TimelineMemoryOverview(this._model);
-                var timelineView = new WebInspector.TimelineView(this, this._presentationModel, null);
+                var timelineView = new WebInspector.TimelineView(this, this._model, this._presentationModel, null);
                 views.mainViews = [timelineView];
                 var memoryStatistics = new WebInspector.CountersGraph(this, this._presentationModel);
                 views.mainViews.push(memoryStatistics);
