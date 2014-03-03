@@ -320,11 +320,25 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
-     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     * @param {?WebInspector.TimelinePresentationModel.Record} presentationRecord
      */
-    _selectRecord: function(record)
+    _selectRecord: function(presentationRecord)
     {
-        this._delegate.selectRecord(record ? record.record() : null);
+        if (presentationRecord && presentationRecord.coalesced()) {
+            // Presentation record does not have model record to highlight.
+            this._innerSetSelectedRecord(presentationRecord);
+            var aggregatedStats = {};
+            var presentationChildren = presentationRecord.presentationChildren();
+            for (var i = 0; i < presentationChildren.length; ++i)
+                WebInspector.TimelineUIUtils.aggregateTimeByCategory(aggregatedStats, presentationChildren[i].record().aggregatedStats);
+            var idle = presentationRecord.record().endTime - presentationRecord.record().startTime;
+            for (var category in aggregatedStats)
+                idle -= aggregatedStats[category];
+            aggregatedStats["idle"] = idle;
+            this._delegate.showAggregatedStatsInDetails(WebInspector.TimelineUIUtils.recordStyle(presentationRecord.record()).title, aggregatedStats);
+            return;
+        }
+        this._delegate.selectRecord(presentationRecord ? presentationRecord.record() : null);
     },
 
     /**
@@ -332,7 +346,14 @@ WebInspector.TimelineView.prototype = {
      */
     setSelectedRecord: function(record)
     {
-        var presentationRecord = this._presentationModel.toPresentationRecord(record);
+        this._innerSetSelectedRecord(this._presentationModel.toPresentationRecord(record));
+    },
+
+    /**
+     * @param {?WebInspector.TimelinePresentationModel.Record} presentationRecord
+     */
+    _innerSetSelectedRecord: function(presentationRecord)
+    {
         if (presentationRecord === this._lastSelectedRecord)
             return;
 

@@ -749,6 +749,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         var startTime = this._windowStartTime;
         var endTime = this._windowEndTime;
+
         // Return early in case 0 selection window.
         if (startTime < 0)
             return;
@@ -839,6 +840,15 @@ WebInspector.TimelinePanel.prototype = {
         {
             this._detailsView.setContent(record.title(), element);
         }
+    },
+
+    /**
+     * @param {string} title
+     * @param {!Object} aggregatedStats
+     */
+    showAggregatedStatsInDetails: function(title, aggregatedStats)
+    {
+        this._detailsView.setContent(title, WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats));
     },
 
     __proto__: WebInspector.Panel.prototype
@@ -945,7 +955,13 @@ WebInspector.TimelineModeViewDelegate.prototype = {
     /**
      * @param {?WebInspector.TimelineModel.Record} record
      */
-    selectRecord: function(record) {}
+    selectRecord: function(record) {},
+
+    /**
+     * @param {string} title
+     * @param {!Object} aggregatedStats
+     */
+    showAggregatedStatsInDetails: function(title, aggregatedStats) {}
 }
 
 /**
