@@ -109,7 +109,7 @@ WebInspector.TimelineUIUtils._initRecordStyles = function()
 }
 
 /**
- * @param {!TimelineAgent.TimelineEvent} record
+ * @param {!WebInspector.TimelineModel.Record} record
  * @return {!{title: string, category: !WebInspector.TimelineCategory}}
  */
 WebInspector.TimelineUIUtils.recordStyle = function(record)
@@ -127,7 +127,7 @@ WebInspector.TimelineUIUtils.recordStyle = function(record)
 }
 
 /**
- * @param {!TimelineAgent.TimelineEvent} record
+ * @param {!WebInspector.TimelineModel.Record} record
  * @return {!WebInspector.TimelineCategory}
  */
 WebInspector.TimelineUIUtils.categoryForRecord = function(record)
@@ -136,7 +136,7 @@ WebInspector.TimelineUIUtils.categoryForRecord = function(record)
 }
 
 /**
- * @param {!TimelineAgent.TimelineEvent} record
+ * @param {!WebInspector.TimelineModel.Record} record
  */
 WebInspector.TimelineUIUtils.isEventDivider = function(record)
 {
@@ -232,7 +232,7 @@ WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(model,
 }
 
 /**
- * @param {!TimelineAgent.TimelineEvent} record
+ * @param {!WebInspector.TimelineModel.Record} record
  * @return {string}
  */
 WebInspector.TimelineUIUtils.recordTitle = function(record)
@@ -258,18 +258,18 @@ WebInspector.TimelineUIUtils.aggregateTimeByCategory = function(total, addend)
 
 /**
  * @param {!Object} total
- * @param {!TimelineAgent.TimelineEvent} rawRecord
+ * @param {!WebInspector.TimelineModel.Record} record
  */
-WebInspector.TimelineUIUtils.aggregateTimeForRecord = function(total, rawRecord)
+WebInspector.TimelineUIUtils.aggregateTimeForRecord = function(total, record)
 {
     var childrenTime = 0;
-    var children = rawRecord["children"] || [];
+    var children = record.children;
     for (var i = 0; i < children.length; ++i) {
         WebInspector.TimelineUIUtils.aggregateTimeForRecord(total, children[i]);
         childrenTime += children[i].endTime - children[i].startTime;
     }
-    var categoryName = WebInspector.TimelineUIUtils.recordStyle(rawRecord).category.name;
-    var ownTime = rawRecord.endTime - rawRecord.startTime - childrenTime;
+    var categoryName = WebInspector.TimelineUIUtils.recordStyle(record).category.name;
+    var ownTime = record.endTime - record.startTime - childrenTime;
     total[categoryName] = (total[categoryName] || 0) + ownTime;
 }
 
@@ -432,14 +432,14 @@ WebInspector.TimelineUIUtils.createStyleRuleForCategory = function(category)
 }
 
 /**
- * @param {!WebInspector.TimelinePresentationModel.Record} record
+ * @param {!WebInspector.TimelineModel.Record} record
  * @param {!WebInspector.Linkifier} linkifier
  * @param {function(!DocumentFragment)} callback
  */
 WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, callback)
 {
-    var imageElement = /** @type {?Element} */ (record.getUserObject("TimelinePresentationModel::preview-element") || null);
-    var relatedNode = /** @type {?WebInspector.DOMNode} */ (record.getUserObject("TimelinePresentationModel::related-node") || null);
+    var imageElement = /** @type {?Element} */ (record.getUserObject("TimelineUIUtils::preview-element") || null);
+    var relatedNode = /** @type {?WebInspector.DOMNode} */ (record.getUserObject("TimelineUIUtils::related-node") || null);
 
     var barrier = new CallbackBarrier();
     if (!imageElement && WebInspector.TimelineUIUtils.needsPreviewElement(record.type))
@@ -454,7 +454,7 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
     function saveImage(element)
     {
         imageElement = element || null;
-        record.setUserObject("TimelinePresentationModel::preview-element", element);
+        record.setUserObject("TimelineUIUtils::preview-element", element);
     }
 
     /**
@@ -464,13 +464,10 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
     {
         if (nodeId !== null) {
             relatedNode = WebInspector.domAgent.nodeForId(nodeId);
-            record.setUserObject("TimelinePresentationModel::related-node", relatedNode);
+            record.setUserObject("TimelineUIUtils::related-node", relatedNode);
         }
     }
 
-    /**
-     * @this {WebInspector.TimelinePresentationModel.Record}
-     */
     function callbackWrapper()
     {
         callback(WebInspector.TimelineUIUtils._generatePopupContentSynchronously(record, linkifier, imageElement, relatedNode));
@@ -478,7 +475,7 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
 }
 
 /**
- * @param {!WebInspector.TimelinePresentationModel.Record} record
+ * @param {!WebInspector.TimelineModel.Record} record
  * @param {!WebInspector.Linkifier} linkifier
  * @param {?Element} imagePreviewElement
  * @param {?WebInspector.DOMNode} relatedNode
@@ -487,13 +484,10 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
 WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(record, linkifier, imagePreviewElement, relatedNode)
 {
     var fragment = document.createDocumentFragment();
-    if (!record.coalesced && record.children.length)
+    if (record.children.length)
         fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(record.aggregatedStats, record.category, record.selfTime));
     else
         fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(record.aggregatedStats));
-
-    if (record.coalesced)
-        return fragment;
 
     const recordTypes = WebInspector.TimelineModel.RecordType;
 
@@ -555,8 +549,8 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
             var clip = record.data["clip"];
             if (clip) {
                 contentHelper.appendTextRow(WebInspector.UIString("Location"), WebInspector.UIString("(%d, %d)", clip[0], clip[1]));
-                var clipWidth = WebInspector.TimelinePresentationModel.quadWidth(clip);
-                var clipHeight = WebInspector.TimelinePresentationModel.quadHeight(clip);
+                var clipWidth = WebInspector.TimelineUIUtils._quadWidth(clip);
+                var clipHeight = WebInspector.TimelineUIUtils._quadHeight(clip);
                 contentHelper.appendTextRow(WebInspector.UIString("Dimensions"), WebInspector.UIString("%d × %d", clipWidth, clipHeight));
             } else {
                 // Backward compatibility: older version used x, y, width, height fields directly in data.
@@ -667,7 +661,25 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
 }
 
 /**
- * @param {!WebInspector.TimelinePresentationModel.Record} record
+ * @param {!Array.<number>} quad
+ * @return {number}
+ */
+WebInspector.TimelineUIUtils._quadWidth = function(quad)
+{
+    return Math.round(Math.sqrt(Math.pow(quad[0] - quad[2], 2) + Math.pow(quad[1] - quad[3], 2)));
+}
+
+/**
+ * @param {!Array.<number>} quad
+ * @return {number}
+ */
+WebInspector.TimelineUIUtils._quadHeight = function(quad)
+{
+    return Math.round(Math.sqrt(Math.pow(quad[0] - quad[6], 2) + Math.pow(quad[1] - quad[7], 2)));
+}
+
+/**
+ * @param {!WebInspector.TimelineModel.Record} record
  * @param {!WebInspector.Linkifier} linkifier
  * @return {?Node}
  */
@@ -675,11 +687,6 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier)
 {
     var details;
     var detailsText;
-    if (record.coalesced) {
-        var node = document.createElement("span");
-        node.textContent = WebInspector.UIString("× %d", record.children.length);
-        return node;
-    }
 
     switch (record.type) {
     case WebInspector.TimelineModel.RecordType.GCEvent:
@@ -701,8 +708,8 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier)
         detailsText = record.data ? record.data["type"] : null;
         break;
     case WebInspector.TimelineModel.RecordType.Paint:
-        var width = record.data.clip ? WebInspector.TimelinePresentationModel.quadWidth(record.data.clip) : record.data.width;
-        var height = record.data.clip ? WebInspector.TimelinePresentationModel.quadHeight(record.data.clip) : record.data.height;
+        var width = record.data.clip ? WebInspector.TimelineUIUtils._quadWidth(record.data.clip) : record.data.width;
+        var height = record.data.clip ? WebInspector.TimelineUIUtils._quadHeight(record.data.clip) : record.data.height;
         if (width && height)
             detailsText = WebInspector.UIString("%d\u2009\u00d7\u2009%d", width, height);
         break;

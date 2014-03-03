@@ -34,10 +34,12 @@
  */
 WebInspector.TimelineModel = function()
 {
+    this._payloads = [];
     this._records = [];
     this._minimumRecordTime = -1;
     this._maximumRecordTime = -1;
     this._stringPool = {};
+    this._bindings = new WebInspector.TimelineModel.InterRecordBindings();
 
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, this._onRecordAdded, this);
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, this._onStarted, this);
@@ -115,7 +117,46 @@ WebInspector.TimelineModel.Events = {
     RecordingStopped: "RecordingStopped"
 }
 
+/**
+ * @param {!Array.<!WebInspector.TimelineModel.Record>} recordsArray
+ * @param {?function(!WebInspector.TimelineModel.Record)|?function(!WebInspector.TimelineModel.Record,number)} preOrderCallback
+ * @param {function(!WebInspector.TimelineModel.Record)|function(!WebInspector.TimelineModel.Record,number)=} postOrderCallback
+ */
+WebInspector.TimelineModel.forAllRecords = function(recordsArray, preOrderCallback, postOrderCallback)
+{
+    if (!recordsArray)
+        return;
+    var stack = [{array: recordsArray, index: 0}];
+    while (stack.length) {
+        var entry = stack[stack.length - 1];
+        var records = entry.array;
+        if (entry.index < records.length) {
+             var record = records[entry.index];
+             if (preOrderCallback && preOrderCallback(record, stack.length))
+                 return;
+             if (record.children)
+                 stack.push({array: record.children, index: 0, record: record});
+             else if (postOrderCallback && postOrderCallback(record, stack.length))
+                return;
+             ++entry.index;
+        } else {
+            if (entry.record && postOrderCallback && postOrderCallback(entry.record, stack.length))
+                return;
+            stack.pop();
+        }
+    }
+}
+
 WebInspector.TimelineModel.prototype = {
+    /**
+     * @param {?function(!WebInspector.TimelineModel.Record)|?function(!WebInspector.TimelineModel.Record,number)} preOrderCallback
+     * @param {function(!WebInspector.TimelineModel.Record)|function(!WebInspector.TimelineModel.Record,number)=} postOrderCallback
+     */
+    forAllRecords: function(preOrderCallback, postOrderCallback)
+    {
+        WebInspector.TimelineModel.forAllRecords(this._records, preOrderCallback, postOrderCallback);
+    },
+
     /**
      * @param {boolean=} includeCounters
      */
@@ -149,7 +190,10 @@ WebInspector.TimelineModel.prototype = {
         WebInspector.timelineManager.stop(this._fireRecordingStopped.bind(this));
     },
 
-    get records()
+    /**
+     * @return {!Array.<!WebInspector.TimelineModel.Record>}
+     */
+    records: function()
     {
         return this._records;
     },
@@ -198,14 +242,36 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} record
+     * @param {!TimelineAgent.TimelineEvent} payload
      */
-    _addRecord: function(record)
+    _addRecord: function(payload)
     {
-        this._internStringsAndAssignEndTime(record);
+        this._internStrings(payload);
+        this._payloads.push(payload);
+        this._updateBoundaries(payload);
+
+        var record = this._innerAddRecord(payload, null);
         this._records.push(record);
-        this._updateBoundaries(record);
+
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordAdded, record);
+    },
+
+    /**
+     * @param {!TimelineAgent.TimelineEvent} payload
+     * @param {?WebInspector.TimelineModel.Record} parentRecord
+     * @return {!WebInspector.TimelineModel.Record}
+     * @this {!WebInspector.TimelineModel}
+     */
+    _innerAddRecord: function(payload, parentRecord)
+    {
+        var record = new WebInspector.TimelineModel.Record(this, payload, parentRecord);
+        for (var i = 0; payload.children && i < payload.children.length; ++i)
+            this._innerAddRecord.call(this, payload.children[i], record);
+
+        record.calculateAggregatedStats();
+        if (parentRecord)
+            parentRecord._selfTime -= record.endTime - record.startTime;
+        return record;
     },
 
     /**
@@ -256,7 +322,7 @@ WebInspector.TimelineModel.prototype = {
             if (!accepted)
                 return;
             var saver = new WebInspector.TimelineSaver(stream);
-            saver.save(this._records, window.navigator.appVersion);
+            saver.save(this._payloads, window.navigator.appVersion);
         }
         stream.open(fileName, callback.bind(this));
     },
@@ -264,9 +330,11 @@ WebInspector.TimelineModel.prototype = {
     reset: function()
     {
         this._records = [];
+        this._payloads = [];
         this._stringPool = {};
         this._minimumRecordTime = -1;
         this._maximumRecordTime = -1;
+        this._bindings._reset();
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordsCleared);
     },
 
@@ -312,14 +380,8 @@ WebInspector.TimelineModel.prototype = {
     /**
      * @param {!TimelineAgent.TimelineEvent} record
      */
-    _internStringsAndAssignEndTime: function(record)
+    _internStrings: function(record)
     {
-        // We'd like to dump raw protocol in tests, so add an option to not assign implicit end time.
-        if (!WebInspector.TimelineModel["_doNotAssignEndTime"]) {
-            if (typeof record.startTime === "number" && typeof record.endTime !== "number")
-                record.endTime = record.startTime;
-        }
-
         for (var name in record) {
             var value = record[name];
             if (typeof value !== "string")
@@ -334,10 +396,419 @@ WebInspector.TimelineModel.prototype = {
 
         var children = record.children;
         for (var i = 0; children && i < children.length; ++i)
-            this._internStringsAndAssignEndTime(children[i]);
+            this._internStrings(children[i]);
     },
 
     __proto__: WebInspector.Object.prototype
+}
+
+
+/**
+ * @constructor
+ */
+WebInspector.TimelineModel.InterRecordBindings = function() {
+    this._reset();
+}
+
+WebInspector.TimelineModel.InterRecordBindings.prototype = {
+    _reset: function()
+    {
+        this._sendRequestRecords = {};
+        this._timerRecords = {};
+        this._requestAnimationFrameRecords = {};
+        this._layoutInvalidateStack = {};
+        this._lastScheduleStyleRecalculation = {};
+        this._webSocketCreateRecords = {};
+    }
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.TimelineModel} model
+ * @param {!TimelineAgent.TimelineEvent} record
+ * @param {?WebInspector.TimelineModel.Record} parentRecord
+ */
+WebInspector.TimelineModel.Record = function(model, record, parentRecord)
+{
+    this._model = model;
+    var bindings = this._model._bindings;
+    this._aggregatedStats = {};
+    this._record = record;
+    this._children = [];
+    if (parentRecord) {
+        this.parent = parentRecord;
+        parentRecord.children.push(this);
+    }
+
+    this._selfTime = this.endTime - this.startTime;
+    this._lastChildEndTime = this.endTime;
+    this._startTimeOffset = this.startTime - model.minimumRecordTime();
+
+    if (record.data) {
+        if (record.data["url"])
+            this.url = record.data["url"];
+        if (record.data["rootNode"])
+            this._relatedBackendNodeId = record.data["rootNode"];
+        else if (record.data["elementId"])
+            this._relatedBackendNodeId = record.data["elementId"];
+        if (record.data["scriptName"]) {
+            this.scriptName = record.data["scriptName"];
+            this.scriptLine = record.data["scriptLine"];
+        }
+    }
+
+    if (parentRecord && parentRecord.callSiteStackTrace)
+        this.callSiteStackTrace = parentRecord.callSiteStackTrace;
+
+    var recordTypes = WebInspector.TimelineModel.RecordType;
+    switch (record.type) {
+    case recordTypes.ResourceSendRequest:
+        // Make resource receive record last since request was sent; make finish record last since response received.
+        bindings._sendRequestRecords[record.data["requestId"]] = this;
+        break;
+
+    case recordTypes.ResourceReceiveResponse:
+        var sendRequestRecord = bindings._sendRequestRecords[record.data["requestId"]];
+        if (sendRequestRecord) // False if we started instrumentation in the middle of request.
+            this.url = sendRequestRecord.url;
+        break;
+
+    case recordTypes.ResourceReceivedData:
+    case recordTypes.ResourceFinish:
+        var sendRequestRecord = bindings._sendRequestRecords[record.data["requestId"]];
+        if (sendRequestRecord) // False for main resource.
+            this.url = sendRequestRecord.url;
+        break;
+
+    case recordTypes.TimerInstall:
+        this.timeout = record.data["timeout"];
+        this.singleShot = record.data["singleShot"];
+        bindings._timerRecords[record.data["timerId"]] = this;
+        break;
+
+    case recordTypes.TimerFire:
+        var timerInstalledRecord = bindings._timerRecords[record.data["timerId"]];
+        if (timerInstalledRecord) {
+            this.callSiteStackTrace = timerInstalledRecord.stackTrace;
+            this.timeout = timerInstalledRecord.timeout;
+            this.singleShot = timerInstalledRecord.singleShot;
+        }
+        break;
+
+    case recordTypes.RequestAnimationFrame:
+        bindings._requestAnimationFrameRecords[record.data["id"]] = this;
+        break;
+
+    case recordTypes.FireAnimationFrame:
+        var requestAnimationRecord = bindings._requestAnimationFrameRecords[record.data["id"]];
+        if (requestAnimationRecord)
+            this.callSiteStackTrace = requestAnimationRecord.stackTrace;
+        break;
+
+    case recordTypes.ConsoleTime:
+        var message = record.data["message"];
+        break;
+
+    case recordTypes.ScheduleStyleRecalculation:
+        bindings._lastScheduleStyleRecalculation[this.frameId] = this;
+        break;
+
+    case recordTypes.RecalculateStyles:
+        var scheduleStyleRecalculationRecord = bindings._lastScheduleStyleRecalculation[this.frameId];
+        if (!scheduleStyleRecalculationRecord)
+            break;
+        this.callSiteStackTrace = scheduleStyleRecalculationRecord.stackTrace;
+        break;
+
+    case recordTypes.InvalidateLayout:
+        // Consider style recalculation as a reason for layout invalidation,
+        // but only if we had no earlier layout invalidation records.
+        var styleRecalcStack;
+        if (!bindings._layoutInvalidateStack[this.frameId]) {
+            if (parentRecord.type === recordTypes.RecalculateStyles)
+                styleRecalcStack = parentRecord.callSiteStackTrace;
+        }
+        bindings._layoutInvalidateStack[this.frameId] = styleRecalcStack || this.stackTrace;
+        break;
+
+    case recordTypes.Layout:
+        var layoutInvalidateStack = bindings._layoutInvalidateStack[this.frameId];
+        if (layoutInvalidateStack)
+            this.callSiteStackTrace = layoutInvalidateStack;
+        if (this.stackTrace)
+            this.addWarning(WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
+
+        bindings._layoutInvalidateStack[this.frameId] = null;
+        this.highlightQuad = record.data.root || WebInspector.TimelineModel._quadFromRectData(record.data);
+        this._relatedBackendNodeId = record.data["rootNode"];
+        break;
+
+    case recordTypes.AutosizeText:
+        if (record.data.needsRelayout && parentRecord.type === recordTypes.Layout)
+            parentRecord.addWarning(WebInspector.UIString("Layout required two passes due to text autosizing, consider setting viewport."));
+        break;
+
+    case recordTypes.Paint:
+        this.highlightQuad = record.data.clip || WebInspector.TimelineModel._quadFromRectData(record.data);
+        break;
+
+    case recordTypes.WebSocketCreate:
+        this.webSocketURL = record.data["url"];
+        if (typeof record.data["webSocketProtocol"] !== "undefined")
+            this.webSocketProtocol = record.data["webSocketProtocol"];
+        bindings._webSocketCreateRecords[record.data["identifier"]] = this;
+        break;
+
+    case recordTypes.WebSocketSendHandshakeRequest:
+    case recordTypes.WebSocketReceiveHandshakeResponse:
+    case recordTypes.WebSocketDestroy:
+        var webSocketCreateRecord = bindings._webSocketCreateRecords[record.data["identifier"]];
+        if (webSocketCreateRecord) { // False if we started instrumentation in the middle of request.
+            this.webSocketURL = webSocketCreateRecord.webSocketURL;
+            if (typeof webSocketCreateRecord.webSocketProtocol !== "undefined")
+                this.webSocketProtocol = webSocketCreateRecord.webSocketProtocol;
+        }
+        break;
+
+    case recordTypes.EmbedderCallback:
+        this.embedderCallbackName = record.data["callbackName"];
+        break;
+    }
+}
+
+WebInspector.TimelineModel.Record.prototype = {
+    get lastChildEndTime()
+    {
+        return this._lastChildEndTime;
+    },
+
+    set lastChildEndTime(time)
+    {
+        this._lastChildEndTime = time;
+    },
+
+    get selfTime()
+    {
+        return this._selfTime;
+    },
+
+    get cpuTime()
+    {
+        return this._cpuTime;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isRoot: function()
+    {
+        return this.type === WebInspector.TimelineModel.RecordType.Root;
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.TimelineModel.Record>}
+     */
+    get children()
+    {
+        return this._children;
+    },
+
+    /**
+     * @return {!WebInspector.TimelineCategory}
+     */
+    get category()
+    {
+        return WebInspector.TimelineUIUtils.categoryForRecord(this);
+    },
+
+    /**
+     * @return {string}
+     */
+    title: function()
+    {
+        return WebInspector.TimelineUIUtils.recordTitle(this);
+    },
+
+    /**
+     * @return {number}
+     */
+    get startTime()
+    {
+        return this._startTime || this._record.startTime;
+    },
+
+    set startTime(startTime)
+    {
+        this._startTime = startTime;
+    },
+
+    /**
+     * @return {string|undefined}
+     */
+    get thread()
+    {
+        return this._record.thread;
+    },
+
+    /**
+     * @return {number}
+     */
+    get startTimeOffset()
+    {
+        return this._startTimeOffset;
+    },
+
+    /**
+     * @return {number}
+     */
+    get endTime()
+    {
+        return this._endTime || this._record.endTime || this._record.startTime;
+    },
+
+    set endTime(endTime)
+    {
+        this._endTime = endTime;
+    },
+
+    /**
+     * @return {!Object}
+     */
+    get data()
+    {
+        return this._record.data;
+    },
+
+    /**
+     * @return {string}
+     */
+    get type()
+    {
+        return this._record.type;
+    },
+
+    /**
+     * @return {string}
+     */
+    get frameId()
+    {
+        return this._record.frameId || "";
+    },
+
+    /**
+     * @return {number}
+     */
+    get usedHeapSizeDelta()
+    {
+        return this._record.usedHeapSizeDelta || 0;
+    },
+
+    /**
+     * @return {number}
+     */
+    get jsHeapSizeUsed()
+    {
+        return this._record.counters ? this._record.counters.jsHeapSizeUsed || 0 : 0;
+    },
+
+    /**
+     * @return {!Object|undefined}
+     */
+    get counters()
+    {
+        return this._record.counters;
+    },
+
+    /**
+     * @return {?Array.<!ConsoleAgent.CallFrame>}
+     */
+    get stackTrace()
+    {
+        if (this._record.stackTrace && this._record.stackTrace.length)
+            return this._record.stackTrace;
+        return null;
+    },
+
+    /**
+     * @param {string} key
+     * @return {?Object}
+     */
+    getUserObject: function(key)
+    {
+        if (!this._userObjects)
+            return null;
+        return this._userObjects.get(key);
+    },
+
+    /**
+     * @param {string} key
+     * @param {?Object|undefined} value
+     */
+    setUserObject: function(key, value)
+    {
+        if (!this._userObjects)
+            this._userObjects = new StringMap();
+        this._userObjects.put(key, value);
+    },
+
+    /**
+     * @return {number} nodeId
+     */
+    relatedBackendNodeId: function()
+    {
+        return this._relatedBackendNodeId;
+    },
+
+    calculateAggregatedStats: function()
+    {
+        this._aggregatedStats = {};
+        this._cpuTime = this._selfTime;
+
+        for (var index = this._children.length; index; --index) {
+            var child = this._children[index - 1];
+            for (var category in child._aggregatedStats)
+                this._aggregatedStats[category] = (this._aggregatedStats[category] || 0) + child._aggregatedStats[category];
+        }
+        for (var category in this._aggregatedStats)
+            this._cpuTime += this._aggregatedStats[category];
+        this._aggregatedStats[this.category.name] = (this._aggregatedStats[this.category.name] || 0) + this._selfTime;
+    },
+
+    get aggregatedStats()
+    {
+        return this._aggregatedStats;
+    },
+
+    /**
+     * @param {string} message
+     */
+    addWarning: function(message)
+    {
+        if (this._warnings)
+            this._warnings.push(message);
+        else
+            this._warnings = [message];
+    },
+
+    /**
+     * @return {!Object}
+     */
+    warnings: function()
+    {
+        return this._warnings;
+    },
+
+    /**
+     * @param {!RegExp} regExp
+     * @return {boolean}
+     */
+    testContentMatching: function(regExp)
+    {
+        var tokens = [this.title()];
+        for (var key in this._record.data)
+            tokens.push(this._record.data[key])
+        return regExp.test(tokens.join("|"));
+    }
 }
 
 /**
@@ -479,12 +950,12 @@ WebInspector.TimelineSaver = function(stream)
 
 WebInspector.TimelineSaver.prototype = {
     /**
-     * @param {!Array.<*>} records
+     * @param {!Array.<*>} payloads
      * @param {string} version
      */
-    save: function(records, version)
+    save: function(payloads, version)
     {
-        this._records = records;
+        this._payloads = payloads;
         this._recordIndex = 0;
         this._prologue = "[" + JSON.stringify(version);
 
@@ -502,14 +973,14 @@ WebInspector.TimelineSaver.prototype = {
             length += this._prologue.length;
             delete this._prologue;
         } else {
-            if (this._recordIndex === this._records.length) {
+            if (this._recordIndex === this._payloads.length) {
                 stream.close();
                 return;
             }
             data.push("");
         }
-        while (this._recordIndex < this._records.length) {
-            var item = JSON.stringify(this._records[this._recordIndex]);
+        while (this._recordIndex < this._payloads.length) {
+            var item = JSON.stringify(this._payloads[this._recordIndex]);
             var itemLength = item.length + separator.length;
             if (length + itemLength > WebInspector.TimelineModel.TransferChunkLengthBytes)
                 break;
@@ -517,7 +988,7 @@ WebInspector.TimelineSaver.prototype = {
             data.push(item);
             ++this._recordIndex;
         }
-        if (this._recordIndex === this._records.length)
+        if (this._recordIndex === this._payloads.length)
             data.push(data.pop() + "]");
         stream.write(data.join(separator), this._writeNextChunk.bind(this));
     }
@@ -559,4 +1030,19 @@ WebInspector.TimelineMergingRecordBuffer.prototype = {
         this._backgroundRecordsBuffer = [];
         return result;
     }
-};
+}
+
+/**
+ * @param {!Object} data
+ * @return {?Array.<number>}
+ */
+WebInspector.TimelineModel._quadFromRectData = function(data)
+{
+    if (typeof data["x"] === "undefined" || typeof data["y"] === "undefined")
+        return null;
+    var x0 = data["x"];
+    var x1 = data["x"] + data["width"];
+    var y0 = data["y"];
+    var y1 = data["y"] + data["height"];
+    return [x0, y0, x1, y0, x1, y1, x0, y1];
+}

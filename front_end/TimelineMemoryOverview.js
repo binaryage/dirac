@@ -53,7 +53,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
     {
         this.resetCanvas();
 
-        var records = this._model.records;
+        var records = this._model.records();
         if (!records.length) {
             this.resetHeapSizeLabels();
             return;
@@ -64,7 +64,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
         var minUsedHeapSize = 100000000000;
         var minTime = this._model.minimumRecordTime();
         var maxTime = this._model.maximumRecordTime();
-        WebInspector.TimelinePresentationModel.forAllRecords(records, function(r) {
+        this._model.forAllRecords(function(r) {
             if (!r.counters || !r.counters.jsHeapSizeUsed)
                 return;
             maxUsedHeapSize = Math.max(maxUsedHeapSize, r.counters.jsHeapSizeUsed);
@@ -78,7 +78,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
         var yFactor = height / Math.max(maxUsedHeapSize - minUsedHeapSize, 1);
 
         var histogram = new Array(width);
-        WebInspector.TimelinePresentationModel.forAllRecords(records, function(r) {
+        this._model.forAllRecords(function(r) {
             if (!r.counters || !r.counters.jsHeapSizeUsed)
                 return;
             var x = Math.round((r.endTime - minTime) * xFactor);

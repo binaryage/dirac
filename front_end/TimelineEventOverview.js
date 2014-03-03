@@ -75,6 +75,7 @@ WebInspector.TimelineEventOverview.prototype = {
             this._context.fillRect(0.5, i * stripHeight + 0.5, this._canvas.width, stripHeight);
 
         /**
+         * @param {!WebInspector.TimelineModel.Record} record
          * @this {WebInspector.TimelineEventOverview}
          */
         function appendRecord(record)
@@ -98,7 +99,7 @@ WebInspector.TimelineEventOverview.prototype = {
                 this._renderBar(bar.start, bar.end, stripHeight, bar.category);
             lastBarByGroup[category.overviewStripGroupIndex] = { start: recordStart, end: recordEnd, category: category };
         }
-        WebInspector.TimelinePresentationModel.forAllRecords(this._model.records, appendRecord.bind(this));
+        this._model.forAllRecords(appendRecord.bind(this));
         for (var i = 0; i < lastBarByGroup.length; ++i) {
             if (lastBarByGroup[i])
                 this._renderBar(lastBarByGroup[i].start, lastBarByGroup[i].end, stripHeight, lastBarByGroup[i].category);

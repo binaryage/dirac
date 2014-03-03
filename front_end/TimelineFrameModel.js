@@ -38,7 +38,7 @@ WebInspector.TimelineFrameModel = function(model)
     this._model = model;
 
     this.reset();
-    var records = model.records;
+    var records = model.records();
     for (var i = 0; i < records.length; ++i)
         this.addRecord(records[i]);
 }
@@ -89,7 +89,7 @@ WebInspector.TimelineFrameModel.prototype = {
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} record
+     * @param {!WebInspector.TimelineModel.Record} record
      */
     addRecord: function(record)
     {
@@ -112,7 +112,7 @@ WebInspector.TimelineFrameModel.prototype = {
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} record
+     * @param {!WebInspector.TimelineModel.Record} record
      */
     _addBackgroundRecord: function(record)
     {
@@ -141,8 +141,8 @@ WebInspector.TimelineFrameModel.prototype = {
     },
 
     /**
-     * @param {?TimelineAgent.TimelineEvent} programRecord
-     * @param {!TimelineAgent.TimelineEvent} record
+     * @param {?WebInspector.TimelineModel.Record} programRecord
+     * @param {!WebInspector.TimelineModel.Record} record
      */
     _addMainThreadRecord: function(programRecord, record)
     {
@@ -178,7 +178,7 @@ WebInspector.TimelineFrameModel.prototype = {
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} programRecord
+     * @param {!WebInspector.TimelineModel.Record} programRecord
      * @param {!Object} timeByCategory
      */
     _deriveOtherTime: function(programRecord, timeByCategory)
@@ -191,7 +191,7 @@ WebInspector.TimelineFrameModel.prototype = {
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} record
+     * @param {!WebInspector.TimelineModel.Record} record
      */
     _startBackgroundFrame: function(record)
     {
@@ -206,7 +206,7 @@ WebInspector.TimelineFrameModel.prototype = {
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} record
+     * @param {!WebInspector.TimelineModel.Record} record
      */
     _startMainThreadFrame: function(record)
     {
@@ -228,8 +228,8 @@ WebInspector.TimelineFrameModel.prototype = {
 
     /**
      * @param {!Array.<string>} types
-     * @param {!TimelineAgent.TimelineEvent} record
-     * @return {?TimelineAgent.TimelineEvent} record
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {?WebInspector.TimelineModel.Record} record
      */
     _findRecordRecursively: function(types, record)
     {
@@ -303,7 +303,7 @@ WebInspector.TimelineFrame.prototype = {
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} record
+     * @param {!WebInspector.TimelineModel.Record} record
      */
     _addTimeFromRecord: function(record)
     {

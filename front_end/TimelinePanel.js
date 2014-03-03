@@ -236,7 +236,7 @@ WebInspector.TimelinePanel.prototype = {
                 views.overviewView = new WebInspector.TimelineMemoryOverview(this._model);
                 var timelineView = new WebInspector.TimelineView(this, this._model, this._presentationModel, null);
                 views.mainViews = [timelineView];
-                var memoryStatistics = new WebInspector.CountersGraph(this, this._presentationModel);
+                var memoryStatistics = new WebInspector.CountersGraph(this, this._model);
                 views.mainViews.push(memoryStatistics);
                 break;
             case WebInspector.TimelinePanel.Mode.FlameChart:
@@ -359,12 +359,6 @@ WebInspector.TimelinePanel.prototype = {
         var searchQuery = this._filters._textFilterUI.value();
         this._presentationModel.setSearchFilter(null);
         delete this._searchFilter;
-
-        function cleanRecord(record)
-        {
-            delete record.clicked;
-        }
-        WebInspector.TimelinePresentationModel.forAllRecords(this._presentationModel.rootRecord().children, cleanRecord);
 
         this.searchCanceled();
         if (searchQuery) {
@@ -608,21 +602,19 @@ WebInspector.TimelinePanel.prototype = {
 
     _onRecordAdded: function(event)
     {
-        this._addRecord(/** @type {!TimelineAgent.TimelineEvent} */(event.data));
+        this._addRecord(/** @type {!WebInspector.TimelineModel.Record} */(event.data));
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} record
+     * @param {!WebInspector.TimelineModel.Record} record
      */
     _addRecord: function(record)
     {
-        var presentationRecords = this._presentationModel.addRecord(record);
-
+        this._presentationModel.addRecord(record);
         if (this._frameModel)
             this._frameModel.addRecord(record);
         for (var i = 0; i < this._currentViews.length; ++i)
-            this._currentViews[i].addRecord(record, presentationRecords);
-
+            this._currentViews[i].addRecord(record);
         this._overviewPane.addRecord(record);
 
         this._updateSearchHighlight(false, true);
@@ -708,13 +700,16 @@ WebInspector.TimelinePanel.prototype = {
         var matches = [];
         var presentationModel = this._presentationModel;
 
+        /**
+         * @param {!WebInspector.TimelineModel.Record} record
+         */
         function processRecord(record)
         {
             if (presentationModel.isVisible(record) && record.testContentMatching(searchRegExp))
                 matches.push(record);
             return false;
         }
-        WebInspector.TimelinePresentationModel.forAllRecords(presentationModel.rootRecord().children, processRecord);
+        this._model.forAllRecords(processRecord);
 
         var matchesCount = matches.length;
         if (matchesCount) {
@@ -762,7 +757,7 @@ WebInspector.TimelinePanel.prototype = {
 
         /**
          * @param {number} value
-         * @param {!TimelineAgent.TimelineEvent} task
+         * @param {!WebInspector.TimelineModel.Record} task
          * @return {number}
          */
         function compareEndTime(value, task)
@@ -771,15 +766,15 @@ WebInspector.TimelinePanel.prototype = {
         }
 
         /**
-         * @param {!TimelineAgent.TimelineEvent} rawRecord
+         * @param {!WebInspector.TimelineModel.Record} record
          */
-        function aggregateTimeForRecordWithinWindow(rawRecord)
+        function aggregateTimeForRecordWithinWindow(record)
         {
-            if (!rawRecord.endTime || rawRecord.endTime < startTime || rawRecord.startTime > endTime)
+            if (!record.endTime || record.endTime < startTime || record.startTime > endTime)
                 return;
 
             var childrenTime = 0;
-            var children = rawRecord.children || [];
+            var children = record.children || [];
             for (var i = 0; i < children.length; ++i) {
                 var child = children[i];
                 if (!child.endTime || child.endTime < startTime || child.startTime > endTime)
@@ -787,8 +782,8 @@ WebInspector.TimelinePanel.prototype = {
                 childrenTime += Math.min(endTime, child.endTime) - Math.max(startTime, child.startTime);
                 aggregateTimeForRecordWithinWindow(child);
             }
-            var categoryName = WebInspector.TimelineUIUtils.categoryForRecord(rawRecord).name;
-            var ownTime = Math.min(endTime, rawRecord.endTime) - Math.max(startTime, rawRecord.startTime) - childrenTime;
+            var categoryName = WebInspector.TimelineUIUtils.categoryForRecord(record).name;
+            var ownTime = Math.min(endTime, record.endTime) - Math.max(startTime, record.startTime) - childrenTime;
             aggregatedStats[categoryName] = (aggregatedStats[categoryName] || 0) + ownTime;
         }
 
@@ -815,7 +810,7 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     * @param {?WebInspector.TimelineModel.Record} record
      */
     selectRecord: function(record)
     {
@@ -907,13 +902,12 @@ WebInspector.TimelineModeView.prototype = {
     refreshRecords: function() {},
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} record
-     * @param {!Array.<!WebInspector.TimelinePresentationModel.Record>} presentationRecords
+     * @param {!WebInspector.TimelineModel.Record} record
      */
-    addRecord: function(record, presentationRecords) {},
+    addRecord: function(record) {},
 
     /**
-     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     * @param {?WebInspector.TimelineModel.Record} record
      * @param {string=} regex
      * @param {boolean=} selectRecord
      */
@@ -931,7 +925,7 @@ WebInspector.TimelineModeView.prototype = {
     setSidebarSize: function(width) {},
 
     /**
-     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     * @param {?WebInspector.TimelineModel.Record} record
      */
     setSelectedRecord: function(record) {}
 }
@@ -949,7 +943,7 @@ WebInspector.TimelineModeViewDelegate.prototype = {
     requestWindowTimes: function(startTime, endTime) {},
 
     /**
-     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     * @param {?WebInspector.TimelineModel.Record} record
      */
     selectRecord: function(record) {}
 }
@@ -964,7 +958,7 @@ WebInspector.TimelineCategoryFilter = function()
 
 WebInspector.TimelineCategoryFilter.prototype = {
     /**
-     * @param {!WebInspector.TimelinePresentationModel.Record} record
+     * @param {!WebInspector.TimelineModel.Record} record
      * @return {boolean}
      */
     accept: function(record)
@@ -992,7 +986,7 @@ WebInspector.TimelineIsLongFilter.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TimelinePresentationModel.Record} record
+     * @param {!WebInspector.TimelineModel.Record} record
      * @return {boolean}
      */
     accept: function(record)
@@ -1013,7 +1007,7 @@ WebInspector.TimelineSearchFilter = function(regExp)
 
 WebInspector.TimelineSearchFilter.prototype = {
     /**
-     * @param {!WebInspector.TimelinePresentationModel.Record} record
+     * @param {!WebInspector.TimelineModel.Record} record
      * @return {boolean}
      */
     accept: function(record)
@@ -1045,7 +1039,7 @@ WebInspector.TimelineWindowFilter.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TimelinePresentationModel.Record} record
+     * @param {!WebInspector.TimelineModel.Record} record
      * @return {boolean}
      */
     accept: function(record)

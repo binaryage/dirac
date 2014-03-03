@@ -118,7 +118,7 @@ WebInspector.TimelineOverviewPane.prototype = {
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} record
+     * @param {!WebInspector.TimelineModel.Record} record
      */
     addRecord: function(record)
     {
@@ -128,7 +128,7 @@ WebInspector.TimelineOverviewPane.prototype = {
             if (WebInspector.TimelineUIUtils.isEventDivider(record))
                 eventDividers.push(record);
         }
-        WebInspector.TimelinePresentationModel.forAllRecords([record], addEventDividers);
+        WebInspector.TimelineModel.forAllRecords([record], addEventDividers);
         this._scheduleRefresh();
     },
 
@@ -168,7 +168,7 @@ WebInspector.TimelineOverviewPane.prototype = {
         var windowBoundaries = this._overviewControl.windowBoundaries(startTime, endTime);
         this._muteOnWindowChanged = true;
         this._overviewGrid.setWindow(windowBoundaries.left, windowBoundaries.right);
-        this._overviewGrid.setResizeEnabled(this._model.records.length);
+        this._overviewGrid.setResizeEnabled(!!this._model.records().length);
         this._muteOnWindowChanged = false;
 
         this.dispatchEventToListeners(WebInspector.TimelineOverviewPane.Events.WindowChanged, { startTime: startTime, endTime: endTime });

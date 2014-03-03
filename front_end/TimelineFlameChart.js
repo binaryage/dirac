@@ -98,7 +98,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} record
+     * @param {!WebInspector.TimelineModel.Record} record
      */
     addRecord: function(record)
     {
@@ -125,7 +125,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     {
         if (!this._timelineData) {
             this._resetData();
-            WebInspector.TimelinePresentationModel.forAllRecords(this._model.records, this._appendRecord.bind(this));
+            this._model.forAllRecords(this._appendRecord.bind(this));
             this._zeroTime = this._model.minimumRecordTime();
         }
         return this._timelineData;
@@ -172,6 +172,10 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         this._entryTitles = [];
     },
 
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {number} depth
+     */
     _appendRecord: function(record, depth)
     {
         var timelineData = this._timelineData;
@@ -281,15 +285,14 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} rawRecord
-     * @param {!Array.<!WebInspector.TimelinePresentationModel.Record>} presentationRecords
+     * @param {!WebInspector.TimelineModel.Record} record
      */
-    addRecord: function(rawRecord, presentationRecords)
+    addRecord: function(record)
     {
-        this._dataProvider.addRecord(rawRecord);
+        this._dataProvider.addRecord(record);
         if (this._automaticallySizeWindow) {
             var minimumRecordTime = this._model.minimumRecordTime();
-            if (rawRecord.startTime > (minimumRecordTime + 1000)) {
+            if (record.startTime > (minimumRecordTime + 1000)) {
                 this._automaticallySizeWindow = false;
                 this._delegate.requestWindowTimes(minimumRecordTime, minimumRecordTime + 1000);
             }
@@ -326,7 +329,7 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
-     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     * @param {?WebInspector.TimelineModel.Record} record
      * @param {string=} regex
      * @param {boolean=} selectRecord
      */
@@ -335,7 +338,7 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
-     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     * @param {?WebInspector.TimelineModel.Record} record
      */
     setSelectedRecord: function(record)
     {

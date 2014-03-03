@@ -32,17 +32,17 @@
  * @constructor
  * @extends {WebInspector.SplitView}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
- * @param {!WebInspector.TimelinePresentationModel} presentationModel
+ * @param {!WebInspector.TimelineModel} model
  */
-WebInspector.MemoryStatistics = function(delegate, presentationModel)
+WebInspector.MemoryStatistics = function(delegate, model)
 {
     WebInspector.SplitView.call(this, true, false);
 
     this.element.id = "memory-graphs-container";
 
     this._delegate = delegate;
-    this._presentationModel = presentationModel;
-    this._calculator = new WebInspector.TimelineCalculator(this._presentationModel);
+    this._model = model;
+    this._calculator = new WebInspector.TimelineCalculator(this._model);
 
     this._graphsContainer = this.mainElement();
     this._createCurrentValuesBar();
@@ -257,10 +257,9 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} record
-     * @param {!Array.<!WebInspector.TimelinePresentationModel.Record>} presentationRecords
+     * @param {!WebInspector.TimelineModel.Record} record
      */
-    addRecord: function(record, presentationRecords)
+    addRecord: function(record)
     {
         throw new Error("Not implemented");
     },
@@ -344,7 +343,7 @@ WebInspector.MemoryStatistics.prototype = {
         var recordToReveal;
         function findRecordToReveal(record)
         {
-            if (record.containsTime(time)) {
+            if (record.startTime <= time && time <= record.endTime) {
                 recordToReveal = record;
                 return true;
             }
@@ -353,8 +352,7 @@ WebInspector.MemoryStatistics.prototype = {
                 recordToReveal = record;
             return false;
         }
-        WebInspector.TimelinePresentationModel.forAllRecords(this._presentationModel.rootRecord().children, null, findRecordToReveal);
-
+        this._model.forAllRecords(null, findRecordToReveal);
         this._delegate.selectRecord(recordToReveal);
     },
 
@@ -420,7 +418,7 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     * @param {?WebInspector.TimelineModel.Record} record
      * @param {string=} regex
      * @param {boolean=} selectRecord
      */
@@ -429,7 +427,7 @@ WebInspector.MemoryStatistics.prototype = {
     },
 
     /**
-     * @param {?WebInspector.TimelinePresentationModel.Record} record
+     * @param {?WebInspector.TimelineModel.Record} record
      */
     setSelectedRecord: function(record)
     {

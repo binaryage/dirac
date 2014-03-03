@@ -33,11 +33,11 @@
  * @extends {WebInspector.MemoryStatistics}
  * @implements {WebInspector.TimelineModeView}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
- * @param {!WebInspector.TimelinePresentationModel} presentationModel
+ * @param {!WebInspector.TimelineModel} model
  */
-WebInspector.CountersGraph = function(delegate, presentationModel)
+WebInspector.CountersGraph = function(delegate, model)
 {
-    WebInspector.MemoryStatistics.call(this, delegate, presentationModel);
+    WebInspector.MemoryStatistics.call(this, delegate, model);
 }
 
 /**
@@ -117,12 +117,12 @@ WebInspector.CountersGraph.prototype = {
     },
 
     /**
-     * @param {!TimelineAgent.TimelineEvent} record
-     * @param {!Array.<!WebInspector.TimelinePresentationModel.Record>} presentationRecords
+     * @param {!WebInspector.TimelineModel.Record} record
      */
-    addRecord: function(record, presentationRecords)
+    addRecord: function(record)
     {
         /**
+         * @param {!WebInspector.TimelineModel.Record} record
          * @this {!WebInspector.CountersGraph}
          */
         function addStatistics(record)
@@ -134,7 +134,7 @@ WebInspector.CountersGraph.prototype = {
             for (var i = 0; i < this._counters.length; ++i)
                 this._counters[i].appendSample(time, counters);
         }
-        WebInspector.TimelinePresentationModel.forAllRecords([record], null, addStatistics.bind(this));
+        WebInspector.TimelineModel.forAllRecords([record], null, addStatistics.bind(this));
         this.scheduleRefresh();
     },
 
