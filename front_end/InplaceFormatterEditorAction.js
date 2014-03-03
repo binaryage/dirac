@@ -66,7 +66,10 @@ WebInspector.InplaceFormatterEditorAction.prototype = {
      */
     _isFormattable: function(uiSourceCode)
     {
-        return !!uiSourceCode && uiSourceCode.contentType() === WebInspector.resourceTypes.Stylesheet;
+        if (!uiSourceCode)
+            return false;
+        return uiSourceCode.contentType() === WebInspector.resourceTypes.Stylesheet
+            || uiSourceCode.project().type() === WebInspector.projectTypes.Snippets;
     },
 
     _formatSourceInPlace: function()
