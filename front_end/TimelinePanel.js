@@ -56,6 +56,7 @@ WebInspector.TimelinePanel = function()
     this.registerRequiredCSS("filter.css");
     this.element.addEventListener("contextmenu", this._contextMenu.bind(this), false);
 
+    this._detailsLinkifier = new WebInspector.Linkifier();
     this._windowStartTime = 0;
     this._windowEndTime = Infinity;
 
@@ -818,6 +819,8 @@ WebInspector.TimelinePanel.prototype = {
      */
     selectRecord: function(record)
     {
+        this._detailsLinkifier.reset();
+
         if (!record) {
             this._updateSelectionDetails();
             return;
@@ -831,7 +834,7 @@ WebInspector.TimelinePanel.prototype = {
             this._updateSelectionDetails();
             return;
         }
-        record.generatePopupContent(showCallback.bind(this));
+        record.generatePopupContent(this._detailsLinkifier, showCallback.bind(this));
 
         /**
          * @param {!DocumentFragment} element
@@ -839,7 +842,7 @@ WebInspector.TimelinePanel.prototype = {
          */
         function showCallback(element)
         {
-            this._detailsView.setContent(record.title, element);
+            this._detailsView.setContent(record.title(), element);
         }
     },
 

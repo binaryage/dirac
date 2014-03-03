@@ -377,7 +377,7 @@ WebInspector.TimelineUIUtils.generatePopupContentForFrameStatistics = function(s
         return WebInspector.UIString("%s (%.0f FPS)", Number.millisToString(time, true), 1 / time);
     }
 
-    var contentHelper = new WebInspector.TimelineDetailsContentHelper(false);
+    var contentHelper = new WebInspector.TimelineDetailsContentHelper(new WebInspector.Linkifier(), false);
     contentHelper.appendTextRow(WebInspector.UIString("Minimum Time"), formatTimeAndFPS(statistics.minDuration));
     contentHelper.appendTextRow(WebInspector.UIString("Average Time"), formatTimeAndFPS(statistics.average));
     contentHelper.appendTextRow(WebInspector.UIString("Maximum Time"), formatTimeAndFPS(statistics.maxDuration));
@@ -527,7 +527,7 @@ WebInspector.TimelinePopupContentHelper.prototype = {
 
     /**
      * @param {string} title
-     * @param {!Element|string} content
+     * @param {!Node|string} content
      */
     appendElementRow: function(title, content)
     {
@@ -547,10 +547,12 @@ WebInspector.TimelinePopupContentHelper.prototype = {
 
 /**
  * @constructor
+ * @param {!WebInspector.Linkifier} linkifier
  * @param {boolean} monospaceValues
  */
-WebInspector.TimelineDetailsContentHelper = function(monospaceValues)
+WebInspector.TimelineDetailsContentHelper = function(linkifier, monospaceValues)
 {
+    this._linkifier = linkifier;
     this.element = document.createElement("div");
     this.element.className = "timeline-details-view-block";
     this._monospaceValues = monospaceValues;
@@ -570,7 +572,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
 
     /**
      * @param {string} title
-     * @param {!Element|string} content
+     * @param {!Node|string} content
      */
     appendElementRow: function(title, content)
     {
@@ -585,10 +587,19 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
 
     /**
      * @param {string} title
-     * @param {!Array.<!ConsoleAgent.CallFrame>} stackTrace
-     * @param {function(!ConsoleAgent.CallFrame)} callFrameLinkifier
+     * @param {string} url
+     * @param {number} line
      */
-    appendStackTrace: function(title, stackTrace, callFrameLinkifier)
+    appendLocationRow: function(title, url, line)
+    {
+        this.appendElementRow(title, this._linkifier.linkifyLocation(url, line - 1) || "");
+    },
+
+    /**
+     * @param {string} title
+     * @param {!Array.<!ConsoleAgent.CallFrame>} stackTrace
+     */
+    appendStackTrace: function(title, stackTrace)
     {
         var rowElement = this.element.createChild("div", "timeline-details-view-row");
         rowElement.createChild("span", "timeline-details-view-row-title").textContent = WebInspector.UIString("%s: ", title);
@@ -599,7 +610,7 @@ WebInspector.TimelineDetailsContentHelper.prototype = {
             var row = stackTraceElement.createChild("div");
             row.createTextChild(stackFrame.functionName || WebInspector.UIString("(anonymous function)"));
             row.createTextChild(" @ ");
-            var urlElement = callFrameLinkifier(stackFrame);
+            var urlElement = this._linkifier.linkifyLocation(stackFrame.url, stackFrame.lineNumber - 1);
             row.appendChild(urlElement);
         }
     }

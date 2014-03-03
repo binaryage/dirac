@@ -47,6 +47,7 @@ WebInspector.TimelineView = function(delegate, presentationModel, frameModel)
     this._presentationModel = presentationModel;
     this._frameModel = frameModel;
     this._calculator = new WebInspector.TimelineCalculator(this._presentationModel);
+    this._linkifier = new WebInspector.Linkifier();
 
     this._boundariesAreValid = true;
     this._scrollTop = 0;
@@ -267,6 +268,7 @@ WebInspector.TimelineView.prototype = {
         this._windowEndTime = -1;
         this._boundariesAreValid = false;
         this._adjustScrollPosition(0);
+        this._linkifier.reset();
         this._closeRecordDetails();
         this._automaticallySizeWindow = true;
     },
@@ -287,7 +289,6 @@ WebInspector.TimelineView.prototype = {
 
     refreshRecords: function()
     {
-        this._resetView();
         this._automaticallySizeWindow = false;
         this._invalidateAndScheduleRefresh(false, true);
     },
@@ -521,7 +522,7 @@ WebInspector.TimelineView.prototype = {
                 }
             } else {
                 if (!listRowElement) {
-                    listRowElement = new WebInspector.TimelineRecordListRow(selectRecordCallback, scheduleRefreshCallback).element;
+                    listRowElement = new WebInspector.TimelineRecordListRow(this._linkifier, selectRecordCallback, scheduleRefreshCallback).element;
                     this._sidebarListElement.appendChild(listRowElement);
                 }
                 if (!graphRowElement) {
@@ -800,7 +801,7 @@ WebInspector.TimelineView.prototype = {
             popover.show(WebInspector.TimelineUIUtils.generatePopupContentForFrame(frame), anchor);
         } else {
             if (anchor.row && anchor.row._record)
-                anchor.row._record.generatePopupContent(showCallback);
+                anchor.row._record.generatePopupContent(this._linkifier, showCallback);
             else if (anchor._tasksInfo)
                 popover.show(WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent(this._presentationModel, anchor._tasksInfo), anchor, null, null, WebInspector.Popover.Orientation.Bottom);
         }
@@ -977,10 +978,11 @@ WebInspector.TimelineCalculator.prototype = {
 
 /**
  * @constructor
+ * @param {!WebInspector.Linkifier} linkifier
  * @param {function(!WebInspector.TimelinePresentationModel.Record)} selectRecord
  * @param {function()} scheduleRefresh
  */
-WebInspector.TimelineRecordListRow = function(selectRecord, scheduleRefresh)
+WebInspector.TimelineRecordListRow = function(linkifier, selectRecord, scheduleRefresh)
 {
     this.element = document.createElement("div");
     this.element.row = this;
@@ -988,6 +990,7 @@ WebInspector.TimelineRecordListRow = function(selectRecord, scheduleRefresh)
     this.element.addEventListener("click", this._onClick.bind(this), false);
     this.element.addEventListener("mouseover", this._onMouseOver.bind(this), false);
     this.element.addEventListener("mouseout", this._onMouseOut.bind(this), false);
+    this._linkifier = linkifier;
 
     // Warning is float right block, it goes first.
     this._warningElement = this.element.createChild("div", "timeline-tree-item-warning hidden");
@@ -1017,7 +1020,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         if (record.isBackground())
             this.element.classList.add("background");
 
-        this._typeElement.textContent = record.title;
+        this._typeElement.textContent = record.title();
 
         if (this._dataElement.firstChild)
             this._dataElement.removeChildren();
@@ -1025,8 +1028,12 @@ WebInspector.TimelineRecordListRow.prototype = {
         this._warningElement.enableStyleClass("hidden", !record.hasWarnings() && !record.childHasWarnings());
         this._warningElement.enableStyleClass("timeline-tree-item-child-warning", record.childHasWarnings() && !record.hasWarnings());
 
-        if (record.detailsNode())
-            this._dataElement.appendChild(record.detailsNode());
+        var detailsNode = record.buildDetailsNode(this._linkifier);
+        if (detailsNode) {
+            this._dataElement.appendChild(document.createTextNode("("));
+            this._dataElement.appendChild(detailsNode);
+            this._dataElement.appendChild(document.createTextNode(")"));
+        }
         this._expandArrowElement.enableStyleClass("parent", record.children && record.children.length);
         this._expandArrowElement.enableStyleClass("expanded", record.visibleChildrenCount);
         this._record.setUserObject("WebInspector.TimelineRecordListRow", this);
