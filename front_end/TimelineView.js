@@ -803,7 +803,7 @@ WebInspector.TimelineView.prototype = {
             popover.show(WebInspector.TimelineUIUtils.generatePopupContentForFrame(frame), anchor);
         } else {
             if (anchor.row && anchor.row._record)
-                anchor.row._record.generatePopupContent(anchor.row._record, this._linkifier, showCallback);
+                WebInspector.TimelineUIUtils.generatePopupContent(anchor.row._record, this._linkifier, showCallback);
             else if (anchor._tasksInfo)
                 popover.show(WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent(this._model, anchor._tasksInfo), anchor, null, null, WebInspector.Popover.Orientation.Bottom);
         }
@@ -1030,7 +1030,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         this._warningElement.enableStyleClass("hidden", !record.hasWarnings() && !record.childHasWarnings());
         this._warningElement.enableStyleClass("timeline-tree-item-child-warning", record.childHasWarnings() && !record.hasWarnings());
 
-        var detailsNode = record.buildDetailsNode(record, this._linkifier);
+        var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNode(record, this._linkifier);
         if (detailsNode) {
             this._dataElement.appendChild(document.createTextNode("("));
             this._dataElement.appendChild(detailsNode);
