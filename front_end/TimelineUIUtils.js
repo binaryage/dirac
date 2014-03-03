@@ -232,16 +232,15 @@ WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(model,
 }
 
 /**
- * @param {!WebInspector.TimelineModel} model
  * @param {!TimelineAgent.TimelineEvent} record
  * @return {string}
  */
-WebInspector.TimelineUIUtils.recordTitle = function(model, record)
+WebInspector.TimelineUIUtils.recordTitle = function(record)
 {
     if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp)
         return record.data["message"];
     if (WebInspector.TimelineUIUtils.isEventDivider(record)) {
-        var startTime = Number.millisToString(record.startTime - model.minimumRecordTime());
+        var startTime = Number.millisToString(record.startTimeOffset);
         return WebInspector.UIString("%s at %s", WebInspector.TimelineUIUtils.recordStyle(record).title, startTime, true);
     }
     return WebInspector.TimelineUIUtils.recordStyle(record).title;

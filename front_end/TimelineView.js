@@ -134,7 +134,7 @@ WebInspector.TimelineView.prototype = {
             var dividerPosition = Math.round(positions.left);
             if (dividerPosition < 0 || dividerPosition >= clientWidth || dividers[dividerPosition])
                 continue;
-            var divider = WebInspector.TimelineUIUtils.createEventDivider(record.type, WebInspector.TimelineUIUtils.recordTitle(this._model, record));
+            var divider = WebInspector.TimelineUIUtils.createEventDivider(record.type, WebInspector.TimelineUIUtils.recordTitle(record));
             divider.style.left = dividerPosition + "px";
             dividers[dividerPosition] = divider;
         }
@@ -803,7 +803,7 @@ WebInspector.TimelineView.prototype = {
             popover.show(WebInspector.TimelineUIUtils.generatePopupContentForFrame(frame), anchor);
         } else {
             if (anchor.row && anchor.row._record)
-                anchor.row._record.generatePopupContent(this._linkifier, showCallback);
+                anchor.row._record.generatePopupContent(anchor.row._record, this._linkifier, showCallback);
             else if (anchor._tasksInfo)
                 popover.show(WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent(this._model, anchor._tasksInfo), anchor, null, null, WebInspector.Popover.Orientation.Bottom);
         }
@@ -1030,7 +1030,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         this._warningElement.enableStyleClass("hidden", !record.hasWarnings() && !record.childHasWarnings());
         this._warningElement.enableStyleClass("timeline-tree-item-child-warning", record.childHasWarnings() && !record.hasWarnings());
 
-        var detailsNode = record.buildDetailsNode(this._linkifier);
+        var detailsNode = record.buildDetailsNode(record, this._linkifier);
         if (detailsNode) {
             this._dataElement.appendChild(document.createTextNode("("));
             this._dataElement.appendChild(detailsNode);
