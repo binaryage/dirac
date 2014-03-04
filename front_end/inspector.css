@@ -1728,6 +1728,7 @@ li.editing-sub-part .delete-button {
 .watch-expressions > li.editing-sub-part .text-prompt {
     display: block;
     width: 100%;
+    overflow: hidden;
 }
 
 .watch-expressions > li.editing-sub-part .value,
