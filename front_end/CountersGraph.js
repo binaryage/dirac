@@ -92,7 +92,7 @@ WebInspector.CountersGraph.prototype = {
         this._graphsContainer.classList.add("dom-counters");
     },
 
-    _createAllCounters: function()
+    createAllCounters: function()
     {
         this._counters = [];
         this._counterUI = [];

@@ -202,7 +202,7 @@ WebInspector.TimelineFrameModel.prototype = {
         if (this._lastFrame)
             this._flushFrame(this._lastFrame, record);
 
-        this._lastFrame = new WebInspector.TimelineFrame(this, record);
+        this._lastFrame = new WebInspector.TimelineFrame(record);
     },
 
     /**
@@ -212,7 +212,7 @@ WebInspector.TimelineFrameModel.prototype = {
     {
         if (this._lastFrame)
             this._flushFrame(this._lastFrame, record);
-        this._lastFrame = new WebInspector.TimelineFrame(this, record);
+        this._lastFrame = new WebInspector.TimelineFrame(record);
     },
 
     /**
@@ -279,13 +279,12 @@ WebInspector.FrameStatistics = function(frames)
 
 /**
  * @constructor
- * @param {!WebInspector.TimelineFrameModel} model
  * @param {!Object} record
  */
-WebInspector.TimelineFrame = function(model, record)
+WebInspector.TimelineFrame = function(record)
 {
     this.startTime = record.startTime;
-    this.startTimeOffset = model._model.recordOffsetInMillis(record);
+    this.startTimeOffset = record.startTimeOffset;
     this.endTime = this.startTime;
     this.duration = 0;
     this.timeByCategory = {};

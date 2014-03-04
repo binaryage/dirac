@@ -63,7 +63,7 @@ WebInspector.MemoryStatistics = function(delegate, model)
 
     // Populate sidebar
     this.sidebarElement().createChild("div", "sidebar-tree sidebar-tree-section").textContent = WebInspector.UIString("COUNTERS");
-    this._createAllCounters();
+    this.createAllCounters();
 }
 
 /**
@@ -251,7 +251,7 @@ WebInspector.MemoryStatistics.prototype = {
         throw new Error("Not implemented");
     },
 
-    _createAllCounters: function()
+    createAllCounters: function()
     {
         throw new Error("Not implemented");
     },
@@ -399,6 +399,10 @@ WebInspector.MemoryStatistics.prototype = {
 
     refreshRecords: function()
     {
+        this.reset();
+        var records = this._model.records();
+        for (var i = 0; i < records.length; ++i)
+            this.addRecord(records[i]);
     },
 
     /**

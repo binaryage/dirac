@@ -35,10 +35,8 @@
  * @implements {WebInspector.TimelineModeView}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
- * @param {!WebInspector.TimelinePresentationModel} presentationModel
- * @param {?WebInspector.TimelineFrameModel} frameModel
  */
-WebInspector.TimelineView = function(delegate, model, presentationModel, frameModel)
+WebInspector.TimelineView = function(delegate, model)
 {
     WebInspector.View.call(this);
     this.element.classList.add("timeline-view");
@@ -46,8 +44,7 @@ WebInspector.TimelineView = function(delegate, model, presentationModel, frameMo
 
     this._delegate = delegate;
     this._model = model;
-    this._presentationModel = presentationModel;
-    this._frameModel = frameModel;
+    this._presentationModel = new WebInspector.TimelinePresentationModel(model);
     this._calculator = new WebInspector.TimelineCalculator(model);
     this._linkifier = new WebInspector.Linkifier();
 
@@ -69,6 +66,14 @@ WebInspector.TimelineView = function(delegate, model, presentationModel, frameMo
 }
 
 WebInspector.TimelineView.prototype = {
+    /**
+     * @param {?WebInspector.TimelineFrameModel} frameModel
+     */
+    setFrameModel: function(frameModel)
+    {
+        this._frameModel = frameModel;
+    },
+
     /**
      * @return {!WebInspector.SplitView}
      */
@@ -121,7 +126,7 @@ WebInspector.TimelineView.prototype = {
         this._timelineGrid.removeEventDividers();
         var clientWidth = this._graphRowsElementWidth;
         var dividers = [];
-        var eventDividerRecords = this._presentationModel.eventDividerRecords();
+        var eventDividerRecords = this._model.eventDividerRecords();
 
         for (var i = 0; i < eventDividerRecords.length; ++i) {
             var record = eventDividerRecords[i];
@@ -194,27 +199,8 @@ WebInspector.TimelineView.prototype = {
      */
     addRecord: function(record)
     {
-        if (this._innerAddRecordToTimeline(record))
-            this._invalidateAndScheduleRefresh(false, false);
-    },
-
-    /**
-     * @param {!WebInspector.TimelineModel.Record} record
-     * @return {boolean}
-     */
-    _innerAddRecordToTimeline: function(record)
-    {
-        if (record.type === WebInspector.TimelineModel.RecordType.GPUTask)
-            return record.startTime < this._windowEndTime;
-
-        var hasVisibleRecords = false;
-        var presentationModel = this._presentationModel;
-        function checkVisible(record)
-        {
-            hasVisibleRecords |= presentationModel.isVisible(record);
-        }
-        WebInspector.TimelineModel.forAllRecords([record], checkVisible);
-        return hasVisibleRecords;
+        this._presentationModel.addRecord(record);
+        this._invalidateAndScheduleRefresh(false, false);
     },
 
     /**
@@ -260,6 +246,7 @@ WebInspector.TimelineView.prototype = {
         this._linkifier.reset();
         this._closeRecordDetails();
         this._automaticallySizeWindow = true;
+        this._presentationModel.reset();
     },
 
     reset: function()
@@ -276,9 +263,17 @@ WebInspector.TimelineView.prototype = {
         return [this._containerElement];
     },
 
-    refreshRecords: function()
+    /**
+     * @param {?RegExp} textFilter
+     */
+    refreshRecords: function(textFilter)
     {
+        this._presentationModel.reset();
+        var records = this._model.records();
+        for (var i = 0; i < records.length; ++i)
+            this.addRecord(records[i]);
         this._automaticallySizeWindow = false;
+        this._presentationModel.setTextFilter(textFilter);
         this._invalidateAndScheduleRefresh(false, true);
     },
 
@@ -493,7 +488,7 @@ WebInspector.TimelineView.prototype = {
             this._automaticallySizeWindow = false;
             this._selectRecord(null);
             // If we're at the top, always use real timeline start as a left window bound so that expansion arrow padding logic works.
-            var windowStartTime = startIndex ? recordsInWindow[startIndex].record().startTime : this._presentationModel.minimumRecordTime();
+            var windowStartTime = startIndex ? recordsInWindow[startIndex].record().startTime : this._model.minimumRecordTime();
             var windowEndTime = recordsInWindow[Math.max(0, lastVisibleLine - 1)].record().endTime;
             this._delegate.requestWindowTimes(windowStartTime, windowEndTime);
             recordsInWindow = this._presentationModel.filteredRecords();
@@ -574,9 +569,9 @@ WebInspector.TimelineView.prototype = {
 
     _refreshAllUtilizationBars: function()
     {
-        this._refreshUtilizationBars(WebInspector.UIString("CPU"), this._presentationModel.mainThreadTasks(), this._cpuBarsElement);
+        this._refreshUtilizationBars(WebInspector.UIString("CPU"), this._model.mainThreadTasks(), this._cpuBarsElement);
         if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
-            this._refreshUtilizationBars(WebInspector.UIString("GPU"), this._presentationModel.gpuThreadTasks(), this._gpuBarsElement);
+            this._refreshUtilizationBars(WebInspector.UIString("GPU"), this._model.gpuThreadTasks(), this._gpuBarsElement);
     },
 
     /**
@@ -725,7 +720,6 @@ WebInspector.TimelineView.prototype = {
                     this._selectRecord(record.presentationParent());
                 } else {
                     record.setCollapsed(true);
-                    record.clicked = true;
                     this._invalidateAndScheduleRefresh(true, true);
                 }
             }
@@ -740,7 +734,6 @@ WebInspector.TimelineView.prototype = {
         case "Right":
             if (record.expandable() && record.collapsed()) {
                 record.setCollapsed(false);
-                record.clicked = true;
                 this._invalidateAndScheduleRefresh(true, true);
             } else {
                 if (++index >= recordsInWindow.length)
@@ -1054,7 +1047,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         }
 
         this._expandArrowElement.enableStyleClass("parent", presentationRecord.hasPresentationChildren());
-        this._expandArrowElement.enableStyleClass("expanded", presentationRecord.visibleChildrenCount());
+        this._expandArrowElement.enableStyleClass("expanded", !!presentationRecord.visibleChildrenCount());
         this._record.setListRow(this);
     },
 
@@ -1076,7 +1069,6 @@ WebInspector.TimelineRecordListRow.prototype = {
     _onExpandClick: function(event)
     {
         this._record.setCollapsed(!this._record.collapsed());
-        this._record.clicked = true;
         this._scheduleRefresh();
         event.consume(true);
     },
@@ -1204,7 +1196,6 @@ WebInspector.TimelineRecordGraphRow.prototype = {
     _expand: function()
     {
         this._record.setCollapsed(!this._record.collapsed());
-        this._record.clicked = true;
         this._scheduleRefresh();
     },
 

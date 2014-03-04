@@ -200,7 +200,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var index = this._entryTitles.length;
         this._entryTitles[index] = record.type;
         timelineData.entryOffsets[index] = record.startTime - startTime;
-        timelineData.entryLevels[index] = depth - 1;
+        timelineData.entryLevels[index] = depth;
         timelineData.entryTotalTimes[index] = endTime - record.startTime;
         this._entryColors[index] = this._colorGenerator.colorForID(WebInspector.TimelineUIUtils.categoryForRecord(record).name);
         this._maxStackDepth = Math.max(this._maxStackDepth, depth + 1);
@@ -274,8 +274,13 @@ WebInspector.TimelineFlameChart.prototype = {
         this._delegate.requestWindowTimes(windowStartTime, windowEndTime);
     },
 
-    refreshRecords: function()
+    /**
+     * @param {?RegExp} textFilter
+     */
+    refreshRecords: function(textFilter)
     {
+        this._dataProvider.reset();
+        this._mainView._scheduleUpdate();
     },
 
     reset: function()

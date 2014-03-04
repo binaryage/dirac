@@ -34,12 +34,10 @@
  */
 WebInspector.TimelineModel = function()
 {
-    this._payloads = [];
-    this._records = [];
-    this._minimumRecordTime = -1;
-    this._maximumRecordTime = -1;
-    this._stringPool = {};
+    this._filters = [];
     this._bindings = new WebInspector.TimelineModel.InterRecordBindings();
+
+    this.reset();
 
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, this._onRecordAdded, this);
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, this._onStarted, this);
@@ -114,37 +112,37 @@ WebInspector.TimelineModel.Events = {
     RecordAdded: "RecordAdded",
     RecordsCleared: "RecordsCleared",
     RecordingStarted: "RecordingStarted",
-    RecordingStopped: "RecordingStopped"
+    RecordingStopped: "RecordingStopped",
+    RecordFilterChanged: "RecordFilterChanged"
 }
 
 /**
  * @param {!Array.<!WebInspector.TimelineModel.Record>} recordsArray
  * @param {?function(!WebInspector.TimelineModel.Record)|?function(!WebInspector.TimelineModel.Record,number)} preOrderCallback
  * @param {function(!WebInspector.TimelineModel.Record)|function(!WebInspector.TimelineModel.Record,number)=} postOrderCallback
+ * @return {boolean}
  */
 WebInspector.TimelineModel.forAllRecords = function(recordsArray, preOrderCallback, postOrderCallback)
 {
-    if (!recordsArray)
-        return;
-    var stack = [{array: recordsArray, index: 0}];
-    while (stack.length) {
-        var entry = stack[stack.length - 1];
-        var records = entry.array;
-        if (entry.index < records.length) {
-             var record = records[entry.index];
-             if (preOrderCallback && preOrderCallback(record, stack.length))
-                 return;
-             if (record.children)
-                 stack.push({array: record.children, index: 0, record: record});
-             else if (postOrderCallback && postOrderCallback(record, stack.length))
-                return;
-             ++entry.index;
-        } else {
-            if (entry.record && postOrderCallback && postOrderCallback(entry.record, stack.length))
-                return;
-            stack.pop();
+    /**
+     * @param {!Array.<!WebInspector.TimelineModel.Record>} records
+     * @param {number} depth
+     * @return {boolean}
+     */
+    function processRecords(records, depth)
+    {
+        for (var i = 0; i < records.length; ++i) {
+            var record = records[i];
+            if (preOrderCallback && preOrderCallback(record, depth))
+                return true;
+            if (processRecords(record.children, depth + 1))
+                return true;
+            if (postOrderCallback && postOrderCallback(record, depth))
+                return true;
         }
+        return false;
     }
+    return processRecords(recordsArray, 0);
 }
 
 WebInspector.TimelineModel.prototype = {
@@ -155,6 +153,63 @@ WebInspector.TimelineModel.prototype = {
     forAllRecords: function(preOrderCallback, postOrderCallback)
     {
         WebInspector.TimelineModel.forAllRecords(this._records, preOrderCallback, postOrderCallback);
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Filter} filter
+     */
+    addFilter: function(filter)
+    {
+        this._filters.push(filter);
+        filter._model = this;
+    },
+
+    /**
+     * @param {function(!WebInspector.TimelineModel.Record)|function(!WebInspector.TimelineModel.Record,number)} callback
+     */
+    forAllFilteredRecords: function(callback)
+    {
+        /**
+         * @param {!WebInspector.TimelineModel.Record} record
+         * @param {number} depth
+         * @this {WebInspector.TimelineModel}
+         * @return {boolean}
+         */
+        function processRecord(record, depth)
+        {
+            var visible = this.isVisible(record);
+            if (visible) {
+                if (callback(record, depth))
+                    return true;
+            }
+
+            for (var i = 0; i < record.children.length; ++i) {
+                if (processRecord.call(this, record.children[i], visible ? depth + 1 : depth))
+                    return true;
+            }
+            return false;
+        }
+
+        for (var i = 0; i < this._records.length; ++i)
+            processRecord.call(this, this._records[i], 0);
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {boolean}
+     */
+    isVisible: function(record)
+    {
+        for (var i = 0; i < this._filters.length; ++i) {
+            if (!this._filters[i].accept(record))
+                return false;
+        }
+        return true;
+    },
+
+    _filterChanged: function()
+    {
+        this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordFilterChanged);
     },
 
     /**
@@ -252,6 +307,10 @@ WebInspector.TimelineModel.prototype = {
 
         var record = this._innerAddRecord(payload, null);
         this._records.push(record);
+        if (record.type === WebInspector.TimelineModel.RecordType.Program)
+            this._mainThreadTasks.push(record);
+        if (record.type === WebInspector.TimelineModel.RecordType.GPUTask)
+            this._gpuThreadTasks.push(record);
 
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordAdded, record);
     },
@@ -265,6 +324,9 @@ WebInspector.TimelineModel.prototype = {
     _innerAddRecord: function(payload, parentRecord)
     {
         var record = new WebInspector.TimelineModel.Record(this, payload, parentRecord);
+        if (WebInspector.TimelineUIUtils.isEventDivider(record))
+            this._eventDividerRecords.push(record);
+
         for (var i = 0; payload.children && i < payload.children.length; ++i)
             this._innerAddRecord.call(this, payload.children[i], record);
 
@@ -335,6 +397,12 @@ WebInspector.TimelineModel.prototype = {
         this._minimumRecordTime = -1;
         this._maximumRecordTime = -1;
         this._bindings._reset();
+        /** @type {!Array.<!WebInspector.TimelineModel.Record>} */
+        this._mainThreadTasks =  [];
+        /** @type {!Array.<!WebInspector.TimelineModel.Record>} */
+        this._gpuThreadTasks = [];
+        /** @type {!Array.<!WebInspector.TimelineModel.Record>} */
+        this._eventDividerRecords = [];
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordsCleared);
     },
 
@@ -369,12 +437,27 @@ WebInspector.TimelineModel.prototype = {
     },
 
     /**
-     * @param {!Object} rawRecord
-     * @return {number}
+     * @return {!Array.<!WebInspector.TimelineModel.Record>}
      */
-    recordOffsetInMillis: function(rawRecord)
+    mainThreadTasks: function()
     {
-        return rawRecord.startTime - this._minimumRecordTime;
+        return this._mainThreadTasks;
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.TimelineModel.Record>}
+     */
+    gpuThreadTasks: function()
+    {
+        return this._gpuThreadTasks;
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.TimelineModel.Record>}
+     */
+    eventDividerRecords: function()
+    {
+        return this._eventDividerRecords;
     },
 
     /**
@@ -808,6 +891,32 @@ WebInspector.TimelineModel.Record.prototype = {
         for (var key in this._record.data)
             tokens.push(this._record.data[key])
         return regExp.test(tokens.join("|"));
+    }
+}
+
+
+/**
+ * @constructor
+ */
+WebInspector.TimelineModel.Filter = function()
+{
+    /** @type {!WebInspector.TimelineModel} */
+    this._model;
+}
+
+WebInspector.TimelineModel.Filter.prototype = {
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {boolean}
+     */
+    accept: function(record)
+    {
+        return true;
+    },
+
+    notifyFilterChanged: function()
+    {
+        this._model._filterChanged();
     }
 }
 
