@@ -529,7 +529,7 @@ WebInspector.EventListenerBreakpointsSidebarPane = function()
     this._createCategory(WebInspector.UIString("Device"), true, ["deviceorientation", "devicemotion"]);
     this._createCategory(WebInspector.UIString("Keyboard"), true, ["keydown", "keyup", "keypress", "input"]);
     this._createCategory(WebInspector.UIString("Load"), true, ["load", "beforeunload", "unload", "abort", "error", "hashchange", "popstate"]);
-    this._createCategory(WebInspector.UIString("Mouse"), true, ["click", "dblclick", "mousedown", "mouseup", "mouseover", "mousemove", "mouseout", "mousewheel"]);
+    this._createCategory(WebInspector.UIString("Mouse"), true, ["click", "dblclick", "mousedown", "mouseup", "mouseover", "mousemove", "mouseout", "mousewheel", "wheel"]);
     this._createCategory(WebInspector.UIString("Timer"), false, ["setTimer", "clearTimer", "timerFired"]);
     this._createCategory(WebInspector.UIString("Touch"), true, ["touchstart", "touchmove", "touchend", "touchcancel"]);
     this._createCategory(WebInspector.UIString("WebGL"), false, ["webglErrorFired", "webglWarningFired"]);
