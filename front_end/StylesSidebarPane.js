@@ -1697,7 +1697,21 @@ WebInspector.BlankStylePropertiesSection.prototype = {
         if (newContent)
             newContent = newContent.trim();
         this._parentPane._userOperation = true;
-        WebInspector.cssModel.addRule(this.pane.node.id, newContent, successCallback.bind(this), this.editingSelectorCancelled.bind(this));
+
+        WebInspector.cssModel.requestViaInspectorStylesheet(this.pane.node, viaInspectorCallback.bind(this));
+
+        /**
+         * @this {WebInspector.BlankStylePropertiesSection}
+         * @param {?WebInspector.CSSStyleSheetHeader} styleSheetHeader
+         */
+        function viaInspectorCallback(styleSheetHeader)
+        {
+            if (!styleSheetHeader) {
+                this.editingSelectorCancelled();
+                return;
+            }
+            WebInspector.cssModel.addRule(styleSheetHeader.id, this.pane.node, newContent, successCallback.bind(this), this.editingSelectorCancelled.bind(this));
+        }
     },
 
     editingSelectorCancelled: function()

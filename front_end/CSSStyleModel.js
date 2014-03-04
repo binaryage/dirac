@@ -281,13 +281,17 @@ WebInspector.CSSStyleModel.prototype = {
     },
 
     /**
-     * @param {!DOMAgent.NodeId} nodeId
+     * @param {!CSSAgent.StyleSheetId} styleSheetId
+     * @param {!WebInspector.DOMNode} node
      * @param {string} selector
      * @param {function(!WebInspector.CSSRule)} successCallback
      * @param {function()} failureCallback
      */
-    addRule: function(nodeId, selector, successCallback, failureCallback)
+    addRule: function(styleSheetId, node, selector, successCallback, failureCallback)
     {
+        this._pendingCommandsMajorState.push(true);
+        CSSAgent.addRule(styleSheetId, selector, callback.bind(this));
+
         /**
          * @param {?Protocol.Error} error
          * @param {!CSSAgent.CSSRule} rulePayload
@@ -301,12 +305,42 @@ WebInspector.CSSStyleModel.prototype = {
                 failureCallback();
             } else {
                 WebInspector.domAgent.markUndoableState();
-                this._computeMatchingSelectors(rulePayload, nodeId, successCallback, failureCallback);
+                this._computeMatchingSelectors(rulePayload, node.id, successCallback, failureCallback);
+            }
+        }
+    },
+
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @param {function(?WebInspector.CSSStyleSheetHeader)} callback
+     */
+    requestViaInspectorStylesheet: function(node, callback)
+    {
+        var frameId = node.frameId() || WebInspector.resourceTreeModel.mainFrame.id;
+        for (var styleSheetId in this._styleSheetIdToHeader) {
+            var styleSheetHeader = this._styleSheetIdToHeader[styleSheetId];
+            if (styleSheetHeader.frameId === frameId && styleSheetHeader.isViaInspector()) {
+                callback(styleSheetHeader);
+                return;
             }
         }
 
-        this._pendingCommandsMajorState.push(true);
-        CSSAgent.addRule(nodeId, selector, callback.bind(this));
+        /**
+         * @this {WebInspector.CSSStyleModel}
+         * @param {?Protocol.Error} error
+         * @param {!CSSAgent.StyleSheetId} styleSheetId
+         */
+        function innerCallback(error, styleSheetId)
+        {
+            if (error) {
+                console.error(error);
+                callback(null);
+            }
+
+            callback(this._styleSheetIdToHeader[styleSheetId]);
+        }
+
+        CSSAgent.createStyleSheet(frameId, innerCallback.bind(this));
     },
 
     mediaQueryResultChanged: function()
@@ -1265,7 +1299,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
      */
     resourceURL: function()
     {
-        return this.origin === "inspector" ? this._viaInspectorResourceURL() : this.sourceURL;
+        return this.isViaInspector() ? this._viaInspectorResourceURL() : this.sourceURL;
     },
 
     /**
@@ -1425,6 +1459,15 @@ WebInspector.CSSStyleSheetHeader.prototype = {
             newText += "\n/*# sourceURL=" + this.sourceURL + " */";
         CSSAgent.setStyleSheetText(this.id, newText, callback);
     },
+
+    /**
+     * @return {boolean}
+     */
+    isViaInspector: function()
+    {
+        return this.origin === "inspector";
+    },
+
 }
 
 /**

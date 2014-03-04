@@ -49,6 +49,7 @@ WebInspector.DOMNode = function(domAgent, doc, isInShadowTree, payload) {
     this._nodeValue = payload.nodeValue;
     this._pseudoType = payload.pseudoType;
     this._shadowRootType = payload.shadowRootType;
+    this._frameId = payload.frameId || null;
 
     this._shadowRoots = [];
 
@@ -472,6 +473,17 @@ WebInspector.DOMNode.prototype = {
     isDescendant: function(descendant)
     {
         return descendant !== null && descendant.isAncestor(this);
+    },
+
+    /**
+     * @return {?PageAgent.FrameId}
+     */
+    frameId: function()
+    {
+        var node = this;
+        while (!node._frameId && node.parentNode)
+            node = node.parentNode;
+        return node._frameId;
     },
 
     /**
