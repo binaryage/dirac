@@ -94,7 +94,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
     reset: function()
     {
-        this._invalidate();
+        this._timelineData = null;
     },
 
     /**
@@ -102,12 +102,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     addRecord: function(record)
     {
-        this._invalidate();
-    },
-
-    _invalidate: function()
-    {
-        this._timelineData = null;
+        WebInspector.TimelineModel.forAllRecords([record], this._appendRecord.bind(this));
     },
 
     /**
@@ -185,10 +180,11 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     _appendRecord: function(record, depth)
     {
-        var timelineData = this._timelineData;
+        var timelineData = this.timelineData();
 
         this._startTime = this._startTime ? Math.min(this._startTime, record.startTime) : record.startTime;
         var startTime = this._startTime;
+        this._zeroTime = startTime;
         var endTime = record.endTime || record.startTime - startTime;
         this._endTime = Math.max(this._endTime, endTime);
         this._totalTime = Math.max(1000, this._endTime - this._startTime);
