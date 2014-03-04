@@ -128,7 +128,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             this._model.forAllRecords(this._appendRecord.bind(this));
             this._zeroTime = this._model.minimumRecordTime();
         }
-        return this._timelineData;
+        return /** @type {!WebInspector.FlameChart.TimelineData} */(this._timelineData);
     },
 
     /**
@@ -163,13 +163,20 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         this._totalTime = 1000;
         this._zeroTime = 0;
 
+        /**
+         * @type {?WebInspector.FlameChart.TimelineData}
+         */
         this._timelineData = {
             entryLevels: [],
             entryTotalTimes: [],
             entryOffsets: [],
-            colorEntryIndexes: []
         };
-        this._entryTitles = [];
+
+        /** @type {!Array.<string>} */
+        this._entryTitles =  [];
+
+        /** @type {!Array.<string>} */
+        this._entryColors = [];
     },
 
     /**
@@ -199,13 +206,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         timelineData.entryOffsets[index] = record.startTime - startTime;
         timelineData.entryLevels[index] = depth - 1;
         timelineData.entryTotalTimes[index] = endTime - record.startTime;
-
-        var color = this._colorGenerator.colorForID(WebInspector.TimelineUIUtils.categoryForRecord(record).name);
-        var indexesForColor = timelineData.colorEntryIndexes[color.index];
-        if (!indexesForColor)
-            indexesForColor = timelineData.colorEntryIndexes[color.index] = [];
-        indexesForColor.push(index);
-
+        this._entryColors[index] = this._colorGenerator.colorForID(WebInspector.TimelineUIUtils.categoryForRecord(record).name);
         this._maxStackDepth = Math.max(this._maxStackDepth, depth + 1);
     },
 
@@ -234,6 +235,15 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     entryData: function(entryIndex)
     {
         return null;
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {!string}
+     */
+    entryColor: function(entryIndex)
+    {
+        return this._entryColors[entryIndex];
     }
 }
 

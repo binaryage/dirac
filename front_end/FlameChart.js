@@ -108,8 +108,7 @@ WebInspector.FlameChartDataProvider = function()
 /** @typedef {!{
         entryLevels: !Array.<number>,
         entryTotalTimes: !Array.<number>,
-        entryOffsets: !Array.<number>,
-        colorEntryIndexes: !Array.<number>
+        entryOffsets: !Array.<number>
     }}
  */
 WebInspector.FlameChart.TimelineData;
@@ -148,11 +147,6 @@ WebInspector.FlameChartDataProvider.prototype = {
     timelineData: function() { },
 
     /**
-     * @return {!WebInspector.FlameChart.ColorGenerator}
-     */
-    colorGenerator: function() { },
-
-    /**
      * @param {number} entryIndex
      * @return {?Array.<!{title: string, text: string}>}
      */
@@ -181,6 +175,12 @@ WebInspector.FlameChartDataProvider.prototype = {
      * @return {?string}
      */
     entryFont: function(entryIndex) { },
+
+    /**
+     * @param {number} entryIndex
+     * @return {!string}
+     */
+    entryColor: function(entryIndex) { },
 }
 
 /**
@@ -363,7 +363,6 @@ WebInspector.FlameChart.Events = {
 WebInspector.FlameChart.ColorGenerator = function()
 {
     this._colors = {};
-    this._colorIndexes = [];
     this._currentColorIndex = 0;
 }
 
@@ -374,35 +373,24 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
      */
     setColorForID: function(id, color)
     {
-        var colorData = {index: this._currentColorIndex++, color: color};
-        this._colors[id] = colorData;
-        this._colorIndexes[colorData.index] = colorData;
+        this._colors[id] = color;
     },
 
     /**
      * @param {!string} id
      * @param {number=} sat
-     * @return {!Object}
+     * @return {!string}
      */
     colorForID: function(id, sat)
     {
         if (typeof sat !== "number")
             sat = 100;
-        var colors = this._colors;
-        var color = colors[id];
+        var color = this._colors[id];
         if (!color) {
-            colors[id] = color = this._createColor(this._currentColorIndex++, sat);
-            this._colorIndexes[color.index] = color;
+            color = this._createColor(this._currentColorIndex++, sat);
+            this._colors[id] = color;
         }
         return color;
-    },
-
-    /**
-     * @param {!number} index
-     */
-    _colorForIndex: function(index)
-    {
-        return this._colorIndexes[index];
     },
 
     /**
@@ -412,7 +400,7 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
     _createColor: function(index, sat)
     {
         var hue = (index * 7 + 12 * (index % 2)) % 360;
-        return {index: index, color: "hsla(" + hue + ", " + sat + "%, 66%, 0.7)"};
+        return "hsla(" + hue + ", " + sat + "%, 66%, 0.7)";
     }
 }
 
@@ -818,7 +806,8 @@ WebInspector.FlameChart.MainPane.prototype = {
 
         var context = this._canvas.getContext("2d");
         context.scale(ratio, ratio);
-        var timeWindowRight = this._timeWindowRight;
+        var timeWindowRight = this._timeWindowRight - this._zeroTime;
+        var timeWindowLeft = this._timeWindowLeft - this._zeroTime;
         var timeToPixel = this._timeToPixel;
         var pixelWindowLeft = this._pixelWindowLeft;
         var paddingLeft = this._paddingLeft;
@@ -826,9 +815,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         var entryTotalTimes = timelineData.entryTotalTimes;
         var entryOffsets = timelineData.entryOffsets;
         var entryLevels = timelineData.entryLevels;
-        var colorEntryIndexes = timelineData.colorEntryIndexes;
 
-        var colorGenerator = this._dataProvider.colorGenerator();
         var titleIndexes = new Uint32Array(timelineData.entryTotalTimes);
         var lastTitleIndex = 0;
         var dotsWidth = context.measureText("\u2026").width;
@@ -836,61 +823,99 @@ WebInspector.FlameChart.MainPane.prototype = {
         this._minTextWidth = context.measureText("\u2026").width + textPaddingLeft;
         var minTextWidth = this._minTextWidth;
 
-        var marksField = [];
-        for (var i = 0; i < this._dataProvider.maxStackDepth(); ++i)
-            marksField.push(new Uint16Array(width));
+        var lastDrawOffset = new Int32Array(this._dataProvider.maxStackDepth());
+        for (var i = 0; i < lastDrawOffset.length; ++i)
+            lastDrawOffset[i] = -1;
 
         var barX = 0;
+        var barY = 0;
         var barWidth = 0;
         var barRight = 0;
         var barLevel = 0;
+        var barHeight = this._barHeight;
         this._baseHeight = this._isTopDown ? WebInspector.FlameChart.DividersBarHeight : height - this._barHeight;
         context.strokeStyle = "black";
         var color;
         var entryIndex = 0;
         var entryOffset = 0;
-        for (var colorIndex = 0; colorIndex < colorEntryIndexes.length; ++colorIndex) {
-            color = colorGenerator._colorForIndex(colorIndex);
-            context.fillStyle = color.color;
-            var indexes = colorEntryIndexes[colorIndex];
-            if (!indexes)
+
+        var colorBuckets = {};
+        var colors = [];
+        var bucket = [];
+
+        var textBaseHeight = this._baseHeight + this._barHeight - 4;
+        var lastUsedFont = "";
+        var font;
+        var text = "";
+        var xText = 0;
+        var textWidth = 0;
+        var title = "";
+        var i = 0;
+        var c = 0;
+
+        var entryOffsetRight = 0;
+        var maxBarLevel = height / this._barHeight;
+        for (entryIndex = 0; entryIndex < entryOffsets.length; ++entryIndex) {
+            // stop if we reached right border in time (entries were ordered by start time).
+            entryOffset = entryOffsets[entryIndex];
+            if (entryOffset > timeWindowRight)
+                break;
+
+            // skip if it is not visible (top/bottom side)
+            barLevel = entryLevels[entryIndex];
+            if (barLevel > maxBarLevel)
                 continue;
+
+            // skip if it is not visible (left side).
+            entryOffsetRight = entryOffset + entryTotalTimes[entryIndex];
+            if (entryOffsetRight < timeWindowLeft)
+                continue;
+
+            barRight = this._offsetToPosition(entryOffsetRight);
+
+            if (barRight <= lastDrawOffset[barLevel])
+                continue;
+            barX = Math.max(this._offsetToPosition(entryOffset), lastDrawOffset[barLevel]);
+            lastDrawOffset[barLevel] = barRight;
+
+            barWidth = barRight - barX;
+
+            color = this._dataProvider.entryColor(entryIndex);
+            bucket = colorBuckets[color];
+            if (!bucket) {
+                bucket = [];
+                colorBuckets[color] = bucket;
+            }
+            bucket.push(entryIndex);
+        }
+        colors = Object.keys(colorBuckets);
+        // We don't use for in here because it couldn't be optimized.
+        for (c = 0; c < colors.length; ++c) {
+            color = colors[c];
+            context.fillStyle = color;
+            var indexes = colorBuckets[color];
             context.beginPath();
-            for (var i = 0; i < indexes.length; ++i) {
+            for (i = 0; i < indexes.length; ++i) {
                 entryIndex = indexes[i];
                 entryOffset = entryOffsets[entryIndex];
-                if (entryOffset > timeWindowRight)
-                    break;
                 barX = this._offsetToPosition(entryOffset);
-                if (barX >= width)
-                    continue;
                 barRight = this._offsetToPosition(entryOffset + entryTotalTimes[entryIndex]);
-                if (barRight < 0)
-                    continue;
-                barWidth = (barRight - barX) || minWidth;
+                barWidth = Math.max(barRight - barX, minWidth);
                 barLevel = entryLevels[entryIndex];
-                var marksRow = marksField[barLevel];
-                if (barWidth <= marksRow[barX]) // skip the bar if there is another bar here.
-                    continue;
-                marksRow[barX] = barWidth;
-                var barY = this._levelToHeight(barLevel);
+                barY = this._levelToHeight(barLevel);
                 context.rect(barX, barY, barWidth, this._barHeight);
                 if (barWidth > minTextWidth)
                     titleIndexes[lastTitleIndex++] = entryIndex;
             }
             context.fill();
         }
-
         context.textBaseline = "alphabetic";
         context.fillStyle = "#333";
         this._dotsWidth = context.measureText("\u2026").width;
 
-        var textBaseHeight = this._baseHeight + this._barHeight - 4;
-        var lastUsedFont = "";
-        var font;
-        for (var i = 0; i < lastTitleIndex; ++i) {
+        for (i = 0; i < lastTitleIndex; ++i) {
             entryIndex = titleIndexes[i];
-            var text = this._dataProvider.entryTitle(entryIndex);
+            text = this._dataProvider.entryTitle(entryIndex);
             if (!text || !text.length)
                 continue;
             font = this._dataProvider.entryFont(entryIndex);
@@ -900,14 +925,13 @@ WebInspector.FlameChart.MainPane.prototype = {
             entryOffset = entryOffsets[entryIndex];
             barX = this._offsetToPosition(entryOffset);
             barRight = this._offsetToPosition(entryOffset + entryTotalTimes[entryIndex]);
-            barWidth = (barRight - barX) || minWidth;
-            var xText = Math.max(0, barX);
-            var widthText = barWidth - textPaddingLeft + barX - xText;
-            var title = this._prepareText(context, text, widthText);
+            barWidth = Math.max(barRight - barX, minWidth);
+            xText = Math.max(0, barX);
+            textWidth = barWidth - textPaddingLeft + barX - xText;
+            title = this._prepareText(context, text, textWidth);
             if (title)
                 context.fillText(title, xText + textPaddingLeft, textBaseHeight - entryLevels[entryIndex] * this._barHeightDelta);
         }
-
         this._updateHighlightElement();
     },
 
@@ -922,7 +946,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         var entryOffset = timelineData.entryOffsets[entryIndex];
         var barX = this._offsetToPosition(entryOffset);
         var barRight = this._offsetToPosition(entryOffset + timelineData.entryTotalTimes[entryIndex]);
-        var barWidth = (barRight - barX) || this._minWidth;
+        var barWidth = Math.max(barRight - barX, this._minWidth);
 
         var style = this._highlightElement.style;
         style.left = barX + "px";

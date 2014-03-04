@@ -1109,14 +1109,6 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     },
 
     /**
-     * @return {!WebInspector.FlameChart.ColorGenerator}
-     */
-    colorGenerator: function()
-    {
-        return this._colorGenerator;
-    },
-
-    /**
      * @return {?WebInspector.FlameChart.TimelineData}
      */
     _calculateTimelineData: function()
@@ -1134,16 +1126,15 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
         var openIntervals = [];
         var stackTrace = [];
-        var colorEntryIndexes = [];
         var maxDepth = 5; // minimum stack depth for the case when we see no activity.
         var depth = 0;
 
         /**
          * @constructor
-         * @param {!Object} color
-         * @param {!number} depth
-         * @param {!number} duration
-         * @param {!number} startTime
+         * @param {string} color
+         * @param {number} depth
+         * @param {number} duration
+         * @param {number} startTime
          * @param {!Object} node
          */
         function ChartEntry(color, depth, duration, startTime, node)
@@ -1199,15 +1190,10 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             }
 
             var colorGenerator = this._colorGenerator;
+            var color = "";
             while (node) {
-                var color = colorGenerator.colorForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
-                var indexesForColor = colorEntryIndexes[color.index];
-                if (!indexesForColor)
-                    indexesForColor = colorEntryIndexes[color.index] = [];
-
-                var entry = new ChartEntry(color, depth, samplingInterval, sampleIndex * samplingInterval, node);
-                indexesForColor.push(entries.length);
-                entries.push(entry);
+                color = colorGenerator.colorForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
+                entries.push(new ChartEntry(color, depth, samplingInterval, sampleIndex * samplingInterval, node));
                 openIntervals.push({node: node, index: index});
                 ++index;
 
@@ -1217,8 +1203,8 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             entries[entries.length - 1].selfTime += samplingInterval;
         }
 
+        var entryColors = new Array(entries.length);
         var entryNodes = new Array(entries.length);
-        var entryColorIndexes = new Uint16Array(entries.length);
         var entryLevels = new Uint8Array(entries.length);
         var entryTotalTimes = new Float32Array(entries.length);
         var entrySelfTimes = new Float32Array(entries.length);
@@ -1229,7 +1215,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         for (var i = 0; i < entries.length; ++i) {
             var entry = entries[i];
             entryNodes[i] = entry.node;
-            entryColorIndexes[i] = color.index;
+            entryColors[i] = entry.color;
             entryLevels[i] = entry.depth;
             entryTotalTimes[i] = entry.duration;
             entryOffsets[i] = entry.startTime;
@@ -1241,8 +1227,6 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         this._maxStackDepth = Math.max(maxDepth, depth);
 
         this._timelineData = {
-            colorEntryIndexes: colorEntryIndexes,
-            entryColorIndexes: entryColorIndexes,
             entryLevels: entryLevels,
             entryTotalTimes: entryTotalTimes,
             entryOffsets: entryOffsets,
@@ -1252,6 +1236,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         this._entryNodes = entryNodes;
         this._entrySelfTimes = entrySelfTimes;
         this._entryDeoptFlags = entryDeoptFlags;
+        this._entryColors = entryColors;
 
         return /** @type {!WebInspector.FlameChart.TimelineData} */ (this._timelineData);
     },
@@ -1342,5 +1327,14 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     entryData: function(entryIndex)
     {
         return this._entryNodes[entryIndex];
-    }
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {!string}
+     */
+    entryColor: function(entryIndex)
+    {
+        return this._entryColors[entryIndex];
+    },
 }
