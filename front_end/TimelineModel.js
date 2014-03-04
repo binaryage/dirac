@@ -364,7 +364,7 @@ WebInspector.TimelineModel.prototype = {
 
         if (this._minimumRecordTime === -1 || startTime < this._minimumRecordTime)
             this._minimumRecordTime = startTime;
-        if (this._maximumRecordTime === -1 || endTime > this._maximumRecordTime)
+        if ((this._maximumRecordTime === -1 && endTime) || endTime > this._maximumRecordTime)
             this._maximumRecordTime = endTime;
     },
 
