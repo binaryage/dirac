@@ -2833,6 +2833,10 @@ button.record-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
     background-color: rgb(236, 236, 236);
 }
 
+.search-bar.replaceable {
+    flex: 0 0 44px;
+}
+
 .progress-bar-container {
     display: inline-flex;
     margin: 0 8px;

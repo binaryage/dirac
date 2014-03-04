@@ -462,21 +462,18 @@ WebInspector.SearchableView.prototype = {
 
     _updateSecondRowVisibility: function()
     {
-        if (this._replaceCheckboxElement.checked) {
-            this._footerElement.classList.add("toolbar-search-replace");
-            this._secondRowElement.classList.remove("hidden");
-            this._prevButtonElement.classList.remove("hidden");
-            this._findButtonElement.classList.remove("hidden");
-            this._replaceCheckboxElement.tabIndex = -1;
+        var secondRowVisible = this._replaceCheckboxElement.checked;
+        this._footerElementContainer.classList.toggle("replaceable", secondRowVisible);
+        this._footerElement.classList.toggle("toolbar-search-replace", secondRowVisible);
+        this._secondRowElement.classList.toggle("hidden", !secondRowVisible);
+        this._prevButtonElement.classList.toggle("hidden", !secondRowVisible);
+        this._findButtonElement.classList.toggle("hidden", !secondRowVisible);
+        this._replaceCheckboxElement.tabIndex = secondRowVisible ? -1 : 0;
+
+        if (secondRowVisible)
             this._replaceInputElement.focus();
-        } else {
-            this._footerElement.classList.remove("toolbar-search-replace");
-            this._secondRowElement.classList.add("hidden");
-            this._prevButtonElement.classList.add("hidden");
-            this._findButtonElement.classList.add("hidden");
-            this._replaceCheckboxElement.tabIndex = 0;
+        else
             this._searchInputElement.focus();
-        }
         this.doResize();
     },
 
