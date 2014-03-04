@@ -32,7 +32,7 @@
     display: flex;
     margin-left: 1px;
     margin-right: 1px;
-    flex: 0 0 100px;
+    flex: 1 0 100px;
 }
 
 .filter-text-filter.supports-regex {

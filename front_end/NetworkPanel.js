@@ -28,6 +28,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+importScript("FilterSuggestionBuilder.js");
 importScript("RequestView.js");
 importScript("NetworkItemView.js");
 importScript("RequestCookiesView.js");
@@ -51,6 +52,7 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     WebInspector.View.call(this);
     this.registerRequiredCSS("networkLogView.css");
     this.registerRequiredCSS("filter.css");
+    this.registerRequiredCSS("textPrompt.css");
 
     this._filterBar = filterBar;
     this._coulmnsVisibilitySetting = coulmnsVisibilitySetting;
@@ -66,6 +68,9 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     this._matchedRequests = [];
     this._highlightedSubstringChanges = [];
     this._filteredOutRequests = new Map();
+
+    /** @type {!Array.<!WebInspector.NetworkLogView.Filter>} */
+    this._filters = [];
 
     this._matchedRequestsMap = {};
     this._currentMatchedRequestIndex = -1;
@@ -84,6 +89,7 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.DOMContentLoaded, this._domContentLoadedEventFired, this);
 
     this._addFilters();
+    this._resetSuggestionBuilder();
     this._initializeView();
     this._recordButton.toggled = true;
     WebInspector.networkLog.requests.forEach(this._appendRequest.bind(this));
@@ -118,10 +124,17 @@ WebInspector.NetworkLogView.prototype = {
         this._filterBar.addFilter(this._dataURLFilterUI);
     },
 
+    _resetSuggestionBuilder: function()
+    {
+        this._suggestionBuilder = new WebInspector.FilterSuggestionBuilder(WebInspector.NetworkPanel._searchKeys);
+        this._textFilterUI.setSuggestionBuilder(this._suggestionBuilder);
+    },
+
     _filterChanged: function(event)
     {
         this._removeAllNodeHighlights();
         this.searchCanceled();
+        this._parseFilterQuery(this._textFilterUI.value());
         this._filterRequests();
     },
 
@@ -743,6 +756,7 @@ WebInspector.NetworkLogView.prototype = {
         this._requestsByURL = {};
         this._staleRequests = {};
         this._requestGridNodes = {};
+        this._resetSuggestionBuilder();
 
         if (this._dataGrid) {
             this._dataGrid.rootNode().removeChildren();
@@ -806,6 +820,21 @@ WebInspector.NetworkLogView.prototype = {
     {
         if (!this._requestsById[request.requestId])
             return;
+
+        this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.Domain, request.domain);
+        this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.MimeType, request.mimeType);
+
+        var responseHeaders = request.responseHeaders;
+        for (var i = 0, l = responseHeaders.length; i < l; ++i)
+            this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.HasResponseHeader, responseHeaders[i].name);
+        var cookies = request.responseCookies;
+        for (var i = 0, l = cookies ? cookies.length : 0; i < l; ++i) {
+            var cookie = cookies[i];
+            this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.SetCookieDomain, cookie.domain());
+            this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.SetCookieName, cookie.name());
+            this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.SetCookieValue, cookie.value());
+        }
+
         this._staleRequests[request.requestId] = request;
         this._scheduleRefresh();
     },
@@ -1291,26 +1320,69 @@ WebInspector.NetworkLogView.prototype = {
      */
     _applyFilter: function(node)
     {
-        var filter = this._textFilterUI.regex();
         var request = node._request;
-
-        var matches = true;
+        var matches = this._resourceTypeFilterUI.accept(request.type.name());
         if (this._dataURLFilterUI.checked() && request.parsedURL.isDataURL())
             matches = false;
-        if (matches && !this._resourceTypeFilterUI.accept(request.type.name()))
-            matches = false;
-
-        if (matches && filter) {
-            matches = filter.test(request.name()) || filter.test(request.path());
-            if (matches)
-                this._highlightMatchedRequest(request, false, filter);
-        }
+        for (var i = 0; matches && (i < this._filters.length); ++i)
+            matches = this._filters[i](request);
 
         node.element.enableStyleClass("filtered-out", !matches);
         if (matches)
             this._filteredOutRequests.remove(request);
         else
             this._filteredOutRequests.put(request, true);
+    },
+
+    /**
+     * @param {string} query
+     */
+    _parseFilterQuery: function(query)
+    {
+        var parsedQuery = this._suggestionBuilder.parseQuery(query);
+        this._filters = parsedQuery.text.map(this._createTextFilter);
+        for (var key in parsedQuery.filters) {
+            var filterType = /** @type {!WebInspector.NetworkPanel.FilterType} */ (key);
+            this._filters.push(this._createFilter(filterType, parsedQuery.filters[key]));
+        }
+    },
+
+    /**
+     * @param {string} text
+     * @return {!WebInspector.NetworkLogView.Filter}
+     */
+    _createTextFilter: function(text)
+    {
+        var regexp = new RegExp(text.escapeForRegExp(), "i");
+        return WebInspector.NetworkLogView._requestNameOrPathFilter.bind(null, regexp);
+    },
+
+    /**
+     * @param {!WebInspector.NetworkPanel.FilterType} type
+     * @param {string} value
+     * @return {!WebInspector.NetworkLogView.Filter}
+     */
+    _createFilter: function(type, value) {
+        switch (type) {
+        case WebInspector.NetworkPanel.FilterType.Domain:
+            return WebInspector.NetworkLogView._requestDomainFilter.bind(null, value);
+
+        case WebInspector.NetworkPanel.FilterType.HasResponseHeader:
+            return WebInspector.NetworkLogView._requestResponseHeaderFilter.bind(null, value);
+
+        case WebInspector.NetworkPanel.FilterType.MimeType:
+            return WebInspector.NetworkLogView._requestMimeTypeFilter.bind(null, value);
+
+        case WebInspector.NetworkPanel.FilterType.SetCookieDomain:
+            return WebInspector.NetworkLogView._requestSetCookieDomainFilter.bind(null, value);
+
+        case WebInspector.NetworkPanel.FilterType.SetCookieName:
+            return WebInspector.NetworkLogView._requestSetCookieNameFilter.bind(null, value);
+
+        case WebInspector.NetworkPanel.FilterType.SetCookieValue:
+            return WebInspector.NetworkLogView._requestSetCookieValueFilter.bind(null, value);
+        }
+        return this._createTextFilter(type + ":" + value);
     },
 
     _filterRequests: function()
@@ -1472,6 +1544,94 @@ WebInspector.NetworkLogView.prototype = {
     __proto__: WebInspector.View.prototype
 }
 
+/** @typedef {function(!WebInspector.NetworkRequest): boolean} */
+WebInspector.NetworkLogView.Filter;
+
+/**
+ * @param {!RegExp} regex
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._requestNameOrPathFilter = function(regex, request)
+{
+    return regex.test(request.name()) || regex.test(request.path());
+}
+
+/**
+ * @param {string} value
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._requestDomainFilter = function(value, request)
+{
+    return request.domain === value;
+}
+
+/**
+ * @param {string} value
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._requestResponseHeaderFilter = function(value, request)
+{
+    return request.responseHeaderValue(value) !== undefined;
+}
+
+/**
+ * @param {string} value
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._requestMimeTypeFilter = function(value, request)
+{
+    return request.mimeType === value;
+}
+
+/**
+ * @param {string} value
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._requestSetCookieDomainFilter = function(value, request)
+{
+    var cookies = request.responseCookies;
+    for (var i = 0, l = cookies ? cookies.length : 0; i < l; ++i) {
+        if (cookies[i].domain() === value)
+            return false;
+    }
+    return false;
+}
+
+/**
+ * @param {string} value
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._requestSetCookieNameFilter = function(value, request)
+{
+    var cookies = request.responseCookies;
+    for (var i = 0, l = cookies ? cookies.length : 0; i < l; ++i) {
+        if (cookies[i].name() === value)
+            return false;
+    }
+    return false;
+}
+
+/**
+ * @param {string} value
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._requestSetCookieValueFilter = function(value, request)
+{
+    var cookies = request.responseCookies;
+    for (var i = 0, l = cookies ? cookies.length : 0; i < l; ++i) {
+        if (cookies[i].value() === value)
+            return false;
+    }
+    return false;
+}
+
 /**
  * @param {!WebInspector.NetworkRequest} request
  * @return {boolean}
@@ -1565,6 +1725,19 @@ WebInspector.NetworkPanel = function()
     }
     WebInspector.GoToLineDialog.install(this, viewGetter.bind(this));
 }
+
+/** @enum {string} */
+WebInspector.NetworkPanel.FilterType = {
+    Domain: "Domain",
+    HasResponseHeader: "HasResponseHeader",
+    MimeType: "MimeType",
+    SetCookieDomain: "SetCookieDomain",
+    SetCookieName: "SetCookieName",
+    SetCookieValue: "SetCookieValue"
+};
+
+/** @type {!Array.<string>} */
+WebInspector.NetworkPanel._searchKeys = Object.values(WebInspector.NetworkPanel.FilterType);
 
 WebInspector.NetworkPanel.prototype = {
     _onFiltersToggled: function(event)

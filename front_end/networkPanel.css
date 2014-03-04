@@ -328,4 +328,5 @@
 
 .network-filters-header {
     flex: 0 0 23px;
+    padding-right: 4px;
 }
