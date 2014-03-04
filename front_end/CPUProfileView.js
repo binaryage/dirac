@@ -1131,15 +1131,13 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
         /**
          * @constructor
-         * @param {string} color
          * @param {number} depth
          * @param {number} duration
          * @param {number} startTime
          * @param {!Object} node
          */
-        function ChartEntry(color, depth, duration, startTime, node)
+        function ChartEntry(depth, duration, startTime, node)
         {
-            this.color = color;
             this.depth = depth;
             this.duration = duration;
             this.startTime = startTime;
@@ -1192,8 +1190,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             var colorGenerator = this._colorGenerator;
             var color = "";
             while (node) {
-                color = colorGenerator.colorForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
-                entries.push(new ChartEntry(color, depth, samplingInterval, sampleIndex * samplingInterval, node));
+                entries.push(new ChartEntry(depth, samplingInterval, sampleIndex * samplingInterval, node));
                 openIntervals.push({node: node, index: index});
                 ++index;
 
@@ -1203,25 +1200,19 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             entries[entries.length - 1].selfTime += samplingInterval;
         }
 
-        var entryColors = new Array(entries.length);
         var entryNodes = new Array(entries.length);
         var entryLevels = new Uint8Array(entries.length);
         var entryTotalTimes = new Float32Array(entries.length);
         var entrySelfTimes = new Float32Array(entries.length);
         var entryOffsets = new Float32Array(entries.length);
-        var entryTitles = new Array(entries.length);
-        var entryDeoptFlags = new Uint8Array(entries.length);
 
         for (var i = 0; i < entries.length; ++i) {
             var entry = entries[i];
             entryNodes[i] = entry.node;
-            entryColors[i] = entry.color;
             entryLevels[i] = entry.depth;
             entryTotalTimes[i] = entry.duration;
             entryOffsets[i] = entry.startTime;
-            entryTitles[i] = entry.node.functionName;
-            var reason = entry.node.deoptReason;
-            entryDeoptFlags[i] = (reason && reason !== "no reason");
+            entrySelfTimes[i] = entry.selfTime;
         }
 
         this._maxStackDepth = Math.max(maxDepth, depth);
@@ -1232,11 +1223,8 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             entryOffsets: entryOffsets,
         };
 
-        this._entryTitles = entryTitles;
         this._entryNodes = entryNodes;
         this._entrySelfTimes = entrySelfTimes;
-        this._entryDeoptFlags = entryDeoptFlags;
-        this._entryColors = entryColors;
 
         return /** @type {!WebInspector.FlameChart.TimelineData} */ (this._timelineData);
     },
@@ -1274,7 +1262,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             entryInfo.push(row);
         }
 
-        pushEntryInfoRow(WebInspector.UIString("Name"), this._entryTitles[entryIndex]);
+        pushEntryInfoRow(WebInspector.UIString("Name"), node.functionName);
         var selfTime = this._millisecondsToString(this._entrySelfTimes[entryIndex]);
         var totalTime = this._millisecondsToString(timelineData.entryTotalTimes[entryIndex]);
         pushEntryInfoRow(WebInspector.UIString("Self time"), selfTime);
@@ -1304,7 +1292,8 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
      */
     entryTitle: function(entryIndex)
     {
-        return this._entryTitles[entryIndex];
+        var node = this._entryNodes[entryIndex];
+        return node.functionName;
     },
 
     /**
@@ -1317,7 +1306,9 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             this._font = (this.barHeight() - 4) + "px " + WebInspector.fontFamily();
             this._boldFont = "bold " + this._font;
         }
-        return this._entryDeoptFlags[entryIndex] ? this._boldFont : this._font;
+        var node = this._entryNodes[entryIndex];
+        var reason = node.deoptReason;
+        return (reason && reason !== "no reason") ? this._boldFont : this._font;
     },
 
     /**
@@ -1335,6 +1326,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
      */
     entryColor: function(entryIndex)
     {
-        return this._entryColors[entryIndex];
+        var node = this._entryNodes[entryIndex];
+        return this._colorGenerator.colorForID(node.functionName + ":" + node.url + ":" + node.lineNumber);;
     },
 }
