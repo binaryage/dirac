@@ -343,7 +343,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
     this.networkLog = new WebInspector.NetworkLog();
     this.domAgent = new WebInspector.DOMAgent();
-    this.domAgent.addEventListener(WebInspector.DOMAgent.Events.InspectNodeRequested, this._inspectNodeRequested, this);
     this.workerManager = new WebInspector.WorkerManager(Capabilities.canInspectWorkers);
     this.runtimeModel = new WebInspector.RuntimeModel(this.resourceTreeModel);
 
@@ -810,14 +809,20 @@ WebInspector.inspect = function(payload, hints)
 {
     var object = WebInspector.RemoteObject.fromPayload(payload);
     if (object.subtype === "node") {
+
+        object.pushNodeToFrontend(callback);
+        var elementsPanel = /** @type {!WebInspector.ElementsPanel} */ WebInspector.panel("elements");
+        elementsPanel.omitDefaultSelection();
+        WebInspector.inspectorView.setCurrentPanel(elementsPanel);
+
         function callback(nodeId)
         {
-            WebInspector._updateFocusedNode(nodeId);
+            elementsPanel.stopOmittingDefaultSelection();
+            WebInspector.Revealer.reveal(WebInspector.domAgent.nodeForId(nodeId));
             InspectorFrontendHost.inspectElementCompleted();
             object.release();
         }
-        object.pushNodeToFrontend(callback);
-        WebInspector.showPanel("elements");
+
         return;
     }
 
@@ -875,7 +880,13 @@ WebInspector._updateFocusedNode = function(nodeId)
         InspectorFrontendHost.bringToFront();
         WebInspector.inspectElementModeController.disable();
     }
-    WebInspector.showPanel("elements").revealAndSelectNode(nodeId);
+    WebInspector.panel("elements").revealAndSelectNode(nodeId);
+}
+
+WebInspector.evaluateInConsole = function(expression, showResultOnly)
+{
+    this.showConsole();
+    this.consoleView.evaluateUsingTextPrompt(expression, showResultOnly);
 }
 
 WebInspector.addMainEventListeners = function(doc)

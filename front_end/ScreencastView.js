@@ -283,7 +283,7 @@ WebInspector.ScreencastView.prototype = {
             if (event.type === "mousemove")
                 this.highlightDOMNode(nodeId, this._inspectModeConfig);
             else if (event.type === "click")
-                WebInspector.domAgent.dispatchEventToListeners(WebInspector.DOMAgent.Events.InspectNodeRequested, nodeId);
+                WebInspector.Revealer.reveal(WebInspector.domAgent.nodeForId(nodeId));
         }
     },
 

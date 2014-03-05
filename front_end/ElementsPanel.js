@@ -119,9 +119,6 @@ WebInspector.ElementsPanel = function()
     WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.DocumentUpdated, this._documentUpdatedEvent, this);
     WebInspector.settings.showShadowDOM.addChangeListener(this._showShadowDOMChanged.bind(this));
 
-    if (WebInspector.domAgent.existingDocument())
-        this._documentUpdated(WebInspector.domAgent.existingDocument());
-
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
 }
 
@@ -168,7 +165,10 @@ WebInspector.ElementsPanel.prototype = {
         this.treeOutline.setVisible(true);
 
         if (!this.treeOutline.rootDOMNode)
-            WebInspector.domAgent.requestDocument();
+            if (WebInspector.domAgent.existingDocument())
+                this._documentUpdated(WebInspector.domAgent.existingDocument());
+            else
+                WebInspector.domAgent.requestDocument();
     },
 
     willHide: function()
@@ -186,6 +186,16 @@ WebInspector.ElementsPanel.prototype = {
     onResize: function()
     {
         this._updateTreeOutlineVisibleWidth();
+    },
+
+    omitDefaultSelection: function()
+    {
+        this._omitDefaultSelection = true;
+    },
+
+    stopOmittingDefaultSelection: function()
+    {
+        delete this._omitDefaultSelection;
     },
 
     /**
@@ -311,6 +321,9 @@ WebInspector.ElementsPanel.prototype = {
             var node = nodeId ? WebInspector.domAgent.nodeForId(nodeId) : null;
             selectNode.call(this, node);
         }
+
+        if (this._omitDefaultSelection)
+            return;
 
         if (this._selectedPathOnReset)
             WebInspector.domAgent.pushNodeByPathToFrontend(this._selectedPathOnReset, selectLastSelectedNode.bind(this));
@@ -1350,7 +1363,14 @@ WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
      */
     reveal: function(node)
     {
-        if (node instanceof WebInspector.DOMNode)
-            /** @type {!WebInspector.ElementsPanel} */ (WebInspector.showPanel("elements")).revealAndSelectNode(node.id);
+        if (!(node instanceof WebInspector.DOMNode))
+            return;
+
+        if (WebInspector.inspectElementModeController && WebInspector.inspectElementModeController.enabled()) {
+            InspectorFrontendHost.bringToFront();
+            WebInspector.inspectElementModeController.disable();
+        }
+
+        /** @type {!WebInspector.ElementsPanel} */ (WebInspector.panel("elements")).revealAndSelectNode(node.id);
     }
 }
