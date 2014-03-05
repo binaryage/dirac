@@ -221,7 +221,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             this._appendRecord(childRecord, level + 1);
             currentTime = childEndTime;
         }
-        if (recordEndTime !== currentTime || record.children.length === 0)
+        if (recordIndex === -1 && recordEndTime !== currentTime || record.children.length === 0)
             this._pushRecord(record, true, level, currentTime, recordEndTime);
 
         this._maxStackDepth = Math.max(this._maxStackDepth, level + 2);
