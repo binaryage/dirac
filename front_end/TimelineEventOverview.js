@@ -47,7 +47,7 @@ WebInspector.TimelineEventOverview = function(model)
     }
 
     this._disabledCategoryFillStyle = WebInspector.TimelineUIUtils.createFillStyle(this._context, 0, WebInspector.TimelineEventOverview._stripGradientHeight,
-        "rgb(218, 218, 218)", "rgb(170, 170, 170)", "rgb(143, 143, 143)");
+        "hsl(0, 0%, 85%)", "hsl(0, 0%, 67%)", "hsl(0, 0%, 56%)");
 
     this._disabledCategoryBorderStyle = "rgb(143, 143, 143)";
 }

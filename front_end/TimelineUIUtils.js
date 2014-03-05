@@ -38,12 +38,12 @@ WebInspector.TimelineUIUtils.categories = function()
     if (WebInspector.TimelineUIUtils._categories)
         return WebInspector.TimelineUIUtils._categories;
     WebInspector.TimelineUIUtils._categories = {
-        loading: new WebInspector.TimelineCategory("loading", WebInspector.UIString("Loading"), 0, "#5A8BCC", "#8EB6E9", "#70A2E3"),
-        scripting: new WebInspector.TimelineCategory("scripting", WebInspector.UIString("Scripting"), 1, "#D8AA34", "#F3D07A", "#F1C453"),
-        rendering: new WebInspector.TimelineCategory("rendering", WebInspector.UIString("Rendering"), 2, "#8266CC", "#AF9AEB", "#9A7EE6"),
-        painting: new WebInspector.TimelineCategory("painting", WebInspector.UIString("Painting"), 2, "#5FA050", "#8DC286", "#71B363"),
-        other: new WebInspector.TimelineCategory("other", WebInspector.UIString("Other"), -1, "#BBBBBB", "#DDDDDD", "#DDDDDD"),
-        idle: new WebInspector.TimelineCategory("idle", WebInspector.UIString("Idle"), -1, "#DDDDDD", "#FFFFFF", "#FFFFFF")
+        loading: new WebInspector.TimelineCategory("loading", WebInspector.UIString("Loading"), 0, "hsl(214, 53%, 58%)", "hsl(214, 67%, 90%)", "hsl(214, 67%, 74%)", "hsl(214, 67%, 66%)"),
+        scripting: new WebInspector.TimelineCategory("scripting", WebInspector.UIString("Scripting"), 1, "hsl(43, 68%, 53%)", "hsl(43, 83%, 90%)", "hsl(43, 83%, 72%)", "hsl(43, 83%, 64%) "),
+        rendering: new WebInspector.TimelineCategory("rendering", WebInspector.UIString("Rendering"), 2, "hsl(256, 50%, 60%)", "hsl(256, 67%, 90%)", "hsl(256, 67%, 76%)", "hsl(256, 67%, 70%)"),
+        painting: new WebInspector.TimelineCategory("painting", WebInspector.UIString("Painting"), 2, "hsl(109, 33%, 47%)", "hsl(109, 33%, 90%)", "hsl(109, 33%, 64%)", "hsl(109, 33%, 55%)"),
+        other: new WebInspector.TimelineCategory("other", WebInspector.UIString("Other"), -1, "hsl(0, 0%, 73%)", "hsl(0, 0%, 90%)", "hsl(0, 0%, 87%)", "hsl(0, 0%, 79%)"),
+        idle: new WebInspector.TimelineCategory("idle", WebInspector.UIString("Idle"), -1, "hsl(0, 0%, 87%)", "hsl(0, 100%, 100%)", "hsl(0, 100%, 100%)", "hsl(0, 100%, 100%)")
     };
     return WebInspector.TimelineUIUtils._categories;
 };
@@ -804,15 +804,17 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier)
  * @param {string} title
  * @param {number} overviewStripGroupIndex
  * @param {string} borderColor
+ * @param {string} backgroundColor
  * @param {string} fillColorStop0
  * @param {string} fillColorStop1
  */
-WebInspector.TimelineCategory = function(name, title, overviewStripGroupIndex, borderColor, fillColorStop0, fillColorStop1)
+WebInspector.TimelineCategory = function(name, title, overviewStripGroupIndex, borderColor, backgroundColor, fillColorStop0, fillColorStop1)
 {
     this.name = name;
     this.title = title;
     this.overviewStripGroupIndex = overviewStripGroupIndex;
     this.borderColor = borderColor;
+    this.backgroundColor = backgroundColor;
     this.fillColorStop0 = fillColorStop0;
     this.fillColorStop1 = fillColorStop1;
     this.hidden = false;

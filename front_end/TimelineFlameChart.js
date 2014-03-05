@@ -42,13 +42,6 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel, mainTh
     this._frameModel = frameModel;
     this._mainThread = mainThread;
     this._font = "bold 12px " + WebInspector.fontFamily();
-
-    this._colorGenerator = new WebInspector.FlameChart.ColorGenerator();
-    var categories = WebInspector.TimelineUIUtils.categories();
-    for (var category in categories) {
-        this._colorGenerator.setColorForID(category, categories[category].fillColorStop1);
-        this._colorGenerator.setColorForID(category + " child", categories[category].fillColorStop0);
-    }
 }
 
 WebInspector.TimelineFlameChartDataProvider.prototype = {
@@ -91,7 +84,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     entryTitle: function(entryIndex)
     {
-        return this._entryTitles[entryIndex];
+        return this._isSelfSegment[entryIndex] ? this._records[entryIndex].title() : null;
     },
 
     /**
@@ -121,14 +114,6 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     addRecord: function(record)
     {
         this._appendRecord(record, 0);
-    },
-
-    /**
-     * @return {!WebInspector.FlameChart.ColorGenerator}
-     */
-    colorGenerator: function()
-    {
-        return this._colorGenerator;
     },
 
     /**
@@ -187,11 +172,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             entryOffsets: [],
         };
 
-        /** @type {!Array.<string>} */
-        this._entryTitles =  [];
-
-        /** @type {!Array.<string>} */
-        this._entryColors = [];
+        this._records = [];
+        this._isSelfSegment = [];
     },
 
     /**
@@ -216,41 +198,38 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 return;
         }
 
-        var color = this._colorGenerator.colorForID(WebInspector.TimelineUIUtils.categoryForRecord(record).name);
-        var colorChild = this._colorGenerator.colorForID(WebInspector.TimelineUIUtils.categoryForRecord(record).name + " child");
-
         var currentTime = record.startTime;
         for (var i = 0; i < record.children.length; ++i) {
             var childRecord = record.children[i];
             var childStartTime = childRecord.startTime;
             if (currentTime !== childStartTime)
-                this._pushRecord(record, level, color, currentTime, childStartTime);
+                this._pushRecord(record, true, level, currentTime, childStartTime);
             var childEndTime = childRecord.endTime || childRecord.startTime;
-            this._pushRecord(record, level, colorChild, childStartTime, childEndTime);
+            this._pushRecord(record, false, level, childStartTime, childEndTime);
             this._appendRecord(childRecord, level + 1);
             currentTime = childEndTime;
         }
         if (recordEndTime !== currentTime || record.children.length === 0)
-            this._pushRecord(record, level, color, currentTime, recordEndTime);
+            this._pushRecord(record, true, level, currentTime, recordEndTime);
 
         this._maxStackDepth = Math.max(this._maxStackDepth, level + 2);
     },
 
     /**
      * @param {!WebInspector.TimelineModel.Record} record
+     * @param {boolean} isSelfSegment
      * @param {number} level
-     * @param {string} color
      * @param {number} startTime
      * @param {number} endTime
      */
-    _pushRecord: function(record, level, color, startTime, endTime)
+    _pushRecord: function(record, isSelfSegment, level, startTime, endTime)
     {
-        var index = this._entryTitles.length;
-        this._entryTitles[index] = record.type;
+        var index = this._records.length;
+        this._records.push(record);
         this._timelineData.entryOffsets[index] = startTime - this._zeroTime;
         this._timelineData.entryLevels[index] = level;
         this._timelineData.entryTotalTimes[index] = endTime - startTime;
-        this._entryColors[index] = color;
+        this._isSelfSegment[index] = isSelfSegment;
     },
 
     /**
@@ -286,7 +265,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     entryColor: function(entryIndex)
     {
-        return this._entryColors[entryIndex];
+        var category = WebInspector.TimelineUIUtils.categoryForRecord(this._records[entryIndex]);
+        return this._isSelfSegment[entryIndex] ? category.fillColorStop1 : category.backgroundColor;
     },
 
     /**
