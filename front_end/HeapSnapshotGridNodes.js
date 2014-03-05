@@ -92,12 +92,18 @@ WebInspector.HeapSnapshotGridNode.prototype = {
         return cell;
     },
 
+    /**
+     * @override
+     */
     collapse: function()
     {
         WebInspector.DataGridNode.prototype.collapse.call(this);
         this._dataGrid.updateVisibleNodes();
     },
 
+    /**
+     * @override
+     */
     dispose: function()
     {
         if (this._providerObject)
@@ -127,23 +133,43 @@ WebInspector.HeapSnapshotGridNode.prototype = {
     },
 
     /**
+     * @return {!Array.<!WebInspector.DataGridNode>}
+     */
+    allChildren: function()
+    {
+        return this.children;
+    },
+
+    /**
+     * @param {number} index
+     */
+    removeChildByIndex: function(index)
+    {
+        this.removeChild(this.children[index]);
+    },
+
+    /**
      * @param {number} nodePosition
      * @return {?WebInspector.DataGridNode}
      */
     childForPosition: function(nodePosition)
     {
-        var indexOfFirsChildInRange = 0;
+        var indexOfFirstChildInRange = 0;
         for (var i = 0; i < this._retrievedChildrenRanges.length; i++) {
            var range = this._retrievedChildrenRanges[i];
            if (range.from <= nodePosition && nodePosition < range.to) {
-               var childIndex = indexOfFirsChildInRange + nodePosition - range.from;
-               return this.children[childIndex];
+               var childIndex = indexOfFirstChildInRange + nodePosition - range.from;
+               return this.allChildren()[childIndex];
            }
-           indexOfFirsChildInRange += range.to - range.from + 1;
+           indexOfFirstChildInRange += range.to - range.from + 1;
         }
         return null;
     },
 
+    /**
+     * @param {string} columnIdentifier
+     * @return {!Element}
+     */
     _createValueCell: function(columnIdentifier)
     {
         var cell = document.createElement("td");
@@ -277,7 +303,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
 
                 if (!found || itemsRange.startPosition < range.from) {
                     // Update previous button.
-                    this.children[insertionIndex - 1].setEndPosition(itemsRange.startPosition);
+                    this.allChildren()[insertionIndex - 1].setEndPosition(itemsRange.startPosition);
                     insertShowMoreButton.call(this, itemsRange.startPosition, found ? range.from : itemsRange.totalLength, insertionIndex);
                     range = {from: itemsRange.startPosition, to: itemsRange.startPosition};
                     if (!found)
@@ -310,15 +336,15 @@ WebInspector.HeapSnapshotGridNode.prototype = {
                     if (nextRange && newEndOfRange === nextRange.from) {
                         range.to = nextRange.to;
                         // Remove "show next" button if there is one.
-                        this.removeChild(this.children[insertionIndex]);
+                        this.removeChildByIndex(insertionIndex);
                         this._retrievedChildrenRanges.splice(rangeIndex + 1, 1);
                     } else {
                         range.to = newEndOfRange;
                         // Remove or update next button.
                         if (newEndOfRange === itemsRange.totalLength)
-                            this.removeChild(this.children[insertionIndex]);
+                            this.removeChildByIndex(insertionIndex);
                         else
-                            this.children[insertionIndex].setStartPosition(itemsRange.endPosition);
+                            this.allChildren()[insertionIndex].setStartPosition(itemsRange.endPosition);
                     }
                 }
             }
@@ -340,8 +366,9 @@ WebInspector.HeapSnapshotGridNode.prototype = {
     _saveChildren: function()
     {
         this._savedChildren = null;
-        for (var i = 0, childrenCount = this.children.length; i < childrenCount; ++i) {
-            var child = this.children[i];
+        var children = this.allChildren();
+        for (var i = 0, l = children.length; i < l; ++i) {
+            var child = children[i];
             if (!child.expanded)
                 continue;
             if (!this._savedChildren)
@@ -368,8 +395,9 @@ WebInspector.HeapSnapshotGridNode.prototype = {
              */
             function afterPopulate()
             {
-                for (var i = 0, l = this.children.length; i < l; ++i) {
-                    var child = this.children[i];
+                var children = this.allChildren();
+                for (var i = 0, l = children.length; i < l; ++i) {
+                    var child = children[i];
                     if (child.expanded)
                         child.sort();
                 }
@@ -837,6 +865,7 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
 
         /**
          * @this {WebInspector.HeapSnapshotConstructorNode}
+         * @param {number} nodePosition
          */
         function didGetNodePosition(nodePosition)
         {
@@ -850,22 +879,14 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
 
         /**
          * @this {WebInspector.HeapSnapshotConstructorNode}
+         * @param {number} nodePosition
          */
         function didPopulateChildren(nodePosition)
         {
-            var indexOfFirsChildInRange = 0;
-            for (var i = 0; i < this._retrievedChildrenRanges.length; i++) {
-               var range = this._retrievedChildrenRanges[i];
-               if (range.from <= nodePosition && nodePosition < range.to) {
-                   var childIndex = indexOfFirsChildInRange + nodePosition - range.from;
-                   var instanceNode = this.children[childIndex];
-                   this._dataGrid.highlightNode(/** @type {!WebInspector.HeapSnapshotGridNode} */ (instanceNode));
-                   callback(true);
-                   return;
-               }
-               indexOfFirsChildInRange += range.to - range.from + 1;
-            }
-            callback(false);
+            var child = this.childForPosition(nodePosition);
+            if (child)
+                this._dataGrid.highlightNode(/** @type {!WebInspector.HeapSnapshotGridNode} */ (child));
+            callback(!!child);
         }
 
         this.expandWithoutPopulate(didExpand.bind(this));

@@ -222,7 +222,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
     _performSorting: function(sortFunction)
     {
         this.recursiveSortingEnter();
-        var children = this.rootNode()._allChildNodes;
+        var children = this.allChildren(this.rootNode());
         this.rootNode().removeChildren();
         children.sort(sortFunction);
         for (var i = 0, l = children.length; i < l; ++i) {
@@ -242,10 +242,6 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
         child.revealed = revealed;
     },
 
-    updateVisibleNodes: function()
-    {
-    },
-
     recursiveSortingEnter: function()
     {
         ++this._recursiveSortingDepth;
@@ -259,9 +255,48 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
             this.dispatchEventToListeners("sorting complete");
     },
 
+    updateVisibleNodes: function()
+    {
+    },
+
+    /**
+     * @param {!WebInspector.DataGridNode} parent
+     * @return {!Array.<!WebInspector.HeapSnapshotGridNode>}
+     */
+    allChildren: function(parent)
+    {
+        return parent.children;
+    },
+
+    /**
+     * @param {!WebInspector.DataGridNode} parent
+     * @param {!WebInspector.DataGridNode} node
+     * @param {number} index
+     */
+    insertChild: function(parent, node, index)
+    {
+        parent.insertChild(node, index);
+    },
+
+    /**
+     * @param {!WebInspector.HeapSnapshotGridNode} parent
+     * @param {number} index
+     */
+    removeChildByIndex: function(parent, index)
+    {
+        parent.removeChild(parent.children[index]);
+    },
+
+    /**
+     * @param {!WebInspector.HeapSnapshotGridNode} parent
+     */
+    removeAllChildren: function(parent)
+    {
+        parent.removeChildren();
+    },
+
     __proto__: WebInspector.DataGrid.prototype
 }
-
 
 
 /**
@@ -276,6 +311,10 @@ WebInspector.HeapSnapshotViewportDataGrid = function(columns)
      * @type {?WebInspector.HeapSnapshotGridNode}
      */
     this._nodeToHighlightAfterScroll = null;
+    this._topPadding = new WebInspector.HeapSnapshotPaddingNode();
+    this.dataTableBody.insertBefore(this._topPadding.element, this.dataTableBody.firstChild);
+    this._bottomPadding = new WebInspector.HeapSnapshotPaddingNode();
+    this.dataTableBody.insertBefore(this._bottomPadding.element, this.dataTableBody.lastChild);
 }
 
 WebInspector.HeapSnapshotViewportDataGrid.prototype = {
@@ -284,7 +323,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
      */
     topLevelNodes: function()
     {
-        return this._allChildrenForNode(this.rootNode());
+        return this.allChildren(this.rootNode());
     },
 
     appendChildAfterSorting: function(child)
@@ -320,11 +359,10 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
     {
         var viewPortHeight = this.scrollContainer.offsetHeight;
 
-        var children = parentNode._allChildNodes;
+        var children = this.allChildren(parentNode);
         var selectedNode = this.selectedNode;
 
         parentNode.removeChildren();
-        this._ensurePaddingRows(parentNode);
 
         // The height of the view port + invisible top part.
         var heightToFill = viewPortHeight + firstNodeHiddenHeight;
@@ -344,7 +382,8 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
             ++i;
         }
 
-        this._updatePaddingRows(parentNode, topPadding, bottomPadding);
+        this._topPadding.setHeight(topPadding);
+        this._bottomPadding.setHeight(bottomPadding);
 
         if (selectedNode) {
             if (selectedNode.parent) {
@@ -362,12 +401,12 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
      */
     defaultAttachLocation: function()
     {
-        return this.rootNode()._bottomPadding.element;
+        return this._bottomPadding.element;
     },
 
     _revealTopLevelNode: function(nodeToReveal)
     {
-        var children = this.rootNode()._allChildNodes;
+        var children = this.allChildren(this.rootNode());
 
         var topPadding = 0;
         for (var i = 0; i < children.length; ++i) {
@@ -383,12 +422,12 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
     },
 
     /**
-     * @param {!WebInspector.DataGridNode} node
+     * @param {!WebInspector.DataGridNode} parent
      * @return {!Array.<!WebInspector.DataGridNode>}
      */
-    _allChildrenForNode: function(node)
+    allChildren: function(parent)
     {
-        return node._allChildNodes || (node._allChildNodes = []);
+        return parent._allChildren || (parent._allChildren = []);
     },
 
     /**
@@ -397,14 +436,34 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
      */
     appendNode: function(parent, node)
     {
-        this._allChildrenForNode(parent).push(node);
+        this.allChildren(parent).push(node);
+    },
+
+    /**
+     * @param {!WebInspector.DataGridNode} parent
+     * @param {!WebInspector.DataGridNode} node
+     * @param {number} index
+     */
+    insertChild: function(parent, node, index)
+    {
+        this.allChildren(parent).splice(index, 0, node);
+    },
+
+    removeChildByIndex: function(parent, index)
+    {
+        this.allChildren(parent).splice(index, 1);
+    },
+
+    removeAllChildren: function(parent)
+    {
+        parent._allChildren = [];
     },
 
     removeTopLevelNodes: function()
     {
         this._disposeAllNodes();
         this.rootNode().removeChildren();
-        this.rootNode()._allChildNodes = [];
+        this.rootNode()._allChildren = [];
     },
 
     /**
@@ -432,35 +491,6 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
         var elemTop = element.offsetTop
         var elemBottom = elemTop + element.offsetHeight;
         return elemBottom <= viewportBottom && elemTop >= viewportTop;
-    },
-
-    /**
-     * @param {!WebInspector.DataGridNode} node
-     */
-    _ensurePaddingRows: function(node)
-    {
-        var parentElement = node == this.rootNode() ? this.dataTableBody : node.element;
-        if (!node._topPadding) {
-            node._topPadding = new WebInspector.HeapSnapshotPaddingNode();
-            parentElement.insertBefore(node._topPadding.element, parentElement.firstChild);
-        }
-        if (!node._bottomPadding) {
-            node._bottomPadding = new WebInspector.HeapSnapshotPaddingNode();
-            // At the root level lastChild is a filler node.
-            var insertLocation = node === this.rootNode() ? parentElement.lastChild : null;
-            parentElement.insertBefore(node._bottomPadding.element, insertLocation);
-        }
-    },
-
-    /**
-     * @param {!WebInspector.DataGridNode} node
-     * @param {number} top
-     * @param {number} bottom
-     */
-    _updatePaddingRows: function(node, top, bottom)
-    {
-        node._topPadding.setHeight(top);
-        node._bottomPadding.setHeight(bottom);
     },
 
     onResize: function()
