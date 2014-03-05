@@ -45,8 +45,10 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel, mainTh
 
     this._colorGenerator = new WebInspector.FlameChart.ColorGenerator();
     var categories = WebInspector.TimelineUIUtils.categories();
-    for (var category in categories)
+    for (var category in categories) {
         this._colorGenerator.setColorForID(category, categories[category].fillColorStop1);
+        this._colorGenerator.setColorForID(category + " child", categories[category].fillColorStop0);
+    }
 }
 
 WebInspector.TimelineFlameChartDataProvider.prototype = {
@@ -102,7 +104,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     addRecord: function(record)
     {
-        WebInspector.TimelineModel.forAllRecords([record], this._appendRecord.bind(this));
+        this._appendRecord(record, 0);
     },
 
     /**
@@ -120,7 +122,9 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     {
         if (!this._timelineData) {
             this._resetData();
-            this._model.forAllRecords(this._appendRecord.bind(this));
+            var records = this._model.records();
+            for (var i = 0; i < records.length; ++i)
+                this._appendRecord(records[i], 0);
             this._zeroTime = this._model.minimumRecordTime();
         }
         return /** @type {!WebInspector.FlameChart.TimelineData} */(this._timelineData);
@@ -176,17 +180,16 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
     /**
      * @param {!WebInspector.TimelineModel.Record} record
-     * @param {number} depth
+     * @param {number} level
      */
-    _appendRecord: function(record, depth)
+    _appendRecord: function(record, level)
     {
         var timelineData = this.timelineData();
 
         this._startTime = this._startTime ? Math.min(this._startTime, record.startTime) : record.startTime;
-        var startTime = this._startTime;
-        this._zeroTime = startTime;
-        var endTime = record.endTime || record.startTime - startTime;
-        this._endTime = Math.max(this._endTime, endTime);
+        this._zeroTime = this._startTime;
+        var recordEndTime = record.endTime || record.startTime;
+        this._endTime = Math.max(this._endTime, recordEndTime);
         this._totalTime = Math.max(1000, this._endTime - this._startTime);
 
         if (this._mainThread) {
@@ -197,13 +200,41 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 return;
         }
 
+        var color = this._colorGenerator.colorForID(WebInspector.TimelineUIUtils.categoryForRecord(record).name);
+        var colorChild = this._colorGenerator.colorForID(WebInspector.TimelineUIUtils.categoryForRecord(record).name + " child");
+
+        var currentTime = record.startTime;
+        for (var i = 0; i < record.children.length; ++i) {
+            var childRecord = record.children[i];
+            var childStartTime = childRecord.startTime;
+            if (currentTime !== childStartTime)
+                this._pushRecord(record, level, color, currentTime, childStartTime);
+            var childEndTime = childRecord.endTime || childRecord.startTime;
+            this._pushRecord(record, level, colorChild, childStartTime, childEndTime);
+            this._appendRecord(childRecord, level + 1);
+            currentTime = childEndTime;
+        }
+        if (recordEndTime !== currentTime || record.children.length === 0)
+            this._pushRecord(record, level, color, currentTime, recordEndTime);
+
+        this._maxStackDepth = Math.max(this._maxStackDepth, level + 2);
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {number} level
+     * @param {string} color
+     * @param {number} startTime
+     * @param {number} endTime
+     */
+    _pushRecord: function(record, level, color, startTime, endTime)
+    {
         var index = this._entryTitles.length;
         this._entryTitles[index] = record.type;
-        timelineData.entryOffsets[index] = record.startTime - startTime;
-        timelineData.entryLevels[index] = depth;
-        timelineData.entryTotalTimes[index] = endTime - record.startTime;
-        this._entryColors[index] = this._colorGenerator.colorForID(WebInspector.TimelineUIUtils.categoryForRecord(record).name);
-        this._maxStackDepth = Math.max(this._maxStackDepth, depth + 1);
+        this._timelineData.entryOffsets[index] = startTime - this._zeroTime;
+        this._timelineData.entryLevels[index] = level;
+        this._timelineData.entryTotalTimes[index] = endTime - startTime;
+        this._entryColors[index] = color;
     },
 
     /**
