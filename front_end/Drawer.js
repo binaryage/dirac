@@ -300,7 +300,7 @@ WebInspector.Drawer.prototype = {
     {
         if (!WebInspector.experimentsSettings.showEditorInDrawer.isEnabled())
             available = false;
-        this._toggleDrawerEditorButton.element.enableStyleClass("hidden", !available);
+        this._toggleDrawerEditorButton.element.classList.toggle("hidden", !available);
     },
 
     showDrawerEditor: function()

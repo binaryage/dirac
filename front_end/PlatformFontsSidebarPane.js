@@ -91,7 +91,7 @@ WebInspector.PlatformFontsSidebarPane.prototype = {
         this._fontStatsSection.removeChildren();
 
         var isEmptySection = !platformFonts || !platformFonts.length;
-        this._sectionTitle.enableStyleClass("hidden", isEmptySection);
+        this._sectionTitle.classList.toggle("hidden", isEmptySection);
         if (isEmptySection)
             return;
         platformFonts.sort(function (a, b) {

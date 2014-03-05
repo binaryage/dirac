@@ -69,7 +69,7 @@ WebInspector.StatusBarItem.prototype = {
     {
         if (this._visible === x)
             return;
-        this.element.enableStyleClass("hidden", !x);
+        this.element.classList.toggle("hidden", !x);
         this._visible = x;
     },
 
@@ -225,7 +225,7 @@ WebInspector.StatusBarButton.prototype = {
             return;
 
         if (this.states === 2)
-            this.element.enableStyleClass("toggled-on", x);
+            this.element.classList.toggle("toggled-on", x);
         else {
             this.element.classList.remove("toggled-" + this._state);
             if (x !== 0)

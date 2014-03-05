@@ -1032,8 +1032,8 @@ WebInspector.TimelineRecordListRow.prototype = {
         if (this._dataElement.firstChild)
             this._dataElement.removeChildren();
 
-        this._warningElement.enableStyleClass("hidden", !presentationRecord.hasWarnings() && !presentationRecord.childHasWarnings());
-        this._warningElement.enableStyleClass("timeline-tree-item-child-warning", presentationRecord.childHasWarnings() && !presentationRecord.hasWarnings());
+        this._warningElement.classList.toggle("hidden", !presentationRecord.hasWarnings() && !presentationRecord.childHasWarnings());
+        this._warningElement.classList.toggle("timeline-tree-item-child-warning", presentationRecord.childHasWarnings() && !presentationRecord.hasWarnings());
 
         if (presentationRecord.coalesced()) {
             this._dataElement.createTextChild(WebInspector.UIString("× %d", presentationRecord.presentationChildren().length));
@@ -1046,8 +1046,8 @@ WebInspector.TimelineRecordListRow.prototype = {
             }
         }
 
-        this._expandArrowElement.enableStyleClass("parent", presentationRecord.hasPresentationChildren());
-        this._expandArrowElement.enableStyleClass("expanded", !!presentationRecord.visibleChildrenCount());
+        this._expandArrowElement.classList.toggle("parent", presentationRecord.hasPresentationChildren());
+        this._expandArrowElement.classList.toggle("expanded", !!presentationRecord.visibleChildrenCount());
         this._record.setListRow(this);
     },
 
@@ -1086,7 +1086,7 @@ WebInspector.TimelineRecordListRow.prototype = {
      */
     renderAsSelected: function(selected)
     {
-        this.element.enableStyleClass("selected", selected);
+        this.element.classList.toggle("selected", selected);
     },
 
     /**
@@ -1190,7 +1190,7 @@ WebInspector.TimelineRecordGraphRow.prototype = {
      */
     renderAsSelected: function(selected)
     {
-        this.element.enableStyleClass("selected", selected);
+        this.element.classList.toggle("selected", selected);
     },
 
     _expand: function()

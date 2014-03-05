@@ -264,7 +264,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
 
     _updateShowMatchingItems: function()
     {
-        this._itemElementsContainer.enableStyleClass("hidden", !this._shouldShowMatchingItems);
+        this._itemElementsContainer.classList.toggle("hidden", !this._shouldShowMatchingItems);
         this.element.style.height = this._shouldShowMatchingItems ? this._dialogHeight + "px" : "auto";
     },
 

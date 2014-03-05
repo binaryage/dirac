@@ -808,7 +808,7 @@ WebInspector.SourcesPanel.prototype = {
         var enabled = WebInspector.settings.pauseOnExceptionEnabled.get();
         this._pauseOnExceptionButton.toggled = enabled;
         this._pauseOnExceptionButton.title = WebInspector.UIString(enabled ? "Don't pause on exceptions." : "Pause on exceptions.");
-        this._debugToolbarDrawer.enableStyleClass("expanded", enabled);
+        this._debugToolbarDrawer.classList.toggle("expanded", enabled);
     },
 
     _updateDebuggerButtons: function()

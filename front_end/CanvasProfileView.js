@@ -274,8 +274,8 @@ WebInspector.CanvasProfileView.prototype = {
      */
     _enableWaitIcon: function(enable)
     {
-        this._spinnerIcon.enableStyleClass("hidden", !enable);
-        this._debugInfoElement.enableStyleClass("hidden", enable);
+        this._spinnerIcon.classList.toggle("hidden", !enable);
+        this._debugInfoElement.classList.toggle("hidden", enable);
     },
 
     _replayTraceLog: function()
@@ -908,7 +908,7 @@ WebInspector.CanvasProfileType.prototype = {
 
     _dispatchViewUpdatedEvent: function()
     {
-        this._frameSelector.element.enableStyleClass("hidden", this._frameSelector.size() <= 1);
+        this._frameSelector.element.classList.toggle("hidden", this._frameSelector.size() <= 1);
         this.dispatchEventToListeners(WebInspector.ProfileType.Events.ViewUpdated);
     },
 

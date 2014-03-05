@@ -157,7 +157,7 @@ WebInspector.UISourceCodeFrame.prototype = {
 
     _updateStyle: function()
     {
-        this.element.enableStyleClass("source-frame-unsaved-committed-changes", this._uiSourceCode.hasUnsavedCommittedChanges());
+        this.element.classList.toggle("source-frame-unsaved-committed-changes", this._uiSourceCode.hasUnsavedCommittedChanges());
     },
 
     onUISourceCodeContentChanged: function()

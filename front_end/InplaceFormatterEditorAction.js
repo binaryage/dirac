@@ -36,7 +36,7 @@ WebInspector.InplaceFormatterEditorAction.prototype = {
      */
     _updateButton: function(uiSourceCode)
     {
-        this._button.element.enableStyleClass("hidden", !this._isFormattable(uiSourceCode));
+        this._button.element.classList.toggle("hidden", !this._isFormattable(uiSourceCode));
     },
 
     /**

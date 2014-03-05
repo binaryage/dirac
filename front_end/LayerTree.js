@@ -223,7 +223,7 @@ WebInspector.LayerTreeElement.prototype = {
      */
     setHovered: function(hovered)
     {
-        this.listItemElement.enableStyleClass("hovered", hovered);
+        this.listItemElement.classList.toggle("hovered", hovered);
     },
 
     __proto__: TreeElement.prototype

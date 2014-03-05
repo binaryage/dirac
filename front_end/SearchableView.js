@@ -244,7 +244,7 @@ WebInspector.SearchableView.prototype = {
 
     _toggleSearchBar: function(toggled)
     {
-        this._footerElementContainer.enableStyleClass("hidden", !toggled);
+        this._footerElementContainer.classList.toggle("hidden", !toggled);
         this.doResize();
     },
 
@@ -363,7 +363,7 @@ WebInspector.SearchableView.prototype = {
 
     _updateReplaceVisibility: function()
     {
-        this._replaceElement.enableStyleClass("hidden", !this._replaceable);
+        this._replaceElement.classList.toggle("hidden", !this._replaceable);
         if (!this._replaceable) {
             this._replaceCheckboxElement.checked = false;
             this._updateSecondRowVisibility();

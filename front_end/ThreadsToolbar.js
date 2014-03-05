@@ -111,7 +111,7 @@ WebInspector.ThreadsToolbar.prototype = {
     _alterVisibility: function()
     {
         var hidden = this._comboBox.size() === 1;
-        this.element.enableStyleClass("hidden", hidden);
+        this.element.classList.toggle("hidden", hidden);
     }
 
 }

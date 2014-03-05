@@ -401,7 +401,7 @@ WebInspector.TimelinePanel.prototype = {
     _onFiltersToggled: function(event)
     {
         var toggled = /** @type {boolean} */ (event.data);
-        this._filtersContainer.enableStyleClass("hidden", !toggled);
+        this._filtersContainer.classList.toggle("hidden", !toggled);
         this.doResize();
     },
 
@@ -894,8 +894,8 @@ WebInspector.TimelineDetailsView.prototype = {
      */
     setVertical: function(vertical)
     {
-        this._contentElement.enableStyleClass("hbox", !vertical);
-        this._contentElement.enableStyleClass("vbox", vertical);
+        this._contentElement.classList.toggle("hbox", !vertical);
+        this._contentElement.classList.toggle("vbox", vertical);
     },
 
     __proto__: WebInspector.View.prototype

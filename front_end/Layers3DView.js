@@ -254,7 +254,7 @@ WebInspector.Layers3DView.prototype = {
         var isContentRoot = layer === this._model.contentRoot();
         var parentElement = isContentRoot ? this._rotatingContainerElement : this._elementForLayer(layer.parent());
         element.__layerDetails.depth = parentElement.__layerDetails ? parentElement.__layerDetails.depth + 1 : 0;
-        element.enableStyleClass("invisible", layer.invisible());
+        element.classList.toggle("invisible", layer.invisible());
         this._updateElementColor(element);
         if (parentElement !== element.parentElement)
             parentElement.appendChild(element);

@@ -342,7 +342,7 @@ WebInspector.SplitView.prototype = {
     setResizable: function(resizable)
     {
         this._resizable = resizable;
-        this._resizerElement.enableStyleClass("hidden", !resizable);
+        this._resizerElement.classList.toggle("hidden", !resizable);
     },
 
     /**

@@ -142,7 +142,7 @@ WebInspector.ConsoleView.prototype = {
     _onFiltersToggled: function(event)
     {
         var toggled = /** @type {boolean} */ (event.data);
-        this._filtersContainer.enableStyleClass("hidden", !toggled);
+        this._filtersContainer.classList.toggle("hidden", !toggled);
     },
 
     /**

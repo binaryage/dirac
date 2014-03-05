@@ -416,7 +416,7 @@ WebInspector.CPUProfileView.prototype = {
             this.dataGrid.detach();
             this._flameChart.show(this.element);
             this._viewType.set(WebInspector.CPUProfileView._TypeFlame);
-            this._statusBarButtonsElement.enableStyleClass("hidden", true);
+            this._statusBarButtonsElement.classList.toggle("hidden", true);
             return;
         case WebInspector.CPUProfileView._TypeTree:
             this.profileDataGridTree = this._getTopDownProfileDataGridTree();
@@ -430,7 +430,7 @@ WebInspector.CPUProfileView.prototype = {
             break;
         }
 
-        this._statusBarButtonsElement.enableStyleClass("hidden", false);
+        this._statusBarButtonsElement.classList.toggle("hidden", false);
 
         if (this._flameChart)
             this._flameChart.detach();

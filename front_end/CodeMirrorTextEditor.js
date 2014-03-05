@@ -589,7 +589,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     _updateCodeMirrorMode: function()
     {
         var showWhitespaces = WebInspector.settings.showWhitespacesInEditor.get();
-        this.element.enableStyleClass("show-whitespaces", showWhitespaces);
+        this.element.classList.toggle("show-whitespaces", showWhitespaces);
         this._codeMirror.setOption("mode", showWhitespaces ? this._whitespaceOverlayMode(this._mimeType) : this._mimeType);
     },
 
@@ -611,7 +611,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     setReadOnly: function(readOnly)
     {
-        this.element.enableStyleClass("CodeMirror-readonly", readOnly)
+        this.element.classList.toggle("CodeMirror-readonly", readOnly)
         this._codeMirror.setOption("readOnly", readOnly);
     },
 

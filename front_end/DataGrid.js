@@ -689,7 +689,7 @@ WebInspector.DataGrid.prototype = {
             return;
 
         this.columns[columnIdentifier].hidden = !visible;
-        this.element.enableStyleClass("hide-" + columnIdentifier + "-column", !visible);
+        this.element.classList.toggle("hide-" + columnIdentifier + "-column", !visible);
     },
 
     get scrollContainer()
@@ -1250,8 +1250,8 @@ WebInspector.DataGridNode.prototype = {
         if (!this._element)
             return;
 
-        this._element.enableStyleClass("parent", this._hasChildren);
-        this._element.enableStyleClass("expanded", this._hasChildren && this.expanded);
+        this._element.classList.toggle("parent", this._hasChildren);
+        this._element.classList.toggle("expanded", this._hasChildren && this.expanded);
     },
 
     get hasChildren()
@@ -1267,7 +1267,7 @@ WebInspector.DataGridNode.prototype = {
         this._revealed = x;
 
         if (this._element)
-            this._element.enableStyleClass("revealed", this._revealed);
+            this._element.classList.toggle("revealed", this._revealed);
 
         for (var i = 0; i < this.children.length; ++i)
             this.children[i].revealed = x && this.expanded;

@@ -289,7 +289,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
      */
     _updateButton: function(uiSourceCode)
     {
-        this._button.element.enableStyleClass("hidden", !this._isFormatableScript(uiSourceCode));
+        this._button.element.classList.toggle("hidden", !this._isFormatableScript(uiSourceCode));
     },
 
     /**

@@ -1174,12 +1174,12 @@ WebInspector.NetworkLogView.prototype = {
 
             var rowIsVisible = unfilteredRowIndex * rowHeight < visibleBottom && (unfilteredRowIndex + 1) * rowHeight > visibleTop;
             if (rowIsVisible !== row.rowIsVisible) {
-                row.enableStyleClass("offscreen", !rowIsVisible);
+                row.classList.toggle("offscreen", !rowIsVisible);
                 row.rowIsVisible = rowIsVisible;
             }
             var rowIsOdd = !!(unfilteredRowIndex & 1);
             if (rowIsOdd !== row.rowIsOdd) {
-                row.enableStyleClass("odd", rowIsOdd);
+                row.classList.toggle("odd", rowIsOdd);
                 row.rowIsOdd = rowIsOdd;
             }
             unfilteredRowIndex++;
@@ -1327,7 +1327,7 @@ WebInspector.NetworkLogView.prototype = {
         for (var i = 0; matches && (i < this._filters.length); ++i)
             matches = this._filters[i](request);
 
-        node.element.enableStyleClass("filtered-out", !matches);
+        node.element.classList.toggle("filtered-out", !matches);
         if (matches)
             this._filteredOutRequests.remove(request);
         else
@@ -1743,8 +1743,8 @@ WebInspector.NetworkPanel.prototype = {
     _onFiltersToggled: function(event)
     {
         var toggled = /** @type {boolean} */ (event.data);
-        this._filtersContainer.enableStyleClass("hidden", !toggled);
-        this.element.enableStyleClass("filters-toggled", toggled);
+        this._filtersContainer.classList.toggle("hidden", !toggled);
+        this.element.classList.toggle("filters-toggled", toggled);
     },
 
     /**
@@ -1810,7 +1810,7 @@ WebInspector.NetworkPanel.prototype = {
 
     _onRowSizeChanged: function(event)
     {
-        this._viewsContainerElement.enableStyleClass("small", !event.data.largeRows);
+        this._viewsContainerElement.classList.toggle("small", !event.data.largeRows);
     },
 
     _onSearchCountUpdated: function(event)
@@ -2499,7 +2499,7 @@ WebInspector.NetworkDataGridNode.prototype = {
             this._timelineCell.classList.add("resource-cached");
 
         this._element.classList.add("network-item");
-        this._element.enableStyleClass("network-error-row", this._isFailed());
+        this._element.classList.toggle("network-error-row", this._isFailed());
         this._updateElementStyleClasses(this._element);
     },
 
@@ -2560,7 +2560,7 @@ WebInspector.NetworkDataGridNode.prototype = {
     _refreshStatusCell: function()
     {
         this._statusCell.removeChildren();
-        this._statusCell.enableStyleClass("network-dim-cell", !this._isFailed() && (this._request.cached || !this._request.statusCode));
+        this._statusCell.classList.toggle("network-dim-cell", !this._isFailed() && (this._request.cached || !this._request.statusCode));
 
         if (this._request.failed && !this._request.canceled) {
             var failText = WebInspector.UIString("(failed)");
@@ -2608,7 +2608,7 @@ WebInspector.NetworkDataGridNode.prototype = {
             this._typeCell.classList.remove("network-dim-cell");
             this._typeCell.setTextAndTitle(this._request.mimeType);
         } else {
-            this._typeCell.enableStyleClass("network-dim-cell", !this._request.isPingRequest());
+            this._typeCell.classList.toggle("network-dim-cell", !this._request.isPingRequest());
             this._typeCell.setTextAndTitle(this._request.requestContentType() || "");
         }
     },

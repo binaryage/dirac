@@ -70,7 +70,7 @@ WebInspector.OverridesView.prototype = {
     _overridesWarningUpdated: function()
     {
         var message = WebInspector.overridesSupport.warningMessage();
-        this._warningFooter.enableStyleClass("hidden", !message);
+        this._warningFooter.classList.toggle("hidden", !message);
         this._warningFooter.textContent = message;
     },
 
@@ -110,7 +110,7 @@ WebInspector.OverridesView.Tab.prototype = {
         var active = false;
         for (var i = 0; !active && i < this._settings.length; ++i)
             active = this._settings[i].get();
-        this._tabbedPane.element.enableStyleClass("overrides-activate-" + this._id, active);
+        this._tabbedPane.element.classList.toggle("overrides-activate-" + this._id, active);
         this._tabbedPane.changeTabTitle(this._id, active ? this._name + " \u2713" : this._name);
     },
 

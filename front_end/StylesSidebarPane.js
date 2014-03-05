@@ -73,7 +73,7 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
     WebInspector.settings.showUserAgentStyles.addChangeListener(this._showUserAgentStylesSettingChanged.bind(this));
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
     this.element.classList.add("styles-pane");
-    this.element.enableStyleClass("show-user-styles", WebInspector.settings.showUserAgentStyles.get());
+    this.element.classList.toggle("show-user-styles", WebInspector.settings.showUserAgentStyles.get());
     this.element.addEventListener("mousemove", this._mouseMovedOverElement.bind(this), false);
     document.body.addEventListener("keydown", this._keyDown.bind(this), false);
     document.body.addEventListener("keyup", this._keyUp.bind(this), false);
@@ -191,8 +191,8 @@ WebInspector.StylesSidebarPane.prototype = {
             return;
 
         var hasPseudoType = !!this.node.pseudoType();
-        this._elementStateButton.enableStyleClass("hidden", hasPseudoType);
-        this._elementStatePane.enableStyleClass("expanded", !hasPseudoType && this._elementStateButton.classList.contains("toggled"));
+        this._elementStateButton.classList.toggle("hidden", hasPseudoType);
+        this._elementStatePane.classList.toggle("expanded", !hasPseudoType && this._elementStateButton.classList.contains("toggled"));
 
         var nodePseudoState = this._forcedPseudoClasses;
         if (!nodePseudoState)
@@ -761,8 +761,8 @@ WebInspector.StylesSidebarPane.prototype = {
         var buttonToggled = !this._elementStateButton.classList.contains("toggled");
         if (buttonToggled)
             this.expand();
-        this._elementStateButton.enableStyleClass("toggled", buttonToggled);
-        this._elementStatePane.enableStyleClass("expanded", buttonToggled);
+        this._elementStateButton.classList.toggle("toggled", buttonToggled);
+        this._elementStatePane.classList.toggle("expanded", buttonToggled);
     },
 
     _createElementStatePane: function()
@@ -825,7 +825,7 @@ WebInspector.StylesSidebarPane.prototype = {
     _showUserAgentStylesSettingChanged: function(event)
     {
         var showStyles = /** @type {boolean} */ (event.data);
-        this.element.enableStyleClass("show-user-styles", showStyles);
+        this.element.classList.toggle("show-user-styles", showStyles);
     },
 
     willHide: function()

@@ -152,18 +152,6 @@ Element.prototype.removeMatchingStyleClasses = function(classNameRegex)
 }
 
 /**
- * @param {string} className
- * @param {*} enable
- */
-Element.prototype.enableStyleClass = function(className, enable)
-{
-    if (enable)
-        this.classList.add(className);
-    else
-        this.classList.remove(className);
-}
-
-/**
  * @param {number|undefined} x
  * @param {number|undefined} y
  * @param {!Element=} relativeTo
