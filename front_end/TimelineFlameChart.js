@@ -186,7 +186,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
         this._startTime = this._startTime ? Math.min(this._startTime, record.startTime) : record.startTime;
         this._zeroTime = this._startTime;
-        var recordEndTime = record.endTime || record.startTime;
+        var recordEndTime = record.endTime;
         this._endTime = Math.max(this._endTime, recordEndTime);
         this._totalTime = Math.max(1000, this._endTime - this._startTime);
 
@@ -194,17 +194,29 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             if (record.type === WebInspector.TimelineModel.RecordType.GPUTask || !!record.thread)
                 return;
         } else {
-            if (record.type === WebInspector.TimelineModel.RecordType.Program || !record.thread)
+            if (record.type === WebInspector.TimelineModel.RecordType.Program || !record.thread || record.thread === "gpu")
                 return;
         }
 
+        var recordIndex = this._pushRecord(record, true, level, record.startTime, record.endTime);
         var currentTime = record.startTime;
         for (var i = 0; i < record.children.length; ++i) {
             var childRecord = record.children[i];
             var childStartTime = childRecord.startTime;
-            if (currentTime !== childStartTime)
-                this._pushRecord(record, true, level, currentTime, childStartTime);
-            var childEndTime = childRecord.endTime || childRecord.startTime;
+            var childEndTime = childRecord.endTime;
+            if (childStartTime === childEndTime) {
+                this._appendRecord(childRecord, level + 1);
+                continue;
+            }
+
+            if (currentTime !== childStartTime) {
+                if (recordIndex !== -1) {
+                    this._timelineData.entryTotalTimes[recordIndex] = childStartTime - record.startTime;
+                    recordIndex = -1;
+                } else {
+                    this._pushRecord(record, true, level, currentTime, childStartTime);
+                }
+            }
             this._pushRecord(record, false, level, childStartTime, childEndTime);
             this._appendRecord(childRecord, level + 1);
             currentTime = childEndTime;
@@ -221,6 +233,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      * @param {number} level
      * @param {number} startTime
      * @param {number} endTime
+     * @return {number}
      */
     _pushRecord: function(record, isSelfSegment, level, startTime, endTime)
     {
@@ -230,6 +243,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         this._timelineData.entryLevels[index] = level;
         this._timelineData.entryTotalTimes[index] = endTime - startTime;
         this._isSelfSegment[index] = isSelfSegment;
+        return index;
     },
 
     /**
@@ -252,21 +266,25 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {?Object}
-     */
-    entryData: function(entryIndex)
-    {
-        return null;
-    },
-
-    /**
-     * @param {number} entryIndex
      * @return {!string}
      */
     entryColor: function(entryIndex)
     {
         var category = WebInspector.TimelineUIUtils.categoryForRecord(this._records[entryIndex]);
         return this._isSelfSegment[entryIndex] ? category.fillColorStop1 : category.backgroundColor;
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {!{startTimeOffset: number, endTimeOffset: number}}
+     */
+    highlightTimeRange: function(entryIndex)
+    {
+        var record = this._records[entryIndex];
+        return {
+            startTimeOffset: record.startTime - this._zeroTime,
+            endTimeOffset: record.endTime - this._zeroTime
+        };
     },
 
     /**
@@ -283,7 +301,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
  * @constructor
  * @extends {WebInspector.View}
  * @implements {WebInspector.TimelineModeView}
- * @implements {WebInspector.TimeRangeController}
+ * @implements {WebInspector.FlameChartDelegate}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.TimelineFrameModel} frameModel
@@ -292,12 +310,15 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 WebInspector.TimelineFlameChart = function(delegate, model, frameModel, mainThread)
 {
     WebInspector.View.call(this);
+    this.element.classList.add("timeline-flamechart");
+    this.registerRequiredCSS("flameChart.css");
     this._delegate = delegate;
     this._model = model;
     this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(model, frameModel, mainThread);
     this._mainView = new WebInspector.FlameChart.MainPane(this._dataProvider, this, true, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
+    this._mainView.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected, this);
 }
 
 WebInspector.TimelineFlameChart.prototype = {
@@ -316,7 +337,8 @@ WebInspector.TimelineFlameChart.prototype = {
     refreshRecords: function(textFilter)
     {
         this._dataProvider.reset();
-        this._mainView._scheduleUpdate();
+        this._mainView.reset();
+        this.setSelectedRecord(this._selectedRecord);
     },
 
     reset: function()
@@ -324,6 +346,7 @@ WebInspector.TimelineFlameChart.prototype = {
         this._automaticallySizeWindow = true;
         this._dataProvider.reset();
         this._mainView.setWindowTimes(0, Infinity);
+        delete this._selectedRecord;
     },
 
     _onRecordingStarted: function()
@@ -389,6 +412,29 @@ WebInspector.TimelineFlameChart.prototype = {
      */
     setSelectedRecord: function(record)
     {
+        this._selectedRecord = record;
+        var entryRecords = this._dataProvider._records;
+        for (var entryIndex = 0; entryIndex < entryRecords.length; ++entryIndex) {
+            if (entryRecords[entryIndex] === record) {
+                this._mainView.setSelectedEntry(entryIndex);
+                return;
+            }
+        }
+        this._mainView.setSelectedEntry(-1);
+        if (this._selectedElement) {
+            this._selectedElement.remove();
+            delete this._selectedElement;
+        }
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onEntrySelected: function(event)
+    {
+        var entryIndex = event.data;
+        var record = this._dataProvider._records[entryIndex];
+        this._delegate.selectRecord(record);
     },
 
     __proto__: WebInspector.View.prototype

@@ -14,6 +14,10 @@
     pointer-events: auto;
 }
 
+.flame-chart-main-pane {
+    overflow: hidden;
+}
+
 .flame-chart-overview-pane {
     flex: 0 0 80px !important;
 }
@@ -47,4 +51,13 @@
     position: absolute;
     opacity: 0.2;
     pointer-events: none;
+}
+
+.flame-chart-selected-element {
+    position: absolute;
+    pointer-events: none;
+    border-color: rgb(56, 121, 217);
+    border-width: 2px;
+    border-style: solid;
+    background-color: rgba(56, 121, 217, 0.2);
 }

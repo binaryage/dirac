@@ -793,14 +793,14 @@
     margin-left: 20px;
 }
 
-.flame-chart-main-pane {
-    overflow: hidden;
-}
-
 .timeline-flamechart-view #timeline-overview-grid {
     display: none;
 }
 
 .timeline-flamechart-view .flame-chart-main-pane .resources-divider-label {
     text-align: center;
+}
+
+.timeline-flamechart {
+    overflow: hidden;
 }

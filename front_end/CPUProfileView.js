@@ -386,8 +386,8 @@ WebInspector.CPUProfileView.prototype = {
     {
         if (this._flameChart)
             return;
-        var dataProvider = new WebInspector.CPUFlameChartDataProvider(this);
-        this._flameChart = new WebInspector.FlameChart(dataProvider);
+        this._dataProvider = new WebInspector.CPUFlameChartDataProvider(this);
+        this._flameChart = new WebInspector.FlameChart(this._dataProvider);
         this._flameChart.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected.bind(this));
     },
 
@@ -396,7 +396,8 @@ WebInspector.CPUProfileView.prototype = {
      */
     _onEntrySelected: function(event)
     {
-        var node = event.data;
+        var entryIndex = event.data;
+        var node = this._dataProvider._entryNodes[entryIndex];
         if (!node || !node.scriptId)
             return;
         var script = WebInspector.debuggerModel.scriptForId(node.scriptId)
@@ -1329,21 +1330,25 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {!Object}
-     */
-    entryData: function(entryIndex)
-    {
-        return this._entryNodes[entryIndex];
-    },
-
-    /**
-     * @param {number} entryIndex
      * @return {!string}
      */
     entryColor: function(entryIndex)
     {
         var node = this._entryNodes[entryIndex];
         return this._colorGenerator.colorForID(node.functionName + ":" + node.url + ":" + node.lineNumber);;
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {!{startTimeOffset: number, endTimeOffset: number}}
+     */
+    highlightTimeRange: function(entryIndex)
+    {
+        var startTimeOffset = this._timelineData.entryOffsets[entryIndex];
+        return {
+            startTimeOffset: startTimeOffset,
+            endTimeOffset: startTimeOffset + this._timelineData.entryTotalTimes[entryIndex]
+        };
     },
 
     /**

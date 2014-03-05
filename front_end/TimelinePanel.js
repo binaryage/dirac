@@ -581,6 +581,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         this.requestWindowTimes(0, Infinity);
         this._windowFilter._reset();
+        delete this._selectedRecord;
         if (this._lazyFrameModel)
             this._lazyFrameModel.reset();
         for (var i = 0; i < this._currentViews.length; ++i)
@@ -749,6 +750,9 @@ WebInspector.TimelinePanel.prototype = {
 
     _updateSelectionDetails: function()
     {
+        if (this._selectedRecord)
+            return;
+
         var startTime = this._windowStartTime;
         var endTime = this._windowEndTime;
 
@@ -818,6 +822,7 @@ WebInspector.TimelinePanel.prototype = {
     selectRecord: function(record)
     {
         this._detailsLinkifier.reset();
+        this._selectedRecord = record;
 
         if (!record) {
             this._updateSelectionDetails();
