@@ -558,6 +558,27 @@ Node.prototype.traversePreviousNode = function(stayWithin)
 }
 
 /**
+ * @param {*} text
+ * @param {string=} placeholder
+ * @return {boolean} true if was truncated
+ */
+Node.prototype.setTextContentTruncatedIfNeeded = function(text, placeholder)
+{
+    // Huge texts in the UI reduce rendering performance drastically.
+    // Moreover, Blink/WebKit uses <unsigned short> internally for storing text content
+    // length, so texts longer than 65535 are inherently displayed incorrectly.
+    const maxTextContentLength = 65535;
+
+    if (typeof text === "string" && text.length > maxTextContentLength) {
+        this.textContent = typeof placeholder === "string" ? placeholder : text.trimEnd(maxTextContentLength);
+        return true;
+    }
+
+    this.textContent = text;
+    return false;
+}
+
+/**
  * @return {boolean}
  */
 function isEnterKey(event) {

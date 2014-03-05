@@ -204,18 +204,20 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
             this.valueElement = document.createElement("span");
             this.valueElement.className = "value";
             var description = this.property.value.description;
-            // Render \n as a nice unicode cr symbol.
+            var valueText;
             if (this.property.wasThrown) {
-                this.valueElement.textContent = "[Exception: " + description + "]";
+                valueText = "[Exception: " + description + "]";
             } else if (this.property.value.type === "string" && typeof description === "string") {
-                this.valueElement.textContent = "\"" + description.replace(/\n/g, "\u21B5") + "\"";
+                // Render \n as a nice unicode cr symbol.
+                valueText = "\"" + description.replace(/\n/g, "\u21B5") + "\"";
                 this.valueElement._originalTextContent = "\"" + description + "\"";
             } else if (this.property.value.type === "function" && typeof description === "string") {
-                this.valueElement.textContent = /.*/.exec(description)[0].replace(/ +$/g, "");
+                valueText = /.*/.exec(description)[0].replace(/ +$/g, "");
                 this.valueElement._originalTextContent = description;
             } else if (this.property.value.type !== "object" || this.property.value.subtype !== "node") {
-                this.valueElement.textContent = description;
+                valueText = description;
             }
+            this.valueElement.setTextContentTruncatedIfNeeded(valueText || "");
 
             if (this.property.wasThrown)
                 this.valueElement.classList.add("error");
@@ -316,7 +318,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
         // Edit original source.
         if (typeof valueToEdit !== "undefined")
-            elementToEdit.textContent = valueToEdit;
+            elementToEdit.setTextContentTruncatedIfNeeded(valueToEdit, WebInspector.UIString("<string is too large to edit>"));
 
         var context = { expanded: this.expanded, elementToEdit: elementToEdit, previousContent: elementToEdit.textContent };
 
