@@ -425,15 +425,6 @@ WebInspector.FlameChart.OverviewPane = function(dataProvider)
 
 WebInspector.FlameChart.OverviewPane.prototype = {
     /**
-     * @param {number} zoom
-     * @param {number} referencePoint
-     */
-    zoom: function(zoom, referencePoint)
-    {
-        this._overviewGrid.zoom(zoom, referencePoint);
-    },
-
-    /**
      * @param {number} windowStartTime
      * @param {number} windowEndTime
      */
@@ -736,14 +727,15 @@ WebInspector.FlameChart.MainPane.prototype = {
      */
     _onMouseWheel: function(e)
     {
-        var windowLeft = this._timeWindowLeft;
-        var windowRight = this._timeWindowRight;
+        var windowLeft = this._timeWindowLeft ? this._timeWindowLeft : this._dataProvider.zeroTime();
+        var windowRight = this._timeWindowRight !== Infinity ? this._timeWindowRight : this._dataProvider.zeroTime() + this._dataProvider.totalTime();
+
         if (e.wheelDeltaY) {
             const mouseWheelZoomSpeed = 1 / 120;
             var zoom = Math.pow(1.2, -e.wheelDeltaY * mouseWheelZoomSpeed) - 1;
             var cursorTime = this._cursorTime(e.offsetX);
-            windowLeft += (this._timeWindowLeft - cursorTime) * zoom;
-            windowRight += (this._timeWindowRight - cursorTime) * zoom;
+            windowLeft += (windowLeft - cursorTime) * zoom;
+            windowRight += (windowRight - cursorTime) * zoom;
         } else {
             var shift = e.wheelDeltaX * this._pixelToTime;
             shift = Number.constrain(shift, this._zeroTime - windowLeft, this._totalTime + this._zeroTime - windowRight);
