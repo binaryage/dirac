@@ -1067,6 +1067,22 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     },
 
     /**
+     * @return {number}
+     */
+    textBaseline: function()
+    {
+        return 4;
+    },
+
+    /**
+     * @return {number}
+     */
+    textPadding: function()
+    {
+        return 2;
+    },
+
+    /**
      * @param {number} startTime
      * @param {number} endTime
      * @return {?Array.<number>}
@@ -1329,4 +1345,13 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         var node = this._entryNodes[entryIndex];
         return this._colorGenerator.colorForID(node.functionName + ":" + node.url + ":" + node.lineNumber);;
     },
+
+    /**
+     * @param {number} entryIndex
+     * @return {!string}
+     */
+    textColor: function(entryIndex)
+    {
+        return "#333";
+    }
 }

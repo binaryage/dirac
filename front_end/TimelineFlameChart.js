@@ -41,7 +41,7 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel, mainTh
     this._model = model;
     this._frameModel = frameModel;
     this._mainThread = mainThread;
-    this._font = (this.barHeight() - 4) + "px " + WebInspector.fontFamily();
+    this._font = "bold 12px " + WebInspector.fontFamily();
 
     this._colorGenerator = new WebInspector.FlameChart.ColorGenerator();
     var categories = WebInspector.TimelineUIUtils.categories();
@@ -57,7 +57,23 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     barHeight: function()
     {
-        return 15;
+        return 20;
+    },
+
+    /**
+     * @return {number}
+     */
+    textBaseline: function()
+    {
+        return 6;
+    },
+
+    /**
+     * @return {number}
+     */
+    textPadding: function()
+    {
+        return 5;
     },
 
     /**
@@ -271,6 +287,15 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     entryColor: function(entryIndex)
     {
         return this._entryColors[entryIndex];
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {!string}
+     */
+    textColor: function(entryIndex)
+    {
+        return "white";
     }
 }
 

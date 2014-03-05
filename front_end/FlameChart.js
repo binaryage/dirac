@@ -181,6 +181,22 @@ WebInspector.FlameChartDataProvider.prototype = {
      * @return {!string}
      */
     entryColor: function(entryIndex) { },
+
+    /**
+     * @param {number} entryIndex
+     * @return {!string}
+     */
+    textColor: function(entryIndex) { },
+
+    /**
+     * @return {number}
+     */
+    textBaseline: function() { },
+
+    /**
+     * @return {number}
+     */
+    textPadding: function() { }
 }
 
 /**
@@ -811,8 +827,8 @@ WebInspector.FlameChart.MainPane.prototype = {
         var titleIndexes = new Uint32Array(timelineData.entryTotalTimes);
         var lastTitleIndex = 0;
         var dotsWidth = context.measureText("\u2026").width;
-        var textPaddingLeft = 2;
-        this._minTextWidth = context.measureText("\u2026").width + textPaddingLeft;
+        var textPadding = this._dataProvider.textPadding();
+        this._minTextWidth = context.measureText("\u2026").width + 2 * textPadding;
         var minTextWidth = this._minTextWidth;
 
         var lastDrawOffset = new Int32Array(this._dataProvider.maxStackDepth());
@@ -835,9 +851,11 @@ WebInspector.FlameChart.MainPane.prototype = {
         var colors = [];
         var bucket = [];
 
-        var textBaseHeight = this._baseHeight + this._barHeight - 4;
+        var textBaseHeight = this._baseHeight + this._barHeight - this._dataProvider.textBaseline();
         var lastUsedFont = "";
         var font;
+        var textColor;
+        var lastTextColor = "";
         var text = "";
         var xText = 0;
         var textWidth = 0;
@@ -911,18 +929,25 @@ WebInspector.FlameChart.MainPane.prototype = {
             if (!text || !text.length)
                 continue;
             font = this._dataProvider.entryFont(entryIndex);
-            if (font !== lastUsedFont)
-                context.font = font;
-
             entryOffset = entryOffsets[entryIndex];
             barX = this._offsetToPosition(entryOffset);
             barRight = this._offsetToPosition(entryOffset + entryTotalTimes[entryIndex]);
             barWidth = Math.max(barRight - barX, minWidth);
             xText = Math.max(0, barX);
-            textWidth = barWidth - textPaddingLeft + barX - xText;
+            textWidth = barWidth - 2 * textPadding + barX - xText;
             title = this._prepareText(context, text, textWidth);
-            if (title)
-                context.fillText(title, xText + textPaddingLeft, textBaseHeight - entryLevels[entryIndex] * this._barHeightDelta);
+            if (!title)
+                continue;
+            if (font !== lastUsedFont) {
+                context.font = font;
+                lastUsedFont = font;
+            }
+            textColor = this._dataProvider.textColor(entryIndex);
+            if (textColor !== lastTextColor) {
+                context.fillStyle = textColor;
+                lastTextColor = textColor;
+            }
+            context.fillText(title, xText + textPadding, textBaseHeight - entryLevels[entryIndex] * this._barHeightDelta);
         }
         this._updateHighlightElement();
     },
