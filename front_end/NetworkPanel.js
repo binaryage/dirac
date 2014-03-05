@@ -573,7 +573,7 @@ WebInspector.NetworkLogView.prototype = {
 
             var loadDividerPadding = document.createElement("div");
             loadDividerPadding.className = "network-event-divider-padding";
-            loadDividerPadding.title = WebInspector.UIString("Load event fired");
+            loadDividerPadding.title = WebInspector.UIString("Load event");
             loadDividerPadding.appendChild(loadDivider);
             loadDividerPadding.style.left = percent + "%";
             this._timelineGrid.addEventDivider(loadDividerPadding);
@@ -587,7 +587,7 @@ WebInspector.NetworkLogView.prototype = {
 
             var domContentLoadedDividerPadding = document.createElement("div");
             domContentLoadedDividerPadding.className = "network-event-divider-padding";
-            domContentLoadedDividerPadding.title = WebInspector.UIString("DOMContentLoaded event fired");
+            domContentLoadedDividerPadding.title = WebInspector.UIString("DOMContentLoaded event");
             domContentLoadedDividerPadding.appendChild(domContentLoadedDivider);
             domContentLoadedDividerPadding.style.left = percent + "%";
             this._timelineGrid.addEventDivider(domContentLoadedDividerPadding);
