@@ -175,8 +175,10 @@ Element.prototype.positionAt = function(x, y, relativeTo)
 
 Element.prototype.isScrolledToBottom = function()
 {
-    // This code works only for 0-width border
-    return this.scrollTop + this.clientHeight === this.scrollHeight;
+    // This code works only for 0-width border.
+    // Both clientHeight and scrollHeight are rounded to integer values, so we tolerate
+    // one pixel error.
+    return Math.abs(this.scrollTop + this.clientHeight - this.scrollHeight) <= 1;
 }
 
 /**
