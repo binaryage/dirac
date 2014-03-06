@@ -33,6 +33,7 @@ importScript("LayerTree.js");
 importScript("Layers3DView.js");
 importScript("LayerDetailsView.js");
 importScript("PaintProfilerView.js");
+importScript("TransformController.js");
 
 /**
  * @constructor

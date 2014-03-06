@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Google Inc. All rights reserved.
+ * Copyright (C) 2014 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -42,20 +42,20 @@ WebInspector.Layers3DView = function(model)
     this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._update, this);
     this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerPainted, this._onLayerPainted, this);
     this._rotatingContainerElement = this.element.createChild("div", "fill rotating-container");
-    this.element.addEventListener("mousemove", this._onMouseMove.bind(this), false);
-    this.element.addEventListener("mouseout", this._onMouseMove.bind(this), false);
-    this.element.addEventListener("mousedown", this._onMouseDown.bind(this), false);
-    this.element.addEventListener("mouseup", this._onMouseUp.bind(this), false);
-    this.element.addEventListener("contextmenu", this._onContextMenu.bind(this), false);
+    this._transformController = new WebInspector.TransformController(this.element);
+    this._transformController.addEventListener(WebInspector.TransformController.Events.TransformChanged, this._onTransformChanged, this);
     this.element.addEventListener("dblclick", this._onDoubleClick.bind(this), false);
     this.element.addEventListener("click", this._onClick.bind(this), false);
+    this.element.addEventListener("mouseout", this._onMouseMove.bind(this), false);
+    this.element.addEventListener("mousemove", this._onMouseMove.bind(this), false);
+    this.element.addEventListener("contextmenu", this._onContextMenu.bind(this), false);
     this._elementsByLayerId = {};
-    this._rotateX = 0;
-    this._rotateY = 0;
     this._scaleAdjustmentStylesheet = this.element.ownerDocument.head.createChild("style");
     this._scaleAdjustmentStylesheet.disabled = true;
     this._lastOutlinedElement = {};
     this._layerImage = document.createElement("img");
+    this._layerImage.style.width = "100%";
+    this._layerImage.style.height = "100%";
     WebInspector.settings.showPaintRects.addChangeListener(this._update, this);
 }
 
@@ -156,15 +156,20 @@ WebInspector.Layers3DView.prototype = {
         var root = this._model.contentRoot();
         if (!root)
             return;
+
         const padding = 40;
         var scaleX = this._clientWidth / (root.width() + 2 * padding);
         var scaleY = this._clientHeight / (root.height() + 2 * padding);
-        this._scale = Math.min(scaleX, scaleY);
+        var autoScale = Math.min(scaleX, scaleY);
 
+        this._scale = autoScale * this._transformController.scale();
+        this._paddingX = ((this._clientWidth / autoScale - root.width()) >> 1) * this._scale;
+        this._paddingY = ((this._clientHeight / autoScale - root.height()) >> 1) * this._scale;
         const screenLayerSpacing = 20;
-        this._layerSpacing = Math.ceil(screenLayerSpacing / this._scale) + "px";
+        this._layerSpacing = screenLayerSpacing + "px";
         const screenLayerThickness = 4;
-        var layerThickness = Math.ceil(screenLayerThickness / this._scale) + "px";
+        var layerThickness = screenLayerThickness + "px";
+
         var stylesheetContent = ".layer-container .side-wall { height: " + layerThickness + "; width: " + layerThickness + "; } " +
             ".layer-container .back-wall { -webkit-transform: translateZ(-" + layerThickness + "); } " +
             ".layer-container { -webkit-transform: translateZ(" + this._layerSpacing + "); }";
@@ -174,11 +179,40 @@ WebInspector.Layers3DView.prototype = {
             this._scaleAdjustmentStylesheet.textContent = stylesheetContent;
         else
             stylesheetTextNode.nodeValue = stylesheetContent;
-        var element = this._elementForLayer(root);
-        element.style.webkitTransform = "scale3d(" + this._scale + "," + this._scale + "," + this._scale + ")";
-        element.style.webkitTransformOrigin = "";
-        element.style.left = ((this._clientWidth - root.width() * this._scale) >> 1) + "px";
-        element.style.top = ((this._clientHeight - root.height() * this._scale) >> 1) + "px";
+
+        var style = this._elementForLayer(root).style;
+        style.left = Math.round(this._paddingX) + "px";
+        style.top = Math.round(this._paddingY) + "px";
+        style.webkitTransformOrigin = "";
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onTransformChanged: function(event)
+    {
+        var changedTransforms = /** @type {number} */ (event.data);
+        if (changedTransforms & WebInspector.TransformController.TransformType.Scale)
+            this._update();
+        else
+            this._updateTransform();
+    },
+
+    _updateTransform: function()
+    {
+        var root = this._model.contentRoot();
+        if (!root)
+            return;
+        var offsetX = this._transformController.offsetX();
+        var offsetY = this._transformController.offsetY();
+        var style = this._rotatingContainerElement.style;
+        // Translate well to front so that no matter how we turn the plane, no parts of it goes below  parent.
+        // This makes sure mouse events go to proper layers, not straight to the parent.
+        style.webkitTransform = "translateZ(10000px)" +
+            " rotateX(" + this._transformController.rotateX() + "deg) rotateY(" + this._transformController.rotateY() + "deg)" +
+            " translateX(" + offsetX + "px) translateY(" + offsetY + "px)";
+        // Compute where the center of shitfted and scaled root layer would be and use is as origin for rotation.
+        style.webkitTransformOrigin = Math.round(this._paddingX + offsetX + root.width() * this._scale / 2) + "px " + Math.round(this._paddingY + offsetY + root.height() * this._scale / 2) + "px";
     },
 
     _update: function()
@@ -210,6 +244,7 @@ WebInspector.Layers3DView.prototype = {
             delete this._elementsByLayerId[layerId];
         }
         this._scaleToFit();
+        this._updateTransform();
         this._model.forEachLayer(updateLayer.bind(this), this._model.contentRoot());
         this._needsUpdate = false;
     },
@@ -259,16 +294,19 @@ WebInspector.Layers3DView.prototype = {
         if (parentElement !== element.parentElement)
             parentElement.appendChild(element);
 
-        style.width  = layer.width() + "px";
-        style.height  = layer.height() + "px";
+        style.width = Math.round(layer.width() * this._scale) + "px";
+        style.height = Math.round(layer.height() * this._scale) + "px";
         this._updatePaintRect(element);
         if (isContentRoot)
             return;
-
-        style.left  = layer.offsetX() + "px";
-        style.top  = layer.offsetY() + "px";
+        style.left = Math.round(layer.offsetX() * this._scale) + "px";
+        style.top = Math.round(layer.offsetY() * this._scale) + "px";
         var transform = layer.transform();
         if (transform) {
+            transform = transform.slice();
+            // Adjust offset in the transform matrix according to scale.
+            for (var i = 12; i < 15; ++i)
+                transform[i] *= this._scale;
             // Avoid exponential notation in CSS.
             style.webkitTransform = "matrix3d(" + transform.map(toFixed5).join(",") + ") translateZ(" + this._layerSpacing + ")";
             var anchor = layer.anchorPoint();
@@ -298,10 +336,10 @@ WebInspector.Layers3DView.prototype = {
             return;
         details.paintCount = details.layer.paintCount();
         var style = paintRectElement.style;
-        style.left = paintRect.x + "px";
-        style.top = paintRect.y + "px";
-        style.width = paintRect.width + "px";
-        style.height = paintRect.height + "px";
+        style.left = Math.round(paintRect.x * this._scale) + "px";
+        style.top = Math.round(paintRect.y * this._scale) + "px";
+        style.width = Math.round(paintRect.width * this._scale) + "px";
+        style.height = Math.round(paintRect.height * this._scale) + "px";
         var color = WebInspector.Layers3DView.PaintRectColors[details.paintCount % WebInspector.Layers3DView.PaintRectColors.length];
         style.borderWidth = Math.ceil(1 / this._scale) + "px";
         style.borderColor = color.toString(WebInspector.Color.Format.RGBA);
@@ -325,45 +363,6 @@ WebInspector.Layers3DView.prototype = {
 
     /**
      * @param {?Event} event
-     */
-    _onMouseDown: function(event)
-    {
-        if (event.which !== 1)
-            return;
-        this._setReferencePoint(event);
-    },
-
-    /**
-     * @param {?Event} event
-     */
-    _setReferencePoint: function(event)
-    {
-        this._originX = event.clientX;
-        this._originY = event.clientY;
-        this._oldRotateX = this._rotateX;
-        this._oldRotateY = this._rotateY;
-    },
-
-    _resetReferencePoint: function()
-    {
-        delete this._originX;
-        delete this._originY;
-        delete this._oldRotateX;
-        delete this._oldRotateY;
-    },
-
-    /**
-     * @param {?Event} event
-     */
-    _onMouseUp: function(event)
-    {
-        if (event.which !== 1)
-            return;
-        this._resetReferencePoint();
-    },
-
-    /**
-     * @param {?Event} event
      * @return {?WebInspector.Layer}
      */
     _layerFromEventPoint: function(event)
@@ -373,27 +372,6 @@ WebInspector.Layers3DView.prototype = {
             return null;
         element = element.enclosingNodeOrSelfWithClass("layer-container");
         return element && element.__layerDetails && element.__layerDetails.layer;
-    },
-
-    /**
-     * @param {?Event} event
-     */
-    _onMouseMove: function(event)
-    {
-        if (!event.which) {
-            this.dispatchEventToListeners(WebInspector.Layers3DView.Events.LayerHovered, this._layerFromEventPoint(event));
-            return;
-        }
-        if (event.which === 1) {
-            // Set reference point if we missed mousedown.
-            if (typeof this._originX !== "number")
-                this._setReferencePoint(event);
-            this._rotateX = this._oldRotateX + (this._originY - event.clientY) / 2;
-            this._rotateY = this._oldRotateY - (this._originX - event.clientX) / 4;
-            // Translate well to front so that no matter how we turn the plane, no parts of it goes below  parent.
-            // This makes sure mouse events go to proper layers, not straight to the parent.
-            this._rotatingContainerElement.style.webkitTransform = "translateZ(10000px) rotateX(" + this._rotateX + "deg) rotateY(" + this._rotateY + "deg)";
-        }
     },
 
     /**
@@ -411,6 +389,16 @@ WebInspector.Layers3DView.prototype = {
          var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendApplicableItems(domNode);
         contextMenu.show();
+    },
+
+    /**
+     * @param {?Event} event
+     */
+    _onMouseMove: function(event)
+    {
+        if (event.which)
+            return;
+        this.dispatchEventToListeners(WebInspector.Layers3DView.Events.LayerHovered, this._layerFromEventPoint(event));
     },
 
     /**

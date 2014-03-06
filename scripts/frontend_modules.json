@@ -331,7 +331,8 @@
             "LayerTree.js",
             "Layers3DView.js",
             "LayerDetailsView.js",
-            "PaintProfilerView.js"
+            "PaintProfilerView.js",
+            "TransformController.js"
         ]
     },
     {

@@ -463,6 +463,7 @@
             'front_end/Layers3DView.js',
             'front_end/LayerDetailsView.js',
             'front_end/PaintProfilerView.js',
+            'front_end/TransformController.js',
         ],
         'devtools_extension_api_files': [
             'front_end/ExtensionAPI.js',
