@@ -817,9 +817,9 @@ WebInspector.SplitView.prototype = {
         {
             var show = this._isShowingOne;
             if (show)
-                this.showBoth();
+                this.showBoth(true);
             else
-                this.hideSidebar();
+                this.hideSidebar(true);
         }
 
         return this._showHideSidebarButton;
