@@ -1005,6 +1005,12 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
     {
         if (this.profileBeingRecorded())
             return;
+        this._addNewProfile();
+        HeapProfilerAgent.startTrackingHeapObjects(WebInspector.experimentsSettings.allocationProfiler.isEnabled());
+    },
+
+    _addNewProfile: function()
+    {
         this._profileBeingRecorded = new WebInspector.HeapProfileHeader(this);
         this._lastSeenIndex = -1;
         this._profileSamples = {
@@ -1018,7 +1024,6 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
         this._recording = true;
         this.addProfile(this._profileBeingRecorded);
         this._profileBeingRecorded.updateStatus(WebInspector.UIString("Recording\u2026"));
-        HeapProfilerAgent.startTrackingHeapObjects(WebInspector.experimentsSettings.allocationProfiler.isEnabled());
         this.dispatchEventToListeners(WebInspector.TrackingHeapSnapshotProfileType.TrackingStarted);
     },
 
@@ -1066,11 +1071,14 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
 
     _reset: function()
     {
+        var wasRecording = this._recording;
+        // Clear current profile to avoid stopping backend.
+        this._profileBeingRecorded = null;
         WebInspector.HeapSnapshotProfileType.prototype._reset.call(this);
-        if (this._recording)
-            this._stopRecordingProfile();
         this._profileSamples = null;
         this._lastSeenIndex = -1;
+        if (wasRecording)
+            this._addNewProfile();
     },
 
     /**
@@ -1158,7 +1166,8 @@ WebInspector.HeapProfileHeader.prototype = {
 
     _finishLoad: function()
     {
-        this._receiver.close(function() {});
+        if (!this._wasDisposed)
+            this._receiver.close(function() {});
         if (this._bufferedWriter) {
             this._bufferedWriter.close(this._didWriteToTempFile.bind(this));
             this._bufferedWriter = null;
@@ -1167,6 +1176,11 @@ WebInspector.HeapProfileHeader.prototype = {
 
     _didWriteToTempFile: function(tempFile)
     {
+        if (this._wasDisposed) {
+            if (tempFile)
+                tempFile.remove();
+            return;
+        }
         this._tempFile = tempFile;
         if (!tempFile)
             this._failedToCreateTempFile = true;
