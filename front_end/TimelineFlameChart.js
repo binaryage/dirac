@@ -151,7 +151,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             this._appendRecord(records[i], 1);
         }
 
-        var cpuStackDepth = this._entryThreadDepths[undefined];
+        var cpuStackDepth = Math.max(5, this._entryThreadDepths[undefined]);
         delete this._entryThreadDepths[undefined];
 
         var threadBaselines = {};
@@ -279,18 +279,47 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     decorateEntry: function(entryIndex, context, barY, offsetToPosition)
     {
         var record = this._records[entryIndex];
-        if (!record.children.length)
-            return;
 
         var timelineData = this._timelineData;
         var entryOffset = timelineData.entryOffsets[entryIndex];
-        var barX = offsetToPosition(entryOffset + record.selfTime);
         var barRight = offsetToPosition(entryOffset + timelineData.entryTotalTimes[entryIndex]);
-        context.beginPath();
-        var category = WebInspector.TimelineUIUtils.categoryForRecord(record);
-        context.fillStyle = category.backgroundColor;
-        context.rect(barX, barY, barRight - barX, this.barHeight());
-        context.fill();
+
+        if (record.children.length) {
+            var category = WebInspector.TimelineUIUtils.categoryForRecord(record);
+            context.beginPath();
+            var barSelf = offsetToPosition(entryOffset + record.selfTime);
+            context.fillStyle = category.backgroundColor;
+            context.rect(barSelf, barY, barRight - barSelf, this.barHeight());
+            context.fill();
+        }
+        if (record.warnings() || record.childHasWarnings()) {
+            var barX = offsetToPosition(entryOffset);
+            if (barRight - barX > 2) {
+                context.save();
+
+                context.rect(barX, barY, barRight - barX, this.barHeight());
+                context.clip();
+
+                context.beginPath();
+                context.fillStyle = record.warnings() ? "red" : "rgba(255, 0, 0, 0.5)";
+                context.moveTo(barRight - 15, barY + 1);
+                context.lineTo(barRight - 1, barY + 1);
+                context.lineTo(barRight - 1, barY + 15);
+                context.fill();
+
+                context.restore();
+            }
+        }
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {boolean}
+     */
+    forceDecoration: function(entryIndex)
+    {
+        var record = this._records[entryIndex];
+        return record.childHasWarnings() || !!record.warnings();
     },
 
     /**

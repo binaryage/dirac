@@ -1348,6 +1348,14 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     {
     },
 
+    /**
+     * @param {number} entryIndex
+     * @return {boolean}
+     */
+    forceDecoration: function(entryIndex)
+    {
+        return false;
+    },
 
     /**
      * @param {number} entryIndex

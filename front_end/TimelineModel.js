@@ -869,16 +869,27 @@ WebInspector.TimelineModel.Record.prototype = {
     {
         if (this._warnings)
             this._warnings.push(message);
-        else
+        else {
             this._warnings = [message];
+            for (var parent = this.parent; parent && !parent._childHasWarnings; parent = parent.parent)
+                parent._childHasWarnings = true;
+        }
     },
 
     /**
-     * @return {!Object}
+     * @return {?Array.<string>}
      */
     warnings: function()
     {
         return this._warnings;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    childHasWarnings: function()
+    {
+        return !!this._childHasWarnings;
     },
 
     /**

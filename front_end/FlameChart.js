@@ -186,6 +186,12 @@ WebInspector.FlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
+     * @return {boolean}
+     */
+    forceDecoration: function(entryIndex) { },
+
+    /**
+     * @param {number} entryIndex
      * @return {!string}
      */
     textColor: function(entryIndex) { },
@@ -821,8 +827,6 @@ WebInspector.FlameChart.MainPane.prototype = {
         var ratio = window.devicePixelRatio;
         this._canvas.width = width * ratio;
         this._canvas.height = height * ratio;
-        this._canvas.style.width = width + "px";
-        this._canvas.style.height = height + "px";
 
         var context = this._canvas.getContext("2d");
         context.scale(ratio, ratio);
@@ -927,7 +931,7 @@ WebInspector.FlameChart.MainPane.prototype = {
                 barLevel = entryLevels[entryIndex];
                 barY = this._levelToHeight(barLevel);
                 context.rect(barX, barY, barWidth, this._barHeight);
-                if (barWidth > minTextWidth)
+                if (barWidth > minTextWidth || this._dataProvider.forceDecoration(entryIndex))
                     titleIndexes[lastTitleIndex++] = entryIndex;
             }
             context.fill();
@@ -1102,6 +1106,8 @@ WebInspector.FlameChart.MainPane.prototype = {
     {
         this._offsetWidth = this.element.offsetWidth;
         this._offsetHeight = this.element.offsetHeight;
+        this._canvas.style.width = this._offsetWidth + "px";
+        this._canvas.style.height = this._offsetHeight + "px";
         this._scheduleUpdate();
     },
 
