@@ -51,8 +51,8 @@
     display: block;
 }
 
-.network.panel .panel-status-bar {
-    border-bottom: 1px solid rgb(179, 179, 179);
+#network-container {
+    border-top: 1px solid rgb(179, 179, 179);
 }
 
 .network.panel .sidebar {
