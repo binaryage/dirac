@@ -474,7 +474,7 @@ WebInspector.FlameChart.OverviewPane.prototype = {
     {
         if (this._updateTimerId)
             return;
-        this._updateTimerId = setTimeout(this.update.bind(this), 10);
+        this._updateTimerId = requestAnimationFrame(this.update.bind(this));
     },
 
     update: function()
@@ -613,6 +613,7 @@ WebInspector.FlameChart.MainPane = function(dataProvider, flameChartDelegate, is
     this._paddingLeft = 15;
     this._highlightedEntryIndex = -1;
     this._selectedEntryIndex = -1;
+    this._textWidth = {};
 }
 
 WebInspector.FlameChart.MainPane.prototype = {
@@ -824,9 +825,9 @@ WebInspector.FlameChart.MainPane.prototype = {
 
         var titleIndexes = new Uint32Array(timelineData.entryTotalTimes);
         var lastTitleIndex = 0;
-        var dotsWidth = context.measureText("\u2026").width;
         var textPadding = this._dataProvider.textPadding();
-        this._minTextWidth = context.measureText("\u2026").width + 2 * textPadding;
+        var dotsWidth = this._measureWidth(context, "\u2026");
+        this._minTextWidth = 2 * textPadding + dotsWidth;
         var minTextWidth = this._minTextWidth;
 
         var lastDrawOffset = new Int32Array(this._dataProvider.maxStackDepth());
@@ -919,8 +920,6 @@ WebInspector.FlameChart.MainPane.prototype = {
         }
 
         context.textBaseline = "alphabetic";
-        context.fillStyle = "#333";
-        this._dotsWidth = context.measureText("\u2026").width;
 
         for (i = 0; i < lastTitleIndex; ++i) {
             entryIndex = titleIndexes[i];
@@ -1005,30 +1004,28 @@ WebInspector.FlameChart.MainPane.prototype = {
 
     _prepareText: function(context, title, maxSize)
     {
-        if (maxSize < this._dotsWidth)
-            return null;
-        var titleWidth = context.measureText(title).width;
+        var titleWidth = this._measureWidth(context, title);
         if (maxSize > titleWidth)
             return title;
-        maxSize -= this._dotsWidth;
+        maxSize -= this._measureWidth(context, "\u2026");
         var dotRegExp=/[\.\$]/g;
         var match = dotRegExp.exec(title);
         if (!match) {
             var visiblePartSize = maxSize / titleWidth;
             var newTextLength = Math.floor(title.length * visiblePartSize) + 1;
-            var minTextLength = 4;
+            var minTextLength = 2;
             if (newTextLength < minTextLength)
                 return null;
             var substring;
             do {
                 --newTextLength;
                 substring = title.substring(0, newTextLength);
-            } while (context.measureText(substring).width > maxSize);
+            } while (this._measureWidth(context, substring).width > maxSize);
             return title.substring(0, newTextLength) + "\u2026";
         }
         while (match) {
             var substring = title.substring(match.index + 1);
-            var width = context.measureText(substring).width;
+            var width = this._measureWidth(context, substring).width;
             if (maxSize > width)
                 return "\u2026" + substring;
             match = dotRegExp.exec(title);
@@ -1036,8 +1033,26 @@ WebInspector.FlameChart.MainPane.prototype = {
         var i = 0;
         do {
             ++i;
-        } while (context.measureText(title.substring(0, i)).width < maxSize);
+        } while (this._measureWidth(context, title.substring(0, i)).width < maxSize);
         return title.substring(0, i - 1) + "\u2026";
+    },
+
+    /**
+     * @param {!CanvasRenderingContext2D} context
+     * @param {string} text
+     * @return {number}
+     */
+    _measureWidth: function(context, text)
+    {
+        if (text.length > 20)
+            return context.measureText(text).width;
+
+        var width = this._textWidth[text];
+        if (!width) {
+            width = context.measureText(text).width;
+            this._textWidth[text] = width;
+        }
+        return width;
     },
 
     _updateBoundaries: function()
@@ -1059,7 +1074,7 @@ WebInspector.FlameChart.MainPane.prototype = {
             this._timeWindowRight = this._windowRight * this._totalTime;
         }
 
-        this._pixelWindowWidth = this.element.clientWidth - this._paddingLeft;
+        this._pixelWindowWidth = this._offsetWidth - this._paddingLeft;
         this._totalPixels = Math.floor(this._pixelWindowWidth / this._windowWidth);
         this._pixelWindowLeft = Math.floor(this._totalPixels * this._windowLeft);
         this._pixelWindowRight = Math.floor(this._totalPixels * this._windowRight);
@@ -1071,6 +1086,8 @@ WebInspector.FlameChart.MainPane.prototype = {
 
     onResize: function()
     {
+        this._offsetWidth = this.element.offsetWidth;
+        this._offsetHeight = this.element.offsetHeight;
         this._scheduleUpdate();
     },
 
@@ -1078,7 +1095,7 @@ WebInspector.FlameChart.MainPane.prototype = {
     {
         if (this._updateTimerId)
             return;
-        this._updateTimerId = setTimeout(this.update.bind(this), 10);
+        this._updateTimerId = requestAnimationFrame(this.update.bind(this));
     },
 
     update: function()
@@ -1093,9 +1110,9 @@ WebInspector.FlameChart.MainPane.prototype = {
             this._timelineGrid.showDividers();
         else
             this._timelineGrid.hideDividers();
-        this.draw(this.element.clientWidth, this.element.clientHeight);
+        this.draw(this._offsetWidth, this._offsetHeight);
         this._calculator._updateBoundaries(this);
-        this._timelineGrid.element.style.width = this.element.clientWidth;
+        this._timelineGrid.element.style.width = this._offsetWidth;
         var offsets = this._dataProvider.dividerOffsets(this._calculator.minimumBoundary(), this._calculator.maximumBoundary());
         this._timelineGrid.updateDividers(this._calculator, offsets, true);
     },
@@ -1104,6 +1121,7 @@ WebInspector.FlameChart.MainPane.prototype = {
     {
         this._highlightedEntryIndex = -1;
         this._selectedEntryIndex = -1;
+        this._textWidth = {};
         this.update();
     },
 

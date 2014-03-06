@@ -198,32 +198,14 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 return;
         }
 
-        var recordIndex = this._pushRecord(record, true, level, record.startTime, record.endTime);
-        var currentTime = record.startTime;
-        for (var i = 0; i < record.children.length; ++i) {
-            var childRecord = record.children[i];
-            var childStartTime = childRecord.startTime;
-            var childEndTime = childRecord.endTime;
-            if (childStartTime === childEndTime) {
-                this._appendRecord(childRecord, level + 1);
-                continue;
-            }
-
-            if (currentTime !== childStartTime) {
-                if (recordIndex !== -1) {
-                    this._timelineData.entryTotalTimes[recordIndex] = childStartTime - record.startTime;
-                    recordIndex = -1;
-                } else {
-                    this._pushRecord(record, true, level, currentTime, childStartTime);
-                }
-            }
-            this._pushRecord(record, false, level, childStartTime, childEndTime);
-            this._appendRecord(childRecord, level + 1);
-            currentTime = childEndTime;
+        if (record.children.length) {
+            this._pushRecord(record, true, level, record.startTime, record.startTime + record.selfTime);
+            this._pushRecord(record, false, level, record.startTime + record.selfTime, record.endTime);
+        } else {
+            this._pushRecord(record, true, level, record.startTime, record.endTime);
         }
-        if (recordIndex === -1 && recordEndTime !== currentTime || record.children.length === 0)
-            this._pushRecord(record, true, level, currentTime, recordEndTime);
-
+        for (var i = 0; i < record.children.length; ++i)
+            this._appendRecord(record.children[i], level + 1);
         this._maxStackDepth = Math.max(this._maxStackDepth, level + 2);
     },
 
@@ -336,9 +318,6 @@ WebInspector.TimelineFlameChart.prototype = {
      */
     refreshRecords: function(textFilter)
     {
-        this._dataProvider.reset();
-        this._mainView.reset();
-        this.setSelectedRecord(this._selectedRecord);
     },
 
     reset: function()
@@ -346,7 +325,6 @@ WebInspector.TimelineFlameChart.prototype = {
         this._automaticallySizeWindow = true;
         this._dataProvider.reset();
         this._mainView.setWindowTimes(0, Infinity);
-        delete this._selectedRecord;
     },
 
     _onRecordingStarted: function()
@@ -412,7 +390,6 @@ WebInspector.TimelineFlameChart.prototype = {
      */
     setSelectedRecord: function(record)
     {
-        this._selectedRecord = record;
         var entryRecords = this._dataProvider._records;
         for (var entryIndex = 0; entryIndex < entryRecords.length; ++entryIndex) {
             if (entryRecords[entryIndex] === record) {
@@ -421,10 +398,6 @@ WebInspector.TimelineFlameChart.prototype = {
             }
         }
         this._mainView.setSelectedEntry(-1);
-        if (this._selectedElement) {
-            this._selectedElement.remove();
-            delete this._selectedElement;
-        }
     },
 
     /**
