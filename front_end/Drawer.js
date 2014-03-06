@@ -167,7 +167,7 @@ WebInspector.Drawer.prototype = {
         this.showView(this._lastSelectedViewSetting.get());
         this._toggleDrawerButton.toggled = true;
         this._toggleDrawerButton.title = WebInspector.UIString("Hide drawer.");
-        this._ensureDrawerEditorEsistsIfNeeded();
+        this._ensureDrawerEditorExistsIfNeeded();
     },
 
     willHide: function()
@@ -275,12 +275,12 @@ WebInspector.Drawer.prototype = {
     initialPanelShown: function()
     {
         this._initialPanelWasShown = true;
-        this._ensureDrawerEditorEsistsIfNeeded();
+        this._ensureDrawerEditorExistsIfNeeded();
     },
 
-    _ensureDrawerEditorEsistsIfNeeded: function()
+    _ensureDrawerEditorExistsIfNeeded: function()
     {
-        if (!this._initialPanelWasShown || !this.isShowing() || !this._drawerEditorShownSetting.get())
+        if (!this._initialPanelWasShown || !this.isShowing() || !this._drawerEditorShownSetting.get() || !WebInspector.experimentsSettings.showEditorInDrawer.isEnabled())
             return;
         this._ensureDrawerEditor();
     },
