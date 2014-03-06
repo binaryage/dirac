@@ -76,8 +76,7 @@ WebInspector.PieChart.prototype = {
     _innerAddSlice: function(sliceAngle, color)
     {
         var sliceElement = this.element.createChild("div", "pie-chart-slice");
-        // translate3d enables antialiasing for the slice.
-        sliceElement.style.webkitTransform = "translate3d(0, 0, 0) rotate(" + Number(this._lastAngle).toFixed(2) + "deg)"
+        sliceElement.style.webkitTransform = "rotate(" + Number(this._lastAngle).toFixed(2) + "deg)"
         var innerSliceElement = sliceElement.createChild("div", "pie-chart-slice-inner");
         innerSliceElement.style.backgroundColor = color;
         innerSliceElement.style.webkitTransform = "rotate(" + Number(sliceAngle).toFixed(2) + "deg)";
