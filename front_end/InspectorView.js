@@ -327,67 +327,47 @@ WebInspector.InspectorView.prototype = {
 
     _keyDownInternal: function(event)
     {
-        if (this._openBracketIdentifiers[event.keyIdentifier]) {
-            var isRotateLeft = !event.shiftKey && !event.altKey;
-            if (isRotateLeft) {
-                var panelOrder = this._tabbedPane.allTabs();
-                var index = panelOrder.indexOf(this.currentPanel().name);
-                index = (index === 0) ? panelOrder.length - 1 : index - 1;
-                this.showPanel(panelOrder[index]);
-                event.consume(true);
-                return;
-            }
+        var direction = 0;
 
-            var isGoBack = event.altKey;
-            if (isGoBack && this._canGoBackInHistory()) {
-                this._goBackInHistory();
-                event.consume(true);
-            }
+        if (this._openBracketIdentifiers[event.keyIdentifier])
+            direction = -1;
+
+        if (this._closeBracketIdentifiers[event.keyIdentifier])
+            direction = 1;
+
+        if (!direction)
+            return;
+
+        if (!event.shiftKey && !event.altKey) {
+            this._changePanelInDirection(direction);
+            event.consume(true);
             return;
         }
 
-        if (this._closeBracketIdentifiers[event.keyIdentifier]) {
-            var isRotateRight = !event.shiftKey && !event.altKey;
-            if (isRotateRight) {
-                var panelOrder = this._tabbedPane.allTabs();
-                var index = panelOrder.indexOf(this.currentPanel().name);
-                index = (index + 1) % panelOrder.length;
-                this.showPanel(panelOrder[index]);
-                event.consume(true);
-                return;
-            }
-
-            var isGoForward = event.altKey;
-            if (isGoForward && this._canGoForwardInHistory()) {
-                this._goForwardInHistory();
-                event.consume(true);
-            }
-            return;
-        }
+        if (event.altKey && this._moveInHistory(direction))
+            event.consume(true)
     },
 
-    _canGoBackInHistory: function()
+    _changePanelInDirection: function(direction)
     {
-        return this._historyIterator > 0;
+        var panelOrder = this._tabbedPane.allTabs();
+        var index = panelOrder.indexOf(this.currentPanel().name);
+        index = (index + panelOrder.length + direction) % panelOrder.length;
+        this.showPanel(panelOrder[index]);
     },
 
-    _goBackInHistory: function()
+    _moveInHistory: function(move)
     {
+        var newIndex = this._historyIterator + move;
+        if (newIndex >= this._history.length || newIndex < 0)
+            return false;
+
         this._inHistory = true;
-        this.setCurrentPanel(WebInspector.panels[this._history[--this._historyIterator]]);
+        this._historyIterator = newIndex;
+        this.setCurrentPanel(WebInspector.panels[this._history[this._historyIterator]]);
         delete this._inHistory;
-    },
 
-    _canGoForwardInHistory: function()
-    {
-        return this._historyIterator < this._history.length - 1;
-    },
-
-    _goForwardInHistory: function()
-    {
-        this._inHistory = true;
-        this.setCurrentPanel(WebInspector.panels[this._history[++this._historyIterator]]);
-        delete this._inHistory;
+        return true;
     },
 
     _pushToHistory: function(panelName)
@@ -414,57 +394,33 @@ WebInspector.InspectorView.prototype = {
         return this._tabbedPane.headerElement();
     },
 
+    _createImagedCounterElementIfNeeded: function(count, id, styleName)
+    {
+        if (!count)
+            return;
+
+        var imageElement = this._errorWarningCountElement.createChild("div", styleName);
+        var counterElement = this._errorWarningCountElement.createChild("span");
+        counterElement.id = id;
+        counterElement.textContent = count;
+    },
+
     /**
      * @param {number} errors
      * @param {number} warnings
      */
     setErrorAndWarningCounts: function(errors, warnings)
     {
-        if (!errors && !warnings) {
-            this._errorWarningCountElement.classList.add("hidden");
-            this._tabbedPane.headerResized();
-            return;
-        }
-
-        this._errorWarningCountElement.classList.remove("hidden");
+        this._errorWarningCountElement.classList.toggle("hidden", !errors && !warnings);
         this._errorWarningCountElement.removeChildren();
 
-        if (errors) {
-            var errorImageElement = this._errorWarningCountElement.createChild("div", "error-icon-small");
-            var errorElement = this._errorWarningCountElement.createChild("span");
-            errorElement.id = "error-count";
-            errorElement.textContent = errors;
-        }
+        this._createImagedCounterElementIfNeeded(errors, "error-count", "error-icon-small");
+        this._createImagedCounterElementIfNeeded(warnings, "warning-count", "warning-icon-small");
 
-        if (warnings) {
-            var warningsImageElement = this._errorWarningCountElement.createChild("div", "warning-icon-small");
-            var warningsElement = this._errorWarningCountElement.createChild("span");
-            warningsElement.id = "warning-count";
-            warningsElement.textContent = warnings;
-        }
-
-        if (errors) {
-            if (warnings) {
-                if (errors == 1) {
-                    if (warnings == 1)
-                        this._errorWarningCountElement.title = WebInspector.UIString("%d error, %d warning", errors, warnings);
-                    else
-                        this._errorWarningCountElement.title = WebInspector.UIString("%d error, %d warnings", errors, warnings);
-                } else if (warnings == 1)
-                    this._errorWarningCountElement.title = WebInspector.UIString("%d errors, %d warning", errors, warnings);
-                else
-                    this._errorWarningCountElement.title = WebInspector.UIString("%d errors, %d warnings", errors, warnings);
-            } else if (errors == 1)
-                this._errorWarningCountElement.title = WebInspector.UIString("%d error", errors);
-            else
-                this._errorWarningCountElement.title = WebInspector.UIString("%d errors", errors);
-        } else if (warnings == 1)
-            this._errorWarningCountElement.title = WebInspector.UIString("%d warning", warnings);
-        else if (warnings)
-            this._errorWarningCountElement.title = WebInspector.UIString("%d warnings", warnings);
-        else
-            this._errorWarningCountElement.title = null;
-
+        var errorString = errors ?  WebInspector.UIString("%d error%s", errors, errors > 1 ? "s" : "") : "";
+        var warningString = warnings ?  WebInspector.UIString("%d warning%s", warnings, warnings > 1 ? "s" : "") : "";
+        var commaString = errors && warnings ? ", " : "";
+        this._errorWarningCountElement.title = errorString + commaString + warningString;
         this._tabbedPane.headerResized();
     },
 
