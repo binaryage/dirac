@@ -79,7 +79,7 @@ WebInspector.TimelineFrameOverview.prototype = {
 
         this._context.save();
         var scale = (this._canvas.height - this._topPadding) / this._computeTargetFrameLength(visibleFrames);
-        this._renderBars(frames, scale, this._canvas.height);
+        this._renderBars(visibleFrames, scale, this._canvas.height);
         this._context.fillStyle = this._frameTopShadeGradient;
         this._context.fillRect(0, 0, this._canvas.width, this._topPadding);
         this._drawFPSMarks(scale, this._canvas.height);
