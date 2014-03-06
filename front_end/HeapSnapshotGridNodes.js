@@ -46,6 +46,11 @@ WebInspector.HeapSnapshotGridNode = function(tree, hasChildren)
      * Position is an item position in the provider.
      */
     this._retrievedChildrenRanges = [];
+
+    /**
+      * @type {?WebInspector.HeapSnapshotGridNode.ChildrenProvider}
+      */
+    this._providerObject = null;
 }
 
 WebInspector.HeapSnapshotGridNode.Events = {
@@ -61,17 +66,52 @@ WebInspector.HeapSnapshotGridNode.createComparator = function(fieldNames)
     return /** @type {!WebInspector.HeapSnapshotCommon.ComparatorConfig} */ ({fieldName1: fieldNames[0], ascending1: fieldNames[1], fieldName2: fieldNames[2], ascending2: fieldNames[3]});
 }
 
+
+/**
+ * @interface
+ */
+WebInspector.HeapSnapshotGridNode.ChildrenProvider = function() { }
+
+WebInspector.HeapSnapshotGridNode.ChildrenProvider.prototype = {
+    dispose: function() { },
+
+    /**
+     * @param {number} snapshotObjectId
+     * @param {function(number)} callback
+     */
+    nodePosition: function(snapshotObjectId, callback) { },
+
+    /**
+     * @param {function(boolean)} callback
+     */
+    isEmpty: function(callback) { },
+
+    /**
+     * @param {number} startPosition
+     * @param {number} endPosition
+     * @param {function(!WebInspector.HeapSnapshotCommon.ItemsRange)} callback
+     */
+    serializeItemsRange: function(startPosition, endPosition, callback) { },
+
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.ComparatorConfig} comparator
+     * @param {function()} callback
+     */
+    sortAndRewind: function(comparator, callback) { }
+}
+
+
 WebInspector.HeapSnapshotGridNode.prototype = {
     /**
-     * @return {!WebInspector.HeapSnapshotProviderProxy}
+     * @return {!WebInspector.HeapSnapshotGridNode.ChildrenProvider}
      */
     createProvider: function()
     {
-        throw new Error("Needs implemented.");
+        throw new Error("Not implemented.");
     },
 
     /**
-     * @return {!WebInspector.HeapSnapshotProviderProxy}
+     * @return {!WebInspector.HeapSnapshotGridNode.ChildrenProvider}
      */
     _provider: function()
     {
@@ -980,7 +1020,7 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.HeapSnapshotProviderProxy}
+ * @implements {WebInspector.HeapSnapshotGridNode.ChildrenProvider}
  * @param {!WebInspector.HeapSnapshotProviderProxy} addedNodesProvider
  * @param {!WebInspector.HeapSnapshotProviderProxy} deletedNodesProvider
  */
@@ -999,6 +1039,19 @@ WebInspector.HeapSnapshotDiffNodesProvider.prototype = {
         this._deletedNodesProvider.dispose();
     },
 
+    /**
+     * @override
+     * @param {number} snapshotObjectId
+     * @param {function(number)} callback
+     */
+    nodePosition: function(snapshotObjectId, callback)
+    {
+        throw new Error("Unreachable");
+    },
+
+    /**
+     * @param {function(boolean)} callback
+     */
     isEmpty: function(callback)
     {
         callback(false);
@@ -1063,6 +1116,10 @@ WebInspector.HeapSnapshotDiffNodesProvider.prototype = {
         }
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.ComparatorConfig} comparator
+     * @param {function()} callback
+     */
     sortAndRewind: function(comparator, callback)
     {
         /**
@@ -1073,9 +1130,7 @@ WebInspector.HeapSnapshotDiffNodesProvider.prototype = {
             this._deletedNodesProvider.sortAndRewind(comparator, callback);
         }
         this._addedNodesProvider.sortAndRewind(comparator, afterSort.bind(this));
-    },
-
-    __proto__: WebInspector.HeapSnapshotProviderProxy.prototype
+    }
 };
 
 /**

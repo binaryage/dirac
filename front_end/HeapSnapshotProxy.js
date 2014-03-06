@@ -500,6 +500,7 @@ WebInspector.HeapSnapshotProxy.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotProxyObject}
+ * @implements {WebInspector.HeapSnapshotGridNode.ChildrenProvider}
  * @param {!WebInspector.HeapSnapshotWorkerProxy} worker
  * @param {number} objectId
  */
@@ -509,17 +510,27 @@ WebInspector.HeapSnapshotProviderProxy = function(worker, objectId)
 }
 
 WebInspector.HeapSnapshotProviderProxy.prototype = {
+    /**
+     * @override
+     * @param {number} snapshotObjectId
+     * @param {function(number)} callback
+     */
     nodePosition: function(snapshotObjectId, callback)
     {
         this.callMethod(callback, "nodePosition", snapshotObjectId);
     },
 
+    /**
+     * @override
+     * @param {function(boolean)} callback
+     */
     isEmpty: function(callback)
     {
         this.callMethod(callback, "isEmpty");
     },
 
     /**
+     * @override
      * @param {number} startPosition
      * @param {number} endPosition
      * @param {function(!WebInspector.HeapSnapshotCommon.ItemsRange)} callback
@@ -529,6 +540,11 @@ WebInspector.HeapSnapshotProviderProxy.prototype = {
         this.callMethod(callback, "serializeItemsRange", startPosition, endPosition);
     },
 
+    /**
+     * @override
+     * @param {!WebInspector.HeapSnapshotCommon.ComparatorConfig} comparator
+     * @param {function()} callback
+     */
     sortAndRewind: function(comparator, callback)
     {
         this.callMethod(callback, "sortAndRewind", comparator);
@@ -536,4 +552,3 @@ WebInspector.HeapSnapshotProviderProxy.prototype = {
 
     __proto__: WebInspector.HeapSnapshotProxyObject.prototype
 }
-
