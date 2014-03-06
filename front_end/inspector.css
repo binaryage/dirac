@@ -1857,14 +1857,6 @@ button.show-all-nodes:active {
     background-image: linear-gradient(to bottom, rgb(194, 194, 194), rgb(239, 239, 239));
 }
 
-button.enable-toggle-status-bar-item .glyph {
-    -webkit-mask-position: -192px 0;
-}
-
-button.enable-toggle-status-bar-item.toggled-on .glyph {
-    -webkit-mask-position: -96px -24px;
-}
-
 #console-messages.console-filter-top {
     margin-top: 23px;
 }
