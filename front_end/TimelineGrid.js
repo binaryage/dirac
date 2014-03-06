@@ -110,7 +110,7 @@ WebInspector.TimelineGrid.prototype = {
             gridSliceTime = gridSliceTime / 2;
         this._gridSliceTime = gridSliceTime;
 
-        var firstDividerTime = Math.ceil((calculator.minimumBoundary() - calculator.zeroTime()) / gridSliceTime) * gridSliceTime + calculator.zeroTime();
+        var firstDividerTime = Math.ceil((calculator.minimumBoundary()) / gridSliceTime) * gridSliceTime;
         var lastDividerTime = calculator.maximumBoundary();
         // Add some extra space past the right boundary as the rightmost divider label text
         // may be partially shown rather than just pop up when a new rightmost divider gets into the view.
@@ -172,12 +172,16 @@ WebInspector.TimelineGrid.prototype = {
 
             var time = dividerOffsets[i];
             var position = calculator.computePosition(time);
-            if (i !== 0 && position - lastPosition > minWidthForTitle)
+            if (position - lastPosition > minWidthForTitle)
                 dividerLabelBar._labelElement.textContent = printDeltas ? calculator.formatTime(time - lastTime) : calculator.formatTime(time);
             else
                 dividerLabelBar._labelElement.textContent = "";
+
             if (printDeltas)
                 dividerLabelBar._labelElement.style.width = Math.ceil(position - lastPosition) + "px";
+            else
+                dividerLabelBar._labelElement.style.removeProperty("width");
+
             lastPosition = position;
             lastTime = time;
             var percentLeft = 100 * position / dividersElementClientWidth;

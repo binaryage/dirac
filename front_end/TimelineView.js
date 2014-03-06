@@ -280,11 +280,6 @@ WebInspector.TimelineView.prototype = {
     wasShown: function()
     {
         WebInspector.View.prototype.wasShown.call(this);
-
-        if (!WebInspector.TimelinePanel._categoryStylesInitialized) {
-            WebInspector.TimelinePanel._categoryStylesInitialized = true;
-            this._injectCategoryStyles();
-        }
         this._onViewportResize();
         this._refresh();
     },
@@ -816,15 +811,6 @@ WebInspector.TimelineView.prototype = {
     _closeRecordDetails: function()
     {
         this._popoverHelper.hidePopover();
-    },
-
-    _injectCategoryStyles: function()
-    {
-        var style = document.createElement("style");
-        var categories = WebInspector.TimelineUIUtils.categories();
-
-        style.textContent = Object.values(categories).map(WebInspector.TimelineUIUtils.createStyleRuleForCategory).join("\n");
-        document.head.appendChild(style);
     },
 
     /**

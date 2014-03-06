@@ -140,6 +140,17 @@ WebInspector.TimelinePanel.headerHeight = 20;
 WebInspector.TimelinePanel.durationFilterPresetsMs = [0, 1, 15];
 
 WebInspector.TimelinePanel.prototype = {
+    wasShown: function()
+    {
+        if (!WebInspector.TimelinePanel._categoryStylesInitialized) {
+            WebInspector.TimelinePanel._categoryStylesInitialized = true;
+            var style = document.createElement("style");
+            var categories = WebInspector.TimelineUIUtils.categories();
+            style.textContent = Object.values(categories).map(WebInspector.TimelineUIUtils.createStyleRuleForCategory).join("\n");
+            document.head.appendChild(style);
+        }
+    },
+
     _dockSideChanged: function()
     {
         var dockSide = WebInspector.dockController.dockSide();
@@ -256,10 +267,7 @@ WebInspector.TimelinePanel.prototype = {
                 break;
             case WebInspector.TimelinePanel.Mode.FlameChart:
                 views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());
-                views.mainViews = [
-                    new WebInspector.TimelineFlameChart(this, this._model, this._frameModel(), true),
-                    new WebInspector.TimelineFlameChart(this, this._model, this._frameModel(), false)
-                ];
+                views.mainViews = [new WebInspector.TimelineFlameChart(this, this._model, this._frameModel())];
                 break;
             default:
                 console.assert(false, "Unknown mode: " + mode);
@@ -508,7 +516,7 @@ WebInspector.TimelinePanel.prototype = {
         this._overviewItems[mode].revealAndSelect(false);
     },
 
-    _refreshViews: function()
+    _refreshViews: function(totalUpdate)
     {
         for (var i = 0; i < this._currentViews.length; ++i) {
             var view = this._currentViews[i];

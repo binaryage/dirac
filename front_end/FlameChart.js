@@ -178,6 +178,14 @@ WebInspector.FlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
+     * @param {!CanvasRenderingContext2D} context
+     * @param {number} levelY
+     * @param {function(number):number} offsetToPosition
+     */
+    decorateEntry: function(entryIndex, context, levelY, offsetToPosition) { },
+
+    /**
+     * @param {number} entryIndex
      * @return {!string}
      */
     textColor: function(entryIndex) { },
@@ -193,9 +201,14 @@ WebInspector.FlameChartDataProvider.prototype = {
     textPadding: function() { },
 
     /**
-     * @return {!{startTimeOffset: number, endTimeOffset: number}}
+     * @return {?{startTimeOffset: number, endTimeOffset: number}}
      */
-    highlightTimeRange: function(entryIndex) { }
+    highlightTimeRange: function(entryIndex) { },
+
+    /**
+     * @return {number}
+     */
+    paddingLeft: function() { }
 }
 
 /**
@@ -610,7 +623,7 @@ WebInspector.FlameChart.MainPane = function(dataProvider, flameChartDelegate, is
     this._barHeight = dataProvider.barHeight();
     this._barHeightDelta = this._isTopDown ? -this._barHeight : this._barHeight;
     this._minWidth = 1;
-    this._paddingLeft = 15;
+    this._paddingLeft = this._dataProvider.paddingLeft();
     this._highlightedEntryIndex = -1;
     this._selectedEntryIndex = -1;
     this._textWidth = {};
@@ -849,12 +862,11 @@ WebInspector.FlameChart.MainPane.prototype = {
         var colorBuckets = {};
         var colors = [];
         var bucket = [];
+        var offsetToPosition = this._offsetToPosition.bind(this);
 
         var textBaseHeight = this._baseHeight + this._barHeight - this._dataProvider.textBaseline();
-        var lastUsedFont = "";
         var font;
         var textColor;
-        var lastTextColor = "";
         var text = "";
         var xText = 0;
         var textWidth = 0;
@@ -903,6 +915,8 @@ WebInspector.FlameChart.MainPane.prototype = {
             color = colors[c];
             context.fillStyle = color;
             var indexes = colorBuckets[color];
+
+            // First fill the boxes.
             context.beginPath();
             for (i = 0; i < indexes.length; ++i) {
                 entryIndex = indexes[i];
@@ -923,6 +937,9 @@ WebInspector.FlameChart.MainPane.prototype = {
 
         for (i = 0; i < lastTitleIndex; ++i) {
             entryIndex = titleIndexes[i];
+
+            this._dataProvider.decorateEntry(entryIndex, context, this._levelToHeight(entryLevels[entryIndex]), offsetToPosition);
+
             text = this._dataProvider.entryTitle(entryIndex);
             if (!text || !text.length)
                 continue;
@@ -936,15 +953,9 @@ WebInspector.FlameChart.MainPane.prototype = {
             title = this._prepareText(context, text, textWidth);
             if (!title)
                 continue;
-            if (font !== lastUsedFont) {
-                context.font = font;
-                lastUsedFont = font;
-            }
+            context.font = font;
             textColor = this._dataProvider.textColor(entryIndex);
-            if (textColor !== lastTextColor) {
-                context.fillStyle = textColor;
-                lastTextColor = textColor;
-            }
+            context.fillStyle = textColor;
             context.fillText(title, xText + textPadding, textBaseHeight - entryLevels[entryIndex] * this._barHeightDelta);
         }
         this._updateElementPosition(this._highlightElement, this._highlightedEntryIndex);
@@ -963,8 +974,10 @@ WebInspector.FlameChart.MainPane.prototype = {
             element.remove();
         if (entryIndex === -1)
             return;
-        var timelineData = this._timelineData();
         var timeRange = this._dataProvider.highlightTimeRange(entryIndex);
+        if (!timeRange)
+            return;
+        var timelineData = this._timelineData();
         var barX = this._offsetToPosition(timeRange.startTimeOffset);
         var barRight = this._offsetToPosition(timeRange.endTimeOffset);
         var barWidth = Math.max(barRight - barX, this._minWidth);
@@ -979,7 +992,8 @@ WebInspector.FlameChart.MainPane.prototype = {
 
     _offsetToPosition: function(offset)
     {
-        return Math.floor(offset * this._timeToPixel) - this._pixelWindowLeft + this._paddingLeft;
+        var value = Math.floor(offset * this._timeToPixel) - this._pixelWindowLeft + this._paddingLeft;
+        return Math.min(this._canvas.width, Math.max(0, value));
     },
 
     _levelToHeight: function(level)

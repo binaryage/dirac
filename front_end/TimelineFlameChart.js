@@ -33,14 +33,12 @@
  * @implements {WebInspector.FlameChartDataProvider}
  * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.TimelineFrameModel} frameModel
- * @param {boolean} mainThread
  */
-WebInspector.TimelineFlameChartDataProvider = function(model, frameModel, mainThread)
+WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
 {
     WebInspector.FlameChartDataProvider.call(this);
     this._model = model;
     this._frameModel = frameModel;
-    this._mainThread = mainThread;
     this._font = "bold 12px " + WebInspector.fontFamily();
 }
 
@@ -84,7 +82,12 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     entryTitle: function(entryIndex)
     {
-        return this._isSelfSegment[entryIndex] ? this._records[entryIndex].title() : null;
+        var record = this._records[entryIndex];
+        if (record === this._cpuThreadRecord)
+            return WebInspector.UIString("CPU");
+        else if (record === this._gpuThreadRecord)
+            return WebInspector.UIString("GPU");
+        return record.title();
     },
 
     /**
@@ -94,9 +97,13 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     dividerOffsets: function(startTime, endTime)
     {
-        var frames = this._frameModel.filteredFrames(this._model.minimumRecordTime() + startTime, this._model.minimumRecordTime() + endTime);
-        if (frames.length > 30)
+        if (endTime - startTime < 16 || endTime - startTime > 300)
             return null;
+
+        var frames = this._frameModel.filteredFrames(this._model.minimumRecordTime() + startTime, this._model.minimumRecordTime() + endTime);
+        if (frames.length > 10)
+            return null;
+
         var offsets = [];
         for (var i = 0; i < frames.length; ++i)
             offsets.push(frames[i].startTimeOffset);
@@ -109,26 +116,64 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TimelineModel.Record} record
-     */
-    addRecord: function(record)
-    {
-        this._appendRecord(record, 0);
-    },
-
-    /**
      * @return {!WebInspector.FlameChart.TimelineData}
      */
     timelineData: function()
     {
-        if (!this._timelineData) {
-            this._resetData();
-            var records = this._model.records();
-            for (var i = 0; i < records.length; ++i)
-                this._appendRecord(records[i], 0);
-            this._zeroTime = this._model.minimumRecordTime();
+        if (this._timelineData)
+            return this._timelineData;
+
+        /**
+         * @type {?WebInspector.FlameChart.TimelineData}
+         */
+        this._timelineData = {
+            entryLevels: [],
+            entryTotalTimes: [],
+            entryOffsets: []
+        };
+
+        this._records = [];
+        this._entryThreadDepths = {};
+        this._zeroTime = this._model.minimumRecordTime();
+
+        var cpuThreadRecordPayload = { type: WebInspector.TimelineModel.RecordType.Program };
+        this._cpuThreadRecord = new WebInspector.TimelineModel.Record(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (cpuThreadRecordPayload), null);
+        this._pushRecord(this._cpuThreadRecord, 0, this.zeroTime(), Math.max(this._model.maximumRecordTime(), this.totalTime() + this.zeroTime()));
+
+        var gpuThreadRecordPayload = { type: WebInspector.TimelineModel.RecordType.Program };
+        this._gpuThreadRecord = new WebInspector.TimelineModel.Record(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (gpuThreadRecordPayload), null);
+        this._pushRecord(this._gpuThreadRecord, 0, this.zeroTime(), Math.max(this._model.maximumRecordTime(), this.totalTime() + this.zeroTime()));
+
+        var records = this._model.records();
+        for (var i = 0; i < records.length; ++i) {
+            if (records[i].thread === "gpu")
+                continue;
+            this._appendRecord(records[i], 1);
         }
-        return /** @type {!WebInspector.FlameChart.TimelineData} */(this._timelineData);
+
+        var cpuStackDepth = this._entryThreadDepths[undefined];
+        delete this._entryThreadDepths[undefined];
+
+        var threadBaselines = {};
+        var threadBaseline = cpuStackDepth + 2;
+
+        for (var thread in this._entryThreadDepths) {
+            threadBaselines[thread] = threadBaseline;
+            threadBaseline += this._entryThreadDepths[thread];
+        }
+
+        for (var i = 0; i < this._records.length; ++i) {
+            var record = this._records[i];
+            var level = this._timelineData.entryLevels[i];
+            if (record === this._cpuThreadRecord)
+                level = 0;
+            else if (record === this._gpuThreadRecord)
+                level = cpuStackDepth + 2;
+            else if (record.thread)
+                level += threadBaselines[record.thread];
+            this._timelineData.entryLevels[i] = level;
+        }
+        return this._timelineData;
     },
 
     /**
@@ -144,7 +189,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     totalTime: function()
     {
-        return this._totalTime;
+        return Math.max(1000, this._model.maximumRecordTime() - this._model.minimumRecordTime());
     },
 
     /**
@@ -152,28 +197,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     maxStackDepth: function()
     {
-        return this._maxStackDepth;
-    },
-
-    _resetData: function()
-    {
-        this._startTime = 0;
-        this._endTime = 0;
-        this._maxStackDepth = 5;
-        this._totalTime = 1000;
-        this._zeroTime = 0;
-
-        /**
-         * @type {?WebInspector.FlameChart.TimelineData}
-         */
-        this._timelineData = {
-            entryLevels: [],
-            entryTotalTimes: [],
-            entryOffsets: [],
-        };
-
-        this._records = [];
-        this._isSelfSegment = [];
+        // Only used by overview.
+        return 0;
     },
 
     /**
@@ -182,49 +207,34 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     _appendRecord: function(record, level)
     {
-        var timelineData = this.timelineData();
-
-        this._startTime = this._startTime ? Math.min(this._startTime, record.startTime) : record.startTime;
-        this._zeroTime = this._startTime;
-        var recordEndTime = record.endTime;
-        this._endTime = Math.max(this._endTime, recordEndTime);
-        this._totalTime = Math.max(1000, this._endTime - this._startTime);
-
-        if (this._mainThread) {
-            if (record.type === WebInspector.TimelineModel.RecordType.GPUTask || !!record.thread)
-                return;
-        } else {
-            if (record.type === WebInspector.TimelineModel.RecordType.Program || !record.thread || record.thread === "gpu")
-                return;
+        if (record.thread)
+            return;
+        if (!this._model.isVisible(record)) {
+            for (var i = 0; i < record.children.length; ++i)
+                this._appendRecord(record.children[i], level);
+            return;
         }
 
-        if (record.children.length) {
-            this._pushRecord(record, true, level, record.startTime, record.startTime + record.selfTime);
-            this._pushRecord(record, false, level, record.startTime + record.selfTime, record.endTime);
-        } else {
-            this._pushRecord(record, true, level, record.startTime, record.endTime);
-        }
+        this._pushRecord(record, level, record.startTime, record.endTime);
         for (var i = 0; i < record.children.length; ++i)
             this._appendRecord(record.children[i], level + 1);
-        this._maxStackDepth = Math.max(this._maxStackDepth, level + 2);
     },
 
     /**
      * @param {!WebInspector.TimelineModel.Record} record
-     * @param {boolean} isSelfSegment
      * @param {number} level
      * @param {number} startTime
      * @param {number} endTime
      * @return {number}
      */
-    _pushRecord: function(record, isSelfSegment, level, startTime, endTime)
+    _pushRecord: function(record, level, startTime, endTime)
     {
         var index = this._records.length;
         this._records.push(record);
         this._timelineData.entryOffsets[index] = startTime - this._zeroTime;
         this._timelineData.entryLevels[index] = level;
         this._timelineData.entryTotalTimes[index] = endTime - startTime;
-        this._isSelfSegment[index] = isSelfSegment;
+        this._entryThreadDepths[record.thread] = Math.max(level, this._entryThreadDepths[record.thread] || 0);
         return index;
     },
 
@@ -252,21 +262,58 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     entryColor: function(entryIndex)
     {
-        var category = WebInspector.TimelineUIUtils.categoryForRecord(this._records[entryIndex]);
-        return this._isSelfSegment[entryIndex] ? category.fillColorStop1 : category.backgroundColor;
+        var record = this._records[entryIndex];
+        if (record === this._cpuThreadRecord || record === this._gpuThreadRecord)
+            return "#555";
+
+        var category = WebInspector.TimelineUIUtils.categoryForRecord(record);
+        return category.fillColorStop1;
     },
 
     /**
      * @param {number} entryIndex
-     * @return {!{startTimeOffset: number, endTimeOffset: number}}
+     * @param {!CanvasRenderingContext2D} context
+     * @param {number} barY
+     * @param {function(number):number} offsetToPosition
+     */
+    decorateEntry: function(entryIndex, context, barY, offsetToPosition)
+    {
+        var record = this._records[entryIndex];
+        if (!record.children.length)
+            return;
+
+        var timelineData = this._timelineData;
+        var entryOffset = timelineData.entryOffsets[entryIndex];
+        var barX = offsetToPosition(entryOffset + record.selfTime);
+        var barRight = offsetToPosition(entryOffset + timelineData.entryTotalTimes[entryIndex]);
+        context.beginPath();
+        var category = WebInspector.TimelineUIUtils.categoryForRecord(record);
+        context.fillStyle = category.backgroundColor;
+        context.rect(barX, barY, barRight - barX, this.barHeight());
+        context.fill();
+    },
+
+    /**
+     * @param {number} entryIndex
+     * @return {?{startTimeOffset: number, endTimeOffset: number}}
      */
     highlightTimeRange: function(entryIndex)
     {
         var record = this._records[entryIndex];
+        if (record === this._cpuThreadRecord || record === this._gpuThreadRecord)
+            return null;
         return {
             startTimeOffset: record.startTime - this._zeroTime,
             endTimeOffset: record.endTime - this._zeroTime
         };
+    },
+
+    /**
+     * @return {number}
+     */
+    paddingLeft: function()
+    {
+        return 0;
     },
 
     /**
@@ -287,16 +334,15 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.TimelineFrameModel} frameModel
- * @param {boolean} mainThread
  */
-WebInspector.TimelineFlameChart = function(delegate, model, frameModel, mainThread)
+WebInspector.TimelineFlameChart = function(delegate, model, frameModel)
 {
     WebInspector.View.call(this);
     this.element.classList.add("timeline-flamechart");
     this.registerRequiredCSS("flameChart.css");
     this._delegate = delegate;
     this._model = model;
-    this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(model, frameModel, mainThread);
+    this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(model, frameModel);
     this._mainView = new WebInspector.FlameChart.MainPane(this._dataProvider, this, true, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
@@ -318,6 +364,13 @@ WebInspector.TimelineFlameChart.prototype = {
      */
     refreshRecords: function(textFilter)
     {
+        this._dataProvider.reset();
+        this._mainView._scheduleUpdate();
+    },
+
+    wasShown: function()
+    {
+        this._mainView._scheduleUpdate();
     },
 
     reset: function()
@@ -337,7 +390,7 @@ WebInspector.TimelineFlameChart.prototype = {
      */
     addRecord: function(record)
     {
-        this._dataProvider.addRecord(record);
+        this._dataProvider.reset();
         if (this._automaticallySizeWindow) {
             var minimumRecordTime = this._model.minimumRecordTime();
             if (record.startTime > (minimumRecordTime + 1000)) {
@@ -345,7 +398,16 @@ WebInspector.TimelineFlameChart.prototype = {
                 this._delegate.requestWindowTimes(minimumRecordTime, minimumRecordTime + 1000);
             }
             this._mainView._scheduleUpdate();
+        } else {
+            if (!this._pendingUpdateTimer)
+                this._pendingUpdateTimer = window.setTimeout(this._updateOnAddRecord.bind(this), 300);
         }
+    },
+
+    _updateOnAddRecord: function()
+    {
+        delete this._pendingUpdateTimer;
+        this._mainView._scheduleUpdate();
     },
 
     /**
@@ -354,19 +416,7 @@ WebInspector.TimelineFlameChart.prototype = {
      */
     setWindowTimes: function(startTime, endTime)
     {
-        this._startTime = startTime;
-        this._endTime = endTime;
-        this._updateWindow();
-    },
-
-    _updateWindow: function()
-    {
-        var minimumRecordTime = this._model.minimumRecordTime();
-        var timeRange = this._model.maximumRecordTime() - minimumRecordTime;
-        if (timeRange === 0)
-            this._mainView.setWindowTimes(0, Infinity);
-        else
-            this._mainView.setWindowTimes(this._startTime, this._endTime);
+        this._mainView.setWindowTimes(startTime, endTime);
     },
 
     /**

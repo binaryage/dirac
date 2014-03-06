@@ -1340,6 +1340,17 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
+     * @param {!CanvasRenderingContext2D} context
+     * @param {number} levelY
+     * @param {function(number):number} offsetToPosition
+     */
+    decorateEntry: function(entryIndex, context, levelY, offsetToPosition)
+    {
+    },
+
+
+    /**
+     * @param {number} entryIndex
      * @return {!{startTimeOffset: number, endTimeOffset: number}}
      */
     highlightTimeRange: function(entryIndex)
@@ -1349,6 +1360,14 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             startTimeOffset: startTimeOffset,
             endTimeOffset: startTimeOffset + this._timelineData.entryTotalTimes[entryIndex]
         };
+    },
+
+    /**
+     * @return {number}
+     */
+    paddingLeft: function()
+    {
+        return 15;
     },
 
     /**
