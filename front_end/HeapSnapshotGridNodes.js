@@ -104,6 +104,15 @@ WebInspector.HeapSnapshotGridNode.prototype = {
     /**
      * @override
      */
+    expand: function()
+    {
+        WebInspector.DataGridNode.prototype.expand.call(this);
+        this._dataGrid.updateVisibleNodes();
+    },
+
+    /**
+     * @override
+     */
     dispose: function()
     {
         if (this._providerObject)
@@ -137,7 +146,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
      */
     allChildren: function()
     {
-        return this.children;
+        return this._dataGrid.allChildren(this);
     },
 
     /**
@@ -145,7 +154,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
      */
     removeChildByIndex: function(index)
     {
-        this.removeChild(this.children[index]);
+        this._dataGrid.removeChildByIndex(this, index);
     },
 
     /**
@@ -247,11 +256,11 @@ WebInspector.HeapSnapshotGridNode.prototype = {
             if (this._savedChildren) {
                 var hash = this._childHashForEntity(item);
                 if (hash in this._savedChildren) {
-                    this.insertChild(this._savedChildren[hash], insertionIndex);
+                    this._dataGrid.insertChild(this, this._savedChildren[hash], insertionIndex);
                     return;
                 }
             }
-            this.insertChild(this._createChildNode(item), insertionIndex);
+            this._dataGrid.insertChild(this, this._createChildNode(item), insertionIndex);
         }
 
         /**
@@ -260,7 +269,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
         function insertShowMoreButton(from, to, insertionIndex)
         {
             var button = new WebInspector.ShowMoreDataGridNode(this._populateChildren.bind(this), from, to, this._dataGrid.defaultPopulateCount());
-            this.insertChild(button, insertionIndex);
+            this._dataGrid.insertChild(this, button, insertionIndex);
         }
 
         /**
@@ -356,6 +365,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
                 return;
             }
 
+            this._dataGrid.updateVisibleNodes();
             if (afterPopulate)
                 afterPopulate();
             this.dispatchEventToListeners(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete);
@@ -387,7 +397,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
         function afterSort()
         {
             this._saveChildren();
-            this.removeChildren();
+            this._dataGrid.removeAllChildren(this);
             this._retrievedChildrenRanges = [];
 
             /**

@@ -133,7 +133,7 @@ WebInspector.ShowMoreDataGridNode.prototype = {
      * @override
      * @return {number}
      */
-    nodeHeight: function()
+    nodeSelfHeight: function()
     {
         return 32;
     },

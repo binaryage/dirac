@@ -1168,8 +1168,6 @@ WebInspector.DataGridNode = function(data, hasChildren)
     this.disclosureToggleWidth = 10;
 }
 
-WebInspector.DataGridNode.NodeShallowHeight = 16;
-
 WebInspector.DataGridNode.prototype = {
     /** @type {boolean} */
     selectable: true,
@@ -1394,17 +1392,9 @@ WebInspector.DataGridNode.prototype = {
     /**
      * @return {number}
      */
-    nodeHeight: function()
+    nodeSelfHeight: function()
     {
-        var rowHeight = WebInspector.DataGridNode.NodeShallowHeight;
-        if (!this.revealed)
-            return 0;
-        if (!this.expanded)
-            return rowHeight;
-        var result = rowHeight;
-        for (var i = 0; i < this.children.length; i++)
-            result += this.children[i].nodeHeight();
-        return result;
+        return 16;
     },
 
     /**
