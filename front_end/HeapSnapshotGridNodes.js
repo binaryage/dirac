@@ -934,8 +934,10 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
         function didPopulateChildren(nodePosition)
         {
             var child = this.childForPosition(nodePosition);
-            if (child)
+            if (child) {
+                this._dataGrid.revealTreeNode([this, child]);
                 this._dataGrid.highlightNode(/** @type {!WebInspector.HeapSnapshotGridNode} */ (child));
+            }
             callback(!!child);
         }
 
