@@ -129,6 +129,15 @@ WebInspector.StatusBarInput.prototype = {
         this._onChangeHandler = handler;
     },
 
+    /**
+     * @param {string} value
+     */
+    setValue: function(value)
+    {
+        this.element.value = value;
+        this._onChangeCallback();
+    },
+
     _onChangeCallback: function()
     {
         this._onChangeHandler && this._onChangeHandler(this.element.value);

@@ -941,7 +941,15 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
             callback(!!child);
         }
 
-        this.expandWithoutPopulate(didExpand.bind(this));
+        this._dataGrid.resetNameFilter(this.expandWithoutPopulate.bind(this, didExpand.bind(this)));
+    },
+
+    /**
+     * @return {boolean}
+     */
+    filteredOut: function()
+    {
+        return this._name.toLowerCase().indexOf(this._dataGrid._nameFilter) === -1;
     },
 
     /**
@@ -1205,6 +1213,14 @@ WebInspector.HeapSnapshotDiffNode.prototype = {
             sizeDelta: ["selfSize", sortAscending, "id", true]
         }[sortColumnIdentifier];
         return WebInspector.HeapSnapshotGridNode.createComparator(sortFields);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    filteredOut: function()
+    {
+        return this._name.toLowerCase().indexOf(this._dataGrid._nameFilter) === -1;
     },
 
     _signForDelta: function(delta)

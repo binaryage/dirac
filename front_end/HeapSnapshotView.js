@@ -69,6 +69,7 @@ WebInspector.HeapSnapshotView = function(profile)
     this.constructorsDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
     this.dataGrid = /** @type {!WebInspector.HeapSnapshotSortableDataGrid} */ (this.constructorsDataGrid);
+    this.dataGrid.addEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.ResetFilter, this._onResetClassNameFilter, this);
     this.currentView = this.constructorsView;
     this.currentView.show(this.viewsContainer.mainElement());
 
@@ -429,6 +430,11 @@ WebInspector.HeapSnapshotView.prototype = {
         this.dataGrid.changeNameFilter(value);
     },
 
+    _onResetClassNameFilter: function()
+    {
+        this._classNameFilter.setValue("");
+    },
+
     /**
      * @return {!Array.<!WebInspector.ProfileHeader>}
      */
@@ -568,6 +574,9 @@ WebInspector.HeapSnapshotView.prototype = {
         if (selectedIndex === this.views.current)
             return;
 
+        if (this.dataGrid)
+            this.dataGrid.removeEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.ResetFilter, this._onResetClassNameFilter, this);
+
         this.views.current = selectedIndex;
         this.currentView.detach();
         var view = this.views[this.views.current];
@@ -575,8 +584,10 @@ WebInspector.HeapSnapshotView.prototype = {
         this.dataGrid = view.grid;
         this.currentView.show(this.viewsContainer.mainElement());
         this.refreshVisibleData();
-        if (this.dataGrid)
+        if (this.dataGrid) {
+            this.dataGrid.addEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.ResetFilter, this._onResetClassNameFilter, this);
             this.dataGrid.updateWidths();
+        }
 
         this._updateSelectorsVisibility();
 
