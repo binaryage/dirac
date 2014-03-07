@@ -260,13 +260,7 @@ WebInspector.log = function(message, messageLevel, showConsole) {}
 
 WebInspector.showErrorMessage = function(error) {}
 
-WebInspector.addMainEventListeners = function(doc) {}
-
 WebInspector.openResource = function(url, external) {}
-
-WebInspector.showConsole = function() {}
-
-WebInspector.queryParamsObject = {}
 
 WebInspector.Events = {
     InspectorLoaded: "InspectorLoaded"

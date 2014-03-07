@@ -166,15 +166,6 @@ var WebInspector = {
                 !!WebInspector.queryParamsObject["isSharedWorker"];
     },
 
-    showConsole: function()
-    {
-        if (this.consoleView.isShowing()) {
-            this.consoleView.focus();
-            return;
-        }
-        this.inspectorView.showViewInDrawer("console");
-    },
-
     _resetErrorAndWarningCounts: function()
     {
         WebInspector.inspectorView.setErrorAndWarningCounts(0, 0);
@@ -349,7 +340,6 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.zoomManager = new WebInspector.ZoomManager();
 
     this.advancedSearchController = new WebInspector.AdvancedSearchController();
-    this.consoleView = new WebInspector.ConsoleView(WebInspector.isWorkerFrontend());
 
     InspectorBackend.registerInspectorDispatcher(this);
 
@@ -414,7 +404,12 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     window.addEventListener("resize", this.windowResize.bind(this), true);
 
     var errorWarningCount = document.getElementById("error-warning-count");
-    errorWarningCount.addEventListener("click", this.showConsole.bind(this), false);
+
+    function showConsole()
+    {
+        WebInspector.console.show();
+    }
+    errorWarningCount.addEventListener("click", showConsole, false);
     this._updateErrorAndWarningCounts();
 
     WebInspector.extensionServerProxy.setFrontendReady();
@@ -682,7 +677,7 @@ WebInspector.postDocumentKeyDown = function(event)
     }
 
     if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Tilde.code && event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey)
-        this.showConsole();
+        WebInspector.console.show();
 }
 
 WebInspector.documentCanCopy = function(event)
@@ -776,7 +771,7 @@ WebInspector.log = function(message, messageLevel, showConsole)
 
         self.console.addMessage(msg);
         if (showConsole)
-            WebInspector.showConsole();
+            WebInspector.console.show();
     }
 
     // if we can't log the message, queue it
@@ -881,12 +876,6 @@ WebInspector._updateFocusedNode = function(nodeId)
         WebInspector.inspectElementModeController.disable();
     }
     WebInspector.panel("elements").revealAndSelectNode(nodeId);
-}
-
-WebInspector.evaluateInConsole = function(expression, showResultOnly)
-{
-    this.showConsole();
-    this.consoleView.evaluateUsingTextPrompt(expression, showResultOnly);
 }
 
 WebInspector.addMainEventListeners = function(doc)

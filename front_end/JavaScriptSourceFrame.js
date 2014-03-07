@@ -115,8 +115,8 @@ WebInspector.JavaScriptSourceFrame.prototype = {
      */
     _evaluateInConsole: function(expression)
     {
-        WebInspector.showConsole();
-        WebInspector.consoleView.evaluateUsingTextPrompt(expression, false);
+        WebInspector.console.show();
+        WebInspector.console.evaluate(expression);
     },
 
     // View events

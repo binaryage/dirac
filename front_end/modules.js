@@ -227,8 +227,14 @@ var allDescriptors = [
                 title: "Console",
                 order: "0",
                 className: "WebInspector.ConsolePanel.ViewFactory"
+            },
+            {
+                type: "@WebInspector.Revealer",
+                contextTypes: ["WebInspector.ConsoleModel"],
+                className: "WebInspector.ConsolePanel.ConsoleRevealer"
             }
-        ]
+        ],
+        scripts: [ "ConsolePanel.js" ]
     },
     {
         extensions: [

@@ -43,9 +43,6 @@
             'front_end/CompilerScriptMapping.js',
             'front_end/CompletionDictionary.js',
             'front_end/ConsoleModel.js',
-            'front_end/ConsolePanel.js',
-            'front_end/ConsoleView.js',
-            'front_end/ConsoleViewMessage.js',
             'front_end/ContentProvider.js',
             'front_end/ContentProviderBasedProjectDelegate.js',
             'front_end/ContentProviders.js',
@@ -236,6 +233,11 @@
             'front_end/canvasProfiler.css',
             'front_end/layersPanel.css',
         ],
+        'devtools_console_js_files': [
+            'front_end/ConsolePanel.js',
+            'front_end/ConsoleView.js',
+            'front_end/ConsoleViewMessage.js',
+        ],
         'devtools_elements_js_files': [
             'front_end/DOMSyntaxHighlighter.js',
             'front_end/ElementsTreeOutline.js',
@@ -380,6 +382,7 @@
             'front_end/cm/xml.js',
         ],
         'devtools_modules_js_files': [
+            '<@(devtools_console_js_files)',
             '<@(devtools_elements_js_files)',
             '<@(devtools_extensions_js_files)',
             '<@(devtools_resources_js_files)',

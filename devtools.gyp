@@ -44,6 +44,7 @@
             'conditions': [
                 ['debug_devtools==0', {
                     'dependencies': ['concatenated_devtools_js',
+                                     'concatenated_devtools_console_js',
                                      'concatenated_devtools_elements_js',
                                      'concatenated_devtools_resources_js',
                                      'concatenated_devtools_network_js',
@@ -153,6 +154,7 @@
             'conditions': [
                 ['debug_devtools==0', {
                     'dependencies': ['concatenated_devtools_js',
+                                     'concatenated_devtools_console_js',
                                      'concatenated_devtools_elements_js',
                                      'concatenated_devtools_resources_js',
                                      'concatenated_devtools_network_js',
@@ -173,6 +175,7 @@
                         'input_pages': [
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.js',
+                            '<(PRODUCT_DIR)/resources/inspector/ConsolePanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/ElementsPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/ExtensionServer.js',
                             '<(PRODUCT_DIR)/resources/inspector/ResourcesPanel.js',
@@ -317,6 +320,22 @@
                         ],
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/inspector.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_search_path)', '<@(_outputs)'],
+                    }],
+                },
+                {
+                    'target_name': 'concatenated_devtools_console_js',
+                    'type': 'none',
+                    'actions': [{
+                        'action_name': 'concatenate_devtools_console_js',
+                        'script_name': 'scripts/inline_js_imports.py',
+                        'input_file': 'front_end/ConsolePanel.js',
+                        'inputs': [
+                            '<@(_script_name)',
+                            '<@(devtools_console_js_files)',
+                        ],
+                        'search_path': 'front_end',
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/ConsolePanel.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
                     }],
                 },
                 {

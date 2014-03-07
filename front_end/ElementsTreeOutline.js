@@ -2352,7 +2352,7 @@ WebInspector.ElementsTreeElement.prototype = {
                 undefined,
                 [nodeObject]);
             WebInspector.console.addMessage(message);
-            WebInspector.showConsole();
+            WebInspector.console.show();
         }
     },
 
