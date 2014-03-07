@@ -108,7 +108,40 @@ Protocol.Error;
 
     for domain in json_api:
         domain_name = domain["domain"]
-        output_file.write("\n\n\nvar %sAgent = {};\n" % domain_name)
+
+        output_file.write("\n\n/**\n * @constructor\n*/\n")
+        output_file.write("Protocol.%sAgent = function(){};\n" % domain_name)
+
+        if "commands" in domain:
+            for command in domain["commands"]:
+                output_file.write("\n/**\n")
+                params = []
+                if ("parameters" in command):
+                    for in_param in command["parameters"]:
+                        if ("optional" in in_param):
+                            params.append("opt_%s" % in_param["name"])
+                            output_file.write(" * @param {%s=} opt_%s\n" % (param_type(domain_name, in_param), in_param["name"]))
+                        else:
+                            params.append(in_param["name"])
+                            output_file.write(" * @param {%s} %s\n" % (param_type(domain_name, in_param), in_param["name"]))
+                returns = ["?Protocol.Error"]
+                if ("error" in command):
+                    returns.append("%s=" % param_type(domain_name, command["error"]))
+                if ("returns" in command):
+                    for out_param in command["returns"]:
+                        if ("optional" in out_param):
+                            returns.append("%s=" % param_type(domain_name, out_param))
+                        else:
+                            returns.append("%s" % param_type(domain_name, out_param))
+                output_file.write(" * @param {function(%s):void=} opt_callback\n" % ", ".join(returns))
+                output_file.write(" */\n")
+                params.append("opt_callback")
+                output_file.write("Protocol.%sAgent.prototype.%s = function(%s) {}\n" % (domain_name, command["name"], ", ".join(params)))
+                output_file.write("/** @param {function(%s):void=} opt_callback */\n" % ", ".join(returns))
+                output_file.write("Protocol.%sAgent.prototype.invoke_%s = function(obj, opt_callback) {}\n" % (domain_name, command["name"]))
+
+        output_file.write("\n\n\nvar %sAgent = new Protocol.%sAgent();\n" % (domain_name, domain_name))
+
         if "types" in domain:
             for type in domain["types"]:
                 if type["type"] == "object":
@@ -135,34 +168,6 @@ Protocol.Error;
                 else:
                     output_file.write("\n/** @typedef {%s} */\n%sAgent.%s;\n" % (type_traits[type["type"]], domain_name, type["id"]))
 
-        if "commands" in domain:
-            for command in domain["commands"]:
-                output_file.write("\n/**\n")
-                params = []
-                if ("parameters" in command):
-                    for in_param in command["parameters"]:
-                        if ("optional" in in_param):
-                            params.append("opt_%s" % in_param["name"])
-                            output_file.write(" * @param {%s=} opt_%s\n" % (param_type(domain_name, in_param), in_param["name"]))
-                        else:
-                            params.append(in_param["name"])
-                            output_file.write(" * @param {%s} %s\n" % (param_type(domain_name, in_param), in_param["name"]))
-                returns = ["?Protocol.Error"]
-                if ("error" in command):
-                    returns.append("%s=" % param_type(domain_name, command["error"]))
-                if ("returns" in command):
-                    for out_param in command["returns"]:
-                        if ("optional" in out_param):
-                            returns.append("%s=" % param_type(domain_name, out_param))
-                        else:
-                            returns.append("%s" % param_type(domain_name, out_param))
-                output_file.write(" * @param {function(%s):void=} opt_callback\n" % ", ".join(returns))
-                output_file.write(" */\n")
-                params.append("opt_callback")
-                output_file.write("%sAgent.%s = function(%s) {}\n" % (domain_name, command["name"], ", ".join(params)))
-                output_file.write("/** @param {function(%s):void=} opt_callback */\n" % ", ".join(returns))
-                output_file.write("%sAgent.invoke_%s = function(obj, opt_callback) {}\n" % (domain_name, command["name"]))
-
         output_file.write("/** @interface */\n")
         output_file.write("%sAgent.Dispatcher = function() {};\n" % domain_name)
         if "events" in domain:
@@ -181,6 +186,19 @@ Protocol.Error;
                 output_file.write("%sAgent.Dispatcher.prototype.%s = function(%s) {};\n" % (domain_name, event["name"], ", ".join(params)))
         output_file.write("/**\n * @param {%sAgent.Dispatcher} dispatcher\n */\n" % domain_name)
         output_file.write("InspectorBackend.register%sDispatcher = function(dispatcher) {}\n" % domain_name)
+
+    output_file.write("\n/** @constructor\n * @param {!Object.<string, !Object>} agentsMap\n */\n")
+    output_file.write("Protocol.Agents = function(agentsMap){this._agentsMap;};\n")
+
+    for domain in json_api:
+        domain_name = domain["domain"]
+        uppercase_length = 0
+        while uppercase_length < len(domain_name) and domain_name[uppercase_length].isupper():
+            uppercase_length += 1
+
+        output_file.write("/** @return {!Protocol.%sAgent}*/\n" % domain_name)
+        output_file.write("Protocol.Agents.prototype.%s = function(){};\n" % (domain_name[:uppercase_length].lower() + domain_name[uppercase_length:] + "Agent"))
+
     output_file.close()
 
 if __name__ == "__main__":

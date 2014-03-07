@@ -23,6 +23,7 @@
         "name": "sdk",
         "dependencies": ["common"],
         "sources": [
+            "Target.js",
             "ApplicationCacheModel.js",
             "CompilerScriptMapping.js",
             "ConsoleModel.js",

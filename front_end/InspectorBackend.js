@@ -38,9 +38,45 @@ function InspectorBackendClass()
     this._dispatcherPrototypes = {};
     this._initialized = false;
     this._enums = {};
+    this._initProtocolAgentsConstructor();
 }
 
 InspectorBackendClass.prototype = {
+
+    _initProtocolAgentsConstructor: function()
+    {
+        window.Protocol = {};
+
+        /**
+         * @constructor
+         * @param {!Object.<string, !Object>} agentsMap
+         */
+        window.Protocol.Agents = function(agentsMap) {
+            this._agentsMap = agentsMap;
+        };
+    },
+
+    /**
+     * @param {string} domain
+     */
+    _addAgentGetterMethodToProtocolAgentsPrototype: function(domain)
+    {
+        var upperCaseLength = 0;
+        while (upperCaseLength < domain.length && domain[upperCaseLength].toLowerCase() !== domain[upperCaseLength])
+            ++upperCaseLength;
+
+        var methodName = domain.substr(0, upperCaseLength).toLowerCase() + domain.slice(upperCaseLength) + "Agent";
+
+        /**
+         * @this {Protocol.Agents}
+         */
+        function agentGetter()
+        {
+            return this._agentsMap[domain];
+        }
+
+        window.Protocol.Agents.prototype[methodName] = agentGetter;
+    },
 
     /**
      * @return {!InspectorBackendClass.Connection}
@@ -73,8 +109,10 @@ InspectorBackendClass.prototype = {
      */
     _agentPrototype: function(domain)
     {
-        if (!this._agentPrototypes[domain])
+        if (!this._agentPrototypes[domain]) {
             this._agentPrototypes[domain] = new InspectorBackendClass.AgentPrototype(domain);
+            this._addAgentGetterMethodToProtocolAgentsPrototype(domain);
+        }
 
         return this._agentPrototypes[domain];
     },
@@ -335,6 +373,14 @@ InspectorBackendClass.Connection.prototype = {
     agent: function(domain)
     {
         return this._agents[domain];
+    },
+
+    /**
+     * @return {!Object.<string, !Object>}
+     */
+    agentsMap: function()
+    {
+        return this._agents;
     },
 
     /**

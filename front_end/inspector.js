@@ -184,13 +184,6 @@ var WebInspector = {
         return parsedURL ? parsedURL.host : "";
     },
 
-    _initializeCapability: function(name, callback, error, result)
-    {
-        Capabilities[name] = result;
-        if (callback)
-            callback();
-    },
-
     _debuggerPaused: function()
     {
         this.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
@@ -284,11 +277,8 @@ WebInspector.loaded = function()
 
     WebInspector.doLoadedDone();
 
-    // In case of loading as a web page with no bindings / harness, kick off initialization manually.
-    if (InspectorFrontendHost.isStub) {
+    if (InspectorFrontendHost.isStub)
         InspectorFrontendAPI.dispatchQueryParameters(WebInspector.queryParamsObject);
-        WebInspector._doLoadedDoneWithCapabilities();
-    }
 }
 
 WebInspector.doLoadedDone = function()
@@ -308,14 +298,13 @@ WebInspector.doLoadedDone = function()
     var connection = workerId ? new WebInspector.WorkerConnection(workerId) : new InspectorBackendClass.MainConnection();
     InspectorBackend.setConnection(connection);
 
-    PageAgent.canScreencast(WebInspector._initializeCapability.bind(WebInspector, "canScreencast", null));
-    WorkerAgent.canInspectWorkers(WebInspector._initializeCapability.bind(WebInspector, "canInspectWorkers", WebInspector._doLoadedDoneWithCapabilities.bind(WebInspector)));
+    WebInspector.targetManager = new WebInspector.TargetManager();
+    WebInspector.targetManager.createTarget(connection, WebInspector._doLoadedDoneWithCapabilities.bind(WebInspector));
 }
 
-WebInspector._doLoadedDoneWithCapabilities = function()
+WebInspector._doLoadedDoneWithCapabilities = function(mainTarget)
 {
     new WebInspector.VersionController().updateVersion();
-
     WebInspector.shortcutsScreen = new WebInspector.ShortcutsScreen();
     this._registerShortcuts();
 
@@ -324,18 +313,12 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     WebInspector.shortcutsScreen.section(WebInspector.UIString("Elements Panel"));
     WebInspector.ShortcutsScreen.registerShortcuts();
 
-    this.console = new WebInspector.ConsoleModel();
     this.console.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._resetErrorAndWarningCounts, this);
     this.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
     this.console.addEventListener(WebInspector.ConsoleModel.Events.RepeatCountUpdated, this._updateErrorAndWarningCounts, this);
-    this.networkManager = new WebInspector.NetworkManager();
-    this.resourceTreeModel = new WebInspector.ResourceTreeModel(this.networkManager);
-    this.debuggerModel = new WebInspector.DebuggerModel();
+
     this.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
     this.networkLog = new WebInspector.NetworkLog();
-    this.domAgent = new WebInspector.DOMAgent();
-    this.workerManager = new WebInspector.WorkerManager(Capabilities.canInspectWorkers);
-    this.runtimeModel = new WebInspector.RuntimeModel(this.resourceTreeModel);
 
     this.zoomManager = new WebInspector.ZoomManager();
 
@@ -393,7 +376,7 @@ WebInspector._doLoadedDoneWithCapabilities = function()
     this.panels = {};
     this.inspectorView = new WebInspector.InspectorView();
     // Screencast controller creates a root view itself.
-    if (Capabilities.canScreencast)
+    if (mainTarget.canScreencast)
         this._screencastController = new WebInspector.ScreencastController();
     else
         this._createRootView();

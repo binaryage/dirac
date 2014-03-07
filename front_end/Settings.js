@@ -40,7 +40,6 @@ var Preferences = {
 
 var Capabilities = {
     canInspectWorkers: false,
-    canScreencast: false
 }
 
 /**
