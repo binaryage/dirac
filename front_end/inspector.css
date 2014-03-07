@@ -1212,7 +1212,7 @@ ol.watch-expressions > li.hovered {
 }
 
 .object-info-state-note {
-    display: none;
+    display: inline-block;
     width: 11px;
     height: 11px;
     background-color: rgb(179, 203, 247);
@@ -1228,8 +1228,8 @@ ol.watch-expressions > li.hovered {
     content: "i";
 }
 
-.section.expanded .object-info-state-note {
-    display: inline-block;
+.section:not(.expanded) .object-info-state-note {
+    display: none;
 }
 
 .error-message {

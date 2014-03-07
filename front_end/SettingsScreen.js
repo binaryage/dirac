@@ -276,6 +276,11 @@ WebInspector.GenericSettingsTab = function()
     p.appendChild(disableJSElement);
     WebInspector.settings.javaScriptDisabled.addChangeListener(this._javaScriptDisabledChanged, this);
     this._disableJSCheckbox = disableJSElement.getElementsByTagName("input")[0];
+    var disableJSInfoParent = this._disableJSCheckbox.parentElement.createChild("span", "monospace");
+    this._disableJSInfo = disableJSInfoParent.createChild("span", "object-info-state-note hidden");
+    this._disableJSInfo.title = WebInspector.UIString("JavaScript is blocked on the inspected page (may be disabled in browser settings).");
+
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._updateScriptDisabledCheckbox, this);
     this._updateScriptDisabledCheckbox();
 
     p = this._appendSection(WebInspector.UIString("Appearance"));
@@ -375,18 +380,12 @@ WebInspector.GenericSettingsTab.prototype = {
             if (error || !status)
                 return;
 
-            switch (status) {
-            case "forbidden":
-                this._disableJSCheckbox.checked = true;
-                this._disableJSCheckbox.disabled = true;
-                break;
-            case "disabled":
-                this._disableJSCheckbox.checked = true;
-                break;
-            default:
-                this._disableJSCheckbox.checked = false;
-                break;
-            }
+            var forbidden = (status === "forbidden");
+            var disabled = forbidden || (status === "disabled");
+
+            this._disableJSInfo.classList.toggle("hidden", !forbidden);
+            this._disableJSCheckbox.checked = disabled;
+            this._disableJSCheckbox.disabled = forbidden;
         }
 
         PageAgent.getScriptExecutionStatus(executionStatusCallback.bind(this));
