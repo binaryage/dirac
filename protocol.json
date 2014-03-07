@@ -4048,6 +4048,15 @@
                 "description": "Stop power events collection.",
                 "parameters": [],
                 "handlers": ["browser", "frontend"]
+            },
+            {
+                "name": "canProfilePower",
+                "description": "Tells whether power profiling is supported.",
+                "returns": [
+                  { "name": "result", "type": "boolean", "description": "True if power profiling is supported." }
+                ],
+                "hidden": true,
+                "handlers": ["browser", "frontend"]
             }
         ],
         "events": [
