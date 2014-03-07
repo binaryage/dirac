@@ -207,8 +207,6 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     _appendRecord: function(record, level)
     {
-        if (record.thread)
-            return;
         if (!this._model.isVisible(record)) {
             for (var i = 0; i < record.children.length; ++i)
                 this._appendRecord(record.children[i], level);
