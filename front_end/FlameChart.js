@@ -678,7 +678,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         if (!this._timelineData())
             return false;
         this._isDragging = true;
-        this._wasDragged = false;
+        this._maxDragOffset = 0;
         this._dragStartPoint = event.pageX;
         this._dragStartWindowLeft = this._timeWindowLeft;
         this._dragStartWindowRight = this._timeWindowRight;
@@ -704,7 +704,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         var windowLeft = this._dragStartWindowLeft + timeShift;
         var windowRight = this._dragStartWindowRight + timeShift;
         this._flameChartDelegate.requestWindowTimes(windowLeft, windowRight);
-        this._wasDragged = true;
+        this._maxDragOffset = Math.max(this._maxDragOffset, Math.abs(pixelShift));
     },
 
     _endCanvasDragging: function()
@@ -749,7 +749,8 @@ WebInspector.FlameChart.MainPane.prototype = {
         // onClick comes after dragStart and dragEnd events.
         // So if there was drag (mouse move) in the middle of that events
         // we skip the click. Otherwise we jump to the sources.
-        if (this._wasDragged)
+        const clickThreshold = 5;
+        if (this._maxDragOffset > clickThreshold)
             return;
         if (this._highlightedEntryIndex === -1)
             return;
