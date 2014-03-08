@@ -68,11 +68,11 @@ WebInspector.SplitView = function(isVertical, secondIsSidebar, settingName, defa
     this._resizable = true;
     this._useDip = !!useDip;
 
-    this._savedSidebarWidth = defaultSidebarWidth || 200;
-    this._savedSidebarHeight = defaultSidebarHeight || this._savedSidebarWidth;
+    this._defaultSidebarWidth = defaultSidebarWidth || 200;
+    this._defaultSidebarHeight = defaultSidebarHeight || this._defaultSidebarWidth;
 
-    if (0 < this._savedSidebarWidth && this._savedSidebarWidth < 1 &&
-        0 < this._savedSidebarHeight && this._savedSidebarHeight < 1)
+    if (0 < this._defaultSidebarWidth && this._defaultSidebarWidth < 1 &&
+        0 < this._defaultSidebarHeight && this._defaultSidebarHeight < 1)
         this._useFraction = true;
 
     this._settingName = settingName;
@@ -136,6 +136,9 @@ WebInspector.SplitView.prototype = {
         this.element.classList.add(this._isVertical ? "hbox" : "vbox");
         delete this._resizerElementSize;
         this._sidebarSize = -1;
+        this._restoreSidebarSizeFromSettings();
+        if (this._shouldSaveShowMode)
+            this._restoreAndApplyShowModeFromSettings();
     },
 
     /**
@@ -144,7 +147,7 @@ WebInspector.SplitView.prototype = {
     _updateLayout: function(animate)
     {
         delete this._totalSize; // Lazy update.
-        this._innerSetSidebarSize(this._lastSidebarSize(), false, animate);
+        this._innerSetSidebarSize(this._preferredSidebarSize(), false, animate);
     },
 
     /**
@@ -174,18 +177,7 @@ WebInspector.SplitView.prototype = {
     enableShowModeSaving: function()
     {
         this._shouldSaveShowMode = true;
-        var savedShowMode = this._savedShowMode();
-        switch (savedShowMode) {
-        case WebInspector.SplitView.ShowMode.Both:
-            this.showBoth();
-            break;
-        case WebInspector.SplitView.ShowMode.OnlyMain:
-            this.hideSidebar();
-            break;
-        case WebInspector.SplitView.ShowMode.OnlySidebar:
-            this.hideMain();
-            break;
-        }
+        this._restoreAndApplyShowModeFromSettings();
     },
 
     /**
@@ -233,9 +225,9 @@ WebInspector.SplitView.prototype = {
     /**
      * @return {number}
      */
-    desiredSidebarSize: function()
+    preferredSidebarSize: function()
     {
-        return this._lastSidebarSize();
+        return this._preferredSidebarSize();
     },
 
     /**
@@ -351,7 +343,7 @@ WebInspector.SplitView.prototype = {
     setSidebarSize: function(size)
     {
         this._innerSetSidebarSize(size);
-        this._saveSetting();
+        this._saveSidebarSizeToSettings();
     },
 
     /**
@@ -378,7 +370,7 @@ WebInspector.SplitView.prototype = {
     _updateShowMode: function(showMode)
     {
         this._showMode = showMode;
-        this._saveSetting();
+        this._saveShowModeToSettings();
         this._updateShowHideSidebarButton();
         this.dispatchEventToListeners(WebInspector.SplitView.Events.ShowModeChanged, showMode);
     },
@@ -628,7 +620,6 @@ WebInspector.SplitView.prototype = {
         if (!this._resizable)
             return false;
 
-        this._saveSetting();
         this._dragOffset = (this._secondIsSidebar ? this.totalSize() - this._sidebarSize : this._sidebarSize) - (this._isVertical ? event.pageX : event.pageY);
         return true;
     },
@@ -650,7 +641,7 @@ WebInspector.SplitView.prototype = {
     _endResizerDragging: function(event)
     {
         delete this._dragOffset;
-        this._saveSetting();
+        this._saveSidebarSizeToSettings();
     },
 
     hideDefaultResizer: function()
@@ -728,57 +719,72 @@ WebInspector.SplitView.prototype = {
     /**
      * @return {number}
      */
-    _lastSidebarSize: function()
+    _preferredSidebarSize: function()
     {
-        var settingForOrientation = this._settingForOrientation();
-        var size = settingForOrientation ? settingForOrientation.size : 0;
-        if (!size)
-             size = this._isVertical ? this._savedSidebarWidth : this._savedSidebarHeight;
+        var size = this._savedSidebarSize;
         if (this._useFraction)
             size *= this.totalSize();
         return size;
     },
 
-    /**
-     * @return {string}
-     */
-    _savedShowMode: function()
+    _restoreSidebarSizeFromSettings: function()
     {
-        var orientationState = this._settingForOrientation();
-        return orientationState ? orientationState.showMode : "";
+        var settingForOrientation = this._settingForOrientation();
+        var size = settingForOrientation ? settingForOrientation.size : 0;
+        if (!size)
+             size = this._isVertical ? this._defaultSidebarWidth : this._defaultSidebarHeight;
+        this._savedSidebarSize = size;
     },
 
-    _sizeToSave: function()
+    _restoreAndApplyShowModeFromSettings: function()
     {
-        var size = this._sidebarSize;
-        if (size < 0)
-            return -1;
+        var orientationState = this._settingForOrientation();
+        this._savedShowMode = orientationState ? orientationState.showMode : WebInspector.SplitView.ShowMode.Both;
+        this._showMode = this._savedShowMode;
 
+        switch (this._savedShowMode) {
+        case WebInspector.SplitView.ShowMode.Both:
+            this.showBoth();
+            break;
+        case WebInspector.SplitView.ShowMode.OnlyMain:
+            this.hideSidebar();
+            break;
+        case WebInspector.SplitView.ShowMode.OnlySidebar:
+            this.hideMain();
+            break;
+        }
+    },
+
+    _saveSidebarSizeToSettings: function()
+    {
+        if (this._sidebarSize < 0)
+            return;
+
+        var size = this._sidebarSize;
         if (this._useFraction)
             size /= this.totalSize();
-        return size;
+        this._savedSidebarSize = size;
+        this._saveSetting();
+    },
+
+    _saveShowModeToSettings: function()
+    {
+        this._savedShowMode = this._showMode;
+        this._saveSetting();
     },
 
     _saveSetting: function()
     {
-        var size = this._sizeToSave();
-
-        if (size !== -1) {
-            if (this._isVertical)
-                this._savedSidebarWidth = size;
-            else
-                this._savedSidebarHeight = size;
-        }
-
         var setting = this._setting();
         if (!setting)
             return;
         var state = setting.get();
         var orientationState = (this._isVertical ? state.vertical : state.horizontal) || {};
-        if (size !== -1)
-            orientationState.size = size;
+
+        orientationState.size = this._savedSidebarSize;
         if (this._shouldSaveShowMode)
-            orientationState.showMode = this._showMode;
+            orientationState.showMode = this._savedShowMode;
+
         if (this._isVertical)
             state.vertical = orientationState;
         else
@@ -793,7 +799,7 @@ WebInspector.SplitView.prototype = {
     {
         var data = /** @type {{from: number, to: number}} */ (event.data);
         this._innerSetSidebarSize(this.sidebarSize() * data.from / data.to, true);
-        this._saveSetting();
+        this._saveSidebarSizeToSettings();
     },
 
     /**

@@ -84,7 +84,7 @@ WebInspector.InspectedPagePlaceholder.prototype = {
         var view = this;
         while (view) {
             if ((view instanceof WebInspector.SplitView) && view.sidebarSide())
-                insets[view.sidebarSide()] += view.desiredSidebarSize();
+                insets[view.sidebarSide()] += view.preferredSidebarSize();
             view = view.parentView();
         }
 
