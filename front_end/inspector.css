@@ -684,10 +684,6 @@ button.status-bar-item.right-sidebar-show-hide-button.toggled-right > .glyph {
     -webkit-mask-position: -264px -76px;
 }
 
-button.status-bar-item.left-sidebar-show-hide-button.toggled-overlay > .glyph {
-    -webkit-mask-position: -231px -76px;
-}
-
 div.resizer-widget {
     position: absolute;
     top: 0;

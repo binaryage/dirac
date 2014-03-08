@@ -149,7 +149,6 @@
             'front_end/SettingsUI.js',
             'front_end/ShortcutsScreen.js',
             'front_end/ShowMoreDataGridNode.js',
-            'front_end/SidebarOverlay.js',
             'front_end/SidebarPane.js',
             'front_end/SidebarTreeElement.js',
             'front_end/SimpleWorkspaceProvider.js',
