@@ -20,11 +20,16 @@ WebInspector.Target = function(connection, callback)
     this.workerAgent().canInspectWorkers(this._initializeCapability.bind(this, "canInspectWorkers", this._loadedWithCapabilities.bind(this, callback)));
 
     // In case of loading as a web page with no bindings / harness, kick off initialization manually.
-    if (InspectorFrontendHost.isStub) {
+    if (InspectorFrontendHost.isStub && !WebInspector.socket) {
         // give a chance to add listeners of WebInspector.Target.Events.TargetIsReady
         setTimeout(this._loadedWithCapabilities.bind(this, callback), 0);
     }
 }
+
+/**
+ * @type {!WebSocket}
+ */
+WebInspector.socket;
 
 WebInspector.Target.prototype = {
 
