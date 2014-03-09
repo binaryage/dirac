@@ -182,7 +182,11 @@ WebInspector.DOMPresentationUtils.simpleSelector = function(node)
         return lowerCaseName;
     if (lowerCaseName === "input" && node.getAttribute("type") && !node.getAttribute("id") && !node.getAttribute("class"))
         return lowerCaseName + "[type=\"" + node.getAttribute("type") + "\"]";
-    return WebInspector.DOMPresentationUtils._cssPathStep(node, false, true).value;
+    if (node.getAttribute("id"))
+        return lowerCaseName + "#" + node.getAttribute("id");
+    if (node.getAttribute("class"))
+        return lowerCaseName + "." + node.getAttribute("class");
+    return lowerCaseName;
 }
 
 /**
