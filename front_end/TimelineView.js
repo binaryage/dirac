@@ -419,6 +419,8 @@ WebInspector.TimelineView.prototype = {
         this._refreshRecords();
         if (!this._boundariesAreValid) {
             this._updateEventDividers();
+            if (this._frameContainer)
+                this._frameContainer.remove();
             if (this._frameModel) {
                 var frames = this._frameModel.filteredFrames(windowStartTime, windowEndTime);
                 const maxFramesForFrameBars = 30;
@@ -426,8 +428,6 @@ WebInspector.TimelineView.prototype = {
                     this._timelineGrid.removeDividers();
                     this._updateFrameBars(frames);
                 } else {
-                    if (this._frameContainer)
-                        this._frameContainer.remove();
                     this._timelineGrid.updateDividers(this._calculator);
                 }
             } else

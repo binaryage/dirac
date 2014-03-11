@@ -249,17 +249,14 @@ WebInspector.TimelinePanel.prototype = {
             switch (mode) {
             case WebInspector.TimelinePanel.Mode.Events:
                 views.overviewView = new WebInspector.TimelineEventOverview(this._model);
-                this._timelineView().setFrameModel(null);
                 views.mainViews = [this._timelineView()];
                 break;
             case WebInspector.TimelinePanel.Mode.Frames:
                 views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());
-                this._timelineView().setFrameModel(this._frameModel());
                 views.mainViews = [this._timelineView()];
                 break;
             case WebInspector.TimelinePanel.Mode.Memory:
                 views.overviewView = new WebInspector.TimelineMemoryOverview(this._model);
-                this._timelineView().setFrameModel(null);
                 views.mainViews = [this._timelineView(), new WebInspector.CountersGraph(this, this._model)];
                 break;
             case WebInspector.TimelinePanel.Mode.FlameChart:
@@ -273,6 +270,8 @@ WebInspector.TimelinePanel.prototype = {
                 views.mainViews[i].addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
             this._viewsMap[mode] = views;
         }
+
+        this._timelineView().setFrameModel(mode === WebInspector.TimelinePanel.Mode.Frames ? this._frameModel() : null);
         return views;
     },
 
