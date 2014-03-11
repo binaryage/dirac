@@ -252,6 +252,9 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "border-width": { values: [
         "medium", "thick", "thin"
     ] },
+    "border-style": { values: [
+        "none", "hidden", "inset", "groove", "ridge", "outset", "dotted", "dashed", "solid", "double"
+    ] },
     "size": { values: [
         "a3", "a4", "a5", "b4", "b5", "landscape", "ledger", "legal", "letter", "portrait"
     ] },
