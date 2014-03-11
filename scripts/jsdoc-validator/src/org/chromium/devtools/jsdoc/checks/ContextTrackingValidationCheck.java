@@ -88,13 +88,15 @@ public class ContextTrackingValidationCheck extends ValidationCheck {
         AstNode nameNode = AstUtil.getFunctionNameNode(node);
 
         // It can be a type declaration: /** @constructor */ function MyType() {...}.
+        String functionName = getNodeText(nameNode);
         boolean isConstructor =
-                nameNode != null && rememberTypeRecordIfNeeded(getNodeText(nameNode), jsDocNode);
+                functionName != null && rememberTypeRecordIfNeeded(functionName, jsDocNode);
         TypeRecord parentType = state.getCurrentFunctionRecord() == null
                 ? state.getCurrentTypeRecord()
                 : null;
         state.pushFunctionRecord(new FunctionRecord(
                 node,
+                functionName,
                 isConstructor,
                 getReturnType(jsDocNode),
                 parentType,

@@ -54,3 +54,37 @@ ProtoNotSameAsExtends.prototype = {
 ProtoNotObjectLiteral = function() {}
 
 ProtoNotObjectLiteral.prototype = Object;
+
+/**
+ * @constructor
+ * @extends {Base}
+ */
+DerivedNoSuperCall = function() {
+}
+
+DerivedNoSuperCall.prototype = {
+    __proto__: Base.prototype
+}
+
+/**
+ * @constructor
+ * @extends {Base}
+ */
+DerivedBadSuperCall = function() {
+    Base.call(1);
+}
+
+DerivedBadSuperCall.prototype = {
+    __proto__: Base.prototype
+}
+
+/**
+ * @extends {Base}
+ */
+GoodDerived = function() {
+    Base.call(this);
+}
+
+GoodDerived.prototype = {
+    __proto__: Base.prototype
+}

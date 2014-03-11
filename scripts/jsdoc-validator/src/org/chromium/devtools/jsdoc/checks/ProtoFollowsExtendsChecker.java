@@ -3,35 +3,130 @@ package org.chromium.devtools.jsdoc.checks;
 import com.google.javascript.rhino.head.Token;
 import com.google.javascript.rhino.head.ast.Assignment;
 import com.google.javascript.rhino.head.ast.AstNode;
+import com.google.javascript.rhino.head.ast.FunctionCall;
 import com.google.javascript.rhino.head.ast.ObjectProperty;
 
 import org.chromium.devtools.jsdoc.checks.TypeRecord.InheritanceEntry;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
 
     private static final String PROTO_PROPERTY_NAME = "__proto__";
+    private static final Set<String> IGNORED_SUPER_TYPES = new HashSet<>();
+    static {
+        IGNORED_SUPER_TYPES.add("WebInspector.Object");
+    }
+
     private final Set<TypeRecord> typesWithAssignedProto = new HashSet<>();
+    private final Set<FunctionRecord> functionsMissingSuperCall = new HashSet<>();
 
     @Override
     protected void enterNode(AstNode node) {
-        if (node.getType() == Token.COLON) {
-            handleColonNode((ObjectProperty) node);
-            return;
-        }
-        if (node.getType() == Token.ASSIGN) {
+        switch (node.getType()) {
+        case Token.ASSIGN:
             handleAssignment((Assignment) node);
+            break;
+        case Token.COLON:
+            handleColonNode((ObjectProperty) node);
+            break;
+        case Token.FUNCTION:
+            enterFunction();
+            break;
+        case Token.CALL:
+            handleCall((FunctionCall) node);
+            break;
+        default:
+            break;
+        }
+    }
+
+    private void handleCall(FunctionCall callNode) {
+        FunctionRecord contextFunction = getState().getCurrentFunctionRecord();
+        if (contextFunction == null || !contextFunction.isConstructor
+                || !functionsMissingSuperCall.contains(contextFunction)) {
             return;
         }
+        String typeName = validSuperConstructorName(callNode);
+        if (typeName == null) {
+            return;
+        }
+        TypeRecord typeRecord = getState().typeRecordsByTypeName.get(contextFunction.name);
+        if (typeRecord == null) {
+            return;
+        }
+        InheritanceEntry extendedType = typeRecord.getFirstExtendedType();
+        if (extendedType == null || !extendedType.superTypeName.equals(typeName)) {
+            return;
+        }
+        functionsMissingSuperCall.remove(contextFunction);
+    }
+
+    private String validSuperConstructorName(FunctionCall callNode) {
+        String callTarget = getContext().getNodeText(callNode.getTarget());
+        int lastDotIndex = callTarget.lastIndexOf('.');
+        if (lastDotIndex == -1) {
+            return null;
+        }
+        String methodName = callTarget.substring(lastDotIndex + 1);
+        if (!"call".equals(methodName) && !"apply".equals(methodName)) {
+            return null;
+        }
+        List<AstNode> arguments = callNode.getArguments();
+        if (arguments.isEmpty() || !"this".equals(getContext().getNodeText(arguments.get(0)))) {
+            return null;
+        }
+        return callTarget.substring(0, lastDotIndex);
     }
 
     @Override
     protected void leaveNode(AstNode node) {
         if (node.getType() == Token.SCRIPT) {
             checkFinished();
+            return;
         }
+        if (node.getType() == Token.FUNCTION) {
+            leaveFunction();
+            return;
+        }
+    }
+
+    private void enterFunction() {
+        FunctionRecord function = getState().getCurrentFunctionRecord();
+        InheritanceEntry extendedType = getExtendedTypeToCheck(function);
+        if (extendedType == null) {
+            return;
+        }
+        if (extendedType != null && !IGNORED_SUPER_TYPES.contains(extendedType.superTypeName)) {
+            functionsMissingSuperCall.add(function);
+        }
+    }
+
+    private void leaveFunction() {
+        FunctionRecord function = getState().getCurrentFunctionRecord();
+        if (!functionsMissingSuperCall.contains(function)) {
+            return;
+        }
+        InheritanceEntry extendedType = getExtendedTypeToCheck(function);
+        if (extendedType == null) {
+            return;
+        }
+        getContext().reportErrorInNode(AstUtil.getFunctionNameNode(function.functionNode), 0,
+                String.format("Type %s extends %s but does not properly invoke its constructor",
+                        function.name, extendedType.superTypeName));
+    }
+
+    private InheritanceEntry getExtendedTypeToCheck(FunctionRecord function) {
+        if (!function.isConstructor || function.name == null) {
+            return null;
+        }
+        TypeRecord type = getState().typeRecordsByTypeName.get(function.name);
+        if (type == null || type.isInterface) {
+            return null;
+        }
+        return type.getFirstExtendedType();
     }
 
     private void checkFinished() {

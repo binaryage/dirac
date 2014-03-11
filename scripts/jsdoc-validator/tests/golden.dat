@@ -2,6 +2,14 @@
  * @extends {Base}
              ^
 
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:10: ERROR - Type DerivedNoProto extends Base but does not properly invoke its constructor
+DerivedNoProto = function() {}
+^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:16: ERROR - Type DerivedBadProto extends Base but does not properly invoke its constructor
+DerivedBadProto = function() {}
+^
+
 /usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:19: ERROR - __proto__ value is not a prototype
     __proto__: Base
                ^
@@ -14,6 +22,10 @@
     __proto__: Base.prototype
                ^
 
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:44: ERROR - Type ProtoNotSameAsExtends extends Base but does not properly invoke its constructor
+ProtoNotSameAsExtends = function() {}
+^
+
 /usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:47: ERROR - Supertype does not match Base declared in @extends for ProtoNotSameAsExtends (line 42)
     __proto__: Object.prototype
                ^
@@ -22,9 +34,21 @@
  * @extends {Base}
              ^
 
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:54: ERROR - Type ProtoNotObjectLiteral extends Base but does not properly invoke its constructor
+ProtoNotObjectLiteral = function() {}
+^
+
 /usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:56: ERROR - @extends found for type ProtoNotObjectLiteral but its prototype is not an object containing __proto__
 ProtoNotObjectLiteral.prototype = Object;
                                   ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:62: ERROR - Type DerivedNoSuperCall extends Base but does not properly invoke its constructor
+DerivedNoSuperCall = function() {
+^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:73: ERROR - Type DerivedBadSuperCall extends Base but does not properly invoke its constructor
+DerivedBadSuperCall = function() {
+^
 
 /usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:1: ERROR - @return annotation is required for API functions that return value
 function badFuncNoAnnotation() {
@@ -162,4 +186,4 @@ function badFuncAnnotatedButNoReturnValue() // ERROR - no returned value.
         function badCallbackInMethod() {
                  ^
 
-Total errors: 41
+Total errors: 47
