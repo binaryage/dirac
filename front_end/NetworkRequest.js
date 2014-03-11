@@ -748,6 +748,14 @@ WebInspector.NetworkRequest.prototype = {
     },
 
     /**
+     * @return {?Protocol.Error|undefined}
+     */
+    contentError: function()
+    {
+        return this._contentError;
+    },
+
+    /**
      * @return {boolean}
      */
     get contentEncoded()
@@ -878,6 +886,7 @@ WebInspector.NetworkRequest.prototype = {
         function onResourceContent(error, content, contentEncoded)
         {
             this._content = error ? null : content;
+            this._contentError = error;
             this._contentEncoded = contentEncoded;
             var callbacks = this._pendingContentCallbacks.slice();
             for (var i = 0; i < callbacks.length; ++i)

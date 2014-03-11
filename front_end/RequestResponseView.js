@@ -57,11 +57,20 @@ WebInspector.RequestResponseView.prototype = {
         return this._sourceView;
     },
 
+    /**
+     * @param {string} message
+     * @return {!WebInspector.EmptyView}
+     */
+    _createMessageView: function(message)
+    {
+        return new WebInspector.EmptyView(message);
+    },
+
     contentLoaded: function()
     {
-        if (!this.request.content || !this.sourceView) {
+        if ((!this.request.content || !this.sourceView) && !this.request.contentError()) {
             if (!this._emptyView) {
-                this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("This request has no response data available."));
+                this._emptyView = this._createMessageView(WebInspector.UIString("This request has no response data available."));
                 this._emptyView.show(this.element);
                 this.innerView = this._emptyView;
             }
@@ -71,8 +80,15 @@ WebInspector.RequestResponseView.prototype = {
                 delete this._emptyView;
             }
 
-            this.sourceView.show(this.element);
-            this.innerView = this.sourceView;
+            if (this.request.content && this.sourceView) {
+                this.sourceView.show(this.element);
+                this.innerView = this.sourceView;
+            } else {
+                if (!this._errorView)
+                    this._errorView = this._createMessageView(WebInspector.UIString("Failed to load response data"));
+                this._errorView.show(this.element);
+                this.innerView = this._errorView;
+            }
         }
     },
 

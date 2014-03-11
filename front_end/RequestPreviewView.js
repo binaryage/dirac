@@ -42,7 +42,7 @@ WebInspector.RequestPreviewView = function(request, responseView)
 WebInspector.RequestPreviewView.prototype = {
     contentLoaded: function()
     {
-        if (!this.request.content) {
+        if (!this.request.content && !this.request.contentError()) {
             if (!this._emptyView) {
                 this._emptyView = this._createEmptyView();
                 this._emptyView.show(this.element);
@@ -63,7 +63,16 @@ WebInspector.RequestPreviewView.prototype = {
 
     _createEmptyView: function()
     {
-        return new WebInspector.EmptyView(WebInspector.UIString("This request has no preview available."));
+        return this._createMessageView(WebInspector.UIString("This request has no preview available."));
+    },
+
+    /**
+     * @param {string} message
+     * @return {!WebInspector.EmptyView}
+     */
+    _createMessageView: function(message)
+    {
+        return new WebInspector.EmptyView(message);
     },
 
     _jsonView: function()
@@ -82,31 +91,32 @@ WebInspector.RequestPreviewView.prototype = {
 
     _createPreviewView: function()
     {
-        if (this.request.content) {
-            var jsonMediaTypeRE = /^application\/[^;]*\+json/;
-            if (this.request.mimeType === "application/json" || jsonMediaTypeRE.test(this.request.mimeType)) {
-                var jsonView = this._jsonView();
-                if (jsonView)
-                    return jsonView;
-            }
+        if (this.request.contentError())
+            return this._createMessageView(WebInspector.UIString("Failed to load response data"));
 
-            if (this.request.hasErrorStatusCode()) {
-                var htmlView = this._htmlView();
-                if (htmlView)
-                    return htmlView;
-            }
+        var jsonMediaTypeRE = /^application\/[^;]*\+json/;
+        if (this.request.mimeType === "application/json" || jsonMediaTypeRE.test(this.request.mimeType)) {
+            var jsonView = this._jsonView();
+            if (jsonView)
+                return jsonView;
+        }
 
-            if (this.request.type === WebInspector.resourceTypes.XHR) {
-                var jsonView = this._jsonView();
-                if (jsonView)
-                    return jsonView;
-            }
+        if (this.request.hasErrorStatusCode()) {
+            var htmlView = this._htmlView();
+            if (htmlView)
+                return htmlView;
+        }
 
-            if (this.request.type === WebInspector.resourceTypes.XHR && this.request.mimeType === "text/html") {
-                var htmlView = this._htmlView();
-                if (htmlView)
-                    return htmlView;
-            }
+        if (this.request.type === WebInspector.resourceTypes.XHR) {
+            var jsonView = this._jsonView();
+            if (jsonView)
+                return jsonView;
+        }
+
+        if (this.request.type === WebInspector.resourceTypes.XHR && this.request.mimeType === "text/html") {
+            var htmlView = this._htmlView();
+            if (htmlView)
+                return htmlView;
         }
 
         if (this._responseView.sourceView)
