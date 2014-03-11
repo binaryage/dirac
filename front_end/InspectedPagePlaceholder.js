@@ -21,18 +21,31 @@ WebInspector.InspectedPagePlaceholder.Constraints = {
 WebInspector.InspectedPagePlaceholder.MarginValue = 3;
 
 WebInspector.InspectedPagePlaceholder.prototype = {
-    /**
-     * @param {boolean} top
-     * @param {boolean} right
-     * @param {boolean} bottom
-     * @param {boolean} left
-     */
-    setMargins: function(top, right, bottom, left)
+    _findMargins: function()
     {
-        this._margins = { top: top, right: right, bottom: bottom, left: left };
+        var margins = { top: false, right: false, bottom: false, left: false };
+        var adjacent = { top: true, right: true, bottom: true, left: true};
+        var view = this;
+        while (view.parentView()) {
+            var parent = view.parentView();
+            // This view assumes it's always inside the main split view element, not a sidebar.
+            // Every parent which is not a split view, must be of the same size as this view.
+            if (parent instanceof WebInspector.SplitView) {
+                var side = parent.sidebarSide();
+                if (adjacent[side] && !parent.hasCustomResizer())
+                    margins[side] = true;
+                adjacent[side] = false;
+            }
+            view = parent;
+        }
+
+        if (this._margins.top !== margins.top || this._margins.left !== margins.left || this._margins.right !== margins.right || this._margins.bottom !== margins.bottom) {
+            this._margins = margins;
+            this._updateMarginValue();
+        }
     },
 
-    _updateMargins: function()
+    _updateMarginValue: function()
     {
         var marginValue = Math.round(WebInspector.InspectedPagePlaceholder.MarginValue / WebInspector.zoomManager.zoomFactor()) + "px ";
         var margins = this._margins.top ? marginValue : "0 ";
@@ -44,12 +57,13 @@ WebInspector.InspectedPagePlaceholder.prototype = {
 
     _onZoomChanged: function()
     {
-        this._updateMargins();
+        this._updateMarginValue();
         this._scheduleUpdate();
     },
 
     onResize: function()
     {
+        this._findMargins();
         this._scheduleUpdate();
     },
 

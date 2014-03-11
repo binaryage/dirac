@@ -66,8 +66,8 @@ var WebInspector = {
 
         this.inspectorView.show(this._rootSplitView.sidebarElement());
 
-        this._inspectedPagePlaceholder = new WebInspector.InspectedPagePlaceholder();
-        this._inspectedPagePlaceholder.show(this._rootSplitView.mainElement());
+        var inspectedPagePlaceholder = new WebInspector.InspectedPagePlaceholder();
+        inspectedPagePlaceholder.show(this._rootSplitView.mainElement());
 
         this.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._updateRootSplitViewOnDockSideChange, this);
         this._updateRootSplitViewOnDockSideChange();
@@ -89,7 +89,6 @@ var WebInspector = {
         this._rootSplitView.setSecondIsSidebar(dockSide === WebInspector.DockController.State.DockedToRight || dockSide === WebInspector.DockController.State.DockedToBottom);
         this._rootSplitView.toggleResizer(this._rootSplitView.resizerElement(), true);
         this._rootSplitView.toggleResizer(this.inspectorView.topResizerElement(), dockSide === WebInspector.DockController.State.DockedToBottom);
-        this._inspectedPagePlaceholder.setMargins(false, dockSide === WebInspector.DockController.State.DockedToRight, false, dockSide === WebInspector.DockController.State.DockedToLeft);
         this._rootSplitView.showBoth();
     },
 

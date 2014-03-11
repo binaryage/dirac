@@ -671,6 +671,14 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    hasCustomResizer: function()
+    {
+        return this._resizerElements.length > 1 || (this._resizerElements.length == 1 && this._resizerElements[0] !== this._resizerElement);
+    },
+
+    /**
      * @param {!Element} resizer
      * @param {boolean} on
      */
