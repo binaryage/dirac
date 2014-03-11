@@ -34,6 +34,7 @@
  */
 WebInspector.ConsoleModel = function()
 {
+    /** @type {!Array.<!WebInspector.ConsoleMessage>} */
     this.messages = [];
     this.warnings = 0;
     this.errors = 0;

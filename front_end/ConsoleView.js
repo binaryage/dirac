@@ -426,7 +426,7 @@ WebInspector.ConsoleView.prototype = {
             this.currentGroup.addMessage(viewMessage);
         }
 
-        if (this._searchRegex && message.matchesRegex(this._searchRegex)) {
+        if (this._searchRegex && viewMessage.matchesRegex(this._searchRegex)) {
             this._searchResultsIndices.push(index);
             this._searchableView.updateSearchMatchesCount(this._searchResultsIndices.length);
         }
@@ -449,11 +449,23 @@ WebInspector.ConsoleView.prototype = {
         return viewMessage;
     },
 
+    /**
+     * @param {number} index
+     * @return {?WebInspector.ConsoleViewMessage}
+     */
+    _viewMessageByIndex: function(index)
+    {
+        var message = WebInspector.console.messages[index];
+        if (!message)
+            return null;
+        return this._messageToViewMessage.get(message) || null;
+    },
+
     _consoleCleared: function()
     {
         this._scrolledToBottom = true;
         for (var i = 0; i < this._visibleMessagesIndices.length; ++i)
-          this._messageToViewMessage.get(WebInspector.console.messages[this._visibleMessagesIndices[i]]).willHide();
+            this._viewMessageByIndex(this._visibleMessagesIndices[i]).willHide();
         this._visibleMessagesIndices = [];
         this._searchResultsIndices = [];
         this._messageToViewMessage.clear();
@@ -553,7 +565,7 @@ WebInspector.ConsoleView.prototype = {
                 if (this._filter.shouldBeVisible(sourceViewMessage)) {
                     newVisibleMessages.push(this._visibleMessagesIndices[visibleMessageIndex]);
 
-                    if (this._searchRegex && sourceMessage.matchesRegex(this._searchRegex))
+                    if (this._searchRegex && sourceViewMessage.matchesRegex(this._searchRegex))
                         this._searchResultsIndices.push(i);
 
                     if (sourceMessage.type === WebInspector.ConsoleMessage.MessageType.EndGroup) {
@@ -572,7 +584,7 @@ WebInspector.ConsoleView.prototype = {
             } else {
                 if (this._filter.shouldBeVisible(sourceViewMessage)) {
 
-                    if (this._searchRegex && sourceMessage.matchesRegex(this._searchRegex))
+                    if (this._searchRegex && sourceViewMessage.matchesRegex(this._searchRegex))
                         this._searchResultsIndices.push(i);
 
                     group.addMessage(sourceViewMessage, anchor ? anchor.nextSibling : group.messagesElement.firstChild);
@@ -788,7 +800,7 @@ WebInspector.ConsoleView.prototype = {
 
         this._searchResultsIndices = [];
         for (var i = 0; i < this._visibleMessagesIndices.length; i++) {
-            if (WebInspector.console.messages[this._visibleMessagesIndices[i]].matchesRegex(this._searchRegex))
+            if (this._viewMessageByIndex(this._visibleMessagesIndices[i]).matchesRegex(this._searchRegex))
                 this._searchResultsIndices.push(this._visibleMessagesIndices[i]);
         }
         this._searchableView.updateSearchMatchesCount(this._searchResultsIndices.length);
@@ -818,9 +830,9 @@ WebInspector.ConsoleView.prototype = {
     {
         if (!this._searchResultsIndices)
             return;
-        var highlightedMessage = WebInspector.console.messages[this._searchResultsIndices[this._currentSearchResultIndex]];
-        if (highlightedMessage)
-            highlightedMessage.clearHighlight();
+        var highlightedViewMessage = this._viewMessageByIndex(this._searchResultsIndices[this._currentSearchResultIndex]);
+        if (highlightedViewMessage)
+            highlightedViewMessage.clearHighlight();
         this._currentSearchResultIndex = -1;
     },
 
@@ -829,7 +841,7 @@ WebInspector.ConsoleView.prototype = {
         this._clearCurrentSearchResultHighlight();
         this._currentSearchResultIndex = index;
         this._searchableView.updateCurrentMatchIndex(this._currentSearchResultIndex);
-        WebInspector.console.messages[this._searchResultsIndices[index]].highlightSearchResults(this._searchRegex);
+        this._viewMessageByIndex(this._searchResultsIndices[index]).highlightSearchResults(this._searchRegex);
     },
 
     __proto__: WebInspector.View.prototype
