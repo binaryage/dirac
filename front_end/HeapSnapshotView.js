@@ -1080,12 +1080,15 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
         return WebInspector.UIString("Record JavaScript object allocations over time. Use this profile type to isolate memory leaks.");
     },
 
-    _reset: function()
+    /**
+     * @override
+     */
+    resetProfiles: function()
     {
         var wasRecording = this._recording;
         // Clear current profile to avoid stopping backend.
         this._profileBeingRecorded = null;
-        WebInspector.HeapSnapshotProfileType.prototype._reset.call(this);
+        WebInspector.HeapSnapshotProfileType.prototype.resetProfiles.call(this);
         this._profileSamples = null;
         this._lastSeenIndex = -1;
         if (wasRecording)
