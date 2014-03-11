@@ -327,11 +327,22 @@ WebInspector.DebuggerModel.prototype = {
 
     /**
      * @param {!DebuggerAgent.BreakpointId} breakpointId
-     * @param {function(?Protocol.Error)=} callback
+     * @param {function()=} callback
      */
     removeBreakpoint: function(breakpointId, callback)
     {
-        DebuggerAgent.removeBreakpoint(breakpointId, callback);
+        DebuggerAgent.removeBreakpoint(breakpointId, innerCallback);
+
+        /**
+         * @param {?Protocol.Error} error
+         */
+        function innerCallback(error)
+        {
+            if (error)
+                console.error("Failed to remove breakpoint: " + error);
+            if (callback)
+                callback();
+        }
     },
 
     /**
