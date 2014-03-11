@@ -110,7 +110,7 @@ WebInspector.TimelineGrid.prototype = {
             gridSliceTime = gridSliceTime / 2;
         this._gridSliceTime = gridSliceTime;
 
-        var firstDividerTime = Math.ceil((calculator.minimumBoundary()) / gridSliceTime) * gridSliceTime;
+        var firstDividerTime = Math.ceil((calculator.minimumBoundary() - calculator.zeroTime()) / gridSliceTime) * gridSliceTime + calculator.zeroTime();
         var lastDividerTime = calculator.maximumBoundary();
         // Add some extra space past the right boundary as the rightmost divider label text
         // may be partially shown rather than just pop up when a new rightmost divider gets into the view.
