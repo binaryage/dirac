@@ -38,16 +38,14 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
 {
     WebInspector.DialogDelegate.call(this);
 
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", "filteredItemSelectionDialog.css", false);
-    xhr.send(null);
+    if (!WebInspector.FilteredItemSelectionDialog._stylesLoaded) {
+        WebInspector.View.createStyleElement("filteredItemSelectionDialog.css");
+        WebInspector.FilteredItemSelectionDialog._stylesLoaded = true;
+    }
 
     this.element = document.createElement("div");
     this.element.className = "filtered-item-list-dialog";
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
-    var styleElement = this.element.createChild("style");
-    styleElement.type = "text/css";
-    styleElement.textContent = xhr.responseText;
 
     this._promptElement = this.element.createChild("input", "monospace");
     this._promptElement.addEventListener("input", this._onInput.bind(this), false);
@@ -147,8 +145,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     {
         var itemElement = document.createElement("div");
         itemElement.className = "filtered-item-list-dialog-item " + (this._renderAsTwoRows ? "two-rows" : "one-row");
-        itemElement._titleElement = itemElement.createChild("span");
-        itemElement._titleSuffixElement = itemElement.createChild("span");
+        itemElement._titleElement = itemElement.createChild("div", "filtered-item-list-dialog-title");
         itemElement._subtitleElement = itemElement.createChild("div", "filtered-item-list-dialog-subtitle");
         itemElement._subtitleElement.textContent = "\u200B";
         itemElement._index = index;

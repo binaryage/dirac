@@ -46,6 +46,25 @@ WebInspector.View._cssFileToVisibleViewCount = {};
 WebInspector.View._cssFileToStyleElement = {};
 WebInspector.View._cssUnloadTimeout = 2000;
 
+WebInspector.View._buildSourceURL = function(cssFile)
+{
+    return "\n/*# sourceURL=" + WebInspector.ParsedURL.completeURL(window.location.href, cssFile) + " */";
+}
+
+WebInspector.View.createStyleElement = function(cssFile)
+{
+    var styleElement;
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", cssFile, false);
+    xhr.send(null);
+
+    styleElement = document.createElement("style");
+    styleElement.type = "text/css";
+    styleElement.textContent = xhr.responseText + WebInspector.View._buildSourceURL(cssFile);
+    document.head.insertBefore(styleElement, document.head.firstChild);
+    return styleElement;
+}
+
 WebInspector.View.prototype = {
     markAsRoot: function()
     {
@@ -389,29 +408,8 @@ WebInspector.View.prototype = {
             styleElement.disabled = false;
             return;
         }
-
-        if (window.debugCSS) { /* debugging support */
-            styleElement = document.createElement("link");
-            styleElement.rel = "stylesheet";
-            styleElement.type = "text/css";
-            styleElement.href = cssFile;
-        } else {
-            var xhr = new XMLHttpRequest();
-            xhr.open("GET", cssFile, false);
-            xhr.send(null);
-
-            styleElement = document.createElement("style");
-            styleElement.type = "text/css";
-            styleElement.textContent = xhr.responseText + this._buildSourceURL(cssFile);
-        }
-        document.head.insertBefore(styleElement, document.head.firstChild);
-
+        styleElement = WebInspector.View.createStyleElement(cssFile);
         WebInspector.View._cssFileToStyleElement[cssFile] = styleElement;
-    },
-
-    _buildSourceURL: function(cssFile)
-    {
-        return "\n/*# sourceURL=" + WebInspector.ParsedURL.completeURL(window.location.href, cssFile) + " */";
     },
 
     _disableCSSIfNeeded: function()
