@@ -374,6 +374,7 @@ WebInspector.TimelineView.prototype = {
     {
         this._windowStartTime = startTime;
         this._windowEndTime = endTime;
+        this._presentationModel.setWindowTimes(startTime, endTime);
         this._automaticallySizeWindow = false;
         this._invalidateAndScheduleRefresh(false, true);
         this._selectRecord(null);

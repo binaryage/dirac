@@ -985,6 +985,8 @@ WebInspector.FlameChart.MainPane.prototype = {
         var timelineData = this._timelineData();
         var barX = this._offsetToPosition(timeRange.startTimeOffset);
         var barRight = this._offsetToPosition(timeRange.endTimeOffset);
+        if (barRight === 0 || barX === this._canvas.width)
+            return;
         var barWidth = Math.max(barRight - barX, this._minWidth);
         var barY = this._levelToHeight(timelineData.entryLevels[entryIndex]);
         var style = element.style;
