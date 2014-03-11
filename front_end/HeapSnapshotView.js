@@ -1816,6 +1816,7 @@ WebInspector.HeapSnapshotStatisticsView = function()
 {
     WebInspector.View.call(this);
     this._pieChart = new WebInspector.PieChart();
+    this._pieChart.setSize(150);
     this.element.appendChild(this._pieChart.element);
     this._labels = this.element.createChild("div", "heap-snapshot-stats-legend");
 }

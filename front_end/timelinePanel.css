@@ -791,6 +791,7 @@
 
 .timeline-aggregated-info .pie-chart {
     margin-left: 20px;
+    margin-bottom: 10px;
 }
 
 .timeline-flamechart-view #timeline-overview-grid {

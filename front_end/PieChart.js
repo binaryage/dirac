@@ -35,15 +35,27 @@
  */
 WebInspector.PieChart = function(totalValue, formatter)
 {
-    this.element = document.createElement("div");
-    this.element.className = "pie-chart";
-    this.element.createChild("div", "pie-chart-background");
+    const shadowOffset = 0.04;
+    this.element = document.createElementWithClass("div", "pie-chart");
+    var svg = this._createSVGChild(this.element, "svg");
+    svg.setAttribute("width", "100%");
+    svg.setAttribute("height", (100 * (1 + shadowOffset)) + "%");
+    this._group = this._createSVGChild(svg, "g");
+    var shadow = this._createSVGChild(this._group, "circle");
+    shadow.setAttribute("r", 1);
+    shadow.setAttribute("cy", shadowOffset);
+    shadow.setAttribute("fill", "hsl(0,0%,70%)");
+    var background = this._createSVGChild(this._group, "circle");
+    background.setAttribute("r", 1);
+    background.setAttribute("fill", "hsl(0,0%,92%)");
     if (totalValue) {
         var totalString = formatter ? formatter(totalValue) : totalValue;
-        this.element.createChild("div", "pie-chart-foreground").textContent = totalString;
+        this._totalElement = this.element.createChild("div", "pie-chart-foreground");
+        this._totalElement.textContent = totalString;
         this._totalValue = totalValue;
     }
-    this._lastAngle = 0;
+    this._lastAngle = -Math.PI/2;
+    this.setSize(100);
 }
 
 WebInspector.PieChart.prototype = {
@@ -57,31 +69,47 @@ WebInspector.PieChart.prototype = {
 
     /**
      * @param {number} value
+     */
+    setSize: function(value)
+    {
+        this._group.setAttribute("transform", "scale(" + (value / 2) + ") translate(1,1)");
+        var size = value + "px";
+        this.element.style.width = size;
+        this.element.style.height = size;
+        if (this._totalElement)
+            this._totalElement.style.lineHeight = size;
+    },
+
+    /**
+     * @param {number} value
      * @param {string} color
      */
     addSlice: function(value, color)
     {
-        var sliceAngle = value / this._totalValue * 360;
-        if (sliceAngle > 180) {
-            this._innerAddSlice(180, color);
-            sliceAngle -= 180;
-        }
-        this._innerAddSlice(sliceAngle, color);
+        var sliceAngle = value / this._totalValue * 2 * Math.PI;
+        if (!isFinite(sliceAngle))
+            return;
+        sliceAngle = Math.min(sliceAngle, 2 * Math.PI * 0.9999);
+        var path = this._createSVGChild(this._group, "path");
+        var x1 = Math.cos(this._lastAngle);
+        var y1 = Math.sin(this._lastAngle);
+        this._lastAngle += sliceAngle;
+        var x2 = Math.cos(this._lastAngle);
+        var y2 = Math.sin(this._lastAngle);
+        var largeArc = sliceAngle > Math.PI ? 1 : 0;
+        path.setAttribute("d", "M0,0 L" + x1 + "," + y1 + " A1,1,0," + largeArc + ",1," + x2 + "," + y2 + " Z");
+        path.setAttribute("fill", color);
     },
 
     /**
-     * @param {number} sliceAngle
-     * @param {string} color
+     * @param {!Element} parent
+     * @param {string} childType
+     * @return {!Element}
      */
-    _innerAddSlice: function(sliceAngle, color)
+    _createSVGChild: function(parent, childType)
     {
-        var sliceElement = this.element.createChild("div", "pie-chart-slice");
-        sliceElement.style.webkitTransform = "rotate(" + Number(this._lastAngle).toFixed(2) + "deg)"
-        var innerSliceElement = sliceElement.createChild("div", "pie-chart-slice-inner");
-        innerSliceElement.style.backgroundColor = color;
-        innerSliceElement.style.webkitTransform = "rotate(" + Number(sliceAngle).toFixed(2) + "deg)";
-        this._lastAngle += sliceAngle;
-        if (this._lastAngle > 360)
-            console.assert("Pie chard slices are greater than total.");
+        var child = document.createElementNS("http://www.w3.org/2000/svg", childType);
+        parent.appendChild(child);
+        return child;
     }
 }
