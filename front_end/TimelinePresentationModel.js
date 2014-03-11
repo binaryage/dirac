@@ -54,16 +54,6 @@ WebInspector.TimelinePresentationModel._coalescingRecords[WebInspector.TimelineM
 
 WebInspector.TimelinePresentationModel.prototype = {
     /**
-     * @param {number} startTime
-     * @param {number} endTime
-     */
-    setWindowTimes: function(startTime, endTime)
-    {
-        this._windowStartTime = startTime;
-        this._windowEndTime = endTime;
-    },
-
-    /**
      * @param {?WebInspector.TimelineModel.Record} record
      * @return {?WebInspector.TimelinePresentationModel.Record}
      */
@@ -88,8 +78,6 @@ WebInspector.TimelinePresentationModel.prototype = {
         this._rootRecord = new WebInspector.TimelinePresentationModel.Record(rootRecord, null);
         /** @type {!Object.<string, !WebInspector.TimelinePresentationModel.Record>} */
         this._coalescingBuckets = {};
-        this._windowStartTime = 0;
-        this._windowEndTime = Infinity;
     },
 
     /**
@@ -264,17 +252,15 @@ WebInspector.TimelinePresentationModel.prototype = {
             if (records && entry.index < records.length) {
                 var record = records[entry.index];
                 ++entry.index;
-                var rawRecord = record.record();
-                if (rawRecord.startTime < this._windowEndTime && rawRecord.endTime > this._windowStartTime) {
-                    if (this._model.isVisible(rawRecord)) {
-                        record._presentationParent._expandable = true;
-                        if (this._textFilter)
-                            revealRecordsInStack();
-                        if (!entry.parentIsCollapsed) {
-                            recordsInWindow.push(record);
-                            revealedDepth = stack.length;
-                            entry.parentRecord._collapsed = false;
-                        }
+
+                if (this._model.isVisible(record.record())) {
+                    record._presentationParent._expandable = true;
+                    if (this._textFilter)
+                        revealRecordsInStack();
+                    if (!entry.parentIsCollapsed) {
+                        recordsInWindow.push(record);
+                        revealedDepth = stack.length;
+                        entry.parentRecord._collapsed = false;
                     }
                 }
 

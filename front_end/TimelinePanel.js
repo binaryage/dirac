@@ -68,11 +68,13 @@ WebInspector.TimelinePanel = function()
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordFilterChanged, this._refreshViews, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
 
+    this._windowFilter = new WebInspector.TimelineWindowFilter();
     this._categoryFilter = new WebInspector.TimelineCategoryFilter();
     this._durationFilter = new WebInspector.TimelineIsLongFilter();
     this._textFilter = new WebInspector.TimelineTextFilter();
 
     this._model.addFilter(new WebInspector.TimelineHiddenFilter());
+    this._model.addFilter(this._windowFilter);
     this._model.addFilter(this._categoryFilter);
     this._model.addFilter(this._durationFilter);
     this._model.addFilter(this._textFilter);
@@ -203,6 +205,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._windowStartTime = event.data.startTime;
         this._windowEndTime = event.data.endTime;
+        this._windowFilter.setWindowTimes(this._windowStartTime, this._windowEndTime);
 
         for (var i = 0; i < this._currentViews.length; ++i)
             this._currentViews[i].setWindowTimes(this._windowStartTime, this._windowEndTime);
@@ -585,6 +588,7 @@ WebInspector.TimelinePanel.prototype = {
     _onRecordsCleared: function()
     {
         this.requestWindowTimes(0, Infinity);
+        this._windowFilter._reset();
         delete this._selectedRecord;
         if (this._lazyFrameModel)
             this._lazyFrameModel.reset();
@@ -1072,6 +1076,42 @@ WebInspector.TimelineTextFilter.prototype = {
             return record.testContentMatching(this._regex);
         }
         return WebInspector.TimelineModel.forAllRecords([record], processRecord.bind(this));
+    },
+
+    __proto__: WebInspector.TimelineModel.Filter.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TimelineModel.Filter}
+ */
+WebInspector.TimelineWindowFilter = function()
+{
+    WebInspector.TimelineModel.Filter.call(this);
+    this._reset();
+}
+
+WebInspector.TimelineWindowFilter.prototype = {
+    _reset: function()
+    {
+        this._windowStartTime = 0;
+        this._windowEndTime = Infinity;
+    },
+
+    setWindowTimes: function(windowStartTime, windowEndTime)
+    {
+        this._windowStartTime = windowStartTime;
+        this._windowEndTime = windowEndTime;
+        this.notifyFilterChanged();
+    },
+
+    /**
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {boolean}
+     */
+    accept: function(record)
+    {
+        return record.lastChildEndTime >= this._windowStartTime && record.startTime <= this._windowEndTime;
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype
