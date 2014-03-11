@@ -49,13 +49,14 @@ WebInspector.HeapSnapshotSortableDataGrid = function(columns)
      */
     this._populatedAndSorted = false;
     this._nameFilter = "";
-    this.addEventListener("sorting complete", this._sortingComplete, this);
+    this.addEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.SortingComplete, this._sortingComplete, this);
     this.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this.sortingChanged, this);
 }
 
 WebInspector.HeapSnapshotSortableDataGrid.Events = {
     ContentShown: "ContentShown",
-    ResetFilter: "ResetFilter"
+    ResetFilter: "ResetFilter",
+    SortingComplete: "SortingComplete"
 }
 
 WebInspector.HeapSnapshotSortableDataGrid.prototype = {
@@ -85,7 +86,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
 
     _sortingComplete: function()
     {
-        this.removeEventListener("sorting complete", this._sortingComplete, this);
+        this.removeEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.SortingComplete, this._sortingComplete, this);
         this._populatedAndSorted = true;
         this.dispatchEventToListeners(WebInspector.HeapSnapshotSortableDataGrid.Events.ContentShown, this);
     },
@@ -259,7 +260,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
         if (--this._recursiveSortingDepth)
             return;
         this.updateVisibleNodes();
-        this.dispatchEventToListeners("sorting complete");
+        this.dispatchEventToListeners(WebInspector.HeapSnapshotSortableDataGrid.Events.SortingComplete);
     },
 
     updateVisibleNodes: function()
@@ -891,7 +892,7 @@ WebInspector.HeapSnapshotDiffDataGrid.prototype = {
         this.removeTopLevelNodes();
         this.resetSortingCache();
         if (this.baseSnapshot === this.snapshot) {
-            this.dispatchEventToListeners("sorting complete");
+            this.dispatchEventToListeners(WebInspector.HeapSnapshotSortableDataGrid.Events.SortingComplete);
             return;
         }
         this._populateChildren();
