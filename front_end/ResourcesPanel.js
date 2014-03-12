@@ -77,7 +77,7 @@ WebInspector.ResourcesPanel = function(database)
         this.sidebarTree.appendChild(this.fileSystemListTreeElement);
     }
 
-    var mainView = new WebInspector.View();
+    var mainView = new WebInspector.VBox();
     this.storageViews = mainView.element.createChild("div", "resources-main diff-container");
     var statusBarContainer = mainView.element.createChild("div", "resources-status-bar");
     this.storageViewStatusBarItemsContainer = statusBarContainer.createChild("div", "status-bar");
@@ -2068,11 +2068,11 @@ WebInspector.FileSystemTreeElement.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.StorageCategoryView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
 
     this.element.classList.add("storage-view");
     this._emptyView = new WebInspector.EmptyView("");
@@ -2085,5 +2085,5 @@ WebInspector.StorageCategoryView.prototype = {
         this._emptyView.text = text;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

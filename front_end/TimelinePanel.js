@@ -866,11 +866,11 @@ WebInspector.TimelinePanel.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.TimelineDetailsView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.classList.add("timeline-details-view");
     this._titleElement = this.element.createChild("div", "timeline-details-view-title");
     this._titleElement.textContent = WebInspector.UIString("DETAILS");
@@ -906,7 +906,7 @@ WebInspector.TimelineDetailsView.prototype = {
         this._contentElement.classList.toggle("vbox", vertical);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

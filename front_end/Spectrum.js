@@ -28,11 +28,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.Spectrum = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("spectrum.css");
 
     this.element.classList.add("spectrum-container");
@@ -313,7 +313,7 @@ WebInspector.Spectrum.prototype = {
         this._updateUI();
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

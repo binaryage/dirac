@@ -29,12 +29,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.SplitView} splitView
  */
 WebInspector.Drawer = function(splitView)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.id = "drawer-contents";
 
     this._splitView = splitView;
@@ -327,7 +327,7 @@ WebInspector.Drawer.prototype = {
         return this._drawerEditorShownSetting.get();
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

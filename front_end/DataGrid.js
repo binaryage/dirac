@@ -37,7 +37,7 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
     WebInspector.View.call(this);
     this.registerRequiredCSS("dataGrid.css");
 
-    this.element.className = "data-grid";
+    this.element.className = "data-grid"; // Override
     this.element.tabIndex = 0;
     this.element.addEventListener("keydown", this._keyDown.bind(this), false);
 

@@ -27,6 +27,7 @@
  */
 
 .split-view {
+    display: flex;
     overflow: hidden;
 }
 

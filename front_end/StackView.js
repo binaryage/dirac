@@ -28,12 +28,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {boolean} isVertical
  */
 WebInspector.StackView = function(isVertical)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this._isVertical = isVertical;
     this._currentSplitView = null;
 }
@@ -69,5 +69,5 @@ WebInspector.StackView.prototype = {
         this._currentSplitView = null;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

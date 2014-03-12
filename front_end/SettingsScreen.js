@@ -151,13 +151,13 @@ WebInspector.SettingsScreen.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {string} name
  * @param {string=} id
  */
 WebInspector.SettingsTab = function(name, id)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.classList.add("settings-tab-container");
     if (id)
         this.element.id = id;
@@ -259,7 +259,7 @@ WebInspector.SettingsTab.prototype = {
         return p;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

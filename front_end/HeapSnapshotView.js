@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.HeapProfileHeader} profile
  */
 WebInspector.HeapSnapshotView = function(profile)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
 
     this.element.classList.add("heap-snapshot-view");
 
@@ -53,7 +53,7 @@ WebInspector.HeapSnapshotView = function(profile)
     this.viewsContainer.setMainElementConstraints(50, 50);
     this.viewsContainer.setSidebarElementConstraints(70, 70);
 
-    this.containmentView = new WebInspector.View();
+    this.containmentView = new WebInspector.VBox();
     this.containmentDataGrid = new WebInspector.HeapSnapshotContainmentDataGrid();
     this.containmentDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
     this.containmentDataGrid.show(this.containmentView.element);
@@ -61,7 +61,7 @@ WebInspector.HeapSnapshotView = function(profile)
 
     this.statisticsView = new WebInspector.HeapSnapshotStatisticsView();
 
-    this.constructorsView = new WebInspector.View();
+    this.constructorsView = new WebInspector.VBox();
 
     this.constructorsDataGrid = new WebInspector.HeapSnapshotConstructorsDataGrid();
     this.constructorsDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
@@ -73,20 +73,20 @@ WebInspector.HeapSnapshotView = function(profile)
     this.currentView = this.constructorsView;
     this.currentView.show(this.viewsContainer.mainElement());
 
-    this.diffView = new WebInspector.View();
+    this.diffView = new WebInspector.VBox();
 
     this.diffDataGrid = new WebInspector.HeapSnapshotDiffDataGrid();
     this.diffDataGrid.show(this.diffView.element);
     this.diffDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
-    this.dominatorView = new WebInspector.View();
+    this.dominatorView = new WebInspector.VBox();
     this.dominatorDataGrid = new WebInspector.HeapSnapshotDominatorsDataGrid();
     this.dominatorDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
     this.dominatorDataGrid.show(this.dominatorView.element);
     this.dominatorDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
     if (WebInspector.experimentsSettings.allocationProfiler.isEnabled() && profile.profileType() === WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType) {
-        this.allocationView = new WebInspector.View();
+        this.allocationView = new WebInspector.VBox();
         this.allocationDataGrid = new WebInspector.AllocationDataGrid();
         this.allocationDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
         this.allocationDataGrid.show(this.allocationView.element);
@@ -100,7 +100,7 @@ WebInspector.HeapSnapshotView = function(profile)
     this.viewsContainer.hideDefaultResizer();
     this.viewsContainer.installResizer(this.retainmentViewHeader);
 
-    this.retainmentView = new WebInspector.View();
+    this.retainmentView = new WebInspector.VBox();
     this.retainmentView.element.classList.add("retaining-paths-view");
     this.retainmentView.element.appendChild(this.retainmentViewHeader);
     this.retainmentDataGrid = new WebInspector.HeapSnapshotRetainmentDataGrid();
@@ -684,7 +684,7 @@ WebInspector.HeapSnapshotView.prototype = {
         }
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**
@@ -1445,12 +1445,12 @@ WebInspector.SaveSnapshotOutputStreamDelegate.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.HeapProfileHeader} heapProfileHeader
  */
 WebInspector.HeapTrackingOverviewGrid = function(heapProfileHeader)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("flameChart.css");
     this.element.id = "heap-recording-view";
     this.element.classList.add("heap-tracking-overview");
@@ -1693,7 +1693,7 @@ WebInspector.HeapTrackingOverviewGrid.prototype = {
         this.dispatchEventToListeners(WebInspector.HeapTrackingOverviewGrid.IdsRangeChanged, {minId: minId, maxId: maxId, size: size});
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 
@@ -1810,11 +1810,11 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.HeapSnapshotStatisticsView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this._pieChart = new WebInspector.PieChart();
     this._pieChart.setSize(150);
     this.element.appendChild(this._pieChart.element);
@@ -1852,5 +1852,5 @@ WebInspector.HeapSnapshotStatisticsView.prototype = {
         sizeDiv.textContent = WebInspector.UIString("%s KB", Number.withThousandsSeparator(Math.round(value / 1024)));
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

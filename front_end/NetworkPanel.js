@@ -43,13 +43,13 @@ importScript("ResourceWebSocketFrameView.js");
 /**
  * @constructor
  * @implements {WebInspector.Searchable}
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.FilterBar} filterBar
  * @param {!WebInspector.Setting} coulmnsVisibilitySetting
  */
 WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("networkLogView.css");
     this.registerRequiredCSS("filter.css");
     this.registerRequiredCSS("textPrompt.css");
@@ -1549,7 +1549,7 @@ WebInspector.NetworkLogView.prototype = {
         return command.join(" ");
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /** @typedef {function(!WebInspector.NetworkRequest): boolean} */
@@ -1703,7 +1703,7 @@ WebInspector.NetworkPanel = function()
     this._networkLogView = new WebInspector.NetworkLogView(this._filterBar, networkLogColumnsVisibilitySetting);
     this._networkLogView.show(this._splitView.sidebarElement());
 
-    var viewsContainerView = new WebInspector.View();
+    var viewsContainerView = new WebInspector.VBox();
     this._viewsContainerElement = viewsContainerView.element;
     this._viewsContainerElement.id = "network-views";
     if (!this._networkLogView.useLargeRows)

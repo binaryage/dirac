@@ -31,16 +31,15 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.HBox}
  * @implements {WebInspector.TimelineModeView}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.TimelineView = function(delegate, model)
 {
-    WebInspector.View.call(this);
+    WebInspector.HBox.call(this);
     this.element.classList.add("timeline-view");
-    this.element.classList.add("hbox");
 
     this._delegate = delegate;
     this._model = model;
@@ -90,7 +89,7 @@ WebInspector.TimelineView.prototype = {
         this._sidebarListElement = recordsView.sidebarElement().createChild("div", "timeline-records-list");
 
         // Create grid in the records main area.
-        this._gridContainer = new WebInspector.ViewWithResizeCallback(this._onViewportResize.bind(this));
+        this._gridContainer = new WebInspector.VBoxWithResizeCallback(this._onViewportResize.bind(this));
         this._gridContainer.element.id = "resources-container-content";
         this._gridContainer.show(recordsView.mainElement());
         this._timelineGrid = new WebInspector.TimelineGrid();
@@ -840,7 +839,7 @@ WebInspector.TimelineView.prototype = {
         }
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.HBox.prototype
 }
 
 /**

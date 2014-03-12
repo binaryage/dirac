@@ -385,7 +385,7 @@ WebInspector.ProfilesPanel = function()
 
     this._searchableView = new WebInspector.SearchableView(this);
 
-    var mainView = new WebInspector.View();
+    var mainView = new WebInspector.VBox();
     this._searchableView.show(mainView.element);
     mainView.show(this.mainElement());
 

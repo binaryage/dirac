@@ -543,21 +543,49 @@ WebInspector.View._assert = function(condition, message)
 /**
  * @constructor
  * @extends {WebInspector.View}
- * @param {function()} resizeCallback
  */
-WebInspector.ViewWithResizeCallback = function(resizeCallback)
+WebInspector.VBox = function()
 {
     WebInspector.View.call(this);
+    this.element.classList.add("vbox");
+};
+
+WebInspector.VBox.prototype = {
+    __proto__: WebInspector.View.prototype
+};
+
+/**
+ * @constructor
+ * @extends {WebInspector.View}
+ */
+WebInspector.HBox = function()
+{
+    WebInspector.View.call(this);
+    this.element.classList.add("hbox");
+};
+
+WebInspector.HBox.prototype = {
+    __proto__: WebInspector.View.prototype
+};
+
+/**
+ * @constructor
+ * @extends {WebInspector.VBox}
+ * @param {function()} resizeCallback
+ */
+WebInspector.VBoxWithResizeCallback = function(resizeCallback)
+{
+    WebInspector.VBox.call(this);
     this._resizeCallback = resizeCallback;
 }
 
-WebInspector.ViewWithResizeCallback.prototype = {
+WebInspector.VBoxWithResizeCallback.prototype = {
     onResize: function()
     {
         this._resizeCallback();
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 Element.prototype.appendChild = function(child)

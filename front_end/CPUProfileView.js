@@ -25,12 +25,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.CPUProfileHeader} profileHeader
  */
 WebInspector.CPUProfileView = function(profileHeader)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
 
     this.element.classList.add("cpu-profile-view");
 
@@ -616,7 +616,7 @@ WebInspector.CPUProfileView.prototype = {
         }
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

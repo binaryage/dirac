@@ -33,7 +33,7 @@
 WebInspector.SidebarPane = function(title)
 {
     WebInspector.View.call(this);
-    this.element.className = "sidebar-pane";
+    this.element.className = "sidebar-pane"; // Override
 
     this.titleElement = document.createElement("div");
     this.titleElement.className = "sidebar-pane-toolbar";
@@ -160,7 +160,7 @@ WebInspector.SidebarPaneTitle.prototype = {
 WebInspector.SidebarPaneStack = function()
 {
     WebInspector.View.call(this);
-    this.element.className = "sidebar-pane-stack";
+    this.element.className = "sidebar-pane-stack"; // Override
     this.registerRequiredCSS("sidebarPane.css");
 }
 

@@ -30,14 +30,14 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {boolean} expandable
  * @param {function()=} refreshCallback
  * @param {function()=} selectedCallback
  */
 WebInspector.CookiesTable = function(expandable, refreshCallback, selectedCallback)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
 
     var readOnly = expandable;
     this._refreshCallback = refreshCallback;
@@ -282,5 +282,5 @@ WebInspector.CookiesTable.prototype = {
             this._refreshCallback();
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

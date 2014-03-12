@@ -138,16 +138,16 @@ WebInspector.CodeMirrorUtils.TokenizerFactory.prototype = {
  * This bogus view is needed to load/unload CodeMirror-related CSS on demand.
  *
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.CodeMirrorCSSLoadView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.classList.add("hidden");
     this.registerRequiredCSS("cm/codemirror.css");
     this.registerRequiredCSS("cm/cmdevtools.css");
 }
 
 WebInspector.CodeMirrorCSSLoadView.prototype = {
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

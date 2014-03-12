@@ -27,12 +27,12 @@
  */
 
 /**
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @constructor
  */
 WebInspector.NavigatorView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("navigatorView.css");
 
     var scriptsTreeElement = document.createElement("ol");
@@ -384,7 +384,7 @@ WebInspector.NavigatorView.prototype = {
         contextMenu.show();
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

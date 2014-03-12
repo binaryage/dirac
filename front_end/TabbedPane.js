@@ -29,13 +29,13 @@
  */
 
 /**
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @constructor
  */
 WebInspector.TabbedPane = function()
 {
-    WebInspector.View.call(this);
-    this.element.classList.add("tabbed-pane", "vbox");
+    WebInspector.VBox.call(this);
+    this.element.classList.add("tabbed-pane");
     this._headerElement = this.element.createChild("div", "tabbed-pane-header");
     this._headerContentsElement = this._headerElement.createChild("div", "tabbed-pane-header-contents");
     this._tabsElement = this._headerContentsElement.createChild("div", "tabbed-pane-header-tabs");
@@ -696,7 +696,7 @@ WebInspector.TabbedPane.prototype = {
         this._tabs.splice(index, 0, tab);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 

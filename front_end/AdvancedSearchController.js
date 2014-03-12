@@ -229,12 +229,12 @@ WebInspector.AdvancedSearchController.ViewFactory.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.AdvancedSearchController} controller
  */
 WebInspector.SearchView = function(controller)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
 
     this._controller = controller;
 
@@ -429,7 +429,7 @@ WebInspector.SearchView.prototype = {
         this._controller.startSearch(searchConfig);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 

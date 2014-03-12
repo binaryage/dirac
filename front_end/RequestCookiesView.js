@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.NetworkRequest} request
  */
 WebInspector.RequestCookiesView = function(request)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.classList.add("resource-cookies-view");
 
     this._request = request;
@@ -90,5 +90,5 @@ WebInspector.RequestCookiesView.prototype = {
         this._buildCookiesTable();
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

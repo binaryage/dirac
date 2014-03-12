@@ -18,11 +18,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.ResourceWebSocketFrameView = function(resource)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.classList.add("resource-websocket");
     this.resource = resource;
     this.element.removeChildren();
@@ -130,5 +130,5 @@ WebInspector.ResourceWebSocketFrameView.prototype = {
         InspectorFrontendHost.copyText(row.data);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

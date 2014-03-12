@@ -30,11 +30,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.RevisionHistoryView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("revisionHistory.css");
     this.element.classList.add("revision-history-drawer");
     this.element.classList.add("outline-disclosure");
@@ -173,7 +173,7 @@ WebInspector.RevisionHistoryView.prototype = {
         project.uiSourceCodes().forEach(this._removeUISourceCode.bind(this));
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

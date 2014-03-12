@@ -30,11 +30,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.EmptyView = function(text)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this._text = text;
 }
 
@@ -52,6 +52,6 @@ WebInspector.EmptyView.prototype = {
             this.element.textContent = this._text;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 

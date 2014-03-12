@@ -355,7 +355,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @implements {WebInspector.TimelineModeView}
  * @implements {WebInspector.FlameChartDelegate}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
@@ -364,7 +364,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
  */
 WebInspector.TimelineFlameChart = function(delegate, model, frameModel)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.classList.add("timeline-flamechart");
     this.registerRequiredCSS("flameChart.css");
     this._delegate = delegate;
@@ -487,5 +487,5 @@ WebInspector.TimelineFlameChart.prototype = {
         this._delegate.selectRecord(record);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

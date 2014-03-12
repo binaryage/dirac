@@ -98,11 +98,11 @@ WebInspector.ConsolePanel.ViewFactory.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.ConsolePanel.WrapperView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.classList.add("console-view-wrapper");
 
     this._view = WebInspector.ConsolePanel._view();
@@ -135,7 +135,7 @@ WebInspector.ConsolePanel.WrapperView.prototype = {
         this._view.show(this.element);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

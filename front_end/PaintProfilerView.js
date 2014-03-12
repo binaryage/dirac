@@ -32,11 +32,11 @@
  * @constructor
  * @param {!WebInspector.LayerTreeModel} model
  * @param {!WebInspector.Layers3DView} layers3DView
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.PaintProfilerView = function(model, layers3DView)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.classList.add("paint-profiler-view");
 
     this._model = model;
@@ -175,5 +175,5 @@ WebInspector.PaintProfilerView.prototype = {
         }
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 };

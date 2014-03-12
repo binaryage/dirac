@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.NetworkRequest} request
  */
 WebInspector.RequestView = function(request)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("resourceView.css");
 
     this.element.classList.add("resource-view");
@@ -51,7 +51,7 @@ WebInspector.RequestView.prototype = {
         return false;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

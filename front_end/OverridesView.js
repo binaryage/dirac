@@ -30,11 +30,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.OverridesView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("overrides.css");
     this.registerRequiredCSS("helpScreen.css");
     this.element.classList.add("overrides-view");
@@ -74,19 +74,19 @@ WebInspector.OverridesView.prototype = {
         this._warningFooter.textContent = message;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {string} id
  * @param {string} name
  * @param {!Array.<!WebInspector.Setting>} settings
  */
 WebInspector.OverridesView.Tab = function(id, name, settings)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this._id = id;
     this._name = name;
     this._settings = settings;
@@ -194,7 +194,7 @@ WebInspector.OverridesView.Tab.prototype = {
         return checkbox;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

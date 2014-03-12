@@ -31,12 +31,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.Searchable} searchable
  */
 WebInspector.SearchableView = function(searchable)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
 
     this._searchProvider = searchable;
     this.element.addEventListener("keydown", this._onKeyDown.bind(this), false);
@@ -499,7 +499,7 @@ WebInspector.SearchableView.prototype = {
         this._performSearch(false, true);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

@@ -46,7 +46,7 @@ WebInspector.MemoryStatistics = function(delegate, model)
 
     this._graphsContainer = this.mainElement();
     this._createCurrentValuesBar();
-    this._canvasView = new WebInspector.ViewWithResizeCallback(this._resize.bind(this));
+    this._canvasView = new WebInspector.VBoxWithResizeCallback(this._resize.bind(this));
     this._canvasView.show(this._graphsContainer);
     this._canvasContainer = this._canvasView.element;
     this._canvasContainer.id = "memory-graphs-canvas-container";

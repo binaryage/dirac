@@ -25,11 +25,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.ApplicationCacheItemsView = function(model, frameId)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     
     this._model = model;
 
@@ -264,6 +264,6 @@ WebInspector.ApplicationCacheItemsView.prototype = {
         // this._update();
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 

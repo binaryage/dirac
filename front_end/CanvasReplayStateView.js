@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.CanvasTraceLogPlayerProxy} traceLogPlayer
  */
 WebInspector.CanvasReplayStateView = function(traceLogPlayer)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("canvasProfiler.css");
     this.element.classList.add("canvas-replay-state-view");
     this._traceLogPlayer = traceLogPlayer;
@@ -525,5 +525,5 @@ WebInspector.CanvasReplayStateView.prototype = {
         return node;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

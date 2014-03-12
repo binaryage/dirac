@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.TimelineOverviewPane = function(model)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.id = "timeline-overview-pane";
 
     this._eventDividers = [];
@@ -190,7 +190,7 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._refreshTimeout = setTimeout(this._update.bind(this), 300);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**
@@ -299,12 +299,12 @@ WebInspector.TimelineOverviewCalculator.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.TimelineOverviewBase = function(model)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
 
     this._model = model;
     this._canvas = this.element.createChild("canvas", "fill");
@@ -352,5 +352,5 @@ WebInspector.TimelineOverviewBase.prototype = {
         this._canvas.height = this.element.clientHeight * window.devicePixelRatio;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

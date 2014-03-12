@@ -1597,7 +1597,7 @@ WebInspector.SourcesPanel.prototype = {
         }
 
         // Create vertical box with stack.
-        var vbox = new WebInspector.View();
+        var vbox = new WebInspector.VBox();
         vbox.element.appendChild(this._debugToolbarDrawer);
         vbox.element.appendChild(this.debugToolbar);
         vbox.element.appendChild(this.threadsToolbar.element);
@@ -1692,11 +1692,11 @@ WebInspector.SourcesPanel.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.SourcesView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("sourcesView.css");
     this.element.id = "sources-panel-sources-view";
     this.element.addEventListener("dragenter", this._onDragEnter.bind(this), true);
@@ -1750,7 +1750,7 @@ WebInspector.SourcesView.prototype = {
         delete this._dragMaskElement;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**
@@ -1800,16 +1800,16 @@ WebInspector.SourcesPanel.DrawerEditor.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.SourcesPanel.DrawerEditorView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.id = "drawer-editor-view";
 }
 
 WebInspector.SourcesPanel.DrawerEditorView.prototype = {
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 

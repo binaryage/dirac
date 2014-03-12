@@ -30,11 +30,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.RenderingOptionsView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("helpScreen.css");
     this.element.classList.add("help-indent-labels");
 
@@ -49,5 +49,5 @@ WebInspector.RenderingOptionsView = function()
 }
 
 WebInspector.RenderingOptionsView.prototype = {
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

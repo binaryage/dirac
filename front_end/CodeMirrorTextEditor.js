@@ -50,14 +50,14 @@ importScript("CodeMirrorUtils.js");
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @implements {WebInspector.TextEditor}
  * @param {?string} url
  * @param {!WebInspector.TextEditorDelegate} delegate
  */
 WebInspector.CodeMirrorTextEditor = function(url, delegate)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this._delegate = delegate;
     this._url = url;
 
@@ -1214,7 +1214,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         return new WebInspector.CodeMirrorPositionHandle(this._codeMirror, new CodeMirror.Pos(lineNumber, columnNumber));
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

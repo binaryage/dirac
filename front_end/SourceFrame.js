@@ -29,14 +29,14 @@
  */
 
 /**
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @constructor
  * @implements {WebInspector.Replaceable}
  * @param {!WebInspector.ContentProvider} contentProvider
  */
 WebInspector.SourceFrame = function(contentProvider)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.classList.add("script-view");
 
     this._url = contentProvider.contentURL();
@@ -813,7 +813,7 @@ WebInspector.SourceFrame.prototype = {
             e.consume(true);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 

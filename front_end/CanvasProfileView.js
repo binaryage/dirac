@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.CanvasProfileHeader} profile
  */
 WebInspector.CanvasProfileView = function(profile)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("canvasProfiler.css");
     this.element.classList.add("canvas-profile-view");
     this._profile = profile;
@@ -598,7 +598,7 @@ WebInspector.CanvasProfileView.prototype = {
         rootNode.removeChild(frameNode);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

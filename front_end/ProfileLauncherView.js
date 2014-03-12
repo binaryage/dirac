@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.ProfilesPanel} profilesPanel
  */
 WebInspector.ProfileLauncherView = function(profilesPanel)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
 
     this._panel = profilesPanel;
 
@@ -120,7 +120,7 @@ WebInspector.ProfileLauncherView.prototype = {
         this._updateControls();
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 

@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @implements {WebInspector.DOMNodeHighlighter}
  */
 WebInspector.ScreencastView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("screencastView.css");
 };
 
@@ -836,7 +836,7 @@ WebInspector.ScreencastView.prototype = {
         return true;
     },
 
-  __proto__: WebInspector.View.prototype
+  __proto__: WebInspector.VBox.prototype
 }
 
 /**

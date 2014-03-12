@@ -28,12 +28,12 @@
  */
 
 /**
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @constructor
  */
 WebInspector.ResourceView = function(resource)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("resourceView.css");
 
     this.element.classList.add("resource-view");
@@ -49,7 +49,7 @@ WebInspector.ResourceView.prototype = {
         return false;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**
@@ -107,12 +107,12 @@ WebInspector.ResourceSourceFrame.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.Resource} resource
  */
 WebInspector.ResourceSourceFrameFallback = function(resource)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this._resource = resource;
     this.element.classList.add("script-view");
     this._content = this.element.createChild("div", "script-view-fallback monospace");
@@ -135,5 +135,5 @@ WebInspector.ResourceSourceFrameFallback.prototype = {
         this._content.textContent = content;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

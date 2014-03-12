@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.NetworkRequest} request
  */
 WebInspector.RequestHeadersView = function(request)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("resourceView.css");
     this.element.classList.add("resource-headers-view");
 
@@ -505,5 +505,5 @@ WebInspector.RequestHeadersView.prototype = {
         return this._createToggleButton(toggleTitle);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

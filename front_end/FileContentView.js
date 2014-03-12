@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.FileSystemModel.File} file
  */
 WebInspector.FileContentView = function(file)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
 
     this._innerView = /** @type {?WebInspector.View} */ (null);
     this._file = file;
@@ -89,7 +89,7 @@ WebInspector.FileContentView.prototype = {
             this._file.requestMetadata(this._metadataReceived.bind(this));
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

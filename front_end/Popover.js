@@ -37,7 +37,7 @@ WebInspector.Popover = function(popoverHelper)
 {
     WebInspector.View.call(this);
     this.markAsRoot();
-    this.element.className = "popover custom-popup-vertical-scroll custom-popup-horizontal-scroll";
+    this.element.className = "popover custom-popup-vertical-scroll custom-popup-horizontal-scroll"; // Override
 
     this._popupArrowElement = document.createElement("div");
     this._popupArrowElement.className = "arrow";

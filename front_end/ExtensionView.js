@@ -38,7 +38,7 @@
 WebInspector.ExtensionView = function(id, src, className)
 {
     WebInspector.View.call(this);
-    this.element.className = "extension-view fill" // Override flex;
+    this.element.className = "extension-view fill"; // Override
 
     this._id = id;
     this._iframe = document.createElement("iframe");
@@ -76,12 +76,12 @@ WebInspector.ExtensionView.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {string} id
  */
 WebInspector.ExtensionNotifierView = function(id)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
 
     this._id = id;
 }
@@ -97,5 +97,5 @@ WebInspector.ExtensionNotifierView.prototype = {
         WebInspector.extensionServer.notifyViewHidden(this._id);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

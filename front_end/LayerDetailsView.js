@@ -31,11 +31,11 @@
 /**
  * @constructor
  * @param {!WebInspector.LayerTreeModel} model
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.LayerDetailsView = function(model)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.classList.add("layer-details-view");
     this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("Select a layer to see its details"));
     this._createTable();
@@ -176,5 +176,5 @@ WebInspector.LayerDetailsView.prototype = {
         this._compositingReasonsCell.appendChild(fragment);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

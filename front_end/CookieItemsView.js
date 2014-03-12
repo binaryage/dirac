@@ -29,11 +29,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.CookieItemsView = function(treeElement, cookieDomain)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
 
     this.element.classList.add("storage-view");
 
@@ -183,5 +183,5 @@ WebInspector.CookieItemsView.prototype = {
         }
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

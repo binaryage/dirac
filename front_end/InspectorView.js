@@ -30,11 +30,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.InspectorView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     WebInspector.Dialog.setModalHostView(this);
 
     // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
@@ -424,7 +424,7 @@ WebInspector.InspectorView.prototype = {
         this._tabbedPane.headerResized();
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 };
 
 /**
@@ -434,11 +434,11 @@ WebInspector.inspectorView;
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.RootView = function()
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.markAsRoot();
     this.element.classList.add("fill", "root-view");
     this.element.setAttribute("spellcheck", false);
@@ -446,5 +446,5 @@ WebInspector.RootView = function()
 };
 
 WebInspector.RootView.prototype = {
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 };

@@ -43,12 +43,12 @@ WebInspector.FlameChartDelegate.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
  */
 WebInspector.FlameChart = function(dataProvider)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("flameChart.css");
     this.element.id = "cpu-flame-chart";
 
@@ -95,7 +95,7 @@ WebInspector.FlameChart.prototype = {
         this._mainPane.update();
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 };
 
 /**
@@ -440,13 +440,13 @@ WebInspector.FlameChart.ColorGenerator.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @implements {WebInspector.FlameChartDelegate}
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
  */
 WebInspector.FlameChart.OverviewPane = function(dataProvider)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.classList.add("flame-chart-overview-pane");
     this._overviewContainer = this.element.createChild("div", "overview-container");
     this._overviewGrid = new WebInspector.OverviewGrid("flame-chart");
@@ -525,7 +525,7 @@ WebInspector.FlameChart.OverviewPane.prototype = {
         this._overviewCanvas.height = height * ratio;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**
@@ -591,7 +591,7 @@ WebInspector.FlameChart.OverviewPane.drawOverviewCanvas = function(dataProvider,
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
  * @param {!WebInspector.FlameChartDelegate} flameChartDelegate
  * @param {boolean} isTopDown
@@ -599,7 +599,7 @@ WebInspector.FlameChart.OverviewPane.drawOverviewCanvas = function(dataProvider,
  */
 WebInspector.FlameChart.MainPane = function(dataProvider, flameChartDelegate, isTopDown, timeBasedWindow)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.element.classList.add("flame-chart-main-pane");
     this._flameChartDelegate = flameChartDelegate;
     this._isTopDown = isTopDown;
@@ -1148,5 +1148,5 @@ WebInspector.FlameChart.MainPane.prototype = {
         this.update();
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

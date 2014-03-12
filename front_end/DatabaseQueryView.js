@@ -25,11 +25,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.DatabaseQueryView = function(database)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
 
     this.database = database;
 
@@ -203,5 +203,5 @@ WebInspector.DatabaseQueryView.prototype = {
         return resultElement;
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

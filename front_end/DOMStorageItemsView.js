@@ -26,11 +26,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.DOMStorageItemsView = function(domStorage)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
 
     this.domStorage = domStorage;
 
@@ -257,5 +257,5 @@ WebInspector.DOMStorageItemsView.prototype = {
             this.domStorage.removeItem(node.data.key);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }

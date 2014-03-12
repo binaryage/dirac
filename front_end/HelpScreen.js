@@ -31,11 +31,11 @@
 /**
  * @constructor
  * @param {string=} title
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  */
 WebInspector.HelpScreen = function(title)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.markAsRoot();
     this.registerRequiredCSS("helpScreen.css");
 
@@ -124,7 +124,7 @@ WebInspector.HelpScreen.prototype = {
         }
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**

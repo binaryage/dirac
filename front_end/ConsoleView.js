@@ -28,7 +28,7 @@
  */
 
 /**
- * @extends {WebInspector.View}
+ * @extends {WebInspector.VBox}
  * @implements {WebInspector.ConsoleModel.UIDelegate}
  * @implements {WebInspector.Searchable}
  * @constructor
@@ -36,7 +36,7 @@
  */
 WebInspector.ConsoleView = function(hideContextSelector)
 {
-    WebInspector.View.call(this);
+    WebInspector.VBox.call(this);
     this.registerRequiredCSS("filter.css");
 
     this._searchableView = new WebInspector.SearchableView(this);
@@ -844,7 +844,7 @@ WebInspector.ConsoleView.prototype = {
         this._viewMessageByIndex(this._searchResultsIndices[index]).highlightSearchResults(this._searchRegex);
     },
 
-    __proto__: WebInspector.View.prototype
+    __proto__: WebInspector.VBox.prototype
 }
 
 /**
