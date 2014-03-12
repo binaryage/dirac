@@ -1297,7 +1297,7 @@ WebInspector.ElementsTreeElement.prototype = {
             return;
 
         if (this.treeOutline._showInElementsPanelEnabled) {
-            WebInspector.showPanel("elements");
+            WebInspector.inspectorView.showPanel("elements");
             this.treeOutline.selectDOMNode(this._node, true);
         }
 

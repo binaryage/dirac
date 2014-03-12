@@ -232,7 +232,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
             return;
 
         event.returnValue = WebInspector.UIString("DevTools have unsaved changes that will be permanently lost.");
-        WebInspector.showPanel("sources");
+        WebInspector.inspectorView.showPanel("sources");
         for (var i = 0; i < unsavedSourceCodes.length; ++i)
             WebInspector.panels.sources.showUISourceCode(unsavedSourceCodes[i]);
     }
@@ -527,7 +527,7 @@ WebInspector.SourcesPanel.prototype = {
         if (this._shouldShowEditorInDrawer() && !forceShowInPanel)
             this._drawerEditor()._show();
         else
-            WebInspector.showPanel("sources");
+            WebInspector.inspectorView.showPanel("sources");
     },
 
     /**
@@ -1759,7 +1759,7 @@ WebInspector.SourcesView.prototype = {
  */
 WebInspector.SourcesPanel.DrawerEditor = function()
 {
-    this._panel = WebInspector.panel("sources");
+    this._panel = WebInspector.inspectorView.panel("sources");
 }
 
 WebInspector.SourcesPanel.DrawerEditor.prototype = {
@@ -1828,7 +1828,7 @@ WebInspector.SourcesPanel.ContextMenuProvider.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
-        WebInspector.panel("sources").appendApplicableItems(event, contextMenu, target);
+        WebInspector.inspectorView.panel("sources").appendApplicableItems(event, contextMenu, target);
     }
 }
 
@@ -1847,7 +1847,7 @@ WebInspector.SourcesPanel.UILocationRevealer.prototype = {
     reveal: function(uiLocation)
     {
         if (uiLocation instanceof WebInspector.UILocation)
-            /** @type {!WebInspector.SourcesPanel} */ (WebInspector.panel("sources")).showUILocation(uiLocation);
+            /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.panel("sources")).showUILocation(uiLocation);
     }
 }
 

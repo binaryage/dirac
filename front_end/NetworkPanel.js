@@ -1029,8 +1029,16 @@ WebInspector.NetworkLogView.prototype = {
         var gridNode = this._dataGrid.dataGridNodeFromNode(event.target);
         var request = gridNode && gridNode._request;
 
+        /**
+         * @param {string} url
+         */
+        function openResourceInNewTab(url)
+        {
+            InspectorFrontendHost.openInNewTab(url);
+        }
+
         if (request) {
-            contextMenu.appendItem(WebInspector.openLinkExternallyLabel(), WebInspector.openResource.bind(WebInspector, request.url, false));
+            contextMenu.appendItem(WebInspector.openLinkExternallyLabel(), openResourceInNewTab.bind(null, request.url));
             contextMenu.appendSeparator();
             contextMenu.appendItem(WebInspector.copyLinkAddressLabel(), this._copyLocation.bind(this, request));
             if (request.requestHeadersText())
@@ -1992,7 +2000,7 @@ WebInspector.NetworkPanel.ContextMenuProvider.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
-        WebInspector.panel("network").appendApplicableItems(event, contextMenu, target);
+        WebInspector.inspectorView.panel("network").appendApplicableItems(event, contextMenu, target);
     }
 }
 
@@ -2011,7 +2019,7 @@ WebInspector.NetworkPanel.RequestRevealer.prototype = {
     reveal: function(request)
     {
         if (request instanceof WebInspector.NetworkRequest)
-            /** @type {!WebInspector.NetworkPanel} */ (WebInspector.showPanel("network")).revealAndHighlightRequest(request);
+            /** @type {!WebInspector.NetworkPanel} */ (WebInspector.inspectorView.showPanel("network")).revealAndHighlightRequest(request);
     }
 }
 

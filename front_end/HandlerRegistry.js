@@ -92,6 +92,14 @@ WebInspector.HandlerRegistry.prototype = {
         this.dispatchEventToListeners(WebInspector.HandlerRegistry.EventTypes.HandlersUpdated);
     },
 
+    /**
+     * @param {string} url
+     */
+    _openInNewTab: function(url)
+    {
+        InspectorFrontendHost.openInNewTab(url);
+    },
+
     /** 
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
@@ -104,7 +112,7 @@ WebInspector.HandlerRegistry.prototype = {
         if (!contentProvider.contentURL())
             return;
 
-        contextMenu.appendItem(WebInspector.openLinkExternallyLabel(), WebInspector.openResource.bind(WebInspector, contentProvider.contentURL(), false));
+        contextMenu.appendItem(WebInspector.openLinkExternallyLabel(), this._openInNewTab.bind(this, contentProvider.contentURL()));
         // Skip 0th handler, as it's 'Use default panel' one.
         for (var i = 1; i < this.handlerNames.length; ++i) {
             var handler = this.handlerNames[i];
@@ -171,9 +179,18 @@ WebInspector.HandlerRegistry.prototype = {
             return;
 
         // Add resource-related actions.
-        contextMenu.appendItem(WebInspector.openLinkExternallyLabel(), WebInspector.openResource.bind(WebInspector, resourceURL, false));
+        contextMenu.appendItem(WebInspector.openLinkExternallyLabel(), this._openInNewTab.bind(this, resourceURL));
+
+        function openInResourcesPanel(resourceURL)
+        {
+            var resource = WebInspector.resourceForURL(resourceURL);
+            if (resource)
+                WebInspector.Revealer.reveal(resource);
+            else
+                InspectorFrontendHost.openInNewTab(resourceURL);
+        }
         if (WebInspector.resourceForURL(resourceURL))
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Open link in Resources panel" : "Open Link in Resources Panel"), WebInspector.openResource.bind(null, resourceURL, true));
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Open link in Resources panel" : "Open Link in Resources Panel"), openInResourcesPanel.bind(null, resourceURL));
         contextMenu.appendItem(WebInspector.copyLinkAddressLabel(), InspectorFrontendHost.copyText.bind(InspectorFrontendHost, resourceURL));
     },
 

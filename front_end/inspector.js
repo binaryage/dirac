@@ -186,7 +186,7 @@ var WebInspector = {
     _debuggerPaused: function()
     {
         this.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
-        WebInspector.showPanel("sources");
+        WebInspector.inspectorView.showPanel("sources");
     }
 }
 
@@ -502,15 +502,6 @@ WebInspector.documentClick = function(event)
     followLink();
 }
 
-WebInspector.openResource = function(resourceURL, inResourcesPanel)
-{
-    var resource = WebInspector.resourceForURL(resourceURL);
-    if (inResourcesPanel && resource)
-        WebInspector.showPanel("resources").showResource(resource);
-    else
-        InspectorFrontendHost.openInNewTab(resourceURL);
-}
-
 WebInspector._registerShortcuts = function()
 {
     var shortcut = WebInspector.KeyboardShortcut;
@@ -606,7 +597,7 @@ WebInspector.postDocumentKeyDown = function(event)
         case "U+004F": // O key
         case "U+0050": // P key
             if (!event.shiftKey && !event.altKey && WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
-                WebInspector.showPanel("sources").showGoToSourceDialog();
+                WebInspector.inspectorView.showPanel("sources").showGoToSourceDialog();
                 event.consume(true);
             }
             break;
@@ -673,22 +664,6 @@ WebInspector.contextMenuEventFired = function(event)
 {
     if (event.handled || event.target.classList.contains("popup-glasspane"))
         event.preventDefault();
-}
-
-/**
- * @param {string} panel
- */
-WebInspector.showPanel = function(panel)
-{
-    return WebInspector.inspectorView.showPanel(panel);
-}
-
-/**
- * @param {string} panel
- */
-WebInspector.panel = function(panel)
-{
-    return WebInspector.inspectorView.panel(panel);
 }
 
 WebInspector.bringToFront = function()
@@ -783,7 +758,7 @@ WebInspector.inspect = function(payload, hints)
     if (object.subtype === "node") {
 
         object.pushNodeToFrontend(callback);
-        var elementsPanel = /** @type {!WebInspector.ElementsPanel} */ WebInspector.panel("elements");
+        var elementsPanel = /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements"));
         elementsPanel.omitDefaultSelection();
         WebInspector.inspectorView.setCurrentPanel(elementsPanel);
 
@@ -816,7 +791,7 @@ WebInspector.inspect = function(payload, hints)
             if (!uiLocation)
                 return;
 
-            WebInspector.panel("sources").showUILocation(uiLocation, true);
+            /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.panel("sources")).showUILocation(uiLocation, true);
         }
         DebuggerAgent.getFunctionDetails(object.objectId, didGetDetails.bind(this));
         return;
@@ -852,7 +827,7 @@ WebInspector._updateFocusedNode = function(nodeId)
         InspectorFrontendHost.bringToFront();
         WebInspector.inspectElementModeController.disable();
     }
-    WebInspector.panel("elements").revealAndSelectNode(nodeId);
+    WebInspector.inspectorView.panel("elements").revealAndSelectNode(nodeId);
 }
 
 WebInspector.addMainEventListeners = function(doc)

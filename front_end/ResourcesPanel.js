@@ -771,7 +771,7 @@ WebInspector.ResourcesPanel.ResourceRevealer.prototype = {
     reveal: function(resource, lineNumber)
     {
         if (resource instanceof WebInspector.Resource)
-            /** @type {!WebInspector.ResourcesPanel} */ (WebInspector.showPanel("resources")).showResource(resource, lineNumber);
+            /** @type {!WebInspector.ResourcesPanel} */ (WebInspector.inspectorView.showPanel("resources")).showResource(resource, lineNumber);
     }
 }
 

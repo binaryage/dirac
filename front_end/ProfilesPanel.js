@@ -1110,7 +1110,7 @@ WebInspector.ProfilesPanel.ContextMenuProvider.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
-        WebInspector.panel("profiles").appendApplicableItems(event, contextMenu, target);
+        WebInspector.inspectorView.panel("profiles").appendApplicableItems(event, contextMenu, target);
     }
 }
 

@@ -1317,7 +1317,7 @@ WebInspector.ElementsPanel.ContextMenuProvider.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
-        WebInspector.panel("elements").appendApplicableItems(event, contextMenu, target);
+        /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements")).appendApplicableItems(event, contextMenu, target);
     }
 }
 
@@ -1371,6 +1371,6 @@ WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
             WebInspector.inspectElementModeController.disable();
         }
 
-        /** @type {!WebInspector.ElementsPanel} */ (WebInspector.panel("elements")).revealAndSelectNode(node.id);
+        /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements")).revealAndSelectNode(node.id);
     }
 }

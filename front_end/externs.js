@@ -260,8 +260,6 @@ WebInspector.log = function(message, messageLevel, showConsole) {}
 
 WebInspector.showErrorMessage = function(error) {}
 
-WebInspector.openResource = function(url, external) {}
-
 WebInspector.Events = {
     InspectorLoaded: "InspectorLoaded"
 }
@@ -305,10 +303,6 @@ function ExtensionReloadOptions() {
     this.injectedScript = "";
     this.preprocessingScript = "";
     this.userAgent = "";
-}
-
-WebInspector.showPanel = function(panel)
-{
 }
 
 /**
