@@ -31,9 +31,10 @@
 /**
  * @constructor
  */
-WebInspector.AllocationProfile = function(profile)
+WebInspector.AllocationProfile = function(profile, liveObjectStats)
 {
     this._strings = profile.strings;
+    this._liveObjectStats = liveObjectStats;
 
     this._nextNodeId = 1;
     this._functionInfos = []
@@ -43,7 +44,7 @@ WebInspector.AllocationProfile = function(profile)
     this._traceTops = null;
 
     this._buildAllocationFunctionInfos(profile);
-    this._traceTree = this._buildInvertedAllocationTree(profile);
+    this._traceTree = this._buildInvertedAllocationTree(profile, liveObjectStats);
 }
 
 WebInspector.AllocationProfile.prototype = {
@@ -74,7 +75,7 @@ WebInspector.AllocationProfile.prototype = {
         }
     },
 
-    _buildInvertedAllocationTree: function(profile)
+    _buildInvertedAllocationTree: function(profile, liveObjectStats)
     {
         var traceTreeRaw = profile.trace_tree;
         var functionInfos = this._functionInfos;
@@ -90,11 +91,17 @@ WebInspector.AllocationProfile.prototype = {
         function traverseNode(rawNodeArray, nodeOffset, parent)
         {
             var functionInfo = functionInfos[rawNodeArray[nodeOffset + functionInfoIndexOffset]];
+            var id = rawNodeArray[nodeOffset + nodeIdOffset];
+            var stats = liveObjectStats[id];
+            var liveCount = stats ? stats.count : 0;
+            var liveSize = stats ? stats.size : 0;
             var result = new WebInspector.AllocationTraceNode(
-                rawNodeArray[nodeOffset + nodeIdOffset],
+                id,
                 functionInfo,
                 rawNodeArray[nodeOffset + allocationCountOffset],
                 rawNodeArray[nodeOffset + allocationSizeOffset],
+                liveCount,
+                liveSize,
                 parent);
             functionInfo.addTraceTopNode(result);
 
@@ -127,6 +134,8 @@ WebInspector.AllocationProfile.prototype = {
                 info,
                 info.totalCount,
                 info.totalSize,
+                info.totalLiveCount,
+                info.totalLiveSize,
                 true));
             this._collapsedTopNodeIdToFunctionInfo[nodeId] = info;
         }
@@ -176,10 +185,12 @@ WebInspector.AllocationProfile.prototype = {
             node.functionInfo,
             node.allocationCount,
             node.allocationSize,
+            node.liveCount,
+            node.liveSize,
             node.hasCallers());
     },
 
-    _serializeNode: function(nodeId, functionInfo, count, size, hasChildren)
+    _serializeNode: function(nodeId, functionInfo, count, size, liveCount, liveSize, hasChildren)
     {
         return {
             id: nodeId,
@@ -189,6 +200,8 @@ WebInspector.AllocationProfile.prototype = {
             column: functionInfo.column,
             count: count,
             size: size,
+            liveCount: liveCount,
+            liveSize: liveSize,
             hasChildren: hasChildren
         };
     }
@@ -198,12 +211,14 @@ WebInspector.AllocationProfile.prototype = {
 /**
  * @constructor
  */
-WebInspector.AllocationTraceNode = function(id, functionInfo, count, size, parent)
+WebInspector.AllocationTraceNode = function(id, functionInfo, count, size, liveCount, liveSize, parent)
 {
     this.id = id;
     this.functionInfo = functionInfo;
     this.allocationCount = count;
     this.allocationSize = size;
+    this.liveCount = liveCount;
+    this.liveSize = liveSize;
     this.parent = parent;
     this.children = [];
 }
@@ -218,6 +233,8 @@ WebInspector.AllocationBackTraceNode = function(functionInfo)
     this.functionInfo = functionInfo;
     this.allocationCount = 0;
     this.allocationSize = 0;
+    this.liveCount = 0;
+    this.liveSize = 0;
     this._callers = [];
 }
 
@@ -275,6 +292,8 @@ WebInspector.FunctionAllocationInfo = function(functionName, scriptName, scriptI
     this.column = column;
     this.totalCount = 0;
     this.totalSize = 0;
+    this.totalLiveCount = 0;
+    this.totalLiveSize = 0;
     this._traceTops = [];
 }
 
@@ -286,6 +305,8 @@ WebInspector.FunctionAllocationInfo.prototype = {
         this._traceTops.push(node);
         this.totalCount += node.allocationCount;
         this.totalSize += node.allocationSize;
+        this.totalLiveCount += node.liveCount;
+        this.totalLiveSize += node.liveSize;
     },
 
     /**
@@ -309,9 +330,13 @@ WebInspector.FunctionAllocationInfo.prototype = {
             var backTraceNode = this._backTraceTree;
             var count = node.allocationCount;
             var size = node.allocationSize;
+            var liveCount = node.liveCount;
+            var liveSize = node.liveSize;
             while (true) {
                 backTraceNode.allocationCount += count;
                 backTraceNode.allocationSize += size;
+                backTraceNode.liveCount += liveCount;
+                backTraceNode.liveSize += liveSize;
                 node = node.parent;
                 if (node === null) {
                     break;

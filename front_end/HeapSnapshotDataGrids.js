@@ -1049,7 +1049,9 @@ WebInspector.HeapSnapshotDominatorsDataGrid.prototype = {
 WebInspector.AllocationDataGrid = function()
 {
     var columns = [
+        {id: "liveCount", title: WebInspector.UIString("Live Count"), width: "72px", sortable: true},
         {id: "count", title: WebInspector.UIString("Count"), width: "72px", sortable: true},
+        {id: "liveSize", title: WebInspector.UIString("Live Size"), width: "72px", sortable: true},
         {id: "size", title: WebInspector.UIString("Size"), width: "72px", sortable: true, sort: WebInspector.DataGrid.Order.Descending},
         {id: "name", title: WebInspector.UIString("Function"), disclosure: true, sortable: true},
     ];

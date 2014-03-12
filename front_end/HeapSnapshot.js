@@ -564,6 +564,15 @@ WebInspector.HeapSnapshotNode.prototype = {
     },
 
     /**
+     * @return {number}
+     */
+    traceNodeId: function()
+    {
+        var snapshot = this._snapshot;
+        return snapshot._nodes[this.nodeIndex + snapshot._nodeTraceNodeIdOffset];
+    },
+
+    /**
      * @return {!WebInspector.HeapSnapshotNode.Serialized}
      */
     serialize: function()
@@ -724,7 +733,22 @@ WebInspector.HeapSnapshot = function(profile, progress)
 
     if (profile.snapshot.trace_function_count) {
         this._progress.updateStatus("Buiding allocation statistics\u2026");
-        this._allocationProfile = new WebInspector.AllocationProfile(profile);
+        var nodes = this._nodes;
+        var nodesLength = nodes.length;
+        var nodeFieldCount = this._nodeFieldCount;
+        var node = this.rootNode();
+        var liveObjects = {};
+        for (var nodeIndex = 0; nodeIndex < nodesLength; nodeIndex += nodeFieldCount) {
+            node.nodeIndex = nodeIndex;
+            var traceNodeId = node.traceNodeId();
+            var stats = liveObjects[traceNodeId];
+            if (!stats) {
+                liveObjects[traceNodeId] = stats = { count: 0, size: 0};
+            }
+            stats.count++;
+            stats.size += node.selfSize();
+        }
+        this._allocationProfile = new WebInspector.AllocationProfile(profile, liveObjects);
         this._progress.updateStatus("Done");
     }
 }
@@ -766,6 +790,7 @@ WebInspector.HeapSnapshot.prototype = {
         this._nodeIdOffset = meta.node_fields.indexOf("id");
         this._nodeSelfSizeOffset = meta.node_fields.indexOf("self_size");
         this._nodeEdgeCountOffset = meta.node_fields.indexOf("edge_count");
+        this._nodeTraceNodeIdOffset = meta.node_fields.indexOf("trace_node_id");
         this._nodeFieldCount = meta.node_fields.length;
 
         this._nodeTypes = meta.node_types[this._nodeTypeOffset];
