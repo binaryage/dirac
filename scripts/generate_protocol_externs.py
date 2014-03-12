@@ -189,7 +189,8 @@ Protocol.Error;
 
     output_file.write("\n/** @constructor\n * @param {!Object.<string, !Object>} agentsMap\n */\n")
     output_file.write("Protocol.Agents = function(agentsMap){this._agentsMap;};\n")
-
+    output_file.write("/**\n * @param {string} domain\n * @param {!Object} dispatcher\n */\n")
+    output_file.write("Protocol.Agents.prototype.registerDispatcher = function(domain, dispatcher){};\n")
     for domain in json_api:
         domain_name = domain["domain"]
         uppercase_length = 0
@@ -198,6 +199,10 @@ Protocol.Error;
 
         output_file.write("/** @return {!Protocol.%sAgent}*/\n" % domain_name)
         output_file.write("Protocol.Agents.prototype.%s = function(){};\n" % (domain_name[:uppercase_length].lower() + domain_name[uppercase_length:] + "Agent"))
+
+        output_file.write("/**\n * @param {!%sAgent.Dispatcher} dispatcher\n */\n" % domain_name)
+        output_file.write("Protocol.Agents.prototype.register%sDispatcher = function(dispatcher) {}\n" % domain_name)
+
 
     output_file.close()
 

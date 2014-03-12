@@ -31,15 +31,19 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {!WebInspector.Target} target
  */
-WebInspector.NetworkManager = function()
+WebInspector.NetworkManager = function(target)
 {
     WebInspector.Object.call(this);
     this._dispatcher = new WebInspector.NetworkDispatcher(this);
+    this._target = target;
+    this._networkAgent = target.networkAgent();
+    target.registerNetworkDispatcher(this._dispatcher);
     if (WebInspector.settings.cacheDisabled.get())
-        NetworkAgent.setCacheDisabled(true);
+        this._networkAgent.setCacheDisabled(true);
 
-    NetworkAgent.enable();
+    this._networkAgent.enable();
 
     WebInspector.settings.cacheDisabled.addChangeListener(this._cacheDisabledSettingChanged, this);
 }
@@ -110,7 +114,7 @@ WebInspector.NetworkManager.prototype = {
     _cacheDisabledSettingChanged: function(event)
     {
         var enabled = /** @type {boolean} */ (event.data);
-        NetworkAgent.setCacheDisabled(enabled);
+        this._networkAgent.setCacheDisabled(enabled);
     },
 
     __proto__: WebInspector.Object.prototype
@@ -125,7 +129,6 @@ WebInspector.NetworkDispatcher = function(manager)
     this._manager = manager;
     this._inflightRequestsById = {};
     this._inflightRequestsByURL = {};
-    InspectorBackend.registerNetworkDispatcher(this);
 }
 
 WebInspector.NetworkDispatcher.prototype = {
@@ -190,7 +193,7 @@ WebInspector.NetworkDispatcher.prototype = {
             networkRequest.timing = response.timing;
 
         if (!this._mimeTypeIsConsistentWithType(networkRequest)) {
-            WebInspector.console.addMessage(new WebInspector.ConsoleMessage(WebInspector.ConsoleMessage.MessageSource.Network,
+            this._manager._target.consoleModel.addMessage(new WebInspector.ConsoleMessage(WebInspector.ConsoleMessage.MessageSource.Network,
                 WebInspector.ConsoleMessage.MessageLevel.Log,
                 WebInspector.UIString("Resource interpreted as %s but transferred with MIME type %s: \"%s\".", networkRequest.type.title(), networkRequest.mimeType, networkRequest.url),
                 WebInspector.ConsoleMessage.MessageType.Log,

@@ -31,15 +31,18 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {!WebInspector.Target} target
  */
-WebInspector.ConsoleModel = function()
+WebInspector.ConsoleModel = function(target)
 {
     /** @type {!Array.<!WebInspector.ConsoleMessage>} */
     this.messages = [];
     this.warnings = 0;
     this.errors = 0;
     this._interruptRepeatCount = false;
-    InspectorBackend.registerConsoleDispatcher(new WebInspector.ConsoleDispatcher(this));
+    this._target = target;
+    this._consoleAgent = target.consoleAgent();
+    target.registerConsoleDispatcher(new WebInspector.ConsoleDispatcher(this));
 }
 
 WebInspector.ConsoleModel.Events = {
@@ -52,7 +55,7 @@ WebInspector.ConsoleModel.prototype = {
     enableAgent: function()
     {
         if (WebInspector.settings.monitoringXHREnabled.get())
-            ConsoleAgent.setMonitoringXHREnabled(true);
+            this._consoleAgent.setMonitoringXHREnabled(true);
 
         this._enablingConsole = true;
 
@@ -63,7 +66,7 @@ WebInspector.ConsoleModel.prototype = {
         {
             delete this._enablingConsole;
         }
-        ConsoleAgent.enable(callback.bind(this));
+        this._consoleAgent.enable(callback.bind(this));
     },
 
     /**
@@ -132,7 +135,7 @@ WebInspector.ConsoleModel.prototype = {
 
             this._uiDelegate.printEvaluationResult(result, wasThrown, text, commandMessage);
         }
-        WebInspector.runtimeModel.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult.bind(this));
+        this._target.runtimeModel.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult.bind(this));
 
         WebInspector.userMetrics.ConsoleEvaluated.record();
     },
@@ -167,7 +170,7 @@ WebInspector.ConsoleModel.prototype = {
 
     requestClearMessages: function()
     {
-        ConsoleAgent.clearMessages();
+        this._consoleAgent.clearMessages();
         this.clearMessages();
     },
 

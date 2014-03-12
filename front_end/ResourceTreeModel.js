@@ -31,22 +31,23 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {!WebInspector.NetworkManager} networkManager
+ * @param {!WebInspector.Target} target
  */
-WebInspector.ResourceTreeModel = function(networkManager)
+WebInspector.ResourceTreeModel = function(target)
 {
-    networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestFinished, this);
-    networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdateDropped, this._onRequestUpdateDropped, this);
+    target.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestFinished, this);
+    target.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdateDropped, this._onRequestUpdateDropped, this);
 
-    WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._consoleMessageAdded, this);
-    WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.RepeatCountUpdated, this._consoleMessageAdded, this);
-    WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+    target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._consoleMessageAdded, this);
+    target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.RepeatCountUpdated, this._consoleMessageAdded, this);
+    target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
 
-    PageAgent.enable();
+    this._agent = target.pageAgent();
+    this._agent.enable();
 
     this._fetchResourceTree();
 
-    InspectorBackend.registerPageDispatcher(new WebInspector.PageDispatcher(this));
+    target.registerPageDispatcher(new WebInspector.PageDispatcher(this));
 
     this._pendingConsoleMessages = {};
     this._securityOriginFrameCount = {};
@@ -78,7 +79,7 @@ WebInspector.ResourceTreeModel.prototype = {
         /** @type {!Object.<string, !WebInspector.ResourceTreeFrame>} */
         this._frames = {};
         delete this._cachedResourcesProcessed;
-        PageAgent.getResourceTree(this._processCachedResources.bind(this));
+        this._agent.getResourceTree(this._processCachedResources.bind(this));
     },
 
     _processCachedResources: function(error, mainFramePayload)
@@ -453,7 +454,7 @@ WebInspector.ResourceTreeModel.prototype = {
     reloadPage: function(ignoreCache, scriptToEvaluateOnLoad, scriptPreprocessor)
     {
         this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage);
-        PageAgent.reload(ignoreCache, scriptToEvaluateOnLoad, scriptPreprocessor);
+        this._agent.reload(ignoreCache, scriptToEvaluateOnLoad, scriptPreprocessor);
     },
 
     __proto__: WebInspector.Object.prototype

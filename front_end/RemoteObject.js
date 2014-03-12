@@ -109,11 +109,12 @@ WebInspector.RemoteObject.prototype = {
 
 /**
  * @param {number|string|boolean} value
+ * @param {!WebInspector.Target=} target
  * @return {!WebInspector.RemoteObject}
  */
-WebInspector.RemoteObject.fromPrimitiveValue = function(value)
+WebInspector.RemoteObject.fromPrimitiveValue = function(value, target)
 {
-    return new WebInspector.RemoteObjectImpl(undefined, typeof value, undefined, value);
+    return new WebInspector.RemoteObjectImpl(target, undefined, typeof value, undefined, value);
 }
 
 /**
@@ -151,13 +152,14 @@ WebInspector.RemoteObject.resolveNode = function(node, objectGroup, callback)
 
 /**
  * @param {!RuntimeAgent.RemoteObject} payload
+ * @param {!WebInspector.Target=} target
  * @return {!WebInspector.RemoteObject}
  */
-WebInspector.RemoteObject.fromPayload = function(payload)
+WebInspector.RemoteObject.fromPayload = function(payload, target)
 {
     console.assert(typeof payload === "object", "Remote object payload should only be an object");
 
-    return new WebInspector.RemoteObjectImpl(payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
+    return new WebInspector.RemoteObjectImpl(target, payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
 }
 
 /**
@@ -179,6 +181,7 @@ WebInspector.RemoteObject.type = function(remoteObject)
 /**
  * @constructor
  * @extends {WebInspector.RemoteObject}
+ * @param {!WebInspector.Target|undefined} target
  * @param {string|undefined} objectId
  * @param {string} type
  * @param {string|undefined} subtype
@@ -186,9 +189,18 @@ WebInspector.RemoteObject.type = function(remoteObject)
  * @param {string=} description
  * @param {!RuntimeAgent.ObjectPreview=} preview
  */
-WebInspector.RemoteObjectImpl = function(objectId, type, subtype, value, description, preview)
+WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value, description, preview)
 {
     WebInspector.RemoteObject.call(this);
+    if (target) {
+        this._runtimeAgent = target.runtimeAgent();
+        this._domAgent = target.domModel;
+    } else {
+        //FIXME: remove this logic once every RemoteObjectImpl constructor call has non-undefined target
+        this._runtimeAgent = RuntimeAgent;
+        this._domAgent = WebInspector.domAgent;
+    }
+
     this._type = type;
     this._subtype = subtype;
     if (objectId) {
@@ -323,7 +335,7 @@ WebInspector.RemoteObjectImpl.prototype = {
             }
             callback(result, internalPropertiesResult);
         }
-        RuntimeAgent.getProperties(this._objectId, ownProperties, accessorPropertiesOnly, remoteObjectBinder);
+        this._runtimeAgent.getProperties(this._objectId, ownProperties, accessorPropertiesOnly, remoteObjectBinder);
     },
 
     /**
@@ -338,7 +350,7 @@ WebInspector.RemoteObjectImpl.prototype = {
             return;
         }
 
-        RuntimeAgent.invoke_evaluate({expression:value, doNotPauseOnExceptionsAndMuteConsole:true}, evaluatedCallback.bind(this));
+        this._runtimeAgent.invoke_evaluate({expression:value, doNotPauseOnExceptionsAndMuteConsole:true}, evaluatedCallback.bind(this));
 
         /**
          * @param {?Protocol.Error} error
@@ -356,7 +368,7 @@ WebInspector.RemoteObjectImpl.prototype = {
             this.doSetObjectPropertyValue(result, name, callback);
 
             if (result.objectId)
-                RuntimeAgent.releaseObject(result.objectId);
+                this._runtimeAgent.releaseObject(result.objectId);
         }
     },
 
@@ -378,7 +390,7 @@ WebInspector.RemoteObjectImpl.prototype = {
             setPropertyValueFunction = "function(a) { this[a] = " + result.description + "; }";
 
         delete result.description; // Optimize on traffic.
-        RuntimeAgent.callFunctionOn(this._objectId, setPropertyValueFunction, [{ value:name }, result], true, undefined, undefined, propertySetCallback.bind(this));
+        this._runtimeAgent.callFunctionOn(this._objectId, setPropertyValueFunction, [{ value:name }, result], true, undefined, undefined, propertySetCallback.bind(this));
 
         /**
          * @param {?Protocol.Error} error
@@ -401,19 +413,19 @@ WebInspector.RemoteObjectImpl.prototype = {
     pushNodeToFrontend: function(callback)
     {
         if (this._objectId)
-            WebInspector.domAgent.pushNodeToFrontend(this._objectId, callback);
+            this._domAgent.pushNodeToFrontend(this._objectId, callback);
         else
             callback(0);
     },
 
     highlightAsDOMNode: function()
     {
-        WebInspector.domAgent.highlightDOMNode(undefined, undefined, this._objectId);
+        this._domAgent.highlightDOMNode(undefined, undefined, this._objectId);
     },
 
     hideDOMNodeHighlight: function()
     {
-        WebInspector.domAgent.hideDOMNodeHighlight();
+        this._domAgent.hideDOMNodeHighlight();
     },
 
     /**
@@ -438,7 +450,7 @@ WebInspector.RemoteObjectImpl.prototype = {
                 callback(WebInspector.RemoteObject.fromPayload(result), wasThrown);
         }
 
-        RuntimeAgent.callFunctionOn(this._objectId, functionDeclaration.toString(), args, true, undefined, undefined, mycallback);
+        this._runtimeAgent.callFunctionOn(this._objectId, functionDeclaration.toString(), args, true, undefined, undefined, mycallback);
     },
 
     /**
@@ -458,14 +470,14 @@ WebInspector.RemoteObjectImpl.prototype = {
             callback((error || wasThrown) ? null : result.value);
         }
 
-        RuntimeAgent.callFunctionOn(this._objectId, functionDeclaration.toString(), args, true, true, false, mycallback);
+        this._runtimeAgent.callFunctionOn(this._objectId, functionDeclaration.toString(), args, true, true, false, mycallback);
     },
 
     release: function()
     {
         if (!this._objectId)
             return;
-        RuntimeAgent.releaseObject(this._objectId);
+        this._runtimeAgent.releaseObject(this._objectId);
     },
 
     /**
@@ -557,6 +569,7 @@ WebInspector.RemoteObject.loadFromObjectPerProto = function(object, callback)
 /**
  * @constructor
  * @extends {WebInspector.RemoteObjectImpl}
+ * @param {!WebInspector.Target|undefined} target
  * @param {string|undefined} objectId
  * @param {!WebInspector.ScopeRef} scopeRef
  * @param {string} type
@@ -565,24 +578,27 @@ WebInspector.RemoteObject.loadFromObjectPerProto = function(object, callback)
  * @param {string=} description
  * @param {!RuntimeAgent.ObjectPreview=} preview
  */
-WebInspector.ScopeRemoteObject = function(objectId, scopeRef, type, subtype, value, description, preview)
+WebInspector.ScopeRemoteObject = function(target, objectId, scopeRef, type, subtype, value, description, preview)
 {
-    WebInspector.RemoteObjectImpl.call(this, objectId, type, subtype, value, description, preview);
+    WebInspector.RemoteObjectImpl.call(this, target, objectId, type, subtype, value, description, preview);
     this._scopeRef = scopeRef;
     this._savedScopeProperties = undefined;
+    //FIXME: remove this logic once every RemoteObjectImpl constructor call has non-undefined target
+    this._debuggerAgent = target ? target.debuggerAgent() : DebuggerAgent;
 };
 
 /**
  * @param {!RuntimeAgent.RemoteObject} payload
  * @param {!WebInspector.ScopeRef=} scopeRef
+ * @param {!WebInspector.Target=} target
  * @return {!WebInspector.RemoteObject}
  */
-WebInspector.ScopeRemoteObject.fromPayload = function(payload, scopeRef)
+WebInspector.ScopeRemoteObject.fromPayload = function(payload, scopeRef, target)
 {
     if (scopeRef)
-        return new WebInspector.ScopeRemoteObject(payload.objectId, scopeRef, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
+        return new WebInspector.ScopeRemoteObject(target, payload.objectId, scopeRef, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
     else
-        return new WebInspector.RemoteObjectImpl(payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
+        return new WebInspector.RemoteObjectImpl(target, payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
 }
 
 WebInspector.ScopeRemoteObject.prototype = {
@@ -643,7 +659,7 @@ WebInspector.ScopeRemoteObject.prototype = {
                 newValue = { value: result.value };
         }
 
-        DebuggerAgent.setVariableValue(this._scopeRef.number, name, newValue, this._scopeRef.callFrameId, this._scopeRef.functionId, setVariableValueCallback.bind(this));
+        this._debuggerAgent.setVariableValue(this._scopeRef.number, name, newValue, this._scopeRef.callFrameId, this._scopeRef.functionId, setVariableValueCallback.bind(this));
 
         /**
          * @param {?Protocol.Error} error

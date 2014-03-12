@@ -76,6 +76,16 @@ InspectorBackendClass.prototype = {
         }
 
         window.Protocol.Agents.prototype[methodName] = agentGetter;
+
+        /**
+         * @this {Protocol.Agents}
+         */
+        function registerDispatcher(dispatcher)
+        {
+            this.registerDispatcher(domain, dispatcher)
+        }
+
+        window.Protocol.Agents.prototype["register" + domain + "Dispatcher"] = registerDispatcher;
     },
 
     /**

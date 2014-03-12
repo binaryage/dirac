@@ -46,26 +46,36 @@ WebInspector.Target.prototype = {
      */
     _loadedWithCapabilities: function(callback)
     {
-        this.consoleModel = new WebInspector.ConsoleModel();
+        this.consoleModel = new WebInspector.ConsoleModel(this);
         //This and similar lines are needed for compatibility
         WebInspector.console = this.consoleModel;
-        this.networkManager = new WebInspector.NetworkManager();
+        this.networkManager = new WebInspector.NetworkManager(this);
         WebInspector.networkManager = this.networkManager;
-        this.resourceTreeModel = new WebInspector.ResourceTreeModel(this.networkManager);
+        this.resourceTreeModel = new WebInspector.ResourceTreeModel(this);
         WebInspector.resourceTreeModel = this.resourceTreeModel;
-        this.debuggerModel = new WebInspector.DebuggerModel();
+        this.debuggerModel = new WebInspector.DebuggerModel(this);
         WebInspector.debuggerModel = this.debuggerModel;
-        this.runtimeModel = new WebInspector.RuntimeModel(this.resourceTreeModel);
+        this.runtimeModel = new WebInspector.RuntimeModel(this);
         WebInspector.runtimeModel = this.runtimeModel;
 
         //we can't name it domAgent, because it clashes with function, WebInspector.DOMAgent should be renamed to DOMModel
-        this._domAgent = new WebInspector.DOMAgent();
-        WebInspector.domAgent = this._domAgent;
+        this.domModel = new WebInspector.DOMAgent();
+        WebInspector.domAgent = this.domModel;
         this.workerManager = new WebInspector.WorkerManager(this.canInspectWorkers);
         WebInspector.workerManager = this.workerManager;
 
         if (callback)
             callback(this);
+    },
+
+    /**
+     * @override
+     * @param {string} domain
+     * @param {!Object} dispatcher
+     */
+    registerDispatcher: function(domain, dispatcher)
+    {
+        this._connection.registerDispatcher(domain, dispatcher);
     },
 
     __proto__: Protocol.Agents.prototype

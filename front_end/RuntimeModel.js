@@ -31,14 +31,17 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {!WebInspector.ResourceTreeModel} resourceTreeModel
+ * @param {!WebInspector.Target} target
  */
-WebInspector.RuntimeModel = function(resourceTreeModel)
+WebInspector.RuntimeModel = function(target)
 {
-    resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, this._frameAdded, this);
-    resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, this._frameNavigated, this);
-    resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameDetached, this);
-    resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._didLoadCachedResources, this);
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, this._frameAdded, this);
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, this._frameNavigated, this);
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameDetached, this);
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._didLoadCachedResources, this);
+    this._target = target;
+    this._debuggerModel = target.debuggerModel;
+    this._agent = target.runtimeAgent();
     this._frameIdToContextList = {};
 }
 
@@ -118,8 +121,8 @@ WebInspector.RuntimeModel.prototype = {
 
     _didLoadCachedResources: function()
     {
-        InspectorBackend.registerRuntimeDispatcher(new WebInspector.RuntimeDispatcher(this));
-        RuntimeAgent.enable();
+        this._target.registerRuntimeDispatcher(new WebInspector.RuntimeDispatcher(this));
+        this._agent.enable();
     },
 
     _executionContextCreated: function(context)
@@ -140,8 +143,8 @@ WebInspector.RuntimeModel.prototype = {
      */
     evaluate: function(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback)
     {
-        if (WebInspector.debuggerModel.selectedCallFrame()) {
-            WebInspector.debuggerModel.evaluateOnSelectedCallFrame(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback);
+        if (this._debuggerModel.selectedCallFrame()) {
+            this._debuggerModel.evaluateOnSelectedCallFrame(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback);
             return;
         }
 
@@ -151,6 +154,7 @@ WebInspector.RuntimeModel.prototype = {
         }
 
         /**
+         * @this {WebInspector.RuntimeModel}
          * @param {?Protocol.Error} error
          * @param {!RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
@@ -165,9 +169,9 @@ WebInspector.RuntimeModel.prototype = {
             if (returnByValue)
                 callback(null, !!wasThrown, wasThrown ? null : result);
             else
-                callback(WebInspector.RemoteObject.fromPayload(result), !!wasThrown);
+                callback(WebInspector.RemoteObject.fromPayload(result, this._target), !!wasThrown);
         }
-        RuntimeAgent.evaluate(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, this._currentExecutionContext ? this._currentExecutionContext.id : undefined, returnByValue, generatePreview, evalCallback);
+        this._agent.evaluate(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, this._currentExecutionContext ? this._currentExecutionContext.id : undefined, returnByValue, generatePreview, evalCallback.bind(this));
     },
 
     /**
@@ -212,8 +216,8 @@ WebInspector.RuntimeModel.prototype = {
             return;
         }
 
-        if (!expressionString && WebInspector.debuggerModel.selectedCallFrame())
-            WebInspector.debuggerModel.getSelectedCallFrameVariables(receivedPropertyNames.bind(this));
+        if (!expressionString && this._debuggerModel.selectedCallFrame())
+            this._debuggerModel.getSelectedCallFrameVariables(receivedPropertyNames.bind(this));
         else
             this.evaluate(expressionString, "completion", true, true, false, false, evaluated.bind(this));
 
@@ -280,7 +284,7 @@ WebInspector.RuntimeModel.prototype = {
          */
         function receivedPropertyNames(propertyNames)
         {
-            RuntimeAgent.releaseObjectGroup("completion");
+            this._agent.releaseObjectGroup("completion");
             if (!propertyNames) {
                 completionsReadyCallback([]);
                 return;

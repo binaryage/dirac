@@ -399,7 +399,7 @@ WebInspector.GenericSettingsTab.prototype = {
 
     _skipStackFramesSwitchOrPatternChanged: function()
     {
-        WebInspector.DebuggerModel.applySkipStackFrameSettings();
+        WebInspector.debuggerModel.applySkipStackFrameSettings();
     },
 
     /**
