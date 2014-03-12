@@ -212,12 +212,12 @@ var InspectorFrontendAPI = {
     },
 
     /**
-     * @param {!Object} queryParamsObject
+     * @param {?string} dispatchParameter
      */
-    dispatchQueryParameters: function(queryParamsObject)
+    dispatchQueryParameters: function(dispatchParameter)
     {
-        if ("dispatch" in queryParamsObject)
-            InspectorFrontendAPI._dispatch(JSON.parse(window.decodeURI(queryParamsObject["dispatch"])));
+        if (dispatchParameter)
+            InspectorFrontendAPI._dispatch(JSON.parse(window.decodeURI(dispatchParameter)));
     },
 
     // Testing harness support

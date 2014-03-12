@@ -248,7 +248,11 @@ InspectorFrontendHost.embedderMessageAck = function(id, error) {}
 var FormatterWorker = {}
 var WebInspector = {}
 
-WebInspector.queryParamsObject = {}
+/**
+ * @param {string} param
+ * @return {?string}
+ */
+WebInspector.queryParam = function(param) {}
 WebInspector.toggleSearchingForNode = function() {}
 WebInspector.panels = {};
 

@@ -31,10 +31,12 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {boolean} canDock
  */
-WebInspector.DockController = function()
+WebInspector.DockController = function(canDock)
 {
-    if (!WebInspector.queryParamsObject["can_dock"]) {
+    this._canDock = canDock;
+    if (!canDock) {
         this._dockSide = WebInspector.DockController.State.Undocked;
         this._updateUI();
         return;
@@ -74,7 +76,7 @@ WebInspector.DockController.prototype = {
      */
     get element()
     {
-        return WebInspector.queryParamsObject["can_dock"] ? this._dockToggleButton.element : null;
+        return this._canDock ? this._dockToggleButton.element : null;
     },
 
     /**
@@ -83,6 +85,14 @@ WebInspector.DockController.prototype = {
     dockSide: function()
     {
         return this._dockSide;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    canDock: function()
+    {
+        return this._canDock;
     },
 
     /**
@@ -105,7 +115,7 @@ WebInspector.DockController.prototype = {
         this._updateUI();
         this.dispatchEventToListeners(WebInspector.DockController.Events.DockSideChanged, this._dockSide);
 
-        if (WebInspector.queryParamsObject["can_dock"])
+        if (this._canDock)
             InspectorFrontendHost.setIsDocked(dockSide !== WebInspector.DockController.State.Undocked);
     },
 

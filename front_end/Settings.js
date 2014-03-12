@@ -34,8 +34,7 @@ var Preferences = {
     minDrawerHeight: 24,
     minSidebarWidth: 100,
     minSidebarHeight: 75,
-    applicationTitle: "Developer Tools - %s",
-    experimentsEnabled: false
+    applicationTitle: "Developer Tools - %s"
 }
 
 var Capabilities = {
@@ -265,9 +264,11 @@ WebInspector.BackendSetting.prototype = {
 
 /**
  * @constructor
+ * @param {boolean} experimentsEnabled
  */
-WebInspector.ExperimentsSettings = function()
+WebInspector.ExperimentsSettings = function(experimentsEnabled)
 {
+    this._experimentsEnabled = experimentsEnabled;
     this._setting = WebInspector.settings.createSetting("experiments", {});
     this._experiments = [];
     this._enabledForTest = {};
@@ -306,7 +307,7 @@ WebInspector.ExperimentsSettings.prototype = {
      */
     get experimentsEnabled()
     {
-        return Preferences.experimentsEnabled || ("experiments" in WebInspector.queryParamsObject);
+        return this._experimentsEnabled;
     },
 
     /**
@@ -575,4 +576,4 @@ WebInspector.VersionController.prototype = {
 }
 
 WebInspector.settings = new WebInspector.Settings();
-WebInspector.experimentsSettings = new WebInspector.ExperimentsSettings();
+WebInspector.experimentsSettings = new WebInspector.ExperimentsSettings(WebInspector.queryParam("experiments") !== null);

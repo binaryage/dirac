@@ -59,7 +59,7 @@ var WebInspector = {
     {
         var rootView = new WebInspector.RootView();
 
-        this._rootSplitView = new WebInspector.SplitView(false, true, WebInspector.queryParamsObject["can_dock"] ? "InspectorView.splitViewState" : "InspectorView.dummySplitViewState", 300, 300, true);
+        this._rootSplitView = new WebInspector.SplitView(false, true, this.dockController.canDock() ? "InspectorView.splitViewState" : "InspectorView.dummySplitViewState", 300, 300, true);
         this._rootSplitView.show(rootView.element);
         this._rootSplitView.setSidebarElementConstraints(180, 50);
         this._rootSplitView.setMainElementConstraints(WebInspector.InspectedPagePlaceholder.Constraints.Width, WebInspector.InspectedPagePlaceholder.Constraints.Height);
@@ -97,7 +97,7 @@ var WebInspector = {
      */
     isInspectingDevice: function()
     {
-        return !!WebInspector.queryParamsObject["remoteFrontend"];
+        return !!WebInspector.queryParam("remoteFrontend");
     },
 
     /**
@@ -105,13 +105,13 @@ var WebInspector = {
      */
     isDedicatedWorkerFrontend: function()
     {
-        return !!WebInspector.queryParamsObject["dedicatedWorkerId"];
+        return !!WebInspector.queryParam("dedicatedWorkerId");
     },
 
     _calculateWorkerInspectorTitle: function()
     {
         var expression = "location.href";
-        if (WebInspector.queryParamsObject["isSharedWorker"])
+        if (WebInspector.queryParam("isSharedWorker"))
             expression += " + (this.name ? ' (' + this.name + ')' : '')";
         RuntimeAgent.invoke_evaluate({expression:expression, doNotPauseOnExceptionsAndMuteConsole:true, returnByValue: true}, evalCallback.bind(this));
 
@@ -144,7 +144,7 @@ var WebInspector = {
     {
         // Make sure script execution of dedicated worker is resumed and then paused
         // on the first script statement in case we autoattached to it.
-        if (WebInspector.queryParamsObject["workerPaused"]) {
+        if (WebInspector.queryParam("workerPaused")) {
             DebuggerAgent.pause();
             RuntimeAgent.run(calculateTitle);
         } else if (WebInspector.isWorkerFrontend())
@@ -161,8 +161,8 @@ var WebInspector = {
      */
     isWorkerFrontend: function()
     {
-        return !!WebInspector.queryParamsObject["dedicatedWorkerId"] ||
-                !!WebInspector.queryParamsObject["isSharedWorker"];
+        return !!WebInspector.queryParam("dedicatedWorkerId") ||
+                !!WebInspector.queryParam("isSharedWorker");
     },
 
     _resetErrorAndWarningCounts: function()
@@ -194,20 +194,29 @@ WebInspector.Events = {
     InspectorLoaded: "InspectorLoaded"
 }
 
+/**
+ * @param {string} name
+ * @return {?string|undefined}
+ */
+WebInspector.queryParam = function(name)
+{
+    return WebInspector._queryParamsObject.hasOwnProperty(name) ? WebInspector._queryParamsObject[name] : null;
+}
+
 {(function parseQueryParameters()
 {
-    WebInspector.queryParamsObject = {};
+    WebInspector._queryParamsObject = {};
     var queryParams = window.location.search;
     if (!queryParams)
         return;
     var params = queryParams.substring(1).split("&");
     for (var i = 0; i < params.length; ++i) {
         var pair = params[i].split("=");
-        WebInspector.queryParamsObject[pair[0]] = pair[1];
+        WebInspector._queryParamsObject[pair[0]] = pair[1];
     }
 
     // Patch settings from the URL param (for tests).
-    var settingsParam = WebInspector.queryParamsObject["settings"];
+    var settingsParam = WebInspector._queryParamsObject["settings"];
     if (settingsParam) {
         try {
             var settings = JSON.parse(window.decodeURI(settingsParam));
@@ -242,7 +251,7 @@ WebInspector.loaded = function()
     }
 
     InspectorBackend.loadFromJSONIfNeeded("../protocol.json");
-    WebInspector.dockController = new WebInspector.DockController();
+    WebInspector.dockController = new WebInspector.DockController(!!WebInspector.queryParam("can_dock"));
 
     if (WebInspector.isDedicatedWorkerFrontend()) {
         // Do not create socket for the worker front-end.
@@ -251,11 +260,11 @@ WebInspector.loaded = function()
     }
 
     var ws;
-    if ("ws" in WebInspector.queryParamsObject)
-        ws = "ws://" + WebInspector.queryParamsObject.ws;
-    else if ("page" in WebInspector.queryParamsObject) {
-        var page = WebInspector.queryParamsObject.page;
-        var host = "host" in WebInspector.queryParamsObject ? WebInspector.queryParamsObject.host : window.location.host;
+    if (WebInspector.queryParam("ws"))
+        ws = "ws://" + WebInspector.queryParam("ws");
+    else if (WebInspector.queryParam("page")) {
+        var page = WebInspector.queryParam("page");
+        var host = WebInspector.queryParam("host") || window.location.host;
         ws = "ws://" + host + "/devtools/page/" + page;
     }
 
@@ -277,7 +286,7 @@ WebInspector.loaded = function()
     WebInspector.doLoadedDone();
 
     if (InspectorFrontendHost.isStub)
-        InspectorFrontendAPI.dispatchQueryParameters(WebInspector.queryParamsObject);
+        InspectorFrontendAPI.dispatchQueryParameters(WebInspector.queryParam("dispatch"));
 }
 
 WebInspector.doLoadedDone = function()
@@ -287,10 +296,10 @@ WebInspector.doLoadedDone = function()
     if (WebInspector.socket)
         document.body.classList.add("remote");
 
-    if (WebInspector.queryParamsObject.toolbarColor && WebInspector.queryParamsObject.textColor)
-        WebInspector.setToolbarColors(WebInspector.queryParamsObject.toolbarColor, WebInspector.queryParamsObject.textColor);
+    if (WebInspector.queryParam("toolbarColor") && WebInspector.queryParam("textColor"))
+        WebInspector.setToolbarColors(WebInspector.queryParam("toolbarColor"), WebInspector.queryParam("textColor"));
 
-    var workerId = WebInspector.queryParamsObject["dedicatedWorkerId"];
+    var workerId = WebInspector.queryParam("dedicatedWorkerId");
     if (workerId)
         this._initializeDedicatedWorkerFrontend(workerId);
 
