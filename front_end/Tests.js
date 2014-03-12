@@ -225,16 +225,6 @@ TestSuite.prototype.addSniffer = function(receiver, methodName, override, opt_st
 };
 
 
-TestSuite.prototype.testEnableResourcesTab = function()
-{
-    // FIXME once reference is removed downstream.
-}
-
-TestSuite.prototype.testCompletionOnPause = function()
-{
-    // FIXME once reference is removed downstream.
-}
-
 // UI Tests
 
 
