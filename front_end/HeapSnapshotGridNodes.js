@@ -138,7 +138,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
     collapse: function()
     {
         WebInspector.DataGridNode.prototype.collapse.call(this);
-        this._dataGrid.updateVisibleNodes();
+        this._dataGrid.updateVisibleNodes(true);
     },
 
     /**
@@ -147,7 +147,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
     expand: function()
     {
         WebInspector.DataGridNode.prototype.expand.call(this);
-        this._dataGrid.updateVisibleNodes();
+        this._dataGrid.updateVisibleNodes(true);
     },
 
     /**
@@ -405,7 +405,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
                 return;
             }
 
-            this._dataGrid.updateVisibleNodes();
+            this._dataGrid.updateVisibleNodes(true);
             if (afterPopulate)
                 afterPopulate();
             this.dispatchEventToListeners(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete);
