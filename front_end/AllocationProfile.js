@@ -116,7 +116,7 @@ WebInspector.AllocationProfile.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.HeapSnapshotCommon.SerializedTraceTop>}
+     * @return {!Array.<!WebInspector.HeapSnapshotCommon.SerializedAllocationNode>}
      */
     serializeTraceTops: function()
     {
@@ -170,10 +170,7 @@ WebInspector.AllocationProfile.prototype = {
         for (var i = 0; i < callers.length; i++) {
             branchingCallers.push(this._serializeCaller(callers[i]));
         }
-        return /** @type {!WebInspector.HeapSnapshotCommon.AllocationNodeCallers} */ ({
-            nodesWithSingleCaller: nodesWithSingleCaller,
-            branchingCallers: branchingCallers
-        });
+        return new WebInspector.HeapSnapshotCommon.AllocationNodeCallers(nodesWithSingleCaller, branchingCallers);
     },
 
     _serializeCaller: function(node)
@@ -190,20 +187,30 @@ WebInspector.AllocationProfile.prototype = {
             node.hasCallers());
     },
 
+    /**
+     * @param {number} nodeId
+     * @param {!WebInspector.FunctionAllocationInfo} functionInfo
+     * @param {number} count
+     * @param {number} size
+     * @param {number} liveCount
+     * @param {number} liveSize
+     * @param {boolean} hasChildren
+     * @return {!WebInspector.HeapSnapshotCommon.SerializedAllocationNode}
+     */
     _serializeNode: function(nodeId, functionInfo, count, size, liveCount, liveSize, hasChildren)
     {
-        return {
-            id: nodeId,
-            name: functionInfo.functionName,
-            scriptName: functionInfo.scriptName,
-            line: functionInfo.line,
-            column: functionInfo.column,
-            count: count,
-            size: size,
-            liveCount: liveCount,
-            liveSize: liveSize,
-            hasChildren: hasChildren
-        };
+        return new WebInspector.HeapSnapshotCommon.SerializedAllocationNode(
+            nodeId,
+            functionInfo.functionName,
+            functionInfo.scriptName,
+            functionInfo.line,
+            functionInfo.column,
+            count,
+            size,
+            liveCount,
+            liveSize,
+            hasChildren
+        );
     }
 }
 

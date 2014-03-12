@@ -1057,6 +1057,7 @@ WebInspector.AllocationDataGrid = function()
     ];
     WebInspector.DataGrid.call(this, columns);
     this._linkifier = new WebInspector.Linkifier();
+    this.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sortingChanged, this);
 }
 
 WebInspector.AllocationDataGrid.prototype = {
@@ -1066,16 +1067,54 @@ WebInspector.AllocationDataGrid.prototype = {
         this._snapshot.allocationTracesTops(didReceiveAllocationTracesTops.bind(this));
 
         /**
-         * @param {!Array.<!WebInspector.DataGrid>} tops
+         * @param {!Array.<!WebInspector.HeapSnapshotCommon.SerializedAllocationNode>} tops
          * @this {WebInspector.AllocationDataGrid}
          */
         function didReceiveAllocationTracesTops(tops)
         {
-            var root = this.rootNode();
-            for (var i = 0; i < tops.length; i++)
-                root.appendChild(new WebInspector.AllocationGridNode(this, tops[i]));
+            this._topNodes = tops;
+            this._populateChildren();
         }
     },
+
+    _populateChildren: function()
+    {
+        var root = this.rootNode();
+        var tops = this._topNodes;
+        for (var i = 0; i < tops.length; i++)
+            root.appendChild(new WebInspector.AllocationGridNode(this, tops[i]));
+    },
+
+    _sortingChanged: function()
+    {
+        this._topNodes.sort(this._createComparator());
+        this.rootNode().removeChildren();
+        this._populateChildren();
+    },
+
+
+    /**
+     * @return {function(!Object, !Object):number}
+     */
+     _createComparator: function()
+     {
+        var fieldName = this.sortColumnIdentifier();
+        var compareResult = (this.sortOrder() === WebInspector.DataGrid.Order.Ascending) ? +1 : -1;
+        /**
+         * @param {!Object} a
+         * @param {!Object} b
+         * @return {number}
+         */
+        function compare(a, b)
+        {
+            if (a[fieldName] > b[fieldName])
+                return compareResult;
+            if (a[fieldName] < b[fieldName])
+                return -compareResult;
+            return 0;
+        }
+        return compare;
+     },
 
     __proto__: WebInspector.DataGrid.prototype
 }
@@ -1084,7 +1123,8 @@ WebInspector.AllocationDataGrid.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.DataGridNode}
- * @param {!WebInspector.DataGrid} dataGrid
+ * @param {!WebInspector.AllocationDataGrid} dataGrid
+ * @param {!WebInspector.HeapSnapshotCommon.SerializedAllocationNode} data
  */
 WebInspector.AllocationGridNode = function(dataGrid, data)
 {
@@ -1119,6 +1159,7 @@ WebInspector.AllocationGridNode.prototype = {
             }
 
             var callersBranch = callers.branchingCallers;
+            callersBranch.sort(this._dataGrid._createComparator());
             for (var i = 0; i < callersBranch.length; i++)
                 parentNode.appendChild(new WebInspector.AllocationGridNode(this._dataGrid, callersBranch[i]));
         }

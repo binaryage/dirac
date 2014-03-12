@@ -1016,7 +1016,7 @@ WebInspector.HeapSnapshot.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.HeapSnapshotCommon.SerializedTraceTop>}
+     * @return {!Array.<!WebInspector.HeapSnapshotCommon.SerializedAllocationNode>}
      */
     allocationTracesTops: function()
     {

@@ -36,14 +36,53 @@ WebInspector.HeapSnapshotCommon = {
 }
 
 /**
+ * @param {!Array.<!WebInspector.HeapSnapshotCommon.SerializedAllocationNode>} nodesWithSingleCaller
+ * @param {!Array.<!WebInspector.HeapSnapshotCommon.SerializedAllocationNode>} branchingCallers
  * @constructor
  */
-WebInspector.HeapSnapshotCommon.AllocationNodeCallers = function()
+WebInspector.HeapSnapshotCommon.AllocationNodeCallers = function(nodesWithSingleCaller, branchingCallers)
 {
-    /** @type {!Array.<!WebInspector.HeapSnapshotCommon.SerializedTraceTop>} */
-    this.nodesWithSingleCaller;
-    /** @type {!Array.<!WebInspector.HeapSnapshotCommon.SerializedTraceTop>} */
-    this.branchingCallers;
+    /** @type {!Array.<!WebInspector.HeapSnapshotCommon.SerializedAllocationNode>} */
+    this.nodesWithSingleCaller = nodesWithSingleCaller;
+    /** @type {!Array.<!WebInspector.HeapSnapshotCommon.SerializedAllocationNode>} */
+    this.branchingCallers = branchingCallers;
+}
+
+/**
+ * @param {number} nodeId
+ * @param {string} functionName
+ * @param {string} scriptName
+ * @param {number} line
+ * @param {number} column
+ * @param {number} count
+ * @param {number} size
+ * @param {number} liveCount
+ * @param {number} liveSize
+ * @param {boolean} hasChildren
+ * @constructor
+ */
+WebInspector.HeapSnapshotCommon.SerializedAllocationNode = function(nodeId, functionName, scriptName, line, column, count, size, liveCount, liveSize, hasChildren)
+{
+    /** @type {number} */
+    this.id = nodeId;
+    /** @type {string} */
+    this.name = functionName;
+    /** @type {string} */
+    this.scriptName = scriptName;
+    /** @type {number} */
+    this.line = line;
+    /** @type {number} */
+    this.column = column;
+    /** @type {number} */
+    this.count = count;
+    /** @type {number} */
+    this.size = size;
+    /** @type {number} */
+    this.liveCount = liveCount;
+    /** @type {number} */
+    this.liveSize = liveSize;
+    /** @type {boolean} */
+    this.hasChildren = hasChildren;
 }
 
 /**
@@ -175,29 +214,6 @@ WebInspector.HeapSnapshotCommon.ItemsRange = function(startPosition, endPosition
     this.totalLength = totalLength;
     /** @type {!Array.<*>} */
     this.items = items;
-}
-
-/**
- * @constructor
- */
-WebInspector.HeapSnapshotCommon.SerializedTraceTop = function()
-{
-    /** @type {string} */
-    this.id;
-    /** @type {string} */
-    this.name;
-    /** @type {string} */
-    this.scriptName;
-    /** @type {number} */
-    this.line;
-    /** @type {number} */
-    this.column;
-    /** @type {number} */
-    this.count;
-    /** @type {number} */
-    this.size;
-    /** @type {boolean} */
-    this.hasChildren;
 }
 
 /**
