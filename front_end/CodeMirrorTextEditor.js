@@ -240,6 +240,7 @@ CodeMirror.commands.redoAndReveal = function(codemirror)
 
 WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 2000;
 WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
+WebInspector.CodeMirrorTextEditor.MaxEditableTextSize = 1024 * 1024 * 10;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
     _enableBracketMatchingIfNeeded: function()
@@ -276,7 +277,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
                 return;
             indents[i] = 1 + (indents[i] || 0);
         }
-        this._codeMirror.eachLine(processLine);
+        this._codeMirror.eachLine(0, 1000, processLine);
 
         var onePercentFilterThreshold = this.linesCount / 100;
         if (tabLines && tabLines > onePercentFilterThreshold)
@@ -414,6 +415,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     _addTextToCompletionDictionary: function(text)
     {
+        if (this.readOnly())
+            return;
         var words = WebInspector.TextUtils.textToWords(text);
         for (var i = 0; i < words.length; ++i) {
             if (this._shouldProcessWordForAutocompletion(words[i]))
@@ -426,6 +429,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     _removeTextFromCompletionDictionary: function(text)
     {
+        if (this.readOnly())
+            return;
         var words = WebInspector.TextUtils.textToWords(text);
         for (var i = 0; i < words.length; ++i) {
             if (this._shouldProcessWordForAutocompletion(words[i]))
@@ -967,9 +972,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             if (!this._muteTextChangedEvent)
                 this._delegate.onTextChanged(oldRange, newRange);
 
-            for (var i = newRange.startLine; i <= newRange.endLine; ++i) {
-                linesToUpdate[i] = true;
-            }
             if (this._dictionary) {
                 for (var i = newRange.startLine; i <= newRange.endLine; ++i)
                     linesToUpdate[i] = this.line(i);
@@ -1102,6 +1104,11 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     setText: function(text)
     {
         this._muteTextChangedEvent = true;
+        if (text.length > WebInspector.CodeMirrorTextEditor.MaxEditableTextSize) {
+            if (this._dictionary)
+                this._dictionary.reset();
+            this.setReadOnly(true);
+        }
         this._codeMirror.setValue(text);
         this._updateEditorIndentation();
         if (this._shouldClearHistory) {

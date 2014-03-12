@@ -60,7 +60,9 @@ WebInspector.CompletionDictionary.prototype = {
      * @param {string} word
      * @return {number}
      */
-    wordCount: function(word) { }
+    wordCount: function(word) { },
+
+    reset: function() { }
 }
 
 /**
@@ -126,5 +128,10 @@ WebInspector.SampleCompletionDictionary.prototype = {
     wordCount: function(word)
     {
         return this._words[word] ? this._words[word] : 0;
+    },
+
+    reset: function()
+    {
+        this._words = {};
     }
 }
