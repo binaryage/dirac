@@ -65,7 +65,7 @@ WebInspector.InspectorView = function()
 
     this._closeButtonToolbarItem = document.createElementWithClass("div", "toolbar-close-button-item");
     var closeButtonElement = this._closeButtonToolbarItem.createChild("div", "close-button");
-    closeButtonElement.addEventListener("click", WebInspector.close.bind(WebInspector), true);
+    closeButtonElement.addEventListener("click", InspectorFrontendHost.closeWindow.bind(InspectorFrontendHost), true);
     this._rightToolbarElement.appendChild(this._closeButtonToolbarItem);
 
     this.appendToRightToolbar(this._drawer.toggleButtonElement());

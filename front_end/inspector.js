@@ -452,11 +452,6 @@ WebInspector.windowResize = function(event)
         WebInspector.settingsController.resize();
 }
 
-WebInspector.close = function(event)
-{
-    InspectorFrontendHost.closeWindow();
-}
-
 WebInspector.documentClick = function(event)
 {
     var anchor = event.target.enclosingNodeOrSelfWithNodeName("a");
