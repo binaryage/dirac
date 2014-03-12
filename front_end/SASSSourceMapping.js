@@ -565,6 +565,14 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isIdentity: function()
+    {
+        return false;
+    },
+
+    /**
      * @param {!WebInspector.Event} event
      */
     _uiSourceCodeAdded: function(event)

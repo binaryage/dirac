@@ -91,6 +91,14 @@ WebInspector.DefaultScriptMapping.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isIdentity: function()
+    {
+        return true;
+    },
+
+    /**
      * @param {string} scriptId
      * @param {!WebInspector.Event} event
      */

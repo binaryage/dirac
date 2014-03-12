@@ -153,6 +153,9 @@ WebInspector.BreakpointManager.prototype = {
     _uiSourceCodeMappingChanged: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.target);
+        var isIdentity = /** @type {boolean} */ (event.data.isIdentity);
+        if (isIdentity)
+            return;
         var breakpoints = this._breakpointsForPrimaryUISourceCode.get(uiSourceCode) || [];
         for (var i = 0; i < breakpoints.length; ++i)
             breakpoints[i]._updateInDebugger();
@@ -557,7 +560,7 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
     _updateInDebugger: function()
     {
         var uiSourceCode = this.uiSourceCode();
-        if (!uiSourceCode || !uiSourceCode.hasSourceMapping())
+        if (!uiSourceCode)
             return;
         var scriptFile = uiSourceCode && uiSourceCode.scriptFile();
         if (this._enabled && !(scriptFile && scriptFile.hasDivergedFromVM()))

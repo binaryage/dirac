@@ -91,6 +91,14 @@ WebInspector.ResourceScriptMapping.prototype = {
         this._bindUISourceCodeToScripts(uiSourceCode, [script]);
     },
 
+    /**
+     * @return {boolean}
+     */
+    isIdentity: function()
+    {
+        return true;
+    },
+
     _uiSourceCodeAddedToWorkspace: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);

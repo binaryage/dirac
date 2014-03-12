@@ -76,6 +76,14 @@ WebInspector.StylesSourceMapping.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isIdentity: function()
+    {
+        return true;
+    },
+
+    /**
      * @param {!WebInspector.CSSStyleSheetHeader} header
      */
     addHeader: function(header)

@@ -536,7 +536,15 @@ WebInspector.SnippetScriptMapping.prototype = {
     addScript: function(script)
     {
         this._scriptSnippetModel._addScript(script);
-    }
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isIdentity: function()
+    {
+        return false;
+    },
 }
 
 /**

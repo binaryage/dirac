@@ -145,6 +145,14 @@ WebInspector.CompilerScriptMapping.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isIdentity: function()
+    {
+        return false;
+    },
+
+    /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      */
     _bindUISourceCode: function(uiSourceCode)

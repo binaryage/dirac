@@ -708,7 +708,9 @@ WebInspector.UISourceCode.prototype = {
         if (this._sourceMapping === sourceMapping)
             return;
         this._sourceMapping = sourceMapping;
-        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.SourceMappingChanged);
+        var data = {};
+        data.isIdentity = this._sourceMapping && this._sourceMapping.isIdentity();
+        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.SourceMappingChanged, data);
     },
 
     __proto__: WebInspector.Object.prototype

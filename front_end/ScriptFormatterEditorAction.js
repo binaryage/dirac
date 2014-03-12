@@ -60,6 +60,14 @@ WebInspector.FormatterScriptMapping.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isIdentity: function()
+    {
+        return false;
+    },
+
+    /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @return {!Array.<!WebInspector.Script>}
      */
