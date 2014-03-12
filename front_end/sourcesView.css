@@ -94,20 +94,10 @@
     background-position: -202px -107px;
 }
 
-.status-bar-item.scripts-debugger-show-hide-button {
-    opacity: 0.9;
-}
-
 button.status-bar-item.scripts-debugger-show-hide-button {
-    right: 15px;
     display: none;
 }
 
 button.status-bar-item.scripts-navigator-show-hide-button {
     display: none;
 }
-
-button.status-bar-item.scripts-debugger-show-hide-button.toggled-left {
-    right: 0;
-}
-

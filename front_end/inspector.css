@@ -649,39 +649,6 @@ button.status-bar-item.settings-status-bar-item:active {
     border-right: 0 transparent none;
 }
 
-button.status-bar-item.left-sidebar-show-hide-button,
-button.status-bar-item.right-sidebar-show-hide-button {
-    position: absolute;
-    top: 0;
-    background-image: none;
-    height: 16px;
-    width: 16px;
-    margin: 4px 2px 2px 2px;
-    border: none;
-    z-index: 10;
-}
-
-button.status-bar-item.left-sidebar-show-hide-button:active,
-button.status-bar-item.right-sidebar-show-hide-button:active {
-    margin: 5px 1px 1px 3px;
-}
-
-button.status-bar-item.left-sidebar-show-hide-button.toggled-left > .glyph {
-    -webkit-mask-position: -199px -76px;
-}
-
-button.status-bar-item.left-sidebar-show-hide-button.toggled-right > .glyph {
-    -webkit-mask-position: -168px -76px;
-}
-
-button.status-bar-item.right-sidebar-show-hide-button.toggled-left > .glyph {
-    -webkit-mask-position: -296px -76px;
-}
-
-button.status-bar-item.right-sidebar-show-hide-button.toggled-right > .glyph {
-    -webkit-mask-position: -264px -76px;
-}
-
 div.resizer-widget {
     position: absolute;
     top: 0;
@@ -692,6 +659,14 @@ div.resizer-widget {
     background-repeat: no-repeat;
     background-position: center;
     z-index: 13;
+}
+
+.ns-resizer-widget {
+    cursor: ns-resize;
+}
+
+.ew-resizer-widget {
+    cursor: ew-resize;
 }
 
 .settings-status-bar-item .glyph {
@@ -789,10 +764,6 @@ body.remote .dock-status-bar-item {
 
 #drawer-tabbed-pane > .tabbed-pane-header {
     background-color: rgb(236, 236, 236);
-}
-
-#drawer-tabbed-pane .drawer-editor-show-hide-button {
-    right: 0;
 }
 
 #drawer-contents .tabbed-pane-header .tabbed-pane-header-tab {

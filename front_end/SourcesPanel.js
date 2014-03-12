@@ -443,7 +443,7 @@ WebInspector.SourcesPanel.prototype = {
                 console.warn("ScriptsPanel paused, but callFrames.length is zero."); // TODO remove this once we understand this case better
         }
 
-        this._splitView.showBoth();
+        this._splitView.showBoth(true);
         this._toggleDebuggerSidebarButton.setEnabled(false);
         window.focus();
         InspectorFrontendHost.bringToFront();
@@ -1307,16 +1307,12 @@ WebInspector.SourcesPanel.prototype = {
     _installDebuggerSidebarController: function()
     {
         this._toggleNavigatorSidebarButton = this.editorView.createShowHideSidebarButton("navigator", "scripts-navigator-show-hide-button");
-        this.sourcesView.element.appendChild(this._toggleNavigatorSidebarButton.element);
+        this.editorView.mainElement().appendChild(this._toggleNavigatorSidebarButton.element);
 
         this._toggleDebuggerSidebarButton = this._splitView.createShowHideSidebarButton("debugger", "scripts-debugger-show-hide-button");
-        if (this._splitView.isVertical()) {
-            this.editorView.element.appendChild(this._toggleDebuggerSidebarButton.element);
-            this._splitView.mainElement().appendChild(this._debugSidebarResizeWidgetElement);
-        } else {
-            this._statusBarContainerElement.appendChild(this._debugSidebarResizeWidgetElement);
-            this._statusBarContainerElement.appendChild(this._toggleDebuggerSidebarButton.element);
-        }
+
+        this._splitView.mainElement().appendChild(this._toggleDebuggerSidebarButton.element);
+        this._splitView.mainElement().appendChild(this._debugSidebarResizeWidgetElement);
     },
 
     _updateDebugSidebarResizeWidget: function()
@@ -1585,16 +1581,10 @@ WebInspector.SourcesPanel.prototype = {
 
         this._splitView.setVertical(!vertically);
 
-        // Update resizer widgets.
-        if (!vertically) {
+        if (!vertically)
             this._splitView.uninstallResizer(this._statusBarContainerElement);
-            this.editorView.element.appendChild(this._toggleDebuggerSidebarButton.element);
-            this._splitView.mainElement().appendChild(this._debugSidebarResizeWidgetElement);
-        } else {
+        else
             this._splitView.installResizer(this._statusBarContainerElement);
-            this._statusBarContainerElement.appendChild(this._debugSidebarResizeWidgetElement);
-            this._statusBarContainerElement.appendChild(this._toggleDebuggerSidebarButton.element)
-        }
 
         // Create vertical box with stack.
         var vbox = new WebInspector.VBox();

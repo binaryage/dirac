@@ -121,9 +121,6 @@ WebInspector.SplitView.prototype = {
 
         if (this.isShowing())
             this._updateLayout();
-
-        for (var i = 0; i < this._resizerElements.length; ++i)
-            this._resizerElements[i].style.setProperty("cursor", this._isVertical ? "ew-resize" : "ns-resize");
     },
 
     /**
@@ -139,6 +136,12 @@ WebInspector.SplitView.prototype = {
         this._restoreSidebarSizeFromSettings();
         if (this._shouldSaveShowMode)
             this._restoreAndApplyShowModeFromSettings();
+        this._updateShowHideSidebarButton();
+
+        for (var i = 0; i < this._resizerElements.length; ++i) {
+            this._resizerElements[i].classList.toggle("ew-resizer-widget", this._isVertical);
+            this._resizerElements[i].classList.toggle("ns-resizer-widget", !this._isVertical);
+        }
     },
 
     /**
@@ -215,7 +218,7 @@ WebInspector.SplitView.prototype = {
      */
     sidebarSide: function()
     {
-        if (this._isShowingOne)
+        if (this._showMode !== WebInspector.SplitView.ShowMode.Both)
             return null;
         return this._isVertical ?
             (this._secondIsSidebar ? "right" : "left") :
@@ -284,7 +287,6 @@ WebInspector.SplitView.prototype = {
             this.doResize();
         }
 
-        this._isShowingOne = true;
         this._sidebarSize = -1;
         this.setResizable(false);
     },
@@ -309,7 +311,7 @@ WebInspector.SplitView.prototype = {
      */
     showBoth: function(animate)
     {
-        if (!this._isShowingOne)
+       if (this._showMode === WebInspector.SplitView.ShowMode.Both)
             animate = false;
 
         this._cancelAnimation();
@@ -321,11 +323,10 @@ WebInspector.SplitView.prototype = {
         // Order views in DOM properly.
         this.setSecondIsSidebar(this._secondIsSidebar);
 
-        this._isShowingOne = false;
         this._sidebarSize = -1;
         this.setResizable(true);
-        this._updateLayout(animate);
         this._updateShowMode(WebInspector.SplitView.ShowMode.Both);
+        this._updateLayout(animate);
     },
 
     /**
@@ -382,7 +383,7 @@ WebInspector.SplitView.prototype = {
      */
     _innerSetSidebarSize: function(size, ignoreConstraints, animate)
     {
-        if (this._isShowingOne) {
+        if (this._showMode !== WebInspector.SplitView.ShowMode.Both) {
             this._sidebarSize = size;
             return;
         }
@@ -655,7 +656,8 @@ WebInspector.SplitView.prototype = {
     installResizer: function(resizerElement)
     {
         resizerElement.addEventListener("mousedown", this._onDragStartBound, false);
-        resizerElement.style.setProperty("cursor", this._isVertical ? "ew-resize" : "ns-resize");
+        resizerElement.classList.toggle("ew-resizer-widget", this._isVertical);
+        resizerElement.classList.toggle("ns-resizer-widget", !this._isVertical);
         if (this._resizerElements.indexOf(resizerElement) === -1)
             this._resizerElements.push(resizerElement);
     },
@@ -820,7 +822,7 @@ WebInspector.SplitView.prototype = {
         console.assert(this.isVertical(), "Buttons for split view with horizontal split are not supported yet.");
 
         this._showHideSidebarButtonTitle = WebInspector.UIString(title);
-        this._showHideSidebarButton = new WebInspector.StatusBarButton("", (this.isSidebarSecond() ? "right" : "left") + "-sidebar-show-hide-button " + className, 3);
+        this._showHideSidebarButton = new WebInspector.StatusBarButton("", "sidebar-show-hide-button " + className, 3);
         this._showHideSidebarButton.addEventListener("click", buttonClicked.bind(this));
         this._updateShowHideSidebarButton();
 
@@ -830,8 +832,7 @@ WebInspector.SplitView.prototype = {
          */
         function buttonClicked(event)
         {
-            var show = this._isShowingOne;
-            if (show)
+            if (this._showMode !== WebInspector.SplitView.ShowMode.Both)
                 this.showBoth(true);
             else
                 this.hideSidebar(true);
@@ -844,8 +845,13 @@ WebInspector.SplitView.prototype = {
     {
         if (!this._showHideSidebarButton)
             return;
-        this._showHideSidebarButton.state = this._isShowingOne === this.isSidebarSecond() ? "left" : "right";
-        this._showHideSidebarButton.title = this._isShowingOne ? WebInspector.UIString("Show %s", this._showHideSidebarButtonTitle) : WebInspector.UIString("Hide %s", this._showHideSidebarButtonTitle);
+        var sidebarHidden = this._showMode === WebInspector.SplitView.ShowMode.OnlyMain;
+        this._showHideSidebarButton.state = sidebarHidden ? "show" : "hide";
+        this._showHideSidebarButton.element.classList.toggle("top-sidebar-show-hide-button", !this.isVertical() && !this.isSidebarSecond());
+        this._showHideSidebarButton.element.classList.toggle("right-sidebar-show-hide-button", this.isVertical() && this.isSidebarSecond());
+        this._showHideSidebarButton.element.classList.toggle("bottom-sidebar-show-hide-button", !this.isVertical() && this.isSidebarSecond());
+        this._showHideSidebarButton.element.classList.toggle("left-sidebar-show-hide-button", this.isVertical() && !this.isSidebarSecond());
+        this._showHideSidebarButton.title = sidebarHidden ? WebInspector.UIString("Show %s", this._showHideSidebarButtonTitle) : WebInspector.UIString("Hide %s", this._showHideSidebarButtonTitle);
     },
 
     __proto__: WebInspector.View.prototype

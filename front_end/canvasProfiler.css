@@ -83,13 +83,8 @@
     border: none;
 }
 
-button.status-bar-item.canvas-sidebar-show-hide-button {
-    right: 15px;
-    z-index: 13;
-}
-
-button.status-bar-item.canvas-sidebar-show-hide-button.toggled-left {
-    right: 0;
+.canvas-profile-view button.right-sidebar-show-hide-button.canvas-sidebar-show-hide-button.toggled-hide {
+    margin-right: 15px;
 }
 
 .canvas-replay-button {

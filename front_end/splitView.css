@@ -81,3 +81,80 @@
 .split-view.split-view-no-resizer > .split-view-resizer {
     display: none;
 }
+
+.split-view button.sidebar-show-hide-button {
+    position: absolute;
+    background-image: none;
+    height: 16px;
+    width: 16px;
+    border: none;
+    z-index: 10;
+}
+
+.split-view button.left-sidebar-show-hide-button,
+.split-view button.top-sidebar-show-hide-button {
+    top: 4px;
+    left: 2px;
+}
+
+.split-view button.left-sidebar-show-hide-button:active,
+.split-view button.top-sidebar-show-hide-button:active {
+    top: 5px;
+    left: 3px;
+}
+
+.split-view button.right-sidebar-show-hide-button {
+    top: 4px;
+    right:2px;
+}
+
+.split-view button.right-sidebar-show-hide-button:active {
+    top: 5px;
+    right: 1px;
+}
+
+.split-view button.bottom-sidebar-show-hide-button {
+    bottom: 1px;
+    right: 1px;
+}
+
+.split-view button.bottom-sidebar-show-hide-button:active {
+    bottom: 0;
+    right: 0;
+}
+
+.split-view button.left-sidebar-show-hide-button.toggled-show > .glyph {
+    -webkit-mask-position: -168px -76px; /* |> */
+}
+
+.split-view button.left-sidebar-show-hide-button.toggled-hide > .glyph {
+    -webkit-mask-position: -199px -76px; /* |< */
+}
+
+.split-view button.right-sidebar-show-hide-button.toggled-show > .glyph {
+    -webkit-mask-position: -296px -76px; /* <| */
+}
+
+.split-view button.right-sidebar-show-hide-button.toggled-hide > .glyph {
+    -webkit-mask-position: -264px -76px; /* >| */
+}
+
+.split-view button.top-sidebar-show-hide-button.toggled-show > .glyph {
+    -webkit-mask-position: -168px -76px; /* |> */
+    -webkit-transform: rotate(90deg);
+}
+
+.split-view button.top-sidebar-show-hide-button.toggled-hide > .glyph {
+    -webkit-mask-position: -199px -76px; /* |< */
+    -webkit-transform: rotate(90deg);
+}
+
+.split-view button.bottom-sidebar-show-hide-button.toggled-show > .glyph {
+    -webkit-mask-position: -296px -76px; /* <| */
+    -webkit-transform: rotate(90deg);
+}
+
+.split-view button.bottom-sidebar-show-hide-button.toggled-hide > .glyph {
+    -webkit-mask-position: -264px -76px; /* >| */
+    -webkit-transform: rotate(90deg);
+}

@@ -133,7 +133,22 @@
     margin-right: 36px;
 }
 
-.panel.sources button.status-bar-item.scripts-debugger-show-hide-button {
+.panel.sources .split-view button.scripts-debugger-show-hide-button.right-sidebar-show-hide-button.toggled-hide {
+    margin-right: 15px;
+}
+
+.panel.sources .split-view #scripts-debug-sidebar-resizer-widget.ns-resizer-widget {
+    -webkit-transform: rotate(90deg);
+    right: 17px;
+    bottom: 0;
+    top: auto;
+}
+
+.panel.sources .split-view.hbox #scripts-debug-sidebar-resizer-widget {
+    bottom: 0;
+}
+
+.panel.sources .scripts-debugger-show-hide-button {
     display: block;
 }
 
