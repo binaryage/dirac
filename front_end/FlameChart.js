@@ -179,10 +179,15 @@ WebInspector.FlameChartDataProvider.prototype = {
     /**
      * @param {number} entryIndex
      * @param {!CanvasRenderingContext2D} context
-     * @param {number} levelY
+     * @param {?string} text
+     * @param {number} barX
+     * @param {number} barY
+     * @param {number} barWidth
+     * @param {number} barHeight
      * @param {function(number):number} offsetToPosition
+     * @return {boolean}
      */
-    decorateEntry: function(entryIndex, context, levelY, offsetToPosition) { },
+    decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight, offsetToPosition) { },
 
     /**
      * @param {number} entryIndex
@@ -852,86 +857,64 @@ WebInspector.FlameChart.MainPane.prototype = {
         for (var i = 0; i < lastDrawOffset.length; ++i)
             lastDrawOffset[i] = -1;
 
-        var barX = 0;
-        var barY = 0;
-        var barWidth = 0;
-        var barRight = 0;
-        var barLevel = 0;
         var barHeight = this._barHeight;
-        this._baseHeight = this._isTopDown ? WebInspector.FlameChart.DividersBarHeight : height - this._barHeight;
-        context.strokeStyle = "black";
-        var color;
-        var entryIndex = 0;
-        var entryOffset = 0;
+        this._baseHeight = this._isTopDown ? WebInspector.FlameChart.DividersBarHeight : height - barHeight;
 
-        var colorBuckets = {};
-        var colors = [];
-        var bucket = [];
         var offsetToPosition = this._offsetToPosition.bind(this);
+        var textBaseHeight = this._baseHeight + barHeight - this._dataProvider.textBaseline();
+        var colorBuckets = {};
+        var maxBarLevel = height / barHeight;
 
-        var textBaseHeight = this._baseHeight + this._barHeight - this._dataProvider.textBaseline();
-        var font;
-        var textColor;
-        var text = "";
-        var xText = 0;
-        var textWidth = 0;
-        var title = "";
-        var i = 0;
-        var c = 0;
-
-        var entryOffsetRight = 0;
-        var maxBarLevel = height / this._barHeight;
-        for (entryIndex = 0; entryIndex < entryOffsets.length; ++entryIndex) {
+        for (var entryIndex = 0; entryIndex < entryOffsets.length; ++entryIndex) {
             // stop if we reached right border in time (entries were ordered by start time).
-            entryOffset = entryOffsets[entryIndex];
+            var entryOffset = entryOffsets[entryIndex];
             if (entryOffset > timeWindowRight)
                 break;
 
             // skip if it is not visible (top/bottom side)
-            barLevel = entryLevels[entryIndex];
+            var barLevel = entryLevels[entryIndex];
             if (barLevel > maxBarLevel)
                 continue;
 
             // skip if it is not visible (left side).
-            entryOffsetRight = entryOffset + entryTotalTimes[entryIndex];
+            var entryOffsetRight = entryOffset + entryTotalTimes[entryIndex];
             if (entryOffsetRight < timeWindowLeft)
                 continue;
 
-            barRight = this._offsetToPosition(entryOffsetRight);
-
+            var barRight = this._offsetToPosition(entryOffsetRight);
             if (barRight <= lastDrawOffset[barLevel])
                 continue;
-            barX = Math.max(this._offsetToPosition(entryOffset), lastDrawOffset[barLevel]);
+            var barX = Math.max(this._offsetToPosition(entryOffset), lastDrawOffset[barLevel]);
             lastDrawOffset[barLevel] = barRight;
 
-            barWidth = barRight - barX;
-
-            color = this._dataProvider.entryColor(entryIndex);
-            bucket = colorBuckets[color];
+            var barWidth = barRight - barX;
+            var color = this._dataProvider.entryColor(entryIndex);
+            var bucket = colorBuckets[color];
             if (!bucket) {
                 bucket = [];
                 colorBuckets[color] = bucket;
             }
             bucket.push(entryIndex);
         }
-        colors = Object.keys(colorBuckets);
+
+        var colors = Object.keys(colorBuckets);
         // We don't use for in here because it couldn't be optimized.
-        for (c = 0; c < colors.length; ++c) {
-            color = colors[c];
+        for (var c = 0; c < colors.length; ++c) {
+            var color = colors[c];
             context.fillStyle = color;
             var indexes = colorBuckets[color];
 
             // First fill the boxes.
             context.beginPath();
             for (i = 0; i < indexes.length; ++i) {
-                entryIndex = indexes[i];
-                entryOffset = entryOffsets[entryIndex];
-                barX = this._offsetToPosition(entryOffset);
-                barRight = this._offsetToPosition(entryOffset + entryTotalTimes[entryIndex]);
-                barWidth = Math.max(barRight - barX, minWidth);
-                barLevel = entryLevels[entryIndex];
-                barY = this._levelToHeight(barLevel);
-                context.rect(barX, barY, barWidth, this._barHeight);
+                var entryIndex = indexes[i];
+                var entryOffset = entryOffsets[entryIndex];
+                var barX = this._offsetToPosition(entryOffset);
+                var barRight = this._offsetToPosition(entryOffset + entryTotalTimes[entryIndex]);
+                var barWidth = Math.max(barRight - barX, minWidth);
+                var barLevel = entryLevels[entryIndex];
+                var barY = this._levelToHeight(barLevel);
+                context.rect(barX, barY, barWidth, barHeight);
                 if (barWidth > minTextWidth || this._dataProvider.forceDecoration(entryIndex))
                     titleIndexes[lastTitleIndex++] = entryIndex;
             }
@@ -940,28 +923,27 @@ WebInspector.FlameChart.MainPane.prototype = {
 
         context.textBaseline = "alphabetic";
 
-        for (i = 0; i < lastTitleIndex; ++i) {
-            entryIndex = titleIndexes[i];
+        for (var i = 0; i < lastTitleIndex; ++i) {
+            var entryIndex = titleIndexes[i];
+            var entryOffset = entryOffsets[entryIndex];
+            var barX = this._offsetToPosition(entryOffset);
+            var barRight = this._offsetToPosition(entryOffset + entryTotalTimes[entryIndex]);
+            var barWidth = Math.max(barRight - barX, minWidth);
+            var barLevel = entryLevels[entryIndex];
+            var barY = this._levelToHeight(barLevel);
+            var text = this._dataProvider.entryTitle(entryIndex);
+            if (text && text.length)
+                text = this._prepareText(context, text, barWidth - 2 * textPadding);
 
-            this._dataProvider.decorateEntry(entryIndex, context, this._levelToHeight(entryLevels[entryIndex]), offsetToPosition);
+            if (this._dataProvider.decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, offsetToPosition))
+                continue;
 
-            text = this._dataProvider.entryTitle(entryIndex);
             if (!text || !text.length)
                 continue;
-            font = this._dataProvider.entryFont(entryIndex);
-            entryOffset = entryOffsets[entryIndex];
-            barX = this._offsetToPosition(entryOffset);
-            barRight = this._offsetToPosition(entryOffset + entryTotalTimes[entryIndex]);
-            barWidth = Math.max(barRight - barX, minWidth);
-            xText = Math.max(0, barX);
-            textWidth = barWidth - 2 * textPadding + barX - xText;
-            title = this._prepareText(context, text, textWidth);
-            if (!title)
-                continue;
-            context.font = font;
-            textColor = this._dataProvider.textColor(entryIndex);
-            context.fillStyle = textColor;
-            context.fillText(title, xText + textPadding, textBaseHeight - entryLevels[entryIndex] * this._barHeightDelta);
+
+            context.font = this._dataProvider.entryFont(entryIndex);
+            context.fillStyle = this._dataProvider.textColor(entryIndex);
+            context.fillText(text, barX + textPadding, textBaseHeight - barLevel * this._barHeightDelta);
         }
         this._updateElementPosition(this._highlightElement, this._highlightedEntryIndex);
         this._updateElementPosition(this._selectedElement, this._selectedEntryIndex);

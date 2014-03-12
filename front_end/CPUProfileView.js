@@ -1335,17 +1335,23 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     entryColor: function(entryIndex)
     {
         var node = this._entryNodes[entryIndex];
-        return this._colorGenerator.colorForID(node.functionName + ":" + node.url + ":" + node.lineNumber);;
+        return this._colorGenerator.colorForID(node.functionName + ":" + node.url + ":" + node.lineNumber);
     },
 
     /**
      * @param {number} entryIndex
      * @param {!CanvasRenderingContext2D} context
-     * @param {number} levelY
+     * @param {?string} text
+     * @param {number} barX
+     * @param {number} barY
+     * @param {number} barWidth
+     * @param {number} barHeight
      * @param {function(number):number} offsetToPosition
+     * @return {boolean}
      */
-    decorateEntry: function(entryIndex, context, levelY, offsetToPosition)
+    decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight, offsetToPosition)
     {
+        return false;
     },
 
     /**

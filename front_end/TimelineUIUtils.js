@@ -650,10 +650,10 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
     if (record.stackTrace)
         contentHelper.appendStackTrace(callStackLabel || WebInspector.UIString("Call Stack"), record.stackTrace);
 
-    if (record.warnings) {
+    if (record.warnings()) {
         var ul = document.createElement("ul");
-        for (var i = 0; i < record.warnings.length; ++i)
-            ul.createChild("li").textContent = record.warnings[i];
+        for (var i = 0; i < record.warnings().length; ++i)
+            ul.createChild("li").textContent = record.warnings()[i];
         contentHelper.appendElementRow(WebInspector.UIString("Warning"), ul);
     }
     fragment.appendChild(contentHelper.element);

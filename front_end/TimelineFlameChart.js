@@ -161,6 +161,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             threadBaselines[thread] = threadBaseline;
             threadBaseline += this._entryThreadDepths[thread];
         }
+        this._maxStackDepth = threadBaseline;
 
         for (var i = 0; i < this._records.length; ++i) {
             var record = this._records[i];
@@ -197,8 +198,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
      */
     maxStackDepth: function()
     {
-        // Only used by overview.
-        return 0;
+        return this._maxStackDepth;
     },
 
     /**
@@ -268,46 +268,74 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         return category.fillColorStop1;
     },
 
+
     /**
      * @param {number} entryIndex
      * @param {!CanvasRenderingContext2D} context
+     * @param {?string} text
+     * @param {number} barX
      * @param {number} barY
+     * @param {number} barWidth
+     * @param {number} barHeight
      * @param {function(number):number} offsetToPosition
+     * @return {boolean}
      */
-    decorateEntry: function(entryIndex, context, barY, offsetToPosition)
+    decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight, offsetToPosition)
     {
+        if (barWidth < 5)
+            return false;
+
         var record = this._records[entryIndex];
-
         var timelineData = this._timelineData;
-        var entryOffset = timelineData.entryOffsets[entryIndex];
-        var barRight = offsetToPosition(entryOffset + timelineData.entryTotalTimes[entryIndex]);
 
+        var decorated = false;
         if (record.children.length) {
             var category = WebInspector.TimelineUIUtils.categoryForRecord(record);
+            // Paint text using white color on dark background.
+            if (text) {
+                context.fillStyle = "white";
+                context.font = this._font;
+                context.fillText(text, barX + this.textPadding(), barY + barHeight - this.textBaseline());
+            }
+
+            var entryOffset = timelineData.entryOffsets[entryIndex];
+            var barSelf = offsetToPosition(entryOffset + record.selfTime)
+
             context.beginPath();
-            var barSelf = offsetToPosition(entryOffset + record.selfTime);
             context.fillStyle = category.backgroundColor;
-            context.rect(barSelf, barY, barRight - barSelf, this.barHeight());
+            context.rect(barSelf, barY, barX + barWidth - barSelf, barHeight);
             context.fill();
-        }
-        if (record.warnings() || record.childHasWarnings()) {
-            var barX = offsetToPosition(entryOffset);
-            if (barRight - barX > 2) {
+
+            // Paint text using dark color on light background.
+            if (text) {
                 context.save();
-
-                context.rect(barX, barY, barRight - barX, this.barHeight());
                 context.clip();
-
-                context.beginPath();
-                context.fillStyle = record.warnings() ? "red" : "rgba(255, 0, 0, 0.5)";
-                context.moveTo(barRight - 15, barY + 1);
-                context.lineTo(barRight - 1, barY + 1);
-                context.lineTo(barRight - 1, barY + 15);
-                context.fill();
-
+                context.fillStyle = category.borderColor;
+                context.fillText(text, barX + this.textPadding(), barY + barHeight - this.textBaseline());
                 context.restore();
             }
+
+            decorated = true;
         }
+
+        if (record.warnings() || record.childHasWarnings()) {
+            context.save();
+
+            context.rect(barX, barY, barWidth, this.barHeight());
+            context.clip();
+
+            context.beginPath();
+            context.fillStyle = record.warnings() ? "red" : "rgba(255, 0, 0, 0.5)";
+            context.moveTo(barX + barWidth - 15, barY + 1);
+            context.lineTo(barX + barWidth - 1, barY + 1);
+            context.lineTo(barX + barWidth - 1, barY + 15);
+            context.fill();
+
+            context.restore();
+            decorated = true;
+        }
+
+        return decorated;
     },
 
     /**
