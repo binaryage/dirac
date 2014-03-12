@@ -249,7 +249,7 @@ WebInspector.HeapSnapshotCommon.Statistics = function()
     /** @type {number} */
     this.code;
     /** @type {number} */
-    this.arrays;
+    this.jsArrays;
     /** @type {number} */
     this.strings;
 }

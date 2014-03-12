@@ -173,7 +173,7 @@ WebInspector.HeapSnapshotView.prototype = {
         this.statisticsView.setTotal(statistics.total);
         this.statisticsView.addRecord(statistics.code, WebInspector.UIString("Code"), "#f77");
         this.statisticsView.addRecord(statistics.strings, WebInspector.UIString("Strings"), "#5e5");
-        this.statisticsView.addRecord(statistics.arrays, WebInspector.UIString("JS Arrays"), "#7af");
+        this.statisticsView.addRecord(statistics.jsArrays, WebInspector.UIString("JS Arrays"), "#7af");
         this.statisticsView.addRecord(statistics.native, WebInspector.UIString("Typed Arrays"), "#fc5");
         this.statisticsView.addRecord(statistics.total, WebInspector.UIString("Total"));
     },

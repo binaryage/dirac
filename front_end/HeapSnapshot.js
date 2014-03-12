@@ -549,6 +549,16 @@ WebInspector.HeapSnapshotNode.prototype = {
     /**
      * @return {number}
      */
+    retainersCount: function()
+    {
+        var snapshot = this._snapshot;
+        var ordinal = this._ordinal();
+        return snapshot._firstRetainerIndex[ordinal + 1] - snapshot._firstRetainerIndex[ordinal];
+    },
+
+    /**
+     * @return {number}
+     */
     selfSize: function()
     {
         var snapshot = this._snapshot;
@@ -580,32 +590,50 @@ WebInspector.HeapSnapshotNode.prototype = {
         return new WebInspector.HeapSnapshotNode.Serialized(this.id(), this.name(), this.distance(), this.nodeIndex, this.retainedSize(), this.selfSize(), this.type());
     },
 
+    /**
+     * @return {number}
+     */
     _name: function()
     {
         var snapshot = this._snapshot;
         return snapshot._nodes[this.nodeIndex + snapshot._nodeNameOffset];
     },
 
+    /**
+     * @return {number}
+     */
     _edgeIndexesStart: function()
     {
         return this._snapshot._firstEdgeIndexes[this._ordinal()];
     },
 
+    /**
+     * @return {number}
+     */
     _edgeIndexesEnd: function()
     {
         return this._snapshot._firstEdgeIndexes[this._ordinal() + 1];
     },
 
+    /**
+     * @return {number}
+     */
     _ordinal: function()
     {
         return this.nodeIndex / this._snapshot._nodeFieldCount;
     },
 
+    /**
+     * @return {number}
+     */
     _nextNodeIndex: function()
     {
         return this.nodeIndex + this._snapshot._nodeFieldCount;
     },
 
+    /**
+     * @return {number}
+     */
     _type: function()
     {
         var snapshot = this._snapshot;
