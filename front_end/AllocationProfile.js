@@ -36,7 +36,7 @@ WebInspector.AllocationProfile = function(profile)
     this._strings = profile.strings;
 
     this._nextNodeId = 1;
-    this._idToFunctionInfo = {};
+    this._functionInfos = []
     this._idToNode = {};
     this._collapsedTopNodeIdToFunctionInfo = {};
 
@@ -60,15 +60,12 @@ WebInspector.AllocationProfile.prototype = {
         var columnOffset = functionInfoFields.indexOf("column");
         var functionInfoFieldCount = functionInfoFields.length;
 
-        var map = this._idToFunctionInfo;
-
-        // Special case for the root node.
-        map[0] = new WebInspector.FunctionAllocationInfo("(root)", "<unknown>", 0, -1, -1);
-
         var rawInfos = profile.trace_function_infos;
         var infoLength = rawInfos.length;
+        var functionInfos = this._functionInfos = new Array(infoLength / functionInfoFieldCount);
+        var index = 0;
         for (var i = 0; i < infoLength; i += functionInfoFieldCount) {
-            map[rawInfos[i + functionIdOffset]] = new WebInspector.FunctionAllocationInfo(
+            functionInfos[index++] = new WebInspector.FunctionAllocationInfo(
                 strings[rawInfos[i + functionNameOffset]],
                 strings[rawInfos[i + scriptNameOffset]],
                 rawInfos[i + scriptIdOffset],
@@ -80,11 +77,11 @@ WebInspector.AllocationProfile.prototype = {
     _buildInvertedAllocationTree: function(profile)
     {
         var traceTreeRaw = profile.trace_tree;
-        var idToFunctionInfo = this._idToFunctionInfo;
+        var functionInfos = this._functionInfos;
 
         var traceNodeFields = profile.snapshot.meta.trace_node_fields;
         var nodeIdOffset = traceNodeFields.indexOf("id");
-        var functionIdOffset = traceNodeFields.indexOf("function_id");
+        var functionInfoIndexOffset = traceNodeFields.indexOf("function_info_index");
         var allocationCountOffset = traceNodeFields.indexOf("count");
         var allocationSizeOffset = traceNodeFields.indexOf("size");
         var childrenOffset = traceNodeFields.indexOf("children");
@@ -92,7 +89,7 @@ WebInspector.AllocationProfile.prototype = {
 
         function traverseNode(rawNodeArray, nodeOffset, parent)
         {
-            var functionInfo = idToFunctionInfo[rawNodeArray[nodeOffset + functionIdOffset]];
+            var functionInfo = functionInfos[rawNodeArray[nodeOffset + functionInfoIndexOffset]];
             var result = new WebInspector.AllocationTraceNode(
                 rawNodeArray[nodeOffset + nodeIdOffset],
                 functionInfo,
@@ -119,9 +116,9 @@ WebInspector.AllocationProfile.prototype = {
         if (this._traceTops)
             return this._traceTops;
         var result = this._traceTops = [];
-        var idToFunctionInfo = this._idToFunctionInfo;
-        for (var id in idToFunctionInfo) {
-            var info = idToFunctionInfo[id];
+        var functionInfos = this._functionInfos;
+        for (var i = 0; i < functionInfos.length; i++) {
+            var info = functionInfos[i];
             if (info.totalCount === 0)
                 continue;
             var nodeId = this._nextNodeId++;
