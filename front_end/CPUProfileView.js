@@ -934,7 +934,7 @@ WebInspector.CPUProfileHeader.prototype = {
                     fileOutputStream.close();
             }
             if (this._failedToCreateTempFile) {
-                WebInspector.log("Failed to open temp file with heap snapshot",
+                WebInspector.console.log("Failed to open temp file with heap snapshot",
                                  WebInspector.ConsoleMessage.MessageLevel.Error);
                 fileOutputStream.close();
             } else if (this._tempFile) {

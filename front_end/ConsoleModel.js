@@ -154,6 +154,31 @@ WebInspector.ConsoleModel.prototype = {
     },
 
     /**
+     * @param {string} messageText
+     * @param {!WebInspector.ConsoleMessage.MessageLevel=} messageLevel
+     * @param {boolean=} showConsole
+     */
+    log: function(messageText, messageLevel, showConsole)
+    {
+        var message = new WebInspector.ConsoleMessage(
+            WebInspector.ConsoleMessage.MessageSource.Other,
+            messageLevel || WebInspector.ConsoleMessage.MessageLevel.Debug,
+            messageText);
+
+        this.addMessage(message);
+        if (showConsole)
+            this.show();
+    },
+
+    /**
+     * @param {string} error
+     */
+    showErrorMessage: function(error)
+    {
+        this.log(error, WebInspector.ConsoleMessage.MessageLevel.Error, true);
+    },
+
+    /**
      * @param {!WebInspector.ConsoleMessage} msg
      */
     _incrementErrorWarningCount: function(msg)
@@ -323,6 +348,9 @@ WebInspector.ConsoleMessage.prototype = {
 }
 
 // Note: Keep these constants in sync with the ones in Console.h
+/**
+ * @enum {string}
+ */
 WebInspector.ConsoleMessage.MessageSource = {
     XML: "xml",
     JS: "javascript",
@@ -337,6 +365,9 @@ WebInspector.ConsoleMessage.MessageSource = {
     Deprecation: "deprecation"
 }
 
+/**
+ * @enum {string}
+ */
 WebInspector.ConsoleMessage.MessageType = {
     Log: "log",
     Dir: "dir",
@@ -354,6 +385,9 @@ WebInspector.ConsoleMessage.MessageType = {
     Command: "command"
 }
 
+/**
+ * @enum {string}
+ */
 WebInspector.ConsoleMessage.MessageLevel = {
     Log: "log",
     Info: "info",

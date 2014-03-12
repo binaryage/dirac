@@ -252,14 +252,6 @@ WebInspector.queryParamsObject = {}
 WebInspector.toggleSearchingForNode = function() {}
 WebInspector.panels = {};
 
-/**
- * @param {string=} messageLevel
- * @param {boolean=} showConsole
- */
-WebInspector.log = function(message, messageLevel, showConsole) {}
-
-WebInspector.showErrorMessage = function(error) {}
-
 WebInspector.Events = {
     InspectorLoaded: "InspectorLoaded"
 }

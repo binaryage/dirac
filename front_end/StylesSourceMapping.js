@@ -347,7 +347,7 @@ WebInspector.StyleFile.prototype = {
     _styleContentSet: function(error)
     {
         if (error)
-            WebInspector.showErrorMessage(error);
+            WebInspector.console.showErrorMessage(error);
     },
 
     _clearIncrementalUpdateTimer: function()

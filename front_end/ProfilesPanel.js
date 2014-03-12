@@ -522,7 +522,7 @@ WebInspector.ProfilesPanel.prototype = {
         function didChangeInterval(error)
         {
             if (error)
-                WebInspector.showErrorMessage(error)
+                WebInspector.console.showErrorMessage(error)
         }
     },
 
@@ -543,12 +543,12 @@ WebInspector.ProfilesPanel.prototype = {
                     continue;
                 extensions.push(extension);
             }
-            WebInspector.log(WebInspector.UIString("Can't load file. Only files with extensions '%s' can be loaded.", extensions.join("', '")));
+            WebInspector.console.log(WebInspector.UIString("Can't load file. Only files with extensions '%s' can be loaded.", extensions.join("', '")));
             return;
         }
 
         if (!!profileType.profileBeingRecorded()) {
-            WebInspector.log(WebInspector.UIString("Can't load profile when other profile is recording."));
+            WebInspector.console.log(WebInspector.UIString("Can't load profile when other profile is recording."));
             return;
         }
 
@@ -799,7 +799,7 @@ WebInspector.ProfilesPanel.prototype = {
                 view.changeView(viewName, function() {
                     function didHighlightObject(found) {
                         if (!found)
-                            WebInspector.log("Cannot find corresponding heap snapshot node", WebInspector.ConsoleMessage.MessageLevel.Error, true);
+                            WebInspector.console.log("Cannot find corresponding heap snapshot node", WebInspector.ConsoleMessage.MessageLevel.Error, true);
                     }
                     view.dataGrid.highlightObjectByHeapSnapshotId(snapshotObjectId, didHighlightObject.bind(this));
                 });
