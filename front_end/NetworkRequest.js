@@ -553,8 +553,10 @@ WebInspector.NetworkRequest.prototype = {
     requestHttpVersion: function()
     {
         var headersText = this.requestHeadersText();
-        if (!headersText)
-            return undefined;
+        if (!headersText) {
+            // SPDY header.
+            return this.requestHeaderValue(":version");
+        }
         var firstLine = headersText.split(/\r\n/)[0];
         var match = firstLine.match(/(HTTP\/\d+\.\d+)$/);
         return match ? match[1] : undefined;
