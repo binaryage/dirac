@@ -1063,8 +1063,8 @@ WebInspector.AllocationDataGrid = function()
 WebInspector.AllocationDataGrid.prototype = {
     setDataSource: function(snapshot)
     {
-        this._snapshot = snapshot;
-        this._snapshot.allocationTracesTops(didReceiveAllocationTracesTops.bind(this));
+        this.snapshot = snapshot;
+        this.snapshot.allocationTracesTops(didReceiveAllocationTracesTops.bind(this));
 
         /**
          * @param {!Array.<!WebInspector.HeapSnapshotCommon.SerializedAllocationNode>} tops
@@ -1139,7 +1139,7 @@ WebInspector.AllocationGridNode.prototype = {
         if (this._populated)
             return;
         this._populated = true;
-        this._dataGrid._snapshot.allocationNodeCallers(this.data.id, didReceiveCallers.bind(this));
+        this._dataGrid.snapshot.allocationNodeCallers(this.data.id, didReceiveCallers.bind(this));
 
         /**
          * @param {!WebInspector.HeapSnapshotCommon.AllocationNodeCallers} callers
