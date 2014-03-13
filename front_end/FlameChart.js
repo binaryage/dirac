@@ -811,10 +811,12 @@ WebInspector.FlameChart.MainPane.prototype = {
         var entryLevels = timelineData.entryLevels;
         var length = entryOffsets.length;
         for (var i = 0; i < length; ++i) {
+            var entryLevel = entryLevels[i];
+            if (cursorLevel !== entryLevel)
+                continue;
             if (cursorTimeOffset < entryOffsets[i])
                 return -1;
-            if (cursorTimeOffset < (entryOffsets[i] + entryTotalTimes[i])
-                && cursorLevel === entryLevels[i])
+            if (cursorTimeOffset < (entryOffsets[i] + entryTotalTimes[i]))
                 return i;
         }
         return -1;
@@ -868,18 +870,26 @@ WebInspector.FlameChart.MainPane.prototype = {
         var offsetToPosition = this._offsetToPosition.bind(this);
         var textBaseHeight = this._baseHeight + barHeight - this._dataProvider.textBaseline();
         var colorBuckets = {};
-        var maxBarLevel = height / barHeight;
+        var maxBarLevel = Math.min(this._dataProvider.maxStackDepth(), Math.ceil(height / barHeight));
 
-        for (var entryIndex = 0; entryIndex < entryOffsets.length; ++entryIndex) {
-            // stop if we reached right border in time (entries were ordered by start time).
-            var entryOffset = entryOffsets[entryIndex];
-            if (entryOffset > timeWindowRight)
-                break;
+        var levelsCompleted = 0;
+        var lastEntryOnLevelPainted = [];
+        for (var i = 0; i < maxBarLevel; ++i)
+            lastEntryOnLevelPainted[i] = false;
 
+        for (var entryIndex = 0; levelsCompleted < maxBarLevel && entryIndex < entryOffsets.length; ++entryIndex) {
             // skip if it is not visible (top/bottom side)
             var barLevel = entryLevels[entryIndex];
-            if (barLevel > maxBarLevel)
+            if (barLevel > maxBarLevel || lastEntryOnLevelPainted[barLevel])
                 continue;
+
+            // stop if we reached right border in time (entries were ordered by start time).
+            var entryOffset = entryOffsets[entryIndex];
+            if (entryOffset > timeWindowRight) {
+                lastEntryOnLevelPainted[barLevel] = true;
+                levelsCompleted++;
+                continue;
+            }
 
             // skip if it is not visible (left side).
             var entryOffsetRight = entryOffset + entryTotalTimes[entryIndex];
