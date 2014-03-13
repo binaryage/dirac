@@ -385,6 +385,18 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
 
 /**
  * @param {number} ms
+ * @param {number=} precision
+ * @return {string}
+ */
+Number.preciseMillisToString = function(ms, precision)
+{
+  precision = precision || 0;
+  var format = "%." + precision + "f\u2009ms";
+  return WebInspector.UIString(format, ms);
+}
+
+/**
+ * @param {number} ms
  * @param {boolean=} higherResolution
  * @return {string}
  */

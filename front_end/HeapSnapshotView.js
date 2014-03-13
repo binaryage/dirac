@@ -1766,12 +1766,12 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
 
     /**
      * @param {number} value
-     * @param {boolean=} hires
+     * @param {number=} precision
      * @return {string}
      */
-    formatTime: function(value, hires)
+    formatTime: function(value, precision)
     {
-        return Number.secondsToString(value / 1000, hires);
+        return Number.secondsToString(value / 1000, !!precision);
     },
 
     /**

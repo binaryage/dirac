@@ -256,12 +256,12 @@ WebInspector.TimelineOverviewCalculator.prototype = {
 
     /**
      * @param {number} value
-     * @param {boolean=} hires
+     * @param {number=} precision
      * @return {string}
      */
-    formatTime: function(value, hires)
+    formatTime: function(value, precision)
     {
-        return Number.millisToString(value - this.zeroTime(), hires);
+        return Number.preciseMillisToString(value - this.zeroTime(), precision);
     },
 
     /**

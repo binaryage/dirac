@@ -245,11 +245,6 @@ WebInspector.FlameChart.Calculator.prototype = {
      */
     _updateBoundaries: function(mainPane)
     {
-        function log10(x)
-        {
-            return Math.log(x) / Math.LN10;
-        }
-        this._decimalDigits = Math.max(0, -Math.floor(log10(mainPane._timelineGrid.gridSliceTime * 1.01)));
         this._totalTime = mainPane._dataProvider.totalTime();
         this._zeroTime = mainPane._dataProvider.zeroTime();
         this._minimumBoundaries = this._zeroTime + mainPane._windowLeft * this._totalTime;
@@ -265,18 +260,17 @@ WebInspector.FlameChart.Calculator.prototype = {
      */
     computePosition: function(time)
     {
-        return (time - this._minimumBoundaries) * this._timeToPixel + this._paddingLeft;
+        return Math.round((time - this._minimumBoundaries) * this._timeToPixel + this._paddingLeft);
     },
 
     /**
      * @param {number} value
-     * @param {boolean=} hires
+     * @param {number=} precision
      * @return {string}
      */
-    formatTime: function(value, hires)
+    formatTime: function(value, precision)
     {
-        var format = "%." + this._decimalDigits + "f\u2009ms";
-        return WebInspector.UIString(format, value - this._zeroTime);
+        return Number.preciseMillisToString(value - this._zeroTime, precision);
     },
 
     /**
@@ -351,12 +345,12 @@ WebInspector.FlameChart.OverviewCalculator.prototype = {
 
     /**
      * @param {number} value
-     * @param {boolean=} hires
+     * @param {number=} precision
      * @return {string}
      */
-    formatTime: function(value, hires)
+    formatTime: function(value, precision)
     {
-        return Number.secondsToString((value + this._minimumBoundaries) / 1000, hires);
+        return Number.secondsToString((value + this._minimumBoundaries) / 1000);
     },
 
     /**
@@ -610,8 +604,6 @@ WebInspector.FlameChart.MainPane = function(dataProvider, flameChartDelegate, is
     this._isTopDown = isTopDown;
     this._timeBasedWindow = timeBasedWindow;
 
-    this._timelineGrid = new WebInspector.TimelineGrid();
-    this.element.appendChild(this._timelineGrid.element);
     this._calculator = new WebInspector.FlameChart.Calculator();
 
     this._canvas = this.element.createChild("canvas");
@@ -641,6 +633,13 @@ WebInspector.FlameChart.MainPane = function(dataProvider, flameChartDelegate, is
 }
 
 WebInspector.FlameChart.MainPane.prototype = {
+    _resetCanvas: function()
+    {
+        var ratio = window.devicePixelRatio;
+        this._canvas.width = this._offsetWidth * ratio;
+        this._canvas.height = this._offsetHeight * ratio;
+    },
+
     /**
      * @return {?WebInspector.FlameChart.TimelineData}
      */
@@ -831,11 +830,17 @@ WebInspector.FlameChart.MainPane.prototype = {
         if (!timelineData)
             return;
         var ratio = window.devicePixelRatio;
-        this._canvas.width = width * ratio;
-        this._canvas.height = height * ratio;
 
         var context = this._canvas.getContext("2d");
         context.scale(ratio, ratio);
+
+        var offsets = this._dataProvider.dividerOffsets(this._calculator.minimumBoundary(), this._calculator.maximumBoundary());
+
+        if (timelineData.entryOffsets.length)
+            WebInspector.TimelineGrid.drawCanvasGrid(this._canvas, this._calculator, offsets);
+
+        context.translate(0.5, 0.5);
+
         var timeWindowRight = this._timeWindowRight - this._zeroTime;
         var timeWindowLeft = this._timeWindowLeft - this._zeroTime;
         var timeToPixel = this._timeToPixel;
@@ -902,6 +907,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         for (var c = 0; c < colors.length; ++c) {
             var color = colors[c];
             context.fillStyle = color;
+            context.strokeStyle = color;
             var indexes = colorBuckets[color];
 
             // First fill the boxes.
@@ -1106,20 +1112,12 @@ WebInspector.FlameChart.MainPane.prototype = {
     update: function()
     {
         this._updateTimerId = 0;
-        if (!this._timelineData()) {
-            this._timelineGrid.hideDividers();
+        if (!this._timelineData())
             return;
-        }
+        this._resetCanvas();
         this._updateBoundaries();
-        if (this._timelineData().entryLevels.length)
-            this._timelineGrid.showDividers();
-        else
-            this._timelineGrid.hideDividers();
-        this.draw(this._offsetWidth, this._offsetHeight);
         this._calculator._updateBoundaries(this);
-        this._timelineGrid.element.style.width = this._offsetWidth;
-        var offsets = this._dataProvider.dividerOffsets(this._calculator.minimumBoundary(), this._calculator.maximumBoundary());
-        this._timelineGrid.updateDividers(this._calculator, offsets, true);
+        this.draw(this._offsetWidth, this._offsetHeight);
     },
 
     reset: function()

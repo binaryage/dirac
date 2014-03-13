@@ -100,14 +100,19 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (endTime - startTime < 16 || endTime - startTime > 300)
             return null;
 
-        var frames = this._frameModel.filteredFrames(this._model.minimumRecordTime() + startTime, this._model.minimumRecordTime() + endTime);
+        var frames = this._frameModel.filteredFrames(startTime, endTime);
         if (frames.length > 10)
+            return null;
+
+        if (frames.length < 3)
             return null;
 
         var offsets = [];
         for (var i = 0; i < frames.length; ++i)
-            offsets.push(frames[i].startTimeOffset);
-        return frames.length ? offsets : null;
+            offsets.push(frames[i].startTime);
+        // Push one more offset so grid will be able to calculate the duration for the last frame.
+        offsets.push(frames.peekLast.endTime)
+        return offsets;
     },
 
     reset: function()
