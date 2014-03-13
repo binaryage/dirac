@@ -248,7 +248,7 @@
                     { "name": "url", "type": "string", "description": "URL to navigate the page to." }
                 ],
                 "description": "Navigates current page to the given URL.",
-                "handlers": ["browser"]
+                "handlers": ["browser", "renderer"]
             },
             {
               "name": "getNavigationHistory",
@@ -3518,7 +3518,7 @@
                 "parameters": [
                     { "name": "workerId", "type": "integer" }
                 ],
-                "handlers": ["browser"]
+                "handlers": ["browser", "renderer"]
             },
             {
                 "name": "setAutoconnectToWorkers",
