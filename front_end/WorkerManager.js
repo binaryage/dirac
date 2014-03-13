@@ -173,13 +173,27 @@ WebInspector.workerManager;
  * @extends {InspectorBackendClass.Connection}
  * @param {number} workerId
  */
-WebInspector.WorkerConnection = function(workerId)
+WebInspector.WorkerConnection = function(workerId, onConnectionReady)
 {
     InspectorBackendClass.Connection.call(this);
     this._workerId = workerId;
+    window.addEventListener("message", this._processMessage.bind(this), true);
+    onConnectionReady(this);
 }
 
 WebInspector.WorkerConnection.prototype = {
+
+    /**
+     * @param {?Event} event
+     */
+    _processMessage: function(event)
+    {
+        if (!event)
+            return;
+
+        var message = event.data;
+        this.dispatch(message);
+    },
 
     /**
      * @param {!Object} messageObject

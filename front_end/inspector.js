@@ -130,16 +130,6 @@ var WebInspector = {
         }
     },
 
-    _initializeDedicatedWorkerFrontend: function(workerId)
-    {
-        function receiveMessage(event)
-        {
-            var message = event.data;
-            InspectorBackend.connection().dispatch(message);
-        }
-        window.addEventListener("message", receiveMessage, true);
-    },
-
     _loadCompletedForWorkers: function()
     {
         // Make sure script execution of dedicated worker is resumed and then paused
@@ -253,9 +243,11 @@ WebInspector.loaded = function()
     InspectorBackend.loadFromJSONIfNeeded("../protocol.json");
     WebInspector.dockController = new WebInspector.DockController(!!WebInspector.queryParam("can_dock"));
 
-    if (WebInspector.isDedicatedWorkerFrontend()) {
-        // Do not create socket for the worker front-end.
-        WebInspector.doLoadedDone();
+    var onConnectionReady = WebInspector.doLoadedDone.bind(this);
+
+    var workerId = WebInspector.queryParam("dedicatedWorkerId");
+    if (workerId) {
+        new WebInspector.WorkerConnection(workerId, onConnectionReady);
         return;
     }
 
@@ -269,42 +261,44 @@ WebInspector.loaded = function()
     }
 
     if (ws) {
-        WebInspector.socket = new WebSocket(ws);
-        WebInspector.socket.onmessage = function(message) { InspectorBackend.connection().dispatch(message.data); }
-        WebInspector.socket.onerror = function(error) { console.error(error); }
-        WebInspector.socket.onopen = function() {
-            InspectorFrontendHost.sendMessageToBackend = WebInspector.socket.send.bind(WebInspector.socket);
-            WebInspector.doLoadedDone();
-        }
-        WebInspector.socket.onclose = function() {
-            if (!WebInspector.socket._detachReason)
-                (new WebInspector.RemoteDebuggingTerminatedScreen("websocket_closed")).showModal();
-        }
+        document.body.classList.add("remote");
+        new InspectorBackendClass.WebSocketConnection(ws, onConnectionReady);
         return;
     }
 
-    WebInspector.doLoadedDone();
+    if (!InspectorFrontendHost.isStub) {
+        new InspectorBackendClass.MainConnection(onConnectionReady);
+        return;
+    }
 
-    if (InspectorFrontendHost.isStub)
-        InspectorFrontendAPI.dispatchQueryParameters(WebInspector.queryParam("dispatch"));
+    InspectorFrontendAPI.dispatchQueryParameters(WebInspector.queryParam("dispatch"));
+    new InspectorBackendClass.StubConnection(onConnectionReady);
 }
 
-WebInspector.doLoadedDone = function()
+/**
+ * @param {!InspectorBackendClass.Connection} connection
+ */
+WebInspector.doLoadedDone = function(connection)
 {
+    connection.addEventListener(InspectorBackendClass.Connection.Events.Disconnected, onDisconnected);
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    function onDisconnected(event)
+    {
+        if (WebInspector._disconnectedScreenWithReasonWasShown)
+            return;
+        new WebInspector.RemoteDebuggingTerminatedScreen(event.data.reason).showModal();
+    }
+
+    InspectorBackend.setConnection(connection);
+
     // Install styles and themes
     WebInspector.installPortStyles();
-    if (WebInspector.socket)
-        document.body.classList.add("remote");
 
     if (WebInspector.queryParam("toolbarColor") && WebInspector.queryParam("textColor"))
         WebInspector.setToolbarColors(WebInspector.queryParam("toolbarColor"), WebInspector.queryParam("textColor"));
-
-    var workerId = WebInspector.queryParam("dedicatedWorkerId");
-    if (workerId)
-        this._initializeDedicatedWorkerFrontend(workerId);
-
-    var connection = workerId ? new WebInspector.WorkerConnection(workerId) : new InspectorBackendClass.MainConnection();
-    InspectorBackend.setConnection(connection);
 
     WebInspector.targetManager = new WebInspector.TargetManager();
     WebInspector.targetManager.createTarget(connection, WebInspector._doLoadedDoneWithCapabilities.bind(WebInspector));
@@ -734,8 +728,8 @@ WebInspector.inspect = function(payload, hints)
 // Inspector.detached protocol event
 WebInspector.detached = function(reason)
 {
-    WebInspector.socket._detachReason = reason;
-    (new WebInspector.RemoteDebuggingTerminatedScreen(reason)).showModal();
+    WebInspector._disconnectedScreenWithReasonWasShown = true;
+    new WebInspector.RemoteDebuggingTerminatedScreen(reason).showModal();
 }
 
 WebInspector.targetCrashed = function()
