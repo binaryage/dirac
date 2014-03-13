@@ -689,7 +689,9 @@ WebInspector.inspect = function(payload, hints)
         {
             elementsPanel.stopOmittingDefaultSelection();
             WebInspector.Revealer.reveal(WebInspector.domAgent.nodeForId(nodeId));
-            InspectorFrontendHost.inspectElementCompleted();
+            if (!WebInspector.inspectorView.drawerVisible() && !WebInspector._notFirstInspectElement)
+                InspectorFrontendHost.inspectElementCompleted();
+            WebInspector._notFirstInspectElement = true;
             object.release();
         }
 
