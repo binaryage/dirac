@@ -251,12 +251,12 @@ WebInspector.FlameChart.Calculator.prototype = {
         }
         this._decimalDigits = Math.max(0, -Math.floor(log10(mainPane._timelineGrid.gridSliceTime * 1.01)));
         this._totalTime = mainPane._dataProvider.totalTime();
-        this._minimumBoundaries = mainPane._windowLeft * this._totalTime;
-        this._maximumBoundaries = mainPane._windowRight * this._totalTime;
+        this._zeroTime = mainPane._dataProvider.zeroTime();
+        this._minimumBoundaries = this._zeroTime + mainPane._windowLeft * this._totalTime;
+        this._maximumBoundaries = this._zeroTime + mainPane._windowRight * this._totalTime;
         this._paddingLeft = mainPane._paddingLeft;
         this._width = mainPane._canvas.width / window.devicePixelRatio - this._paddingLeft;
         this._timeToPixel = this._width / this.boundarySpan();
-        this._zeroTime = mainPane._dataProvider.zeroTime();
     },
 
     /**
@@ -276,7 +276,7 @@ WebInspector.FlameChart.Calculator.prototype = {
     formatTime: function(value, hires)
     {
         var format = "%." + this._decimalDigits + "f\u2009ms";
-        return WebInspector.UIString(format, value);
+        return WebInspector.UIString(format, value - this._zeroTime);
     },
 
     /**

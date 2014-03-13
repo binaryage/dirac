@@ -91,8 +91,8 @@ WebInspector.TimelineOverviewPane.prototype = {
     {
         delete this._refreshTimeout;
 
-        this._overviewCalculator.setWindow(this._model.minimumRecordTime(), this._model.maximumRecordTime());
-        this._overviewCalculator.setDisplayWindow(0, this._overviewGrid.clientWidth());
+        this._overviewCalculator._setWindow(this._model.minimumRecordTime(), this._model.maximumRecordTime());
+        this._overviewCalculator._setDisplayWindow(0, this._overviewGrid.clientWidth());
         if (this._overviewControl)
             this._overviewControl.update();
         this._overviewGrid.updateDividers(this._overviewCalculator);
@@ -230,20 +230,20 @@ WebInspector.TimelineOverviewCalculator.prototype = {
     },
 
     /**
-     * @param {number=} minimum
-     * @param {number=} maximum
+     * @param {number=} minimumRecordTime
+     * @param {number=} maximumRecordTime
      */
-    setWindow: function(minimum, maximum)
+    _setWindow: function(minimumRecordTime, maximumRecordTime)
     {
-        this._minimumBoundary = minimum >= 0 ? minimum : undefined;
-        this._maximumBoundary = maximum >= 0 ? maximum : undefined;
+        this._minimumBoundary = minimumRecordTime;
+        this._maximumBoundary = maximumRecordTime;
     },
 
     /**
      * @param {number} paddingLeft
      * @param {number} clientWidth
      */
-    setDisplayWindow: function(paddingLeft, clientWidth)
+    _setDisplayWindow: function(paddingLeft, clientWidth)
     {
         this._workingArea = clientWidth - paddingLeft;
         this._paddingLeft = paddingLeft;
@@ -251,7 +251,7 @@ WebInspector.TimelineOverviewCalculator.prototype = {
 
     reset: function()
     {
-        this.setWindow();
+        this._setWindow(0, 1000);
     },
 
     /**
