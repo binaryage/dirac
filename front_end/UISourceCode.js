@@ -175,6 +175,11 @@ WebInspector.UISourceCode.prototype = {
         }
     },
 
+    remove: function()
+    {
+        this._project.deleteFile(this.path());
+    },
+
     /**
      * @param {string} name
      * @param {string} url

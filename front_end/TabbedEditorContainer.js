@@ -36,7 +36,12 @@ WebInspector.TabbedEditorContainerDelegate.prototype = {
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @return {!WebInspector.SourceFrame}
      */
-    viewForFile: function(uiSourceCode) { }
+    viewForFile: function(uiSourceCode) { },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     */
+    revealInNavigator: function(uiSourceCode) { }
 }
 
 /**
@@ -143,22 +148,51 @@ WebInspector.TabbedEditorContainer.prototype = {
         return result;
     },
 
-    _addScrollAndSelectionListeners: function()
+    _addViewListeners: function()
     {
         if (!this._currentView)
             return;
         this._currentView.addEventListener(WebInspector.SourceFrame.Events.ScrollChanged, this._scrollChanged, this);
         this._currentView.addEventListener(WebInspector.SourceFrame.Events.SelectionChanged, this._selectionChanged, this);
+        this._boundHandleContextMenu = this._handleContextMenu.bind(this);
+        this._currentView.element.addEventListener("contextmenu", this._boundHandleContextMenu, false);
     },
 
-    _removeScrollAndSelectionListeners: function()
+    _removeViewListeners: function()
     {
         if (!this._currentView)
             return;
         this._currentView.removeEventListener(WebInspector.SourceFrame.Events.ScrollChanged, this._scrollChanged, this);
         this._currentView.removeEventListener(WebInspector.SourceFrame.Events.SelectionChanged, this._selectionChanged, this);
+        this._currentView.element.addEventListener("contextmenu", this._boundHandleContextMenu, false);
+        delete this._boundHandleContextMenu;
     },
 
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     */
+    _handleContextMenuReveal: function(uiSourceCode)
+    {
+        this._delegate.revealInNavigator(uiSourceCode);
+    },
+
+    /**
+     * @param {!Event} event
+     */
+    _handleContextMenu: function(event)
+    {
+        var uiSourceCode = this._currentFile;
+
+        var contextMenu = new WebInspector.ContextMenu(event);
+        contextMenu.appendApplicableItems(uiSourceCode);
+        contextMenu.appendSeparator();
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in navigator" : "Reveal in Navigator"), this._handleContextMenuReveal.bind(this, uiSourceCode));
+        contextMenu.show();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _scrollChanged: function(event)
     {
         var lineNumber = /** @type {number} */ (event.data);
@@ -166,6 +200,9 @@ WebInspector.TabbedEditorContainer.prototype = {
         this._history.save(this._previouslyViewedFilesSetting);
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _selectionChanged: function(event)
     {
         var range = /** @type {!WebInspector.TextRange} */ (event.data);
@@ -182,7 +219,7 @@ WebInspector.TabbedEditorContainer.prototype = {
         if (this._currentFile === uiSourceCode)
             return;
 
-        this._removeScrollAndSelectionListeners();
+        this._removeViewListeners();
         this._currentFile = uiSourceCode;
 
         var tabId = this._tabIds.get(uiSourceCode) || this._appendFileTab(uiSourceCode, userGesture);
@@ -192,7 +229,7 @@ WebInspector.TabbedEditorContainer.prototype = {
             this._editorSelectedByUserAction();
         
         this._currentView = this.visibleView;
-        this._addScrollAndSelectionListeners();
+        this._addViewListeners();
 
         var eventData = { currentFile: this._currentFile, userGesture: userGesture };
         this.dispatchEventToListeners(WebInspector.TabbedEditorContainer.Events.EditorSelected, eventData);
@@ -390,7 +427,7 @@ WebInspector.TabbedEditorContainer.prototype = {
 
         var uiSourceCode = this._files[tabId];
         if (this._currentFile === uiSourceCode) {
-            this._removeScrollAndSelectionListeners();
+            this._removeViewListeners();
             delete this._currentView;
             delete this._currentFile;
         }

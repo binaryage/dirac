@@ -226,7 +226,7 @@ WebInspector.NavigatorView.prototype = {
      */
     requestRename: function(uiSourceCode)
     {
-        this.dispatchEventToListeners(WebInspector.SourcesNavigator.Events.ItemRenamingRequested, uiSourceCode);
+        this.dispatchEventToListeners(WebInspector.NavigatorView.Events.ItemRenamingRequested, uiSourceCode);
     },
 
     /**

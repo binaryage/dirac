@@ -27,12 +27,14 @@
  */
 
 /**
- * @extends {WebInspector.Object}
  * @constructor
+ * @extends {WebInspector.Object}
+ * @param {!WebInspector.Workspace} workspace
  */
-WebInspector.SourcesNavigator = function()
+WebInspector.SourcesNavigator = function(workspace)
 {
     WebInspector.Object.call(this);
+    this._workspace = workspace;
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.shrinkableTabs = true;
@@ -57,12 +59,18 @@ WebInspector.SourcesNavigator = function()
     this._tabbedPane.selectTab(WebInspector.SourcesNavigator.SourcesTab);
     this._tabbedPane.appendTab(WebInspector.SourcesNavigator.ContentScriptsTab, WebInspector.UIString("Content scripts"), this._contentScriptsView);
     this._tabbedPane.appendTab(WebInspector.SourcesNavigator.SnippetsTab, WebInspector.UIString("Snippets"), this._snippetsView);
+
+    this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
+    this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
+    this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._projectWillReset.bind(this), this);
+    WebInspector.startBatchUpdate();
+    this._workspace.uiSourceCodes().forEach(this._addUISourceCode.bind(this));
+    WebInspector.endBatchUpdate();
 }
 
 WebInspector.SourcesNavigator.Events = {
     SourceSelected: "SourceSelected",
-    ItemCreationRequested: "ItemCreationRequested",
-    ItemRenamingRequested: "ItemRenamingRequested",
+    SourceRenamed: "SourceRenamed"
 }
 
 WebInspector.SourcesNavigator.SourcesTab = "sources";
@@ -94,26 +102,9 @@ WebInspector.SourcesNavigator.prototype = {
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      */
-    addUISourceCode: function(uiSourceCode)
+    revealUISourceCode: function(uiSourceCode)
     {
-        this._navigatorViewForUISourceCode(uiSourceCode).addUISourceCode(uiSourceCode);
-    },
-
-    /**
-     * @param {!WebInspector.UISourceCode} uiSourceCode
-     */
-    removeUISourceCode: function(uiSourceCode)
-    {
-        this._navigatorViewForUISourceCode(uiSourceCode).removeUISourceCode(uiSourceCode);
-    },
-
-    /**
-     * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @param {boolean=} select
-     */
-    revealUISourceCode: function(uiSourceCode, select)
-    {
-        this._navigatorViewForUISourceCode(uiSourceCode).revealUISourceCode(uiSourceCode, select);
+        this._navigatorViewForUISourceCode(uiSourceCode).revealUISourceCode(uiSourceCode, true);
         if (uiSourceCode.isContentScript)
             this._tabbedPane.selectTab(WebInspector.SourcesNavigator.ContentScriptsTab);
         else if (uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets)
@@ -130,11 +121,29 @@ WebInspector.SourcesNavigator.prototype = {
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @param {function(boolean)=} callback
+     * @param {boolean} deleteIfCanceled
      */
-    rename: function(uiSourceCode, callback)
+    _rename: function(uiSourceCode, deleteIfCanceled)
     {
-        this._navigatorViewForUISourceCode(uiSourceCode).rename(uiSourceCode, callback);
+        this._navigatorViewForUISourceCode(uiSourceCode).rename(uiSourceCode, callback.bind(this));
+
+        /**
+         * @this {WebInspector.SourcesNavigator}
+         * @param {boolean} committed
+         */
+        function callback(committed)
+        {
+            if (!committed) {
+                if (deleteIfCanceled)
+                    uiSourceCode.remove();
+                return;
+            }
+
+            var data = { uiSourceCode: uiSourceCode };
+            this.dispatchEventToListeners(WebInspector.SourcesNavigator.Events.SourceRenamed, data);
+            this.updateIcon(uiSourceCode);
+            this.dispatchEventToListeners(WebInspector.SourcesNavigator.Events.SourceSelected, data);
+        }
     },
 
     /**
@@ -150,7 +159,8 @@ WebInspector.SourcesNavigator.prototype = {
      */
     _itemRenamingRequested: function(event)
     {
-        this.dispatchEventToListeners(WebInspector.SourcesNavigator.Events.ItemRenamingRequested, event.data);
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
+        this._rename(uiSourceCode, false);
     },
 
     /**
@@ -158,7 +168,97 @@ WebInspector.SourcesNavigator.prototype = {
      */
     _itemCreationRequested: function(event)
     {
-        this.dispatchEventToListeners(WebInspector.SourcesNavigator.Events.ItemCreationRequested, event.data);
+        var project = event.data.project;
+        var path = event.data.path;
+        var uiSourceCodeToCopy = event.data.uiSourceCode;
+        var filePath;
+        var uiSourceCode;
+
+        /**
+         * @this {WebInspector.SourcesNavigator}
+         * @param {?string} content
+         */
+        function contentLoaded(content)
+        {
+            createFile.call(this, content || "");
+        }
+
+        if (uiSourceCodeToCopy)
+            uiSourceCodeToCopy.requestContent(contentLoaded.bind(this));
+        else
+            createFile.call(this);
+
+        /**
+         * @this {WebInspector.SourcesNavigator}
+         * @param {string=} content
+         */
+        function createFile(content)
+        {
+            project.createFile(path, null, content || "", fileCreated.bind(this));
+        }
+
+        /**
+         * @this {WebInspector.SourcesNavigator}
+         * @param {?string} path
+         */
+        function fileCreated(path)
+        {
+            if (!path)
+                return;
+            filePath = path;
+            uiSourceCode = project.uiSourceCode(filePath);
+
+            var data = { uiSourceCode: uiSourceCode };
+            this.dispatchEventToListeners(WebInspector.SourcesNavigator.Events.SourceSelected, data);
+            this._rename(uiSourceCode, true);
+        }
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     */
+    _addUISourceCode: function(uiSourceCode)
+    {
+        if (uiSourceCode.project().isServiceProject())
+            return;
+        this._navigatorViewForUISourceCode(uiSourceCode).addUISourceCode(uiSourceCode);
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     */
+    _removeUISourceCode: function(uiSourceCode)
+    {
+        this._navigatorViewForUISourceCode(uiSourceCode).removeUISourceCode(uiSourceCode);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _uiSourceCodeAdded: function(event)
+    {
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
+        this._addUISourceCode(uiSourceCode);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _uiSourceCodeRemoved: function(event)
+    {
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
+        this._removeUISourceCode(uiSourceCode);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _projectWillReset: function(event)
+    {
+        var project = /** @type {!WebInspector.Project} */ (event.data);
+        var uiSourceCodes = project.uiSourceCodes();
+        for (var i = 0; i < uiSourceCodes.length; ++i)
+            this._removeUISourceCode(uiSourceCodes[i]);
     },
 
     __proto__: WebInspector.Object.prototype
