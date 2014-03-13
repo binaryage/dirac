@@ -116,11 +116,17 @@ WebInspector.DOMNode = function(domAgent, doc, isInShadowTree, payload) {
     }
 }
 
+/**
+ * @enum {string}
+ */
 WebInspector.DOMNode.PseudoElementNames = {
     Before: "before",
     After: "after"
 }
 
+/**
+ * @enum {string}
+ */
 WebInspector.DOMNode.ShadowRootTypes = {
     UserAgent: "user-agent",
     Author: "author"
@@ -229,6 +235,28 @@ WebInspector.DOMNode.prototype = {
     isInShadowTree: function()
     {
         return this._isInShadowTree;
+    },
+
+    /**
+     * @return {?WebInspector.DOMNode}
+     */
+    ancestorUserAgentShadowRoot: function()
+    {
+        if (!this._isInShadowTree)
+            return null;
+
+        var current = this;
+        while (!current.isShadowRoot())
+            current = current.parentNode;
+        return current.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.UserAgent ? current : null;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isShadowRoot: function()
+    {
+        return !!this._shadowRootType;
     },
 
     /**

@@ -76,6 +76,9 @@ WebInspector.Settings = function()
     this.deviceFitWindow = this.createSetting("deviceFitWindow", true);
     this.emulateViewport = this.createSetting("emulateViewport", false);
     this.emulateTouchEvents = this.createSetting("emulateTouchEvents", false);
+
+    // This setting affects the display of user-agent shadow DOM only,
+    // as author shadow DOM is displayed at all times.
     this.showShadowDOM = this.createSetting("showShadowDOM", false);
     this.savedURLs = this.createSetting("savedURLs", {});
     this.javaScriptDisabled = this.createSetting("javaScriptDisabled", false);

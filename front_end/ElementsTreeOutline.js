@@ -734,12 +734,6 @@ WebInspector.ElementsTreeOutline.prototype = {
     __proto__: TreeOutline.prototype
 }
 
-WebInspector.ElementsTreeOutline.showShadowDOM = function()
-{
-    return WebInspector.settings.showShadowDOM.get() || WebInspector.ElementsTreeOutline["showShadowDOMForTest"];
-}
-
-
 /**
  * @interface
  */
@@ -2235,7 +2229,7 @@ WebInspector.ElementsTreeElement.prototype = {
      */
     _showInlineText: function()
     {
-        if (this._node.importedDocument() || this._node.templateContent() || (WebInspector.ElementsTreeOutline.showShadowDOM() && this._node.hasShadowRoots()) || this._node.hasPseudoElements())
+        if (this._node.importedDocument() || this._node.templateContent() || this._visibleShadowRoots().length > 0 || this._node.hasPseudoElements())
             return false;
         if (this._node.nodeType() !== Node.ELEMENT_NODE)
             return false;
@@ -2404,11 +2398,25 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
+     * @return {!Array.<!WebInspector.DOMAgent>}
+     */
+    _visibleShadowRoots: function()
+    {
+        var roots = this._node.shadowRoots();
+        if (roots.length && !WebInspector.settings.showShadowDOM.get()) {
+            roots = roots.filter(function(root) {
+                return root.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Author;
+            });
+        }
+        return roots;
+    },
+
+    /**
      * @return {!Array.<!WebInspector.DOMNode>} visibleChildren
      */
     _visibleChildren: function()
     {
-        var visibleChildren = WebInspector.ElementsTreeOutline.showShadowDOM() ? this._node.shadowRoots() : [];
+        var visibleChildren = this._visibleShadowRoots();
         if (this._node.importedDocument())
             visibleChildren.push(this._node.importedDocument());
         if (this._node.templateContent())
@@ -2428,13 +2436,11 @@ WebInspector.ElementsTreeElement.prototype = {
      */
     _visibleChildCount: function()
     {
-        var childCount = this._node.childNodeCount();
+        var childCount = this._node.childNodeCount() + this._visibleShadowRoots().length;
         if (this._node.importedDocument())
             ++childCount;
         if (this._node.templateContent())
             ++childCount;
-        if (WebInspector.ElementsTreeOutline.showShadowDOM())
-            childCount += this._node.shadowRoots().length;
         for (var pseudoType in this._node.pseudoElements())
             ++childCount;
         return childCount;

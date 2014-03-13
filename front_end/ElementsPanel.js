@@ -1112,6 +1112,19 @@ WebInspector.ElementsPanel.prototype = {
         this.selectedDOMNode().copyNode();
     },
 
+    /**
+     * @param {!WebInspector.DOMNode} node
+     * @return {!WebInspector.DOMNode}
+     */
+    _leaveUserAgentShadowDOM: function(node)
+    {
+        var userAgentShadowRoot = node.ancestorUserAgentShadowRoot();
+        return userAgentShadowRoot ? /** @type {!WebInspector.DOMNode} */ (userAgentShadowRoot.parentNode) : node;
+    },
+
+    /**
+     * @param {!DOMAgent.NodeId} nodeId
+     */
     revealAndSelectNode: function(nodeId)
     {
         WebInspector.inspectorView.setCurrentPanel(this);
@@ -1120,9 +1133,7 @@ WebInspector.ElementsPanel.prototype = {
         if (!node)
             return;
 
-        while (!WebInspector.ElementsTreeOutline.showShadowDOM() && node && node.isInShadowTree())
-            node = node.parentNode;
-
+        node = WebInspector.settings.showShadowDOM.get() ? node : this._leaveUserAgentShadowDOM(node);
         WebInspector.domAgent.highlightDOMNodeForTwoSeconds(nodeId);
         this.selectDOMNode(node, true);
     },
