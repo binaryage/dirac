@@ -445,7 +445,7 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
     if (!imageElement && WebInspector.TimelineUIUtils.needsPreviewElement(record.type))
         WebInspector.DOMPresentationUtils.buildImagePreviewContents(record.url, false, barrier.createCallback(saveImage));
     if (!relatedNode && record.relatedBackendNodeId())
-        WebInspector.domAgent.pushNodeByBackendIdToFrontend(record.relatedBackendNodeId(), barrier.createCallback(saveNode));
+        WebInspector.domAgent.pushNodesByBackendIdsToFrontend([record.relatedBackendNodeId()], barrier.createCallback(saveNode));
     barrier.callWhenDone(callbackWrapper);
 
     /**
@@ -458,12 +458,12 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
     }
 
     /**
-     * @param {?DOMAgent.NodeId} nodeId
+     * @param {?Array.<!DOMAgent.NodeId>} nodeIds
      */
-    function saveNode(nodeId)
+    function saveNode(nodeIds)
     {
-        if (nodeId !== null) {
-            relatedNode = WebInspector.domAgent.nodeForId(nodeId);
+        if (nodeIds !== null) {
+            relatedNode = WebInspector.domAgent.nodeForId(nodeIds[0]);
             record.setUserObject("TimelineUIUtils::related-node", relatedNode);
         }
     }

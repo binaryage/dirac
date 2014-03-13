@@ -2149,14 +2149,14 @@
                 "hidden": true
             },
             {
-                "name": "pushNodeByBackendIdToFrontend",
+                "name": "pushNodesByBackendIdsToFrontend",
                 "parameters": [
-                    { "name": "backendNodeId", "$ref": "BackendNodeId", "description": "The backend node id of the node." }
+                    { "name": "backendNodeIds", "type": "array", "items": {"$ref": "BackendNodeId"}, "description": "The array of backend node ids." }
                 ],
                 "returns": [
-                    { "name": "nodeId", "$ref": "NodeId", "description": "The pushed node's id." }
+                    { "name": "nodeIds", "type": "array", "items": {"$ref": "NodeId"}, "description": "The array of ids of pushed nodes that correspond to the backend ids specified in backendNodeIds." }
                 ],
-                "description": "Requests that the node is sent to the caller given its backend node id.",
+                "description": "Requests that a batch of nodes is sent to the caller given their backend node ids.",
                 "hidden": true
             },
             {
@@ -3850,7 +3850,7 @@
                 "properties": [
                     { "name": "layerId", "$ref": "LayerId", "description": "The unique id for this layer." },
                     { "name": "parentLayerId", "$ref": "LayerId", "optional": true, "description": "The id of parent (not present for root)." },
-                    { "name": "nodeId", "$ref": "DOM.NodeId", "optional": true, "description": "The id for the node associated with this layer." },
+                    { "name": "backendNodeId", "$ref": "DOM.BackendNodeId", "optional": true, "description": "The backend id for the node associated with this layer." },
                     { "name": "offsetX", "type": "number", "description": "Offset from parent layer, X coordinate." },
                     { "name": "offsetY", "type": "number", "description": "Offset from parent layer, X coordinate." },
                     { "name": "width", "type": "number", "description": "Layer width." },

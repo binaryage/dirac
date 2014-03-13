@@ -858,12 +858,12 @@ WebInspector.DOMAgent.prototype = {
     },
 
     /**
-     * @param {number} backendNodeId
-     * @param {function(?number)=} callback
+     * @param {!Array.<number>} backendNodeIds
+     * @param {function(?Array.<number>)=} callback
      */
-    pushNodeByBackendIdToFrontend: function(backendNodeId, callback)
+    pushNodesByBackendIdsToFrontend: function(backendNodeIds, callback)
     {
-        this._dispatchWhenDocumentAvailable(DOMAgent.pushNodeByBackendIdToFrontend.bind(DOMAgent, backendNodeId), callback);
+        this._dispatchWhenDocumentAvailable(DOMAgent.pushNodesByBackendIdsToFrontend.bind(DOMAgent, backendNodeIds), callback);
     },
 
     /**
