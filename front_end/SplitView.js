@@ -54,6 +54,7 @@ WebInspector.SplitView = function(isVertical, secondIsSidebar, settingName, defa
     this._sidebarElement.className = "split-view-contents scroll-target split-view-sidebar vbox"; // Override
 
     this._resizerElement = this.element.createChild("div", "split-view-resizer");
+    this._resizerElement.createChild("div", "split-view-resizer-border");
     if (secondIsSidebar) {
         this._mainView.show(this.element);
         this._sidebarView.show(this.element);
@@ -137,11 +138,7 @@ WebInspector.SplitView.prototype = {
         if (this._shouldSaveShowMode)
             this._restoreAndApplyShowModeFromSettings();
         this._updateShowHideSidebarButton();
-
-        for (var i = 0; i < this._resizerElements.length; ++i) {
-            this._resizerElements[i].classList.toggle("ew-resizer-widget", this._isVertical);
-            this._resizerElements[i].classList.toggle("ns-resizer-widget", !this._isVertical);
-        }
+        this._updateResizersClass();
     },
 
     /**
@@ -286,6 +283,7 @@ WebInspector.SplitView.prototype = {
             sideToHide.detach();
             sideToShow.element.classList.add("maximized");
             sideToHide.element.classList.remove("maximized");
+            this._resizerElement.classList.add("hidden");
             this._removeAllLayoutProperties();
         }
 
@@ -326,6 +324,7 @@ WebInspector.SplitView.prototype = {
         this._cancelAnimation();
         this._mainElement.classList.remove("maximized");
         this._sidebarElement.classList.remove("maximized");
+        this._resizerElement.classList.remove("hidden");
 
         this._mainView.show(this.element);
         this._sidebarView.show(this.element);
@@ -344,7 +343,7 @@ WebInspector.SplitView.prototype = {
     setResizable: function(resizable)
     {
         this._resizable = resizable;
-        this._resizerElement.classList.toggle("hidden", !resizable);
+        this._updateResizersClass();
     },
 
     /**
@@ -656,7 +655,7 @@ WebInspector.SplitView.prototype = {
 
     hideDefaultResizer: function()
     {
-        this.element.classList.add("split-view-no-resizer");
+        this.uninstallResizer(this._resizerElement);
     },
 
     /**
@@ -665,8 +664,8 @@ WebInspector.SplitView.prototype = {
     installResizer: function(resizerElement)
     {
         resizerElement.addEventListener("mousedown", this._onDragStartBound, false);
-        resizerElement.classList.toggle("ew-resizer-widget", this._isVertical);
-        resizerElement.classList.toggle("ns-resizer-widget", !this._isVertical);
+        resizerElement.classList.toggle("ew-resizer-widget", this._isVertical && this._resizable);
+        resizerElement.classList.toggle("ns-resizer-widget", !this._isVertical && this._resizable);
         if (this._resizerElements.indexOf(resizerElement) === -1)
             this._resizerElements.push(resizerElement);
     },
@@ -677,7 +676,8 @@ WebInspector.SplitView.prototype = {
     uninstallResizer: function(resizerElement)
     {
         resizerElement.removeEventListener("mousedown", this._onDragStartBound, false);
-        resizerElement.style.removeProperty("cursor");
+        resizerElement.classList.remove("ew-resizer-widget");
+        resizerElement.classList.remove("ns-resizer-widget");
         this._resizerElements.remove(resizerElement);
     },
 
@@ -699,6 +699,14 @@ WebInspector.SplitView.prototype = {
             this.installResizer(resizer);
         else
             this.uninstallResizer(resizer);
+    },
+
+    _updateResizersClass: function()
+    {
+        for (var i = 0; i < this._resizerElements.length; ++i) {
+            this._resizerElements[i].classList.toggle("ew-resizer-widget", this._isVertical && this._resizable);
+            this._resizerElements[i].classList.toggle("ns-resizer-widget", !this._isVertical && this._resizable);
+        }
     },
 
     /**
