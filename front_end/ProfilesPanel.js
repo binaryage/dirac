@@ -785,9 +785,9 @@ WebInspector.ProfilesPanel.prototype = {
 
     /**
      * @param {!HeapProfilerAgent.HeapSnapshotObjectId} snapshotObjectId
-     * @param {string} viewName
+     * @param {string} perspectiveName
      */
-    showObject: function(snapshotObjectId, viewName)
+    showObject: function(snapshotObjectId, perspectiveName)
     {
         var heapProfiles = WebInspector.ProfileTypeRegistry.instance.heapSnapshotProfileType.getProfiles();
         for (var i = 0; i < heapProfiles.length; i++) {
@@ -796,7 +796,7 @@ WebInspector.ProfilesPanel.prototype = {
             if (profile.maxJSObjectId >= snapshotObjectId) {
                 this.showProfile(profile);
                 var view = this._viewForProfile(profile);
-                view.changeView(viewName, function() {
+                view.changePerspective(perspectiveName, function() {
                     function didHighlightObject(found) {
                         if (!found)
                             WebInspector.console.log("Cannot find corresponding heap snapshot node", WebInspector.ConsoleMessage.MessageLevel.Error, true);

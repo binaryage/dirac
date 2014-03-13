@@ -260,6 +260,15 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
+     * @override
+     */
+    detachChildViews: function()
+    {
+        this._mainView.detachChildViews();
+        this._sidebarView.detachChildViews();
+    },
+
+    /**
      * @param {!WebInspector.View} sideToShow
      * @param {!WebInspector.View} sideToHide
      * @param {boolean=} animate
