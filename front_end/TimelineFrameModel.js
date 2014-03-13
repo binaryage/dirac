@@ -47,6 +47,13 @@ WebInspector.TimelineFrameModel.Events = {
     FrameAdded: "FrameAdded"
 }
 
+WebInspector.TimelineFrameModel._mainFrameMarkers = [
+    WebInspector.TimelineModel.RecordType.ScheduleStyleRecalculation,
+    WebInspector.TimelineModel.RecordType.InvalidateLayout,
+    WebInspector.TimelineModel.RecordType.BeginFrame,
+    WebInspector.TimelineModel.RecordType.ScrollLayer
+];
+
 WebInspector.TimelineFrameModel.prototype = {
     /**
      * @return {!Array.<!WebInspector.TimelineFrame>}
@@ -98,7 +105,7 @@ WebInspector.TimelineFrameModel.prototype = {
 
         // Start collecting main frame
         if (programRecord) {
-            if (!this._aggregatedMainThreadWork && this._findRecordRecursively([recordTypes.ScheduleStyleRecalculation, recordTypes.InvalidateLayout, recordTypes.BeginFrame], programRecord))
+            if (!this._aggregatedMainThreadWork && this._findRecordRecursively(WebInspector.TimelineFrameModel._mainFrameMarkers, programRecord))
                 this._aggregatedMainThreadWork = {};
         }
 
