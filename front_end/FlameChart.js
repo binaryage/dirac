@@ -831,17 +831,11 @@ WebInspector.FlameChart.MainPane.prototype = {
         var timelineData = this._timelineData();
         if (!timelineData)
             return;
-        var ratio = window.devicePixelRatio;
 
         var context = this._canvas.getContext("2d");
+        context.save();
+        var ratio = window.devicePixelRatio;
         context.scale(ratio, ratio);
-
-        var offsets = this._dataProvider.dividerOffsets(this._calculator.minimumBoundary(), this._calculator.maximumBoundary());
-
-        if (timelineData.entryOffsets.length)
-            WebInspector.TimelineGrid.drawCanvasGrid(this._canvas, this._calculator, offsets);
-
-        context.translate(0.5, 0.5);
 
         var timeWindowRight = this._timeWindowRight - this._zeroTime;
         var timeWindowLeft = this._timeWindowLeft - this._zeroTime;
@@ -856,8 +850,7 @@ WebInspector.FlameChart.MainPane.prototype = {
         var titleIndexes = new Uint32Array(timelineData.entryTotalTimes);
         var lastTitleIndex = 0;
         var textPadding = this._dataProvider.textPadding();
-        var dotsWidth = this._measureWidth(context, "\u2026");
-        this._minTextWidth = 2 * textPadding + dotsWidth;
+        this._minTextWidth = 2 * textPadding + this._measureWidth(context, "\u2026");
         var minTextWidth = this._minTextWidth;
 
         var lastDrawOffset = new Int32Array(this._dataProvider.maxStackDepth());
@@ -961,6 +954,12 @@ WebInspector.FlameChart.MainPane.prototype = {
             context.fillStyle = this._dataProvider.textColor(entryIndex);
             context.fillText(text, barX + textPadding, textBaseHeight - barLevel * this._barHeightDelta);
         }
+        context.restore();
+
+        var offsets = this._dataProvider.dividerOffsets(this._calculator.minimumBoundary(), this._calculator.maximumBoundary());
+        if (timelineData.entryOffsets.length)
+            WebInspector.TimelineGrid.drawCanvasGrid(this._canvas, this._calculator, offsets);
+
         this._updateElementPosition(this._highlightElement, this._highlightedEntryIndex);
         this._updateElementPosition(this._selectedElement, this._selectedEntryIndex);
     },
@@ -1026,34 +1025,23 @@ WebInspector.FlameChart.MainPane.prototype = {
         var titleWidth = this._measureWidth(context, title);
         if (maxSize > titleWidth)
             return title;
-        maxSize -= this._measureWidth(context, "\u2026");
-        var dotRegExp=/[\.\$]/g;
-        var match = dotRegExp.exec(title);
-        if (!match) {
-            var visiblePartSize = maxSize / titleWidth;
-            var newTextLength = Math.floor(title.length * visiblePartSize) + 1;
-            var minTextLength = 2;
-            if (newTextLength < minTextLength)
-                return null;
-            var substring;
-            do {
-                --newTextLength;
-                substring = title.substring(0, newTextLength);
-            } while (this._measureWidth(context, substring).width > maxSize);
-            return title.substring(0, newTextLength) + "\u2026";
+
+        var l = 3;
+        var r = title.length;
+        while (l < r) {
+            var m = (l + r) >> 1;
+            if (this._measureWidth(context, title.trimMiddle(m)) < maxSize)
+                l = m + 1;
+            else
+                r = m;
         }
-        while (match) {
-            var substring = title.substring(match.index + 1);
-            var width = this._measureWidth(context, substring).width;
-            if (maxSize > width)
-                return "\u2026" + substring;
-            match = dotRegExp.exec(title);
-        }
-        var i = 0;
-        do {
-            ++i;
-        } while (this._measureWidth(context, title.substring(0, i)).width < maxSize);
-        return title.substring(0, i - 1) + "\u2026";
+        title = title.trimMiddle(r - 1);
+        titleWidth = this._measureWidth(context, title);
+        if (titleWidth <= maxSize)
+            return title;
+        if (maxSize > this._measureWidth(context, "\u2026"))
+            return "\u2026";
+        return "";
     },
 
     /**

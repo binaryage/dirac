@@ -105,6 +105,9 @@ WebInspector.TimelineGrid.drawCanvasGrid = function(canvas, calculator, dividerO
 {
     var context = canvas.getContext("2d");
     context.save();
+    var ratio = window.devicePixelRatio;
+    context.scale(ratio, ratio);
+    context.translate(0.5, 0.5);
     var printDeltas = !!dividerOffsets;
     var width = canvas.width / window.devicePixelRatio;
     var height = canvas.height / window.devicePixelRatio;
@@ -116,11 +119,10 @@ WebInspector.TimelineGrid.drawCanvasGrid = function(canvas, calculator, dividerO
     }
 
     context.fillStyle = "#333";
-    context.strokeStyle = "#bbb";
+    context.strokeStyle = "rgba(0, 0, 0, 0.1)";
     context.textBaseline = "hanging";
     context.font = (printDeltas ? "italic bold 11px " : " 11px ") + WebInspector.fontFamily();
     context.lineWidth = 1;
-    context.translate(0.5, 0.5);
 
     const minWidthForTitle = 60;
     var lastPosition = 0;

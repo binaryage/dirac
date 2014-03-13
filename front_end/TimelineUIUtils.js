@@ -693,7 +693,6 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier)
         detailsText = WebInspector.UIString("%s collected", Number.bytesToString(record.data["usedHeapSizeDelta"]));
         break;
     case WebInspector.TimelineModel.RecordType.TimerFire:
-        details = linkifyScriptLocation();
         detailsText = record.data["timerId"];
         break;
     case WebInspector.TimelineModel.RecordType.FunctionCall:
@@ -701,7 +700,6 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier)
             details = linkifyLocation(record.scriptName, record.scriptLine, 0);
         break;
     case WebInspector.TimelineModel.RecordType.FireAnimationFrame:
-        details = linkifyScriptLocation();
         detailsText = record.data["id"];
         break;
     case WebInspector.TimelineModel.RecordType.EventDispatch:

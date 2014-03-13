@@ -40,6 +40,7 @@ WebInspector.TimelineFlameChartDataProvider = function(model, frameModel)
     this._model = model;
     this._frameModel = frameModel;
     this._font = "bold 12px " + WebInspector.fontFamily();
+    this._linkifier = new WebInspector.Linkifier();
 }
 
 WebInspector.TimelineFlameChartDataProvider.prototype = {
@@ -87,7 +88,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             return WebInspector.UIString("CPU");
         else if (record === this._gpuThreadRecord)
             return WebInspector.UIString("GPU");
-        return record.title();
+        var details = WebInspector.TimelineUIUtils.buildDetailsNode(record, this._linkifier);
+        return details ? WebInspector.UIString("%s (%s)", record.title(), details.textContent) : record.title();
     },
 
     /**
@@ -128,6 +130,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (this._timelineData)
             return this._timelineData;
 
+        this._linkifier.reset();
+
         /**
          * @type {?WebInspector.FlameChart.TimelineData}
          */
@@ -151,12 +155,19 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
         var records = this._model.records();
         for (var i = 0; i < records.length; ++i) {
-            if (records[i].thread === "gpu")
+            var record = records[i];
+            var thread = record.thread;
+            if (thread === "gpu")
                 continue;
-            this._appendRecord(records[i], 1);
+            if (!thread) {
+                for (var j = 0; j < record.children.length; ++j)
+                    this._appendRecord(record.children[j], 1);
+            } else {
+                this._appendRecord(records[i], 1);
+            }
         }
 
-        var cpuStackDepth = Math.max(5, this._entryThreadDepths[undefined]);
+        var cpuStackDepth = Math.max(4, this._entryThreadDepths[undefined]);
         delete this._entryThreadDepths[undefined];
 
         var threadBaselines = {};
