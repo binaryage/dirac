@@ -343,6 +343,7 @@ WebInspector.EditFileSystemDialog.prototype = {
         var path = entry.path;
         this._excludedFolderEntries.put(path, entry);
         this._excludedFolderList.addItem(path, null);
+        this._resize();
     },
 
     /**
