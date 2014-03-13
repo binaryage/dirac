@@ -264,7 +264,7 @@ WebInspector.ConsoleModel.UIDelegate.prototype = {
  * @constructor
  * @param {string} source
  * @param {?string} level
- * @param {string} text
+ * @param {string} messageText
  * @param {string=} type
  * @param {?string=} url
  * @param {number=} line
@@ -275,11 +275,11 @@ WebInspector.ConsoleModel.UIDelegate.prototype = {
  * @param {!Array.<!ConsoleAgent.CallFrame>=} stackTrace
  * @param {boolean=} isOutdated
  */
-WebInspector.ConsoleMessage = function(source, level, text, type, url, line, column, repeatCount, requestId, parameters, stackTrace, isOutdated)
+WebInspector.ConsoleMessage = function(source, level, messageText, type, url, line, column, repeatCount, requestId, parameters, stackTrace, isOutdated)
 {
     this.source = source;
     this.level = level;
-    this.messageText = text;
+    this.messageText = messageText;
     this.type = type || WebInspector.ConsoleMessage.MessageType.Log;
     this.url = url || null;
     this.line = line || 0;
@@ -309,7 +309,19 @@ WebInspector.ConsoleMessage.prototype = {
      */
     clone: function()
     {
-        return new WebInspector.ConsoleMessage(this.source, this.level, this.text, this.type, this.url, this.line, this.column, this.repeatCount, this.requestId, this.parameters, this.stackTrace, this.isOutdated);
+        return new WebInspector.ConsoleMessage(
+            this.source,
+            this.level,
+            this.messageText,
+            this.type,
+            this.url,
+            this.line,
+            this.column,
+            this.repeatCount,
+            this.request ? this.request.requestId : undefined,
+            this.parameters,
+            this.stackTrace,
+            this.isOutdated);
     },
 
     /**
