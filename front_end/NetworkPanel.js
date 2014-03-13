@@ -28,7 +28,6 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-importScript("FilterSuggestionBuilder.js");
 importScript("RequestView.js");
 importScript("NetworkItemView.js");
 importScript("RequestCookiesView.js");
