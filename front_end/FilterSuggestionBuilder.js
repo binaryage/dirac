@@ -145,11 +145,12 @@ WebInspector.FilterSuggestionBuilder.prototype = {
         var filters = {};
         var text = [];
         var i = 0;
+        var j = 0;
         var part;
         while (true) {
             var colonIndex = query.indexOf(":", i);
             if (colonIndex == -1) {
-                part = query.substring(i);
+                part = query.substring(j);
                 if (part)
                     text.push(part);
                 break;
@@ -160,7 +161,7 @@ WebInspector.FilterSuggestionBuilder.prototype = {
                 i = colonIndex + 1;
                 continue;
             }
-            part = query.substring(i, spaceIndex);
+            part = spaceIndex > j ? query.substring(j, spaceIndex) : "";
             if (part)
                 text.push(part);
             var nextSpace = query.indexOf(" ", colonIndex + 1);
@@ -170,6 +171,7 @@ WebInspector.FilterSuggestionBuilder.prototype = {
             }
             filters[key] = query.substring(colonIndex + 1, nextSpace);
             i = nextSpace + 1;
+            j = i;
         }
         return {text: text, filters: filters};
     }
