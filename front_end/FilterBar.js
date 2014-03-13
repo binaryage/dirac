@@ -190,7 +190,7 @@ WebInspector.TextFilterUI = function(supportRegex)
     this._filterInputElement.id = "filter-input-field";
     this._filterInputElement.addEventListener("mousedown", this._onFilterFieldManualFocus.bind(this), false); // when the search field is manually selected
     this._filterInputElement.addEventListener("input", this._onInput.bind(this), false);
-    this._filterInputElement.addEventListener("change", this._onInput.bind(this), false);
+    this._filterInputElement.addEventListener("change", this._onChange.bind(this), false);
     this._filterInputElement.addEventListener("keydown", this._onInputKeyDown.bind(this), true);
     this._filterInputElement.addEventListener("blur", this._onBlur.bind(this), true);
 
@@ -267,7 +267,15 @@ WebInspector.TextFilterUI.prototype = {
      */
     _onBlur: function(event)
     {
-        this._suggestBox.hide();
+        this._cancelSuggestion();
+    },
+
+    _cancelSuggestion: function()
+    {
+        if (this._suggestionBuilder && this._suggestBox.visible) {
+            this._suggestionBuilder.unapplySuggestion(this._filterInputElement);
+            this._suggestBox.hide();
+        }
     },
 
     /**
@@ -276,6 +284,14 @@ WebInspector.TextFilterUI.prototype = {
     _onInput: function(event)
     {
         this._valueChanged(true);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onChange: function(event)
+    {
+        this._valueChanged(false);
     },
 
     focus: function()
@@ -288,17 +304,14 @@ WebInspector.TextFilterUI.prototype = {
      */
     setSuggestionBuilder: function(suggestionBuilder)
     {
+        this._cancelSuggestion();
         this._suggestionBuilder = suggestionBuilder;
-        if (document.activeElement === this._filterInputElement)
-            this._updateSuggestions();
     },
 
     _updateSuggestions: function()
     {
-        if (!this._suggestionBuilder) {
-            this._suggestBox.hide();
+        if (!this._suggestionBuilder)
             return;
-        }
         var suggestions = this._suggestionBuilder.buildSuggestions(this._filterInputElement);
         if (suggestions && suggestions.length) {
             if (this._suppressSuggestion)
@@ -356,10 +369,11 @@ WebInspector.TextFilterUI.prototype = {
             this._suppressSuggestion = true;
         } else if (this._suggestBox.visible()) {
             if (event.keyIdentifier === "U+001B") { // Esc
-                this._suggestBox.hide();
+                this._cancelSuggestion();
                 handled = true;
             } else if (event.keyIdentifier === "U+0009") { // Tab
                 this._suggestBox.acceptSuggestion();
+                this._valueChanged(true);
                 handled = true;
             } else {
                 handled = this._suggestBox.keyPressed(event);
@@ -414,6 +428,11 @@ WebInspector.TextFilterUI.SuggestionBuilder.prototype = {
      * @param {boolean} isIntermediate
      */
     applySuggestion: function(input, suggestion, isIntermediate) { },
+
+    /**
+     * @param {!HTMLInputElement} input
+     */
+    unapplySuggestion: function(input) { }
 }
 
 /**

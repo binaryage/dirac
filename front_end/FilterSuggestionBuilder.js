@@ -57,6 +57,9 @@ WebInspector.FilterSuggestionBuilder.prototype = {
         var prefixIndex = text.lastIndexOf(" ") + 1;
 
         var prefix = text.substring(prefixIndex);
+        if (!prefix)
+            return [];
+
         var valueDelimiterIndex = prefix.indexOf(":");
 
         var suggestions = [];
@@ -95,6 +98,18 @@ WebInspector.FilterSuggestionBuilder.prototype = {
         if (!isIntermediate)
             start = text.length;
         input.setSelectionRange(start, text.length);
+    },
+
+    /**
+     * @param {!HTMLInputElement} input
+     */
+    unapplySuggestion: function(input)
+    {
+        var start = input.selectionStart;
+        var end = input.selectionEnd;
+        var text = input.value;
+        if (start !== end && end === text.length)
+            input.value = text.substring(0, start);
     },
 
     /**
