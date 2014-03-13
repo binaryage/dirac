@@ -105,9 +105,8 @@ WebInspector.LayerTree.prototype = {
                 node = new WebInspector.LayerTreeElement(this, layer);
                 parent.appendChild(node);
             } else {
-                var oldParentId = node.parent.representedObject && node.parent.representedObject.id();
-                if (oldParentId !== layer.parentId()) {
-                    (node.parent || this._treeOutline).removeChild(node);
+                if (node.parent !== parent) {
+                    node.parent.removeChild(node);
                     parent.appendChild(node);
                 }
                 node._update();
