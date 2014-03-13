@@ -35,10 +35,6 @@ WebInspector.TimelineGrid = function()
 {
     this.element = document.createElement("div");
 
-    this._itemsGraphsElement = document.createElement("div");
-    this._itemsGraphsElement.id = "resources-graphs";
-    this.element.appendChild(this._itemsGraphsElement);
-
     this._dividersElement = this.element.createChild("div", "resources-dividers");
 
     this._gridHeaderElement = document.createElement("div");
@@ -53,11 +49,6 @@ WebInspector.TimelineGrid = function()
 }
 
 WebInspector.TimelineGrid.prototype = {
-    get itemsGraphsElement()
-    {
-        return this._itemsGraphsElement;
-    },
-
     get dividersElement()
     {
         return this._dividersElement;

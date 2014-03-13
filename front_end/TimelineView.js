@@ -93,11 +93,12 @@ WebInspector.TimelineView.prototype = {
         this._gridContainer.element.id = "resources-container-content";
         this._gridContainer.show(recordsView.mainElement());
         this._timelineGrid = new WebInspector.TimelineGrid();
-        this._itemsGraphsElement = this._timelineGrid.itemsGraphsElement;
-        this._itemsGraphsElement.id = "timeline-graphs";
         this._gridContainer.element.appendChild(this._timelineGrid.element);
         this._timelineGrid.gridHeaderElement.id = "timeline-grid-header";
         this._timelineGrid.gridHeaderElement.classList.add("fill");
+
+        this._itemsGraphsElement = this._gridContainer.element.createChild("div");
+        this._itemsGraphsElement.id = "timeline-graphs";
 
         // Create gap elements
         this._topGapElement = this._itemsGraphsElement.createChild("div", "timeline-gap");
