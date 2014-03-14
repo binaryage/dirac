@@ -45,13 +45,12 @@ WebInspector.HeapSnapshotView = function(profile)
     if (profile._profileType.id === WebInspector.TrackingHeapSnapshotProfileType.TypeId) {
         this._trackingOverviewGrid = new WebInspector.HeapTrackingOverviewGrid(profile);
         this._trackingOverviewGrid.addEventListener(WebInspector.HeapTrackingOverviewGrid.IdsRangeChanged, this._onIdsRangeChanged.bind(this));
-        this._trackingOverviewGrid.show(this.element);
     }
 
-    this._viewsContainer = new WebInspector.SplitView(false, true, "heapSnapshotSplitViewState", 200, 200);
-    this._viewsContainer.show(this.element);
-    this._viewsContainer.setMainElementConstraints(50, 50);
-    this._viewsContainer.setSidebarElementConstraints(70, 70);
+    this._splitView = new WebInspector.SplitView(false, true, "heapSnapshotSplitViewState", 200, 200);
+    this._splitView.show(this.element);
+    this._splitView.setMainElementConstraints(50, 50);
+    this._splitView.setSidebarElementConstraints(70, 70);
 
     this._containmentView = new WebInspector.VBox();
     this._containmentDataGrid = new WebInspector.HeapSnapshotContainmentDataGrid();
@@ -87,8 +86,8 @@ WebInspector.HeapSnapshotView = function(profile)
     var retainingPathsTitleDiv = this._retainmentViewHeader.createChild("div", "title");
     var retainingPathsTitle = retainingPathsTitleDiv.createChild("span");
     retainingPathsTitle.textContent = WebInspector.UIString("Object's retaining tree");
-    this._viewsContainer.hideDefaultResizer();
-    this._viewsContainer.installResizer(this._retainmentViewHeader);
+    this._splitView.hideDefaultResizer();
+    this._splitView.installResizer(this._retainmentViewHeader);
 
     this._retainmentView = new WebInspector.VBox();
     this._retainmentView.element.classList.add("retaining-paths-view");
@@ -165,7 +164,14 @@ WebInspector.HeapSnapshotView.Perspective.prototype = {
         heapSnapshotView._filterSelect.visible = false;
         heapSnapshotView._classNameFilter.visible = false;
         if (heapSnapshotView._trackingOverviewGrid)
-            heapSnapshotView._trackingOverviewGrid.element.classList.add("hidden");
+            heapSnapshotView._trackingOverviewGrid.detach();
+        if (heapSnapshotView._allocationView)
+            heapSnapshotView._allocationView.detach();
+        if (heapSnapshotView._statisticsView)
+            heapSnapshotView._statisticsView.detach();
+
+        heapSnapshotView._splitView.detach();
+        heapSnapshotView._splitView.detachChildViews();
     },
 
     /**
@@ -210,12 +216,13 @@ WebInspector.HeapSnapshotView.SummaryPerspective.prototype = {
      */
     activate: function(heapSnapshotView)
     {
-        heapSnapshotView._constructorsView.show(heapSnapshotView._viewsContainer.mainElement());
-        heapSnapshotView._retainmentView.show(heapSnapshotView._viewsContainer.sidebarElement());
+        heapSnapshotView._constructorsView.show(heapSnapshotView._splitView.mainElement());
+        heapSnapshotView._retainmentView.show(heapSnapshotView._splitView.sidebarElement());
+        heapSnapshotView._splitView.show(heapSnapshotView.element);
         heapSnapshotView._filterSelect.visible = true;
         heapSnapshotView._classNameFilter.visible = true;
         if (heapSnapshotView._trackingOverviewGrid) {
-            heapSnapshotView._trackingOverviewGrid.element.classList.remove("hidden");
+            heapSnapshotView._trackingOverviewGrid.show(heapSnapshotView.element, heapSnapshotView._splitView.element);
             heapSnapshotView._trackingOverviewGrid.update();
         }
     },
@@ -258,8 +265,9 @@ WebInspector.HeapSnapshotView.ComparisonPerspective.prototype = {
      */
     activate: function(heapSnapshotView)
     {
-        heapSnapshotView._diffView.show(heapSnapshotView._viewsContainer.mainElement());
-        heapSnapshotView._retainmentView.show(heapSnapshotView._viewsContainer.sidebarElement());
+        heapSnapshotView._diffView.show(heapSnapshotView._splitView.mainElement());
+        heapSnapshotView._retainmentView.show(heapSnapshotView._splitView.sidebarElement());
+        heapSnapshotView._splitView.show(heapSnapshotView.element);
         heapSnapshotView._baseSelect.visible = true;
         heapSnapshotView._classNameFilter.visible = true;
     },
@@ -302,8 +310,9 @@ WebInspector.HeapSnapshotView.ContainmentPerspective.prototype = {
      */
     activate: function(heapSnapshotView)
     {
-        heapSnapshotView._containmentView.show(heapSnapshotView._viewsContainer.mainElement());
-        heapSnapshotView._retainmentView.show(heapSnapshotView._viewsContainer.sidebarElement());
+        heapSnapshotView._containmentView.show(heapSnapshotView._splitView.mainElement());
+        heapSnapshotView._retainmentView.show(heapSnapshotView._splitView.sidebarElement());
+        heapSnapshotView._splitView.show(heapSnapshotView.element);
     },
 
     /**
@@ -334,8 +343,9 @@ WebInspector.HeapSnapshotView.DominatorPerspective.prototype = {
      */
     activate: function(heapSnapshotView)
     {
-        heapSnapshotView._dominatorView.show(heapSnapshotView._viewsContainer.mainElement());
-        heapSnapshotView._retainmentView.show(heapSnapshotView._viewsContainer.sidebarElement());
+        heapSnapshotView._dominatorView.show(heapSnapshotView._splitView.mainElement());
+        heapSnapshotView._retainmentView.show(heapSnapshotView._splitView.sidebarElement());
+        heapSnapshotView._splitView.show(heapSnapshotView.element);
     },
 
     /**
@@ -367,7 +377,7 @@ WebInspector.HeapSnapshotView.AllocationPerspective.prototype = {
      */
     activate: function(heapSnapshotView)
     {
-        heapSnapshotView._allocationView.show(heapSnapshotView._viewsContainer.mainElement());
+        heapSnapshotView._allocationView.show(heapSnapshotView.element);
     },
 
     /**
@@ -399,15 +409,7 @@ WebInspector.HeapSnapshotView.StatisticsPerspective.prototype = {
      */
     activate: function(heapSnapshotView)
     {
-        heapSnapshotView._statisticsView.show(heapSnapshotView._viewsContainer.mainElement());
-    },
-
-    /**
-     * @override
-     * @param {!WebInspector.HeapSnapshotView} heapSnapshotView
-     */
-    deactivate: function(heapSnapshotView)
-    {
+        heapSnapshotView._statisticsView.show(heapSnapshotView.element);
     },
 
     /**
@@ -838,7 +840,6 @@ WebInspector.HeapSnapshotView.prototype = {
         this._currentPerspectiveIndex = selectedIndex;
 
         this._currentPerspective.deactivate(this);
-        this._viewsContainer.detachChildViews();
         var perspective = this._perspectives[selectedIndex];
         perspective.activate(this);
         this._currentPerspective = perspective;
