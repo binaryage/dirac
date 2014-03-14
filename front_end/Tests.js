@@ -821,22 +821,10 @@ TestSuite.prototype.evaluateInConsole_ = function(code, callback)
     consoleView.promptElement.dispatchEvent(TestSuite.createKeyEvent("Enter"));
 
     this.addSniffer(WebInspector.ConsoleView.prototype, "_showConsoleMessage",
-        function(messageIndex) {
-            var commandResult = WebInspector.console.messages[messageIndex];
-            callback(this._consoleViewMessage(commandResult).toMessageElement().textContent);
+        function(viewMessage) {
+            callback(viewMessage.toMessageElement().textContent);
         }.bind(this));
 };
-
-
-/**
- * Converts a WebInspector.ConsoleMessage into WebInspector.ConsoleViewMessage.
- * @param {!WebInspector.ConsoleMessage} message
- * @return {!WebInspector.ConsoleViewMessage|undefined}
- */
-TestSuite.prototype._consoleViewMessage = function(message)
-{
-    return WebInspector.ConsolePanel._view()._messageToViewMessage.get(message);
-}
 
 /**
  * Checks that all expected scripts are present in the scripts list
