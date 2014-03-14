@@ -2019,17 +2019,6 @@ WebInspector.HeapSnapshotFilteredOrderedIterator.prototype = {
         return new WebInspector.HeapSnapshotCommon.ItemsRange(startPosition, this._position, this._iterationOrder.length, result);
     },
 
-    sortAll: function()
-    {
-        this._createIterationOrder();
-        if (this._sortedPrefixLength + this._sortedSuffixLength >= this._iterationOrder.length)
-            return;
-        this.sort(this._currentComparator, this._sortedPrefixLength, this._iterationOrder.length - 1 - this._sortedSuffixLength,
-                  this._sortedPrefixLength, this._iterationOrder.length - 1 - this._sortedSuffixLength);
-        this._sortedPrefixLength = this._iterationOrder.length;
-        this._sortedSuffixLength = 0;
-    },
-
     sortAndRewind: function(comparator)
     {
         this._currentComparator = comparator;
@@ -2154,20 +2143,28 @@ WebInspector.HeapSnapshotNodesProvider.prototype = {
     nodePosition: function(snapshotObjectId)
     {
         this._createIterationOrder();
-        if (this.isEmpty())
-            return -1;
-        this.sortAll();
-
         var node = this.snapshot.createNode();
         for (var i = 0; i < this._iterationOrder.length; i++) {
             node.nodeIndex = this._iterationOrder[i];
             if (node.id() === snapshotObjectId)
-                return i;
+                break;
         }
-        return -1;
+        if (i === this._iterationOrder.length)
+            return -1;
+        var targetNodeIndex = this._iterationOrder[i];
+        var smallerCount = 0;
+        var compare = this._buildCompareFunction(this._currentComparator);
+        for (var i = 0; i < this._iterationOrder.length; i++) {
+            if (compare(this._iterationOrder[i], targetNodeIndex) < 0)
+                ++smallerCount;
+        }
+        return smallerCount;
     },
 
-    sort: function(comparator, leftBound, rightBound, windowLeft, windowRight)
+    /**
+     * @return {function(number,number):number}
+     */
+    _buildCompareFunction: function(comparator)
     {
         var nodeA = this.snapshot.createNode();
         var nodeB = this.snapshot.createNode();
@@ -2203,7 +2200,18 @@ WebInspector.HeapSnapshotNodesProvider.prototype = {
             return result || indexA - indexB;
         }
 
-        this._iterationOrder.sortRange(sortByComparator, leftBound, rightBound, windowLeft, windowRight);
+        return sortByComparator;
+    },
+
+    /**
+     * @param {number} leftBound
+     * @param {number} rightBound
+     * @param {number} windowLeft
+     * @param {number} windowRight
+     */
+    sort: function(comparator, leftBound, rightBound, windowLeft, windowRight)
+    {
+        this._iterationOrder.sortRange(this._buildCompareFunction(comparator), leftBound, rightBound, windowLeft, windowRight);
     },
 
     __proto__: WebInspector.HeapSnapshotFilteredOrderedIterator.prototype
