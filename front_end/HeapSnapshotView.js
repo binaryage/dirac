@@ -55,7 +55,6 @@ WebInspector.HeapSnapshotView = function(profile)
 
     this._containmentView = new WebInspector.VBox();
     this._containmentDataGrid = new WebInspector.HeapSnapshotContainmentDataGrid();
-    this._containmentDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
     this._containmentDataGrid.show(this._containmentView.element);
     this._containmentDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
@@ -64,7 +63,6 @@ WebInspector.HeapSnapshotView = function(profile)
     this._constructorsView = new WebInspector.VBox();
 
     this._constructorsDataGrid = new WebInspector.HeapSnapshotConstructorsDataGrid();
-    this._constructorsDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
     this._constructorsDataGrid.show(this._constructorsView.element);
     this._constructorsDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
@@ -76,7 +74,6 @@ WebInspector.HeapSnapshotView = function(profile)
 
     this._dominatorView = new WebInspector.VBox();
     this._dominatorDataGrid = new WebInspector.HeapSnapshotDominatorsDataGrid();
-    this._dominatorDataGrid.element.addEventListener("mousedown", this._mouseDownInContentsGrid.bind(this), true);
     this._dominatorDataGrid.show(this._dominatorView.element);
     this._dominatorDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
@@ -755,18 +752,6 @@ WebInspector.HeapSnapshotView.prototype = {
             this._retainmentDataGrid.setDataSource(nodeItem.isDeletedNode ? nodeItem.dataGrid.baseSnapshot : nodeItem.dataGrid.snapshot, nodeItem.snapshotNodeIndex);
         else
             this._retainmentDataGrid.reset();
-    },
-
-    _mouseDownInContentsGrid: function(event)
-    {
-        if (event.detail < 2)
-            return;
-
-        var cell = event.target.enclosingNodeOrSelfWithNodeName("td");
-        if (!cell || (!cell.classList.contains("count-column") && !cell.classList.contains("shallowSize-column") && !cell.classList.contains("retainedSize-column")))
-            return;
-
-        event.consume(true);
     },
 
     /**
