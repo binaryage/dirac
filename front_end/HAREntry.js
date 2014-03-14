@@ -93,6 +93,7 @@ WebInspector.HAREntry.prototype = {
      */
     _buildResponse: function()
     {
+        var headersText = this._request.responseHeadersText;
         return {
             status: this._request.statusCode,
             statusText: this._request.statusText,
@@ -101,8 +102,9 @@ WebInspector.HAREntry.prototype = {
             cookies: this._buildCookies(this._request.responseCookies || []),
             content: this._buildContent(),
             redirectURL: this._request.responseHeaderValue("Location") || "",
-            headersSize: this._request.responseHeadersSize,
-            bodySize: this.responseBodySize
+            headersSize: headersText ? headersText.length : -1,
+            bodySize: this.responseBodySize,
+            _error: this._request.localizedFailDescription
         };
     },
 
@@ -113,7 +115,7 @@ WebInspector.HAREntry.prototype = {
     {
         var content = {
             size: this._request.resourceSize,
-            mimeType: this._request.mimeType,
+            mimeType: this._request.mimeType || "x-unknown",
             // text: this._request.content // TODO: pull out into a boolean flag, as content can be huge (and needs to be requested with an async call)
         };
         var compression = this.responseCompression;
@@ -237,7 +239,9 @@ WebInspector.HAREntry.prototype = {
     {
         if (this._request.cached || this._request.statusCode === 304)
             return 0;
-        return this._request.transferSize - this._request.responseHeadersSize;
+        if (!this._request.responseHeadersText)
+            return -1;
+        return this._request.transferSize - this._request.responseHeadersText.length;
     },
 
     /**
@@ -246,6 +250,8 @@ WebInspector.HAREntry.prototype = {
     get responseCompression()
     {
         if (this._request.cached || this._request.statusCode === 304 || this._request.statusCode === 206)
+            return;
+        if (!this._request.responseHeadersText)
             return;
         return this._request.resourceSize - this.responseBodySize;
     }
