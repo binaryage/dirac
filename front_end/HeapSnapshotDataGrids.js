@@ -351,12 +351,15 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
      */
     updateVisibleNodes: function(force, pathToReveal)
     {
-        var scrollTop = this.scrollContainer.scrollTop;
-        var viewPortHeight = this.scrollContainer.offsetHeight;
-        if (!pathToReveal && !force) {
+        // Guard zone is used to ensure there are always some extra items
+        // above and below the viewport to support keyboard navigation.
+        var guardZoneHeight = 40;
+        var scrollTop = this.scrollContainer.scrollTop - guardZoneHeight;
+        var viewPortHeight = this.scrollContainer.offsetHeight + 2 * guardZoneHeight;
+        if (!pathToReveal) {
             // Do nothing if populated nodes still fit the viewport.
             var scrollBottom = this.scrollContainer.scrollHeight - scrollTop - viewPortHeight;
-            if (scrollTop >= this._topPaddingHeight && scrollBottom >= this._bottomPaddingHeight)
+            if (!force && scrollTop >= this._topPaddingHeight && scrollBottom >= this._bottomPaddingHeight)
                 return;
             var hysteresisHeight = 500;
             scrollTop -= hysteresisHeight;

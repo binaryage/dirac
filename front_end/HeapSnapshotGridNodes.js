@@ -405,7 +405,8 @@ WebInspector.HeapSnapshotGridNode.prototype = {
                 return;
             }
 
-            this._dataGrid.updateVisibleNodes(true);
+            if (this.expanded)
+                this._dataGrid.updateVisibleNodes(true);
             if (afterPopulate)
                 afterPopulate();
             this.dispatchEventToListeners(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete);
