@@ -85,7 +85,7 @@ WebInspector.NavigatorView.prototype = {
         var uiSourceCodeNode = new WebInspector.NavigatorUISourceCodeTreeNode(this, uiSourceCode);
         this._uiSourceCodeNodes.put(uiSourceCode, uiSourceCodeNode);
         folderNode.appendChild(uiSourceCodeNode);
-        if (uiSourceCode.url === WebInspector.inspectedPageURL)
+        if (uiSourceCode.url === WebInspector.resourceTreeModel.inspectedPageURL())
             this.revealUISourceCode(uiSourceCode);
     },
 
@@ -97,7 +97,7 @@ WebInspector.NavigatorView.prototype = {
         var nodes = this._uiSourceCodeNodes.values();
         for (var i = 0; i < nodes.length; ++i) {
             var uiSourceCode = nodes[i].uiSourceCode();
-            if (uiSourceCode.url === WebInspector.inspectedPageURL)
+            if (uiSourceCode.url === WebInspector.resourceTreeModel.inspectedPageURL())
                 this.revealUISourceCode(uiSourceCode);
         }
     },
@@ -420,7 +420,7 @@ WebInspector.NavigatorTreeOutline._treeElementsCompare = function compare(treeEl
     {
         var type = treeElement.type();
         if (type === WebInspector.NavigatorTreeOutline.Types.Domain) {
-            if (treeElement.titleText === WebInspector.inspectedPageDomain())
+            if (treeElement.titleText === WebInspector.resourceTreeModel.inspectedPageDomain())
                 return 1;
             return 2;
         }

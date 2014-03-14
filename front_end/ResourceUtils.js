@@ -62,14 +62,14 @@ WebInspector.displayNameForURL = function(url)
     if (uiSourceCode)
         return uiSourceCode.displayName();
 
-    if (!WebInspector.inspectedPageURL)
+    if (!WebInspector.resourceTreeModel.inspectedPageURL())
         return url.trimURL("");
 
-    var parsedURL = WebInspector.inspectedPageURL.asParsedURL();
+    var parsedURL = WebInspector.resourceTreeModel.inspectedPageURL().asParsedURL();
     var lastPathComponent = parsedURL ? parsedURL.lastPathComponent : parsedURL;
-    var index = WebInspector.inspectedPageURL.indexOf(lastPathComponent);
-    if (index !== -1 && index + lastPathComponent.length === WebInspector.inspectedPageURL.length) {
-        var baseURL = WebInspector.inspectedPageURL.substring(0, index);
+    var index = WebInspector.resourceTreeModel.inspectedPageURL().indexOf(lastPathComponent);
+    if (index !== -1 && index + lastPathComponent.length === WebInspector.resourceTreeModel.inspectedPageURL().length) {
+        var baseURL = WebInspector.resourceTreeModel.inspectedPageURL().substring(0, index);
         if (url.startsWith(baseURL))
             return url.substring(index);
     }

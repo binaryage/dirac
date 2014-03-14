@@ -63,7 +63,7 @@ WebInspector.AuditController.prototype = {
         }
 
         var results = [];
-        var mainResourceURL = WebInspector.inspectedPageURL;
+        var mainResourceURL = WebInspector.resourceTreeModel.inspectedPageURL();
         var categoriesDone = 0;
 
         /**

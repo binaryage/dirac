@@ -51,6 +51,7 @@ WebInspector.ResourceTreeModel = function(target)
 
     this._pendingConsoleMessages = {};
     this._securityOriginFrameCount = {};
+    this._inspectedPageURL = "";
 }
 
 WebInspector.ResourceTreeModel.EventTypes = {
@@ -90,11 +91,28 @@ WebInspector.ResourceTreeModel.prototype = {
         }
 
         this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.WillLoadCachedResources);
-        WebInspector.inspectedPageURL = mainFramePayload.frame.url;
+        this._inspectedPageURL = mainFramePayload.frame.url;
         this._addFramesRecursively(null, mainFramePayload);
         this._dispatchInspectedURLChanged();
         this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded);
         this._cachedResourcesProcessed = true;
+    },
+
+    /**
+     * @return {string}
+     */
+    inspectedPageURL: function()
+    {
+        return this._inspectedPageURL;
+    },
+
+    /**
+     * @return {string}
+     */
+    inspectedPageDomain: function()
+    {
+        var parsedURL = this._inspectedPageURL ? this._inspectedPageURL.asParsedURL() : null;
+        return parsedURL ? parsedURL.host : "";
     },
 
     /**
@@ -107,8 +125,8 @@ WebInspector.ResourceTreeModel.prototype = {
 
     _dispatchInspectedURLChanged: function()
     {
-        InspectorFrontendHost.inspectedURLChanged(WebInspector.inspectedPageURL);
-        this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, WebInspector.inspectedPageURL);
+        InspectorFrontendHost.inspectedURLChanged(this._inspectedPageURL);
+        this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._inspectedPageURL);
     },
 
     /**
@@ -226,7 +244,7 @@ WebInspector.ResourceTreeModel.prototype = {
         var addedOrigin = frame.securityOrigin;
 
         if (frame.isMainFrame())
-            WebInspector.inspectedPageURL = frame.url;
+            this._inspectedPageURL = frame.url;
 
         this.dispatchEventToListeners(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, frame);
         if (frame.isMainFrame()) {
@@ -421,7 +439,7 @@ WebInspector.ResourceTreeModel.prototype = {
 
         var frameResource = this._createResourceFromFramePayload(framePayload, framePayload.url, WebInspector.resourceTypes.Document, framePayload.mimeType);
         if (frame.isMainFrame())
-            WebInspector.inspectedPageURL = frameResource.url;
+            this._inspectedPageURL = frameResource.url;
         frame.addResource(frameResource);
 
         for (var i = 0; frameTreePayload.childFrames && i < frameTreePayload.childFrames.length; ++i)

@@ -406,7 +406,7 @@ WebInspector.NetworkRequest.prototype = {
             this._path = "";
         } else {
             this._path = this._parsedURL.host + this._parsedURL.folderPathComponents;
-            this._path = this._path.trimURL(WebInspector.inspectedPageDomain() ? WebInspector.inspectedPageDomain() : "");
+            this._path = this._path.trimURL(WebInspector.resourceTreeModel.inspectedPageDomain());
             if (this._parsedURL.lastPathComponent || this._parsedURL.queryParams)
                 this._name = this._parsedURL.lastPathComponent + (this._parsedURL.queryParams ? "?" + this._parsedURL.queryParams : "");
             else if (this._parsedURL.folderPathComponents) {

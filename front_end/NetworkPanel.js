@@ -496,7 +496,7 @@ WebInspector.NetworkLogView.prototype = {
                 selectedRequestsNumber++;
                 selectedTransferSize += requestTransferSize;
             }
-            if (request.url === WebInspector.inspectedPageURL)
+            if (request.url === WebInspector.resourceTreeModel.inspectedPageURL())
                 baseTime = request.startTime;
             if (request.endTime > maxTime)
                 maxTime = request.endTime;
@@ -1122,7 +1122,7 @@ WebInspector.NetworkLogView.prototype = {
 
     _exportAll: function()
     {
-        var filename = WebInspector.inspectedPageDomain() + ".har";
+        var filename = WebInspector.resourceTreeModel.inspectedPageDomain() + ".har";
         var stream = new WebInspector.FileOutputStream();
         stream.open(filename, openCallback.bind(this));
 

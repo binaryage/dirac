@@ -301,11 +301,6 @@ function ExtensionReloadOptions() {
     this.userAgent = "";
 }
 
-/**
- * @return {string}
- */
-WebInspector.inspectedPageDomain = function() {};
-
 WebInspector.SourceJavaScriptTokenizer = {}
 WebInspector.SourceJavaScriptTokenizer.Keywords = {}
 

@@ -171,7 +171,9 @@ WebInspector.ResourcesPanel.prototype = {
             }
         }
 
-        var mainResource = WebInspector.inspectedPageURL && this.resourcesListTreeElement && this.resourcesListTreeElement.expanded && WebInspector.resourceTreeModel.resourceForURL(WebInspector.inspectedPageURL);
+        var mainResource = WebInspector.resourceTreeModel.inspectedPageURL() && this.resourcesListTreeElement && this.resourcesListTreeElement.expanded
+                ? WebInspector.resourceTreeModel.resourceForURL(WebInspector.resourceTreeModel.inspectedPageURL())
+                : null;
         if (mainResource)
             this.showResource(mainResource);
     },
