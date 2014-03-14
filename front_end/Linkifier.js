@@ -76,7 +76,7 @@ WebInspector.Linkifier.handleLink = function(url, lineNumber)
 /**
  * @param {!Object} revealable
  * @param {string} text
- * @param {string} fallbackHref
+ * @param {string=} fallbackHref
  * @param {number=} fallbackLineNumber
  * @param {string=} title
  * @param {string=} classes
@@ -88,9 +88,10 @@ WebInspector.Linkifier.linkifyUsingRevealer = function(revealable, text, fallbac
     a.className = (classes || "") + " webkit-html-resource-link";
     a.textContent = text.trimMiddle(WebInspector.Linkifier.MaxLengthForDisplayedURLs);
     a.title = title || text;
-    a.href = fallbackHref;
-    a.lineNumber = fallbackLineNumber;
-
+    if (fallbackHref) {
+        a.href = fallbackHref;
+        a.lineNumber = fallbackLineNumber;
+    }
     /**
      * @param {?Event} event
      * @this {Object}
@@ -98,7 +99,7 @@ WebInspector.Linkifier.linkifyUsingRevealer = function(revealable, text, fallbac
     function clickHandler(event)
     {
         event.consume(true);
-        if (WebInspector.Linkifier.handleLink(fallbackHref, fallbackLineNumber))
+        if (fallbackHref && WebInspector.Linkifier.handleLink(fallbackHref, fallbackLineNumber))
             return;
 
         WebInspector.Revealer.reveal(this);

@@ -28,7 +28,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-importScript("LayerTreeModel.js");
 importScript("LayerTree.js");
 importScript("Layers3DView.js");
 importScript("LayerDetailsView.js");
@@ -91,6 +90,14 @@ WebInspector.LayersPanel.prototype = {
     {
         this._model.disable();
         WebInspector.Panel.prototype.willHide.call(this);
+    },
+
+    /**
+     * @param {!WebInspector.LayerTreeSnapshot} snapshot
+     */
+    _showSnapshot: function(snapshot)
+    {
+        this._model.setSnapshot(snapshot);
     },
 
     _onLayerTreeUpdated: function()
@@ -165,4 +172,23 @@ WebInspector.LayersPanel.prototype = {
     },
 
     __proto__: WebInspector.PanelWithSidebarTree.prototype
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.Revealer}
+ */
+WebInspector.LayersPanel.LayerTreeRevealer = function()
+{
+}
+
+WebInspector.LayersPanel.LayerTreeRevealer.prototype = {
+    /**
+     * @param {!Object} layerTree
+     */
+    reveal: function(layerTree)
+    {
+        if (layerTree instanceof WebInspector.LayerTreeSnapshot)
+            /** @type {!WebInspector.LayersPanel} */ (WebInspector.inspectorView.showPanel("layers"))._showSnapshot(layerTree);
+    }
 }

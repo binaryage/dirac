@@ -61,6 +61,7 @@ WebInspector.TimelineModel.RecordType = {
     RecalculateStyles: "RecalculateStyles",
     InvalidateLayout: "InvalidateLayout",
     Layout: "Layout",
+    UpdateLayerTree: "UpdateLayerTree",
     AutosizeText: "AutosizeText",
     PaintSetup: "PaintSetup",
     Paint: "Paint",

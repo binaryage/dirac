@@ -360,6 +360,11 @@ WebInspector.TimelineUIUtils.generatePopupContentForFrame = function(frame)
     contentHelper.appendTextRow(WebInspector.UIString("CPU time"), Number.millisToString(frame.cpuTime, true));
     contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"),
         WebInspector.TimelineUIUtils._generateAggregatedInfo(frame.timeByCategory));
+    if (WebInspector.experimentsSettings.layersPanel.isEnabled() && frame.layerTree) {
+        var layerTreeSnapshot = new WebInspector.LayerTreeSnapshot(frame.layerTree);
+        contentHelper.appendElementRow(WebInspector.UIString("Layer tree"),
+                                       WebInspector.Linkifier.linkifyUsingRevealer(layerTreeSnapshot, WebInspector.UIString("show")));
+    }
     return contentHelper.contentTable();
 }
 
@@ -617,20 +622,8 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
             break;
     }
 
-    /**
-     * @param {!WebInspector.DOMNode} node
-     */
-    function createNodeAnchor(node)
-    {
-        var span = document.createElement("span");
-        span.classList.add("node-link");
-        span.addEventListener("click", WebInspector.Revealer.reveal.bind(WebInspector.Revealer, node, undefined), false);
-        WebInspector.DOMPresentationUtils.decorateNodeLabel(node, span);
-        return span;
-    }
-
     if (relatedNode)
-        contentHelper.appendElementRow(relatedNodeLabel || WebInspector.UIString("Related node"), createNodeAnchor(relatedNode));
+        contentHelper.appendElementRow(relatedNodeLabel || WebInspector.UIString("Related node"), WebInspector.DOMPresentationUtils.linkifyNodeReference(relatedNode));
 
     if (record.scriptName && record.type !== recordTypes.FunctionCall)
         contentHelper.appendLocationRow(WebInspector.UIString("Function Call"), record.scriptName, record.scriptLine);

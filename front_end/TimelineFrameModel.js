@@ -88,6 +88,7 @@ WebInspector.TimelineFrameModel.prototype = {
     {
         this._frames = [];
         this._lastFrame = null;
+        this._lastLayerTree = null;
         this._hasThreadedCompositing = false;
         this._mainFrameCommitted = false;
         this._mainFrameRequested = false;
@@ -154,6 +155,8 @@ WebInspector.TimelineFrameModel.prototype = {
     _addMainThreadRecord: function(programRecord, record)
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
+        if (record.type === recordTypes.UpdateLayerTree)
+            this._lastLayerTree = record.data["layerTree"] || null;
         if (!this._hasThreadedCompositing) {
             if (record.type === recordTypes.BeginFrame)
                 this._startMainThreadFrame(record);
@@ -228,6 +231,7 @@ WebInspector.TimelineFrameModel.prototype = {
      */
     _flushFrame: function(frame, record)
     {
+        frame._setLayerTree(this._lastLayerTree);
         frame._setEndTime(record.startTime);
         this._frames.push(frame);
         this.dispatchEventToListeners(WebInspector.TimelineFrameModel.Events.FrameAdded, frame);
@@ -296,6 +300,8 @@ WebInspector.TimelineFrame = function(record)
     this.duration = 0;
     this.timeByCategory = {};
     this.cpuTime = 0;
+    /** @type {?Array.<!LayerTreeAgent.Layer>} */
+    this.layerTree = null;
 }
 
 WebInspector.TimelineFrame.prototype = {
@@ -306,6 +312,14 @@ WebInspector.TimelineFrame.prototype = {
     {
         this.endTime = endTime;
         this.duration = this.endTime - this.startTime;
+    },
+
+    /**
+     * @param {?Array.<!LayerTreeAgent.Layer>} layerTree
+     */
+    _setLayerTree: function(layerTree)
+    {
+        this.layerTree = layerTree;
     },
 
     /**

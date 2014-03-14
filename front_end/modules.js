@@ -255,6 +255,11 @@ var allDescriptors = [
                 title: "Layers",
                 order: 7,
                 className: "WebInspector.LayersPanel"
+            },
+            {
+                type: "@WebInspector.Revealer",
+                contextTypes: ["WebInspector.LayerTreeSnapshot"],
+                className: "WebInspector.LayersPanel.LayerTreeRevealer"
             }
         ],
         scripts: [ "LayersPanel.js" ]

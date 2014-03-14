@@ -71,6 +71,15 @@ WebInspector.LayerTreeModel.prototype = {
     },
 
     /**
+     * @param {!WebInspector.LayerTreeSnapshot} snapshot
+     */
+    setSnapshot: function(snapshot)
+    {
+        this.disable();
+        this._resolveNodesAndRepopulate(snapshot.layers);
+    },
+
+    /**
      * @return {?WebInspector.Layer}
      */
     root: function()
@@ -108,6 +117,25 @@ WebInspector.LayerTreeModel.prototype = {
     layerById: function(id)
     {
         return this._layersById[id] || null;
+    },
+
+    /**
+     * @param {!Array.<!LayerTreeAgent.Layer>=} payload
+     */
+    _resolveNodesAndRepopulate: function(payload)
+    {
+        if (payload)
+            this._resolveBackendNodeIdsForLayers(payload, onBackendNodeIdsResolved.bind(this));
+        else
+            onBackendNodeIdsResolved.call(this);
+        /**
+         * @this {WebInspector.LayerTreeModel}
+         */
+        function onBackendNodeIdsResolved()
+        {
+            this._repopulate(payload);
+            this.dispatchEventToListeners(WebInspector.LayerTreeModel.Events.LayerTreeChanged);
+        }
     },
 
     /**
@@ -158,18 +186,9 @@ WebInspector.LayerTreeModel.prototype = {
      */
     _layerTreeChanged: function(payload)
     {
-        if (payload)
-            this._resolveBackendNodeIdsForLayers(payload, onBackendNodeIdsResolved.bind(this));
-        else
-            onBackendNodeIdsResolved.call(this);
-        /**
-         * @this {WebInspector.LayerTreeModel}
-         */
-        function onBackendNodeIdsResolved()
-        {
-            this._repopulate(payload);
-            this.dispatchEventToListeners(WebInspector.LayerTreeModel.Events.LayerTreeChanged);
-        }
+        if (!this._enabled)
+            return;
+        this._resolveNodesAndRepopulate(payload);
     },
 
     /**
@@ -440,6 +459,15 @@ WebInspector.Layer.prototype = {
         this._image = null;
         this._nodeId = 0;
     }
+}
+
+/**
+ * @constructor
+ * @param {!Array.<!LayerTreeAgent.Layer>} layers
+ */
+WebInspector.LayerTreeSnapshot = function(layers)
+{
+    this.layers = layers;
 }
 
 /**

@@ -52,6 +52,7 @@
             "InspectorBackend.js",
             "IsolatedFileSystemManager.js",
             "IsolatedFileSystem.js",
+            "LayerTreeModel.js",
             "Linkifier.js",
             "NetworkLog.js",
             "NetworkUISourceCodeProvider.js",
@@ -326,7 +327,6 @@
         "name": "layers",
         "dependencies": ["components"],
         "sources": [
-            "LayerTreeModel.js",
             "LayersPanel.js",
             "LayerTree.js",
             "Layers3DView.js",
