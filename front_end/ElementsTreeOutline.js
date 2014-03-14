@@ -616,7 +616,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         if (!node || !treeElement)
             return;
 
-        if (event.keyIdentifier === "F2") {
+        if (event.keyIdentifier === "F2" && treeElement.hasEditableNode()) {
             this._toggleEditAsHTML(node);
             event.handled = true;
             return;
@@ -1317,6 +1317,14 @@ WebInspector.ElementsTreeElement.prototype = {
         return false;
     },
 
+    /**
+     * @return {boolean}
+     */
+    hasEditableNode: function()
+    {
+        return !this.representedObject.isShadowRoot() && !this.representedObject.ancestorUserAgentShadowRoot();
+    },
+
     _insertInLastAttributePosition: function(tag, node)
     {
         if (tag.getElementsByClassName("webkit-html-attribute").length > 0)
@@ -1414,14 +1422,20 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         // Add free-form node-related actions.
         var openTagElement = this.treeOutline.getCachedTreeElement(this.representedObject) || this;
-        contextMenu.appendItem(WebInspector.UIString("Edit as HTML"), openTagElement._editAsHTML.bind(openTagElement));
-        contextMenu.appendItem(WebInspector.UIString("Copy as HTML"), this._copyHTML.bind(this));
+        var isEditable = this.hasEditableNode();
+        if (isEditable)
+            contextMenu.appendItem(WebInspector.UIString("Edit as HTML"), openTagElement._editAsHTML.bind(openTagElement));
+        var isShadowRoot = this.representedObject.isShadowRoot();
+        if (!isShadowRoot)
+            contextMenu.appendItem(WebInspector.UIString("Copy as HTML"), this._copyHTML.bind(this));
 
         // Place it here so that all "Copy"-ing items stick together.
         if (this.representedObject.nodeType() === Node.ELEMENT_NODE)
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy CSS path" : "Copy CSS Path"), this._copyCSSPath.bind(this));
-        contextMenu.appendItem(WebInspector.UIString("Copy XPath"), this._copyXPath.bind(this));
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Delete node" : "Delete Node"), this.remove.bind(this));
+        if (!isShadowRoot)
+            contextMenu.appendItem(WebInspector.UIString("Copy XPath"), this._copyXPath.bind(this));
+        if (isEditable)
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Delete node" : "Delete Node"), this.remove.bind(this));
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Inspect DOM properties" : "Inspect DOM Properties"), this._inspectDOMProperties.bind(this));
     },
 
