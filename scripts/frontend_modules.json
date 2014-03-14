@@ -16,7 +16,8 @@
             "TextRange.js",
             "UIString.js",
             "UserMetrics.js",
-            "utilities.js"
+            "utilities.js",
+            "WebInspector.js"
         ]
     },
     {
@@ -452,6 +453,6 @@
             "host_stub",
             "screencast"
         ],
-        "sources": []
+        "sources": [ "inspector.js" ]
     }
 ]

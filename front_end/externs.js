@@ -49,9 +49,6 @@ KeyboardEvent.DOM_KEY_LOCATION_NUMPAD;
 /** @param {*} message */
 function postMessage(message) {}
 
-/** @type {*} */
-window.testRunner ;
-
 /**
  * @param {string} eventName
  * @param {!Function} listener
@@ -248,17 +245,9 @@ InspectorFrontendHost.embedderMessageAck = function(id, error) {}
 var FormatterWorker = {}
 var WebInspector = {}
 
-/**
- * @param {string} param
- * @return {?string}
- */
-WebInspector.queryParam = function(param) {}
-WebInspector.toggleSearchingForNode = function() {}
 WebInspector.panels = {};
 
-WebInspector.Events = {
-    InspectorLoaded: "InspectorLoaded"
-}
+WebInspector.reload = function() { }
 
 /** Extensions API */
 
@@ -300,8 +289,6 @@ function ExtensionReloadOptions() {
     this.preprocessingScript = "";
     this.userAgent = "";
 }
-
-var InspectorTest = {}
 
 /* jsdifflib API */
 var difflib = {};
@@ -470,10 +457,6 @@ CodeMirror.keyMap;
 
 /** @type {{scrollLeft: number, scrollTop: number}} */
 CodeMirror.doc;
-
-WebInspector.suggestReload = function() { }
-WebInspector.reload = function() { }
-WebInspector._inspectedTabId;
 
 /** @type {boolean} */
 window.dispatchStandaloneTestRunnerMessages;

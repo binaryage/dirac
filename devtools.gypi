@@ -182,6 +182,7 @@
             'front_end/utilities.js',
             'front_end/View.js',
             'front_end/ViewportControl.js',
+            'front_end/WebInspector.js',
             'front_end/WorkerManager.js',
             'front_end/WorkerFrontendManager.js',
             'front_end/Workspace.js',

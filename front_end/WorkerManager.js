@@ -171,7 +171,7 @@ WebInspector.workerManager;
 /**
  * @constructor
  * @extends {InspectorBackendClass.Connection}
- * @param {number} workerId
+ * @param {string} workerId
  */
 WebInspector.WorkerConnection = function(workerId, onConnectionReady)
 {

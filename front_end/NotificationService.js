@@ -15,6 +15,7 @@ WebInspector.NotificationService.prototype = {
 }
 
 WebInspector.NotificationService.Events = {
+    InspectorLoaded: "InspectorLoaded",
     SelectedNodeChanged: "SelectedNodeChanged"
 }
 
