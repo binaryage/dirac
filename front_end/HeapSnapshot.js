@@ -2169,33 +2169,38 @@ WebInspector.HeapSnapshotNodesProvider.prototype = {
 
     sort: function(comparator, leftBound, rightBound, windowLeft, windowRight)
     {
-        var fieldName1 = comparator.fieldName1;
-        var fieldName2 = comparator.fieldName2;
-        var ascending1 = comparator.ascending1;
-        var ascending2 = comparator.ascending2;
-
         var nodeA = this.snapshot.createNode();
         var nodeB = this.snapshot.createNode();
+        var fieldAccessor1 = nodeA[comparator.fieldName1];
+        var fieldAccessor2 = nodeA[comparator.fieldName2];
+        var ascending1 = comparator.ascending1 ? 1 : -1;
+        var ascending2 = comparator.ascending2 ? 1 : -1;
 
-        function sortByNodeField(fieldName, ascending)
+        /**
+         * @param {function():*} fieldAccessor
+         * @param {number} ascending
+         * @return {number}
+         */
+        function sortByNodeField(fieldAccessor, ascending)
         {
-            var valueOrFunctionA = nodeA[fieldName];
-            var valueA = typeof valueOrFunctionA !== "function" ? valueOrFunctionA : valueOrFunctionA.call(nodeA);
-            var valueOrFunctionB = nodeB[fieldName];
-            var valueB = typeof valueOrFunctionB !== "function" ? valueOrFunctionB : valueOrFunctionB.call(nodeB);
-            var result = valueA < valueB ? -1 : (valueA > valueB ? 1 : 0);
-            return ascending ? result : -result;
+            var valueA = fieldAccessor.call(nodeA);
+            var valueB = fieldAccessor.call(nodeB);
+            return valueA < valueB ? -ascending : (valueA > valueB ? ascending : 0);
         }
 
-        function sortByComparator(indexA, indexB) {
+        /**
+         * @param {number} indexA
+         * @param {number} indexB
+         * @return {number}
+         */
+        function sortByComparator(indexA, indexB)
+        {
             nodeA.nodeIndex = indexA;
             nodeB.nodeIndex = indexB;
-            var result = sortByNodeField(fieldName1, ascending1);
+            var result = sortByNodeField(fieldAccessor1, ascending1);
             if (result === 0)
-                result = sortByNodeField(fieldName2, ascending2);
-            if (result === 0)
-                return indexA - indexB;
-            return result;
+                result = sortByNodeField(fieldAccessor2, ascending2);
+            return result || indexA - indexB;
         }
 
         this._iterationOrder.sortRange(sortByComparator, leftBound, rightBound, windowLeft, windowRight);
