@@ -796,13 +796,7 @@ WebInspector.ProfilesPanel.prototype = {
             if (profile.maxJSObjectId >= snapshotObjectId) {
                 this.showProfile(profile);
                 var view = this._viewForProfile(profile);
-                view.changePerspective(perspectiveName, function() {
-                    function didHighlightObject(found) {
-                        if (!found)
-                            WebInspector.console.log("Cannot find corresponding heap snapshot node", WebInspector.ConsoleMessage.MessageLevel.Error, true);
-                    }
-                    view.dataGrid.highlightObjectByHeapSnapshotId(snapshotObjectId, didHighlightObject.bind(this));
-                });
+                view.highlightLiveObject(perspectiveName, snapshotObjectId);
                 break;
             }
         }
