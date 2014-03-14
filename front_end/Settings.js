@@ -38,7 +38,7 @@ var Preferences = {
 }
 
 var Capabilities = {
-    canInspectWorkers: false,
+    isMainFrontend: false,
 }
 
 /**

@@ -102,3 +102,24 @@ WebInspector.port = function()
 
     return WebInspector._port;
 }
+
+/**
+ * @return {string}
+ */
+WebInspector.fontFamily = function()
+{
+    if (WebInspector._fontFamily)
+        return WebInspector._fontFamily;
+    switch (WebInspector.platform()) {
+    case "linux":
+        WebInspector._fontFamily = "Ubuntu, Arial, sans-serif";
+        break;
+    case "mac":
+        WebInspector._fontFamily = "'Lucida Grande', sans-serif";
+        break;
+    case "windows":
+        WebInspector._fontFamily = "'Segoe UI', Tahoma, sans-serif";
+        break;
+    }
+    return WebInspector._fontFamily;
+}

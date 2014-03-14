@@ -45,7 +45,7 @@ WebInspector.ConsolePanel = function()
 WebInspector.ConsolePanel._view = function()
 {
     if (!WebInspector.ConsolePanel._consoleView) {
-        WebInspector.ConsolePanel._consoleView = new WebInspector.ConsoleView(WebInspector.isWorkerFrontend());
+        WebInspector.ConsolePanel._consoleView = new WebInspector.ConsoleView(!Capabilities.isMainFrontend);
         WebInspector.console.setUIDelegate(WebInspector.ConsolePanel._consoleView);
     }
     return WebInspector.ConsolePanel._consoleView;

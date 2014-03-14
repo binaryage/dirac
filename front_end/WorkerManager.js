@@ -31,12 +31,12 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {boolean} canInspectWorkers
+ * @param {boolean} isMainFrontend
  */
-WebInspector.WorkerManager = function(canInspectWorkers)
+WebInspector.WorkerManager = function(isMainFrontend)
 {
     this._reset();
-    if (canInspectWorkers) {
+    if (isMainFrontend) {
         WorkerAgent.enable();
         InspectorBackend.registerWorkerDispatcher(new WebInspector.WorkerDispatcher(this));
         WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);

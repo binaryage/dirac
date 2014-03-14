@@ -692,7 +692,6 @@ WebInspector.Workspace.prototype = {
         var path = uiSourceCode.path();
         var fileSystemPath = fileSystemWorkspaceProvider.fileSystemPath(uiSourceCode);
         this._fileSystemMapping.addMappingForResource(url, fileSystemPath, path);
-        WebInspector.suggestReload();
     },
 
     /**
@@ -701,7 +700,6 @@ WebInspector.Workspace.prototype = {
     removeMapping: function(uiSourceCode)
     {
         this._fileSystemMapping.removeMappingForURL(uiSourceCode.url);
-        WebInspector.suggestReload();
     },
 
     /**

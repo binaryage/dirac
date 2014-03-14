@@ -141,7 +141,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.sidebarPanes.xhrBreakpoints = new WebInspector.XHRBreakpointsSidebarPane();
     this.sidebarPanes.eventListenerBreakpoints = new WebInspector.EventListenerBreakpointsSidebarPane();
 
-    if (Capabilities.canInspectWorkers && !WebInspector.isWorkerFrontend())
+    if (Capabilities.isMainFrontend)
         this.sidebarPanes.workerList = new WebInspector.WorkersSidebarPane();
 
     this._historyManager = new WebInspector.EditingLocationHistoryManager(this, this.currentSourceFrame.bind(this));
@@ -1356,6 +1356,12 @@ WebInspector.SourcesPanel.prototype = {
         this._appendFunctionItems(contextMenu, target);
     },
 
+    _suggestReload: function()
+    {
+        if (window.confirm(WebInspector.UIString("It is recommended to restart inspector after making these changes. Would you like to restart it?")))
+            WebInspector.reload();
+    },
+
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      */
@@ -1370,6 +1376,7 @@ WebInspector.SourcesPanel.prototype = {
         function mapFileSystemToNetwork(networkUISourceCode)
         {
             this._workspace.addMapping(networkUISourceCode, uiSourceCode, WebInspector.fileSystemWorkspaceProvider);
+            this._suggestReload();
         }
     },
 
@@ -1378,8 +1385,10 @@ WebInspector.SourcesPanel.prototype = {
      */
     _removeNetworkMapping: function(uiSourceCode)
     {
-        if (confirm(WebInspector.UIString("Are you sure you want to remove network mapping?")))
+        if (confirm(WebInspector.UIString("Are you sure you want to remove network mapping?"))) {
             this._workspace.removeMapping(uiSourceCode);
+            this._suggestReload();
+        }
     },
 
     /**

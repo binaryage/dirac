@@ -14,10 +14,10 @@ WebInspector.Target = function(connection, callback)
 {
     Protocol.Agents.call(this, connection.agentsMap());
     this._connection = connection;
-    this.canInspectWorkers = false;
+    this.isMainFrontend = false;
 
     this.pageAgent().canScreencast(this._initializeCapability.bind(this, "canScreencast", null));
-    this.workerAgent().canInspectWorkers(this._initializeCapability.bind(this, "canInspectWorkers", this._loadedWithCapabilities.bind(this, callback)));
+    this.workerAgent().canInspectWorkers(this._initializeCapability.bind(this, "isMainFrontend", this._loadedWithCapabilities.bind(this, callback)));
 }
 
 WebInspector.Target.prototype = {
@@ -50,7 +50,7 @@ WebInspector.Target.prototype = {
         //we can't name it domAgent, because it clashes with function, WebInspector.DOMAgent should be renamed to DOMModel
         this.domModel = new WebInspector.DOMAgent();
         WebInspector.domAgent = this.domModel;
-        this.workerManager = new WebInspector.WorkerManager(this.canInspectWorkers);
+        this.workerManager = new WebInspector.WorkerManager(this.isMainFrontend);
         WebInspector.workerManager = this.workerManager;
 
         if (callback)

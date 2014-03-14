@@ -32,7 +32,7 @@ var WebInspector = {
     _registerModules: function()
     {
         var configuration;
-        if (WebInspector.isWorkerFrontend()) {
+        if (!Capabilities.isMainFrontend) {
             configuration = ["sources", "timeline", "profiles", "console", "codemirror"];
         } else {
             configuration = ["elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "codemirror", "extensions", "sources-formatter-actions"];
@@ -100,14 +100,6 @@ var WebInspector = {
         return !!WebInspector.queryParam("remoteFrontend");
     },
 
-    /**
-     * @return {boolean}
-     */
-    isDedicatedWorkerFrontend: function()
-    {
-        return !!WebInspector.queryParam("dedicatedWorkerId");
-    },
-
     _calculateWorkerInspectorTitle: function()
     {
         var expression = "location.href";
@@ -137,22 +129,14 @@ var WebInspector = {
         if (WebInspector.queryParam("workerPaused")) {
             DebuggerAgent.pause();
             RuntimeAgent.run(calculateTitle);
-        } else if (WebInspector.isWorkerFrontend())
+        } else if (!Capabilities.isMainFrontend) {
             calculateTitle();
+        }
 
         function calculateTitle()
         {
             WebInspector._calculateWorkerInspectorTitle();
         }
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isWorkerFrontend: function()
-    {
-        return !!WebInspector.queryParam("dedicatedWorkerId") ||
-                !!WebInspector.queryParam("isSharedWorker");
     },
 
     _resetErrorAndWarningCounts: function()
@@ -211,12 +195,6 @@ WebInspector.queryParam = function(name)
         }
     }
 })();}
-
-WebInspector.suggestReload = function()
-{
-    if (window.confirm(WebInspector.UIString("It is recommended to restart inspector after making these changes. Would you like to restart it?")))
-        this.reload();
-}
 
 WebInspector.reload = function()
 {
@@ -330,7 +308,7 @@ WebInspector._doLoadedDoneWithCapabilities = function(mainTarget)
     this.timelineManager = new WebInspector.TimelineManager();
     this.tracingAgent = new WebInspector.TracingAgent();
 
-    if (!WebInspector.isWorkerFrontend()) {
+    if (Capabilities.isMainFrontend) {
         this.inspectElementModeController = new WebInspector.InspectElementModeController();
         this.workerFrontendManager = new WebInspector.WorkerFrontendManager();
     }
@@ -663,11 +641,6 @@ WebInspector.contextMenuEventFired = function(event)
         event.preventDefault();
 }
 
-WebInspector.bringToFront = function()
-{
-    InspectorFrontendHost.bringToFront();
-}
-
 // Inspector.inspect protocol event
 WebInspector.inspect = function(payload, hints)
 {
@@ -756,24 +729,6 @@ WebInspector.addMainEventListeners = function(doc)
     doc.addEventListener("copy", this.documentCopy.bind(this), false);
     doc.addEventListener("contextmenu", this.contextMenuEventFired.bind(this), true);
     doc.addEventListener("click", this.documentClick.bind(this), false);
-}
-
-WebInspector.fontFamily = function()
-{
-    if (WebInspector._fontFamily)
-        return WebInspector._fontFamily;
-    switch (WebInspector.platform()) {
-    case "linux":
-        this._fontFamily = "Ubuntu, Arial, sans-serif";
-        break;
-    case "mac":
-        this._fontFamily = "'Lucida Grande', sans-serif";
-        break;
-    case "windows":
-        this._fontFamily = "'Segoe UI', Tahoma, sans-serif";
-        break;
-    }
-    return WebInspector._fontFamily;
 }
 
 window.DEBUG = true;

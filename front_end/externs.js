@@ -301,24 +301,6 @@ function ExtensionReloadOptions() {
     this.userAgent = "";
 }
 
-WebInspector.SourceJavaScriptTokenizer = {}
-WebInspector.SourceJavaScriptTokenizer.Keywords = {}
-
-/**
- * @return {boolean}
- */
-WebInspector.isInspectingDevice = function() {}
-
-/**
- * @return {boolean}
- */
-WebInspector.isWorkerFrontend = function() {}
-
-/**
- * @return {boolean}
- */
-WebInspector.isDedicatedWorkerFrontend = function() {}
-
 var InspectorTest = {}
 
 /* jsdifflib API */
