@@ -819,7 +819,6 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
         for (var constructor in aggregates)
             this.appendNode(this.rootNode(), new WebInspector.HeapSnapshotConstructorNode(this, constructor, aggregates[constructor], key));
         this.sortingChanged();
-        this.updateVisibleNodes(true);
         this._lastKey = key;
     },
 
