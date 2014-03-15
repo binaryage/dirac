@@ -38,6 +38,7 @@ WebInspector.TimelineGrid = function()
     this._dividersElement = this.element.createChild("div", "resources-dividers");
 
     this._gridHeaderElement = document.createElement("div");
+    this._gridHeaderElement.id = "timeline-grid-header";
     this._eventDividersElement = this._gridHeaderElement.createChild("div", "resources-event-dividers");
     this._dividersLabelBarElement = this._gridHeaderElement.createChild("div", "resources-dividers-label-bar");
     this.element.appendChild(this._gridHeaderElement);
@@ -160,11 +161,6 @@ WebInspector.TimelineGrid.prototype = {
     get dividersLabelBarElement()
     {
         return this._dividersLabelBarElement;
-    },
-
-    get gridHeaderElement()
-    {
-        return this._gridHeaderElement;
     },
 
     removeDividers: function()
@@ -309,7 +305,7 @@ WebInspector.TimelineGrid.prototype = {
 
     setScrollAndDividerTop: function(scrollTop, dividersTop)
     {
-        this._dividersElement.style.top = scrollTop + "px";
+        this._dividersLabelBarElement.style.top = scrollTop + "px";
         this._leftCurtainElement.style.top = scrollTop + "px";
         this._rightCurtainElement.style.top = scrollTop + "px";
     }

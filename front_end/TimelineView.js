@@ -53,7 +53,13 @@ WebInspector.TimelineView = function(delegate, model)
     this._recordsView = this._createRecordsView();
     this._recordsView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
     this._recordsView.show(this.element);
-    this.element.appendChild(this._timelineGrid.gridHeaderElement);
+    this._headerElement = this.element.createChild("div", "fill");
+    this._headerElement.id = "timeline-graph-records-header";
+
+    // Create gpu tasks containers.
+    this._cpuBarsElement = this._headerElement.createChild("div", "timeline-utilization-strip");
+    if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
+        this._gpuBarsElement = this._headerElement.createChild("div", "timeline-utilization-strip gpu");
 
     this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
 
@@ -94,8 +100,6 @@ WebInspector.TimelineView.prototype = {
         this._gridContainer.show(recordsView.mainElement());
         this._timelineGrid = new WebInspector.TimelineGrid();
         this._gridContainer.element.appendChild(this._timelineGrid.element);
-        this._timelineGrid.gridHeaderElement.id = "timeline-grid-header";
-        this._timelineGrid.gridHeaderElement.classList.add("fill");
 
         this._itemsGraphsElement = this._gridContainer.element.createChild("div");
         this._itemsGraphsElement.id = "timeline-graphs";
@@ -106,12 +110,6 @@ WebInspector.TimelineView.prototype = {
         this._bottomGapElement = this._itemsGraphsElement.createChild("div", "timeline-gap");
         this._expandElements = this._itemsGraphsElement.createChild("div");
         this._expandElements.id = "orphan-expand-elements";
-
-        // Create gpu tasks containers.
-        var utilizationStripsElement = this._timelineGrid.gridHeaderElement.createChild("div", "timeline-utilization-strips vbox");
-        this._cpuBarsElement = utilizationStripsElement.createChild("div", "timeline-utilization-strip");
-        if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
-            this._gpuBarsElement = utilizationStripsElement.createChild("div", "timeline-utilization-strip gpu");
 
         return recordsView;
     },
@@ -183,7 +181,7 @@ WebInspector.TimelineView.prototype = {
             }
         }
         this._timelineGrid.addEventDividers(dividers);
-        this._timelineGrid.gridHeaderElement.appendChild(this._frameContainer);
+        this._headerElement.appendChild(this._frameContainer);
     },
 
     _onFrameDoubleClicked: function(event)
@@ -232,8 +230,8 @@ WebInspector.TimelineView.prototype = {
         this._closeRecordDetails();
         this._graphRowsElementWidth = this._graphRowsElement.offsetWidth;
         this._containerElementHeight = this._containerElement.clientHeight;
-        this._timelineGrid.gridHeaderElement.style.left = sidebarWidth + "px";
-        this._timelineGrid.gridHeaderElement.style.width = this._itemsGraphsElement.offsetWidth + "px";
+        this._headerElement.style.left = sidebarWidth + "px";
+        this._headerElement.style.width = this._itemsGraphsElement.offsetWidth + "px";
         this._scheduleRefresh(false, true);
     },
 

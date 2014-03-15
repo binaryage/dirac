@@ -605,9 +605,11 @@
 
 #timeline-grid-header {
     pointer-events: none;
+    height: 19px;
 }
 
-.timeline-utilization-strips {
+#timeline-graph-records-header {
+    pointer-events: none;
     height: 19px;
     padding: 1px 0;
     justify-content: center;
@@ -618,6 +620,7 @@
     overflow: hidden;
     flex: 0 1 12px;
     position: relative;
+    height: 9px;
 }
 
 .timeline-utilization-strip .timeline-graph-bar {
