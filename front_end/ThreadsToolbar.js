@@ -50,6 +50,9 @@ WebInspector.ThreadsToolbar.prototype = {
 
     _reset: function()
     {
+        if (!WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
+             return;
+
         this._threadIdToOption = {};
 
         var connectedThreads = WebInspector.workerManager.threadsList();
