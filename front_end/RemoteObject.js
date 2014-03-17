@@ -214,7 +214,11 @@ WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value,
         console.assert(type !== "object" || value === null);
         this._description = description || (value + "");
         this._hasChildren = false;
-        this.value = value;
+        // Handle special numbers: NaN, Infinity, -Infinity, -0.
+        if (type === "number" && typeof value !== "number")
+            this.value = Number(value);
+        else
+            this.value = value;
     }
 }
 
@@ -385,12 +389,8 @@ WebInspector.RemoteObjectImpl.prototype = {
         // where property was defined; so do we.
         var setPropertyValueFunction = "function(a, b) { this[a] = b; }";
 
-        // Special case for NaN, Infinity, -Infinity, -0.
-        if (result.type === "number" && String(result.value) !== result.description)
-            setPropertyValueFunction = "function(a) { this[a] = " + result.description + "; }";
-
-        delete result.description; // Optimize on traffic.
-        this._runtimeAgent.callFunctionOn(this._objectId, setPropertyValueFunction, [{ value:name }, result], true, undefined, undefined, propertySetCallback.bind(this));
+        var argv = [{ value: name }, this._toCallArgument(result)]
+        this._runtimeAgent.callFunctionOn(this._objectId, setPropertyValueFunction, argv, true, undefined, undefined, propertySetCallback.bind(this));
 
         /**
          * @param {?Protocol.Error} error
@@ -405,6 +405,15 @@ WebInspector.RemoteObjectImpl.prototype = {
             }
             callback();
         }
+    },
+
+    /**
+     * @param {!RuntimeAgent.RemoteObject} object
+     * @return {!RuntimeAgent.CallArgument}
+     */
+    _toCallArgument: function(object)
+    {
+        return { value: object.value, objectId: object.objectId, type: /** @type {!RuntimeAgent.CallArgumentType.<string>} */ (object.type) };
     },
 
     /**
@@ -645,21 +654,7 @@ WebInspector.ScopeRemoteObject.prototype = {
      */
     doSetObjectPropertyValue: function(result, name, callback)
     {
-        var newValue;
-
-        switch (result.type) {
-            case "undefined":
-                newValue = {};
-                break;
-            case "object":
-            case "function":
-                newValue = { objectId: result.objectId };
-                break;
-            default:
-                newValue = { value: result.value };
-        }
-
-        this._debuggerAgent.setVariableValue(this._scopeRef.number, name, newValue, this._scopeRef.callFrameId, this._scopeRef.functionId, setVariableValueCallback.bind(this));
+        this._debuggerAgent.setVariableValue(this._scopeRef.number, name, this._toCallArgument(result), this._scopeRef.callFrameId, this._scopeRef.functionId, setVariableValueCallback.bind(this));
 
         /**
          * @param {?Protocol.Error} error
