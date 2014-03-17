@@ -682,7 +682,7 @@ WebInspector.SourcesPanel.prototype = {
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      */
-    revealInNavigator: function(uiSourceCode)
+    _revealInNavigator: function(uiSourceCode)
     {
         this._navigator.revealUISourceCode(uiSourceCode);
     },
@@ -1351,7 +1351,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, target)
     {
-        this._appendUISourceCodeItems(contextMenu, target);
+        this._appendUISourceCodeItems(event, contextMenu, target);
         this._appendFunctionItems(contextMenu, target);
     },
 
@@ -1438,10 +1438,11 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
+     * @param {!Event} event
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */
-    _appendUISourceCodeItems: function(contextMenu, target)
+    _appendUISourceCodeItems: function(event, contextMenu, target)
     {
         if (!(target instanceof WebInspector.UISourceCode))
             return;
@@ -1449,6 +1450,20 @@ WebInspector.SourcesPanel.prototype = {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (target);
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Local modifications\u2026" : "Local Modifications\u2026"), this._showLocalHistory.bind(this, uiSourceCode));
         this._appendUISourceCodeMappingItems(contextMenu, uiSourceCode);
+
+        if (!event.target.isSelfOrDescendant(this.editorView.sidebarElement())) {
+            contextMenu.appendSeparator();
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in navigator" : "Reveal in Navigator"), this._handleContextMenuReveal.bind(this, uiSourceCode));
+        }
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     */
+    _handleContextMenuReveal: function(uiSourceCode)
+    {
+        this.editorView.showBoth();
+        this._revealInNavigator(uiSourceCode);
     },
 
     /**

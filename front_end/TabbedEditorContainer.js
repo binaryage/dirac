@@ -37,11 +37,6 @@ WebInspector.TabbedEditorContainerDelegate.prototype = {
      * @return {!WebInspector.SourceFrame}
      */
     viewForFile: function(uiSourceCode) { },
-
-    /**
-     * @param {!WebInspector.UISourceCode} uiSourceCode
-     */
-    revealInNavigator: function(uiSourceCode) { }
 }
 
 /**
@@ -154,8 +149,6 @@ WebInspector.TabbedEditorContainer.prototype = {
             return;
         this._currentView.addEventListener(WebInspector.SourceFrame.Events.ScrollChanged, this._scrollChanged, this);
         this._currentView.addEventListener(WebInspector.SourceFrame.Events.SelectionChanged, this._selectionChanged, this);
-        this._boundHandleContextMenu = this._handleContextMenu.bind(this);
-        this._currentView.element.addEventListener("contextmenu", this._boundHandleContextMenu, false);
     },
 
     _removeViewListeners: function()
@@ -164,30 +157,6 @@ WebInspector.TabbedEditorContainer.prototype = {
             return;
         this._currentView.removeEventListener(WebInspector.SourceFrame.Events.ScrollChanged, this._scrollChanged, this);
         this._currentView.removeEventListener(WebInspector.SourceFrame.Events.SelectionChanged, this._selectionChanged, this);
-        this._currentView.element.addEventListener("contextmenu", this._boundHandleContextMenu, false);
-        delete this._boundHandleContextMenu;
-    },
-
-    /**
-     * @param {!WebInspector.UISourceCode} uiSourceCode
-     */
-    _handleContextMenuReveal: function(uiSourceCode)
-    {
-        this._delegate.revealInNavigator(uiSourceCode);
-    },
-
-    /**
-     * @param {!Event} event
-     */
-    _handleContextMenu: function(event)
-    {
-        var uiSourceCode = this._currentFile;
-
-        var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendApplicableItems(uiSourceCode);
-        contextMenu.appendSeparator();
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in navigator" : "Reveal in Navigator"), this._handleContextMenuReveal.bind(this, uiSourceCode));
-        contextMenu.show();
     },
 
     /**
