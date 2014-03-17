@@ -91,14 +91,13 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     // Create scripts navigator
     const initialNavigatorWidth = 225;
-    const minimumViewsContainerWidthPercent = 0.5;
     this.editorView = new WebInspector.SplitView(true, false, "sourcesPanelNavigatorSplitViewState", initialNavigatorWidth);
     this.editorView.enableShowModeSaving();
     this.editorView.element.id = "scripts-editor-split-view";
     this.editorView.element.tabIndex = 0;
 
     this.editorView.setSidebarElementConstraints(Preferences.minSidebarWidth);
-    this.editorView.setMainElementConstraints(minimumViewsContainerWidthPercent);
+    this.editorView.setMainElementConstraints(50, 50);
     this.editorView.show(this._splitView.mainElement());
 
     this._navigator = new WebInspector.SourcesNavigator(this._workspace);

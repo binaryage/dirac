@@ -71,11 +71,6 @@ WebInspector.SplitView = function(isVertical, secondIsSidebar, settingName, defa
 
     this._defaultSidebarWidth = defaultSidebarWidth || 200;
     this._defaultSidebarHeight = defaultSidebarHeight || this._defaultSidebarWidth;
-
-    if (0 < this._defaultSidebarWidth && this._defaultSidebarWidth < 1 &&
-        0 < this._defaultSidebarHeight && this._defaultSidebarHeight < 1)
-        this._useFraction = true;
-
     this._settingName = settingName;
 
     this.setSecondIsSidebar(secondIsSidebar);
@@ -408,11 +403,7 @@ WebInspector.SplitView.prototype = {
 
         this._removeAllLayoutProperties();
 
-        var sizeValue;
-        if (this._useFraction)
-            sizeValue = (size / this.totalSize()) * 100 + "%";
-        else
-            sizeValue = size + "px";
+        var sizeValue = size + "px";
 
         this.sidebarElement().style.flexBasis = sizeValue;
 
@@ -564,40 +555,19 @@ WebInspector.SplitView.prototype = {
         var totalSize = this.totalSize();
         var minimumSiderbarSizeContraint = this.isVertical() ? this._minimumSidebarWidth : this._minimumSidebarHeight;
         var from = minimumSiderbarSizeContraint || 0;
-        var fromInPercents = false;
-        if (from && from < 1) {
-            fromInPercents = true;
-            from = Math.round(totalSize * from);
-        }
         if (typeof minimumSiderbarSizeContraint !== "number")
             from = Math.max(from, minPadding);
-        if (!fromInPercents)
-            from /= zoomFactor;
+        from /= zoomFactor;
 
         var minimumMainSizeConstraint = this.isVertical() ? this._minimumMainWidth : this._minimumMainHeight;
         var minMainSize = minimumMainSizeConstraint || 0;
-        var toInPercents = false;
-        if (minMainSize && minMainSize < 1) {
-            toInPercents = true;
-            minMainSize = Math.round(totalSize * minMainSize);
-        }
         if (typeof minimumMainSizeConstraint !== "number")
             minMainSize = Math.max(minMainSize, minPadding);
-        if (!toInPercents)
-            minMainSize /= zoomFactor;
+        minMainSize /= zoomFactor;
 
         var to = totalSize - minMainSize;
         if (from <= to)
             return Number.constrain(sidebarSize, from, to);
-
-        // Respect fixed constraints over percents. This will, for example, shrink
-        // the sidebar to its minimum size when possible.
-        if (!fromInPercents && !toInPercents)
-            return -1;
-        if (toInPercents && sidebarSize >= from && from < totalSize)
-            return from;
-        if (fromInPercents && sidebarSize <= to && to < totalSize)
-            return to;
 
         return -1;
     },
@@ -749,18 +719,19 @@ WebInspector.SplitView.prototype = {
     _preferredSidebarSize: function()
     {
         var size = this._savedSidebarSize;
-        if (this._useFraction)
-            size *= this.totalSize();
+        if (!size) {
+            size = this._isVertical ? this._defaultSidebarWidth : this._defaultSidebarHeight;
+            // If we have default value in percents, calculate it on first use.
+            if (0 < size && size < 1)
+                size *= this.totalSize();
+        }
         return size;
     },
 
     _restoreSidebarSizeFromSettings: function()
     {
         var settingForOrientation = this._settingForOrientation();
-        var size = settingForOrientation ? settingForOrientation.size : 0;
-        if (!size)
-             size = this._isVertical ? this._defaultSidebarWidth : this._defaultSidebarHeight;
-        this._savedSidebarSize = size;
+        this._savedSidebarSize = settingForOrientation ? settingForOrientation.size : 0;
     },
 
     _restoreAndApplyShowModeFromSettings: function()
@@ -787,10 +758,7 @@ WebInspector.SplitView.prototype = {
         if (this._sidebarSize < 0)
             return;
 
-        var size = this._sidebarSize;
-        if (this._useFraction)
-            size /= this.totalSize();
-        this._savedSidebarSize = size;
+        this._savedSidebarSize = this._sidebarSize;
         this._saveSetting();
     },
 

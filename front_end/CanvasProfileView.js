@@ -43,9 +43,8 @@ WebInspector.CanvasProfileView = function(profile)
     this._traceLogPlayer = /** @type {!WebInspector.CanvasTraceLogPlayerProxy} */ (profile.traceLogPlayer());
     this._linkifier = new WebInspector.Linkifier();
 
-    const defaultReplayLogWidthPercent = 0.34;
-    this._replayInfoSplitView = new WebInspector.SplitView(true, true, "canvasProfileViewReplaySplitViewState", defaultReplayLogWidthPercent);
-    this._replayInfoSplitView.setMainElementConstraints(defaultReplayLogWidthPercent, defaultReplayLogWidthPercent);
+    this._replayInfoSplitView = new WebInspector.SplitView(true, true, "canvasProfileViewReplaySplitViewState", 0.34);
+    this._replayInfoSplitView.setMainElementConstraints(25, 25);
     this._replayInfoSplitView.show(this.element);
 
     this._imageSplitView = new WebInspector.SplitView(false, true, "canvasProfileViewSplitViewState", 300);

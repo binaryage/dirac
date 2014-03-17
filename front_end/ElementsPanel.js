@@ -51,14 +51,9 @@ WebInspector.ElementsPanel = function()
     this.registerRequiredCSS("textPrompt.css");
     this.setHideOnDetach();
 
-    const initialSidebarWidth = 325;
-    const minimumContentWidthPercent = 0.34;
-    const initialSidebarHeight = 325;
-    const minimumContentHeightPercent = 0.34;
-
-    this._splitView = new WebInspector.SplitView(true, true, "elementsPanelSplitViewState", initialSidebarWidth, initialSidebarHeight);
-    this._splitView.setSidebarElementConstraints(Preferences.minSidebarWidth, Preferences.minSidebarHeight);
-    this._splitView.setMainElementConstraints(minimumContentWidthPercent, minimumContentHeightPercent);
+    this._splitView = new WebInspector.SplitView(true, true, "elementsPanelSplitViewState", 325, 325);
+    this._splitView.setSidebarElementConstraints(25, 25);
+    this._splitView.setMainElementConstraints(25, 19);
     this._splitView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._updateTreeOutlineVisibleWidth.bind(this));
     this._splitView.show(this.element);
 

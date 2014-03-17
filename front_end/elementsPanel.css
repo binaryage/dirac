@@ -37,6 +37,7 @@
     flex: 0 0 19px;
     background-color: rgb(236, 236, 236);
     border-top: 1px solid #ccc;
+    overflow: hidden;
 }
 
 #elements-content > ol {

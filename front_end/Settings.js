@@ -432,7 +432,7 @@ WebInspector.VersionController = function()
 {
 }
 
-WebInspector.VersionController.currentVersion = 6;
+WebInspector.VersionController.currentVersion = 7;
 
 WebInspector.VersionController.prototype = {
     updateVersion: function()
@@ -562,6 +562,36 @@ WebInspector.VersionController.prototype = {
             newValue.horizontal = newValue.horizontal || {};
             newValue.horizontal.showMode = showMode;
             newSetting.set(newValue);
+        }
+    },
+
+    _updateVersionFrom6To7: function()
+    {
+        if (!window.localStorage)
+            return;
+
+        var settingNames = {
+            "sourcesPanelNavigatorSplitViewState": "sourcesPanelNavigatorSplitViewState",
+            "elementsPanelSplitViewState": "elementsPanelSplitViewState",
+            "canvasProfileViewReplaySplitViewState": "canvasProfileViewReplaySplitViewState",
+            "editorInDrawerSplitViewState": "editorInDrawerSplitViewState",
+            "stylesPaneSplitViewState": "stylesPaneSplitViewState",
+            "sourcesPanelDebuggerSidebarSplitViewState": "sourcesPanelDebuggerSidebarSplitViewState"
+        };
+
+        for (var name in settingNames) {
+            if (!(name in window.localStorage))
+                continue;
+            var setting = WebInspector.settings.createSetting(name, undefined);
+            var value = setting.get();
+            if (!value)
+                continue;
+            // Zero out saved percentage sizes, and they will be restored to defaults.
+            if (value.vertical && value.vertical.size && value.vertical.size < 1)
+                value.vertical.size = 0;
+            if (value.horizontal && value.horizontal.size && value.horizontal.size < 1)
+                value.horizontal.size = 0;
+            setting.set(value);
         }
     },
 
