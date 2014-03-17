@@ -300,10 +300,10 @@ WebInspector.DebuggerModel.prototype = {
         columnNumber = Math.max(columnNumber, minColumnNumber);
 
         /**
-         * @this {WebInspector.DebuggerModel}
          * @param {?Protocol.Error} error
          * @param {!DebuggerAgent.BreakpointId} breakpointId
          * @param {!Array.<!DebuggerAgent.Location>} locations
+         * @this {WebInspector.DebuggerModel}
          */
         function didSetBreakpoint(error, breakpointId, locations)
         {
@@ -324,10 +324,10 @@ WebInspector.DebuggerModel.prototype = {
     setBreakpointBySourceId: function(rawLocation, condition, callback)
     {
         /**
-         * @this {WebInspector.DebuggerModel}
          * @param {?Protocol.Error} error
          * @param {!DebuggerAgent.BreakpointId} breakpointId
          * @param {!DebuggerAgent.Location} actualLocation
+         * @this {WebInspector.DebuggerModel}
          */
         function didSetBreakpoint(error, breakpointId, actualLocation)
         {
@@ -710,7 +710,6 @@ WebInspector.DebuggerModel.prototype = {
 
     /**
      * Handles notification from JavaScript VM about updated stack (liveedit or frame restart action).
-     * @this {WebInspector.DebuggerModel}
      * @param {!Array.<!DebuggerAgent.CallFrame>=} newCallFrames
      * @param {!Object=} details
      * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
@@ -940,10 +939,10 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
     evaluate: function(code, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback)
     {
         /**
-         * @this {WebInspector.DebuggerModel.CallFrame}
          * @param {?Protocol.Error} error
          * @param {!RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
+         * @this {WebInspector.DebuggerModel.CallFrame}
          */
         function didEvaluateOnCallFrame(error, result, wasThrown)
         {
@@ -963,11 +962,11 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
     restart: function(callback)
     {
         /**
-         * @this {WebInspector.DebuggerModel.CallFrame}
          * @param {?Protocol.Error} error
          * @param {!Array.<!DebuggerAgent.CallFrame>=} callFrames
          * @param {!Object=} details
          * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
+         * @this {WebInspector.DebuggerModel.CallFrame}
          */
         function protocolCallback(error, callFrames, details, asyncStackTrace)
         {
@@ -976,7 +975,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
             if (callback)
                 callback(error);
         }
-        this._debuggerAgent.restartFrame(this._payload.callFrameId, protocolCallback);
+        this._debuggerAgent.restartFrame(this._payload.callFrameId, protocolCallback.bind(this));
     },
 
     /**
