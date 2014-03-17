@@ -40,7 +40,6 @@ WebInspector.WorkerFrontendManager = function()
     WebInspector.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerRemoved, this._workerRemoved, this);
     WebInspector.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkersCleared, this._workersCleared, this);
     WebInspector.workerManager.addEventListener(WebInspector.WorkerManager.Events.MessageFromWorker, this._sendMessageToWorkerInspector, this);
-    WebInspector.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerDisconnected, this._disconnectedFromWorker, this);
 
     window.addEventListener("message", this._handleMessage.bind(this), true);
 }
@@ -156,13 +155,6 @@ WebInspector.WorkerFrontendManager.prototype = {
         WorkerAgent.disconnectFromWorker(workerId);
     },
 
-    _disconnectedFromWorker: function()
-    {
-        var screen = new WebInspector.WorkerTerminatedScreen();
-        WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, screen.hide, screen);
-        screen.showModal();
-    },
-
     _pageInspectorClosing: function()
     {
         this._ignoreWorkerInspectorClosing = true;
@@ -177,29 +169,4 @@ WebInspector.WorkerFrontendManager.prototype = {
  * @type {?WebInspector.WorkerFrontendManager}
  */
 WebInspector.workerFrontendManager = null;
-
-/**
- * @constructor
- * @extends {WebInspector.HelpScreen}
- */
-WebInspector.WorkerTerminatedScreen = function()
-{
-    WebInspector.HelpScreen.call(this, WebInspector.UIString("Inspected worker terminated"));
-    var p = this.contentElement.createChild("p");
-    p.classList.add("help-section");
-    p.textContent = WebInspector.UIString("Inspected worker has terminated. Once it restarts we will attach to it automatically.");
-}
-
-WebInspector.WorkerTerminatedScreen.prototype = {
-    /**
-     * @override
-     */
-    willHide: function()
-    {
-        WebInspector.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this.hide, this);
-        WebInspector.HelpScreen.prototype.willHide.call(this);
-    },
-
-    __proto__: WebInspector.HelpScreen.prototype
-}
 

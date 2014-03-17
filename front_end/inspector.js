@@ -280,6 +280,26 @@ WebInspector.Main.prototype = {
         if (Capabilities.isMainFrontend) {
             WebInspector.inspectElementModeController = new WebInspector.InspectElementModeController();
             WebInspector.workerFrontendManager = new WebInspector.WorkerFrontendManager();
+        } else {
+            mainTarget.workerManager.addEventListener(WebInspector.WorkerManager.Events.WorkerDisconnected, onWorkerDisconnected);
+        }
+
+        function onWorkerDisconnected()
+        {
+            var screen = new WebInspector.WorkerTerminatedScreen();
+            var listener = hideScreen.bind(null, screen);
+            mainTarget.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, listener);
+
+            /**
+             * @param {!WebInspector.WorkerTerminatedScreen} screen
+             */
+            function hideScreen(screen)
+            {
+                mainTarget.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, listener);
+                screen.hide();
+            }
+
+            screen.showModal();
         }
 
         WebInspector.settingsController = new WebInspector.SettingsController();

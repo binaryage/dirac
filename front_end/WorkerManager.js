@@ -36,9 +36,9 @@
 WebInspector.WorkerManager = function(isMainFrontend)
 {
     this._reset();
+    InspectorBackend.registerWorkerDispatcher(new WebInspector.WorkerDispatcher(this));
     if (isMainFrontend) {
         WorkerAgent.enable();
-        InspectorBackend.registerWorkerDispatcher(new WebInspector.WorkerDispatcher(this));
         WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
     }
 }
