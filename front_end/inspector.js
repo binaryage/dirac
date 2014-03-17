@@ -54,7 +54,7 @@ WebInspector.Main.prototype = {
         if (!Capabilities.isMainFrontend) {
             configuration = ["sources", "timeline", "profiles", "console", "codemirror"];
         } else {
-            configuration = ["elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "codemirror", "extensions", "sources-formatter-actions"];
+            configuration = ["elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "codemirror", "extensions"];
             if (WebInspector.experimentsSettings.layersPanel.isEnabled())
                 configuration.push("layers");
         }

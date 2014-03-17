@@ -27,8 +27,8 @@
  */
 
 /**
- * @extends {WebInspector.VBox}
  * @constructor
+ * @extends {WebInspector.VBox}
  */
 WebInspector.NavigatorView = function()
 {
@@ -55,14 +55,12 @@ WebInspector.NavigatorView = function()
     this._rootNode = new WebInspector.NavigatorRootTreeNode(this);
     this._rootNode.populate();
 
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._inspectedURLChanged, this);
     this.element.addEventListener("contextmenu", this.handleContextMenu.bind(this), false);
 }
 
 WebInspector.NavigatorView.Events = {
     ItemSelected: "ItemSelected",
-    ItemRenamingRequested: "ItemRenamingRequested",
-    ItemCreationRequested: "ItemCreationRequested"
+    ItemRenamed: "ItemRenamed",
 }
 
 WebInspector.NavigatorView.iconClassForType = function(type)
@@ -75,31 +73,72 @@ WebInspector.NavigatorView.iconClassForType = function(type)
 }
 
 WebInspector.NavigatorView.prototype = {
+    setWorkspace: function(workspace)
+    {
+        this._workspace = workspace;
+        this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
+        this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeRemoved, this._uiSourceCodeRemoved, this);
+        this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._projectWillReset.bind(this), this);
+    },
+
+    wasShown: function()
+    {
+        if (this._loaded)
+            return;
+        this._loaded = true;
+        this._workspace.uiSourceCodes().forEach(this._addUISourceCode.bind(this));
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @return {boolean}
+     */
+    accept: function(uiSourceCode)
+    {
+        return !uiSourceCode.project().isServiceProject();
+    },
+
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      */
-    addUISourceCode: function(uiSourceCode)
+    _addUISourceCode: function(uiSourceCode)
     {
+        if (!this.accept(uiSourceCode))
+            return;
         var projectNode = this._projectNode(uiSourceCode.project());
         var folderNode = this._folderNode(projectNode, uiSourceCode.parentPath());
         var uiSourceCodeNode = new WebInspector.NavigatorUISourceCodeTreeNode(this, uiSourceCode);
         this._uiSourceCodeNodes.put(uiSourceCode, uiSourceCodeNode);
         folderNode.appendChild(uiSourceCodeNode);
-        if (uiSourceCode.url === WebInspector.resourceTreeModel.inspectedPageURL())
-            this.revealUISourceCode(uiSourceCode);
     },
 
     /**
      * @param {!WebInspector.Event} event
      */
-    _inspectedURLChanged: function(event)
+    _uiSourceCodeAdded: function(event)
     {
-        var nodes = this._uiSourceCodeNodes.values();
-        for (var i = 0; i < nodes.length; ++i) {
-            var uiSourceCode = nodes[i].uiSourceCode();
-            if (uiSourceCode.url === WebInspector.resourceTreeModel.inspectedPageURL())
-                this.revealUISourceCode(uiSourceCode);
-        }
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
+        this._addUISourceCode(uiSourceCode);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _uiSourceCodeRemoved: function(event)
+    {
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
+        this._removeUISourceCode(uiSourceCode);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _projectWillReset: function(event)
+    {
+        var project = /** @type {!WebInspector.Project} */ (event.data);
+        var uiSourceCodes = project.uiSourceCodes();
+        for (var i = 0; i < uiSourceCodes.length; ++i)
+            this._removeUISourceCode(uiSourceCodes[i]);
     },
 
     /**
@@ -188,7 +227,7 @@ WebInspector.NavigatorView.prototype = {
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      */
-    removeUISourceCode: function(uiSourceCode)
+    _removeUISourceCode: function(uiSourceCode)
     {
         var node = this._uiSourceCodeNodes.get(uiSourceCode);
         if (!node)
@@ -215,30 +254,10 @@ WebInspector.NavigatorView.prototype = {
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      */
-    updateIcon: function(uiSourceCode)
+    _updateIcon: function(uiSourceCode)
     {
         var node = this._uiSourceCodeNodes.get(uiSourceCode);
         node.updateIcon();
-    },
-
-    /**
-     * @param {!WebInspector.UISourceCode} uiSourceCode
-     */
-    requestRename: function(uiSourceCode)
-    {
-        this.dispatchEventToListeners(WebInspector.NavigatorView.Events.ItemRenamingRequested, uiSourceCode);
-    },
-
-    /**
-     * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @param {function(boolean)=} callback
-     */
-    rename: function(uiSourceCode, callback)
-    {
-        var node = this._uiSourceCodeNodes.get(uiSourceCode);
-        if (!node)
-            return;
-        node.rename(callback);
     },
 
     reset: function()
@@ -293,11 +312,7 @@ WebInspector.NavigatorView.prototype = {
      */
     _handleContextMenuCreate: function(project, path, uiSourceCode)
     {
-        var data = {};
-        data.project = project;
-        data.path = path;
-        data.uiSourceCode = uiSourceCode;
-        this.dispatchEventToListeners(WebInspector.NavigatorView.Events.ItemCreationRequested, data);
+        this.create(project, path, uiSourceCode);
     },
 
     /**
@@ -384,7 +399,162 @@ WebInspector.NavigatorView.prototype = {
         contextMenu.show();
     },
 
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {boolean} deleteIfCanceled
+     */
+    rename: function(uiSourceCode, deleteIfCanceled)
+    {
+        var node = this._uiSourceCodeNodes.get(uiSourceCode);
+        console.assert(node);
+        node.rename(callback);
+
+        /**
+         * @this {WebInspector.NavigatorView}
+         * @param {boolean} committed
+         */
+        function callback(committed)
+        {
+            if (!committed) {
+                if (deleteIfCanceled)
+                    uiSourceCode.remove();
+                return;
+            }
+
+            var data = { uiSourceCode: uiSourceCode };
+            this.dispatchEventToListeners(WebInspector.NavigatorView.Events.ItemRenamed, data);
+            this._updateIcon(uiSourceCode);
+            this._sourceSelected(uiSourceCode, true)
+        }
+    },
+
+    /**
+     * @param {!WebInspector.Project} project
+     * @param {string} path
+     * @param {!WebInspector.UISourceCode=} uiSourceCodeToCopy
+     */
+    create: function(project, path, uiSourceCodeToCopy)
+    {
+        var filePath;
+        var uiSourceCode;
+
+        /**
+         * @this {WebInspector.NavigatorView}
+         * @param {?string} content
+         */
+        function contentLoaded(content)
+        {
+            createFile.call(this, content || "");
+        }
+
+        if (uiSourceCodeToCopy)
+            uiSourceCodeToCopy.requestContent(contentLoaded.bind(this));
+        else
+            createFile.call(this);
+
+        /**
+         * @this {WebInspector.NavigatorView}
+         * @param {string=} content
+         */
+        function createFile(content)
+        {
+            project.createFile(path, null, content || "", fileCreated.bind(this));
+        }
+
+        /**
+         * @this {WebInspector.NavigatorView}
+         * @param {?string} path
+         */
+        function fileCreated(path)
+        {
+            if (!path)
+                return;
+            filePath = path;
+            uiSourceCode = project.uiSourceCode(filePath);
+            if (!uiSourceCode) {
+                console.assert(uiSourceCode)
+                return;
+            }
+            this._sourceSelected(uiSourceCode, false);
+            this.rename(uiSourceCode, true);
+        }
+    },
+
     __proto__: WebInspector.VBox.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.NavigatorView}
+ */
+WebInspector.SourcesNavigatorView = function()
+{
+    WebInspector.NavigatorView.call(this);
+    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._inspectedURLChanged, this);
+}
+
+WebInspector.SourcesNavigatorView.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @return {boolean}
+     */
+    accept: function(uiSourceCode)
+    {
+        if (!WebInspector.NavigatorView.prototype.accept(uiSourceCode))
+            return false;
+        return !uiSourceCode.isContentScript && uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets;
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _inspectedURLChanged: function(event)
+    {
+       var nodes = this._uiSourceCodeNodes.values();
+       for (var i = 0; i < nodes.length; ++i) {
+           var uiSourceCode = nodes[i].uiSourceCode();
+           if (uiSourceCode.url === WebInspector.resourceTreeModel.inspectedPageURL())
+              this.revealUISourceCode(uiSourceCode, true);
+       }
+    },
+
+    /**
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     */
+    _addUISourceCode: function(uiSourceCode)
+    {
+        WebInspector.NavigatorView.prototype._addUISourceCode.call(this, uiSourceCode);
+        if (uiSourceCode.url === WebInspector.resourceTreeModel.inspectedPageURL())
+            this.revealUISourceCode(uiSourceCode, true);
+     },
+
+    __proto__: WebInspector.NavigatorView.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.NavigatorView}
+ */
+WebInspector.ContentScriptsNavigatorView = function()
+{
+    WebInspector.NavigatorView.call(this);
+}
+
+WebInspector.ContentScriptsNavigatorView.prototype = {
+    /**
+     * @override
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @return {boolean}
+     */
+    accept: function(uiSourceCode)
+    {
+        if (!WebInspector.NavigatorView.prototype.accept(uiSourceCode))
+            return false;
+        return uiSourceCode.isContentScript;
+    },
+
+    __proto__: WebInspector.NavigatorView.prototype
 }
 
 /**
@@ -694,7 +864,7 @@ WebInspector.NavigatorSourceTreeElement.prototype = {
         function rename()
         {
             if (this._shouldRenameOnMouseDown())
-                this._navigatorView.requestRename(this._uiSourceCode);
+                this._navigatorView.rename(this.uiSourceCode, false);
         }
     },
 

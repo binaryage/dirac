@@ -145,6 +145,35 @@ var allDescriptors = [
                 type: "@WebInspector.Revealer",
                 contextTypes: ["WebInspector.UILocation"],
                 className: "WebInspector.SourcesPanel.UILocationRevealer"
+            },
+            {
+                type: "@WebInspector.SourcesPanel.EditorAction",
+                className: "WebInspector.InplaceFormatterEditorAction"
+            },
+            {
+                type: "@WebInspector.SourcesPanel.EditorAction",
+                className: "WebInspector.ScriptFormatterEditorAction"
+            },
+            {
+                type: "navigator-view",
+                name: "sources",
+                title: "Sources",
+                order: 1,
+                className: "WebInspector.SourcesNavigatorView"
+            },
+            {
+                type: "navigator-view",
+                name: "contentScripts",
+                title: "Content scripts",
+                order: 2,
+                className: "WebInspector.ContentScriptsNavigatorView"
+            },
+            {
+                type: "navigator-view",
+                name: "snippets",
+                title: "Snippets",
+                order: 3,
+                className: "WebInspector.SnippetsNavigatorView"
             }
         ],
         scripts: [ "SourcesPanel.js" ]
@@ -271,19 +300,6 @@ var allDescriptors = [
                 type: "@WebInspector.ContextMenu.Provider",
                 contextTypes: ["WebInspector.UISourceCode", "WebInspector.Resource", "WebInspector.NetworkRequest", "Node"],
                 className: "WebInspector.HandlerRegistry.ContextMenuProvider"
-            }
-        ]
-    },
-    {
-        name: "sources-formatter-actions",
-        extensions: [
-            {
-                type: "@WebInspector.SourcesPanel.EditorAction",
-                className: "WebInspector.InplaceFormatterEditorAction"
-            },
-            {
-                type: "@WebInspector.SourcesPanel.EditorAction",
-                className: "WebInspector.ScriptFormatterEditorAction"
             }
         ]
     }

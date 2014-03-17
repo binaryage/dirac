@@ -1061,14 +1061,18 @@ WebInspector.TabbedPaneTabDelegate.prototype = {
  * @constructor
  * @param {!WebInspector.TabbedPane} tabbedPane
  * @param {string} extensionPoint
+ * @param {function(string, !WebInspector.View)=} viewCallback
  */
-WebInspector.ExtensibleTabbedPaneController = function(tabbedPane, extensionPoint)
+WebInspector.ExtensibleTabbedPaneController = function(tabbedPane, extensionPoint, viewCallback)
 {
     this._tabbedPane = tabbedPane;
     this._extensionPoint = extensionPoint;
+    this._viewCallback = viewCallback;
 
     this._tabbedPane.setRetainTabOrder(true, WebInspector.moduleManager.orderComparator(extensionPoint, "name", "order"));
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
+    /** @type {!StringMap.<?WebInspector.View>} */
+    this._views = new StringMap();
     this._initialize();
 }
 
@@ -1125,6 +1129,12 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
      */
     _viewForId: function(id)
     {
-        return this._extensions[id] ? /** @type {!WebInspector.View} */ (this._extensions[id].instance()) : null;
-    },
+        if (this._views.contains(id))
+            return /** @type {!WebInspector.View} */ (this._views.get(id));
+        var view = this._extensions[id] ? /** @type {!WebInspector.View} */ (this._extensions[id].instance()) : null;
+        this._views.put(id, view);
+        if (this._viewCallback && view)
+            this._viewCallback(id, view);
+        return view;
+    }
 }
