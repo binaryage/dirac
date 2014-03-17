@@ -52,8 +52,8 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._clearConsoleButton.addEventListener("click", this._requestClearMessages, this);
 
     this._executionContextSelector = new WebInspector.StatusBarComboBox(this._executionContextChanged.bind(this), "console-context");
-    this._topLevelOptionByFrameId = {};
-    this._subOptionsByFrameId = {};
+    this._topLevelOptionByContextListId = {};
+    this._subOptionsByContextListId = {};
 
     this._filter = new WebInspector.ConsoleViewFilter(this);
     this._filter.addEventListener(WebInspector.ConsoleViewFilter.Events.FilterChanged, this._updateMessageList.bind(this));
@@ -117,17 +117,17 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this.prompt.setHistoryData(WebInspector.settings.consoleHistory.get());
 
     /**
-     * @param {!WebInspector.FrameExecutionContextList} contextList
+     * @param {!WebInspector.ExecutionContextList} contextList
      * @this {WebInspector.ConsoleView}
      */
     function loadContextList(contextList)
     {
-        this._addFrame(contextList);
+        this._addExecutionContextList(contextList);
         this._contextListChanged(contextList);
     }
     WebInspector.runtimeModel.contextLists().forEach(loadContextList, this);
-    WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.FrameExecutionContextListAdded, this._frameAdded, this);
-    WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.FrameExecutionContextListRemoved, this._frameRemoved, this);
+    WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextListAdded, this._executionContextListAdded, this);
+    WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextListRemoved, this._executionContextListRemoved, this);
 
     this._filterStatusMessageElement = document.createElement("div");
     this._filterStatusMessageElement.classList.add("console-message");
@@ -164,55 +164,55 @@ WebInspector.ConsoleView.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    _frameAdded: function(event)
+    _executionContextListAdded: function(event)
     {
-        var contextList = /** @type {!WebInspector.FrameExecutionContextList} */ (event.data);
-        this._addFrame(contextList);
+        var contextList = /** @type {!WebInspector.ExecutionContextList} */ (event.data);
+        this._addExecutionContextList(contextList);
     },
 
     /**
-     * @param {!WebInspector.FrameExecutionContextList} contextList
+     * @param {!WebInspector.ExecutionContextList} contextList
      */
-    _addFrame: function(contextList)
+    _addExecutionContextList: function(contextList)
     {
         var maxLength = 50;
-        var topLevelOption = this._executionContextSelector.createOption(contextList.displayName.trimMiddle(maxLength), contextList.url);
+        var topLevelOption = this._executionContextSelector.createOption(contextList.displayName().trimMiddle(maxLength), contextList.url());
         topLevelOption._executionContext = null;
-        this._topLevelOptionByFrameId[contextList.frameId] = topLevelOption;
-        this._subOptionsByFrameId[contextList.frameId] = [];
+        this._topLevelOptionByContextListId[contextList.id()] = topLevelOption;
+        this._subOptionsByContextListId[contextList.id()] = [];
 
-        contextList.addEventListener(WebInspector.FrameExecutionContextList.EventTypes.ContextsUpdated, this._frameUpdated, this);
-        contextList.addEventListener(WebInspector.FrameExecutionContextList.EventTypes.ContextAdded, this._contextListChanged.bind(this, contextList), this);
+        contextList.addEventListener(WebInspector.ExecutionContextList.EventTypes.Reset, this._contextListReset, this);
+        contextList.addEventListener(WebInspector.ExecutionContextList.EventTypes.ContextAdded, this._contextListChanged.bind(this, contextList), this);
     },
 
     /**
      * @param {!WebInspector.Event} event
      */
-    _frameRemoved: function(event)
+    _executionContextListRemoved: function(event)
     {
-        var contextList = /** @type {!WebInspector.FrameExecutionContextList} */ (event.data);
+        var contextList = /** @type {!WebInspector.ExecutionContextList} */ (event.data);
 
-        this._removeSubOptions(contextList.frameId);
-        var topLevelOption = this._topLevelOptionByFrameId[contextList.frameId];
+        this._removeSubOptions(contextList.id());
+        var topLevelOption = this._topLevelOptionByContextListId[contextList.id()];
         this._executionContextSelector.removeOption(topLevelOption);
-        delete this._topLevelOptionByFrameId[contextList.frameId];
-        delete this._subOptionsByFrameId[contextList.frameId];
+        delete this._topLevelOptionByContextListId[contextList.id()];
+        delete this._subOptionsByContextListId[contextList.id()];
         this._executionContextChanged();
     },
 
     /**
-     * @param {string} frameId
+     * @param {string} contextListId
      * @return {boolean}
      */
-    _removeSubOptions: function(frameId)
+    _removeSubOptions: function(contextListId)
     {
         var selectedOptionRemoved = false;
-        var subOptions = this._subOptionsByFrameId[frameId];
+        var subOptions = this._subOptionsByContextListId[contextListId];
         for (var i = 0; i < subOptions.length; ++i) {
             selectedOptionRemoved |= this._executionContextSelector.selectedOption() === subOptions[i];
             this._executionContextSelector.removeOption(subOptions[i]);
         }
-        this._subOptionsByFrameId[frameId] = [];
+        this._subOptionsByContextListId[contextListId] = [];
         return selectedOptionRemoved;
     },
 
@@ -235,15 +235,15 @@ WebInspector.ConsoleView.prototype = {
     /**
      * @param {!WebInspector.Event} event
      */
-    _frameUpdated: function(event)
+    _contextListReset: function(event)
     {
-        var contextList = /** @type {!WebInspector.FrameExecutionContextList} */ (event.data);
-        var option = this._topLevelOptionByFrameId[contextList.frameId];
+        var contextList = /** @type {!WebInspector.ExecutionContextList} */ (event.data);
+        var option = this._topLevelOptionByContextListId[contextList.id()];
         var maxLength = 50;
-        option.text = contextList.displayName.trimMiddle(maxLength);
-        option.title = contextList.url;
+        option.text = contextList.displayName().trimMiddle(maxLength);
+        option.title = contextList.url();
 
-        var selectedRemoved = this._removeSubOptions(contextList.frameId);
+        var selectedRemoved = this._removeSubOptions(contextList.id());
 
         if (selectedRemoved) {
             this._executionContextSelector.select(option);
@@ -252,16 +252,16 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.FrameExecutionContextList} contextList
+     * @param {!WebInspector.ExecutionContextList} contextList
      */
     _contextListChanged: function(contextList)
     {
         var currentExecutionContext = this._currentExecutionContext();
-        var shouldSelectOption = this._removeSubOptions(contextList.frameId);
+        var shouldSelectOption = this._removeSubOptions(contextList.id());
 
-        var topLevelOption = this._topLevelOptionByFrameId[contextList.frameId];
+        var topLevelOption = this._topLevelOptionByContextListId[contextList.id()];
         var nextTopLevelOption = topLevelOption.nextSibling;
-        var subOptions = this._subOptionsByFrameId[contextList.frameId];
+        var subOptions = this._subOptionsByContextListId[contextList.id()];
         var executionContexts = contextList.executionContexts();
         for (var i = 0; i < executionContexts.length; ++i) {
             if (executionContexts[i].isMainWorldContext) {

@@ -67,6 +67,14 @@ WebInspector.Target.prototype = {
         this._connection.registerDispatcher(domain, dispatcher);
     },
 
+    /**
+     * @return {boolean}
+     */
+    isWorkerTarget: function()
+    {
+        return !this.isMainFrontend;
+    },
+
     __proto__: Protocol.Agents.prototype
 }
 
