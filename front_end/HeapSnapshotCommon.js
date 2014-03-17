@@ -253,3 +253,29 @@ WebInspector.HeapSnapshotCommon.Statistics = function()
     /** @type {number} */
     this.strings;
 }
+
+
+/**
+ * @param {number=} minNodeId
+ * @param {number=} maxNodeId
+ * @constructor
+ */
+WebInspector.HeapSnapshotCommon.NodeFilter = function(minNodeId, maxNodeId)
+{
+    /** @type {number|undefined} */
+    this.minNodeId = minNodeId;
+    /** @type {number|undefined} */
+    this.maxNodeId = maxNodeId;
+}
+
+WebInspector.HeapSnapshotCommon.NodeFilter.prototype =
+{
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} o
+     * @return {boolean}
+     */
+    equals: function(o)
+    {
+        return this.minNodeId === o.minNodeId && this.maxNodeId === o.maxNodeId;
+    }
+}

@@ -723,22 +723,6 @@ WebInspector.HeapSnapshotConstructorsDataGrid = function()
     this._objectIdToSelect = null;
 }
 
-/**
- * @constructor
- * @param {number=} minNodeId
- * @param {number=} maxNodeId
- */
-WebInspector.HeapSnapshotConstructorsDataGrid.Request = function(minNodeId, maxNodeId)
-{
-    if (typeof minNodeId === "number") {
-        this.key = minNodeId + ".." + maxNodeId;
-        this.filter = "function(node) { var id = node.id(); return id > " + minNodeId + " && id <= " + maxNodeId + "; }";
-    } else {
-        this.key = "allObjects";
-        this.filter = null;
-    }
-}
-
 WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
     _sortFields: function(sortColumn, sortAscending)
     {
@@ -803,54 +787,58 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
       */
     setSelectionRange: function(minNodeId, maxNodeId)
     {
-        this._populateChildren(new WebInspector.HeapSnapshotConstructorsDataGrid.Request(minNodeId, maxNodeId));
+        this._populateChildren(new WebInspector.HeapSnapshotCommon.NodeFilter(minNodeId, maxNodeId));
     },
 
-    _aggregatesReceived: function(key, aggregates)
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} nodeFilter
+     * @param {!Object.<string, !WebInspector.HeapSnapshotCommon.Aggregate>} aggregates
+     */
+    _aggregatesReceived: function(nodeFilter, aggregates)
     {
-        this._requestInProgress = null;
-        if (this._nextRequest) {
-            this.snapshot.aggregates(false, this._nextRequest.key, this._nextRequest.filter, this._aggregatesReceived.bind(this, this._nextRequest.key));
-            this._requestInProgress = this._nextRequest;
-            this._nextRequest = null;
+        this._filterInProgress = null;
+        if (this._nextRequestedFilter) {
+            this.snapshot.aggregatesWithFilter(this._nextRequestedFilter, this._aggregatesReceived.bind(this, this._nextRequestedFilter));
+            this._filterInProgress = this._nextRequestedFilter;
+            this._nextRequestedFilter = null;
         }
         this.removeTopLevelNodes();
         this.resetSortingCache();
         for (var constructor in aggregates)
-            this.appendNode(this.rootNode(), new WebInspector.HeapSnapshotConstructorNode(this, constructor, aggregates[constructor], key));
+            this.appendNode(this.rootNode(), new WebInspector.HeapSnapshotConstructorNode(this, constructor, aggregates[constructor], nodeFilter));
         this.sortingChanged();
-        this._lastKey = key;
+        this._lastFilter = nodeFilter;
     },
 
     /**
-      * @param {?WebInspector.HeapSnapshotConstructorsDataGrid.Request=} request
+      * @param {!WebInspector.HeapSnapshotCommon.NodeFilter=} nodeFilter
       */
-    _populateChildren: function(request)
+    _populateChildren: function(nodeFilter)
     {
-        request = request || new WebInspector.HeapSnapshotConstructorsDataGrid.Request();
+        nodeFilter = nodeFilter || new WebInspector.HeapSnapshotCommon.NodeFilter();
 
-        if (this._requestInProgress) {
-            this._nextRequest = this._requestInProgress.key === request.key ? null : request;
+        if (this._filterInProgress) {
+            this._nextRequestedFilter = this._filterInProgress.equals(nodeFilter) ? null : nodeFilter;
             return;
         }
-        if (this._lastKey === request.key)
+        if (this._lastFilter && this._lastFilter.equals(nodeFilter))
             return;
-        this._requestInProgress = request;
-        this.snapshot.aggregates(false, request.key, request.filter, this._aggregatesReceived.bind(this, request.key));
+        this._filterInProgress = nodeFilter;
+        this.snapshot.aggregatesWithFilter(nodeFilter, this._aggregatesReceived.bind(this, nodeFilter));
     },
 
     filterSelectIndexChanged: function(profiles, profileIndex)
     {
         this._profileIndex = profileIndex;
 
-        var request = null;
+        var nodeFilter;
         if (profileIndex !== -1) {
             var minNodeId = profileIndex > 0 ? profiles[profileIndex - 1].maxJSObjectId : 0;
             var maxNodeId = profiles[profileIndex].maxJSObjectId;
-            request = new WebInspector.HeapSnapshotConstructorsDataGrid.Request(minNodeId, maxNodeId)
+            nodeFilter = new WebInspector.HeapSnapshotCommon.NodeFilter(minNodeId, maxNodeId)
         }
 
-        this._populateChildren(request);
+        this._populateChildren(nodeFilter);
     },
 
     __proto__: WebInspector.HeapSnapshotViewportDataGrid.prototype

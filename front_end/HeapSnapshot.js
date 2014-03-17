@@ -1005,12 +1005,40 @@ WebInspector.HeapSnapshot.prototype = {
     },
 
     /**
-     * @param {boolean} sortedIndexes
-     * @param {string} key
-     * @param {string=} filterString
+     * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} nodeFilter
      * @return {!Object.<string, !WebInspector.HeapSnapshotCommon.Aggregate>}
      */
-    aggregates: function(sortedIndexes, key, filterString)
+    aggregatesWithFilter: function(nodeFilter)
+    {
+        var minNodeId = nodeFilter.minNodeId;
+        var maxNodeId = nodeFilter.maxNodeId;
+        var key;
+        var filter;
+        /**
+         * @param {!WebInspector.HeapSnapshotNode} node
+         * @return boolean
+         */
+        function filterById(node)
+        {
+            var id = node.id();
+            return id > minNodeId && id <= maxNodeId;
+        }
+        if (typeof minNodeId === "number") {
+            key = minNodeId + ".." + maxNodeId;
+            filter = filterById;
+        } else {
+            key = "allObjects";
+        }
+        return this.aggregates(false, key, filter);
+    },
+
+    /**
+     * @param {boolean} sortedIndexes
+     * @param {string} key
+     * @param {function(!WebInspector.HeapSnapshotNode):boolean=} filter
+     * @return {!Object.<string, !WebInspector.HeapSnapshotCommon.Aggregate>}
+     */
+    aggregates: function(sortedIndexes, key, filter)
     {
         if (!this._aggregates) {
             this._aggregates = {};
@@ -1025,10 +1053,6 @@ WebInspector.HeapSnapshot.prototype = {
             }
             return aggregatesByClassName;
         }
-
-        var filter;
-        if (filterString)
-            filter = this._parseFilter(filterString);
 
         var aggregates = this._buildAggregates(filter);
         this._calculateClassesRetainedSize(aggregates.aggregatesByClassIndex, filter);
@@ -1830,12 +1854,12 @@ WebInspector.HeapSnapshot.prototype = {
 
     /**
      * @param {string} className
-     * @param {string} aggregatesKey
+     * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} nodeFilter
      * @return {!WebInspector.HeapSnapshotNodesProvider}
      */
-    createNodesProviderForClass: function(className, aggregatesKey)
+    createNodesProviderForClass: function(className, nodeFilter)
     {
-        return new WebInspector.HeapSnapshotNodesProvider(this, this.classNodesFilter(), this.aggregates(false, aggregatesKey)[className].idxs);
+        return new WebInspector.HeapSnapshotNodesProvider(this, this.classNodesFilter(), this.aggregatesWithFilter(nodeFilter)[className].idxs);
     },
 
     /**

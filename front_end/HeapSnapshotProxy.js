@@ -331,9 +331,13 @@ WebInspector.HeapSnapshotProxy = function(worker, objectId)
 }
 
 WebInspector.HeapSnapshotProxy.prototype = {
-    aggregates: function(sortedIndexes, key, filter, callback)
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} filter
+     * @param {function(!Object.<string, !WebInspector.HeapSnapshotCommon.Aggregate>)} callback
+     */
+    aggregatesWithFilter: function(filter, callback)
     {
-        this.callMethod(callback, "aggregates", sortedIndexes, key, filter);
+        this.callMethod(callback, "aggregatesWithFilter", filter);
     },
 
     aggregatesForDiff: function(callback)
@@ -406,12 +410,12 @@ WebInspector.HeapSnapshotProxy.prototype = {
 
     /**
      * @param {string} className
-     * @param {string} aggregatesKey
+     * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} nodeFilter
      * @return {?WebInspector.HeapSnapshotProviderProxy}
      */
-    createNodesProviderForClass: function(className, aggregatesKey)
+    createNodesProviderForClass: function(className, nodeFilter)
     {
-        return this.callFactoryMethod(null, "createNodesProviderForClass", WebInspector.HeapSnapshotProviderProxy, className, aggregatesKey);
+        return this.callFactoryMethod(null, "createNodesProviderForClass", WebInspector.HeapSnapshotProviderProxy, className, nodeFilter);
     },
 
     /**

@@ -876,14 +876,14 @@ WebInspector.HeapSnapshotInstanceNode.prototype = {
  * @constructor
  * @param {string} className
  * @param {!WebInspector.HeapSnapshotCommon.Aggregate} aggregate
- * @param {string} aggregatesKey
+ * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} nodeFilter
  * @extends {WebInspector.HeapSnapshotGridNode}
  */
-WebInspector.HeapSnapshotConstructorNode = function(tree, className, aggregate, aggregatesKey)
+WebInspector.HeapSnapshotConstructorNode = function(tree, className, aggregate, nodeFilter)
 {
     WebInspector.HeapSnapshotGridNode.call(this, tree, aggregate.count > 0);
     this._name = className;
-    this._aggregatesKey = aggregatesKey;
+    this._nodeFilter = nodeFilter;
     this._distance = aggregate.distance;
     this._count = aggregate.count;
     this._shallowSize = aggregate.self;
@@ -897,7 +897,7 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
      */
     createProvider: function()
     {
-        return this._dataGrid.snapshot.createNodesProviderForClass(this._name, this._aggregatesKey)
+        return this._dataGrid.snapshot.createNodesProviderForClass(this._name, this._nodeFilter)
     },
 
     /**
