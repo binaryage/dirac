@@ -1332,34 +1332,6 @@ WebInspector.ElementsPanel.ContextMenuProvider.prototype = {
     }
 }
 
-
-/**
- * @constructor
- * @extends {WebInspector.Drawer.SingletonViewFactory}
- */
-WebInspector.ElementsPanel.OverridesViewFactory = function()
-{
-    WebInspector.Drawer.SingletonViewFactory.call(this, WebInspector.OverridesView);
-}
-
-WebInspector.ElementsPanel.OverridesViewFactory.prototype = {
-    __proto__: WebInspector.Drawer.SingletonViewFactory.prototype
-}
-
-
-/**
- * @constructor
- * @extends {WebInspector.Drawer.SingletonViewFactory}
- */
-WebInspector.ElementsPanel.RenderingViewFactory = function()
-{
-    WebInspector.Drawer.SingletonViewFactory.call(this, WebInspector.RenderingOptionsView);
-}
-
-WebInspector.ElementsPanel.RenderingViewFactory.prototype = {
-    __proto__: WebInspector.Drawer.SingletonViewFactory.prototype
-}
-
 /**
  * @constructor
  * @implements {WebInspector.Revealer}

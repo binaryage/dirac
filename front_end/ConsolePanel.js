@@ -78,26 +78,6 @@ WebInspector.ConsolePanel.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.Drawer.ViewFactory}
- */
-WebInspector.ConsolePanel.ViewFactory = function()
-{
-}
-
-WebInspector.ConsolePanel.ViewFactory.prototype = {
-    /**
-     * @return {!WebInspector.View}
-     */
-    createView: function()
-    {
-        if (!WebInspector.ConsolePanel.WrapperView._instance)
-            WebInspector.ConsolePanel.WrapperView._instance = new WebInspector.ConsolePanel.WrapperView();
-        return WebInspector.ConsolePanel.WrapperView._instance;
-    }
-}
-
-/**
- * @constructor
  * @extends {WebInspector.VBox}
  */
 WebInspector.ConsolePanel.WrapperView = function()

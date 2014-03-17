@@ -209,26 +209,6 @@ WebInspector.AdvancedSearchController.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.Drawer.ViewFactory}
- */
-WebInspector.AdvancedSearchController.ViewFactory = function()
-{
-}
-
-WebInspector.AdvancedSearchController.ViewFactory.prototype = {
-    /**
-     * @return {!WebInspector.View}
-     */
-    createView: function()
-    {
-        if (!WebInspector.advancedSearchController._searchView)
-            WebInspector.advancedSearchController._searchView = new WebInspector.SearchView(WebInspector.advancedSearchController);
-        return WebInspector.advancedSearchController._searchView;
-    }
-}
-
-/**
- * @constructor
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.AdvancedSearchController} controller
  */
@@ -236,7 +216,8 @@ WebInspector.SearchView = function(controller)
 {
     WebInspector.VBox.call(this);
 
-    this._controller = controller;
+    this._controller = WebInspector.advancedSearchController;
+    WebInspector.advancedSearchController._searchView = this;
 
     this.element.classList.add("search-view");
 

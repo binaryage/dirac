@@ -53,57 +53,20 @@ WebInspector.Drawer = function(splitView)
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.element.id = "drawer-tabbed-pane";
     this._tabbedPane.closeableTabs = false;
-    this._tabbedPane.setRetainTabOrder(true, WebInspector.moduleManager.orderComparator(WebInspector.Drawer.ViewFactory, "name", "order"));
+    this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
+    new WebInspector.ExtensibleTabbedPaneController(this._tabbedPane, "drawer-view");
 
     this._toggleDrawerEditorButton = this._drawerEditorSplitView.createShowHideSidebarButton("editor in drawer", "drawer-editor-show-hide-button");
     this._tabbedPane.element.appendChild(this._toggleDrawerEditorButton.element);
     if (!WebInspector.experimentsSettings.showEditorInDrawer.isEnabled())
         this.setDrawerEditorAvailable(false);
 
-    this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
     splitView.installResizer(this._tabbedPane.headerElement());
     this._lastSelectedViewSetting = WebInspector.settings.createSetting("WebInspector.Drawer.lastSelectedView", "console");
-    this._initializeViewFactories();
+    this._tabbedPane.show(this._drawerEditorSplitView.mainElement());
 }
 
 WebInspector.Drawer.prototype = {
-    _initializeViewFactories: function()
-    {
-        this._viewFactories = {};
-        var extensions = WebInspector.moduleManager.extensions(WebInspector.Drawer.ViewFactory);
-
-        for (var i = 0; i < extensions.length; ++i) {
-            var descriptor = extensions[i].descriptor();
-            var id = descriptor["name"];
-            var title = WebInspector.UIString(descriptor["title"]);
-            var settingName = descriptor["setting"];
-            var setting = settingName ? /** @type {!WebInspector.Setting|undefined} */ (WebInspector.settings[settingName]) : null;
-
-            this._viewFactories[id] = extensions[i];
-
-            if (setting) {
-                setting.addChangeListener(this._toggleSettingBasedView.bind(this, id, title, setting));
-                if (setting.get())
-                    this._tabbedPane.appendTab(id, title, new WebInspector.View());
-            } else {
-                this._tabbedPane.appendTab(id, title, new WebInspector.View());
-            }
-        }
-        this._tabbedPane.show(this._drawerEditorSplitView.mainElement());
-    },
-
-    /**
-     * @param {string} id
-     * @param {string} title
-     * @param {!WebInspector.Setting} setting
-     */
-    _toggleSettingBasedView: function(id, title, setting)
-    {
-        this._tabbedPane.closeTab(id);
-        if (setting.get())
-            this._tabbedPane.appendTab(id, title, new WebInspector.View());
-    },
-
     /**
      * @return {!Element}
      */
@@ -131,9 +94,6 @@ WebInspector.Drawer.prototype = {
             this._innerShow(immediate);
             return;
         }
-        var viewFactory = this._viewFactory(id);
-        if (viewFactory)
-            this._tabbedPane.changeTabView(id, viewFactory.createView());
         this._innerShow(immediate);
         this._tabbedPane.selectTab(id, true);
         // In case this id is already selected, anyways persist it as the last saved value.
@@ -215,9 +175,6 @@ WebInspector.Drawer.prototype = {
         var tabId = this._tabbedPane.selectedTabId;
         if (event.data["isUserGesture"] && !this._tabbedPane.isTabCloseable(tabId))
             this._lastSelectedViewSetting.set(tabId);
-        var viewFactory = this._viewFactory(tabId);
-        if (viewFactory)
-            this._tabbedPane.changeTabView(tabId, viewFactory.createView());
     },
 
     toggle: function()
@@ -242,14 +199,6 @@ WebInspector.Drawer.prototype = {
     selectedViewId: function()
     {
         return this._tabbedPane.selectedTabId;
-    },
-
-    /**
-     * @return {?WebInspector.Drawer.ViewFactory}
-     */
-    _viewFactory: function(id)
-    {
-        return this._viewFactories[id] ? /** @type {!WebInspector.Drawer.ViewFactory} */ (this._viewFactories[id].instance()) : null;
     },
 
     /**

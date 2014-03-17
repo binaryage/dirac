@@ -699,7 +699,6 @@ WebInspector.TabbedPane.prototype = {
     __proto__: WebInspector.VBox.prototype
 }
 
-
 /**
  * @constructor
  * @param {!WebInspector.TabbedPane} tabbedPane
@@ -1056,4 +1055,76 @@ WebInspector.TabbedPaneTabDelegate.prototype = {
      * @param {!Array.<string>} ids
      */
     closeTabs: function(tabbedPane, ids) { }
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.TabbedPane} tabbedPane
+ * @param {string} extensionPoint
+ */
+WebInspector.ExtensibleTabbedPaneController = function(tabbedPane, extensionPoint)
+{
+    this._tabbedPane = tabbedPane;
+    this._extensionPoint = extensionPoint;
+
+    this._tabbedPane.setRetainTabOrder(true, WebInspector.moduleManager.orderComparator(extensionPoint, "name", "order"));
+    this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
+    this._initialize();
+}
+
+WebInspector.ExtensibleTabbedPaneController.prototype = {
+    _initialize: function()
+    {
+        this._extensions = {};
+        var extensions = WebInspector.moduleManager.extensions(this._extensionPoint);
+
+        for (var i = 0; i < extensions.length; ++i) {
+            var descriptor = extensions[i].descriptor();
+            var id = descriptor["name"];
+            var title = WebInspector.UIString(descriptor["title"]);
+            var settingName = descriptor["setting"];
+            var setting = settingName ? /** @type {!WebInspector.Setting|undefined} */ (WebInspector.settings[settingName]) : null;
+
+            this._extensions[id] = extensions[i];
+
+            if (setting) {
+                setting.addChangeListener(this._toggleSettingBasedView.bind(this, id, title, setting));
+                if (setting.get())
+                    this._tabbedPane.appendTab(id, title, new WebInspector.View());
+            } else {
+                this._tabbedPane.appendTab(id, title, new WebInspector.View());
+            }
+        }
+    },
+
+    /**
+     * @param {string} id
+     * @param {string} title
+     * @param {!WebInspector.Setting} setting
+     */
+    _toggleSettingBasedView: function(id, title, setting)
+    {
+        this._tabbedPane.closeTab(id);
+        if (setting.get())
+            this._tabbedPane.appendTab(id, title, new WebInspector.View());
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _tabSelected: function(event)
+    {
+        var tabId = this._tabbedPane.selectedTabId;
+        var view = this._viewForId(tabId);
+        if (view)
+            this._tabbedPane.changeTabView(tabId, view);
+    },
+
+    /**
+     * @return {?WebInspector.View}
+     */
+    _viewForId: function(id)
+    {
+        return this._extensions[id] ? /** @type {!WebInspector.View} */ (this._extensions[id].instance()) : null;
+    },
 }
