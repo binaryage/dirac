@@ -756,6 +756,8 @@ WebInspector.HeapSnapshot = function(profile, progress)
 
     this._snapshotDiffs = {};
     this._aggregatesForDiff = null;
+    this._aggregates = {};
+    this._aggregatesSortedFlags = {};
 
     this._init();
 
@@ -957,10 +959,8 @@ WebInspector.HeapSnapshot.prototype = {
         delete this._retainingEdges;
         delete this._retainingNodes;
         delete this._firstRetainerIndex;
-        if (this._aggregates) {
-            delete this._aggregates;
-            delete this._aggregatesSortedFlags;
-        }
+        delete this._aggregates;
+        delete this._aggregatesSortedFlags;
         delete this._dominatedNodes;
         delete this._firstDominatedNodeIndex;
         delete this._nodeDistances;
@@ -1040,30 +1040,18 @@ WebInspector.HeapSnapshot.prototype = {
      */
     aggregates: function(sortedIndexes, key, filter)
     {
-        if (!this._aggregates) {
-            this._aggregates = {};
-            this._aggregatesSortedFlags = {};
-        }
-
         var aggregatesByClassName = this._aggregates[key];
-        if (aggregatesByClassName) {
-            if (sortedIndexes && !this._aggregatesSortedFlags[key]) {
-                this._sortAggregateIndexes(aggregatesByClassName);
-                this._aggregatesSortedFlags[key] = sortedIndexes;
-            }
-            return aggregatesByClassName;
+        if (!aggregatesByClassName) {
+            var aggregates = this._buildAggregates(filter);
+            this._calculateClassesRetainedSize(aggregates.aggregatesByClassIndex, filter);
+            aggregatesByClassName = aggregates.aggregatesByClassName;
+            this._aggregates[key] = aggregatesByClassName;
         }
 
-        var aggregates = this._buildAggregates(filter);
-        this._calculateClassesRetainedSize(aggregates.aggregatesByClassIndex, filter);
-        aggregatesByClassName = aggregates.aggregatesByClassName;
-
-        if (sortedIndexes)
+        if (sortedIndexes && !this._aggregatesSortedFlags[key]) {
             this._sortAggregateIndexes(aggregatesByClassName);
-
-        this._aggregatesSortedFlags[key] = sortedIndexes;
-        this._aggregates[key] = aggregatesByClassName;
-
+            this._aggregatesSortedFlags[key] = sortedIndexes;
+        }
         return aggregatesByClassName;
     },
 
