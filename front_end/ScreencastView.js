@@ -926,7 +926,7 @@ WebInspector.ScreencastController = function()
 {
     var rootView = new WebInspector.RootView();
 
-    this._rootSplitView = new WebInspector.SplitView(false, true, "InspectorView.screencastSplitViewState", 300, 300, true);
+    this._rootSplitView = new WebInspector.SplitView(false, true, "InspectorView.screencastSplitViewState", 300, 300);
     this._rootSplitView.show(rootView.element);
     this._rootSplitView.setSidebarElementConstraints(180, 50);
     this._rootSplitView.setMainElementConstraints(WebInspector.ScreencastView.Constraints.Width, WebInspector.ScreencastView.Constraints.Height);

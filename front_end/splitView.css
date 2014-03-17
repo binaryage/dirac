@@ -50,7 +50,7 @@
     position: absolute;
     top: 0;
     bottom: 0;
-    width: 5px;
+    width: 6px;
     z-index: 500;
 }
 
@@ -58,7 +58,7 @@
     position: absolute;
     left: 0;
     right: 0;
-    height: 5px;
+    height: 6px;
     z-index: 500;
 }
 
@@ -69,12 +69,12 @@
 }
 
 .split-view.vbox > .split-view-resizer > .split-view-resizer-border {
-    margin: 2px 0;
+    margin: 3px 0;
     border-top: 1px solid rgb(64%, 64%, 64%);
 }
 
 .split-view.hbox > .split-view-resizer > .split-view-resizer-border {
-    margin: 0 2px;
+    margin: 0 3px;
     border-left: 1px solid rgb(64%, 64%, 64%);
 }
 

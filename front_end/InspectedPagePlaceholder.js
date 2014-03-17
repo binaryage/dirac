@@ -83,7 +83,7 @@ WebInspector.InspectedPagePlaceholder.prototype = {
 
         var zoomFactor = WebInspector.zoomManager.zoomFactor();
 
-        var marginValue = Math.round(WebInspector.InspectedPagePlaceholder.MarginValue / zoomFactor);
+        var marginValue = WebInspector.InspectedPagePlaceholder.MarginValue;
         var insets = {
             top: this._margins.top ? marginValue : 0,
             left: this._margins.left ? marginValue : 0,
@@ -102,13 +102,13 @@ WebInspector.InspectedPagePlaceholder.prototype = {
             view = view.parentView();
         }
 
-        var zoomedInsets = {
-            top: Math.round(insets.top * zoomFactor),
-            left: Math.round(insets.left * zoomFactor),
-            bottom: Math.round(insets.bottom * zoomFactor),
-            right: Math.round(insets.right * zoomFactor)};
+        var roundedInsets = {
+            top: Math.ceil(insets.top),
+            left: Math.ceil(insets.left),
+            right: Math.ceil(insets.right),
+            bottom: Math.ceil(insets.bottom)};
 
-        InspectorFrontendHost.setContentsResizingStrategy(zoomedInsets, minSize);
+        InspectorFrontendHost.setContentsResizingStrategy(roundedInsets, minSize);
     },
 
     __proto__: WebInspector.View.prototype

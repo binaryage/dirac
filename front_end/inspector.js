@@ -78,7 +78,7 @@ WebInspector.Main.prototype = {
     {
         var rootView = new WebInspector.RootView();
 
-        this._rootSplitView = new WebInspector.SplitView(false, true, WebInspector.dockController.canDock() ? "InspectorView.splitViewState" : "InspectorView.dummySplitViewState", 300, 300, true);
+        this._rootSplitView = new WebInspector.SplitView(false, true, WebInspector.dockController.canDock() ? "InspectorView.splitViewState" : "InspectorView.dummySplitViewState", 300, 300);
         this._rootSplitView.show(rootView.element);
         this._rootSplitView.setSidebarElementConstraints(180, 50);
         this._rootSplitView.setMainElementConstraints(WebInspector.InspectedPagePlaceholder.Constraints.Width, WebInspector.InspectedPagePlaceholder.Constraints.Height);
