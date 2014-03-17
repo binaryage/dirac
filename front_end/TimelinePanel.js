@@ -319,8 +319,15 @@ WebInspector.TimelinePanel.prototype = {
         this._statusBarButtons.push(this.garbageCollectButton);
         panelStatusBarElement.appendChild(this.garbageCollectButton.element);
 
-        panelStatusBarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Capture stacks"), WebInspector.settings.timelineCaptureStacks, true, undefined,
-                                               WebInspector.UIString("Capture JavaScript stack on every timeline event")));
+        if (WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled()) {
+            panelStatusBarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Live update"),
+                                              WebInspector.settings.timelineLiveUpdate, true, undefined,
+                                              WebInspector.UIString("Show timeline records while recording")));
+        }
+
+        panelStatusBarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Capture stacks"),
+                                          WebInspector.settings.timelineCaptureStacks, true, undefined,
+                                          WebInspector.UIString("Capture JavaScript stack on every timeline event")));
 
         this._miscStatusBarItems = panelStatusBarElement.createChild("div", "status-bar-item");
 

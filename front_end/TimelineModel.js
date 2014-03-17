@@ -221,14 +221,15 @@ WebInspector.TimelineModel.prototype = {
         this._clientInitiatedRecording = true;
         this.reset();
         var maxStackFrames = WebInspector.settings.timelineCaptureStacks.get() ? 30 : 0;
+        var bufferEvents = WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled() && !WebInspector.settings.timelineLiveUpdate.get();
         var includeGPUEvents = WebInspector.experimentsSettings.gpuTimeline.isEnabled();
-        WebInspector.timelineManager.start(maxStackFrames, includeCounters, includeGPUEvents, this._fireRecordingStarted.bind(this));
+        WebInspector.timelineManager.start(maxStackFrames, bufferEvents, includeCounters, includeGPUEvents, this._fireRecordingStarted.bind(this));
     },
 
     stopRecording: function()
     {
         if (!this._clientInitiatedRecording) {
-            WebInspector.timelineManager.start(undefined, undefined, undefined, stopTimeline.bind(this));
+            WebInspector.timelineManager.start(undefined, undefined, undefined, undefined, stopTimeline.bind(this));
             return;
         }
 
@@ -281,7 +282,7 @@ WebInspector.TimelineModel.prototype = {
     {
         if (event.data) {
             // Stopped from console.
-            this._fireRecordingStopped();
+            this._fireRecordingStopped(null);
         }
     },
 
@@ -291,9 +292,15 @@ WebInspector.TimelineModel.prototype = {
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStarted);
     },
 
-    _fireRecordingStopped: function()
+    /**
+     * @param {?Protocol.Error} error
+     * @param {!Array.<!TimelineAgent.TimelineEvent>=} events
+     */
+    _fireRecordingStopped: function(error, events)
     {
         this._collectionEnabled = false;
+        for (var i = 0; events && i < events.length; ++i)
+            this._addRecord(events[i]);
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStopped);
     },
 

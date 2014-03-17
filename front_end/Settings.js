@@ -95,6 +95,7 @@ WebInspector.Settings = function()
     this.textEditorBracketMatching = this.createSetting("textEditorBracketMatching", true);
     this.cssReloadEnabled = this.createSetting("cssReloadEnabled", false);
     this.timelineCaptureStacks = this.createSetting("timelineCaptureStacks", true);
+    this.timelineLiveUpdate = this.createSetting("timelineLiveUpdate", true);
     this.showMetricsRulers = this.createSetting("showMetricsRulers", false);
     this.overrideCSSMedia = this.createSetting("overrideCSSMedia", false);
     this.emulatedCSSMedia = this.createSetting("emulatedCSSMedia", "print");
@@ -292,6 +293,7 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     this.allocationProfiler = this._createExperiment("allocationProfiler", "Enable JavaScript heap allocation profiler");
     this.timelineFlameChart = this._createExperiment("timelineFlameChart", "Enable FlameChart mode in Timeline");
     this.heapSnapshotStatistics = this._createExperiment("heapSnapshotStatistics", "Show memory breakdown statistics in heap snapshots");
+    this.timelineNoLiveUpdate = this._createExperiment("timelineNoLiveUpdate", "Timeline w/o live update");
 
     this._cleanUpSetting();
 }
