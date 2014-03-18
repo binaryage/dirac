@@ -280,7 +280,6 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     this.canvasInspection = this._createExperiment("canvasInspection ", "Canvas inspection");
     this.frameworksDebuggingSupport = this._createExperiment("frameworksDebuggingSupport", "Enable frameworks debugging support");
     this.layersPanel = this._createExperiment("layersPanel", "Show Layers panel");
-    this.stepIntoSelection = this._createExperiment("stepIntoSelection", "Show step-in candidates while debugging.");
     this.doNotOpenDrawerOnEsc = this._createExperiment("doNotOpenDrawerWithEsc", "Do not open drawer on Esc");
     this.showEditorInDrawer = this._createExperiment("showEditorInDrawer", "Show editor in drawer");
     this.gpuTimeline = this._createExperiment("gpuTimeline", "Show GPU data on timeline");

@@ -207,9 +207,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._projectWillReset.bind(this), this);
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 
-    this._boundOnKeyUp = this._onKeyUp.bind(this);
-    this._boundOnKeyDown = this._onKeyDown.bind(this);
-
     function handleBeforeUnload(event)
     {
         if (event.returnValue)
@@ -292,16 +289,10 @@ WebInspector.SourcesPanel.prototype = {
         this._drawerEditor()._panelWasShown();
         this.sourcesView.show(this.editorView.mainElement());
         WebInspector.Panel.prototype.wasShown.call(this);
-
-        this.element.addEventListener("keydown", this._boundOnKeyDown, false);
-        this.element.addEventListener("keyup", this._boundOnKeyUp, false);
     },
 
     willHide: function()
     {
-        this.element.removeEventListener("keydown", this._boundOnKeyDown, false);
-        this.element.removeEventListener("keyup", this._boundOnKeyUp, false);
-
         WebInspector.Panel.prototype.willHide.call(this);
         this._drawerEditor()._panelWillHide();
         this.sourcesView.show(this._drawerEditorView.element);
@@ -716,9 +707,8 @@ WebInspector.SourcesPanel.prototype = {
 
     _setExecutionLine: function(uiLocation)
     {
-        var callFrame = WebInspector.debuggerModel.selectedCallFrame()
         var sourceFrame = this._getOrCreateSourceFrame(uiLocation.uiSourceCode);
-        sourceFrame.setExecutionLine(uiLocation.lineNumber, callFrame);
+        sourceFrame.setExecutionLine(uiLocation.lineNumber);
         this._executionSourceFrame = sourceFrame;
     },
 
@@ -944,34 +934,6 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @param {?Event=} event
-     * @return {boolean}
-     */
-    _stepIntoSelectionClicked: function(event)
-    {
-        if (!this._paused)
-            return true;
-
-        if (this._executionSourceFrame) {
-            var stepIntoMarkup = this._executionSourceFrame.stepIntoMarkup();
-            if (stepIntoMarkup)
-                stepIntoMarkup.iterateSelection(event.shiftKey);
-        }
-        return true;
-    },
-
-    doStepIntoSelection: function(rawLocation)
-    {
-        if (!this._paused)
-            return;
-
-        delete this._skipExecutionLineRevealing;
-        this._paused = false;
-        this._clearInterface();
-        WebInspector.debuggerModel.stepIntoSelection(rawLocation);
-    },
-
-    /**
      * @return {boolean}
      */
     _stepOutClicked: function()
@@ -1070,9 +1032,6 @@ WebInspector.SourcesPanel.prototype = {
         handler = this._stepIntoClicked.bind(this);
         this._stepIntoButton = this._createButtonAndRegisterShortcuts("scripts-step-into", title, handler, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepInto);
         debugToolbar.appendChild(this._stepIntoButton.element);
-
-        // Step into selection (keyboard shortcut only).
-        this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.StepIntoSelection, this._stepIntoSelectionClicked.bind(this))
 
         // Step out.
         title = WebInspector.UIString("Step out of current function (%s).");
@@ -1246,35 +1205,6 @@ WebInspector.SourcesPanel.prototype = {
             return;
         }
         sourceFrame.replaceAllWith(query, text);
-    },
-
-    _onKeyDown: function(event)
-    {
-        if (event.keyCode !== WebInspector.KeyboardShortcut.Keys.CtrlOrMeta.code)
-            return;
-        if (!this._paused || !this._executionSourceFrame)
-            return;
-        var stepIntoMarkup = this._executionSourceFrame.stepIntoMarkup();
-        if (stepIntoMarkup)
-            stepIntoMarkup.startIteratingSelection();
-    },
-
-    _onKeyUp: function(event)
-    {
-        if (event.keyCode !== WebInspector.KeyboardShortcut.Keys.CtrlOrMeta.code)
-            return;
-        if (!this._paused || !this._executionSourceFrame)
-            return;
-        var stepIntoMarkup = this._executionSourceFrame.stepIntoMarkup();
-        if (!stepIntoMarkup)
-            return;
-        var currentPosition = stepIntoMarkup.getSelectedItemIndex();
-        if (typeof currentPosition === "undefined") {
-            stepIntoMarkup.stopIteratingSelection();
-        } else {
-            var rawLocation = stepIntoMarkup.getRawPosition(currentPosition);
-            this.doStepIntoSelection(rawLocation);
-        }
     },
 
     addToWatch: function(expression)
