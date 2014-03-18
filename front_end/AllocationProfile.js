@@ -43,12 +43,12 @@ WebInspector.AllocationProfile = function(profile, liveObjectStats)
 
     this._traceTops = null;
 
-    this._buildAllocationFunctionInfos(profile);
-    this._traceTree = this._buildInvertedAllocationTree(profile, liveObjectStats);
+    this._buildFunctionAllocationInfos(profile);
+    this._traceTree = this._buildAllocationTree(profile, liveObjectStats);
 }
 
 WebInspector.AllocationProfile.prototype = {
-    _buildAllocationFunctionInfos: function(profile)
+    _buildFunctionAllocationInfos: function(profile)
     {
         var strings = this._strings;
 
@@ -75,7 +75,7 @@ WebInspector.AllocationProfile.prototype = {
         }
     },
 
-    _buildInvertedAllocationTree: function(profile, liveObjectStats)
+    _buildAllocationTree: function(profile, liveObjectStats)
     {
         var traceTreeRaw = profile.trace_tree;
         var functionInfos = this._functionInfos;
@@ -95,7 +95,7 @@ WebInspector.AllocationProfile.prototype = {
             var stats = liveObjectStats[id];
             var liveCount = stats ? stats.count : 0;
             var liveSize = stats ? stats.size : 0;
-            var result = new WebInspector.AllocationTraceNode(
+            var result = new WebInspector.TopDownAllocationNode(
                 id,
                 functionInfo,
                 rawNodeArray[nodeOffset + allocationCountOffset],
@@ -154,7 +154,7 @@ WebInspector.AllocationProfile.prototype = {
         var node = this._idToNode[nodeId];
         if (!node) {
             var functionInfo = this._collapsedTopNodeIdToFunctionInfo[nodeId];
-            node = functionInfo.tracesWithThisTop();
+            node = functionInfo.bottomUpRoot();
             delete this._collapsedTopNodeIdToFunctionInfo[nodeId];
             this._idToNode[nodeId] = node;
         }
@@ -217,8 +217,15 @@ WebInspector.AllocationProfile.prototype = {
 
 /**
  * @constructor
+ * @param {number} id
+ * @param {!WebInspector.FunctionAllocationInfo} functionInfo
+ * @param {number} count
+ * @param {number} size
+ * @param {number} liveCount
+ * @param {number} liveSize
+ * @param {?WebInspector.TopDownAllocationNode} parent
  */
-WebInspector.AllocationTraceNode = function(id, functionInfo, count, size, liveCount, liveSize, parent)
+WebInspector.TopDownAllocationNode = function(id, functionInfo, count, size, liveCount, liveSize, parent)
 {
     this.id = id;
     this.functionInfo = functionInfo;
@@ -235,7 +242,7 @@ WebInspector.AllocationTraceNode = function(id, functionInfo, count, size, liveC
  * @constructor
  * @param {!WebInspector.FunctionAllocationInfo} functionInfo
  */
-WebInspector.AllocationBackTraceNode = function(functionInfo)
+WebInspector.BottomUpAllocationNode = function(functionInfo)
 {
     this.functionInfo = functionInfo;
     this.allocationCount = 0;
@@ -246,10 +253,10 @@ WebInspector.AllocationBackTraceNode = function(functionInfo)
 }
 
 
-WebInspector.AllocationBackTraceNode.prototype = {
+WebInspector.BottomUpAllocationNode.prototype = {
     /**
-     * @param {!WebInspector.AllocationTraceNode} traceNode
-     * @return {!WebInspector.AllocationTraceNode}
+     * @param {!WebInspector.TopDownAllocationNode} traceNode
+     * @return {!WebInspector.TopDownAllocationNode}
      */
     addCaller: function(traceNode)
     {
@@ -263,14 +270,14 @@ WebInspector.AllocationBackTraceNode.prototype = {
             }
         }
         if (!result) {
-            result = new WebInspector.AllocationBackTraceNode(functionInfo);
+            result = new WebInspector.BottomUpAllocationNode(functionInfo);
             this._callers.push(result);
         }
         return result;
     },
 
     /**
-     * @return {!Array.<!WebInspector.AllocationBackTraceNode>}
+     * @return {!Array.<!WebInspector.BottomUpAllocationNode>}
      */
     callers: function()
     {
@@ -289,6 +296,11 @@ WebInspector.AllocationBackTraceNode.prototype = {
 
 /**
  * @constructor
+ * @param {string} functionName
+ * @param {string} scriptName
+ * @param {number} scriptId
+ * @param {number} line
+ * @param {number} column
  */
 WebInspector.FunctionAllocationInfo = function(functionName, scriptName, scriptId, line, column)
 {
@@ -305,6 +317,9 @@ WebInspector.FunctionAllocationInfo = function(functionName, scriptName, scriptI
 }
 
 WebInspector.FunctionAllocationInfo.prototype = {
+    /**
+     * @param {!WebInspector.TopDownAllocationNode} node
+     */
     addTraceTopNode: function(node)
     {
         if (node.allocationCount === 0)
@@ -317,38 +332,38 @@ WebInspector.FunctionAllocationInfo.prototype = {
     },
 
     /**
-     * @return {?WebInspector.AllocationBackTraceNode}
+     * @return {?WebInspector.BottomUpAllocationNode}
      */
-    tracesWithThisTop: function()
+    bottomUpRoot: function()
     {
         if (!this._traceTops.length)
             return null;
-        if (!this._backTraceTree)
+        if (!this._bottomUpTree)
             this._buildAllocationTraceTree();
-        return this._backTraceTree;
+        return this._bottomUpTree;
     },
 
     _buildAllocationTraceTree: function()
     {
-        this._backTraceTree = new WebInspector.AllocationBackTraceNode(this._traceTops[0].functionInfo);
+        this._bottomUpTree = new WebInspector.BottomUpAllocationNode(this);
 
         for (var i = 0; i < this._traceTops.length; i++) {
             var node = this._traceTops[i];
-            var backTraceNode = this._backTraceTree;
+            var bottomUpNode = this._bottomUpTree;
             var count = node.allocationCount;
             var size = node.allocationSize;
             var liveCount = node.liveCount;
             var liveSize = node.liveSize;
             while (true) {
-                backTraceNode.allocationCount += count;
-                backTraceNode.allocationSize += size;
-                backTraceNode.liveCount += liveCount;
-                backTraceNode.liveSize += liveSize;
+                bottomUpNode.allocationCount += count;
+                bottomUpNode.allocationSize += size;
+                bottomUpNode.liveCount += liveCount;
+                bottomUpNode.liveSize += liveSize;
                 node = node.parent;
                 if (node === null) {
                     break;
                 }
-                backTraceNode = backTraceNode.addCaller(node);
+                bottomUpNode = bottomUpNode.addCaller(node);
             }
         }
     }
