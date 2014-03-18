@@ -143,7 +143,6 @@ WebInspector.HandlerRegistry.prototype = {
 
         /**
          * @param {boolean} forceSaveAs
-         * @this {WebInspector.HandlerRegistry}
          */
         function save(forceSaveAs)
         {
@@ -152,12 +151,12 @@ WebInspector.HandlerRegistry.prototype = {
                 uiSourceCode.saveToFileSystem(forceSaveAs);
                 return;
             }
-            contentProvider.requestContent(doSave.bind(this, forceSaveAs));
+            contentProvider.requestContent(doSave.bind(null, forceSaveAs));
         }
 
         contextMenu.appendSeparator();
-        contextMenu.appendItem(WebInspector.UIString("Save"), save.bind(this, false));
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Save as..." : "Save As..."), save.bind(this, true));
+        contextMenu.appendItem(WebInspector.UIString("Save"), save.bind(null, false));
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Save as..." : "Save As..."), save.bind(null, true));
     },
 
     /** 

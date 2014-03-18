@@ -199,7 +199,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     searchInFileContent: function(path, query, caseSensitive, isRegex, callback)
     {
         var filePath = this._filePathForPath(path);
-        this._fileSystem.requestFileContent(filePath, contentCallback.bind(this));
+        this._fileSystem.requestFileContent(filePath, contentCallback);
 
         /**
          * @param {?string} content
@@ -236,7 +236,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
         function searchNextQuery()
         {
             if (!queriesToRun.length) {
-                matchFileQueries.call(this, result);
+                matchFileQueries.call(null, result);
                 return;
             }
             var query = queriesToRun.shift();

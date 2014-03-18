@@ -101,7 +101,7 @@ WebInspector.SourceMap.load = function(sourceMapURL, compiledURL, callback)
 {
     var headers = {};
     headers[WebInspector.SourceMap._sourceMapRequestHeaderName] = WebInspector.SourceMap._sourceMapRequestHeaderValue;
-    NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, sourceMapURL, headers, contentLoaded.bind(this));
+    NetworkAgent.loadResourceForFrontend(WebInspector.resourceTreeModel.mainFrame.id, sourceMapURL, headers, contentLoaded);
 
     /**
      * @param {?Protocol.Error} error

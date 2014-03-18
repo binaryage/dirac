@@ -121,7 +121,7 @@ WebInspector.FileSystemModel.prototype = {
             callback(errorCode, backendRootEntry);
         }
 
-        FileSystemAgent.requestFileSystemRoot(origin, type, innerCallback.bind(this));
+        FileSystemAgent.requestFileSystemRoot(origin, type, innerCallback);
     },
 
     /**
@@ -196,7 +196,7 @@ WebInspector.FileSystemModel.prototype = {
             callback(errorCode, backendEntries);
         }
 
-        FileSystemAgent.requestDirectoryContent(url, innerCallback.bind(this));
+        FileSystemAgent.requestDirectoryContent(url, innerCallback);
     },
 
     /**
@@ -244,7 +244,7 @@ WebInspector.FileSystemModel.prototype = {
             callback(errorCode, metadata);
         }
 
-        FileSystemAgent.requestMetadata(entry.url, innerCallback.bind(this));
+        FileSystemAgent.requestMetadata(entry.url, innerCallback);
     },
 
     /**
@@ -288,7 +288,7 @@ WebInspector.FileSystemModel.prototype = {
                 callback(errorCode, content, charset);
         }
 
-        FileSystemAgent.requestFileContent(url, readAsText, start, end, charset, innerCallback.bind(this));
+        FileSystemAgent.requestFileContent(url, readAsText, start, end, charset, innerCallback);
     },
     /**
      * @param {!WebInspector.FileSystemModel.Entry} entry
@@ -332,7 +332,7 @@ WebInspector.FileSystemModel.prototype = {
                 callback(errorCode);
         }
 
-        FileSystemAgent.deleteEntry(url, innerCallback.bind(this));
+        FileSystemAgent.deleteEntry(url, innerCallback);
     },
 
     /**

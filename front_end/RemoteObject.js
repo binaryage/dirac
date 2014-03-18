@@ -390,7 +390,7 @@ WebInspector.RemoteObjectImpl.prototype = {
         var setPropertyValueFunction = "function(a, b) { this[a] = b; }";
 
         var argv = [{ value: name }, this._toCallArgument(result)]
-        this._runtimeAgent.callFunctionOn(this._objectId, setPropertyValueFunction, argv, true, undefined, undefined, propertySetCallback.bind(this));
+        this._runtimeAgent.callFunctionOn(this._objectId, setPropertyValueFunction, argv, true, undefined, undefined, propertySetCallback);
 
         /**
          * @param {?Protocol.Error} error

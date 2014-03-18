@@ -123,7 +123,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane.prototype = {
             }
         }
 
-        uiLocation.uiSourceCode.requestContent(didRequestContent.bind(this));
+        uiLocation.uiSourceCode.requestContent(didRequestContent);
 
         element._data = uiLocation;
         var currentElement = this.listElement.firstChild;

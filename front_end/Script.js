@@ -124,7 +124,6 @@ WebInspector.Script.prototype = {
     searchInContent: function(query, caseSensitive, isRegex, callback)
     {
         /**
-         * @this {WebInspector.Script}
          * @param {?Protocol.Error} error
          * @param {!Array.<!PageAgent.SearchMatch>} searchMatches
          */
@@ -142,7 +141,7 @@ WebInspector.Script.prototype = {
 
         if (this.scriptId) {
             // Script failed to parse.
-            DebuggerAgent.searchInContent(this.scriptId, query, caseSensitive, isRegex, innerCallback.bind(this));
+            DebuggerAgent.searchInContent(this.scriptId, query, caseSensitive, isRegex, innerCallback);
         } else
             callback([]);
     },

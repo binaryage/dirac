@@ -1375,7 +1375,7 @@ WebInspector.ElementsTreeElement.prototype = {
     {
         // Add attribute-related actions.
         var treeElement = this._elementCloseTag ? this.treeOutline.findTreeElement(this._node) : this;
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add attribute" : "Add Attribute"), this._addNewAttribute.bind(treeElement));
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Add attribute" : "Add Attribute"), treeElement._addNewAttribute.bind(treeElement));
 
         var attribute = event.target.enclosingNodeOrSelfWithClass("webkit-html-attribute");
         var newAttribute = event.target.enclosingNodeOrSelfWithClass("add-attribute");
@@ -1550,7 +1550,7 @@ WebInspector.ElementsTreeElement.prototype = {
             }
         }
 
-        config.customFinishHandler = handleKeyDownEvents.bind(this);
+        config.customFinishHandler = handleKeyDownEvents;
 
         this._editing = WebInspector.InplaceEditor.startEditing(attribute, config);
 
@@ -1605,7 +1605,6 @@ WebInspector.ElementsTreeElement.prototype = {
 
         /**
          * @param {?Event} event
-         * @this {WebInspector.ElementsTreeElement}
          */
         function keyupListener(event)
         {

@@ -696,7 +696,7 @@ WebInspector.CanvasProfileType.prototype = {
         {
             profileHeader._updateCapturingStatus();
         }
-        CanvasAgent.stopCapturing(traceLogId, didStopCapturing.bind(this));
+        CanvasAgent.stopCapturing(traceLogId, didStopCapturing);
     },
 
     /**
@@ -769,7 +769,7 @@ WebInspector.CanvasProfileType.prototype = {
 
         if (forcePageReload) {
             if (this._canvasAgentEnabled) {
-                CanvasAgent.hasUninstrumentedCanvases(hasUninstrumentedCanvasesCallback.bind(this));
+                CanvasAgent.hasUninstrumentedCanvases(hasUninstrumentedCanvasesCallback);
             } else {
                 for (var frameId in this._framesWithCanvases) {
                     if (this._framesWithCanvases.hasOwnProperty(frameId)) {

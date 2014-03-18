@@ -218,10 +218,10 @@ WebInspector.ApplicationCacheItemsView.prototype = {
 
         var comparator;
         switch (parseInt(this._dataGrid.sortColumnIdentifier(), 10)) {
-            case 0: comparator = localeCompare.bind(this, "name"); break;
-            case 1: comparator = localeCompare.bind(this, "type"); break;
-            case 2: comparator = numberCompare.bind(this, "size"); break;
-            default: localeCompare.bind(this, "resource"); // FIXME: comparator = ?
+            case 0: comparator = localeCompare.bind(null, "name"); break;
+            case 1: comparator = localeCompare.bind(null, "type"); break;
+            case 2: comparator = numberCompare.bind(null, "size"); break;
+            default: localeCompare.bind(null, "resource"); // FIXME: comparator = ?
         }
 
         this._resources.sort(comparator);

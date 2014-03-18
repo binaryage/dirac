@@ -223,7 +223,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
         for (var i = 0; i < unsavedSourceCodes.length; ++i)
             WebInspector.panels.sources.showUISourceCode(unsavedSourceCodes[i]);
     }
-    window.addEventListener("beforeunload", handleBeforeUnload.bind(this), true);
+    window.addEventListener("beforeunload", handleBeforeUnload, true);
 }
 
 WebInspector.SourcesPanel.minToolbarWidth = 215;

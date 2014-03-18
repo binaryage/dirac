@@ -270,7 +270,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
         var barrier = new CallbackBarrier();
         progress.setTotalWork(paths.length);
         for (var i = 0; i < paths.length; ++i)
-            searchInContent.call(this, paths[i], barrier.createCallback(searchInContentCallback.bind(this, paths[i])));
+            searchInContent.call(this, paths[i], barrier.createCallback(searchInContentCallback.bind(null, paths[i])));
         barrier.callWhenDone(doneCallback);
 
         /**

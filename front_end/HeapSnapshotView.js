@@ -869,19 +869,21 @@ WebInspector.HeapSnapshotView.prototype = {
      */
     highlightLiveObject: function(perspectiveName, snapshotObjectId)
     {
+        this._changePerspectiveAndWait(perspectiveName, didChangePerspective.bind(this));
+
         /**
          * @this {WebInspector.HeapSnapshotView}
          */
         function didChangePerspective()
         {
-            function didHighlightObject(found)
-            {
-                if (!found)
-                    WebInspector.console.log("Cannot find corresponding heap snapshot node", WebInspector.ConsoleMessage.MessageLevel.Error, true);
-            }
-            this._dataGrid.highlightObjectByHeapSnapshotId(snapshotObjectId, didHighlightObject.bind(this));
+            this._dataGrid.highlightObjectByHeapSnapshotId(snapshotObjectId, didHighlightObject);
         }
-        this._changePerspectiveAndWait(perspectiveName, didChangePerspective.bind(this));
+
+        function didHighlightObject(found)
+        {
+            if (!found)
+                WebInspector.console.log("Cannot find corresponding heap snapshot node", WebInspector.ConsoleMessage.MessageLevel.Error, true);
+        }
     },
 
     _getHoverAnchor: function(target)

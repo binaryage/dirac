@@ -273,7 +273,7 @@ WebInspector.CSSStyleModel.prototype = {
         var allSelectorsBarrier = new CallbackBarrier();
         for (var i = 0; i < rule.selectors.length; ++i) {
             var selector = rule.selectors[i];
-            var boundCallback = allSelectorsBarrier.createCallback(selectorQueried.bind(this, i, nodeId, matchingSelectors));
+            var boundCallback = allSelectorsBarrier.createCallback(selectorQueried.bind(null, i, nodeId, matchingSelectors));
             WebInspector.domAgent.querySelectorAll(ownerDocumentId, selector.value, boundCallback);
         }
         allSelectorsBarrier.callWhenDone(function() {
@@ -890,7 +890,7 @@ WebInspector.CSSStyleDeclaration.prototype = {
             throw "No style id";
 
         WebInspector.cssModel._pendingCommandsMajorState.push(true);
-        CSSAgent.setPropertyText(this.id, index, name + ": " + value + ";", false, callback.bind(this));
+        CSSAgent.setPropertyText(this.id, index, name + ": " + value + ";", false, callback);
     },
 
     /**

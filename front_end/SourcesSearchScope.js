@@ -49,7 +49,7 @@ WebInspector.SourcesSearchScope.prototype = {
         var projects = this._workspace.projects().filter(this._filterOutServiceProjects);
         var barrier = new CallbackBarrier();
         var compositeProgress = new WebInspector.CompositeProgress(progress);
-        progress.addEventListener(WebInspector.Progress.Events.Canceled, indexingCanceled.bind(this));
+        progress.addEventListener(WebInspector.Progress.Events.Canceled, indexingCanceled);
         for (var i = 0; i < projects.length; ++i) {
             var project = projects[i];
             var projectProgress = compositeProgress.createSubProgress(project.uiSourceCodes().length);

@@ -695,7 +695,6 @@ WebInspector.ConsoleViewMessage.prototype = {
      * @param {string} format
      * @param {!Array.<string>} parameters
      * @param {!Element} formattedResult
-     * @this {WebInspector.ConsoleViewMessage}
      */
     _formatWithSubstitutionString: function(format, parameters, formattedResult)
     {

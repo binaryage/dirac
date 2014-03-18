@@ -114,7 +114,6 @@ WebInspector.InplaceEditor.prototype = {
                 editingCommitted.call(element);
         }
 
-        /** @this {Element} */
         function cleanUpAfterEditing()
         {
             WebInspector.markBeingEdited(element, false);
@@ -132,14 +131,14 @@ WebInspector.InplaceEditor.prototype = {
         function editingCancelled()
         {
             self.cancelEditing(editingContext);
-            cleanUpAfterEditing.call(this);
+            cleanUpAfterEditing();
             cancelledCallback(this, context);
         }
 
         /** @this {Element} */
         function editingCommitted()
         {
-            cleanUpAfterEditing.call(this);
+            cleanUpAfterEditing();
 
             committedCallback(this, self.editorContent(editingContext), editingContext.oldText, context, moveDirection);
         }

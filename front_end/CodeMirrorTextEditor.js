@@ -196,7 +196,7 @@ CodeMirror.commands.autocomplete = WebInspector.CodeMirrorTextEditor.autocomplet
 
 CodeMirror.commands.smartNewlineAndIndent = function(codeMirror)
 {
-    codeMirror.operation(innerSmartNewlineAndIndent.bind(this, codeMirror));
+    codeMirror.operation(innerSmartNewlineAndIndent.bind(null, codeMirror));
 
     function countIndent(line)
     {
@@ -1526,11 +1526,11 @@ WebInspector.CodeMirrorTextEditor.FixWordMovement = function(codeMirror)
     var leftKey = modifierKey + "-Left";
     var rightKey = modifierKey + "-Right";
     var keyMap = {};
-    keyMap[leftKey] = moveLeft.bind(this, false);
-    keyMap[rightKey] = moveRight.bind(this, false);
-    keyMap["Shift-" + leftKey] = moveLeft.bind(this, true);
-    keyMap["Shift-" + rightKey] = moveRight.bind(this, true);
-    keyMap[modifierKey + "-Backspace"] = delWordBack.bind(this);
+    keyMap[leftKey] = moveLeft.bind(null, false);
+    keyMap[rightKey] = moveRight.bind(null, false);
+    keyMap["Shift-" + leftKey] = moveLeft.bind(null, true);
+    keyMap["Shift-" + rightKey] = moveRight.bind(null, true);
+    keyMap[modifierKey + "-Backspace"] = delWordBack;
     codeMirror.addKeyMap(keyMap);
 }
 

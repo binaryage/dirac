@@ -593,7 +593,6 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
     },
 
     /**
-    * @this {WebInspector.BreakpointManager.Breakpoint}
     * @param {?DebuggerAgent.BreakpointId} breakpointId
     * @param {!Array.<!WebInspector.DebuggerModel.Location>} locations
     */

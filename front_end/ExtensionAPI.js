@@ -629,11 +629,11 @@ function AuditResultImpl(id)
 {
     this._id = id;
 
-    this.createURL = this._nodeFactory.bind(null, "url");
-    this.createSnippet = this._nodeFactory.bind(null, "snippet");
-    this.createText = this._nodeFactory.bind(null, "text");
-    this.createObject = this._nodeFactory.bind(null, "object");
-    this.createNode = this._nodeFactory.bind(null, "node");
+    this.createURL = this._nodeFactory.bind(this, "url");
+    this.createSnippet = this._nodeFactory.bind(this, "snippet");
+    this.createText = this._nodeFactory.bind(this, "text");
+    this.createObject = this._nodeFactory.bind(this, "object");
+    this.createNode = this._nodeFactory.bind(this, "node");
 }
 
 AuditResultImpl.prototype = {

@@ -124,7 +124,7 @@ WebInspector.Database.prototype = {
             }
             onSuccess(columnNames, values);
         }
-        DatabaseAgent.executeSQL(this._id, query, callback.bind(this));
+        DatabaseAgent.executeSQL(this._id, query, callback);
     }
 }
 

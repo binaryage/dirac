@@ -351,8 +351,8 @@ WebInspector.StylesSidebarPane.prototype = {
         }
 
         if (this._computedStylePane.isShowing())
-            WebInspector.cssModel.getComputedStyleAsync(node.id, computedCallback.bind(this));
-        WebInspector.cssModel.getInlineStylesAsync(node.id, inlineCallback.bind(this));
+            WebInspector.cssModel.getComputedStyleAsync(node.id, computedCallback);
+        WebInspector.cssModel.getInlineStylesAsync(node.id, inlineCallback);
         WebInspector.cssModel.getMatchedStylesAsync(node.id, true, true, stylesCallback.bind(this));
     },
 
@@ -1931,7 +1931,7 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         }
 
         if (value) {
-            var colorProcessor = processValue.bind(this, WebInspector.StylesSidebarPane._colorRegex, this._processColor.bind(this, nameElement, valueElement), null);
+            var colorProcessor = processValue.bind(null, WebInspector.StylesSidebarPane._colorRegex, this._processColor.bind(this, nameElement, valueElement), null);
             valueElement.appendChild(processValue(/url\(\s*([^)]+)\s*\)/g, linkifyURL.bind(this), WebInspector.CSSMetadata.isColorAwareProperty(this.name) && this.parsedOk ? colorProcessor : null, value));
         }
 

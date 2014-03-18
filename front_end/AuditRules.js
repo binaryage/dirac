@@ -1488,7 +1488,7 @@ WebInspector.AuditRules.CookieSizeRule.prototype = {
                 null,
                 true);
         var matchingResourceData = {};
-        this.mapResourceCookies(domainToResourcesMap, allCookies, collectorCallback.bind(this));
+        this.mapResourceCookies(domainToResourcesMap, allCookies, collectorCallback);
 
         for (var requestDomain in cookiesPerResourceDomain) {
             var cookies = cookiesPerResourceDomain[requestDomain];

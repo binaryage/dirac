@@ -303,7 +303,6 @@ WebInspector.DebuggerModel.prototype = {
          * @param {?Protocol.Error} error
          * @param {!DebuggerAgent.BreakpointId} breakpointId
          * @param {!Array.<!DebuggerAgent.Location>} locations
-         * @this {WebInspector.DebuggerModel}
          */
         function didSetBreakpoint(error, breakpointId, locations)
         {
@@ -312,7 +311,7 @@ WebInspector.DebuggerModel.prototype = {
                 callback(error ? null : breakpointId, rawLocations);
             }
         }
-        this._agent.setBreakpointByUrl(lineNumber, url, undefined, columnNumber, condition, undefined, didSetBreakpoint.bind(this));
+        this._agent.setBreakpointByUrl(lineNumber, url, undefined, columnNumber, condition, undefined, didSetBreakpoint);
         WebInspector.userMetrics.ScriptsBreakpointSet.record();
     },
 
@@ -327,7 +326,6 @@ WebInspector.DebuggerModel.prototype = {
          * @param {?Protocol.Error} error
          * @param {!DebuggerAgent.BreakpointId} breakpointId
          * @param {!DebuggerAgent.Location} actualLocation
-         * @this {WebInspector.DebuggerModel}
          */
         function didSetBreakpoint(error, breakpointId, actualLocation)
         {
@@ -336,7 +334,7 @@ WebInspector.DebuggerModel.prototype = {
                 callback(error ? null : breakpointId, [rawLocation]);
             }
         }
-        this._agent.setBreakpoint(rawLocation, condition, didSetBreakpoint.bind(this));
+        this._agent.setBreakpoint(rawLocation, condition, didSetBreakpoint);
         WebInspector.userMetrics.ScriptsBreakpointSet.record();
     },
 
@@ -942,7 +940,6 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
          * @param {?Protocol.Error} error
          * @param {!RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
-         * @this {WebInspector.DebuggerModel.CallFrame}
          */
         function didEvaluateOnCallFrame(error, result, wasThrown)
         {
@@ -953,7 +950,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
             }
             callback(result, wasThrown);
         }
-        this._debuggerAgent.evaluateOnCallFrame(this._payload.callFrameId, code, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, didEvaluateOnCallFrame.bind(this));
+        this._debuggerAgent.evaluateOnCallFrame(this._payload.callFrameId, code, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, didEvaluateOnCallFrame);
     },
 
     /**

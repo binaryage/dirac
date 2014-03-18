@@ -364,8 +364,7 @@ WebInspector.StatusBarButton.prototype = {
         mainButtonClone.state = this.state;
         buttons.push(mainButtonClone);
 
-        var mouseUpListener = mouseUp.bind(this);
-        document.documentElement.addEventListener("mouseup", mouseUpListener, false);
+        document.documentElement.addEventListener("mouseup", mouseUp, false);
 
         var optionsGlassPane = new WebInspector.GlassPane();
         var optionsBarElement = optionsGlassPane.element.createChild("div", "alternate-status-bar-buttons-bar");
@@ -385,11 +384,9 @@ WebInspector.StatusBarButton.prototype = {
             optionsBarElement.style.top = (hostButtonPosition.top - (buttonHeight * (buttons.length - 1))) + "px";
         optionsBarElement.style.left = (hostButtonPosition.left + 1) + "px";
 
-        var boundMouseOver = mouseOver.bind(this);
-        var boundMouseOut = mouseOut.bind(this);
         for (var i = 0; i < buttons.length; ++i) {
-            buttons[i].element.addEventListener("mousemove", boundMouseOver, false);
-            buttons[i].element.addEventListener("mouseout", boundMouseOut, false);
+            buttons[i].element.addEventListener("mousemove", mouseOver, false);
+            buttons[i].element.addEventListener("mouseout", mouseOut, false);
             optionsBarElement.appendChild(buttons[i].element);
         }
         var hostButtonIndex = topNotBottom ? 0 : buttons.length - 1;
@@ -416,7 +413,7 @@ WebInspector.StatusBarButton.prototype = {
             if (e.which !== 1)
                 return;
             optionsGlassPane.dispose();
-            document.documentElement.removeEventListener("mouseup", mouseUpListener, false);
+            document.documentElement.removeEventListener("mouseup", mouseUp, false);
 
             for (var i = 0; i < buttons.length; ++i) {
                 if (buttons[i].element.classList.contains("emulate-active")) {

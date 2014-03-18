@@ -212,7 +212,7 @@ WebInspector.ApplicationCacheModel.prototype = {
             callback(applicationCache);
         }
 
-        ApplicationCacheAgent.getApplicationCacheForFrame(frameId, callbackWrapper.bind(this));
+        ApplicationCacheAgent.getApplicationCacheForFrame(frameId, callbackWrapper);
     },
 
     /**

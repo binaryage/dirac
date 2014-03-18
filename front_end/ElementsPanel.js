@@ -383,7 +383,7 @@ WebInspector.ElementsPanel.prototype = {
         this.treeOutline.populateContextMenu(contextMenu, event);
 
         contextMenu.appendSeparator();
-        contextMenu.appendCheckboxItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Word wrap" : "Word Wrap"), toggleWordWrap.bind(this), WebInspector.settings.domWordWrap.get());
+        contextMenu.appendCheckboxItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Word wrap" : "Word Wrap"), toggleWordWrap, WebInspector.settings.domWordWrap.get());
 
         contextMenu.show();
     },
@@ -1160,7 +1160,7 @@ WebInspector.ElementsPanel.prototype = {
         if (target instanceof WebInspector.RemoteObject) {
             var remoteObject = /** @type {!WebInspector.RemoteObject} */ (target);
             if (remoteObject.subtype === "node")
-                commandCallback = revealElement.bind(this, remoteObject);
+                commandCallback = revealElement.bind(null, remoteObject);
         } else if (target instanceof WebInspector.DOMNode) {
             var domNode = /** @type {!WebInspector.DOMNode} */ (target);
             if (domNode.id)

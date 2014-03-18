@@ -938,7 +938,7 @@ WebInspector.CPUProfileHeader.prototype = {
                                  WebInspector.ConsoleMessage.MessageLevel.Error);
                 fileOutputStream.close();
             } else if (this._tempFile) {
-                this._tempFile.read(didRead.bind(this));
+                this._tempFile.read(didRead);
             } else {
                 this._onTempFileReady = onOpenForSave.bind(this, accepted);
             }

@@ -238,7 +238,7 @@ WebInspector.IsolatedFileSystem.prototype = {
          */
         function fileEntryLoaded(fileEntry)
         {
-            fileEntry.remove(fileEntryRemoved.bind(this), errorHandler.bind(this));
+            fileEntry.remove(fileEntryRemoved, errorHandler.bind(this));
         }
 
         function fileEntryRemoved()
@@ -262,7 +262,7 @@ WebInspector.IsolatedFileSystem.prototype = {
      */
     requestMetadata: function(path, callback)
     {
-        this._requestFileSystem(fileSystemLoaded.bind(this));
+        this._requestFileSystem(fileSystemLoaded);
 
         /**
          * @param {?DOMFileSystem} fs

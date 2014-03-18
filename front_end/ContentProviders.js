@@ -135,7 +135,6 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
         /**
          * @param {!WebInspector.Script} script
          * @param {!Array.<!PageAgent.SearchMatch>} searchMatches
-         * @this {WebInspector.ConcatenatedScriptsContentProvider}
          */
         function searchCallback(script, searchMatches)
         {
@@ -145,12 +144,12 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
                 results[script.scriptId].push(searchMatch);
             }
             scriptsLeft--;
-            maybeCallback.call(this);
+            maybeCallback();
         }
 
         maybeCallback();
         for (var i = 0; i < scripts.length; ++i)
-            scripts[i].searchInContent(query, caseSensitive, isRegex, searchCallback.bind(this, scripts[i]));
+            scripts[i].searchInContent(query, caseSensitive, isRegex, searchCallback.bind(null, scripts[i]));
     },
 
     /**
