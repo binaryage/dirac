@@ -146,8 +146,8 @@ WebInspector.SearchableView.findNextShortcut = function()
     if (WebInspector.SearchableView._findNextShortcut)
         return WebInspector.SearchableView._findNextShortcut;
     WebInspector.SearchableView._findNextShortcut = [];
-    if (!WebInspector.isMac())
-        WebInspector.SearchableView._findNextShortcut.push(WebInspector.KeyboardShortcut.makeDescriptor("g", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta));
+    if (WebInspector.isMac())
+        WebInspector.SearchableView._findNextShortcut.push(WebInspector.KeyboardShortcut.makeDescriptor("g", WebInspector.KeyboardShortcut.Modifiers.Meta));
     return WebInspector.SearchableView._findNextShortcut;
 }
 
@@ -156,8 +156,8 @@ WebInspector.SearchableView.findPreviousShortcuts = function()
     if (WebInspector.SearchableView._findPreviousShortcuts)
         return WebInspector.SearchableView._findPreviousShortcuts;
     WebInspector.SearchableView._findPreviousShortcuts = [];
-    if (!WebInspector.isMac())
-        WebInspector.SearchableView._findPreviousShortcuts.push(WebInspector.KeyboardShortcut.makeDescriptor("g", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta | WebInspector.KeyboardShortcut.Modifiers.Shift));
+    if (WebInspector.isMac())
+        WebInspector.SearchableView._findPreviousShortcuts.push(WebInspector.KeyboardShortcut.makeDescriptor("g", WebInspector.KeyboardShortcut.Modifiers.Meta | WebInspector.KeyboardShortcut.Modifiers.Shift));
     return WebInspector.SearchableView._findPreviousShortcuts;
 }
 
