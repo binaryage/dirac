@@ -7,6 +7,8 @@ import com.google.javascript.rhino.head.ast.Comment;
 import com.google.javascript.rhino.head.ast.FunctionNode;
 import com.google.javascript.rhino.head.ast.ObjectProperty;
 
+import org.chromium.devtools.jsdoc.ValidatorContext;
+
 public class AstUtil {
 
     private static final String PROTOTYPE_SUFFIX = ".prototype";
@@ -86,6 +88,11 @@ public class AstUtil {
             }
         }
         return null;
+    }
+
+    static boolean hasThisAnnotation(FunctionNode node, ValidatorContext context) {
+        Comment comment = AstUtil.getJsDocNode(node);
+        return comment != null && context.getNodeText(comment).contains("@this");
     }
 
     private AstUtil() {}

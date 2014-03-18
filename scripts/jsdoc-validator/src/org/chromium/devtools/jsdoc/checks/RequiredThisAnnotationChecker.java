@@ -2,7 +2,6 @@ package org.chromium.devtools.jsdoc.checks;
 
 import com.google.javascript.rhino.head.Token;
 import com.google.javascript.rhino.head.ast.AstNode;
-import com.google.javascript.rhino.head.ast.Comment;
 import com.google.javascript.rhino.head.ast.FunctionNode;
 
 import java.util.HashSet;
@@ -33,20 +32,23 @@ public final class RequiredThisAnnotationChecker extends ContextTrackingChecker 
         }
 
         ContextTrackingState state = getState();
-        FunctionRecord record = state.getCurrentFunctionRecord();
-        if (!functionsRequiringThisAnnotation.contains(record)) {
+        FunctionRecord function = state.getCurrentFunctionRecord();
+        FunctionNode functionNode = (FunctionNode) node;
+        if (!functionsRequiringThisAnnotation.contains(function)) {
+            AstNode functionNameNode = AstUtil.getFunctionNameNode(functionNode);
+            if (functionNameNode != null && !function.isTopLevelFunction() &&
+                    AstUtil.hasThisAnnotation(functionNode, getContext())) {
+                reportErrorAtNodeStart(
+                        functionNameNode,
+                        "@this annotation found for function not referencing 'this'");
+            }
             return;
         }
-        FunctionNode functionNode = (FunctionNode) node;
         AstNode functionNameNode = AstUtil.getFunctionNameNode(functionNode);
-        if (functionNameNode != null && shouldAddThisAnnotation(functionNode)) {
-            state.getContext().reportErrorInNode(functionNameNode, 0,
+        if (functionNameNode != null && !AstUtil.hasThisAnnotation(functionNode, getContext())) {
+            reportErrorAtNodeStart(
+                    functionNameNode,
                     "@this annotation is required for functions referencing 'this'");
         }
-    }
-
-    private boolean shouldAddThisAnnotation(FunctionNode node) {
-        Comment comment = AstUtil.getJsDocNode(node);
-        return comment == null || !getContext().getNodeText(comment).contains("@this");
     }
 }

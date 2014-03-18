@@ -32,6 +32,7 @@ public class ContextTrackingValidationCheck extends ValidationCheck {
         registerClient(new ProtoFollowsExtendsChecker());
         registerClient(new RequiredThisAnnotationChecker());
         registerClient(new ReturnAnnotationChecker());
+        registerClient(new FunctionReceiverChecker());
     }
 
     @Override

@@ -101,7 +101,8 @@ public final class ReturnAnnotationChecker extends ContextTrackingChecker {
 
         if (isReturningFunction) {
             if (!function.hasReturnAnnotation() && isApiFunction) {
-                getContext().reportErrorInNode(functionNameNode, 0,
+                reportErrorAtNodeStart(
+                        functionNameNode,
                         "@return annotation is required for API functions that return value");
             }
         } else {
@@ -110,7 +111,7 @@ public final class ReturnAnnotationChecker extends ContextTrackingChecker {
             if (function.hasReturnAnnotation()
                     && !isInterfaceFunction
                     && !throwingFunctions.contains(function)) {
-                getContext().reportErrorInNode(functionNameNode, 0,
+                reportErrorAtNodeStart(functionNameNode,
                         "@return annotation found, yet function does not return value");
             }
         }

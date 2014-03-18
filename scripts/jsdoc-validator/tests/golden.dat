@@ -186,4 +186,68 @@ function badFuncAnnotatedButNoReturnValue() // ERROR - no returned value.
         function badCallbackInMethod() {
                  ^
 
-Total errors: 47
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:153: ERROR - @this annotation found for function not referencing 'this'
+        function callbackNotReferencingThis() {
+                 ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:191: ERROR - Member function can only be bound to 'this' as the receiver
+        var badMemberBinding1 = this.memberTwo.bind(null); // ERROR - Member not bound to |this| receiver.
+                                ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:192: ERROR - Member function can only be bound to 'this' as the receiver
+        var badMemberBinding2 = this.memberTwo.bind(bar); // ERROR - Member not bound to |this| receiver.
+                                ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:217: ERROR - Receiver not specified for a function annotated with @this
+        callbackWithThis(); // ERROR - No receiver.
+        ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:218: ERROR - Receiver not specified for a function annotated with @this
+        callbackWithThis.call(); // ERROR - No receiver.
+        ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:219: ERROR - Receiver not specified for a function annotated with @this
+        callbackWithThis.call(null); // ERROR - No receiver.
+        ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:220: ERROR - Receiver not specified for a function annotated with @this
+        callbackWithThis.apply(); // ERROR - No receiver.
+        ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:221: ERROR - Receiver not specified for a function annotated with @this
+        callbackWithThis.apply(null); // ERROR - No receiver.
+        ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:222: ERROR - Receiver specified for a function not annotated with @this
+        callbackNoThis.call(this); // ERROR - Function has no @this annotation.
+        ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:223: ERROR - Receiver specified for a function not annotated with @this
+        callbackNoThis.call(foo); // ERROR - Function has no @this annotation.
+        ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:224: ERROR - Receiver specified for a function not annotated with @this
+        callbackNoThis.apply(this); // ERROR - Function has no @this annotation.
+        ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:225: ERROR - Receiver specified for a function not annotated with @this
+        callbackNoThis.bind(this); // ERROR - Function has no @this annotation.
+        ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:227: ERROR - Function annotated with @this used as argument without bind(<non-null-receiver>)
+        this.memberTwo(callbackWithThis); // ERROR - Used as argument with no bound receiver.
+                       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:228: ERROR - Receiver not specified for a function annotated with @this
+        this.memberTwo(callbackWithThis.bind(null, 2)); // ERROR - Used as argument with no bound receiver (null means "no receiver").
+                       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:229: ERROR - Receiver specified for a function not annotated with @this
+        this.memberTwo(callbackNoThis.bind(this)); // ERROR - Bound to a receiver but has no @this annotation.
+                       ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:230: ERROR - Receiver specified for a function not annotated with @this
+        this.memberTwo(callbackNoThis.bind(foo)); // ERROR - Bound to a receiver but has no @this annotation.
+                       ^
+
+Total errors: 63

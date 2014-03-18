@@ -99,7 +99,7 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
         if (extendedType == null) {
             return;
         }
-        if (extendedType != null && !IGNORED_SUPER_TYPES.contains(extendedType.superTypeName)) {
+        if (!IGNORED_SUPER_TYPES.contains(extendedType.superTypeName)) {
             functionsMissingSuperCall.add(function);
         }
     }
@@ -113,7 +113,7 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
         if (extendedType == null) {
             return;
         }
-        getContext().reportErrorInNode(AstUtil.getFunctionNameNode(function.functionNode), 0,
+        reportErrorAtNodeStart(AstUtil.getFunctionNameNode(function.functionNode),
                 String.format("Type %s extends %s but does not properly invoke its constructor",
                         function.name, extendedType.superTypeName));
     }
@@ -162,18 +162,18 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
         typesWithAssignedProto.add(currentType);
         String value = state.getNodeText(node.getRight());
         if (!AstUtil.isPrototypeName(value)) {
-            state.getContext().reportErrorInNode(
-                    node.getRight(), 0, "__proto__ value is not a prototype");
+            reportErrorAtNodeStart(
+                    node.getRight(), "__proto__ value is not a prototype");
             return;
         }
         String superType = AstUtil.getTypeNameFromPrototype(value);
         if (type.isInterface) {
-            state.getContext().reportErrorInNode(node.getLeft(), 0, String.format(
+            reportErrorAtNodeStart(node.getLeft(), String.format(
                     "__proto__ defined for interface %s", type.typeName));
             return;
         } else {
             if (type.extendedTypes.isEmpty()) {
-                state.getContext().reportErrorInNode(node.getRight(), 0, String.format(
+                reportErrorAtNodeStart(node.getRight(), String.format(
                         "No @extends annotation for %s extending %s", type.typeName, superType));
                 return;
             }
@@ -183,7 +183,7 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
         InheritanceEntry entry = type.getFirstExtendedType();
         String extendedTypeName = entry.superTypeName;
         if (!superType.equals(extendedTypeName)) {
-            state.getContext().reportErrorInNode(node.getRight(), 0, String.format(
+            reportErrorAtNodeStart(node.getRight(), String.format(
                     "Supertype does not match %s declared in @extends for %s (line %d)",
                     extendedTypeName, type.typeName,
                     state.getContext().getPosition(entry.jsDocNode, entry.offsetInJsDocText).line));
@@ -213,7 +213,7 @@ public final class ProtoFollowsExtendsChecker extends ContextTrackingChecker {
             return;
         }
         if (!type.extendedTypes.isEmpty()) {
-            state.getContext().reportErrorInNode(prototypeValueNode, 0, String.format(
+            reportErrorAtNodeStart(prototypeValueNode, String.format(
                     "@extends found for type %s but its prototype is not an object "
                     + "containing __proto__", AstUtil.getTypeNameFromPrototype(assignedTypeName)));
         }

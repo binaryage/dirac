@@ -146,6 +146,13 @@ TypeThree.prototype = {
         function badCallbackInMethod() {
             this.bar = this.bar + 1; // ERROR - @this not declared.
         }
+
+        /**
+         * @this {TypeOne}
+         */
+        function callbackNotReferencingThis() {
+            return 3; // ERROR - @this for a function not referencing |this|.
+        }
     }
 }
 
@@ -173,3 +180,55 @@ var object = {
         }
     };
 })();
+
+/**
+ * @constructor
+ */
+var ReceiverTest = function() {}
+
+ReceiverTest.prototype = {
+    memberOne: function() {
+        var badMemberBinding1 = this.memberTwo.bind(null); // ERROR - Member not bound to |this| receiver.
+        var badMemberBinding2 = this.memberTwo.bind(bar); // ERROR - Member not bound to |this| receiver.
+        var goodMemberBinding = this.memberTwo.bind(this);
+
+        /** @this {ReceiverTest} */
+        function callbackWithThis()
+        {
+            this.memberTwo();
+        }
+
+        function callbackNoThis()
+        {
+            return 42;
+        }
+
+        callbackWithThis.call(this);
+        callbackWithThis.call(foo);
+        callbackNoThis();
+        callbackNoThis.call(null, 1);
+        callbackNoThis.apply(null, [2]);
+        callbackNoThis.bind(null, 1);
+        this.memberTwo(callbackWithThis.bind(this, 1));
+        this.memberTwo(callbackWithThis.bind(foo, 1));
+        this.memberTwo(callbackNoThis);
+        this.memberTwo(callbackNoThis.bind(null));
+
+        callbackWithThis(); // ERROR - No receiver.
+        callbackWithThis.call(); // ERROR - No receiver.
+        callbackWithThis.call(null); // ERROR - No receiver.
+        callbackWithThis.apply(); // ERROR - No receiver.
+        callbackWithThis.apply(null); // ERROR - No receiver.
+        callbackNoThis.call(this); // ERROR - Function has no @this annotation.
+        callbackNoThis.call(foo); // ERROR - Function has no @this annotation.
+        callbackNoThis.apply(this); // ERROR - Function has no @this annotation.
+        callbackNoThis.bind(this); // ERROR - Function has no @this annotation.
+
+        this.memberTwo(callbackWithThis); // ERROR - Used as argument with no bound receiver.
+        this.memberTwo(callbackWithThis.bind(null, 2)); // ERROR - Used as argument with no bound receiver (null means "no receiver").
+        this.memberTwo(callbackNoThis.bind(this)); // ERROR - Bound to a receiver but has no @this annotation.
+        this.memberTwo(callbackNoThis.bind(foo)); // ERROR - Bound to a receiver but has no @this annotation.
+    },
+
+    memberTwo: function(arg) {}
+}

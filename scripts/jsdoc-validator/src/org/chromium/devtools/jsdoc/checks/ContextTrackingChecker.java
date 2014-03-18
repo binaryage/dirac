@@ -22,4 +22,8 @@ abstract class ContextTrackingChecker {
     protected ValidatorContext getContext() {
         return state.getContext();
     }
+
+    void reportErrorAtNodeStart(AstNode node, String errorText) {
+        getContext().reportErrorInNode(node, 0, errorText);
+    }
 }
