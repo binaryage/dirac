@@ -2416,7 +2416,7 @@ WebInspector.ElementsTreeElement.prototype = {
     _visibleShadowRoots: function()
     {
         var roots = this._node.shadowRoots();
-        if (roots.length && !WebInspector.settings.showShadowDOM.get()) {
+        if (roots.length && !WebInspector.settings.showUAShadowDOM.get()) {
             roots = roots.filter(function(root) {
                 return root.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.Author;
             });

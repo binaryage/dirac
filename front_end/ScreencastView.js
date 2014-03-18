@@ -723,11 +723,11 @@ WebInspector.ScreencastView.prototype = {
 
     /**
      * @param {boolean} enabled
-     * @param {boolean} inspectShadowDOM
+     * @param {boolean} inspectUAShadowDOM
      * @param {!DOMAgent.HighlightConfig} config
      * @param {function(?Protocol.Error)=} callback
      */
-    setInspectModeEnabled: function(enabled, inspectShadowDOM, config, callback)
+    setInspectModeEnabled: function(enabled, inspectUAShadowDOM, config, callback)
     {
         this._inspectModeConfig = enabled ? config : null;
         if (callback)

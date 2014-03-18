@@ -69,7 +69,7 @@ WebInspector.InspectElementModeController.prototype = {
             if (!error)
                 this.toggleSearchButton.toggled = enabled;
         }
-        WebInspector.domAgent.setInspectModeEnabled(enabled, WebInspector.settings.showShadowDOM.get(), callback.bind(this));
+        WebInspector.domAgent.setInspectModeEnabled(enabled, WebInspector.settings.showUAShadowDOM.get(), callback.bind(this));
     },
 
     /**
