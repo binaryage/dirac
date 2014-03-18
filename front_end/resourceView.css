@@ -36,6 +36,10 @@
     display: flex;
 }
 
+.resource-view > * {
+    flex: none;
+}
+
 .resource-view.font {
     font-size: 60px;
     white-space: pre-wrap;
