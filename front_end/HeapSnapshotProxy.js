@@ -432,6 +432,10 @@ WebInspector.HeapSnapshotProxy.prototype = {
         this.callMethod(callback, "allocationTracesTops");
     },
 
+    /**
+     * @param {number} nodeId
+     * @param {function(!WebInspector.HeapSnapshotCommon.AllocationNodeCallers)} callback
+     */
     allocationNodeCallers: function(nodeId, callback)
     {
         this.callMethod(callback, "allocationNodeCallers", nodeId);

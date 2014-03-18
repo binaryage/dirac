@@ -791,6 +791,16 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
     },
 
     /**
+      * @param {number} allocationNodeId
+      */
+    setAllocationNodeId: function(allocationNodeId)
+    {
+        var filter = new WebInspector.HeapSnapshotCommon.NodeFilter();
+        filter.allocationNodeId = allocationNodeId;
+        this._populateChildren(filter);
+    },
+
+    /**
      * @param {!WebInspector.HeapSnapshotCommon.NodeFilter} nodeFilter
      * @param {!Object.<string, !WebInspector.HeapSnapshotCommon.Aggregate>} aggregates
      */
@@ -1188,6 +1198,14 @@ WebInspector.AllocationGridNode.prototype = {
         }
 
         return cell;
+    },
+
+    /**
+     * @return {number}
+     */
+    allocationNodeId: function()
+    {
+        return this.data.id;
     },
 
     __proto__: WebInspector.DataGridNode.prototype

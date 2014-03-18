@@ -79,6 +79,7 @@ WebInspector.HeapSnapshotView = function(profile)
     if (WebInspector.experimentsSettings.allocationProfiler.isEnabled() && profile.profileType() === WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType) {
         this._allocationView = new WebInspector.VBox();
         this._allocationDataGrid = new WebInspector.AllocationDataGrid();
+        this._allocationDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._onSelectAllocationNode, this);
         this._allocationDataGrid.show(this._allocationView.element);
     }
 
@@ -368,6 +369,9 @@ WebInspector.HeapSnapshotView.DominatorPerspective.prototype = {
 WebInspector.HeapSnapshotView.AllocationPerspective = function()
 {
     WebInspector.HeapSnapshotView.Perspective.call(this,  WebInspector.UIString("Allocation"));
+    this._allocationSplitView = new WebInspector.SplitView(false, true, "heapSnapshotAllocationSplitViewState", 200, 200);
+    this._allocationSplitView.setMainElementConstraints(50, 100);
+    this._allocationSplitView.setSidebarElementConstraints(50, 100);
 }
 
 WebInspector.HeapSnapshotView.AllocationPerspective.prototype = {
@@ -377,7 +381,21 @@ WebInspector.HeapSnapshotView.AllocationPerspective.prototype = {
      */
     activate: function(heapSnapshotView)
     {
-        heapSnapshotView._allocationView.show(heapSnapshotView.element);
+        heapSnapshotView._allocationView.show(this._allocationSplitView.mainElement());
+        heapSnapshotView._constructorsView.show(heapSnapshotView._splitView.mainElement());
+        heapSnapshotView._retainmentView.show(heapSnapshotView._splitView.sidebarElement());
+        heapSnapshotView._splitView.show(this._allocationSplitView.sidebarElement());
+        this._allocationSplitView.show(heapSnapshotView.element);
+    },
+
+    /**
+     * @override
+     * @param {!WebInspector.HeapSnapshotView} heapSnapshotView
+     */
+    deactivate: function(heapSnapshotView)
+    {
+        this._allocationSplitView.detach();
+        WebInspector.HeapSnapshotView.Perspective.prototype.deactivate.call(this, heapSnapshotView);
     },
 
     /**
@@ -739,6 +757,12 @@ WebInspector.HeapSnapshotView.prototype = {
         var selectedNode = event.target.selectedNode;
         this._setRetainmentDataGridSource(selectedNode);
         this._inspectedObjectChanged(event);
+    },
+
+    _onSelectAllocationNode: function(event)
+    {
+        var selectedNode = event.target.selectedNode;
+        this._constructorsDataGrid.setAllocationNodeId(selectedNode.allocationNodeId());
     },
 
     _inspectedObjectChanged: function(event)

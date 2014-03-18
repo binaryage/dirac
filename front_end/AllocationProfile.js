@@ -146,19 +146,12 @@ WebInspector.AllocationProfile.prototype = {
     },
 
     /**
-     * @param {string} nodeId
+     * @param {number} nodeId
      * @return {!WebInspector.HeapSnapshotCommon.AllocationNodeCallers}
      */
     serializeCallers: function(nodeId)
     {
-        var node = this._idToNode[nodeId];
-        if (!node) {
-            var functionInfo = this._collapsedTopNodeIdToFunctionInfo[nodeId];
-            node = functionInfo.bottomUpRoot();
-            delete this._collapsedTopNodeIdToFunctionInfo[nodeId];
-            this._idToNode[nodeId] = node;
-        }
-
+        var node = this._ensureBottomUpNode(nodeId);
         var nodesWithSingleCaller = [];
         while (node.callers().length === 1) {
             node = node.callers()[0];
@@ -171,6 +164,31 @@ WebInspector.AllocationProfile.prototype = {
             branchingCallers.push(this._serializeCaller(callers[i]));
         }
         return new WebInspector.HeapSnapshotCommon.AllocationNodeCallers(nodesWithSingleCaller, branchingCallers);
+    },
+
+    /**
+     * @param {number} allocationNodeId
+     * @return {!Array.<number>}
+     */
+    traceIds: function(allocationNodeId)
+    {
+        return this._ensureBottomUpNode(allocationNodeId).traceTopIds;
+    },
+
+    /**
+     * @param {number} nodeId
+     * @return {!WebInspector.BottomUpAllocationNode}
+     */
+    _ensureBottomUpNode: function(nodeId)
+    {
+        var node = this._idToNode[nodeId];
+        if (!node) {
+            var functionInfo = this._collapsedTopNodeIdToFunctionInfo[nodeId];
+            node = functionInfo.bottomUpRoot();
+            delete this._collapsedTopNodeIdToFunctionInfo[nodeId];
+            this._idToNode[nodeId] = node;
+        }
+        return node;
     },
 
     _serializeCaller: function(node)
@@ -249,6 +267,7 @@ WebInspector.BottomUpAllocationNode = function(functionInfo)
     this.allocationSize = 0;
     this.liveCount = 0;
     this.liveSize = 0;
+    this.traceTopIds = [];
     this._callers = [];
 }
 
@@ -256,7 +275,7 @@ WebInspector.BottomUpAllocationNode = function(functionInfo)
 WebInspector.BottomUpAllocationNode.prototype = {
     /**
      * @param {!WebInspector.TopDownAllocationNode} traceNode
-     * @return {!WebInspector.TopDownAllocationNode}
+     * @return {!WebInspector.BottomUpAllocationNode}
      */
     addCaller: function(traceNode)
     {
@@ -354,11 +373,13 @@ WebInspector.FunctionAllocationInfo.prototype = {
             var size = node.allocationSize;
             var liveCount = node.liveCount;
             var liveSize = node.liveSize;
+            var traceId = node.id;
             while (true) {
                 bottomUpNode.allocationCount += count;
                 bottomUpNode.allocationSize += size;
                 bottomUpNode.liveCount += liveCount;
                 bottomUpNode.liveSize += liveSize;
+                bottomUpNode.traceTopIds.push(traceId);
                 node = node.parent;
                 if (node === null) {
                     break;

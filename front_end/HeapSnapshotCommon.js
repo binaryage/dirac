@@ -266,6 +266,8 @@ WebInspector.HeapSnapshotCommon.NodeFilter = function(minNodeId, maxNodeId)
     this.minNodeId = minNodeId;
     /** @type {number|undefined} */
     this.maxNodeId = maxNodeId;
+    /** @type {number|undefined} */
+    this.allocationNodeId;
 }
 
 WebInspector.HeapSnapshotCommon.NodeFilter.prototype =
@@ -276,6 +278,6 @@ WebInspector.HeapSnapshotCommon.NodeFilter.prototype =
      */
     equals: function(o)
     {
-        return this.minNodeId === o.minNodeId && this.maxNodeId === o.maxNodeId;
+        return this.minNodeId === o.minNodeId && this.maxNodeId === o.maxNodeId && this.allocationNodeId === o.allocationNodeId;
     }
 }

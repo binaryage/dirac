@@ -773,10 +773,11 @@ WebInspector.HeapSnapshot = function(profile, progress)
             var traceNodeId = node.traceNodeId();
             var stats = liveObjects[traceNodeId];
             if (!stats) {
-                liveObjects[traceNodeId] = stats = { count: 0, size: 0};
+                liveObjects[traceNodeId] = stats = { count: 0, size: 0, ids: []};
             }
             stats.count++;
             stats.size += node.selfSize();
+            stats.ids.push(node.id());
         }
         this._allocationProfile = new WebInspector.AllocationProfile(profile, liveObjects);
         this._progress.updateStatus("Done");
@@ -1012,20 +1013,14 @@ WebInspector.HeapSnapshot.prototype = {
     {
         var minNodeId = nodeFilter.minNodeId;
         var maxNodeId = nodeFilter.maxNodeId;
+        var allocationNodeId = nodeFilter.allocationNodeId;
         var key;
         var filter;
-        /**
-         * @param {!WebInspector.HeapSnapshotNode} node
-         * @return boolean
-         */
-        function filterById(node)
-        {
-            var id = node.id();
-            return id > minNodeId && id <= maxNodeId;
-        }
-        if (typeof minNodeId === "number") {
+        if (typeof allocationNodeId === "number") {
+            filter = this._createAllocationStackFilter(allocationNodeId);
+        } else if (typeof minNodeId === "number" && typeof maxNodeId === "number") {
             key = minNodeId + ".." + maxNodeId;
-            filter = filterById;
+            filter = this._createNodeIdFilter(minNodeId, maxNodeId);
         } else {
             key = "allObjects";
         }
@@ -1033,24 +1028,68 @@ WebInspector.HeapSnapshot.prototype = {
     },
 
     /**
+     * @param {number} minNodeId
+     * @param {number} maxNodeId
+     * @return {function(!WebInspector.HeapSnapshotNode):boolean}
+     */
+    _createNodeIdFilter: function(minNodeId, maxNodeId)
+    {
+        /**
+         * @param {!WebInspector.HeapSnapshotNode} node
+         * @return boolean
+         */
+        function nodeIdFilter(node)
+        {
+            var id = node.id();
+            return id > minNodeId && id <= maxNodeId;
+        }
+        return nodeIdFilter;
+    },
+
+    /**
+     * @param {number} bottomUpAllocationNodeId
+     * @return {function(!WebInspector.HeapSnapshotNode):boolean|undefined}
+     */
+    _createAllocationStackFilter: function(bottomUpAllocationNodeId)
+    {
+        var traceIds = this._allocationProfile.traceIds(bottomUpAllocationNodeId);
+        if (!traceIds.length)
+            return undefined;
+        var set = {};
+        for (var i = 0; i < traceIds.length; i++)
+            set[traceIds[i]] = true;
+        /**
+         * @param {!WebInspector.HeapSnapshotNode} node
+         * @return boolean
+         */
+        function traceIdFilter(node)
+        {
+            return !!set[node.traceNodeId()];
+        };
+        return traceIdFilter;
+    },
+
+    /**
      * @param {boolean} sortedIndexes
-     * @param {string} key
+     * @param {string=} key
      * @param {function(!WebInspector.HeapSnapshotNode):boolean=} filter
      * @return {!Object.<string, !WebInspector.HeapSnapshotCommon.Aggregate>}
      */
     aggregates: function(sortedIndexes, key, filter)
     {
-        var aggregatesByClassName = this._aggregates[key];
+        var aggregatesByClassName = key && this._aggregates[key];
         if (!aggregatesByClassName) {
             var aggregates = this._buildAggregates(filter);
             this._calculateClassesRetainedSize(aggregates.aggregatesByClassIndex, filter);
             aggregatesByClassName = aggregates.aggregatesByClassName;
-            this._aggregates[key] = aggregatesByClassName;
+            if (key)
+                this._aggregates[key] = aggregatesByClassName;
         }
 
-        if (sortedIndexes && !this._aggregatesSortedFlags[key]) {
+        if (sortedIndexes && (!key || !this._aggregatesSortedFlags[key])) {
             this._sortAggregateIndexes(aggregatesByClassName);
-            this._aggregatesSortedFlags[key] = sortedIndexes;
+            if (key)
+                this._aggregatesSortedFlags[key] = sortedIndexes;
         }
         return aggregatesByClassName;
     },
@@ -1064,7 +1103,7 @@ WebInspector.HeapSnapshot.prototype = {
     },
 
     /**
-     * @param {string} nodeId
+     * @param {number} nodeId
      * @return {!WebInspector.HeapSnapshotCommon.AllocationNodeCallers}
      */
     allocationNodeCallers: function(nodeId)
