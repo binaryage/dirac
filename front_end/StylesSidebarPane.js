@@ -2266,6 +2266,8 @@ WebInspector.StylePropertyTreeElement.prototype = {
          */
         function callback(newStyle)
         {
+            delete this._parentPane._userOperation;
+
             if (!newStyle)
                 return;
 
@@ -2278,8 +2280,6 @@ WebInspector.StylePropertyTreeElement.prototype = {
                 section.pane.dispatchEventToListeners("style property toggled");
 
             this._updatePane();
-
-            delete this._parentPane._userOperation;
         }
 
         this._parentPane._userOperation = true;
