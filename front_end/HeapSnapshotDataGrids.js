@@ -769,6 +769,13 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
         this.snapshot.nodeClassName(parseInt(id, 10), didGetClassName.bind(this));
     },
 
+    clear: function()
+    {
+        this._nextRequestedFilter = null;
+        this._lastFilter = null;
+        this.removeTopLevelNodes();
+    },
+
     setDataSource: function(snapshot)
     {
         this.snapshot = snapshot;

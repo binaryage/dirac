@@ -225,6 +225,7 @@ WebInspector.HeapSnapshotView.SummaryPerspective.prototype = {
         if (heapSnapshotView._trackingOverviewGrid) {
             heapSnapshotView._trackingOverviewGrid.show(heapSnapshotView.element, heapSnapshotView._splitView.element);
             heapSnapshotView._trackingOverviewGrid.update();
+            heapSnapshotView._trackingOverviewGrid._updateGrid();
         }
     },
 
@@ -386,6 +387,11 @@ WebInspector.HeapSnapshotView.AllocationPerspective.prototype = {
         heapSnapshotView._retainmentView.show(heapSnapshotView._splitView.sidebarElement());
         heapSnapshotView._splitView.show(this._allocationSplitView.sidebarElement());
         this._allocationSplitView.show(heapSnapshotView.element);
+
+        heapSnapshotView._constructorsDataGrid.clear();
+        var selectedNode = heapSnapshotView._allocationDataGrid.selectedNode;
+        if (selectedNode)
+            heapSnapshotView._constructorsDataGrid.setAllocationNodeId(selectedNode.allocationNodeId());
     },
 
     /**
