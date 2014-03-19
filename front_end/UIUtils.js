@@ -820,15 +820,12 @@ WebInspector.invokeOnceAfterBatchUpdate = function(object, method)
 
 ;(function() {
 
-/**
- * @this {Window}
- */
 function windowLoaded()
 {
     window.addEventListener("focus", WebInspector._windowFocused, false);
     window.addEventListener("blur", WebInspector._windowBlurred, false);
-    document.addEventListener("focus", WebInspector._focusChanged.bind(this), true);
-    document.addEventListener("blur", WebInspector._documentBlurred.bind(this), true);
+    document.addEventListener("focus", WebInspector._focusChanged, true);
+    document.addEventListener("blur", WebInspector._documentBlurred, true);
     window.removeEventListener("DOMContentLoaded", windowLoaded, false);
 }
 

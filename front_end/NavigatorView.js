@@ -407,7 +407,7 @@ WebInspector.NavigatorView.prototype = {
     {
         var node = this._uiSourceCodeNodes.get(uiSourceCode);
         console.assert(node);
-        node.rename(callback);
+        node.rename(callback.bind(this));
 
         /**
          * @this {WebInspector.NavigatorView}

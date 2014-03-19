@@ -59,7 +59,7 @@ WebInspector.PropertiesSidebarPane.prototype = {
                 return;
 
             /**
-             * @this {WebInspector.PropertiesSidebarPane}
+             * @this {*}
              */
             function protoList()
             {
