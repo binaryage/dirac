@@ -339,7 +339,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         function innerHighlightRegex()
         {
             if (range) {
-                this.revealLine(range.startLine);
+                this._revealLine(range.startLine);
                 if (range.endColumn > WebInspector.CodeMirrorTextEditor.maxHighlightLength)
                     this.setSelection(range);
                 else
@@ -685,7 +685,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     /**
      * @param {number} lineNumber
      */
-    revealLine: function(lineNumber)
+    _revealLine: function(lineNumber)
     {
         this._innerRevealLine(lineNumber, this._codeMirror.getScrollInfo());
     },
@@ -794,8 +794,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     /**
      * @param {number} lineNumber
      * @param {number=} columnNumber
+     * @param {boolean=} shouldHighlight
      */
-    highlightPosition: function(lineNumber, columnNumber)
+    revealPosition: function(lineNumber, columnNumber, shouldHighlight)
     {
         lineNumber = Number.constrain(lineNumber, 0, this._codeMirror.lineCount() - 1);
         if (typeof columnNumber !== "number")
@@ -806,9 +807,11 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._highlightedLine = this._codeMirror.getLineHandle(lineNumber);
         if (!this._highlightedLine)
           return;
-        this.revealLine(lineNumber);
-        this._codeMirror.addLineClass(this._highlightedLine, null, "cm-highlight");
-        this._clearHighlightTimeout = setTimeout(this.clearPositionHighlight.bind(this), 2000);
+        this._revealLine(lineNumber);
+        if (shouldHighlight) {
+            this._codeMirror.addLineClass(this._highlightedLine, null, "cm-highlight");
+            this._clearHighlightTimeout = setTimeout(this.clearPositionHighlight.bind(this), 2000);
+        }
         this.setSelection(WebInspector.TextRange.createFromLocation(lineNumber, columnNumber));
     },
 

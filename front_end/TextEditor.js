@@ -114,11 +114,6 @@ WebInspector.TextEditor.prototype = {
 
     /**
      * @param {number} lineNumber
-     */
-    revealLine: function(lineNumber) { },
-
-    /**
-     * @param {number} lineNumber
      * @param {boolean} disabled
      * @param {boolean} conditional
      */
@@ -157,8 +152,9 @@ WebInspector.TextEditor.prototype = {
     /**
      * @param {number} lineNumber
      * @param {number=} columnNumber
+     * @param {boolean=} shouldHighlight
      */
-    highlightPosition: function(lineNumber, columnNumber) { },
+    revealPosition: function(lineNumber, columnNumber, shouldHighlight) { },
 
     clearPositionHighlight: function() { },
 

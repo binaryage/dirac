@@ -125,8 +125,7 @@ WebInspector.SourceFrame.prototype = {
     {
         WebInspector.View.prototype.willHide.call(this);
 
-        this._clearPositionHighlight();
-        this._clearLineToReveal();
+        this._clearPositionToReveal();
     },
 
     /**
@@ -213,56 +212,38 @@ WebInspector.SourceFrame.prototype = {
      */
     highlightPosition: function(line, column)
     {
-        this._clearLineToReveal();
-        this._clearLineToScrollTo();
-        this._clearSelectionToSet();
-        this._positionToHighlight = { line: line, column: column };
-        this._innerHighlightPositionIfNeeded();
+        this.revealPosition(line, column, true);
     },
 
-    _innerHighlightPositionIfNeeded: function()
+    /**
+     * @param {number} line
+     * @param {number=} column
+     * @param {boolean=} shouldHighlight
+     */
+    revealPosition: function(line, column, shouldHighlight)
     {
-        if (!this._positionToHighlight)
+        this._clearLineToScrollTo();
+        this._clearSelectionToSet();
+        this._positionToReveal = { line: line, column: column, shouldHighlight: shouldHighlight };
+        this._innerRevealPositionIfNeeded();
+    },
+
+    _innerRevealPositionIfNeeded: function()
+    {
+        if (!this._positionToReveal)
             return;
 
         if (!this.loaded || !this._isEditorShowing())
             return;
 
-        this._textEditor.highlightPosition(this._positionToHighlight.line, this._positionToHighlight.column);
-        delete this._positionToHighlight;
+        this._textEditor.revealPosition(this._positionToReveal.line, this._positionToReveal.column, this._positionToReveal.shouldHighlight);
+        delete this._positionToReveal;
     },
 
-    _clearPositionHighlight: function()
+    _clearPositionToReveal: function()
     {
         this._textEditor.clearPositionHighlight();
-        delete this._positionToHighlight;
-    },
-
-    /**
-     * @param {number} line
-     */
-    revealLine: function(line)
-    {
-        this._clearPositionHighlight();
-        this._clearLineToScrollTo();
-        this._clearSelectionToSet();
-        this._lineToReveal = line;
-        this._innerRevealLineIfNeeded();
-    },
-
-    _innerRevealLineIfNeeded: function()
-    {
-        if (typeof this._lineToReveal === "number") {
-            if (this.loaded && this._isEditorShowing()) {
-                this._textEditor.revealLine(this._lineToReveal);
-                delete this._lineToReveal;
-            }
-        }
-    },
-
-    _clearLineToReveal: function()
-    {
-        delete this._lineToReveal;
+        delete this._positionToReveal;
     },
 
     /**
@@ -270,8 +251,7 @@ WebInspector.SourceFrame.prototype = {
      */
     scrollToLine: function(line)
     {
-        this._clearPositionHighlight();
-        this._clearLineToReveal();
+        this._clearPositionToReveal();
         this._lineToScrollTo = line;
         this._innerScrollToLineIfNeeded();
     },
@@ -323,8 +303,7 @@ WebInspector.SourceFrame.prototype = {
 
     _wasShownOrLoaded: function()
     {
-        this._innerHighlightPositionIfNeeded();
-        this._innerRevealLineIfNeeded();
+        this._innerRevealPositionIfNeeded();
         this._innerSetSelectionIfNeeded();
         this._innerScrollToLineIfNeeded();
     },

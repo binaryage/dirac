@@ -716,7 +716,7 @@ WebInspector.SourcesPanel.prototype = {
         this._skipExecutionLineRevealing = true;
 
         var sourceFrame = this._showFile(uiSourceCode);
-        sourceFrame.revealLine(uiLocation.lineNumber);
+        sourceFrame.revealPosition(uiLocation.lineNumber);
         this._historyManager.pushNewState();
 
         if (sourceFrame.canEditSource())
