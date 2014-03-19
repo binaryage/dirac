@@ -201,8 +201,10 @@ WebInspector.LayerTreeModel.prototype = {
         var requestedIds = [];
         for (var i = 0; i < layers.length; ++i) {
             var backendNodeId = layers[i].backendNodeId;
-            if (!backendNodeId || this._backendNodeIdToNodeId[backendNodeId] || idsToResolve[backendNodeId])
+            if (!backendNodeId || idsToResolve[backendNodeId] ||
+                (this._backendNodeIdToNodeId[backendNodeId] && WebInspector.domAgent.nodeForId(this._backendNodeIdToNodeId[backendNodeId]))) {
                 continue;
+            }
             idsToResolve[backendNodeId] = true;
             requestedIds.push(backendNodeId);
         }

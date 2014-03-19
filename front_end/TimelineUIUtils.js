@@ -444,13 +444,13 @@ WebInspector.TimelineUIUtils.createStyleRuleForCategory = function(category)
 WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, callback)
 {
     var imageElement = /** @type {?Element} */ (record.getUserObject("TimelineUIUtils::preview-element") || null);
-    var relatedNode = /** @type {?WebInspector.DOMNode} */ (record.getUserObject("TimelineUIUtils::related-node") || null);
+    var relatedNode = null;
 
     var barrier = new CallbackBarrier();
     if (!imageElement && WebInspector.TimelineUIUtils.needsPreviewElement(record.type))
         WebInspector.DOMPresentationUtils.buildImagePreviewContents(record.url, false, barrier.createCallback(saveImage));
-    if (!relatedNode && record.relatedBackendNodeId())
-        WebInspector.domAgent.pushNodesByBackendIdsToFrontend([record.relatedBackendNodeId()], barrier.createCallback(saveNode));
+    if (record.relatedBackendNodeId())
+        WebInspector.domAgent.pushNodesByBackendIdsToFrontend([record.relatedBackendNodeId()], barrier.createCallback(setRelatedNode));
     barrier.callWhenDone(callbackWrapper);
 
     /**
@@ -465,12 +465,10 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
     /**
      * @param {?Array.<!DOMAgent.NodeId>} nodeIds
      */
-    function saveNode(nodeIds)
+    function setRelatedNode(nodeIds)
     {
-        if (nodeIds !== null) {
+        if (nodeIds)
             relatedNode = WebInspector.domAgent.nodeForId(nodeIds[0]);
-            record.setUserObject("TimelineUIUtils::related-node", relatedNode);
-        }
     }
 
     function callbackWrapper()
