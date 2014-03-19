@@ -650,6 +650,7 @@ WebInspector.NetworkLogView.prototype = {
         this._largerRequestsButton.addEventListener("click", this._toggleLargerRequests, this);
 
         this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"));
+        this._preserveLogCheckbox.element.title = WebInspector.UIString("Do not clear log on page reload / navigation.");
     },
 
     _loadEventFired: function(event)
