@@ -453,6 +453,6 @@
             "host_stub",
             "screencast"
         ],
-        "sources": [ "inspector.js" ]
+        "sources": [ "Main.js" ]
     }
 ]

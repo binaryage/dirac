@@ -174,7 +174,7 @@
                         'script_name': 'scripts/generate_devtools_grd.py',
                         'input_pages': [
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
-                            '<(PRODUCT_DIR)/resources/inspector/inspector.js',
+                            '<(PRODUCT_DIR)/resources/inspector/Main.js',
                             '<(PRODUCT_DIR)/resources/inspector/ConsolePanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/ElementsPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/ExtensionServer.js',
@@ -318,7 +318,7 @@
                             'front_end',
                             '<(SHARED_INTERMEDIATE_DIR)/blink',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/inspector.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/Main.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_search_path)', '<@(_outputs)'],
                     }],
                 },
