@@ -63,8 +63,6 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
     this._delegate = delegate;
     this._delegate.setRefreshCallback(this._itemsLoaded.bind(this));
     this._itemsLoaded();
-
-    this._shouldShowMatchingItems = true;
 }
 
 WebInspector.FilteredItemSelectionDialog.prototype = {
@@ -252,17 +250,25 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         }
     },
 
+    /**
+     * @return {boolean}
+     */
+    _shouldShowMatchingItems: function()
+    {
+        return this._delegate.shouldShowMatchingItems(this._promptElement.value);
+    },
+
     _onInput: function(event)
     {
-        this._shouldShowMatchingItems = this._delegate.shouldShowMatchingItems(this._promptElement.value);
         this._updateShowMatchingItems();
         this._scheduleFilter();
     },
 
     _updateShowMatchingItems: function()
     {
-        this._itemElementsContainer.classList.toggle("hidden", !this._shouldShowMatchingItems);
-        this.element.style.height = this._shouldShowMatchingItems ? this._dialogHeight + "px" : "auto";
+        var shouldShowMatchingItems = this._shouldShowMatchingItems();
+        this._itemElementsContainer.classList.toggle("hidden", !shouldShowMatchingItems);
+        this.element.style.height = shouldShowMatchingItems ? this._dialogHeight + "px" : "auto";
     },
 
     _onKeyDown: function(event)
@@ -811,18 +817,18 @@ WebInspector.OpenResourceDialog.prototype = {
 /**
  * @param {!WebInspector.SourcesPanel} panel
  * @param {!Element} relativeToElement
- * @param {string=} name
+ * @param {string=} query
  * @param {!Map.<!WebInspector.UISourceCode, number>=} defaultScores
  */
-WebInspector.OpenResourceDialog.show = function(panel, relativeToElement, name, defaultScores)
+WebInspector.OpenResourceDialog.show = function(panel, relativeToElement, query, defaultScores)
 {
     if (WebInspector.Dialog.currentInstance())
         return;
 
     var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.OpenResourceDialog(panel, defaultScores));
     filteredItemSelectionDialog.renderAsTwoRows();
-    if (name)
-        filteredItemSelectionDialog.setQuery(name);
+    if (query)
+        filteredItemSelectionDialog.setQuery(query);
     WebInspector.Dialog.show(relativeToElement, filteredItemSelectionDialog);
 }
 

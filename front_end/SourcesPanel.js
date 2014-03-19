@@ -66,16 +66,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
 
     this._workspace = workspaceForTest || WebInspector.workspace;
 
-    /**
-     * @return {!WebInspector.View}
-     * @this {WebInspector.SourcesPanel}
-     */
-    function viewGetter()
-    {
-        return this;
-    }
-    WebInspector.GoToLineDialog.install(this, viewGetter.bind(this));
-
     var helpSection = WebInspector.shortcutsScreen.section(WebInspector.UIString("Sources Panel"));
     this.debugToolbar = this._createDebugToolbar();
     this._debugToolbarDrawer = this._createDebugToolbarDrawer();
@@ -149,6 +139,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.CloseEditorTab, this._onCloseEditorTab.bind(this));
 
     this.sidebarPanes.callstack.registerShortcuts(this.registerShortcuts.bind(this));
+    this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToLine, this._showGoToLineDialog.bind(this));
     this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToMember, this._showOutlineDialog.bind(this));
     this.registerShortcuts(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.ToggleBreakpoint, this._toggleBreakpoint.bind(this));
 
@@ -1242,10 +1233,10 @@ WebInspector.SourcesPanel.prototype = {
         switch (uiSourceCode.contentType()) {
         case WebInspector.resourceTypes.Document:
         case WebInspector.resourceTypes.Script:
-            WebInspector.JavaScriptOutlineDialog.show(this.visibleView, uiSourceCode, this.highlightPosition.bind(this));
+            WebInspector.JavaScriptOutlineDialog.show(this.visibleView, uiSourceCode, this.showUISourceCode.bind(this, uiSourceCode));
             return true;
         case WebInspector.resourceTypes.Stylesheet:
-            WebInspector.StyleSheetOutlineDialog.show(this.visibleView, uiSourceCode, this.highlightPosition.bind(this));
+            WebInspector.StyleSheetOutlineDialog.show(this.visibleView, uiSourceCode, this.showUISourceCode.bind(this, uiSourceCode));
             return true;
         }
         return false;
@@ -1438,14 +1429,32 @@ WebInspector.SourcesPanel.prototype = {
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show function definition" : "Show Function Definition"), revealFunction.bind(this));
     },
 
-    showGoToSourceDialog: function()
+    /**
+     * @param {string=} query
+     */
+    _showOpenResourceDialog: function(query)
     {
         var uiSourceCodes = this._editorContainer.historyUISourceCodes();
         /** @type {!Map.<!WebInspector.UISourceCode, number>} */
         var defaultScores = new Map();
         for (var i = 1; i < uiSourceCodes.length; ++i) // Skip current element
             defaultScores.put(uiSourceCodes[i], uiSourceCodes.length - i);
-        WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement(), undefined, defaultScores);
+        WebInspector.OpenResourceDialog.show(this, this.editorView.mainElement(), query, defaultScores);
+    },
+
+    /**
+     * @param {?Event=} event
+     * @return {boolean}
+     */
+    _showGoToLineDialog: function(event)
+    {
+        this._showOpenResourceDialog(":");
+        return true;
+    },
+
+    showGoToSourceDialog: function()
+    {
+        this._showOpenResourceDialog();
     },
 
     _dockSideChanged: function()
@@ -1521,28 +1530,6 @@ WebInspector.SourcesPanel.prototype = {
 
         if (WebInspector.settings.watchExpressions.get().length > 0)
             this.sidebarPanes.watchExpressions.expand();
-    },
-
-    /**
-     * @return {boolean}
-     */
-    canHighlightPosition: function()
-    {
-        return !!this.currentSourceFrame();
-    },
-
-    /**
-     * @param {number} line
-     * @param {number=} column
-     */
-    highlightPosition: function(line, column)
-    {
-        var sourceFrame = this.currentSourceFrame();
-        if (!sourceFrame)
-            return;
-        this._historyManager.updateCurrentState();
-        sourceFrame.highlightPosition(line, column);
-        this._historyManager.pushNewState();
     },
 
     /**

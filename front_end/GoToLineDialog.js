@@ -81,8 +81,6 @@ WebInspector.GoToLineDialog._show = function(viewGetter, event)
  */
 WebInspector.GoToLineDialog.createShortcut = function()
 {
-    var isMac = WebInspector.isMac();
-    var shortcut;
     return WebInspector.KeyboardShortcut.makeDescriptor("g", WebInspector.KeyboardShortcut.Modifiers.Ctrl);
 }
 

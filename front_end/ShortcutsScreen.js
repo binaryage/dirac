@@ -259,6 +259,7 @@ WebInspector.ShortcutsScreen.registerShortcuts = function()
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.EvaluateSelectionInConsole, WebInspector.UIString("Evaluate selection in console"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.AddSelectionToWatch, WebInspector.UIString("Add selection to watch"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToMember, WebInspector.UIString("Go to member"));
+    section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToLine, WebInspector.UIString("Go to line"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.ToggleBreakpoint, WebInspector.UIString("Toggle breakpoint"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.ToggleComment, WebInspector.UIString("Toggle comment"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.CloseEditorTab, WebInspector.UIString("Close editor tab"));
@@ -404,6 +405,10 @@ WebInspector.ShortcutsScreen.SourcesPanelShortcuts = {
 
     GoToMember: [
         WebInspector.KeyboardShortcut.makeDescriptor("o", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta | WebInspector.KeyboardShortcut.Modifiers.Shift)
+    ],
+
+    GoToLine: [
+        WebInspector.KeyboardShortcut.makeDescriptor("g", WebInspector.KeyboardShortcut.Modifiers.Ctrl)
     ],
 
     ToggleBreakpoint: [
