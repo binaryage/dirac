@@ -542,14 +542,15 @@ WebInspector.SourcesPanel.prototype = {
      * @param {number=} columnNumber
      * @param {boolean=} forceShowInPanel
      * @param {boolean=} omitFocus
+     * @param {boolean=} omitHighlight
      */
-    _showSourceLocation: function(uiSourceCode, lineNumber, columnNumber, forceShowInPanel, omitFocus)
+    _showSourceLocation: function(uiSourceCode, lineNumber, columnNumber, forceShowInPanel, omitFocus, omitHighlight)
     {
         this._showEditor(forceShowInPanel);
         this._historyManager.updateCurrentState();
         var sourceFrame = this._showFile(uiSourceCode);
         if (typeof lineNumber === "number")
-            sourceFrame.highlightPosition(lineNumber, columnNumber);
+            sourceFrame.revealPosition(lineNumber, columnNumber, !omitHighlight);
         this._historyManager.pushNewState();
         if (!omitFocus)
             sourceFrame.focus();
@@ -714,14 +715,7 @@ WebInspector.SourcesPanel.prototype = {
         if (this._skipExecutionLineRevealing)
             return;
         this._skipExecutionLineRevealing = true;
-
-        var sourceFrame = this._showFile(uiSourceCode);
-        sourceFrame.revealPosition(uiLocation.lineNumber);
-        this._historyManager.pushNewState();
-
-        if (sourceFrame.canEditSource())
-            sourceFrame.setSelection(WebInspector.TextRange.createFromLocation(uiLocation.lineNumber, 0));
-        sourceFrame.focus();
+        this._showSourceLocation(uiSourceCode, uiLocation.lineNumber, 0, undefined, undefined, true);
     },
 
     _callFrameSelected: function(event)

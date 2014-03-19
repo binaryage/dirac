@@ -49,6 +49,14 @@
     to { background-color: white; }
 }
 
+.cm-highlight.cm-execution-line {
+  -webkit-animation: "fadeout-execution-line" 1s 0s;
+}
+@-webkit-keyframes fadeout-execution-line {
+    from {background-color: rgb(121, 141, 254); }
+    to { background-color: rgb(171, 191, 254); }
+}
+
 .cm-breakpoint .CodeMirror-linenumber {
   color: white;
   border-width: 1px 4px 1px 1px !important;
@@ -120,7 +128,7 @@
 }
 
 .cm-execution-line {
-    background-color: rgb(171, 191, 254) !important;
+    background-color: rgb(171, 191, 254);
     outline: 1px solid rgb(64, 115, 244);
 }
 

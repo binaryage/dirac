@@ -759,12 +759,16 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     setExecutionLine: function(lineNumber)
     {
+        this.clearPositionHighlight();
         this._executionLine = this._codeMirror.getLineHandle(lineNumber);
+        if (!this._executionLine)
+            return;
         this._codeMirror.addLineClass(this._executionLine, "wrap", "cm-execution-line");
     },
 
     clearExecutionLine: function()
     {
+        this.clearPositionHighlight();
         if (this._executionLine)
             this._codeMirror.removeLineClass(this._executionLine, "wrap", "cm-execution-line");
         delete this._executionLine;
@@ -821,7 +825,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             clearTimeout(this._clearHighlightTimeout);
         delete this._clearHighlightTimeout;
 
-         if (this._highlightedLine)
+        if (this._highlightedLine)
             this._codeMirror.removeLineClass(this._highlightedLine, null, "cm-highlight");
         delete this._highlightedLine;
     },
