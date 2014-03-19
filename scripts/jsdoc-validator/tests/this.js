@@ -228,6 +228,42 @@ ReceiverTest.prototype = {
         this.memberTwo(callbackWithThis.bind(null, 2)); // ERROR - Used as argument with no bound receiver (null means "no receiver").
         this.memberTwo(callbackNoThis.bind(this)); // ERROR - Bound to a receiver but has no @this annotation.
         this.memberTwo(callbackNoThis.bind(foo)); // ERROR - Bound to a receiver but has no @this annotation.
+
+        // Callback receivers specified as arguments.
+
+        array.forEach(callbackWithThis, this);
+        array.forEach(callbackNoThis);
+
+        array.forEach(callbackWithThis); // ERROR - No receiver.
+        array.forEach(callbackNoThis, this); // ERROR - Receiver for callback with no @this annotation.
+
+        var isMultiline = false;
+
+        element.addEventListener("click", callbackNoThis);
+        element.addEventListener("click", callbackNoThis, true);
+        element.addEventListener("click", callbackNoThis, false);
+        element.addEventListener("click", callbackNoThis, isMultiline); // OK - ignored.
+
+        element.addEventListener("click", callbackNoThis, this); // ERROR.
+
+        element.addEventListener("click", callbackWithThis, this);
+        element.addEventListener("click", callbackWithThis, foo); // OK - ignored.
+        element.addEventListener("click", callbackWithThis, isMultiline); // OK - ignored.
+
+        element.addEventListener("click", callbackWithThis, true); // ERROR.
+        element.addEventListener("click", callbackWithThis, false); // ERROR.
+
+        // DevTools-specific.
+
+        /**
+         * @suppressReceiverCheck
+         * @this {Object}
+         */
+        function ignoredCallbackWithThis()
+        {
+            this.foo = 1;
+        }
+        object.callFunction(func, [], ignoredCallbackWithThis); // OK - ignored.
     },
 
     memberTwo: function(arg) {}

@@ -465,6 +465,7 @@ WebInspector.ElementsPanel.prototype = {
 
             /**
              * @return {!{offsetWidth: number, offsetHeight: number, naturalWidth: number, naturalHeight: number}}
+             * @suppressReceiverCheck
              * @this {!Element}
              */
             function dimensions()

@@ -740,6 +740,7 @@ WebInspector.ArrayGroupingTreeElement._populateRanges = function(treeElement, ob
     object.callFunctionJSON(packRanges, [{value: fromIndex}, {value: toIndex}, {value: WebInspector.ArrayGroupingTreeElement._bucketThreshold}, {value: WebInspector.ArrayGroupingTreeElement._sparseIterationThreshold}], callback);
 
     /**
+     * @suppressReceiverCheck
      * @this {Object}
      * @param {number=} fromIndex // must declare optional
      * @param {number=} toIndex // must declare optional
@@ -839,6 +840,7 @@ WebInspector.ArrayGroupingTreeElement._populateAsFragment = function(treeElement
     object.callFunction(buildArrayFragment, [{value: fromIndex}, {value: toIndex}, {value: WebInspector.ArrayGroupingTreeElement._sparseIterationThreshold}], processArrayFragment.bind(this));
 
     /**
+     * @suppressReceiverCheck
      * @this {Object}
      * @param {number=} fromIndex // must declare optional
      * @param {number=} toIndex // must declare optional
@@ -901,7 +903,10 @@ WebInspector.ArrayGroupingTreeElement._populateNonIndexProperties = function(tre
 {
     object.callFunction(buildObjectFragment, undefined, processObjectFragment.bind(this));
 
-    /** @this {Object} */
+    /**
+     * @suppressReceiverCheck
+     * @this {Object}
+     */
     function buildObjectFragment()
     {
         var result = Object.create(this.__proto__);

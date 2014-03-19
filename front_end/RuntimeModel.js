@@ -254,6 +254,7 @@ WebInspector.RuntimeModel.prototype = {
 
             /**
              * @param {string} primitiveType
+             * @suppressReceiverCheck
              * @this {WebInspector.RuntimeModel}
              */
             function getCompletions(primitiveType)

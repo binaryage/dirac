@@ -284,6 +284,7 @@ WebInspector.RemoteObjectImpl.prototype = {
     {
         /**
          * @param {string} arrayStr
+         * @suppressReceiverCheck
          * @this {Object}
          */
         function remoteFunction(arrayStr)

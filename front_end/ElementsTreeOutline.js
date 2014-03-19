@@ -701,6 +701,7 @@ WebInspector.ElementsTreeOutline.prototype = {
 
             /**
              * @param {?string} pseudoType
+             * @suppressReceiverCheck
              * @this {!Element}
              */
             function toggleClassAndInjectStyleRule(pseudoType)
@@ -2396,6 +2397,7 @@ WebInspector.ElementsTreeElement.prototype = {
         function scrollIntoViewCallback(object)
         {
             /**
+             * @suppressReceiverCheck
              * @this {!Element}
              */
             function scrollIntoView()

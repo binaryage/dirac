@@ -14,9 +14,22 @@ import java.util.Set;
 
 public final class FunctionReceiverChecker extends ContextTrackingChecker {
 
+    private static final Set<String> FUNCTIONS_WITH_CALLBACK_RECEIVER_AS_SECOND_ARGUMENT =
+            new HashSet<>();
+    private static final String SUPPRESSION_HINT = "This check can be suppressed using "
+            + "@suppressReceiverCheck annotation on function declaration.";
+    static {
+        // Array.prototype methods.
+        FUNCTIONS_WITH_CALLBACK_RECEIVER_AS_SECOND_ARGUMENT.add("every");
+        FUNCTIONS_WITH_CALLBACK_RECEIVER_AS_SECOND_ARGUMENT.add("filter");
+        FUNCTIONS_WITH_CALLBACK_RECEIVER_AS_SECOND_ARGUMENT.add("forEach");
+        FUNCTIONS_WITH_CALLBACK_RECEIVER_AS_SECOND_ARGUMENT.add("map");
+        FUNCTIONS_WITH_CALLBACK_RECEIVER_AS_SECOND_ARGUMENT.add("some");
+    }
+
     private final Map<String, FunctionRecord> nestedFunctionsByName = new HashMap<>();
     private final Map<String, Set<CallSite>> callSitesByFunctionName = new HashMap<>();
-    private final Map<String, Set<AstNode>> argumentNodesByName = new HashMap<>();
+    private final Map<String, Set<SymbolicArgument>> symbolicArgumentsByName = new HashMap<>();
 
     @Override
     void enterNode(AstNode node) {
@@ -30,7 +43,7 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
                 break;
             }
             if (function.isTopLevelFunction()) {
-                argumentNodesByName.clear();
+                symbolicArgumentsByName.clear();
             } else {
                 AstNode nameNode = AstUtil.getFunctionNameNode((FunctionNode) node);
                 if (nameNode == null) {
@@ -45,18 +58,18 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
     }
 
     private void handleCall(FunctionCall functionCall) {
-        String[] targetParts = getContext().getNodeText(functionCall.getTarget()).split("\\.");
-        String firstPart = targetParts[0];
-        int partCount = targetParts.length;
-        List<String> arguments = new ArrayList<>(functionCall.getArguments().size());
-        for (AstNode argumentNode : functionCall.getArguments()) {
-            String argumentText = getContext().getNodeText(argumentNode);
-            arguments.add(argumentText);
-            getOrCreateSetByKey(argumentNodesByName, argumentText).add(argumentNode);
-        }
-        boolean hasBind = partCount > 1 && "bind".equals(targetParts[partCount - 1]);
-        if (hasBind && partCount == 3 && "this".equals(firstPart) &&
-            !(arguments.size() > 0 && "this".equals(arguments.get(0)))) {
+        String[] callParts = getContext().getNodeText(functionCall.getTarget()).split("\\.");
+        String firstPart = callParts[0];
+        List<AstNode> argumentNodes = functionCall.getArguments();
+        List<String> actualArguments = argumentsForCall(argumentNodes);
+        int partCount = callParts.length;
+        String functionName = callParts[partCount - 1];
+
+        saveSymbolicArguments(functionName, argumentNodes, actualArguments);
+
+        boolean isBindCall = partCount > 1 && "bind".equals(functionName);
+        if (isBindCall && partCount == 3 && "this".equals(firstPart) &&
+            !(actualArguments.size() > 0 && "this".equals(actualArguments.get(0)))) {
                 reportErrorAtNodeStart(functionCall,
                         "Member function can only be bound to 'this' as the receiver");
                 return;
@@ -64,12 +77,53 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
         if (partCount > 2 || "this".equals(firstPart)) {
             return;
         }
-        boolean hasReceiver = hasBind && isReceiverSpecified(arguments);
+        boolean hasReceiver = isBindCall && isReceiverSpecified(actualArguments);
         hasReceiver |= (partCount == 2) &&
-                ("call".equals(targetParts[1]) || "apply".equals(targetParts[1])) &&
-                isReceiverSpecified(arguments);
+                ("call".equals(functionName) || "apply".equals(functionName)) &&
+                isReceiverSpecified(actualArguments);
         getOrCreateSetByKey(callSitesByFunctionName, firstPart)
                 .add(new CallSite(hasReceiver, functionCall));
+    }
+
+    private List<String> argumentsForCall(List<AstNode> argumentNodes) {
+        int argumentCount = argumentNodes.size();
+        List<String> arguments = new ArrayList<>(argumentCount);
+        for (AstNode argumentNode : argumentNodes) {
+            arguments.add(getContext().getNodeText(argumentNode));
+        }
+        return arguments;
+    }
+
+    private void saveSymbolicArguments(
+            String functionName, List<AstNode> argumentNodes, List<String> arguments) {
+        int argumentCount = arguments.size();
+        CheckedReceiverPresence receiverPresence = CheckedReceiverPresence.MISSING;
+        if (FUNCTIONS_WITH_CALLBACK_RECEIVER_AS_SECOND_ARGUMENT.contains(functionName)) {
+            if (argumentCount >= 2) {
+                receiverPresence = CheckedReceiverPresence.PRESENT;
+            }
+        } else if ("addEventListener".equals(functionName) ||
+                "removeEventListener".equals(functionName)) {
+            String receiverArgument = argumentCount < 3 ? "" : arguments.get(2);
+            switch (receiverArgument) {
+            case "":
+            case "true":
+            case "false":
+                receiverPresence = CheckedReceiverPresence.MISSING;
+                break;
+            case "this":
+                receiverPresence = CheckedReceiverPresence.PRESENT;
+                break;
+            default:
+                receiverPresence = CheckedReceiverPresence.IGNORE;
+            }
+        }
+
+        for (int i = 0; i < argumentCount; ++i) {
+            String argumentText = arguments.get(i);
+            getOrCreateSetByKey(symbolicArgumentsByName, argumentText).add(
+                    new SymbolicArgument(receiverPresence, argumentNodes.get(i)));
+        }
     }
 
     private static <K, T> Set<T> getOrCreateSetByKey(Map<K, Set<T>> map, K key) {
@@ -97,31 +151,22 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
         }
 
         for (FunctionRecord record : nestedFunctionsByName.values()) {
-            processNestedFunction(record);
+            processFunctionUsesAsArgument(record, symbolicArgumentsByName.get(record.name));
+            processFunctionCallSites(record, callSitesByFunctionName.get(record.name));
         }
+
         nestedFunctionsByName.clear();
         callSitesByFunctionName.clear();
-        argumentNodesByName.clear();
+        symbolicArgumentsByName.clear();
     }
 
-    private void processNestedFunction(FunctionRecord record) {
-        String name = record.name;
-        Set<AstNode> argumentUsages = argumentNodesByName.get(name);
-        Set<CallSite> callSites = callSitesByFunctionName.get(name);
-        boolean hasThisAnnotation = AstUtil.hasThisAnnotation(record.functionNode, getContext());
-        if (hasThisAnnotation && argumentUsages != null) {
-            for (AstNode argumentNode : argumentUsages) {
-                reportErrorAtNodeStart(argumentNode,
-                        "Function annotated with @this used as argument without " +
-                         "bind(<non-null-receiver>)");
-            }
-        }
-
+    private void processFunctionCallSites(FunctionRecord function, Set<CallSite> callSites) {
         if (callSites == null) {
             return;
         }
+        boolean hasThisAnnotation = hasAnnotationTag(function.functionNode, "this");
         for (CallSite callSite : callSites) {
-            if (hasThisAnnotation == callSite.hasReceiver || record.isConstructor) {
+            if (hasThisAnnotation == callSite.hasReceiver || function.isConstructor) {
                 continue;
             }
             if (callSite.hasReceiver) {
@@ -131,6 +176,51 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
                 reportErrorAtNodeStart(callSite.callNode,
                         "Receiver not specified for a function annotated with @this");
             }
+        }
+    }
+
+    private void processFunctionUsesAsArgument(
+            FunctionRecord function, Set<SymbolicArgument> argumentUses) {
+        if (argumentUses == null ||
+                hasAnnotationTag(function.functionNode, "suppressReceiverCheck")) {
+            return;
+        }
+
+        boolean hasThisAnnotation = hasAnnotationTag(function.functionNode, "this");
+        for (SymbolicArgument argument : argumentUses) {
+            if (argument.receiverPresence == CheckedReceiverPresence.IGNORE) {
+                continue;
+            }
+            boolean receiverProvided =
+                    argument.receiverPresence == CheckedReceiverPresence.PRESENT;
+            if (hasThisAnnotation == receiverProvided) {
+                continue;
+            }
+            if (hasThisAnnotation) {
+                reportErrorAtNodeStart(argument.node,
+                        "Function annotated with @this used as argument without " +
+                         "a receiver. " + SUPPRESSION_HINT);
+            } else {
+                reportErrorAtNodeStart(argument.node,
+                        "Function not annotated with @this used as argument with " +
+                         "a receiver. " + SUPPRESSION_HINT);
+            }
+        }
+    }
+
+    private static enum CheckedReceiverPresence {
+        PRESENT,
+        MISSING,
+        IGNORE
+    }
+
+    private static class SymbolicArgument {
+        CheckedReceiverPresence receiverPresence;
+        AstNode node;
+
+        public SymbolicArgument(CheckedReceiverPresence receiverPresence, AstNode node) {
+            this.receiverPresence = receiverPresence;
+            this.node = node;
         }
     }
 

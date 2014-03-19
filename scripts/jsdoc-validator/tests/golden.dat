@@ -234,7 +234,7 @@ function badFuncAnnotatedButNoReturnValue() // ERROR - no returned value.
         callbackNoThis.bind(this); // ERROR - Function has no @this annotation.
         ^
 
-/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:227: ERROR - Function annotated with @this used as argument without bind(<non-null-receiver>)
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:227: ERROR - Function annotated with @this used as argument without a receiver. This check can be suppressed using @suppressReceiverCheck annotation on function declaration.
         this.memberTwo(callbackWithThis); // ERROR - Used as argument with no bound receiver.
                        ^
 
@@ -250,4 +250,24 @@ function badFuncAnnotatedButNoReturnValue() // ERROR - no returned value.
         this.memberTwo(callbackNoThis.bind(foo)); // ERROR - Bound to a receiver but has no @this annotation.
                        ^
 
-Total errors: 63
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:237: ERROR - Function annotated with @this used as argument without a receiver. This check can be suppressed using @suppressReceiverCheck annotation on function declaration.
+        array.forEach(callbackWithThis); // ERROR - No receiver.
+                      ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:238: ERROR - Function not annotated with @this used as argument with a receiver. This check can be suppressed using @suppressReceiverCheck annotation on function declaration.
+        array.forEach(callbackNoThis, this); // ERROR - Receiver for callback with no @this annotation.
+                      ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:247: ERROR - Function not annotated with @this used as argument with a receiver. This check can be suppressed using @suppressReceiverCheck annotation on function declaration.
+        element.addEventListener("click", callbackNoThis, this); // ERROR.
+                                          ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:253: ERROR - Function annotated with @this used as argument without a receiver. This check can be suppressed using @suppressReceiverCheck annotation on function declaration.
+        element.addEventListener("click", callbackWithThis, true); // ERROR.
+                                          ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/this.js:254: ERROR - Function annotated with @this used as argument without a receiver. This check can be suppressed using @suppressReceiverCheck annotation on function declaration.
+        element.addEventListener("click", callbackWithThis, false); // ERROR.
+                                          ^
+
+Total errors: 68

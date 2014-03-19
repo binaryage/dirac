@@ -90,10 +90,5 @@ public class AstUtil {
         return null;
     }
 
-    static boolean hasThisAnnotation(FunctionNode node, ValidatorContext context) {
-        Comment comment = AstUtil.getJsDocNode(node);
-        return comment != null && context.getNodeText(comment).contains("@this");
-    }
-
     private AstUtil() {}
 }

@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -177,6 +178,7 @@ public class Runner {
         protected CompilerOptions createOptions() {
             CompilerOptions options = super.createOptions();
             options.setIdeMode(true);
+            options.setExtraAnnotationNames(Collections.singletonList("suppressReceiverCheck"));
             return options;
         }
 

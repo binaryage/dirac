@@ -37,7 +37,7 @@ public final class RequiredThisAnnotationChecker extends ContextTrackingChecker 
         if (!functionsRequiringThisAnnotation.contains(function)) {
             AstNode functionNameNode = AstUtil.getFunctionNameNode(functionNode);
             if (functionNameNode != null && !function.isTopLevelFunction() &&
-                    AstUtil.hasThisAnnotation(functionNode, getContext())) {
+                    hasAnnotationTag(functionNode, "this")) {
                 reportErrorAtNodeStart(
                         functionNameNode,
                         "@this annotation found for function not referencing 'this'");
@@ -45,7 +45,7 @@ public final class RequiredThisAnnotationChecker extends ContextTrackingChecker 
             return;
         }
         AstNode functionNameNode = AstUtil.getFunctionNameNode(functionNode);
-        if (functionNameNode != null && !AstUtil.hasThisAnnotation(functionNode, getContext())) {
+        if (functionNameNode != null && !hasAnnotationTag(functionNode, "this")) {
             reportErrorAtNodeStart(
                     functionNameNode,
                     "@this annotation is required for functions referencing 'this'");
