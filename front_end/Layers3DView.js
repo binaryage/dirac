@@ -380,7 +380,7 @@ WebInspector.Layers3DView.prototype = {
     _onContextMenu: function(event)
     {
         var layer = this._layerFromEventPoint(event);
-        var nodeId = layer && layer.nodeId();
+        var nodeId = layer && layer.nodeIdForSelfOrAncestor();
         if (!nodeId)
             return;
         var domNode = WebInspector.domAgent.nodeForId(nodeId);
