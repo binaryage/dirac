@@ -58,7 +58,7 @@ WebInspector.JSHeapSnapshot.prototype = {
     },
 
     /**
-     * @param {!Array.<number>} edges
+     * @param {!Uint32Array} edges
      * @param {number} edgeIndex
      * @return {!WebInspector.JSHeapSnapshotEdge}
      */
@@ -147,7 +147,7 @@ WebInspector.JSHeapSnapshot.prototype = {
                     && globalObjEdge.node().isHidden()
                     && globalObjEdge._hasStringName()
                     && (globalObjEdge._nameOrIndex() in propNames))
-                    this._containmentEdges[globalObjEdge._edges._start + globalObjEdge.edgeIndex + this._edgeTypeOffset] = this._edgeInvisibleType;
+                    globalObjEdge._edges[globalObjEdge.edgeIndex + this._edgeTypeOffset] = this._edgeInvisibleType;
             }
         }
     },
@@ -666,7 +666,7 @@ WebInspector.JSHeapSnapshotNode.prototype = {
  * @constructor
  * @extends {WebInspector.HeapSnapshotEdge}
  * @param {!WebInspector.JSHeapSnapshot} snapshot
- * @param {!Array.<number>} edges
+ * @param {!Uint32Array} edges
  * @param {number=} edgeIndex
  */
 WebInspector.JSHeapSnapshotEdge = function(snapshot, edges, edgeIndex)
@@ -680,7 +680,8 @@ WebInspector.JSHeapSnapshotEdge.prototype = {
      */
     clone: function()
     {
-        return new WebInspector.JSHeapSnapshotEdge(this._snapshot, this._edges, this.edgeIndex);
+        var snapshot = /** @type {!WebInspector.JSHeapSnapshot} */ (this._snapshot);
+        return new WebInspector.JSHeapSnapshotEdge(snapshot, this._edges, this.edgeIndex);
     },
 
     /**
@@ -789,12 +790,12 @@ WebInspector.JSHeapSnapshotEdge.prototype = {
 
     _nameOrIndex: function()
     {
-        return this._edges.item(this.edgeIndex + this._snapshot._edgeNameOffset);
+        return this._edges[this.edgeIndex + this._snapshot._edgeNameOffset];
     },
 
     _type: function()
     {
-        return this._edges.item(this.edgeIndex + this._snapshot._edgeTypeOffset);
+        return this._edges[this.edgeIndex + this._snapshot._edgeTypeOffset];
     },
 
     __proto__: WebInspector.HeapSnapshotEdge.prototype
