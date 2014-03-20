@@ -111,7 +111,6 @@ WebInspector.JavaScriptSourceFrame.prototype = {
      */
     _evaluateInConsole: function(expression)
     {
-        WebInspector.console.show();
         WebInspector.console.evaluate(expression);
     },
 

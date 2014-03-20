@@ -46,9 +46,10 @@ WebInspector.ConsoleModel = function(target)
 }
 
 WebInspector.ConsoleModel.Events = {
-    ConsoleCleared: "console-cleared",
-    MessageAdded: "console-message-added",
-    RepeatCountUpdated: "repeat-count-updated"
+    ConsoleCleared: "ConsoleCleared",
+    MessageAdded: "MessageAdded",
+    RepeatCountUpdated: "RepeatCountUpdated",
+    CommandEvaluated: "CommandEvaluated",
 }
 
 WebInspector.ConsoleModel.prototype = {
@@ -78,14 +79,6 @@ WebInspector.ConsoleModel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ConsoleModel.UIDelegate} delegate
-     */
-    setUIDelegate: function(delegate)
-    {
-        this._uiDelegate = delegate;
-    },
-
-    /**
      * @param {!WebInspector.ConsoleMessage} msg
      * @param {boolean=} isFromBackend
      */
@@ -108,19 +101,14 @@ WebInspector.ConsoleModel.prototype = {
 
     /**
      * @param {string} text
-     * @param {?string} newPromptText
      * @param {boolean} useCommandLineAPI
      */
-    evaluateCommand: function(text, newPromptText, useCommandLineAPI)
+    evaluateCommand: function(text, useCommandLineAPI)
     {
-        if (!this._uiDelegate)
-            this.show();
+        this.show();
 
         var commandMessage = new WebInspector.ConsoleMessage(WebInspector.ConsoleMessage.MessageSource.JS, null, text, WebInspector.ConsoleMessage.MessageType.Command);
         this.addMessage(commandMessage);
-
-        if (newPromptText !== null)
-            this._uiDelegate.setPromptText(newPromptText);
 
         /**
          * @param {?WebInspector.RemoteObject} result
@@ -133,7 +121,7 @@ WebInspector.ConsoleModel.prototype = {
             if (!result)
                 return;
 
-            this._uiDelegate.printEvaluationResult(result, wasThrown, text, commandMessage);
+            this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.CommandEvaluated, {result: result, wasThrown: wasThrown, text: text, commandMessage: commandMessage});
         }
         this._target.runtimeModel.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult.bind(this));
 
@@ -150,7 +138,7 @@ WebInspector.ConsoleModel.prototype = {
      */
     evaluate: function(expression)
     {
-        this.evaluateCommand(expression, null, false);
+        this.evaluateCommand(expression, false);
     },
 
     /**
@@ -238,26 +226,6 @@ WebInspector.ConsoleModel.prototype = {
     },
 
     __proto__: WebInspector.Object.prototype
-}
-
-/**
- * @interface
- */
-WebInspector.ConsoleModel.UIDelegate = function() { }
-
-WebInspector.ConsoleModel.UIDelegate.prototype = {
-    /**
-     * @param {string} text
-     */
-    setPromptText: function(text) { },
-
-    /**
-     * @param {?WebInspector.RemoteObject} result
-     * @param {boolean} wasThrown
-     * @param {string} promptText
-     * @param {!WebInspector.ConsoleMessage} commandMessage
-     */
-    printEvaluationResult: function(result, wasThrown, promptText, commandMessage) { }
 }
 
 /**

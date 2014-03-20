@@ -29,7 +29,6 @@
 
 /**
  * @extends {WebInspector.VBox}
- * @implements {WebInspector.ConsoleModel.UIDelegate}
  * @implements {WebInspector.Searchable}
  * @constructor
  * @param {boolean} hideContextSelector
@@ -101,6 +100,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
     WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
     WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.RepeatCountUpdated, this._repeatCountUpdated, this);
+    WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
 
     this._linkifier = new WebInspector.Linkifier();
 
@@ -670,7 +670,7 @@ WebInspector.ConsoleView.prototype = {
         var str = this.prompt.text;
         if (!str.length)
             return;
-        this._appendCommand(str, "", true);
+        this._appendCommand(str, true);
     },
 
     /**
@@ -731,35 +731,23 @@ WebInspector.ConsoleView.prototype = {
 
     /**
      * @param {string} text
-     * @param {string} newPromptText
      * @param {boolean} useCommandLineAPI
      */
-    _appendCommand: function(text, newPromptText, useCommandLineAPI)
+    _appendCommand: function(text, useCommandLineAPI)
     {
-        WebInspector.console.evaluateCommand(text, newPromptText, useCommandLineAPI);
+        this.prompt.text = "";
+        WebInspector.console.evaluateCommand(text, useCommandLineAPI);
     },
 
     /**
-     * @override
-     * @param {string} text
+     * @param {!WebInspector.Event} event
      */
-    setPromptText: function(text)
+    _commandEvaluated: function(event)
     {
-        this.prompt.text = text;
-    },
-
-    /**
-     * @override
-     * @param {?WebInspector.RemoteObject} result
-     * @param {boolean} wasThrown
-     * @param {string} promptText
-     * @param {!WebInspector.ConsoleMessage} commandMessage
-     */
-    printEvaluationResult: function(result, wasThrown, promptText, commandMessage)
-    {
-        this.prompt.pushHistoryItem(promptText);
+        var data = /**{{result: ?WebInspector.RemoteObject, wasThrown: boolean, text: string, commandMessage: !WebInspector.ConsoleMessage}} */ (event.data);
+        this.prompt.pushHistoryItem(data.text);
         WebInspector.settings.consoleHistory.set(this.prompt.historyData.slice(-30));
-        this._printResult(result, wasThrown, /** @type {!WebInspector.ConsoleCommand} */ (this._messageToViewMessage.get(commandMessage)));
+        this._printResult(data.result, data.wasThrown, /** @type {!WebInspector.ConsoleCommand} */ (this._messageToViewMessage.get(data.commandMessage)));
     },
 
     /**
