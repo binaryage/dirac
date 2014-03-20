@@ -346,14 +346,6 @@ WebInspector.TimelinePresentationModel.Record.prototype = {
     /**
      * @return {boolean}
      */
-    hasPresentationChildren: function()
-    {
-        return !!this._presentationChildren.length;
-    },
-
-    /**
-     * @return {boolean}
-     */
     coalesced: function()
     {
         return this._coalesced;

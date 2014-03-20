@@ -1031,7 +1031,7 @@ WebInspector.TimelineRecordListRow.prototype = {
             }
         }
 
-        this._expandArrowElement.classList.toggle("parent", presentationRecord.hasPresentationChildren());
+        this._expandArrowElement.classList.toggle("parent", presentationRecord.expandable());
         this._expandArrowElement.classList.toggle("expanded", !!presentationRecord.visibleChildrenCount());
         this._record.setListRow(this);
     },
