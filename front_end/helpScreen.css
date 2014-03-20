@@ -350,6 +350,7 @@ body.platform-mac .help-key {
 
 .settings-tab-container {
     flex: auto;
+    overflow: hidden;
 }
 
 .settings-tab-container header {
