@@ -30,6 +30,7 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
     private final Map<String, FunctionRecord> nestedFunctionsByName = new HashMap<>();
     private final Map<String, Set<CallSite>> callSitesByFunctionName = new HashMap<>();
     private final Map<String, Set<SymbolicArgument>> symbolicArgumentsByName = new HashMap<>();
+    private final Set<FunctionRecord> functionsRequiringThisAnnotation = new HashSet<>();
 
     @Override
     void enterNode(AstNode node) {
@@ -37,21 +38,14 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
         case Token.CALL:
             handleCall((FunctionCall) node);
             break;
-        case Token.FUNCTION:
-            FunctionRecord function = getState().getCurrentFunctionRecord();
-            if (function == null) {
-                break;
-            }
-            if (function.isTopLevelFunction()) {
-                symbolicArgumentsByName.clear();
-            } else {
-                AstNode nameNode = AstUtil.getFunctionNameNode((FunctionNode) node);
-                if (nameNode == null) {
-                    break;
-                }
-                nestedFunctionsByName.put(getContext().getNodeText(nameNode), function);
-            }
+        case Token.FUNCTION: {
+            handleFunction((FunctionNode) node);
             break;
+        }
+        case Token.THIS: {
+            handleThis();
+            break;
+        }
         default:
             break;
         }
@@ -83,6 +77,33 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
                 isReceiverSpecified(actualArguments);
         getOrCreateSetByKey(callSitesByFunctionName, firstPart)
                 .add(new CallSite(hasReceiver, functionCall));
+    }
+
+
+    private void handleFunction(FunctionNode node) {
+        FunctionRecord function = getState().getCurrentFunctionRecord();
+        if (function == null) {
+            return;
+        }
+        if (function.isTopLevelFunction()) {
+            symbolicArgumentsByName.clear();
+        } else {
+            AstNode nameNode = AstUtil.getFunctionNameNode(node);
+            if (nameNode == null) {
+                return;
+            }
+            nestedFunctionsByName.put(getContext().getNodeText(nameNode), function);
+        }
+    }
+
+    private void handleThis() {
+        FunctionRecord function = getState().getCurrentFunctionRecord();
+        if (function == null) {
+            return;
+        }
+        if (!function.isTopLevelFunction() && !function.isConstructor) {
+            functionsRequiringThisAnnotation.add(function);
+        }
     }
 
     private List<String> argumentsForCall(List<AstNode> argumentNodes) {
@@ -145,8 +166,15 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
             return;
         }
 
-        FunctionRecord function = getState().getCurrentFunctionRecord();
-        if (function == null || !function.isTopLevelFunction()) {
+        ContextTrackingState state = getState();
+        FunctionRecord function = state.getCurrentFunctionRecord();
+        if (function == null) {
+            return;
+        }
+        checkThisAnnotation(function);
+
+        // The nested function checks are only run when leaving a top-level function.
+        if (!function.isTopLevelFunction()) {
             return;
         }
 
@@ -160,21 +188,48 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
         symbolicArgumentsByName.clear();
     }
 
+    private void checkThisAnnotation(FunctionRecord function) {
+        AstNode functionNameNode = AstUtil.getFunctionNameNode(function.functionNode);
+        if (functionNameNode == null) {
+            return;
+        }
+        boolean hasThisAnnotation = hasAnnotationTag(function.functionNode, "this");
+        if (hasThisAnnotation == functionReferencesThis(function)) {
+            return;
+        }
+        if (hasThisAnnotation) {
+            if (!function.isTopLevelFunction()) {
+                reportErrorAtNodeStart(
+                        functionNameNode,
+                        "@this annotation found for function not referencing 'this'");
+            }
+            return;
+        } else {
+            reportErrorAtNodeStart(
+                    functionNameNode,
+                    "@this annotation is required for functions referencing 'this'");
+        }
+    }
+
+    private boolean functionReferencesThis(FunctionRecord function) {
+        return functionsRequiringThisAnnotation.contains(function);
+    }
+
     private void processFunctionCallSites(FunctionRecord function, Set<CallSite> callSites) {
         if (callSites == null) {
             return;
         }
-        boolean hasThisAnnotation = hasAnnotationTag(function.functionNode, "this");
+        boolean functionReferencesThis = functionReferencesThis(function);
         for (CallSite callSite : callSites) {
-            if (hasThisAnnotation == callSite.hasReceiver || function.isConstructor) {
+            if (functionReferencesThis == callSite.hasReceiver || function.isConstructor) {
                 continue;
             }
             if (callSite.hasReceiver) {
                 reportErrorAtNodeStart(callSite.callNode,
-                        "Receiver specified for a function not annotated with @this");
+                        "Receiver specified for a function not referencing 'this'");
             } else {
                 reportErrorAtNodeStart(callSite.callNode,
-                        "Receiver not specified for a function annotated with @this");
+                        "Receiver not specified for a function referencing 'this'");
             }
         }
     }
@@ -186,23 +241,23 @@ public final class FunctionReceiverChecker extends ContextTrackingChecker {
             return;
         }
 
-        boolean hasThisAnnotation = hasAnnotationTag(function.functionNode, "this");
+        boolean referencesThis = functionReferencesThis(function);
         for (SymbolicArgument argument : argumentUses) {
             if (argument.receiverPresence == CheckedReceiverPresence.IGNORE) {
                 continue;
             }
             boolean receiverProvided =
                     argument.receiverPresence == CheckedReceiverPresence.PRESENT;
-            if (hasThisAnnotation == receiverProvided) {
+            if (referencesThis == receiverProvided) {
                 continue;
             }
-            if (hasThisAnnotation) {
+            if (referencesThis) {
                 reportErrorAtNodeStart(argument.node,
-                        "Function annotated with @this used as argument without " +
+                        "Function referencing 'this' used as argument without " +
                          "a receiver. " + SUPPRESSION_HINT);
             } else {
                 reportErrorAtNodeStart(argument.node,
-                        "Function not annotated with @this used as argument with " +
+                        "Function not referencing 'this' used as argument with " +
                          "a receiver. " + SUPPRESSION_HINT);
             }
         }

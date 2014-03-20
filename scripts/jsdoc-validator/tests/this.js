@@ -264,6 +264,20 @@ ReceiverTest.prototype = {
             this.foo = 1;
         }
         object.callFunction(func, [], ignoredCallbackWithThis); // OK - ignored.
+
+        function callbackReferencingThisNotAnnotated()
+        {
+            this.foo = 2;
+        }
+        this.memberTwo(callbackReferencingThisNotAnnotated.bind(this)); // OK - No @this annotation, but references |this|.
+
+        /**
+         * @this {Object}
+         */
+        function callbackNotReferencingThisAnnotated()
+        {
+        }
+        this.memberTwo(callbackNotReferencingThisAnnotated); // OK - Has @this annotation, but does not reference |this|.
     },
 
     memberTwo: function(arg) {}

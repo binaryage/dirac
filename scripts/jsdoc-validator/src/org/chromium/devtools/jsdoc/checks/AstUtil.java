@@ -7,8 +7,6 @@ import com.google.javascript.rhino.head.ast.Comment;
 import com.google.javascript.rhino.head.ast.FunctionNode;
 import com.google.javascript.rhino.head.ast.ObjectProperty;
 
-import org.chromium.devtools.jsdoc.ValidatorContext;
-
 public class AstUtil {
 
     private static final String PROTOTYPE_SUFFIX = ".prototype";
