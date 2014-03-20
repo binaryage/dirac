@@ -25,7 +25,8 @@ WebInspector.Target.prototype = {
     _initializeCapability: function(name, callback, error, result)
     {
         this[name] = result;
-        Capabilities[name] = result;
+        if (!Capabilities[name])
+            Capabilities[name] = result;
         if (callback)
             callback();
     },
@@ -37,21 +38,33 @@ WebInspector.Target.prototype = {
     {
         this.consoleModel = new WebInspector.ConsoleModel(this);
         //This and similar lines are needed for compatibility
-        WebInspector.console = this.consoleModel;
+        if (!WebInspector.console)
+            WebInspector.console = this.consoleModel;
+
         this.networkManager = new WebInspector.NetworkManager(this);
-        WebInspector.networkManager = this.networkManager;
+        if (!WebInspector.networkManager)
+            WebInspector.networkManager = this.networkManager;
+
         this.resourceTreeModel = new WebInspector.ResourceTreeModel(this);
-        WebInspector.resourceTreeModel = this.resourceTreeModel;
+        if (!WebInspector.resourceTreeModel)
+            WebInspector.resourceTreeModel = this.resourceTreeModel;
+
         this.debuggerModel = new WebInspector.DebuggerModel(this);
-        WebInspector.debuggerModel = this.debuggerModel;
+        if (!WebInspector.debuggerModel)
+            WebInspector.debuggerModel = this.debuggerModel;
+
         this.runtimeModel = new WebInspector.RuntimeModel(this);
-        WebInspector.runtimeModel = this.runtimeModel;
+        if (!WebInspector.runtimeModel)
+            WebInspector.runtimeModel = this.runtimeModel;
 
         //we can't name it domAgent, because it clashes with function, WebInspector.DOMAgent should be renamed to DOMModel
         this.domModel = new WebInspector.DOMAgent();
-        WebInspector.domAgent = this.domModel;
+        if (!WebInspector.domAgent)
+            WebInspector.domAgent = this.domModel;
+
         this.workerManager = new WebInspector.WorkerManager(this.isMainFrontend);
-        WebInspector.workerManager = this.workerManager;
+        if (!WebInspector.workerManager)
+            WebInspector.workerManager = this.workerManager;
 
         if (callback)
             callback(this);

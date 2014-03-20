@@ -185,6 +185,7 @@
             'front_end/WebInspector.js',
             'front_end/WorkerManager.js',
             'front_end/WorkerFrontendManager.js',
+            'front_end/WorkerTargetManager.js',
             'front_end/Workspace.js',
             'front_end/WorkspaceController.js',
             'front_end/ZoomManager.js',

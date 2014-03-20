@@ -173,7 +173,7 @@ WebInspector.workerManager;
  * @extends {InspectorBackendClass.Connection}
  * @param {string} workerId
  */
-WebInspector.WorkerConnection = function(workerId, onConnectionReady)
+WebInspector.ExternalWorkerConnection = function(workerId, onConnectionReady)
 {
     InspectorBackendClass.Connection.call(this);
     this._workerId = workerId;
@@ -181,7 +181,7 @@ WebInspector.WorkerConnection = function(workerId, onConnectionReady)
     onConnectionReady(this);
 }
 
-WebInspector.WorkerConnection.prototype = {
+WebInspector.ExternalWorkerConnection.prototype = {
 
     /**
      * @param {?Event} event

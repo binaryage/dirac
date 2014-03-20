@@ -61,6 +61,7 @@
             "OverridesSupport.js",
             "PresentationConsoleMessageHelper.js",
             "WorkerManager.js",
+            "WorkerTargetManager.js",
             "RuntimeModel.js",
             "SASSSourceMapping.js",
             "Script.js",

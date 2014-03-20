@@ -188,7 +188,7 @@ WebInspector.Main.prototype = {
 
         var workerId = WebInspector.queryParam("dedicatedWorkerId");
         if (workerId) {
-            new WebInspector.WorkerConnection(workerId, onConnectionReady);
+            new WebInspector.ExternalWorkerConnection(workerId, onConnectionReady);
             return;
         }
 
@@ -255,6 +255,9 @@ WebInspector.Main.prototype = {
         WebInspector.shortcutsScreen.section(WebInspector.UIString("Console"));
         WebInspector.shortcutsScreen.section(WebInspector.UIString("Elements Panel"));
         WebInspector.ShortcutsScreen.registerShortcuts();
+
+        if (WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
+            new WebInspector.WorkerTargetManager(mainTarget, WebInspector.targetManager);
 
         WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._resetErrorAndWarningCounts, this);
         WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);

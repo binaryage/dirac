@@ -104,7 +104,6 @@ InspectorBackendClass.prototype = {
     setConnection: function(connection)
     {
         this._connection = connection;
-        this._connection.initialize(this._agentPrototypes, this._dispatcherPrototypes);
 
         this._connection.registerAgentsOn(window);
         for (var type in this._enums) {
@@ -340,6 +339,7 @@ InspectorBackendClass.Connection = function()
     this._agents = {};
     this._dispatchers = {};
     this._callbacks = {};
+    this._initialize(InspectorBackend._agentPrototypes, InspectorBackend._dispatcherPrototypes);
 }
 
 InspectorBackendClass.Connection.Events = {
@@ -352,7 +352,7 @@ InspectorBackendClass.Connection.prototype = {
      * @param {!Object.<string, !InspectorBackendClass.AgentPrototype>} agentPrototypes
      * @param {!Object.<string, !InspectorBackendClass.DispatcherPrototype>} dispatcherPrototypes
      */
-    initialize: function(agentPrototypes, dispatcherPrototypes)
+    _initialize: function(agentPrototypes, dispatcherPrototypes)
     {
         for (var domain in agentPrototypes) {
             this._agents[domain] = Object.create(agentPrototypes[domain]);
