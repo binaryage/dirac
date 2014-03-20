@@ -141,7 +141,7 @@ WebInspector.JSHeapSnapshot.prototype = {
                 if (globalObjEdge.isShortcut())
                     propNames[globalObjEdge._nameOrIndex()] = true;
             }
-            for (innerIter.rewind(); innerIter.hasNext(); innerIter.next()) {
+            for (var innerIter = node.edges(); innerIter.hasNext(); innerIter.next()) {
                 var globalObjEdge = innerIter.edge;
                 if (!globalObjEdge.isShortcut()
                     && globalObjEdge.node().isHidden()

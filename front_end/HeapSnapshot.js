@@ -137,8 +137,6 @@ WebInspector.HeapSnapshotEdge.prototype = {
 WebInspector.HeapSnapshotItemIterator = function() { }
 
 WebInspector.HeapSnapshotItemIterator.prototype = {
-    rewind: function() { },
-
     /**
      * @return {boolean}
      */
@@ -175,11 +173,6 @@ WebInspector.HeapSnapshotEdgeIterator = function(edge)
 }
 
 WebInspector.HeapSnapshotEdgeIterator.prototype = {
-    rewind: function()
-    {
-        this.edge.edgeIndex = 0;
-    },
-
     /**
      * @return {boolean}
      */
@@ -374,11 +367,6 @@ WebInspector.HeapSnapshotRetainerEdgeIterator = function(retainer)
 }
 
 WebInspector.HeapSnapshotRetainerEdgeIterator.prototype = {
-    rewind: function()
-    {
-        this.retainer.setRetainerIndex(0);
-    },
-
     /**
      * @return {boolean}
      */
@@ -650,11 +638,6 @@ WebInspector.HeapSnapshotNodeIterator = function(node)
 }
 
 WebInspector.HeapSnapshotNodeIterator.prototype = {
-    rewind: function()
-    {
-        this.node.nodeIndex = this.node._firstNodeIndex;
-    },
-
     /**
      * @return {boolean}
      */
@@ -709,8 +692,6 @@ WebInspector.HeapSnapshotIndexRangeIterator = function(iterator, indexes)
 }
 
 WebInspector.HeapSnapshotIndexRangeIterator.prototype = {
-    rewind: function() { },
-
     /**
      * @return {boolean}
      */
@@ -766,8 +747,6 @@ WebInspector.HeapSnapshotFilteredIterator = function(iterator, filter)
 }
 
 WebInspector.HeapSnapshotFilteredIterator.prototype = {
-    rewind: function() { },
-
     /**
      * @return {boolean}
      */
