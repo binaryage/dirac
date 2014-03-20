@@ -1267,7 +1267,7 @@ WebInspector.SourcesPanel.prototype = {
     appendApplicableItems: function(event, contextMenu, target)
     {
         this._appendUISourceCodeItems(event, contextMenu, target);
-        this._appendFunctionItems(contextMenu, target);
+        this._appendRemoteObjectItems(contextMenu, target);
     },
 
     _suggestReload: function()
@@ -1385,20 +1385,89 @@ WebInspector.SourcesPanel.prototype = {
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */
-    _appendFunctionItems: function(contextMenu, target)
+    _appendRemoteObjectItems: function(contextMenu, target)
     {
         if (!(target instanceof WebInspector.RemoteObject))
             return;
         var remoteObject = /** @type {!WebInspector.RemoteObject} */ (target);
-        if (remoteObject.type !== "function")
-            return;
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Store as global variable" : "Store as Global Variable"), this._saveToTempVariable.bind(this, remoteObject));
+        if (remoteObject.type === "function")
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show function definition" : "Show Function Definition"), this._showFunctionDefinition.bind(this, remoteObject));
+    },
 
+    /**
+     * @param {!WebInspector.RemoteObject} remoteObject
+     */
+    _saveToTempVariable: function(remoteObject)
+    {
+        WebInspector.runtimeModel.evaluate("window", "", false, true, false, false, didGetGlobalObject);
+
+        /**
+         * @param {?WebInspector.RemoteObject} global
+         * @param {boolean=} wasThrown
+         */
+        function didGetGlobalObject(global, wasThrown)
+        {
+            /**
+             * @suppressReceiverCheck
+             * @this {Window}
+             */
+            function remoteFunction(value)
+            {
+                var prefix = "temp";
+                var index = 1;
+                while ((prefix + index) in this)
+                    ++index;
+                var name = prefix + index;
+                this[name] = value;
+                return name;
+            }
+
+            if (wasThrown || !global)
+                failedToSave(global);
+            else
+                global.callFunction(remoteFunction, [WebInspector.RemoteObject.toCallArgument(remoteObject)], didSave.bind(null, global));
+        }
+
+        /**
+         * @param {!WebInspector.RemoteObject} global
+         * @param {?WebInspector.RemoteObject} result
+         * @param {boolean=} wasThrown
+         */
+        function didSave(global, result, wasThrown)
+        {
+            global.release();
+            if (wasThrown || !result || result.type !== "string")
+                failedToSave(result);
+            else
+                WebInspector.console.evaluate(result.value);
+        }
+
+        /**
+         * @param {?WebInspector.RemoteObject} result
+         */
+        function failedToSave(result)
+        {
+            var message = WebInspector.UIString("Failed to save to temp variable.");
+            if (result) {
+                message += " " + result.description;
+                result.release();
+            }
+            WebInspector.console.showErrorMessage(message)
+        }
+    },
+
+    /**
+     * @param {!WebInspector.RemoteObject} remoteObject
+     */
+    _showFunctionDefinition: function(remoteObject)
+    {
         /**
          * @param {?Protocol.Error} error
          * @param {!DebuggerAgent.FunctionDetails} response
          * @this {WebInspector.SourcesPanel}
          */
-        function didGetDetails(error, response)
+        function didGetFunctionDetails(error, response)
         {
             if (error) {
                 console.error(error);
@@ -1411,16 +1480,7 @@ WebInspector.SourcesPanel.prototype = {
 
             this.showUILocation(uiLocation, true);
         }
-
-        /**
-         * @this {WebInspector.SourcesPanel}
-         */
-        function revealFunction()
-        {
-            DebuggerAgent.getFunctionDetails(remoteObject.objectId, didGetDetails.bind(this));
-        }
-
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Show function definition" : "Show Function Definition"), revealFunction.bind(this));
+        DebuggerAgent.getFunctionDetails(remoteObject.objectId, didGetFunctionDetails.bind(this));
     },
 
     /**

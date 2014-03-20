@@ -179,6 +179,34 @@ WebInspector.RemoteObject.type = function(remoteObject)
 }
 
 /**
+ * @param {!RuntimeAgent.RemoteObject|!WebInspector.RemoteObject} remoteObject
+ * @return {!RuntimeAgent.CallArgument}
+ */
+WebInspector.RemoteObject.toCallArgument = function(remoteObject)
+{
+    var type = /** @type {!RuntimeAgent.CallArgumentType.<string>} */ (remoteObject.type);
+    var value = remoteObject.value;
+
+    // Handle special numbers: NaN, Infinity, -Infinity, -0.
+    if (type === "number") {
+        switch (remoteObject.description) {
+        case "NaN":
+        case "Infinity":
+        case "-Infinity":
+        case "-0":
+            value = remoteObject.description;
+            break;
+        }
+    }
+
+    return {
+        value: value,
+        objectId: remoteObject.objectId,
+        type: type
+    };
+}
+
+/**
  * @constructor
  * @extends {WebInspector.RemoteObject}
  * @param {!WebInspector.Target|undefined} target
@@ -390,7 +418,7 @@ WebInspector.RemoteObjectImpl.prototype = {
         // where property was defined; so do we.
         var setPropertyValueFunction = "function(a, b) { this[a] = b; }";
 
-        var argv = [{ value: name }, this._toCallArgument(result)]
+        var argv = [{ value: name }, WebInspector.RemoteObject.toCallArgument(result)]
         this._runtimeAgent.callFunctionOn(this._objectId, setPropertyValueFunction, argv, true, undefined, undefined, propertySetCallback);
 
         /**
@@ -406,15 +434,6 @@ WebInspector.RemoteObjectImpl.prototype = {
             }
             callback();
         }
-    },
-
-    /**
-     * @param {!RuntimeAgent.RemoteObject} object
-     * @return {!RuntimeAgent.CallArgument}
-     */
-    _toCallArgument: function(object)
-    {
-        return { value: object.value, objectId: object.objectId, type: /** @type {!RuntimeAgent.CallArgumentType.<string>} */ (object.type) };
     },
 
     /**
@@ -655,7 +674,7 @@ WebInspector.ScopeRemoteObject.prototype = {
      */
     doSetObjectPropertyValue: function(result, name, callback)
     {
-        this._debuggerAgent.setVariableValue(this._scopeRef.number, name, this._toCallArgument(result), this._scopeRef.callFrameId, this._scopeRef.functionId, setVariableValueCallback.bind(this));
+        this._debuggerAgent.setVariableValue(this._scopeRef.number, name, WebInspector.RemoteObject.toCallArgument(result), this._scopeRef.callFrameId, this._scopeRef.functionId, setVariableValueCallback.bind(this));
 
         /**
          * @param {?Protocol.Error} error
