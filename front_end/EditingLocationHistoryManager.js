@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @param {!WebInspector.SourcesPanel} sourcesPanel
+ * @param {!WebInspector.SourcesEditor} sourcesEditor
  * @param {!function():?WebInspector.SourceFrame} currentSourceFrameCallback
  */
-WebInspector.EditingLocationHistoryManager = function(sourcesPanel, currentSourceFrameCallback)
+WebInspector.EditingLocationHistoryManager = function(sourcesEditor, currentSourceFrameCallback)
 {
-    this._sourcesPanel = sourcesPanel;
+    this._sourcesEditor = sourcesEditor;
     this._historyManager = new WebInspector.SimpleHistoryManager(WebInspector.EditingLocationHistoryManager.HistoryDepth);
     this._currentSourceFrameCallback = currentSourceFrameCallback;
 }
@@ -99,7 +99,7 @@ WebInspector.EditingLocationHistoryManager.prototype = {
         var sourceFrame = this._currentSourceFrameCallback();
         if (!sourceFrame)
             return;
-        var entry = new WebInspector.EditingLocationHistoryEntry(this._sourcesPanel, this, sourceFrame, selection);
+        var entry = new WebInspector.EditingLocationHistoryEntry(this._sourcesEditor, this, sourceFrame, selection);
         active.merge(entry);
     },
 
@@ -111,7 +111,7 @@ WebInspector.EditingLocationHistoryManager.prototype = {
         var sourceFrame = this._currentSourceFrameCallback();
         if (!sourceFrame)
             return;
-        var entry = new WebInspector.EditingLocationHistoryEntry(this._sourcesPanel, this, sourceFrame, selection);
+        var entry = new WebInspector.EditingLocationHistoryEntry(this._sourcesEditor, this, sourceFrame, selection);
         this._historyManager.push(entry);
     },
 
@@ -133,14 +133,14 @@ WebInspector.EditingLocationHistoryManager.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.HistoryEntry}
- * @param {!WebInspector.SourcesPanel} sourcesPanel
+ * @param {!WebInspector.SourcesEditor} sourcesEditor
  * @param {!WebInspector.EditingLocationHistoryManager} editingLocationManager
  * @param {!WebInspector.SourceFrame} sourceFrame
  * @param {!WebInspector.TextRange} selection
  */
-WebInspector.EditingLocationHistoryEntry = function(sourcesPanel, editingLocationManager, sourceFrame, selection)
+WebInspector.EditingLocationHistoryEntry = function(sourcesEditor, editingLocationManager, sourceFrame, selection)
 {
-    this._sourcesPanel = sourcesPanel;
+    this._sourcesEditor = sourcesEditor;
     this._editingLocationManager = editingLocationManager;
     var uiSourceCode = sourceFrame.uiSourceCode();
     this._projectId = uiSourceCode.project().id();
@@ -191,6 +191,6 @@ WebInspector.EditingLocationHistoryEntry.prototype = {
             return;
 
         this._editingLocationManager.updateCurrentState();
-        this._sourcesPanel.showUISourceCode(uiSourceCode, position.lineNumber, position.columnNumber);
+        this._sourcesEditor.showSourceLocation(uiSourceCode, position.lineNumber, position.columnNumber);
     }
 };

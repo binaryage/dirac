@@ -147,11 +147,11 @@ var allDescriptors = [
                 className: "WebInspector.SourcesPanel.UILocationRevealer"
             },
             {
-                type: "@WebInspector.SourcesPanel.EditorAction",
+                type: "@WebInspector.SourcesEditor.EditorAction",
                 className: "WebInspector.InplaceFormatterEditorAction"
             },
             {
-                type: "@WebInspector.SourcesPanel.EditorAction",
+                type: "@WebInspector.SourcesEditor.EditorAction",
                 className: "WebInspector.ScriptFormatterEditorAction"
             },
             {

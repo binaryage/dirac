@@ -492,16 +492,14 @@ WebInspector.SelectionDialogContentProvider.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.SelectionDialogContentProvider}
- * @param {!WebInspector.View} view
  * @param {!WebInspector.UISourceCode} uiSourceCode
  * @param {function(number, number)} selectItemCallback
  */
-WebInspector.JavaScriptOutlineDialog = function(view, uiSourceCode, selectItemCallback)
+WebInspector.JavaScriptOutlineDialog = function(uiSourceCode, selectItemCallback)
 {
     WebInspector.SelectionDialogContentProvider.call(this);
 
     this._functionItems = [];
-    this._view = view;
     this._selectItemCallback = selectItemCallback;
     this._outlineWorker = new Worker("ScriptFormatterWorker.js");
     this._outlineWorker.onmessage = this._didBuildOutlineChunk.bind(this);
@@ -517,7 +515,7 @@ WebInspector.JavaScriptOutlineDialog.show = function(view, uiSourceCode, selectI
 {
     if (WebInspector.Dialog.currentInstance())
         return null;
-    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.JavaScriptOutlineDialog(view, uiSourceCode, selectItemCallback));
+    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.JavaScriptOutlineDialog(uiSourceCode, selectItemCallback));
     WebInspector.Dialog.show(view.element, filteredItemSelectionDialog);
 }
 
@@ -768,13 +766,13 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.SelectUISourceCodeDialog}
- * @param {!WebInspector.SourcesPanel} panel
+ * @param {!WebInspector.SourcesEditor} sourcesEditor
  * @param {!Map.<!WebInspector.UISourceCode, number>=} defaultScores
  */
-WebInspector.OpenResourceDialog = function(panel, defaultScores)
+WebInspector.OpenResourceDialog = function(sourcesEditor, defaultScores)
 {
     WebInspector.SelectUISourceCodeDialog.call(this, defaultScores);
-    this._panel = panel;
+    this._sourcesEditor = sourcesEditor;
 }
 
 WebInspector.OpenResourceDialog.prototype = {
@@ -787,10 +785,10 @@ WebInspector.OpenResourceDialog.prototype = {
     uiSourceCodeSelected: function(uiSourceCode, lineNumber, columnNumber)
     {
         if (!uiSourceCode)
-            uiSourceCode = this._panel.currentUISourceCode();
+            uiSourceCode = this._sourcesEditor.currentUISourceCode();
         if (!uiSourceCode)
             return;
-        this._panel.showUISourceCode(uiSourceCode, lineNumber, columnNumber);
+        this._sourcesEditor.showSourceLocation(uiSourceCode, lineNumber, columnNumber);
     },
 
     /**
@@ -815,17 +813,17 @@ WebInspector.OpenResourceDialog.prototype = {
 }
 
 /**
- * @param {!WebInspector.SourcesPanel} panel
+ * @param {!WebInspector.SourcesEditor} sourcesEditor
  * @param {!Element} relativeToElement
  * @param {string=} query
  * @param {!Map.<!WebInspector.UISourceCode, number>=} defaultScores
  */
-WebInspector.OpenResourceDialog.show = function(panel, relativeToElement, query, defaultScores)
+WebInspector.OpenResourceDialog.show = function(sourcesEditor, relativeToElement, query, defaultScores)
 {
     if (WebInspector.Dialog.currentInstance())
         return;
 
-    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.OpenResourceDialog(panel, defaultScores));
+    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.OpenResourceDialog(sourcesEditor, defaultScores));
     filteredItemSelectionDialog.renderAsTwoRows();
     if (query)
         filteredItemSelectionDialog.setQuery(query);

@@ -262,7 +262,7 @@ WebInspector.FormatterProjectDelegate.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.SourcesPanel.EditorAction}
+ * @implements {WebInspector.SourcesEditor.EditorAction}
  */
 WebInspector.ScriptFormatterEditorAction = function()
 {
@@ -301,17 +301,17 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
     },
 
     /**
-     * @param {!WebInspector.SourcesPanel} panel
+     * @param {!WebInspector.SourcesEditor} sourcesEditor
      * @return {!Element}
      */
-    button: function(panel)
+    button: function(sourcesEditor)
     {
         if (this._button)
             return this._button.element;
 
-        this._panel = panel;
-        this._panel.addEventListener(WebInspector.SourcesPanel.Events.EditorSelected, this._editorSelected.bind(this));
-        this._panel.addEventListener(WebInspector.SourcesPanel.Events.EditorClosed, this._editorClosed.bind(this));
+        this._sourcesEditor = sourcesEditor;
+        this._sourcesEditor.addEventListener(WebInspector.SourcesEditor.Events.EditorSelected, this._editorSelected.bind(this));
+        this._sourcesEditor.addEventListener(WebInspector.SourcesEditor.Events.EditorClosed, this._editorClosed.bind(this));
 
         this._button = new WebInspector.StatusBarButton(WebInspector.UIString("Pretty print"), "sources-toggle-pretty-print-status-bar-item");
         this._button.toggled = false;
@@ -338,7 +338,7 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
 
     _toggleFormatScriptSource: function()
     {
-        var uiSourceCode = this._panel.selectedUISourceCode();
+        var uiSourceCode = this._sourcesEditor.currentUISourceCode();
         if (!this._isFormatableScript(uiSourceCode))
             return;
         this._formatUISourceCodeScript(uiSourceCode);
@@ -366,15 +366,15 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
         {
             if (!formattedUISourceCode)
                 return;
-            if (uiSourceCode !== this._panel.selectedUISourceCode())
+            if (uiSourceCode !== this._sourcesEditor.currentUISourceCode())
                 return;
-            var sourceFrame = this._panel.viewForFile(uiSourceCode);
+            var sourceFrame = this._sourcesEditor.viewForFile(uiSourceCode);
             var start = [0, 0];
             if (sourceFrame) {
                 var selection = sourceFrame.selection();
                 start = mapping.originalToFormatted(selection.startLine, selection.startColumn);
             }
-            this._panel.showUISourceCode(formattedUISourceCode, start[0], start[1]);
+            this._sourcesEditor.showSourceLocation(formattedUISourceCode, start[0], start[1]);
             this._updateButton(formattedUISourceCode);
         }
     },

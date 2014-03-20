@@ -716,7 +716,7 @@ WebInspector.ExtensionServer.prototype = {
             startColumn: textRange.startColumn,
             endLine: textRange.endLine,
             endColumn: textRange.endColumn,
-            url: sourcesPanel.tabbedEditorContainer.currentFile().uri()
+            url: sourcesPanel.sourcesEditor().currentUISourceCode().uri()
         };
 
         return selection;
