@@ -951,8 +951,6 @@ WebInspector.HeapSnapshot.prototype = {
 
         this._progress.updateStatus("Building edge indexes\u2026");
         this._buildEdgeIndexes();
-        this._progress.updateStatus("Marking invisible edges\u2026");
-        this._markInvisibleEdges();
         this._progress.updateStatus("Building retainers\u2026");
         this._buildRetainers();
         this._progress.updateStatus("Calculating node flags\u2026");
@@ -1735,11 +1733,6 @@ WebInspector.HeapSnapshot.prototype = {
             dominatedRefIndex += (--dominatedNodes[dominatedRefIndex]);
             dominatedNodes[dominatedRefIndex] = nodeOrdinal * nodeFieldCount;
         }
-    },
-
-    _markInvisibleEdges: function()
-    {
-        throw new Error("Not implemented");
     },
 
     _calculateFlags: function()

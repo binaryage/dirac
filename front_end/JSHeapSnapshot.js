@@ -125,33 +125,6 @@ WebInspector.JSHeapSnapshot.prototype = {
         delete this._flags;
     },
 
-    _markInvisibleEdges: function()
-    {
-        // Mark hidden edges of global objects as invisible.
-        // FIXME: This is a temporary measure. Normally, we should
-        // really hide all hidden nodes.
-        for (var iter = this.rootNode().edges(); iter.hasNext(); iter.next()) {
-            var edge = iter.edge;
-            if (!edge.isShortcut())
-                continue;
-            var node = edge.node();
-            var propNames = {};
-            for (var innerIter = node.edges(); innerIter.hasNext(); innerIter.next()) {
-                var globalObjEdge = innerIter.edge;
-                if (globalObjEdge.isShortcut())
-                    propNames[globalObjEdge._nameOrIndex()] = true;
-            }
-            for (var innerIter = node.edges(); innerIter.hasNext(); innerIter.next()) {
-                var globalObjEdge = innerIter.edge;
-                if (!globalObjEdge.isShortcut()
-                    && globalObjEdge.node().isHidden()
-                    && globalObjEdge._hasStringName()
-                    && (globalObjEdge._nameOrIndex() in propNames))
-                    globalObjEdge._edges[globalObjEdge.edgeIndex + this._edgeTypeOffset] = this._edgeInvisibleType;
-            }
-        }
-    },
-
     _calculateFlags: function()
     {
         this._flags = new Uint32Array(this.nodeCount);
