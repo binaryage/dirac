@@ -104,7 +104,6 @@
             "EmptyView.js",
             "FilterBar.js",
             "FilterSuggestionBuilder.js",
-            "GoToLineDialog.js",
             "HelpScreen.js",
             "InplaceEditor.js",
             "InspectedPagePlaceholder.js",
@@ -179,6 +178,7 @@
         "name": "source_frame",
         "dependencies": ["components", "codemirror"],
         "sources": [
+            "GoToLineDialog.js",
             "SourceFrame.js"
         ]
     },

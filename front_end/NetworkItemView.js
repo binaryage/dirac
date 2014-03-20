@@ -73,6 +73,17 @@ WebInspector.NetworkItemView.prototype = {
     },
 
     /**
+     * @return {?WebInspector.SourceFrame}
+     */
+    currentSourceFrame: function()
+    {
+        var view = this.visibleView;
+        if (view && view instanceof WebInspector.SourceFrame)
+            return /** @type {!WebInspector.SourceFrame} */ (view);
+        return null;
+    },
+
+    /**
      * @param {string=} tabId
      */
     _selectTab: function(tabId)
@@ -171,24 +182,6 @@ WebInspector.RequestContentView.prototype = {
     contentLoaded: function()
     {
         // Should be implemented by subclasses.
-    },
-
-    /**
-     * @override
-     * @return {boolean}
-     */
-    canHighlightPosition: function()
-    {
-        return this._innerView && this._innerView.canHighlightPosition();
-    },
-
-    /**
-     * @override
-     */
-    highlightPosition: function(line, column)
-    {
-        if (this.canHighlightPosition())
-            this._innerView.highlightPosition(line, column);
     },
 
     __proto__: WebInspector.RequestView.prototype

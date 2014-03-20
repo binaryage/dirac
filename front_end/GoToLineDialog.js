@@ -31,8 +31,9 @@
 /**
  * @constructor
  * @extends {WebInspector.DialogDelegate}
+ * @param {!WebInspector.SourceFrame} sourceFrame
  */
-WebInspector.GoToLineDialog = function(view)
+WebInspector.GoToLineDialog = function(sourceFrame)
 {
     WebInspector.DialogDelegate.call(this);
     
@@ -49,30 +50,30 @@ WebInspector.GoToLineDialog = function(view)
     this._goButton.textContent = WebInspector.UIString("Go");
     this._goButton.addEventListener("click", this._onGoClick.bind(this), false);
 
-    this._view = view;
+    this._sourceFrame = sourceFrame;
 }
 
 /**
  * @param {!WebInspector.Panel} panel
- * @param {function():?WebInspector.View} viewGetter
+ * @param {function():?WebInspector.SourceFrame} sourceFrameGetter
  */
-WebInspector.GoToLineDialog.install = function(panel, viewGetter)
+WebInspector.GoToLineDialog.install = function(panel, sourceFrameGetter)
 {
     var goToLineShortcut = WebInspector.GoToLineDialog.createShortcut();
-    panel.registerShortcuts([goToLineShortcut], WebInspector.GoToLineDialog._show.bind(null, viewGetter));
+    panel.registerShortcuts([goToLineShortcut], WebInspector.GoToLineDialog._show.bind(null, sourceFrameGetter));
 }
 
 /**
- * @param {function():?WebInspector.View} viewGetter
+ * @param {function():?WebInspector.SourceFrame} sourceFrameGetter
  * @param {?Event=} event
  * @return {boolean}
  */
-WebInspector.GoToLineDialog._show = function(viewGetter, event)
+WebInspector.GoToLineDialog._show = function(sourceFrameGetter, event)
 {
-    var sourceView = viewGetter();
-    if (!sourceView || !sourceView.canHighlightPosition())
+    var sourceFrame = sourceFrameGetter();
+    if (!sourceFrame)
         return false;
-    WebInspector.Dialog.show(sourceView.element, new WebInspector.GoToLineDialog(sourceView));
+    WebInspector.Dialog.show(sourceFrame.element, new WebInspector.GoToLineDialog(sourceFrame));
     return true;
 }
 
@@ -102,7 +103,7 @@ WebInspector.GoToLineDialog.prototype = {
         var value = this._input.value;
         var lineNumber = parseInt(value, 10) - 1;
         if (!isNaN(lineNumber) && lineNumber >= 0)
-            this._view.highlightPosition(lineNumber);
+            this._sourceFrame.revealPosition(lineNumber, 0, true);
     },
     
     onEnter: function()

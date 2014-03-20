@@ -657,24 +657,6 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @override
-     * @return {boolean}
-     */
-    canHighlightPosition: function()
-    {
-        return !!(this._currentTab && this._currentTab.view && this._currentTab.view.canHighlightPosition());
-    },
-
-    /**
-     * @override
-     */
-    highlightPosition: function(line, column)
-    {
-        if (this.canHighlightPosition())
-            this._currentTab.view.highlightPosition(line, column);
-    },
-
-    /**
      * @return {!Array.<!Element>}
      */
     elementsToRestoreScrollPositionsFor: function()

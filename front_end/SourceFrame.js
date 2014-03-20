@@ -199,23 +199,6 @@ WebInspector.SourceFrame.prototype = {
     },
 
     /**
-     * @override
-     * @return {boolean}
-     */
-    canHighlightPosition: function()
-    {
-        return true;
-    },
-
-    /**
-     * @override
-     */
-    highlightPosition: function(line, column)
-    {
-        this.revealPosition(line, column, true);
-    },
-
-    /**
      * @param {number} line
      * @param {number=} column
      * @param {boolean=} shouldHighlight

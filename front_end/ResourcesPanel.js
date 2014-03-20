@@ -102,14 +102,17 @@ WebInspector.ResourcesPanel = function(database)
     this.sidebarElement().addEventListener("mouseout", this._onmouseout.bind(this), false);
 
     /**
-     * @return {!WebInspector.View}
      * @this {WebInspector.ResourcesPanel}
+     * @return {?WebInspector.SourceFrame}
      */
-    function viewGetter()
+    function sourceFrameGetter()
     {
-        return this.visibleView;
+        var view = this.visibleView;
+        if (view && view instanceof WebInspector.SourceFrame)
+            return /** @type {!WebInspector.SourceFrame} */ (view);
+        return null;
     }
-    WebInspector.GoToLineDialog.install(this, viewGetter.bind(this));
+    WebInspector.GoToLineDialog.install(this, sourceFrameGetter.bind(this));
 
     if (WebInspector.resourceTreeModel.cachedResourcesLoaded())
         this._cachedResourcesLoaded();
@@ -425,9 +428,9 @@ WebInspector.ResourcesPanel.prototype = {
             resourceTreeElement.revealAndSelect(true);
 
         if (typeof line === "number") {
-            var view = this._resourceViewForResource(resource);
-            if (view.canHighlightPosition())
-                view.highlightPosition(line, column);
+            var resourceSourceFrame = this._resourceSourceFrameViewForResource(resource);
+            if (resourceSourceFrame)
+                resourceSourceFrame.revealPosition(line, column, true);
         }
         return true;
     },
@@ -442,6 +445,10 @@ WebInspector.ResourcesPanel.prototype = {
         this._innerShowView(view);
     },
 
+    /**
+     * @param {!WebInspector.Resource} resource
+     * @return {?WebInspector.View}
+     */
     _resourceViewForResource: function(resource)
     {
         if (WebInspector.ResourceView.hasTextContent(resource)) {
@@ -451,6 +458,18 @@ WebInspector.ResourcesPanel.prototype = {
             return treeElement.sourceView();
         }
         return WebInspector.ResourceView.nonSourceViewForResource(resource);
+    },
+
+    /**
+     * @param {!WebInspector.Resource} resource
+     * @return {?WebInspector.ResourceSourceFrame}
+     */
+    _resourceSourceFrameViewForResource: function(resource)
+    {
+        var resourceView = this._resourceViewForResource(resource);
+        if (resourceView && resourceView instanceof WebInspector.ResourceSourceFrame)
+            return /** @type {!WebInspector.ResourceSourceFrame} */ (resourceView);
+        return null;
     },
 
     /**

@@ -355,22 +355,6 @@ WebInspector.View.prototype = {
         }
     },
 
-    /**
-     * @return {boolean}
-     */
-    canHighlightPosition: function()
-    {
-        return false;
-    },
-
-    /**
-     * @param {number} line
-     * @param {number=} column
-     */
-    highlightPosition: function(line, column)
-    {
-    },
-
     doResize: function()
     {
         if (!this.isShowing())

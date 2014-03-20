@@ -1736,12 +1736,13 @@ WebInspector.NetworkPanel = function()
 
     /**
      * @this {WebInspector.NetworkPanel}
+     * @return {?WebInspector.SourceFrame}
      */
-    function viewGetter()
+    function sourceFrameGetter()
     {
-        return this.visibleView;
+        return this._networkItemView.currentSourceFrame();
     }
-    WebInspector.GoToLineDialog.install(this, viewGetter.bind(this));
+    WebInspector.GoToLineDialog.install(this, sourceFrameGetter.bind(this));
 }
 
 /** @enum {string} */
@@ -1847,6 +1848,9 @@ WebInspector.NetworkPanel.prototype = {
         this._showRequest(event.data);
     },
 
+    /**
+     * @param {?WebInspector.NetworkRequest} request
+     */
     _showRequest: function(request)
     {
         if (!request)
@@ -1854,23 +1858,23 @@ WebInspector.NetworkPanel.prototype = {
 
         this._toggleViewingRequestMode();
 
-        if (this.visibleView) {
-            this.visibleView.detach();
-            delete this.visibleView;
+        if (this._networkItemView) {
+            this._networkItemView.detach();
+            delete this._networkItemView;
         }
 
         var view = new WebInspector.NetworkItemView(request);
         view.show(this._viewsContainerElement);
-        this.visibleView = view;
+        this._networkItemView = view;
     },
 
     _closeVisibleRequest: function()
     {
         this.element.classList.remove("viewing-resource");
 
-        if (this.visibleView) {
-            this.visibleView.detach();
-            delete this.visibleView;
+        if (this._networkItemView) {
+            this._networkItemView.detach();
+            delete this._networkItemView;
         }
     },
 
@@ -1966,7 +1970,7 @@ WebInspector.NetworkPanel.prototype = {
         if (!(target instanceof WebInspector.NetworkRequest))
             return;
         var request = /** @type {!WebInspector.NetworkRequest} */ (target);
-        if (this.visibleView && this.visibleView.isShowing() && this.visibleView.request() === request)
+        if (this._networkItemView && this._networkItemView.isShowing() && this._networkItemView.request() === request)
             return;
 
         appendRevealItem.call(this, request);
