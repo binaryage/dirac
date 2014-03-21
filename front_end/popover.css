@@ -2,7 +2,7 @@
     position: absolute;
     -webkit-border-image: url(Images/popoverBackground.png) 25 25 25 25;
     border-width: 25px;
-    z-index: 100;
+    z-index: 600;
     pointer-events: none;
 }
 
