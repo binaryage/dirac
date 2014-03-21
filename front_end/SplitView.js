@@ -42,8 +42,6 @@ WebInspector.SplitView = function(isVertical, secondIsSidebar, settingName, defa
     this.registerRequiredCSS("splitView.css");
     this.element.classList.add("split-view");
 
-    WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
-
     this._mainView = new WebInspector.VBox();
     this._mainView.makeLayoutBoundary();
     this._mainElement = this._mainView.element;
@@ -572,7 +570,13 @@ WebInspector.SplitView.prototype = {
 
     wasShown: function()
     {
-        this._updateLayout();
+        this._forceUpdateLayout();
+        WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
+    },
+
+    willHide: function()
+    {
+        WebInspector.zoomManager.removeEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
     },
 
     onResize: function()
@@ -779,15 +783,19 @@ WebInspector.SplitView.prototype = {
         setting.set(state);
     },
 
+    _forceUpdateLayout: function()
+    {
+        // Force layout even if sidebar size does not change.
+        this._sidebarSize = -1;
+        this._updateLayout();
+    },
+
     /**
      * @param {!WebInspector.Event} event
      */
     _onZoomChanged: function(event)
     {
-        // Force layout even if sidebar size does not change.
-        this._sidebarSize = -1;
-        if (this.isShowing())
-            this._updateLayout();
+        this._forceUpdateLayout();
     },
 
     /**
