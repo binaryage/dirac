@@ -131,6 +131,23 @@
     border-style: solid;
 }
 
+.layers-3d-view .layer-transparent {
+    position: absolute;
+    background-color: transparent;
+    z-index: 100;
+}
+
+.layer-transparent .back-wall,
+.layer-transparent .side-wall {
+    display: none;
+}
+
+.scroll-rect {
+    border: solid rgb(178, 0, 0);
+    border-width: inherit;
+    background-color: rgba(178, 0, 0, 0.4);
+}
+
 .layer-details-view .empty-view {
     font-size: 16px;
 }

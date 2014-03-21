@@ -3845,6 +3845,15 @@
                 "description": "Unique snapshot identifier."
             },
             {
+                "id": "ScrollRect",
+                "type": "object",
+                "description": "Rectangle where scrolling happens on the main thread.",
+                "properties": [
+                    { "name": "rect", "$ref": "DOM.Rect", "description": "Rectangle itself." },
+                    { "name": "type", "type": "string", "enum": ["RepaintsOnScroll", "TouchEventHandler", "WheelEventHandler"], "description": "Reason for rectangle to force scrolling on the main thread" }
+                ]
+            },
+            {
                 "id": "Layer",
                 "type": "object",
                 "description": "Information about a compositing layer.",
@@ -3861,7 +3870,8 @@
                     { "name": "anchorY", "type": "number", "optional": true, "description": "Transform anchor point Y, absent if no transform specified" },
                     { "name": "anchorZ", "type": "number", "optional": true, "description": "Transform anchor point Z, absent if no transform specified" },
                     { "name": "paintCount", "type": "integer", "description": "Indicates how many time this layer has painted." },
-                    { "name": "invisible", "type": "boolean", "optional": true, "description": "Set if layer is not visible." }
+                    { "name": "invisible", "type": "boolean", "optional": true, "description": "Set if layer is not visible." },
+                    { "name": "scrollRects", "type": "array", "items": { "$ref": "ScrollRect"}, "optional": true, "description": "Rectangles scrolling on main thread only."}
                 ]
             },
             {

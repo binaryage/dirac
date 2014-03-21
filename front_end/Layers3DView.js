@@ -82,6 +82,15 @@ WebInspector.Layers3DView.PaintRectColors = [
     WebInspector.Color.fromRGBA([0, 0xFF, 0, 0x3F])
 ]
 
+/**
+ * @enum {string}
+ */
+WebInspector.Layers3DView.ScrollRectTitles = {
+    RepaintsOnScroll: WebInspector.UIString("repaints on scroll"),
+    TouchEventHandler: WebInspector.UIString("touch event listener"),
+    WheelEventHandler: WebInspector.UIString("mousewheel event listener")
+}
+
 WebInspector.Layers3DView.prototype = {
     onResize: function()
     {
@@ -215,6 +224,56 @@ WebInspector.Layers3DView.prototype = {
         style.webkitTransformOrigin = Math.round(this._paddingX + offsetX + root.width() * this._scale / 2) + "px " + Math.round(this._paddingY + offsetY + root.height() * this._scale / 2) + "px";
     },
 
+    /**
+     * @param {!WebInspector.Layer} layer
+     * @return {!Element}
+     */
+    _createScrollRectElement: function(layer)
+    {
+        var element = document.createElement("div");
+        var parentLayerElement = this._elementsByLayerId[layer.id()];
+        element.className = "scroll-rect";
+        parentLayerElement.appendChild(element);
+        return element;
+    },
+
+    /**
+     * @param {!LayerTreeAgent.ScrollRect} rect
+     * @param {!Element} element
+     */
+    _updateScrollRectElement: function(rect, element)
+    {
+        var style = element.style;
+        style.width = Math.round(rect.rect.width * this._scale) + "px";
+        style.height = Math.round(rect.rect.height * this._scale) + "px";
+        style.left = Math.round(rect.rect.x * this._scale) + "px";
+        style.top = Math.round(rect.rect.y * this._scale) + "px";
+        element.title = WebInspector.Layers3DView.ScrollRectTitles[rect.type];
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     */
+    _updateScrollRectsForLayer: function(layer)
+    {
+        var layerDetails = this._elementsByLayerId[layer.id()].__layerDetails;
+
+        /**
+         * @param {!Element} element
+         */
+        function removeElement(element)
+        {
+            element.remove()
+        }
+
+        if (layer.scrollRects().length !== layerDetails.scrollRectElements.length) {
+            layerDetails.scrollRectElements.forEach(removeElement);
+            layerDetails.scrollRectElements = layer.scrollRects().map(this._createScrollRectElement.bind(this, layer));
+        }
+        for (var i = 0; i < layer.scrollRects().length; ++i)
+            this._updateScrollRectElement(layer.scrollRects()[i], layerDetails.scrollRectElements[i]);
+    },
+
     _update: function()
     {
         if (!this.isShowing()) {
@@ -234,6 +293,7 @@ WebInspector.Layers3DView.prototype = {
         function updateLayer(layer)
         {
             this._updateLayerElement(this._elementForLayer(layer));
+            this._updateScrollRectsForLayer(layer);
         }
         this._clientWidth = this.element.clientWidth;
         this._clientHeight = this.element.clientHeight;
@@ -245,7 +305,7 @@ WebInspector.Layers3DView.prototype = {
         }
         this._scaleToFit();
         this._updateTransform();
-        this._model.forEachLayer(updateLayer.bind(this), this._model.contentRoot());
+        this._model.forEachLayer(updateLayer.bind(this));
         this._needsUpdate = false;
     },
 
@@ -272,9 +332,8 @@ WebInspector.Layers3DView.prototype = {
             return element;
         }
         element = document.createElement("div");
-        element.className = "layer-container";
-        ["fill back-wall", "side-wall top", "side-wall right", "side-wall bottom", "side-wall left"].forEach(element.createChild.bind(element, "div"));
         element.__layerDetails = new WebInspector.LayerDetails(layer, element.createChild("div", "paint-rect"));
+        ["fill back-wall", "side-wall top", "side-wall right", "side-wall bottom", "side-wall left"].forEach(element.createChild.bind(element, "div"));
         this._elementsByLayerId[layer.id()] = element;
         return element;
     },
@@ -286,9 +345,25 @@ WebInspector.Layers3DView.prototype = {
     {
         var layer = element.__layerDetails.layer;
         var style = element.style;
-        var isContentRoot = layer === this._model.contentRoot();
-        var parentElement = isContentRoot ? this._rotatingContainerElement : this._elementForLayer(layer.parent());
-        element.__layerDetails.depth = parentElement.__layerDetails ? parentElement.__layerDetails.depth + 1 : 0;
+
+        var contentRoot = /** @type {!WebInspector.Layer} */ (this._model.contentRoot());
+        var isContentRoot = layer === contentRoot;
+        var isRoot = layer === this._model.root();
+        var parentElement;
+        if (isContentRoot) {
+            parentElement = this._rotatingContainerElement;
+            element.__layerDetails.depth = 0;
+        } else if (isRoot) {
+            parentElement = this._elementForLayer(contentRoot);
+            element.__layerDetails.depth = undefined;
+        } else {
+            parentElement = this._elementForLayer(layer.parent());
+            element.__layerDetails.depth = parentElement.__layerDetails.isAboveContentRoot() ? undefined : parentElement.__layerDetails.depth + 1;
+        }
+        if (!element.__layerDetails.isAboveContentRoot())
+            element.className = "layer-container";
+        else
+            element.className = "layer-transparent";
         element.classList.toggle("invisible", layer.invisible());
         this._updateElementColor(element);
         if (parentElement !== element.parentElement)
@@ -297,7 +372,7 @@ WebInspector.Layers3DView.prototype = {
         style.width = Math.round(layer.width() * this._scale) + "px";
         style.height = Math.round(layer.height() * this._scale) + "px";
         this._updatePaintRect(element);
-        if (isContentRoot)
+        if (isContentRoot || isRoot)
             return;
         style.left = Math.round(layer.offsetX() * this._scale) + "px";
         style.top = Math.round(layer.offsetY() * this._scale) + "px";
@@ -322,6 +397,9 @@ WebInspector.Layers3DView.prototype = {
         }
     },
 
+    /**
+     * @param {!Element} element
+     */
     _updatePaintRect: function(element)
     {
         var details = element.__layerDetails;
@@ -434,4 +512,15 @@ WebInspector.LayerDetails = function(layer, paintRectElement)
     this.depth = 0;
     this.paintRectElement = paintRectElement;
     this.paintCount = 0;
+    this.scrollRectElements = [];
+}
+
+WebInspector.LayerDetails.prototype = {
+    /**
+     * @return {boolean}
+     */
+    isAboveContentRoot: function()
+    {
+        return this.depth === undefined;
+    }
 }
