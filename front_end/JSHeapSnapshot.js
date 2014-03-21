@@ -58,23 +58,23 @@ WebInspector.JSHeapSnapshot.prototype = {
     },
 
     /**
-     * @param {!Uint32Array} edges
+     * @override
      * @param {number} edgeIndex
      * @return {!WebInspector.JSHeapSnapshotEdge}
      */
-    createEdge: function(edges, edgeIndex)
+    createEdge: function(edgeIndex)
     {
-        return new WebInspector.JSHeapSnapshotEdge(this, edges, edgeIndex);
+        return new WebInspector.JSHeapSnapshotEdge(this, edgeIndex);
     },
 
     /**
-     * @param {number} retainedNodeIndex
+     * @override
      * @param {number} retainerIndex
      * @return {!WebInspector.JSHeapSnapshotRetainerEdge}
      */
-    createRetainingEdge: function(retainedNodeIndex, retainerIndex)
+    createRetainingEdge: function(retainerIndex)
     {
-        return new WebInspector.JSHeapSnapshotRetainerEdge(this, retainedNodeIndex, retainerIndex);
+        return new WebInspector.JSHeapSnapshotRetainerEdge(this, retainerIndex);
     },
 
     /**
@@ -639,12 +639,11 @@ WebInspector.JSHeapSnapshotNode.prototype = {
  * @constructor
  * @extends {WebInspector.HeapSnapshotEdge}
  * @param {!WebInspector.JSHeapSnapshot} snapshot
- * @param {!Uint32Array} edges
  * @param {number=} edgeIndex
  */
-WebInspector.JSHeapSnapshotEdge = function(snapshot, edges, edgeIndex)
+WebInspector.JSHeapSnapshotEdge = function(snapshot, edgeIndex)
 {
-    WebInspector.HeapSnapshotEdge.call(this, snapshot, edges, edgeIndex);
+    WebInspector.HeapSnapshotEdge.call(this, snapshot, edgeIndex);
 }
 
 WebInspector.JSHeapSnapshotEdge.prototype = {
@@ -654,7 +653,7 @@ WebInspector.JSHeapSnapshotEdge.prototype = {
     clone: function()
     {
         var snapshot = /** @type {!WebInspector.JSHeapSnapshot} */ (this._snapshot);
-        return new WebInspector.JSHeapSnapshotEdge(snapshot, this._edges, this.edgeIndex);
+        return new WebInspector.JSHeapSnapshotEdge(snapshot, this.edgeIndex);
     },
 
     /**
@@ -779,10 +778,11 @@ WebInspector.JSHeapSnapshotEdge.prototype = {
  * @constructor
  * @extends {WebInspector.HeapSnapshotRetainerEdge}
  * @param {!WebInspector.JSHeapSnapshot} snapshot
+ * @param {number} retainerIndex
  */
-WebInspector.JSHeapSnapshotRetainerEdge = function(snapshot, retainedNodeIndex, retainerIndex)
+WebInspector.JSHeapSnapshotRetainerEdge = function(snapshot, retainerIndex)
 {
-    WebInspector.HeapSnapshotRetainerEdge.call(this, snapshot, retainedNodeIndex, retainerIndex);
+    WebInspector.HeapSnapshotRetainerEdge.call(this, snapshot, retainerIndex);
 }
 
 WebInspector.JSHeapSnapshotRetainerEdge.prototype = {
@@ -791,7 +791,8 @@ WebInspector.JSHeapSnapshotRetainerEdge.prototype = {
      */
     clone: function()
     {
-        return new WebInspector.JSHeapSnapshotRetainerEdge(this._snapshot, this._retainedNodeIndex, this.retainerIndex());
+        var snapshot = /** @type {!WebInspector.JSHeapSnapshot} */ (this._snapshot);
+        return new WebInspector.JSHeapSnapshotRetainerEdge(snapshot, this.retainerIndex());
     },
 
     /**
