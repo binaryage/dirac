@@ -383,16 +383,8 @@ WebInspector.Main.prototype = {
         {
             WebInspector.inspectorView.showInitialPanel();
 
-            if (WebInspector.overridesSupport.hasActiveOverrides()) {
-                if (!WebInspector.settings.showEmulationViewInDrawer.get())
-                    WebInspector.settings.showEmulationViewInDrawer.set(true);
+            if (WebInspector.overridesSupport.hasActiveOverrides())
                 WebInspector.inspectorView.showViewInDrawer("emulation", true);
-            }
-
-            if (WebInspector.settings.showPaintRects.get() || WebInspector.settings.showDebugBorders.get() || WebInspector.settings.continuousPainting.get() ||
-                    WebInspector.settings.showFPSCounter.get() || WebInspector.settings.showScrollBottleneckRects.get()) {
-                WebInspector.settings.showRenderingViewInDrawer.set(true);
-            }
 
             WebInspector.settings.showMetricsRulers.addChangeListener(showRulersChanged);
             function showRulersChanged()

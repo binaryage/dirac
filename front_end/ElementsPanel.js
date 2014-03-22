@@ -374,17 +374,8 @@ WebInspector.ElementsPanel.prototype = {
 
     _contextMenuEventFired: function(event)
     {
-        function toggleWordWrap()
-        {
-            WebInspector.settings.domWordWrap.set(!WebInspector.settings.domWordWrap.get());
-        }
-
         var contextMenu = new WebInspector.ContextMenu(event);
         this.treeOutline.populateContextMenu(contextMenu, event);
-
-        contextMenu.appendSeparator();
-        contextMenu.appendCheckboxItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Word wrap" : "Word Wrap"), toggleWordWrap, WebInspector.settings.domWordWrap.get());
-
         contextMenu.show();
     },
 

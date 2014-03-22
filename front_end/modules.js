@@ -50,7 +50,6 @@ var allDescriptors = [
                 name: "emulation",
                 title: "Emulation",
                 order: "10",
-                setting: "showEmulationViewInDrawer",
                 className: "WebInspector.OverridesView"
             },
             {
@@ -58,7 +57,6 @@ var allDescriptors = [
                 name: "rendering",
                 title: "Rendering",
                 order: "11",
-                setting: "showRenderingViewInDrawer",
                 className: "WebInspector.RenderingOptionsView"
             },
             {

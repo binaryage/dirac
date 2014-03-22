@@ -284,10 +284,6 @@ WebInspector.GenericSettingsTab = function()
     this._updateScriptDisabledCheckbox();
 
     p = this._appendSection(WebInspector.UIString("Appearance"));
-    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show 'Emulation' view in console drawer."), WebInspector.settings.showEmulationViewInDrawer));
-    this._appendDrawerNote(p.lastElementChild);
-    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show 'Rendering' view in console drawer."), WebInspector.settings.showRenderingViewInDrawer));
-    this._appendDrawerNote(p.lastElementChild);
     var splitVerticallyTitle = WebInspector.UIString("Split panels vertically when docked to %s", WebInspector.experimentsSettings.dockToLeft.isEnabled() ? "left or right" : "right");
     p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(splitVerticallyTitle, WebInspector.settings.splitVerticallyWhenDockedToRight));
     var panelShortcutTitle = WebInspector.UIString("Enable %s + 1-9 shortcut to switch panels", WebInspector.isMac() ? "Cmd" : "Ctrl");

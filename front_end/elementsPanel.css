@@ -36,7 +36,7 @@
 
 #elements-crumbs {
     flex: 0 0 19px;
-    background-color: rgb(236, 236, 236);
+    background-color: white;
     border-top: 1px solid #ccc;
     overflow: hidden;
 }
