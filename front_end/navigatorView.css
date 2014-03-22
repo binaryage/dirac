@@ -102,10 +102,12 @@
 
 .navigator-tabbed-pane .navigator-container {
     overflow: auto;
+    -webkit-transform: translateZ(0);
 }
 
 .navigator-tabbed-pane .navigator {
     padding-left: 0;
+    -webkit-transform: translateZ(0);
 }
 
 .navigator-tabbed-pane .tabbed-pane-header-contents {

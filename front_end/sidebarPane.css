@@ -34,8 +34,6 @@
 .sidebar-pane > .body {
     position: relative;
     display: none;
-    overflow-y: auto;
-    overflow-x: hidden;
 }
 
 .sidebar-pane > .body .info {
