@@ -51,7 +51,7 @@ WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallb
     this.titleElement.appendChild(addButton);
 
     this._computedStylePane = computedStylePane;
-    computedStylePane._stylesSidebarPane = this;
+    computedStylePane.setHostingPane(this);
     this._setPseudoClassCallback = setPseudoClassCallback;
     this.element.addEventListener("contextmenu", this._contextMenuEventFired.bind(this), true);
     WebInspector.settings.colorFormat.addChangeListener(this._colorFormatSettingChanged.bind(this));
@@ -180,6 +180,55 @@ WebInspector.StylesSidebarPane.prototype = {
         contextMenu.show();
     },
 
+    /**
+     * @param {!Element} matchedStylesElement
+     * @param {!Element} computedStylesElement
+     */
+    setFilterBoxContainers: function(matchedStylesElement, computedStylesElement)
+    {
+        if (!WebInspector.experimentsSettings.cssStyleSearch.isEnabled())
+            return;
+
+        matchedStylesElement.appendChild(this._createCSSFilterControl());
+        this._computedStylePane.setFilterBoxContainer(computedStylesElement);
+    },
+
+    /**
+     * @return {!Element}
+     */
+    _createCSSFilterControl: function()
+    {
+        var filterInput = this._createPropertyFilterElement(false, searchHandler.bind(this));
+
+        /**
+         * @param {?RegExp} regex
+         * @this {WebInspector.StylesSidebarPane}
+         */
+        function searchHandler(regex)
+        {
+            this._filterRegex = regex;
+        }
+
+        filterInput.addEventListener("keydown", tabHandler.bind(this), false);
+
+        /**
+         * @param {?Event} event
+         * @this {WebInspector.StylesSidebarPane}
+         */
+        function tabHandler(event)
+        {
+            if (event.keyIdentifier !== "U+0009")
+                return;
+
+            event.consume(true);
+            var firstSection = this.sections[0][1];
+            if (!firstSection)
+                return;
+            firstSection._moveEditorFromSelector(event.shiftKey ? "backward" : "forward");
+        }
+        return filterInput;
+    },
+
     get _forcedPseudoClasses()
     {
         return this.node ? (this.node.getUserProperty("pseudoState") || undefined) : undefined;
@@ -246,6 +295,14 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     _refreshUpdate: function(editedSection, forceFetchComputedStyle, userCallback)
     {
+        var callbackWrapper = function()
+        {
+            if (this._filterRegex)
+                this._updateFilter(false);
+            if (userCallback)
+                userCallback();
+        }.bind(this);
+
         if (this._refreshUpdateInProgress) {
             this._lastNodeForInnerRefresh = this.node;
             return;
@@ -265,15 +322,14 @@ WebInspector.StylesSidebarPane.prototype = {
 
             if (this._lastNodeForInnerRefresh) {
                 delete this._lastNodeForInnerRefresh;
-                this._refreshUpdate(editedSection, forceFetchComputedStyle, userCallback);
+                this._refreshUpdate(editedSection, forceFetchComputedStyle, callbackWrapper);
                 return;
             }
 
             if (this.node === node && computedStyle)
                 this._innerRefreshUpdate(node, computedStyle, editedSection);
 
-            if (userCallback)
-                userCallback();
+            callbackWrapper();
         }
 
         if (this._computedStylePane.isShowing() || forceFetchComputedStyle) {
@@ -281,8 +337,7 @@ WebInspector.StylesSidebarPane.prototype = {
             WebInspector.cssModel.getComputedStyleAsync(node.id, computedStyleCallback.bind(this));
         } else {
             this._innerRefreshUpdate(node, null, editedSection);
-            if (userCallback)
-                userCallback();
+            callbackWrapper();
         }
     },
 
@@ -463,6 +518,8 @@ WebInspector.StylesSidebarPane.prototype = {
             this.sections[pseudoId] = this._rebuildSectionsForStyleRules(styleRules, usedProperties, anchorElement);
         }
 
+        if (this._filterRegex)
+            this._updateFilter(false);
         this._nodeStylesUpdatedForTest(node, true);
     },
 
@@ -806,17 +863,80 @@ WebInspector.StylesSidebarPane.prototype = {
             return td;
         }
 
-        var tr = document.createElement("tr");
+        var tr = table.createChild("tr");
         tr.appendChild(createCheckbox.call(this, "active"));
         tr.appendChild(createCheckbox.call(this, "hover"));
-        table.appendChild(tr);
 
-        tr = document.createElement("tr");
+        tr = table.createChild("tr");
         tr.appendChild(createCheckbox.call(this, "focus"));
         tr.appendChild(createCheckbox.call(this, "visited"));
-        table.appendChild(tr);
 
         this._elementStatePane.appendChild(table);
+    },
+
+    /**
+     * @return {?RegExp}
+     */
+    filterRegex: function()
+    {
+        return this._filterRegex;
+    },
+
+    /**
+     * @param {boolean} isComputedStyleFilter
+     * @return {!Element}
+     * @param {function(?RegExp)} filterCallback
+     */
+    _createPropertyFilterElement: function(isComputedStyleFilter, filterCallback)
+    {
+        var input = document.createElement("input");
+        input.type = "text";
+        input.placeholder = isComputedStyleFilter ? WebInspector.UIString("Filter") : WebInspector.UIString("Find in Styles");
+        input.className = "filter-box toolbar-search-control search-replace";
+        var boundSearchHandler = searchHandler.bind(this);
+
+        /**
+         * @this {WebInspector.StylesSidebarPane}
+         */
+        function searchHandler()
+        {
+            var regex = input.value ? new RegExp(input.value.escapeForRegExp(), "i") : null;
+            filterCallback(regex);
+            this._updateFilter(isComputedStyleFilter);
+        }
+        input.addEventListener("input", boundSearchHandler, false);
+
+        /**
+         * @param {?Event} event
+         */
+        function keydownHandler(event)
+        {
+            var Esc = "U+001B";
+            if (event.keyIdentifier !== Esc || !input.value)
+                return;
+            event.consume(true);
+            input.value = "";
+            boundSearchHandler();
+        }
+        input.addEventListener("keydown", keydownHandler, false);
+
+        return input;
+    },
+
+    /**
+     * @param {boolean} isComputedStyleFilter
+     */
+    _updateFilter: function(isComputedStyleFilter)
+    {
+        for (var pseudoId in this.sections) {
+            var sections = this.sections[pseudoId];
+            for (var i = 0; i < sections.length; ++i) {
+                var section = sections[i];
+                if (isComputedStyleFilter !== !!section.computedStyle)
+                    continue;
+                section.updateFilter();
+            }
+        }
     },
 
     /**
@@ -880,6 +1000,28 @@ WebInspector.ComputedStyleSidebarPane = function()
 }
 
 WebInspector.ComputedStyleSidebarPane.prototype = {
+    /**
+     * @param {!WebInspector.StylesSidebarPane} pane
+     */
+    setHostingPane: function(pane)
+    {
+        this._stylesSidebarPane = pane;
+    },
+
+    setFilterBoxContainer: function(element)
+    {
+        element.appendChild(this._stylesSidebarPane._createPropertyFilterElement(true, filterCallback.bind(this)));
+
+        /**
+         * @param {?RegExp} regex
+         * @this {WebInspector.ComputedStyleSidebarPane}
+         */
+        function filterCallback(regex)
+        {
+            this._filterRegex = regex;
+        }
+    },
+
     wasShown: function()
     {
         WebInspector.SidebarPane.prototype.wasShown.call(this);
@@ -902,6 +1044,14 @@ WebInspector.ComputedStyleSidebarPane.prototype = {
             delete this._hasFreshContent;
         }
         this._stylesSidebarPane._refreshUpdate(null, true, wrappedCallback.bind(this));
+    },
+
+    /**
+     * @return {?RegExp}
+     */
+    filterRegex: function()
+    {
+        return this._filterRegex;
     },
 
     __proto__: WebInspector.SidebarPane.prototype
@@ -1221,6 +1371,16 @@ WebInspector.StylePropertiesSection.prototype = {
         }
     },
 
+    updateFilter: function()
+    {
+        var children = this.propertiesTreeOutline.children;
+        for (var i = 0; i < children.length; ++i)
+            children[i].updateFilter();
+
+        if (this.styleRule.rule)
+            this._markSelectorHighlights();
+    },
+
     _markSelectorMatches: function()
     {
         var rule = this.styleRule.rule;
@@ -1256,6 +1416,17 @@ WebInspector.StylePropertiesSection.prototype = {
 
         this._selectorElement.removeChildren();
         this._selectorElement.appendChild(fragment);
+        this._markSelectorHighlights();
+    },
+
+    _markSelectorHighlights: function()
+    {
+        var selectors = this._selectorElement.getElementsByClassName("simple-selector");
+        var regex = this.pane.filterRegex();
+        for (var i = 0; i < selectors.length; ++i) {
+            var selectorMatchesFilter = regex && regex.test(selectors[i].textContent);
+            selectors[i].classList.toggle("filter-match", selectorMatchesFilter);
+        }
     },
 
     _checkWillCancelEditing: function()
@@ -1505,8 +1676,10 @@ WebInspector.ComputedStylePropertiesSection = function(stylesPane, styleRule, us
 {
     WebInspector.PropertiesSection.call(this, "");
 
-    var showInheritedCheckbox = new WebInspector.Checkbox(WebInspector.UIString("Show inherited properties"), "sidebar-pane-subtitle");
-    this.headerElement.appendChild(showInheritedCheckbox.element);
+    var subtitle = this.headerElement.createChild("div", "sidebar-pane-subtitle vbox");
+    var showInheritedCheckbox = new WebInspector.Checkbox(WebInspector.UIString("Show inherited properties"), "hbox");
+    subtitle.appendChild(showInheritedCheckbox.element);
+
     this._hasFreshContent = false;
 
     /**
@@ -1561,6 +1734,13 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
         this._propertyTreeElements = {};
         this.propertiesTreeOutline.removeChildren();
         this.populated = false;
+    },
+
+    updateFilter: function()
+    {
+        var children = this.propertiesTreeOutline.children;
+        for (var i = 0; i < children.length; ++i)
+            children[i].updateFilter();
     },
 
     onpopulate: function()
@@ -1780,6 +1960,14 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         return null;  // Overridden by ancestors.
     },
 
+    /**
+     * @return {!WebInspector.StylesSidebarPane|!WebInspector.ComputedStyleSidebarPane}
+     */
+    parentPane: function()
+    {
+        throw "Not implemented";
+    },
+
     get inherited()
     {
         return this._inherited;
@@ -1962,6 +2150,13 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         }
         if (this.property.inactive)
             this.listItemElement.classList.add("inactive");
+        this.updateFilter();
+    },
+
+    updateFilter: function()
+    {
+        var regEx = this.parentPane().filterRegex();
+        this.listItemElement.classList.toggle("filter-match", !!regEx && (regEx.test(this.property.name) || regEx.test(this.property.value)));
     },
 
     /**
@@ -2193,6 +2388,20 @@ WebInspector.ComputedStylePropertyTreeElement.prototype = {
         return null;
     },
 
+    /**
+     * @return {!WebInspector.ComputedStyleSidebarPane}
+     */
+    parentPane: function()
+    {
+        return this._stylesPane._computedStylePane;
+    },
+
+    updateFilter: function()
+    {
+        var regEx = this.parentPane().filterRegex();
+        this.listItemElement.classList.toggle("hidden", !!regEx && (!regEx.test(this.property.name) && !regEx.test(this.property.value)));
+    },
+
     __proto__: WebInspector.StylePropertyTreeElementBase.prototype
 }
 
@@ -2227,6 +2436,14 @@ WebInspector.StylePropertyTreeElement.prototype = {
      * @return {?WebInspector.StylesSidebarPane}
      */
     editablePane: function()
+    {
+        return this._parentPane;
+    },
+
+    /**
+     * @return {!WebInspector.StylesSidebarPane}
+     */
+    parentPane: function()
     {
         return this._parentPane;
     },
