@@ -29,7 +29,25 @@
  */
 
 /**
+ * @interface
+ */
+WebInspector.HeapSnapshotItem = function() { }
+
+WebInspector.HeapSnapshotItem.prototype = {
+    /**
+     * @return {number}
+     */
+    itemIndex: function() { },
+
+    /**
+     * @return {!Object}
+     */
+    serialize: function() { }
+};
+
+/**
  * @constructor
+ * @implements {WebInspector.HeapSnapshotItem}
  * @param {!WebInspector.HeapSnapshot} snapshot
  * @param {number=} edgeIndex
  */
@@ -114,6 +132,16 @@ WebInspector.HeapSnapshotEdge.prototype = {
     },
 
     /**
+     * @override
+     * @return {number}
+     */
+    itemIndex: function()
+    {
+        return this.edgeIndex;
+    },
+
+    /**
+     * @override
      * @return {!WebInspector.HeapSnapshotEdge.Serialized}
      */
     serialize: function()
@@ -129,7 +157,6 @@ WebInspector.HeapSnapshotEdge.prototype = {
 };
 
 
-
 /**
  * @interface
  */
@@ -142,7 +169,7 @@ WebInspector.HeapSnapshotItemIterator.prototype = {
     hasNext: function() { },
 
     /**
-     * @return {!WebInspector.HeapSnapshotEdge|!WebInspector.HeapSnapshotNode|!WebInspector.HeapSnapshotRetainerEdge}
+     * @return {!WebInspector.HeapSnapshotItem}
      */
     item: function() { },
 
@@ -157,14 +184,8 @@ WebInspector.HeapSnapshotItemIndexProvider = function() { }
 
 WebInspector.HeapSnapshotItemIndexProvider.prototype = {
     /**
-     * @param {!WebInspector.HeapSnapshotEdge|!WebInspector.HeapSnapshotNode|!WebInspector.HeapSnapshotRetainerEdge} item
-     * @return {number}
-     */
-    indexForItem: function(item) { },
-
-    /**
      * @param {number} newIndex
-     * @return {!WebInspector.HeapSnapshotEdge|!WebInspector.HeapSnapshotNode|!WebInspector.HeapSnapshotRetainerEdge}
+     * @return {!WebInspector.HeapSnapshotItem}
      */
     itemForIndex: function(newIndex) { },
 };
@@ -180,16 +201,6 @@ WebInspector.HeapSnapshotNodeIndexProvider = function(snapshot)
 }
 
 WebInspector.HeapSnapshotNodeIndexProvider.prototype = {
-    /**
-     * @param {!WebInspector.HeapSnapshotEdge|!WebInspector.HeapSnapshotNode|!WebInspector.HeapSnapshotRetainerEdge} item
-     * @return {number}
-     */
-    indexForItem: function(item)
-    {
-        var node = /** @type {!WebInspector.HeapSnapshotNode} */ (item);
-        return node.nodeIndex;
-    },
-
     /**
      * @param {number} index
      * @return {!WebInspector.HeapSnapshotNode}
@@ -214,16 +225,6 @@ WebInspector.HeapSnapshotEdgeIndexProvider = function(snapshot)
 
 WebInspector.HeapSnapshotEdgeIndexProvider.prototype = {
     /**
-     * @param {!WebInspector.HeapSnapshotEdge|!WebInspector.HeapSnapshotNode|!WebInspector.HeapSnapshotRetainerEdge} item
-     * @return {number}
-     */
-    indexForItem: function(item)
-    {
-        var edge = /** @type {!WebInspector.HeapSnapshotEdge} */ (item);
-        return edge.edgeIndex;
-    },
-
-    /**
      * @param {number} index
      * @return {!WebInspector.HeapSnapshotEdge}
      */
@@ -246,16 +247,6 @@ WebInspector.HeapSnapshotRetainerEdgeIndexProvider = function(snapshot)
 }
 
 WebInspector.HeapSnapshotRetainerEdgeIndexProvider.prototype = {
-    /**
-     * @param {!WebInspector.HeapSnapshotEdge|!WebInspector.HeapSnapshotNode|!WebInspector.HeapSnapshotRetainerEdge} item
-     * @return {number}
-     */
-    indexForItem: function(item)
-    {
-        var edge = /** @type {!WebInspector.HeapSnapshotRetainerEdge} */ (item);
-        return edge.retainerIndex();
-    },
-
     /**
      * @param {number} index
      * @return {!WebInspector.HeapSnapshotRetainerEdge}
@@ -304,6 +295,7 @@ WebInspector.HeapSnapshotEdgeIterator.prototype = {
 
 /**
  * @constructor
+ * @implements {WebInspector.HeapSnapshotItem}
  * @param {!WebInspector.HeapSnapshot} snapshot
  * @param {number} retainerIndex
  */
@@ -423,6 +415,16 @@ WebInspector.HeapSnapshotRetainerEdge.prototype = {
     },
 
     /**
+     * @override
+     * @return {number}
+     */
+    itemIndex: function()
+    {
+        return this._retainerIndex;
+    },
+
+    /**
+     * @override
      * @return {!WebInspector.HeapSnapshotRetainerEdge.Serialized}
      */
     serialize: function()
@@ -479,12 +481,14 @@ WebInspector.HeapSnapshotRetainerEdgeIterator.prototype = {
 
 /**
  * @constructor
+ * @implements {WebInspector.HeapSnapshotItem}
+ * @param {!WebInspector.HeapSnapshot} snapshot
  * @param {number=} nodeIndex
  */
 WebInspector.HeapSnapshotNode = function(snapshot, nodeIndex)
 {
     this._snapshot = snapshot;
-    this.nodeIndex = nodeIndex;
+    this.nodeIndex = nodeIndex || 0;
 }
 
 /**
@@ -631,6 +635,16 @@ WebInspector.HeapSnapshotNode.prototype = {
     },
 
     /**
+     * @override
+     * @return {number}
+     */
+    itemIndex: function()
+    {
+        return this.nodeIndex;
+    },
+
+    /**
+     * @override
      * @return {!WebInspector.HeapSnapshotNode.Serialized}
      */
     serialize: function()
@@ -747,7 +761,7 @@ WebInspector.HeapSnapshotIndexRangeIterator.prototype = {
     },
 
     /**
-     * @return {!WebInspector.HeapSnapshotEdge|!WebInspector.HeapSnapshotNode|!WebInspector.HeapSnapshotRetainerEdge}
+     * @return {!WebInspector.HeapSnapshotItem}
      */
     item: function()
     {
@@ -784,7 +798,7 @@ WebInspector.HeapSnapshotFilteredIterator.prototype = {
     },
 
     /**
-     * @return {!WebInspector.HeapSnapshotEdge|!WebInspector.HeapSnapshotNode|!WebInspector.HeapSnapshotRetainerEdge}
+     * @return {!WebInspector.HeapSnapshotItem}
      */
     item: function()
     {
@@ -2071,7 +2085,7 @@ WebInspector.HeapSnapshotItemProvider.prototype = {
             return;
         this._iterationOrder = [];
         for (var iterator = this._iterator; iterator.hasNext(); iterator.next())
-            this._iterationOrder.push(this._indexProvider.indexForItem(iterator.item()));
+            this._iterationOrder.push(iterator.item().itemIndex());
     },
 
     /**
