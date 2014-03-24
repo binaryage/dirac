@@ -39,6 +39,18 @@ input[type="checkbox"] {
     flex-shrink: 0;
 }
 
+label:hover {
+    cursor: pointer;
+}
+
+label:hover input {
+    box-shadow: 0 0 3px highlight;
+}
+
+fieldset[disabled] label:hover input {
+    box-shadow: none;
+}
+
 .fill {
     position: absolute;
     top: 0;
