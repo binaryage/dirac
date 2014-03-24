@@ -594,6 +594,8 @@ WebInspector.ElementsTreeOutline.prototype = {
             treeElement._populateNodeContextMenu(contextMenu, textNode);
         } else if (isPseudoElement) {
             treeElement._populateScrollIntoView(contextMenu);
+        } else if (treeElement._node.isShadowRoot()) {
+            this.treeOutline._populateContextMenu(contextMenu, treeElement._node);
         }
     },
 
