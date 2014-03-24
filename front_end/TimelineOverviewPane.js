@@ -67,7 +67,7 @@ WebInspector.TimelineOverviewPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TimelineOverviewBase} overviewControl
+     * @param {!WebInspector.TimelineOverview} overviewControl
      */
     setOverviewControl: function(overviewControl)
     {
@@ -298,8 +298,42 @@ WebInspector.TimelineOverviewCalculator.prototype = {
 }
 
 /**
+ * @interface
+ */
+WebInspector.TimelineOverview = function(model)
+{
+}
+
+WebInspector.TimelineOverview.prototype = {
+    /**
+     * @param {?Element} parentElement
+     * @param {!Element=} insertBefore
+     */
+    show: function(parentElement, insertBefore) { },
+
+    update: function() { },
+
+    reset: function() { },
+
+    /**
+     * @param {number} windowLeft
+     * @param {number} windowRight
+     * @return {!{startTime: number, endTime: number}}
+     */
+    windowTimes: function(windowLeft, windowRight) { },
+
+    /**
+     * @param {number} startTime
+     * @param {number} endTime
+     * @return {!{left: number, right: number}}
+     */
+    windowBoundaries: function(startTime, endTime) { }
+}
+
+/**
  * @constructor
  * @extends {WebInspector.VBox}
+ * @implements {WebInspector.TimelineOverview}
  * @param {!WebInspector.TimelineModel} model
  */
 WebInspector.TimelineOverviewBase = function(model)
@@ -312,8 +346,14 @@ WebInspector.TimelineOverviewBase = function(model)
 }
 
 WebInspector.TimelineOverviewBase.prototype = {
-    update: function() { },
-    reset: function() { },
+    update: function()
+    {
+        this.resetCanvas();
+    },
+
+    reset: function()
+    {
+    },
 
     /**
      * @param {number} windowLeft

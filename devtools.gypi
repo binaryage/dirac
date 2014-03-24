@@ -50,7 +50,6 @@
             'front_end/CookieItemsView.js',
             'front_end/CookieParser.js',
             'front_end/CookiesTable.js',
-            'front_end/CountersGraph.js',
             'front_end/CPUProfilerModel.js',
             'front_end/CSSMetadata.js',
             'front_end/CSSParser.js',
@@ -308,7 +307,8 @@
             'front_end/ThreadsToolbar.js',
         ],
         'devtools_timeline_js_files': [
-            'front_end/MemoryStatistics.js',
+            'front_end/CountersGraph.js',
+            'front_end/DOMCountersGraph.js',
             'front_end/PieChart.js',
             'front_end/TimelineFrameModel.js',
             'front_end/TimelineModel.js',

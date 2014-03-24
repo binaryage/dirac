@@ -29,8 +29,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-importScript("MemoryStatistics.js");
 importScript("CountersGraph.js");
+importScript("DOMCountersGraph.js");
 importScript("PieChart.js");
 importScript("TimelineModel.js");
 importScript("TimelineOverviewPane.js");
@@ -240,6 +240,7 @@ WebInspector.TimelinePanel.prototype = {
 
     /**
      * @param {string} mode
+     * @return {!{overviewView: !WebInspector.TimelineOverview, mainViews: !Array.<!WebInspector.TimelineView>}}
      */
     _viewsForMode: function(mode)
     {
@@ -257,7 +258,7 @@ WebInspector.TimelinePanel.prototype = {
                 break;
             case WebInspector.TimelinePanel.Mode.Memory:
                 views.overviewView = new WebInspector.TimelineMemoryOverview(this._model);
-                views.mainViews = [this._timelineView(), new WebInspector.CountersGraph(this, this._model)];
+                views.mainViews = [this._timelineView(), new WebInspector.DOMCountersGraph(this, this._model)];
                 break;
             case WebInspector.TimelinePanel.Mode.FlameChart:
                 views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());

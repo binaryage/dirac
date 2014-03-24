@@ -298,7 +298,7 @@
         "dependencies": ["components"],
         "sources": [
             "CountersGraph.js",
-            "MemoryStatistics.js",
+            "DOMCountersGraph.js",
             "TimelineEventOverview.js",
             "TimelineFrameModel.js",
             "TimelineFrameOverview.js",
