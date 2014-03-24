@@ -88,7 +88,7 @@ WebInspector.CSSParser.prototype = {
         for (var i = 0; i < chunk.length; ++i)
             this._rules.push(chunk[i]);
 
-        if (data.index === data.total - 1)
+        if (data.isLastChunk)
             this._onFinishedParsing();
         this.dispatchEventToListeners(WebInspector.CSSParser.Events.RulesParsed);
     },
@@ -104,7 +104,7 @@ WebInspector.CSSParser.prototype = {
 }
 
 /**
- * @typedef {{index: number, total: number, chunk: !Array.<!WebInspector.CSSParser.Rule>}}
+ * @typedef {{isLastChunk: boolean, chunk: !Array.<!WebInspector.CSSParser.Rule>}}
  */
 WebInspector.CSSParser.DataChunk;
 

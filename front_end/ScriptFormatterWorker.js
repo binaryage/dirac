@@ -212,12 +212,9 @@ FormatterWorker.CSSParserStates = {
 FormatterWorker.parseCSS = function(params)
 {
     var chunkSize = 100000; // characters per data chunk
-    var totalLength = params.content.length;
     var lines = params.content.split("\n");
-    var chunkCount = FormatterWorker._chunkCount(totalLength, chunkSize);
     var rules = [];
     var processedChunkCharacters = 0;
-    var currentChunk = 0;
 
     var state = FormatterWorker.CSSParserStates.Initial;
     var rule;
@@ -308,7 +305,7 @@ FormatterWorker.parseCSS = function(params)
         }
         processedChunkCharacters += newColumn - column;
         if (processedChunkCharacters > chunkSize) {
-            postMessage({ chunk: rules, total: chunkCount, index: currentChunk++ });
+            postMessage({ chunk: rules, isLastChunk: false });
             rules = [];
             processedChunkCharacters = 0;
         }
@@ -319,7 +316,7 @@ FormatterWorker.parseCSS = function(params)
         var line = lines[lineNumber];
         tokenizer(line, processToken);
     }
-    postMessage({ chunk: rules, total: chunkCount, index: currentChunk++ });
+    postMessage({ chunk: rules, isLastChunk: true });
 }
 
 /**
