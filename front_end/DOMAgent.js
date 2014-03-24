@@ -272,6 +272,9 @@ WebInspector.DOMNode.prototype = {
      */
     nodeNameInCorrectCase: function()
     {
+        var shadowRootType = this.shadowRootType();
+        if (shadowRootType)
+            return "#shadow-root" + (shadowRootType === WebInspector.DOMNode.ShadowRootTypes.UserAgent ? " (user-agent)" : "");
         return this.isXMLNode() ? this.nodeName() : this.nodeName().toLowerCase();
     },
 
@@ -466,10 +469,19 @@ WebInspector.DOMNode.prototype = {
      */
     path: function()
     {
+        /**
+         * @param {?WebInspector.DOMNode} node
+         */
+        function canPush(node)
+        {
+            return node && ("index" in node || (node.isShadowRoot() && node.parentNode)) && node._nodeName.length;
+        }
+
         var path = [];
         var node = this;
-        while (node && "index" in node && node._nodeName.length) {
-            path.push([node.index, node._nodeName]);
+        while (canPush(node)) {
+            var index = typeof node.index === "number" ? node.index : (node.shadowRootType() === WebInspector.DOMNode.ShadowRootTypes.UserAgent ? "u" : "a");
+            path.push([index, node._nodeName]);
             node = node.parentNode;
         }
         path.reverse();

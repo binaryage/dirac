@@ -2216,20 +2216,14 @@ WebInspector.ElementsTreeElement.prototype = {
                 break;
             case Node.DOCUMENT_FRAGMENT_NODE:
                 var fragmentElement = info.titleDOM.createChild("span", "webkit-html-fragment");
-                var nodeTitle;
                 if (node.isInShadowTree()) {
                     var shadowRootType = node.shadowRootType();
                     if (shadowRootType) {
                         info.shadowRoot = true;
                         fragmentElement.classList.add("shadow-root");
-                        nodeTitle = "#shadow-root";
-                        if (shadowRootType === WebInspector.DOMNode.ShadowRootTypes.UserAgent)
-                            nodeTitle += " (" + shadowRootType + ")";
                     }
                 }
-                if (!nodeTitle)
-                    nodeTitle = node.nodeNameInCorrectCase().collapseWhitespace();
-                fragmentElement.textContent = nodeTitle;
+                fragmentElement.textContent = node.nodeNameInCorrectCase().collapseWhitespace();
                 break;
             default:
                 info.titleDOM.appendChild(document.createTextNode(node.nodeNameInCorrectCase().collapseWhitespace()));
