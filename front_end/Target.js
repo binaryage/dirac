@@ -62,7 +62,7 @@ WebInspector.Target.prototype = {
         if (!WebInspector.domAgent)
             WebInspector.domAgent = this.domModel;
 
-        this.workerManager = new WebInspector.WorkerManager(this.isMainFrontend);
+        this.workerManager = new WebInspector.WorkerManager(this, this.isMainFrontend);
         if (!WebInspector.workerManager)
             WebInspector.workerManager = this.workerManager;
 
@@ -93,11 +93,17 @@ WebInspector.Target.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.Object}
  */
 WebInspector.TargetManager = function()
 {
+    WebInspector.Object.call(this);
     /** @type {!Array.<!WebInspector.Target>} */
     this._targets = [];
+}
+
+WebInspector.TargetManager.Events = {
+    TargetAdded: "TargetAdded",
 }
 
 WebInspector.TargetManager.prototype = {
@@ -108,8 +114,43 @@ WebInspector.TargetManager.prototype = {
      */
     createTarget: function(connection, callback)
     {
-        var newTarget = new WebInspector.Target(connection, callback);
-        this._targets.push(newTarget);
-    }
+        var target = new WebInspector.Target(connection, callbackWrapper.bind(this));
 
+        /**
+         * @this {WebInspector.TargetManager}
+         * @param newTarget
+         */
+        function callbackWrapper(newTarget)
+        {
+            if (callback)
+                callback(newTarget);
+
+            this._targets.push(newTarget);
+            this.dispatchEventToListeners(WebInspector.TargetManager.Events.TargetAdded, newTarget);
+        }
+
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.Target>}
+     */
+    targets: function()
+    {
+        return this._targets;
+    },
+
+    /**
+     * @return {!WebInspector.Target}
+     */
+    mainTarget: function()
+    {
+        return this._targets[0];
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
+
+/**
+ * @type {!WebInspector.TargetManager}
+ */
+WebInspector.targetManager;

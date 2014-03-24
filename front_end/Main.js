@@ -368,8 +368,6 @@ WebInspector.Main.prototype = {
 
         WebInspector.extensionServerProxy.setFrontendReady();
 
-        WebInspector.console.enableAgent();
-
         WebInspector.databaseModel = new WebInspector.DatabaseModel();
         WebInspector.domStorageModel = new WebInspector.DOMStorageModel();
         WebInspector.cpuProfilerModel = new WebInspector.CPUProfilerModel();

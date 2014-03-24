@@ -34,10 +34,11 @@
  * @param {!WebInspector.ConsoleMessage} consoleMessage
  * @param {?WebInspector.Linkifier} linkifier
  */
-WebInspector.ConsoleViewMessage = function(consoleMessage, linkifier)
+WebInspector.ConsoleViewMessage = function(target, consoleMessage, linkifier)
 {
     this._message = consoleMessage;
     this._linkifier = linkifier;
+    this._target = target;
 
     /** @type {!Array.<!WebInspector.DataGrid>} */
     this._dataGrids = [];
@@ -268,9 +269,9 @@ WebInspector.ConsoleViewMessage.prototype = {
                 continue;
 
             if (typeof parameters[i] === "object")
-                parameters[i] = WebInspector.RemoteObject.fromPayload(parameters[i]);
+                parameters[i] = WebInspector.RemoteObject.fromPayload(parameters[i], this._target);
             else
-                parameters[i] = WebInspector.RemoteObject.fromPrimitiveValue(parameters[i]);
+                parameters[i] = WebInspector.RemoteObject.fromPrimitiveValue(parameters[i], this._target);
         }
 
         // There can be string log and string eval result. We distinguish between them based on message type.

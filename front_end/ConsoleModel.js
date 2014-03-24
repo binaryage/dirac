@@ -43,6 +43,7 @@ WebInspector.ConsoleModel = function(target)
     this._target = target;
     this._consoleAgent = target.consoleAgent();
     target.registerConsoleDispatcher(new WebInspector.ConsoleDispatcher(this));
+    this._enableAgent();
 }
 
 WebInspector.ConsoleModel.Events = {
@@ -53,7 +54,7 @@ WebInspector.ConsoleModel.Events = {
 }
 
 WebInspector.ConsoleModel.prototype = {
-    enableAgent: function()
+    _enableAgent: function()
     {
         if (WebInspector.settings.monitoringXHREnabled.get())
             this._consoleAgent.setMonitoringXHREnabled(true);
