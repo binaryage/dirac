@@ -453,15 +453,9 @@
             {
                 "name": "captureScreenshot",
                 "description": "Capture page screenshot.",
-                "parameters": [
-                    { "name": "format", "type": "string", "optional": true, "enum": ["jpeg", "png"], "description": "Image compression format." },
-                    { "name": "quality", "type": "integer", "hidden": true, "optional": true, "description": "Compression quality from range [0..100]." },
-                    { "name": "maxWidth", "type": "integer", "hidden": true, "optional": true, "description": "Maximum screenshot width." },
-                    { "name": "maxHeight", "type": "integer", "hidden": true, "optional": true, "description": "Maximum screenshot height." }
-                ],
+                "parameters": [],
                 "returns": [
-                    { "name": "data", "type": "string", "description": "Base64-encoded image data (PNG)." },
-                    { "name": "metadata", "$ref": "ScreencastFrameMetadata", "description": "Screencast frame metadata"}
+                    { "name": "data", "type": "string", "description": "Base64-encoded image data (PNG)." }
                 ],
                 "hidden": true,
                 "handlers": ["browser"]
