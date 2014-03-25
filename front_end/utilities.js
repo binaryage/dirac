@@ -374,23 +374,22 @@ Object.defineProperty(Array.prototype, "remove",
 {
     /**
      * @param {!T} value
-     * @param {boolean=} onlyFirst
+     * @param {boolean=} firstOnly
      * @this {Array.<!T>}
      * @template T
      */
-    value: function(value, onlyFirst)
+    value: function(value, firstOnly)
     {
-        if (onlyFirst) {
+        if (firstOnly) {
             var index = this.indexOf(value);
             if (index !== -1)
                 this.splice(index, 1);
             return;
         }
 
-        var length = this.length;
-        for (var i = 0; i < length; ++i) {
+        for (var i = 0; i < this.length; ++i) {
             if (this[i] === value)
-                this.splice(i, 1);
+                this.splice(i--, 1);
         }
     }
 });
