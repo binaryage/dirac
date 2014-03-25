@@ -7,20 +7,22 @@
  * @implements {WebInspector.TabbedEditorContainerDelegate}
  * @implements {WebInspector.Searchable}
  * @implements {WebInspector.Replaceable}
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.VBox}
  * @param {!WebInspector.Workspace} workspace
  * @param {!WebInspector.SourcesPanel} sourcesPanel
  */
-WebInspector.SourcesEditor = function(workspace, sourcesPanel)
+WebInspector.SourcesView = function(workspace, sourcesPanel)
 {
+    WebInspector.VBox.call(this);
+    this.registerRequiredCSS("sourcesView.css");
+    this.element.id = "sources-panel-sources-view";
+
     this._workspace = workspace;
     this._sourcesPanel = sourcesPanel;
 
-    this._sourcesView = new WebInspector.SourcesView();
-
     this._searchableView = new WebInspector.SearchableView(this);
     this._searchableView.setMinimalSearchQuerySize(0);
-    this._searchableView.show(this._sourcesView.element);
+    this._searchableView.show(this.element);
 
     /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.SourceFrame>} */
     this._sourceFramesByUISourceCode = new Map();
@@ -39,17 +41,17 @@ WebInspector.SourcesEditor = function(workspace, sourcesPanel)
     this._scriptViewStatusBarTextContainer = document.createElement("div");
     this._scriptViewStatusBarTextContainer.className = "hbox";
 
-    this._statusBarContainerElement = this._sourcesView.element.createChild("div", "sources-status-bar");
+    this._statusBarContainerElement = this.element.createChild("div", "sources-status-bar");
 
     /**
-     * @this {WebInspector.SourcesEditor}
-     * @param {!WebInspector.SourcesEditor.EditorAction} EditorAction
+     * @this {WebInspector.SourcesView}
+     * @param {!WebInspector.SourcesView.EditorAction} EditorAction
      */
     function appendButtonForExtension(EditorAction)
     {
         this._statusBarContainerElement.appendChild(EditorAction.button(this));
     }
-    var editorActions = /** @type {!Array.<!WebInspector.SourcesEditor.EditorAction>} */ (WebInspector.moduleManager.instances(WebInspector.SourcesEditor.EditorAction));
+    var editorActions = /** @type {!Array.<!WebInspector.SourcesView.EditorAction>} */ (WebInspector.moduleManager.instances(WebInspector.SourcesView.EditorAction));
     editorActions.forEach(appendButtonForExtension.bind(this));
 
     this._statusBarContainerElement.appendChild(this._scriptViewStatusBarItemsContainer);
@@ -79,12 +81,12 @@ WebInspector.SourcesEditor = function(workspace, sourcesPanel)
     window.addEventListener("beforeunload", handleBeforeUnload, true);
 }
 
-WebInspector.SourcesEditor.Events = {
+WebInspector.SourcesView.Events = {
     EditorClosed: "EditorClosed",
     EditorSelected: "EditorSelected",
 }
 
-WebInspector.SourcesEditor.prototype = {
+WebInspector.SourcesView.prototype = {
     /**
      * @param {function(!Array.<!WebInspector.KeyboardShortcut.Descriptor>, function(?Event=):boolean)} registerShortcutDelegate
      */
@@ -120,14 +122,6 @@ WebInspector.SourcesEditor.prototype = {
     searchableView: function()
     {
         return this._searchableView;
-    },
-
-    /**
-     * @return {!WebInspector.SourcesView}
-     */
-    sourcesView: function()
-    {
-        return this._sourcesView;
     },
 
     /**
@@ -417,7 +411,7 @@ WebInspector.SourcesEditor.prototype = {
         var data = {};
         data.uiSourceCode = uiSourceCode;
         data.wasSelected = wasSelected;
-        this.dispatchEventToListeners(WebInspector.SourcesEditor.Events.EditorClosed, data);
+        this.dispatchEventToListeners(WebInspector.SourcesView.Events.EditorClosed, data);
     },
 
     _editorSelected: function(event)
@@ -433,7 +427,7 @@ WebInspector.SourcesEditor.prototype = {
         this._searchableView.setReplaceable(!!sourceFrame && sourceFrame.canEditSource());
         this._searchableView.resetSearch();
 
-        this.dispatchEventToListeners(WebInspector.SourcesEditor.Events.EditorSelected, uiSourceCode);
+        this.dispatchEventToListeners(WebInspector.SourcesView.Events.EditorSelected, uiSourceCode);
     },
 
     /**
@@ -471,7 +465,7 @@ WebInspector.SourcesEditor.prototype = {
         /**
          * @param {!WebInspector.View} view
          * @param {number} searchMatches
-         * @this {WebInspector.SourcesEditor}
+         * @this {WebInspector.SourcesView}
          */
         function finishedCallback(view, searchMatches)
         {
@@ -483,7 +477,7 @@ WebInspector.SourcesEditor.prototype = {
 
         /**
          * @param {number} currentMatchIndex
-         * @this {WebInspector.SourcesEditor}
+         * @this {WebInspector.SourcesView}
          */
         function currentMatchChanged(currentMatchIndex)
         {
@@ -491,7 +485,7 @@ WebInspector.SourcesEditor.prototype = {
         }
 
         /**
-         * @this {WebInspector.SourcesEditor}
+         * @this {WebInspector.SourcesView}
          */
         function searchResultsChanged()
         {
@@ -569,10 +563,10 @@ WebInspector.SourcesEditor.prototype = {
         switch (uiSourceCode.contentType()) {
         case WebInspector.resourceTypes.Document:
         case WebInspector.resourceTypes.Script:
-            WebInspector.JavaScriptOutlineDialog.show(this._sourcesView, uiSourceCode, this.showSourceLocation.bind(this, uiSourceCode));
+            WebInspector.JavaScriptOutlineDialog.show(this, uiSourceCode, this.showSourceLocation.bind(this, uiSourceCode));
             return true;
         case WebInspector.resourceTypes.Stylesheet:
-            WebInspector.StyleSheetOutlineDialog.show(this._sourcesView, uiSourceCode, this.showSourceLocation.bind(this, uiSourceCode));
+            WebInspector.StyleSheetOutlineDialog.show(this, uiSourceCode, this.showSourceLocation.bind(this, uiSourceCode));
             return true;
         }
         return false;
@@ -588,7 +582,7 @@ WebInspector.SourcesEditor.prototype = {
         var defaultScores = new Map();
         for (var i = 1; i < uiSourceCodes.length; ++i) // Skip current element
             defaultScores.put(uiSourceCodes[i], uiSourceCodes.length - i);
-        WebInspector.OpenResourceDialog.show(this, this._sourcesView.element, query, defaultScores);
+        WebInspector.OpenResourceDialog.show(this, this.element, query, defaultScores);
     },
 
     /**
@@ -626,83 +620,20 @@ WebInspector.SourcesEditor.prototype = {
         this._editorContainer.view.element.classList.toggle("breakpoints-deactivated", !active);
     },
 
-    __proto__: WebInspector.Object.prototype
-}
-
-/**
- * @constructor
- * @extends {WebInspector.VBox}
- */
-WebInspector.SourcesView = function()
-{
-    WebInspector.VBox.call(this);
-    this.registerRequiredCSS("sourcesView.css");
-    this.element.id = "sources-panel-sources-view";
-    this.element.addEventListener("dragenter", this._onDragEnter.bind(this), true);
-    this.element.addEventListener("dragover", this._onDragOver.bind(this), true);
-}
-
-WebInspector.SourcesView.dragAndDropFilesType = "Files";
-
-WebInspector.SourcesView.prototype = {
-    _onDragEnter: function (event)
-    {
-        if (event.dataTransfer.types.indexOf(WebInspector.SourcesView.dragAndDropFilesType) === -1)
-            return;
-        event.consume(true);
-    },
-
-    _onDragOver: function (event)
-    {
-        if (event.dataTransfer.types.indexOf(WebInspector.SourcesView.dragAndDropFilesType) === -1)
-            return;
-        event.consume(true);
-        if (this._dragMaskElement)
-            return;
-        this._dragMaskElement = this.element.createChild("div", "fill drag-mask");
-        this._dragMaskElement.addEventListener("drop", this._onDrop.bind(this), true);
-        this._dragMaskElement.addEventListener("dragleave", this._onDragLeave.bind(this), true);
-    },
-
-    _onDrop: function (event)
-    {
-        event.consume(true);
-        this._removeMask();
-        var items = /** @type {!Array.<!DataTransferItem>} */ (event.dataTransfer.items);
-        if (!items.length)
-            return;
-        var entry = items[0].webkitGetAsEntry();
-        if (!entry.isDirectory)
-            return;
-        InspectorFrontendHost.upgradeDraggedFileSystemPermissions(entry.filesystem);
-    },
-
-    _onDragLeave: function (event)
-    {
-        event.consume(true);
-        this._removeMask();
-    },
-
-    _removeMask: function ()
-    {
-        this._dragMaskElement.remove();
-        delete this._dragMaskElement;
-    },
-
     __proto__: WebInspector.VBox.prototype
 }
 
 /**
  * @interface
  */
-WebInspector.SourcesEditor.EditorAction = function()
+WebInspector.SourcesView.EditorAction = function()
 {
 }
 
-WebInspector.SourcesEditor.EditorAction.prototype = {
+WebInspector.SourcesView.EditorAction.prototype = {
     /**
-     * @param {!WebInspector.SourcesEditor} sourcesEditor
+     * @param {!WebInspector.SourcesView} sourcesView
      * @return {!Element}
      */
-    button: function(sourcesEditor) { }
+    button: function(sourcesView) { }
 }

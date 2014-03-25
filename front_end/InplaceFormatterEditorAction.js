@@ -5,7 +5,7 @@
 
 /**
  * @constructor
- * @implements {WebInspector.SourcesEditor.EditorAction}
+ * @implements {WebInspector.SourcesView.EditorAction}
  */
 WebInspector.InplaceFormatterEditorAction = function()
 {
@@ -40,17 +40,17 @@ WebInspector.InplaceFormatterEditorAction.prototype = {
     },
 
     /**
-     * @param {!WebInspector.SourcesEditor} sourcesEditor
+     * @param {!WebInspector.SourcesView} sourcesView
      * @return {!Element}
      */
-    button: function(sourcesEditor)
+    button: function(sourcesView)
     {
         if (this._button)
             return this._button.element;
 
-        this._sourcesEditor = sourcesEditor;
-        this._sourcesEditor.addEventListener(WebInspector.SourcesEditor.Events.EditorSelected, this._editorSelected.bind(this));
-        this._sourcesEditor.addEventListener(WebInspector.SourcesEditor.Events.EditorClosed, this._editorClosed.bind(this));
+        this._sourcesView = sourcesView;
+        this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorSelected, this._editorSelected.bind(this));
+        this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorClosed, this._editorClosed.bind(this));
 
         this._button = new WebInspector.StatusBarButton(WebInspector.UIString("Format"), "sources-toggle-pretty-print-status-bar-item");
         this._button.toggled = false;
@@ -74,7 +74,7 @@ WebInspector.InplaceFormatterEditorAction.prototype = {
 
     _formatSourceInPlace: function()
     {
-        var uiSourceCode = this._sourcesEditor.currentUISourceCode();
+        var uiSourceCode = this._sourcesView.currentUISourceCode();
         if (!this._isFormattable(uiSourceCode))
             return;
 
@@ -102,14 +102,14 @@ WebInspector.InplaceFormatterEditorAction.prototype = {
         {
             if (uiSourceCode.workingCopy() === formattedContent)
                 return;
-            var sourceFrame = this._sourcesEditor.viewForFile(uiSourceCode);
+            var sourceFrame = this._sourcesView.viewForFile(uiSourceCode);
             var start = [0, 0];
             if (sourceFrame) {
                 var selection = sourceFrame.selection();
                 start = formatterMapping.originalToFormatted(selection.startLine, selection.startColumn);
             }
             uiSourceCode.setWorkingCopy(formattedContent);
-            this._sourcesEditor.showSourceLocation(uiSourceCode, start[0], start[1]);
+            this._sourcesView.showSourceLocation(uiSourceCode, start[0], start[1]);
         }
     },
 }

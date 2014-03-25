@@ -75,11 +75,6 @@
     background-color: rgb(66, 129, 235);
 }
 
-#sources-panel-sources-view .drag-mask {
-    background-color: transparent;
-    z-index: 1000;
-}
-
 .source-frame-debugger-script {
     background-color: rgba(255, 255, 194, 0.5);
 }

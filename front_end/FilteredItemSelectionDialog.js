@@ -766,13 +766,13 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.SelectUISourceCodeDialog}
- * @param {!WebInspector.SourcesEditor} sourcesEditor
+ * @param {!WebInspector.SourcesView} sourcesView
  * @param {!Map.<!WebInspector.UISourceCode, number>=} defaultScores
  */
-WebInspector.OpenResourceDialog = function(sourcesEditor, defaultScores)
+WebInspector.OpenResourceDialog = function(sourcesView, defaultScores)
 {
     WebInspector.SelectUISourceCodeDialog.call(this, defaultScores);
-    this._sourcesEditor = sourcesEditor;
+    this._sourcesView = sourcesView;
 }
 
 WebInspector.OpenResourceDialog.prototype = {
@@ -785,10 +785,10 @@ WebInspector.OpenResourceDialog.prototype = {
     uiSourceCodeSelected: function(uiSourceCode, lineNumber, columnNumber)
     {
         if (!uiSourceCode)
-            uiSourceCode = this._sourcesEditor.currentUISourceCode();
+            uiSourceCode = this._sourcesView.currentUISourceCode();
         if (!uiSourceCode)
             return;
-        this._sourcesEditor.showSourceLocation(uiSourceCode, lineNumber, columnNumber);
+        this._sourcesView.showSourceLocation(uiSourceCode, lineNumber, columnNumber);
     },
 
     /**
@@ -813,17 +813,17 @@ WebInspector.OpenResourceDialog.prototype = {
 }
 
 /**
- * @param {!WebInspector.SourcesEditor} sourcesEditor
+ * @param {!WebInspector.SourcesView} sourcesView
  * @param {!Element} relativeToElement
  * @param {string=} query
  * @param {!Map.<!WebInspector.UISourceCode, number>=} defaultScores
  */
-WebInspector.OpenResourceDialog.show = function(sourcesEditor, relativeToElement, query, defaultScores)
+WebInspector.OpenResourceDialog.show = function(sourcesView, relativeToElement, query, defaultScores)
 {
     if (WebInspector.Dialog.currentInstance())
         return;
 
-    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.OpenResourceDialog(sourcesEditor, defaultScores));
+    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.OpenResourceDialog(sourcesView, defaultScores));
     filteredItemSelectionDialog.renderAsTwoRows();
     if (query)
         filteredItemSelectionDialog.setQuery(query);

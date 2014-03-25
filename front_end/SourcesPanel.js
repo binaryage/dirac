@@ -59,6 +59,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     WebInspector.Panel.call(this, "sources");
     this.registerRequiredCSS("sourcesPanel.css");
     this.registerRequiredCSS("textPrompt.css"); // Watch Expressions autocomplete.
+    new WebInspector.UpgradeFileSystemDropTarget(this.element);
 
     WebInspector.settings.showEditorInDrawer = WebInspector.settings.createSetting("showEditorInDrawer", true);
 
@@ -93,13 +94,13 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.SourceSelected, this._sourceSelected, this);
     this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.SourceRenamed, this._sourceRenamed, this);
 
-    this._sourcesEditor = new WebInspector.SourcesEditor(this._workspace, this);
-    this._sourcesEditor.addEventListener(WebInspector.SourcesEditor.Events.EditorSelected, this._editorSelected.bind(this));
-    this._sourcesEditor.addEventListener(WebInspector.SourcesEditor.Events.EditorClosed, this._editorClosed.bind(this));
-    this._sourcesEditor.registerShortcuts(this.registerShortcuts.bind(this));
+    this._sourcesView = new WebInspector.SourcesView(this._workspace, this);
+    this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorSelected, this._editorSelected.bind(this));
+    this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorClosed, this._editorClosed.bind(this));
+    this._sourcesView.registerShortcuts(this.registerShortcuts.bind(this));
 
     this._drawerEditorView = new WebInspector.SourcesPanel.DrawerEditorView();
-    this._sourcesEditor.sourcesView().show(this._drawerEditorView.element);
+    this._sourcesView.show(this._drawerEditorView.element);
 
     this._debugSidebarResizeWidgetElement = document.createElementWithClass("div", "resizer-widget");
     this._debugSidebarResizeWidgetElement.id = "scripts-debug-sidebar-resizer-widget";
@@ -155,7 +156,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     defaultFocusedElement: function()
     {
-        return this._sourcesEditor.defaultFocusedElement() || this._navigator.view.defaultFocusedElement();
+        return this._sourcesView.defaultFocusedElement() || this._navigator.view.defaultFocusedElement();
     },
 
     get paused()
@@ -176,7 +177,7 @@ WebInspector.SourcesPanel.prototype = {
     wasShown: function()
     {
         this._drawerEditor()._panelWasShown();
-        this._sourcesEditor.sourcesView().show(this.editorView.mainElement());
+        this._sourcesView.show(this.editorView.mainElement());
         WebInspector.Panel.prototype.wasShown.call(this);
     },
 
@@ -184,7 +185,7 @@ WebInspector.SourcesPanel.prototype = {
     {
         WebInspector.Panel.prototype.willHide.call(this);
         this._drawerEditor()._panelWillHide();
-        this._sourcesEditor.sourcesView().show(this._drawerEditorView.element);
+        this._sourcesView.show(this._drawerEditorView.element);
     },
 
     /**
@@ -192,7 +193,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     searchableView: function()
     {
-        return this._sourcesEditor.searchableView();
+        return this._sourcesView.searchableView();
     },
 
     _consoleCommandEvaluatedInSelectedCallFrame: function(event)
@@ -302,7 +303,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     get visibleView()
     {
-        return this._sourcesEditor.visibleView();
+        return this._sourcesView.visibleView();
     },
 
     /**
@@ -314,12 +315,12 @@ WebInspector.SourcesPanel.prototype = {
     showUISourceCode: function(uiSourceCode, lineNumber, columnNumber, forceShowInPanel)
     {
         this._showEditor(forceShowInPanel);
-        this._sourcesEditor.showSourceLocation(uiSourceCode, lineNumber, columnNumber);
+        this._sourcesView.showSourceLocation(uiSourceCode, lineNumber, columnNumber);
     },
 
     _showEditor: function(forceShowInPanel)
     {
-        if (this._sourcesEditor.sourcesView().isShowing())
+        if (this._sourcesView.isShowing())
             return;
 
         if (this._shouldShowEditorInDrawer() && !forceShowInPanel)
@@ -355,12 +356,12 @@ WebInspector.SourcesPanel.prototype = {
 
     _executionLineChanged: function(uiLocation)
     {
-        this._sourcesEditor.clearCurrentExecutionLine();
-        this._sourcesEditor.setExecutionLine(uiLocation);
+        this._sourcesView.clearCurrentExecutionLine();
+        this._sourcesView.setExecutionLine(uiLocation);
         if (this._skipExecutionLineRevealing)
             return;
         this._skipExecutionLineRevealing = true;
-        this._sourcesEditor.showSourceLocation(uiLocation.uiSourceCode, uiLocation.lineNumber, 0, undefined, true);
+        this._sourcesView.showSourceLocation(uiLocation.uiSourceCode, uiLocation.lineNumber, 0, undefined, true);
     },
 
     _callFrameSelected: function(event)
@@ -382,7 +383,7 @@ WebInspector.SourcesPanel.prototype = {
     _sourceSelected: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data.uiSourceCode);
-        this._sourcesEditor.showSourceLocation(uiSourceCode, undefined, undefined, !event.data.focusSource)
+        this._sourcesView.showSourceLocation(uiSourceCode, undefined, undefined, !event.data.focusSource)
     },
 
     /**
@@ -391,7 +392,7 @@ WebInspector.SourcesPanel.prototype = {
     _sourceRenamed: function(event)
     {
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.data);
-        this._sourcesEditor.sourceRenamed(uiSourceCode);
+        this._sourcesView.sourceRenamed(uiSourceCode);
     },
 
     _pauseOnExceptionEnabledChanged: function()
@@ -434,7 +435,7 @@ WebInspector.SourcesPanel.prototype = {
         this.sidebarPanes.eventListenerBreakpoints.clearBreakpointHighlight();
         this.sidebarPanes.xhrBreakpoints.clearBreakpointHighlight();
 
-        this._sourcesEditor.clearCurrentExecutionLine();
+        this._sourcesView.clearCurrentExecutionLine();
         this._updateDebuggerButtons();
     },
 
@@ -448,7 +449,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     _runSnippet: function()
     {
-        var uiSourceCode = this._sourcesEditor.currentUISourceCode();
+        var uiSourceCode = this._sourcesView.currentUISourceCode();
         if (uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets)
             return false;
         WebInspector.scriptSnippetModel.evaluateScriptSnippet(uiSourceCode);
@@ -608,7 +609,7 @@ WebInspector.SourcesPanel.prototype = {
         var active = event.data;
         this._toggleBreakpointsButton.toggled = !active;
         this.sidebarPanes.jsBreakpoints.listElement.classList.toggle("breakpoints-list-deactivated", !active);
-        this._sourcesEditor.toggleBreakpointsActiveState(active);
+        this._sourcesView.toggleBreakpointsActiveState(active);
         if (active)
             this._toggleBreakpointsButton.title = WebInspector.UIString("Deactivate breakpoints.");
         else
@@ -968,7 +969,7 @@ WebInspector.SourcesPanel.prototype = {
 
     showGoToSourceDialog: function()
     {
-        this._sourcesEditor.showOpenResourceDialog();
+        this._sourcesView.showOpenResourceDialog();
     },
 
     _dockSideChanged: function()
@@ -991,9 +992,9 @@ WebInspector.SourcesPanel.prototype = {
         this._splitView.setVertical(!vertically);
 
         if (!vertically)
-            this._splitView.uninstallResizer(this._sourcesEditor.statusBarContainerElement());
+            this._splitView.uninstallResizer(this._sourcesView.statusBarContainerElement());
         else
-            this._splitView.installResizer(this._sourcesEditor.statusBarContainerElement());
+            this._splitView.installResizer(this._sourcesView.statusBarContainerElement());
 
         // Create vertical box with stack.
         var vbox = new WebInspector.VBox();
@@ -1058,14 +1059,74 @@ WebInspector.SourcesPanel.prototype = {
     },
 
     /**
-     * @return {!WebInspector.SourcesEditor}
+     * @return {!WebInspector.SourcesView}
      */
-    sourcesEditor: function()
+    sourcesView: function()
     {
-        return this._sourcesEditor;
+        return this._sourcesView;
     },
 
     __proto__: WebInspector.Panel.prototype
+}
+
+/**
+ * @constructor
+ * @param {!Element} element
+ */
+WebInspector.UpgradeFileSystemDropTarget = function(element)
+{
+    element.addEventListener("dragenter", this._onDragEnter.bind(this), false);
+    element.addEventListener("dragover", this._onDragOver.bind(this), false);
+    this._element = element;
+}
+
+WebInspector.UpgradeFileSystemDropTarget.dragAndDropFilesType = "Files";
+
+WebInspector.UpgradeFileSystemDropTarget.prototype = {
+    _onDragEnter: function (event)
+    {
+        if (event.dataTransfer.types.indexOf(WebInspector.UpgradeFileSystemDropTarget.dragAndDropFilesType) === -1)
+            return;
+        event.consume(true);
+    },
+
+    _onDragOver: function (event)
+    {
+        if (event.dataTransfer.types.indexOf(WebInspector.UpgradeFileSystemDropTarget.dragAndDropFilesType) === -1)
+            return;
+        event.consume(true);
+        if (this._dragMaskElement)
+            return;
+        this._dragMaskElement = this._element.createChild("div", "fill drag-mask");
+        this._dragMaskElement.createChild("div", "fill drag-mask-inner").textContent = WebInspector.UIString("Drop workspace folder here");
+        this._dragMaskElement.addEventListener("drop", this._onDrop.bind(this), false);
+        this._dragMaskElement.addEventListener("dragleave", this._onDragLeave.bind(this), false);
+    },
+
+    _onDrop: function (event)
+    {
+        event.consume(true);
+        this._removeMask();
+        var items = /** @type {!Array.<!DataTransferItem>} */ (event.dataTransfer.items);
+        if (!items.length)
+            return;
+        var entry = items[0].webkitGetAsEntry();
+        if (!entry.isDirectory)
+            return;
+        InspectorFrontendHost.upgradeDraggedFileSystemPermissions(entry.filesystem);
+    },
+
+    _onDragLeave: function (event)
+    {
+        event.consume(true);
+        this._removeMask();
+    },
+
+    _removeMask: function ()
+    {
+        this._dragMaskElement.remove();
+        delete this._dragMaskElement;
+    }
 }
 
 /**
