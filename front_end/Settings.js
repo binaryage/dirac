@@ -289,7 +289,6 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     this.timelineFlameChart = this._createExperiment("timelineFlameChart", "Enable FlameChart mode in Timeline");
     this.heapSnapshotStatistics = this._createExperiment("heapSnapshotStatistics", "Show memory breakdown statistics in heap snapshots");
     this.timelineNoLiveUpdate = this._createExperiment("timelineNoLiveUpdate", "Timeline w/o live update");
-    this.cssStyleSearch = this._createExperiment("cssStyleSearch", "Enable Styles search and Computed style filtering");
     this.powerProfiler = this._createExperiment("powerProfiler", "Enable power mode in Timeline");
 
     this._cleanUpSetting();

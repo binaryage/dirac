@@ -609,12 +609,22 @@
     position: absolute;
 }
 
-input.filter-box {
-    outline: none !important;
+.sidebar-pane-filter-box {
+    display: flex;
+    border-top: 1px solid rgb(191, 191, 191);
+    flex-basis: 19px;
 }
 
-.sidebar-pane .filter-box-container > .filter-box {
-    margin: 1px 1px 1px 2px;
+.sidebar-pane-filter-box > input {
+    outline: none !important;
+    border: none;
+    width: 100%;
+    margin: 0 4px;
+    background: transparent;
+}
+
+.styles-filter-engaged {
+    background-color: rgba(255, 255, 0, 0.5);
 }
 
 .sidebar-pane.composite .metrics-and-computed .sidebar-pane-toolbar {

@@ -186,9 +186,6 @@ WebInspector.StylesSidebarPane.prototype = {
      */
     setFilterBoxContainers: function(matchedStylesElement, computedStylesElement)
     {
-        if (!WebInspector.experimentsSettings.cssStyleSearch.isEnabled())
-            return;
-
         matchedStylesElement.appendChild(this._createCSSFilterControl());
         this._computedStylePane.setFilterBoxContainer(computedStylesElement);
     },
@@ -209,23 +206,6 @@ WebInspector.StylesSidebarPane.prototype = {
             this._filterRegex = regex;
         }
 
-        filterInput.addEventListener("keydown", tabHandler.bind(this), false);
-
-        /**
-         * @param {?Event} event
-         * @this {WebInspector.StylesSidebarPane}
-         */
-        function tabHandler(event)
-        {
-            if (event.keyIdentifier !== "U+0009")
-                return;
-
-            event.consume(true);
-            var firstSection = this.sections[0][1];
-            if (!firstSection)
-                return;
-            firstSection._moveEditorFromSelector(event.shiftKey ? "backward" : "forward");
-        }
         return filterInput;
     },
 
@@ -892,7 +872,6 @@ WebInspector.StylesSidebarPane.prototype = {
         var input = document.createElement("input");
         input.type = "text";
         input.placeholder = isComputedStyleFilter ? WebInspector.UIString("Filter") : WebInspector.UIString("Find in Styles");
-        input.className = "filter-box toolbar-search-control search-replace";
         var boundSearchHandler = searchHandler.bind(this);
 
         /**
@@ -902,6 +881,7 @@ WebInspector.StylesSidebarPane.prototype = {
         {
             var regex = input.value ? new RegExp(input.value.escapeForRegExp(), "i") : null;
             filterCallback(regex);
+            input.parentNode.classList.toggle("styles-filter-engaged", !!input.value);
             this._updateFilter(isComputedStyleFilter);
         }
         input.addEventListener("input", boundSearchHandler, false);
@@ -934,7 +914,7 @@ WebInspector.StylesSidebarPane.prototype = {
                 var section = sections[i];
                 if (isComputedStyleFilter !== !!section.computedStyle)
                     continue;
-                section.updateFilter();
+                section._updateFilter();
             }
         }
     },
@@ -1371,11 +1351,19 @@ WebInspector.StylePropertiesSection.prototype = {
         }
     },
 
-    updateFilter: function()
+    _updateFilter: function()
     {
+        if (this.styleRule.isAttribute)
+            return;
+        var regex = this._parentPane.filterRegex();
+        var hideRule = regex && !regex.test(this.element.textContent);
+        this.element.classList.toggle("hidden", hideRule);
+        if (hideRule)
+            return;
+
         var children = this.propertiesTreeOutline.children;
         for (var i = 0; i < children.length; ++i)
-            children[i].updateFilter();
+            children[i]._updateFilter();
 
         if (this.styleRule.rule)
             this._markSelectorHighlights();
@@ -1736,11 +1724,11 @@ WebInspector.ComputedStylePropertiesSection.prototype = {
         this.populated = false;
     },
 
-    updateFilter: function()
+    _updateFilter: function()
     {
         var children = this.propertiesTreeOutline.children;
         for (var i = 0; i < children.length; ++i)
-            children[i].updateFilter();
+            children[i]._updateFilter();
     },
 
     onpopulate: function()
@@ -2150,10 +2138,10 @@ WebInspector.StylePropertyTreeElementBase.prototype = {
         }
         if (this.property.inactive)
             this.listItemElement.classList.add("inactive");
-        this.updateFilter();
+        this._updateFilter();
     },
 
-    updateFilter: function()
+    _updateFilter: function()
     {
         var regEx = this.parentPane().filterRegex();
         this.listItemElement.classList.toggle("filter-match", !!regEx && (regEx.test(this.property.name) || regEx.test(this.property.value)));
@@ -2396,7 +2384,7 @@ WebInspector.ComputedStylePropertyTreeElement.prototype = {
         return this._stylesPane._computedStylePane;
     },
 
-    updateFilter: function()
+    _updateFilter: function()
     {
         var regEx = this.parentPane().filterRegex();
         this.listItemElement.classList.toggle("hidden", !!regEx && (!regEx.test(this.property.name) && !regEx.test(this.property.value)));

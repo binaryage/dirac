@@ -90,9 +90,9 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.styles = new WebInspector.StylesSidebarPane(this.sidebarPanes.computedStyle, this._setPseudoClassForNodeId.bind(this));
 
     this._matchedStylesFilterBoxContainer = document.createElement("div");
-    this._matchedStylesFilterBoxContainer.className = "filter-box-container inspector-footer status-bar";
+    this._matchedStylesFilterBoxContainer.className = "sidebar-pane-filter-box";
     this._computedStylesFilterBoxContainer = document.createElement("div");
-    this._computedStylesFilterBoxContainer.className = "filter-box-container inspector-footer status-bar";
+    this._computedStylesFilterBoxContainer.className = "sidebar-pane-filter-box";
     this.sidebarPanes.styles.setFilterBoxContainers(this._matchedStylesFilterBoxContainer, this._computedStylesFilterBoxContainer);
 
     this.sidebarPanes.metrics = new WebInspector.MetricsSidebarPane();
@@ -1268,10 +1268,8 @@ WebInspector.ElementsPanel.prototype = {
             computedPane.show(computedStylePanesWrapper);
             computedPane.setExpandCallback(expandComposite);
 
-            if (WebInspector.experimentsSettings.cssStyleSearch.isEnabled()) {
-                splitView.mainElement().appendChild(this._matchedStylesFilterBoxContainer);
-                splitView.sidebarElement().appendChild(this._computedStylesFilterBoxContainer);
-            }
+            splitView.mainElement().appendChild(this._matchedStylesFilterBoxContainer);
+            splitView.sidebarElement().appendChild(this._computedStylesFilterBoxContainer);
 
             this.sidebarPaneView.addPane(compositePane);
         } else {
@@ -1289,10 +1287,8 @@ WebInspector.ElementsPanel.prototype = {
 
             this.sidebarPaneView.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, tabSelected, this);
 
-            if (WebInspector.experimentsSettings.cssStyleSearch.isEnabled()) {
-                stylesPane.bodyElement.appendChild(this._matchedStylesFilterBoxContainer);
-                computedPane.bodyElement.appendChild(this._computedStylesFilterBoxContainer);
-            }
+            stylesPane.bodyElement.appendChild(this._matchedStylesFilterBoxContainer);
+            computedPane.bodyElement.appendChild(this._computedStylesFilterBoxContainer);
 
             this.sidebarPaneView.addPane(stylesPane);
             this.sidebarPaneView.addPane(computedPane);
