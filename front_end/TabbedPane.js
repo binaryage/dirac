@@ -83,6 +83,7 @@ WebInspector.TabbedPane.prototype = {
     set verticalTabLayout(verticalTabLayout)
     {
         this._verticalTabLayout = verticalTabLayout;
+        this.invalidateMinimumSize();
     },
 
     /**
@@ -286,7 +287,7 @@ WebInspector.TabbedPane.prototype = {
         this._hideCurrentTab();
         this._showTab(tab);
         this._currentTab = tab;
-        
+
         this._tabsHistory.splice(this._tabsHistory.indexOf(tab), 1);
         this._tabsHistory.splice(0, 0, tab);
         
@@ -375,6 +376,20 @@ WebInspector.TabbedPane.prototype = {
         var effectiveTab = this._currentTab || this._tabsHistory[0];
         if (effectiveTab)
             this.selectTab(effectiveTab.id);
+        this.invalidateMinimumSize();
+    },
+
+    /**
+     * @return {!Size}
+     */
+    calculateMinimumSize: function()
+    {
+        var size = WebInspector.VBox.prototype.calculateMinimumSize.call(this);
+        if (this._verticalTabLayout)
+            size.width += this._headerElement.offsetWidth;
+        else
+            size.height += this._headerElement.offsetHeight;
+        return size;
     },
 
     _updateTabElements: function()

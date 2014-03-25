@@ -229,6 +229,10 @@ WebInspector.View.prototype = {
     {
     },
 
+    onLayout: function()
+    {
+    },
+
     /**
      * @param {?Element} parentElement
      * @param {!Element=} insertBefore
@@ -276,6 +280,9 @@ WebInspector.View.prototype = {
             this._processWasShown();
             this._cacheSize();
         }
+
+        if (this._parentView && this._hasNonZeroMinimumSize())
+            this._parentView.invalidateMinimumSize();
     },
 
     /**
@@ -297,6 +304,8 @@ WebInspector.View.prototype = {
             this._visible = false;
             if (this._parentIsShowing())
                 this._processWasHidden();
+            if (this._parentView && this._hasNonZeroMinimumSize())
+                this._parentView.invalidateMinimumSize();
             return;
         }
 
@@ -313,7 +322,10 @@ WebInspector.View.prototype = {
             var childIndex = this._parentView._children.indexOf(this);
             WebInspector.View._assert(childIndex >= 0, "Attempt to remove non-child view");
             this._parentView._children.splice(childIndex, 1);
+            var parent = this._parentView;
             this._parentView = null;
+            if (this._hasNonZeroMinimumSize())
+                parent.invalidateMinimumSize();
         } else
             WebInspector.View._assert(this._isRoot, "Removing non-root view from DOM");
     },
@@ -364,6 +376,14 @@ WebInspector.View.prototype = {
         if (!this._inNotification())
             this._callOnVisibleChildren(this._processOnResize);
         this._cacheSize();
+    },
+
+    doLayout: function()
+    {
+        if (!this.isShowing())
+            return;
+        this._notify(this.onLayout);
+        this.doResize();
     },
 
     registerRequiredCSS: function(cssFile)
@@ -484,6 +504,56 @@ WebInspector.View.prototype = {
         return result;
     },
 
+    /**
+     * @return {!Size}
+     */
+    calculateMinimumSize: function()
+    {
+        return new Size(0, 0);
+    },
+
+    /**
+     * @return {!Size}
+     */
+    minimumSize: function()
+    {
+        if (typeof this._minimumSize !== "undefined")
+            return this._minimumSize;
+        if (typeof this._cachedMinimumSize === "undefined")
+            this._cachedMinimumSize = this.calculateMinimumSize();
+        return this._cachedMinimumSize;
+    },
+
+    /**
+     * @param {number} width
+     * @param {number} height
+     */
+    setMinimumSize: function(width, height)
+    {
+        this._minimumSize = new Size(width, height);
+        this.invalidateMinimumSize();
+    },
+
+    /**
+     * @return {boolean}
+     */
+    _hasNonZeroMinimumSize: function()
+    {
+        var size = this.minimumSize();
+        return size.width || size.height;
+    },
+
+    invalidateMinimumSize: function()
+    {
+        var cached = this._cachedMinimumSize;
+        delete this._cachedMinimumSize;
+        var actual = this.minimumSize();
+        if (!actual.isEqual(cached) && this._parentView)
+            this._parentView.invalidateMinimumSize();
+        else
+            this.doLayout();
+    },
+
     __proto__: WebInspector.Object.prototype
 }
 
@@ -535,6 +605,29 @@ WebInspector.VBox = function()
 };
 
 WebInspector.VBox.prototype = {
+    /**
+     * @return {!Size}
+     */
+    calculateMinimumSize: function()
+    {
+        var width = 0;
+        var height = 0;
+
+        /**
+         * @this {!WebInspector.View}
+         * @suppressReceiverCheck
+         */
+        function updateForChild()
+        {
+            var size = this.minimumSize();
+            width = Math.max(width, size.width);
+            height += size.height;
+        }
+
+        this._callOnVisibleChildren(updateForChild);
+        return new Size(width, height);
+    },
+
     __proto__: WebInspector.View.prototype
 };
 
@@ -549,6 +642,29 @@ WebInspector.HBox = function()
 };
 
 WebInspector.HBox.prototype = {
+    /**
+     * @return {!Size}
+     */
+    calculateMinimumSize: function()
+    {
+        var width = 0;
+        var height = 0;
+
+        /**
+         * @this {!WebInspector.View}
+         * @suppressReceiverCheck
+         */
+        function updateForChild()
+        {
+            var size = this.minimumSize();
+            width += size.width;
+            height = Math.max(height, size.height);
+        }
+
+        this._callOnVisibleChildren(updateForChild);
+        return new Size(width, height);
+    },
+
     __proto__: WebInspector.View.prototype
 };
 

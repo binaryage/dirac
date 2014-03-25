@@ -36,13 +36,12 @@ WebInspector.InspectorView = function()
 {
     WebInspector.VBox.call(this);
     WebInspector.Dialog.setModalHostView(this);
+    this.setMinimumSize(180, 72);
 
     // DevTools sidebar is a vertical split of panels tabbed pane and a drawer.
     this._drawerSplitView = new WebInspector.SplitView(false, true, "Inspector.drawerSplitViewState", 200, 200);
     this._drawerSplitView.hideSidebar();
     this._drawerSplitView.enableShowModeSaving();
-    this._drawerSplitView.setSidebarElementConstraints(Preferences.minDrawerHeight, Preferences.minDrawerHeight);
-    this._drawerSplitView.setMainElementConstraints(25, 25);
     this._drawerSplitView.show(this.element);
 
     this._tabbedPane = new WebInspector.TabbedPane();
@@ -440,11 +439,44 @@ WebInspector.RootView = function()
 {
     WebInspector.VBox.call(this);
     this.markAsRoot();
-    this.element.classList.add("fill", "root-view");
+    this.element.classList.add("root-view");
     this.element.setAttribute("spellcheck", false);
     window.addEventListener("resize", this.doResize.bind(this), true);
+    this._onScrollBound = this._onScroll.bind(this);
 };
 
 WebInspector.RootView.prototype = {
+    attachToBody: function()
+    {
+        this.doResize();
+        this.show(document.body);
+    },
+
+    _onScroll: function()
+    {
+        // If we didn't have enough space at the start, we may have wrong scroll offsets.
+        if (document.body.scrollTop !== 0)
+            document.body.scrollTop = 0;
+        if (document.body.scrollLeft !== 0)
+            document.body.scrollLeft = 0;
+    },
+
+    doResize: function()
+    {
+        var size = this.minimumSize();
+        var right = Math.min(0, window.innerWidth - size.width);
+        this.element.style.right = right + "px";
+        var bottom = Math.min(0, window.innerHeight - size.height);
+        this.element.style.bottom = bottom + "px";
+
+        if (window.innerWidth < size.width || window.innerHeight < size.height)
+            window.addEventListener("scroll", this._onScrollBound, false);
+        else
+            window.removeEventListener("scroll", this._onScrollBound, false);
+
+        WebInspector.VBox.prototype.doResize.call(this);
+        this._onScroll();
+    },
+
     __proto__: WebInspector.VBox.prototype
 };

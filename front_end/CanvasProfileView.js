@@ -44,19 +44,26 @@ WebInspector.CanvasProfileView = function(profile)
     this._linkifier = new WebInspector.Linkifier();
 
     this._replayInfoSplitView = new WebInspector.SplitView(true, true, "canvasProfileViewReplaySplitViewState", 0.34);
-    this._replayInfoSplitView.setMainElementConstraints(25, 25);
     this._replayInfoSplitView.show(this.element);
 
     this._imageSplitView = new WebInspector.SplitView(false, true, "canvasProfileViewSplitViewState", 300);
     this._imageSplitView.show(this._replayInfoSplitView.mainElement());
 
-    var replayImageContainer = this._imageSplitView.mainElement().createChild("div");
+    var replayImageContainerView = new WebInspector.VBox();
+    replayImageContainerView.setMinimumSize(50, 28);
+    replayImageContainerView.show(this._imageSplitView.mainElement());
+
+    var replayImageContainer = replayImageContainerView.element;
     replayImageContainer.id = "canvas-replay-image-container";
     this._replayImageElement = replayImageContainer.createChild("img", "canvas-replay-image");
     this._debugInfoElement = replayImageContainer.createChild("div", "canvas-debug-info hidden");
     this._spinnerIcon = replayImageContainer.createChild("div", "spinner-icon small hidden");
 
-    var replayLogContainer = this._imageSplitView.sidebarElement();
+    var replayLogContainerView = new WebInspector.VBox();
+    replayLogContainerView.setMinimumSize(22, 22);
+    replayLogContainerView.show(this._imageSplitView.sidebarElement());
+
+    var replayLogContainer = replayLogContainerView.element;
     var controlsContainer = replayLogContainer.createChild("div", "status-bar");
     var logGridContainer = replayLogContainer.createChild("div", "canvas-replay-log");
 

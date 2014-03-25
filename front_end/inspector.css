@@ -2784,6 +2784,8 @@ button.record-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
 .root-view {
     overflow: hidden;
     position: absolute !important;
+    left: 0;
+    top: 0;
 }
 
 .search-bar {

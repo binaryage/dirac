@@ -73,9 +73,6 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     const initialDebugSidebarWidth = 225;
     this._splitView = new WebInspector.SplitView(true, true, "sourcesPanelSplitViewState", initialDebugSidebarWidth);
     this._splitView.enableShowModeSaving();
-    this._splitView.setMainElementConstraints(200, 25);
-    this._splitView.setSidebarElementConstraints(WebInspector.SourcesPanel.minToolbarWidth, 25);
-
     this._splitView.show(this.element);
 
     // Create scripts navigator
@@ -84,12 +81,10 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.editorView.enableShowModeSaving();
     this.editorView.element.id = "scripts-editor-split-view";
     this.editorView.element.tabIndex = 0;
-
-    this.editorView.setSidebarElementConstraints(Preferences.minSidebarWidth);
-    this.editorView.setMainElementConstraints(50, 50);
     this.editorView.show(this._splitView.mainElement());
 
     this._navigator = new WebInspector.SourcesNavigator(this._workspace);
+    this._navigator.view.setMinimumSize(Preferences.minSidebarWidth, 25);
     this._navigator.view.show(this.editorView.sidebarElement());
     this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.SourceSelected, this._sourceSelected, this);
     this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.SourceRenamed, this._sourceRenamed, this);
@@ -1001,6 +996,7 @@ WebInspector.SourcesPanel.prototype = {
         vbox.element.appendChild(this._debugToolbarDrawer);
         vbox.element.appendChild(this.debugToolbar);
         vbox.element.appendChild(this.threadsToolbar.element);
+        vbox.setMinimumSize(WebInspector.SourcesPanel.minToolbarWidth, 25);
         var sidebarPaneStack = new WebInspector.SidebarPaneStack();
         sidebarPaneStack.element.classList.add("flex-auto");
         sidebarPaneStack.show(vbox.element);
@@ -1014,7 +1010,6 @@ WebInspector.SourcesPanel.prototype = {
             this.sidebarPaneView = vbox;
         } else {
             var splitView = new WebInspector.SplitView(true, true, "sourcesPanelDebuggerSidebarSplitViewState", 0.5);
-            splitView.setMainElementConstraints(WebInspector.SourcesPanel.minToolbarWidth, 25);
             vbox.show(splitView.mainElement());
 
             // Populate the left stack.

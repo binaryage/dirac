@@ -80,8 +80,6 @@ WebInspector.Main.prototype = {
 
         this._rootSplitView = new WebInspector.SplitView(false, true, WebInspector.dockController.canDock() ? "InspectorView.splitViewState" : "InspectorView.dummySplitViewState", 300, 300);
         this._rootSplitView.show(rootView.element);
-        this._rootSplitView.setSidebarElementConstraints(180, 50);
-        this._rootSplitView.setMainElementConstraints(WebInspector.InspectedPagePlaceholder.Constraints.Width, WebInspector.InspectedPagePlaceholder.Constraints.Height);
 
         WebInspector.inspectorView.show(this._rootSplitView.sidebarElement());
 
@@ -91,7 +89,7 @@ WebInspector.Main.prototype = {
         WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._updateRootSplitViewOnDockSideChange, this);
         this._updateRootSplitViewOnDockSideChange();
 
-        rootView.show(document.body);
+        rootView.attachToBody();
     },
 
     _updateRootSplitViewOnDockSideChange: function()

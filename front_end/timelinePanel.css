@@ -715,6 +715,7 @@
 
 .timeline-details-view {
     color: #333;
+    overflow: hidden;
 }
 
 .timeline-details-view-title {

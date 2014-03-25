@@ -52,12 +52,11 @@ WebInspector.ElementsPanel = function()
     this.setHideOnDetach();
 
     this._splitView = new WebInspector.SplitView(true, true, "elementsPanelSplitViewState", 325, 325);
-    this._splitView.setSidebarElementConstraints(25, 25);
-    this._splitView.setMainElementConstraints(25, 19);
     this._splitView.addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._updateTreeOutlineVisibleWidth.bind(this));
     this._splitView.show(this.element);
 
     this._searchableView = new WebInspector.SearchableView(this);
+    this._searchableView.setMinimumSize(25, 19);
     this._searchableView.show(this._splitView.mainElement());
     var stackElement = this._searchableView.element;
 

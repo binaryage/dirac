@@ -104,12 +104,12 @@ WebInspector.TimelinePanel = function()
     this._detailsSplitView = new WebInspector.SplitView(false, true, "timelinePanelDetailsSplitViewState");
     this._detailsSplitView.element.classList.add("timeline-details-split");
     this._detailsSplitView.sidebarElement().classList.add("timeline-details");
-    this._detailsSplitView.setMainElementConstraints(undefined, 40);
     this._detailsView = new WebInspector.TimelineDetailsView();
     this._detailsSplitView.installResizer(this._detailsView.titleElement());
     this._detailsView.show(this._detailsSplitView.sidebarElement());
 
     this._searchableView = new WebInspector.SearchableView(this);
+    this._searchableView.setMinimumSize(0, 25);
     this._searchableView.element.classList.add("searchable-view");
     this._searchableView.show(this._detailsSplitView.mainElement());
 

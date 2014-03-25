@@ -49,10 +49,9 @@ WebInspector.HeapSnapshotView = function(profile)
 
     this._splitView = new WebInspector.SplitView(false, true, "heapSnapshotSplitViewState", 200, 200);
     this._splitView.show(this.element);
-    this._splitView.setMainElementConstraints(50, 50);
-    this._splitView.setSidebarElementConstraints(70, 70);
 
     this._containmentView = new WebInspector.VBox();
+    this._containmentView.setMinimumSize(50, 25);
     this._containmentDataGrid = new WebInspector.HeapSnapshotContainmentDataGrid();
     this._containmentDataGrid.show(this._containmentView.element);
     this._containmentDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
@@ -60,24 +59,28 @@ WebInspector.HeapSnapshotView = function(profile)
     this._statisticsView = new WebInspector.HeapSnapshotStatisticsView();
 
     this._constructorsView = new WebInspector.VBox();
+    this._constructorsView.setMinimumSize(50, 25);
 
     this._constructorsDataGrid = new WebInspector.HeapSnapshotConstructorsDataGrid();
     this._constructorsDataGrid.show(this._constructorsView.element);
     this._constructorsDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
     this._diffView = new WebInspector.VBox();
+    this._diffView.setMinimumSize(50, 25);
 
     this._diffDataGrid = new WebInspector.HeapSnapshotDiffDataGrid();
     this._diffDataGrid.show(this._diffView.element);
     this._diffDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
     this._dominatorView = new WebInspector.VBox();
+    this._dominatorView.setMinimumSize(50, 25);
     this._dominatorDataGrid = new WebInspector.HeapSnapshotDominatorsDataGrid();
     this._dominatorDataGrid.show(this._dominatorView.element);
     this._dominatorDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
     if (WebInspector.experimentsSettings.allocationProfiler.isEnabled() && profile.profileType() === WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType) {
         this._allocationView = new WebInspector.VBox();
+        this._allocationView.setMinimumSize(50, 25);
         this._allocationDataGrid = new WebInspector.AllocationDataGrid();
         this._allocationDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._onSelectAllocationNode, this);
         this._allocationDataGrid.show(this._allocationView.element);
@@ -91,6 +94,7 @@ WebInspector.HeapSnapshotView = function(profile)
     this._splitView.installResizer(this._retainmentViewHeader);
 
     this._retainmentView = new WebInspector.VBox();
+    this._retainmentView.setMinimumSize(50, 21);
     this._retainmentView.element.classList.add("retaining-paths-view");
     this._retainmentView.element.appendChild(this._retainmentViewHeader);
     this._retainmentDataGrid = new WebInspector.HeapSnapshotRetainmentDataGrid();
@@ -371,8 +375,6 @@ WebInspector.HeapSnapshotView.AllocationPerspective = function()
 {
     WebInspector.HeapSnapshotView.Perspective.call(this,  WebInspector.UIString("Allocation"));
     this._allocationSplitView = new WebInspector.SplitView(false, true, "heapSnapshotAllocationSplitViewState", 200, 200);
-    this._allocationSplitView.setMainElementConstraints(50, 100);
-    this._allocationSplitView.setSidebarElementConstraints(50, 100);
 }
 
 WebInspector.HeapSnapshotView.AllocationPerspective.prototype = {
@@ -2128,6 +2130,7 @@ WebInspector.HeapTrackingOverviewGrid.OverviewCalculator.prototype = {
 WebInspector.HeapSnapshotStatisticsView = function()
 {
     WebInspector.VBox.call(this);
+    this.setMinimumSize(50, 25);
     this._pieChart = new WebInspector.PieChart();
     this._pieChart.setSize(150);
     this.element.appendChild(this._pieChart.element);

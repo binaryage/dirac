@@ -16,6 +16,7 @@ WebInspector.SourcesView = function(workspace, sourcesPanel)
     WebInspector.VBox.call(this);
     this.registerRequiredCSS("sourcesView.css");
     this.element.id = "sources-panel-sources-view";
+    this.setMinimumSize(50, 25);
 
     this._workspace = workspace;
     this._sourcesPanel = sourcesPanel;

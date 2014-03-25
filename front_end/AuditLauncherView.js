@@ -36,6 +36,7 @@
 WebInspector.AuditLauncherView = function(auditController)
 {
     WebInspector.VBox.call(this);
+    this.setMinimumSize(100, 25);
 
     this._auditController = auditController;
 

@@ -31,7 +31,6 @@
 
 var Preferences = {
     maxInlineTextChildLength: 80,
-    minDrawerHeight: 25,
     minSidebarWidth: 100,
     minSidebarHeight: 75,
     applicationTitle: "Developer Tools - %s"

@@ -206,6 +206,15 @@ function Size(width, height)
 }
 
 /**
+ * @param {?Size} size
+ * @return {boolean}
+ */
+Size.prototype.isEqual = function(size)
+{
+    return !!size && this.width === size.width && this.height === size.height;
+};
+
+/**
  * @param {?Element=} containerElement
  * @return {!Size}
  */

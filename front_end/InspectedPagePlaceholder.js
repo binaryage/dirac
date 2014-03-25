@@ -11,6 +11,7 @@ WebInspector.InspectedPagePlaceholder = function()
     WebInspector.View.call(this);
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
     this._margins = { top: false, right: false, bottom: false, left: false };
+    this.setMinimumSize(WebInspector.InspectedPagePlaceholder.Constraints.Width, WebInspector.InspectedPagePlaceholder.Constraints.Height);
 };
 
 WebInspector.InspectedPagePlaceholder.Constraints = {
