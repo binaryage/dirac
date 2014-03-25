@@ -219,6 +219,15 @@
     margin-left: -6px;
 }
 
+.styles-section .properties li.filter-match,
+.styles-section .simple-selector.filter-match {
+    background-color: rgba(255, 255, 0, 0.5);
+}
+
+.styles-section .properties li.overloaded.filter-match {
+    background-color: rgba(255, 255, 0, 0.25);
+}
+
 .styles-section .properties li.not-parsed-ok .exclamation-mark {
     display: inline-block;
     position: relative;
@@ -430,10 +439,6 @@
     color: inherit;
 }
 
-.styles-section.computed-style .properties {
-    margin-top: 18px;
-}
-
 .styles-section.computed-style .properties .disabled {
     text-decoration: none;
     opacity: 0.5;
@@ -449,7 +454,6 @@
 }
 
 .styles-element-state-pane {
-    background-color: rgb(240, 240, 240);
     overflow: hidden;
     margin-top: -56px;
     padding-top: 18px;
@@ -579,10 +583,36 @@
 .sidebar-pane.composite .metrics {
     border-bottom: 1px solid rgb(64%, 64%, 64%);
     height: 206px;
-    display: -webkit-flex;
-    -webkit-flex-direction: column;
+    display: flex;
+    flex-direction: column;
     -webkit-align-items: center;
     -webkit-justify-content: center;
+}
+
+.sidebar-pane .metrics-and-styles,
+.sidebar-pane .metrics-and-computed {
+    display: flex !important;
+    flex-direction: column !important;
+    position: relative;
+}
+
+.sidebar-pane .style-panes-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    position: relative;
+}
+
+.sidebar-pane.composite .metrics-and-computed .sidebar-pane-toolbar,
+.sidebar-pane.composite .metrics-and-styles .sidebar-pane-toolbar {
+    position: absolute;
+}
+
+input.filter-box {
+    outline: none !important;
+}
+
+.sidebar-pane .filter-box-container > .filter-box {
+    margin: 1px 1px 1px 2px;
 }
 
 .sidebar-pane.composite .metrics-and-computed .sidebar-pane-toolbar {
@@ -621,8 +651,8 @@
 }
 
 .styles-section.computed-style > .header > .sidebar-pane-subtitle {
-    top: 4px;
-    left: 8px;
+    line-height: 17px;
+    margin: 2px;
     -webkit-user-select: none;
 }
 
