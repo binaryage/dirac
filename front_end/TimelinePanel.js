@@ -30,7 +30,7 @@
  */
 
 importScript("CountersGraph.js");
-importScript("DOMCountersGraph.js");
+importScript("MemoryCountersGraph.js");
 importScript("PieChart.js");
 importScript("TimelineModel.js");
 importScript("TimelineOverviewPane.js");
@@ -260,7 +260,7 @@ WebInspector.TimelinePanel.prototype = {
                 break;
             case WebInspector.TimelinePanel.Mode.Memory:
                 views.overviewView = new WebInspector.TimelineMemoryOverview(this._model);
-                views.mainViews = [this._timelineView(), new WebInspector.DOMCountersGraph(this, this._model)];
+                views.mainViews = [this._timelineView(), new WebInspector.MemoryCountersGraph(this, this._model)];
                 break;
             case WebInspector.TimelinePanel.Mode.FlameChart:
                 views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());

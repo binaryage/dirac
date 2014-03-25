@@ -35,7 +35,7 @@
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
  */
-WebInspector.DOMCountersGraph = function(delegate, model)
+WebInspector.MemoryCountersGraph = function(delegate, model)
 {
     WebInspector.CountersGraph.call(this, delegate, model);
     this._countersByName = {};
@@ -46,7 +46,7 @@ WebInspector.DOMCountersGraph = function(delegate, model)
         this._countersByName["gpuMemoryUsedKB"] = this.createCounter(WebInspector.UIString("GPU Memory"), WebInspector.UIString("GPU Memory [KB]: %d"), "#c0c");
 }
 
-WebInspector.DOMCountersGraph.prototype = {
+WebInspector.MemoryCountersGraph.prototype = {
     /**
      * @param {!WebInspector.TimelineModel.Record} record
      */
@@ -54,7 +54,7 @@ WebInspector.DOMCountersGraph.prototype = {
     {
         /**
          * @param {!WebInspector.TimelineModel.Record} record
-         * @this {!WebInspector.DOMCountersGraph}
+         * @this {!WebInspector.MemoryCountersGraph}
          */
         function addStatistics(record)
         {
