@@ -39,6 +39,7 @@ WebInspector.ConsoleViewMessage = function(target, consoleMessage, linkifier)
     this._message = consoleMessage;
     this._linkifier = linkifier;
     this._target = target;
+    this._repeatCount = 1;
 
     /** @type {!Array.<!WebInspector.DataGrid>} */
     this._dataGrids = [];
@@ -881,8 +882,8 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         element.appendChild(this.formattedMessage());
 
-        if (this._message.repeatCount > 1)
-            this.updateRepeatCount();
+        if (this._repeatCount > 1)
+            this._showRepeatCountElement();
 
         return element;
     },
@@ -912,7 +913,14 @@ WebInspector.ConsoleViewMessage.prototype = {
         }
     },
 
-    updateRepeatCount: function() {
+    incrementRepeatCount: function()
+    {
+        this._repeatCount++;
+        this._showRepeatCountElement();
+    },
+
+    _showRepeatCountElement: function()
+    {
         if (!this._element)
             return;
 
@@ -923,7 +931,7 @@ WebInspector.ConsoleViewMessage.prototype = {
             this._element.insertBefore(this.repeatCountElement, this._element.firstChild);
             this._element.classList.add("repeated-message");
         }
-        this.repeatCountElement.textContent = this._message.repeatCount;
+        this.repeatCountElement.textContent = this._repeatCount;
     },
 
     /**

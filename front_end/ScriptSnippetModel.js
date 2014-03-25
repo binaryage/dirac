@@ -278,7 +278,6 @@ WebInspector.ScriptSnippetModel.prototype = {
             undefined,
             undefined,
             undefined,
-            undefined,
             [result]);
         WebInspector.console.addMessage(message);
     },

@@ -606,7 +606,7 @@ WebInspector.SourceFrame.prototype = {
 
         for (var i = 0; i < rowMessages.length; ++i) {
             if (rowMessages[i].consoleMessage.isEqual(msg)) {
-                rowMessages[i].repeatCount = msg.totalRepeatCount;
+                rowMessages[i].repeatCount++;
                 this._updateMessageRepeatCount(rowMessages[i]);
                 return;
             }
@@ -645,7 +645,7 @@ WebInspector.SourceFrame.prototype = {
         messageLineElement.appendChild(document.createTextNode(msg.messageText));
 
         rowMessage.element = messageLineElement;
-        rowMessage.repeatCount = msg.totalRepeatCount;
+        rowMessage.repeatCount = 1;
         this._updateMessageRepeatCount(rowMessage);
         this._textEditor.endUpdates();
     },

@@ -39,7 +39,6 @@ WebInspector.ConsoleModel = function(target)
     this.messages = [];
     this.warnings = 0;
     this.errors = 0;
-    this._interruptRepeatCount = false;
     this._target = target;
     this._consoleAgent = target.consoleAgent();
     target.registerConsoleDispatcher(new WebInspector.ConsoleDispatcher(this));
@@ -49,7 +48,6 @@ WebInspector.ConsoleModel = function(target)
 WebInspector.ConsoleModel.Events = {
     ConsoleCleared: "ConsoleCleared",
     MessageAdded: "MessageAdded",
-    RepeatCountUpdated: "RepeatCountUpdated",
     CommandEvaluated: "CommandEvaluated",
 }
 
@@ -91,11 +89,6 @@ WebInspector.ConsoleModel.prototype = {
         msg.index = this.messages.length;
         this.messages.push(msg);
         this._incrementErrorWarningCount(msg);
-
-        if (isFromBackend)
-            this._previousMessage = msg;
-
-        this._interruptRepeatCount = !isFromBackend;
 
         this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.MessageAdded, msg);
     },
@@ -174,10 +167,10 @@ WebInspector.ConsoleModel.prototype = {
     {
         switch (msg.level) {
             case WebInspector.ConsoleMessage.MessageLevel.Warning:
-                this.warnings += msg.repeatDelta;
+                this.warnings++;
                 break;
             case WebInspector.ConsoleMessage.MessageLevel.Error:
-                this.errors += msg.repeatDelta;
+                this.errors++;
                 break;
         }
     },
@@ -193,37 +186,8 @@ WebInspector.ConsoleModel.prototype = {
         this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.ConsoleCleared);
 
         this.messages = [];
-        delete this._previousMessage;
-
         this.errors = 0;
         this.warnings = 0;
-    },
-
-    /**
-     * @param {number} count
-     */
-    _messageRepeatCountUpdated: function(count)
-    {
-        var msg = this._previousMessage;
-        if (!msg)
-            return;
-
-        var prevRepeatCount = msg.totalRepeatCount;
-
-        if (!this._interruptRepeatCount) {
-            msg.repeatDelta = count - prevRepeatCount;
-            msg.repeatCount = msg.repeatCount + msg.repeatDelta;
-            msg.totalRepeatCount = count;
-
-            this._incrementErrorWarningCount(msg);
-            this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.RepeatCountUpdated, msg);
-        } else {
-            var msgCopy = msg.clone();
-            msgCopy.totalRepeatCount = count;
-            msgCopy.repeatCount = (count - prevRepeatCount) || 1;
-            msgCopy.repeatDelta = msgCopy.repeatCount;
-            this.addMessage(msgCopy, true);
-        }
     },
 
     __proto__: WebInspector.Object.prototype
@@ -238,13 +202,12 @@ WebInspector.ConsoleModel.prototype = {
  * @param {?string=} url
  * @param {number=} line
  * @param {number=} column
- * @param {number=} repeatCount
  * @param {!NetworkAgent.RequestId=} requestId
  * @param {!Array.<!RuntimeAgent.RemoteObject>=} parameters
  * @param {!Array.<!ConsoleAgent.CallFrame>=} stackTrace
  * @param {boolean=} isOutdated
  */
-WebInspector.ConsoleMessage = function(source, level, messageText, type, url, line, column, repeatCount, requestId, parameters, stackTrace, isOutdated)
+WebInspector.ConsoleMessage = function(source, level, messageText, type, url, line, column, requestId, parameters, stackTrace, isOutdated)
 {
     this.source = source;
     this.level = level;
@@ -256,15 +219,21 @@ WebInspector.ConsoleMessage = function(source, level, messageText, type, url, li
     this.parameters = parameters;
     this.stackTrace = stackTrace;
     this.isOutdated = isOutdated;
-
-    repeatCount = repeatCount || 1;
-    this.repeatCount = repeatCount;
-    this.repeatDelta = repeatCount;
-    this.totalRepeatCount = repeatCount;
     this.request = requestId ? WebInspector.networkLog.requestForId(requestId) : null;
 }
 
 WebInspector.ConsoleMessage.prototype = {
+
+    /**
+     * @return {boolean}
+     */
+    isGroupMessage: function()
+    {
+        return this.type === WebInspector.ConsoleMessage.MessageType.StartGroup ||
+            this.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed ||
+            this.type === WebInspector.ConsoleMessage.MessageType.EndGroup;
+    },
+
     /**
      * @return {boolean}
      */
@@ -286,7 +255,6 @@ WebInspector.ConsoleMessage.prototype = {
             this.url,
             this.line,
             this.column,
-            this.repeatCount,
             this.request ? this.request.requestId : undefined,
             this.parameters,
             this.stackTrace,
@@ -314,6 +282,17 @@ WebInspector.ConsoleMessage.prototype = {
                     l[i].functionName !== r[i].functionName ||
                     l[i].lineNumber !== r[i].lineNumber ||
                     l[i].columnNumber !== r[i].columnNumber)
+                    return false;
+            }
+        }
+
+        if (this.parameters) {
+            if (!msg.parameters || this.parameters.length !== msg.parameters.length)
+                return false;
+
+            for (var i = 0; i < msg.parameters.length; ++i) {
+                // Never treat objects as equal - their properties might change over time.
+                if (this.parameters[i].type !== msg.parameters[i].type || msg.parameters[i].type === "object" || this.parameters[i].value !== msg.parameters[i].value)
                     return false;
             }
         }
@@ -401,7 +380,6 @@ WebInspector.ConsoleDispatcher.prototype = {
             payload.url,
             payload.line,
             payload.column,
-            payload.repeatCount,
             payload.networkRequestId,
             payload.parameters,
             payload.stackTrace,
@@ -414,7 +392,6 @@ WebInspector.ConsoleDispatcher.prototype = {
      */
     messageRepeatCountUpdated: function(count)
     {
-        this._console._messageRepeatCountUpdated(count);
     },
 
     messagesCleared: function()

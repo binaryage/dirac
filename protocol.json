@@ -926,7 +926,8 @@
                     { "name": "count", "type": "integer", "description": "New repeat count value." },
                     { "name": "timestamp", "$ref": "Timestamp", "description": "Timestamp of most recent message in batch.", "hidden": true }
                 ],
-                "description": "Issued when subsequent message(s) are equal to the previous one(s)."
+                "description": "Is not issued. Will be gone in the future versions of the protocol.",
+                "deprecated": true
             },
             {
                 "name": "messagesCleared",

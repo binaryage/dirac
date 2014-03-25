@@ -510,7 +510,6 @@ TestSuite.prototype.testConsoleOnNavigateBack = function()
     function didClickLink() {
         // Check that there are no new messages(command is not a message).
         this.assertEquals(3, WebInspector.console.messages.length);
-        this.assertEquals(1, WebInspector.console.messages[0].totalRepeatCount);
         this.evaluateInConsole_("history.back();", didNavigateBack.bind(this));
     }
 
@@ -522,7 +521,6 @@ TestSuite.prototype.testConsoleOnNavigateBack = function()
 
     function didCompleteNavigation() {
         this.assertEquals(7, WebInspector.console.messages.length);
-        this.assertEquals(1, WebInspector.console.messages[0].totalRepeatCount);
         this.releaseControl();
     }
 

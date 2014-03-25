@@ -200,7 +200,6 @@ WebInspector.NetworkDispatcher.prototype = {
                 "",
                 0,
                 0,
-                1,
                 networkRequest.requestId));
         }
     },

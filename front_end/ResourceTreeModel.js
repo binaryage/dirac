@@ -39,7 +39,6 @@ WebInspector.ResourceTreeModel = function(target)
     target.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdateDropped, this._onRequestUpdateDropped, this);
 
     target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._consoleMessageAdded, this);
-    target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.RepeatCountUpdated, this._consoleMessageAdded, this);
     target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
 
     this._agent = target.pageAgent();
@@ -397,10 +396,10 @@ WebInspector.ResourceTreeModel.prototype = {
     {
         switch (msg.level) {
         case WebInspector.ConsoleMessage.MessageLevel.Warning:
-            resource.warnings += msg.repeatDelta;
+            resource.warnings++;
             break;
         case WebInspector.ConsoleMessage.MessageLevel.Error:
-            resource.errors += msg.repeatDelta;
+            resource.errors++;
             break;
         }
         resource.addMessage(msg);
