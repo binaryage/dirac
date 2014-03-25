@@ -39,6 +39,8 @@
     background-color: white;
     border-top: 1px solid #ccc;
     overflow: hidden;
+    height: 19px;
+    width: 100%;
 }
 
 #elements-content > ol {

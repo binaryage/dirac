@@ -134,8 +134,8 @@ WebInspector.ElementsPanel.prototype = {
         if (this._splitView.isVertical())
             width -= this._splitView.sidebarSize();
         this.treeOutline.setVisibleWidth(width);
-        this.updateBreadcrumbSizes();
         this.treeOutline.updateSelection();
+        this.updateBreadcrumbSizes();
     },
 
     /**
@@ -753,14 +753,8 @@ WebInspector.ElementsPanel.prototype = {
 
             if (current === this.selectedDOMNode())
                 crumb.classList.add("selected");
-            if (!crumbs.childNodes.length)
-                crumb.classList.add("end");
-
             crumbs.insertBefore(crumb, crumbs.firstChild);
         }
-
-        if (crumbs.hasChildNodes())
-            crumbs.lastChild.classList.add("start");
 
         this.updateBreadcrumbSizes();
     },
@@ -773,24 +767,17 @@ WebInspector.ElementsPanel.prototype = {
         if (!this.isShowing())
             return;
 
-        if (document.body.offsetWidth <= 0) {
-            // The stylesheet hasn't loaded yet or the window is closed,
-            // so we can't calculate what is need. Return early.
-            return;
-        }
-
         var crumbs = this.crumbsElement;
-        if (!crumbs.childNodes.length || crumbs.offsetWidth <= 0)
-            return; // No crumbs, do nothing.
+        if (!crumbs.firstChild)
+            return;
 
-        // A Zero index is the right most child crumb in the breadcrumb.
         var selectedIndex = 0;
         var focusedIndex = 0;
         var selectedCrumb;
 
-        var i = 0;
-        var crumb = crumbs.firstChild;
-        while (crumb) {
+        // Reset crumb styles.
+        for (var i = 0; i < crumbs.childNodes.length; ++i) {
+            var crumb = crumbs.childNodes[i];
             // Find the selected crumb and index.
             if (!selectedCrumb && crumb.classList.contains("selected")) {
                 selectedCrumb = crumb;
@@ -801,31 +788,53 @@ WebInspector.ElementsPanel.prototype = {
             if (crumb === focusedCrumb)
                 focusedIndex = i;
 
-            // Remove any styles that affect size before
-            // deciding to shorten any crumbs.
-            if (crumb !== crumbs.lastChild)
-                crumb.classList.remove("start");
-            if (crumb !== crumbs.firstChild)
-                crumb.classList.remove("end");
-
-            crumb.classList.remove("compact");
-            crumb.classList.remove("collapsed");
-            crumb.classList.remove("hidden");
-
-            crumb = crumb.nextSibling;
-            ++i;
+            crumb.classList.remove("compact", "collapsed", "hidden");
         }
 
-        // Restore the start and end crumb classes in case they got removed in coalesceCollapsedCrumbs().
-        // The order of the crumbs in the document is opposite of the visual order.
-        crumbs.firstChild.classList.add("end");
-        crumbs.lastChild.classList.add("start");
+        // Layout 1: Measure total and normal crumb sizes
+        var contentElementWidth = this.contentElement.offsetWidth;
+        var normalSizes = [];
+        for (var i = 0; i < crumbs.childNodes.length; ++i) {
+            var crumb = crumbs.childNodes[i];
+            normalSizes[i] = crumb.offsetWidth;
+        }
 
-        var contentElement = this.contentElement;
+        // Layout 2: Measure collapsed crumb sizes
+        var compactSizes = [];
+        for (var i = 0; i < crumbs.childNodes.length; ++i) {
+            var crumb = crumbs.childNodes[i];
+            crumb.classList.add("compact");
+        }
+        for (var i = 0; i < crumbs.childNodes.length; ++i) {
+            var crumb = crumbs.childNodes[i];
+            compactSizes[i] = crumb.offsetWidth;
+        }
+
+        // Layout 3: Measure collapsed crumb size
+        crumbs.firstChild.classList.add("collapsed");
+        var collapsedSize = crumbs.firstChild.offsetWidth;
+
+        // Clean up.
+        for (var i = 0; i < crumbs.childNodes.length; ++i) {
+            var crumb = crumbs.childNodes[i];
+            crumb.classList.remove("compact", "collapsed");
+        }
+
         function crumbsAreSmallerThanContainer()
         {
+            var totalSize = 0;
+            for (var i = 0; i < crumbs.childNodes.length; ++i) {
+                var crumb = crumbs.childNodes[i];
+                if (crumb.classList.contains("hidden"))
+                    continue;
+                if (crumb.classList.contains("collapsed")) {
+                    totalSize += collapsedSize;
+                    continue;
+                }
+                totalSize += crumb.classList.contains("compact") ? compactSizes[i] : normalSizes[i];
+            }
             const rightPadding = 10;
-            return crumbs.offsetWidth + rightPadding < contentElement.offsetWidth;
+            return totalSize + rightPadding < contentElementWidth;
         }
 
         if (crumbsAreSmallerThanContainer())
@@ -836,26 +845,13 @@ WebInspector.ElementsPanel.prototype = {
         var ChildSide = 1;
 
         /**
-         * @param {boolean=} significantCrumb
+         * @param {function(!Element)} shrinkingFunction
+         * @param {number} direction
          */
-        function makeCrumbsSmaller(shrinkingFunction, direction, significantCrumb)
+        function makeCrumbsSmaller(shrinkingFunction, direction)
         {
-            if (!significantCrumb)
-                significantCrumb = (focusedCrumb || selectedCrumb);
-
-            if (significantCrumb === selectedCrumb)
-                var significantIndex = selectedIndex;
-            else if (significantCrumb === focusedCrumb)
-                var significantIndex = focusedIndex;
-            else {
-                var significantIndex = 0;
-                for (var i = 0; i < crumbs.childNodes.length; ++i) {
-                    if (crumbs.childNodes[i] === significantCrumb) {
-                        significantIndex = i;
-                        break;
-                    }
-                }
-            }
+            var significantCrumb = focusedCrumb || selectedCrumb;
+            var significantIndex = significantCrumb === selectedCrumb ? selectedIndex : focusedIndex;
 
             function shrinkCrumbAtIndex(index)
             {
@@ -949,6 +945,9 @@ WebInspector.ElementsPanel.prototype = {
             }
         }
 
+        /**
+         * @param {!Element} crumb
+         */
         function compact(crumb)
         {
             if (crumb.classList.contains("hidden"))
@@ -956,6 +955,10 @@ WebInspector.ElementsPanel.prototype = {
             crumb.classList.add("compact");
         }
 
+        /**
+         * @param {!Element} crumb
+         * @param {boolean=} dontCoalesce
+         */
         function collapse(crumb, dontCoalesce)
         {
             if (crumb.classList.contains("hidden"))
@@ -980,11 +983,11 @@ WebInspector.ElementsPanel.prototype = {
         }
 
         // Compact ancestor crumbs, or from both sides if focused.
-        if (makeCrumbsSmaller(compact, (focusedCrumb ? BothSides : AncestorSide)))
+        if (makeCrumbsSmaller(compact, focusedCrumb ? BothSides : AncestorSide))
             return;
 
         // Collapse ancestor crumbs, or from both sides if focused.
-        if (makeCrumbsSmaller(collapse, (focusedCrumb ? BothSides : AncestorSide)))
+        if (makeCrumbsSmaller(collapse, focusedCrumb ? BothSides : AncestorSide))
             return;
 
         if (!selectedCrumb)
