@@ -123,6 +123,7 @@
             'front_end/Placard.js',
             'front_end/Platform.js',
             'front_end/Popover.js',
+            'front_end/PowerProfiler.js',
             'front_end/PresentationConsoleMessageHelper.js',
             'front_end/Progress.js',
             'front_end/ProgressIndicator.js',
@@ -320,6 +321,7 @@
             'front_end/TimelineMemoryOverview.js',
             'front_end/TimelineUIUtils.js',
             'front_end/TimelineView.js',
+            'front_end/TimelinePowerOverview.js',
             'front_end/TimelinePanel.js',
         ],
         'devtools_profiles_js_files': [

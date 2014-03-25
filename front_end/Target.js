@@ -17,6 +17,10 @@ WebInspector.Target = function(connection, callback)
     this.isMainFrontend = false;
 
     this.pageAgent().canScreencast(this._initializeCapability.bind(this, "canScreencast", null));
+
+    if (WebInspector.experimentsSettings.powerProfiler.isEnabled())
+        this.powerAgent().canProfilePower(this._initializeCapability.bind(this, "canProfilePower", null));
+
     this.workerAgent().canInspectWorkers(this._initializeCapability.bind(this, "isMainFrontend", this._loadedWithCapabilities.bind(this, callback)));
 }
 
@@ -64,6 +68,9 @@ WebInspector.Target.prototype = {
         this.workerManager = new WebInspector.WorkerManager(this, this.isMainFrontend);
         if (!WebInspector.workerManager)
             WebInspector.workerManager = this.workerManager;
+
+        if (this.canProfilePower)
+            WebInspector.powerProfiler = new WebInspector.PowerProfiler();
 
         if (callback)
             callback(this);

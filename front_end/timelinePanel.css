@@ -265,7 +265,8 @@
 }
 
 #timeline-overview-events,
-#timeline-overview-memory {
+#timeline-overview-memory,
+#timeline-overview-power {
     position: absolute;
     left: 0;
     right: 0;
@@ -274,7 +275,8 @@
     z-index: 160;
 }
 
-#timeline-overview-memory  {
+#timeline-overview-memory,
+#timeline-overview-power  {
     top: 25px;
 }
 
@@ -472,6 +474,10 @@
 
 .timeline-overview-sidebar-memory .icon {
     -webkit-mask-position: -224px -48px;
+}
+
+.timeline-overview-sidebar-power .icon {
+    -webkit-mask-position: -64px -120px;
 }
 
 .memory-graph-label {

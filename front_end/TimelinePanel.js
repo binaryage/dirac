@@ -39,6 +39,7 @@ importScript("TimelineFrameModel.js");
 importScript("TimelineEventOverview.js");
 importScript("TimelineFrameOverview.js");
 importScript("TimelineMemoryOverview.js");
+importScript("TimelinePowerOverview.js");
 importScript("TimelineFlameChart.js");
 importScript("TimelineUIUtils.js");
 importScript("TimelineView.js");
@@ -128,7 +129,8 @@ WebInspector.TimelinePanel.Mode = {
     Events: "Events",
     Frames: "Frames",
     Memory: "Memory",
-    FlameChart: "FlameChart"
+    FlameChart: "FlameChart",
+    Power: "Power"
 };
 
 // Define row and header height, should be in sync with styles for timeline graphs.
@@ -264,6 +266,10 @@ WebInspector.TimelinePanel.prototype = {
                 views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());
                 views.mainViews = [new WebInspector.TimelineFlameChart(this, this._model, this._frameModel())];
                 break;
+            case WebInspector.TimelinePanel.Mode.Power:
+                views.overviewView = new WebInspector.TimelinePowerOverview(this._model);
+                views.mainViews = [this._timelineView()];
+                break;
             default:
                 console.assert(false, "Unknown mode: " + mode);
             }
@@ -288,7 +294,8 @@ WebInspector.TimelinePanel.prototype = {
 
         this._overviewItems = {};
         for (var mode in WebInspector.TimelinePanel.Mode) {
-            if (mode === WebInspector.TimelinePanel.Mode.FlameChart && !WebInspector.experimentsSettings.timelineFlameChart.isEnabled())
+            if (mode === WebInspector.TimelinePanel.Mode.FlameChart && !WebInspector.experimentsSettings.timelineFlameChart.isEnabled() ||
+                mode === WebInspector.TimelinePanel.Mode.Power && !Capabilities.canProfilePower)
                 continue;
             this._overviewItems[mode] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-" + mode.toLowerCase(), WebInspector.UIString(mode));
             var item = this._overviewItems[mode];
@@ -555,6 +562,9 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._userInitiatedRecording = userInitiated;
         this._model.startRecording(true);
+        for (var mode in WebInspector.TimelinePanel.Mode)
+            this._viewsForMode(mode).overviewView.timelineStarted();
+
         if (userInitiated)
             WebInspector.userMetrics.TimelineStarted.record();
     },
@@ -563,6 +573,8 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._userInitiatedRecording = false;
         this._model.stopRecording();
+        for (var mode in WebInspector.TimelinePanel.Mode)
+            this._viewsForMode(mode).overviewView.timelineStopped();
     },
 
     /**

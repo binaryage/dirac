@@ -355,6 +355,9 @@ WebInspector.TimelineOverviewBase.prototype = {
     {
     },
 
+    timelineStarted: function() { },
+    timelineStopped: function() { },
+
     /**
      * @param {number} windowLeft
      * @param {number} windowRight
