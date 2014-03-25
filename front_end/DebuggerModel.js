@@ -181,7 +181,7 @@ WebInspector.DebuggerModel.prototype = {
     _asyncStackTracesStateChanged: function()
     {
         const maxAsyncStackChainDepth = 4;
-        var enabled = WebInspector.settings.enableAsyncStackTraces.get() && WebInspector.experimentsSettings.asyncStackTraces.isEnabled();
+        var enabled = WebInspector.settings.enableAsyncStackTraces.get();
         this._agent.setAsyncCallStackDepth(enabled ? maxAsyncStackChainDepth : 0);
     },
 

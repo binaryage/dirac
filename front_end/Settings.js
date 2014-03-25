@@ -273,7 +273,6 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     this._enabledForTest = {};
 
     // Add currently running experiments here.
-    this.asyncStackTraces = this._createExperiment("asyncStackTraces", "Enable support for async stack traces");
     this.fileSystemInspection = this._createExperiment("fileSystemInspection", "FileSystem inspection");
     this.canvasInspection = this._createExperiment("canvasInspection ", "Canvas inspection");
     this.frameworksDebuggingSupport = this._createExperiment("frameworksDebuggingSupport", "Enable frameworks debugging support");
