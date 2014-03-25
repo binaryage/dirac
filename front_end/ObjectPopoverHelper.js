@@ -153,7 +153,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
 
     _onHideObjectPopover: function()
     {
-        WebInspector.domAgent.hideDOMNodeHighlight();
+        WebInspector.domModel.hideDOMNodeHighlight();
         if (this._linkifier) {
             this._linkifier.reset();
             delete this._linkifier;

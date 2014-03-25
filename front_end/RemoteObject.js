@@ -233,9 +233,10 @@ WebInspector.RemoteObject.toCallArgument = function(remoteObject)
 WebInspector.RemoteObjectImpl = function(target, objectId, type, subtype, value, description, preview)
 {
     WebInspector.RemoteObject.call(this);
+
     this._target = target;
     this._runtimeAgent = target.runtimeAgent();
-    this._domAgent = target.domModel;
+    this._domModel = target.domModel;
 
     this._type = type;
     this._subtype = subtype;
@@ -450,19 +451,19 @@ WebInspector.RemoteObjectImpl.prototype = {
     pushNodeToFrontend: function(callback)
     {
         if (this._objectId)
-            this._domAgent.pushNodeToFrontend(this._objectId, callback);
+            this._domModel.pushNodeToFrontend(this._objectId, callback);
         else
             callback(0);
     },
 
     highlightAsDOMNode: function()
     {
-        this._domAgent.highlightDOMNode(undefined, undefined, this._objectId);
+        this._domModel.highlightDOMNode(undefined, undefined, this._objectId);
     },
 
     hideDOMNodeHighlight: function()
     {
-        this._domAgent.hideDOMNodeHighlight();
+        this._domModel.hideDOMNodeHighlight();
     },
 
     /**

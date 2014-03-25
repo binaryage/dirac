@@ -38,8 +38,8 @@ WebInspector.CSSStyleModel = function(workspace)
     this._workspace = workspace;
     this._pendingCommandsMajorState = [];
     this._styleLoader = new WebInspector.CSSStyleModel.ComputedStyleLoader(this);
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.UndoRedoRequested, this._undoRedoRequested, this);
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.UndoRedoCompleted, this._undoRedoCompleted, this);
+    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoRequested, this._undoRedoRequested, this);
+    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoCompleted, this._undoRedoCompleted, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameCreatedOrNavigated, this._mainFrameCreatedOrNavigated, this);
     InspectorBackend.registerCSSDispatcher(new WebInspector.CSSDispatcher(this));
     CSSAgent.enable(this._wasEnabled.bind(this));
@@ -246,7 +246,7 @@ WebInspector.CSSStyleModel.prototype = {
                 failureCallback();
                 return;
             }
-            WebInspector.domAgent.markUndoableState();
+            WebInspector.domModel.markUndoableState();
             this._computeMatchingSelectors(rulePayload, nodeId, successCallback, failureCallback);
         }
 
@@ -274,7 +274,7 @@ WebInspector.CSSStyleModel.prototype = {
         for (var i = 0; i < rule.selectors.length; ++i) {
             var selector = rule.selectors[i];
             var boundCallback = allSelectorsBarrier.createCallback(selectorQueried.bind(null, i, nodeId, matchingSelectors));
-            WebInspector.domAgent.querySelectorAll(ownerDocumentId, selector.value, boundCallback);
+            WebInspector.domModel.querySelectorAll(ownerDocumentId, selector.value, boundCallback);
         }
         allSelectorsBarrier.callWhenDone(function() {
             rule.matchingSelectors = matchingSelectors;
@@ -320,7 +320,7 @@ WebInspector.CSSStyleModel.prototype = {
                 // Invalid syntax for a selector
                 failureCallback();
             } else {
-                WebInspector.domAgent.markUndoableState();
+                WebInspector.domModel.markUndoableState();
                 this._computeMatchingSelectors(rulePayload, node.id, successCallback, failureCallback);
             }
         }
@@ -387,7 +387,7 @@ WebInspector.CSSStyleModel.prototype = {
      */
     _ownerDocumentId: function(nodeId)
     {
-        var node = WebInspector.domAgent.nodeForId(nodeId);
+        var node = WebInspector.domModel.nodeForId(nodeId);
         if (!node)
             return null;
         return node.ownerDocument ? node.ownerDocument.id : null;
@@ -498,7 +498,7 @@ WebInspector.CSSStyleModel.prototype = {
         {
             this._pendingCommandsMajorState.pop();
             if (!error && majorChange)
-                WebInspector.domAgent.markUndoableState();
+                WebInspector.domModel.markUndoableState();
             
             if (!error && userCallback)
                 userCallback(error);
@@ -1124,7 +1124,7 @@ WebInspector.CSSProperty.prototype = {
             WebInspector.cssModel._pendingCommandsMajorState.pop();
             if (!error) {
                 if (majorChange)
-                    WebInspector.domAgent.markUndoableState();
+                    WebInspector.domModel.markUndoableState();
                 var style = WebInspector.CSSStyleDeclaration.parsePayload(stylePayload);
                 var newProperty = style.allProperties[this.index];
 

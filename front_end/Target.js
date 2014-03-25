@@ -57,10 +57,9 @@ WebInspector.Target.prototype = {
         if (!WebInspector.runtimeModel)
             WebInspector.runtimeModel = this.runtimeModel;
 
-        //we can't name it domAgent, because it clashes with function, WebInspector.DOMAgent should be renamed to DOMModel
-        this.domModel = new WebInspector.DOMAgent();
-        if (!WebInspector.domAgent)
-            WebInspector.domAgent = this.domModel;
+        this.domModel = new WebInspector.DOMModel();
+        if (!WebInspector.domModel)
+            WebInspector.domModel = this.domModel;
 
         this.workerManager = new WebInspector.WorkerManager(this, this.isMainFrontend);
         if (!WebInspector.workerManager)

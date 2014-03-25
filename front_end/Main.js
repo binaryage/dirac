@@ -617,7 +617,7 @@ WebInspector.Main.prototype = {
 
     _updateFocusedNode: function(nodeId)
     {
-        var node = WebInspector.domAgent.nodeForId(nodeId);
+        var node = WebInspector.domModel.nodeForId(nodeId);
         console.assert(node);
         WebInspector.Revealer.reveal(node);
     },
@@ -650,7 +650,7 @@ WebInspector.Main.prototype = {
         function callback(nodeId)
         {
             elementsPanel.stopOmittingDefaultSelection();
-            WebInspector.Revealer.reveal(WebInspector.domAgent.nodeForId(nodeId));
+            WebInspector.Revealer.reveal(WebInspector.domModel.nodeForId(nodeId));
             if (!WebInspector.inspectorView.drawerVisible() && !WebInspector._notFirstInspectElement)
                 InspectorFrontendHost.inspectElementCompleted();
             WebInspector._notFirstInspectElement = true;

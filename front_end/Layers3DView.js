@@ -461,7 +461,7 @@ WebInspector.Layers3DView.prototype = {
         var nodeId = layer && layer.nodeIdForSelfOrAncestor();
         if (!nodeId)
             return;
-        var domNode = WebInspector.domAgent.nodeForId(nodeId);
+        var domNode = WebInspector.domModel.nodeForId(nodeId);
         if (!domNode)
             return;
          var contextMenu = new WebInspector.ContextMenu(event);

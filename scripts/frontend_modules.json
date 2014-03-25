@@ -39,7 +39,7 @@
             "CSSStyleSheetMapping.js",
             "BreakpointManager.js",
             "Database.js",
-            "DOMAgent.js",
+            "DOMModel.js",
             "DOMStorage.js",
             "DebuggerModel.js",
             "DebuggerScriptMapping.js",

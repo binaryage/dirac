@@ -96,16 +96,16 @@ WebInspector.DOMPresentationUtils.linkifyNodeReference = function(node)
     link.className = "node-link";
     WebInspector.DOMPresentationUtils.decorateNodeLabel(node, link);
 
-    link.addEventListener("click", WebInspector.domAgent.inspectElement.bind(WebInspector.domAgent, node.id), false);
-    link.addEventListener("mouseover", WebInspector.domAgent.highlightDOMNode.bind(WebInspector.domAgent, node.id, "", undefined), false);
-    link.addEventListener("mouseout", WebInspector.domAgent.hideDOMNodeHighlight.bind(WebInspector.domAgent), false);
+    link.addEventListener("click", WebInspector.domModel.inspectElement.bind(WebInspector.domModel, node.id), false);
+    link.addEventListener("mouseover", WebInspector.domModel.highlightDOMNode.bind(WebInspector.domModel, node.id, "", undefined), false);
+    link.addEventListener("mouseout", WebInspector.domModel.hideDOMNodeHighlight.bind(WebInspector.domModel), false);
 
     return link;
 }
 
 WebInspector.DOMPresentationUtils.linkifyNodeById = function(nodeId)
 {
-    var node = WebInspector.domAgent.nodeForId(nodeId);
+    var node = WebInspector.domModel.nodeForId(nodeId);
     if (!node)
         return document.createTextNode(WebInspector.UIString("<node>"));
     return WebInspector.DOMPresentationUtils.linkifyNodeReference(node);

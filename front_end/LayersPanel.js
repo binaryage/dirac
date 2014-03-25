@@ -146,9 +146,9 @@ WebInspector.LayersPanel.prototype = {
         this._currentlySelectedLayer = layer;
         var nodeId = layer && layer.nodeIdForSelfOrAncestor();
         if (nodeId)
-            WebInspector.domAgent.highlightDOMNodeForTwoSeconds(nodeId);
+            WebInspector.domModel.highlightDOMNodeForTwoSeconds(nodeId);
         else
-            WebInspector.domAgent.hideDOMNodeHighlight();
+            WebInspector.domModel.hideDOMNodeHighlight();
         this._layerTree.selectLayer(layer);
         this._layers3DView.selectLayer(layer);
         this._layerDetailsView.setLayer(layer);
@@ -164,9 +164,9 @@ WebInspector.LayersPanel.prototype = {
         this._currentlyHoveredLayer = layer;
         var nodeId = layer && layer.nodeIdForSelfOrAncestor();
         if (nodeId)
-            WebInspector.domAgent.highlightDOMNode(nodeId);
+            WebInspector.domModel.highlightDOMNode(nodeId);
         else
-            WebInspector.domAgent.hideDOMNodeHighlight();
+            WebInspector.domModel.hideDOMNodeHighlight();
         this._layerTree.hoverLayer(layer);
         this._layers3DView.hoverLayer(layer);
     },

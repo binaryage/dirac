@@ -54,7 +54,7 @@ WebInspector.DOMBreakpointsSidebarPane = function()
     this._contextMenuLabels[this._breakpointTypes.NodeRemoved] = WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Node removal" : "Node Removal");
 
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.InspectedURLChanged, this._inspectedURLChanged, this);
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.NodeRemoved, this._nodeRemoved, this);
+    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
 }
 
 WebInspector.DOMBreakpointsSidebarPane.prototype = {
@@ -328,7 +328,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
          */
         function didPushNodeByPathToFrontend(path, nodeId)
         {
-            var node = nodeId ? WebInspector.domAgent.nodeForId(nodeId) : null;
+            var node = nodeId ? WebInspector.domModel.nodeForId(nodeId) : null;
             if (!node)
                 return;
 
@@ -345,7 +345,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
             var path = breakpoint.path;
             if (!pathToBreakpoints[path]) {
                 pathToBreakpoints[path] = [];
-                WebInspector.domAgent.pushNodeByPathToFrontend(path, didPushNodeByPathToFrontend.bind(this, path));
+                WebInspector.domModel.pushNodeByPathToFrontend(path, didPushNodeByPathToFrontend.bind(this, path));
             }
             pathToBreakpoints[path].push(breakpoint);
         }

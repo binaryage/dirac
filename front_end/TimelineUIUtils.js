@@ -450,7 +450,7 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
     if (!imageElement && WebInspector.TimelineUIUtils.needsPreviewElement(record.type))
         WebInspector.DOMPresentationUtils.buildImagePreviewContents(record.url, false, barrier.createCallback(saveImage));
     if (record.relatedBackendNodeId())
-        WebInspector.domAgent.pushNodesByBackendIdsToFrontend([record.relatedBackendNodeId()], barrier.createCallback(setRelatedNode));
+        WebInspector.domModel.pushNodesByBackendIdsToFrontend([record.relatedBackendNodeId()], barrier.createCallback(setRelatedNode));
     barrier.callWhenDone(callbackWrapper);
 
     /**
@@ -468,7 +468,7 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
     function setRelatedNode(nodeIds)
     {
         if (nodeIds)
-            relatedNode = WebInspector.domAgent.nodeForId(nodeIds[0]);
+            relatedNode = WebInspector.domModel.nodeForId(nodeIds[0]);
     }
 
     function callbackWrapper()

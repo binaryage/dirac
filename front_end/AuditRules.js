@@ -458,11 +458,11 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
                     if (progress.isCanceled())
                         return;
                     var effectiveSelector = selectors[i].replace(pseudoSelectorRegexp, "");
-                    WebInspector.domAgent.querySelector(document.id, effectiveSelector, queryCallback.bind(null, i === selectors.length - 1 ? selectorsCallback.bind(null, styleSheets) : null, selectors[i]));
+                    WebInspector.domModel.querySelector(document.id, effectiveSelector, queryCallback.bind(null, i === selectors.length - 1 ? selectorsCallback.bind(null, styleSheets) : null, selectors[i]));
                 }
             }
 
-            WebInspector.domAgent.requestDocument(documentLoaded.bind(null, selectors));
+            WebInspector.domModel.requestDocument(documentLoaded.bind(null, selectors));
         }
 
         var styleSheetInfos = WebInspector.cssModel.allStyleSheets();
@@ -885,7 +885,7 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
             if (progress.isCanceled())
                 return;
 
-            const node = WebInspector.domAgent.nodeForId(imageId);
+            const node = WebInspector.domModel.nodeForId(imageId);
             var src = node.getAttribute("src");
             if (!src.asParsedURL()) {
                 for (var frameOwnerCandidate = node; frameOwnerCandidate; frameOwnerCandidate = frameOwnerCandidate.parentNode) {
@@ -971,12 +971,12 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
         {
             if (progress.isCanceled())
                 return;
-            WebInspector.domAgent.querySelectorAll(root.id, "img[src]", getStyles);
+            WebInspector.domModel.querySelectorAll(root.id, "img[src]", getStyles);
         }
 
         if (progress.isCanceled())
             return;
-        WebInspector.domAgent.requestDocument(onDocumentAvailable);
+        WebInspector.domModel.requestDocument(onDocumentAvailable);
     },
 
     __proto__: WebInspector.AuditRule.prototype
@@ -1041,7 +1041,7 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
                 var urlToViolationsArray = {};
                 var externalStylesheetHrefs = [];
                 for (var j = 0; j < externalStylesheetNodeIds.length; ++j) {
-                    var linkNode = WebInspector.domAgent.nodeForId(externalStylesheetNodeIds[j]);
+                    var linkNode = WebInspector.domModel.nodeForId(externalStylesheetNodeIds[j]);
                     var completeHref = WebInspector.ParsedURL.completeURL(linkNode.ownerDocument.baseURL, linkNode.getAttribute("href"));
                     externalStylesheetHrefs.push(completeHref || "<empty>");
                 }
@@ -1061,7 +1061,7 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
 
             if (!nodeIds)
                 return;
-            WebInspector.domAgent.querySelectorAll(root.id, "body link[rel~='stylesheet'][href]", externalStylesheetsReceived.bind(null, root, nodeIds));
+            WebInspector.domModel.querySelectorAll(root.id, "body link[rel~='stylesheet'][href]", externalStylesheetsReceived.bind(null, root, nodeIds));
         }
 
         function onDocumentAvailable(root)
@@ -1069,10 +1069,10 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
             if (progress.isCanceled())
                 return;
 
-            WebInspector.domAgent.querySelectorAll(root.id, "body style", inlineStylesReceived.bind(null, root));
+            WebInspector.domModel.querySelectorAll(root.id, "body style", inlineStylesReceived.bind(null, root));
         }
 
-        WebInspector.domAgent.requestDocument(onDocumentAvailable);
+        WebInspector.domModel.requestDocument(onDocumentAvailable);
     },
 
     __proto__: WebInspector.AuditRule.prototype
@@ -1137,7 +1137,7 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
             if (lateStyleIds.length || cssBeforeInlineCount) {
                 var lateStyleUrls = [];
                 for (var i = 0; i < lateStyleIds.length; ++i) {
-                    var lateStyleNode = WebInspector.domAgent.nodeForId(lateStyleIds[i]);
+                    var lateStyleNode = WebInspector.domModel.nodeForId(lateStyleIds[i]);
                     var completeHref = WebInspector.ParsedURL.completeURL(lateStyleNode.ownerDocument.baseURL, lateStyleNode.getAttribute("href"));
                     lateStyleUrls.push(completeHref || "<empty>");
                 }
@@ -1159,7 +1159,7 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
             if (!nodeIds)
                 return;
 
-            WebInspector.domAgent.querySelectorAll(root.id, "head link[rel~='stylesheet'][href] ~ script:not([src])", cssBeforeInlineReceived.bind(null, nodeIds));
+            WebInspector.domModel.querySelectorAll(root.id, "head link[rel~='stylesheet'][href] ~ script:not([src])", cssBeforeInlineReceived.bind(null, nodeIds));
         }
 
         /**
@@ -1170,10 +1170,10 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
             if (progress.isCanceled())
                 return;
 
-            WebInspector.domAgent.querySelectorAll(root.id, "head script[src] ~ link[rel~='stylesheet'][href]", lateStylesReceived.bind(null, root));
+            WebInspector.domModel.querySelectorAll(root.id, "head script[src] ~ link[rel~='stylesheet'][href]", lateStylesReceived.bind(null, root));
         }
 
-        WebInspector.domAgent.requestDocument(onDocumentAvailable);
+        WebInspector.domModel.requestDocument(onDocumentAvailable);
     },
 
     __proto__: WebInspector.AuditRule.prototype

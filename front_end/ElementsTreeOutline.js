@@ -397,7 +397,7 @@ WebInspector.ElementsTreeOutline.prototype = {
             this._previousHoveredElement = element;
         }
 
-        WebInspector.domAgent.highlightDOMNode(element && element._node ? element._node.id : 0);
+        WebInspector.domModel.highlightDOMNode(element && element._node ? element._node.id : 0);
     },
 
     _onmouseout: function(event)
@@ -411,7 +411,7 @@ WebInspector.ElementsTreeOutline.prototype = {
             delete this._previousHoveredElement;
         }
 
-        WebInspector.domAgent.hideDOMNodeHighlight();
+        WebInspector.domModel.hideDOMNodeHighlight();
     },
 
     _ondragstart: function(event)
@@ -435,7 +435,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         event.dataTransfer.effectAllowed = "copyMove";
         this._treeElementBeingDragged = treeElement;
 
-        WebInspector.domAgent.hideDOMNodeHighlight();
+        WebInspector.domModel.hideDOMNodeHighlight();
 
         return true;
     },
@@ -666,7 +666,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         // Select it and expand if necessary. We force tree update so that it processes dom events and is up to date.
         this._updateModifiedNodes();
 
-        var newNode = nodeId ? WebInspector.domAgent.nodeForId(nodeId) : null;
+        var newNode = nodeId ? WebInspector.domModel.nodeForId(nodeId) : null;
         if (!newNode)
             return;
 
@@ -1252,7 +1252,7 @@ WebInspector.ElementsTreeElement.prototype = {
         this.treeOutline.suppressRevealAndSelect = true;
         this.treeOutline.selectDOMNode(this._node, selectedByUser);
         if (selectedByUser)
-            WebInspector.domAgent.highlightDOMNode(this._node.id);
+            WebInspector.domModel.highlightDOMNode(this._node.id);
         this.updateSelection();
         this.treeOutline.suppressRevealAndSelect = false;
         return true;
@@ -2380,7 +2380,7 @@ WebInspector.ElementsTreeElement.prototype = {
     },
 
     /**
-     * @return {!Array.<!WebInspector.DOMAgent>}
+     * @return {!Array.<!WebInspector.DOMModel>}
      */
     _visibleShadowRoots: function()
     {
@@ -2442,13 +2442,13 @@ WebInspector.ElementsTreeElement.prototype = {
  */
 WebInspector.ElementsTreeUpdater = function(treeOutline)
 {
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.NodeInserted, this._nodeInserted, this);
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.NodeRemoved, this._nodeRemoved, this);
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrModified, this._attributesUpdated, this);
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrRemoved, this._attributesUpdated, this);
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.CharacterDataModified, this._characterDataModified, this);
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.DocumentUpdated, this._documentUpdated, this);
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.ChildNodeCountUpdated, this._childNodeCountUpdated, this);
+    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.NodeInserted, this._nodeInserted, this);
+    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
+    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
+    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
+    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._characterDataModified, this);
+    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdated, this);
+    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.ChildNodeCountUpdated, this._childNodeCountUpdated, this);
 
     this._treeOutline = treeOutline;
     /** @type {!Map.<!WebInspector.DOMNode, !WebInspector.ElementsTreeUpdater.UpdateEntry>} */
@@ -2589,7 +2589,7 @@ WebInspector.ElementsTreeUpdater.prototype = {
     {
         this._treeOutline.rootDOMNode = null;
         this._treeOutline.selectDOMNode(null, false);
-        WebInspector.domAgent.hideDOMNodeHighlight();
+        WebInspector.domModel.hideDOMNodeHighlight();
         this._recentlyModifiedNodes.clear();
     }
 }

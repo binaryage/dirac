@@ -203,7 +203,7 @@ WebInspector.ExtensionAuditFormatters = {
         {
             if (!nodeId)
                 return;
-            var node = WebInspector.domAgent.nodeForId(nodeId);
+            var node = WebInspector.domModel.nodeForId(nodeId);
             var renderer = WebInspector.moduleManager.instance(WebInspector.Renderer, node);
             if (renderer)
                 parentElement.appendChild(renderer.render(node));

@@ -132,7 +132,7 @@ WebInspector.ScreencastView.prototype = {
         dimensions.width *= WebInspector.zoomManager.zoomFactor();
         dimensions.height *= WebInspector.zoomManager.zoomFactor();
         PageAgent.startScreencast("jpeg", 80, Math.min(maxImageDimension, dimensions.width), Math.min(maxImageDimension, dimensions.height));
-        WebInspector.domAgent.setHighlighter(this);
+        WebInspector.domModel.setHighlighter(this);
     },
 
     _stopCasting: function()
@@ -141,7 +141,7 @@ WebInspector.ScreencastView.prototype = {
             return;
         this._isCasting = false;
         PageAgent.stopScreencast();
-        WebInspector.domAgent.setHighlighter(null);
+        WebInspector.domModel.setHighlighter(null);
     },
 
     /**
@@ -283,7 +283,7 @@ WebInspector.ScreencastView.prototype = {
             if (event.type === "mousemove")
                 this.highlightDOMNode(nodeId, this._inspectModeConfig);
             else if (event.type === "click")
-                WebInspector.Revealer.reveal(WebInspector.domAgent.nodeForId(nodeId));
+                WebInspector.Revealer.reveal(WebInspector.domModel.nodeForId(nodeId));
         }
     },
 
@@ -458,7 +458,7 @@ WebInspector.ScreencastView.prototype = {
             return;
         }
 
-        this._node = WebInspector.domAgent.nodeForId(nodeId);
+        this._node = WebInspector.domModel.nodeForId(nodeId);
         DOMAgent.getBoxModel(nodeId, callback.bind(this));
 
         /**

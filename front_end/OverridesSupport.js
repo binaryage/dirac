@@ -532,7 +532,7 @@ WebInspector.OverridesSupport.prototype = {
         if (WebInspector.OverridesSupport.isInspectingDevice() && WebInspector.settings.emulateTouchEvents.get())
             return;
 
-        WebInspector.domAgent.emulateTouchEventObjects(WebInspector.settings.emulateTouchEvents.get());
+        WebInspector.domModel.emulateTouchEventObjects(WebInspector.settings.emulateTouchEvents.get());
         this.maybeHasActiveOverridesChanged();
     },
 

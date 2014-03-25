@@ -61,7 +61,7 @@
             'front_end/DebuggerScriptMapping.js',
             'front_end/Tests.js',
             'front_end/Dialog.js',
-            'front_end/DOMAgent.js',
+            'front_end/DOMModel.js',
             'front_end/DOMBreakpointsSidebarPane.js',
             'front_end/DOMExtension.js',
             'front_end/DOMPresentationUtils.js',

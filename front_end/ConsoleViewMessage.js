@@ -473,7 +473,7 @@ WebInspector.ConsoleViewMessage.prototype = {
                 this._formatParameterAsObject(object, elem, false);
                 return;
             }
-            var node = WebInspector.domAgent.nodeForId(nodeId);
+            var node = WebInspector.domModel.nodeForId(nodeId);
             var renderer = WebInspector.moduleManager.instance(WebInspector.Renderer, node);
             if (renderer)
                 elem.appendChild(renderer.render(node));

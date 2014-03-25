@@ -118,7 +118,7 @@ WebInspector.ElementsPanel = function()
     this._popoverHelper = new WebInspector.PopoverHelper(this.element, this._getPopoverAnchor.bind(this), this._showPopover.bind(this));
     this._popoverHelper.setTimeout(0);
 
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.DocumentUpdated, this._documentUpdatedEvent, this);
+    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
     WebInspector.settings.showUAShadowDOM.addChangeListener(this._showUAShadowDOMChanged.bind(this));
 
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
@@ -167,15 +167,15 @@ WebInspector.ElementsPanel.prototype = {
         this.treeOutline.setVisible(true);
 
         if (!this.treeOutline.rootDOMNode)
-            if (WebInspector.domAgent.existingDocument())
-                this._documentUpdated(WebInspector.domAgent.existingDocument());
+            if (WebInspector.domModel.existingDocument())
+                this._documentUpdated(WebInspector.domModel.existingDocument());
             else
-                WebInspector.domAgent.requestDocument();
+                WebInspector.domModel.requestDocument();
     },
 
     willHide: function()
     {
-        WebInspector.domAgent.hideDOMNodeHighlight();
+        WebInspector.domModel.hideDOMNodeHighlight();
         this.treeOutline.setVisible(false);
         this._popoverHelper.hidePopover();
 
@@ -207,7 +207,7 @@ WebInspector.ElementsPanel.prototype = {
      */
     _setPseudoClassForNodeId: function(nodeId, pseudoClass, enable)
     {
-        var node = WebInspector.domAgent.nodeForId(nodeId);
+        var node = WebInspector.domModel.nodeForId(nodeId);
         if (!node)
             return;
 
@@ -287,7 +287,7 @@ WebInspector.ElementsPanel.prototype = {
 
         if (!inspectedRootDocument) {
             if (this.isShowing())
-                WebInspector.domAgent.requestDocument();
+                WebInspector.domModel.requestDocument();
             return;
         }
 
@@ -320,7 +320,7 @@ WebInspector.ElementsPanel.prototype = {
                 // Focused node has been explicitly set while reaching out for the last selected node.
                 return;
             }
-            var node = nodeId ? WebInspector.domAgent.nodeForId(nodeId) : null;
+            var node = nodeId ? WebInspector.domModel.nodeForId(nodeId) : null;
             selectNode.call(this, node);
         }
 
@@ -328,7 +328,7 @@ WebInspector.ElementsPanel.prototype = {
             return;
 
         if (this._selectedPathOnReset)
-            WebInspector.domAgent.pushNodeByPathToFrontend(this._selectedPathOnReset, selectLastSelectedNode.bind(this));
+            WebInspector.domModel.pushNodeByPathToFrontend(this._selectedPathOnReset, selectLastSelectedNode.bind(this));
         else
             selectNode.call(this, null);
         delete this._selectedPathOnReset;
@@ -343,7 +343,7 @@ WebInspector.ElementsPanel.prototype = {
 
         delete this._currentSearchResultIndex;
         delete this._searchResults;
-        WebInspector.domAgent.cancelSearch();
+        WebInspector.domModel.cancelSearch();
     },
 
     /**
@@ -376,7 +376,7 @@ WebInspector.ElementsPanel.prototype = {
             if (shouldJump)
                 this.jumpToNextSearchResult();
         }
-        WebInspector.domAgent.performSearch(whitespaceTrimmedQuery, resultCountCallback.bind(this));
+        WebInspector.domModel.performSearch(whitespaceTrimmedQuery, resultCountCallback.bind(this));
     },
 
     _contextMenuEventFired: function(event)
@@ -544,7 +544,7 @@ WebInspector.ElementsPanel.prototype = {
 
         if (typeof searchResult === "undefined") {
             // No data for slot, request it.
-            WebInspector.domAgent.searchResult(index, searchCallback.bind(this));
+            WebInspector.domModel.searchResult(index, searchCallback.bind(this));
             return;
         }
 
@@ -627,7 +627,7 @@ WebInspector.ElementsPanel.prototype = {
         var nodeUnderMouse = document.elementFromPoint(event.pageX, event.pageY);
         var crumbElement = nodeUnderMouse.enclosingNodeOrSelfWithClass("crumb");
 
-        WebInspector.domAgent.highlightDOMNode(crumbElement ? crumbElement.representedObject.id : 0);
+        WebInspector.domModel.highlightDOMNode(crumbElement ? crumbElement.representedObject.id : 0);
 
         if ("_mouseOutOfCrumbsTimeout" in this) {
             clearTimeout(this._mouseOutOfCrumbsTimeout);
@@ -641,7 +641,7 @@ WebInspector.ElementsPanel.prototype = {
         if (nodeUnderMouse && nodeUnderMouse.isDescendant(this.crumbsElement))
             return;
 
-        WebInspector.domAgent.hideDOMNodeHighlight();
+        WebInspector.domModel.hideDOMNodeHighlight();
 
         this._mouseOutOfCrumbsTimeout = setTimeout(this.updateBreadcrumbSizes.bind(this), 1000);
     },
@@ -1070,7 +1070,7 @@ WebInspector.ElementsPanel.prototype = {
         function handleUndoRedo()
         {
             if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) && !event.shiftKey && event.keyIdentifier === "U+005A") { // Z key
-                WebInspector.domAgent.undo(this._updateSidebars.bind(this));
+                WebInspector.domModel.undo(this._updateSidebars.bind(this));
                 event.handled = true;
                 return;
             }
@@ -1123,12 +1123,12 @@ WebInspector.ElementsPanel.prototype = {
     {
         WebInspector.inspectorView.setCurrentPanel(this);
 
-        var node = WebInspector.domAgent.nodeForId(nodeId);
+        var node = WebInspector.domModel.nodeForId(nodeId);
         if (!node)
             return;
 
         node = WebInspector.settings.showUAShadowDOM.get() ? node : this._leaveUserAgentShadowDOM(node);
-        WebInspector.domAgent.highlightDOMNodeForTwoSeconds(nodeId);
+        WebInspector.domModel.highlightDOMNodeForTwoSeconds(nodeId);
         this.selectDOMNode(node, true);
     },
 
@@ -1144,7 +1144,7 @@ WebInspector.ElementsPanel.prototype = {
         function selectNode(nodeId)
         {
             if (nodeId)
-                WebInspector.domAgent.inspectElement(nodeId);
+                WebInspector.domModel.inspectElement(nodeId);
         }
 
         /**
@@ -1163,7 +1163,7 @@ WebInspector.ElementsPanel.prototype = {
         } else if (target instanceof WebInspector.DOMNode) {
             var domNode = /** @type {!WebInspector.DOMNode} */ (target);
             if (domNode.id)
-                commandCallback = WebInspector.domAgent.inspectElement.bind(WebInspector.domAgent, domNode.id);
+                commandCallback = WebInspector.domModel.inspectElement.bind(WebInspector.domModel, domNode.id);
         }
         if (!commandCallback)
             return;

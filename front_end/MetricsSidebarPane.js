@@ -36,8 +36,8 @@ WebInspector.MetricsSidebarPane = function()
 
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetOrMediaQueryResultChanged, this);
     WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._styleSheetOrMediaQueryResultChanged, this);
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrModified, this._attributesUpdated, this);
-    WebInspector.domAgent.addEventListener(WebInspector.DOMAgent.Events.AttrRemoved, this._attributesUpdated, this);
+    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
+    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
 }
 
@@ -145,10 +145,10 @@ WebInspector.MetricsSidebarPane.prototype = {
             if (this._highlightMode === mode)
                 return;
             this._highlightMode = mode;
-            WebInspector.domAgent.highlightDOMNode(nodeId, mode);
+            WebInspector.domModel.highlightDOMNode(nodeId, mode);
         } else {
             delete this._highlightMode;
-            WebInspector.domAgent.hideDOMNodeHighlight();
+            WebInspector.domModel.hideDOMNodeHighlight();
         }
 
         for (var i = 0; this._boxElements && i < this._boxElements.length; ++i) {
@@ -434,7 +434,7 @@ WebInspector.MetricsSidebarPane.prototype = {
                 self.originalPropertyData = self.previousPropertyDataCandidate;
 
             if (typeof self._highlightMode !== "undefined") {
-                WebInspector.domAgent.highlightDOMNode(self.node.id, self._highlightMode);
+                WebInspector.domModel.highlightDOMNode(self.node.id, self._highlightMode);
             }
 
             if (commitEditor) {
