@@ -88,13 +88,6 @@ WebInspector.ElementsPanel = function()
     this.sidebarPanes.platformFonts = new WebInspector.PlatformFontsSidebarPane();
     this.sidebarPanes.computedStyle = new WebInspector.ComputedStyleSidebarPane();
     this.sidebarPanes.styles = new WebInspector.StylesSidebarPane(this.sidebarPanes.computedStyle, this._setPseudoClassForNodeId.bind(this));
-
-    this._matchedStylesFilterBoxContainer = document.createElement("div");
-    this._matchedStylesFilterBoxContainer.className = "filter-box-container inspector-footer status-bar";
-    this._computedStylesFilterBoxContainer = document.createElement("div");
-    this._computedStylesFilterBoxContainer.className = "filter-box-container inspector-footer status-bar";
-    this.sidebarPanes.styles.setFilterBoxContainers(this._matchedStylesFilterBoxContainer, this._computedStylesFilterBoxContainer);
-
     this.sidebarPanes.metrics = new WebInspector.MetricsSidebarPane();
     this.sidebarPanes.properties = new WebInspector.PropertiesSidebarPane();
     this.sidebarPanes.domBreakpoints = WebInspector.domBreakpointsSidebarPane.createProxy(this);
@@ -433,7 +426,7 @@ WebInspector.ElementsPanel.prototype = {
         }
         return anchor;
     },
-
+    
     _loadDimensionsForNode: function(treeElement, callback)
     {
         // We get here for CSS properties, too, so bail out early for non-DOM treeElements.
@@ -441,7 +434,7 @@ WebInspector.ElementsPanel.prototype = {
             callback();
             return;
         }
-
+        
         var node = /** @type {!WebInspector.DOMNode} */ (treeElement.representedObject);
 
         if (!node.nodeName() || node.nodeName().toLowerCase() !== "img") {
@@ -1210,24 +1203,21 @@ WebInspector.ElementsPanel.prototype = {
         computedPane.element.classList.add("fill");
         var expandComputed = computedPane.expand.bind(computedPane);
 
+        computedPane.bodyElement.appendChild(this.sidebarPanes.computedStyle.titleElement);
         computedPane.bodyElement.classList.add("metrics-and-computed");
+        this.sidebarPanes.computedStyle.show(computedPane.bodyElement);
         this.sidebarPanes.computedStyle.setExpandCallback(expandComputed);
 
-        var matchedStylePanesWrapper = document.createElement("div");
-        matchedStylePanesWrapper.className = "style-panes-wrapper";
-        var computedStylePanesWrapper = document.createElement("div");
-        computedStylePanesWrapper.className = "style-panes-wrapper";
+        this.sidebarPanes.platformFonts.show(computedPane.bodyElement);
 
         /**
-         * @param {boolean} inComputedStyle
+         * @param {!WebInspector.SidebarPane} pane
+         * @param {!Element=} beforeElement
          * @this {WebInspector.ElementsPanel}
          */
-        function showMetrics(inComputedStyle)
+        function showMetrics(pane, beforeElement)
         {
-            if (inComputedStyle)
-                this.sidebarPanes.metrics.show(computedStylePanesWrapper, this.sidebarPanes.computedStyle.element);
-            else
-                this.sidebarPanes.metrics.show(matchedStylePanesWrapper);
+            this.sidebarPanes.metrics.show(pane.bodyElement, beforeElement);
         }
 
         /**
@@ -1238,15 +1228,16 @@ WebInspector.ElementsPanel.prototype = {
         {
             var tabId = /** @type {string} */ (event.data.tabId);
             if (tabId === computedPane.title())
-                showMetrics.call(this, true);
-            else if (tabId === stylesPane.title())
-                showMetrics.call(this, false);
+                showMetrics.call(this, computedPane, this.sidebarPanes.computedStyle.element);
+            if (tabId === stylesPane.title())
+                showMetrics.call(this, stylesPane);
         }
 
         this.sidebarPaneView = new WebInspector.SidebarTabbedPane();
 
         if (vertically) {
             this._splitView.installResizer(this.sidebarPaneView.headerElement());
+            this.sidebarPanes.metrics.show(computedPane.bodyElement, this.sidebarPanes.computedStyle.element);
             this.sidebarPanes.metrics.setExpandCallback(expandComputed);
 
             var compositePane = new WebInspector.SidebarPane(this.sidebarPanes.styles.title());
@@ -1257,17 +1248,12 @@ WebInspector.ElementsPanel.prototype = {
             var splitView = new WebInspector.SplitView(true, true, "stylesPaneSplitViewState", 0.5);
             splitView.show(compositePane.bodyElement);
 
-            matchedStylePanesWrapper.appendChild(this.sidebarPanes.styles.titleElement);
-            splitView.mainElement().appendChild(matchedStylePanesWrapper);
-            splitView.sidebarElement().appendChild(computedStylePanesWrapper);
-
+            this.sidebarPanes.styles.show(splitView.mainElement());
+            splitView.mainElement().appendChild(this.sidebarPanes.styles.titleElement);
             this.sidebarPanes.styles.setExpandCallback(expandComposite);
 
             computedPane.show(splitView.sidebarElement());
             computedPane.setExpandCallback(expandComposite);
-
-            splitView.mainElement().appendChild(this._matchedStylesFilterBoxContainer);
-            splitView.sidebarElement().appendChild(this._computedStylesFilterBoxContainer);
 
             this.sidebarPaneView.addPane(compositePane);
         } else {
@@ -1276,26 +1262,17 @@ WebInspector.ElementsPanel.prototype = {
             stylesPane.element.classList.add("fill");
             var expandStyles = stylesPane.expand.bind(stylesPane);
             stylesPane.bodyElement.classList.add("metrics-and-styles");
-
-            stylesPane.bodyElement.appendChild(matchedStylePanesWrapper);
-            computedPane.bodyElement.appendChild(computedStylePanesWrapper);
-
+            this.sidebarPanes.styles.show(stylesPane.bodyElement);
             this.sidebarPanes.styles.setExpandCallback(expandStyles);
             this.sidebarPanes.metrics.setExpandCallback(expandStyles);
-            this.sidebarPanes.styles.element.appendChild(this.sidebarPanes.styles.titleElement);
+            stylesPane.bodyElement.appendChild(this.sidebarPanes.styles.titleElement);
 
             this.sidebarPaneView.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, tabSelected, this);
 
-            stylesPane.bodyElement.appendChild(this._matchedStylesFilterBoxContainer);
-            computedPane.bodyElement.appendChild(this._computedStylesFilterBoxContainer);
+            showMetrics.call(this, stylesPane);
             this.sidebarPaneView.addPane(stylesPane);
             this.sidebarPaneView.addPane(computedPane);
         }
-
-        this.sidebarPanes.styles.show(matchedStylePanesWrapper);
-        this.sidebarPanes.computedStyle.show(computedStylePanesWrapper);
-        showMetrics.call(this, vertically);
-        this.sidebarPanes.platformFonts.show(computedStylePanesWrapper);
 
         this.sidebarPaneView.addPane(this.sidebarPanes.eventListeners);
         this.sidebarPaneView.addPane(this.sidebarPanes.domBreakpoints);

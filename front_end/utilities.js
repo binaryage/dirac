@@ -134,7 +134,7 @@ String.prototype.escapeCharacters = function(chars)
  */
 String.regexSpecialCharacters = function()
 {
-    return "^[]{}()\\.^$*+?|-,";
+    return "^[]{}()\\.$*+?|-,";
 }
 
 /**
