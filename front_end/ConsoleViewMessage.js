@@ -30,7 +30,7 @@
 
 /**
  * @constructor
- *
+ * @param {!WebInspector.Target} target
  * @param {!WebInspector.ConsoleMessage} consoleMessage
  * @param {?WebInspector.Linkifier} linkifier
  */
@@ -163,11 +163,11 @@ WebInspector.ConsoleViewMessage.prototype = {
         }
 
         if (consoleMessage.source !== WebInspector.ConsoleMessage.MessageSource.Network || consoleMessage.request) {
-            if (consoleMessage.stackTrace && consoleMessage.stackTrace.length && consoleMessage.stackTrace[0].scriptId) {
-                this._anchorElement = this._linkifyCallFrame(consoleMessage.stackTrace[0]);
-            } else if (consoleMessage.url && consoleMessage.url !== "undefined") {
+            var callFrame = this._callFrameAnchorFromStackTrace(consoleMessage.stackTrace);
+            if (callFrame)
+                this._anchorElement = this._linkifyCallFrame(callFrame);
+            else if (consoleMessage.url && consoleMessage.url !== "undefined")
                 this._anchorElement = this._linkifyLocation(consoleMessage.url, consoleMessage.line, consoleMessage.column);
-            }
         }
 
         this._formattedMessage.appendChild(this._messageElement);
@@ -247,6 +247,30 @@ WebInspector.ConsoleViewMessage.prototype = {
         var columnNumber = callFrame.columnNumber ? callFrame.columnNumber - 1 : 0;
         var rawLocation = new WebInspector.DebuggerModel.Location(callFrame.scriptId, lineNumber, columnNumber);
         return this._linkifier.linkifyRawLocation(rawLocation, "console-message-url");
+    },
+
+    /**
+     * @param {?Array.<!ConsoleAgent.CallFrame>} stackTrace
+     * @return {?ConsoleAgent.CallFrame}
+     */
+    _callFrameAnchorFromStackTrace: function(stackTrace)
+    {
+        if (!stackTrace || !stackTrace.length)
+            return null;
+        var callFrame = stackTrace[0].scriptId ? stackTrace[0] : null;
+        if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
+            return callFrame;
+        if (!WebInspector.settings.skipStackFramesSwitch.get())
+            return callFrame;
+        var regex = WebInspector.settings.skipStackFramesPattern.asRegExp();
+        if (!regex)
+            return callFrame;
+        for (var i = 0; i < stackTrace.length; ++i) {
+            var script = this._target.debuggerModel.scriptForId(stackTrace[i].scriptId);
+            if (!script || !regex.test(script.sourceURL))
+                return stackTrace[i].scriptId ? stackTrace[i] : null;
+        }
+        return callFrame;
     },
 
     /**
