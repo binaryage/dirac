@@ -73,25 +73,22 @@ WebInspector.FormatterScriptMapping.prototype = {
      */
     _scriptsForUISourceCode: function(uiSourceCode)
     {
-        var isInlineScript;
-        switch (uiSourceCode.contentType()) {
-        case WebInspector.resourceTypes.Document:
-            isInlineScript = true;
-            break;
-        case WebInspector.resourceTypes.Script:
-            isInlineScript = false;
-            break;
-        default:
-            return [];
-        }
-        var scripts = this._debuggerModel.scriptsForSourceURL(uiSourceCode.url);
-
-        function filterOutIncorrectInlineType(script)
+        /**
+         * @param {!WebInspector.Script} script
+         * @return {boolean}
+         */
+        function isInlineScript(script)
         {
-            return script.isInlineScript() === isInlineScript;
+            return script.isInlineScript();
         }
 
-        return scripts.filter(filterOutIncorrectInlineType);
+        if (uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
+            return this._debuggerModel.scriptsForSourceURL(uiSourceCode.url).filter(isInlineScript);
+        if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script) {
+            var rawLocation = uiSourceCode.uiLocationToRawLocation(0, 0);
+            return rawLocation ? [this._debuggerModel.scriptForId(rawLocation.scriptId)] : [];
+        }
+        return [];
     },
 
     _init: function()
