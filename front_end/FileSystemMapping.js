@@ -72,7 +72,7 @@ WebInspector.FileSystemMapping = function()
     else
         defaultExcludedFolders = defaultExcludedFolders.concat(defaultLinuxExcludedFolders);
     var defaultExcludedFoldersPattern = defaultExcludedFolders.join("|");
-    WebInspector.settings.workspaceFolderExcludePattern = WebInspector.settings.createSetting("workspaceFolderExcludePattern", defaultExcludedFoldersPattern);
+    WebInspector.settings.workspaceFolderExcludePattern = WebInspector.settings.createRegExpSetting("workspaceFolderExcludePattern", defaultExcludedFoldersPattern, WebInspector.isWin() ? "i" : "");
     /** @type {!Object.<string, !Array.<!WebInspector.FileSystemMapping.Entry>>} */
     this._fileSystemMappings = {};
     /** @type {!Object.<string, !Array.<!WebInspector.FileSystemMapping.ExcludedFolderEntry>>} */
@@ -119,13 +119,6 @@ WebInspector.FileSystemMapping.prototype = {
                 var entry = new WebInspector.FileSystemMapping.ExcludedFolderEntry(savedEntry.fileSystemPath, savedEntry.path);
                 excludedFolders.push(entry);
             }
-        }
-
-        var workspaceFolderExcludePattern = WebInspector.settings.workspaceFolderExcludePattern.get()
-        try {
-            var flags = WebInspector.isWin() ? "i" : "";
-            this._workspaceFolderExcludeRegex = workspaceFolderExcludePattern ? new RegExp(workspaceFolderExcludePattern, flags) : null;
-        } catch (e) {
         }
 
         this._rebuildIndexes();
@@ -329,7 +322,8 @@ WebInspector.FileSystemMapping.prototype = {
             if (entry.path === folderPath)
                 return true;
         }
-        return this._workspaceFolderExcludeRegex && this._workspaceFolderExcludeRegex.test(folderPath);
+        var regex = WebInspector.settings.workspaceFolderExcludePattern.asRegExp();
+        return regex && regex.test(folderPath);
     },
 
     /**

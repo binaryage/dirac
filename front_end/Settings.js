@@ -106,7 +106,7 @@ WebInspector.Settings = function()
     this.shortcutPanelSwitch = this.createSetting("shortcutPanelSwitch", false);
     this.showWhitespacesInEditor = this.createSetting("showWhitespacesInEditor", false);
     this.skipStackFramesSwitch = this.createSetting("skipStackFramesSwitch", false);
-    this.skipStackFramesPattern = this.createSetting("skipStackFramesPattern", "");
+    this.skipStackFramesPattern = this.createRegExpSetting("skipStackFramesPattern", "");
     this.pauseOnExceptionEnabled = this.createSetting("pauseOnExceptionEnabled", false);
     this.pauseOnCaughtException = this.createSetting("pauseOnCaughtException", false);
     this.enableAsyncStackTraces = this.createSetting("enableAsyncStackTraces", false);
@@ -122,6 +122,19 @@ WebInspector.Settings.prototype = {
     {
         if (!this._registry[key])
             this._registry[key] = new WebInspector.Setting(key, defaultValue, this._eventSupport, window.localStorage);
+        return this._registry[key];
+    },
+
+    /**
+     * @param {string} key
+     * @param {string} defaultValue
+     * @param {string=} regexFlags
+     * @return {!WebInspector.Setting}
+     */
+    createRegExpSetting: function(key, defaultValue, regexFlags)
+    {
+        if (!this._registry[key])
+            this._registry[key] = new WebInspector.RegExpSetting(key, defaultValue, this._eventSupport, window.localStorage, regexFlags);
         return this._registry[key];
     },
 
@@ -225,6 +238,46 @@ WebInspector.Setting.prototype = {
  * @constructor
  * @extends {WebInspector.Setting}
  * @param {string} name
+ * @param {string} defaultValue
+ * @param {!WebInspector.Object} eventSupport
+ * @param {?Storage} storage
+ * @param {string=} regexFlags
+ */
+WebInspector.RegExpSetting = function(name, defaultValue, eventSupport, storage, regexFlags)
+{
+    WebInspector.Setting.call(this, name, defaultValue, eventSupport, storage);
+    this._regexFlags = regexFlags;
+}
+
+WebInspector.RegExpSetting.prototype = {
+    set: function(value)
+    {
+        delete this._regex;
+        WebInspector.Setting.prototype.set.call(this, value);
+    },
+
+    /**
+     * @return {?RegExp}
+     */
+    asRegExp: function()
+    {
+        if (typeof this._regex !== "undefined")
+            return this._regex;
+        this._regex = null;
+        try {
+            this._regex = new RegExp(this.get(), this._regexFlags || "");
+        } catch (e) {
+        }
+        return this._regex;
+    },
+
+    __proto__: WebInspector.Setting.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.Setting}
+ * @param {string} name
  * @param {*} defaultValue
  * @param {!WebInspector.Object} eventSupport
  * @param {?Storage} storage
@@ -259,7 +312,7 @@ WebInspector.BackendSetting.prototype = {
     },
 
     __proto__: WebInspector.Setting.prototype
-};
+}
 
 /**
  * @constructor
