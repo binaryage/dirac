@@ -15,7 +15,7 @@ WebInspector.TimelinePowerOverviewDataProvider = function()
 
 WebInspector.TimelinePowerOverviewDataProvider.prototype = {
     /**
-     * @return {Array.<PowerEvent>}
+     * @return {!Array.<!PowerAgent.PowerEvent>}
      */
     records : function()
     {
@@ -25,8 +25,8 @@ WebInspector.TimelinePowerOverviewDataProvider.prototype = {
 
     _onRecordAdded: function(event)
     {
-        // "value" of original PowerEvent means the anverage power between previous sampling to current one.
-        // Here, it is converted to anverage power between current sampling to next one.
+        // "value" of original PowerEvent means the average power between previous sampling to current one.
+        // Here, it is converted to average power between current sampling to next one.
         var record = event.data;
         var length = this._records.length;
         if (length)

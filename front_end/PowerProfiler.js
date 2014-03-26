@@ -33,7 +33,7 @@ WebInspector.PowerProfiler.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.PowerEventDispatcher}
+ * @implements {PowerAgent.Dispatcher}
  */
 WebInspector.PowerDispatcher = function(profiler)
 {
@@ -44,7 +44,7 @@ WebInspector.PowerDispatcher = function(profiler)
 WebInspector.PowerDispatcher.prototype = {
     dataAvailable: function(events)
     {
-        for (var i in events)
+        for (var i = 0; i < events.length; ++i)
             this._profiler.dispatchEventToListeners(WebInspector.PowerProfiler.EventTypes.PowerEventRecorded, events[i]);
     }
 }
