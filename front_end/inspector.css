@@ -1179,6 +1179,7 @@ ol.watch-expressions > li.hovered {
 .console-formatted-regexp {
     color: rgb(196, 26, 22);
     white-space: pre;
+    unicode-bidi: -webkit-isolate;
 }
 
 .console-formatted-null,
