@@ -412,17 +412,18 @@ Object.defineProperty(Array.prototype, "remove",
      */
     value: function(value, firstOnly)
     {
+        var index = this.indexOf(value);
+        if (index === -1)
+            return;
         if (firstOnly) {
-            var index = this.indexOf(value);
-            if (index !== -1)
-                this.splice(index, 1);
+            this.splice(index, 1);
             return;
         }
-
-        for (var i = 0; i < this.length; ++i) {
-            if (this[i] === value)
-                this.splice(i--, 1);
+        for (var i = index + 1, n = this.length; i < n; ++i) {
+            if (this[i] !== value)
+                this[index++] = this[i];
         }
+        this.length = index;
     }
 });
 
