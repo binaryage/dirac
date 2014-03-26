@@ -205,9 +205,11 @@ WebInspector.ConsoleModel.prototype = {
  * @param {!NetworkAgent.RequestId=} requestId
  * @param {!Array.<!RuntimeAgent.RemoteObject>=} parameters
  * @param {!Array.<!ConsoleAgent.CallFrame>=} stackTrace
+ * @param {number=} timestamp
  * @param {boolean=} isOutdated
  */
-WebInspector.ConsoleMessage = function(source, level, messageText, type, url, line, column, requestId, parameters, stackTrace, isOutdated)
+
+WebInspector.ConsoleMessage = function(source, level, messageText, type, url, line, column, requestId, parameters, stackTrace, timestamp, isOutdated)
 {
     this.source = source;
     this.level = level;
@@ -218,7 +220,9 @@ WebInspector.ConsoleMessage = function(source, level, messageText, type, url, li
     this.column = column || 0;
     this.parameters = parameters;
     this.stackTrace = stackTrace;
+    this.timestamp = timestamp || Date.now();
     this.isOutdated = isOutdated;
+
     this.request = requestId ? WebInspector.networkLog.requestForId(requestId) : null;
 }
 
@@ -258,6 +262,7 @@ WebInspector.ConsoleMessage.prototype = {
             this.request ? this.request.requestId : undefined,
             this.parameters,
             this.stackTrace,
+            this.timestamp,
             this.isOutdated);
     },
 
@@ -267,21 +272,18 @@ WebInspector.ConsoleMessage.prototype = {
      */
     isEqual: function(msg)
     {
-        if (!msg)
+        if (!msg || WebInspector.settings.consoleTimestampsEnabled.get())
             return false;
 
         if (this.stackTrace) {
-            if (!msg.stackTrace)
+            if (!msg.stackTrace || this.stackTrace.length !== msg.stackTrace.length)
                 return false;
-            var l = this.stackTrace;
-            var r = msg.stackTrace;
-            if (l.length !== r.length)
-                return false;
-            for (var i = 0; i < l.length; i++) {
-                if (l[i].url !== r[i].url ||
-                    l[i].functionName !== r[i].functionName ||
-                    l[i].lineNumber !== r[i].lineNumber ||
-                    l[i].columnNumber !== r[i].columnNumber)
+
+            for (var i = 0; i < msg.stackTrace.length; ++i) {
+                if (this.stackTrace[i].url !== msg.stackTrace[i].url ||
+                    this.stackTrace[i].functionName !== msg.stackTrace[i].functionName ||
+                    this.stackTrace[i].lineNumber !== msg.stackTrace[i].lineNumber ||
+                    this.stackTrace[i].columnNumber !== msg.stackTrace[i].columnNumber)
                     return false;
             }
         }
@@ -383,6 +385,7 @@ WebInspector.ConsoleDispatcher.prototype = {
             payload.networkRequestId,
             payload.parameters,
             payload.stackTrace,
+            payload.timestamp * 1000, // Convert to ms.
             this._console._enablingConsole);
         this._console.addMessage(consoleMessage, true);
     },

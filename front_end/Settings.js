@@ -56,6 +56,7 @@ WebInspector.Settings = function()
     this.lastViewedScriptFile = this.createSetting("lastViewedScriptFile", "application");
     this.monitoringXHREnabled = this.createSetting("monitoringXHREnabled", false);
     this.preserveConsoleLog = this.createSetting("preserveConsoleLog", false);
+    this.consoleTimestampsEnabled = this.createSetting("consoleTimestampsEnabled", false);
     this.resourcesLargeRows = this.createSetting("resourcesLargeRows", true);
     this.resourcesSortOptions = this.createSetting("resourcesSortOptions", {timeOption: "responseTime", sizeOption: "transferSize"});
     this.resourceViewTab = this.createSetting("resourceViewTab", "preview");

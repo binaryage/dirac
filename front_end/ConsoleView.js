@@ -103,7 +103,6 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._messageToViewMessage = new Map();
     /** @type {!Array.<!WebInspector.ConsoleMessage>} */
     this._consoleMessages = [];
-    this._previousMessage = null;
 
     this.prompt = new WebInspector.TextPromptWithHistory(this._completionsForTextPrompt.bind(this));
     this.prompt.setSuggestBoxEnabled("generic-suggest");
@@ -421,13 +420,14 @@ WebInspector.ConsoleView.prototype = {
         else
             this._urlToMessageCount[message.url] = 1;
 
-        if (this._previousMessage && !message.isGroupMessage() && message.isEqual(this._previousMessage)) {
-            this._messageToViewMessage.get(this._previousMessage).incrementRepeatCount();
+        var previousMessage = this._consoleMessages.peekLast();
+        if (previousMessage && !message.isGroupMessage() && message.isEqual(previousMessage)) {
+            previousMessage.timestamp = message.timestamp;
+            this._messageToViewMessage.get(previousMessage).incrementRepeatCount();
             return;
         }
 
         this._consoleMessages.push(message);
-        this._previousMessage = message;
         var viewMessage = this._createViewMessage(target, message);
 
         if (this._filter.shouldBeVisible(viewMessage))
@@ -507,7 +507,6 @@ WebInspector.ConsoleView.prototype = {
 
         this._visibleViewMessages = [];
         this._searchResults = [];
-        this._previousMessage = null;
         this._messageToViewMessage.clear();
         this._consoleMessages = [];
 

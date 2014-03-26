@@ -870,6 +870,12 @@ body.platform-linux .source-code {
     background-image: none;
 }
 
+.console-timestamp {
+    color: gray;
+    margin-right: 10px;
+    -webkit-user-select: none;
+}
+
 .console-message::before,
 .console-user-command::before,
 #console-prompt::before,

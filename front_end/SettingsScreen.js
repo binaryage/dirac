@@ -341,6 +341,7 @@ WebInspector.GenericSettingsTab = function()
     p = this._appendSection(WebInspector.UIString("Console"));
     p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Log XMLHttpRequests"), WebInspector.settings.monitoringXHREnabled));
     p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Preserve log upon navigation"), WebInspector.settings.preserveConsoleLog));
+    p.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Show timestamps"), WebInspector.settings.consoleTimestampsEnabled));
 
     if (WebInspector.openAnchorLocationRegistry.handlerNames.length > 0) {
         var handlerSelector = new WebInspector.HandlerSelector(WebInspector.openAnchorLocationRegistry);

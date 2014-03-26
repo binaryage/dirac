@@ -370,6 +370,38 @@ Date.prototype.toISO8601Compact = function()
            leadZero(this.getSeconds());
 }
 
+/**
+ * @return {string}
+ */
+ Date.prototype.toConsoleTime = function()
+{
+    /**
+     * @param {number} x
+     * @return {string}
+     */
+    function leadZero2(x)
+    {
+        return (x > 9 ? "" : "0") + x;
+    }
+
+    /**
+     * @param {number} x
+     * @return {string}
+     */
+    function leadZero3(x)
+    {
+        return (Array(4 - x.toString().length)).join('0') + x;
+    }
+
+    return this.getFullYear() + "-" +
+           leadZero2(this.getMonth() + 1) + "-" +
+           leadZero2(this.getDate()) + " " +
+           leadZero2(this.getHours()) + ":" +
+           leadZero2(this.getMinutes()) + ":" +
+           leadZero2(this.getSeconds()) + "." +
+           leadZero3(this.getMilliseconds());
+}
+
 Object.defineProperty(Array.prototype, "remove",
 {
     /**
