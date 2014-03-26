@@ -135,7 +135,13 @@ WebInspector.KeyboardShortcut.makeKeyFromEvent = function(keyboardEvent)
         modifiers |= WebInspector.KeyboardShortcut.Modifiers.Alt;
     if (keyboardEvent.metaKey)
         modifiers |= WebInspector.KeyboardShortcut.Modifiers.Meta;
-    return WebInspector.KeyboardShortcut._makeKeyFromCodeAndModifiers(keyboardEvent.keyCode, modifiers);
+
+    function keyCodeForEvent(keyboardEvent)
+    {
+        // Use either a real or a synthetic keyCode (for events originating from extensions).
+        return keyboardEvent.keyCode || keyboardEvent["__keyCode"];
+    }
+    return WebInspector.KeyboardShortcut._makeKeyFromCodeAndModifiers(keyCodeForEvent(keyboardEvent), modifiers);
 }
 
 /**

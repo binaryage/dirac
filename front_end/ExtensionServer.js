@@ -618,20 +618,37 @@ WebInspector.ExtensionServer.prototype = {
     _onForwardKeyboardEvent: function(message)
     {
         const Esc = "U+001B";
+        message.entries.forEach(handleEventEntry);
 
-        if (!message.ctrlKey && !message.altKey && !message.metaKey && !/^F\d+$/.test(message.keyIdentifier) && message.keyIdentifier !== Esc)
-            return;
-        // Fool around closure compiler -- it has its own notion of both KeyboardEvent constructor
-        // and initKeyboardEvent methods and overriding these in externs.js does not have effect.
-        var event = new window.KeyboardEvent(message.eventType, {
-            keyIdentifier: message.keyIdentifier,
-            location: message.location,
-            ctrlKey: message.ctrlKey,
-            altKey: message.altKey,
-            shiftKey: message.shiftKey,
-            metaKey: message.metaKey
-        });
-        document.dispatchEvent(event);
+        function handleEventEntry(entry)
+        {
+            if (!entry.ctrlKey && !entry.altKey && !entry.metaKey && !/^F\d+$/.test(entry.keyIdentifier) && entry.keyIdentifier !== Esc)
+                return;
+            // Fool around closure compiler -- it has its own notion of both KeyboardEvent constructor
+            // and initKeyboardEvent methods and overriding these in externs.js does not have effect.
+            var event = new window.KeyboardEvent(entry.eventType, {
+                keyIdentifier: entry.keyIdentifier,
+                location: entry.location,
+                ctrlKey: entry.ctrlKey,
+                altKey: entry.altKey,
+                shiftKey: entry.shiftKey,
+                metaKey: entry.metaKey
+            });
+            event.__keyCode = keyCodeForEntry(entry);
+            document.dispatchEvent(event);
+        }
+
+        function keyCodeForEntry(entry)
+        {
+            var keyCode = entry.keyCode;
+            if (!keyCode) {
+                // This is required only for synthetic events (e.g. dispatched in tests).
+                var match = entry.keyIdentifier.match(/^U\+([\dA-Fa-f]+)$/);
+                if (match)
+                    keyCode = parseInt(match[1], 16);
+            }
+            return keyCode || 0;
+        }
     },
 
     _dispatchCallback: function(requestId, port, result)

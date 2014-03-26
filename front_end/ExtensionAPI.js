@@ -845,22 +845,38 @@ function TimelineImpl()
     this.onEventRecorded = new EventSink(events.TimelineEventRecorded);
 }
 
+var keyboardEventRequestQueue = [];
+var forwardTimer = null;
+
 function forwardKeyboardEvent(event)
 {
     const Esc = "U+001B";
     // We only care about global hotkeys, not about random text
     if (!event.ctrlKey && !event.altKey && !event.metaKey && !/^F\d+$/.test(event.keyIdentifier) && event.keyIdentifier !== Esc)
         return;
-    var request = {
-        command: commands.ForwardKeyboardEvent,
+    var requestPayload = {
         eventType: event.type,
         ctrlKey: event.ctrlKey,
         altKey: event.altKey,
         metaKey: event.metaKey,
         keyIdentifier: event.keyIdentifier,
-        location: event.location
+        location: event.location,
+        keyCode: event.keyCode
+    };
+    keyboardEventRequestQueue.push(requestPayload);
+    if (!forwardTimer)
+        forwardTimer = setTimeout(forwardEventQueue, 0);
+}
+
+function forwardEventQueue()
+{
+    forwardTimer = null;
+    var request = {
+        command: commands.ForwardKeyboardEvent,
+        entries: keyboardEventRequestQueue
     };
     extensionServer.sendRequest(request);
+    keyboardEventRequestQueue = [];
 }
 
 document.addEventListener("keydown", forwardKeyboardEvent, false);
