@@ -463,14 +463,15 @@ WebInspector.OverridesSupport.prototype = {
 
         var dipWidth = Math.round(metrics.width / metrics.deviceScaleFactor);
         var dipHeight = Math.round(metrics.height / metrics.deviceScaleFactor);
+        var metricsOverrideEnabled = !!(dipWidth && dipHeight);
 
         // Disable override without checks.
-        if (dipWidth && dipHeight && WebInspector.OverridesSupport.isInspectingDevice()) {
+        if (metricsOverrideEnabled && WebInspector.OverridesSupport.isInspectingDevice()) {
             this._updateDeviceMetricsWarningMessage(WebInspector.UIString("Screen emulation on the device is not available."));
             return;
         }
 
-        PageAgent.setDeviceMetricsOverride(dipWidth, dipHeight, metrics.deviceScaleFactor, WebInspector.settings.emulateViewport.get(), WebInspector.settings.deviceFitWindow.get(), metrics.textAutosizing, metrics.fontScaleFactor(), apiCallback.bind(this));
+        PageAgent.setDeviceMetricsOverride(dipWidth, dipHeight, metricsOverrideEnabled ? metrics.deviceScaleFactor : 0, WebInspector.settings.emulateViewport.get(), WebInspector.settings.deviceFitWindow.get(), metrics.textAutosizing, metrics.fontScaleFactor(), apiCallback.bind(this));
         this.maybeHasActiveOverridesChanged();
 
         /**
@@ -484,7 +485,6 @@ WebInspector.OverridesSupport.prototype = {
                 return;
             }
 
-            var metricsOverrideEnabled = !!(dipWidth && dipHeight);
             var viewportEnabled =  WebInspector.settings.emulateViewport.get();
             this._updateDeviceMetricsWarningMessage(this._deviceMetricsOverrideEnabled !== metricsOverrideEnabled || (metricsOverrideEnabled && this._emulateViewportEnabled != viewportEnabled) ?
                 WebInspector.UIString("You might need to reload the page for proper user agent spoofing and viewport rendering.") : "");
