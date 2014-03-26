@@ -64,14 +64,13 @@ WebInspector.HeapSnapshotEdge = function(snapshot, edgeIndex)
  * @param {!WebInspector.HeapSnapshotNode.Serialized} node
  * @param {number} nodeIndex
  * @param {string} type
- * @param {number} distance
  */
-WebInspector.HeapSnapshotEdge.Serialized = function(name, node, nodeIndex, type, distance) {
+WebInspector.HeapSnapshotEdge.Serialized = function(name, node, nodeIndex, type)
+{
     this.name = name;
     this.node = node;
     this.nodeIndex = nodeIndex;
     this.type = type;
-    this.distance = distance;
 };
 
 WebInspector.HeapSnapshotEdge.prototype = {
@@ -147,7 +146,7 @@ WebInspector.HeapSnapshotEdge.prototype = {
     serialize: function()
     {
         var node = this.node();
-        return new WebInspector.HeapSnapshotEdge.Serialized(this.name(), node.serialize(), this.nodeIndex(), this.type(), node.distance());
+        return new WebInspector.HeapSnapshotEdge.Serialized(this.name(), node.serialize(), this.nodeIndex(), this.type());
     },
 
     _type: function()
@@ -311,14 +310,12 @@ WebInspector.HeapSnapshotRetainerEdge = function(snapshot, retainerIndex)
  * @param {!WebInspector.HeapSnapshotNode.Serialized} node
  * @param {number} nodeIndex
  * @param {string} type
- * @param {number} distance
  */
-WebInspector.HeapSnapshotRetainerEdge.Serialized = function(name, node, nodeIndex, type, distance) {
+WebInspector.HeapSnapshotRetainerEdge.Serialized = function(name, node, nodeIndex, type) {
     this.name = name;
     this.node = node;
     this.nodeIndex = nodeIndex;
     this.type = type;
-    this.distance = distance;
 }
 
 WebInspector.HeapSnapshotRetainerEdge.prototype = {
@@ -430,7 +427,7 @@ WebInspector.HeapSnapshotRetainerEdge.prototype = {
     serialize: function()
     {
         var node = this.node();
-        return new WebInspector.HeapSnapshotRetainerEdge.Serialized(this.name(), node.serialize(), this.nodeIndex(), this.type(), node.distance());
+        return new WebInspector.HeapSnapshotRetainerEdge.Serialized(this.name(), node.serialize(), this.nodeIndex(), this.type());
     },
 
     /**

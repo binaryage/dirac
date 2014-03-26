@@ -77,13 +77,6 @@ WebInspector.HeapSnapshotWorkerProxy.prototype = {
         this._postMessage({callId: callId, disposition: "evaluateForTest", source: script});
     },
 
-    callGetter: function(callback, objectId, getterName)
-    {
-        var callId = this._nextCallId++;
-        this._callbacks[callId] = callback;
-        this._postMessage({callId: callId, disposition: "getter", objectId: objectId, methodName: getterName});
-    },
-
     /**
      * @param {?function(...[?])} callback
      * @param {string} objectId
@@ -233,17 +226,6 @@ WebInspector.HeapSnapshotProxyObject.prototype = {
 
     /**
      * @param {function(T)|undefined} callback
-     * @param {string} getterName
-     * @return {*}
-     * @template T
-     */
-    callGetter: function(callback, getterName)
-    {
-        return this._callWorker("callGetter", Array.prototype.slice.call(arguments, 0));
-    },
-
-    /**
-     * @param {function(T)|undefined} callback
      * @param {string} methodName
      * @param {...*} var_args
      * @return {*}
@@ -252,10 +234,6 @@ WebInspector.HeapSnapshotProxyObject.prototype = {
     callMethod: function(callback, methodName, var_args)
     {
         return this._callWorker("callMethod", Array.prototype.slice.call(arguments, 0));
-    },
-
-    get worker() {
-        return this._worker;
     }
 };
 
@@ -363,21 +341,21 @@ WebInspector.HeapSnapshotProxy.prototype = {
     /**
      * @param {number} nodeIndex
      * @param {boolean} showHiddenData
-     * @return {?WebInspector.HeapSnapshotProviderProxy}
+     * @return {!WebInspector.HeapSnapshotProviderProxy}
      */
     createEdgesProvider: function(nodeIndex, showHiddenData)
     {
-        return this.callFactoryMethod(null, "createEdgesProvider", WebInspector.HeapSnapshotProviderProxy, nodeIndex, showHiddenData);
+        return /** @type {!WebInspector.HeapSnapshotProviderProxy} */ (this.callFactoryMethod(null, "createEdgesProvider", WebInspector.HeapSnapshotProviderProxy, nodeIndex, showHiddenData));
     },
 
     /**
      * @param {number} nodeIndex
      * @param {boolean} showHiddenData
-     * @return {?WebInspector.HeapSnapshotProviderProxy}
+     * @return {!WebInspector.HeapSnapshotProviderProxy}
      */
     createRetainingEdgesProvider: function(nodeIndex, showHiddenData)
     {
-        return this.callFactoryMethod(null, "createRetainingEdgesProvider", WebInspector.HeapSnapshotProviderProxy, nodeIndex, showHiddenData);
+        return /** @type {!WebInspector.HeapSnapshotProviderProxy} */ (this.callFactoryMethod(null, "createRetainingEdgesProvider", WebInspector.HeapSnapshotProviderProxy, nodeIndex, showHiddenData));
     },
 
     /**

@@ -780,10 +780,14 @@ WebInspector.HeapSnapshotView.prototype = {
             ConsoleAgent.addInspectedHeapObject(selectedNode.snapshotNodeId);
     },
 
+    /**
+     * @param {?WebInspector.HeapSnapshotGridNode} nodeItem
+     */
     _setRetainmentDataGridSource: function(nodeItem)
     {
-        if (nodeItem && nodeItem.snapshotNodeIndex)
-            this._retainmentDataGrid.setDataSource(nodeItem.isDeletedNode ? nodeItem.dataGrid.baseSnapshot : nodeItem.dataGrid.snapshot, nodeItem.snapshotNodeIndex);
+        var dataSource = nodeItem && nodeItem.retainersDataSource();
+        if (dataSource)
+            this._retainmentDataGrid.setDataSource(dataSource.snapshot, dataSource.snapshotNodeIndex);
         else
             this._retainmentDataGrid.reset();
     },

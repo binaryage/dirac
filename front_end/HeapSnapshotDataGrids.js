@@ -618,7 +618,7 @@ WebInspector.HeapSnapshotContainmentDataGrid.prototype = {
         this.snapshot = snapshot;
         var node = { nodeIndex: nodeIndex || snapshot.rootNodeIndex };
         var fakeEdge = { node: node };
-        this.setRootNode(new WebInspector.HeapSnapshotObjectNode(this, false, fakeEdge, null));
+        this.setRootNode(new WebInspector.HeapSnapshotObjectNode(this, snapshot, fakeEdge, null));
         this.rootNode().sort();
     },
 
