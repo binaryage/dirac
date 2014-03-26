@@ -714,8 +714,15 @@ WebInspector.DataGrid.prototype = {
     {
         var headerTableColumns = this._headerTableColumnGroup.children;
         var numColumns = headerTableColumns.length - 1; // Do not process corner column.
-        var left = 0;
+        var left = [];
         var previousResizer = null;
+
+        for (var i = 0; i < numColumns - 1; i++) {
+            // Get the width of the cell in the first (and only) row of the
+            // header table in order to determine the width of the column, since
+            // it is not possible to query a column for its width.
+            left[i] = (left[i-1] || 0) + this.headerTableBody.rows[0].cells[i].offsetWidth;
+        }
 
         // Make n - 1 resizers for n columns.
         for (var i = 0; i < numColumns - 1; i++) {
@@ -732,27 +739,24 @@ WebInspector.DataGrid.prototype = {
                 this.resizers[i] = resizer;
             }
 
-            // Get the width of the cell in the first (and only) row of the
-            // header table in order to determine the width of the column, since
-            // it is not possible to query a column for its width.
-            left += this.headerTableBody.rows[0].cells[i].offsetWidth;
 
             if (!this._columnsArray[i].hidden) {
                 resizer.style.removeProperty("display");
-                if (resizer._position !== left) {
-                    resizer._position = left;
-                    resizer.style.left = left + "px";
+                if (resizer._position !== left[i]) {
+                    resizer._position = left[i];
+                    resizer.style.left = left[i] + "px";
                 }
                 resizer.leftNeighboringColumnIndex = i;
                 if (previousResizer)
                     previousResizer.rightNeighboringColumnIndex = i;
                 previousResizer = resizer;
             } else {
-                if (previousResizer && previousResizer._position !== left) {
-                    previousResizer._position = left;
-                    previousResizer.style.left = left + "px";
+                if (previousResizer && previousResizer._position !== left[i]) {
+                    previousResizer._position = left[i];
+                    previousResizer.style.left = left[i] + "px";
                 }
-                resizer.style.setProperty("display", "none");
+                if (resizer.style.getPropertyValue("display") !== "none")
+                    resizer.style.setProperty("display", "none");
                 resizer.leftNeighboringColumnIndex = 0;
                 resizer.rightNeighboringColumnIndex = 0;
             }

@@ -790,13 +790,17 @@ WebInspector.endBatchUpdate = function()
     var handlers = WebInspector._postUpdateHandlers;
     delete WebInspector._postUpdateHandlers;
 
-    var keys = handlers.keys();
-    for (var i = 0; i < keys.length; ++i) {
-        var object = keys[i];
-        var methods = handlers.get(object).keys();
-        for (var j = 0; j < methods.length; ++j)
-            methods[j].call(object);
-    }
+    window.requestAnimationFrame(function() {
+        if (WebInspector._coalescingLevel)
+            return;
+        var keys = handlers.keys();
+        for (var i = 0; i < keys.length; ++i) {
+            var object = keys[i];
+            var methods = handlers.get(object).keys();
+            for (var j = 0; j < methods.length; ++j)
+                methods[j].call(object);
+        }
+    });
 }
 
 /**
@@ -806,10 +810,13 @@ WebInspector.endBatchUpdate = function()
 WebInspector.invokeOnceAfterBatchUpdate = function(object, method)
 {
     if (!WebInspector._coalescingLevel) {
-        method.call(object);
+        window.requestAnimationFrame(function() {
+            if (!WebInspector._coalescingLevel)
+                method.call(object);
+        });
         return;
     }
-    
+
     var methods = WebInspector._postUpdateHandlers.get(object);
     if (!methods) {
         methods = new Map();

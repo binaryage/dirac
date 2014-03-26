@@ -184,11 +184,6 @@ WebInspector.NetworkLogView.prototype = {
         return [this._dataGrid.scrollContainer];
     },
 
-    onResize: function()
-    {
-        this._updateOffscreenRows();
-    },
-
     _createTimelineGrid: function()
     {
         this._timelineGrid = new WebInspector.TimelineGrid();
@@ -325,7 +320,6 @@ WebInspector.NetworkLogView.prototype = {
         // Event listeners need to be added _after_ we attach to the document, so that owner document is properly update.
         this._dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sortItems, this);
         this._dataGrid.addEventListener(WebInspector.DataGrid.Events.ColumnsResized, this._updateDividersIfNeeded, this);
-        this._dataGrid.scrollContainer.addEventListener("scroll", this._updateOffscreenRows.bind(this));
 
         this._patchTimelineHeader();
     },
@@ -429,7 +423,7 @@ WebInspector.NetworkLogView.prototype = {
 
         this._dataGrid.sortNodes(sortingFunction, !this._dataGrid.isSortOrderAscending());
         this._timelineSortSelector.selectedIndex = 0;
-        this._updateOffscreenRows();
+        this._updateRows();
 
         this.searchCanceled();
 
@@ -457,7 +451,7 @@ WebInspector.NetworkLogView.prototype = {
         else
             this._timelineGrid.showEventDividers();
         this._dataGrid.markColumnAsSortedBy("timeline", WebInspector.DataGrid.Order.Ascending);
-        this._updateOffscreenRows();
+        this._updateRows();
     },
 
     _createStatusBarItems: function()
@@ -912,7 +906,6 @@ WebInspector.NetworkLogView.prototype = {
             this._timelineGrid.element.classList.remove("small");
         }
         this.dispatchEventToListeners(WebInspector.NetworkLogView.EventTypes.RowSizeChanged, { largeRows: enabled });
-        this._updateOffscreenRows();
     },
 
     _getPopoverAnchor: function(element)
@@ -1154,18 +1147,13 @@ WebInspector.NetworkLogView.prototype = {
             NetworkAgent.clearBrowserCookies();
     },
 
-    _updateOffscreenRows: function()
+    _updateRows: function()
     {
         var dataTableBody = this._dataGrid.dataTableBody;
         var rows = dataTableBody.children;
         var recordsCount = rows.length;
         if (recordsCount < 2)
             return;  // Filler row only.
-
-        var visibleTop = this._dataGrid.scrollContainer.scrollTop;
-        var visibleBottom = visibleTop + this._dataGrid.scrollContainer.offsetHeight;
-
-        var rowHeight = 0;
 
         // Filler is at recordsCount - 1.
         var unfilteredRowIndex = 0;
@@ -1178,14 +1166,6 @@ WebInspector.NetworkLogView.prototype = {
                 continue;
             }
 
-            if (!rowHeight)
-                rowHeight = row.offsetHeight;
-
-            var rowIsVisible = unfilteredRowIndex * rowHeight < visibleBottom && (unfilteredRowIndex + 1) * rowHeight > visibleTop;
-            if (rowIsVisible !== row.rowIsVisible) {
-                row.classList.toggle("offscreen", !rowIsVisible);
-                row.rowIsVisible = rowIsVisible;
-            }
             var rowIsOdd = !!(unfilteredRowIndex & 1);
             if (rowIsOdd !== row.rowIsOdd) {
                 row.classList.toggle("odd", rowIsOdd);
@@ -1403,7 +1383,7 @@ WebInspector.NetworkLogView.prototype = {
         for (var i = 0; i < nodes.length; ++i)
             this._applyFilter(nodes[i]);
         this._updateSummaryBar();
-        this._updateOffscreenRows();
+        this._updateRows();
     },
 
     jumpToPreviousSearchResult: function()
@@ -2383,8 +2363,6 @@ WebInspector.NetworkDataGridNode.prototype = {
     /** override */
     createCells: function()
     {
-        // Out of sight, out of mind: create nodes offscreen to save on render tree update times when running updateOffscreenRows()
-        this._element.classList.add("offscreen");
         this._nameCell = this._createDivInTD("name");
         this._methodCell = this._createDivInTD("method");
         this._statusCell = this._createDivInTD("status");

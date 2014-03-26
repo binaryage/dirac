@@ -291,12 +291,11 @@
     z-index: 150;
     overflow: hidden;
     text-align: center;
-    opacity: 0;
-    -webkit-transition: opacity 250ms ease-in-out;
+    visibility: hidden;
 }
 
 .network-graph-side:hover .network-graph-label {
-    opacity: 1;
+    visibility: visible;
 }
 
 .network-graph-label:empty {

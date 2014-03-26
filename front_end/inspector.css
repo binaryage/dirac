@@ -827,6 +827,7 @@ body.platform-linux .source-code {
     word-wrap: break-word;
     -webkit-user-select: text;
     border-top: 1px solid rgb(230, 230, 230);
+    -webkit-transform: translateZ(0);
 }
 
 #console-prompt {
