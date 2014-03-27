@@ -519,8 +519,6 @@ WebInspector.OverridesSupport.prototype = {
             PageAgent.clearDeviceOrientationOverride();
             return;
         }
-        if (WebInspector.OverridesSupport.isInspectingDevice())
-            return;
 
         var deviceOrientation = WebInspector.OverridesSupport.DeviceOrientation.parseSetting(WebInspector.settings.deviceOrientationOverride.get());
         PageAgent.setDeviceOrientationOverride(deviceOrientation.alpha, deviceOrientation.beta, deviceOrientation.gamma);

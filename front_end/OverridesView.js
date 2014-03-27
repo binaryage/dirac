@@ -834,8 +834,7 @@ WebInspector.OverridesView.SensorsTab = function()
     if (!WebInspector.OverridesSupport.isInspectingDevice())
         this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Emulate touch screen"), WebInspector.settings.emulateTouchEvents));
     this._appendGeolocationOverrideControl();
-    if (!WebInspector.OverridesSupport.isInspectingDevice())
-        this._apendDeviceOrientationOverrideControl();
+    this._apendDeviceOrientationOverrideControl();
 }
 
 WebInspector.OverridesView.SensorsTab.prototype = {
