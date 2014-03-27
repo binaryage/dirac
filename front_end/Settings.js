@@ -660,3 +660,80 @@ WebInspector.VersionController.prototype = {
 
 WebInspector.settings = new WebInspector.Settings();
 WebInspector.experimentsSettings = new WebInspector.ExperimentsSettings(WebInspector.queryParam("experiments") !== null);
+
+// These methods are added for backwards compatibility with Devtools CodeSchool extension.
+// DO NOT REMOVE
+
+/**
+ * @constructor
+ */
+WebInspector.PauseOnExceptionStateSetting = function()
+{
+    WebInspector.settings.pauseOnExceptionEnabled.addChangeListener(this._enabledChanged, this);
+    WebInspector.settings.pauseOnCaughtException.addChangeListener(this._pauseOnCaughtChanged, this);
+    this._name = "pauseOnExceptionStateString";
+    this._eventSupport = new WebInspector.Object();
+    this._value = this._calculateValue();
+}
+
+WebInspector.PauseOnExceptionStateSetting.prototype = {
+    /**
+     * @param {function(!WebInspector.Event)} listener
+     * @param {!Object=} thisObject
+     */
+    addChangeListener: function(listener, thisObject)
+    {
+        this._eventSupport.addEventListener(this._name, listener, thisObject);
+    },
+
+    /**
+     * @param {function(!WebInspector.Event)} listener
+     * @param {!Object=} thisObject
+     */
+    removeChangeListener: function(listener, thisObject)
+    {
+        this._eventSupport.removeEventListener(this._name, listener, thisObject);
+    },
+
+    /**
+     * @return {string}
+     */
+    get: function()
+    {
+        return this._value;
+    },
+
+    /**
+     * @return {string}
+     */
+    _calculateValue: function()
+    {
+        if (!WebInspector.settings.pauseOnExceptionEnabled.get())
+            return "none";
+        // The correct code here would be
+        //     return WebInspector.settings.pauseOnCaughtException.get() ? "all" : "uncaught";
+        // But the CodeSchool DevTools relies on the fact that we used to enable pausing on ALL extensions by default, so we trick it here.
+        return "all";
+    },
+
+    _enabledChanged: function(event)
+    {
+        this._fireChangedIfNeeded();
+    },
+
+    _pauseOnCaughtChanged: function(event)
+    {
+        this._fireChangedIfNeeded();
+    },
+
+    _fireChangedIfNeeded: function()
+    {
+        var newValue = this._calculateValue();
+        if (newValue === this._value)
+            return;
+        this._value = newValue;
+        this._eventSupport.dispatchEventToListeners(this._name, this._value);
+    }
+}
+
+WebInspector.settings.pauseOnExceptionStateString = new WebInspector.PauseOnExceptionStateSetting();

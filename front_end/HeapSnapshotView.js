@@ -863,6 +863,12 @@ WebInspector.HeapSnapshotView.prototype = {
     _onSelectedPerspectiveChanged: function(event)
     {
         this._changePerspective(event.target.selectedIndex);
+        // FIXME: This is needed by CodeSchool extension.
+        this._onSelectedViewChanged(event);
+    },
+
+    _onSelectedViewChanged: function(event)
+    {
     },
 
     _changePerspective: function(selectedIndex)

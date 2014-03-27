@@ -725,3 +725,16 @@ WebInspector.reload = function()
 new WebInspector.Main();
 
 window.DEBUG = true;
+
+// These methods are added for backwards compatibility with Devtools CodeSchool extension.
+// DO NOT REMOVE
+
+WebInspector.__defineGetter__("inspectedPageURL", function()
+{
+    return WebInspector.resourceTreeModel.inspectedPageURL();
+});
+
+WebInspector.panel = function(name)
+{
+    return WebInspector.inspectorView.panel(name);
+}
