@@ -125,6 +125,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this.messagesElement.insertBefore(this._filterStatusMessageElement, this.topGroup.element);
 
     this._updateFilterStatus();
+    WebInspector.settings.consoleTimestampsEnabled.addChangeListener(this._consoleTimestampsSettingChanged, this);
 }
 
 WebInspector.ConsoleView.prototype = {
@@ -159,6 +160,14 @@ WebInspector.ConsoleView.prototype = {
         target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextListAdded, this._executionContextListAdded.bind(this, target));
         target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextListRemoved, this._executionContextListRemoved, this);
 
+    },
+
+    _consoleTimestampsSettingChanged: function(event)
+    {
+        var enabled = /** @type {boolean} */ (event.data);
+        this._messageToViewMessage.values().forEach(function(viewMessage) {
+            viewMessage.updateTimestamp(enabled);
+        })
     },
 
     /**

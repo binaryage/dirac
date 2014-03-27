@@ -52,8 +52,6 @@ WebInspector.ConsoleViewMessage = function(target, consoleMessage, linkifier)
         "node":   this._formatParameterAsNode,
         "string": this._formatParameterAsString
     };
-
-    WebInspector.settings.consoleTimestampsEnabled.addChangeListener(this._consoleTimestampsSettingChanged, this);
 }
 
 WebInspector.ConsoleViewMessage.prototype = {
@@ -871,7 +869,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         return regexObject.test(this._formattedMessageText()) || (!!this._anchorElement && regexObject.test(this._anchorElement.textContent));
     },
 
-    _updateTimestamp: function(show)
+    updateTimestamp: function(show)
     {
         if (!this._element)
             return;
@@ -884,14 +882,10 @@ WebInspector.ConsoleViewMessage.prototype = {
             return;
         }
 
-        if (!show && this.timestampElement)
+        if (!show && this.timestampElement) {
             this.timestampElement.remove();
-    },
-
-    _consoleTimestampsSettingChanged: function(event)
-    {
-        var enabled = /** @type {boolean} */ (event.data);
-        this._updateTimestamp(enabled);
+            delete this.timestampElement;
+        }
     },
 
     /**
@@ -934,7 +928,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         if (this._repeatCount > 1)
             this._showRepeatCountElement();
 
-        this._updateTimestamp(WebInspector.settings.consoleTimestampsEnabled.get());
+        this.updateTimestamp(WebInspector.settings.consoleTimestampsEnabled.get());
 
         return element;
     },
