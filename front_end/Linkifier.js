@@ -276,3 +276,17 @@ WebInspector.Linkifier.LinkHandler.prototype = {
      */
     handleLink: function(url, lineNumber) {}
 }
+
+/**
+ * @param {string} scriptId
+ * @param {number} lineNumber
+ * @param {number=} columnNumber
+ */
+WebInspector.Linkifier.liveLocationText = function(scriptId, lineNumber, columnNumber)
+{
+    var script = WebInspector.debuggerModel.scriptForId(scriptId);
+    if (!script)
+        return "";
+    var uiLocation = script.rawLocationToUILocation(lineNumber, columnNumber);
+    return uiLocation.linkText();
+}

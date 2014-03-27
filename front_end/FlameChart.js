@@ -55,7 +55,7 @@ WebInspector.FlameChart = function(dataProvider)
     this._overviewPane = new WebInspector.FlameChart.OverviewPane(dataProvider);
     this._overviewPane.show(this.element);
 
-    this._mainPane = new WebInspector.FlameChart.MainPane(dataProvider, this._overviewPane, false, false);
+    this._mainPane = new WebInspector.FlameChart.MainPane(dataProvider, this._overviewPane, true, false);
     this._mainPane.show(this.element);
     this._mainPane.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected, this);
     this._overviewPane._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);

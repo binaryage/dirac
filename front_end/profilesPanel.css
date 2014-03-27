@@ -247,6 +247,7 @@ body.inactive .profile-launcher-view-content button.running:not(.status-bar-item
 
 .profile-entry-info {
     position: absolute;
-    top: 20px;
+    bottom: 20px;
     left: 20px;
+    height: 120px;
 }
