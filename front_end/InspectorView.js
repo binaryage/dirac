@@ -433,6 +433,32 @@ WebInspector.inspectorView;
 
 /**
  * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.InspectorView.DrawerToggleActionDelegate = function()
+{
+}
+
+WebInspector.InspectorView.DrawerToggleActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        if (WebInspector.inspectorView.drawerVisible()) {
+            WebInspector.inspectorView.closeDrawer();
+            return true;
+        }
+        if (!WebInspector.experimentsSettings.doNotOpenDrawerOnEsc.isEnabled()) {
+            WebInspector.inspectorView.showDrawer();
+            return true;
+        }
+        return false;
+    }
+}
+
+/**
+ * @constructor
  * @extends {WebInspector.VBox}
  */
 WebInspector.RootView = function()

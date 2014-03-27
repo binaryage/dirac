@@ -1221,3 +1221,20 @@ WebInspector.SourcesPanel.UILocationRevealer.prototype = {
             /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.panel("sources")).showUILocation(uiLocation);
     }
 }
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate = function() {}
+
+WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.showPanel("sources")).showGoToSourceDialog();
+        return true;
+    }
+}

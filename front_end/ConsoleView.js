@@ -1180,3 +1180,22 @@ WebInspector.ConsoleGroup.prototype = {
         }
     }
 }
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.ConsoleView.ShowConsoleActionDelegate = function()
+{
+}
+
+WebInspector.ConsoleView.ShowConsoleActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        WebInspector.console.show();
+        return true;
+    }
+}

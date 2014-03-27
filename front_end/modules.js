@@ -31,6 +31,57 @@
  */
 var allDescriptors = [
     {
+        name: "main",
+        extensions: [
+            {
+                type: "@WebInspector.ActionDelegate",
+                bindings: [
+                    {
+                        platform: "win,linux",
+                        shortcut: "F5 Ctrl+R"
+                    },
+                    {
+                        platform: "mac",
+                        shortcut: "Meta+R"
+                    }
+                ],
+                className: "WebInspector.Main.ReloadActionDelegate"
+            },
+            {
+                type: "@WebInspector.ActionDelegate",
+                bindings: [
+                    {
+                        platform: "win,linux",
+                        shortcut: "Shift+F5 Ctrl+F5 Ctrl+Shift+F5 Shift+Ctrl+R"
+                    },
+                    {
+                        platform: "mac",
+                        shortcut: "Shift+Meta+R"
+                    }
+                ],
+                className: "WebInspector.Main.HardReloadActionDelegate"
+            },
+            {
+                type: "@WebInspector.ActionDelegate",
+                bindings: [
+                    {
+                        shortcut: "Esc"
+                    }
+                ],
+                className: "WebInspector.InspectorView.DrawerToggleActionDelegate"
+            },
+            {
+                type: "@WebInspector.ActionDelegate",
+                bindings: [
+                    {
+                        shortcut: "Alt+R"
+                    }
+                ],
+                className: "WebInspector.Main.DebugReloadActionDelegate"
+            }
+        ]
+    },
+    {
         name: "elements",
         extensions: [
             {
@@ -172,6 +223,20 @@ var allDescriptors = [
                 title: "Snippets",
                 order: 3,
                 className: "WebInspector.SnippetsNavigatorView"
+            },
+            {
+                type: "@WebInspector.ActionDelegate",
+                bindings: [
+                    {
+                        platform: "mac",
+                        shortcut: "Meta+O Meta+P"
+                    },
+                    {
+                        platform: "win,linux",
+                        shortcut: "Ctrl+O Ctrl+P"
+                    }
+                ],
+                className: "WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate"
             }
         ],
         scripts: [ "SourcesPanel.js" ]
@@ -259,18 +324,41 @@ var allDescriptors = [
                 type: "@WebInspector.Revealer",
                 contextTypes: ["WebInspector.ConsoleModel"],
                 className: "WebInspector.ConsolePanel.ConsoleRevealer"
+            },
+            {
+                type: "@WebInspector.ActionDelegate",
+                bindings: [
+                    {
+                        shortcut: "Ctrl+`"
+                    }
+                ],
+                className: "WebInspector.ConsoleView.ShowConsoleActionDelegate"
             }
         ],
         scripts: [ "ConsolePanel.js" ]
     },
     {
+        name: "settings",
+        extensions: [
+            {
+                type: "@WebInspector.ActionDelegate",
+                bindings: [
+                    {
+                        shortcut: "F1 Shift+?"
+                    }
+                ],
+                className: "WebInspector.SettingsController.SettingsScreenActionDelegate"
+            }
+        ]
+    },
+    {
+        name: "extensions",
         extensions: [
             {
                 type: "@WebInspector.ExtensionServerAPI",
                 className: "WebInspector.ExtensionServer"
             }
         ],
-        name: "extensions",
         scripts: [ "ExtensionServer.js" ]
     },
     {

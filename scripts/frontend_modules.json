@@ -431,6 +431,21 @@
         ]
     },
     {
+        "name": "main",
+        "dependencies": [
+            "elements",
+            "host_stub",
+            "screencast",
+            "settings",
+            "sources",
+            "sdk",
+            "workers"
+        ],
+        "sources": [
+            "Main.js"
+        ]
+    },
+    {
         "name": "front_end",
         "standalone": true,
         "dependencies": [
@@ -455,8 +470,9 @@
             "tests",
             "profiler",
             "host_stub",
-            "screencast"
+            "screencast",
+            "main"
         ],
-        "sources": [ "Main.js" ]
+        "sources": []
     }
 ]

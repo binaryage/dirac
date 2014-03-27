@@ -104,18 +104,30 @@ WebInspector.KeyboardShortcut.Keys = {
     },
 };
 
+WebInspector.KeyboardShortcut.KeyBindings = {};
+
+(function() {
+    for (var key in WebInspector.KeyboardShortcut.Keys) {
+        var descriptor = WebInspector.KeyboardShortcut.Keys[key];
+        if (typeof descriptor === "object" && descriptor["code"]) {
+            var name = typeof descriptor["name"] === "string" ? descriptor["name"] : key;
+            WebInspector.KeyboardShortcut.KeyBindings[name] = { code: descriptor["code"] };
+        }
+    }
+})();
+
 /**
  * Creates a number encoding keyCode in the lower 8 bits and modifiers mask in the higher 8 bits.
  * It is useful for matching pressed keys.
  *
  * @param {number|string} keyCode The code of the key, or a character "a-z" which is converted to a keyCode value.
- * @param {number=} modifiers Optional list of modifiers passed as additional paramerters.
+ * @param {number=} modifiers Optional list of modifiers passed as additional parameters.
  * @return {number}
  */
 WebInspector.KeyboardShortcut.makeKey = function(keyCode, modifiers)
 {
     if (typeof keyCode === "string")
-        keyCode = keyCode.charCodeAt(0) - 32;
+        keyCode = keyCode.charCodeAt(0) - (/^[a-z]/.test(keyCode) ? 32 : 0);
     modifiers = modifiers || WebInspector.KeyboardShortcut.Modifiers.None;
     return WebInspector.KeyboardShortcut._makeKeyFromCodeAndModifiers(keyCode, modifiers);
 }
@@ -179,6 +191,29 @@ WebInspector.KeyboardShortcut.makeDescriptor = function(key, modifiers)
 }
 
 /**
+ * @param {string} shortcut
+ * @return {number}
+ */
+WebInspector.KeyboardShortcut.makeKeyFromBindingShortcut = function(shortcut)
+{
+    var parts = shortcut.split(/\+(?!$)/);
+    var modifiers = 0;
+    for (var i = 0; i < parts.length; ++i) {
+        if (typeof WebInspector.KeyboardShortcut.Modifiers[parts[i]] !== "undefined") {
+            modifiers |= WebInspector.KeyboardShortcut.Modifiers[parts[i]];
+            continue;
+        }
+        console.assert(i === parts.length - 1, "Modifiers-only shortcuts are not allowed (encountered <" + shortcut + ">)");
+        var key = WebInspector.KeyboardShortcut.Keys[parts[i]] || WebInspector.KeyboardShortcut.KeyBindings[parts[i]];
+        if (key && key.shiftKey)
+            modifiers |= WebInspector.KeyboardShortcut.Modifiers.Shift;
+        return WebInspector.KeyboardShortcut.makeKey(key ? key.code : parts[i].toLowerCase(), modifiers)
+    }
+    console.assert(false);
+    return 0;
+}
+
+/**
  * @param {string|!WebInspector.KeyboardShortcut.Key} key
  * @param {number=} modifiers
  * @return {string}
@@ -236,4 +271,100 @@ WebInspector.KeyboardShortcut._modifiersToString = function(modifiers)
     return res;
 };
 
+/**
+ * @param {!KeyboardEvent} event
+ */
+WebInspector.KeyboardShortcut.handleShortcut = function(event)
+{
+    var key = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
+    var extensions = WebInspector.KeyboardShortcut._keysToActionExtensions[key];
+    if (!extensions)
+        return;
+
+    function handler(extension)
+    {
+        var result = extension.instance().handleAction(event);
+        if (result)
+            event.consume(true);
+        delete WebInspector.KeyboardShortcut._pendingActionTimer;
+        return result;
+    }
+
+    for (var i = 0; i < extensions.length; ++i) {
+        var ident = event.keyIdentifier;
+        if (/^F\d+|Control|Shift|Alt|Meta|Win|U\+001B$/.test(ident) || event.ctrlKey || event.altKey || event.metaKey) {
+            if (handler(extensions[i]))
+                return;
+        } else {
+            WebInspector.KeyboardShortcut._pendingActionTimer = setTimeout(handler.bind(null, extensions[i]), 0);
+            break;
+        }
+    }
+}
+
 WebInspector.KeyboardShortcut.SelectAll = WebInspector.KeyboardShortcut.makeKey("a", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta);
+
+WebInspector.KeyboardShortcut._onKeyPress = function(event)
+{
+    if (!WebInspector.KeyboardShortcut._pendingActionTimer)
+        return;
+
+    var target = event.target;
+    if (WebInspector.isBeingEdited(event.target)) {
+        clearTimeout(WebInspector.KeyboardShortcut._pendingActionTimer);
+        delete WebInspector.KeyboardShortcut._pendingActionTimer;
+    }
+}
+
+WebInspector.KeyboardShortcut.registerActions = function()
+{
+    document.addEventListener("keypress", WebInspector.KeyboardShortcut._onKeyPress, true);
+    WebInspector.KeyboardShortcut._keysToActionExtensions = {};
+    var extensions = WebInspector.moduleManager.extensions(WebInspector.ActionDelegate);
+    extensions.forEach(registerBindings);
+
+    /**
+     * @param {!WebInspector.ModuleManager.Extension} extension
+     */
+    function registerBindings(extension)
+    {
+        var bindings = extension.descriptor().bindings;
+        for (var i = 0; bindings && i < bindings.length; ++i) {
+            if (!platformMatches(bindings[i].platform))
+                continue;
+            var shortcuts = bindings[i].shortcut.split(/\s+/);
+            shortcuts.forEach(registerShortcut.bind(null, extension));
+        }
+    }
+
+    /**
+     * @param {!WebInspector.ModuleManager.Extension} extension
+     * @param {string} shortcut
+     */
+    function registerShortcut(extension, shortcut)
+    {
+        var key = WebInspector.KeyboardShortcut.makeKeyFromBindingShortcut(shortcut);
+        if (!key)
+            return;
+        if (WebInspector.KeyboardShortcut._keysToActionExtensions[key])
+            WebInspector.KeyboardShortcut._keysToActionExtensions[key].push(extension);
+        else
+            WebInspector.KeyboardShortcut._keysToActionExtensions[key] = [extension];
+    }
+
+    /**
+     * @param {string=} platformsString
+     * @return {boolean}
+     */
+    function platformMatches(platformsString)
+    {
+        if (!platformsString)
+            return true;
+        var platforms = platformsString.split(",");
+        var isMatch = false;
+        var currentPlatform = WebInspector.platform();
+        for (var i = 0; !isMatch && i < platforms.length; ++i)
+            isMatch = platforms[i] === currentPlatform;
+        return isMatch;
+    }
+}

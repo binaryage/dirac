@@ -52,9 +52,9 @@ WebInspector.Main.prototype = {
     {
         var configuration;
         if (!Capabilities.isMainFrontend) {
-            configuration = ["sources", "timeline", "profiles", "console", "codemirror"];
+            configuration = ["main", "sources", "timeline", "profiles", "console", "codemirror"];
         } else {
-            configuration = ["elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "codemirror", "extensions"];
+            configuration = ["main", "elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "codemirror", "extensions", "settings"];
             if (WebInspector.experimentsSettings.layersPanel.isEnabled())
                 configuration.push("layers");
         }
@@ -335,6 +335,7 @@ WebInspector.Main.prototype = {
         WebInspector.settings.initializeBackendSettings();
 
         this._registerModules();
+        WebInspector.KeyboardShortcut.registerActions();
 
         WebInspector.panels = {};
         WebInspector.inspectorView = new WebInspector.InspectorView();
@@ -533,34 +534,6 @@ WebInspector.Main.prototype = {
         if (WebInspector.inspectElementModeController && WebInspector.inspectElementModeController.handleShortcut(event))
             return;
 
-        switch (event.keyIdentifier) {
-            case "U+004F": // O key
-            case "U+0050": // P key
-                if (!event.shiftKey && !event.altKey && WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
-                    // FIXME: Dependency violation. Introduce pluggable global shortcuts.
-                    /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.showPanel("sources")).showGoToSourceDialog();
-                    event.consume(true);
-                }
-                break;
-            case "U+0052": // R key
-                if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event)) {
-                    WebInspector.debuggerModel.skipAllPauses(true, true);
-                    WebInspector.resourceTreeModel.reloadPage(event.shiftKey);
-                    event.consume(true);
-                }
-                if (window.DEBUG && event.altKey) {
-                    WebInspector.reload();
-                    return;
-                }
-                break;
-            case "F5":
-                if (!WebInspector.isMac()) {
-                    WebInspector.resourceTreeModel.reloadPage(event.ctrlKey || event.shiftKey);
-                    event.consume(true);
-                }
-                break;
-        }
-
         var isValidZoomShortcut = WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) &&
             !event.altKey &&
             !InspectorFrontendHost.isStub;
@@ -568,25 +541,7 @@ WebInspector.Main.prototype = {
             event.consume(true);
             return;
         }
-
-        if (event.keyCode === WebInspector.KeyboardShortcut.Keys.F1.code ||
-            (event.keyCode === WebInspector.KeyboardShortcut.Keys.QuestionMark.code && event.shiftKey && (!WebInspector.isBeingEdited(event.target) || event.metaKey))) {
-            WebInspector.settingsController.showSettingsScreen(WebInspector.SettingsScreen.Tabs.General);
-            event.consume(true);
-            return;
-        }
-
-        var Esc = "U+001B";
-        var doNotOpenDrawerOnEsc = WebInspector.experimentsSettings.doNotOpenDrawerOnEsc.isEnabled();
-        if (event.keyIdentifier === Esc) {
-            if (WebInspector.inspectorView.drawerVisible())
-                WebInspector.inspectorView.closeDrawer();
-            else if (!doNotOpenDrawerOnEsc)
-                WebInspector.inspectorView.showDrawer();
-        }
-
-        if (event.keyCode === WebInspector.KeyboardShortcut.Keys.Tilde.code && event.ctrlKey && !event.shiftKey && !event.altKey && !event.metaKey)
-            WebInspector.console.show();
+        WebInspector.KeyboardShortcut.handleShortcut(event);
     },
 
     _documentCanCopy: function(event)
@@ -720,6 +675,65 @@ WebInspector.reload = function()
 {
     InspectorAgent.reset();
     window.location.reload();
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.Main.ReloadActionDelegate = function()
+{
+}
+
+WebInspector.Main.ReloadActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        WebInspector.debuggerModel.skipAllPauses(true, true);
+        WebInspector.resourceTreeModel.reloadPage(false);
+        return true;
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.Main.HardReloadActionDelegate = function()
+{
+}
+
+WebInspector.Main.HardReloadActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        WebInspector.debuggerModel.skipAllPauses(true, true);
+        WebInspector.resourceTreeModel.reloadPage(true);
+        return true;
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.Main.DebugReloadActionDelegate = function()
+{
+}
+
+WebInspector.Main.DebugReloadActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        WebInspector.reload();
+        return true;
+    }
 }
 
 new WebInspector.Main();

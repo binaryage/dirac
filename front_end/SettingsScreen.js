@@ -723,6 +723,23 @@ WebInspector.SettingsController.prototype =
 
 /**
  * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.SettingsController.SettingsScreenActionDelegate = function() { }
+
+WebInspector.SettingsController.SettingsScreenActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        WebInspector.settingsController.showSettingsScreen(WebInspector.SettingsScreen.Tabs.General);
+        return true;
+    }
+}
+
+/**
+ * @constructor
  * @extends {WebInspector.Object}
  * @param {function(!Element, string, ?string)} itemRenderer
  */

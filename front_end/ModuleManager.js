@@ -412,4 +412,19 @@ WebInspector.Revealer.prototype = {
     reveal: function(object) {}
 }
 
+/**
+ * @interface
+ */
+WebInspector.ActionDelegate = function()
+{
+}
+
+WebInspector.ActionDelegate.prototype = {
+    /**
+     * @param {!Event} event
+     * @return {boolean}
+     */
+    handleAction: function(event) {}
+}
+
 WebInspector.moduleManager = new WebInspector.ModuleManager(allDescriptors);
