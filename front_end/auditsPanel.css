@@ -92,6 +92,7 @@
     padding: 0 0 5px 0;
     margin: 0;
     display: flex;
+    flex-shrink: 0;
 }
 
 .panel-enabler-view.audit-launcher-view label.disabled {
