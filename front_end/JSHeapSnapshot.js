@@ -168,21 +168,6 @@ WebInspector.JSHeapSnapshot.prototype = {
             return null;
         }
 
-        /**
-         * @param {!WebInspector.HeapSnapshotNode} node
-         * @param {!string} name
-         * @return {?WebInspector.HeapSnapshotNode}
-         */
-        function getChildNodeByLinkName(node, name)
-        {
-            for (var iter = node.edges(); iter.hasNext(); iter.next()) {
-                var edge = iter.edge;
-                if (edge.name() === name)
-                    return edge.node();
-            }
-            return null;
-        }
-
         var visitedNodes = {};
         /**
          * @param {!WebInspector.HeapSnapshotNode} node
@@ -203,15 +188,8 @@ WebInspector.JSHeapSnapshot.prototype = {
         if (userRootsOnly) {
             for (var iter = this.rootNode().edges(); iter.hasNext(); iter.next()) {
                 var node = iter.edge.node();
-                if (node.isDocumentDOMTreesRoot())
+                if (this._isUserRoot(node))
                     doAction(node);
-                else if (node.isUserRoot()) {
-                    var nativeContextNode = getChildNodeByLinkName(node, "native_context");
-                    if (nativeContextNode)
-                        doAction(nativeContextNode);
-                    else
-                        doAction(node);
-                }
             }
         } else {
             for (var iter = gcRoots.edges(); iter.hasNext(); iter.next()) {

@@ -1303,7 +1303,7 @@ WebInspector.HeapSnapshot.prototype = {
     {
         var nodeFieldCount = this._nodeFieldCount;
         var nodeCount = this.nodeCount;
-        var distances = new Int32Array(nodeCount);
+        var distances = this._nodeDistances = new Int32Array(nodeCount);
         var noDistance = this._noDistance;
         for (var i = 0; i < nodeCount; ++i)
             distances[i] = noDistance;
@@ -1312,26 +1312,25 @@ WebInspector.HeapSnapshot.prototype = {
         var nodesToVisitLength = 0;
 
         /**
+         * @param {number} distance
          * @param {!WebInspector.HeapSnapshotNode} node
          */
-        function enqueueNode(node)
+        function enqueueNode(distance, node)
         {
             var ordinal = node._ordinal();
             if (distances[ordinal] !== noDistance)
                 return;
-            distances[ordinal] = 0;
+            distances[ordinal] = distance;
             nodesToVisit[nodesToVisitLength++] = node.nodeIndex;
         }
 
-        this.forEachRoot(enqueueNode, true);
+        this.forEachRoot(enqueueNode.bind(null, 1), true);
         this._bfs(nodesToVisit, nodesToVisitLength, distances);
 
         // bfs for the rest of objects
         nodesToVisitLength = 0;
-        this.forEachRoot(enqueueNode);
+        this.forEachRoot(enqueueNode.bind(null, 0), false);
         this._bfs(nodesToVisit, nodesToVisitLength, distances);
-
-        this._nodeDistances = distances;
     },
 
     /**
