@@ -1070,8 +1070,8 @@ WebInspector.SourcesPanel.prototype = {
  */
 WebInspector.UpgradeFileSystemDropTarget = function(element)
 {
-    element.addEventListener("dragenter", this._onDragEnter.bind(this), false);
-    element.addEventListener("dragover", this._onDragOver.bind(this), false);
+    element.addEventListener("dragenter", this._onDragEnter.bind(this), true);
+    element.addEventListener("dragover", this._onDragOver.bind(this), true);
     this._element = element;
 }
 
@@ -1089,13 +1089,14 @@ WebInspector.UpgradeFileSystemDropTarget.prototype = {
     {
         if (event.dataTransfer.types.indexOf(WebInspector.UpgradeFileSystemDropTarget.dragAndDropFilesType) === -1)
             return;
+        event.dataTransfer.dropEffect = "copy";
         event.consume(true);
         if (this._dragMaskElement)
             return;
         this._dragMaskElement = this._element.createChild("div", "fill drag-mask");
         this._dragMaskElement.createChild("div", "fill drag-mask-inner").textContent = WebInspector.UIString("Drop workspace folder here");
-        this._dragMaskElement.addEventListener("drop", this._onDrop.bind(this), false);
-        this._dragMaskElement.addEventListener("dragleave", this._onDragLeave.bind(this), false);
+        this._dragMaskElement.addEventListener("drop", this._onDrop.bind(this), true);
+        this._dragMaskElement.addEventListener("dragleave", this._onDragLeave.bind(this), true);
     },
 
     _onDrop: function (event)

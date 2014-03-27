@@ -33,8 +33,8 @@ input[type="text"]:focus {
 }
 
 input[type="checkbox"] {
-    height: 13px;
-    width: 13px;
+    height: 12px;
+    width: 12px;
     margin: auto 3px;
     flex-shrink: 0;
 }
@@ -97,14 +97,14 @@ fieldset[disabled] label:hover input {
 
 .toolbar-background {
     background-image: linear-gradient(to bottom, rgb(191, 191, 191), rgb(151, 151, 151));
-    padding: 1px 0 0 1px;
-    border-bottom: 1px solid rgb(80, 80, 80);
+    padding-left: 1px;
+    border-bottom: 1px solid rgb(64%, 64%, 64%);
     background-origin: padding-box;
     background-clip: padding-box;
 }
 
 .toolbar {
-    flex: 0 0 25px;
+    flex: 0 0 24px;
     display: flex;
     flex-direction: row;
     position: relative;
@@ -143,7 +143,6 @@ select {
 
 body.inactive .toolbar-background {
     background-image: linear-gradient(to bottom, rgb(233, 233, 233), rgb(207, 207, 207));
-    border-bottom: 1px solid rgb(64%, 64%, 64%);
 }
 
 body.dock-to-bottom .toolbar-background {
@@ -1480,7 +1479,7 @@ iframe.panel.extension {
 }
 
 .section > .header {
-    padding: 0 8px 0 5px;
+    padding: 0px 8px 0 5px;
     min-height: 18px;
     white-space: nowrap;
     background-origin: padding-box;
@@ -1780,8 +1779,8 @@ li.editing-sub-part .delete-button {
 .swatch {
     margin-left: 1px;
     margin-right: 2px;
-    width: 1em;
-    height: 1em;
+    width: 10px;
+    height: 10px;
     position: relative;
     top: 1px;
     display: inline-block;

@@ -75,7 +75,6 @@
     border: 1px solid transparent;
     border-bottom: none;
     line-height: 15px;
-    
     white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;

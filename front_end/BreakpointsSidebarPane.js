@@ -527,6 +527,7 @@ WebInspector.EventListenerBreakpointsSidebarPane = function()
     this._createCategory(WebInspector.UIString("Clipboard"), true, ["copy", "cut", "paste", "beforecopy", "beforecut", "beforepaste"]);
     this._createCategory(WebInspector.UIString("DOM Mutation"), true, ["DOMActivate", "DOMFocusIn", "DOMFocusOut", "DOMAttrModified", "DOMCharacterDataModified", "DOMNodeInserted", "DOMNodeInsertedIntoDocument", "DOMNodeRemoved", "DOMNodeRemovedFromDocument", "DOMSubtreeModified", "DOMContentLoaded"]);
     this._createCategory(WebInspector.UIString("Device"), true, ["deviceorientation", "devicemotion"]);
+    this._createCategory(WebInspector.UIString("Drag / drop"), true, ["dragenter", "dragover", "dragleave", "drop"]);
     this._createCategory(WebInspector.UIString("Keyboard"), true, ["keydown", "keyup", "keypress", "input"]);
     this._createCategory(WebInspector.UIString("Load"), true, ["load", "beforeunload", "unload", "abort", "error", "hashchange", "popstate"]);
     this._createCategory(WebInspector.UIString("Mouse"), true, ["click", "dblclick", "mousedown", "mouseup", "mouseover", "mousemove", "mouseout", "mousewheel", "wheel"]);

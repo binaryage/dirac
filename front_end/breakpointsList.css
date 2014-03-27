@@ -96,6 +96,11 @@ li.breakpoint-hit .breakpoint-hit-marker {
     z-index: -1;
 }
 
+.event-listener-breakpoints.properties-tree li {
+    height: 16px;
+    padding-top: 3px;
+}
+
 .event-listener-breakpoints.properties-tree .children li {
     margin-left: 12px;
     height: 16px;
@@ -103,8 +108,7 @@ li.breakpoint-hit .breakpoint-hit-marker {
 
 .event-listener-breakpoints .checkbox-elem {
     float: left;
-    top: -2px;
     position: relative;
-    left: -1px;
+    top: 1px;
     font-size: 10px;
 }

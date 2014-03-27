@@ -92,7 +92,7 @@
 .split-view button.left-sidebar-show-hide-button,
 .split-view button.top-sidebar-show-hide-button {
     top: 4px;
-    left: 2px;
+    left: 4px;
 }
 
 .split-view button.left-sidebar-show-hide-button:active,
@@ -112,7 +112,7 @@
 }
 
 .split-view button.bottom-sidebar-show-hide-button {
-    bottom: 1px;
+    bottom: 0px;
     right: 1px;
 }
 

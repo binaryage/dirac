@@ -70,6 +70,7 @@
 .scripts-debug-toolbar-drawer > label {
     display: flex;
     padding-left: 3px;
+    border-top: 1px solid rgb(196,196,196);
 }
 
 #scripts-editor-toolbar {
@@ -129,7 +130,7 @@
 }
 
 .panel.sources #sources-editor-container-tabbed-pane .tabbed-pane-header-contents {
-    margin-left: 20px;
+    margin-left: 22px;
     margin-right: 36px;
 }
 
@@ -140,8 +141,10 @@
 .panel.sources .split-view #scripts-debug-sidebar-resizer-widget.ns-resizer-widget {
     -webkit-transform: rotate(90deg);
     right: 17px;
-    bottom: 0;
+    bottom: 4px;
     top: auto;
+    height: 10px;
+    width: 18px;
 }
 
 .panel.sources .split-view.hbox #scripts-debug-sidebar-resizer-widget {
@@ -154,6 +157,8 @@
 
 .panel.sources button.status-bar-item.scripts-navigator-show-hide-button {
     display: block;
+    top: 4px;
+    left: 4px;
 }
 
 .panel.sources .navigator-tabbed-pane .tabbed-pane-header {
