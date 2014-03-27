@@ -263,6 +263,10 @@ body.undocked.platform-mac.inactive .toolbar-background {
     outline: none;
 }
 
+#search-input-field {
+    height: 18px;
+}
+
 .toolbar-search {
     border-spacing: 1px;
 }
