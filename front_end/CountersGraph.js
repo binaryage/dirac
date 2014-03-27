@@ -278,17 +278,9 @@ WebInspector.CountersGraph.prototype = {
         if (!values.length)
             return;
 
-        var maxValue;
-        var minValue;
-        for (var i = counter._minimumIndex; i <= counter._maximumIndex; i++) {
-            var value = values[i];
-            if (minValue === undefined || value < minValue)
-                minValue = value;
-            if (maxValue === undefined || value > maxValue)
-                maxValue = value;
-        }
-        minValue = minValue || 0;
-        maxValue = maxValue || 1;
+        var bounds = counter._calculateBounds();
+        var minValue = bounds.min;
+        var maxValue = bounds.max;
 
         counterUI.setRange(minValue, maxValue);
 
@@ -321,6 +313,13 @@ WebInspector.CountersGraph.prototype = {
         ctx.lineWidth = 1;
         ctx.strokeStyle = counterUI.graphColor;
         ctx.stroke();
+        if (counter._limitValue) {
+            var limitLineY = Math.round(originY + height - (counter._limitValue - minValue) * yFactor);
+            ctx.moveTo(0, limitLineY);
+            ctx.lineTo(width, limitLineY);
+            ctx.strokeStyle = counterUI.limitColor;
+            ctx.stroke();
+        }
         ctx.closePath();
         ctx.restore();
     },
@@ -354,6 +353,38 @@ WebInspector.CountersGraph.Counter.prototype = {
     {
         this.times = [];
         this.values = [];
+    },
+
+    /**
+     * @param {number} value
+     */
+    setLimit: function(value)
+    {
+        this._limitValue = value;
+    },
+
+    /**
+     * @return {!{min: number, max: number}}
+     */
+    _calculateBounds: function()
+    {
+        var maxValue;
+        var minValue;
+        for (var i = this._minimumIndex; i <= this._maximumIndex; i++) {
+            var value = this.values[i];
+            if (minValue === undefined || value < minValue)
+                minValue = value;
+            if (maxValue === undefined || value > maxValue)
+                maxValue = value;
+        }
+        minValue = minValue || 0;
+        maxValue = maxValue || 1;
+        if (this._limitValue) {
+            if (maxValue > this._limitValue * 0.5)
+                maxValue = Math.max(maxValue, this._limitValue);
+            minValue = Math.min(minValue, this._limitValue);
+        }
+        return { min: minValue, max: maxValue };
     },
 
     /**
@@ -415,7 +446,7 @@ WebInspector.CountersGraph.CounterUI = function(memoryCountersPane, title, curre
     this._value = memoryCountersPane._currentValuesBar.createChild("span", "memory-counter-value");
     this._value.style.color = graphColor;
     this.graphColor = graphColor;
-    this.strokeColor = graphColor;
+    this.limitColor = WebInspector.Color.parse(graphColor).setAlpha(0.3).toString(WebInspector.Color.Format.RGBA);
     this.graphYValues = [];
 
     this._currentValueLabel = currentValueLabel;
