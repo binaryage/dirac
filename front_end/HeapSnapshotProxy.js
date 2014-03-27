@@ -216,7 +216,7 @@ WebInspector.HeapSnapshotProxyObject.prototype = {
      * @param {string} methodName
      * @param {function (new:T, ...[?])} proxyConstructor
      * @param {...*} var_args
-     * @return {?WebInspector.HeapSnapshotProviderProxy}
+     * @return {!T}
      * @template T
      */
     callFactoryMethod: function(callback, methodName, proxyConstructor, var_args)
@@ -274,7 +274,8 @@ WebInspector.HeapSnapshotLoaderProxy.prototype = {
         {
             if (callback)
                 callback();
-            this.callFactoryMethod(updateStaticData.bind(this), "buildSnapshot", WebInspector.HeapSnapshotProxy);
+            var showHiddenData = WebInspector.settings.showAdvancedHeapSnapshotProperties.get();
+            this.callFactoryMethod(updateStaticData.bind(this), "buildSnapshot", WebInspector.HeapSnapshotProxy, showHiddenData);
         }
 
         /**
@@ -340,22 +341,20 @@ WebInspector.HeapSnapshotProxy.prototype = {
 
     /**
      * @param {number} nodeIndex
-     * @param {boolean} showHiddenData
      * @return {!WebInspector.HeapSnapshotProviderProxy}
      */
-    createEdgesProvider: function(nodeIndex, showHiddenData)
+    createEdgesProvider: function(nodeIndex)
     {
-        return /** @type {!WebInspector.HeapSnapshotProviderProxy} */ (this.callFactoryMethod(null, "createEdgesProvider", WebInspector.HeapSnapshotProviderProxy, nodeIndex, showHiddenData));
+        return this.callFactoryMethod(null, "createEdgesProvider", WebInspector.HeapSnapshotProviderProxy, nodeIndex);
     },
 
     /**
      * @param {number} nodeIndex
-     * @param {boolean} showHiddenData
      * @return {!WebInspector.HeapSnapshotProviderProxy}
      */
-    createRetainingEdgesProvider: function(nodeIndex, showHiddenData)
+    createRetainingEdgesProvider: function(nodeIndex)
     {
-        return /** @type {!WebInspector.HeapSnapshotProviderProxy} */ (this.callFactoryMethod(null, "createRetainingEdgesProvider", WebInspector.HeapSnapshotProviderProxy, nodeIndex, showHiddenData));
+        return this.callFactoryMethod(null, "createRetainingEdgesProvider", WebInspector.HeapSnapshotProviderProxy, nodeIndex);
     },
 
     /**

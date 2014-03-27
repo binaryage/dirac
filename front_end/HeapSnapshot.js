@@ -860,9 +860,10 @@ WebInspector.HeapSnapshotProgress.prototype = {
 
 /**
  * @param {!WebInspector.HeapSnapshotProgress} progress
+ * @param {boolean} showHiddenData
  * @constructor
  */
-WebInspector.HeapSnapshot = function(profile, progress)
+WebInspector.HeapSnapshot = function(profile, progress, showHiddenData)
 {
     this._nodes = profile.nodes;
     this._containmentEdges = profile.edges;
@@ -880,6 +881,7 @@ WebInspector.HeapSnapshot = function(profile, progress)
     this._aggregatesForDiff = null;
     this._aggregates = {};
     this._aggregatesSortedFlags = {};
+    this._showHiddenData = showHiddenData;
 
     this._init();
 
@@ -1917,23 +1919,14 @@ WebInspector.HeapSnapshot.prototype = {
         return result;
     },
 
-    _parseFilter: function(filter)
-    {
-        if (!filter)
-            return null;
-        var parsedFilter = eval("(function(){return " + filter + "})()");
-        return parsedFilter.bind(this);
-    },
-
     /**
      * @param {number} nodeIndex
-     * @param {boolean} showHiddenData
      * @return {!WebInspector.HeapSnapshotEdgesProvider}
      */
-    createEdgesProvider: function(nodeIndex, showHiddenData)
+    createEdgesProvider: function(nodeIndex)
     {
         var node = this.createNode(nodeIndex);
-        var filter = this.containmentEdgesFilter(showHiddenData);
+        var filter = this.containmentEdgesFilter();
         var indexProvider = new WebInspector.HeapSnapshotEdgeIndexProvider(this);
         return new WebInspector.HeapSnapshotEdgesProvider(this, filter, node.edges(), indexProvider);
     },
@@ -1950,32 +1943,29 @@ WebInspector.HeapSnapshot.prototype = {
     },
 
     /**
-     * @param {boolean} showHiddenData
      * @return {?function(!WebInspector.HeapSnapshotEdge):boolean}
      */
-    retainingEdgesFilter: function(showHiddenData)
+    retainingEdgesFilter: function()
     {
         return null;
     },
 
     /**
-     * @param {boolean} showHiddenData
      * @return {?function(!WebInspector.HeapSnapshotEdge):boolean}
      */
-    containmentEdgesFilter: function(showHiddenData)
+    containmentEdgesFilter: function()
     {
         return null;
     },
 
     /**
      * @param {number} nodeIndex
-     * @param {boolean} showHiddenData
      * @return {!WebInspector.HeapSnapshotEdgesProvider}
      */
-    createRetainingEdgesProvider: function(nodeIndex, showHiddenData)
+    createRetainingEdgesProvider: function(nodeIndex)
     {
         var node = this.createNode(nodeIndex);
-        var filter = this.retainingEdgesFilter(showHiddenData);
+        var filter = this.retainingEdgesFilter();
         var indexProvider = new WebInspector.HeapSnapshotRetainerEdgeIndexProvider(this);
         return new WebInspector.HeapSnapshotEdgesProvider(this, filter, node.retainers(), indexProvider);
     },

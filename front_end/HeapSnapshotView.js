@@ -883,9 +883,9 @@ WebInspector.HeapSnapshotView.prototype = {
 
         this._currentPerspective.deactivate(this);
         var perspective = this._perspectives[selectedIndex];
-        perspective.activate(this);
         this._currentPerspective = perspective;
         this._dataGrid = perspective.masterGrid(this);
+        perspective.activate(this);
 
         this.refreshVisibleData();
         if (this._dataGrid) {

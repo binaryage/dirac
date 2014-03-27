@@ -31,9 +31,10 @@
 /**
  * @constructor
  * @param {!WebInspector.HeapSnapshotProgress} progress
+ * @param {boolean} showHiddenData
  * @extends {WebInspector.HeapSnapshot}
  */
-WebInspector.JSHeapSnapshot = function(profile, progress)
+WebInspector.JSHeapSnapshot = function(profile, progress, showHiddenData)
 {
     this._nodeFlags = { // bit flags
         canBeQueried: 1,
@@ -44,7 +45,7 @@ WebInspector.JSHeapSnapshot = function(profile, progress)
         visitedMarker:     0x10000  // bits: 1,0000,0000,0000,0000
     };
     this._lazyStringCache = { };
-    WebInspector.HeapSnapshot.call(this, profile, progress);
+    WebInspector.HeapSnapshot.call(this, profile, progress, showHiddenData);
 }
 
 WebInspector.JSHeapSnapshot.prototype = {
@@ -78,23 +79,28 @@ WebInspector.JSHeapSnapshot.prototype = {
     },
 
     /**
-     * @return {function(!WebInspector.JSHeapSnapshotNode):boolean}
+     * @override
+     * @return {?function(!WebInspector.JSHeapSnapshotNode):boolean}
      */
     classNodesFilter: function()
     {
+        /**
+         * @param {!WebInspector.JSHeapSnapshotNode} node
+         * @return {boolean}
+         */
         function filter(node)
         {
             return node.isUserObject();
         }
-        return filter;
+        return this._showHiddenData ? null : filter;
     },
 
     /**
-     * @param {boolean} showHiddenData
      * @return {function(!WebInspector.HeapSnapshotEdge):boolean}
      */
-    containmentEdgesFilter: function(showHiddenData)
+    containmentEdgesFilter: function()
     {
+        var showHiddenData = this._showHiddenData;
         function filter(edge) {
             if (edge.isInvisible())
                 return false;
@@ -106,12 +112,11 @@ WebInspector.JSHeapSnapshot.prototype = {
     },
 
     /**
-     * @param {boolean} showHiddenData
      * @return {function(!WebInspector.HeapSnapshotEdge):boolean}
      */
-    retainingEdgesFilter: function(showHiddenData)
+    retainingEdgesFilter: function()
     {
-        var containmentEdgesFilter = this.containmentEdgesFilter(showHiddenData);
+        var containmentEdgesFilter = this.containmentEdgesFilter();
         function filter(edge)
         {
             return containmentEdgesFilter(edge) && !edge.node().isRoot() && !edge.isWeak();
@@ -221,11 +226,11 @@ WebInspector.JSHeapSnapshot.prototype = {
     },
 
     /**
-     * @return {!{map: !Uint32Array, flag: number}}
+     * @return {?{map: !Uint32Array, flag: number}}
      */
     userObjectsMapAndFlag: function()
     {
-        return {
+        return this._showHiddenData ? null : {
             map: this._flags,
             flag: this._nodeFlags.pageObject
         };

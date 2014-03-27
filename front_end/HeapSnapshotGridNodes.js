@@ -708,11 +708,10 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
     createProvider: function()
     {
         var tree = this._dataGrid;
-        var showHiddenData = WebInspector.settings.showAdvancedHeapSnapshotProperties.get();
         if (this.showRetainingEdges)
-            return this._snapshot.createRetainingEdgesProvider(this.snapshotNodeIndex, showHiddenData);
+            return this._snapshot.createRetainingEdgesProvider(this.snapshotNodeIndex);
         else
-            return this._snapshot.createEdgesProvider(this.snapshotNodeIndex, showHiddenData);
+            return this._snapshot.createEdgesProvider(this.snapshotNodeIndex);
     },
 
     _findAncestorWithSameSnapshotNodeId: function()
@@ -841,10 +840,7 @@ WebInspector.HeapSnapshotInstanceNode.prototype = {
      */
     createProvider: function()
     {
-        var showHiddenData = WebInspector.settings.showAdvancedHeapSnapshotProperties.get();
-        return this._baseSnapshotOrSnapshot.createEdgesProvider(
-            this.snapshotNodeIndex,
-            showHiddenData);
+        return this._baseSnapshotOrSnapshot.createEdgesProvider(this.snapshotNodeIndex);
     },
 
     _createChildNode: function(item)
