@@ -387,7 +387,7 @@ WebInspector.CPUProfileView.prototype = {
         if (this._flameChart)
             return;
         this._dataProvider = new WebInspector.CPUFlameChartDataProvider(this);
-        this._flameChart = new WebInspector.FlameChart(this._dataProvider);
+        this._flameChart = new WebInspector.CPUProfileFlameChart(this._dataProvider);
         this._flameChart.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected.bind(this));
     },
 
@@ -1031,12 +1031,12 @@ WebInspector.CPUProfileHeader.prototype = {
 }
 
 /**
- * @return {!WebInspector.FlameChart.ColorGenerator}
+ * @return {!WebInspector.CPUProfileFlameChart.ColorGenerator}
  */
 WebInspector.CPUProfileView.colorGenerator = function()
 {
     if (!WebInspector.CPUProfileView._colorGenerator) {
-        var colorGenerator = new WebInspector.FlameChart.ColorGenerator();
+        var colorGenerator = new WebInspector.CPUProfileFlameChart.ColorGenerator();
         colorGenerator.colorForID("(idle)::0", 50);
         colorGenerator.colorForID("(program)::0", 50);
         colorGenerator.colorForID("(garbage collector)::0", 50);

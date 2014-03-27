@@ -326,6 +326,7 @@
         ],
         'devtools_profiles_js_files': [
             'front_end/BottomUpProfileDataGridTree.js',
+            'front_end/CPUProfileFlameChart.js',
             'front_end/CPUProfileView.js',
             'front_end/HeapSnapshotCommon.js',
             'front_end/HeapSnapshotDataGrids.js',

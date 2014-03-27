@@ -380,6 +380,7 @@
         "dependencies": ["components"],
         "sources": [
             "BottomUpProfileDataGridTree.js",
+            "CPUProfileFlameChart.js",
             "CPUProfileView.js",
             "HeapSnapshotCommon.js",
             "HeapSnapshotDataGrids.js",
