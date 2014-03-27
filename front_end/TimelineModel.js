@@ -213,23 +213,25 @@ WebInspector.TimelineModel.prototype = {
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordFilterChanged);
     },
 
-    /**
-     * @param {boolean=} includeCounters
-     */
-    startRecording: function(includeCounters)
+    startRecording: function()
     {
         this._clientInitiatedRecording = true;
         this.reset();
         var maxStackFrames = WebInspector.settings.timelineCaptureStacks.get() ? 30 : 0;
-        var bufferEvents = WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled() && !WebInspector.settings.timelineLiveUpdate.get();
+        this._bufferEvents = WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled() && !WebInspector.settings.timelineLiveUpdate.get();
         var includeGPUEvents = WebInspector.experimentsSettings.gpuTimeline.isEnabled();
-        WebInspector.timelineManager.start(maxStackFrames, bufferEvents, includeCounters, includeGPUEvents, this._fireRecordingStarted.bind(this));
+        var liveEvents = [ WebInspector.TimelineModel.RecordType.BeginFrame,
+                           WebInspector.TimelineModel.RecordType.DrawFrame,
+                           WebInspector.TimelineModel.RecordType.RequestMainThreadFrame,
+                           WebInspector.TimelineModel.RecordType.ActivateLayerTree ];
+        var includeCounters = true;
+        WebInspector.timelineManager.start(maxStackFrames, this._bufferEvents, liveEvents.join(","), includeCounters, includeGPUEvents, this._fireRecordingStarted.bind(this));
     },
 
     stopRecording: function()
     {
         if (!this._clientInitiatedRecording) {
-            WebInspector.timelineManager.start(undefined, undefined, undefined, undefined, stopTimeline.bind(this));
+            WebInspector.timelineManager.start(undefined, undefined, undefined, undefined, undefined, stopTimeline.bind(this));
             return;
         }
 
@@ -298,10 +300,22 @@ WebInspector.TimelineModel.prototype = {
      */
     _fireRecordingStopped: function(error, events)
     {
+        this._bufferEvents = false;
         this._collectionEnabled = false;
-        for (var i = 0; events && i < events.length; ++i)
-            this._addRecord(events[i]);
+        if (events && events.length) {
+            this.reset();
+            for (var i = 0; i < events.length; ++i)
+                this._addRecord(events[i]);
+        }
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStopped);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    bufferEvents: function()
+    {
+        return this._bufferEvents;
     },
 
     /**

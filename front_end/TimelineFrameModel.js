@@ -110,7 +110,11 @@ WebInspector.TimelineFrameModel.prototype = {
                 this._aggregatedMainThreadWork = {};
         }
 
-        var records = this._mergingBuffer.process(record.thread, programRecord ? record.children || [] : [record]);
+        var records;
+        if (this._model.bufferEvents())
+            records = [record];
+        else
+            records = this._mergingBuffer.process(record.thread, programRecord ? record.children || [] : [record]);
         for (var i = 0; i < records.length; ++i) {
             if (records[i].thread)
                 this._addBackgroundRecord(records[i]);

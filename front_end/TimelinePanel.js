@@ -561,7 +561,7 @@ WebInspector.TimelinePanel.prototype = {
     _startRecording: function(userInitiated)
     {
         this._userInitiatedRecording = userInitiated;
-        this._model.startRecording(true);
+        this._model.startRecording();
         for (var mode in WebInspector.TimelinePanel.Mode)
             this._viewsForMode(mode).overviewView.timelineStarted();
 

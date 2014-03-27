@@ -2773,6 +2773,7 @@
                 "parameters": [
                     { "name": "maxCallStackDepth", "optional": true, "type": "integer", "description": "Samples JavaScript stack traces up to <code>maxCallStackDepth</code>, defaults to 5." },
                     { "name": "bufferEvents", "optional": true, "type": "boolean", "hidden": true, "description": "Whether instrumentation events should be buffered and returned upon <code>stop</code> call." },
+                    { "name": "liveEvents", "optional": true, "type": "string", "hidden": true, "description": "Coma separated event types to issue although bufferEvents is set."},
                     { "name": "includeCounters", "optional": true, "type": "boolean", "hidden": true, "description": "Whether counters data should be included into timeline events." },
                     { "name": "includeGPUEvents", "optional": true, "type": "boolean", "hidden": true, "description": "Whether events from GPU process should be collected." }
                 ],
