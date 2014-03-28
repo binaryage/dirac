@@ -37,7 +37,7 @@ var allDescriptors = [
                 type: "@WebInspector.ActionDelegate",
                 bindings: [
                     {
-                        platform: "win,linux",
+                        platform: "windows,linux",
                         shortcut: "F5 Ctrl+R"
                     },
                     {
@@ -51,7 +51,7 @@ var allDescriptors = [
                 type: "@WebInspector.ActionDelegate",
                 bindings: [
                     {
-                        platform: "win,linux",
+                        platform: "windows,linux",
                         shortcut: "Shift+F5 Ctrl+F5 Ctrl+Shift+F5 Shift+Ctrl+R"
                     },
                     {
@@ -232,7 +232,7 @@ var allDescriptors = [
                         shortcut: "Meta+O Meta+P"
                     },
                     {
-                        platform: "win,linux",
+                        platform: "windows,linux",
                         shortcut: "Ctrl+O Ctrl+P"
                     }
                 ],
