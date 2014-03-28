@@ -333,13 +333,13 @@ WebInspector.CPUProfileFlameChart.OverviewPane.calculateDrawData = function(data
  */
 WebInspector.CPUProfileFlameChart.OverviewPane.drawOverviewCanvas = function(dataProvider, timelineData, context, width, height)
 {
-    var drawData = WebInspector.CPUProfileFlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, width);
-    if (!drawData)
-        return;
-
     var ratio = window.devicePixelRatio;
     var canvasWidth = width * ratio;
     var canvasHeight = height * ratio;
+
+    var drawData = WebInspector.CPUProfileFlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, canvasWidth);
+    if (!drawData)
+        return;
 
     var yScaleFactor = canvasHeight / (dataProvider.maxStackDepth() * 1.1);
     context.lineWidth = 1;
@@ -347,12 +347,11 @@ WebInspector.CPUProfileFlameChart.OverviewPane.drawOverviewCanvas = function(dat
     context.strokeStyle = "rgba(20,0,0,0.4)";
     context.fillStyle = "rgba(214,225,254,0.8)";
     context.moveTo(-1, canvasHeight - 1);
-    if (drawData)
-      context.lineTo(-1, Math.round(height - drawData[0] * yScaleFactor - 1));
+    context.lineTo(-1, Math.round(canvasHeight - drawData[0] * yScaleFactor - 1));
     var value;
-    for (var x = 0; x < width; ++x) {
+    for (var x = 0; x < canvasWidth; ++x) {
         value = Math.round(canvasHeight - drawData[x] * yScaleFactor - 1);
-        context.lineTo(x * ratio, value);
+        context.lineTo(x, value);
     }
     context.lineTo(canvasWidth + 1, value);
     context.lineTo(canvasWidth + 1, canvasHeight - 1);
