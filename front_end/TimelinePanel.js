@@ -232,29 +232,6 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @return {!WebInspector.TimelinePanel.Mode}
-     */
-    _availableModes: function()
-    {
-        if (this._modes)
-            return this._modes;
-
-        this._modes = {
-            Events: WebInspector.TimelinePanel.Mode.Events,
-            Frames: WebInspector.TimelinePanel.Mode.Frames,
-            Memory: WebInspector.TimelinePanel.Mode.Memory,
-        };
-
-        if (WebInspector.experimentsSettings.timelineFlameChart.isEnabled())
-            this._modes.FlameChart = WebInspector.TimelinePanel.Mode.FlameChart;
-
-        if (Capabilities.canProfilePower)
-            this._modes.Power = WebInspector.TimelinePanel.Mode.Power;
-
-        return this._modes;
-    },
-
-    /**
      * @return {!WebInspector.TimelineView}
      */
     _timelineView: function()
@@ -317,7 +294,10 @@ WebInspector.TimelinePanel.prototype = {
         var topPaneSidebarTree = new TreeOutline(overviewTreeElement);
 
         this._overviewItems = {};
-        for (var mode in this._availableModes()) {
+        for (var mode in WebInspector.TimelinePanel.Mode) {
+            if (mode === WebInspector.TimelinePanel.Mode.FlameChart && !WebInspector.experimentsSettings.timelineFlameChart.isEnabled() ||
+                mode === WebInspector.TimelinePanel.Mode.Power && !Capabilities.canProfilePower)
+                continue;
             this._overviewItems[mode] = new WebInspector.SidebarTreeElement("timeline-overview-sidebar-" + mode.toLowerCase(), WebInspector.UIString(mode));
             var item = this._overviewItems[mode];
             item.onselect = this._onModeChanged.bind(this, mode);
@@ -578,7 +558,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._userInitiatedRecording = userInitiated;
         this._model.startRecording();
-        for (var mode in this._availableModes())
+        for (var mode in WebInspector.TimelinePanel.Mode)
             this._viewsForMode(mode).overviewView.timelineStarted();
 
         if (userInitiated)
@@ -589,7 +569,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._userInitiatedRecording = false;
         this._model.stopRecording();
-        for (var mode in this._availableModes())
+        for (var mode in WebInspector.TimelinePanel.Mode)
             this._viewsForMode(mode).overviewView.timelineStopped();
     },
 
