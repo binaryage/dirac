@@ -80,6 +80,9 @@ WebInspector.SourcesView = function(workspace, sourcesPanel)
             WebInspector.panels.sources.showUISourceCode(unsavedSourceCodes[i]);
     }
     window.addEventListener("beforeunload", handleBeforeUnload, true);
+
+    this._shortcuts = {};
+    this.element.addEventListener("keydown", this._handleKeyDown.bind(this), false);
 }
 
 WebInspector.SourcesView.Events = {
@@ -93,12 +96,42 @@ WebInspector.SourcesView.prototype = {
      */
     registerShortcuts: function(registerShortcutDelegate)
     {
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToPreviousLocation, this._onJumpToPreviousLocation.bind(this));
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToNextLocation, this._onJumpToNextLocation.bind(this));
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.CloseEditorTab, this._onCloseEditorTab.bind(this));
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToLine, this._showGoToLineDialog.bind(this));
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToMember, this._showOutlineDialog.bind(this));
-        registerShortcutDelegate(WebInspector.ShortcutsScreen.SourcesPanelShortcuts.ToggleBreakpoint, this._toggleBreakpoint.bind(this));
+        /**
+         * @this {WebInspector.SourcesView}
+         * @param {!Array.<!WebInspector.KeyboardShortcut.Descriptor>} shortcuts
+         * @param {function(?Event=):boolean} handler
+         */
+        function registerShortcut(shortcuts, handler)
+        {
+            registerShortcutDelegate(shortcuts, handler);
+            this._registerShortcuts(shortcuts, handler);
+        }
+
+        registerShortcut.call(this, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToPreviousLocation, this._onJumpToPreviousLocation.bind(this));
+        registerShortcut.call(this, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.JumpToNextLocation, this._onJumpToNextLocation.bind(this));
+        registerShortcut.call(this, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.CloseEditorTab, this._onCloseEditorTab.bind(this));
+        registerShortcut.call(this, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToLine, this._showGoToLineDialog.bind(this));
+        registerShortcut.call(this, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToMember, this._showOutlineDialog.bind(this));
+        registerShortcut.call(this, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.ToggleBreakpoint, this._toggleBreakpoint.bind(this));
+        registerShortcut.call(this, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.Save, this._save.bind(this));
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.KeyboardShortcut.Descriptor>} keys
+     * @param {function(?Event=):boolean} handler
+     */
+    _registerShortcuts: function(keys, handler)
+    {
+        for (var i = 0; i < keys.length; ++i)
+            this._shortcuts[keys[i].key] = handler;
+    },
+
+    _handleKeyDown: function(event)
+    {
+        var shortcutKey = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
+        var handler = this._shortcuts[shortcutKey];
+        if (handler && handler())
+            event.consume(true);
     },
 
     /**
@@ -593,6 +626,21 @@ WebInspector.SourcesView.prototype = {
     _showGoToLineDialog: function(event)
     {
         this.showOpenResourceDialog(":");
+        return true;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    _save: function()
+    {
+        var sourceFrame = this.currentSourceFrame();
+        if (!sourceFrame)
+            return true;
+        if (!(sourceFrame instanceof WebInspector.UISourceCodeFrame))
+            return true;
+        var uiSourceCodeFrame = /** @type {!WebInspector.UISourceCodeFrame} */ (sourceFrame);
+        uiSourceCodeFrame.commitEditing();
         return true;
     },
 

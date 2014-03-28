@@ -41,16 +41,9 @@ WebInspector.UISourceCodeFrame = function(uiSourceCode)
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._onWorkingCopyChanged, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._onWorkingCopyCommitted, this);
     this._updateStyle();
-    this.addShortcut(WebInspector.KeyboardShortcut.makeKey("s", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta), this._commitEditing.bind(this));
 }
 
 WebInspector.UISourceCodeFrame.prototype = {
-    _commitEditing: function()
-    {
-        this.commitEditing();
-        return true;
-    },
-
     /**
      * @return {!WebInspector.UISourceCode}
      */
