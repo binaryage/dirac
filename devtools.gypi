@@ -157,7 +157,7 @@
             'front_end/SourceFrame.js',
             'front_end/SourceMap.js',
             'front_end/SourceMapping.js',
-            'front_end/SourcesEditor.js',
+            'front_end/SourcesView.js',
             'front_end/Spectrum.js',
             'front_end/SplitView.js',
             'front_end/StackView.js',

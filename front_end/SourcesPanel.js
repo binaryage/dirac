@@ -46,7 +46,7 @@ importScript("ThreadsToolbar.js");
 importScript("ScriptFormatterEditorAction.js");
 importScript("InplaceFormatterEditorAction.js");
 importScript("ScriptFormatter.js");
-importScript("SourcesEditor.js");
+importScript("SourcesView.js");
 
 /**
  * @constructor

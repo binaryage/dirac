@@ -274,7 +274,7 @@
             "ScopeChainSidebarPane.js",
             "ScriptFormatter.js",
             "SimpleHistoryManager.js",
-            "SourcesEditor.js",
+            "SourcesView.js",
             "SourcesNavigator.js",
             "SourcesPanel.js",
             "SourcesSearchScope.js",
