@@ -33,6 +33,7 @@
     margin-bottom: 4px;
     margin-left: 23px;
     margin-right: 8px;
+    overflow: hidden;
 }
 
 #breakpoint-condition-input {
