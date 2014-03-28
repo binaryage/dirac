@@ -70,6 +70,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._filtersContainer = this._contentsElement.createChild("div", "console-filters-header hidden");
     this._filtersContainer.appendChild(this._filterBar.filtersElement());
     this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
+    this._filterBar.setName("consoleView");
     this._filter.addFilters(this._filterBar);
 
     this.messagesElement = document.createElement("div");

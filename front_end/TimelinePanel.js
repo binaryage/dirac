@@ -337,6 +337,7 @@ WebInspector.TimelinePanel.prototype = {
         this._filtersContainer = this.element.createChild("div", "timeline-filters-header hidden");
         this._filtersContainer.appendChild(this._filterBar.filtersElement());
         this._filterBar.addEventListener(WebInspector.FilterBar.Events.FiltersToggled, this._onFiltersToggled, this);
+        this._filterBar.setName("timelinePanel");
     },
 
     /**

@@ -56,6 +56,15 @@ WebInspector.FilterBar.FilterBarState = {
 
 WebInspector.FilterBar.prototype = {
     /**
+     * @param {string} name
+     */
+    setName: function(name)
+    {
+        this._stateSetting = WebInspector.settings.createSetting("filterBar-" + name + "-toggled", false);
+        this._setState(this._stateSetting.get());
+    },
+
+    /**
      * @return {!WebInspector.StatusBarButton}
      */
     filterButton: function()
@@ -123,7 +132,21 @@ WebInspector.FilterBar.prototype = {
      */
     _handleFilterButtonClick: function(event)
     {
-        this._filtersShown = !this._filtersShown;
+        this._setState(!this._filtersShown);
+    },
+
+    /**
+     * @param {boolean} filtersShown
+     */
+    _setState: function(filtersShown)
+    {
+        if (this._filtersShown === filtersShown)
+            return;
+
+        this._filtersShown = filtersShown;
+        if (this._stateSetting)
+            this._stateSetting.set(filtersShown);
+
         this._updateFilterButton();
         this.dispatchEventToListeners(WebInspector.FilterBar.Events.FiltersToggled, this._filtersShown);
         if (this._filtersShown) {
