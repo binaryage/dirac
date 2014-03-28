@@ -421,8 +421,7 @@ WebInspector.NavigatorView.prototype = {
                 return;
             }
 
-            var data = { uiSourceCode: uiSourceCode };
-            this.dispatchEventToListeners(WebInspector.NavigatorView.Events.ItemRenamed, data);
+            this.dispatchEventToListeners(WebInspector.NavigatorView.Events.ItemRenamed, uiSourceCode);
             this._updateIcon(uiSourceCode);
             this._sourceSelected(uiSourceCode, true)
         }
@@ -476,6 +475,7 @@ WebInspector.NavigatorView.prototype = {
                 return;
             }
             this._sourceSelected(uiSourceCode, false);
+            this.revealUISourceCode(uiSourceCode, true);
             this.rename(uiSourceCode, true);
         }
     },
