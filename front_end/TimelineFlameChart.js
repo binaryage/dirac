@@ -454,6 +454,7 @@ WebInspector.TimelineFlameChart.prototype = {
     _onRecordingStarted: function()
     {
         this._automaticallySizeWindow = true;
+        this._mainView.reset();
     },
 
     /**
