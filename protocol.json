@@ -2796,6 +2796,13 @@
                 "description": "Fired for every instrumentation event while timeline is started."
             },
             {
+                "name": "progress",
+                "parameters": [
+                    { "name": "count", "type": "number" }
+                ],
+                "hidden": true
+            },
+            {
                 "name": "started",
                 "parameters": [
                     { "name": "consoleTimeline", "type": "boolean", "optional": true, "description": "If specified, identifies that timeline was started using console.timeline() call." }

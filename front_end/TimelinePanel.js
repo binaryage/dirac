@@ -66,6 +66,7 @@ WebInspector.TimelinePanel = function()
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);
+    this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingProgress, this._onRecordingProgress, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordFilterChanged, this._refreshViews, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
 
@@ -326,12 +327,6 @@ WebInspector.TimelinePanel.prototype = {
         this.garbageCollectButton.addEventListener("click", this._garbageCollectButtonClicked, this);
         this._statusBarButtons.push(this.garbageCollectButton);
         panelStatusBarElement.appendChild(this.garbageCollectButton.element);
-
-        if (WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled()) {
-            panelStatusBarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Live update"),
-                                              WebInspector.settings.timelineLiveUpdate, true, undefined,
-                                              WebInspector.UIString("Show timeline records while recording")));
-        }
 
         panelStatusBarElement.appendChild(WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Capture stacks"),
                                           WebInspector.settings.timelineCaptureStacks, true, undefined,
@@ -617,6 +612,7 @@ WebInspector.TimelinePanel.prototype = {
     {
         this.toggleTimelineButton.title = WebInspector.UIString("Stop");
         this.toggleTimelineButton.toggled = true;
+        this._showProgressPane();
     },
 
     _recordingInProgress: function()
@@ -624,10 +620,38 @@ WebInspector.TimelinePanel.prototype = {
         return this.toggleTimelineButton.toggled;
     },
 
+    _showProgressPane: function()
+    {
+        if (!WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled())
+            return;
+        this._hideProgressPane();
+        this._progressElement = this._detailsSplitView.mainElement().createChild("div", "timeline-progress-pane");
+        this._progressElement.textContent = WebInspector.UIString("%d events collected", 0);
+    },
+
+    _hideProgressPane: function()
+    {
+        if (!WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled())
+            return;
+        if (this._progressElement)
+            this._progressElement.remove();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onRecordingProgress: function(event)
+    {
+        if (!WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled())
+            return;
+        this._progressElement.textContent = WebInspector.UIString("%d events collected", event.data);
+    },
+
     _onRecordingStopped: function()
     {
         this.toggleTimelineButton.title = WebInspector.UIString("Record");
         this.toggleTimelineButton.toggled = false;
+        this._hideProgressPane();
     },
 
     _onRecordAdded: function(event)

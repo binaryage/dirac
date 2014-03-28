@@ -441,7 +441,7 @@ WebInspector.FlameChart.prototype = {
         var windowRight = this._timeWindowRight !== Infinity ? this._timeWindowRight : this._dataProvider.zeroTime() + this._dataProvider.totalTime();
 
         if (e.wheelDeltaY) {
-            if (e.altKey) {
+            if (!e.altKey) {
                 const mouseWheelZoomSpeed = 1 / 120;
                 var zoom = Math.pow(1.2, -e.wheelDeltaY * mouseWheelZoomSpeed) - 1;
                 var cursorTime = this._cursorTime(e.offsetX);

@@ -43,7 +43,8 @@ WebInspector.TimelineManager = function()
 WebInspector.TimelineManager.EventTypes = {
     TimelineStarted: "TimelineStarted",
     TimelineStopped: "TimelineStopped",
-    TimelineEventRecorded: "TimelineEventRecorded"
+    TimelineEventRecorded: "TimelineEventRecorded",
+    TimelineProgress: "TimelineProgress"
 }
 
 WebInspector.TimelineManager.prototype = {
@@ -138,6 +139,11 @@ WebInspector.TimelineDispatcher.prototype = {
     {
         this._started = false;
         this._manager.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineStopped, consoleTimeline);
+    },
+
+    progress: function(count)
+    {
+        this._manager.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineProgress, count);
     }
 }
 

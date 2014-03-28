@@ -42,6 +42,7 @@ WebInspector.TimelineModel = function()
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, this._onRecordAdded, this);
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, this._onStarted, this);
     WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStopped, this._onStopped, this);
+    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineProgress, this._onProgress, this);
 }
 
 WebInspector.TimelineModel.TransferChunkLengthBytes = 5000000;
@@ -114,6 +115,7 @@ WebInspector.TimelineModel.Events = {
     RecordsCleared: "RecordsCleared",
     RecordingStarted: "RecordingStarted",
     RecordingStopped: "RecordingStopped",
+    RecordingProgress: "RecordingProgress",
     RecordFilterChanged: "RecordFilterChanged"
 }
 
@@ -218,7 +220,7 @@ WebInspector.TimelineModel.prototype = {
         this._clientInitiatedRecording = true;
         this.reset();
         var maxStackFrames = WebInspector.settings.timelineCaptureStacks.get() ? 30 : 0;
-        this._bufferEvents = WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled() && !WebInspector.settings.timelineLiveUpdate.get();
+        this._bufferEvents = WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled();
         var includeGPUEvents = WebInspector.experimentsSettings.gpuTimeline.isEnabled();
         var liveEvents = [ WebInspector.TimelineModel.RecordType.BeginFrame,
                            WebInspector.TimelineModel.RecordType.DrawFrame,
@@ -286,6 +288,14 @@ WebInspector.TimelineModel.prototype = {
             // Stopped from console.
             this._fireRecordingStopped(null);
         }
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onProgress: function(event)
+    {
+        this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingProgress, event.data);
     },
 
     _fireRecordingStarted: function()
