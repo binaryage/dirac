@@ -109,11 +109,12 @@ WebInspector.NetworkLogView.prototype = {
         this._textFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged, this);
         this._filterBar.addFilter(this._textFilterUI);
 
-        this._resourceTypeFilterUI = new WebInspector.NamedBitSetFilterUI();
+        var types = [];
         for (var typeId in WebInspector.resourceTypes) {
             var resourceType = WebInspector.resourceTypes[typeId];
-            this._resourceTypeFilterUI.addBit(resourceType.name(), resourceType.categoryTitle());
+            types.push({name: resourceType.name(), label: resourceType.categoryTitle()});
         }
+        this._resourceTypeFilterUI = new WebInspector.NamedBitSetFilterUI(types, WebInspector.settings.networkResourceTypeFilters);
         this._resourceTypeFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged.bind(this), this);
         this._filterBar.addFilter(this._resourceTypeFilterUI);
 

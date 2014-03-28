@@ -437,10 +437,12 @@ WebInspector.TextFilterUI.SuggestionBuilder.prototype = {
 
 /**
  * @constructor
- * @implements {WebInspector.FilterUI}
  * @extends {WebInspector.Object}
+ * @implements {WebInspector.FilterUI}
+ * @param {!Array.<!WebInspector.NamedBitSetFilterUI.Item>} items
+ * @param {!WebInspector.Setting=} setting
  */
-WebInspector.NamedBitSetFilterUI = function()
+WebInspector.NamedBitSetFilterUI = function(items, setting)
 {
     this._filtersElement = document.createElement("div");
     this._filtersElement.className = "filter-bitset-filter status-bar-item";
@@ -448,10 +450,23 @@ WebInspector.NamedBitSetFilterUI = function()
 
     this._allowedTypes = {};
     this._typeFilterElements = {};
-    this.addBit(WebInspector.NamedBitSetFilterUI.ALL_TYPES, WebInspector.UIString("All"));
+    this._addBit(WebInspector.NamedBitSetFilterUI.ALL_TYPES, WebInspector.UIString("All"));
     this._filtersElement.createChild("div", "filter-bitset-filter-divider");
-    this._toggleTypeFilter(WebInspector.NamedBitSetFilterUI.ALL_TYPES, false);
+
+    for (var i = 0; i < items.length; ++i)
+        this._addBit(items[i].name, items[i].label);
+
+    if (setting) {
+        this._setting = setting;
+        setting.addChangeListener(this._settingChanged.bind(this));
+        this._settingChanged();
+    } else {
+        this._toggleTypeFilter(WebInspector.NamedBitSetFilterUI.ALL_TYPES, false);
+    }
 }
+
+/** @typedef {{name: string, label: string}} */
+WebInspector.NamedBitSetFilterUI.Item;
 
 WebInspector.NamedBitSetFilterUI.ALL_TYPES = "all";
 
@@ -462,17 +477,6 @@ WebInspector.NamedBitSetFilterUI.prototype = {
     isActive: function()
     {
         return !this._allowedTypes[WebInspector.NamedBitSetFilterUI.ALL_TYPES];
-    },
-
-    /**
-     * @param {!WebInspector.Setting} setting
-     */
-    bindSetting: function(setting)
-    {
-        console.assert(!this._setting);
-        this._setting = setting;
-        setting.addChangeListener(this._settingChanged.bind(this));
-        this._settingChanged();
     },
 
     /**
@@ -518,7 +522,7 @@ WebInspector.NamedBitSetFilterUI.prototype = {
      * @param {string} name
      * @param {string} label
      */
-    addBit: function(name, label)
+    _addBit: function(name, label)
     {
         var typeFilterElement = this._filtersElement.createChild("li", name);
         typeFilterElement.typeName = name;

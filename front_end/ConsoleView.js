@@ -896,13 +896,14 @@ WebInspector.ConsoleViewFilter.prototype = {
         this._textFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._textFilterChanged, this);
         filterBar.addFilter(this._textFilterUI);
 
-        this._levelFilterUI = new WebInspector.NamedBitSetFilterUI();
-        this._levelFilterUI.addBit("error", WebInspector.UIString("Errors"));
-        this._levelFilterUI.addBit("warning", WebInspector.UIString("Warnings"));
-        this._levelFilterUI.addBit("info", WebInspector.UIString("Info"));
-        this._levelFilterUI.addBit("log", WebInspector.UIString("Logs"));
-        this._levelFilterUI.addBit("debug", WebInspector.UIString("Debug"));
-        this._levelFilterUI.bindSetting(WebInspector.settings.messageLevelFilters);
+        var levels = [
+            {name: "error", label: WebInspector.UIString("Errors")},
+            {name: "warning", label: WebInspector.UIString("Warnings")},
+            {name: "info", label: WebInspector.UIString("Info")},
+            {name: "log", label: WebInspector.UIString("Logs")},
+            {name: "debug", label: WebInspector.UIString("Debug")}
+        ];
+        this._levelFilterUI = new WebInspector.NamedBitSetFilterUI(levels, WebInspector.settings.messageLevelFilters);
         this._levelFilterUI.addEventListener(WebInspector.FilterUI.Events.FilterChanged, this._filterChanged, this);
         filterBar.addFilter(this._levelFilterUI);
     },
