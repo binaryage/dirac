@@ -412,6 +412,10 @@ WebInspector.InspectorView.prototype = {
      */
     setErrorAndWarningCounts: function(errors, warnings)
     {
+        if (this._errors === errors && this._warnings === warnings)
+            return;
+        this._errors = errors;
+        this._warnings = warnings;
         this._errorWarningCountElement.classList.toggle("hidden", !errors && !warnings);
         this._errorWarningCountElement.removeChildren();
 
