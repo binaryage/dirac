@@ -354,7 +354,9 @@ WebInspector.FlameChart.prototype = {
             return false;
         this._isDragging = true;
         this._maxDragOffset = 0;
-        this._dragStartPoint = event.pageX;
+        this._dragStartPointX = event.pageX;
+        this._dragStartPointY = event.pageY;
+        this._dragStartScrollTop = this._vScrollElement.scrollTop;
         this._dragStartWindowLeft = this._timeWindowLeft;
         this._dragStartWindowRight = this._timeWindowRight;
         this._canvas.style.cursor = "";
@@ -367,7 +369,9 @@ WebInspector.FlameChart.prototype = {
      */
     _canvasDragging: function(event)
     {
-        var pixelShift = this._dragStartPoint - event.pageX;
+        var pixelShift = this._dragStartPointX - event.pageX;
+        var pixelScroll = this._dragStartPointY - event.pageY;
+        this._vScrollElement.scrollTop = this._dragStartScrollTop + pixelScroll;
         var windowShift = pixelShift / this._totalPixels;
         var windowTime = this._windowWidth * this._totalTime;
         var timeShift = windowTime * pixelShift / this._pixelWindowWidth;
