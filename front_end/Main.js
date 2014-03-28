@@ -520,6 +520,8 @@ WebInspector.Main.prototype = {
     {
         if (event.handled)
             return;
+        if (WebInspector.Dialog.currentInstance())
+            return;
 
         if (WebInspector.inspectorView.currentPanel()) {
             WebInspector.inspectorView.currentPanel().handleShortcut(event);
