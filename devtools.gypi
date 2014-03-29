@@ -321,6 +321,7 @@
             'front_end/TimelineMemoryOverview.js',
             'front_end/TimelineUIUtils.js',
             'front_end/TimelineView.js',
+            'front_end/TimelinePowerGraph.js',
             'front_end/TimelinePowerOverview.js',
             'front_end/TimelinePanel.js',
         ],

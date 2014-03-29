@@ -72,5 +72,13 @@ WebInspector.MemoryCountersGraph.prototype = {
         this.scheduleRefresh();
     },
 
+    refreshRecords: function()
+    {
+        this.reset();
+        var records = this._model.records();
+        for (var i = 0; i < records.length; ++i)
+            this.addRecord(records[i]);
+    },
+
     __proto__: WebInspector.CountersGraph.prototype
 }

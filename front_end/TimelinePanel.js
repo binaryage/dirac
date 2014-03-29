@@ -39,6 +39,7 @@ importScript("TimelineFrameModel.js");
 importScript("TimelineEventOverview.js");
 importScript("TimelineFrameOverview.js");
 importScript("TimelineMemoryOverview.js");
+importScript("TimelinePowerGraph.js");
 importScript("TimelinePowerOverview.js");
 importScript("TimelineFlameChart.js");
 importScript("TimelineUIUtils.js");
@@ -279,7 +280,7 @@ WebInspector.TimelinePanel.prototype = {
                 break;
             case WebInspector.TimelinePanel.Mode.Power:
                 views.overviewView = new WebInspector.TimelinePowerOverview(this._model);
-                views.mainViews = [this._timelineView()];
+                views.mainViews = [this._timelineView(), new WebInspector.TimelinePowerGraph(this, this._model)];
                 break;
             default:
                 console.assert(false, "Unknown mode: " + mode);

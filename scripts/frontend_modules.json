@@ -304,6 +304,7 @@
             "TimelineFrameModel.js",
             "TimelineFrameOverview.js",
             "TimelineMemoryOverview.js",
+            "TimelinePowerGraph.js",
             "TimelinePowerOverview.js",
             "TimelineModel.js",
             "TimelineOverviewPane.js",

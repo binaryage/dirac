@@ -224,10 +224,6 @@ WebInspector.CountersGraph.prototype = {
 
     refreshRecords: function()
     {
-        this.reset();
-        var records = this._model.records();
-        for (var i = 0; i < records.length; ++i)
-            this.addRecord(records[i]);
     },
 
     /**
@@ -467,7 +463,7 @@ WebInspector.CountersGraph.CounterUI.prototype = {
      */
     setRange: function(minValue, maxValue)
     {
-        this._range.textContent = WebInspector.UIString("[%d:%d]", minValue, maxValue);
+        this._range.textContent = WebInspector.UIString("[%.0f:%.0f]", minValue, maxValue);
     },
 
     _toggleCounterGraph: function(event)
