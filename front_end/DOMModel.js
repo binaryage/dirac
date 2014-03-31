@@ -31,12 +31,14 @@
 
 /**
  * @constructor
+ * @extends {WebInspector.TargetAware}
  * @param {!WebInspector.DOMModel} domModel
  * @param {?WebInspector.DOMDocument} doc
  * @param {boolean} isInShadowTree
  * @param {!DOMAgent.Node} payload
  */
 WebInspector.DOMNode = function(domModel, doc, isInShadowTree, payload) {
+    WebInspector.TargetAware.call(this, domModel._target);
     this._domModel = domModel;
     this.ownerDocument = doc;
     this._isInShadowTree = isInShadowTree;
@@ -457,7 +459,7 @@ WebInspector.DOMNode.prototype = {
 
     /**
      * @param {string} objectGroupId
-     * @param {function(?Protocol.Error)=} callback
+     * @param {function(?Protocol.Error, !Array.<!DOMAgent.EventListener>)=} callback
      */
     eventListeners: function(objectGroupId, callback)
     {
@@ -780,7 +782,9 @@ WebInspector.DOMNode.prototype = {
                 return WebInspector.ParsedURL.completeURL(frameOwnerCandidate.baseURL, url);
         }
         return null;
-    }
+    },
+
+    __proto__: WebInspector.TargetAware.prototype
 }
 
 /**
@@ -805,8 +809,10 @@ WebInspector.DOMDocument.prototype = {
 /**
  * @extends {WebInspector.Object}
  * @constructor
+ * @param {!WebInspector.Target} target
  */
-WebInspector.DOMModel = function() {
+WebInspector.DOMModel = function(target) {
+    this._target = target;
     /** @type {!Object.<number, !WebInspector.DOMNode>} */
     this._idToDOMNode = {};
     /** @type {?WebInspector.DOMDocument} */

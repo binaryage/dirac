@@ -61,9 +61,13 @@ WebInspector.Target.prototype = {
         if (!WebInspector.runtimeModel)
             WebInspector.runtimeModel = this.runtimeModel;
 
-        this.domModel = new WebInspector.DOMModel();
+        this.domModel = new WebInspector.DOMModel(this);
         if (!WebInspector.domModel)
             WebInspector.domModel = this.domModel;
+
+        this.cssModel = new WebInspector.CSSStyleModel(this);
+        if (!WebInspector.cssModel)
+            WebInspector.cssModel = this.cssModel;
 
         this.workerManager = new WebInspector.WorkerManager(this, this.isMainFrontend);
         if (!WebInspector.workerManager)
@@ -99,13 +103,31 @@ WebInspector.Target.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @param {!WebInspector.Target} target
+ */
+WebInspector.TargetAware = function(target)
+{
+    this._target = target;
+}
+
+WebInspector.TargetAware.prototype = {
+    /**
+     * @return {!WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._target;
+    }
+}
+
+/**
+ * @constructor
  */
 WebInspector.TargetManager = function()
 {
-    WebInspector.Object.call(this);
     /** @type {!Array.<!WebInspector.Target>} */
     this._targets = [];
+    this._observers = [];
 }
 
 WebInspector.TargetManager.Events = {
@@ -113,6 +135,17 @@ WebInspector.TargetManager.Events = {
 }
 
 WebInspector.TargetManager.prototype = {
+
+    /**
+     * @param {!WebInspector.TargetManager.Observer} targetObserver
+     */
+    observeTargets: function(targetObserver)
+    {
+        WebInspector.targetManager.targets().forEach(targetObserver.targetAdded.bind(targetObserver));
+        if (this._targets.length)
+            targetObserver.activeTargetChanged(this._targets[0]);
+        this._observers.push(targetObserver);
+    },
 
     /**
      * @param {!InspectorBackendClass.Connection} connection
@@ -132,9 +165,13 @@ WebInspector.TargetManager.prototype = {
                 callback(newTarget);
 
             this._targets.push(newTarget);
-            this.dispatchEventToListeners(WebInspector.TargetManager.Events.TargetAdded, newTarget);
+            var copy = this._observers;
+            for (var i = 0; i < copy.length; ++i) {
+                copy[i].targetAdded(newTarget);
+                if (this._targets.length === 1)
+                    copy[i].activeTargetChanged(newTarget);
+            }
         }
-
     },
 
     /**
@@ -146,14 +183,36 @@ WebInspector.TargetManager.prototype = {
     },
 
     /**
-     * @return {!WebInspector.Target}
+     * @return {?WebInspector.Target}
      */
-    mainTarget: function()
+    activeTarget: function()
     {
         return this._targets[0];
-    },
+    }
+}
 
-    __proto__: WebInspector.Object.prototype
+/**
+ * @interface
+ */
+WebInspector.TargetManager.Observer = function()
+{
+}
+
+WebInspector.TargetManager.Observer.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target) { },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target) { },
+
+    /**
+     * @param {?WebInspector.Target} target
+     */
+    activeTargetChanged: function(target) { }
 }
 
 /**

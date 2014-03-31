@@ -31,6 +31,7 @@
  * @extends {WebInspector.VBox}
  * @implements {WebInspector.Searchable}
  * @constructor
+ * @implements {WebInspector.TargetManager.Observer}
  * @param {boolean} hideContextSelector
  */
 WebInspector.ConsoleView = function(hideContextSelector)
@@ -112,8 +113,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this.prompt.proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), false);
     this.prompt.setHistoryData(WebInspector.settings.consoleHistory.get());
 
-    WebInspector.targetManager.targets().forEach(this._targetAdded, this);
-    WebInspector.targetManager.addEventListener(WebInspector.TargetManager.Events.TargetAdded, this._onTargetAdded, this);
+    WebInspector.targetManager.observeTargets(this);
 
     this._filterStatusMessageElement = document.createElement("div");
     this._filterStatusMessageElement.classList.add("console-message");
@@ -131,17 +131,9 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
 WebInspector.ConsoleView.prototype = {
     /**
-     * @param {!WebInspector.Event} event
-     */
-    _onTargetAdded: function(event)
-    {
-        this._targetAdded(/**@type {!WebInspector.Target} */(event.data));
-    },
-
-    /**
      * @param {!WebInspector.Target} target
      */
-    _targetAdded: function(target)
+    targetAdded: function(target)
     {
         target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded.bind(this, target), this);
         target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
@@ -161,6 +153,20 @@ WebInspector.ConsoleView.prototype = {
         target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextListAdded, this._executionContextListAdded.bind(this, target));
         target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextListRemoved, this._executionContextListRemoved, this);
 
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+    },
+
+    /**
+     * @param {?WebInspector.Target} target
+     */
+    activeTargetChanged: function(target)
+    {
     },
 
     _consoleTimestampsSettingChanged: function(event)
@@ -266,7 +272,7 @@ WebInspector.ConsoleView.prototype = {
     _currentTarget: function()
     {
         var option = this._executionContextSelector.selectedOption();
-        return option ? option._target : WebInspector.targetManager.mainTarget();
+        return option ? option._target : WebInspector.targetManager.activeTarget();
     },
 
     /**
@@ -1086,7 +1092,7 @@ WebInspector.ConsoleCommandResult = function(result, wasThrown, originatingComma
     var level = wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log;
 
     var message = new WebInspector.ConsoleMessage(WebInspector.ConsoleMessage.MessageSource.JS, level, "", WebInspector.ConsoleMessage.MessageType.Result, url, lineNumber, columnNumber, undefined, [result]);
-    WebInspector.ConsoleViewMessage.call(this, result.target(), message, linkifier);
+    WebInspector.ConsoleViewMessage.call(this, /** @type {!WebInspector.Target} */ (result.target()), message, linkifier);
 }
 
 WebInspector.ConsoleCommandResult.prototype = {

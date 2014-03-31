@@ -110,7 +110,7 @@ WebInspector.WatchExpressionsSection = function()
 {
     this._watchObjectGroupId = "watch-group";
 
-    WebInspector.ObjectPropertiesSection.call(this, WebInspector.RemoteObject.fromPrimitiveValue(""));
+    WebInspector.ObjectPropertiesSection.call(this, WebInspector.runtimeModel.createRemoteObjectFromPrimitiveValue(""));
 
     this.treeElementConstructor = WebInspector.WatchedPropertyTreeElement;
     this._expandedExpressions = {};

@@ -461,7 +461,7 @@ WebInspector.DebuggerModel.prototype = {
      */
     _pausedScript: function(callFrames, reason, auxData, breakpointIds, asyncStackTrace)
     {
-        this._setDebuggerPausedDetails(new WebInspector.DebuggerPausedDetails(this, callFrames, reason, auxData, breakpointIds, asyncStackTrace));
+        this._setDebuggerPausedDetails(new WebInspector.DebuggerPausedDetails(this._target, callFrames, reason, auxData, breakpointIds, asyncStackTrace));
     },
 
     _resumedScript: function()
@@ -593,7 +593,7 @@ WebInspector.DebuggerModel.prototype = {
             else if (returnByValue)
                 callback(null, !!wasThrown, wasThrown ? null : result);
             else
-                callback(WebInspector.RemoteObject.fromPayload(result, this._target), !!wasThrown);
+                callback(this._target.runtimeModel.createRemoteObject(result), !!wasThrown);
 
             if (objectGroup === "console")
                 this.dispatchEventToListeners(WebInspector.DebuggerModel.Events.ConsoleCommandEvaluatedInSelectedCallFrame);
@@ -625,7 +625,7 @@ WebInspector.DebuggerModel.prototype = {
 
         for (var i = 0; i < selectedCallFrame.scopeChain.length; ++i) {
             var scope = selectedCallFrame.scopeChain[i];
-            var object = WebInspector.RemoteObject.fromPayload(scope.object, this._target);
+            var object = this._target.runtimeModel.createRemoteObject(scope.object);
             pendingRequests++;
             object.getAllProperties(false, propertiesCollected);
         }
@@ -785,15 +785,16 @@ WebInspector.DebuggerDispatcher.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.DebuggerModel} debuggerModel
+ * @extends {WebInspector.TargetAware}
+ * @param {!WebInspector.Target} target
  * @param {!WebInspector.Script} script
  * @param {!DebuggerAgent.CallFrame} payload
  * @param {boolean=} isAsync
  */
-WebInspector.DebuggerModel.CallFrame = function(debuggerModel, script, payload, isAsync)
+WebInspector.DebuggerModel.CallFrame = function(target, script, payload, isAsync)
 {
-    this._debuggerModel = debuggerModel;
-    this._debuggerAgent = debuggerModel._agent;
+    WebInspector.TargetAware.call(this, target);
+    this._debuggerAgent = target.debuggerModel._agent;
     this._script = script;
     this._payload = payload;
     /** @type {!Array.<!WebInspector.Script.Location>} */
@@ -802,24 +803,25 @@ WebInspector.DebuggerModel.CallFrame = function(debuggerModel, script, payload, 
 }
 
 /**
- * @param {!WebInspector.DebuggerModel} debuggerModel
+ * @param {!WebInspector.Target} target
  * @param {!Array.<!DebuggerAgent.CallFrame>} callFrames
  * @param {boolean=} isAsync
  * @return {!Array.<!WebInspector.DebuggerModel.CallFrame>}
  */
-WebInspector.DebuggerModel.CallFrame.fromPayloadArray = function(debuggerModel, callFrames, isAsync)
+WebInspector.DebuggerModel.CallFrame.fromPayloadArray = function(target, callFrames, isAsync)
 {
     var result = [];
     for (var i = 0; i < callFrames.length; ++i) {
         var callFrame = callFrames[i];
-        var script = debuggerModel.scriptForId(callFrame.location.scriptId);
+        var script = target.debuggerModel.scriptForId(callFrame.location.scriptId);
         if (script)
-            result.push(new WebInspector.DebuggerModel.CallFrame(debuggerModel, script, callFrame, isAsync));
+            result.push(new WebInspector.DebuggerModel.CallFrame(target, script, callFrame, isAsync));
     }
     return result;
 }
 
 WebInspector.DebuggerModel.CallFrame.prototype = {
+
     /**
      * @return {!WebInspector.Script}
      */
@@ -853,19 +855,19 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
     },
 
     /**
-     * @return {!RuntimeAgent.RemoteObject}
+     * @return {?WebInspector.RemoteObject}
      */
-    get this()
+    thisObject: function()
     {
-        return this._payload.this;
+        return this._payload.this ? this.target().runtimeModel.createRemoteObject(this._payload.this) : null;
     },
 
     /**
-     * @return {!RuntimeAgent.RemoteObject|undefined}
+     * @return {?WebInspector.RemoteObject}
      */
-    get returnValue()
+    returnValue: function()
     {
-        return this._payload.returnValue;
+        return this._payload.returnValue ?  this.target().runtimeModel.createRemoteObject(this._payload.returnValue) : null
     },
 
     /**
@@ -936,7 +938,7 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
         function protocolCallback(error, callFrames, details, asyncStackTrace)
         {
             if (!error)
-                this._debuggerModel.callStackModified(callFrames, details, asyncStackTrace);
+                this.target().debuggerModel.callStackModified(callFrames, details, asyncStackTrace);
             if (callback)
                 callback(error);
         }
@@ -959,7 +961,9 @@ WebInspector.DebuggerModel.CallFrame.prototype = {
         for (var i = 0; i < this._locations.length; ++i)
             this._locations[i].dispose();
         this._locations = [];
-    }
+    },
+
+    __proto__: WebInspector.TargetAware.prototype
 }
 
 /**
@@ -976,19 +980,19 @@ WebInspector.DebuggerModel.StackTrace = function(callFrames, asyncStackTrace, de
 }
 
 /**
- * @param {!WebInspector.DebuggerModel} debuggerModel
+ * @param {!WebInspector.Target} target
  * @param {!DebuggerAgent.StackTrace=} payload
  * @param {boolean=} isAsync
  * @return {?WebInspector.DebuggerModel.StackTrace}
  */
-WebInspector.DebuggerModel.StackTrace.fromPayload = function(debuggerModel, payload, isAsync)
+WebInspector.DebuggerModel.StackTrace.fromPayload = function(target, payload, isAsync)
 {
     if (!payload)
         return null;
-    var callFrames = WebInspector.DebuggerModel.CallFrame.fromPayloadArray(debuggerModel, payload.callFrames, isAsync);
+    var callFrames = WebInspector.DebuggerModel.CallFrame.fromPayloadArray(target, payload.callFrames, isAsync);
     if (!callFrames.length)
         return null;
-    var asyncStackTrace = WebInspector.DebuggerModel.StackTrace.fromPayload(debuggerModel, payload.asyncStackTrace, true);
+    var asyncStackTrace = WebInspector.DebuggerModel.StackTrace.fromPayload(target, payload.asyncStackTrace, true);
     return new WebInspector.DebuggerModel.StackTrace(callFrames, asyncStackTrace, payload.description);
 }
 
@@ -1004,30 +1008,44 @@ WebInspector.DebuggerModel.StackTrace.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.DebuggerModel} debuggerModel
+ * @extends {WebInspector.TargetAware}
+ * @param {!WebInspector.Target} target
  * @param {!Array.<!DebuggerAgent.CallFrame>} callFrames
  * @param {string} reason
  * @param {!Object|undefined} auxData
  * @param {!Array.<string>} breakpointIds
  * @param {!DebuggerAgent.StackTrace=} asyncStackTrace
  */
-WebInspector.DebuggerPausedDetails = function(debuggerModel, callFrames, reason, auxData, breakpointIds, asyncStackTrace)
+WebInspector.DebuggerPausedDetails = function(target, callFrames, reason, auxData, breakpointIds, asyncStackTrace)
 {
-    this.callFrames = WebInspector.DebuggerModel.CallFrame.fromPayloadArray(debuggerModel, callFrames);
+    WebInspector.TargetAware.call(this, target);
+    this.callFrames = WebInspector.DebuggerModel.CallFrame.fromPayloadArray(target, callFrames);
     this.reason = reason;
     this.auxData = auxData;
     this.breakpointIds = breakpointIds;
-    this.asyncStackTrace = WebInspector.DebuggerModel.StackTrace.fromPayload(debuggerModel, asyncStackTrace, true);
+    this.asyncStackTrace = WebInspector.DebuggerModel.StackTrace.fromPayload(target, asyncStackTrace, true);
 }
 
 WebInspector.DebuggerPausedDetails.prototype = {
+    /**
+     * @return {?WebInspector.RemoteObject}
+     */
+    exception: function()
+    {
+        if (this.reason !== WebInspector.DebuggerModel.BreakReason.Exception)
+            return null;
+        return this.target().runtimeModel.createRemoteObject(/** @type {!RuntimeAgent.RemoteObject} */(this.auxData));
+    },
+
     dispose: function()
     {
         for (var i = 0; i < this.callFrames.length; ++i)
             this.callFrames[i].dispose();
         if (this.asyncStackTrace)
             this.asyncStackTrace.dispose();
-    }
+    },
+
+    __proto__: WebInspector.TargetAware.prototype
 }
 
 /**

@@ -103,13 +103,16 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         }
     },
 
-    createBreakpointHitStatusMessage: function(auxData, callback)
+    /**
+     * @param {!WebInspector.DebuggerPausedDetails} details
+     */
+    createBreakpointHitStatusMessage: function(details, callback)
     {
-        if (auxData.type === this._breakpointTypes.SubtreeModified) {
-            var targetNodeObject = WebInspector.RemoteObject.fromPayload(auxData["targetNode"]);
+        if (details.auxData.type === this._breakpointTypes.SubtreeModified) {
+            var targetNodeObject = details.target().runtimeModel.createRemoteObject(details.auxData["targetNode"]);
             targetNodeObject.pushNodeToFrontend(didPushNodeToFrontend.bind(this));
         } else
-            this._doCreateBreakpointHitStatusMessage(auxData, null, callback);
+            this._doCreateBreakpointHitStatusMessage(details.auxData, null, callback);
 
         /**
          * @param {?DOMAgent.NodeId} targetNodeId
@@ -119,7 +122,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         {
             if (targetNodeId)
                 targetNodeObject.release();
-            this._doCreateBreakpointHitStatusMessage(auxData, targetNodeId, callback);
+            this._doCreateBreakpointHitStatusMessage(details.auxData, targetNodeId, callback);
         }
     },
 

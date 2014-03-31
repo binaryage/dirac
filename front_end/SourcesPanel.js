@@ -237,7 +237,7 @@ WebInspector.SourcesPanel.prototype = {
 
         if (details.reason === WebInspector.DebuggerModel.BreakReason.DOM) {
             WebInspector.domBreakpointsSidebarPane.highlightBreakpoint(details.auxData);
-            WebInspector.domBreakpointsSidebarPane.createBreakpointHitStatusMessage(details.auxData, didCreateBreakpointHitStatusMessage.bind(this));
+            WebInspector.domBreakpointsSidebarPane.createBreakpointHitStatusMessage(details, didCreateBreakpointHitStatusMessage.bind(this));
         } else if (details.reason === WebInspector.DebuggerModel.BreakReason.EventListener) {
             var eventName = details.auxData.eventName;
             this.sidebarPanes.eventListenerBreakpoints.highlightBreakpoint(details.auxData.eventName);

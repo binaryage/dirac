@@ -214,12 +214,13 @@ WebInspector.AuditCategoryImpl.prototype = {
 
     /**
      * @override
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {function(!WebInspector.AuditRuleResult)} ruleResultCallback
      * @param {function()} categoryDoneCallback
      * @param {!WebInspector.Progress} progress
      */
-    run: function(requests, ruleResultCallback, categoryDoneCallback, progress)
+    run: function(target, requests, ruleResultCallback, categoryDoneCallback, progress)
     {
         this._ensureInitialized();
         var remainingRulesCount = this._rules.length;
@@ -232,7 +233,7 @@ WebInspector.AuditCategoryImpl.prototype = {
                 categoryDoneCallback();
         }
         for (var i = 0; i < this._rules.length; ++i)
-            this._rules[i].run(requests, callbackWrapper, progress);
+            this._rules[i].run(target, requests, callbackWrapper, progress);
     },
 
     _ensureInitialized: function()
@@ -294,27 +295,29 @@ WebInspector.AuditRule.prototype = {
     },
 
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {function(!WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
-    run: function(requests, callback, progress)
+    run: function(target, requests, callback, progress)
     {
         if (progress.isCanceled())
             return;
 
         var result = new WebInspector.AuditRuleResult(this.displayName);
         result.severity = this._severity;
-        this.doRun(requests, result, callback, progress);
+        this.doRun(target, requests, result, callback, progress);
     },
 
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
      * @param {function(!WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
-    doRun: function(requests, result, callback, progress)
+    doRun: function(target, requests, result, callback, progress)
     {
         throw new Error("doRun() not implemented");
     }

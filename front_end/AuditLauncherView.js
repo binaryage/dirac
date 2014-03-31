@@ -32,6 +32,7 @@
  * @constructor
  * @param {!WebInspector.AuditController} auditController
  * @extends {WebInspector.VBox}
+ * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.AuditLauncherView = function(auditController)
 {
@@ -66,11 +67,30 @@ WebInspector.AuditLauncherView = function(auditController)
     var defaultSelectedAuditCategory = {};
     defaultSelectedAuditCategory[WebInspector.AuditLauncherView.AllCategoriesKey] = true;
     this._selectedCategoriesSetting = WebInspector.settings.createSetting("selectedAuditCategories", defaultSelectedAuditCategory);
+    WebInspector.targetManager.observeTargets(this);
 }
 
 WebInspector.AuditLauncherView.AllCategoriesKey = "__AllCategories";
 
 WebInspector.AuditLauncherView.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target) { },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target) { },
+
+    /**
+     * @param {?WebInspector.Target} target
+     */
+    activeTargetChanged: function(target)
+    {
+        this._target = target;
+    },
+
     _resetResourceCount: function()
     {
         this._loadedResources = 0;
@@ -166,7 +186,7 @@ WebInspector.AuditLauncherView.prototype = {
         {
             this._displayResourceLoadingProgress = false;
         }
-        this._auditController.initiateAudit(catIds, this._progressIndicator, this._auditPresentStateElement.checked, onAuditStarted.bind(this), this._setAuditRunning.bind(this, false));
+        this._auditController.initiateAudit(this._target, catIds, this._progressIndicator, this._auditPresentStateElement.checked, onAuditStarted.bind(this), this._setAuditRunning.bind(this, false));
     },
 
     _stopAudit: function()

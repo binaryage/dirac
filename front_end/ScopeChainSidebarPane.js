@@ -80,17 +80,19 @@ WebInspector.ScopeChainSidebarPane.prototype = {
                 title = WebInspector.UIString("Local");
                 emptyPlaceholder = WebInspector.UIString("No Variables");
                 subtitle = undefined;
-                if (callFrame.this)
-                    extraProperties.push(new WebInspector.RemoteObjectProperty("this", WebInspector.RemoteObject.fromPayload(callFrame.this)));
+                var thisObject = callFrame.thisObject();
+                if (thisObject)
+                    extraProperties.push(new WebInspector.RemoteObjectProperty("this", thisObject));
                 if (i == 0) {
                     var details = WebInspector.debuggerModel.debuggerPausedDetails();
-                    var exception = details.reason === WebInspector.DebuggerModel.BreakReason.Exception ? details.auxData : 0;
-                    if (exception && !callFrame.isAsync()) {
-                        var exceptionObject = /** @type {!RuntimeAgent.RemoteObject} */ (exception);
-                        extraProperties.push(new WebInspector.RemoteObjectProperty("<exception>", WebInspector.RemoteObject.fromPayload(exceptionObject)));
+                    if (!callFrame.isAsync()) {
+                        var exception = details.exception();
+                        if (exception)
+                            extraProperties.push(new WebInspector.RemoteObjectProperty("<exception>", exception));
                     }
-                    if (callFrame.returnValue)
-                        extraProperties.push(new WebInspector.RemoteObjectProperty("<return>", WebInspector.RemoteObject.fromPayload(callFrame.returnValue)));
+                    var returnValue = callFrame.returnValue();
+                    if (returnValue)
+                        extraProperties.push(new WebInspector.RemoteObjectProperty("<return>", returnValue));
                 }
                 declarativeScope = true;
                 break;
@@ -119,7 +121,7 @@ WebInspector.ScopeChainSidebarPane.prototype = {
                 subtitle = undefined;
 
             var scopeRef = declarativeScope ? new WebInspector.ScopeRef(i, callFrame.id, undefined) : undefined;
-            var scopeObject = WebInspector.ScopeRemoteObject.fromPayload(scope.object, scopeRef);
+            var scopeObject = callFrame.target().runtimeModel.createScopedObject(scope.object, scopeRef);
             var section = new WebInspector.ObjectPropertiesSection(scopeObject, title, subtitle, emptyPlaceholder, true, extraProperties, WebInspector.ScopeVariableTreeElement);
             section.editInSelectedCallFrameWhenPaused = true;
             section.pane = this;

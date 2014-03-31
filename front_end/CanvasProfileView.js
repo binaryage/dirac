@@ -550,7 +550,7 @@ WebInspector.CanvasProfileView.prototype = {
             var diffLeft = this._popoverAnchorElement.boxInWindow().x - argumentElement.boxInWindow().x;
             this._popoverAnchorElement.style.left = this._popoverAnchorElement.offsetLeft - diffLeft + "px";
 
-            showCallback(WebInspector.RemoteObject.fromPayload(result), false, this._popoverAnchorElement);
+            showCallback(WebInspector.runtimeModel.createRemoteObject(result), false, this._popoverAnchorElement);
         }
 
         var evalResult = argumentElement.__evalResult;
@@ -1102,7 +1102,7 @@ WebInspector.CanvasProfileDataGridHelper = {
             element.createTextChild("\"");
             element.__suppressPopover = (description.length <= maxStringLength && !/[\r\n]/.test(description));
             if (!element.__suppressPopover)
-                element.__evalResult = WebInspector.RemoteObject.fromPrimitiveValue(description);
+                element.__evalResult = WebInspector.runtimeModel.createRemoteObjectFromPrimitiveValue(description);
         } else {
             var type = callArgument.subtype || callArgument.type;
             if (type) {
@@ -1112,7 +1112,7 @@ WebInspector.CanvasProfileDataGridHelper = {
             }
             element.textContent = description;
             if (callArgument.remoteObject)
-                element.__evalResult = WebInspector.RemoteObject.fromPayload(callArgument.remoteObject);
+                element.__evalResult = WebInspector.runtimeModel.createRemoteObject(callArgument.remoteObject);
         }
         if (callArgument.resourceId) {
             element.classList.add("canvas-formatted-resource");
@@ -1131,7 +1131,7 @@ WebInspector.CanvasProfileDataGridHelper = {
         var element = document.createElement("span");
         element.className = "canvas-call-argument canvas-formatted-number";
         element.textContent = enumName;
-        element.__evalResult = WebInspector.RemoteObject.fromPrimitiveValue(enumValue);
+        element.__evalResult = WebInspector.runtimeModel.createRemoteObjectFromPrimitiveValue(enumValue);
         return element;
     }
 }

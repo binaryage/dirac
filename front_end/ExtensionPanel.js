@@ -217,7 +217,7 @@ WebInspector.ExtensionSidebarPane.prototype = {
         if (error)
             callback(error.toString());
         else
-            this._setObject(WebInspector.RemoteObject.fromPayload(result), title, callback);
+            this._setObject(WebInspector.runtimeModel.createRemoteObject(result), title, callback);
     },
 
     _createObjectPropertiesView: function()

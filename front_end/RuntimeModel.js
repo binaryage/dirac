@@ -190,7 +190,7 @@ WebInspector.RuntimeModel.prototype = {
             if (returnByValue)
                 callback(null, !!wasThrown, wasThrown ? null : result);
             else
-                callback(WebInspector.RemoteObject.fromPayload(result, this._target), !!wasThrown);
+                callback(this._target.runtimeModel.createRemoteObject(result), !!wasThrown);
         }
         this._agent.evaluate(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, this._currentExecutionContext ? this._currentExecutionContext.id : undefined, returnByValue, generatePreview, evalCallback.bind(this));
     },
@@ -369,6 +369,47 @@ WebInspector.RuntimeModel.prototype = {
             results.push(property);
         }
         completionsReadyCallback(results);
+    },
+
+    /**
+     * @return {!WebInspector.RemoteObject}
+     */
+    createRemoteObject: function(payload)
+    {
+        console.assert(typeof payload === "object", "Remote object payload should only be an object");
+        return new WebInspector.RemoteObjectImpl(this._target, payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
+    },
+
+    /**
+     * @param {number|string|boolean} value
+     * @return {!WebInspector.RemoteObject}
+     */
+    createRemoteObjectFromPrimitiveValue: function(value)
+    {
+        return new WebInspector.RemoteObjectImpl(this._target, undefined, typeof value, undefined, value);
+    },
+
+    /**
+     * @param {string} name
+     * @param {string} value
+     * @return {!WebInspector.RemoteObjectProperty}
+     */
+    createRemotePropertyFromPrimitiveValue: function(name, value)
+    {
+        return new WebInspector.RemoteObjectProperty(name, this.createRemoteObjectFromPrimitiveValue(value));
+    },
+
+    /**
+     * @param {!RuntimeAgent.RemoteObject} payload
+     * @param {!WebInspector.ScopeRef=} scopeRef
+     * @return {!WebInspector.RemoteObject}
+     */
+    createScopedObject: function(payload, scopeRef)
+    {
+        if (scopeRef)
+            return new WebInspector.ScopeRemoteObject(this._target, payload.objectId, scopeRef, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
+        else
+            return new WebInspector.RemoteObjectImpl(this._target, payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
     },
 
     __proto__: WebInspector.Object.prototype

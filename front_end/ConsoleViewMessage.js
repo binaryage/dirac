@@ -294,9 +294,9 @@ WebInspector.ConsoleViewMessage.prototype = {
                 continue;
 
             if (typeof parameters[i] === "object")
-                parameters[i] = WebInspector.RemoteObject.fromPayload(parameters[i], this._target);
+                parameters[i] = this._target.runtimeModel.createRemoteObject(parameters[i], this._target);
             else
-                parameters[i] = WebInspector.RemoteObject.fromPrimitiveValue(parameters[i], this._target);
+                parameters[i] = this._target.runtimeModel.createRemoteObjectFromPrimitiveValue(parameters[i]);
         }
 
         // There can be string log and string eval result. We distinguish between them based on message type.
@@ -498,7 +498,7 @@ WebInspector.ConsoleViewMessage.prototype = {
                 this._formatParameterAsObject(object, elem, false);
                 return;
             }
-            var node = WebInspector.domModel.nodeForId(nodeId);
+            var node = this._target.domModel.nodeForId(nodeId);
             var renderer = WebInspector.moduleManager.instance(WebInspector.Renderer, node);
             if (renderer)
                 elem.appendChild(renderer.render(node));

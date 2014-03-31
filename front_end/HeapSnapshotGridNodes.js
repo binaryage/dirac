@@ -619,13 +619,13 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
         function formatResult(error, object)
         {
             if (!error && object.type)
-                callback(WebInspector.RemoteObject.fromPayload(object), !!error);
+                callback(WebInspector.runtimeModel.createRemoteObject(object), !!error);
             else
-                callback(WebInspector.RemoteObject.fromPrimitiveValue(WebInspector.UIString("Preview is not available")));
+                callback(WebInspector.runtimeModel.createRemoteObjectFromPrimitiveValue(WebInspector.UIString("Preview is not available")));
         }
 
         if (this._type === "string")
-            callback(WebInspector.RemoteObject.fromPrimitiveValue(this._name));
+            callback(WebInspector.runtimeModel.createRemoteObjectFromPrimitiveValue(this._name));
         else
             HeapProfilerAgent.getObjectByHeapObjectId(String(this.snapshotNodeId), objectGroupName, formatResult);
     },

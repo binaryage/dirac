@@ -63,14 +63,15 @@ WebInspector.ExtensionAuditCategory.prototype = {
 
     /**
      * @override
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
-     * @param {function(!WebInspector.AuditRuleResult)} ruleResultCallback
+            * @param {function(!WebInspector.AuditRuleResult)} ruleResultCallback
      * @param {function()} categoryDoneCallback
      * @param {!WebInspector.Progress} progress
      */
-    run: function(requests, ruleResultCallback, categoryDoneCallback, progress)
+    run: function(target, requests, ruleResultCallback, categoryDoneCallback, progress)
     {
-        var results = new WebInspector.ExtensionAuditCategoryResults(this, ruleResultCallback, categoryDoneCallback, progress);
+        var results = new WebInspector.ExtensionAuditCategoryResults(this, target, ruleResultCallback, categoryDoneCallback, progress);
         WebInspector.extensionServer.startAuditRun(this, results);
     }
 }
@@ -78,12 +79,14 @@ WebInspector.ExtensionAuditCategory.prototype = {
 /**
  * @constructor
  * @param {!WebInspector.ExtensionAuditCategory} category
+ * @param {!WebInspector.Target} target
  * @param {function(!WebInspector.AuditRuleResult)} ruleResultCallback
  * @param {function()} categoryDoneCallback
  * @param {!WebInspector.Progress} progress
  */
-WebInspector.ExtensionAuditCategoryResults = function(category, ruleResultCallback, categoryDoneCallback, progress)
+WebInspector.ExtensionAuditCategoryResults = function(category, target, ruleResultCallback, categoryDoneCallback, progress)
 {
+    this._target = target;
     this._category = category;
     this._ruleResultCallback = ruleResultCallback;
     this._categoryDoneCallback = categoryDoneCallback;
@@ -153,15 +156,16 @@ WebInspector.ExtensionAuditCategoryResults.prototype = {
          * @param {?string} error
          * @param {!RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
+         * @this {WebInspector.ExtensionAuditCategoryResults}
          */
         function onEvaluate(error, result, wasThrown)
         {
             if (wasThrown)
                 return;
-            var object = WebInspector.RemoteObject.fromPayload(result);
+            var object = this._target.runtimeModel.createRemoteObject(result);
             callback(object);
         }
-        WebInspector.extensionServer.evaluate(expression, false, false, evaluateOptions, this._category._extensionOrigin, onEvaluate);
+        WebInspector.extensionServer.evaluate(expression, false, false, evaluateOptions, this._category._extensionOrigin, onEvaluate.bind(this));
     }
 }
 

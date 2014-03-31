@@ -80,12 +80,13 @@ WebInspector.AuditRules.GzipRule = function()
 
 WebInspector.AuditRules.GzipRule.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
      * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
-    doRun: function(requests, result, callback, progress)
+    doRun: function(target, requests, result, callback, progress)
     {
         var totalSavings = 0;
         var compressedSize = 0;
@@ -153,12 +154,13 @@ WebInspector.AuditRules.CombineExternalResourcesRule = function(id, name, type, 
 
 WebInspector.AuditRules.CombineExternalResourcesRule.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
      * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
-    doRun: function(requests, result, callback, progress)
+    doRun: function(target, requests, result, callback, progress)
     {
         var domainToResourcesMap = WebInspector.AuditRules.getDomainToResourcesMap(requests, [this._type], false);
         var penalizedResourceCount = 0;
@@ -220,12 +222,13 @@ WebInspector.AuditRules.MinimizeDnsLookupsRule = function(hostCountThreshold) {
 
 WebInspector.AuditRules.MinimizeDnsLookupsRule.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
      * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
-    doRun: function(requests, result, callback, progress)
+    doRun: function(target, requests, result, callback, progress)
     {
         var summary = result.addChild("");
         var domainToResourcesMap = WebInspector.AuditRules.getDomainToResourcesMap(requests, null, false);
@@ -266,12 +269,13 @@ WebInspector.AuditRules.ParallelizeDownloadRule = function(optimalHostnameCount,
 
 WebInspector.AuditRules.ParallelizeDownloadRule.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
      * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
-    doRun: function(requests, result, callback, progress)
+    doRun: function(target, requests, result, callback, progress)
     {
         /**
          * @param {string} a
@@ -351,12 +355,13 @@ WebInspector.AuditRules.UnusedCssRule = function()
 
 WebInspector.AuditRules.UnusedCssRule.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
      * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
-    doRun: function(requests, result, callback, progress)
+    doRun: function(target, requests, result, callback, progress)
     {
         /**
          * @param {!Array.<!WebInspector.AuditRules.ParsedStyleSheet>} styleSheets
@@ -458,14 +463,14 @@ WebInspector.AuditRules.UnusedCssRule.prototype = {
                     if (progress.isCanceled())
                         return;
                     var effectiveSelector = selectors[i].replace(pseudoSelectorRegexp, "");
-                    WebInspector.domModel.querySelector(document.id, effectiveSelector, queryCallback.bind(null, i === selectors.length - 1 ? selectorsCallback.bind(null, styleSheets) : null, selectors[i]));
+                    target.domModel.querySelector(document.id, effectiveSelector, queryCallback.bind(null, i === selectors.length - 1 ? selectorsCallback.bind(null, styleSheets) : null, selectors[i]));
                 }
             }
 
-            WebInspector.domModel.requestDocument(documentLoaded.bind(null, selectors));
+            target.domModel.requestDocument(documentLoaded.bind(null, selectors));
         }
 
-        var styleSheetInfos = WebInspector.cssModel.allStyleSheets();
+        var styleSheetInfos = target.cssModel.allStyleSheets();
         if (!styleSheetInfos || !styleSheetInfos.length) {
             evalCallback([]);
             return;
@@ -564,12 +569,13 @@ WebInspector.AuditRules.CacheControlRule.MillisPerMonth = 1000 * 60 * 60 * 24 * 
 
 WebInspector.AuditRules.CacheControlRule.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
      * @param {function(!WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
-    doRun: function(requests, result, callback, progress)
+    doRun: function(target, requests, result, callback, progress)
     {
         var cacheableAndNonCacheableResources = this._cacheableAndNonCacheableResources(requests);
         if (cacheableAndNonCacheableResources[0].length)
@@ -858,12 +864,13 @@ WebInspector.AuditRules.ImageDimensionsRule = function()
 
 WebInspector.AuditRules.ImageDimensionsRule.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
      * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
-    doRun: function(requests, result, callback, progress)
+    doRun: function(target, requests, result, callback, progress)
     {
         var urlToNoDimensionCount = {};
 
@@ -885,7 +892,7 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
             if (progress.isCanceled())
                 return;
 
-            const node = WebInspector.domModel.nodeForId(imageId);
+            const node = target.domModel.nodeForId(imageId);
             var src = node.getAttribute("src");
             if (!src.asParsedURL()) {
                 for (var frameOwnerCandidate = node; frameOwnerCandidate; frameOwnerCandidate = frameOwnerCandidate.parentNode) {
@@ -961,9 +968,9 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
                 doneCallback();
 
             for (var i = 0; nodeIds && i < nodeIds.length; ++i) {
-                WebInspector.cssModel.getMatchedStylesAsync(nodeIds[i], false, false, matchedCallback);
-                WebInspector.cssModel.getInlineStylesAsync(nodeIds[i], inlineCallback);
-                WebInspector.cssModel.getComputedStyleAsync(nodeIds[i], imageStylesReady.bind(null, nodeIds[i], targetResult, i === nodeIds.length - 1));
+                target.cssModel.getMatchedStylesAsync(nodeIds[i], false, false, matchedCallback);
+                target.cssModel.getInlineStylesAsync(nodeIds[i], inlineCallback);
+                target.cssModel.getComputedStyleAsync(nodeIds[i], imageStylesReady.bind(null, nodeIds[i], targetResult, i === nodeIds.length - 1));
             }
         }
 
@@ -971,12 +978,12 @@ WebInspector.AuditRules.ImageDimensionsRule.prototype = {
         {
             if (progress.isCanceled())
                 return;
-            WebInspector.domModel.querySelectorAll(root.id, "img[src]", getStyles);
+            target.domModel.querySelectorAll(root.id, "img[src]", getStyles);
         }
 
         if (progress.isCanceled())
             return;
-        WebInspector.domModel.requestDocument(onDocumentAvailable);
+        target.domModel.requestDocument(onDocumentAvailable);
     },
 
     __proto__: WebInspector.AuditRule.prototype
@@ -993,12 +1000,13 @@ WebInspector.AuditRules.CssInHeadRule = function()
 
 WebInspector.AuditRules.CssInHeadRule.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
      * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
-    doRun: function(requests, result, callback, progress)
+    doRun: function(target, requests, result, callback, progress)
     {
         function evalCallback(evalResult)
         {
@@ -1041,7 +1049,7 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
                 var urlToViolationsArray = {};
                 var externalStylesheetHrefs = [];
                 for (var j = 0; j < externalStylesheetNodeIds.length; ++j) {
-                    var linkNode = WebInspector.domModel.nodeForId(externalStylesheetNodeIds[j]);
+                    var linkNode = target.domModel.nodeForId(externalStylesheetNodeIds[j]);
                     var completeHref = WebInspector.ParsedURL.completeURL(linkNode.ownerDocument.baseURL, linkNode.getAttribute("href"));
                     externalStylesheetHrefs.push(completeHref || "<empty>");
                 }
@@ -1061,7 +1069,7 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
 
             if (!nodeIds)
                 return;
-            WebInspector.domModel.querySelectorAll(root.id, "body link[rel~='stylesheet'][href]", externalStylesheetsReceived.bind(null, root, nodeIds));
+            target.domModel.querySelectorAll(root.id, "body link[rel~='stylesheet'][href]", externalStylesheetsReceived.bind(null, root, nodeIds));
         }
 
         function onDocumentAvailable(root)
@@ -1069,10 +1077,10 @@ WebInspector.AuditRules.CssInHeadRule.prototype = {
             if (progress.isCanceled())
                 return;
 
-            WebInspector.domModel.querySelectorAll(root.id, "body style", inlineStylesReceived.bind(null, root));
+            target.domModel.querySelectorAll(root.id, "body style", inlineStylesReceived.bind(null, root));
         }
 
-        WebInspector.domModel.requestDocument(onDocumentAvailable);
+        target.domModel.requestDocument(onDocumentAvailable);
     },
 
     __proto__: WebInspector.AuditRule.prototype
@@ -1089,12 +1097,13 @@ WebInspector.AuditRules.StylesScriptsOrderRule = function()
 
 WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
      * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
-    doRun: function(requests, result, callback, progress)
+    doRun: function(target, requests, result, callback, progress)
     {
         function evalCallback(resultValue)
         {
@@ -1137,7 +1146,7 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
             if (lateStyleIds.length || cssBeforeInlineCount) {
                 var lateStyleUrls = [];
                 for (var i = 0; i < lateStyleIds.length; ++i) {
-                    var lateStyleNode = WebInspector.domModel.nodeForId(lateStyleIds[i]);
+                    var lateStyleNode = target.domModel.nodeForId(lateStyleIds[i]);
                     var completeHref = WebInspector.ParsedURL.completeURL(lateStyleNode.ownerDocument.baseURL, lateStyleNode.getAttribute("href"));
                     lateStyleUrls.push(completeHref || "<empty>");
                 }
@@ -1159,7 +1168,7 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
             if (!nodeIds)
                 return;
 
-            WebInspector.domModel.querySelectorAll(root.id, "head link[rel~='stylesheet'][href] ~ script:not([src])", cssBeforeInlineReceived.bind(null, nodeIds));
+            target.domModel.querySelectorAll(root.id, "head link[rel~='stylesheet'][href] ~ script:not([src])", cssBeforeInlineReceived.bind(null, nodeIds));
         }
 
         /**
@@ -1170,10 +1179,10 @@ WebInspector.AuditRules.StylesScriptsOrderRule.prototype = {
             if (progress.isCanceled())
                 return;
 
-            WebInspector.domModel.querySelectorAll(root.id, "head script[src] ~ link[rel~='stylesheet'][href]", lateStylesReceived.bind(null, root));
+            target.domModel.querySelectorAll(root.id, "head script[src] ~ link[rel~='stylesheet'][href]", lateStylesReceived.bind(null, root));
         }
 
-        WebInspector.domModel.requestDocument(onDocumentAvailable);
+        target.domModel.requestDocument(onDocumentAvailable);
     },
 
     __proto__: WebInspector.AuditRule.prototype
@@ -1190,14 +1199,15 @@ WebInspector.AuditRules.CSSRuleBase = function(id, name)
 
 WebInspector.AuditRules.CSSRuleBase.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
      * @param {function(?WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
-    doRun: function(requests, result, callback, progress)
+    doRun: function(target, requests, result, callback, progress)
     {
-        var headers = WebInspector.cssModel.allStyleSheets();
+        var headers = target.cssModel.allStyleSheets();
 
         if (!headers.length) {
             callback(null);
@@ -1385,12 +1395,13 @@ WebInspector.AuditRules.CookieRuleBase = function(id, name)
 
 WebInspector.AuditRules.CookieRuleBase.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.NetworkRequest>} requests
      * @param {!WebInspector.AuditRuleResult} result
      * @param {function(!WebInspector.AuditRuleResult)} callback
      * @param {!WebInspector.Progress} progress
      */
-    doRun: function(requests, result, callback, progress)
+    doRun: function(target, requests, result, callback, progress)
     {
         var self = this;
         function resultCallback(receivedCookies) {

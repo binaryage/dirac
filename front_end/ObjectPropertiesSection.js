@@ -651,10 +651,11 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
                     continue;
                 }
 
+                var runtimeModel = this._remoteObject.target().runtimeModel;
                 var scopeRef = isTrueObject ? undefined : new WebInspector.ScopeRef(i, undefined, this._remoteObject.objectId);
-                var remoteObject = WebInspector.ScopeRemoteObject.fromPayload(scope.object, scopeRef);
+                var remoteObject = runtimeModel.createScopedObject(scope.object, scopeRef);
                 if (isTrueObject) {
-                    var property = WebInspector.RemoteObjectProperty.fromScopeValue(title, remoteObject);
+                    var property = runtimeModel.createScopedObject(title, remoteObject);
                     property.parentObject = null;
                     this.appendChild(new this.treeOutline.section.treeElementConstructor(property));
                 } else {

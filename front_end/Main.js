@@ -273,7 +273,6 @@ WebInspector.Main.prototype = {
         WebInspector.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(WebInspector.isolatedFileSystemManager);
         WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
 
-        WebInspector.cssModel = new WebInspector.CSSStyleModel(WebInspector.workspace);
         WebInspector.timelineManager = new WebInspector.TimelineManager();
         WebInspector.tracingAgent = new WebInspector.TracingAgent();
 
@@ -590,7 +589,7 @@ WebInspector.Main.prototype = {
      */
     inspect: function(payload, hints)
     {
-        var object = WebInspector.RemoteObject.fromPayload(payload);
+        var object = WebInspector.runtimeModel.createRemoteObject(payload);
         if (object.subtype === "node") {
             object.pushNodeToFrontend(callback);
             var elementsPanel = /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements"));
