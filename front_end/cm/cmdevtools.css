@@ -242,3 +242,8 @@
     background-color: rgb(100%, 42%, 42%);
     border: 2px solid rgb(100%, 31%, 31%);
 }
+
+/** @see crbug.com/358161 */
+.CodeMirror .CodeMirror-vscrollbar, .CodeMirror .CodeMirror-hscrollbar {
+  -webkit-transform: translateZ(0);
+}
