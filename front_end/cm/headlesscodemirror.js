@@ -1,8 +1,6 @@
 // Content of the function is equal to runmode-standalone.js file
 // from CodeMirror distribution
 (function(window) {
-/* Just enough of CodeMirror to run runMode under node.js */
-
 window.CodeMirror = {};
 
 (function() {
@@ -152,4 +150,5 @@ CodeMirror.runMode = function (string, modespec, callback, options) {
   }
 };
 })();
+
 }(this))

@@ -72,7 +72,7 @@ WebInspector.CodeMirrorUtils.prototype = {
         });
         codeMirror.getWrapperElement().classList.add("source-code");
         codeMirror.on("cursorActivity", function(cm) {
-            cm.display.cursor.scrollIntoViewIfNeeded(false);
+            cm.display.cursorDiv.scrollIntoViewIfNeeded(false);
         });
         editingContext.codeMirror = codeMirror;
     },

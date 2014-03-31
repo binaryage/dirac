@@ -88,7 +88,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         "Tab": "defaultTab",
         "Shift-Tab": "indentLess",
         "Enter": "smartNewlineAndIndent",
-        "Ctrl-Space": "autocomplete"
+        "Ctrl-Space": "autocomplete",
+        "Esc": "dismissMultipleSelections"
     };
 
     CodeMirror.keyMap["devtools-pc"] = {
@@ -147,7 +148,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._fixWordMovement = new WebInspector.CodeMirrorTextEditor.FixWordMovement(this._codeMirror);
     this._autocompleteController = new WebInspector.CodeMirrorTextEditor.AutocompleteController(this, this._codeMirror);
 
-    this._codeMirror.on("change", this._change.bind(this));
+    this._codeMirror.on("changes", this._changes.bind(this));
     this._codeMirror.on("beforeChange", this._beforeChange.bind(this));
     this._codeMirror.on("gutterClick", this._gutterClick.bind(this));
     this._codeMirror.on("cursorActivity", this._cursorActivity.bind(this));
@@ -236,6 +237,15 @@ CodeMirror.commands.redoAndReveal = function(codemirror)
     var cursor = codemirror.getCursor("start");
     codemirror._codeMirrorTextEditor._innerRevealLine(cursor.line, scrollInfo);
     codemirror._codeMirrorTextEditor._autocompleteController.finishAutocomplete();
+}
+
+CodeMirror.commands.dismissMultipleSelections = function(codemirror)
+{
+    if (codemirror.getSelections().length <= 1)
+        return CodeMirror.Pass;
+    var range = codemirror.listSelections()[0];
+    codemirror.setSelection(range.anchor, range.head, {scroll: false});
+    codemirror._codeMirrorTextEditor._revealLine(range.anchor.line);
 }
 
 WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 2000;
@@ -937,10 +947,12 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     /**
      * @param {!CodeMirror} codeMirror
-     * @param {!WebInspector.CodeMirrorTextEditor.ChangeObject} changeObject
+     * @param {!Array.<!WebInspector.CodeMirrorTextEditor.ChangeObject>} changes
      */
-    _change: function(codeMirror, changeObject)
+    _changes: function(codeMirror, changes)
     {
+        if (!changes.length)
+            return;
         // We do not show "scroll beyond end of file" span for one line documents, so we need to check if "document has one line" changed.
         var hasOneLine = this._codeMirror.lineCount() === 1;
         if (hasOneLine !== this._hasOneLine)
@@ -959,7 +971,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
         var linesToUpdate = {};
         var singleCharInput = false;
-        do {
+        for (var changeIndex = 0; changeIndex < changes.length; ++changeIndex) {
+            var changeObject = changes[changeIndex];
             var oldRange = this._toRange(changeObject.from, changeObject.to);
             var newRange = oldRange.clone();
             var linesAdded = changeObject.text.length;
@@ -983,7 +996,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
                 for (var i = newRange.startLine; i <= newRange.endLine; ++i)
                     linesToUpdate[i] = this.line(i);
             }
-        } while (changeObject = changeObject.next);
+        }
         if (this._dictionary) {
             for (var lineNumber in linesToUpdate)
                 this._addTextToCompletionDictionary(linesToUpdate[lineNumber]);
@@ -1003,13 +1016,16 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     /**
      * @param {!CodeMirror} codeMirror
-     * @param {!{head: !CodeMirror.Pos, anchor: !CodeMirror.Pos}} selection
+     * @param {{ranges: !Array.<{head: !CodeMirror.Pos, anchor: !CodeMirror.Pos}>}} selection
      */
     _beforeSelectionChange: function(codeMirror, selection)
     {
         if (!this._isHandlingMouseDownEvent)
             return;
-        this._reportJump(this.selection(), this._toRange(selection.anchor, selection.head));
+        if (!selection.ranges.length)
+            return;
+        var primarySelection = selection.ranges[0];
+        this._reportJump(this.selection(), this._toRange(primarySelection.anchor, primarySelection.head));
     },
 
     /**
@@ -1334,7 +1350,10 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
         if (selectionStart.ch === selectionEnd.ch)
             return;
 
-        var selectedText = this._codeMirror.getSelection();
+        var selections = this._codeMirror.getSelections();
+        if (selections.length !== 1)
+            return;
+        var selectedText = selections[0];
         if (this._isWord(selectedText, selectionStart.line, selectionStart.ch, selectionEnd.ch)) {
             if (selectionStart)
                 this._codeMirror.addLineClass(selectionStart.line, "wrap", "cm-line-with-selection")
@@ -1499,34 +1518,36 @@ WebInspector.CodeMirrorTextEditor.FixWordMovement = function(codeMirror)
 {
     function moveLeft(shift, codeMirror)
     {
-        var cursor = codeMirror.getCursor("head");
-        if (cursor.ch !== 0 || cursor.line === 0)
-            return CodeMirror.Pass;
         codeMirror.setExtending(shift);
-        codeMirror.execCommand("goLineUp");
-        codeMirror.execCommand("goLineEnd")
+        var cursor = codeMirror.getCursor("head");
+        codeMirror.execCommand("goGroupLeft");
+        var newCursor = codeMirror.getCursor("head");
+        if (newCursor.ch === 0 && newCursor.line !== 0) {
+            codeMirror.setExtending(false);
+            return;
+        }
+
+        var skippedText = codeMirror.getRange(newCursor, cursor, "#");
+        if (/^\s+$/.test(skippedText))
+            codeMirror.execCommand("goGroupLeft");
         codeMirror.setExtending(false);
     }
+
     function moveRight(shift, codeMirror)
     {
-        var cursor = codeMirror.getCursor("head");
-        var line = codeMirror.getLine(cursor.line);
-        if (cursor.ch !== line.length || cursor.line + 1 === codeMirror.lineCount())
-            return CodeMirror.Pass;
         codeMirror.setExtending(shift);
-        codeMirror.execCommand("goLineDown");
-        codeMirror.execCommand("goLineStart");
-        codeMirror.setExtending(false);
-    }
-    function delWordBack(codeMirror)
-    {
-        if (codeMirror.somethingSelected())
-            return CodeMirror.Pass;
         var cursor = codeMirror.getCursor("head");
-        if (cursor.ch === 0)
-            codeMirror.execCommand("delCharBefore");
-        else
-            return CodeMirror.Pass;
+        codeMirror.execCommand("goGroupRight");
+        var newCursor = codeMirror.getCursor("head");
+        if (newCursor.ch === 0 && newCursor.line !== 0) {
+            codeMirror.setExtending(false);
+            return;
+        }
+
+        var skippedText = codeMirror.getRange(cursor, newCursor, "#");
+        if (/^\s+$/.test(skippedText))
+            codeMirror.execCommand("goGroupRight");
+        codeMirror.setExtending(false);
     }
 
     var modifierKey = WebInspector.isMac() ? "Alt" : "Ctrl";
@@ -1537,7 +1558,6 @@ WebInspector.CodeMirrorTextEditor.FixWordMovement = function(codeMirror)
     keyMap[rightKey] = moveRight.bind(null, false);
     keyMap["Shift-" + leftKey] = moveLeft.bind(null, true);
     keyMap["Shift-" + rightKey] = moveRight.bind(null, true);
-    keyMap[modifierKey + "-Backspace"] = delWordBack;
     codeMirror.addKeyMap(keyMap);
 }
 
@@ -1556,6 +1576,25 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController = function(textEditor, 
 }
 
 WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
+    /**
+     * @param {!WebInspector.TextRange} mainSelection
+     * @param {!Array.<!{head: !CodeMirror.Pos, anchor: !CodeMirror.Pos}>} selections
+     * @return {boolean}
+     */
+    _validateSelectionsContexts: function(mainSelection, selections)
+    {
+        var mainSelectionContext = this._textEditor.copyRange(mainSelection);
+        for (var i = 0; i < selections.length; ++i) {
+            var wordRange = this._textEditor._wordRangeForCursorPosition(selections[i].head.line, selections[i].head.ch, false);
+            if (!wordRange)
+                return false;
+            var context = this._textEditor.copyRange(wordRange);
+            if (context !== mainSelectionContext)
+                return false;
+        }
+        return true;
+    },
+
     autocomplete: function()
     {
         var dictionary = this._textEditor._dictionary;
@@ -1564,12 +1603,15 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
             return;
         }
 
-        var cursor = this._codeMirror.getCursor();
+        var selections = this._codeMirror.listSelections().slice();
+        var topSelection = selections.shift();
+        var cursor = topSelection.head;
         var substituteRange = this._textEditor._wordRangeForCursorPosition(cursor.line, cursor.ch, false);
-        if (!substituteRange || substituteRange.startColumn === cursor.ch) {
+        if (!substituteRange || substituteRange.startColumn === cursor.ch || !this._validateSelectionsContexts(substituteRange, selections)) {
             this.finishAutocomplete();
             return;
         }
+
         var prefixRange = substituteRange.clone();
         prefixRange.endColumn = cursor.ch;
 
@@ -1639,9 +1681,15 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
 
     acceptSuggestion: function()
     {
-        if (this._prefixRange.endColumn - this._prefixRange.startColumn !== this._currentSuggestion.length) {
-            var pos = this._textEditor._toPos(this._prefixRange);
-            this._codeMirror.replaceRange(this._currentSuggestion, pos.start, pos.end, "+autocomplete");
+        if (this._prefixRange.endColumn - this._prefixRange.startColumn === this._currentSuggestion.length)
+            return;
+
+        var selections = this._codeMirror.listSelections().slice();
+        var prefixLength = this._prefixRange.endColumn - this._prefixRange.startColumn;
+        for (var i = selections.length - 1; i >= 0; --i) {
+            var start = selections[i].head;
+            var end = new CodeMirror.Pos(start.line, start.ch - prefixLength);
+            this._codeMirror.replaceRange(this._currentSuggestion, start, end, "+autocomplete");
         }
     },
 
