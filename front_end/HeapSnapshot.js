@@ -1512,51 +1512,51 @@ WebInspector.HeapSnapshot.prototype = {
         var edgeShortcutType = this._edgeShortcutType;
         var firstEdgeIndexes = this._firstEdgeIndexes;
         var containmentEdges = this._containmentEdges;
-        var containmentEdgesLength = this._containmentEdges.length;
 
         var mapAndFlag = this.userObjectsMapAndFlag();
         var flags = mapAndFlag ? mapAndFlag.map : null;
         var flag = mapAndFlag ? mapAndFlag.flag : 0;
 
-        var nodesToVisit = new Uint32Array(nodeCount);
+        var stackNodes = new Uint32Array(nodeCount);
+        var stackCurrentEdge = new Uint32Array(nodeCount);
         var postOrderIndex2NodeOrdinal = new Uint32Array(nodeCount);
         var nodeOrdinal2PostOrderIndex = new Uint32Array(nodeCount);
-        var painted = new Uint8Array(nodeCount);
-        var nodesToVisitLength = 0;
+        var visited = new Uint8Array(nodeCount);
         var postOrderIndex = 0;
-        var grey = 1;
-        var black = 2;
 
-        nodesToVisit[nodesToVisitLength++] = rootNodeOrdinal;
-        painted[rootNodeOrdinal] = grey;
+        var stackTop = 0;
+        stackNodes[0] = rootNodeOrdinal;
+        stackCurrentEdge[0] = firstEdgeIndexes[rootNodeOrdinal];
+        visited[rootNodeOrdinal] = 1;
 
-        while (nodesToVisitLength) {
-            var nodeOrdinal = nodesToVisit[nodesToVisitLength - 1];
+        while (stackTop >= 0) {
+            var nodeOrdinal = stackNodes[stackTop];
+            var edgeIndex = stackCurrentEdge[stackTop];
+            var edgesEnd = firstEdgeIndexes[nodeOrdinal + 1];
 
-            if (painted[nodeOrdinal] === grey) {
-                painted[nodeOrdinal] = black;
+            if (edgeIndex < edgesEnd) {
+                stackCurrentEdge[stackTop] += edgeFieldsCount;
+                if (nodeOrdinal !== rootNodeOrdinal && containmentEdges[edgeIndex + edgeTypeOffset] === edgeShortcutType)
+                    continue;
+                var childNodeIndex = containmentEdges[edgeIndex + edgeToNodeOffset];
+                var childNodeOrdinal = childNodeIndex / nodeFieldCount;
+                if (visited[childNodeOrdinal])
+                    continue;
                 var nodeFlag = !flags || (flags[nodeOrdinal] & flag);
-                var beginEdgeIndex = firstEdgeIndexes[nodeOrdinal];
-                var endEdgeIndex = firstEdgeIndexes[nodeOrdinal + 1];
-                for (var edgeIndex = beginEdgeIndex; edgeIndex < endEdgeIndex; edgeIndex += edgeFieldsCount) {
-                    if (nodeOrdinal !== rootNodeOrdinal && containmentEdges[edgeIndex + edgeTypeOffset] === edgeShortcutType)
-                        continue;
-                    var childNodeIndex = containmentEdges[edgeIndex + edgeToNodeOffset];
-                    var childNodeOrdinal = childNodeIndex / nodeFieldCount;
-                    var childNodeFlag = !flags || (flags[childNodeOrdinal] & flag);
-                    // We are skipping the edges from non-page-owned nodes to page-owned nodes.
-                    // Otherwise the dominators for the objects that also were retained by debugger would be affected.
-                    if (nodeOrdinal !== rootNodeOrdinal && childNodeFlag && !nodeFlag)
-                        continue;
-                    if (!painted[childNodeOrdinal]) {
-                        painted[childNodeOrdinal] = grey;
-                        nodesToVisit[nodesToVisitLength++] = childNodeOrdinal;
-                    }
-                }
+                var childNodeFlag = !flags || (flags[childNodeOrdinal] & flag);
+                // We are skipping the edges from non-page-owned nodes to page-owned nodes.
+                // Otherwise the dominators for the objects that also were retained by debugger would be affected.
+                if (nodeOrdinal !== rootNodeOrdinal && childNodeFlag && !nodeFlag)
+                    continue;
+                ++stackTop;
+                stackNodes[stackTop] = childNodeOrdinal;
+                stackCurrentEdge[stackTop] = firstEdgeIndexes[childNodeOrdinal];
+                visited[childNodeOrdinal] = 1;
             } else {
+                // Done with all the node children
                 nodeOrdinal2PostOrderIndex[nodeOrdinal] = postOrderIndex;
                 postOrderIndex2NodeOrdinal[postOrderIndex++] = nodeOrdinal;
-                --nodesToVisitLength;
+                --stackTop;
             }
         }
 
@@ -1564,7 +1564,7 @@ WebInspector.HeapSnapshot.prototype = {
             console.log("Error: Corrupted snapshot. " + (nodeCount - postOrderIndex) + " nodes are unreachable from the root:");
             var dumpNode = this.rootNode();
             for (var i = 0; i < nodeCount; ++i) {
-                if (painted[i] !== black) {
+                if (!visited[i]) {
                     // Fix it by giving the node a postorder index anyway.
                     nodeOrdinal2PostOrderIndex[i] = postOrderIndex;
                     postOrderIndex2NodeOrdinal[postOrderIndex++] = i;
