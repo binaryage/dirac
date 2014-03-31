@@ -64,43 +64,7 @@
     color: inherit;
 }
 
-.heap-snapshot-view .data-grid td.count-column {
-    text-align: right;
-}
-
-.heap-snapshot-view .data-grid td.addedCount-column {
-    text-align: right;
-}
-
-.heap-snapshot-view .data-grid td.removedCount-column {
-    text-align: right;
-}
-
-.heap-snapshot-view .data-grid td.countDelta-column {
-    text-align: right;
-}
-
-.heap-snapshot-view .data-grid td.addedSize-column {
-    text-align: right;
-}
-
-.heap-snapshot-view .data-grid td.removedSize-column {
-    text-align: right;
-}
-
-.heap-snapshot-view .data-grid td.sizeDelta-column {
-    text-align: right;
-}
-
-.heap-snapshot-view .data-grid td.shallowSize-column {
-    text-align: right;
-}
-
-.heap-snapshot-view .data-grid td.retainedSize-column {
-    text-align: right;
-}
-
-.heap-snapshot-view .data-grid td.distanceToWindow-column {
+.heap-snapshot-view .data-grid td.numeric-column {
     text-align: right;
 }
 
