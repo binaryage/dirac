@@ -134,7 +134,7 @@ WebInspector.SplitView.prototype = {
             this._restoreAndApplyShowModeFromSettings();
         this._updateShowHideSidebarButton();
         this._updateResizersClass();
-        this.invalidateMinimumSize();
+        this.invalidateConstraints();
     },
 
     /**
@@ -349,7 +349,7 @@ WebInspector.SplitView.prototype = {
     {
         this._savedSidebarSize = size;
         this._saveSetting();
-        this._innerSetSidebarSize(size, false);
+        this._innerSetSidebarSize(size, false, true);
     },
 
     /**
@@ -380,19 +380,20 @@ WebInspector.SplitView.prototype = {
         this._saveShowModeToSettings();
         this._updateShowHideSidebarButton();
         this.dispatchEventToListeners(WebInspector.SplitView.Events.ShowModeChanged, showMode);
-        this.invalidateMinimumSize();
+        this.invalidateConstraints();
     },
 
     /**
      * @param {number} size
      * @param {boolean} animate
+     * @param {boolean=} userAction
      */
-    _innerSetSidebarSize: function(size, animate)
+    _innerSetSidebarSize: function(size, animate, userAction)
     {
         if (this._showMode !== WebInspector.SplitView.ShowMode.Both || !this.isShowing())
             return;
 
-        size = this._applyConstraints(size);
+        size = this._applyConstraints(size, userAction);
         if (this._sidebarSize === size)
             return;
 
@@ -517,28 +518,54 @@ WebInspector.SplitView.prototype = {
 
     /**
      * @param {number} sidebarSize
+     * @param {boolean=} userAction
      * @return {number}
      */
-    _applyConstraints: function(sidebarSize)
+    _applyConstraints: function(sidebarSize, userAction)
     {
         var totalSize = this.totalSize();
 
-        var size = this._sidebarView.minimumSize();
-        var from = this.isVertical() ? size.width : size.height;
-        if (!from)
-            from = WebInspector.SplitView.MinPadding;
+        var constraints = this._sidebarView.constraints();
+        var minSidebarSize = this.isVertical() ? constraints.minimum.width : constraints.minimum.height;
+        if (!minSidebarSize)
+            minSidebarSize = WebInspector.SplitView.MinPadding;
 
-        size = this._mainView.minimumSize();
-        var minMainSize = this.isVertical() ? size.width : size.height;
+        var preferredSidebarSize = this.isVertical() ? constraints.preferred.width : constraints.preferred.height;
+        if (!preferredSidebarSize)
+            preferredSidebarSize = WebInspector.SplitView.MinPadding;
+        // Allow sidebar to be less than preferred by explicit user action.
+        if (sidebarSize < preferredSidebarSize)
+            preferredSidebarSize = Math.max(sidebarSize, minSidebarSize);
+
+        constraints = this._mainView.constraints();
+        var minMainSize = this.isVertical() ? constraints.minimum.width : constraints.minimum.height;
         if (!minMainSize)
             minMainSize = WebInspector.SplitView.MinPadding;
 
-        var to = totalSize - minMainSize;
-        if (from <= to)
-            return Number.constrain(sidebarSize, from, to);
+        var preferredMainSize = this.isVertical() ? constraints.preferred.width : constraints.preferred.height;
+        if (!preferredMainSize)
+            preferredMainSize = WebInspector.SplitView.MinPadding;
+        var savedMainSize = this.isVertical() ? this._savedVerticalMainSize : this._savedHorizontalMainSize;
+        if (typeof savedMainSize !== "undefined")
+            preferredMainSize = Math.min(preferredMainSize, savedMainSize);
+        if (userAction)
+            preferredMainSize = minMainSize;
 
-        // If we don't have enough space (which is a very rare case), prioritize main view.
-        return Math.max(0, to);
+        // Enough space for preferred.
+        var totalPreferred = preferredMainSize + preferredSidebarSize;
+        if (totalPreferred <= totalSize)
+            return Number.constrain(sidebarSize, preferredSidebarSize, totalSize - preferredMainSize);
+
+        // Enough space for minimum.
+        if (minMainSize + minSidebarSize <= totalSize) {
+            var delta = totalPreferred - totalSize;
+            var sidebarDelta = delta * preferredSidebarSize / totalPreferred;
+            sidebarSize = preferredSidebarSize - sidebarDelta;
+            return Number.constrain(sidebarSize, minSidebarSize, totalSize - minMainSize);
+        }
+
+        // Not enough space even for minimum sizes.
+        return Math.max(0, totalSize - minMainSize);
     },
 
     wasShown: function()
@@ -563,22 +590,27 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
-     * @return {!Size}
+     * @return {!Constraints}
      */
-    calculateMinimumSize: function()
+    calculateConstraints: function()
     {
         if (this._showMode === WebInspector.SplitView.ShowMode.OnlyMain)
-            return this._mainView.minimumSize();
+            return this._mainView.constraints();
         if (this._showMode === WebInspector.SplitView.ShowMode.OnlySidebar)
-            return this._sidebarView.minimumSize();
+            return this._sidebarView.constraints();
 
-        var mainSize = this._mainView.minimumSize();
-        var sidebarSize = this._sidebarView.minimumSize();
+        var mainConstraints = this._mainView.constraints();
+        var sidebarConstraints = this._sidebarView.constraints();
         var min = WebInspector.SplitView.MinPadding;
-        if (this._isVertical)
-            return new Size((mainSize.width || min) + (sidebarSize.width || min), Math.max(mainSize.height, sidebarSize.height));
-        else
-            return new Size(Math.max(mainSize.width, sidebarSize.width), (mainSize.height || min) + (sidebarSize.height || min));
+        if (this._isVertical) {
+            mainConstraints = mainConstraints.widthToMax(min);
+            sidebarConstraints = sidebarConstraints.widthToMax(min);
+            return mainConstraints.addWidth(sidebarConstraints).heightToMax(sidebarConstraints);
+        } else {
+            mainConstraints = mainConstraints.heightToMax(min);
+            sidebarConstraints = sidebarConstraints.heightToMax(min);
+            return mainConstraints.widthToMax(sidebarConstraints).addHeight(sidebarConstraints);
+        }
     },
 
     /**
@@ -603,10 +635,14 @@ WebInspector.SplitView.prototype = {
         var dipEventPosition = (this._isVertical ? event.pageX : event.pageY) * WebInspector.zoomManager.zoomFactor();
         var newOffset = dipEventPosition + this._dragOffset;
         var newSize = (this._secondIsSidebar ? this.totalSize() - newOffset : newOffset);
-        var constrainedSize = this._applyConstraints(newSize);
+        var constrainedSize = this._applyConstraints(newSize, true);
         this._savedSidebarSize = constrainedSize;
         this._saveSetting();
-        this._innerSetSidebarSize(constrainedSize, false);
+        this._innerSetSidebarSize(constrainedSize, false, true);
+        if (this.isVertical())
+            this._savedVerticalMainSize = this.totalSize() - this._sidebarSize;
+        else
+            this._savedHorizontalMainSize = this.totalSize() - this._sidebarSize;
         event.preventDefault();
     },
 

@@ -996,7 +996,7 @@ WebInspector.SourcesPanel.prototype = {
         vbox.element.appendChild(this._debugToolbarDrawer);
         vbox.element.appendChild(this.debugToolbar);
         vbox.element.appendChild(this.threadsToolbar.element);
-        vbox.setMinimumSize(WebInspector.SourcesPanel.minToolbarWidth, 25);
+        vbox.setMinimumAndPreferredSizes(25, 25, WebInspector.SourcesPanel.minToolbarWidth, 100);
         var sidebarPaneStack = new WebInspector.SidebarPaneStack();
         sidebarPaneStack.element.classList.add("flex-auto");
         sidebarPaneStack.show(vbox.element);

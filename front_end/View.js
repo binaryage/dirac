@@ -281,8 +281,8 @@ WebInspector.View.prototype = {
             this._cacheSize();
         }
 
-        if (this._parentView && this._hasNonZeroMinimumSize())
-            this._parentView.invalidateMinimumSize();
+        if (this._parentView && this._hasNonZeroConstraints())
+            this._parentView.invalidateConstraints();
     },
 
     /**
@@ -304,8 +304,8 @@ WebInspector.View.prototype = {
             this._visible = false;
             if (this._parentIsShowing())
                 this._processWasHidden();
-            if (this._parentView && this._hasNonZeroMinimumSize())
-                this._parentView.invalidateMinimumSize();
+            if (this._parentView && this._hasNonZeroConstraints())
+                this._parentView.invalidateConstraints();
             return;
         }
 
@@ -324,8 +324,8 @@ WebInspector.View.prototype = {
             this._parentView._children.splice(childIndex, 1);
             var parent = this._parentView;
             this._parentView = null;
-            if (this._hasNonZeroMinimumSize())
-                parent.invalidateMinimumSize();
+            if (this._hasNonZeroConstraints())
+                parent.invalidateConstraints();
         } else
             WebInspector.View._assert(this._isRoot, "Removing non-root view from DOM");
     },
@@ -505,23 +505,35 @@ WebInspector.View.prototype = {
     },
 
     /**
-     * @return {!Size}
+     * @return {!Constraints}
      */
-    calculateMinimumSize: function()
+    calculateConstraints: function()
     {
-        return new Size(0, 0);
+        return new Constraints(new Size(0, 0));
     },
 
     /**
-     * @return {!Size}
+     * @return {!Constraints}
      */
-    minimumSize: function()
+    constraints: function()
     {
-        if (typeof this._minimumSize !== "undefined")
-            return this._minimumSize;
-        if (typeof this._cachedMinimumSize === "undefined")
-            this._cachedMinimumSize = this.calculateMinimumSize();
-        return this._cachedMinimumSize;
+        if (typeof this._constraints !== "undefined")
+            return this._constraints;
+        if (typeof this._cachedConstraints === "undefined")
+            this._cachedConstraints = this.calculateConstraints();
+        return this._cachedConstraints;
+    },
+
+    /**
+     * @param {number} width
+     * @param {number} height
+     * @param {number} preferredWidth
+     * @param {number} preferredHeight
+     */
+    setMinimumAndPreferredSizes: function(width, height, preferredWidth, preferredHeight)
+    {
+        this._constraints = new Constraints(new Size(width, height), new Size(preferredWidth, preferredHeight));
+        this.invalidateConstraints();
     },
 
     /**
@@ -530,26 +542,26 @@ WebInspector.View.prototype = {
      */
     setMinimumSize: function(width, height)
     {
-        this._minimumSize = new Size(width, height);
-        this.invalidateMinimumSize();
+        this._constraints = new Constraints(new Size(width, height));
+        this.invalidateConstraints();
     },
 
     /**
      * @return {boolean}
      */
-    _hasNonZeroMinimumSize: function()
+    _hasNonZeroConstraints: function()
     {
-        var size = this.minimumSize();
-        return size.width || size.height;
+        var constraints = this.constraints();
+        return !!(constraints.minimum.width || constraints.minimum.height || constraints.preferred.width || constraints.preferred.height);
     },
 
-    invalidateMinimumSize: function()
+    invalidateConstraints: function()
     {
-        var cached = this._cachedMinimumSize;
-        delete this._cachedMinimumSize;
-        var actual = this.minimumSize();
+        var cached = this._cachedConstraints;
+        delete this._cachedConstraints;
+        var actual = this.constraints();
         if (!actual.isEqual(cached) && this._parentView)
-            this._parentView.invalidateMinimumSize();
+            this._parentView.invalidateConstraints();
         else
             this.doLayout();
     },
@@ -606,12 +618,11 @@ WebInspector.VBox = function()
 
 WebInspector.VBox.prototype = {
     /**
-     * @return {!Size}
+     * @return {!Constraints}
      */
-    calculateMinimumSize: function()
+    calculateConstraints: function()
     {
-        var width = 0;
-        var height = 0;
+        var constraints = new Constraints(new Size(0, 0));
 
         /**
          * @this {!WebInspector.View}
@@ -619,13 +630,13 @@ WebInspector.VBox.prototype = {
          */
         function updateForChild()
         {
-            var size = this.minimumSize();
-            width = Math.max(width, size.width);
-            height += size.height;
+            var child = this.constraints();
+            constraints = constraints.widthToMax(child);
+            constraints = constraints.addHeight(child);
         }
 
         this._callOnVisibleChildren(updateForChild);
-        return new Size(width, height);
+        return constraints;
     },
 
     __proto__: WebInspector.View.prototype
@@ -643,12 +654,11 @@ WebInspector.HBox = function()
 
 WebInspector.HBox.prototype = {
     /**
-     * @return {!Size}
+     * @return {!Constraints}
      */
-    calculateMinimumSize: function()
+    calculateConstraints: function()
     {
-        var width = 0;
-        var height = 0;
+        var constraints = new Constraints(new Size(0, 0));
 
         /**
          * @this {!WebInspector.View}
@@ -656,13 +666,13 @@ WebInspector.HBox.prototype = {
          */
         function updateForChild()
         {
-            var size = this.minimumSize();
-            width += size.width;
-            height = Math.max(height, size.height);
+            var child = this.constraints();
+            constraints = constraints.addWidth(child);
+            constraints = constraints.heightToMax(child);
         }
 
         this._callOnVisibleChildren(updateForChild);
-        return new Size(width, height);
+        return constraints;
     },
 
     __proto__: WebInspector.View.prototype

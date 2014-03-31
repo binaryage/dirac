@@ -496,7 +496,7 @@ WebInspector.RootView.prototype = {
 
     doResize: function()
     {
-        var size = this.minimumSize();
+        var size = this.constraints().minimum;
         var right = Math.min(0, window.innerWidth - size.width);
         this.element.style.right = right + "px";
         var bottom = Math.min(0, window.innerHeight - size.height);

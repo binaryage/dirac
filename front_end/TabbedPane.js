@@ -83,7 +83,7 @@ WebInspector.TabbedPane.prototype = {
     set verticalTabLayout(verticalTabLayout)
     {
         this._verticalTabLayout = verticalTabLayout;
-        this.invalidateMinimumSize();
+        this.invalidateConstraints();
     },
 
     /**
@@ -376,20 +376,22 @@ WebInspector.TabbedPane.prototype = {
         var effectiveTab = this._currentTab || this._tabsHistory[0];
         if (effectiveTab)
             this.selectTab(effectiveTab.id);
-        this.invalidateMinimumSize();
+        this.invalidateConstraints();
     },
 
     /**
-     * @return {!Size}
+     * @return {!Constraints}
      */
-    calculateMinimumSize: function()
+    calculateConstraints: function()
     {
-        var size = WebInspector.VBox.prototype.calculateMinimumSize.call(this);
+        var constraints = WebInspector.VBox.prototype.calculateConstraints.call(this);
+        var minContentConstraints = new Constraints(new Size(0, 0), new Size(50, 50));
+        constraints = constraints.widthToMax(minContentConstraints).heightToMax(minContentConstraints);
         if (this._verticalTabLayout)
-            size.width += this._headerElement.offsetWidth;
+            constraints = constraints.addWidth(new Constraints(new Size(this._headerElement.offsetWidth, 0)));
         else
-            size.height += this._headerElement.offsetHeight;
-        return size;
+            constraints = constraints.addHeight(new Constraints(new Size(0, this._headerElement.offsetHeight)));
+        return constraints;
     },
 
     _updateTabElements: function()

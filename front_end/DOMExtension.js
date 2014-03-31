@@ -215,6 +215,116 @@ Size.prototype.isEqual = function(size)
 };
 
 /**
+ * @param {!Size|number} size
+ * @return {!Size}
+ */
+Size.prototype.widthToMax = function(size)
+{
+    return new Size(Math.max(this.width, (typeof size === "number" ? size : size.width)), this.height);
+};
+
+/**
+ * @param {!Size|number} size
+ * @return {!Size}
+ */
+Size.prototype.addWidth = function(size)
+{
+    return new Size(this.width + (typeof size === "number" ? size : size.width), this.height);
+};
+
+/**
+ * @param {!Size|number} size
+ * @return {!Size}
+ */
+Size.prototype.heightToMax = function(size)
+{
+    return new Size(this.width, Math.max(this.height, (typeof size === "number" ? size : size.height)));
+};
+
+/**
+ * @param {!Size|number} size
+ * @return {!Size}
+ */
+Size.prototype.addHeight = function(size)
+{
+    return new Size(this.width, this.height + (typeof size === "number" ? size : size.height));
+};
+
+/**
+ * @constructor
+ * @param {!Size} minimum
+ * @param {?Size=} preferred
+ */
+function Constraints(minimum, preferred)
+{
+    /**
+     * @type {!Size}
+     */
+    this.minimum = minimum;
+
+    /**
+     * @type {!Size}
+     */
+    this.preferred = preferred || minimum;
+
+    if (this.minimum.width > this.preferred.width || this.minimum.height > this.preferred.height)
+        throw new Error("Minimum size is greater than preferred.");
+}
+
+/**
+ * @param {?Constraints} constraints
+ * @return {boolean}
+ */
+Constraints.prototype.isEqual = function(constraints)
+{
+    return !!constraints && this.minimum.isEqual(constraints.minimum) && this.preferred.isEqual(constraints.preferred);
+};
+
+/**
+ * @param {!Constraints|number} value
+ * @return {!Constraints}
+ */
+Constraints.prototype.widthToMax = function(value)
+{
+    if (typeof value === "number")
+        return new Constraints(this.minimum.widthToMax(value), this.preferred.widthToMax(value));
+    return new Constraints(this.minimum.widthToMax(value.minimum), this.preferred.widthToMax(value.preferred));
+};
+
+/**
+ * @param {!Constraints|number} value
+ * @return {!Constraints}
+ */
+Constraints.prototype.addWidth = function(value)
+{
+    if (typeof value === "number")
+        return new Constraints(this.minimum.addWidth(value), this.preferred.addWidth(value));
+    return new Constraints(this.minimum.addWidth(value.minimum), this.preferred.addWidth(value.preferred));
+};
+
+/**
+ * @param {!Constraints|number} value
+ * @return {!Constraints}
+ */
+Constraints.prototype.heightToMax = function(value)
+{
+    if (typeof value === "number")
+        return new Constraints(this.minimum.heightToMax(value), this.preferred.heightToMax(value));
+    return new Constraints(this.minimum.heightToMax(value.minimum), this.preferred.heightToMax(value.preferred));
+};
+
+/**
+ * @param {!Constraints|number} value
+ * @return {!Constraints}
+ */
+Constraints.prototype.addHeight = function(value)
+{
+    if (typeof value === "number")
+        return new Constraints(this.minimum.addHeight(value), this.preferred.addHeight(value));
+    return new Constraints(this.minimum.addHeight(value.minimum), this.preferred.addHeight(value.preferred));
+};
+
+/**
  * @param {?Element=} containerElement
  * @return {!Size}
  */
