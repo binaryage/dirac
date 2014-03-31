@@ -124,32 +124,65 @@ WebInspector.TimelineFrameModel.prototype = {
     },
 
     /**
+     * @param {number} startTime
+     */
+    handleBeginFrame: function(startTime)
+    {
+        if (!this._lastFrame)
+            this._startBackgroundFrame(startTime);
+    },
+
+    /**
+     * @param {number} startTime
+     */
+    handleDrawFrame: function(startTime)
+    {
+        if (!this._lastFrame) {
+            this._startBackgroundFrame(startTime);
+            return;
+        }
+
+        // - if it wasn't drawn, it didn't happen!
+        // - only show frames that either did not wait for the main thread frame or had one committed.
+        if (this._mainFrameCommitted || !this._mainFrameRequested)
+            this._startBackgroundFrame(startTime);
+        this._mainFrameCommitted = false;
+    },
+
+    handleActivateLayerTree: function()
+    {
+        if (!this._lastFrame)
+            return;
+        this._mainFrameRequested = false;
+        this._mainFrameCommitted = true;
+        this._lastFrame._addTimeForCategories(this._aggregatedMainThreadWorkToAttachToBackgroundFrame);
+        this._aggregatedMainThreadWorkToAttachToBackgroundFrame = {};
+    },
+
+    handleRequestMainThreadFrame: function()
+    {
+        if (!this._lastFrame)
+            return;
+        this._mainFrameRequested = true;
+    },
+
+    /**
      * @param {!WebInspector.TimelineModel.Record} record
      */
     _addBackgroundRecord: function(record)
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
-        if (!this._lastFrame) {
-            if (record.type === recordTypes.BeginFrame || record.type === recordTypes.DrawFrame)
-                this._startBackgroundFrame(record);
-            return;
-        }
+        if (record.type === recordTypes.BeginFrame)
+            this.handleBeginFrame(record.startTime);
+        else if (record.type === recordTypes.DrawFrame)
+            this.handleDrawFrame(record.startTime);
+        else if (record.type === recordTypes.RequestMainThreadFrame)
+            this.handleRequestMainThreadFrame();
+        else if (record.type === recordTypes.ActivateLayerTree)
+            this.handleActivateLayerTree();
 
-        if (record.type === recordTypes.DrawFrame) {
-            // - if it wasn't drawn, it didn't happen!
-            // - only show frames that either did not wait for the main thread frame or had one committed.
-            if (this._mainFrameCommitted || !this._mainFrameRequested)
-                this._startBackgroundFrame(record);
-            this._mainFrameCommitted = false;
-        } else if (record.type === recordTypes.RequestMainThreadFrame) {
-            this._mainFrameRequested = true;
-        } else if (record.type === recordTypes.ActivateLayerTree) {
-            this._mainFrameRequested = false;
-            this._mainFrameCommitted = true;
-            this._lastFrame._addTimeForCategories(this._aggregatedMainThreadWorkToAttachToBackgroundFrame);
-            this._aggregatedMainThreadWorkToAttachToBackgroundFrame = {};
-        }
-        this._lastFrame._addTimeFromRecord(record);
+        if (this._lastFrame)
+            this._lastFrame._addTimeFromRecord(record);
     },
 
     /**
@@ -163,7 +196,7 @@ WebInspector.TimelineFrameModel.prototype = {
             this._lastLayerTree = record.data["layerTree"] || null;
         if (!this._hasThreadedCompositing) {
             if (record.type === recordTypes.BeginFrame)
-                this._startMainThreadFrame(record);
+                this._startMainThreadFrame(record.startTime);
 
             if (!this._lastFrame)
                 return;
@@ -205,38 +238,38 @@ WebInspector.TimelineFrameModel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {number} startTime
      */
-    _startBackgroundFrame: function(record)
+    _startBackgroundFrame: function(startTime)
     {
         if (!this._hasThreadedCompositing) {
             this._lastFrame = null;
             this._hasThreadedCompositing = true;
         }
         if (this._lastFrame)
-            this._flushFrame(this._lastFrame, record);
+            this._flushFrame(this._lastFrame, startTime);
 
-        this._lastFrame = new WebInspector.TimelineFrame(record);
+        this._lastFrame = new WebInspector.TimelineFrame(startTime, startTime - this._model.minimumRecordTime());
     },
 
     /**
-     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {number} startTime
      */
-    _startMainThreadFrame: function(record)
+    _startMainThreadFrame: function(startTime)
     {
         if (this._lastFrame)
-            this._flushFrame(this._lastFrame, record);
-        this._lastFrame = new WebInspector.TimelineFrame(record);
+            this._flushFrame(this._lastFrame, startTime);
+        this._lastFrame = new WebInspector.TimelineFrame(startTime, startTime - this._model.minimumRecordTime());
     },
 
     /**
      * @param {!WebInspector.TimelineFrame} frame
-     * @param {!Object} record
+     * @param {number} endTime
      */
-    _flushFrame: function(frame, record)
+    _flushFrame: function(frame, endTime)
     {
         frame._setLayerTree(this._lastLayerTree);
-        frame._setEndTime(record.startTime);
+        frame._setEndTime(endTime);
         this._frames.push(frame);
         this.dispatchEventToListeners(WebInspector.TimelineFrameModel.Events.FrameAdded, frame);
     },
@@ -294,12 +327,13 @@ WebInspector.FrameStatistics = function(frames)
 
 /**
  * @constructor
- * @param {!Object} record
+ * @param {number} startTime
+ * @param {number} startTimeOffset
  */
-WebInspector.TimelineFrame = function(record)
+WebInspector.TimelineFrame = function(startTime, startTimeOffset)
 {
-    this.startTime = record.startTime;
-    this.startTimeOffset = record.startTimeOffset;
+    this.startTime = startTime;
+    this.startTimeOffset = startTimeOffset;
     this.endTime = this.startTime;
     this.duration = 0;
     this.timeByCategory = {};
