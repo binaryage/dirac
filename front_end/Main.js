@@ -520,7 +520,7 @@ WebInspector.Main.prototype = {
         if (event.handled)
             return;
 
-        if (WebInspector.inspectorView.currentPanel()) {
+        if (!WebInspector.Dialog.currentInstance() && WebInspector.inspectorView.currentPanel()) {
             WebInspector.inspectorView.currentPanel().handleShortcut(event);
             if (event.handled) {
                 event.consume(true);
@@ -528,15 +528,15 @@ WebInspector.Main.prototype = {
             }
         }
 
-        if (WebInspector.advancedSearchController.handleShortcut(event))
+        if (!WebInspector.Dialog.currentInstance() && WebInspector.advancedSearchController.handleShortcut(event))
             return;
-        if (WebInspector.inspectElementModeController && WebInspector.inspectElementModeController.handleShortcut(event))
+        if (!WebInspector.Dialog.currentInstance() && WebInspector.inspectElementModeController && WebInspector.inspectElementModeController.handleShortcut(event))
             return;
 
         var isValidZoomShortcut = WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) &&
             !event.altKey &&
             !InspectorFrontendHost.isStub;
-        if (isValidZoomShortcut && this._handleZoomEvent(event)) {
+        if (!WebInspector.Dialog.currentInstance() && isValidZoomShortcut && this._handleZoomEvent(event)) {
             event.consume(true);
             return;
         }
@@ -690,8 +690,10 @@ WebInspector.Main.ReloadActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        WebInspector.debuggerModel.skipAllPauses(true, true);
-        WebInspector.resourceTreeModel.reloadPage(false);
+        if (!WebInspector.Dialog.currentInstance()) {
+            WebInspector.debuggerModel.skipAllPauses(true, true);
+            WebInspector.resourceTreeModel.reloadPage(false);
+        }
         return true;
     }
 }
@@ -710,8 +712,10 @@ WebInspector.Main.HardReloadActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        WebInspector.debuggerModel.skipAllPauses(true, true);
-        WebInspector.resourceTreeModel.reloadPage(true);
+        if (!WebInspector.Dialog.currentInstance()) {
+            WebInspector.debuggerModel.skipAllPauses(true, true);
+            WebInspector.resourceTreeModel.reloadPage(true);
+        }
         return true;
     }
 }

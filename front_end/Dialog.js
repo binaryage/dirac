@@ -59,7 +59,7 @@ WebInspector.Dialog = function(relativeToElement, delegate)
 }
 
 /**
- * @return {!WebInspector.Dialog}
+ * @return {?WebInspector.Dialog}
  */
 WebInspector.Dialog.currentInstance = function()
 {
