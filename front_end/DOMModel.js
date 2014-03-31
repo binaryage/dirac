@@ -40,6 +40,7 @@
 WebInspector.DOMNode = function(domModel, doc, isInShadowTree, payload) {
     WebInspector.TargetAware.call(this, domModel._target);
     this._domModel = domModel;
+    this._agent = domModel._agent;
     this.ownerDocument = doc;
     this._isInShadowTree = isInShadowTree;
 
@@ -135,6 +136,14 @@ WebInspector.DOMNode.ShadowRootTypes = {
 }
 
 WebInspector.DOMNode.prototype = {
+    /**
+     * @return {!WebInspector.DOMModel}
+     */
+    domModel: function()
+    {
+        return this._domModel;
+    },
+
     /**
      * @return {?Array.<!WebInspector.DOMNode>}
      */
@@ -286,7 +295,7 @@ WebInspector.DOMNode.prototype = {
      */
     setNodeName: function(name, callback)
     {
-        DOMAgent.setNodeName(this.id, name, WebInspector.domModel._markRevision(this, callback));
+        this._agent.setNodeName(this.id, name, this._domModel._markRevision(this, callback));
     },
 
     /**
@@ -311,7 +320,7 @@ WebInspector.DOMNode.prototype = {
      */
     setNodeValue: function(value, callback)
     {
-        DOMAgent.setNodeValue(this.id, value, WebInspector.domModel._markRevision(this, callback));
+        this._agent.setNodeValue(this.id, value, this._domModel._markRevision(this, callback));
     },
 
     /**
@@ -331,7 +340,7 @@ WebInspector.DOMNode.prototype = {
      */
     setAttribute: function(name, text, callback)
     {
-        DOMAgent.setAttributesAsText(this.id, text, name, WebInspector.domModel._markRevision(this, callback));
+        this._agent.setAttributesAsText(this.id, text, name, this._domModel._markRevision(this, callback));
     },
 
     /**
@@ -341,7 +350,7 @@ WebInspector.DOMNode.prototype = {
      */
     setAttributeValue: function(name, value, callback)
     {
-        DOMAgent.setAttributeValue(this.id, name, value, WebInspector.domModel._markRevision(this, callback));
+        this._agent.setAttributeValue(this.id, name, value, this._domModel._markRevision(this, callback));
     },
 
     /**
@@ -374,9 +383,9 @@ WebInspector.DOMNode.prototype = {
                 }
             }
 
-            WebInspector.domModel._markRevision(this, callback)(error);
+            this._domModel._markRevision(this, callback)(error);
         }
-        DOMAgent.removeAttribute(this.id, name, mycallback.bind(this));
+        this._agent.removeAttribute(this.id, name, mycallback.bind(this));
     },
 
     /**
@@ -400,7 +409,7 @@ WebInspector.DOMNode.prototype = {
                 callback(error ? null : this.children());
         }
 
-        DOMAgent.requestChildNodes(this.id, undefined, mycallback.bind(this));
+        this._agent.requestChildNodes(this.id, undefined, mycallback.bind(this));
     },
 
     /**
@@ -419,7 +428,7 @@ WebInspector.DOMNode.prototype = {
                 callback(error ? null : this._children);
         }
 
-        DOMAgent.requestChildNodes(this.id, depth, mycallback.bind(this));
+        this._agent.requestChildNodes(this.id, depth, mycallback.bind(this));
     },
 
     /**
@@ -427,7 +436,7 @@ WebInspector.DOMNode.prototype = {
      */
     getOuterHTML: function(callback)
     {
-        DOMAgent.getOuterHTML(this.id, callback);
+        this._agent.getOuterHTML(this.id, callback);
     },
 
     /**
@@ -436,7 +445,7 @@ WebInspector.DOMNode.prototype = {
      */
     setOuterHTML: function(html, callback)
     {
-        DOMAgent.setOuterHTML(this.id, html, WebInspector.domModel._markRevision(this, callback));
+        this._agent.setOuterHTML(this.id, html, this._domModel._markRevision(this, callback));
     },
 
     /**
@@ -444,7 +453,7 @@ WebInspector.DOMNode.prototype = {
      */
     removeNode: function(callback)
     {
-        DOMAgent.removeNode(this.id, WebInspector.domModel._markRevision(this, callback));
+        this._agent.removeNode(this.id, this._domModel._markRevision(this, callback));
     },
 
     copyNode: function()
@@ -454,7 +463,7 @@ WebInspector.DOMNode.prototype = {
             if (!error)
                 InspectorFrontendHost.copyText(text);
         }
-        DOMAgent.getOuterHTML(this.id, copy);
+        this._agent.getOuterHTML(this.id, copy);
     },
 
     /**
@@ -463,7 +472,7 @@ WebInspector.DOMNode.prototype = {
      */
     eventListeners: function(objectGroupId, callback)
     {
-        DOMAgent.getEventListenersForNode(this.id, objectGroupId, callback);
+        this._agent.getEventListenersForNode(this.id, objectGroupId, callback);
     },
 
     /**
@@ -686,7 +695,7 @@ WebInspector.DOMNode.prototype = {
      */
     moveTo: function(targetNode, anchorNode, callback)
     {
-        DOMAgent.moveTo(this.id, targetNode.id, anchorNode ? anchorNode.id : undefined, WebInspector.domModel._markRevision(this, callback));
+        this._agent.moveTo(this.id, targetNode.id, anchorNode ? anchorNode.id : undefined, this._domModel._markRevision(this, callback));
     },
 
     /**
@@ -784,6 +793,50 @@ WebInspector.DOMNode.prototype = {
         return null;
     },
 
+    /**
+     * @param {string=} mode
+     * @param {!RuntimeAgent.RemoteObjectId=} objectId
+     */
+    highlight: function(mode, objectId)
+    {
+        this._domModel.highlightDOMNode(this.id, mode, objectId);
+    },
+
+    highlightForTwoSeconds: function()
+    {
+        this._domModel.highlightDOMNodeForTwoSeconds(this.id);
+    },
+
+    reveal: function()
+    {
+        WebInspector.Revealer.reveal(this);
+    },
+
+    /**
+     * @param {string=} objectGroup
+     * @param {function(?WebInspector.RemoteObject)=} callback
+     */
+    resolveToObject: function(objectGroup, callback)
+    {
+        this._agent.resolveNode(this.id, objectGroup, mycallback.bind(this));
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {!RuntimeAgent.RemoteObject} object
+         * @this {WebInspector.DOMNode}
+         */
+        function mycallback(error, object)
+        {
+            if (!callback)
+                return;
+
+            if (error || !object)
+                callback(null);
+            else
+                callback(this.target().runtimeModel.createRemoteObject(object));
+        }
+    },
+
     __proto__: WebInspector.TargetAware.prototype
 }
 
@@ -813,6 +866,8 @@ WebInspector.DOMDocument.prototype = {
  */
 WebInspector.DOMModel = function(target) {
     this._target = target;
+    this._agent = target.domAgent();
+
     /** @type {!Object.<number, !WebInspector.DOMNode>} */
     this._idToDOMNode = {};
     /** @type {?WebInspector.DOMDocument} */
@@ -821,7 +876,7 @@ WebInspector.DOMModel = function(target) {
     this._attributeLoadNodeIds = {};
     InspectorBackend.registerDOMDispatcher(new WebInspector.DOMDispatcher(this));
 
-    this._defaultHighlighter = new WebInspector.DefaultDOMNodeHighlighter();
+    this._defaultHighlighter = new WebInspector.DefaultDOMNodeHighlighter(this._agent);
     this._highlighter = this._defaultHighlighter;
 }
 
@@ -874,7 +929,7 @@ WebInspector.DOMModel.prototype = {
             delete this._pendingDocumentRequestCallbacks;
         }
 
-        DOMAgent.getDocument(onDocumentAvailable.bind(this));
+        this._agent.getDocument(onDocumentAvailable.bind(this));
     },
 
     /**
@@ -891,7 +946,7 @@ WebInspector.DOMModel.prototype = {
      */
     pushNodeToFrontend: function(objectId, callback)
     {
-        this._dispatchWhenDocumentAvailable(DOMAgent.requestNode.bind(DOMAgent, objectId), callback);
+        this._dispatchWhenDocumentAvailable(this._agent.requestNode.bind(this._agent, objectId), callback);
     },
 
     /**
@@ -900,7 +955,7 @@ WebInspector.DOMModel.prototype = {
      */
     pushNodeByPathToFrontend: function(path, callback)
     {
-        this._dispatchWhenDocumentAvailable(DOMAgent.pushNodeByPathToFrontend.bind(DOMAgent, path), callback);
+        this._dispatchWhenDocumentAvailable(this._agent.pushNodeByPathToFrontend.bind(this._agent, path), callback);
     },
 
     /**
@@ -909,7 +964,7 @@ WebInspector.DOMModel.prototype = {
      */
     pushNodesByBackendIdsToFrontend: function(backendNodeIds, callback)
     {
-        this._dispatchWhenDocumentAvailable(DOMAgent.pushNodesByBackendIdsToFrontend.bind(DOMAgent, backendNodeIds), callback);
+        this._dispatchWhenDocumentAvailable(this._agent.pushNodesByBackendIdsToFrontend.bind(this._agent, backendNodeIds), callback);
     },
 
     /**
@@ -1022,7 +1077,7 @@ WebInspector.DOMModel.prototype = {
 
         for (var nodeId in this._attributeLoadNodeIds) {
             var nodeIdAsNumber = parseInt(nodeId, 10);
-            DOMAgent.getAttributes(nodeIdAsNumber, callback.bind(this, nodeIdAsNumber));
+            this._agent.getAttributes(nodeIdAsNumber, callback.bind(this, nodeIdAsNumber));
         }
         this._attributeLoadNodeIds = {};
     },
@@ -1248,7 +1303,7 @@ WebInspector.DOMModel.prototype = {
             this._searchId = searchId;
             searchCallback(resultsCount);
         }
-        DOMAgent.performSearch(query, callback.bind(this));
+        this._agent.performSearch(query, callback.bind(this));
     },
 
     /**
@@ -1258,7 +1313,7 @@ WebInspector.DOMModel.prototype = {
     searchResult: function(index, callback)
     {
         if (this._searchId)
-            DOMAgent.getSearchResults(this._searchId, index, index + 1, searchResultsCallback.bind(this));
+            this._agent.getSearchResults(this._searchId, index, index + 1, searchResultsCallback.bind(this));
         else
             callback(null);
 
@@ -1284,7 +1339,7 @@ WebInspector.DOMModel.prototype = {
     cancelSearch: function()
     {
         if (this._searchId) {
-            DOMAgent.discardSearchResults(this._searchId);
+            this._agent.discardSearchResults(this._searchId);
             delete this._searchId;
         }
     },
@@ -1296,7 +1351,7 @@ WebInspector.DOMModel.prototype = {
      */
     querySelector: function(nodeId, selectors, callback)
     {
-        DOMAgent.querySelector(nodeId, selectors, this._wrapClientCallback(callback));
+        this._agent.querySelector(nodeId, selectors, this._wrapClientCallback(callback));
     },
 
     /**
@@ -1306,7 +1361,7 @@ WebInspector.DOMModel.prototype = {
      */
     querySelectorAll: function(nodeId, selectors, callback)
     {
-        DOMAgent.querySelectorAll(nodeId, selectors, this._wrapClientCallback(callback));
+        this._agent.querySelectorAll(nodeId, selectors, this._wrapClientCallback(callback));
     },
 
     /**
@@ -1447,7 +1502,7 @@ WebInspector.DOMModel.prototype = {
 
     markUndoableState: function()
     {
-        DOMAgent.markUndoableState();
+        this._agent.markUndoableState();
     },
 
     /**
@@ -1466,7 +1521,7 @@ WebInspector.DOMModel.prototype = {
         }
 
         this.dispatchEventToListeners(WebInspector.DOMModel.Events.UndoRedoRequested);
-        DOMAgent.undo(callback);
+        this._agent.undo(callback);
     },
 
     /**
@@ -1485,7 +1540,7 @@ WebInspector.DOMModel.prototype = {
         }
 
         this.dispatchEventToListeners(WebInspector.DOMModel.Events.UndoRedoRequested);
-        DOMAgent.redo(callback);
+        this._agent.redo(callback);
     },
 
     /**
@@ -1659,8 +1714,11 @@ WebInspector.DOMNodeHighlighter.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.DOMNodeHighlighter}
+ * @param {!Protocol.DOMAgent} agent
  */
-WebInspector.DefaultDOMNodeHighlighter = function() {
+WebInspector.DefaultDOMNodeHighlighter = function(agent)
+{
+    this._agent = agent;
 }
 
 WebInspector.DefaultDOMNodeHighlighter.prototype = {
@@ -1672,9 +1730,9 @@ WebInspector.DefaultDOMNodeHighlighter.prototype = {
     highlightDOMNode: function(nodeId, config, objectId)
     {
         if (objectId || nodeId)
-            DOMAgent.highlightNode(config, objectId ? undefined : nodeId, objectId);
+            this._agent.highlightNode(config, objectId ? undefined : nodeId, objectId);
         else
-            DOMAgent.hideHighlight();
+            this._agent.hideHighlight();
     },
 
     /**
@@ -1685,7 +1743,7 @@ WebInspector.DefaultDOMNodeHighlighter.prototype = {
      */
     setInspectModeEnabled: function(enabled, inspectUAShadowDOM, config, callback)
     {
-        DOMAgent.setInspectModeEnabled(enabled, inspectUAShadowDOM, config, callback);
+        this._agent.setInspectModeEnabled(enabled, inspectUAShadowDOM, config, callback);
     }
 }
 

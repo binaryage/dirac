@@ -124,30 +124,6 @@ WebInspector.RemoteObject.fromLocalObject = function(value)
 }
 
 /**
- * @param {!WebInspector.DOMNode} node
- * @param {string} objectGroup
- * @param {function(?WebInspector.RemoteObject)} callback
- */
-WebInspector.RemoteObject.resolveNode = function(node, objectGroup, callback)
-{
-    /**
-     * @param {?Protocol.Error} error
-     * @param {!RuntimeAgent.RemoteObject} object
-     */
-    function mycallback(error, object)
-    {
-        if (!callback)
-            return;
-
-        if (error || !object)
-            callback(null);
-        else
-            callback(node.target().runtimeModel.createRemoteObject(object));
-    }
-    DOMAgent.resolveNode(node.id, objectGroup, mycallback);
-}
-
-/**
  * @param {!WebInspector.RemoteObject} remoteObject
  * @return {string}
  */

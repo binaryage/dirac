@@ -96,9 +96,9 @@ WebInspector.DOMPresentationUtils.linkifyNodeReference = function(node)
     link.className = "node-link";
     WebInspector.DOMPresentationUtils.decorateNodeLabel(node, link);
 
-    link.addEventListener("click", WebInspector.domModel.inspectElement.bind(WebInspector.domModel, node.id), false);
-    link.addEventListener("mouseover", WebInspector.domModel.highlightDOMNode.bind(WebInspector.domModel, node.id, "", undefined), false);
-    link.addEventListener("mouseout", WebInspector.domModel.hideDOMNodeHighlight.bind(WebInspector.domModel), false);
+    link.addEventListener("click", node.reveal.bind(node), false);
+    link.addEventListener("mouseover", node.highlight.bind(node.id), false);
+    link.addEventListener("mouseout", node.domModel().hideDOMNodeHighlight.bind(node.domModel()), false);
 
     return link;
 }

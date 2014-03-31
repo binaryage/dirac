@@ -36,15 +36,18 @@
 WebInspector.CSSStyleModel = function(target)
 {
     this._domModel = target.domModel;
+    this._agent = target.cssAgent();
     this._pendingCommandsMajorState = [];
     this._styleLoader = new WebInspector.CSSStyleModel.ComputedStyleLoader(this);
     this._domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoRequested, this._undoRedoRequested, this);
     this._domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoCompleted, this._undoRedoCompleted, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameCreatedOrNavigated, this._mainFrameCreatedOrNavigated, this);
     InspectorBackend.registerCSSDispatcher(new WebInspector.CSSDispatcher(this));
-    CSSAgent.enable(this._wasEnabled.bind(this));
+    this._agent.enable(this._wasEnabled.bind(this));
     this._resetStyleSheets();
 }
+
+WebInspector.CSSStyleModel.PseudoStatePropertyName = "pseudoState";
 
 /**
  * @param {!WebInspector.CSSStyleModel} cssModel
@@ -138,7 +141,7 @@ WebInspector.CSSStyleModel.prototype = {
                 userCallback(result);
         }
 
-        CSSAgent.getMatchedStylesForNode(nodeId, needPseudo, needInherited, callback.bind(this, userCallback));
+        this._agent.getMatchedStylesForNode(nodeId, needPseudo, needInherited, callback.bind(this, userCallback));
     },
 
     /**
@@ -163,7 +166,7 @@ WebInspector.CSSStyleModel.prototype = {
             else
                 callback(cssFamilyName, fonts);
         }
-        CSSAgent.getPlatformFontsForNode(nodeId, platformFontsCallback);
+        this._agent.getPlatformFontsForNode(nodeId, platformFontsCallback);
     },
 
     /**
@@ -211,17 +214,33 @@ WebInspector.CSSStyleModel.prototype = {
                 userCallback(WebInspector.CSSStyleDeclaration.parsePayload(this, inlinePayload), attributesStylePayload ? WebInspector.CSSStyleDeclaration.parsePayload(this, attributesStylePayload) : null);
         }
 
-        CSSAgent.getInlineStylesForNode(nodeId, callback.bind(this, userCallback));
+        this._agent.getInlineStylesForNode(nodeId, callback.bind(this, userCallback));
     },
 
     /**
-     * @param {!DOMAgent.NodeId} nodeId
-     * @param {?Array.<string>|undefined} forcedPseudoClasses
-     * @param {function()=} userCallback
+     * @param {!WebInspector.DOMNode} node
+     * @param {string} pseudoClass
+     * @param {boolean} enable
+     * @return {boolean}
      */
-    forcePseudoState: function(nodeId, forcedPseudoClasses, userCallback)
+    forcePseudoState: function(node, pseudoClass, enable)
     {
-        CSSAgent.forcePseudoState(nodeId, forcedPseudoClasses || [], userCallback);
+        var pseudoClasses = node.getUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName) || [];
+        if (enable) {
+            if (pseudoClasses.indexOf(pseudoClass) >= 0)
+                return false;
+            pseudoClasses.push(pseudoClass);
+            node.setUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName, pseudoClasses);
+        } else {
+            if (pseudoClasses.indexOf(pseudoClass) < 0)
+                return false;
+            pseudoClasses.remove(pseudoClass);
+            if (!pseudoClasses.length)
+                node.removeUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName);
+        }
+
+        this._agent.forcePseudoState(node.id, pseudoClasses);
+        return true;
     },
 
     /**
@@ -255,7 +274,7 @@ WebInspector.CSSStyleModel.prototype = {
 
 
         this._pendingCommandsMajorState.push(true);
-        CSSAgent.setRuleSelector(ruleId, newSelector, callback.bind(this, nodeId, successCallback, failureCallback, newSelector));
+        this._agent.setRuleSelector(ruleId, newSelector, callback.bind(this, nodeId, successCallback, failureCallback, newSelector));
     },
 
     /**
@@ -309,7 +328,7 @@ WebInspector.CSSStyleModel.prototype = {
     addRule: function(styleSheetId, node, selector, successCallback, failureCallback)
     {
         this._pendingCommandsMajorState.push(true);
-        CSSAgent.addRule(styleSheetId, selector, callback.bind(this));
+        this._agent.addRule(styleSheetId, selector, callback.bind(this));
 
         /**
          * @param {?Protocol.Error} error
@@ -359,7 +378,7 @@ WebInspector.CSSStyleModel.prototype = {
             callback(this._styleSheetIdToHeader[styleSheetId]);
         }
 
-        CSSAgent.createStyleSheet(frameId, innerCallback.bind(this));
+        this._agent.createStyleSheet(frameId, innerCallback.bind(this));
     },
 
     mediaQueryResultChanged: function()
@@ -418,7 +437,7 @@ WebInspector.CSSStyleModel.prototype = {
     _styleSheetAdded: function(header)
     {
         console.assert(!this._styleSheetIdToHeader[header.styleSheetId]);
-        var styleSheetHeader = new WebInspector.CSSStyleSheetHeader(header);
+        var styleSheetHeader = new WebInspector.CSSStyleSheetHeader(this, header);
         this._styleSheetIdToHeader[header.styleSheetId] = styleSheetHeader;
         var url = styleSheetHeader.resourceURL();
         if (!this._styleSheetIdsForURL[url])
@@ -898,7 +917,7 @@ WebInspector.CSSStyleDeclaration.prototype = {
             throw "No style id";
 
         this._cssModel._pendingCommandsMajorState.push(true);
-        CSSAgent.setPropertyText(this.id, index, name + ": " + value + ";", false, callback.bind(this));
+        this._cssModel._agent.setPropertyText(this.id, index, name + ": " + value + ";", false, callback.bind(this));
     },
 
     /**
@@ -909,7 +928,7 @@ WebInspector.CSSStyleDeclaration.prototype = {
     appendProperty: function(name, value, userCallback)
     {
         this.insertPropertyAt(this.allProperties.length, name, value, userCallback);
-    },
+    }
 }
 
 /**
@@ -1158,8 +1177,9 @@ WebInspector.CSSProperty.prototype = {
             throw "No owner style id";
 
         // An index past all the properties adds a new property to the style.
-        this.ownerStyle._cssModel._pendingCommandsMajorState.push(majorChange);
-        CSSAgent.setPropertyText(this.ownerStyle.id, this.index, propertyText, overwrite, callback.bind(this));
+        var cssModel = this.ownerStyle._cssModel;
+        cssModel._pendingCommandsMajorState.push(majorChange);
+        cssModel._agent.setPropertyText(this.ownerStyle.id, this.index, propertyText, overwrite, callback.bind(this));
     },
 
     /**
@@ -1299,10 +1319,12 @@ WebInspector.CSSMedia.prototype = {
 /**
  * @constructor
  * @implements {WebInspector.ContentProvider}
+ * @param {!WebInspector.CSSStyleModel} cssModel
  * @param {!CSSAgent.CSSStyleSheetHeader} payload
  */
-WebInspector.CSSStyleSheetHeader = function(payload)
+WebInspector.CSSStyleSheetHeader = function(cssModel, payload)
 {
+    this._cssModel = cssModel;
     this.id = payload.styleSheetId;
     this.frameId = payload.frameId;
     this.sourceURL = payload.sourceURL;
@@ -1444,7 +1466,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
      */
     requestContent: function(callback)
     {
-        CSSAgent.getStyleSheetText(this.id, textCallback.bind(this));
+        this._cssModel._agent.getStyleSheetText(this.id, textCallback.bind(this));
 
         /**
          * @this {WebInspector.CSSStyleSheetHeader}
@@ -1484,7 +1506,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
         newText = this._trimSourceURL(newText);
         if (this.hasSourceURL)
             newText += "\n/*# sourceURL=" + this.sourceURL + " */";
-        CSSAgent.setStyleSheetText(this.id, newText, callback);
+        this._cssModel._agent.setStyleSheetText(this.id, newText, callback);
     },
 
     /**
@@ -1563,7 +1585,7 @@ WebInspector.CSSStyleModel.ComputedStyleLoader.prototype = {
 
         this._nodeIdToCallbackData[nodeId] = [userCallback];
 
-        CSSAgent.getComputedStyleForNode(nodeId, resultCallback.bind(this, nodeId));
+        this._cssModel._agent.getComputedStyleForNode(nodeId, resultCallback.bind(this, nodeId));
 
         /**
          * @param {!DOMAgent.NodeId} nodeId

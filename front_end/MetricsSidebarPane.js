@@ -140,12 +140,11 @@ WebInspector.MetricsSidebarPane.prototype = {
     _highlightDOMNode: function(showHighlight, mode, event)
     {
         event.consume();
-        var nodeId = showHighlight && this.node ? this.node.id : 0;
-        if (nodeId) {
+        if (showHighlight && this.node) {
             if (this._highlightMode === mode)
                 return;
             this._highlightMode = mode;
-            WebInspector.domModel.highlightDOMNode(nodeId, mode);
+            this.node.highlight(mode);
         } else {
             delete this._highlightMode;
             WebInspector.domModel.hideDOMNodeHighlight();
@@ -153,7 +152,7 @@ WebInspector.MetricsSidebarPane.prototype = {
 
         for (var i = 0; this._boxElements && i < this._boxElements.length; ++i) {
             var element = this._boxElements[i];
-            if (!nodeId || mode === "all" || element._name === mode)
+            if (!this.node || mode === "all" || element._name === mode)
                 element.style.backgroundColor = element._backgroundColor;
             else
                 element.style.backgroundColor = "";
@@ -433,9 +432,8 @@ WebInspector.MetricsSidebarPane.prototype = {
             if (!("originalPropertyData" in self))
                 self.originalPropertyData = self.previousPropertyDataCandidate;
 
-            if (typeof self._highlightMode !== "undefined") {
-                WebInspector.domModel.highlightDOMNode(self.node.id, self._highlightMode);
-            }
+            if (typeof self._highlightMode !== "undefined")
+                self.node.highlight(self._highlightMode);
 
             if (commitEditor) {
                 self.dispatchEventToListeners("metrics edited");

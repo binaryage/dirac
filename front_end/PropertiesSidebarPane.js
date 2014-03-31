@@ -48,7 +48,7 @@ WebInspector.PropertiesSidebarPane.prototype = {
             return;
         }
 
-        WebInspector.RemoteObject.resolveNode(node, WebInspector.PropertiesSidebarPane._objectGroupName, nodeResolved.bind(this));
+        node.resolveToObject(WebInspector.PropertiesSidebarPane._objectGroupName, nodeResolved.bind(this));
 
         /**
          * @this {WebInspector.PropertiesSidebarPane}

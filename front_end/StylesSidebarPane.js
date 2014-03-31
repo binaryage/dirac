@@ -31,7 +31,7 @@
  * @constructor
  * @extends {WebInspector.SidebarPane}
  * @param {!WebInspector.ComputedStyleSidebarPane} computedStylePane
- * @param {function(!DOMAgent.NodeId, string, boolean)} setPseudoClassCallback
+ * @param {function(!WebInspector.DOMNode, string, boolean)=} setPseudoClassCallback
  */
 WebInspector.StylesSidebarPane = function(computedStylePane, setPseudoClassCallback)
 {
@@ -211,7 +211,7 @@ WebInspector.StylesSidebarPane.prototype = {
 
     get _forcedPseudoClasses()
     {
-        return this.node ? (this.node.getUserProperty("pseudoState") || undefined) : undefined;
+        return this.node ? (this.node.getUserProperty(WebInspector.CSSStyleModel.PseudoStatePropertyName) || undefined) : undefined;
     },
 
     _updateForcedPseudoStateInputs: function()
@@ -820,7 +820,7 @@ WebInspector.StylesSidebarPane.prototype = {
             var node = this._validateNode();
             if (!node)
                 return;
-            this._setPseudoClassCallback(node.id, event.target.state, event.target.checked);
+            this._setPseudoClassCallback(node, event.target.state, event.target.checked);
         }
 
         /**

@@ -240,7 +240,7 @@ WebInspector.EventListenerBar.prototype = {
 
             this.updateProperties(properties);
         }
-        WebInspector.RemoteObject.resolveNode(this.eventListener.node, WebInspector.EventListenersSidebarPane._objectGroupName, updateWithNodeObject.bind(this));
+        this.eventListener.node.resolveToObject(WebInspector.EventListenersSidebarPane._objectGroupName, updateWithNodeObject.bind(this));
     },
 
     _setNodeTitle: function()
