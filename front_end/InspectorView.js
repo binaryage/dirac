@@ -293,8 +293,6 @@ WebInspector.InspectorView.prototype = {
     {
         if (!WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event))
             return;
-        if (WebInspector.Dialog.currentInstance())
-            return;
 
         var keyboardEvent = /** @type {!KeyboardEvent} */ (event);
         // Ctrl/Cmd + 1-9 should show corresponding panel.
