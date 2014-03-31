@@ -90,6 +90,9 @@ WebInspector.DOMPresentationUtils.createSpansForNodeTitle = function(container, 
         container.createChild("span", "webkit-html-attribute-name").textContent = match[3];
 }
 
+/**
+ * @param {!WebInspector.DOMNode} node
+ */
 WebInspector.DOMPresentationUtils.linkifyNodeReference = function(node)
 {
     var link = document.createElement("span");
@@ -97,7 +100,7 @@ WebInspector.DOMPresentationUtils.linkifyNodeReference = function(node)
     WebInspector.DOMPresentationUtils.decorateNodeLabel(node, link);
 
     link.addEventListener("click", node.reveal.bind(node), false);
-    link.addEventListener("mouseover", node.highlight.bind(node.id), false);
+    link.addEventListener("mouseover", node.highlight.bind(node, undefined, undefined), false);
     link.addEventListener("mouseout", node.domModel().hideDOMNodeHighlight.bind(node.domModel()), false);
 
     return link;
