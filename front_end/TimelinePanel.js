@@ -908,11 +908,11 @@ WebInspector.TimelinePanel.prototype = {
 
     /**
      * @param {string} title
-     * @param {!Object} aggregatedStats
+     * @param {!Node} node
      */
-    showAggregatedStatsInDetails: function(title, aggregatedStats)
+    showInDetails: function(title, node)
     {
-        this._detailsView.setContent(title, WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats));
+        this._detailsView.setContent(title, node);
     },
 
     __proto__: WebInspector.Panel.prototype
@@ -1026,9 +1026,9 @@ WebInspector.TimelineModeViewDelegate.prototype = {
 
     /**
      * @param {string} title
-     * @param {!Object} aggregatedStats
+     * @param {!Node} node
      */
-    showAggregatedStatsInDetails: function(title, aggregatedStats) {},
+    showInDetails: function(title, node) {},
 }
 
 /**

@@ -323,7 +323,8 @@ WebInspector.TimelineView.prototype = {
             for (var category in aggregatedStats)
                 idle -= aggregatedStats[category];
             aggregatedStats["idle"] = idle;
-            this._delegate.showAggregatedStatsInDetails(WebInspector.TimelineUIUtils.recordStyle(presentationRecord.record()).title, aggregatedStats);
+            var pieChart = WebInspector.TimelineUIUtils.generatePieChart(aggregatedStats);
+            this._delegate.showInDetails(WebInspector.TimelineUIUtils.recordStyle(presentationRecord.record()).title, pieChart);
             return;
         }
         this._delegate.selectRecord(presentationRecord ? presentationRecord.record() : null);
