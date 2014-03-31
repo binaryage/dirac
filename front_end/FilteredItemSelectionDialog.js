@@ -72,19 +72,20 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
      */
     position: function(element, relativeToElement)
     {
-        const minWidth = 500;
-        const minHeight = 204;
-        var width = Math.max(relativeToElement.offsetWidth * 2 / 3, minWidth);
-        var height = Math.max(relativeToElement.offsetHeight * 2 / 3, minHeight);
+        const shadow = 10;
+        const shadowPadding = 20; // shadow + padding
+        var container = WebInspector.Dialog.modalHostView().element;
+        var preferredWidth = Math.max(relativeToElement.offsetWidth * 2 / 3, 500);
+        var width = Math.min(preferredWidth, container.offsetWidth - 2 * shadowPadding);
+        var preferredHeight = Math.max(relativeToElement.offsetHeight * 2 / 3, 204);
+        var height = Math.min(preferredHeight, container.offsetHeight - 2 * shadowPadding);
 
         this.element.style.width = width + "px";
-        var container = WebInspector.Dialog.modalHostView().element;
         var box = relativeToElement.boxInWindow(window).relativeToElement(container);
-        const shadowPadding = 20; // shadow + padding
-        var positionX = box.x + Math.max((box.width - width - 2 * shadowPadding) / 2, shadowPadding);
-        positionX = Math.max(shadowPadding, Math.min(container.offsetWidth - width - 2 * shadowPadding, positionX));
-        var positionY = box.y + Math.max((box.height - height - 2 * shadowPadding) / 2, shadowPadding);
-        positionY = Math.max(shadowPadding, Math.min(container.offsetHeight - height - 2 * shadowPadding, positionY));
+        var positionX = box.x + Math.max((box.width - width - 2 * shadowPadding) / 2, shadow);
+        positionX = Math.max(shadow, Math.min(container.offsetWidth - width - 2 * shadowPadding, positionX));
+        var positionY = box.y + Math.max((box.height - height - 2 * shadowPadding) / 2, shadow);
+        positionY = Math.max(shadow, Math.min(container.offsetHeight - height - 2 * shadowPadding, positionY));
         element.positionAt(positionX, positionY, container);
         this._dialogHeight = height;
 
