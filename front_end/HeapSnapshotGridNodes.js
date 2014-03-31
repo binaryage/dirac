@@ -1342,15 +1342,15 @@ WebInspector.HeapSnapshotDominatorObjectNode.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.DataGridNode}
+ * @extends {WebInspector.HeapSnapshotGridNode}
  * @param {!WebInspector.AllocationDataGrid} dataGrid
  * @param {!WebInspector.HeapSnapshotCommon.SerializedAllocationNode} data
  */
 WebInspector.AllocationGridNode = function(dataGrid, data)
 {
-    WebInspector.DataGridNode.call(this, data, data.hasChildren);
-    this._dataGrid = dataGrid;
+    WebInspector.HeapSnapshotGridNode.call(this, dataGrid, data.hasChildren);
     this._populated = false;
+    this.data = data;
 }
 
 WebInspector.AllocationGridNode.prototype = {
@@ -1369,9 +1369,10 @@ WebInspector.AllocationGridNode.prototype = {
         {
             var callersChain = callers.nodesWithSingleCaller;
             var parentNode = this;
+            var dataGrid = /** @type {!WebInspector.AllocationDataGrid} */ (this._dataGrid);
             for (var i = 0; i < callersChain.length; i++) {
-                var child = new WebInspector.AllocationGridNode(this._dataGrid, callersChain[i]);
-                parentNode.appendChild(child);
+                var child = new WebInspector.AllocationGridNode(dataGrid, callersChain[i]);
+                dataGrid.appendNode(parentNode, child);
                 parentNode = child;
                 parentNode._populated = true;
                 if (this.expanded)
@@ -1381,7 +1382,8 @@ WebInspector.AllocationGridNode.prototype = {
             var callersBranch = callers.branchingCallers;
             callersBranch.sort(this._dataGrid._createComparator());
             for (var i = 0; i < callersBranch.length; i++)
-                parentNode.appendChild(new WebInspector.AllocationGridNode(this._dataGrid, callersBranch[i]));
+                dataGrid.appendNode(parentNode, new WebInspector.AllocationGridNode(dataGrid, callersBranch[i]));
+            dataGrid.updateVisibleNodes(true);
         }
     },
 
@@ -1390,7 +1392,7 @@ WebInspector.AllocationGridNode.prototype = {
      */
     expand: function()
     {
-        WebInspector.DataGridNode.prototype.expand.call(this);
+        WebInspector.HeapSnapshotGridNode.prototype.expand.call(this);
         if (this.children.length === 1)
             this.children[0].expand();
     },
@@ -1402,7 +1404,7 @@ WebInspector.AllocationGridNode.prototype = {
      */
     createCell: function(columnIdentifier)
     {
-        var cell = WebInspector.DataGridNode.prototype.createCell.call(this, columnIdentifier);
+        var cell = WebInspector.HeapSnapshotGridNode.prototype.createCell.call(this, columnIdentifier);
 
         if (columnIdentifier !== "name")
             return cell;
@@ -1425,5 +1427,5 @@ WebInspector.AllocationGridNode.prototype = {
         return this.data.id;
     },
 
-    __proto__: WebInspector.DataGridNode.prototype
+    __proto__: WebInspector.HeapSnapshotGridNode.prototype
 }

@@ -771,6 +771,7 @@ WebInspector.HeapSnapshotView.prototype = {
     {
         var selectedNode = event.target.selectedNode;
         this._constructorsDataGrid.setAllocationNodeId(selectedNode.allocationNodeId());
+        this._setRetainmentDataGridSource(null);
     },
 
     _inspectedObjectChanged: function(event)

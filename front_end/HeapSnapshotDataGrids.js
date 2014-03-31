@@ -1054,7 +1054,7 @@ WebInspector.HeapSnapshotDominatorsDataGrid.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.DataGrid}
+ * @extends {WebInspector.HeapSnapshotViewportDataGrid}
  */
 WebInspector.AllocationDataGrid = function()
 {
@@ -1065,9 +1065,8 @@ WebInspector.AllocationDataGrid = function()
         {id: "size", title: WebInspector.UIString("Size"), width: "72px", sortable: true, sort: WebInspector.DataGrid.Order.Descending},
         {id: "name", title: WebInspector.UIString("Function"), disclosure: true, sortable: true},
     ];
-    WebInspector.DataGrid.call(this, columns);
+    WebInspector.HeapSnapshotViewportDataGrid.call(this, columns);
     this._linkifier = new WebInspector.Linkifier();
-    this.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sortingChanged, this);
 }
 
 WebInspector.AllocationDataGrid.prototype = {
@@ -1089,13 +1088,15 @@ WebInspector.AllocationDataGrid.prototype = {
 
     _populateChildren: function()
     {
+        this.removeTopLevelNodes();
         var root = this.rootNode();
         var tops = this._topNodes;
         for (var i = 0; i < tops.length; i++)
-            root.appendChild(new WebInspector.AllocationGridNode(this, tops[i]));
+            this.appendNode(root, new WebInspector.AllocationGridNode(this, tops[i]));
+        this.updateVisibleNodes(true);
     },
 
-    _sortingChanged: function()
+    sortingChanged: function()
     {
         this._topNodes.sort(this._createComparator());
         this.rootNode().removeChildren();
@@ -1126,5 +1127,5 @@ WebInspector.AllocationDataGrid.prototype = {
         return compare;
      },
 
-    __proto__: WebInspector.DataGrid.prototype
+    __proto__: WebInspector.HeapSnapshotViewportDataGrid.prototype
 }
