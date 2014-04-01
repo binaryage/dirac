@@ -35,6 +35,11 @@
     margin-right: 8px;
 }
 
+.breakpoint-list .editing.being-edited {
+    overflow: hidden;
+    white-space: nowrap;
+}
+
 #breakpoint-condition-input {
     display: block;
     margin-left: 0;
