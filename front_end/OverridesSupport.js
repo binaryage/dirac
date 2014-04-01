@@ -461,8 +461,8 @@ WebInspector.OverridesSupport.prototype = {
         if (!metrics.isValid())
             return;
 
-        var dipWidth = Math.round(metrics.width / metrics.deviceScaleFactor);
-        var dipHeight = Math.round(metrics.height / metrics.deviceScaleFactor);
+        var dipWidth = Math.round(metrics.width);
+        var dipHeight = Math.round(metrics.height);
         var metricsOverrideEnabled = !!(dipWidth && dipHeight);
 
         // Disable override without checks.

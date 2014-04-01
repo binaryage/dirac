@@ -484,7 +484,7 @@ WebInspector.VersionController = function()
 {
 }
 
-WebInspector.VersionController.currentVersion = 7;
+WebInspector.VersionController.currentVersion = 8;
 
 WebInspector.VersionController.prototype = {
     updateVersion: function()
@@ -645,6 +645,30 @@ WebInspector.VersionController.prototype = {
                 value.horizontal.size = 0;
             setting.set(value);
         }
+    },
+
+    _updateVersionFrom7To8: function()
+    {
+        var settingName = "deviceMetrics";
+        if (!window.localStorage || !(settingName in window.localStorage))
+            return;
+        var setting = WebInspector.settings.createSetting(settingName, undefined);
+        var value = setting.get();
+        if (!value)
+            return;
+
+        var components = value.split("x");
+        if (components.length >= 3) {
+            var width = parseInt(components[0], 10);
+            var height = parseInt(components[1], 10);
+            var deviceScaleFactor = parseFloat(components[2]);
+            if (deviceScaleFactor) {
+                components[0] = "" + Math.round(width / deviceScaleFactor);
+                components[1] = "" + Math.round(height / deviceScaleFactor);
+            }
+        }
+        value = components.join("x");
+        setting.set(value);
     },
 
     /**
