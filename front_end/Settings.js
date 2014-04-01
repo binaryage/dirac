@@ -343,6 +343,7 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     this.heapSnapshotStatistics = this._createExperiment("heapSnapshotStatistics", "Show memory breakdown statistics in heap snapshots");
     this.timelineNoLiveUpdate = this._createExperiment("timelineNoLiveUpdate", "Timeline w/o live update");
     this.powerProfiler = this._createExperiment("powerProfiler", "Enable power mode in Timeline");
+    this.timelineTracingMode = this._createExperiment("timelineTracingMode", "Enable Tracing mode in Timeline");
 
     this._cleanUpSetting();
 }

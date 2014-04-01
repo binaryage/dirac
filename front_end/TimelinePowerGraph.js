@@ -18,6 +18,14 @@ WebInspector.TimelinePowerGraph = function(delegate, model)
 }
 
 WebInspector.TimelinePowerGraph.prototype = {
+    timelineStarted: function()
+    {
+    },
+
+    timelineStopped: function()
+    {
+    },
+
     _onRecordAdded: function(event)
     {
         var record = event.data;

@@ -30,11 +30,62 @@
 
 /**
  * @constructor
+ * @extends {WebInspector.Object}
  */
 WebInspector.TracingAgent = function()
 {
+    WebInspector.Object.call(this);
     this._active = false;
     InspectorBackend.registerTracingDispatcher(new WebInspector.TracingDispatcher(this));
+}
+
+WebInspector.TracingAgent.Events = {
+    EventsCollected: "EventsCollected"
+};
+
+/** @typedef {!{
+        cat: string,
+        pid: number,
+        tid: number,
+        ts: number,
+        ph: string,
+        name: string,
+        args: !Object,
+        dur: number,
+        id: number,
+        s: string
+    }}
+ */
+WebInspector.TracingAgent.Event;
+
+/**
+ * @enum {string}
+ */
+WebInspector.TracingAgent.Phase = {
+    Begin: "B",
+    End: "E",
+    Complete: "X",
+    Instant: "i",
+    AsyncBegin: "S",
+    AsyncStepInto: "T",
+    AsyncStepPast: "p",
+    AsyncEnd: "F",
+    FlowBegin: "s",
+    FlowStep: "t",
+    FlowEnd: "f",
+    Metadata: "M",
+    Counter: "C",
+    Sample: "P",
+    CreateObject: "N",
+    SnapshotObject: "O",
+    DeleteObject: "D"
+};
+
+WebInspector.TracingAgent.MetadataEvent = {
+    ProcessSortIndex: "process_sort_index",
+    ProcessName: "process_name",
+    ThreadSortIndex: "thread_sort_index",
+    ThreadName: "thread_name"
 }
 
 WebInspector.TracingAgent.prototype = {
@@ -47,7 +98,6 @@ WebInspector.TracingAgent.prototype = {
     {
         TracingAgent.start(categoryPatterns, options, callback);
         this._active = true;
-        this._events = [];
     },
 
     /**
@@ -63,27 +113,21 @@ WebInspector.TracingAgent.prototype = {
         TracingAgent.end();
     },
 
-    /**
-     * @return {!Array.<!{cat: string, args: !Object, ph: string, ts: number}>}
-     */
-    events: function()
-    {
-        return this._events;
-    },
-
     _eventsCollected: function(events)
     {
-        Array.prototype.push.apply(this._events, events);
+        this.dispatchEventToListeners(WebInspector.TracingAgent.Events.EventsCollected, events);
     },
 
     _tracingComplete: function()
     {
         this._active = false;
-        if (this._pendingStopCallback) {
-            this._pendingStopCallback();
-            this._pendingStopCallback = null;
-        }
-    }
+        if (!this._pendingStopCallback)
+            return;
+        this._pendingStopCallback();
+        this._pendingStopCallback = null;
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
 
 /**

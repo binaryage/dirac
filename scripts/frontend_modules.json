@@ -83,6 +83,7 @@
             "ResourceUtils.js",
             "SourceMap.js",
             "TracingAgent.js",
+            "TracingModel.js",
             "NetworkManager.js",
             "NetworkRequest.js",
             "UISourceCode.js",
@@ -312,7 +313,8 @@
             "TimelinePanel.js",
             "TimelinePresentationModel.js",
             "TimelineUIUtils.js",
-            "TimelineView.js"
+            "TimelineView.js",
+            "TimelineTracingView.js"
         ]
     },
     {

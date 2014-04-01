@@ -44,6 +44,7 @@ importScript("TimelinePowerOverview.js");
 importScript("TimelineFlameChart.js");
 importScript("TimelineUIUtils.js");
 importScript("TimelineView.js");
+importScript("TimelineTracingView.js");
 
 /**
  * @constructor
@@ -89,6 +90,8 @@ WebInspector.TimelinePanel = function()
         this._presentationModes.push(WebInspector.TimelinePanel.Mode.FlameChart);
     if (Capabilities.canProfilePower)
         this._presentationModes.push(WebInspector.TimelinePanel.Mode.Power);
+    if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled())
+        this._presentationModes.push(WebInspector.TimelinePanel.Mode.Tracing);
 
     this._presentationModeSetting = WebInspector.settings.createSetting("timelineOverviewMode", WebInspector.TimelinePanel.Mode.Events);
 
@@ -142,7 +145,8 @@ WebInspector.TimelinePanel.Mode = {
     Frames: "Frames",
     Memory: "Memory",
     FlameChart: "FlameChart",
-    Power: "Power"
+    Power: "Power",
+    Tracing: "Tracing"
 };
 
 // Define row and header height, should be in sync with styles for timeline graphs.
@@ -243,6 +247,16 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @return {!WebInspector.TimelineTracingView}
+     */
+    _tracingView: function()
+    {
+        if (!this._lazyTracingView)
+            this._lazyTracingView = new WebInspector.TimelineTracingView(this);
+        return this._lazyTracingView;
+    },
+
+    /**
      * @return {!WebInspector.TimelineView}
      */
     _timelineView: function()
@@ -281,6 +295,10 @@ WebInspector.TimelinePanel.prototype = {
             case WebInspector.TimelinePanel.Mode.Power:
                 views.overviewView = new WebInspector.TimelinePowerOverview(this._model);
                 views.mainViews = [this._timelineView(), new WebInspector.TimelinePowerGraph(this, this._model)];
+                break;
+            case WebInspector.TimelinePanel.Mode.Tracing:
+                views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());
+                views.mainViews = [this._tracingView()];
                 break;
             default:
                 console.assert(false, "Unknown mode: " + mode);
@@ -567,9 +585,12 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._userInitiatedRecording = userInitiated;
         this._model.startRecording();
-        for (var i = 0; i < this._presentationModes.length; ++i)
-            this._viewsForMode(this._presentationModes[i]).overviewView.timelineStarted();
-
+        for (var i = 0; i < this._presentationModes.length; ++i) {
+            var views = this._viewsForMode(this._presentationModes[i]);
+            views.overviewView.timelineStarted();
+            for (var j = 0; j < views.mainViews.length; ++j)
+                views.mainViews[j].timelineStarted();
+        }
         if (userInitiated)
             WebInspector.userMetrics.TimelineStarted.record();
     },
@@ -578,8 +599,12 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._userInitiatedRecording = false;
         this._model.stopRecording();
-        for (var i = 0; i < this._presentationModes.length; ++i)
-            this._viewsForMode(this._presentationModes[i]).overviewView.timelineStopped();
+        for (var i = 0; i < this._presentationModes.length; ++i) {
+            var views = this._viewsForMode(this._presentationModes[i]);
+            views.overviewView.timelineStopped();
+            for (var j = 0; j < views.mainViews.length; ++j)
+                views.mainViews[j].timelineStopped();
+        }
     },
 
     /**
@@ -1004,7 +1029,11 @@ WebInspector.TimelineModeView.prototype = {
     /**
      * @param {?WebInspector.TimelineModel.Record} record
      */
-    setSelectedRecord: function(record) {}
+    setSelectedRecord: function(record) {},
+
+    timelineStarted: function() {},
+
+    timelineStopped: function() {},
 }
 
 /**

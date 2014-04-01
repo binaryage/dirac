@@ -47,6 +47,14 @@ WebInspector.MemoryCountersGraph = function(delegate, model)
 }
 
 WebInspector.MemoryCountersGraph.prototype = {
+    timelineStarted: function()
+    {
+    },
+
+    timelineStopped: function()
+    {
+    },
+
     /**
      * @param {!WebInspector.TimelineModel.Record} record
      */

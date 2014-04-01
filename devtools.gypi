@@ -175,6 +175,7 @@
             'front_end/TimelineGrid.js',
             'front_end/TimelineManager.js',
             'front_end/TracingAgent.js',
+            'front_end/TracingModel.js',
             'front_end/treeoutline.js',
             'front_end/UISourceCode.js',
             'front_end/UIString.js',
@@ -324,6 +325,7 @@
             'front_end/TimelinePowerGraph.js',
             'front_end/TimelinePowerOverview.js',
             'front_end/TimelinePanel.js',
+            'front_end/TimelineTracingView.js',
         ],
         'devtools_profiles_js_files': [
             'front_end/BottomUpProfileDataGridTree.js',
