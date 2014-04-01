@@ -1088,7 +1088,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
                         var lineNumber = media.lineNumberInSource();
                         var columnNumber = media.columnNumberInSource();
                         console.assert(typeof lineNumber !== "undefined" && typeof columnNumber !== "undefined");
-                        rawLocation = new WebInspector.CSSLocation(media.sourceURL, lineNumber, columnNumber);
+                        rawLocation = new WebInspector.CSSLocation(WebInspector.cssModel.target(), media.sourceURL, lineNumber, columnNumber);
                     }
                 }
 
@@ -1391,7 +1391,7 @@ WebInspector.StylePropertiesSection.prototype = {
             var isSelectorMatching = matchingSelectors[currentMatch] === i;
             if (isSelectorMatching)
                 ++currentMatch;
-            var rawLocation = new WebInspector.CSSLocation(rule.sourceURL, rule.lineNumberInSource(i), rule.columnNumberInSource(i));
+            var rawLocation = new WebInspector.CSSLocation(WebInspector.cssModel.target(), rule.sourceURL, rule.lineNumberInSource(i), rule.columnNumberInSource(i));
             var matchingSelectorClass = isSelectorMatching ? " selector-matches" : "";
             var selectorElement = document.createElement("span");
             selectorElement.className = "simple-selector" + matchingSelectorClass;
@@ -1466,7 +1466,7 @@ WebInspector.StylePropertiesSection.prototype = {
 
         if (this.styleRule.sourceURL) {
             var firstMatchingIndex = this.styleRule.rule.matchingSelectors && this.rule.matchingSelectors.length ? this.rule.matchingSelectors[0] : 0;
-            var matchingSelectorLocation = new WebInspector.CSSLocation(this.styleRule.sourceURL, this.rule.lineNumberInSource(firstMatchingIndex), this.rule.columnNumberInSource(firstMatchingIndex));
+            var matchingSelectorLocation = new WebInspector.CSSLocation(WebInspector.cssModel.target(), this.styleRule.sourceURL, this.rule.lineNumberInSource(firstMatchingIndex), this.rule.columnNumberInSource(firstMatchingIndex));
             return this._parentPane._linkifier.linkifyCSSLocation(this.rule.id.styleSheetId, matchingSelectorLocation) || linkifyUncopyable(this.styleRule.sourceURL, this.rule.lineNumberInSource());
         }
 

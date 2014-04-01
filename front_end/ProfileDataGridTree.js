@@ -107,7 +107,7 @@ WebInspector.ProfileDataGridNode.prototype = {
         if (this.profileNode.scriptId !== "0") {
             var lineNumber = this.profileNode.lineNumber ? this.profileNode.lineNumber - 1 : 0;
             var columnNumber = this.profileNode.columnNumber ? this.profileNode.columnNumber - 1 : 0;
-            var location = new WebInspector.DebuggerModel.Location(this.profileNode.scriptId, lineNumber, columnNumber);
+            var location = new WebInspector.DebuggerModel.Location(/** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget()), this.profileNode.scriptId, lineNumber, columnNumber);
             var urlElement = this.tree.profileView._linkifier.linkifyRawLocation(location, "profile-node-file");
             if (!urlElement)
                 urlElement = this.tree.profileView._linkifier.linkifyLocation(this.profileNode.url, lineNumber, columnNumber, "profile-node-file");

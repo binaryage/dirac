@@ -30,11 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
  * @param {!WebInspector.Target} target
  */
 WebInspector.CSSStyleModel = function(target)
 {
+    WebInspector.TargetAwareObject.call(this, target);
     this._domModel = target.domModel;
     this._agent = target.cssAgent();
     this._pendingCommandsMajorState = [];
@@ -594,7 +595,7 @@ WebInspector.CSSStyleModel.prototype = {
         return uiLocation || null;
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**
@@ -691,11 +692,33 @@ WebInspector.CSSStyleModel.LiveLocation.prototype = {
  * @param {number} lineNumber
  * @param {number=} columnNumber
  */
-WebInspector.CSSLocation = function(url, lineNumber, columnNumber)
+WebInspector.CSSLocation = function(target, url, lineNumber, columnNumber)
 {
+    this._cssModel = target.cssModel;
     this.url = url;
     this.lineNumber = lineNumber;
     this.columnNumber = columnNumber || 0;
+}
+
+WebInspector.CSSLocation.prototype = {
+    /**
+     * @param {?CSSAgent.StyleSheetId} styleSheetId
+     * @param {function(!WebInspector.UILocation):(boolean|undefined)} updateDelegate
+     * @return {?WebInspector.LiveLocation}
+     */
+    createLiveLocation: function(styleSheetId, updateDelegate)
+    {
+        var header = styleSheetId ? this._cssModel.styleSheetHeaderForId(styleSheetId) : null;
+        return new WebInspector.CSSStyleModel.LiveLocation(this._cssModel, header, this, updateDelegate);
+    },
+
+    /**
+     * @return {?WebInspector.UILocation}
+     */
+    toUILocation: function()
+    {
+        return this._cssModel.rawLocationToUILocation(this);
+    }
 }
 
 /**
@@ -985,7 +1008,7 @@ WebInspector.CSSRule.prototype = {
         var url = styleSheetHeader.resourceURL();
         if (!url)
             return;
-        this.rawLocation = new WebInspector.CSSLocation(url, this.lineNumberInSource(0), this.columnNumberInSource(0));
+        this.rawLocation = new WebInspector.CSSLocation(this._cssModel.target(), url, this.lineNumberInSource(0), this.columnNumberInSource(0));
     },
 
     /**
@@ -1234,8 +1257,8 @@ WebInspector.CSSProperty.prototype = {
         var line = forName ? range.startLine : range.endLine;
         // End of range is exclusive, so subtract 1 from the end offset.
         var column = forName ? range.startColumn : range.endColumn - (this.text && this.text.endsWith(";") ? 2 : 1);
-        var rawLocation = new WebInspector.CSSLocation(url, line, column);
-        return this.ownerStyle._cssModel.rawLocationToUILocation(rawLocation);
+        var rawLocation = new WebInspector.CSSLocation(this.ownerStyle._cssModel.target(), url, line, column);
+        return rawLocation.toUILocation();
     }
 }
 
@@ -1387,7 +1410,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
     rawLocationToUILocation: function(lineNumber, columnNumber)
     {
         var uiLocation = null;
-        var rawLocation = new WebInspector.CSSLocation(this.resourceURL(), lineNumber, columnNumber);
+        var rawLocation = new WebInspector.CSSLocation(this._cssModel.target(), this.resourceURL(), lineNumber, columnNumber);
         for (var i = this._sourceMappings.length - 1; !uiLocation && i >= 0; --i)
             uiLocation = this._sourceMappings[i].rawLocationToUILocation(rawLocation);
         return uiLocation;

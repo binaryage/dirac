@@ -561,7 +561,7 @@ WebInspector.SASSSourceMapping.prototype = {
     uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
         // FIXME: Implement this when ui -> raw mapping has clients.
-        return new WebInspector.CSSLocation(uiSourceCode.url || "", lineNumber, columnNumber);
+        return new WebInspector.CSSLocation(this._cssModel.target(), uiSourceCode.url || "", lineNumber, columnNumber);
     },
 
     /**

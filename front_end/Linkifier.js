@@ -131,11 +131,12 @@ WebInspector.Linkifier.prototype = {
      */
     linkifyRawLocation: function(rawLocation, classes)
     {
-        var script = WebInspector.debuggerModel.scriptForId(rawLocation.scriptId);
+        // FIXME: this check should not be here.
+        var script = rawLocation.target().debuggerModel.scriptForId(rawLocation.scriptId);
         if (!script)
             return null;
         var anchor = this._createAnchor(classes);
-        var liveLocation = script.createLiveLocation(rawLocation, this._updateAnchor.bind(this, anchor));
+        var liveLocation = rawLocation.createLiveLocation(this._updateAnchor.bind(this, anchor));
         this._liveLocations.push(liveLocation);
         return anchor;
     },
@@ -149,7 +150,7 @@ WebInspector.Linkifier.prototype = {
     linkifyCSSLocation: function(styleSheetId, rawLocation, classes)
     {
         var anchor = this._createAnchor(classes);
-        var liveLocation = WebInspector.cssModel.createLiveLocation(styleSheetId, rawLocation, this._updateAnchor.bind(this, anchor));
+        var liveLocation = rawLocation.createLiveLocation(styleSheetId, this._updateAnchor.bind(this, anchor));
         if (!liveLocation)
             return null;
         this._liveLocations.push(liveLocation);

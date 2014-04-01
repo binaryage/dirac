@@ -62,18 +62,17 @@ WebInspector.ObjectPopoverHelper.prototype = {
     _showObjectPopover: function(element, popover)
     {
         /**
+         * @param {!WebInspector.Target} target
          * @param {!Element} anchorElement
          * @param {!Element} popoverContentElement
-         * @param {?Protocol.Error} error
-         * @param {!DebuggerAgent.FunctionDetails} response
+         * @param {?DebuggerAgent.FunctionDetails} response
          * @this {WebInspector.ObjectPopoverHelper}
          */
-        function didGetDetails(anchorElement, popoverContentElement, error, response)
+        function didGetDetails(target, anchorElement, popoverContentElement, response)
         {
-            if (error) {
-                console.error(error);
+            if (!response)
                 return;
-            }
+
             var container = document.createElement("div");
             container.className = "inline-block";
 
@@ -82,7 +81,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
             functionName.textContent = response.functionName || WebInspector.UIString("(anonymous function)");
 
             this._linkifier = new WebInspector.Linkifier();
-            var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (response.location);
+            var rawLocation = WebInspector.DebuggerModel.Location.fromPayload(target, response.location);
             var link = this._linkifier.linkifyRawLocation(rawLocation, "function-location-link");
             if (link)
                 title.appendChild(link);
@@ -117,7 +116,7 @@ WebInspector.ObjectPopoverHelper.prototype = {
                 popoverContentElement.style.whiteSpace = "pre";
                 popoverContentElement.textContent = description;
                 if (result.type === "function") {
-                    DebuggerAgent.getFunctionDetails(result.objectId, didGetDetails.bind(this, anchorElement, popoverContentElement));
+                    result.functionDetails(didGetDetails.bind(this, result.target(), anchorElement, popoverContentElement));
                     return;
                 }
                 if (result.type === "string")

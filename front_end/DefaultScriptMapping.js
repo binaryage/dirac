@@ -52,7 +52,7 @@ WebInspector.DefaultScriptMapping.prototype = {
     rawLocationToUILocation: function(rawLocation)
     {
         var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (rawLocation);
-        var script = this._debuggerModel.scriptForId(debuggerModelLocation.scriptId);
+        var script = debuggerModelLocation.script();
         var uiSourceCode = this._uiSourceCodeForScriptId[script.scriptId];
         var lineNumber = debuggerModelLocation.lineNumber;
         var columnNumber = debuggerModelLocation.columnNumber || 0;

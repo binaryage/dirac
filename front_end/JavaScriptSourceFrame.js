@@ -651,7 +651,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     _continueToLine: function(lineNumber)
     {
         var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (this._uiSourceCode.uiLocationToRawLocation(lineNumber, 0));
-        this._scriptsPanel.continueToLocation(rawLocation);
+        rawLocation.continueToLocation();
     },
 
     dispose: function()

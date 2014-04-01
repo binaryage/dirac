@@ -122,6 +122,29 @@ WebInspector.TargetAware.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.Object}
+ * @param {!WebInspector.Target} target
+ */
+WebInspector.TargetAwareObject = function(target)
+{
+    WebInspector.Object.call(this);
+    this._target = target;
+}
+
+WebInspector.TargetAwareObject.prototype = {
+    /**
+     * @return {!WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._target;
+    },
+
+    __proto__: WebInspector.Object.prototype
+}
+
+/**
+ * @constructor
  */
 WebInspector.TargetManager = function()
 {

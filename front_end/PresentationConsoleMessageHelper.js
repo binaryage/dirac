@@ -151,7 +151,7 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
 WebInspector.PresentationConsoleMessage = function(message, rawLocation)
 {
     this.originalMessage = message;
-    this._liveLocation = WebInspector.debuggerModel.createLiveLocation(rawLocation, this._updateLocation.bind(this));
+    this._liveLocation = rawLocation.createLiveLocation(this._updateLocation.bind(this));
 }
 
 WebInspector.PresentationConsoleMessage.prototype = {

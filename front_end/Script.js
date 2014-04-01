@@ -25,8 +25,9 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
  * @implements {WebInspector.ContentProvider}
+ * @param {!WebInspector.Target} target
  * @param {string} scriptId
  * @param {string} sourceURL
  * @param {number} startLine
@@ -37,8 +38,9 @@
  * @param {string=} sourceMapURL
  * @param {boolean=} hasSourceURL
  */
-WebInspector.Script = function(scriptId, sourceURL, startLine, startColumn, endLine, endColumn, isContentScript, sourceMapURL, hasSourceURL)
+WebInspector.Script = function(target, scriptId, sourceURL, startLine, startColumn, endLine, endColumn, isContentScript, sourceMapURL, hasSourceURL)
 {
+    WebInspector.TargetAwareObject.call(this, target);
     this.scriptId = scriptId;
     this.sourceURL = sourceURL;
     this.lineOffset = startLine;
@@ -225,7 +227,7 @@ WebInspector.Script.prototype = {
     rawLocationToUILocation: function(lineNumber, columnNumber)
     {
         var uiLocation;
-        var rawLocation = new WebInspector.DebuggerModel.Location(this.scriptId, lineNumber, columnNumber || 0);
+        var rawLocation = new WebInspector.DebuggerModel.Location(this.target(), this.scriptId, lineNumber, columnNumber || 0);
         for (var i = this._sourceMappings.length - 1; !uiLocation && i >= 0; --i)
             uiLocation = this._sourceMappings[i].rawLocationToUILocation(rawLocation);
         console.assert(uiLocation, "Script raw location can not be mapped to any ui location.");
@@ -272,7 +274,7 @@ WebInspector.Script.prototype = {
         return location;
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**

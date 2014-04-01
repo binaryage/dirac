@@ -106,11 +106,19 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
-     * @return {?WebInspector.Target}
+     * @return {!WebInspector.Target}
      */
     target: function()
     {
-        return null;
+        throw new Error("Target-less object");
+    },
+
+    /**
+     * @param {function(?DebuggerAgent.FunctionDetails)} callback
+     */
+    functionDetails: function(callback)
+    {
+        callback(null);
     }
 }
 
@@ -494,11 +502,19 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
-     * @return {?WebInspector.Target}
+     * @return {!WebInspector.Target}
      */
     target: function()
     {
         return this._target;
+    },
+
+    /**
+     * @param {function(?DebuggerAgent.FunctionDetails)} callback
+     */
+    functionDetails: function(callback)
+    {
+        this._target.debuggerModel.functionDetails(this, callback)
     },
 
     __proto__: WebInspector.RemoteObject.prototype

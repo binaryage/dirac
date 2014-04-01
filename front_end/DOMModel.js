@@ -38,7 +38,7 @@
  * @param {!DOMAgent.Node} payload
  */
 WebInspector.DOMNode = function(domModel, doc, isInShadowTree, payload) {
-    WebInspector.TargetAware.call(this, domModel._target);
+    WebInspector.TargetAware.call(this, domModel.target());
     this._domModel = domModel;
     this._agent = domModel._agent;
     this.ownerDocument = doc;
@@ -468,11 +468,27 @@ WebInspector.DOMNode.prototype = {
 
     /**
      * @param {string} objectGroupId
-     * @param {function(?Protocol.Error, !Array.<!DOMAgent.EventListener>)=} callback
+     * @param {function(?Array.<!WebInspector.DOMModel.EventListener>)} callback
      */
     eventListeners: function(objectGroupId, callback)
     {
-        this._agent.getEventListenersForNode(this.id, objectGroupId, callback);
+        var target = this.target();
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {!Array.<!DOMAgent.EventListener>} payloads
+         */
+        function mycallback(error, payloads)
+        {
+            if (error) {
+                callback(null);
+                return;
+            }
+            callback(payloads.map(function(payload) {
+                return new WebInspector.DOMModel.EventListener(target, payload);
+            }));
+        }
+        this._agent.getEventListenersForNode(this.id, objectGroupId, mycallback);
     },
 
     /**
@@ -860,12 +876,13 @@ WebInspector.DOMDocument.prototype = {
 }
 
 /**
- * @extends {WebInspector.Object}
  * @constructor
+ * @extends {WebInspector.TargetAwareObject}
  * @param {!WebInspector.Target} target
  */
 WebInspector.DOMModel = function(target) {
-    this._target = target;
+    WebInspector.TargetAwareObject.call(this, target);
+
     this._agent = target.domAgent();
 
     /** @type {!Object.<number, !WebInspector.DOMNode>} */
@@ -1551,7 +1568,7 @@ WebInspector.DOMModel.prototype = {
         this._highlighter = highlighter || this._defaultHighlighter;
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**
@@ -1686,6 +1703,54 @@ WebInspector.DOMDispatcher.prototype = {
     {
         this._domModel._pseudoElementRemoved(parentId, pseudoElementId);
     }
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TargetAware}
+ * @param {!WebInspector.Target} target
+ * @param {!DOMAgent.EventListener} payload
+ */
+WebInspector.DOMModel.EventListener = function(target, payload)
+{
+    WebInspector.TargetAware.call(this, target);
+    this._payload = payload;
+}
+
+WebInspector.DOMModel.EventListener.prototype = {
+    /**
+     * @return {!DOMAgent.EventListener}
+     */
+    payload: function()
+    {
+        return this._payload;
+    },
+
+    /**
+     * @return {?WebInspector.DOMNode}
+     */
+    node: function()
+    {
+        return this.target().domModel.nodeForId(this._payload.nodeId);
+    },
+
+    /**
+     * @return {!WebInspector.DebuggerModel.Location}
+     */
+    location: function()
+    {
+        return WebInspector.DebuggerModel.Location.fromPayload(this.target(), this._payload.location);
+    },
+
+    /**
+     * @return {?WebInspector.RemoteObject}
+     */
+    handler: function()
+    {
+        return this._payload.handler ? this.target().runtimeModel.createRemoteObject(this._payload.handler) : null;
+    },
+
+    __proto__: WebInspector.TargetAware.prototype
 }
 
 /**

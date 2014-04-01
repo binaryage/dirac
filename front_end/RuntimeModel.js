@@ -30,16 +30,17 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
  * @param {!WebInspector.Target} target
  */
 WebInspector.RuntimeModel = function(target)
 {
+    WebInspector.TargetAwareObject.call(this, target);
+
     target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, this._frameAdded, this);
     target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, this._frameNavigated, this);
     target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameDetached, this);
     target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._didLoadCachedResources, this);
-    this._target = target;
     this._debuggerModel = target.debuggerModel;
     this._agent = target.runtimeAgent();
     this._contextListById = {};
@@ -57,7 +58,7 @@ WebInspector.RuntimeModel.prototype = {
      */
     addWorkerContextList: function(url)
     {
-        console.assert(this._target.isWorkerTarget(), "Worker context list was added in a non-worker target");
+        console.assert(this.target().isWorkerTarget(), "Worker context list was added in a non-worker target");
         var fakeContextList = new WebInspector.WorkerExecutionContextList("worker", url);
         this._addContextList(fakeContextList);
         var fakeExecutionContext = new WebInspector.ExecutionContext(undefined, url, true);
@@ -102,7 +103,7 @@ WebInspector.RuntimeModel.prototype = {
      */
     _frameAdded: function(event)
     {
-        console.assert(!this._target.isWorkerTarget() ,"Frame was added in a worker target.t");
+        console.assert(!this.target().isWorkerTarget() ,"Frame was added in a worker target.t");
         var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
         var contextList = new WebInspector.FrameExecutionContextList(frame);
         this._addContextList(contextList);
@@ -119,7 +120,7 @@ WebInspector.RuntimeModel.prototype = {
      */
     _frameNavigated: function(event)
     {
-        console.assert(!this._target.isWorkerTarget() ,"Frame was navigated in worker's target");
+        console.assert(!this.target().isWorkerTarget() ,"Frame was navigated in worker's target");
         var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
         var context = this._contextListById[frame.id];
         if (context)
@@ -131,7 +132,7 @@ WebInspector.RuntimeModel.prototype = {
      */
     _frameDetached: function(event)
     {
-        console.assert(!this._target.isWorkerTarget() ,"Frame was detached in worker's target");
+        console.assert(!this.target().isWorkerTarget() ,"Frame was detached in worker's target");
         var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
         var context = this._contextListById[frame.id];
         if (!context)
@@ -142,7 +143,7 @@ WebInspector.RuntimeModel.prototype = {
 
     _didLoadCachedResources: function()
     {
-        this._target.registerRuntimeDispatcher(new WebInspector.RuntimeDispatcher(this));
+        this.target().registerRuntimeDispatcher(new WebInspector.RuntimeDispatcher(this));
         this._agent.enable();
     },
 
@@ -190,7 +191,7 @@ WebInspector.RuntimeModel.prototype = {
             if (returnByValue)
                 callback(null, !!wasThrown, wasThrown ? null : result);
             else
-                callback(this._target.runtimeModel.createRemoteObject(result), !!wasThrown);
+                callback(this.target().runtimeModel.createRemoteObject(result), !!wasThrown);
         }
         this._agent.evaluate(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, this._currentExecutionContext ? this._currentExecutionContext.id : undefined, returnByValue, generatePreview, evalCallback.bind(this));
     },
@@ -377,7 +378,7 @@ WebInspector.RuntimeModel.prototype = {
     createRemoteObject: function(payload)
     {
         console.assert(typeof payload === "object", "Remote object payload should only be an object");
-        return new WebInspector.RemoteObjectImpl(this._target, payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
+        return new WebInspector.RemoteObjectImpl(this.target(), payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
     },
 
     /**
@@ -386,7 +387,7 @@ WebInspector.RuntimeModel.prototype = {
      */
     createRemoteObjectFromPrimitiveValue: function(value)
     {
-        return new WebInspector.RemoteObjectImpl(this._target, undefined, typeof value, undefined, value);
+        return new WebInspector.RemoteObjectImpl(this.target(), undefined, typeof value, undefined, value);
     },
 
     /**
@@ -407,12 +408,12 @@ WebInspector.RuntimeModel.prototype = {
     createScopedObject: function(payload, scopeRef)
     {
         if (scopeRef)
-            return new WebInspector.ScopeRemoteObject(this._target, payload.objectId, scopeRef, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
+            return new WebInspector.ScopeRemoteObject(this.target(), payload.objectId, scopeRef, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
         else
-            return new WebInspector.RemoteObjectImpl(this._target, payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
+            return new WebInspector.RemoteObjectImpl(this.target(), payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**

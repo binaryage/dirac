@@ -487,7 +487,7 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
      */
     _addResolvedLocation: function(location)
     {
-        this._liveLocations.push(this._breakpointManager._debuggerModel.createLiveLocation(location, this._locationUpdated.bind(this, location)));
+        this._liveLocations.push(location.createLiveLocation(this._locationUpdated.bind(this, location)));
     },
 
     /**
@@ -614,7 +614,7 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
 
         this._resetLocations();
         for (var i = 0; i < locations.length; ++i) {
-            var script = this._breakpointManager._debuggerModel.scriptForId(locations[i].scriptId);
+            var script = locations[i].script();
             var uiLocation = script.rawLocationToUILocation(locations[i].lineNumber, locations[i].columnNumber);
             if (this._breakpointManager.findBreakpoint(uiLocation.uiSourceCode, uiLocation.lineNumber, uiLocation.columnNumber)) {
                 // location clash

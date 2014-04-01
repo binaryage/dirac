@@ -28,11 +28,14 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
+ * @param {!WebInspector.Target} target
  * @implements {ProfilerAgent.Dispatcher}
  */
-WebInspector.CPUProfilerModel = function()
+WebInspector.CPUProfilerModel = function(target)
 {
+    WebInspector.TargetAwareObject.call(this, target);
+
     /** @type {?WebInspector.CPUProfilerModel.Delegate} */
     this._delegate = null;
     this._isRecording = false;
@@ -64,7 +67,7 @@ WebInspector.CPUProfilerModel.prototype = {
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
         WebInspector.moduleManager.loadModule("profiles");
-        this._delegate.consoleProfileFinished(id, scriptLocation, cpuProfile, title);
+        this._delegate.consoleProfileFinished(id, WebInspector.DebuggerModel.Location.fromPayload(this.target(), scriptLocation), cpuProfile, title);
     },
 
     /**
@@ -76,7 +79,7 @@ WebInspector.CPUProfilerModel.prototype = {
     {
         // Make sure ProfilesPanel is initialized and CPUProfileType is created.
         WebInspector.moduleManager.loadModule("profiles");
-        this._delegate.consoleProfileStarted(id, scriptLocation, title);
+        this._delegate.consoleProfileStarted(id, WebInspector.DebuggerModel.Location.fromPayload(this.target(), scriptLocation), title);
     },
 
     /**
@@ -98,7 +101,7 @@ WebInspector.CPUProfilerModel.prototype = {
         return this._isRecording;
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /** @interface */
@@ -107,14 +110,14 @@ WebInspector.CPUProfilerModel.Delegate = function() {};
 WebInspector.CPUProfilerModel.Delegate.prototype = {
     /**
      * @param {string} protocolId
-     * @param {!DebuggerAgent.Location} scriptLocation
+     * @param {!WebInspector.DebuggerModel.Location} scriptLocation
      * @param {string=} title
      */
     consoleProfileStarted: function(protocolId, scriptLocation, title) {},
 
     /**
      * @param {string} protocolId
-     * @param {!DebuggerAgent.Location} scriptLocation
+     * @param {!WebInspector.DebuggerModel.Location} scriptLocation
      * @param {!ProfilerAgent.CPUProfile} cpuProfile
      * @param {string=} title
      */

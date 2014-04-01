@@ -680,7 +680,7 @@ WebInspector.CPUProfileType.prototype = {
 
     /**
      * @param {string} id
-     * @param {!DebuggerAgent.Location} scriptLocation
+     * @param {!WebInspector.DebuggerModel.Location} scriptLocation
      * @param {string=} title
      */
     consoleProfileStarted: function(id, scriptLocation, title)
@@ -695,7 +695,7 @@ WebInspector.CPUProfileType.prototype = {
 
     /**
      * @param {string} protocolId
-     * @param {!DebuggerAgent.Location} scriptLocation
+     * @param {!WebInspector.DebuggerModel.Location} scriptLocation
      * @param {!ProfilerAgent.CPUProfile} cpuProfile
      * @param {string=} title
      */
@@ -715,12 +715,12 @@ WebInspector.CPUProfileType.prototype = {
 
     /**
      * @param {string} type
-     * @param {!DebuggerAgent.Location} scriptLocation
+     * @param {!WebInspector.DebuggerModel.Location} scriptLocation
      * @param {string} messageText
      */
     _addMessageToConsole: function(type, scriptLocation, messageText)
     {
-        var script = WebInspector.debuggerModel.scriptForId(scriptLocation.scriptId);
+        var script = scriptLocation.script();
         var message = new WebInspector.ConsoleMessage(
             WebInspector.ConsoleMessage.MessageSource.ConsoleAPI,
             WebInspector.ConsoleMessage.MessageLevel.Debug,

@@ -30,16 +30,17 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
  * @param {!WebInspector.Target} target
  */
 WebInspector.ConsoleModel = function(target)
 {
+    WebInspector.TargetAwareObject.call(this, target);
+
     /** @type {!Array.<!WebInspector.ConsoleMessage>} */
     this.messages = [];
     this.warnings = 0;
     this.errors = 0;
-    this._target = target;
     this._consoleAgent = target.consoleAgent();
     target.registerConsoleDispatcher(new WebInspector.ConsoleDispatcher(this));
     this._enableAgent();
@@ -117,7 +118,7 @@ WebInspector.ConsoleModel.prototype = {
 
             this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.CommandEvaluated, {result: result, wasThrown: wasThrown, text: text, commandMessage: commandMessage});
         }
-        this._target.runtimeModel.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult.bind(this));
+        this.target().runtimeModel.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult.bind(this));
 
         WebInspector.userMetrics.ConsoleEvaluated.record();
     },
@@ -190,7 +191,7 @@ WebInspector.ConsoleModel.prototype = {
         this.warnings = 0;
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**

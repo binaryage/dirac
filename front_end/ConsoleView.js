@@ -756,17 +756,15 @@ WebInspector.ConsoleView.prototype = {
             return;
         }
 
-        target.debuggerAgent().getFunctionDetails(result.objectId, didGetDetails.bind(this));
+        result.functionDetails(didGetDetails.bind(this));
 
         /**
-         * @param {?Protocol.Error} error
-         * @param {!DebuggerAgent.FunctionDetails} response
+         * @param {?DebuggerAgent.FunctionDetails} response
          * @this {WebInspector.ConsoleView}
          */
-        function didGetDetails(error, response)
+        function didGetDetails(response)
         {
-            if (error) {
-                console.error(error);
+            if (!response) {
                 addMessage.call(this);
                 return;
             }
@@ -774,12 +772,13 @@ WebInspector.ConsoleView.prototype = {
             var url;
             var lineNumber;
             var columnNumber;
-            var script = WebInspector.debuggerModel.scriptForId(response.location.scriptId);
+            var script = target.debuggerModel.scriptForId(response.location.scriptId);
             if (script && script.sourceURL) {
                 url = script.sourceURL;
                 lineNumber = response.location.lineNumber + 1;
                 columnNumber = response.location.columnNumber + 1;
             }
+            // FIXME: this should be using live location.
             addMessage.call(this, url, lineNumber, columnNumber);
         }
     },

@@ -583,6 +583,9 @@ WebInspector.SourcesPanel.prototype = {
         delete this._skipExecutionLineRevealing;
     },
 
+    /**
+     * @param {!WebInspector.DebuggerModel.Location} rawLocation
+     */
     continueToLocation: function(rawLocation)
     {
         if (!this._paused)
@@ -591,7 +594,7 @@ WebInspector.SourcesPanel.prototype = {
         delete this._skipExecutionLineRevealing;
         this._paused = false;
         this._clearInterface();
-        WebInspector.debuggerModel.continueToLocation(rawLocation);
+        rawLocation.continueToLocation();
     },
 
     _toggleBreakpointsClicked: function(event)

@@ -785,6 +785,13 @@ WebInspector.RawLocation = function()
 {
 }
 
+WebInspector.RawLocation.prototype = {
+    /**
+     * @return {?WebInspector.UILocation}
+     */
+    toUILocation: function() { }
+}
+
 /**
  * @constructor
  * @param {!WebInspector.RawLocation} rawLocation

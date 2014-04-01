@@ -604,16 +604,13 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
             return;
 
         /**
-         * @param {?Protocol.Error} error
-         * @param {!DebuggerAgent.FunctionDetails} response
+         * @param {?DebuggerAgent.FunctionDetails} response
          * @this {WebInspector.FunctionScopeMainTreeElement}
          */
-        function didGetDetails(error, response)
+        function didGetDetails(response)
         {
-            if (error) {
-                console.error(error);
+            if (!response)
                 return;
-            }
             this.removeChildren();
 
             var scopeChain = response.scopeChain;
@@ -665,7 +662,7 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
             }
 
         }
-        DebuggerAgent.getFunctionDetails(this._remoteObject.objectId, didGetDetails.bind(this));
+        this._remoteObject.functionDetails(didGetDetails.bind(this));
     },
 
     __proto__: TreeElement.prototype

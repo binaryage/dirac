@@ -367,7 +367,7 @@ WebInspector.Main.prototype = {
 
         WebInspector.databaseModel = new WebInspector.DatabaseModel();
         WebInspector.domStorageModel = new WebInspector.DOMStorageModel();
-        WebInspector.cpuProfilerModel = new WebInspector.CPUProfilerModel();
+        WebInspector.cpuProfilerModel = new WebInspector.CPUProfilerModel(mainTarget);
 
         InspectorAgent.enable(inspectorAgentEnableCallback.bind(this));
 
@@ -613,25 +613,21 @@ WebInspector.Main.prototype = {
              * @param {?Protocol.Error} error
              * @param {!DebuggerAgent.FunctionDetails} response
              */
-            DebuggerAgent.getFunctionDetails(object.objectId, didGetDetails);
+            object.functionDetails(didGetDetails);
             return;
         }
 
-        function didGetDetails(error, response)
+        /**
+         * @param {?DebuggerAgent.FunctionDetails} response
+         */
+        function didGetDetails(response)
         {
             object.release();
 
-            if (error) {
-                console.error(error);
-                return;
-            }
-
-            var uiLocation = WebInspector.debuggerModel.rawLocationToUILocation(response.location);
-            if (!uiLocation)
+            if (!response)
                 return;
 
-            // FIXME: Dependency violation.
-            /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.panel("sources")).showUILocation(uiLocation, true);
+            WebInspector.Revealer.reveal(WebInspector.DebuggerModel.Location.fromPayload(object.target(), response.location).toUILocation());
         }
 
         if (hints.copyToClipboard)

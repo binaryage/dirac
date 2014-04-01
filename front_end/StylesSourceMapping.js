@@ -72,7 +72,7 @@ WebInspector.StylesSourceMapping.prototype = {
      */
     uiLocationToRawLocation: function(uiSourceCode, lineNumber, columnNumber)
     {
-        return new WebInspector.CSSLocation(uiSourceCode.url || "", lineNumber, columnNumber);
+        return new WebInspector.CSSLocation(this._cssModel.target(), uiSourceCode.url || "", lineNumber, columnNumber);
     },
 
     /**

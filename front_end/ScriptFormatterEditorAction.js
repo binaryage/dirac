@@ -29,7 +29,7 @@ WebInspector.FormatterScriptMapping.prototype = {
     rawLocationToUILocation: function(rawLocation)
     {
         var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (rawLocation);
-        var script = this._debuggerModel.scriptForId(debuggerModelLocation.scriptId);
+        var script = debuggerModelLocation.script();
         var uiSourceCode = this._uiSourceCodes.get(script);
         if (!uiSourceCode)
             return null;
@@ -85,8 +85,8 @@ WebInspector.FormatterScriptMapping.prototype = {
         if (uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
             return this._debuggerModel.scriptsForSourceURL(uiSourceCode.url).filter(isInlineScript);
         if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script) {
-            var rawLocation = uiSourceCode.uiLocationToRawLocation(0, 0);
-            return rawLocation ? [this._debuggerModel.scriptForId(rawLocation.scriptId)] : [];
+            var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (uiSourceCode.uiLocationToRawLocation(0, 0));
+            return rawLocation ? [rawLocation.script()] : [];
         }
         return [];
     },
