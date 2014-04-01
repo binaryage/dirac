@@ -308,7 +308,6 @@ WebInspector.TimelinePanel.prototype = {
             this._viewsMap[mode] = views;
         }
 
-        this._timelineView().setFrameModel(mode === WebInspector.TimelinePanel.Mode.Frames ? this._frameModel() : null);
         return views;
     },
 
@@ -573,6 +572,7 @@ WebInspector.TimelinePanel.prototype = {
             this._stackView.appendView(view, "timelinePanelTimelineStackSplitViewState");
             view.refreshRecords(this._textFilter._regex);
         }
+        this._timelineView().setFrameModel(mode === WebInspector.TimelinePanel.Mode.Frames ? this._frameModel() : null);
         this._overviewControl = views.overviewView;
         this._overviewPane.setOverviewControl(this._overviewControl);
         this._updateSelectionDetails();
