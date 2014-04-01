@@ -675,6 +675,8 @@ WebInspector.CSSStyleModel.LiveLocation.prototype = {
     dispose: function()
     {
         WebInspector.LiveLocation.prototype.dispose.call(this);
+        if (this._header)
+            this._header._removeLocation(this);
         this._model.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetAdded, this);
         this._model.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._styleSheetRemoved, this);
     },
