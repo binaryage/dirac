@@ -1398,11 +1398,21 @@ var StringSet = function()
     this._map = new StringMap();
 }
 
+/**
+ * @param {!Array.<string>} array
+ */
+StringSet.fromArray = function(array)
+{
+    var result = new StringSet();
+    array.forEach(function(item) { result.add(item); });
+    return result;
+}
+
 StringSet.prototype = {
     /**
      * @param {string} value
      */
-    put: function(value)
+    add: function(value)
     {
         this._map.put(value, true);
     },

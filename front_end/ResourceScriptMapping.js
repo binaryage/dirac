@@ -172,7 +172,7 @@ WebInspector.ResourceScriptMapping.prototype = {
         for (var i = 0; i < scripts.length; ++i)
             scripts[i].updateLocations();
         uiSourceCode.setSourceMapping(this);
-        this._boundURLs.put(uiSourceCode.url);
+        this._boundURLs.add(uiSourceCode.url);
     },
 
     /**

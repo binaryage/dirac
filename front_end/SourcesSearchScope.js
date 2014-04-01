@@ -115,6 +115,8 @@ WebInspector.SourcesSearchScope.prototype = {
             return;
         }
 
+        addDirtyFiles();
+
         if (!files.length) {
             progress.done();
             callback();
@@ -130,6 +132,19 @@ WebInspector.SourcesSearchScope.prototype = {
         for (var i = 0; i < maxFileContentRequests && i < files.length; ++i)
             scheduleSearchInNextFileOrFinish.call(this);
 
+        function addDirtyFiles()
+        {
+            var matchingFiles = StringSet.fromArray(files);
+            var uiSourceCodes = project.uiSourceCodes();
+            for (var i = 0; i < uiSourceCodes.length; ++i) {
+                if (!uiSourceCodes[i].isDirty())
+                    continue;
+                var path = uiSourceCodes[i].path();
+                if (!matchingFiles.contains(path))
+                    files.push(path);
+            }
+        }
+
         /**
          * @param {!string} path
          * @this {WebInspector.SourcesSearchScope}
@@ -143,7 +158,19 @@ WebInspector.SourcesSearchScope.prototype = {
                 scheduleSearchInNextFileOrFinish.call(this);
                 return;
             }
-            uiSourceCode.requestContent(contentLoaded.bind(this, path));
+            if (uiSourceCode.isDirty())
+                contentLoaded.call(this, uiSourceCode.path(), uiSourceCode.workingCopy());
+            else
+                uiSourceCode.checkContentUpdated(contentUpdated.bind(this, uiSourceCode));
+        }
+
+        /**
+         * @param {!WebInspector.UISourceCode} uiSourceCode
+         * @this {WebInspector.SourcesSearchScope}
+         */
+        function contentUpdated(uiSourceCode)
+        {
+            uiSourceCode.requestContent(contentLoaded.bind(this, uiSourceCode.path()));
         }
 
         /**

@@ -262,14 +262,39 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
+     * @param {function()} callback
+     */
+    _pushCheckContentUpdatedCallback: function(callback)
+    {
+        if (!this._checkContentUpdatedCallbacks)
+            this._checkContentUpdatedCallbacks = [];
+        this._checkContentUpdatedCallbacks.push(callback);
+    },
+
+    _terminateContentCheck: function()
+    {
+        delete this._checkingContent;
+        if (this._checkContentUpdatedCallbacks) {
+            this._checkContentUpdatedCallbacks.forEach(function(callback) { callback(); });
+            delete this._checkContentUpdatedCallbacks;
+        }
+    },
+
+    /**
      * @param {function()=} callback
      */
     checkContentUpdated: function(callback)
     {
-        if (!this._project.canSetFileContent())
+        callback = callback || function() {};
+        if (!this._project.canSetFileContent()) {
+            callback();
             return;
-        if (this._checkingContent)
+        }
+        this._pushCheckContentUpdatedCallback(callback);
+
+        if (this._checkingContent) {
             return;
+        }
         this._checkingContent = true;
         this._project.requestFileContent(this, contentLoaded.bind(this));
 
@@ -283,30 +308,22 @@ WebInspector.UISourceCode.prototype = {
                 var workingCopy = this.workingCopy();
                 this._commitContent("", false);
                 this.setWorkingCopy(workingCopy);
-                delete this._checkingContent;
-                if (callback)
-                    callback();
+                this._terminateContentCheck();
                 return;
             }
             if (typeof this._lastAcceptedContent === "string" && this._lastAcceptedContent === updatedContent) {
-                delete this._checkingContent;
-                if (callback)
-                    callback();
+                this._terminateContentCheck();
                 return;
             }
             if (this._content === updatedContent) {
                 delete this._lastAcceptedContent;
-                delete this._checkingContent;
-                if (callback)
-                    callback();
+                this._terminateContentCheck();
                 return;
             }
 
             if (!this.isDirty()) {
                 this._commitContent(updatedContent, false);
-                delete this._checkingContent;
-                if (callback)
-                    callback();
+                this._terminateContentCheck();
                 return;
             }
 
@@ -315,9 +332,7 @@ WebInspector.UISourceCode.prototype = {
                 this._commitContent(updatedContent, false);
             else
                 this._lastAcceptedContent = updatedContent;
-            delete this._checkingContent;
-            if (callback)
-                callback();
+            this._terminateContentCheck();
         }
     },
 
