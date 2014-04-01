@@ -36,9 +36,6 @@ WebInspector.PlatformFontsSidebarPane = function()
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Fonts"));
     this.element.classList.add("platform-fonts");
-    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._onNodeChange.bind(this));
-    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._onNodeChange.bind(this));
-    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._onNodeChange.bind(this));
 
     this._sectionTitle = document.createElementWithClass("div", "sidebar-separator");
     this.element.insertBefore(this._sectionTitle, this.bodyElement);
@@ -64,7 +61,26 @@ WebInspector.PlatformFontsSidebarPane.prototype = {
             return;
         }
         this._node = node;
+        this._updateTarget(node.target());
         this._innerUpdate();
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    _updateTarget: function(target)
+    {
+        if (this._target === target)
+            return;
+        if (this._target) {
+            this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._onNodeChange, this);
+            this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._onNodeChange, this);
+            this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._onNodeChange, this);
+        }
+        this._target = target;
+        this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._onNodeChange, this);
+        this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._onNodeChange, this);
+        this._target.domModel.addEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._onNodeChange, this);
     },
 
     _innerUpdate: function()
@@ -75,7 +91,7 @@ WebInspector.PlatformFontsSidebarPane.prototype = {
         }
         if (!this._node)
             return;
-        WebInspector.cssModel.getPlatformFontsForNode(this._node.id, this._refreshUI.bind(this, this._node));
+        this._target.cssModel.getPlatformFontsForNode(this._node.id, this._refreshUI.bind(this, this._node));
     },
 
     /**

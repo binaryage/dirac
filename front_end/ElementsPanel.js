@@ -1051,11 +1051,21 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    _cssModelEnabledForSelectedNode: function()
+    {
+        if (!this.selectedDOMNode())
+            return true;
+        return this.selectedDOMNode().target().cssModel.isEnabled();
+    },
+
+    /**
      * @param {boolean=} forceUpdate
      */
     updateStyles: function(forceUpdate)
     {
-        if (!WebInspector.cssModel.isEnabled())
+        if (!this._cssModelEnabledForSelectedNode())
             return;
         var stylesSidebarPane = this.sidebarPanes.styles;
         var computedStylePane = this.sidebarPanes.computedStyle;
@@ -1068,7 +1078,7 @@ WebInspector.ElementsPanel.prototype = {
 
     updateMetrics: function()
     {
-        if (!WebInspector.cssModel.isEnabled())
+        if (!this._cssModelEnabledForSelectedNode())
             return;
         var metricsSidebarPane = this.sidebarPanes.metrics;
         if (!metricsSidebarPane.isShowing() || !metricsSidebarPane.needsUpdate)
@@ -1080,7 +1090,7 @@ WebInspector.ElementsPanel.prototype = {
 
     updatePlatformFonts: function()
     {
-        if (!WebInspector.cssModel.isEnabled())
+        if (!this._cssModelEnabledForSelectedNode())
             return;
         var platformFontsSidebar = this.sidebarPanes.platformFonts;
         if (!platformFontsSidebar.isShowing() || !platformFontsSidebar.needsUpdate)

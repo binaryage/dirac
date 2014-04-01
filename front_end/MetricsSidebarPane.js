@@ -33,12 +33,6 @@
 WebInspector.MetricsSidebarPane = function()
 {
     WebInspector.SidebarPane.call(this, WebInspector.UIString("Metrics"));
-
-    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetOrMediaQueryResultChanged, this);
-    WebInspector.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._styleSheetOrMediaQueryResultChanged, this);
-    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
-    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
 }
 
 WebInspector.MetricsSidebarPane.prototype = {
@@ -47,9 +41,37 @@ WebInspector.MetricsSidebarPane.prototype = {
      */
     update: function(node)
     {
-        if (node)
-            this.node = node;
+        if (!node || this._node === node) {
+            this._innerUpdate();
+            return;
+        }
+
+        this._node = node;
+        this._updateTarget(node.target());
         this._innerUpdate();
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    _updateTarget: function(target)
+    {
+        if (this._target === target)
+            return;
+
+        if (this._target) {
+            this._target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetOrMediaQueryResultChanged, this);
+            this._target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._styleSheetOrMediaQueryResultChanged, this);
+            this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
+            this._target.domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
+            this._target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
+        }
+        this._target = target;
+        this._target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetChanged, this._styleSheetOrMediaQueryResultChanged, this);
+        this._target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.MediaQueryResultChanged, this._styleSheetOrMediaQueryResultChanged, this);
+        this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
+        this._target.domModel.addEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
+        this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameResized, this._frameResized, this);
     },
 
     _innerUpdate: function()
@@ -60,7 +82,7 @@ WebInspector.MetricsSidebarPane.prototype = {
             return;
 
         // FIXME: avoid updates of a collapsed pane.
-        var node = this.node;
+        var node = this._node;
 
         if (!node || node.nodeType() !== Node.ELEMENT_NODE) {
             this.bodyElement.removeChildren();
@@ -73,11 +95,11 @@ WebInspector.MetricsSidebarPane.prototype = {
          */
         function callback(style)
         {
-            if (!style || this.node !== node)
+            if (!style || this._node !== node)
                 return;
             this._updateMetrics(style);
         }
-        WebInspector.cssModel.getComputedStyleAsync(node.id, callback.bind(this));
+        this._target.cssModel.getComputedStyleAsync(node.id, callback.bind(this));
 
         /**
          * @param {?WebInspector.CSSStyleDeclaration} style
@@ -85,11 +107,11 @@ WebInspector.MetricsSidebarPane.prototype = {
          */
         function inlineStyleCallback(style)
         {
-            if (!style || this.node !== node)
+            if (!style || this._node !== node)
                 return;
             this.inlineStyle = style;
         }
-        WebInspector.cssModel.getInlineStylesAsync(node.id, inlineStyleCallback.bind(this));
+        this._target.cssModel.getInlineStylesAsync(node.id, inlineStyleCallback.bind(this));
     },
 
     _styleSheetOrMediaQueryResultChanged: function()
@@ -116,7 +138,7 @@ WebInspector.MetricsSidebarPane.prototype = {
 
     _attributesUpdated: function(event)
     {
-        if (this.node !== event.data.node)
+        if (this._node !== event.data.node)
             return;
 
         this._innerUpdate();
@@ -140,19 +162,19 @@ WebInspector.MetricsSidebarPane.prototype = {
     _highlightDOMNode: function(showHighlight, mode, event)
     {
         event.consume();
-        if (showHighlight && this.node) {
+        if (showHighlight && this._node) {
             if (this._highlightMode === mode)
                 return;
             this._highlightMode = mode;
-            this.node.highlight(mode);
+            this._node.highlight(mode);
         } else {
             delete this._highlightMode;
-            WebInspector.domModel.hideDOMNodeHighlight();
+            this._target.domModel.hideDOMNodeHighlight();
         }
 
         for (var i = 0; this._boxElements && i < this._boxElements.length; ++i) {
             var element = this._boxElements[i];
-            if (!this.node || mode === "all" || element._name === mode)
+            if (!this._node || mode === "all" || element._name === mode)
                 element.style.backgroundColor = element._backgroundColor;
             else
                 element.style.backgroundColor = "";
@@ -433,7 +455,7 @@ WebInspector.MetricsSidebarPane.prototype = {
                 self.originalPropertyData = self.previousPropertyDataCandidate;
 
             if (typeof self._highlightMode !== "undefined")
-                self.node.highlight(self._highlightMode);
+                self._node.highlight(self._highlightMode);
 
             if (commitEditor) {
                 self.dispatchEventToListeners("metrics edited");
