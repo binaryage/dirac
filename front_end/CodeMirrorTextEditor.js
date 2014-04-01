@@ -1762,7 +1762,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
         if (!this._suggestBox)
             return;
         var cursor = this._codeMirror.getCursor();
-        if (cursor.line !== this._prefixRange.startLine || cursor.ch > this._prefixRange.endColumn || cursor.ch < this._prefixRange.startColumn)
+        if (cursor.line !== this._prefixRange.startLine || cursor.ch > this._prefixRange.endColumn || cursor.ch <= this._prefixRange.startColumn)
             this.finishAutocomplete();
     },
 
