@@ -400,6 +400,7 @@ CodeMirror.prototype = {
     setLine: function(line, text) { },
     setOption: function(option, value) { },
     setSelection: function(anchor, head) { },
+    setSelections: function(selections) { },
     setSize: function(width, height) { },
     setValue: function(code) { },
     somethingSelected: function() { },
@@ -407,8 +408,6 @@ CodeMirror.prototype = {
     undo: function() { },
     unlinkDoc: function(other) { }
 }
-/** @type {number} */
-CodeMirror.prototype.lineCount;
 /** @type {!{cursorDiv: Element}} */
 CodeMirror.prototype.display;
 CodeMirror.Pass;

@@ -89,6 +89,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         "Shift-Tab": "indentLess",
         "Enter": "smartNewlineAndIndent",
         "Ctrl-Space": "autocomplete",
+        "Ctrl-D": "selectNextOccurrence",
         "Esc": "dismissMultipleSelections"
     };
 
@@ -143,10 +144,11 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._shouldClearHistory = true;
     this._lineSeparator = "\n";
 
-    this._tokenHighlighter = new WebInspector.CodeMirrorTextEditor.TokenHighlighter(this._codeMirror);
+    this._tokenHighlighter = new WebInspector.CodeMirrorTextEditor.TokenHighlighter(this, this._codeMirror);
     this._blockIndentController = new WebInspector.CodeMirrorTextEditor.BlockIndentController(this._codeMirror);
     this._fixWordMovement = new WebInspector.CodeMirrorTextEditor.FixWordMovement(this._codeMirror);
     this._autocompleteController = new WebInspector.CodeMirrorTextEditor.AutocompleteController(this, this._codeMirror);
+    this._selectNextOccurrenceController = new WebInspector.CodeMirrorTextEditor.SelectNextOccurrenceController(this, this._codeMirror);
 
     this._codeMirror.on("changes", this._changes.bind(this));
     this._codeMirror.on("beforeChange", this._beforeChange.bind(this));
@@ -189,12 +191,27 @@ WebInspector.CodeMirrorTextEditor.ChangeObject;
 
 WebInspector.CodeMirrorTextEditor.maxHighlightLength = 1000;
 
+/**
+ * @param {!CodeMirror} codeMirror
+ */
 WebInspector.CodeMirrorTextEditor.autocompleteCommand = function(codeMirror)
 {
     codeMirror._codeMirrorTextEditor._autocompleteController.autocomplete();
 }
 CodeMirror.commands.autocomplete = WebInspector.CodeMirrorTextEditor.autocompleteCommand;
 
+/**
+ * @param {!CodeMirror} codeMirror
+ */
+WebInspector.CodeMirrorTextEditor.selectNextOccurrenceCommand = function(codeMirror)
+{
+    codeMirror._codeMirrorTextEditor._selectNextOccurrenceController.selectNextOccurrence();
+}
+CodeMirror.commands.selectNextOccurrence = WebInspector.CodeMirrorTextEditor.selectNextOccurrenceCommand;
+
+/**
+ * @param {!CodeMirror} codeMirror
+ */
 CodeMirror.commands.smartNewlineAndIndent = function(codeMirror)
 {
     codeMirror.operation(innerSmartNewlineAndIndent.bind(null, codeMirror));
@@ -355,7 +372,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
                 else
                     this.setSelection(WebInspector.TextRange.createFromLocation(range.startLine, range.startColumn));
             } else {
-                // Collapse selection to end on search start so that we jump to next occurence on the first enter press.
+                // Collapse selection to end on search start so that we jump to next occurrence on the first enter press.
                 this.setSelection(this.selection().collapseToEnd());
             }
             this._tokenHighlighter.highlightSearchResults(regex, range);
@@ -913,19 +930,17 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     /**
      * @param {number} lineNumber
      * @param {number} column
-     * @param {boolean=} prefixOnly
      * @return {?WebInspector.TextRange}
      */
-    _wordRangeForCursorPosition: function(lineNumber, column, prefixOnly)
+    _wordRangeForCursorPosition: function(lineNumber, column)
     {
         var line = this.line(lineNumber);
-        if (column === 0 || !WebInspector.TextUtils.isWordChar(line.charAt(column - 1)))
-            return null;
-        var wordStart = column - 1;
-        while (wordStart > 0 && WebInspector.TextUtils.isWordChar(line.charAt(wordStart - 1)))
-            --wordStart;
-        if (prefixOnly)
-            return new WebInspector.TextRange(lineNumber, wordStart, lineNumber, column);
+        var wordStart = column;
+        if (column !== 0 && WebInspector.TextUtils.isWordChar(line.charAt(column - 1))) {
+            wordStart = column - 1;
+            while (wordStart > 0 && WebInspector.TextUtils.isWordChar(line.charAt(wordStart - 1)))
+                --wordStart;
+        }
         var wordEnd = column;
         while (wordEnd < line.length && WebInspector.TextUtils.isWordChar(line.charAt(wordEnd)))
             ++wordEnd;
@@ -1020,6 +1035,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     _beforeSelectionChange: function(codeMirror, selection)
     {
+        this._selectNextOccurrenceController.selectionWillChange();
         if (!this._isHandlingMouseDownEvent)
             return;
         if (!selection.ranges.length)
@@ -1096,6 +1112,20 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     },
 
     /**
+     * @return {!Array.<!WebInspector.TextRange>}
+     */
+    selections: function()
+    {
+        var selectionList = this._codeMirror.listSelections();
+        var result = [];
+        for (var i = 0; i < selectionList.length; ++i) {
+            var selection = selectionList[i];
+            result.push(this._toRange(selection.anchor, selection.head));
+        }
+        return result;
+    },
+
+    /**
      * @return {?WebInspector.TextRange}
      */
     lastSelection: function()
@@ -1111,6 +1141,22 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this._lastSelection = textRange;
         var pos = this._toPos(textRange);
         this._codeMirror.setSelection(pos.start, pos.end);
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.TextRange>} ranges
+     */
+    setSelections: function(ranges)
+    {
+        var selections = [];
+        for (var i = 0; i < ranges.length; ++i) {
+            var selection = this._toPos(ranges[i]);
+            selections.push({
+                anchor: selection.start,
+                head: selection.end
+            });
+        }
+        this._codeMirror.setSelections(selections, 0, { scroll: false });
     },
 
     /**
@@ -1287,10 +1333,12 @@ WebInspector.CodeMirrorPositionHandle.prototype = {
 
 /**
  * @constructor
+ * @param {!WebInspector.CodeMirrorTextEditor} textEditor
  * @param {!CodeMirror} codeMirror
  */
-WebInspector.CodeMirrorTextEditor.TokenHighlighter = function(codeMirror)
+WebInspector.CodeMirrorTextEditor.TokenHighlighter = function(textEditor, codeMirror)
 {
+    this._textEditor = textEditor;
     this._codeMirror = codeMirror;
 }
 
@@ -1351,7 +1399,7 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
             return;
 
         var selections = this._codeMirror.getSelections();
-        if (selections.length !== 1)
+        if (selections.length > 1)
             return;
         var selectedText = selections[0];
         if (this._isWord(selectedText, selectionStart.line, selectionStart.ch, selectionEnd.ch)) {
@@ -1585,7 +1633,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
     {
         var mainSelectionContext = this._textEditor.copyRange(mainSelection);
         for (var i = 0; i < selections.length; ++i) {
-            var wordRange = this._textEditor._wordRangeForCursorPosition(selections[i].head.line, selections[i].head.ch, false);
+            var wordRange = this._textEditor._wordRangeForCursorPosition(selections[i].head.line, selections[i].head.ch);
             if (!wordRange)
                 return false;
             var context = this._textEditor.copyRange(wordRange);
@@ -1606,7 +1654,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
         var selections = this._codeMirror.listSelections().slice();
         var topSelection = selections.shift();
         var cursor = topSelection.head;
-        var substituteRange = this._textEditor._wordRangeForCursorPosition(cursor.line, cursor.ch, false);
+        var substituteRange = this._textEditor._wordRangeForCursorPosition(cursor.line, cursor.ch);
         if (!substituteRange || substituteRange.startColumn === cursor.ch || !this._validateSelectionsContexts(substituteRange, selections)) {
             this.finishAutocomplete();
             return;
@@ -1728,6 +1776,139 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
         var metrics = this._textEditor.cursorPositionToCoordinates(line, column);
         return metrics ? new AnchorBox(metrics.x, metrics.y, 0, metrics.height) : null;
     },
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.CodeMirrorTextEditor} textEditor
+ * @param {!CodeMirror} codeMirror
+ */
+WebInspector.CodeMirrorTextEditor.SelectNextOccurrenceController = function(textEditor, codeMirror)
+{
+    this._textEditor = textEditor;
+    this._codeMirror = codeMirror;
+}
+
+WebInspector.CodeMirrorTextEditor.SelectNextOccurrenceController.prototype = {
+    selectionWillChange: function()
+    {
+        if (!this._muteSelectionListener)
+            delete this._fullWordSelection;
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.TextRange>} selections
+     * @param {!WebInspector.TextRange} range
+     * @return {boolean}
+     */
+    _findRange: function(selections, range)
+    {
+        for (var i = 0; i < selections.length; ++i) {
+            if (range.equal(selections[i]))
+                return true;
+        }
+        return false;
+    },
+
+    selectNextOccurrence: function()
+    {
+        var selections = this._textEditor.selections();
+        var anyEmptySelection = false;
+        for (var i = 0; i < selections.length; ++i) {
+            var selection = selections[i];
+            anyEmptySelection = anyEmptySelection || selection.isEmpty();
+            if (selection.startLine !== selection.endLine)
+                return;
+        }
+        if (anyEmptySelection) {
+            this._expandSelectionsToWords(selections);
+            return;
+        }
+
+        var last = selections[selections.length - 1];
+        var next = last;
+        do {
+            next = this._findNextOccurrence(next, !!this._fullWordSelection);
+        } while (next && this._findRange(selections, next) && !next.equal(last));
+
+        if (!next)
+            return;
+        selections.push(next);
+
+        this._muteSelectionListener = true;
+        this._textEditor.setSelections(selections);
+        delete this._muteSelectionListener;
+
+        this._textEditor._revealLine(next.startLine);
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.TextRange>} selections
+     */
+    _expandSelectionsToWords: function(selections)
+    {
+        var newSelections = [];
+        for (var i = 0; i < selections.length; ++i) {
+            var selection = selections[i];
+            var startRangeWord = this._textEditor._wordRangeForCursorPosition(selection.startLine, selection.startColumn)
+                || WebInspector.TextRange.createFromLocation(selection.startLine, selection.startColumn);
+            var endRangeWord = this._textEditor._wordRangeForCursorPosition(selection.endLine, selection.endColumn)
+                || WebInspector.TextRange.createFromLocation(selection.endLine, selection.endColumn);
+            var newSelection = new WebInspector.TextRange(startRangeWord.startLine, startRangeWord.startColumn, endRangeWord.endLine, endRangeWord.endColumn);
+            newSelections.push(newSelection);
+        }
+        this._textEditor.setSelections(newSelections);
+        this._fullWordSelection = true;
+    },
+
+    /**
+     * @param {!WebInspector.TextRange} range
+     * @param {boolean} fullWord
+     * @return {?WebInspector.TextRange}
+     */
+    _findNextOccurrence: function(range, fullWord)
+    {
+        range = range.normalize();
+        var matchedLineNumber;
+        var matchedColumnNumber;
+        var textToFind = this._textEditor.copyRange(range);
+        function findWordInLine(wordRegex, lineNumber, lineText, from, to)
+        {
+            if (typeof matchedLineNumber === "number")
+                return true;
+            wordRegex.lastIndex = from;
+            var result = wordRegex.exec(lineText);
+            if (!result || result.index + textToFind.length > to)
+                return false;
+            matchedLineNumber = lineNumber;
+            matchedColumnNumber = result.index;
+            return true;
+        }
+
+        var iteratedLineNumber;
+        function lineIterator(regex, lineHandle)
+        {
+            if (findWordInLine(regex, iteratedLineNumber++, lineHandle.text, 0, lineHandle.text.length))
+                return true;
+        }
+
+        var regexSource = textToFind.escapeForRegExp();
+        if (fullWord)
+            regexSource = "\\b" + regexSource + "\\b";
+        var wordRegex = new RegExp(regexSource, "gi");
+        var currentLineText = this._codeMirror.getLine(range.startLine);
+
+        findWordInLine(wordRegex, range.startLine, currentLineText, range.endColumn, currentLineText.length);
+        iteratedLineNumber = range.startLine + 1;
+        this._codeMirror.eachLine(range.startLine + 1, this._codeMirror.lineCount(), lineIterator.bind(null, wordRegex));
+        iteratedLineNumber = 0;
+        this._codeMirror.eachLine(0, range.startLine, lineIterator.bind(null, wordRegex));
+        findWordInLine(wordRegex, range.startLine, currentLineText, 0, range.startColumn);
+
+        if (typeof matchedLineNumber !== "number")
+            return null;
+        return new WebInspector.TextRange(matchedLineNumber, matchedColumnNumber, matchedLineNumber, matchedColumnNumber + textToFind.length);
+    }
 }
 
 /**
