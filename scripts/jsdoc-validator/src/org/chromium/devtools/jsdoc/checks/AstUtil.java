@@ -6,17 +6,15 @@ import com.google.javascript.rhino.head.ast.AstNode;
 import com.google.javascript.rhino.head.ast.Comment;
 import com.google.javascript.rhino.head.ast.FunctionNode;
 import com.google.javascript.rhino.head.ast.ObjectProperty;
+import com.google.javascript.rhino.head.ast.VariableInitializer;
 
 public class AstUtil {
 
     private static final String PROTOTYPE_SUFFIX = ".prototype";
 
-    static boolean hasParentOfType(AstNode node, int tokenType) {
+    static AstNode parentOfType(AstNode node, int tokenType) {
         AstNode parent = node.getParent();
-        if (parent == null) {
-            return false;
-        }
-        return parent.getType() == tokenType;
+        return (parent == null || parent.getType() != tokenType) ? null : parent;
     }
 
     static AstNode getFunctionNameNode(FunctionNode functionNode) {
@@ -25,16 +23,24 @@ public class AstUtil {
             return nameNode;
         }
 
-        if (AstUtil.hasParentOfType(functionNode, Token.COLON)) {
-            return ((ObjectProperty) functionNode.getParent()).getLeft();
+        AstNode parentNode = functionNode.getParent();
+        if (parentNode == null) {
+            return null;
         }
 
-        if (AstUtil.hasParentOfType(functionNode, Token.ASSIGN)) {
-            Assignment assignment = (Assignment) functionNode.getParent();
+        switch (parentNode.getType()) {
+        case Token.COLON:
+            return ((ObjectProperty) parentNode).getLeft();
+        case Token.ASSIGN:
+            Assignment assignment = (Assignment) parentNode;
             if (assignment.getRight() == functionNode) {
                 return assignment.getLeft();
             }
+            break;
+        case Token.VAR:
+            return ((VariableInitializer) parentNode).getTarget();
         }
+
         return null;
     }
 
@@ -69,22 +75,24 @@ public class AstUtil {
         }
 
         // reader.onloadend = function() {...}
-        if (hasParentOfType(functionNode, Token.ASSIGN)) {
-            Assignment assignment = (Assignment) functionNode.getParent();
-            if (assignment.getRight() == functionNode) {
-                jsDocNode = assignment.getJsDocNode();
-                if (jsDocNode != null) {
-                    return jsDocNode;
-                }
-            }
+        AstNode parentNode = functionNode.getParent();
+        if (parentNode == null) {
+            return null;
         }
 
-        if (hasParentOfType(functionNode, Token.COLON)) {
-            jsDocNode = ((ObjectProperty) functionNode.getParent()).getLeft().getJsDocNode();
-            if (jsDocNode != null) {
-                return jsDocNode;
+        switch (parentNode.getType()) {
+        case Token.COLON:
+            return ((ObjectProperty) parentNode).getLeft().getJsDocNode();
+        case Token.ASSIGN:
+            Assignment assignment = (Assignment) parentNode;
+            if (assignment.getRight() == functionNode) {
+                return assignment.getJsDocNode();
             }
+            break;
+        case Token.VAR:
+            return parentNode.getParent().getJsDocNode();
         }
+
         return null;
     }
 

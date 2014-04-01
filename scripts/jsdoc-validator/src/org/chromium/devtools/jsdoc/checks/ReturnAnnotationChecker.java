@@ -30,7 +30,7 @@ public final class ReturnAnnotationChecker extends ContextTrackingChecker {
     }
 
     private void handleReturn(ReturnStatement node) {
-        if (node.getReturnValue() == null || AstUtil.hasParentOfType(node, Token.ASSIGN)) {
+        if (node.getReturnValue() == null || AstUtil.parentOfType(node, Token.ASSIGN) != null) {
             return;
         }
 
@@ -137,8 +137,9 @@ public final class ReturnAnnotationChecker extends ContextTrackingChecker {
             return nameNode;
         }
 
-        if (AstUtil.hasParentOfType(functionNode, Token.COLON)) {
-            return ((ObjectProperty) functionNode.getParent()).getLeft();
+        ObjectProperty parent = (ObjectProperty) AstUtil.parentOfType(functionNode, Token.COLON);
+        if (parent != null) {
+            return parent.getLeft();
         }
         // Do not require annotation for assignment-RHS functions.
         return null;

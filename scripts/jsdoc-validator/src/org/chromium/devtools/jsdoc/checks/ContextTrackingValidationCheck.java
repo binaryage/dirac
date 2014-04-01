@@ -195,7 +195,9 @@ public class ContextTrackingValidationCheck extends ValidationCheck {
         List<InheritanceEntry> result = new ArrayList<>(2);
         Matcher matcher = EXTENDS_PATTERN.matcher(getNodeText(jsDocNode));
         while (matcher.find()) {
-            result.add(new InheritanceEntry(matcher.group(1), jsDocNode, matcher.start(1)));
+            String fullSuperType = matcher.group(1);
+            result.add(new InheritanceEntry(
+                    fullSuperType.replaceFirst("\\.<.+>", ""), jsDocNode, matcher.start(1)));
         }
 
         return result;

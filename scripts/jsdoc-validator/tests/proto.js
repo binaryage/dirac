@@ -88,3 +88,42 @@ GoodDerived = function() {
 GoodDerived.prototype = {
     __proto__: Base.prototype
 }
+
+/**
+ * @constructor
+ * @template T
+ */
+var Set = function() {}
+
+Set.prototype = {
+    add: function(item) {},
+    remove: function(item) {},
+    /** @return {boolean} */
+    contains: function(item) { return true; }
+}
+
+/**
+ * @constructor
+ * @extends {Set.<T>}
+ * @template T
+ */
+var GoodSetSubclass = function()
+{
+    Set.call(this);
+}
+
+GoodSetSubclass.prototype = {
+    __proto__: Set.prototype
+}
+
+/**
+ * @constructor
+ * @extends {Set.<T>}
+ * @template T
+ */
+var BadSetSubclass = function()
+{
+}
+
+BadSetSubclass.prototype = {
+}

@@ -50,6 +50,14 @@ DerivedNoSuperCall = function() {
 DerivedBadSuperCall = function() {
 ^
 
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:121: ERROR - No __proto__ assigned for type BadSetSubclass having @extends
+ * @extends {Set.<T>}
+             ^
+
+/usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/proto.js:124: ERROR - Type BadSetSubclass extends Set but does not properly invoke its constructor
+var BadSetSubclass = function()
+    ^
+
 /usr/local/google/home/apavlov/dev/blink/src/third_party/WebKit/Source/devtools/scripts/jsdoc-validator/tests/return.js:1: ERROR - @return annotation is required for API functions that return value
 function badFuncNoAnnotation() {
          ^
@@ -278,4 +286,4 @@ function badFuncAnnotatedButNoReturnValue() // ERROR - no returned value.
         function callbackNotReferencingThisAnnotated()
                  ^
 
-Total errors: 70
+Total errors: 72
