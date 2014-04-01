@@ -78,6 +78,31 @@ var allDescriptors = [
                     }
                 ],
                 className: "WebInspector.Main.DebugReloadActionDelegate"
+            },
+            {
+                type: "ui-setting",
+                title: "Disable cache (while DevTools is open)",
+                settingName: "cacheDisabled",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Appearance",
+                title: "Split panels vertically when docked to right",
+                settingName: "splitVerticallyWhenDockedToRight",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Appearance",
+                settingType: "custom",
+                className: "WebInspector.Main.ShortcutPanelSwitchSettingDelegate"
+            },
+            {
+                type: "ui-setting",
+                section: "Extensions",
+                settingType: "custom",
+                className: "WebInspector.HandlerRegistry.OpenAnchorLocationSettingDelegate"
             }
         ]
     },
@@ -119,6 +144,47 @@ var allDescriptors = [
                 type: "@WebInspector.Revealer",
                 contextTypes: ["WebInspector.DOMNode"],
                 className: "WebInspector.ElementsPanel.DOMNodeRevealer"
+            },
+            {
+                type: "ui-setting",
+                section: "Elements",
+                title: "Color format",
+                settingName: "colorFormat",
+                settingType: "select",
+                options: [
+                    [ "As authored", "original" ],
+                    [ "HEX: #DAC0DE", "hex", true ],
+                    [ "RGB: rgb(128, 255, 255)", "rgb", true ],
+                    [ "HSL: hsl(300, 80%, 90%)", "hsl", true ]
+                ]
+            },
+            {
+                type: "ui-setting",
+                section: "Elements",
+                title: "Show user agent styles",
+                settingName: "showUserAgentStyles",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Elements",
+                title: "Show user agent shadow DOM",
+                settingName: "showUAShadowDOM",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Elements",
+                title: "Word wrap",
+                settingName: "domWordWrap",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Elements",
+                title: "Show rulers",
+                settingName: "showMetricsRulers",
+                settingType: "checkbox"
             }
         ],
         scripts: [ "ElementsPanel.js" ]
@@ -157,6 +223,19 @@ var allDescriptors = [
               type: "@WebInspector.TokenizerFactory",
               className: "WebInspector.CodeMirrorUtils.TokenizerFactory"
             },
+            {
+                type: "ui-setting",
+                section: "Sources",
+                title: "Default indentation",
+                settingName: "textEditorIndent",
+                settingType: "select",
+                options: [
+                    ["2 spaces", "  "],
+                    ["4 spaces", "    "],
+                    ["8 spaces", "        "],
+                    ["Tab character", "\t"]
+                ]
+            }
         ],
         scripts: [ "CodeMirrorTextEditor.js" ]
     },
@@ -237,6 +316,83 @@ var allDescriptors = [
                     }
                 ],
                 className: "WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate"
+            },
+            {
+                type: "ui-setting",
+                settingName: "javaScriptDisabled",
+                settingType: "custom",
+                className: "WebInspector.SourcesPanel.DisableJavaScriptSettingDelegate"
+            },
+            {
+                type: "ui-setting",
+                section: "Sources",
+                title: "Search in content scripts",
+                settingName: "searchInContentScripts",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Sources",
+                title: "Enable JavaScript source maps",
+                settingName: "jsSourceMapsEnabled",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Sources",
+                title: "Detect indentation",
+                settingName: "textEditorAutoDetectIndent",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Sources",
+                title: "Autocompletion",
+                settingName: "textEditorAutocompletion",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Sources",
+                title: "Bracket matching",
+                settingName: "textEditorBracketMatching",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Sources",
+                title: "Show whitespace characters",
+                settingName: "showWhitespacesInEditor",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Sources",
+                title: "Enable CSS source maps",
+                settingName: "cssSourceMapsEnabled",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                title: "Auto-reload generated CSS",
+                parentSettingName: "cssSourceMapsEnabled",
+                settingName: "cssReloadEnabled",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Sources",
+                experiment: "frameworksDebuggingSupport",
+                title: "Skip stepping through sources with particular names",
+                settingName: "skipStackFramesSwitch",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                experiment: "frameworksDebuggingSupport",
+                parentSettingName: "skipStackFramesSwitch",
+                settingType: "custom",
+                className: "WebInspector.SourcesPanel.SkipStackFramePatternSettingDelegate"
             }
         ],
         scripts: [ "SourcesPanel.js" ]
@@ -268,6 +424,20 @@ var allDescriptors = [
                 type: "@WebInspector.ContextMenu.Provider",
                 contextTypes: ["WebInspector.RemoteObject"],
                 className: "WebInspector.ProfilesPanel.ContextMenuProvider"
+            },
+            {
+                type: "ui-setting",
+                section: "Profiler",
+                title: "Show advanced heap snapshot properties",
+                settingName: "showAdvancedHeapSnapshotProperties",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Profiler",
+                title: "High resolution CPU profiling",
+                settingName: "highResolutionCpuProfiling",
+                settingType: "checkbox"
             }
         ],
         scripts: [ "ProfilesPanel.js" ]
@@ -333,6 +503,27 @@ var allDescriptors = [
                     }
                 ],
                 className: "WebInspector.ConsoleView.ShowConsoleActionDelegate"
+            },
+            {
+                type: "ui-setting",
+                section: "Console",
+                title: "Log XMLHttpRequests",
+                settingName: "monitoringXHREnabled",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Console",
+                title: "Preserve log upon navigation",
+                settingName: "preserveConsoleLog",
+                settingType: "checkbox"
+            },
+            {
+                type: "ui-setting",
+                section: "Console",
+                title: "Show timestamps",
+                settingName: "consoleTimestampsEnabled",
+                settingType: "checkbox"
             }
         ],
         scripts: [ "ConsolePanel.js" ]

@@ -1242,3 +1242,87 @@ WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate.prototype = {
         return true;
     }
 }
+
+/**
+ * @constructor
+ * @extends {WebInspector.UISettingDelegate}
+ */
+WebInspector.SourcesPanel.SkipStackFramePatternSettingDelegate = function()
+{
+    WebInspector.UISettingDelegate.call(this);
+}
+
+WebInspector.SourcesPanel.SkipStackFramePatternSettingDelegate.prototype = {
+    /**
+     * @override
+     * @return {!Element}
+     */
+    settingElement: function()
+    {
+        return WebInspector.SettingsUI.createSettingInputField(WebInspector.UIString("Pattern"), WebInspector.settings.skipStackFramesPattern, false, 1000, "100px", WebInspector.SettingsUI.regexValidator);
+    },
+
+    __proto__: WebInspector.UISettingDelegate.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.UISettingDelegate}
+ */
+WebInspector.SourcesPanel.DisableJavaScriptSettingDelegate = function()
+{
+    WebInspector.UISettingDelegate.call(this);
+}
+
+WebInspector.SourcesPanel.DisableJavaScriptSettingDelegate.prototype = {
+    /**
+     * @override
+     * @return {!Element}
+     */
+    settingElement: function()
+    {
+        var disableJSElement = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("Disable JavaScript"), WebInspector.settings.javaScriptDisabled);
+        this._disableJSCheckbox = disableJSElement.getElementsByTagName("input")[0];
+        WebInspector.settings.javaScriptDisabled.addChangeListener(this._settingChanged, this);
+        var disableJSInfoParent = this._disableJSCheckbox.parentElement.createChild("span", "monospace");
+        this._disableJSInfo = disableJSInfoParent.createChild("span", "object-info-state-note hidden");
+        this._disableJSInfo.title = WebInspector.UIString("JavaScript is blocked on the inspected page (may be disabled in browser settings).");
+
+        WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._updateScriptDisabledCheckbox, this);
+        this._updateScriptDisabledCheckbox();
+        return disableJSElement;
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _settingChanged: function(event)
+    {
+        PageAgent.setScriptExecutionDisabled(event.data, this._updateScriptDisabledCheckbox.bind(this));
+    },
+
+    _updateScriptDisabledCheckbox: function()
+    {
+        PageAgent.getScriptExecutionStatus(executionStatusCallback.bind(this));
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {string} status
+         * @this {WebInspector.SourcesPanel.DisableJavaScriptSettingDelegate}
+         */
+        function executionStatusCallback(error, status)
+        {
+            if (error || !status)
+                return;
+
+            var forbidden = (status === "forbidden");
+            var disabled = forbidden || (status === "disabled");
+
+            this._disableJSInfo.classList.toggle("hidden", !forbidden);
+            this._disableJSCheckbox.checked = disabled;
+            this._disableJSCheckbox.disabled = forbidden;
+        }
+    },
+
+    __proto__: WebInspector.UISettingDelegate.prototype
+}

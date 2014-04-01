@@ -132,6 +132,7 @@ body.platform-mac .settings-tab .help-block {
 
 .settings-tab .field-error-message {
     color: DarkRed;
+    height: 0px; // Avoid changing element height when content is set.
 }
 
 .help-line {
@@ -197,7 +198,7 @@ body.platform-mac .help-key {
 
 .settings-tab label {
     padding-right: 4px;
-    display: flex;
+    display: inline-flex;
 }
 
 #general-tab-content .help-block fieldset legend {

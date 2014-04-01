@@ -80,6 +80,64 @@ WebInspector.SettingsUI.createSettingCheckbox = function(name, setting, omitPara
 }
 
 /**
+ * @param {string} label
+ * @param {!WebInspector.Setting} setting
+ * @param {boolean} numeric
+ * @param {number=} maxLength
+ * @param {string=} width
+ * @param {function(string):?string=} validatorCallback
+ */
+WebInspector.SettingsUI.createSettingInputField = function(label, setting, numeric, maxLength, width, validatorCallback)
+{
+    var p = document.createElement("p");
+    var labelElement = p.createChild("label");
+    labelElement.textContent = label;
+    var inputElement = p.createChild("input");
+    inputElement.value = setting.get();
+    inputElement.type = "text";
+    if (numeric)
+        inputElement.className = "numeric";
+    if (maxLength)
+        inputElement.maxLength = maxLength;
+    if (width)
+        inputElement.style.width = width;
+
+    var errorMessageLabel;
+    if (validatorCallback) {
+        errorMessageLabel = p.createChild("div");
+        errorMessageLabel.classList.add("field-error-message");
+        inputElement.oninput = onInput;
+        onInput();
+    }
+
+    function onInput()
+    {
+        var error = validatorCallback(inputElement.value);
+        if (!error)
+            error = "";
+        errorMessageLabel.textContent = error;
+    }
+
+    function onBlur()
+    {
+        setting.set(numeric ? Number(inputElement.value) : inputElement.value);
+    }
+    inputElement.addEventListener("blur", onBlur, false);
+
+    return p;
+}
+
+WebInspector.SettingsUI.createCustomSetting = function(name, element)
+{
+    var p = document.createElement("p");
+    var fieldsetElement = document.createElement("fieldset");
+    fieldsetElement.createChild("label").textContent = name;
+    fieldsetElement.appendChild(element);
+    p.appendChild(fieldsetElement);
+    return p;
+}
+
+/**
  * @param {!WebInspector.Setting} setting
  * @return {!Element}
  */
@@ -93,5 +151,36 @@ WebInspector.SettingsUI.createSettingFieldset = function(setting)
     function settingChanged()
     {
         fieldset.disabled = !setting.get();
+    }
+}
+
+/**
+ * @param {string} text
+ * @return {?string}
+ */
+WebInspector.SettingsUI.regexValidator = function(text)
+{
+    var regex;
+    try {
+        regex = new RegExp(text);
+    } catch (e) {
+    }
+    return regex ? null : WebInspector.UIString("Invalid pattern");
+}
+
+/**
+ * @constructor
+ */
+WebInspector.UISettingDelegate = function()
+{
+}
+
+WebInspector.UISettingDelegate.prototype = {
+    /**
+     * @return {?Element}
+     */
+    settingElement: function()
+    {
+        return null;
     }
 }

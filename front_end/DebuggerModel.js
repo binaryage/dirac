@@ -56,7 +56,9 @@ WebInspector.DebuggerModel = function(target)
 
     this.enableDebugger();
 
-    this.applySkipStackFrameSettings();
+    WebInspector.settings.skipStackFramesSwitch.addChangeListener(this._applySkipStackFrameSettings, this);
+    WebInspector.settings.skipStackFramesPattern.addChangeListener(this._applySkipStackFrameSettings, this);
+    this._applySkipStackFrameSettings();
 }
 
 /**
@@ -671,7 +673,7 @@ WebInspector.DebuggerModel.prototype = {
             this._pausedScript(newCallFrames, this._debuggerPausedDetails.reason, this._debuggerPausedDetails.auxData, this._debuggerPausedDetails.breakpointIds, asyncStackTrace);
     },
 
-    applySkipStackFrameSettings: function()
+    _applySkipStackFrameSettings: function()
     {
         if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
             return;

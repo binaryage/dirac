@@ -278,6 +278,32 @@ WebInspector.HandlerRegistry.LinkHandler.prototype = {
 }
 
 /**
+ * @constructor
+ * @extends {WebInspector.UISettingDelegate}
+ */
+WebInspector.HandlerRegistry.OpenAnchorLocationSettingDelegate = function()
+{
+    WebInspector.UISettingDelegate.call(this);
+}
+
+WebInspector.HandlerRegistry.OpenAnchorLocationSettingDelegate.prototype = {
+    /**
+     * @override
+     * @return {?Element}
+     */
+    settingElement: function()
+    {
+        if (!WebInspector.openAnchorLocationRegistry.handlerNames.length)
+            return null;
+
+        var handlerSelector = new WebInspector.HandlerSelector(WebInspector.openAnchorLocationRegistry);
+        return WebInspector.SettingsUI.createCustomSetting(WebInspector.UIString("Open links in"), handlerSelector.element);
+    },
+
+    __proto__: WebInspector.UISettingDelegate.prototype
+}
+
+/**
  * @type {!WebInspector.HandlerRegistry}
  */
 WebInspector.openAnchorLocationRegistry;

@@ -1391,6 +1391,43 @@ StringMap.prototype = {
 
 /**
  * @constructor
+ * @extends {StringMap.<Set.<!T>>}
+ * @template T
+ */
+var StringMultimap = function()
+{
+    StringMap.call(this);
+}
+
+StringMultimap.prototype = {
+    /**
+     * @param {string} key
+     * @param {T} value
+     */
+    put: function(key, value)
+    {
+        if (key === "__proto__") {
+            if (!this._hasProtoKey) {
+                ++this._size;
+                this._hasProtoKey = true;
+                /** @type {!Set.<T>} */
+                this._protoValue = new Set();
+            }
+            this._protoValue.add(value);
+            return;
+        }
+        if (!Object.prototype.hasOwnProperty.call(this._map, key)) {
+            ++this._size;
+            this._map[key] = new Set();
+        }
+        this._map[key].add(value);
+    },
+
+    __proto__: StringMap.prototype
+}
+
+/**
+ * @constructor
  */
 var StringSet = function()
 {
