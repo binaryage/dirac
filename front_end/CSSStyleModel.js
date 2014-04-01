@@ -459,6 +459,8 @@ WebInspector.CSSStyleModel.prototype = {
     {
         var header = this._styleSheetIdToHeader[id];
         console.assert(header);
+        if (!header)
+            return;
         delete this._styleSheetIdToHeader[id];
         var url = header.resourceURL();
         var frameIdToStyleSheetIds = this._styleSheetIdsForURL[url];
