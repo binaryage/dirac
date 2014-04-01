@@ -1437,7 +1437,8 @@ WebInspector.ElementsTreeElement.prototype = {
 
     _populateTextContextMenu: function(contextMenu, textNode)
     {
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Edit text" : "Edit Text"), this._startEditingTextNode.bind(this, textNode));
+        if (!this._editing)
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Edit text" : "Edit Text"), this._startEditingTextNode.bind(this, textNode));
         this._populateNodeContextMenu(contextMenu);
     },
 
@@ -1446,7 +1447,7 @@ WebInspector.ElementsTreeElement.prototype = {
         // Add free-form node-related actions.
         var openTagElement = this.treeOutline.getCachedTreeElement(this.representedObject) || this;
         var isEditable = this.hasEditableNode();
-        if (isEditable)
+        if (isEditable && !this._editing)
             contextMenu.appendItem(WebInspector.UIString("Edit as HTML"), openTagElement._editAsHTML.bind(openTagElement));
         var isShadowRoot = this.representedObject.isShadowRoot();
         if (!isShadowRoot)
