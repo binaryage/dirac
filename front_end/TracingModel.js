@@ -100,6 +100,7 @@ WebInspector.TracingModel.prototype = {
 WebInspector.TracingModel.Event = function(payload, level)
 {
     this.name = payload.name;
+    this.category = payload.cat;
     this.startTime = payload.ts;
     this.args = payload.args;
     this.phase = payload.phase;

@@ -18,7 +18,6 @@ WebInspector.TimelineTracingView = function(delegate)
     this._tracingModel = new WebInspector.TracingModel();
     this.element.classList.add("timeline-flamechart");
     this.registerRequiredCSS("flameChart.css");
-    this._delegate = delegate;
     this._dataProvider = new WebInspector.TraceViewFlameChartDataProvider(this._tracingModel);
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true, true);
     this._mainView.show(this.element);
@@ -129,6 +128,27 @@ WebInspector.TimelineTracingView.prototype = {
      */
     _onEntrySelected: function(event)
     {
+        var index = /** @type {number} */ (event.data);
+        var record = this._dataProvider._recordAt(index);
+        if (!record || this._dataProvider._isHeaderRecord(record)) {
+            this._delegate.showInDetails("", document.createTextNode(""));
+            return;
+        }
+        var contentHelper = new WebInspector.TimelineDetailsContentHelper(new WebInspector.Linkifier(), false);
+        contentHelper.appendTextRow(WebInspector.UIString("Name"), record.name);
+        contentHelper.appendTextRow(WebInspector.UIString("Category"), record.category);
+        contentHelper.appendTextRow(WebInspector.UIString("Start"), Number.millisToString(this._dataProvider._toTimelineTime(record.startTime - this._tracingModel.minimumRecordTime()), true));
+        contentHelper.appendTextRow(WebInspector.UIString("Duration"), Number.millisToString(this._dataProvider._toTimelineTime(record.duration), true));
+        if (!Object.isEmpty(record.args)) {
+            var table = document.createElement("table");
+            for (var name in record.args) {
+                var row = table.createChild("tr");
+                row.createChild("td", "timeline-details-row-title").textContent = name + ":";
+                row.createChild("td", "timeline-details-row-data").textContent = record.args[name];
+            }
+            contentHelper.appendElementRow(WebInspector.UIString("Arguments"), table);
+        }
+        this._delegate.showInDetails(WebInspector.UIString("Selected Event"), contentHelper.element);
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -202,7 +222,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
     entryTitle: function(entryIndex)
     {
         var record = this._records[entryIndex];
-        if (record === this._threadHeaderRecord || record === this._processHeaderRecord)
+        if (this._isHeaderRecord(record))
             return this._headerTitles[entryIndex]
         return record.name;
     },
@@ -351,7 +371,13 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
      */
     highlightTimeRange: function(entryIndex)
     {
-        return null;
+        var record = this._records[entryIndex];
+        if (!record || this._isHeaderRecord(record))
+            return null;
+        return {
+            startTimeOffset: this._toTimelineTime(record.startTime - this._zeroTime),
+            endTimeOffset: this._toTimelineTime(record.endTime  - this._zeroTime)
+        }
     },
 
     /**
@@ -404,6 +430,23 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
     _toTimelineTime: function(time)
     {
         return time / 1000;
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} record
+     */
+    _isHeaderRecord: function(record)
+    {
+        return record === this._threadHeaderRecord || record === this._processHeaderRecord;
+    },
+
+    /**
+     * @param {number} index
+     * @return {!WebInspector.TracingModel.Event|undefined}
+     */
+    _recordAt: function(index)
+    {
+        return this._records[index];
     }
 }
 

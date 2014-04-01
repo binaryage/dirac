@@ -764,6 +764,14 @@
     padding: 10px;
 }
 
+.timeline-details-view-row-details table {
+    padding-left: 10px;
+}
+
+.timeline-details-view-row-details table td {
+    text-align: left;
+}
+
 .timeline-details-view-row-stack-trace {
     padding: 4px 0 4px 20px;
 }
