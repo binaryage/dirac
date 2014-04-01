@@ -219,7 +219,7 @@ WebInspector._valueModificationDirection = function(event)
         if (event.keyIdentifier === "Up" || event.keyIdentifier === "PageUp")
             direction = "Up";
         else if (event.keyIdentifier === "Down" || event.keyIdentifier === "PageDown")
-            direction = "Down";        
+            direction = "Down";
     }
     return direction;
 }
@@ -272,7 +272,7 @@ WebInspector._modifiedFloatNumber = function(number, event)
     var direction = WebInspector._valueModificationDirection(event);
     if (!direction)
         return number;
-    
+
     var arrowKeyOrMouseWheelEvent = (event.keyIdentifier === "Up" || event.keyIdentifier === "Down" || event.type === "mousewheel");
 
     // Jump by 10 when shift is down or jump by 0.1 when Alt/Option is down.
@@ -323,7 +323,7 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
     var originalValue = element.textContent;
     var wordRange = selectionRange.startContainer.rangeOfWord(selectionRange.startOffset, WebInspector.StyleValueDelimiters, element);
     var wordString = wordRange.toString();
-    
+
     if (suggestionHandler && suggestionHandler(wordString))
         return false;
 
@@ -336,7 +336,7 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
         prefix = matches[1];
         suffix = matches[3];
         number = WebInspector._modifiedHexValue(matches[2], event);
-        
+
         if (customNumberHandler)
             number = customNumberHandler(number);
 
@@ -347,11 +347,11 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
             prefix = matches[1];
             suffix = matches[3];
             number = WebInspector._modifiedFloatNumber(parseFloat(matches[2]), event);
-            
+
             // Need to check for null explicitly.
-            if (number === null)                
+            if (number === null)
                 return false;
-            
+
             if (customNumberHandler)
                 number = customNumberHandler(number);
 
@@ -374,7 +374,7 @@ WebInspector.handleElementValueModifications = function(event, element, finishHa
 
         event.handled = true;
         event.preventDefault();
-                
+
         if (finishHandler)
             finishHandler(originalValue, replacementString);
 
@@ -539,7 +539,7 @@ WebInspector._documentBlurred = function(event)
       WebInspector.setCurrentFocusElement(null);
 }
 
-WebInspector._textInputTypes = ["text", "search", "tel", "url", "email", "password"].keySet(); 
+WebInspector._textInputTypes = ["text", "search", "tel", "url", "email", "password"].keySet();
 WebInspector._isTextEditingElement = function(element)
 {
     if (element instanceof HTMLInputElement)
@@ -791,12 +791,10 @@ WebInspector.endBatchUpdate = function()
     delete WebInspector._postUpdateHandlers;
 
     window.requestAnimationFrame(function() {
-        if (WebInspector._coalescingLevel)
-            return;
         var keys = handlers.keys();
         for (var i = 0; i < keys.length; ++i) {
             var object = keys[i];
-            var methods = handlers.get(object).keys();
+            var methods = handlers.get(object).items();
             for (var j = 0; j < methods.length; ++j)
                 methods[j].call(object);
         }
@@ -810,19 +808,16 @@ WebInspector.endBatchUpdate = function()
 WebInspector.invokeOnceAfterBatchUpdate = function(object, method)
 {
     if (!WebInspector._coalescingLevel) {
-        window.requestAnimationFrame(function() {
-            if (!WebInspector._coalescingLevel)
-                method.call(object);
-        });
+        window.requestAnimationFrame(method.bind(object));
         return;
     }
 
     var methods = WebInspector._postUpdateHandlers.get(object);
     if (!methods) {
-        methods = new Map();
+        methods = new Set();
         WebInspector._postUpdateHandlers.put(object, methods);
     }
-    methods.put(method);
+    methods.add(method);
 }
 
 ;(function() {
