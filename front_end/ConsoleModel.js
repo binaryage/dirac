@@ -208,9 +208,10 @@ WebInspector.ConsoleModel.prototype = {
  * @param {!Array.<!ConsoleAgent.CallFrame>=} stackTrace
  * @param {number=} timestamp
  * @param {boolean=} isOutdated
+ * @param {!RuntimeAgent.ExecutionContextId=} executionContextId
  */
 
-WebInspector.ConsoleMessage = function(source, level, messageText, type, url, line, column, requestId, parameters, stackTrace, timestamp, isOutdated)
+WebInspector.ConsoleMessage = function(source, level, messageText, type, url, line, column, requestId, parameters, stackTrace, timestamp, isOutdated, executionContextId)
 {
     this.source = source;
     this.level = level;
@@ -223,6 +224,7 @@ WebInspector.ConsoleMessage = function(source, level, messageText, type, url, li
     this.stackTrace = stackTrace;
     this.timestamp = timestamp || Date.now();
     this.isOutdated = isOutdated;
+    this.executionContextId = executionContextId;
 
     this.request = requestId ? WebInspector.networkLog.requestForId(requestId) : null;
 }
@@ -264,7 +266,8 @@ WebInspector.ConsoleMessage.prototype = {
             this.parameters,
             this.stackTrace,
             this.timestamp,
-            this.isOutdated);
+            this.isOutdated,
+            this.executionContextId);
     },
 
     /**
@@ -387,7 +390,8 @@ WebInspector.ConsoleDispatcher.prototype = {
             payload.parameters,
             payload.stackTrace,
             payload.timestamp * 1000, // Convert to ms.
-            this._console._enablingConsole);
+            this._console._enablingConsole,
+            payload.executionContextId);
         this._console.addMessage(consoleMessage, true);
     },
 
