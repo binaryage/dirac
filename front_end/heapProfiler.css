@@ -114,7 +114,7 @@
     overflow: hidden;
 }
 
-.heap-snapshot-view .retainers-view-header {
+.heap-snapshot-view .heap-snapshot-view-resizer {
     background-image: url(Images/statusbarResizerVertical.png);
     background-color: rgb(236, 236, 236);
     border-bottom: 1px solid rgb(179, 179, 179);
@@ -123,7 +123,7 @@
     flex: 0 0 21px;
 }
 
-.heap-snapshot-view .retainers-view-header .title > span {
+.heap-snapshot-view .heap-snapshot-view-resizer .title > span {
     display: inline-block;
     padding-top: 3px;
     vertical-align: middle;
@@ -131,7 +131,7 @@
     margin-right: 8px;
 }
 
-.heap-snapshot-view .retainers-view-header * {
+.heap-snapshot-view .heap-snapshot-view-resizer * {
     pointer-events: none;
 }
 

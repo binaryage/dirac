@@ -86,7 +86,7 @@ WebInspector.HeapSnapshotView = function(profile)
         this._allocationDataGrid.show(this._allocationView.element);
     }
 
-    this._retainmentViewHeader = document.createElementWithClass("div", "retainers-view-header");
+    this._retainmentViewHeader = document.createElementWithClass("div", "heap-snapshot-view-resizer");
     var retainingPathsTitleDiv = this._retainmentViewHeader.createChild("div", "title");
     var retainingPathsTitle = retainingPathsTitleDiv.createChild("span");
     retainingPathsTitle.textContent = WebInspector.UIString("Object's retaining tree");
@@ -375,6 +375,14 @@ WebInspector.HeapSnapshotView.AllocationPerspective = function()
 {
     WebInspector.HeapSnapshotView.Perspective.call(this,  WebInspector.UIString("Allocation"));
     this._allocationSplitView = new WebInspector.SplitView(false, true, "heapSnapshotAllocationSplitViewState", 200, 200);
+
+    var resizer = document.createElementWithClass("div", "heap-snapshot-view-resizer");
+    var title = resizer.createChild("div", "title").createChild("span");
+    title.textContent = WebInspector.UIString("Live objects");
+    this._allocationSplitView.hideDefaultResizer();
+    this._allocationSplitView.installResizer(resizer);
+
+    this._allocationSplitView.sidebarElement().appendChild(resizer);
 }
 
 WebInspector.HeapSnapshotView.AllocationPerspective.prototype = {
