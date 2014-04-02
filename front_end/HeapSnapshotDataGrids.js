@@ -580,6 +580,7 @@ WebInspector.HeapSnapshotPaddingNode = function()
 {
     this.element = document.createElement("tr");
     this.element.classList.add("revealed");
+    this.setHeight(0);
 }
 
 WebInspector.HeapSnapshotPaddingNode.prototype = {
