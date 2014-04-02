@@ -150,6 +150,14 @@ WebInspector.TimelineModel.forAllRecords = function(recordsArray, preOrderCallba
 
 WebInspector.TimelineModel.prototype = {
     /**
+     * @return {boolean}
+     */
+    loadedFromFile: function()
+    {
+        return this._loadedFromFile;
+    },
+
+    /**
      * @param {?function(!WebInspector.TimelineModel.Record)|?function(!WebInspector.TimelineModel.Record,number)} preOrderCallback
      * @param {function(!WebInspector.TimelineModel.Record)|function(!WebInspector.TimelineModel.Record,number)=} postOrderCallback
      */
@@ -423,6 +431,7 @@ WebInspector.TimelineModel.prototype = {
 
     reset: function()
     {
+        this._loadedFromFile = false;
         this._records = [];
         this._payloads = [];
         this._stringPool = {};
@@ -566,7 +575,8 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
             this._relatedBackendNodeId = record.data["rootNode"];
         else if (record.data["elementId"])
             this._relatedBackendNodeId = record.data["elementId"];
-        if (record.data["scriptName"]) {
+        if (record.data["scriptName"] || record.data["scriptId"]) {
+            this.scriptId = record.data["scriptId"];
             this.scriptName = record.data["scriptName"];
             this.scriptLine = record.data["scriptLine"];
         }
@@ -692,6 +702,14 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
 }
 
 WebInspector.TimelineModel.Record.prototype = {
+    /**
+     * @return {!WebInspector.TimelineModel}
+     */
+    model: function()
+    {
+        return this._model;
+    },
+
     get lastChildEndTime()
     {
         return this._lastChildEndTime;
@@ -1025,7 +1043,10 @@ WebInspector.TimelineModelLoader.prototype = {
             this._model._addRecord(items[i]);
     },
 
-    close: function() { }
+    close: function()
+    {
+        this._model._loadedFromFile = true;
+    }
 }
 
 /**

@@ -440,8 +440,9 @@ WebInspector.TimelineUIUtils.createStyleRuleForCategory = function(category)
  * @param {!WebInspector.TimelineModel.Record} record
  * @param {!WebInspector.Linkifier} linkifier
  * @param {function(!DocumentFragment)} callback
+ * @param {boolean} loadedFromFile
  */
-WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, callback)
+WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, callback, loadedFromFile)
 {
     var imageElement = /** @type {?Element} */ (record.getUserObject("TimelineUIUtils::preview-element") || null);
     var relatedNode = null;
@@ -473,7 +474,7 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
 
     function callbackWrapper()
     {
-        callback(WebInspector.TimelineUIUtils._generatePopupContentSynchronously(record, linkifier, imageElement, relatedNode));
+        callback(WebInspector.TimelineUIUtils._generatePopupContentSynchronously(record, linkifier, imageElement, relatedNode, loadedFromFile));
     }
 }
 
@@ -482,9 +483,10 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
  * @param {!WebInspector.Linkifier} linkifier
  * @param {?Element} imagePreviewElement
  * @param {?WebInspector.DOMNode} relatedNode
+ * @param {boolean} loadedFromFile
  * @return {!DocumentFragment}
  */
-WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(record, linkifier, imagePreviewElement, relatedNode)
+WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(record, linkifier, imagePreviewElement, relatedNode, loadedFromFile)
 {
     var fragment = document.createDocumentFragment();
     if (record.children.length)
@@ -614,7 +616,7 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
             contentHelper.appendTextRow(WebInspector.UIString("Callback Function"), record.embedderCallbackName);
             break;
         default:
-            var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNode(record, linkifier);
+            var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNode(record, linkifier, loadedFromFile);
             if (detailsNode)
                 contentHelper.appendElementRow(WebInspector.UIString("Details"), detailsNode);
             break;
@@ -672,9 +674,10 @@ WebInspector.TimelineUIUtils._quadHeight = function(quad)
 /**
  * @param {!WebInspector.TimelineModel.Record} record
  * @param {!WebInspector.Linkifier} linkifier
+ * @param {boolean} loadedFromFile
  * @return {?Node}
  */
-WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier)
+WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier, loadedFromFile)
 {
     var details;
     var detailsText;
@@ -687,8 +690,7 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier)
         detailsText = record.data["timerId"];
         break;
     case WebInspector.TimelineModel.RecordType.FunctionCall:
-        if (record.scriptName)
-            details = linkifyLocation(record.scriptName, record.scriptLine, 0);
+        details = linkifyLocation(record.data.scriptId, record.data.scriptName, record.data.scriptLine, 0);
         break;
     case WebInspector.TimelineModel.RecordType.FireAnimationFrame:
         detailsText = record.data["id"];
@@ -717,7 +719,7 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier)
         details = linkifyTopCallFrame();
         break;
     case WebInspector.TimelineModel.RecordType.EvaluateScript:
-        details = record.url ? linkifyLocation(record.url, record.data["lineNumber"], 0) : null;
+        details = linkifyLocation("", record.url, record.data["lineNumber"], 0);
         break;
     case WebInspector.TimelineModel.RecordType.XHRReadyStateChange:
     case WebInspector.TimelineModel.RecordType.XHRLoad:
@@ -737,7 +739,7 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier)
         detailsText = record.data["callbackName"];
         break;
     default:
-        details = record.scriptName ? linkifyLocation(record.scriptName, record.scriptLine, 0) : linkifyTopCallFrame();
+        details = linkifyTopCallFrame();
         break;
     }
 
@@ -746,12 +748,25 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier)
     return details;
 
     /**
+     * @param {string} scriptId
      * @param {string} url
      * @param {number} lineNumber
      * @param {number=} columnNumber
      */
-    function linkifyLocation(url, lineNumber, columnNumber)
+    function linkifyLocation(scriptId, url, lineNumber, columnNumber)
     {
+        if (!loadedFromFile && scriptId !== "0") {
+            var location = new WebInspector.DebuggerModel.Location(
+                /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget()),
+                scriptId,
+                lineNumber - 1,
+                (columnNumber || 1) - 1);
+            return linkifier.linkifyRawLocation(location, "timeline-details");
+        }
+
+        if (!url)
+            return null;
+
         // FIXME(62725): stack trace line/column numbers are one-based.
         columnNumber = columnNumber ? columnNumber - 1 : 0;
         return linkifier.linkifyLocation(url, lineNumber - 1, columnNumber, "timeline-details");
@@ -762,7 +777,7 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier)
      */
     function linkifyCallFrame(callFrame)
     {
-        return linkifyLocation(callFrame.url, callFrame.lineNumber, callFrame.columnNumber);
+        return linkifyLocation(callFrame.scriptId, callFrame.url, callFrame.lineNumber, callFrame.columnNumber);
     }
 
     /**
@@ -775,14 +790,6 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier)
         if (record.callSiteStackTrace)
             return linkifyCallFrame(record.callSiteStackTrace[0]);
         return null;
-    }
-
-    /**
-     * @return {?Element}
-     */
-    function linkifyScriptLocation()
-    {
-        return record.scriptName ? linkifyLocation(record.scriptName, record.scriptLine, 0) : null;
     }
 }
 

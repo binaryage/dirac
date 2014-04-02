@@ -88,7 +88,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             return WebInspector.UIString("CPU");
         else if (record === this._gpuThreadRecord)
             return WebInspector.UIString("GPU");
-        var details = WebInspector.TimelineUIUtils.buildDetailsNode(record, this._linkifier);
+        var details = WebInspector.TimelineUIUtils.buildDetailsNode(record, this._linkifier, this._model.loadedFromFile());
         return details ? WebInspector.UIString("%s (%s)", record.title(), details.textContent) : record.title();
     },
 
