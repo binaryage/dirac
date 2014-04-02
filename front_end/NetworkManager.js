@@ -193,7 +193,8 @@ WebInspector.NetworkDispatcher.prototype = {
             networkRequest.timing = response.timing;
 
         if (!this._mimeTypeIsConsistentWithType(networkRequest)) {
-            this._manager._target.consoleModel.addMessage(new WebInspector.ConsoleMessage(WebInspector.ConsoleMessage.MessageSource.Network,
+            var consoleModel = this._manager._target.consoleModel;
+            consoleModel.addMessage(new WebInspector.ConsoleMessage(consoleModel.target(), WebInspector.ConsoleMessage.MessageSource.Network,
                 WebInspector.ConsoleMessage.MessageLevel.Log,
                 WebInspector.UIString("Resource interpreted as %s but transferred with MIME type %s: \"%s\".", networkRequest.type.title(), networkRequest.mimeType, networkRequest.url),
                 WebInspector.ConsoleMessage.MessageType.Log,

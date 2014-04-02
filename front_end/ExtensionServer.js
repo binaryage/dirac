@@ -417,6 +417,7 @@ WebInspector.ExtensionServer.prototype = {
             return this._status.E_BADARG("message.severity", message.severity);
 
         var consoleMessage = new WebInspector.ConsoleMessage(
+            WebInspector.console.target(),
             WebInspector.ConsoleMessage.MessageSource.JS,
             level,
             message.text,

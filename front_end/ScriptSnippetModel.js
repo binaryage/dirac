@@ -223,6 +223,7 @@ WebInspector.ScriptSnippetModel.prototype = {
 
             if (!scriptId) {
                 var consoleMessage = new WebInspector.ConsoleMessage(
+                        WebInspector.console.target(),
                         WebInspector.ConsoleMessage.MessageSource.JS,
                         WebInspector.ConsoleMessage.MessageLevel.Error,
                         syntaxErrorMessage || "");
@@ -269,7 +270,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     _printRunScriptResult: function(result, wasThrown)
     {
         var level = (wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log);
-        var message = new WebInspector.ConsoleMessage(
+        var message = new WebInspector.ConsoleMessage(WebInspector.console.target(),
             WebInspector.ConsoleMessage.MessageSource.JS,
             level,
             "",

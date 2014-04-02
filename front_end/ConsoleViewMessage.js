@@ -31,13 +31,12 @@
 /**
  * @constructor
  * @extends {WebInspector.TargetAware}
- * @param {!WebInspector.Target} target
  * @param {!WebInspector.ConsoleMessage} consoleMessage
  * @param {?WebInspector.Linkifier} linkifier
  */
-WebInspector.ConsoleViewMessage = function(target, consoleMessage, linkifier)
+WebInspector.ConsoleViewMessage = function(consoleMessage, linkifier)
 {
-    WebInspector.TargetAware.call(this, target);
+    WebInspector.TargetAware.call(this, consoleMessage.target());
     this._message = consoleMessage;
     this._linkifier = linkifier;
     this._repeatCount = 1;

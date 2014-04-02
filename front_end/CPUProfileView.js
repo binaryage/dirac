@@ -722,6 +722,7 @@ WebInspector.CPUProfileType.prototype = {
     {
         var script = scriptLocation.script();
         var message = new WebInspector.ConsoleMessage(
+            WebInspector.console.target(),
             WebInspector.ConsoleMessage.MessageSource.ConsoleAPI,
             WebInspector.ConsoleMessage.MessageLevel.Debug,
             messageText,

@@ -102,7 +102,7 @@ WebInspector.ConsoleModel.prototype = {
     {
         this.show();
 
-        var commandMessage = new WebInspector.ConsoleMessage(WebInspector.ConsoleMessage.MessageSource.JS, null, text, WebInspector.ConsoleMessage.MessageType.Command);
+        var commandMessage = new WebInspector.ConsoleMessage(this.target(), WebInspector.ConsoleMessage.MessageSource.JS, null, text, WebInspector.ConsoleMessage.MessageType.Command);
         this.addMessage(commandMessage);
 
         /**
@@ -144,6 +144,7 @@ WebInspector.ConsoleModel.prototype = {
     log: function(messageText, messageLevel, showConsole)
     {
         var message = new WebInspector.ConsoleMessage(
+            this.target(),
             WebInspector.ConsoleMessage.MessageSource.Other,
             messageLevel || WebInspector.ConsoleMessage.MessageLevel.Debug,
             messageText);
@@ -196,6 +197,8 @@ WebInspector.ConsoleModel.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.TargetAware}
+ * @param {!WebInspector.Target} target
  * @param {string} source
  * @param {?string} level
  * @param {string} messageText
@@ -210,9 +213,9 @@ WebInspector.ConsoleModel.prototype = {
  * @param {boolean=} isOutdated
  * @param {!RuntimeAgent.ExecutionContextId=} executionContextId
  */
-
-WebInspector.ConsoleMessage = function(source, level, messageText, type, url, line, column, requestId, parameters, stackTrace, timestamp, isOutdated, executionContextId)
+WebInspector.ConsoleMessage = function(target, source, level, messageText, type, url, line, column, requestId, parameters, stackTrace, timestamp, isOutdated, executionContextId)
 {
+    WebInspector.TargetAware.call(this, target);
     this.source = source;
     this.level = level;
     this.messageText = messageText;
@@ -255,6 +258,7 @@ WebInspector.ConsoleMessage.prototype = {
     clone: function()
     {
         return new WebInspector.ConsoleMessage(
+            this.target(),
             this.source,
             this.level,
             this.messageText,
@@ -310,7 +314,9 @@ WebInspector.ConsoleMessage.prototype = {
             && (this.url === msg.url)
             && (this.messageText === msg.messageText)
             && (this.request === msg.request);
-    }
+    },
+
+    __proto__: WebInspector.TargetAware.prototype
 }
 
 // Note: Keep these constants in sync with the ones in Console.h
@@ -379,6 +385,7 @@ WebInspector.ConsoleDispatcher.prototype = {
     messageAdded: function(payload)
     {
         var consoleMessage = new WebInspector.ConsoleMessage(
+            this._console.target(),
             payload.source,
             payload.level,
             payload.text,
