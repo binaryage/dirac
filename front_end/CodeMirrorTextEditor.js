@@ -1145,8 +1145,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
 
     /**
      * @param {!Array.<!WebInspector.TextRange>} ranges
+     * @param {number=} primarySelectionIndex
      */
-    setSelections: function(ranges)
+    setSelections: function(ranges, primarySelectionIndex)
     {
         var selections = [];
         for (var i = 0; i < ranges.length; ++i) {
@@ -1156,7 +1157,8 @@ WebInspector.CodeMirrorTextEditor.prototype = {
                 head: selection.end
             });
         }
-        this._codeMirror.setSelections(selections, 0, { scroll: false });
+        primarySelectionIndex = primarySelectionIndex || 0;
+        this._codeMirror.setSelections(selections, primarySelectionIndex, { scroll: false });
     },
 
     /**
@@ -1836,7 +1838,7 @@ WebInspector.CodeMirrorTextEditor.SelectNextOccurrenceController.prototype = {
         selections.push(next);
 
         this._muteSelectionListener = true;
-        this._textEditor.setSelections(selections);
+        this._textEditor.setSelections(selections, selections.length - 1);
         delete this._muteSelectionListener;
 
         this._textEditor._revealLine(next.startLine);
@@ -1857,7 +1859,7 @@ WebInspector.CodeMirrorTextEditor.SelectNextOccurrenceController.prototype = {
             var newSelection = new WebInspector.TextRange(startRangeWord.startLine, startRangeWord.startColumn, endRangeWord.endLine, endRangeWord.endColumn);
             newSelections.push(newSelection);
         }
-        this._textEditor.setSelections(newSelections);
+        this._textEditor.setSelections(newSelections, newSelections.length - 1);
         this._fullWordSelection = true;
     },
 
