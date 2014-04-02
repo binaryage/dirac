@@ -89,6 +89,16 @@ WebInspector.TextRange.prototype = {
     },
 
     /**
+     * @param {!WebInspector.TextRange} range
+     * @return {boolean}
+     */
+    follows: function(range)
+    {
+        return (range.endLine === this.startLine && range.endColumn <= this.startColumn)
+            || range.endLine < this.startLine;
+    },
+
+    /**
      * @return {number}
      */
     get linesCount()
@@ -170,6 +180,29 @@ WebInspector.TextRange.prototype = {
     shift: function(lineOffset)
     {
         return new WebInspector.TextRange(this.startLine + lineOffset, this.startColumn, this.endLine + lineOffset, this.endColumn);
+    },
+
+    /**
+     * @param {!WebInspector.TextRange} originalRange
+     * @param {!WebInspector.TextRange} editedRange
+     * @return {!WebInspector.TextRange}
+     */
+    rebaseAfterTextEdit: function(originalRange, editedRange)
+    {
+        console.assert(originalRange.startLine === editedRange.startLine);
+        console.assert(originalRange.startColumn === editedRange.startColumn);
+        var rebase = this.clone();
+        if (!this.follows(originalRange))
+            return rebase;
+        var lineDelta = editedRange.endLine - originalRange.endLine;
+        var columnDelta = editedRange.endColumn - originalRange.endColumn;
+        rebase.startLine += lineDelta;
+        rebase.endLine += lineDelta;
+        if (rebase.startLine === editedRange.endLine)
+            rebase.startColumn += columnDelta;
+        if (rebase.endLine === editedRange.endLine)
+            rebase.endColumn += columnDelta;
+        return rebase;
     },
 
     /**

@@ -732,7 +732,7 @@ WebInspector.CSSStyleDeclaration = function(cssModel, payload)
     this.id = payload.styleId;
     this.width = payload.width;
     this.height = payload.height;
-    this.range = payload.range;
+    this.range = payload.range ? WebInspector.TextRange.fromObject(payload.range) : null;
     this._shorthandValues = WebInspector.CSSStyleDeclaration.buildShorthandValueMap(payload.shorthandEntries);
     this._livePropertyMap = {}; // LIVE properties (source-based or style-based) : { name -> CSSProperty }
     this._allProperties = []; // ALL properties: [ CSSProperty ]
@@ -801,6 +801,21 @@ WebInspector.CSSStyleDeclaration.parseComputedStylePayload = function(cssModel, 
 }
 
 WebInspector.CSSStyleDeclaration.prototype = {
+    /**
+     * @param {string} styleSheetId
+     * @param {!WebInspector.TextRange} oldRange
+     * @param {!WebInspector.TextRange} newRange
+     */
+    sourceStyleSheetEdited: function(styleSheetId, oldRange, newRange)
+    {
+        if (!this.id || this.id.styleSheetId !== styleSheetId)
+            return;
+        if (this.range)
+            this.range = this.range.rebaseAfterTextEdit(oldRange, newRange);
+        for (var i = 0; i < this._allProperties.length; ++i)
+            this._allProperties[i].sourceStyleSheetEdited(styleSheetId, oldRange, newRange);
+    },
+
     _computeActiveProperties: function()
     {
         var activeProperties = {};
@@ -971,6 +986,11 @@ WebInspector.CSSRule = function(cssModel, payload, matchingSelectors)
     if (matchingSelectors)
         this.matchingSelectors = matchingSelectors;
     this.selectors = payload.selectorList.selectors;
+    for (var i = 0; i < this.selectors.length; ++i) {
+        var selector = this.selectors[i];
+        if (selector.range)
+            selector.range = WebInspector.TextRange.fromObject(selector.range);
+    }
     this.selectorText = this.selectors.select("value").join(", ");
 
     var firstRange = this.selectors[0].range;
@@ -999,6 +1019,29 @@ WebInspector.CSSRule.parsePayload = function(cssModel, payload, matchingIndices)
 }
 
 WebInspector.CSSRule.prototype = {
+    /**
+     * @param {string} styleSheetId
+     * @param {!WebInspector.TextRange} oldRange
+     * @param {!WebInspector.TextRange} newRange
+     */
+    sourceStyleSheetEdited: function(styleSheetId, oldRange, newRange)
+    {
+        if (this.id && this.id.styleSheetId === styleSheetId) {
+            if (this.selectorRange)
+                this.selectorRange = this.selectorRange.rebaseAfterTextEdit(oldRange, newRange);
+            for (var i = 0; i < this.selectors.length; ++i) {
+                var selector = this.selectors[i];
+                if (selector.range)
+                    selector.range = selector.range.rebaseAfterTextEdit(oldRange, newRange);
+            }
+        }
+        if (this.media) {
+            for (var i = 0; i < this.media.length; ++i)
+                this.media[i].sourceStyleSheetEdited(styleSheetId, oldRange, newRange);
+        }
+        this.style.sourceStyleSheetEdited(styleSheetId, oldRange, newRange);
+    },
+
     _setRawLocationAndFrameId: function()
     {
         if (!this.id)
@@ -1094,7 +1137,7 @@ WebInspector.CSSProperty = function(ownerStyle, index, name, value, important, d
     this.parsedOk = parsedOk;
     this.implicit = implicit;
     this.text = text;
-    this.range = range;
+    this.range = range ? WebInspector.TextRange.fromObject(range) : null;
 }
 
 /**
@@ -1116,6 +1159,19 @@ WebInspector.CSSProperty.parsePayload = function(ownerStyle, index, payload)
 }
 
 WebInspector.CSSProperty.prototype = {
+    /**
+     * @param {string} styleSheetId
+     * @param {!WebInspector.TextRange} oldRange
+     * @param {!WebInspector.TextRange} newRange
+     */
+    sourceStyleSheetEdited: function(styleSheetId, oldRange, newRange)
+    {
+        if (!this.ownerStyle.id || this.ownerStyle.id.styleSheetId !== styleSheetId)
+            return;
+        if (this.range)
+            this.range = this.range.rebaseAfterTextEdit(oldRange, newRange);
+    },
+
     /**
      * @param {boolean} active
      */
@@ -1308,6 +1364,19 @@ WebInspector.CSSMedia.parseMediaArrayPayload = function(cssModel, payload)
 }
 
 WebInspector.CSSMedia.prototype = {
+    /**
+     * @param {string} styleSheetId
+     * @param {!WebInspector.TextRange} oldRange
+     * @param {!WebInspector.TextRange} newRange
+     */
+    sourceStyleSheetEdited: function(styleSheetId, oldRange, newRange)
+    {
+        if (this.parentStyleSheetId !== styleSheetId)
+            return;
+        if (this.range)
+            this.range = this.range.rebaseAfterTextEdit(oldRange, newRange);
+    },
+
     /**
      * @return {number|undefined}
      */

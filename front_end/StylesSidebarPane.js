@@ -162,6 +162,18 @@ WebInspector.StylesSidebarPane._ignoreErrorsForProperty = function(property) {
 
 WebInspector.StylesSidebarPane.prototype = {
     /**
+     * @param {!WebInspector.CSSRule} editedRule
+     * @param {!WebInspector.TextRange} oldRange
+     * @param {!WebInspector.TextRange} newRange
+     */
+    _styleSheetRuleEdited: function(editedRule, oldRange, newRange)
+    {
+        var styleRuleSections = this.sections[0];
+        for (var i = 1; i < styleRuleSections.length; ++i)
+            styleRuleSections[i]._styleSheetRuleEdited(editedRule, oldRange, newRange);
+    },
+
+    /**
      * @param {?Event} event
      */
     _contextMenuEventFired: function(event)
@@ -1080,10 +1092,84 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
     // We don't really use properties' disclosure.
     this.propertiesElement.classList.remove("properties-tree");
 
-    if (styleRule.media) {
+    var selectorContainer = document.createElement("div");
+    this._selectorElement = document.createElement("span");
+    this._selectorElement.textContent = styleRule.selectorText;
+    selectorContainer.appendChild(this._selectorElement);
+
+    var openBrace = document.createElement("span");
+    openBrace.textContent = " {";
+    selectorContainer.appendChild(openBrace);
+    selectorContainer.addEventListener("mousedown", this._handleEmptySpaceMouseDown.bind(this), false);
+    selectorContainer.addEventListener("click", this._handleSelectorContainerClick.bind(this), false);
+
+    var closeBrace = document.createElement("div");
+    closeBrace.textContent = "}";
+    this.element.appendChild(closeBrace);
+
+    this._selectorElement.addEventListener("click", this._handleSelectorClick.bind(this), false);
+    this.element.addEventListener("mousedown", this._handleEmptySpaceMouseDown.bind(this), false);
+    this.element.addEventListener("click", this._handleEmptySpaceClick.bind(this), false);
+
+    if (this.rule) {
+        // Prevent editing the user agent and user rules.
+        if (this.rule.isUserAgent || this.rule.isUser)
+            this.editable = false;
+        else {
+            // Check this is a real CSSRule, not a bogus object coming from WebInspector.BlankStylePropertiesSection.
+            if (this.rule.id)
+                this.navigable = !!this.rule.resourceURL();
+        }
+        this.titleElement.classList.add("styles-selector");
+    }
+
+    this._usedProperties = styleRule.usedProperties;
+
+    this._selectorRefElement = document.createElement("div");
+    this._selectorRefElement.className = "subtitle";
+    this._mediaListElement = this.titleElement.createChild("div", "media-list");
+    this._updateMediaList();
+    this._updateRuleOrigin();
+    selectorContainer.insertBefore(this._selectorRefElement, selectorContainer.firstChild);
+    this.titleElement.appendChild(selectorContainer);
+    this._selectorContainer = selectorContainer;
+
+    if (isInherited)
+        this.element.classList.add("styles-show-inherited"); // This one is related to inherited rules, not computed style.
+
+    if (this.navigable)
+        this.element.classList.add("navigable");
+
+    if (!this.editable)
+        this.element.classList.add("read-only");
+}
+
+WebInspector.StylePropertiesSection.prototype = {
+    /**
+     * @param {!WebInspector.CSSRule} editedRule
+     * @param {!WebInspector.TextRange} oldRange
+     * @param {!WebInspector.TextRange} newRange
+     */
+    _styleSheetRuleEdited: function(editedRule, oldRange, newRange)
+    {
+        if (!this.rule || !this.rule.id)
+            return;
+        if (this.rule !== editedRule)
+            this.rule.sourceStyleSheetEdited(this.rule.id.styleSheetId, oldRange, newRange);
+        this._updateMediaList();
+        this._updateRuleOrigin();
+    },
+
+    /**
+     * @param {!Object} styleRule
+     */
+    _createMediaList: function(styleRule)
+    {
+        if (!styleRule.media)
+            return;
         for (var i = styleRule.media.length - 1; i >= 0; --i) {
             var media = styleRule.media[i];
-            var mediaDataElement = this.titleElement.createChild("div", "media");
+            var mediaDataElement = this._mediaListElement.createChild("div", "media");
             var mediaText;
             switch (media.source) {
             case WebInspector.CSSMedia.Source.LINKED_SHEET:
@@ -1127,59 +1213,14 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
             mediaTextElement.textContent = mediaText;
             mediaTextElement.title = media.text;
         }
-    }
+    },
 
-    var selectorContainer = document.createElement("div");
-    this._selectorElement = document.createElement("span");
-    this._selectorElement.textContent = styleRule.selectorText;
-    selectorContainer.appendChild(this._selectorElement);
+    _updateMediaList: function()
+    {
+        this._mediaListElement.removeChildren();
+        this._createMediaList(this.styleRule);
+    },
 
-    var openBrace = document.createElement("span");
-    openBrace.textContent = " {";
-    selectorContainer.appendChild(openBrace);
-    selectorContainer.addEventListener("mousedown", this._handleEmptySpaceMouseDown.bind(this), false);
-    selectorContainer.addEventListener("click", this._handleSelectorContainerClick.bind(this), false);
-
-    var closeBrace = document.createElement("div");
-    closeBrace.textContent = "}";
-    this.element.appendChild(closeBrace);
-
-    this._selectorElement.addEventListener("click", this._handleSelectorClick.bind(this), false);
-    this.element.addEventListener("mousedown", this._handleEmptySpaceMouseDown.bind(this), false);
-    this.element.addEventListener("click", this._handleEmptySpaceClick.bind(this), false);
-
-    if (this.rule) {
-        // Prevent editing the user agent and user rules.
-        if (this.rule.isUserAgent || this.rule.isUser)
-            this.editable = false;
-        else {
-            // Check this is a real CSSRule, not a bogus object coming from WebInspector.BlankStylePropertiesSection.
-            if (this.rule.id)
-                this.navigable = !!this.rule.resourceURL();
-        }
-        this.titleElement.classList.add("styles-selector");
-    }
-
-    this._usedProperties = styleRule.usedProperties;
-
-    this._selectorRefElement = document.createElement("div");
-    this._selectorRefElement.className = "subtitle";
-    this._updateRuleOrigin();
-    selectorContainer.insertBefore(this._selectorRefElement, selectorContainer.firstChild);
-    this.titleElement.appendChild(selectorContainer);
-    this._selectorContainer = selectorContainer;
-
-    if (isInherited)
-        this.element.classList.add("styles-show-inherited"); // This one is related to inherited rules, not computed style.
-
-    if (this.navigable)
-        this.element.classList.add("navigable");
-
-    if (!this.editable)
-        this.element.classList.add("read-only");
-}
-
-WebInspector.StylePropertiesSection.prototype = {
     collapse: function()
     {
         // Overriding with empty body.
@@ -1622,11 +1663,12 @@ WebInspector.StylePropertiesSection.prototype = {
                 this.element.classList.remove("no-affect");
             }
 
+            var oldSelectorRange = this.rule.selectorRange;
             this.rule = newRule;
             this.styleRule = { section: this, style: newRule.style, selectorText: newRule.selectorText, media: newRule.media, sourceURL: newRule.resourceURL(), rule: newRule };
 
             this._parentPane.update(selectedNode);
-            this._updateRuleOrigin();
+            this._parentPane._styleSheetRuleEdited(this.rule, oldSelectorRange, this.rule.selectorRange);
 
             finishOperationAndMoveEditor.call(this, moveDirection);
         }
@@ -2475,6 +2517,22 @@ WebInspector.StylePropertyTreeElement.prototype = {
     },
 
     /**
+     * @param {!WebInspector.CSSStyleDeclaration} newStyle
+     */
+    _applyNewStyle: function(newStyle)
+    {
+        newStyle.parentRule = this.style.parentRule;
+        var oldStyleRange = /** @type {!WebInspector.TextRange} */ (this.style.range);
+        var newStyleRange = /** @type {!WebInspector.TextRange} */ (newStyle.range);
+        this.style = newStyle;
+        this._styleRule.style = newStyle;
+        if (this.style.parentRule) {
+            this.style.parentRule.style = this.style;
+            this._parentPane._styleSheetRuleEdited(this.style.parentRule, oldStyleRange, newStyleRange);
+        }
+    },
+
+    /**
      * @param {?Event} event
      */
     toggleEnabled: function(event)
@@ -2491,10 +2549,7 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
             if (!newStyle)
                 return;
-
-            newStyle.parentRule = this.style.parentRule;
-            this.style = newStyle;
-            this._styleRule.style = newStyle;
+            this._applyNewStyle(newStyle);
 
             var section = this.section();
             if (section && section._parentPane)
@@ -3089,14 +3144,12 @@ WebInspector.StylePropertyTreeElement.prototype = {
                 userCallback();
                 return;
             }
+            this._applyNewStyle(newStyle);
 
             if (this._newProperty)
                 this._newPropertyInStyle = true;
-            newStyle.parentRule = this.style.parentRule;
-            this.style = newStyle;
-            this.property = newStyle.propertyAt(this.property.index);
-            this._styleRule.style = this.style;
 
+            this.property = newStyle.propertyAt(this.property.index);
             if (section && section._parentPane)
                 section._parentPane.dispatchEventToListeners("style edited");
 
