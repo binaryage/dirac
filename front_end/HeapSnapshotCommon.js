@@ -35,6 +35,8 @@ WebInspector.HeapSnapshotProgressEvent = {
 WebInspector.HeapSnapshotCommon = {
 }
 
+WebInspector.HeapSnapshotCommon.baseSystemDistance = 100000000;
+
 /**
  * @param {!Array.<!WebInspector.HeapSnapshotCommon.SerializedAllocationNode>} nodesWithSingleCaller
  * @param {!Array.<!WebInspector.HeapSnapshotCommon.SerializedAllocationNode>} branchingCallers

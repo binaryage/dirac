@@ -1342,7 +1342,7 @@ WebInspector.HeapSnapshot.prototype = {
 
         // bfs for the rest of objects
         nodesToVisitLength = 0;
-        this.forEachRoot(enqueueNode.bind(null, 0), false);
+        this.forEachRoot(enqueueNode.bind(null, WebInspector.HeapSnapshotCommon.baseSystemDistance), false);
         this._bfs(nodesToVisit, nodesToVisitLength, distances);
     },
 

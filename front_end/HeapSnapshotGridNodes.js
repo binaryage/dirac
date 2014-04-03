@@ -184,9 +184,23 @@ WebInspector.HeapSnapshotGridNode.prototype = {
         this._dataGrid.nodeWasDetached(this);
     },
 
+    /**
+     * @param {number} num
+     * @return {string}
+     */
     _toPercentString: function(num)
     {
         return num.toFixed(0) + "\u2009%"; // \u2009 is a thin space.
+    },
+
+    /**
+     * @param {number} distance
+     * @return {string}
+     */
+    _toUIDistance: function(distance)
+    {
+        var baseSystemDistance = WebInspector.HeapSnapshotCommon.baseSystemDistance;
+        return distance >= 0 && distance < baseSystemDistance ? WebInspector.UIString("%d", distance) : WebInspector.UIString("\u2212");
     },
 
     /**
@@ -506,7 +520,7 @@ WebInspector.HeapSnapshotGenericObjectNode = function(dataGrid, node)
     var shallowSizePercent = this._shallowSize / snapshot.totalSize * 100.0;
     var retainedSizePercent = this._retainedSize / snapshot.totalSize * 100.0;
     this.data = {
-        "distance": this._distance,
+        "distance": this._toUIDistance(this._distance),
         "shallowSize": Number.withThousandsSeparator(this._shallowSize),
         "retainedSize": Number.withThousandsSeparator(this._retainedSize),
         "shallowSize-percent": this._toPercentString(shallowSizePercent),
@@ -905,11 +919,11 @@ WebInspector.HeapSnapshotConstructorNode = function(dataGrid, className, aggrega
 
     this.data = {
         "object": className,
-        "count":  Number.withThousandsSeparator(this._count),
-        "distance":  this._distance,
+        "count": Number.withThousandsSeparator(this._count),
+        "distance": this._toUIDistance(this._distance),
         "shallowSize": Number.withThousandsSeparator(this._shallowSize),
         "retainedSize": Number.withThousandsSeparator(this._retainedSize),
-        "count-percent":  this._toPercentString(countPercent),
+        "count-percent": this._toPercentString(countPercent),
         "shallowSize-percent": this._toPercentString(shallowSizePercent),
         "retainedSize-percent": this._toPercentString(retainedSizePercent)
     };
