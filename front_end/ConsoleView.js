@@ -272,8 +272,9 @@ WebInspector.ConsoleView.prototype = {
      */
     _currentTarget: function()
     {
-        var executionContext = this._currentExecutionContext();
-        return executionContext ? executionContext.target() : null;
+//         var executionContext = this._currentExecutionContext();
+//         return executionContext ? executionContext.target() : null;
+        return WebInspector.targetManager.activeTarget();
     },
 
     /**
