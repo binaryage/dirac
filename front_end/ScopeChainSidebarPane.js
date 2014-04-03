@@ -84,7 +84,7 @@ WebInspector.ScopeChainSidebarPane.prototype = {
                 if (thisObject)
                     extraProperties.push(new WebInspector.RemoteObjectProperty("this", thisObject));
                 if (i == 0) {
-                    var details = WebInspector.debuggerModel.debuggerPausedDetails();
+                    var details = callFrame.target().debuggerModel.debuggerPausedDetails();
                     if (!callFrame.isAsync()) {
                         var exception = details.exception();
                         if (exception)

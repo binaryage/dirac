@@ -76,6 +76,10 @@ WebInspector.Target.prototype = {
         if (this.canProfilePower)
             WebInspector.powerProfiler = new WebInspector.PowerProfiler();
 
+        this.timelineManager = new WebInspector.TimelineManager(this);
+        if (!WebInspector.timelineManager)
+            WebInspector.timelineManager = this.timelineManager;
+
         if (callback)
             callback(this);
     },

@@ -228,7 +228,7 @@ WebInspector.ConsoleViewMessage.prototype = {
             return this._linkifier.linkifyCSSLocation(headerIds[0] || null, cssLocation, "console-message-url");
         }
 
-        return this._linkifier.linkifyLocation(url, lineNumber, columnNumber, "console-message-url");
+        return this._linkifier.linkifyLocation(this.target(), url, lineNumber, columnNumber, "console-message-url");
     },
 
     /**
@@ -487,18 +487,17 @@ WebInspector.ConsoleViewMessage.prototype = {
     _formatParameterAsNode: function(object, elem)
     {
         /**
-         * @param {!DOMAgent.NodeId} nodeId
+         * @param {!WebInspector.DOMNode} node
          * @this {WebInspector.ConsoleViewMessage}
          */
-        function printNode(nodeId)
+        function printNode(node)
         {
-            if (!nodeId) {
+            if (!node) {
                 // Sometimes DOM is loaded after the sync message is being formatted, so we get no
                 // nodeId here. So we fall back to object formatting here.
                 this._formatParameterAsObject(object, elem, false);
                 return;
             }
-            var node = this.target().domModel.nodeForId(nodeId);
             var renderer = WebInspector.moduleManager.instance(WebInspector.Renderer, node);
             if (renderer)
                 elem.appendChild(renderer.render(node));

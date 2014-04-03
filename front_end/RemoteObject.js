@@ -414,14 +414,14 @@ WebInspector.RemoteObjectImpl.prototype = {
     },
 
     /**
-     * @param {function(?DOMAgent.NodeId)} callback
+     * @param {function(?WebInspector.DOMNode)} callback
      */
     pushNodeToFrontend: function(callback)
     {
         if (this._objectId)
             this._domModel.pushNodeToFrontend(this._objectId, callback);
         else
-            callback(0);
+            callback(null);
     },
 
     highlightAsDOMNode: function()

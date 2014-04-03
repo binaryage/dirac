@@ -110,15 +110,16 @@ WebInspector.Linkifier.linkifyUsingRevealer = function(revealable, text, fallbac
 
 WebInspector.Linkifier.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @param {string} sourceURL
      * @param {number} lineNumber
      * @param {number=} columnNumber
      * @param {string=} classes
      * @return {?Element}
      */
-    linkifyLocation: function(sourceURL, lineNumber, columnNumber, classes)
+    linkifyLocation: function(target, sourceURL, lineNumber, columnNumber, classes)
     {
-        var rawLocation = WebInspector.debuggerModel.createRawLocationByURL(sourceURL, lineNumber, columnNumber || 0);
+        var rawLocation = target.debuggerModel.createRawLocationByURL(sourceURL, lineNumber, columnNumber || 0);
         if (!rawLocation)
             return WebInspector.linkifyResourceAsNode(sourceURL, lineNumber, classes);
         return this.linkifyRawLocation(rawLocation, classes);
@@ -279,13 +280,14 @@ WebInspector.Linkifier.LinkHandler.prototype = {
 }
 
 /**
+ * @param {!WebInspector.Target} target
  * @param {string} scriptId
  * @param {number} lineNumber
  * @param {number=} columnNumber
  */
-WebInspector.Linkifier.liveLocationText = function(scriptId, lineNumber, columnNumber)
+WebInspector.Linkifier.liveLocationText = function(target, scriptId, lineNumber, columnNumber)
 {
-    var script = WebInspector.debuggerModel.scriptForId(scriptId);
+    var script = target.debuggerModel.scriptForId(scriptId);
     if (!script)
         return "";
     var uiLocation = script.rawLocationToUILocation(lineNumber, columnNumber);

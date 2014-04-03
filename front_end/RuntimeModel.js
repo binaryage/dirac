@@ -59,9 +59,9 @@ WebInspector.RuntimeModel.prototype = {
     addWorkerContextList: function(url)
     {
         console.assert(this.target().isWorkerTarget(), "Worker context list was added in a non-worker target");
-        var fakeContextList = new WebInspector.WorkerExecutionContextList("worker", url);
+        var fakeContextList = new WebInspector.WorkerExecutionContextList(this.target(), "worker", url);
         this._addContextList(fakeContextList);
-        var fakeExecutionContext = new WebInspector.ExecutionContext(undefined, url, true);
+        var fakeExecutionContext = new WebInspector.ExecutionContext(this.target(), "", url, true);
         fakeContextList._addExecutionContext(fakeExecutionContext);
     },
 
@@ -105,7 +105,7 @@ WebInspector.RuntimeModel.prototype = {
     {
         console.assert(!this.target().isWorkerTarget() ,"Frame was added in a worker target.t");
         var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
-        var contextList = new WebInspector.FrameExecutionContextList(frame);
+        var contextList = new WebInspector.FrameExecutionContextList(this.target(), frame);
         this._addContextList(contextList);
     },
 
@@ -151,7 +151,7 @@ WebInspector.RuntimeModel.prototype = {
     {
         var contextList = this._contextListById[context.frameId];
         console.assert(contextList);
-        contextList._addExecutionContext(new WebInspector.ExecutionContext(context.id, context.name, context.isPageContext));
+        contextList._addExecutionContext(new WebInspector.ExecutionContext(this.target(), context.id, context.name, context.isPageContext));
     },
 
     /**
@@ -440,9 +440,15 @@ WebInspector.RuntimeDispatcher.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.TargetAware}
+ * @param {!WebInspector.Target} target
+ * @param {string} id
+ * @param {string} name
+ * @param {boolean} isPageContext
  */
-WebInspector.ExecutionContext = function(id, name, isPageContext)
+WebInspector.ExecutionContext = function(target, id, name, isPageContext)
 {
+    WebInspector.TargetAware.call(this, target);
     this.id = id;
     this.name = (isPageContext && !name) ? "<page context>" : name;
     this.isMainWorldContext = isPageContext;
@@ -463,12 +469,23 @@ WebInspector.ExecutionContext.comparator = function(a, b)
     return a.name.localeCompare(b.name);
 }
 
+WebInspector.ExecutionContext.prototype = {
+    makeCurrent: function()
+    {
+        this.target().runtimeModel.setCurrentExecutionContext(this);
+    },
+
+    __proto__: WebInspector.TargetAware.prototype
+}
+
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
+ * @param {!WebInspector.Target} target
  */
-WebInspector.ExecutionContextList = function()
+WebInspector.ExecutionContextList = function(target)
 {
+    WebInspector.TargetAwareObject.call(this, target);
     this._executionContexts = [];
 }
 
@@ -552,18 +569,19 @@ WebInspector.ExecutionContextList.prototype =
         throw "Not implemented";
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 
 /**
  * @constructor
  * @extends {WebInspector.ExecutionContextList}
+ * @param {!WebInspector.Target} target
  * @param {!WebInspector.ResourceTreeFrame} frame
  */
-WebInspector.FrameExecutionContextList = function(frame)
+WebInspector.FrameExecutionContextList = function(target, frame)
 {
-    WebInspector.ExecutionContextList.call(this);
+    WebInspector.ExecutionContextList.call(this, target);
     this._frame = frame;
 }
 
@@ -607,12 +625,13 @@ WebInspector.FrameExecutionContextList.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ExecutionContextList}
+ * @param {!WebInspector.Target} target
  * @param {string} id
  * @param {string} url
  */
-WebInspector.WorkerExecutionContextList = function(id, url)
+WebInspector.WorkerExecutionContextList = function(target, id, url)
 {
-    WebInspector.ExecutionContextList.call(this);
+    WebInspector.ExecutionContextList.call(this, target);
     this._url = url;
     this._id = id;
 }

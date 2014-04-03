@@ -46,21 +46,25 @@ WebInspector.CallStackSidebarPane.Events = {
 
 WebInspector.CallStackSidebarPane.prototype = {
     /**
-     * @param {?Array.<!WebInspector.DebuggerModel.CallFrame>} callFrames
-     * @param {?WebInspector.DebuggerModel.StackTrace} asyncStackTrace
+     * @param {?WebInspector.DebuggerPausedDetails} details
      */
-    update: function(callFrames, asyncStackTrace)
+    update: function(details)
     {
         this.bodyElement.removeChildren();
-        delete this._statusMessageElement;
-        /** @type {!Array.<!WebInspector.CallStackSidebarPane.Placard>} */
-        this.placards = [];
 
-        if (!callFrames) {
+        if (!details) {
             var infoElement = this.bodyElement.createChild("div", "info");
             infoElement.textContent = WebInspector.UIString("Not Paused");
             return;
         }
+
+        this._target = details.target();
+        var callFrames = details.callFrames;
+        var asyncStackTrace = details.asyncStackTrace;
+
+        delete this._statusMessageElement;
+        /** @type {!Array.<!WebInspector.CallStackSidebarPane.Placard>} */
+        this.placards = [];
 
         this._appendSidebarPlacards(callFrames);
 
@@ -197,7 +201,7 @@ WebInspector.CallStackSidebarPane.prototype = {
      */
     _selectedCallFrameIndex: function()
     {
-        var selectedCallFrame = WebInspector.debuggerModel.selectedCallFrame();
+        var selectedCallFrame = this._target.debuggerModel.selectedCallFrame();
         if (!selectedCallFrame)
             return -1;
         for (var i = 0; i < this.placards.length; ++i) {

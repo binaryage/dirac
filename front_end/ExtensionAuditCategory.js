@@ -201,13 +201,12 @@ WebInspector.ExtensionAuditFormatters = {
     {
         var parentElement = document.createElement("div");
         /**
-         * @param {?number} nodeId
+         * @param {?WebInspector.DOMNode} node
          */
-        function onNodeAvailable(nodeId)
+        function onNodeAvailable(node)
         {
-            if (!nodeId)
+            if (!node)
                 return;
-            var node = WebInspector.domModel.nodeForId(nodeId);
             var renderer = WebInspector.moduleManager.instance(WebInspector.Renderer, node);
             if (renderer)
                 parentElement.appendChild(renderer.render(node));

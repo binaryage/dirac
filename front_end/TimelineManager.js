@@ -30,11 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
+ * @param {!WebInspector.Target} target
  */
-WebInspector.TimelineManager = function()
+WebInspector.TimelineManager = function(target)
 {
-    WebInspector.Object.call(this);
+    WebInspector.TargetAwareObject.call(this, target);
     this._dispatcher = new WebInspector.TimelineDispatcher(this);
     this._enablementCount = 0;
     TimelineAgent.enable();
@@ -89,7 +90,7 @@ WebInspector.TimelineManager.prototype = {
             callback(null);
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**

@@ -31,18 +31,20 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {!WebInspector.TimelineManager} timelineManager
  */
-WebInspector.TimelineModel = function()
+WebInspector.TimelineModel = function(timelineManager)
 {
+    this._timelineManager = timelineManager;
     this._filters = [];
     this._bindings = new WebInspector.TimelineModel.InterRecordBindings();
 
     this.reset();
 
-    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, this._onRecordAdded, this);
-    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, this._onStarted, this);
-    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStopped, this._onStopped, this);
-    WebInspector.timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineProgress, this._onProgress, this);
+    this._timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded, this._onRecordAdded, this);
+    this._timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStarted, this._onStarted, this);
+    this._timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineStopped, this._onStopped, this);
+    this._timelineManager.addEventListener(WebInspector.TimelineManager.EventTypes.TimelineProgress, this._onProgress, this);
 }
 
 WebInspector.TimelineModel.TransferChunkLengthBytes = 5000000;
@@ -150,6 +152,14 @@ WebInspector.TimelineModel.forAllRecords = function(recordsArray, preOrderCallba
 
 WebInspector.TimelineModel.prototype = {
     /**
+     * @return {!WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._timelineManager.target();
+    },
+
+    /**
      * @return {boolean}
      */
     loadedFromFile: function()
@@ -235,13 +245,13 @@ WebInspector.TimelineModel.prototype = {
                            WebInspector.TimelineModel.RecordType.RequestMainThreadFrame,
                            WebInspector.TimelineModel.RecordType.ActivateLayerTree ];
         var includeCounters = true;
-        WebInspector.timelineManager.start(maxStackFrames, this._bufferEvents, liveEvents.join(","), includeCounters, includeGPUEvents, this._fireRecordingStarted.bind(this));
+        this._timelineManager.start(maxStackFrames, this._bufferEvents, liveEvents.join(","), includeCounters, includeGPUEvents, this._fireRecordingStarted.bind(this));
     },
 
     stopRecording: function()
     {
         if (!this._clientInitiatedRecording) {
-            WebInspector.timelineManager.start(undefined, undefined, undefined, undefined, undefined, stopTimeline.bind(this));
+            this._timelineManager.start(undefined, undefined, undefined, undefined, undefined, stopTimeline.bind(this));
             return;
         }
 
@@ -252,11 +262,11 @@ WebInspector.TimelineModel.prototype = {
          */
         function stopTimeline()
         {
-            WebInspector.timelineManager.stop(this._fireRecordingStopped.bind(this));
+            this._timelineManager.stop(this._fireRecordingStopped.bind(this));
         }
 
         this._clientInitiatedRecording = false;
-        WebInspector.timelineManager.stop(this._fireRecordingStopped.bind(this));
+        this._timelineManager.stop(this._fireRecordingStopped.bind(this));
     },
 
     /**

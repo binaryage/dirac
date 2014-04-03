@@ -134,7 +134,7 @@ WebInspector.TimelineTracingView.prototype = {
             this._delegate.showInDetails("", document.createTextNode(""));
             return;
         }
-        var contentHelper = new WebInspector.TimelineDetailsContentHelper(new WebInspector.Linkifier(), false);
+        var contentHelper = new WebInspector.TimelineDetailsContentHelper(null, null, false);
         contentHelper.appendTextRow(WebInspector.UIString("Name"), record.name);
         contentHelper.appendTextRow(WebInspector.UIString("Category"), record.category);
         contentHelper.appendTextRow(WebInspector.UIString("Start"), Number.millisToString(this._dataProvider._toTimelineTime(record.startTime - this._tracingModel.minimumRecordTime()), true));

@@ -130,7 +130,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._updateDebuggerButtons();
     this._pauseOnExceptionEnabledChanged();
     if (WebInspector.debuggerModel.isPaused())
-        this._showDebuggerPausedDetails();
+        this._showDebuggerPausedDetails(WebInspector.debuggerModel.debuggerPausedDetails());
 
     WebInspector.settings.pauseOnExceptionEnabled.addChangeListener(this._pauseOnExceptionEnabledChanged, this);
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerWasEnabled, this._debuggerWasEnabled, this);
@@ -196,22 +196,27 @@ WebInspector.SourcesPanel.prototype = {
         this.sidebarPanes.scopechain.update(WebInspector.debuggerModel.selectedCallFrame());
     },
 
-    _debuggerPaused: function()
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _debuggerPaused: function(event)
     {
+        var details = /** @type {!WebInspector.DebuggerPausedDetails} */ (event.data);
         WebInspector.inspectorView.setCurrentPanel(this);
-        this._showDebuggerPausedDetails();
+        this._showDebuggerPausedDetails(details);
     },
 
-    _showDebuggerPausedDetails: function()
+    /**
+     * @param {?WebInspector.DebuggerPausedDetails} details
+     */
+    _showDebuggerPausedDetails: function(details)
     {
-        var details = WebInspector.debuggerModel.debuggerPausedDetails();
-
         this._paused = true;
         this._waitingToPause = false;
 
         this._updateDebuggerButtons();
 
-        this.sidebarPanes.callstack.update(details.callFrames, details.asyncStackTrace);
+        this.sidebarPanes.callstack.update(details);
 
         /**
          * @param {!Element} element
@@ -423,7 +428,7 @@ WebInspector.SourcesPanel.prototype = {
 
     _clearInterface: function()
     {
-        this.sidebarPanes.callstack.update(null, null);
+        this.sidebarPanes.callstack.update(null);
         this.sidebarPanes.scopechain.update(null);
         this.sidebarPanes.jsBreakpoints.clearBreakpointHighlight();
         WebInspector.domBreakpointsSidebarPane.clearBreakpointHighlight();

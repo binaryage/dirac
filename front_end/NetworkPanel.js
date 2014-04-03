@@ -955,7 +955,7 @@ WebInspector.NetworkLogView.prototype = {
             var row = document.createElement("tr");
             row.createChild("td").textContent = stackFrame.functionName || WebInspector.UIString("(anonymous function)");
             row.createChild("td").textContent = " @ ";
-            row.createChild("td").appendChild(this._linkifier.linkifyLocation(stackFrame.url, stackFrame.lineNumber - 1, stackFrame.columnNumber - 1));
+            row.createChild("td").appendChild(this._linkifier.linkifyLocation(request.target(), stackFrame.url, stackFrame.lineNumber - 1, stackFrame.columnNumber - 1));
             framesTable.appendChild(row);
         }
         return framesTable;
@@ -2642,7 +2642,7 @@ WebInspector.NetworkDataGridNode.prototype = {
             break;
 
         case WebInspector.NetworkRequest.InitiatorType.Script:
-            var urlElement = this._linkifier.linkifyLocation(initiator.url, initiator.lineNumber - 1, initiator.columnNumber - 1);
+            var urlElement = this._linkifier.linkifyLocation(request.target(), initiator.url, initiator.lineNumber - 1, initiator.columnNumber - 1);
             urlElement.title = "";
             this._initiatorCell.appendChild(urlElement);
             this._appendSubtitle(this._initiatorCell, WebInspector.UIString("Script"));

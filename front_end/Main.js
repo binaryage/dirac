@@ -273,7 +273,6 @@ WebInspector.Main.prototype = {
         WebInspector.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(WebInspector.isolatedFileSystemManager);
         WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
 
-        WebInspector.timelineManager = new WebInspector.TimelineManager();
         WebInspector.tracingAgent = new WebInspector.TracingAgent();
 
         if (Capabilities.isMainFrontend) {
@@ -598,10 +597,13 @@ WebInspector.Main.prototype = {
             return;
         }
 
-        function callback(nodeId)
+        /**
+         * @param {!WebInspector.DOMNode} node
+         */
+        function callback(node)
         {
             elementsPanel.stopOmittingDefaultSelection();
-            WebInspector.Revealer.reveal(WebInspector.domModel.nodeForId(nodeId));
+            WebInspector.Revealer.reveal(node);
             if (!WebInspector.inspectorView.drawerVisible() && !WebInspector._notFirstInspectElement)
                 InspectorFrontendHost.inspectElementCompleted();
             WebInspector._notFirstInspectElement = true;

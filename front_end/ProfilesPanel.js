@@ -252,12 +252,13 @@ WebInspector.ProfileType.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
  * @param {!WebInspector.ProfileType} profileType
  * @param {string} title
  */
-WebInspector.ProfileHeader = function(profileType, title)
+WebInspector.ProfileHeader = function(target, profileType, title)
 {
+    WebInspector.TargetAwareObject.call(this, target);
     this._profileType = profileType;
     this.title = title;
     this.uid = profileType._nextProfileUid++;
@@ -368,7 +369,7 @@ WebInspector.ProfileHeader.prototype = {
         this._fromFile = true;
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**

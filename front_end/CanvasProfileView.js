@@ -38,6 +38,7 @@ WebInspector.CanvasProfileView = function(profile)
     WebInspector.VBox.call(this);
     this.registerRequiredCSS("canvasProfiler.css");
     this.element.classList.add("canvas-profile-view");
+
     this._profile = profile;
     this._traceLogId = profile.traceLogId();
     this._traceLogPlayer = /** @type {!WebInspector.CanvasTraceLogPlayerProxy} */ (profile.traceLogPlayer());
@@ -484,7 +485,7 @@ WebInspector.CanvasProfileView.prototype = {
             // FIXME(62725): stack trace line/column numbers are one-based.
             var lineNumber = Math.max(0, call.lineNumber - 1) || 0;
             var columnNumber = Math.max(0, call.columnNumber - 1) || 0;
-            data[2] = this._linkifier.linkifyLocation(call.sourceURL, lineNumber, columnNumber);
+            data[2] = this._linkifier.linkifyLocation(this.profile.target(), call.sourceURL, lineNumber, columnNumber);
         }
 
         callViewElement.createChild("span", "canvas-function-name").textContent = call.functionName || "context." + call.property;
@@ -715,7 +716,8 @@ WebInspector.CanvasProfileType.prototype = {
     {
         if (error || this._lastProfileHeader && this._lastProfileHeader.traceLogId() === traceLogId)
             return;
-        var profileHeader = new WebInspector.CanvasProfileHeader(this, traceLogId, frameId);
+        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+        var profileHeader = new WebInspector.CanvasProfileHeader(target, this, traceLogId, frameId);
         this._lastProfileHeader = profileHeader;
         this.addProfile(profileHeader);
         profileHeader._updateCapturingStatus();
@@ -972,13 +974,14 @@ WebInspector.CanvasDispatcher.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileHeader}
+ * @param {!WebInspector.Target} target
  * @param {!WebInspector.CanvasProfileType} type
  * @param {!CanvasAgent.TraceLogId=} traceLogId
  * @param {!PageAgent.FrameId=} frameId
  */
-WebInspector.CanvasProfileHeader = function(type, traceLogId, frameId)
+WebInspector.CanvasProfileHeader = function(target, type, traceLogId, frameId)
 {
-    WebInspector.ProfileHeader.call(this, type, WebInspector.UIString("Trace Log %d", type._nextProfileUid));
+    WebInspector.ProfileHeader.call(this, target, type, WebInspector.UIString("Trace Log %d", type._nextProfileUid));
     /** @type {!CanvasAgent.TraceLogId} */
     this._traceLogId = traceLogId || "";
     this._frameId = frameId;

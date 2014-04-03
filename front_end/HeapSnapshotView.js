@@ -1220,14 +1220,16 @@ WebInspector.HeapSnapshotProfileType.prototype = {
      */
     createProfileLoadedFromFile: function(title)
     {
-        return new WebInspector.HeapProfileHeader(this, title);
+        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+        return new WebInspector.HeapProfileHeader(target, this, title);
     },
 
     _takeHeapSnapshot: function(callback)
     {
         if (this.profileBeingRecorded())
             return;
-        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(this);
+        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(target, this);
         this.addProfile(this._profileBeingRecorded);
         this._profileBeingRecorded.updateStatus(WebInspector.UIString("Snapshotting\u2026"));
 
@@ -1394,7 +1396,8 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
 
     _addNewProfile: function()
     {
-        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(this);
+        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(target, this);
         this._lastSeenIndex = -1;
         this._profileSamples = {
             'sizes': [],
@@ -1482,12 +1485,13 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ProfileHeader}
+ * @param {!WebInspector.Target} target
  * @param {!WebInspector.HeapSnapshotProfileType} type
  * @param {string=} title
  */
-WebInspector.HeapProfileHeader = function(type, title)
+WebInspector.HeapProfileHeader = function(target, type, title)
 {
-    WebInspector.ProfileHeader.call(this, type, title || WebInspector.UIString("Snapshot %d", type._nextProfileUid));
+    WebInspector.ProfileHeader.call(this, target, type, title || WebInspector.UIString("Snapshot %d", type._nextProfileUid));
     this.maxJSObjectId = -1;
     /**
      * @type {?WebInspector.HeapSnapshotWorkerProxy}
@@ -2235,6 +2239,7 @@ WebInspector.HeapSnapshotStatisticsView.prototype = {
 WebInspector.HeapAllocationStackView = function()
 {
     WebInspector.View.call(this);
+    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
     this._linkifier = new WebInspector.Linkifier();
 }
 
@@ -2273,15 +2278,12 @@ WebInspector.HeapAllocationStackView.prototype = {
             var name = frameDiv.createChild("div");
             name.textContent = frame.functionName;
             if (frame.scriptId) {
-                var script = WebInspector.debuggerModel.scriptForId(String(frame.scriptId));
                 var urlElement;
-                if (script) {
-                    var rawLocation = WebInspector.debuggerModel.createRawLocation(script, frame.line - 1, frame.column - 1);
-                    if (rawLocation)
-                        urlElement = this._linkifier.linkifyRawLocation(rawLocation);
-                }
+                var rawLocation = new WebInspector.DebuggerModel.Location(this._target, String(frame.scriptId), frame.line - 1, frame.column - 1);
+                if (rawLocation)
+                    urlElement = this._linkifier.linkifyRawLocation(rawLocation);
                 if (!urlElement)
-                    urlElement = this._linkifier.linkifyLocation(frame.scriptName, frame.line - 1, frame.column - 1);
+                    urlElement = this._linkifier.linkifyLocation(this._target, frame.scriptName, frame.line - 1, frame.column - 1);
                 frameDiv.appendChild(urlElement);
             }
         }

@@ -707,7 +707,8 @@ WebInspector.CPUProfileType.prototype = {
             delete this._anonymousConsoleProfileIdToTitle[protocolId];
         }
 
-        var profile = new WebInspector.CPUProfileHeader(this, resolvedTitle);
+        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+        var profile = new WebInspector.CPUProfileHeader(target, this, resolvedTitle);
         profile.setProtocolProfile(cpuProfile);
         this.addProfile(profile);
         this._addMessageToConsole(WebInspector.ConsoleMessage.MessageType.ProfileEnd, scriptLocation, WebInspector.UIString("Profile '%s' finished.", resolvedTitle));
@@ -755,7 +756,8 @@ WebInspector.CPUProfileType.prototype = {
     {
         if (this._profileBeingRecorded)
             return;
-        this._profileBeingRecorded = new WebInspector.CPUProfileHeader(this);
+        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+        this._profileBeingRecorded = new WebInspector.CPUProfileHeader(target, this);
         this.addProfile(this._profileBeingRecorded);
         this._profileBeingRecorded.updateStatus(WebInspector.UIString("Recording\u2026"));
         this._recording = true;
@@ -794,7 +796,8 @@ WebInspector.CPUProfileType.prototype = {
      */
     createProfileLoadedFromFile: function(title)
     {
-        return new WebInspector.CPUProfileHeader(this, title);
+        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+        return new WebInspector.CPUProfileHeader(target, this, title);
     },
 
     /**
@@ -813,12 +816,13 @@ WebInspector.CPUProfileType.prototype = {
  * @extends {WebInspector.ProfileHeader}
  * @implements {WebInspector.OutputStream}
  * @implements {WebInspector.OutputStreamDelegate}
+ * @param {!WebInspector.Target} target
  * @param {!WebInspector.CPUProfileType} type
  * @param {string=} title
  */
-WebInspector.CPUProfileHeader = function(type, title)
+WebInspector.CPUProfileHeader = function(target, type, title)
 {
-    WebInspector.ProfileHeader.call(this, type, title || WebInspector.UIString("Profile %d", type._nextProfileUid));
+    WebInspector.ProfileHeader.call(this, target, type, title || WebInspector.UIString("Profile %d", type._nextProfileUid));
     this._tempFile = null;
 }
 
@@ -1284,6 +1288,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         var totalTime = this._millisecondsToString(timelineData.entryTotalTimes[entryIndex]);
         pushEntryInfoRow(WebInspector.UIString("Self time"), selfTime);
         pushEntryInfoRow(WebInspector.UIString("Total time"), totalTime);
+        var target = this._cpuProfileView.profile.target();
         var text = WebInspector.Linkifier.liveLocationText(node.scriptId, node.lineNumber, node.columnNumber);
         pushEntryInfoRow(WebInspector.UIString("URL"), text);
         pushEntryInfoRow(WebInspector.UIString("Aggregated self time"), Number.secondsToString(node.selfTime / 1000, true));

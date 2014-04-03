@@ -64,7 +64,7 @@ WebInspector.TimelinePanel = function()
     this._windowEndTime = Infinity;
 
     // Create model.
-    this._model = new WebInspector.TimelineModel();
+    this._model = new WebInspector.TimelineModel(WebInspector.timelineManager);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStopped, this._onRecordingStopped, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._onRecordsCleared, this);

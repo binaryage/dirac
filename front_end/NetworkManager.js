@@ -378,7 +378,7 @@ WebInspector.NetworkDispatcher.prototype = {
      */
     webSocketCreated: function(requestId, requestURL)
     {
-        var networkRequest = new WebInspector.NetworkRequest(requestId, requestURL, "", "", "");
+        var networkRequest = new WebInspector.NetworkRequest(this._manager._target, requestId, requestURL, "", "", "");
         networkRequest.type = WebInspector.resourceTypes.WebSocket;
         this._startNetworkRequest(networkRequest);
     },
@@ -562,7 +562,7 @@ WebInspector.NetworkDispatcher.prototype = {
      */
     _createNetworkRequest: function(requestId, frameId, loaderId, url, documentURL, initiator)
     {
-        var networkRequest = new WebInspector.NetworkRequest(requestId, url, documentURL, frameId, loaderId);
+        var networkRequest = new WebInspector.NetworkRequest(this._manager._target, requestId, url, documentURL, frameId, loaderId);
         networkRequest.initiator = initiator;
         return networkRequest;
     }

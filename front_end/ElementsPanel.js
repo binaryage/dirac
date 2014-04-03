@@ -326,7 +326,7 @@ WebInspector.ElementsPanel.prototype = {
             return;
         }
 
-        WebInspector.domBreakpointsSidebarPane.restoreBreakpoints();
+        WebInspector.domBreakpointsSidebarPane.restoreBreakpoints(target);
 
         /**
          * @this {WebInspector.ElementsPanel}
@@ -1199,13 +1199,12 @@ WebInspector.ElementsPanel.prototype = {
     appendApplicableItems: function(event, contextMenu, object)
     {
         /**
-         * @param {!WebInspector.Target} target
-         * @param {?DOMAgent.NodeId} nodeId
+         * @param {?WebInspector.DOMNode} node
          */
-        function selectNode(target, nodeId)
+        function selectNode(node)
         {
-            if (nodeId)
-                target.domModel.inspectElement(nodeId);
+            if (node)
+                node.reveal();
         }
 
         /**
@@ -1213,7 +1212,7 @@ WebInspector.ElementsPanel.prototype = {
          */
         function revealElement(remoteObject)
         {
-            remoteObject.pushNodeToFrontend(selectNode.bind(null, /** @type {!WebInspector.Target} */ (remoteObject.target())));
+            remoteObject.pushNodeToFrontend(selectNode);
         }
 
         var commandCallback;

@@ -1450,7 +1450,8 @@ WebInspector.AllocationGridNode.prototype = {
                 var rawLocation = WebInspector.debuggerModel.createRawLocation(script, allocationNode.line - 1, allocationNode.column - 1);
                 urlElement = linkifier.linkifyRawLocation(rawLocation, "profile-node-file");
             } else {
-                urlElement = linkifier.linkifyLocation(allocationNode.scriptName, allocationNode.line - 1, allocationNode.column - 1, "profile-node-file");
+                var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+                urlElement = linkifier.linkifyLocation(target, allocationNode.scriptName, allocationNode.line - 1, allocationNode.column - 1, "profile-node-file");
             }
             urlElement.style.maxWidth = "75%";
             cell.insertBefore(urlElement, cell.firstChild);

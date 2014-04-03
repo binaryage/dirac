@@ -32,6 +32,7 @@
  */
 WebInspector.ProfileDataGridNode = function(profileNode, owningTree, hasChildren)
 {
+    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
     this.profileNode = profileNode;
 
     WebInspector.DataGridNode.call(this, null, hasChildren);
@@ -110,7 +111,7 @@ WebInspector.ProfileDataGridNode.prototype = {
             var location = new WebInspector.DebuggerModel.Location(/** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget()), this.profileNode.scriptId, lineNumber, columnNumber);
             var urlElement = this.tree.profileView._linkifier.linkifyRawLocation(location, "profile-node-file");
             if (!urlElement)
-                urlElement = this.tree.profileView._linkifier.linkifyLocation(this.profileNode.url, lineNumber, columnNumber, "profile-node-file");
+                urlElement = this.tree.profileView._linkifier.linkifyLocation(this._target, this.profileNode.url, lineNumber, columnNumber, "profile-node-file");
             urlElement.style.maxWidth = "75%";
             cell.insertBefore(urlElement, cell.firstChild);
         }

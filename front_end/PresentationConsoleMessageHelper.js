@@ -30,6 +30,7 @@
 
 /**
  * @constructor
+ * @implements {WebInspector.TargetManager.Observer}
  * @param {!WebInspector.Workspace} workspace
  */
 WebInspector.PresentationConsoleMessageHelper = function(workspace)
@@ -41,15 +42,41 @@ WebInspector.PresentationConsoleMessageHelper = function(workspace)
     this._presentationConsoleMessages = [];
     this._workspace = workspace;
 
-    WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._consoleMessageAdded, this);
-    WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
-
-    WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
-    WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
-    WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
+    WebInspector.targetManager.observeTargets(this);
 }
 
 WebInspector.PresentationConsoleMessageHelper.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._consoleMessageAdded, this);
+        target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+
+        target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
+        target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
+        target.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._consoleMessageAdded, this);
+        target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
+
+        target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
+        target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
+        target.debuggerModel.removeEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
+    },
+
+    /**
+     * @param {?WebInspector.Target} target
+     */
+    activeTargetChanged: function(target) { },
+
     /**
      * @param {!WebInspector.Event} event
      */
@@ -67,6 +94,7 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
     },
 
     /**
+     * @param {!WebInspector.ConsoleMessage} message
      * @return {?WebInspector.DebuggerModel.Location}
      */
     _rawLocation: function(message)
@@ -74,7 +102,7 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
         // FIXME(62725): stack trace line/column numbers are one-based.
         var lineNumber = message.stackTrace ? message.stackTrace[0].lineNumber - 1 : message.line - 1;
         var columnNumber = message.stackTrace && message.stackTrace[0].columnNumber ? message.stackTrace[0].columnNumber - 1 : 0;
-        return WebInspector.debuggerModel.createRawLocationByURL(message.url, lineNumber, columnNumber);
+        return message.target().debuggerModel.createRawLocationByURL(message.url, lineNumber, columnNumber);
     },
 
     /**

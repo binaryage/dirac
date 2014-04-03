@@ -959,11 +959,19 @@ WebInspector.DOMModel.prototype = {
 
     /**
      * @param {!RuntimeAgent.RemoteObjectId} objectId
-     * @param {function(?DOMAgent.NodeId)=} callback
+     * @param {function(?WebInspector.DOMNode)=} callback
      */
     pushNodeToFrontend: function(objectId, callback)
     {
-        this._dispatchWhenDocumentAvailable(this._agent.requestNode.bind(this._agent, objectId), callback);
+        /**
+         * @param {?DOMAgent.NodeId} nodeId
+         * @this {!WebInspector.DOMModel}
+         */
+        function mycallback(nodeId)
+        {
+            callback(nodeId ? this.nodeForId(nodeId) : null);
+        }
+        this._dispatchWhenDocumentAvailable(this._agent.requestNode.bind(this._agent, objectId), mycallback.bind(this));
     },
 
     /**
@@ -1286,19 +1294,11 @@ WebInspector.DOMModel.prototype = {
     },
 
     /**
-     * @param {number} nodeId
-     */
-    inspectElement: function(nodeId)
-    {
-        WebInspector.Revealer.reveal(this.nodeForId(nodeId));
-    },
-
-    /**
      * @param {!DOMAgent.NodeId} nodeId
      */
     _inspectNodeRequested: function(nodeId)
     {
-        this.inspectElement(nodeId);
+        WebInspector.Revealer.reveal(this.nodeForId(nodeId))
     },
 
     /**
