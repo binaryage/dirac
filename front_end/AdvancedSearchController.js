@@ -255,9 +255,6 @@ WebInspector.SearchView = function(controller)
     this._load();
 }
 
-// Number of recent search queries to store.
-WebInspector.SearchView.maxQueriesCount = 20;
-
 WebInspector.SearchView.prototype = {
     /**
      * @return {!WebInspector.SearchConfig}
@@ -598,17 +595,6 @@ WebInspector.FileBasedSearchResultsPane.fileMatchesShownAtOnce = 20;
 
 WebInspector.FileBasedSearchResultsPane.prototype = {
     /**
-     * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @param {number} lineNumber
-     * @param {number} columnNumber
-     * @return {!Element}
-     */
-    _createAnchor: function(uiSourceCode, lineNumber, columnNumber)
-    {
-        return WebInspector.Linkifier.linkifyUsingRevealer(new WebInspector.UILocation(uiSourceCode, lineNumber, columnNumber), "", uiSourceCode.url, lineNumber);
-    },
-
-    /**
      * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
      */
     addSearchResult: function(searchResult)
@@ -617,38 +603,98 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
         var uiSourceCode = searchResult.uiSourceCode;
         if (!uiSourceCode)
             return;
-        var searchMatches = searchResult.searchMatches;
-
-        var fileTreeElement = this._addFileTreeElement(uiSourceCode.fullDisplayName(), searchMatches.length, this._searchResults.length - 1);
+        this._addFileTreeElement(searchResult);
     },
 
     /**
      * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
-     * @param {!TreeElement} fileTreeElement
      */
-    _fileTreeElementExpanded: function(searchResult, fileTreeElement)
+    _addFileTreeElement: function(searchResult)
     {
-        if (fileTreeElement._initialized)
+        var fileTreeElement = new WebInspector.FileBasedSearchResultsPane.FileTreeElement(this._searchConfig, searchResult);
+        this._treeOutline.appendChild(fileTreeElement);
+        // Expand until at least a certain number of matches is expanded.
+        if (this._matchesExpandedCount < WebInspector.FileBasedSearchResultsPane.matchesExpandedByDefaultCount)
+            fileTreeElement.expand();
+        this._matchesExpandedCount += searchResult.searchMatches.length;
+    },
+
+    __proto__: WebInspector.SearchResultsPane.prototype
+}
+
+/**
+ * @constructor
+ * @extends {TreeElement}
+ * @param {!WebInspector.SearchConfig} searchConfig
+ * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
+ */
+WebInspector.FileBasedSearchResultsPane.FileTreeElement = function(searchConfig, searchResult)
+{
+    TreeElement.call(this, "", null, true);
+    this._searchConfig = searchConfig;
+    this._searchResult = searchResult;
+
+    this.toggleOnClick = true;
+    this.selectable = false;
+}
+
+WebInspector.FileBasedSearchResultsPane.FileTreeElement.prototype = {
+    onexpand: function()
+    {
+        if (this._initialized)
             return;
 
-        var toIndex = Math.min(searchResult.searchMatches.length, WebInspector.FileBasedSearchResultsPane.fileMatchesShownAtOnce);
-        if (toIndex < searchResult.searchMatches.length) {
-            this._appendSearchMatches(fileTreeElement, searchResult, 0, toIndex - 1);
-            this._appendShowMoreMatchesElement(fileTreeElement, searchResult, toIndex - 1);
-        } else
-            this._appendSearchMatches(fileTreeElement, searchResult, 0, toIndex);
+        this._updateMatchesUI();
+        this._initialized = true;
+    },
 
-        fileTreeElement._initialized = true;
+    _updateMatchesUI: function()
+    {
+        this.removeChildren();
+        var toIndex = Math.min(this._searchResult.searchMatches.length, WebInspector.FileBasedSearchResultsPane.fileMatchesShownAtOnce);
+        if (toIndex < this._searchResult.searchMatches.length) {
+            this._appendSearchMatches(0, toIndex - 1);
+            this._appendShowMoreMatchesElement(toIndex - 1);
+        } else {
+            this._appendSearchMatches(0, toIndex);
+        }
+    },
+
+    onattach: function()
+    {
+        this._updateSearchMatches();
+    },
+
+    _updateSearchMatches: function()
+    {
+        this.listItemElement.classList.add("search-result");
+
+        var fileNameSpan = document.createElement("span");
+        fileNameSpan.className = "search-result-file-name";
+        fileNameSpan.textContent = this._searchResult.uiSourceCode.fullDisplayName();
+        this.listItemElement.appendChild(fileNameSpan);
+
+        var matchesCountSpan = document.createElement("span");
+        matchesCountSpan.className = "search-result-matches-count";
+
+        var searchMatchesCount = this._searchResult.searchMatches.length;
+        if (searchMatchesCount === 1)
+            matchesCountSpan.textContent = WebInspector.UIString("(%d match)", searchMatchesCount);
+        else
+            matchesCountSpan.textContent = WebInspector.UIString("(%d matches)", searchMatchesCount);
+
+        this.listItemElement.appendChild(matchesCountSpan);
+        if (this.expanded)
+            this._updateMatchesUI();
     },
 
     /**
-     * @param {!TreeElement} fileTreeElement
-     * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
      * @param {number} fromIndex
      * @param {number} toIndex
      */
-    _appendSearchMatches: function(fileTreeElement, searchResult, fromIndex, toIndex)
+    _appendSearchMatches: function(fromIndex, toIndex)
     {
+        var searchResult = this._searchResult;
         var uiSourceCode = searchResult.uiSourceCode;
         var searchMatches = searchResult.searchMatches;
 
@@ -677,78 +723,47 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
 
             var searchMatchElement = new TreeElement("");
             searchMatchElement.selectable = false;
-            fileTreeElement.appendChild(searchMatchElement);
+            this.appendChild(searchMatchElement);
             searchMatchElement.listItemElement.className = "search-match source-code";
             searchMatchElement.listItemElement.appendChild(anchor);
         }
     },
 
     /**
-     * @param {!TreeElement} fileTreeElement
-     * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
      * @param {number} startMatchIndex
      */
-    _appendShowMoreMatchesElement: function(fileTreeElement, searchResult, startMatchIndex)
+    _appendShowMoreMatchesElement: function(startMatchIndex)
     {
-        var matchesLeftCount = searchResult.searchMatches.length - startMatchIndex;
+        var matchesLeftCount = this._searchResult.searchMatches.length - startMatchIndex;
         var showMoreMatchesText = WebInspector.UIString("Show all matches (%d more).", matchesLeftCount);
-        var showMoreMatchesElement = new TreeElement(showMoreMatchesText);
-        fileTreeElement.appendChild(showMoreMatchesElement);
-        showMoreMatchesElement.listItemElement.classList.add("show-more-matches");
-        showMoreMatchesElement.onselect = this._showMoreMatchesElementSelected.bind(this, searchResult, startMatchIndex, showMoreMatchesElement);
+        this._showMoreMatchesTreeElement = new TreeElement(showMoreMatchesText);
+        this.appendChild(this._showMoreMatchesTreeElement);
+        this._showMoreMatchesTreeElement.listItemElement.classList.add("show-more-matches");
+        this._showMoreMatchesTreeElement.onselect = this._showMoreMatchesElementSelected.bind(this, startMatchIndex);
     },
 
     /**
-     * @param {!WebInspector.FileBasedSearchResultsPane.SearchResult} searchResult
-     * @param {number} startMatchIndex
-     * @param {!TreeElement} showMoreMatchesElement
-     * @return {boolean}
+     * @param {!WebInspector.UISourceCode} uiSourceCode
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @return {!Element}
      */
-    _showMoreMatchesElementSelected: function(searchResult, startMatchIndex, showMoreMatchesElement)
+    _createAnchor: function(uiSourceCode, lineNumber, columnNumber)
     {
-        var fileTreeElement = showMoreMatchesElement.parent;
-        fileTreeElement.removeChild(showMoreMatchesElement);
-        this._appendSearchMatches(fileTreeElement, searchResult, startMatchIndex, searchResult.searchMatches.length);
-        return false;
+        return WebInspector.Linkifier.linkifyUsingRevealer(new WebInspector.UILocation(uiSourceCode, lineNumber, columnNumber), "", uiSourceCode.url, lineNumber);
     },
 
     /**
-     * @param {string} fileName
-     * @param {number} searchMatchesCount
-     * @param {number} searchResultIndex
+     * @param {string} lineContent
+     * @param {!Array.<!WebInspector.SourceRange>} matchRanges
      */
-    _addFileTreeElement: function(fileName, searchMatchesCount, searchResultIndex)
+    _createContentSpan: function(lineContent, matchRanges)
     {
-        var fileTreeElement = new TreeElement("", null, true);
-        fileTreeElement.toggleOnClick = true;
-        fileTreeElement.selectable = false;
-
-        this._treeOutline.appendChild(fileTreeElement);
-        fileTreeElement.listItemElement.classList.add("search-result");
-
-        var fileNameSpan = document.createElement("span");
-        fileNameSpan.className = "search-result-file-name";
-        fileNameSpan.textContent = fileName;
-        fileTreeElement.listItemElement.appendChild(fileNameSpan);
-
-        var matchesCountSpan = document.createElement("span");
-        matchesCountSpan.className = "search-result-matches-count";
-        if (searchMatchesCount === 1)
-            matchesCountSpan.textContent = WebInspector.UIString("(%d match)", searchMatchesCount);
-        else
-            matchesCountSpan.textContent = WebInspector.UIString("(%d matches)", searchMatchesCount);
-
-        fileTreeElement.listItemElement.appendChild(matchesCountSpan);
-
-        var searchResult = this._searchResults[searchResultIndex];
-        fileTreeElement.onexpand = this._fileTreeElementExpanded.bind(this, searchResult, fileTreeElement);
-
-        // Expand until at least certain amount of matches is expanded.
-        if (this._matchesExpandedCount < WebInspector.FileBasedSearchResultsPane.matchesExpandedByDefaultCount)
-            fileTreeElement.expand();
-        this._matchesExpandedCount += searchResult.searchMatches.length;
-
-        return fileTreeElement;
+        var contentSpan = document.createElement("span");
+        contentSpan.className = "search-match-content";
+        contentSpan.textContent = lineContent;
+        WebInspector.highlightRangesWithStyleClass(contentSpan, matchRanges, "highlighted-match");
+        return contentSpan;
     },
 
     /**
@@ -769,19 +784,17 @@ WebInspector.FileBasedSearchResultsPane.prototype = {
     },
 
     /**
-     * @param {string} lineContent
-     * @param {!Array.<!WebInspector.SourceRange>} matchRanges
+     * @param {number} startMatchIndex
+     * @return {boolean}
      */
-    _createContentSpan: function(lineContent, matchRanges)
+    _showMoreMatchesElementSelected: function(startMatchIndex)
     {
-        var contentSpan = document.createElement("span");
-        contentSpan.className = "search-match-content";
-        contentSpan.textContent = lineContent;
-        WebInspector.highlightRangesWithStyleClass(contentSpan, matchRanges, "highlighted-match");
-        return contentSpan;
+        this.removeChild(this._showMoreMatchesTreeElement);
+        this._appendSearchMatches(startMatchIndex, this._searchResult.searchMatches.length);
+        return false;
     },
 
-    __proto__: WebInspector.SearchResultsPane.prototype
+    __proto__: TreeElement.prototype
 }
 
 /**
