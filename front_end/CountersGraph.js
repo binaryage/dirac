@@ -131,10 +131,9 @@ WebInspector.CountersGraph.prototype = {
             this._counters[i]._calculateXValues(this._canvas.width);
         }
         this._clear();
-        this._setVerticalClip(10, this._canvas.height - 20);
 
         for (var i = 0; i < this._counterUI.length; i++)
-            this._drawGraph(this._counterUI[i]);
+            this._counterUI[i]._drawGraph(this._canvas);
     },
 
     /**
@@ -226,16 +225,6 @@ WebInspector.CountersGraph.prototype = {
     {
     },
 
-    /**
-     * @param {number} originY
-     * @param {number} height
-     */
-    _setVerticalClip: function(originY, height)
-    {
-        this._originY = originY;
-        this._clippedHeight = height;
-    },
-
     _clear: function()
     {
         var ctx = this._canvas.getContext("2d");
@@ -256,68 +245,6 @@ WebInspector.CountersGraph.prototype = {
      */
     setSelectedRecord: function(record)
     {
-    },
-
-    /**
-     * @param {!WebInspector.CountersGraph.CounterUI} counterUI
-     */
-    _drawGraph: function(counterUI)
-    {
-        var canvas = this._canvas;
-        var ctx = canvas.getContext("2d");
-        var width = canvas.width;
-        var height = this._clippedHeight;
-        var originY = this._originY;
-        var counter = counterUI.counter;
-        var values = counter.values;
-
-        if (!values.length)
-            return;
-
-        var bounds = counter._calculateBounds();
-        var minValue = bounds.min;
-        var maxValue = bounds.max;
-
-        counterUI.setRange(minValue, maxValue);
-
-        if (!counterUI.visible())
-            return;
-
-        var yValues = counterUI.graphYValues;
-        yValues.length = this._counters.length;
-
-        var maxYRange = maxValue - minValue;
-        var yFactor = maxYRange ? height / (maxYRange) : 1;
-
-        ctx.save();
-        ctx.translate(0.5, 0.5);
-        ctx.beginPath();
-        var value = values[counter._minimumIndex];
-        var currentY = Math.round(originY + height - (value - minValue) * yFactor);
-        ctx.moveTo(0, currentY);
-        for (var i = counter._minimumIndex; i <= counter._maximumIndex; i++) {
-             var x = Math.round(counter.x[i]);
-             ctx.lineTo(x, currentY);
-             var currentValue = values[i];
-             if (typeof currentValue !== "undefined")
-                value = currentValue;
-             currentY = Math.round(originY + height - (value - minValue) * yFactor);
-             ctx.lineTo(x, currentY);
-             yValues[i] = currentY;
-        }
-        ctx.lineTo(width, currentY);
-        ctx.lineWidth = 1;
-        ctx.strokeStyle = counterUI.graphColor;
-        ctx.stroke();
-        if (counter._limitValue) {
-            var limitLineY = Math.round(originY + height - (counter._limitValue - minValue) * yFactor);
-            ctx.moveTo(0, limitLineY);
-            ctx.lineTo(width, limitLineY);
-            ctx.strokeStyle = counterUI.limitColor;
-            ctx.stroke();
-        }
-        ctx.closePath();
-        ctx.restore();
     },
 
     __proto__: WebInspector.SplitView.prototype
@@ -444,6 +371,7 @@ WebInspector.CountersGraph.CounterUI = function(memoryCountersPane, title, curre
     this.graphColor = graphColor;
     this.limitColor = WebInspector.Color.parse(graphColor).setAlpha(0.3).toString(WebInspector.Color.Format.RGBA);
     this.graphYValues = [];
+    this._verticalPadding = 10;
 
     this._currentValueLabel = currentValueLabel;
     this._marker = memoryCountersPane._canvasContainer.createChild("div", "memory-counter-marker");
@@ -500,6 +428,65 @@ WebInspector.CountersGraph.CounterUI.prototype = {
     {
         this._value.textContent = "";
         this._marker.classList.add("hidden");
+    },
+
+    /**
+     * @param {!HTMLCanvasElement} canvas
+     */
+    _drawGraph: function(canvas)
+    {
+        var ctx = canvas.getContext("2d");
+        var width = canvas.width;
+        var height = canvas.height - 2 * this._verticalPadding;
+        var originY = this._verticalPadding;
+        var counter = this.counter;
+        var values = counter.values;
+
+        if (!values.length)
+            return;
+
+        var bounds = counter._calculateBounds();
+        var minValue = bounds.min;
+        var maxValue = bounds.max;
+        this.setRange(minValue, maxValue);
+
+        if (!this.visible())
+            return;
+
+        var yValues = this.graphYValues;
+        var maxYRange = maxValue - minValue;
+        var yFactor = maxYRange ? height / (maxYRange) : 1;
+
+        ctx.save();
+        ctx.translate(0.5, 0.5);
+        ctx.beginPath();
+        var value = values[counter._minimumIndex];
+        var currentY = Math.round(originY + height - (value - minValue) * yFactor);
+        ctx.moveTo(0, currentY);
+        for (var i = counter._minimumIndex; i <= counter._maximumIndex; i++) {
+             var x = Math.round(counter.x[i]);
+             ctx.lineTo(x, currentY);
+             var currentValue = values[i];
+             if (typeof currentValue !== "undefined")
+                value = currentValue;
+             currentY = Math.round(originY + height - (value - minValue) * yFactor);
+             ctx.lineTo(x, currentY);
+             yValues[i] = currentY;
+        }
+        yValues.length = i;
+        ctx.lineTo(width, currentY);
+        ctx.lineWidth = 1;
+        ctx.strokeStyle = this.graphColor;
+        ctx.stroke();
+        if (counter._limitValue) {
+            var limitLineY = Math.round(originY + height - (counter._limitValue - minValue) * yFactor);
+            ctx.moveTo(0, limitLineY);
+            ctx.lineTo(width, limitLineY);
+            ctx.strokeStyle = this.limitColor;
+            ctx.stroke();
+        }
+        ctx.closePath();
+        ctx.restore();
     },
 
     /**
