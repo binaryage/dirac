@@ -1042,10 +1042,17 @@ WebInspector.HeapSnapshotView.prototype = {
             this.detach();
             this._profile.profileType().removeEventListener(WebInspector.HeapSnapshotProfileType.SnapshotReceived, this._onReceiveSnapshot, this);
             this._profile.profileType().removeEventListener(WebInspector.ProfileType.Events.RemoveProfileHeader, this._onProfileHeaderRemoved, this);
-            if (this._allocationStackView)
-                this._allocationStackView.clear();
+            this.dispose();
         } else {
             this._updateControls();
+        }
+    },
+
+    dispose: function()
+    {
+        if (this._allocationStackView) {
+            this._allocationStackView.clear();
+            this._allocationDataGrid.dispose();
         }
     },
 

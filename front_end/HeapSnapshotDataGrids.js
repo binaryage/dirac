@@ -1071,6 +1071,11 @@ WebInspector.AllocationDataGrid = function()
 }
 
 WebInspector.AllocationDataGrid.prototype = {
+    dispose: function()
+    {
+        this._linkifier.reset();
+    },
+
     setDataSource: function(snapshot)
     {
         this.snapshot = snapshot;
