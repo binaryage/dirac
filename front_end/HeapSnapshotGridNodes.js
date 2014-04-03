@@ -1428,12 +1428,19 @@ WebInspector.AllocationGridNode.prototype = {
 
         var cell = WebInspector.HeapSnapshotGridNode.prototype.createCell.call(this, columnIdentifier);
         var allocationNode = this._allocationNode;
-        if (allocationNode.scriptName) {
-            var urlElement = this._dataGrid._linkifier.linkifyLocation(allocationNode.scriptName, allocationNode.line - 1, allocationNode.column - 1, "profile-node-file");
+        if (allocationNode.scriptId) {
+            var urlElement;
+            var linkifier = this._dataGrid._linkifier;
+            var script = WebInspector.debuggerModel.scriptForId(String(allocationNode.scriptId));
+            if (script) {
+                var rawLocation = WebInspector.debuggerModel.createRawLocation(script, allocationNode.line - 1, allocationNode.column - 1);
+                urlElement = linkifier.linkifyRawLocation(rawLocation, "profile-node-file");
+            } else {
+                urlElement = linkifier.linkifyLocation(allocationNode.scriptName, allocationNode.line - 1, allocationNode.column - 1, "profile-node-file");
+            }
             urlElement.style.maxWidth = "75%";
             cell.insertBefore(urlElement, cell.firstChild);
         }
-
         return cell;
     },
 
@@ -1442,7 +1449,7 @@ WebInspector.AllocationGridNode.prototype = {
      */
     allocationNodeId: function()
     {
-        return this.data.id;
+        return this._allocationNode.id;
     },
 
     __proto__: WebInspector.HeapSnapshotGridNode.prototype

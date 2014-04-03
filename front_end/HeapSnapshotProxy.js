@@ -418,6 +418,15 @@ WebInspector.HeapSnapshotProxy.prototype = {
         this.callMethod(callback, "allocationNodeCallers", nodeId);
     },
 
+    /**
+     * @param {number} nodeIndex
+     * @param {function(?Array.<!WebInspector.HeapSnapshotCommon.AllocationStackFrame>)} callback
+     */
+    allocationStack: function(nodeIndex, callback)
+    {
+        this.callMethod(callback, "allocationStack", nodeIndex);
+    },
+
     dispose: function()
     {
         throw new Error("Should never be called");

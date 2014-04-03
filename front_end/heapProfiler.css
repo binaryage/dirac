@@ -135,6 +135,10 @@
     pointer-events: none;
 }
 
+.heap-snapshot-view .heap-object-details-header {
+    background-color: rgb(236, 236, 236);
+}
+
 .heap-snapshot-view tr:not(.selected) td.object-column span.highlight {
     background-color: rgb(255, 255, 200);
 }
@@ -208,4 +212,19 @@ table.heap-snapshot-help {
 .heap-snapshot-stats-size {
     float: right;
     text-align: right;
+}
+
+.heap-allocation-stack .stack-frame {
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px solid rgb(240, 240, 240);
+    padding: 2px;
+}
+
+.heap-allocation-stack .stack-frame a {
+    color: rgb(33%, 33%, 33%);
+}
+
+.no-heap-allocation-stack {
+    padding: 5px;
 }

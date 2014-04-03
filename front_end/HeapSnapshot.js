@@ -1246,6 +1246,19 @@ WebInspector.HeapSnapshot.prototype = {
     },
 
     /**
+     * @param {number} nodeIndex
+     * @return {?Array.<!WebInspector.HeapSnapshotCommon.AllocationStackFrame>}
+     */
+    allocationStack: function(nodeIndex)
+    {
+        var node = this.createNode(nodeIndex);
+        var allocationNodeId = node.traceNodeId();
+        if (!allocationNodeId)
+            return null;
+        return this._allocationProfile.serializeAllocationStack(allocationNodeId);
+    },
+
+    /**
      * @return {!Object.<string, !WebInspector.HeapSnapshotCommon.AggregateForDiff>}
      */
     aggregatesForDiff: function()

@@ -52,6 +52,7 @@ WebInspector.HeapSnapshotCommon.AllocationNodeCallers = function(nodesWithSingle
  * @param {number} nodeId
  * @param {string} functionName
  * @param {string} scriptName
+ * @param {number} scriptId
  * @param {number} line
  * @param {number} column
  * @param {number} count
@@ -61,7 +62,7 @@ WebInspector.HeapSnapshotCommon.AllocationNodeCallers = function(nodesWithSingle
  * @param {boolean} hasChildren
  * @constructor
  */
-WebInspector.HeapSnapshotCommon.SerializedAllocationNode = function(nodeId, functionName, scriptName, line, column, count, size, liveCount, liveSize, hasChildren)
+WebInspector.HeapSnapshotCommon.SerializedAllocationNode = function(nodeId, functionName, scriptName, scriptId, line, column, count, size, liveCount, liveSize, hasChildren)
 {
     /** @type {number} */
     this.id = nodeId;
@@ -69,6 +70,8 @@ WebInspector.HeapSnapshotCommon.SerializedAllocationNode = function(nodeId, func
     this.name = functionName;
     /** @type {string} */
     this.scriptName = scriptName;
+    /** @type {number} */
+    this.scriptId = scriptId;
     /** @type {number} */
     this.line = line;
     /** @type {number} */
@@ -83,6 +86,28 @@ WebInspector.HeapSnapshotCommon.SerializedAllocationNode = function(nodeId, func
     this.liveSize = liveSize;
     /** @type {boolean} */
     this.hasChildren = hasChildren;
+}
+
+/**
+ * @param {string} functionName
+ * @param {string} scriptName
+ * @param {number} scriptId
+ * @param {number} line
+ * @param {number} column
+ * @constructor
+ */
+WebInspector.HeapSnapshotCommon.AllocationStackFrame = function(functionName, scriptName, scriptId, line, column)
+{
+    /** @type {string} */
+    this.functionName = functionName;
+    /** @type {string} */
+    this.scriptName = scriptName;
+    /** @type {number} */
+    this.scriptId = scriptId;
+    /** @type {number} */
+    this.line = line;
+    /** @type {number} */
+    this.column = column;
 }
 
 /**
