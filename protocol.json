@@ -2737,7 +2737,8 @@
                     { "name": "nodes", "type": "integer", "optional": true },
                     { "name": "jsEventListeners", "type": "integer", "optional": true },
                     { "name": "jsHeapSizeUsed", "type": "number", "optional": true, "description": "Currently used size of JS heap." },
-                    { "name": "gpuMemoryUsedKB", "type": "number", "optional": true, "description": "Current GPU memory usage in kilobytes." }
+                    { "name": "gpuMemoryUsedKB", "type": "number", "optional": true, "description": "Current GPU memory usage in kilobytes." },
+                    { "name": "gpuMemoryLimitKB", "type": "number", "optional": true, "description": "Current GPU memory limit in kilobytes." }
                 ],
                 "description": "Current values of counters.",
                 "hidden": true

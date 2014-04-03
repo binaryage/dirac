@@ -42,8 +42,10 @@ WebInspector.MemoryCountersGraph = function(delegate, model)
     this._countersByName["documents"] = this.createCounter(WebInspector.UIString("Documents"), WebInspector.UIString("Documents: %d"), "#d00");
     this._countersByName["nodes"] = this.createCounter(WebInspector.UIString("Nodes"), WebInspector.UIString("Nodes: %d"), "#0a0");
     this._countersByName["jsEventListeners"] = this.createCounter(WebInspector.UIString("Listeners"), WebInspector.UIString("Listeners: %d"), "#00d");
-    if (WebInspector.experimentsSettings.gpuTimeline.isEnabled())
-        this._countersByName["gpuMemoryUsedKB"] = this.createCounter(WebInspector.UIString("GPU Memory"), WebInspector.UIString("GPU Memory [KB]: %d"), "#c0c");
+    if (WebInspector.experimentsSettings.gpuTimeline.isEnabled()) {
+        this._gpuMemoryCounter = this.createCounter(WebInspector.UIString("GPU Memory"), WebInspector.UIString("GPU Memory [KB]: %d"), "#c0c");
+        this._countersByName["gpuMemoryUsedKB"] = this._gpuMemoryCounter;
+    }
 }
 
 WebInspector.MemoryCountersGraph.prototype = {
@@ -75,6 +77,10 @@ WebInspector.MemoryCountersGraph.prototype = {
                 if (counter)
                     counter.appendSample(record.endTime || record.startTime, counters[name]);
             }
+
+            var gpuMemoryLimitCounterName = "gpuMemoryLimitKB";
+            if (this._gpuMemoryCounter && (gpuMemoryLimitCounterName in counters))
+                this._gpuMemoryCounter.setLimit(counters[gpuMemoryLimitCounterName]);
         }
         WebInspector.TimelineModel.forAllRecords([record], null, addStatistics.bind(this));
         this.scheduleRefresh();
