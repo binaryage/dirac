@@ -354,7 +354,7 @@ TestSuite.prototype.testPauseWhenLoadingDevTools = function()
     this.showPanel("sources");
 
     // Script execution can already be paused.
-    if (WebInspector.debuggerModel.debuggerPausedDetails)
+    if (WebInspector.debuggerModel.debuggerPausedDetails())
         return;
 
     this._waitForScriptPause(this.releaseControl.bind(this));
@@ -548,7 +548,7 @@ TestSuite.prototype.testSharedWorker = function()
 
 TestSuite.prototype.testPauseInSharedWorkerInitialization = function()
 {
-    if (WebInspector.debuggerModel.debuggerPausedDetails)
+    if (WebInspector.debuggerModel.debuggerPausedDetails())
         return;
     this._waitForScriptPause(this.releaseControl.bind(this));
     this.takeControl();
