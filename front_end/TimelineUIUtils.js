@@ -451,7 +451,7 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
     if (!imageElement && WebInspector.TimelineUIUtils.needsPreviewElement(record.type))
         WebInspector.DOMPresentationUtils.buildImagePreviewContents(record.url, false, barrier.createCallback(saveImage));
     if (record.relatedBackendNodeId())
-        WebInspector.domModel.pushNodesByBackendIdsToFrontend([record.relatedBackendNodeId()], barrier.createCallback(setRelatedNode));
+        record.target().domModel.pushNodesByBackendIdsToFrontend([record.relatedBackendNodeId()], barrier.createCallback(setRelatedNode));
     barrier.callWhenDone(callbackWrapper);
 
     /**
@@ -469,7 +469,7 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
     function setRelatedNode(nodeIds)
     {
         if (nodeIds)
-            relatedNode = WebInspector.domModel.nodeForId(nodeIds[0]);
+            relatedNode = record.target().domModel.nodeForId(nodeIds[0]);
     }
 
     function callbackWrapper()
@@ -501,7 +501,7 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
     var callStackLabel;
     var relatedNodeLabel;
 
-    var contentHelper = new WebInspector.TimelineDetailsContentHelper(record.model().target(), linkifier, true);
+    var contentHelper = new WebInspector.TimelineDetailsContentHelper(record.target(), linkifier, true);
     contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(record.selfTime, true));
     contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString(record.startTimeOffset));
 
@@ -757,7 +757,7 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier, load
     {
         if (!loadedFromFile && scriptId !== "0") {
             var location = new WebInspector.DebuggerModel.Location(
-                record.model().target(),
+                record.target(),
                 scriptId,
                 lineNumber - 1,
                 (columnNumber || 1) - 1);
@@ -769,7 +769,7 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier, load
 
         // FIXME(62725): stack trace line/column numbers are one-based.
         columnNumber = columnNumber ? columnNumber - 1 : 0;
-        return linkifier.linkifyLocation(record.model().target(), url, lineNumber - 1, columnNumber, "timeline-details");
+        return linkifier.linkifyLocation(record.target(), url, lineNumber - 1, columnNumber, "timeline-details");
     }
 
     /**

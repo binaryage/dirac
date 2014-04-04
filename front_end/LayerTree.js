@@ -159,10 +159,7 @@ WebInspector.LayerTree.prototype = {
         var layer = /** @type {!WebInspector.Layer} */ (node.representedObject);
         if (!layer)
             return;
-        var nodeId = layer.nodeIdForSelfOrAncestor();
-        if (!nodeId)
-            return;
-        var domNode = WebInspector.domModel.nodeForId(nodeId);
+        var domNode = layer.nodeForSelfOrAncestor();
         if (!domNode)
             return;
         var contextMenu = new WebInspector.ContextMenu(event);
@@ -197,8 +194,7 @@ WebInspector.LayerTreeElement.prototype = {
     _update: function()
     {
         var layer = /** @type {!WebInspector.Layer} */ (this.representedObject);
-        var nodeId = layer.nodeIdForSelfOrAncestor();
-        var node = nodeId ? WebInspector.domModel.nodeForId(nodeId) : null;
+        var node = layer.nodeForSelfOrAncestor();
         var title = document.createDocumentFragment();
         title.createChild("div", "selection");
         title.appendChild(document.createTextNode(node ? WebInspector.DOMPresentationUtils.simpleSelector(node) : "#" + layer.id()));

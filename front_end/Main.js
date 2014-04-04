@@ -560,18 +560,6 @@ WebInspector.Main.prototype = {
             event.preventDefault();
     },
 
-    _inspectNodeRequested: function(event)
-    {
-        this._updateFocusedNode(event.data);
-    },
-
-    _updateFocusedNode: function(nodeId)
-    {
-        var node = WebInspector.domModel.nodeForId(nodeId);
-        console.assert(node);
-        WebInspector.Revealer.reveal(node);
-    },
-
     _addMainEventListeners: function(doc)
     {
         doc.addEventListener("keydown", this._postDocumentKeyDown.bind(this), false);
@@ -603,7 +591,7 @@ WebInspector.Main.prototype = {
         function callback(node)
         {
             elementsPanel.stopOmittingDefaultSelection();
-            WebInspector.Revealer.reveal(node);
+            node.reveal();
             if (!WebInspector.inspectorView.drawerVisible() && !WebInspector._notFirstInspectElement)
                 InspectorFrontendHost.inspectElementCompleted();
             WebInspector._notFirstInspectElement = true;

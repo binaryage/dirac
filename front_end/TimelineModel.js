@@ -713,6 +713,14 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
 
 WebInspector.TimelineModel.Record.prototype = {
     /**
+     * @return {!WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._model.target();
+    },
+
+    /**
      * @return {!WebInspector.TimelineModel}
      */
     model: function()

@@ -530,14 +530,19 @@ WebInspector.OverridesSupport.prototype = {
         if (WebInspector.OverridesSupport.isInspectingDevice() && WebInspector.settings.emulateTouchEvents.get())
             return;
 
-        WebInspector.domModel.emulateTouchEventObjects(WebInspector.settings.emulateTouchEvents.get());
+        var emulateTouch = WebInspector.settings.emulateTouchEvents.get();
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i)
+            targets[i].domModel.emulateTouchEventObjects(emulateTouch);
         this.maybeHasActiveOverridesChanged();
     },
 
     _cssMediaChanged: function()
     {
         PageAgent.setEmulatedMedia(WebInspector.settings.overrideCSSMedia.get() ? WebInspector.settings.emulatedCSSMedia.get() : "");
-        WebInspector.cssModel.mediaQueryResultChanged();
+        var targets = WebInspector.targetManager.targets();
+        for (var i = 0; i < targets.length; ++i)
+            targets[i].cssModel.mediaQueryResultChanged();
         this.maybeHasActiveOverridesChanged();
     },
 

@@ -32,10 +32,13 @@
  * @constructor
  * @extends {WebInspector.VBox}
  * @implements {WebInspector.DOMNodeHighlighter}
+ * @param {!WebInspector.Target} target
  */
-WebInspector.ScreencastView = function()
+WebInspector.ScreencastView = function(target)
 {
     WebInspector.VBox.call(this);
+    this._target = target;
+
     this.setMinimumSize(150, 150);
     this.registerRequiredCSS("screencastView.css");
 };
@@ -127,8 +130,8 @@ WebInspector.ScreencastView.prototype = {
         }
         dimensions.width *= WebInspector.zoomManager.zoomFactor();
         dimensions.height *= WebInspector.zoomManager.zoomFactor();
-        PageAgent.startScreencast("jpeg", 80, Math.min(maxImageDimension, dimensions.width), Math.min(maxImageDimension, dimensions.height));
-        WebInspector.domModel.setHighlighter(this);
+        this._target.pageAgent().startScreencast("jpeg", 80, Math.min(maxImageDimension, dimensions.width), Math.min(maxImageDimension, dimensions.height));
+        this._target.domModel.setHighlighter(this);
     },
 
     _stopCasting: function()
@@ -136,8 +139,8 @@ WebInspector.ScreencastView.prototype = {
         if (!this._isCasting)
             return;
         this._isCasting = false;
-        PageAgent.stopScreencast();
-        WebInspector.domModel.setHighlighter(null);
+        this._target.pageAgent().stopScreencast();
+        this._target.domModel.setHighlighter(null);
     },
 
     /**
@@ -168,7 +171,7 @@ WebInspector.ScreencastView.prototype = {
         this._resizeViewport(screenWidthDIP, screenHeightDIP);
 
         this._imageZoom = this._imageElement.naturalWidth ? this._canvasElement.offsetWidth / this._imageElement.naturalWidth : 1;
-        this.highlightDOMNode(this._highlightNodeId, this._highlightConfig);
+        this.highlightDOMNode(this._highlightNode, this._highlightConfig);
     },
 
     _isGlassPaneActive: function()
@@ -265,21 +268,20 @@ WebInspector.ScreencastView.prototype = {
         }
 
         var position = this._convertIntoScreenSpace(event);
-        DOMAgent.getNodeForLocation(position.x / this._pageScaleFactor, position.y / this._pageScaleFactor, callback.bind(this));
+        this._target.domModel.nodeForLocation(position.x / this._pageScaleFactor, position.y / this._pageScaleFactor, callback.bind(this));
 
         /**
-         * @param {?Protocol.Error} error
-         * @param {number} nodeId
+         * @param {?WebInspector.DOMNode} node
          * @this {WebInspector.ScreencastView}
          */
-        function callback(error, nodeId)
+        function callback(node)
         {
-            if (error)
+            if (!node)
                 return;
             if (event.type === "mousemove")
-                this.highlightDOMNode(nodeId, this._inspectModeConfig);
+                node.highlight(this._inspectModeConfig);
             else if (event.type === "click")
-                WebInspector.Revealer.reveal(WebInspector.domModel.nodeForId(nodeId));
+                node.reveal();
         }
     },
 
@@ -437,15 +439,15 @@ WebInspector.ScreencastView.prototype = {
     },
 
     /**
-     * @param {!DOMAgent.NodeId} nodeId
+     * @param {?WebInspector.DOMNode} node
      * @param {?DOMAgent.HighlightConfig} config
      * @param {!RuntimeAgent.RemoteObjectId=} objectId
      */
-    highlightDOMNode: function(nodeId, config, objectId)
+    highlightDOMNode: function(node, config, objectId)
     {
-        this._highlightNodeId = nodeId;
+        this._highlightNode = node;
         this._highlightConfig = config;
-        if (!nodeId) {
+        if (!node) {
             this._model = null;
             this._config = null;
             this._node = null;
@@ -454,17 +456,16 @@ WebInspector.ScreencastView.prototype = {
             return;
         }
 
-        this._node = WebInspector.domModel.nodeForId(nodeId);
-        DOMAgent.getBoxModel(nodeId, callback.bind(this));
+        this._node = node;
+        node.boxModel(callback.bind(this));
 
         /**
-         * @param {?Protocol.Error} error
-         * @param {!DOMAgent.BoxModel} model
+         * @param {?DOMAgent.BoxModel} model
          * @this {WebInspector.ScreencastView}
          */
-        function callback(error, model)
+        function callback(model)
         {
-            if (error) {
+            if (!model) {
                 this._repaint();
                 return;
             }
@@ -926,7 +927,8 @@ WebInspector.ScreencastController = function()
     this._rootSplitView.show(rootView.element);
 
     WebInspector.inspectorView.show(this._rootSplitView.sidebarElement());
-    this._screencastView = new WebInspector.ScreencastView();
+    var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+    this._screencastView = new WebInspector.ScreencastView(target);
     this._screencastView.show(this._rootSplitView.mainElement());
 
     this._onStatusBarButtonStateChanged("disabled");

@@ -30,18 +30,18 @@
 
 /**
   * @constructor
-  * @extends {WebInspector.Object}
+  * @extends {WebInspector.TargetAwareObject}
   */
-WebInspector.LayerTreeModel = function()
+WebInspector.LayerTreeModel = function(target)
 {
-    WebInspector.Object.call(this);
+    WebInspector.TargetAwareObject.call(this, target);
     this._layersById = {};
     // We fetch layer tree lazily and get paint events asynchronously, so keep the last painted
     // rect separate from layer so we can get it after refreshing the tree.
     this._lastPaintRectByLayerId = {};
     this._backendNodeIdToNodeId = {};
     InspectorBackend.registerLayerTreeDispatcher(new WebInspector.LayerTreeDispatcher(this));
-    WebInspector.domModel.addEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._onDocumentUpdated, this);
+    target.domModel.addEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._onDocumentUpdated, this);
 }
 
 WebInspector.LayerTreeModel.Events = {
@@ -159,7 +159,7 @@ WebInspector.LayerTreeModel.prototype = {
                 layer = new WebInspector.Layer(layers[i]);
             this._layersById[layerId] = layer;
             if (layers[i].backendNodeId) {
-                layer._setNodeId(this._backendNodeIdToNodeId[layers[i].backendNodeId]);
+                layer._setNode(this._target.domModel.nodeForId(this._backendNodeIdToNodeId[layers[i].backendNodeId]));
                 if (!this._contentRoot)
                     this._contentRoot = layer;
             }
@@ -202,7 +202,7 @@ WebInspector.LayerTreeModel.prototype = {
         for (var i = 0; i < layers.length; ++i) {
             var backendNodeId = layers[i].backendNodeId;
             if (!backendNodeId || idsToResolve[backendNodeId] ||
-                (this._backendNodeIdToNodeId[backendNodeId] && WebInspector.domModel.nodeForId(this._backendNodeIdToNodeId[backendNodeId]))) {
+                (this._backendNodeIdToNodeId[backendNodeId] && this.target().domModel.nodeForId(this._backendNodeIdToNodeId[backendNodeId]))) {
                 continue;
             }
             idsToResolve[backendNodeId] = true;
@@ -212,7 +212,7 @@ WebInspector.LayerTreeModel.prototype = {
             callback();
             return;
         }
-        WebInspector.domModel.pushNodesByBackendIdsToFrontend(requestedIds, populateBackendNodeIdMap.bind(this));
+        this.target().domModel.pushNodesByBackendIdsToFrontend(requestedIds, populateBackendNodeIdMap.bind(this));
 
         /**
          * @this {WebInspector.LayerTreeModel}
@@ -252,7 +252,7 @@ WebInspector.LayerTreeModel.prototype = {
         this.enable();
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**
@@ -318,30 +318,29 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @param {!DOMAgent.NodeId} nodeId
+     * @param {?WebInspector.DOMNode} node
      */
-    _setNodeId: function(nodeId)
+    _setNode: function(node)
     {
-        this._nodeId = nodeId;
+        this._node = node;
     },
 
     /**
-     * @return {?DOMAgent.NodeId}
+     * @return {?WebInspector.DOMNode}
      */
-    nodeId: function()
+    node: function()
     {
-        return this._nodeId;
+        return this._node;
     },
 
     /**
-     * @return {?DOMAgent.NodeId}
+     * @return {?WebInspector.DOMNode}
      */
-    nodeIdForSelfOrAncestor: function()
+    nodeForSelfOrAncestor: function()
     {
         for (var layer = this; layer; layer = layer._parent) {
-            var nodeId = layer._nodeId;
-            if (nodeId)
-                return nodeId;
+            if (layer._node)
+                return layer._node;
         }
         return null;
     },

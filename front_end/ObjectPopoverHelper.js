@@ -123,8 +123,10 @@ WebInspector.ObjectPopoverHelper.prototype = {
                     popoverContentElement.textContent = "\"" + popoverContentElement.textContent + "\"";
                 popover.show(popoverContentElement, anchorElement);
             } else {
-                if (result.subtype === "node")
+                if (result.subtype === "node") {
                     result.highlightAsDOMNode();
+                    this._resultHighlightedAsDOM = result;
+                }
                 popoverContentElement = document.createElement("div");
                 this._titleElement = document.createElement("div");
                 this._titleElement.className = "source-frame-popover-title monospace";
@@ -152,7 +154,10 @@ WebInspector.ObjectPopoverHelper.prototype = {
 
     _onHideObjectPopover: function()
     {
-        WebInspector.domModel.hideDOMNodeHighlight();
+        if (this._resultHighlightedAsDOM) {
+            this._resultHighlightedAsDOM.target().domModel.hideDOMNodeHighlight();
+            delete this._resultHighlightedAsDOM;
+        }
         if (this._linkifier) {
             this._linkifier.reset();
             delete this._linkifier;

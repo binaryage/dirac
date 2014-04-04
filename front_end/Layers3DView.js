@@ -458,14 +458,11 @@ WebInspector.Layers3DView.prototype = {
     _onContextMenu: function(event)
     {
         var layer = this._layerFromEventPoint(event);
-        var nodeId = layer && layer.nodeIdForSelfOrAncestor();
-        if (!nodeId)
+        var node = layer ? layer.nodeForSelfOrAncestor() : null;
+        if (!node)
             return;
-        var domNode = WebInspector.domModel.nodeForId(nodeId);
-        if (!domNode)
-            return;
-         var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendApplicableItems(domNode);
+        var contextMenu = new WebInspector.ContextMenu(event);
+        contextMenu.appendApplicableItems(node);
         contextMenu.show();
     },
 

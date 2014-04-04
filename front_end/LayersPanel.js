@@ -46,7 +46,8 @@ WebInspector.LayersPanel = function()
     this.sidebarElement().classList.add("outline-disclosure");
     this.sidebarTree.element.classList.remove("sidebar-tree");
 
-    this._model = new WebInspector.LayerTreeModel();
+    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+    this._model = new WebInspector.LayerTreeModel(this._target);
     this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._onLayerTreeUpdated, this);
     this._currentlySelectedLayer = null;
     this._currentlyHoveredLayer = null;
@@ -144,11 +145,11 @@ WebInspector.LayersPanel.prototype = {
         if (this._currentlySelectedLayer === layer)
             return;
         this._currentlySelectedLayer = layer;
-        var nodeId = layer && layer.nodeIdForSelfOrAncestor();
-        if (nodeId)
-            WebInspector.domModel.highlightDOMNodeForTwoSeconds(nodeId);
+        var node = layer ? layer.nodeForSelfOrAncestor() : null;
+        if (node)
+            node.highlightForTwoSeconds();
         else
-            WebInspector.domModel.hideDOMNodeHighlight();
+            this._target.domModel.hideDOMNodeHighlight();
         this._layerTree.selectLayer(layer);
         this._layers3DView.selectLayer(layer);
         this._layerDetailsView.setLayer(layer);
@@ -162,11 +163,11 @@ WebInspector.LayersPanel.prototype = {
         if (this._currentlyHoveredLayer === layer)
             return;
         this._currentlyHoveredLayer = layer;
-        var nodeId = layer && layer.nodeIdForSelfOrAncestor();
-        if (nodeId)
-            WebInspector.domModel.highlightDOMNode(nodeId);
+        var node = layer ? layer.nodeForSelfOrAncestor() : null;
+        if (node)
+            node.highlight();
         else
-            WebInspector.domModel.hideDOMNodeHighlight();
+            this._target.domModel.hideDOMNodeHighlight();
         this._layerTree.hoverLayer(layer);
         this._layers3DView.hoverLayer(layer);
     },
