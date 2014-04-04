@@ -117,14 +117,6 @@ WebInspector.TextRange.prototype = {
     /**
      * @return {!WebInspector.TextRange}
      */
-    collapseToStart: function()
-    {
-        return new WebInspector.TextRange(this.startLine, this.startColumn, this.startLine, this.startColumn);
-    },
-
-    /**
-     * @return {!WebInspector.TextRange}
-     */
     normalize: function()
     {
         if (this.startLine > this.endLine || (this.startLine === this.endLine && this.startColumn > this.endColumn))

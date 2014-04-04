@@ -2646,9 +2646,10 @@
             {
                 "name": "setPropertyText",
                 "parameters": [
-                    { "name": "styleSheetId", "$ref": "StyleSheetId" },
-                    { "name": "range", "$ref": "SourceRange" },
-                    { "name": "text", "type": "string" }
+                    { "name": "styleId", "$ref": "CSSStyleId" },
+                    { "name": "propertyIndex", "type": "integer" },
+                    { "name": "text", "type": "string" },
+                    { "name": "overwrite", "type": "boolean" }
                 ],
                 "returns": [
                     { "name": "style", "$ref": "CSSStyle", "description": "The resulting style after the property text modification." }
@@ -2658,8 +2659,7 @@
             {
                 "name": "setRuleSelector",
                 "parameters": [
-                    { "name": "styleSheetId", "$ref": "StyleSheetId" },
-                    { "name": "range", "$ref": "SourceRange" },
+                    { "name": "ruleId", "$ref": "CSSRuleId" },
                     { "name": "selector", "type": "string" }
                 ],
                 "returns": [

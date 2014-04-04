@@ -245,13 +245,13 @@ WebInspector.CSSStyleModel.prototype = {
     },
 
     /**
-     * @param {!CSSAgent.CSSRule} rule
+     * @param {!CSSAgent.CSSRuleId} ruleId
      * @param {!DOMAgent.NodeId} nodeId
      * @param {string} newSelector
      * @param {function(!WebInspector.CSSRule)} successCallback
      * @param {function()} failureCallback
      */
-    setRuleSelector: function(rule, nodeId, newSelector, successCallback, failureCallback)
+    setRuleSelector: function(ruleId, nodeId, newSelector, successCallback, failureCallback)
     {
         /**
          * @param {!DOMAgent.NodeId} nodeId
@@ -273,8 +273,9 @@ WebInspector.CSSStyleModel.prototype = {
             this._computeMatchingSelectors(rulePayload, nodeId, successCallback, failureCallback);
         }
 
+
         this._pendingCommandsMajorState.push(true);
-        this._agent.setRuleSelector(rule.id.styleSheetId, rule.selectorRange, newSelector, callback.bind(this, nodeId, successCallback, failureCallback, newSelector));
+        this._agent.setRuleSelector(ruleId, newSelector, callback.bind(this, nodeId, successCallback, failureCallback, newSelector));
     },
 
     /**
@@ -917,23 +918,13 @@ WebInspector.CSSStyleDeclaration.prototype = {
     },
 
     /**
-     * @param {number} index
-     * @return {!WebInspector.TextRange}
-     */
-    _insertionRange: function(index)
-    {
-        var property = this.propertyAt(index);
-        return property && property.range ? property.range.collapseToStart() : this.range.collapseToEnd();
-    },
-
-    /**
      * @param {number=} index
      * @return {!WebInspector.CSSProperty}
      */
     newBlankProperty: function(index)
     {
         index = (typeof index === "undefined") ? this.pastLastSourcePropertyIndex() : index;
-        var property = new WebInspector.CSSProperty(this, index, "", "", false, false, true, false, "", this._insertionRange(index));
+        var property = new WebInspector.CSSProperty(this, index, "", "", false, false, true, false, "");
         property._setActive(true);
         return property;
     },
@@ -968,7 +959,7 @@ WebInspector.CSSStyleDeclaration.prototype = {
             throw "No style id";
 
         this._cssModel._pendingCommandsMajorState.push(true);
-        this._cssModel._agent.setPropertyText(this.id.styleSheetId, this._insertionRange(index), name + ": " + value + ";", callback.bind(this));
+        this._cssModel._agent.setPropertyText(this.id, index, name + ": " + value + ";", false, callback.bind(this));
     },
 
     /**
@@ -1271,8 +1262,7 @@ WebInspector.CSSProperty.prototype = {
         // An index past all the properties adds a new property to the style.
         var cssModel = this.ownerStyle._cssModel;
         cssModel._pendingCommandsMajorState.push(majorChange);
-        var range = /** @type {!WebInspector.TextRange} */ (this.range);
-        cssModel._agent.setPropertyText(this.ownerStyle.id.styleSheetId, overwrite ? range : range.collapseToStart(), propertyText, callback.bind(this));
+        cssModel._agent.setPropertyText(this.ownerStyle.id, this.index, propertyText, overwrite, callback.bind(this));
     },
 
     /**
