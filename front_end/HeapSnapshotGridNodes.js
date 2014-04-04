@@ -811,6 +811,61 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
 
 /**
  * @constructor
+ * @extends {WebInspector.HeapSnapshotObjectNode}
+ * @param {!WebInspector.HeapSnapshotSortableDataGrid} dataGrid
+ * @param {!WebInspector.HeapSnapshotProxy} snapshot
+ */
+WebInspector.HeapSnapshotRetainingObjectNode = function(dataGrid, snapshot, edge, parentGridNode)
+{
+    WebInspector.HeapSnapshotObjectNode.call(this, dataGrid, snapshot, edge, parentGridNode);
+}
+
+WebInspector.HeapSnapshotRetainingObjectNode.prototype = {
+    _createChildNode: function(item)
+    {
+        return new WebInspector.HeapSnapshotRetainingObjectNode(this._dataGrid, this._snapshot, item, this);
+    },
+
+    expand: function()
+    {
+        this._expandRetainersChain(20);
+    },
+
+    /**
+     * @param {number} maxExpandLevels
+     */
+    _expandRetainersChain: function(maxExpandLevels)
+    {
+        /**
+         * @this {!WebInspector.HeapSnapshotRetainingObjectNode}
+         */
+        function populateComplete()
+        {
+            this.removeEventListener(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this);
+            this._expandRetainersChain(maxExpandLevels);
+        }
+
+        if (!this._populated) {
+            this.addEventListener(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this);
+            this.populate();
+            return;
+        }
+        WebInspector.HeapSnapshotGenericObjectNode.prototype.expand.call(this);
+        if (--maxExpandLevels > 0 && this.children.length > 0) {
+            var retainer = this.children[0];
+            if (retainer._distance > 1) {
+                retainer._expandRetainersChain(maxExpandLevels);
+                return;
+            }
+        }
+        this._dataGrid.dispatchEventToListeners(WebInspector.HeapSnapshotRetainmentDataGrid.Events.ExpandRetainersComplete);
+    },
+
+    __proto__: WebInspector.HeapSnapshotObjectNode.prototype
+}
+
+/**
+ * @constructor
  * @extends {WebInspector.HeapSnapshotGenericObjectNode}
  * @param {!WebInspector.HeapSnapshotSortableDataGrid} dataGrid
  * @param {!WebInspector.HeapSnapshotProxy} snapshot

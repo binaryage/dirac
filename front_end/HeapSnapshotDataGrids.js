@@ -625,8 +625,13 @@ WebInspector.HeapSnapshotContainmentDataGrid.prototype = {
         this.snapshot = snapshot;
         var node = { nodeIndex: nodeIndex || snapshot.rootNodeIndex };
         var fakeEdge = { node: node };
-        this.setRootNode(new WebInspector.HeapSnapshotObjectNode(this, snapshot, fakeEdge, null));
+        this.setRootNode(this._createRootNode(snapshot, fakeEdge));
         this.rootNode().sort();
+    },
+
+    _createRootNode: function(snapshot, fakeEdge)
+    {
+        return new WebInspector.HeapSnapshotObjectNode(this, snapshot, fakeEdge, null);
     },
 
     sortingChanged: function()
@@ -661,6 +666,11 @@ WebInspector.HeapSnapshotRetainmentDataGrid.Events = {
 }
 
 WebInspector.HeapSnapshotRetainmentDataGrid.prototype = {
+    _createRootNode: function(snapshot, fakeEdge)
+    {
+        return new WebInspector.HeapSnapshotRetainingObjectNode(this, snapshot, fakeEdge, null);
+    },
+
     _sortFields: function(sortColumn, sortAscending)
     {
         return {
@@ -685,27 +695,7 @@ WebInspector.HeapSnapshotRetainmentDataGrid.prototype = {
     setDataSource: function(snapshot, nodeIndex)
     {
         WebInspector.HeapSnapshotContainmentDataGrid.prototype.setDataSource.call(this, snapshot, nodeIndex);
-
-        var dataGrid = this;
-        var maxExpandLevels = 20;
-        /**
-         * @this {!WebInspector.HeapSnapshotObjectNode}
-         */
-        function populateComplete()
-        {
-            this.removeEventListener(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this);
-            this.expand();
-            if (--maxExpandLevels > 0 && this.children.length > 0) {
-                var retainer = this.children[0];
-                if (retainer._distance > 1) {
-                    retainer.addEventListener(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, retainer);
-                    retainer.populate();
-                    return;
-                }
-            }
-            dataGrid.dispatchEventToListeners(WebInspector.HeapSnapshotRetainmentDataGrid.Events.ExpandRetainersComplete);
-        }
-        this.rootNode().addEventListener(WebInspector.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this.rootNode());
+        this.rootNode().expand();
     },
 
     __proto__: WebInspector.HeapSnapshotContainmentDataGrid.prototype
