@@ -48,18 +48,28 @@ WebInspector.HeapSnapshotSortableDataGrid = function(columns)
      * @type {boolean}
      */
     this._populatedAndSorted = false;
-    this._nameFilter = "";
+    /**
+     * @type {?WebInspector.StatusBarInput}
+     */
+    this._nameFilter = null;
     this.addEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.SortingComplete, this._sortingComplete, this);
     this.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this.sortingChanged, this);
 }
 
 WebInspector.HeapSnapshotSortableDataGrid.Events = {
     ContentShown: "ContentShown",
-    ResetFilter: "ResetFilter",
     SortingComplete: "SortingComplete"
 }
 
 WebInspector.HeapSnapshotSortableDataGrid.prototype = {
+    /**
+     * @param {!WebInspector.StatusBarInput} nameFilter
+     */
+    setNameFilter: function(nameFilter)
+    {
+        this._nameFilter = nameFilter;
+    },
+
     /**
      * @return {number}
      */
@@ -80,6 +90,10 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
      */
     wasShown: function()
     {
+        if (this._nameFilter) {
+            this._nameFilter.addEventListener(WebInspector.StatusBarInput.Event.TextChanged, this._onNameFilterChanged, this);
+            this.updateVisibleNodes(true);
+        }
         if (this._populatedAndSorted)
             this.dispatchEventToListeners(WebInspector.HeapSnapshotSortableDataGrid.Events.ContentShown, this);
     },
@@ -96,6 +110,8 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
      */
     willHide: function()
     {
+        if (this._nameFilter)
+            this._nameFilter.removeEventListener(WebInspector.StatusBarInput.Event.TextChanged, this._onNameFilterChanged, this);
         this._clearCurrentHighlight();
     },
 
@@ -175,26 +191,15 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
         this._highlightedNode = null;
     },
 
-    /**
-     * @param {function()=} callback
-     */
-    resetNameFilter: function(callback)
+    resetNameFilter: function()
     {
-        this._callbackAfterFilterChange = callback;
-        this.dispatchEventToListeners(WebInspector.HeapSnapshotSortableDataGrid.Events.ResetFilter);
+        this._nameFilter.setValue("");
+        this._onNameFilterChanged();
     },
 
-    /**
-     * @param {string} filter
-     */
-    changeNameFilter: function(filter)
+    _onNameFilterChanged: function()
     {
-        this._nameFilter = filter.toLowerCase();
         this.updateVisibleNodes(true);
-        if (this._callbackAfterFilterChange) {
-            this._callbackAfterFilterChange();
-            this._callbackAfterFilterChange = null;
-        }
     },
 
     sortingChanged: function()
@@ -404,11 +409,12 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
         var restPathToReveal = pathToReveal && pathToReveal.length > 1 ? pathToReveal.slice(1) : null;
         var children = this.allChildren(parentNode);
         var topPadding = 0;
+        var nameFilterValue = this._nameFilter ? this._nameFilter.value().toLowerCase() : "";
         // Iterate over invisible nodes beyond the upper bound of viewport.
         // Do not insert them into the grid, but count their total height.
         for (var i = 0; i < children.length; ++i) {
             var child = children[i];
-            if (child.filteredOut && child.filteredOut())
+            if (nameFilterValue && child.filteredOut && child.filteredOut(nameFilterValue))
                 continue;
             var newTop = topPadding + this._nodeHeight(child);
             if (nodeToReveal === child || (!nodeToReveal && newTop > topBound))
@@ -420,7 +426,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
         var position = topPadding;
         for (; i < children.length && (nodeToReveal || position < bottomBound); ++i) {
             var child = children[i];
-            if (child.filteredOut && child.filteredOut())
+            if (nameFilterValue && child.filteredOut && child.filteredOut(nameFilterValue))
                 continue;
             var hasChildren = child.hasChildren;
             child.removeChildren();
@@ -437,7 +443,7 @@ WebInspector.HeapSnapshotViewportDataGrid.prototype = {
         var bottomPadding = 0;
         for (; i < children.length; ++i) {
             var child = children[i];
-            if (child.filteredOut && child.filteredOut())
+            if (nameFilterValue && child.filteredOut && child.filteredOut(nameFilterValue))
                 continue;
             bottomPadding += this._nodeHeight(child);
         }

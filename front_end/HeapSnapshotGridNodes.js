@@ -981,15 +981,17 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
             callback(!!child);
         }
 
-        this._dataGrid.resetNameFilter(this.expandWithoutPopulate.bind(this, didExpand.bind(this)));
+        this._dataGrid.resetNameFilter();
+        this.expandWithoutPopulate(didExpand.bind(this));
     },
 
     /**
+     * @param {string} filterValue
      * @return {boolean}
      */
-    filteredOut: function()
+    filteredOut: function(filterValue)
     {
-        return this._name.toLowerCase().indexOf(this._dataGrid._nameFilter) === -1;
+        return this._name.toLowerCase().indexOf(filterValue) === -1;
     },
 
     /**
@@ -1249,11 +1251,12 @@ WebInspector.HeapSnapshotDiffNode.prototype = {
     },
 
     /**
+     * @param {string} filterValue
      * @return {boolean}
      */
-    filteredOut: function()
+    filteredOut: function(filterValue)
     {
-        return this._name.toLowerCase().indexOf(this._dataGrid._nameFilter) === -1;
+        return this._name.toLowerCase().indexOf(filterValue) === -1;
     },
 
     _signForDelta: function(delta)

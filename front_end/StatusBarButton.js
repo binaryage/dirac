@@ -118,29 +118,34 @@ WebInspector.StatusBarInput = function(placeholder, width)
         this.element.style.width = width + "px";
     if (placeholder)
         this.element.setAttribute("placeholder", placeholder);
+    this._value = "";
 }
 
-WebInspector.StatusBarInput.prototype = {
-    /**
-     * @param {?function(string)} handler
-     */
-    setOnChangeHandler: function(handler)
-    {
-        this._onChangeHandler = handler;
-    },
+WebInspector.StatusBarInput.Event = {
+    TextChanged: "TextChanged"
+};
 
+WebInspector.StatusBarInput.prototype = {
     /**
      * @param {string} value
      */
     setValue: function(value)
     {
+        this._value = value;
         this.element.value = value;
-        this._onChangeCallback();
+    },
+
+    /**
+     * @return {string}
+     */
+    value: function()
+    {
+        return this.element.value;
     },
 
     _onChangeCallback: function()
     {
-        this._onChangeHandler && this._onChangeHandler(this.element.value);
+        this.dispatchEventToListeners(WebInspector.StatusBarInput.Event.TextChanged, this.element.value);
     },
 
     __proto__: WebInspector.StatusBarItem.prototype

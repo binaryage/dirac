@@ -154,7 +154,8 @@ WebInspector.HeapSnapshotView = function(profile)
 
     this._classNameFilter = new WebInspector.StatusBarInput("Class filter");
     this._classNameFilter.visible = false;
-    this._classNameFilter.setOnChangeHandler(this._onClassFilterChanged.bind(this));
+    this._constructorsDataGrid.setNameFilter(this._classNameFilter);
+    this._diffDataGrid.setNameFilter(this._classNameFilter);
 
     this._selectedSizeText = new WebInspector.StatusBarText("");
 
@@ -164,7 +165,6 @@ WebInspector.HeapSnapshotView = function(profile)
     this._currentPerspective = this._perspectives[0];
     this._currentPerspective.activate(this);
     this._dataGrid = this._currentPerspective.masterGrid(this);
-    this._dataGrid.addEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.ResetFilter, this._onResetClassNameFilter, this);
 
     this._refreshView();
 }
@@ -762,19 +762,6 @@ WebInspector.HeapSnapshotView.prototype = {
     },
 
     /**
-     * @param {string} value
-     */
-    _onClassFilterChanged: function(value)
-    {
-        this._dataGrid.changeNameFilter(value);
-    },
-
-    _onResetClassNameFilter: function()
-    {
-        this._classNameFilter.setValue("");
-    },
-
-    /**
      * @return {!Array.<!WebInspector.ProfileHeader>}
      */
     _profiles: function()
@@ -914,9 +901,6 @@ WebInspector.HeapSnapshotView.prototype = {
         if (selectedIndex === this._currentPerspectiveIndex)
             return;
 
-        if (this._dataGrid)
-            this._dataGrid.removeEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.ResetFilter, this._onResetClassNameFilter, this);
-
         this._currentPerspectiveIndex = selectedIndex;
 
         this._currentPerspective.deactivate(this);
@@ -926,10 +910,8 @@ WebInspector.HeapSnapshotView.prototype = {
         perspective.activate(this);
 
         this.refreshVisibleData();
-        if (this._dataGrid) {
-            this._dataGrid.addEventListener(WebInspector.HeapSnapshotSortableDataGrid.Events.ResetFilter, this._onResetClassNameFilter, this);
+        if (this._dataGrid)
             this._dataGrid.updateWidths();
-        }
 
         this._updateDataSourceAndView();
 
