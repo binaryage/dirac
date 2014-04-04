@@ -2658,7 +2658,8 @@
             {
                 "name": "setRuleSelector",
                 "parameters": [
-                    { "name": "ruleId", "$ref": "CSSRuleId" },
+                    { "name": "styleSheetId", "$ref": "StyleSheetId" },
+                    { "name": "range", "$ref": "SourceRange" },
                     { "name": "selector", "type": "string" }
                 ],
                 "returns": [
