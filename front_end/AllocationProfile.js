@@ -132,6 +132,7 @@ WebInspector.AllocationProfile.prototype = {
             if (info.totalCount === 0)
                 continue;
             var nodeId = this._nextNodeId++;
+            var isRoot = i == 0;
             result.push(this._serializeNode(
                 nodeId,
                 info,
@@ -139,7 +140,7 @@ WebInspector.AllocationProfile.prototype = {
                 info.totalSize,
                 info.totalLiveCount,
                 info.totalLiveSize,
-                true));
+                !isRoot));
             this._collapsedTopNodeIdToFunctionInfo[nodeId] = info;
         }
         result.sort(function(a, b) {
