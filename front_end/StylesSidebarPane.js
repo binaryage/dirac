@@ -3096,6 +3096,10 @@ WebInspector.StylePropertyTreeElement.prototype = {
         return typeof this.originalPropertyText === "string" || (!!this.property.propertyText && this._newProperty);
     },
 
+    styleTextAppliedForTest: function()
+    {
+    },
+
     applyStyleText: function(styleText, updateInterface, majorChange, isRevert)
     {
         function userOperationFinishedCallback(parentPane, updateInterface)
@@ -3155,10 +3159,12 @@ WebInspector.StylePropertyTreeElement.prototype = {
 
             if (updateInterface && currentNode === this.node()) {
                 this._updatePane(userCallback);
+                this.styleTextAppliedForTest();
                 return;
             }
 
             userCallback();
+            this.styleTextAppliedForTest();
         }
 
         // Append a ";" if the new text does not end in ";".
