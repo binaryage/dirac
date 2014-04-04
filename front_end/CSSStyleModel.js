@@ -918,13 +918,23 @@ WebInspector.CSSStyleDeclaration.prototype = {
     },
 
     /**
+     * @param {number} index
+     * @return {!WebInspector.TextRange}
+     */
+    _insertionRange: function(index)
+    {
+        var property = this.propertyAt(index);
+        return property && property.range ? property.range.collapseToStart() : this.range.collapseToEnd();
+    },
+
+    /**
      * @param {number=} index
      * @return {!WebInspector.CSSProperty}
      */
     newBlankProperty: function(index)
     {
         index = (typeof index === "undefined") ? this.pastLastSourcePropertyIndex() : index;
-        var property = new WebInspector.CSSProperty(this, index, "", "", false, false, true, false, "");
+        var property = new WebInspector.CSSProperty(this, index, "", "", false, false, true, false, "", this._insertionRange(index));
         property._setActive(true);
         return property;
     },
@@ -959,7 +969,7 @@ WebInspector.CSSStyleDeclaration.prototype = {
             throw "No style id";
 
         this._cssModel._pendingCommandsMajorState.push(true);
-        this._cssModel._agent.setPropertyText(this.id, index, name + ": " + value + ";", false, callback.bind(this));
+        this._cssModel._agent.setPropertyText(this.id.styleSheetId, this._insertionRange(index), name + ": " + value + ";", callback.bind(this));
     },
 
     /**
@@ -1262,7 +1272,8 @@ WebInspector.CSSProperty.prototype = {
         // An index past all the properties adds a new property to the style.
         var cssModel = this.ownerStyle._cssModel;
         cssModel._pendingCommandsMajorState.push(majorChange);
-        cssModel._agent.setPropertyText(this.ownerStyle.id, this.index, propertyText, overwrite, callback.bind(this));
+        var range = /** @type {!WebInspector.TextRange} */ (this.range);
+        cssModel._agent.setPropertyText(this.ownerStyle.id.styleSheetId, overwrite ? range : range.collapseToStart(), propertyText, callback.bind(this));
     },
 
     /**

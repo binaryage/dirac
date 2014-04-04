@@ -2646,10 +2646,9 @@
             {
                 "name": "setPropertyText",
                 "parameters": [
-                    { "name": "styleId", "$ref": "CSSStyleId" },
-                    { "name": "propertyIndex", "type": "integer" },
-                    { "name": "text", "type": "string" },
-                    { "name": "overwrite", "type": "boolean" }
+                    { "name": "styleSheetId", "$ref": "StyleSheetId" },
+                    { "name": "range", "$ref": "SourceRange" },
+                    { "name": "text", "type": "string" }
                 ],
                 "returns": [
                     { "name": "style", "$ref": "CSSStyle", "description": "The resulting style after the property text modification." }
