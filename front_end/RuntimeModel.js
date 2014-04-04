@@ -61,7 +61,7 @@ WebInspector.RuntimeModel.prototype = {
         console.assert(this.target().isWorkerTarget(), "Worker context list was added in a non-worker target");
         var fakeContextList = new WebInspector.WorkerExecutionContextList(this.target(), "worker", url);
         this._addContextList(fakeContextList);
-        var fakeExecutionContext = new WebInspector.ExecutionContext(this.target(), "", url, true);
+        var fakeExecutionContext = new WebInspector.ExecutionContext(this.target(), 0, url, true);
         fakeContextList._addExecutionContext(fakeExecutionContext);
     },
 
@@ -442,7 +442,7 @@ WebInspector.RuntimeDispatcher.prototype = {
  * @constructor
  * @extends {WebInspector.TargetAware}
  * @param {!WebInspector.Target} target
- * @param {string} id
+ * @param {number} id
  * @param {string} name
  * @param {boolean} isPageContext
  */

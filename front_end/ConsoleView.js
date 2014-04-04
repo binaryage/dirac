@@ -47,6 +47,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._contentsElement.classList.add("console-view");
     this._visibleViewMessages = [];
     this._urlToMessageCount = {};
+    this._hiddenByFilterCount = 0;
 
     this._clearConsoleButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear console log."), "clear-status-bar-item");
     this._clearConsoleButton.addEventListener("click", this._requestClearMessages, this);
@@ -92,12 +93,19 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this.messagesElement.insertBefore(this.topGroup.element, this.promptElement);
     this.currentGroup = this.topGroup;
 
+    this._showAllMessagesCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Show all messages"));
+    this._showAllMessagesCheckbox._checkbox.checked = true;
+    this._showAllMessagesCheckbox._checkbox.addEventListener("change", this._updateMessageList.bind(this), false);
+
+    if (!WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
+        this._showAllMessagesCheckbox.element.classList.add("hidden");
+
+    statusBarElement.appendChild(this._showAllMessagesCheckbox.element);
+
     this._registerShortcuts();
     this.registerRequiredCSS("textPrompt.css");
 
     this.messagesElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), false);
-
-    WebInspector.settings.monitoringXHREnabled.addChangeListener(this._monitoringXHREnabledSettingChanged.bind(this));
 
     this._linkifier = new WebInspector.Linkifier();
 
@@ -173,9 +181,13 @@ WebInspector.ConsoleView.prototype = {
     {
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _consoleTimestampsSettingChanged: function(event)
     {
         var enabled = /** @type {boolean} */ (event.data);
+        this._updateMessageList();
         this._messageToViewMessage.values().forEach(function(viewMessage) {
             viewMessage.updateTimestamp(enabled);
         });
@@ -256,6 +268,8 @@ WebInspector.ConsoleView.prototype = {
         if (newContext)
             newContext.makeCurrent();
         this.prompt.clearAutoComplete(true);
+        if (!this._showAllMessagesCheckbox.checked())
+            this._updateMessageList();
     },
 
     /**
@@ -423,13 +437,10 @@ WebInspector.ConsoleView.prototype = {
         delete this._scrollIntoViewTimer;
     },
 
-    /**
-     * @param {number=} count
-     */
-    _updateFilterStatus: function(count) {
-        count = (typeof count === "undefined") ? (this._consoleMessages.length - this._visibleViewMessages.length) : count;
-        this._filterStatusTextElement.textContent = WebInspector.UIString(count == 1 ? "%d message is hidden by filters." : "%d messages are hidden by filters.", count);
-        this._filterStatusMessageElement.style.display = count ? "" : "none";
+    _updateFilterStatus: function()
+    {
+        this._filterStatusTextElement.textContent = WebInspector.UIString(this._hiddenByFilterCount === 1 ? "%d message is hidden by filters." : "%d messages are hidden by filters.", this._hiddenByFilterCount);
+        this._filterStatusMessageElement.style.display = this._hiddenByFilterCount ? "" : "none";
     },
 
     /**
@@ -442,20 +453,19 @@ WebInspector.ConsoleView.prototype = {
         else
             this._urlToMessageCount[message.url] = 1;
 
-        var previousMessage = this._consoleMessages.peekLast();
-        if (previousMessage && !message.isGroupMessage() && message.isEqual(previousMessage)) {
-            previousMessage.timestamp = message.timestamp;
-            this._messageToViewMessage.get(previousMessage).incrementRepeatCount();
+        var insertAt = insertionIndexForObjectInListSortedByFunction(message, this._consoleMessages, WebInspector.ConsoleMessage.timestampComparator, true);
+        this._consoleMessages.splice(insertAt, 0, message);
+
+        if (this._tryToCollapseMessages(message, this._visibleViewMessages.peekLast()))
             return;
-        }
 
-        this._consoleMessages.push(message);
-        var viewMessage = this._createViewMessage(message);
 
-        if (this._filter.shouldBeVisible(viewMessage))
-            this._showConsoleMessage(viewMessage);
-        else
+        if (this._filter.shouldBeVisible(message))
+            this._showConsoleMessage(this._viewMessageBy(message))
+        else {
+            this._hiddenByFilterCount++;
             this._updateFilterStatus();
+        }
     },
 
     /**
@@ -505,7 +515,7 @@ WebInspector.ConsoleView.prototype = {
      * @param {!WebInspector.ConsoleMessage} message
      * @return {!WebInspector.ConsoleViewMessage}
      */
-    _createViewMessage: function(message)
+    _viewMessageBy: function(message)
     {
         var viewMessage = this._messageToViewMessage.get(message);
         if (viewMessage)
@@ -522,7 +532,7 @@ WebInspector.ConsoleView.prototype = {
     {
         this._scrolledToBottom = true;
         this._clearCurrentSearchResultHighlight();
-        this._updateFilterStatus(0);
+        this._updateFilterStatus();
 
         for (var i = 0; i < this._visibleViewMessages.length; ++i)
             this._visibleViewMessages[i].willHide();
@@ -595,51 +605,81 @@ WebInspector.ConsoleView.prototype = {
         contextMenu.show();
     },
 
+    /**
+     * @param {!WebInspector.ConsoleMessage} message
+     * @param {?WebInspector.ConsoleViewMessage} viewMessage
+     * @return {boolean}
+     */
+    _tryToCollapseMessages: function(message, viewMessage)
+    {
+        if (!WebInspector.settings.consoleTimestampsEnabled.get() && viewMessage && !message.isGroupMessage() && message.isEqual(viewMessage.consoleMessage())) {
+            viewMessage.incrementRepeatCount();
+            return true;
+        }
+
+        return false;
+    },
+
     _updateMessageList: function()
     {
         var group = this.topGroup;
         var visibleMessageIndex = 0;
         var newVisibleMessages = [];
-
+        this._hiddenByFilterCount = 0;
         if (this._searchRegex)
             this._searchResults = [];
 
         var anchor = null;
         for (var i = 0; i < this._consoleMessages.length; ++i) {
             var sourceMessage = this._consoleMessages[i];
-            var sourceViewMessage = this._messageToViewMessage.get(sourceMessage);
             var visibleViewMessage = this._visibleViewMessages[visibleMessageIndex];
-
-            if (visibleViewMessage === sourceViewMessage) {
-                if (this._filter.shouldBeVisible(sourceViewMessage)) {
-                    newVisibleMessages.push(this._visibleViewMessages[visibleMessageIndex]);
-
-                    if (this._searchRegex && sourceViewMessage.matchesRegex(this._searchRegex))
-                        this._searchResults.push(sourceViewMessage);
-
-                    if (sourceMessage.type === WebInspector.ConsoleMessage.MessageType.EndGroup) {
-                        anchor = group.element;
-                        group = group.parentGroup || group;
-                    } else if (sourceMessage.type === WebInspector.ConsoleMessage.MessageType.StartGroup || sourceMessage.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed) {
-                        group = sourceViewMessage.group;
-                        anchor = group.messagesElement.firstChild;
-                    } else
-                        anchor = sourceViewMessage.toMessageElement();
-                } else {
-                    sourceViewMessage.willHide();
-                    sourceViewMessage.toMessageElement().remove();
-                }
+            var visibleMessage = visibleViewMessage ? visibleViewMessage.consoleMessage() : null;
+            var lastVisibleViewMessage = newVisibleMessages.peekLast();
+            if (visibleMessage === sourceMessage) {
                 ++visibleMessageIndex;
-            } else {
-                if (this._filter.shouldBeVisible(sourceViewMessage)) {
-
-                    if (this._searchRegex && sourceViewMessage.matchesRegex(this._searchRegex))
-                        this._searchResults.push(sourceViewMessage);
-
-                    group.addMessage(sourceViewMessage, anchor ? anchor.nextSibling : group.messagesElement.firstChild);
-                    newVisibleMessages.push(sourceViewMessage);
-                    anchor = sourceViewMessage.toMessageElement();
+                if (!this._filter.shouldBeVisible(visibleMessage)) {
+                    visibleViewMessage.willHide();
+                    visibleViewMessage.toMessageElement().remove();
+                    this._hiddenByFilterCount++;
+                    continue;
                 }
+
+                if (this._tryToCollapseMessages(visibleMessage, lastVisibleViewMessage)) {
+                    visibleViewMessage.willHide();
+                    visibleViewMessage.toMessageElement().remove();
+                    continue;
+                }
+
+                newVisibleMessages.push(visibleViewMessage);
+                visibleViewMessage.resetIncrementRepeatCount();
+
+                if (this._searchRegex && visibleViewMessage.matchesRegex(this._searchRegex))
+                    this._searchResults.push(visibleViewMessage);
+
+                if (visibleMessage.type === WebInspector.ConsoleMessage.MessageType.EndGroup) {
+                    anchor = group.element;
+                    group = group.parentGroup || group;
+                } else if (visibleMessage.type === WebInspector.ConsoleMessage.MessageType.StartGroup || visibleMessage.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed) {
+                    group = visibleViewMessage.group;
+                    anchor = group.messagesElement.firstChild;
+                } else
+                    anchor = visibleViewMessage.toMessageElement();
+            } else {
+                if (this._tryToCollapseMessages(sourceMessage, lastVisibleViewMessage))
+                    continue;
+
+                if (!this._filter.shouldBeVisible(sourceMessage)) {
+                    this._hiddenByFilterCount++;
+                    continue;
+                }
+                var sourceViewMessage = this._viewMessageBy(sourceMessage);
+                if (this._searchRegex && sourceViewMessage.matchesRegex(this._searchRegex))
+                    this._searchResults.push(sourceViewMessage);
+
+                group.addMessage(sourceViewMessage, anchor ? anchor.nextSibling : group.messagesElement.firstChild);
+                newVisibleMessages.push(sourceViewMessage);
+                sourceViewMessage.resetIncrementRepeatCount();
+                anchor = sourceViewMessage.toMessageElement();
             }
         }
 
@@ -650,9 +690,14 @@ WebInspector.ConsoleView.prototype = {
         this._updateFilterStatus();
     },
 
-    _monitoringXHREnabledSettingChanged: function(event)
+    /**
+     * @param {!WebInspector.Target} target
+     * @param {!WebInspector.Event} event
+     */
+    _monitoringXHREnabledSettingChanged: function(target, event)
     {
-        ConsoleAgent.setMonitoringXHREnabled(event.data);
+        var enabled = /** @type {boolean} */ (event.data);
+        WebInspector.targetManager.targets().forEach(function(target) {target.consoleAgent().setMonitoringXHREnabled(enabled);});
     },
 
     _messagesClicked: function()
@@ -962,14 +1007,15 @@ WebInspector.ConsoleViewFilter.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ConsoleViewMessage|undefined} viewMessage
+     * @param {!WebInspector.ConsoleMessage} message
      * @return {boolean}
      */
-    shouldBeVisible: function(viewMessage)
+    shouldBeVisible: function(message)
     {
-        if (!viewMessage)
+        var executionContext = this._view._currentExecutionContext();
+        if (!this._view._showAllMessagesCheckbox.checked() && (message.target() !== executionContext.target() || message.executionContextId !== executionContext.id))
             return false;
-        var message = viewMessage.consoleMessage();
+
         if ((message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed || message.type === WebInspector.ConsoleMessage.MessageType.EndGroup))
             return true;
 
@@ -984,6 +1030,7 @@ WebInspector.ConsoleViewFilter.prototype = {
 
         if (this._filterRegex) {
             this._filterRegex.lastIndex = 0;
+            var viewMessage = this._view._viewMessageBy(message);
             if (!viewMessage.matchesRegex(this._filterRegex))
                 return false;
         }
@@ -996,6 +1043,7 @@ WebInspector.ConsoleViewFilter.prototype = {
         this._messageURLFilters = {};
         WebInspector.settings.messageURLFilters.set(this._messageURLFilters);
         WebInspector.settings.messageLevelFilters.set({});
+        this._view._showAllMessagesCheckbox._checkbox.checked = true;
         this._filterChanged();
     },
 

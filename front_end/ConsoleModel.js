@@ -227,7 +227,7 @@ WebInspector.ConsoleMessage = function(target, source, level, messageText, type,
     this.stackTrace = stackTrace;
     this.timestamp = timestamp || Date.now();
     this.isOutdated = isOutdated;
-    this.executionContextId = executionContextId;
+    this.executionContextId = executionContextId || 0;
 
     this.request = requestId ? WebInspector.networkLog.requestForId(requestId) : null;
 }
@@ -280,7 +280,7 @@ WebInspector.ConsoleMessage.prototype = {
      */
     isEqual: function(msg)
     {
-        if (!msg || WebInspector.settings.consoleTimestampsEnabled.get())
+        if (!msg)
             return false;
 
         if (this.stackTrace) {
@@ -307,13 +307,15 @@ WebInspector.ConsoleMessage.prototype = {
             }
         }
 
-        return (this.source === msg.source)
+        return (this.target() == msg.target())
+            && (this.source === msg.source)
             && (this.type === msg.type)
             && (this.level === msg.level)
             && (this.line === msg.line)
             && (this.url === msg.url)
             && (this.messageText === msg.messageText)
-            && (this.request === msg.request);
+            && (this.request === msg.request)
+            && (this.executionContextId == msg.executionContextId);
     },
 
     __proto__: WebInspector.TargetAware.prototype
@@ -366,6 +368,16 @@ WebInspector.ConsoleMessage.MessageLevel = {
     Warning: "warning",
     Error: "error",
     Debug: "debug"
+}
+
+/**
+ * @param {!WebInspector.ConsoleMessage} a
+ * @param {!WebInspector.ConsoleMessage} b
+ * @return number
+ */
+WebInspector.ConsoleMessage.timestampComparator = function (a, b)
+{
+    return a.timestamp - b.timestamp;
 }
 
 /**
