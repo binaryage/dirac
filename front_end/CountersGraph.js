@@ -119,9 +119,7 @@ WebInspector.CountersGraph.prototype = {
 
     scheduleRefresh: function()
     {
-        if (this._refreshTimer)
-            return;
-        this._refreshTimer = setTimeout(this.refresh.bind(this), 300);
+        WebInspector.invokeOnceAfterBatchUpdate(this, this.refresh);
     },
 
     draw: function()
@@ -215,7 +213,6 @@ WebInspector.CountersGraph.prototype = {
 
     refresh: function()
     {
-        delete this._refreshTimer;
         this._timelineGrid.updateDividers(this._calculator);
         this.draw();
         this._refreshCurrentValues();
