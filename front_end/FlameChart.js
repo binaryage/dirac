@@ -623,8 +623,10 @@ WebInspector.FlameChart.prototype = {
             var barLevel = entryLevels[entryIndex];
             var barY = this._levelToHeight(barLevel);
             var text = this._dataProvider.entryTitle(entryIndex);
-            if (text && text.length)
+            if (text && text.length) {
+                context.font = this._dataProvider.entryFont(entryIndex);
                 text = this._prepareText(context, text, barWidth - 2 * textPadding);
+            }
 
             if (this._dataProvider.decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, offsetToPosition))
                 continue;
@@ -632,7 +634,6 @@ WebInspector.FlameChart.prototype = {
             if (!text || !text.length)
                 continue;
 
-            context.font = this._dataProvider.entryFont(entryIndex);
             context.fillStyle = this._dataProvider.textColor(entryIndex);
             context.fillText(text, barX + textPadding, textBaseHeight - barLevel * this._barHeightDelta);
         }
@@ -736,10 +737,16 @@ WebInspector.FlameChart.prototype = {
         if (text.length > 20)
             return context.measureText(text).width;
 
-        var width = this._textWidth[text];
+        var font = context.font;
+        var textWidths = this._textWidth[font];
+        if (!textWidths) {
+            textWidths = {};
+            this._textWidth[font] = textWidths;
+        }
+        var width = textWidths[text];
         if (!width) {
             width = context.measureText(text).width;
-            this._textWidth[text] = width;
+            textWidths[text] = width;
         }
         return width;
     },
