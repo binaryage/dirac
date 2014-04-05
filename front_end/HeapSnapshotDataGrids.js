@@ -133,7 +133,7 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
         {
             WebInspector.panels.profiles.showObject(node.snapshotNodeId, "Summary");
         }
-        if(node && node.showRetainingEdges) {
+        if(node instanceof WebInspector.HeapSnapshotRetainingObjectNode) {
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Summary view" : "Reveal in Summary View"), revealInSummaryView);
             contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Dominators view" : "Reveal in Dominators View"), revealInDominatorsView);
         }
@@ -620,6 +620,10 @@ WebInspector.HeapSnapshotContainmentDataGrid = function(columns)
 }
 
 WebInspector.HeapSnapshotContainmentDataGrid.prototype = {
+    /**
+     * @param {!WebInspector.HeapSnapshotProxy} snapshot
+     * @param {number} nodeIndex
+     */
     setDataSource: function(snapshot, nodeIndex)
     {
         this.snapshot = snapshot;
@@ -651,7 +655,6 @@ WebInspector.HeapSnapshotContainmentDataGrid.prototype = {
  */
 WebInspector.HeapSnapshotRetainmentDataGrid = function()
 {
-    this.showRetainingEdges = true;
     var columns = [
         {id: "object", title: WebInspector.UIString("Object"), disclosure: true, sortable: true},
         {id: "distance", title: WebInspector.UIString("Distance"), width: "80px", sortable: true, sort: WebInspector.DataGrid.Order.Ascending},

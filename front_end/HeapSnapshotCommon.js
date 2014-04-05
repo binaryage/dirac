@@ -114,6 +114,43 @@ WebInspector.HeapSnapshotCommon.AllocationStackFrame = function(functionName, sc
 
 /**
  * @constructor
+ * @param {string} id
+ * @param {string} name
+ * @param {number} distance
+ * @param {number|undefined} nodeIndex
+ * @param {number} retainedSize
+ * @param {number} selfSize
+ * @param {string} type
+ */
+WebInspector.HeapSnapshotCommon.Node = function(id, name, distance, nodeIndex, retainedSize, selfSize, type)
+{
+    this.id = id;
+    this.name = name;
+    this.distance = distance;
+    this.nodeIndex = nodeIndex;
+    this.retainedSize = retainedSize;
+    this.selfSize = selfSize;
+    this.type = type;
+
+    this.canBeQueried = false;
+    this.detachedDOMTreeNode = false;
+}
+
+/**
+ * @constructor
+ * @param {string} name
+ * @param {!WebInspector.HeapSnapshotCommon.Node} node
+ * @param {string} type
+ */
+WebInspector.HeapSnapshotCommon.Edge = function(name, node, type)
+{
+    this.name = name;
+    this.node = node;
+    this.type = type;
+};
+
+/**
+ * @constructor
  */
 WebInspector.HeapSnapshotCommon.Aggregate = function()
 {

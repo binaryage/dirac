@@ -683,16 +683,17 @@ WebInspector.HeapSnapshotGenericObjectNode.prototype = {
  * @extends {WebInspector.HeapSnapshotGenericObjectNode}
  * @param {!WebInspector.HeapSnapshotSortableDataGrid} dataGrid
  * @param {!WebInspector.HeapSnapshotProxy} snapshot
+ * @param {!WebInspector.HeapSnapshotCommon.Edge} edge
+ * @param {?WebInspector.HeapSnapshotObjectNode} parentObjectNode
  */
-WebInspector.HeapSnapshotObjectNode = function(dataGrid, snapshot, edge, parentGridNode)
+WebInspector.HeapSnapshotObjectNode = function(dataGrid, snapshot, edge, parentObjectNode)
 {
     WebInspector.HeapSnapshotGenericObjectNode.call(this, dataGrid, edge.node);
     this._referenceName = edge.name;
     this._referenceType = edge.type;
-    this.showRetainingEdges = dataGrid.showRetainingEdges;
     this._snapshot = snapshot;
 
-    this._parentGridNode = parentGridNode;
+    this._parentObjectNode = parentObjectNode;
     this._cycledWithAncestorGridNode = this._findAncestorWithSameSnapshotNodeId();
     if (!this._cycledWithAncestorGridNode)
         this.updateHasChildren();
@@ -721,24 +722,24 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
      */
     createProvider: function()
     {
-        var tree = this._dataGrid;
-        if (this.showRetainingEdges)
-            return this._snapshot.createRetainingEdgesProvider(this.snapshotNodeIndex);
-        else
-            return this._snapshot.createEdgesProvider(this.snapshotNodeIndex);
+        return this._snapshot.createEdgesProvider(this.snapshotNodeIndex);
     },
 
     _findAncestorWithSameSnapshotNodeId: function()
     {
-        var ancestor = this._parentGridNode;
+        var ancestor = this._parentObjectNode;
         while (ancestor) {
             if (ancestor.snapshotNodeId === this.snapshotNodeId)
                 return ancestor;
-            ancestor = ancestor._parentGridNode;
+            ancestor = ancestor._parentObjectNode;
         }
         return null;
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.Edge} item
+     * @return {!WebInspector.HeapSnapshotObjectNode}
+     */
     _createChildNode: function(item)
     {
         return new WebInspector.HeapSnapshotObjectNode(this._dataGrid, this._snapshot, item, this);
@@ -746,14 +747,12 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
 
     _childHashForEntity: function(edge)
     {
-        var prefix = this.showRetainingEdges ? edge.node.id + "#" : "";
-        return prefix + edge.type + "#" + edge.name;
+        return edge.type + "#" + edge.name;
     },
 
     _childHashForNode: function(childNode)
     {
-        var prefix = this.showRetainingEdges ? childNode.snapshotNodeId + "#" : "";
-        return prefix + childNode._referenceType + "#" + childNode._referenceName;
+        return childNode._referenceType + "#" + childNode._referenceName;
     },
 
     /**
@@ -802,8 +801,16 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
 
         var separatorSpan = document.createElement("span");
         separatorSpan.className = "grayed";
-        separatorSpan.textContent = this.showRetainingEdges ? " in " : " :: ";
+        separatorSpan.textContent = this._edgeNodeSeparator();
         div.appendChild(separatorSpan);
+    },
+
+    /**
+     * @return {string}
+     */
+    _edgeNodeSeparator: function()
+    {
+        return " :: ";
     },
 
     __proto__: WebInspector.HeapSnapshotGenericObjectNode.prototype
@@ -814,16 +821,50 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
  * @extends {WebInspector.HeapSnapshotObjectNode}
  * @param {!WebInspector.HeapSnapshotSortableDataGrid} dataGrid
  * @param {!WebInspector.HeapSnapshotProxy} snapshot
+ * @param {!WebInspector.HeapSnapshotCommon.Edge} edge
+ * @param {?WebInspector.HeapSnapshotRetainingObjectNode} parentRetainingObjectNode
  */
-WebInspector.HeapSnapshotRetainingObjectNode = function(dataGrid, snapshot, edge, parentGridNode)
+WebInspector.HeapSnapshotRetainingObjectNode = function(dataGrid, snapshot, edge, parentRetainingObjectNode)
 {
-    WebInspector.HeapSnapshotObjectNode.call(this, dataGrid, snapshot, edge, parentGridNode);
+    WebInspector.HeapSnapshotObjectNode.call(this, dataGrid, snapshot, edge, parentRetainingObjectNode);
 }
 
 WebInspector.HeapSnapshotRetainingObjectNode.prototype = {
+    /**
+     * @return {!WebInspector.HeapSnapshotProviderProxy}
+     */
+    createProvider: function()
+    {
+        return this._snapshot.createRetainingEdgesProvider(this.snapshotNodeIndex);
+    },
+
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.Edge} item
+     * @return {!WebInspector.HeapSnapshotRetainingObjectNode}
+     */
     _createChildNode: function(item)
     {
         return new WebInspector.HeapSnapshotRetainingObjectNode(this._dataGrid, this._snapshot, item, this);
+    },
+
+    _childHashForEntity: function(edge)
+    {
+        var result = WebInspector.HeapSnapshotObjectNode.prototype._childHashForEntity.call(this, edge);
+        return edge.node.id + "#" + result;
+    },
+
+    _childHashForNode: function(childNode)
+    {
+        var result = WebInspector.HeapSnapshotObjectNode.prototype._childHashForNode.call(this, childNode);
+        return childNode.snapshotNodeId + "#" + result;
+    },
+
+    /**
+     * @return {string}
+     */
+    _edgeNodeSeparator: function()
+    {
+        return " in ";
     },
 
     expand: function()
@@ -912,6 +953,10 @@ WebInspector.HeapSnapshotInstanceNode.prototype = {
         return this._baseSnapshotOrSnapshot.createEdgesProvider(this.snapshotNodeIndex);
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.Edge} item
+     * @return {!WebInspector.HeapSnapshotObjectNode}
+     */
     _createChildNode: function(item)
     {
         return new WebInspector.HeapSnapshotObjectNode(this._dataGrid, this._baseSnapshotOrSnapshot, item, null);
@@ -1061,6 +1106,10 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
         return cell;
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.Node} item
+     * @return {!WebInspector.HeapSnapshotInstanceNode}
+     */
     _createChildNode: function(item)
     {
         return new WebInspector.HeapSnapshotInstanceNode(this._dataGrid, this._dataGrid.snapshot, item, false);
@@ -1268,6 +1317,10 @@ WebInspector.HeapSnapshotDiffNode.prototype = {
         return cell;
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.Node} item
+     * @return {!WebInspector.HeapSnapshotInstanceNode}
+     */
     _createChildNode: function(item)
     {
         if (item.isAddedNotRemoved)

@@ -58,21 +58,6 @@ WebInspector.HeapSnapshotEdge = function(snapshot, edgeIndex)
     this.edgeIndex = edgeIndex || 0;
 }
 
-/**
- * @constructor
- * @param {string} name
- * @param {!WebInspector.HeapSnapshotNode.Serialized} node
- * @param {number} nodeIndex
- * @param {string} type
- */
-WebInspector.HeapSnapshotEdge.Serialized = function(name, node, nodeIndex, type)
-{
-    this.name = name;
-    this.node = node;
-    this.nodeIndex = nodeIndex;
-    this.type = type;
-};
-
 WebInspector.HeapSnapshotEdge.prototype = {
     /**
      * @return {!WebInspector.HeapSnapshotEdge}
@@ -141,12 +126,12 @@ WebInspector.HeapSnapshotEdge.prototype = {
 
     /**
      * @override
-     * @return {!WebInspector.HeapSnapshotEdge.Serialized}
+     * @return {!WebInspector.HeapSnapshotCommon.Edge}
      */
     serialize: function()
     {
         var node = this.node();
-        return new WebInspector.HeapSnapshotEdge.Serialized(this.name(), node.serialize(), this.nodeIndex(), this.type());
+        return new WebInspector.HeapSnapshotCommon.Edge(this.name(), node.serialize(), this.type());
     },
 
     _type: function()
@@ -304,20 +289,6 @@ WebInspector.HeapSnapshotRetainerEdge = function(snapshot, retainerIndex)
     this.setRetainerIndex(retainerIndex);
 }
 
-/**
- * @constructor
- * @param {string} name
- * @param {!WebInspector.HeapSnapshotNode.Serialized} node
- * @param {number} nodeIndex
- * @param {string} type
- */
-WebInspector.HeapSnapshotRetainerEdge.Serialized = function(name, node, nodeIndex, type) {
-    this.name = name;
-    this.node = node;
-    this.nodeIndex = nodeIndex;
-    this.type = type;
-}
-
 WebInspector.HeapSnapshotRetainerEdge.prototype = {
     /**
      * @return {!WebInspector.HeapSnapshotRetainerEdge}
@@ -422,12 +393,11 @@ WebInspector.HeapSnapshotRetainerEdge.prototype = {
 
     /**
      * @override
-     * @return {!WebInspector.HeapSnapshotRetainerEdge.Serialized}
+     * @return {!WebInspector.HeapSnapshotCommon.Edge}
      */
     serialize: function()
     {
-        var node = this.node();
-        return new WebInspector.HeapSnapshotRetainerEdge.Serialized(this.name(), node.serialize(), this.nodeIndex(), this.type());
+        return new WebInspector.HeapSnapshotCommon.Edge(this.name(), this.node().serialize(), this.type());
     },
 
     /**
@@ -486,26 +456,6 @@ WebInspector.HeapSnapshotNode = function(snapshot, nodeIndex)
 {
     this._snapshot = snapshot;
     this.nodeIndex = nodeIndex || 0;
-}
-
-/**
- * @constructor
- * @param {string} id
- * @param {string} name
- * @param {number} distance
- * @param {number|undefined} nodeIndex
- * @param {number} retainedSize
- * @param {number} selfSize
- * @param {string} type
- */
-WebInspector.HeapSnapshotNode.Serialized = function(id, name, distance, nodeIndex, retainedSize, selfSize, type) {
-    this.id = id;
-    this.name = name;
-    this.distance = distance;
-    this.nodeIndex = nodeIndex;
-    this.retainedSize = retainedSize;
-    this.selfSize = selfSize;
-    this.type = type;
 }
 
 WebInspector.HeapSnapshotNode.prototype = {
@@ -642,11 +592,11 @@ WebInspector.HeapSnapshotNode.prototype = {
 
     /**
      * @override
-     * @return {!WebInspector.HeapSnapshotNode.Serialized}
+     * @return {!WebInspector.HeapSnapshotCommon.Node}
      */
     serialize: function()
     {
-        return new WebInspector.HeapSnapshotNode.Serialized(this.id(), this.name(), this.distance(), this.nodeIndex, this.retainedSize(), this.selfSize(), this.type());
+        return new WebInspector.HeapSnapshotCommon.Node(this.id(), this.name(), this.distance(), this.nodeIndex, this.retainedSize(), this.selfSize(), this.type());
     },
 
     /**

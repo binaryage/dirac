@@ -602,7 +602,7 @@ WebInspector.JSHeapSnapshotNode.prototype = {
     },
 
     /**
-     * @return {!WebInspector.HeapSnapshotNode.Serialized}
+     * @return {!WebInspector.HeapSnapshotCommon.Node}
      */
     serialize: function()
     {
