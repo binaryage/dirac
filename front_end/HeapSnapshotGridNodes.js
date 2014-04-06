@@ -691,6 +691,7 @@ WebInspector.HeapSnapshotObjectNode = function(dataGrid, snapshot, edge, parentO
     WebInspector.HeapSnapshotGenericObjectNode.call(this, dataGrid, edge.node);
     this._referenceName = edge.name;
     this._referenceType = edge.type;
+    this._edgeIndex = edge.edgeIndex;
     this._snapshot = snapshot;
 
     this._parentObjectNode = parentObjectNode;
@@ -745,14 +746,22 @@ WebInspector.HeapSnapshotObjectNode.prototype = {
         return new WebInspector.HeapSnapshotObjectNode(this._dataGrid, this._snapshot, item, this);
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.Edge} edge
+     * @return {number}
+     */
     _childHashForEntity: function(edge)
     {
-        return edge.type + "#" + edge.name;
+        return edge.edgeIndex;
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotObjectNode} childNode
+     * @return {number}
+     */
     _childHashForNode: function(childNode)
     {
-        return childNode._referenceType + "#" + childNode._referenceName;
+        return childNode._edgeIndex;
     },
 
     /**
@@ -845,18 +854,6 @@ WebInspector.HeapSnapshotRetainingObjectNode.prototype = {
     _createChildNode: function(item)
     {
         return new WebInspector.HeapSnapshotRetainingObjectNode(this._dataGrid, this._snapshot, item, this);
-    },
-
-    _childHashForEntity: function(edge)
-    {
-        var result = WebInspector.HeapSnapshotObjectNode.prototype._childHashForEntity.call(this, edge);
-        return edge.node.id + "#" + result;
-    },
-
-    _childHashForNode: function(childNode)
-    {
-        var result = WebInspector.HeapSnapshotObjectNode.prototype._childHashForNode.call(this, childNode);
-        return childNode.snapshotNodeId + "#" + result;
     },
 
     /**
@@ -962,14 +959,22 @@ WebInspector.HeapSnapshotInstanceNode.prototype = {
         return new WebInspector.HeapSnapshotObjectNode(this._dataGrid, this._baseSnapshotOrSnapshot, item, null);
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.Edge} edge
+     * @return {number}
+     */
     _childHashForEntity: function(edge)
     {
-        return edge.type + "#" + edge.name;
+        return edge.edgeIndex;
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotObjectNode} childNode
+     * @return {number}
+     */
     _childHashForNode: function(childNode)
     {
-        return childNode._referenceType + "#" + childNode._referenceName;
+        return childNode._edgeIndex;
     },
 
     /**
@@ -1132,11 +1137,19 @@ WebInspector.HeapSnapshotConstructorNode.prototype = {
         return WebInspector.HeapSnapshotGridNode.createComparator(sortFields);
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.Node} node
+     * @return {number}
+     */
     _childHashForEntity: function(node)
     {
         return node.id;
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotInstanceNode} childNode
+     * @return {number}
+     */
     _childHashForNode: function(childNode)
     {
         return childNode.snapshotNodeId;
@@ -1329,11 +1342,19 @@ WebInspector.HeapSnapshotDiffNode.prototype = {
             return new WebInspector.HeapSnapshotInstanceNode(this._dataGrid, this._dataGrid.baseSnapshot, item, true);
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.Node} node
+     * @return {number}
+     */
     _childHashForEntity: function(node)
     {
         return node.id;
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotInstanceNode} childNode
+     * @return {number}
+     */
     _childHashForNode: function(childNode)
     {
         return childNode.snapshotNodeId;
@@ -1448,11 +1469,19 @@ WebInspector.HeapSnapshotDominatorObjectNode.prototype = {
         return new WebInspector.HeapSnapshotDominatorObjectNode(this._dataGrid, item);
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotCommon.Node} node
+     * @return {number}
+     */
     _childHashForEntity: function(node)
     {
         return node.id;
     },
 
+    /**
+     * @param {!WebInspector.HeapSnapshotDominatorObjectNode} childNode
+     * @return {number}
+     */
     _childHashForNode: function(childNode)
     {
         return childNode.snapshotNodeId;

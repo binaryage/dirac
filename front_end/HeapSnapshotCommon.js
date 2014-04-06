@@ -114,7 +114,7 @@ WebInspector.HeapSnapshotCommon.AllocationStackFrame = function(functionName, sc
 
 /**
  * @constructor
- * @param {string} id
+ * @param {number} id
  * @param {string} name
  * @param {number} distance
  * @param {number|undefined} nodeIndex
@@ -141,12 +141,14 @@ WebInspector.HeapSnapshotCommon.Node = function(id, name, distance, nodeIndex, r
  * @param {string} name
  * @param {!WebInspector.HeapSnapshotCommon.Node} node
  * @param {string} type
+ * @param {number} edgeIndex
  */
-WebInspector.HeapSnapshotCommon.Edge = function(name, node, type)
+WebInspector.HeapSnapshotCommon.Edge = function(name, node, type, edgeIndex)
 {
     this.name = name;
     this.node = node;
     this.type = type;
+    this.edgeIndex = edgeIndex;
 };
 
 /**

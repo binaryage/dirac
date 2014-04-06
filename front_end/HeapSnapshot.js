@@ -130,8 +130,7 @@ WebInspector.HeapSnapshotEdge.prototype = {
      */
     serialize: function()
     {
-        var node = this.node();
-        return new WebInspector.HeapSnapshotCommon.Edge(this.name(), node.serialize(), this.type());
+        return new WebInspector.HeapSnapshotCommon.Edge(this.name(), this.node().serialize(), this.type(), this.edgeIndex);
     },
 
     _type: function()
@@ -397,7 +396,7 @@ WebInspector.HeapSnapshotRetainerEdge.prototype = {
      */
     serialize: function()
     {
-        return new WebInspector.HeapSnapshotCommon.Edge(this.name(), this.node().serialize(), this.type());
+        return new WebInspector.HeapSnapshotCommon.Edge(this.name(), this.node().serialize(), this.type(), this._globalEdgeIndex);
     },
 
     /**
@@ -508,6 +507,9 @@ WebInspector.HeapSnapshotNode.prototype = {
         return (this._edgeIndexesEnd() - this._edgeIndexesStart()) / this._snapshot._edgeFieldsCount;
     },
 
+    /**
+     * @return {number}
+     */
     id: function()
     {
         throw new Error("Not implemented");

@@ -561,7 +561,7 @@ WebInspector.JSHeapSnapshotNode.prototype = {
     },
 
     /**
-     * @return {string}
+     * @return {number}
      */
     id: function()
     {
