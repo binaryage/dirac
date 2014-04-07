@@ -523,7 +523,7 @@ WebInspector.StylesSidebarPane.prototype = {
             // Add rules in reverse order to match the cascade order.
             for (var j = pseudoElementCSSRules.rules.length - 1; j >= 0; --j) {
                 var rule = pseudoElementCSSRules.rules[j];
-                styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, sourceURL: rule.resourceURL(), rule: rule, editable: !!(rule.style && rule.style.id) });
+                styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, sourceURL: rule.resourceURL(), rule: rule, editable: !!(rule.style && rule.style.styleSheetId) });
             }
             usedProperties = {};
             this._markUsedProperties(styleRules, usedProperties);
@@ -550,7 +550,7 @@ WebInspector.StylesSidebarPane.prototype = {
                 continue;
             if (section.computedStyle)
                 section.styleRule.style = nodeComputedStyle;
-            var styleRule = { section: section, style: section.styleRule.style, computedStyle: section.computedStyle, rule: section.rule, editable: !!(section.styleRule.style && section.styleRule.style.id),
+            var styleRule = { section: section, style: section.styleRule.style, computedStyle: section.computedStyle, rule: section.rule, editable: !!(section.styleRule.style && section.styleRule.style.styleSheetId),
                 isAttribute: section.styleRule.isAttribute, isInherited: section.styleRule.isInherited, parentNode: section.styleRule.parentNode };
             styleRules.push(styleRule);
         }
@@ -593,7 +593,7 @@ WebInspector.StylesSidebarPane.prototype = {
                 addedAttributesStyle = true;
                 addAttributesStyle();
             }
-            styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, sourceURL: rule.resourceURL(), rule: rule, editable: !!(rule.style && rule.style.id) });
+            styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, sourceURL: rule.resourceURL(), rule: rule, editable: !!(rule.style && rule.style.styleSheetId) });
         }
 
         if (!addedAttributesStyle)
@@ -633,7 +633,7 @@ WebInspector.StylesSidebarPane.prototype = {
                     insertInheritedNodeSeparator(parentNode);
                     separatorInserted = true;
                 }
-                styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, sourceURL: rule.resourceURL(), rule: rule, isInherited: true, parentNode: parentNode, editable: !!(rule.style && rule.style.id) });
+                styleRules.push({ style: rule.style, selectorText: rule.selectorText, media: rule.media, sourceURL: rule.resourceURL(), rule: rule, isInherited: true, parentNode: parentNode, editable: !!(rule.style && rule.style.styleSheetId) });
             }
             parentNode = parentNode.parentNode;
         }
@@ -1117,7 +1117,7 @@ WebInspector.StylePropertiesSection = function(parentPane, styleRule, editable, 
             this.editable = false;
         else {
             // Check this is a real CSSRule, not a bogus object coming from WebInspector.BlankStylePropertiesSection.
-            if (this.rule.id)
+            if (this.rule.styleSheetId)
                 this.navigable = !!this.rule.resourceURL();
         }
         this.titleElement.classList.add("styles-selector");
@@ -1152,10 +1152,10 @@ WebInspector.StylePropertiesSection.prototype = {
      */
     _styleSheetRuleEdited: function(editedRule, oldRange, newRange)
     {
-        if (!this.rule || !this.rule.id)
+        if (!this.rule || !this.rule.styleSheetId)
             return;
         if (this.rule !== editedRule)
-            this.rule.sourceStyleSheetEdited(this.rule.id.styleSheetId, oldRange, newRange);
+            this.rule.sourceStyleSheetEdited(this.rule.styleSheetId, oldRange, newRange);
         this._updateMediaList();
         this._updateRuleOrigin();
     },
@@ -1451,7 +1451,7 @@ WebInspector.StylePropertiesSection.prototype = {
             var matchingSelectorClass = isSelectorMatching ? " selector-matches" : "";
             var selectorElement = document.createElement("span");
             selectorElement.className = "simple-selector" + matchingSelectorClass;
-            if (rule.id)
+            if (rule.styleSheetId)
                 selectorElement._selectorIndex = i;
             selectorElement.textContent = selectors[i].value;
 
@@ -1523,7 +1523,7 @@ WebInspector.StylePropertiesSection.prototype = {
         if (this.styleRule.sourceURL) {
             var firstMatchingIndex = this.styleRule.rule.matchingSelectors && this.rule.matchingSelectors.length ? this.rule.matchingSelectors[0] : 0;
             var matchingSelectorLocation = new WebInspector.CSSLocation(this._parentPane._target, this.styleRule.sourceURL, this.rule.lineNumberInSource(firstMatchingIndex), this.rule.columnNumberInSource(firstMatchingIndex));
-            return this._parentPane._linkifier.linkifyCSSLocation(this.rule.id.styleSheetId, matchingSelectorLocation) || linkifyUncopyable(this.styleRule.sourceURL, this.rule.lineNumberInSource());
+            return this._parentPane._linkifier.linkifyCSSLocation(this.rule.styleSheetId, matchingSelectorLocation) || linkifyUncopyable(this.styleRule.sourceURL, this.rule.lineNumberInSource());
         }
 
         if (!this.rule)
@@ -1566,7 +1566,7 @@ WebInspector.StylePropertiesSection.prototype = {
     {
         if (WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) && this.navigable && event.target.classList.contains("simple-selector")) {
             var index = event.target._selectorIndex;
-            var styleSheetHeader = this._parentPane._target.cssModel.styleSheetHeaderForId(this.rule.id.styleSheetId);
+            var styleSheetHeader = this._parentPane._target.cssModel.styleSheetHeaderForId(this.rule.styleSheetId);
             var uiLocation = styleSheetHeader.rawLocationToUILocation(this.rule.lineNumberInSource(index), this.rule.columnNumberInSource(index));
             WebInspector.Revealer.reveal(uiLocation);
             return;

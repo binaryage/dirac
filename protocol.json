@@ -2392,28 +2392,10 @@
                 "type": "string"
             },
             {
-                "id": "CSSStyleId",
-                "type": "object",
-                "properties": [
-                    { "name": "styleSheetId", "$ref": "StyleSheetId", "description": "Enclosing stylesheet identifier." },
-                    { "name": "ordinal", "type": "integer", "description": "The style ordinal within the stylesheet." }
-                ],
-                "description": "This object identifies a CSS style in a unique way."
-            },
-            {
                 "id": "StyleSheetOrigin",
                 "type": "string",
                 "enum": ["user", "user-agent", "inspector", "regular"],
                 "description": "Stylesheet type: \"user\" for user stylesheets, \"user-agent\" for user-agent stylesheets, \"inspector\" for stylesheets created by the inspector (i.e. those holding the \"via inspector\" rules), \"regular\" for regular stylesheets."
-            },
-            {
-                "id": "CSSRuleId",
-                "type": "object",
-                "properties": [
-                    { "name": "styleSheetId", "$ref": "StyleSheetId", "description": "Enclosing stylesheet identifier." },
-                    { "name": "ordinal", "type": "integer", "description": "The rule ordinal within the stylesheet." }
-                ],
-                "description": "This object identifies a CSS rule in a unique way."
             },
             {
                 "id": "PseudoIdMatches",
@@ -2482,7 +2464,7 @@
                 "id": "CSSRule",
                 "type": "object",
                 "properties": [
-                    { "name": "ruleId", "$ref": "CSSRuleId", "optional": true, "description": "The CSS rule identifier (absent for user agent stylesheet and user-specified stylesheet rules)."},
+                    { "name": "styleSheetId", "$ref": "StyleSheetId", "optional": true, "description": "The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from." },
                     { "name": "selectorList", "$ref": "SelectorList", "description": "Rule selector data." },
                     { "name": "sourceURL", "type": "string", "optional": true, "description": "Parent stylesheet resource URL (for regular rules)."},
                     { "name": "origin", "$ref": "StyleSheetOrigin", "description": "Parent stylesheet's origin."},
@@ -2522,7 +2504,7 @@
                 "id": "CSSStyle",
                 "type": "object",
                 "properties": [
-                    { "name": "styleId", "$ref": "CSSStyleId", "optional": true, "description": "The CSS style identifier (absent for attribute styles)." },
+                    { "name": "styleSheetId", "$ref": "StyleSheetId", "optional": true, "description": "The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from." },
                     { "name": "cssProperties", "type": "array", "items": { "$ref": "CSSProperty" }, "description": "CSS properties in the style." },
                     { "name": "shorthandEntries", "type": "array", "items": { "$ref": "ShorthandEntry" }, "description": "Computed values for all shorthands found in the style." },
                     { "name": "cssText", "type": "string", "optional": true, "description": "Style declaration text (if available)." },
@@ -2641,7 +2623,7 @@
                     { "name": "styleSheetId", "$ref": "StyleSheetId" },
                     { "name": "text", "type": "string" }
                 ],
-                "description": "Sets the new stylesheet text, thereby invalidating all existing <code>CSSStyleId</code>'s and <code>CSSRuleId</code>'s contained by this stylesheet."
+                "description": "Sets the new stylesheet text."
             },
             {
                 "name": "setPropertyText",

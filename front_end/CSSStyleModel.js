@@ -273,8 +273,10 @@ WebInspector.CSSStyleModel.prototype = {
             this._computeMatchingSelectors(rulePayload, nodeId, successCallback, failureCallback);
         }
 
+        if (!rule.styleSheetId)
+            throw "No rule stylesheet id";
         this._pendingCommandsMajorState.push(true);
-        this._agent.setRuleSelector(rule.id.styleSheetId, rule.selectorRange, newSelector, callback.bind(this, nodeId, successCallback, failureCallback, newSelector));
+        this._agent.setRuleSelector(rule.styleSheetId, rule.selectorRange, newSelector, callback.bind(this, nodeId, successCallback, failureCallback, newSelector));
     },
 
     /**
@@ -728,7 +730,7 @@ WebInspector.CSSLocation.prototype = {
 WebInspector.CSSStyleDeclaration = function(cssModel, payload)
 {
     this._cssModel = cssModel;
-    this.id = payload.styleId;
+    this.styleSheetId = payload.styleSheetId;
     this.width = payload.width;
     this.height = payload.height;
     this.range = payload.range ? WebInspector.TextRange.fromObject(payload.range) : null;
@@ -807,7 +809,7 @@ WebInspector.CSSStyleDeclaration.prototype = {
      */
     sourceStyleSheetEdited: function(styleSheetId, oldRange, newRange)
     {
-        if (!this.id || this.id.styleSheetId !== styleSheetId)
+        if (this.styleSheetId !== styleSheetId)
             return;
         if (this.range)
             this.range = this.range.rebaseAfterTextEdit(oldRange, newRange);
@@ -964,11 +966,11 @@ WebInspector.CSSStyleDeclaration.prototype = {
                 userCallback(WebInspector.CSSStyleDeclaration.parsePayload(this._cssModel, payload));
         }
 
-        if (!this.id)
-            throw "No style id";
+        if (!this.styleSheetId)
+            throw "No stylesheet id";
 
         this._cssModel._pendingCommandsMajorState.push(true);
-        this._cssModel._agent.setPropertyText(this.id.styleSheetId, this._insertionRange(index), name + ": " + value + ";", callback.bind(this));
+        this._cssModel._agent.setPropertyText(this.styleSheetId, this._insertionRange(index), name + ": " + value + ";", callback.bind(this));
     },
 
     /**
@@ -991,7 +993,7 @@ WebInspector.CSSStyleDeclaration.prototype = {
 WebInspector.CSSRule = function(cssModel, payload, matchingSelectors)
 {
     this._cssModel = cssModel;
-    this.id = payload.ruleId;
+    this.styleSheetId = payload.styleSheetId;
     if (matchingSelectors)
         this.matchingSelectors = matchingSelectors;
     this.selectors = payload.selectorList.selectors;
@@ -1035,7 +1037,7 @@ WebInspector.CSSRule.prototype = {
      */
     sourceStyleSheetEdited: function(styleSheetId, oldRange, newRange)
     {
-        if (this.id && this.id.styleSheetId === styleSheetId) {
+        if (this.styleSheetId === styleSheetId) {
             if (this.selectorRange)
                 this.selectorRange = this.selectorRange.rebaseAfterTextEdit(oldRange, newRange);
             for (var i = 0; i < this.selectors.length; ++i) {
@@ -1053,9 +1055,9 @@ WebInspector.CSSRule.prototype = {
 
     _setRawLocationAndFrameId: function()
     {
-        if (!this.id)
+        if (!this.styleSheetId)
             return;
-        var styleSheetHeader = this._cssModel.styleSheetHeaderForId(this.id.styleSheetId);
+        var styleSheetHeader = this._cssModel.styleSheetHeaderForId(this.styleSheetId);
         this.frameId = styleSheetHeader.frameId;
         var url = styleSheetHeader.resourceURL();
         if (!url)
@@ -1068,9 +1070,9 @@ WebInspector.CSSRule.prototype = {
      */
     resourceURL: function()
     {
-        if (!this.id)
+        if (!this.styleSheetId)
             return "";
-        var styleSheetHeader = this._cssModel.styleSheetHeaderForId(this.id.styleSheetId);
+        var styleSheetHeader = this._cssModel.styleSheetHeaderForId(this.styleSheetId);
         return styleSheetHeader.resourceURL();
     },
 
@@ -1081,9 +1083,9 @@ WebInspector.CSSRule.prototype = {
     lineNumberInSource: function(selectorIndex)
     {
         var selector = this.selectors[selectorIndex];
-        if (!selector || !selector.range)
+        if (!selector || !selector.range || !this.styleSheetId)
             return 0;
-        var styleSheetHeader = this._cssModel.styleSheetHeaderForId(this.id.styleSheetId);
+        var styleSheetHeader = this._cssModel.styleSheetHeaderForId(this.styleSheetId);
         return styleSheetHeader.lineNumberInSource(selector.range.startLine);
     },
 
@@ -1094,9 +1096,9 @@ WebInspector.CSSRule.prototype = {
     columnNumberInSource: function(selectorIndex)
     {
         var selector = this.selectors[selectorIndex];
-        if (!selector || !selector.range)
+        if (!selector || !selector.range || !this.styleSheetId)
             return undefined;
-        var styleSheetHeader = this._cssModel.styleSheetHeaderForId(this.id.styleSheetId);
+        var styleSheetHeader = this._cssModel.styleSheetHeaderForId(this.styleSheetId);
         console.assert(styleSheetHeader);
         return styleSheetHeader.columnNumberInSource(selector.range.startLine, selector.range.startColumn);
     },
@@ -1175,7 +1177,7 @@ WebInspector.CSSProperty.prototype = {
      */
     sourceStyleSheetEdited: function(styleSheetId, oldRange, newRange)
     {
-        if (!this.ownerStyle.id || this.ownerStyle.id.styleSheetId !== styleSheetId)
+        if (this.ownerStyle.styleSheetId !== styleSheetId)
             return;
         if (this.range)
             this.range = this.range.rebaseAfterTextEdit(oldRange, newRange);
@@ -1265,14 +1267,14 @@ WebInspector.CSSProperty.prototype = {
         if (!this.ownerStyle)
             throw "No ownerStyle for property";
 
-        if (!this.ownerStyle.id)
+        if (!this.ownerStyle.styleSheetId)
             throw "No owner style id";
 
         // An index past all the properties adds a new property to the style.
         var cssModel = this.ownerStyle._cssModel;
         cssModel._pendingCommandsMajorState.push(majorChange);
         var range = /** @type {!WebInspector.TextRange} */ (this.range);
-        cssModel._agent.setPropertyText(this.ownerStyle.id.styleSheetId, overwrite ? range : range.collapseToStart(), propertyText, callback.bind(this));
+        cssModel._agent.setPropertyText(this.ownerStyle.styleSheetId, overwrite ? range : range.collapseToStart(), propertyText, callback.bind(this));
     },
 
     /**
