@@ -1547,7 +1547,7 @@ WebInspector.CodeMirrorTextEditor.BlockIndentController.prototype = {
         }
 
         codeMirror.replaceRange("}", cursor);
-        var matchingBracket = codeMirror.findMatchingBracket();
+        var matchingBracket = codeMirror.findMatchingBracket(cursor);
         if (!matchingBracket || !matchingBracket.match)
             return;
 
