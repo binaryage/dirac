@@ -38,7 +38,7 @@ WebInspector.FlameChartDelegate.prototype = {
      * @param {number} startTime
      * @param {number} endTime
      */
-    requestWindowTimes: function(startTime, endTime) { },
+    requestWindowTimes: function(startTime, endTime) { }
 }
 
 /**
@@ -84,6 +84,8 @@ WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown, 
     this._barHeightDelta = this._isTopDown ? -this._barHeight : this._barHeight;
     this._minWidth = 1;
     this._paddingLeft = this._dataProvider.paddingLeft();
+    this._markerPadding = 2;
+    this._markerRadius = this._barHeight / 2 - this._markerPadding;
     this._highlightedEntryIndex = -1;
     this._selectedEntryIndex = -1;
     this._textWidth = {};
@@ -212,7 +214,7 @@ WebInspector.FlameChartDataProvider.prototype = {
     /**
      * @return {number}
      */
-    paddingLeft: function() { }
+    paddingLeft: function() { },
 }
 
 WebInspector.FlameChart.Events = {
@@ -485,15 +487,30 @@ WebInspector.FlameChart.prototype = {
         if (!timelineData)
             return -1;
         var cursorTimeOffset = this._cursorTime(x) - this._zeroTime;
-        var cursorLevel = this._isTopDown ? Math.floor((y - WebInspector.FlameChart.DividersBarHeight) / this._barHeight) : Math.floor((this._canvas.height / window.devicePixelRatio - y) / this._barHeight);
+        var cursorLevel;
+        var offsetFromLevel;
+        if (this._isTopDown) {
+            cursorLevel = Math.floor((y - WebInspector.FlameChart.DividersBarHeight) / this._barHeight);
+            offsetFromLevel = y - WebInspector.FlameChart.DividersBarHeight - cursorLevel * this._barHeight;
+        } else {
+            cursorLevel = Math.floor((this._canvas.height / window.devicePixelRatio - y) / this._barHeight);
+            offsetFromLevel = this._canvas.height / window.devicePixelRatio - cursorLevel * this._barHeight;
+        }
         var entryOffsets = timelineData.entryOffsets;
         var entryTotalTimes = timelineData.entryTotalTimes;
         var entryLevels = timelineData.entryLevels;
         var length = entryOffsets.length;
+        var markerHitThreshold = Math.sqrt(Math.pow(this._markerRadius, 2) - Math.pow(this._barHeight / 2 - offsetFromLevel, 2)) * this._pixelToTime;
         for (var i = 0; i < length; ++i) {
             var entryLevel = entryLevels[i];
             if (cursorLevel !== entryLevel)
                 continue;
+            if (isNaN(entryTotalTimes[i])) {
+                if (Math.abs(cursorTimeOffset - entryOffsets[i]) < markerHitThreshold)
+                    return i;
+                if (cursorTimeOffset < entryOffsets[i])
+                    return -1;
+            }
             if (cursorTimeOffset < entryOffsets[i])
                 return -1;
             if (cursorTimeOffset < (entryOffsets[i] + entryTotalTimes[i]))
@@ -527,8 +544,10 @@ WebInspector.FlameChart.prototype = {
         var entryOffsets = timelineData.entryOffsets;
         var entryLevels = timelineData.entryLevels;
 
-        var titleIndexes = new Uint32Array(timelineData.entryTotalTimes);
-        var lastTitleIndex = 0;
+        var titleIndices = new Uint32Array(timelineData.entryTotalTimes);
+        var nextTitleIndex = 0;
+        var markerIndices = new Uint32Array(timelineData.entryTotalTimes);
+        var nextMarkerIndex = 0;
         var textPadding = this._dataProvider.textPadding();
         this._minTextWidth = 2 * textPadding + this._measureWidth(context, "\u2026");
         var minTextWidth = this._minTextWidth;
@@ -567,7 +586,7 @@ WebInspector.FlameChart.prototype = {
             }
 
             // skip if it is not visible (left side).
-            var entryOffsetRight = entryOffset + entryTotalTimes[entryIndex];
+            var entryOffsetRight = entryOffset + (isNaN(entryTotalTimes[entryIndex]) ? 0 : entryTotalTimes[entryIndex]);
             if (entryOffsetRight < timeWindowLeft)
                 continue;
 
@@ -605,17 +624,34 @@ WebInspector.FlameChart.prototype = {
                 var barWidth = Math.max(barRight - barX, minWidth);
                 var barLevel = entryLevels[entryIndex];
                 var barY = this._levelToHeight(barLevel);
-                context.rect(barX, barY, barWidth, barHeight);
-                if (barWidth > minTextWidth || this._dataProvider.forceDecoration(entryIndex))
-                    titleIndexes[lastTitleIndex++] = entryIndex;
+                if (isNaN(entryTotalTimes[entryIndex])) {
+                    context.arc(barX, barY + barHeight / 2, this._markerRadius, 0, Math.PI * 2);
+                    markerIndices[nextMarkerIndex++] = entryIndex;
+                } else {
+                    context.rect(barX, barY, barWidth, barHeight);
+                    if (barWidth > minTextWidth || this._dataProvider.forceDecoration(entryIndex))
+                        titleIndices[nextTitleIndex++] = entryIndex;
+                }
             }
             context.fill();
         }
 
+        context.strokeStyle = "rgb(0, 0, 0)";
+        for (var m = 0; m < nextMarkerIndex; ++m) {
+            var entryIndex = markerIndices[m];
+            var entryOffset = entryOffsets[entryIndex];
+            var barX = this._offsetToPosition(entryOffset);
+            var barLevel = entryLevels[entryIndex];
+            var barY = this._levelToHeight(barLevel);
+            context.beginPath();
+            context.arc(barX, barY + barHeight / 2, this._markerRadius, 0, Math.PI * 2);
+            context.stroke();
+        }
+
         context.textBaseline = "alphabetic";
 
-        for (var i = 0; i < lastTitleIndex; ++i) {
-            var entryIndex = titleIndexes[i];
+        for (var i = 0; i < nextTitleIndex; ++i) {
+            var entryIndex = titleIndices[i];
             var entryOffset = entryOffsets[entryIndex];
             var barX = this._offsetToPosition(entryOffset);
             var barRight = this._offsetToPosition(entryOffset + entryTotalTimes[entryIndex]);
@@ -630,7 +666,6 @@ WebInspector.FlameChart.prototype = {
 
             if (this._dataProvider.decorateEntry(entryIndex, context, text, barX, barY, barWidth, barHeight, offsetToPosition))
                 continue;
-
             if (!text || !text.length)
                 continue;
 

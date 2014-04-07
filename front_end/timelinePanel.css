@@ -770,6 +770,15 @@
 
 .timeline-details-view-row-details table td {
     text-align: left;
+    vertical-align: top;
+}
+
+.timeline-details-view-row-details table td .section {
+    margin-top: -1px;
+}
+
+.timeline-details-view-row-details table td .section  > .header .title {
+    white-space: nowrap;
 }
 
 .timeline-details-view-row-stack-trace {

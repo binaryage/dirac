@@ -34,7 +34,7 @@ WebInspector.TimelineTracingView.prototype = {
         this._recordingTrace = true;
         WebInspector.tracingAgent.addEventListener(WebInspector.TracingAgent.Events.EventsCollected, this._boundTraceEventListener);
         this._tracingModel.reset();
-        WebInspector.tracingAgent.start("", "");
+        WebInspector.tracingAgent.start("*,disabled-by-default-cc.debug", "");
     },
 
     timelineStopped: function()
@@ -139,16 +139,33 @@ WebInspector.TimelineTracingView.prototype = {
         contentHelper.appendTextRow(WebInspector.UIString("Category"), record.category);
         contentHelper.appendTextRow(WebInspector.UIString("Start"), Number.millisToString(this._dataProvider._toTimelineTime(record.startTime - this._tracingModel.minimumRecordTime()), true));
         contentHelper.appendTextRow(WebInspector.UIString("Duration"), Number.millisToString(this._dataProvider._toTimelineTime(record.duration), true));
-        if (!Object.isEmpty(record.args)) {
-            var table = document.createElement("table");
-            for (var name in record.args) {
-                var row = table.createChild("tr");
-                row.createChild("td", "timeline-details-row-title").textContent = name + ":";
-                row.createChild("td", "timeline-details-row-data").textContent = record.args[name];
-            }
-            contentHelper.appendElementRow(WebInspector.UIString("Arguments"), table);
-        }
+        if (!Object.isEmpty(record.args))
+            contentHelper.appendElementRow(WebInspector.UIString("Arguments"), this._formatArguments(record.args));
+
         this._delegate.showInDetails(WebInspector.UIString("Selected Event"), contentHelper.element);
+    },
+
+    /**
+     * @param {!Object} args
+     * @return {!Element}
+     */
+    _formatArguments: function(args)
+    {
+        var table = document.createElement("table");
+        for (var name in args) {
+            var row = table.createChild("tr");
+            row.createChild("td", "timeline-details-row-title").textContent = name + ":";
+            var valueContainer = row.createChild("td", "timeline-details-row-data");
+            var value = args[name];
+            if (typeof value === "object" && value) {
+                var localObject = new WebInspector.LocalJSONObject(value);
+                var propertiesSection = new WebInspector.ObjectPropertiesSection(localObject, localObject.description);
+                valueContainer.appendChild(propertiesSection.element);
+            } else {
+                valueContainer.textContent = String(value);
+            }
+        }
+        return table;
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -266,17 +283,27 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
         this._zeroTime = this._model.minimumRecordTime() || 0;
         this._timeSpan = Math.max((this._model.maximumRecordTime() || 0) - this._zeroTime, 1000000);
         var processes = this._model.sortedProcesses();
-        for (var i = 0; i < processes.length; ++i) {
-            this._appendHeaderRecord(processes[i].name(), this._processHeaderRecord);
-            var threads = processes[i].sortedThreads();
-            for (var j = 0; j < threads.length; ++j) {
-                this._appendHeaderRecord(threads[j].name(), this._threadHeaderRecord);
-                var events = threads[j].events();
-                for (var k = 0; k < events.length; ++k) {
-                    if (events[k].duration)
-                        this._appendRecord(events[k]);
+        for (var processIndex = 0; processIndex < processes.length; ++processIndex) {
+            var process = processes[processIndex];
+            this._appendHeaderRecord(process.name(), this._processHeaderRecord);
+            var objectNames = process.sortedObjectNames();
+            for (var objectNameIndex = 0; objectNameIndex < objectNames.length; ++objectNameIndex) {
+                this._appendHeaderRecord(WebInspector.UIString("Object %s", objectNames[objectNameIndex]), this._threadHeaderRecord);
+                var objects = process.objectsByName(objectNames[objectNameIndex]);
+                for (var objectIndex = 0; objectIndex < objects.length; ++objectIndex)
+                    this._appendRecord(objects[objectIndex]);
+                ++this._currentLevel;
+            }
+            var threads = process.sortedThreads();
+            for (var threadIndex = 0; threadIndex < threads.length; ++threadIndex) {
+                this._appendHeaderRecord(threads[threadIndex].name(), this._threadHeaderRecord);
+                var events = threads[threadIndex].events();
+                for (var eventIndex = 0; eventIndex < events.length; ++eventIndex) {
+                    var event = events[eventIndex];
+                    if (event.duration)
+                        this._appendRecord(event);
                 }
-                this._currentLevel += threads[j].maxStackDepth();
+                this._currentLevel += threads[threadIndex].maxStackDepth();
             }
             ++this._currentLevel;
         }
@@ -322,7 +349,8 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
      */
     canJumpToEntry: function(entryIndex)
     {
-        return false;
+        var record = this._records[entryIndex];
+        return record.phase === WebInspector.TracingAgent.Phase.SnapshotObject;
     },
 
     /**
@@ -332,13 +360,14 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
     entryColor: function(entryIndex)
     {
         var record = this._records[entryIndex];
+        if (record.phase === WebInspector.TracingAgent.Phase.SnapshotObject)
+            return "rgb(20, 150, 20)";
         if (record === this._processHeaderRecord)
             return "#555";
         if (record === this._threadHeaderRecord)
             return "#777";
         return this._palette.colorForString(record.name);
     },
-
 
     /**
      * @param {number} entryIndex
@@ -419,7 +448,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
         var index = this._records.length;
         this._records.push(record);
         this._timelineData.entryLevels[index] = this._currentLevel + record.level;
-        this._timelineData.entryTotalTimes[index] = this._toTimelineTime(record.duration);
+        this._timelineData.entryTotalTimes[index] = this._toTimelineTime(record.phase === WebInspector.TracingAgent.Phase.SnapshotObject ? NaN : record.duration || 0);
         this._timelineData.entryOffsets[index] = this._toTimelineTime(record.startTime - this._zeroTime);
     },
 

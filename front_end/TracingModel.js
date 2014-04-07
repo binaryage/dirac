@@ -39,6 +39,10 @@ WebInspector.TracingModel.prototype = {
             process = new WebInspector.TracingModel.Process(payload.pid);
             this._processById[payload.pid] = process;
         }
+        if (payload.ph === WebInspector.TracingAgent.Phase.SnapshotObject) {
+            process.addObject(payload);
+            return;
+        }
         var thread = process.threadById(payload.tid);
         if (payload.ph !== WebInspector.TracingAgent.Phase.Metadata) {
             var timestamp = payload.ts;
@@ -103,7 +107,7 @@ WebInspector.TracingModel.Event = function(payload, level)
     this.category = payload.cat;
     this.startTime = payload.ts;
     this.args = payload.args;
-    this.phase = payload.phase;
+    this.phase = payload.ph;
     this.level = level;
 }
 
@@ -195,6 +199,7 @@ WebInspector.TracingModel.Process = function(id)
     WebInspector.TracingModel.NamedObject.call(this);
     this._setName("Process " + id);
     this._threads = {};
+    this._objects = {};
 }
 
 WebInspector.TracingModel.Process.prototype = {
@@ -210,6 +215,36 @@ WebInspector.TracingModel.Process.prototype = {
             this._threads[id] = thread;
         }
         return thread;
+    },
+
+    /**
+     * @param {!WebInspector.TracingAgent.Event} event
+     */
+    addObject: function(event)
+    {
+        this.objectsByName(event.name).push(new WebInspector.TracingModel.Event(event, 0));
+    },
+
+    /**
+     * @param {string} name
+     * @return {!Array.<!WebInspector.TracingModel.Event>}
+     */
+    objectsByName: function(name)
+    {
+        var objects = this._objects[name];
+        if (!objects) {
+            objects = [];
+            this._objects[name] = objects;
+        }
+        return objects;
+    },
+
+    /**
+     * @return {!Array.<string>}
+     */
+    sortedObjectNames: function()
+    {
+        return Object.keys(this._objects).sort();
     },
 
     /**
