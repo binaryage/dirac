@@ -59,7 +59,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
             return;
         }
 
-        const lowerOffset = 3;
+        var lowerOffset = 3;
         var maxUsedHeapSize = 0;
         var minUsedHeapSize = 100000000000;
         var minTime = this._model.minimumRecordTime();
@@ -72,54 +72,64 @@ WebInspector.TimelineMemoryOverview.prototype = {
         });
         minUsedHeapSize = Math.min(minUsedHeapSize, maxUsedHeapSize);
 
+        var lineWidth = 2;
         var width = this._canvas.width;
         var height = this._canvas.height - lowerOffset;
         var xFactor = width / (maxTime - minTime);
-        var yFactor = height / Math.max(maxUsedHeapSize - minUsedHeapSize, 1);
+        var yFactor = (height - lineWidth) / Math.max(maxUsedHeapSize - minUsedHeapSize, 1);
 
         var histogram = new Array(width);
         this._model.forAllRecords(function(r) {
             if (!r.counters || !r.counters.jsHeapSizeUsed)
                 return;
             var x = Math.round((r.endTime - minTime) * xFactor);
-            var y = (r.counters.jsHeapSizeUsed - minUsedHeapSize) * yFactor;
+            var y = Math.round((r.counters.jsHeapSizeUsed - minUsedHeapSize) * yFactor);
             histogram[x] = Math.max(histogram[x] || 0, y);
         });
 
-        var y = 0;
-        var isFirstPoint = true;
         var ctx = this._context;
-        ctx.save();
-        ctx.translate(0.5, 0.5);
-        ctx.beginPath();
-        ctx.moveTo(-1, this._canvas.height);
-        for (var x = 0; x < histogram.length; x++) {
-            if (typeof histogram[x] === "undefined")
-                continue;
-            if (isFirstPoint) {
-                isFirstPoint = false;
-                y = histogram[x];
-                ctx.lineTo(-1, height - y);
+        var heightBeyondView = height + lowerOffset + lineWidth;
+
+        function drawGraph() {
+            ctx.beginPath();
+            ctx.moveTo(-lineWidth, heightBeyondView);
+            var y = 0;
+            var isFirstPoint = true;
+            var lastX = 0;
+            for (var x = 0; x < histogram.length; x++) {
+                if (typeof histogram[x] === "undefined")
+                    continue;
+                if (isFirstPoint) {
+                    isFirstPoint = false;
+                    y = histogram[x];
+                    ctx.lineTo(-lineWidth, height - y);
+                }
+                var nextY = histogram[x];
+                if (Math.abs(nextY - y) > 2 && Math.abs(x - lastX) > 1)
+                    ctx.lineTo(x, height - y);
+                y = nextY;
+                ctx.lineTo(x, height - y);
+                lastX = x;
             }
-            ctx.lineTo(x, height - y);
-            y = histogram[x];
-            ctx.lineTo(x, height - y);
+            ctx.lineTo(width + lineWidth, height - y);
+            ctx.lineTo(width + lineWidth, heightBeyondView);
+            ctx.closePath();
         }
-        ctx.lineTo(width, height - y);
-        ctx.lineTo(width, this._canvas.height);
-        ctx.lineTo(-1, this._canvas.height);
-        ctx.closePath();
 
-        var gradient = ctx.createLinearGradient(0, 0, 0, height);
-        gradient.addColorStop(0, "rgba(192,204,255,1)");
-        gradient.addColorStop(1, "rgba(192,204,255,0.4)");
-        ctx.fillStyle = gradient;
-        ctx.fill();
-
-        ctx.lineWidth = 0.5;
-        ctx.strokeStyle = "#666";
+        ctx.save();
+        ctx.translate(0, 2);
+        drawGraph();
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
         ctx.stroke();
         ctx.restore();
+
+        drawGraph();
+        ctx.fillStyle = "hsla(220, 90%, 70%, 0.2)";
+        ctx.fill();
+        ctx.lineWidth = lineWidth;
+        ctx.strokeStyle = "hsl(220, 90%, 70%)";
+        ctx.stroke();
 
         this._maxHeapSizeLabel.textContent = Number.bytesToString(maxUsedHeapSize);
         this._minHeapSizeLabel.textContent = Number.bytesToString(minUsedHeapSize);
