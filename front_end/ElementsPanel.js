@@ -133,7 +133,7 @@ WebInspector.ElementsPanel.prototype = {
         this._treeOutlines.push(treeOutline);
         this._targetToTreeOutline.put(target, treeOutline);
 
-        target.domModel.addEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent.bind(this, target));
+        target.domModel.addEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
         target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
 
         // Perform attach if necessary.
@@ -144,12 +144,16 @@ WebInspector.ElementsPanel.prototype = {
     /**
      * @param {!WebInspector.Target} target
      */
-    targetRemoved: function(target) { },
+    targetRemoved: function(target)
+    {
+        var treeOutline = this._targetToTreeOutline.get(target);
+        treeOutline.unwireFromDOMModel();
+        this._treeOutlines.remove(treeOutline);
+        treeOutline.element.remove();
 
-    /**
-     * @param {?WebInspector.Target} target
-     */
-    activeTargetChanged: function(target) { },
+        target.domModel.removeEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
+        target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
+    },
 
     /**
      * @return {?WebInspector.ElementsTreeOutline}
@@ -208,7 +212,7 @@ WebInspector.ElementsPanel.prototype = {
 
             if (!treeOutline.rootDOMNode)
                 if (treeOutline.domModel().existingDocument())
-                    this._documentUpdated(treeOutline.target(), treeOutline.domModel().existingDocument());
+                    this._documentUpdated(treeOutline.domModel(), treeOutline.domModel().existingDocument());
                 else
                     treeOutline.domModel().requestDocument();
         }
@@ -265,9 +269,17 @@ WebInspector.ElementsPanel.prototype = {
         });
     },
 
-    _selectedNodeChanged: function()
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _selectedNodeChanged: function(event)
     {
-        var selectedNode = this.selectedDOMNode();
+        var selectedNode = /** @type {?WebInspector.DOMNode} */ (event.data);
+        for (var i = 0; i < this._treeOutlines.length; ++i) {
+            if (!selectedNode || selectedNode.domModel() !== this._treeOutlines[i].domModel())
+                this._treeOutlines[i].selectDOMNode(null);
+        }
+
         if (!selectedNode && this._lastValidSelectedNode)
             this._selectedPathOnReset = this._lastValidSelectedNode.path();
 
@@ -300,33 +312,32 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Target} target
      * @param {!WebInspector.Event} event
      */
-    _documentUpdatedEvent: function(target, event)
+    _documentUpdatedEvent: function(event)
     {
-        this._documentUpdated(target, /** @type {?WebInspector.DOMDocument} */ (event.data));
+        this._documentUpdated(/** @type {!WebInspector.DOMModel} */ (event.target), /** @type {?WebInspector.DOMDocument} */ (event.data));
     },
 
     /**
-     * @param {!WebInspector.Target} target
+     * @param {!WebInspector.DOMModel} domModel
      * @param {?WebInspector.DOMDocument} inspectedRootDocument
      */
-    _documentUpdated: function(target, inspectedRootDocument)
+    _documentUpdated: function(domModel, inspectedRootDocument)
     {
         this._reset();
         this.searchCanceled();
 
-        var treeOutline = this._targetToTreeOutline.get(target);
+        var treeOutline = this._targetToTreeOutline.get(domModel.target());
         treeOutline.rootDOMNode = inspectedRootDocument;
 
         if (!inspectedRootDocument) {
             if (this.isShowing())
-                target.domModel.requestDocument();
+                domModel.requestDocument();
             return;
         }
 
-        WebInspector.domBreakpointsSidebarPane.restoreBreakpoints(target);
+        WebInspector.domBreakpointsSidebarPane.restoreBreakpoints(domModel.target());
 
         /**
          * @this {WebInspector.ElementsPanel}
@@ -355,7 +366,7 @@ WebInspector.ElementsPanel.prototype = {
                 // Focused node has been explicitly set while reaching out for the last selected node.
                 return;
             }
-            var node = nodeId ? target.domModel.nodeForId(nodeId) : null;
+            var node = nodeId ? domModel.nodeForId(nodeId) : null;
             selectNode.call(this, node);
         }
 
@@ -363,7 +374,7 @@ WebInspector.ElementsPanel.prototype = {
             return;
 
         if (this._selectedPathOnReset)
-            target.domModel.pushNodeByPathToFrontend(this._selectedPathOnReset, selectLastSelectedNode.bind(this));
+            domModel.pushNodeByPathToFrontend(this._selectedPathOnReset, selectLastSelectedNode.bind(this));
         else
             selectNode.call(this, null);
         delete this._selectedPathOnReset;

@@ -139,6 +139,11 @@ WebInspector.ElementsTreeOutline.prototype = {
         this._elementsTreeUpdater = new WebInspector.ElementsTreeUpdater(this._target.domModel, this);
     },
 
+    unwireFromDOMModel: function()
+    {
+        if (this._elementsTreeUpdater)
+            this._elementsTreeUpdater.dispose();
+    },
     /**
      * @param {boolean} visible
      */
@@ -2479,6 +2484,17 @@ WebInspector.ElementsTreeUpdater = function(domModel, treeOutline)
 }
 
 WebInspector.ElementsTreeUpdater.prototype = {
+    dispose: function()
+    {
+        this._domModel.removeEventListener(WebInspector.DOMModel.Events.NodeInserted, this._nodeInserted, this);
+        this._domModel.removeEventListener(WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
+        this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrModified, this._attributesUpdated, this);
+        this._domModel.removeEventListener(WebInspector.DOMModel.Events.AttrRemoved, this._attributesUpdated, this);
+        this._domModel.removeEventListener(WebInspector.DOMModel.Events.CharacterDataModified, this._characterDataModified, this);
+        this._domModel.removeEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdated, this);
+        this._domModel.removeEventListener(WebInspector.DOMModel.Events.ChildNodeCountUpdated, this._childNodeCountUpdated, this);
+    },
+
     /**
      * @param {!WebInspector.DOMNode} node
      * @param {boolean} isUpdated

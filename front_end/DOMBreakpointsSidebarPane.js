@@ -76,11 +76,6 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
         target.domModel.removeEventListener(WebInspector.DOMModel.Events.NodeRemoved, this._nodeRemoved, this);
     },
 
-    /**
-     * @param {?WebInspector.Target} target
-     */
-    activeTargetChanged: function(target) { },
-
     _inspectedURLChanged: function(event)
     {
         this._breakpointElements = {};

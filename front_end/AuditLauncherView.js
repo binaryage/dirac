@@ -32,7 +32,6 @@
  * @constructor
  * @param {!WebInspector.AuditController} auditController
  * @extends {WebInspector.VBox}
- * @implements {WebInspector.TargetManager.Observer}
  */
 WebInspector.AuditLauncherView = function(auditController)
 {
@@ -67,30 +66,12 @@ WebInspector.AuditLauncherView = function(auditController)
     var defaultSelectedAuditCategory = {};
     defaultSelectedAuditCategory[WebInspector.AuditLauncherView.AllCategoriesKey] = true;
     this._selectedCategoriesSetting = WebInspector.settings.createSetting("selectedAuditCategories", defaultSelectedAuditCategory);
-    WebInspector.targetManager.observeTargets(this);
+    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
 }
 
 WebInspector.AuditLauncherView.AllCategoriesKey = "__AllCategories";
 
 WebInspector.AuditLauncherView.prototype = {
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetAdded: function(target) { },
-
-    /**
-     * @param {!WebInspector.Target} target
-     */
-    targetRemoved: function(target) { },
-
-    /**
-     * @param {?WebInspector.Target} target
-     */
-    activeTargetChanged: function(target)
-    {
-        this._target = target;
-    },
-
     _resetResourceCount: function()
     {
         this._loadedResources = 0;

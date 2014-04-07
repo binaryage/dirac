@@ -175,13 +175,6 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {?WebInspector.Target} target
-     */
-    activeTargetChanged: function(target)
-    {
-    },
-
-    /**
      * @param {!WebInspector.Event} event
      */
     _consoleTimestampsSettingChanged: function(event)

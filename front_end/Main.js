@@ -748,6 +748,21 @@ WebInspector.Main.ShortcutPanelSwitchSettingDelegate.prototype = {
     __proto__: WebInspector.UISettingDelegate.prototype
 }
 
+/**
+ * @param {string} ws
+ */
+WebInspector.Main._addWebSocketTarget = function(ws)
+{
+    /**
+     * @param {!InspectorBackendClass.Connection} connection
+     */
+    function callback(connection)
+    {
+        WebInspector.targetManager.createTarget(connection);
+    }
+    new InspectorBackendClass.WebSocketConnection(ws, callback);
+}
+
 new WebInspector.Main();
 
 window.DEBUG = true;

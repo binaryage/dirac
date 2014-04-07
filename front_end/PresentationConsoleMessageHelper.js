@@ -73,11 +73,6 @@ WebInspector.PresentationConsoleMessageHelper.prototype = {
     },
 
     /**
-     * @param {?WebInspector.Target} target
-     */
-    activeTargetChanged: function(target) { },
-
-    /**
      * @param {!WebInspector.Event} event
      */
     _consoleMessageAdded: function(event)

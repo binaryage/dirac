@@ -899,7 +899,7 @@ WebInspector.DOMModel = function(target) {
     this._document = null;
     /** @type {!Object.<number, boolean>} */
     this._attributeLoadNodeIds = {};
-    InspectorBackend.registerDOMDispatcher(new WebInspector.DOMDispatcher(this));
+    target.registerDOMDispatcher(new WebInspector.DOMDispatcher(this));
 
     this._defaultHighlighter = new WebInspector.DefaultDOMNodeHighlighter(this._agent);
     this._highlighter = this._defaultHighlighter;

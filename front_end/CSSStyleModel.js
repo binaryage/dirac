@@ -43,7 +43,7 @@ WebInspector.CSSStyleModel = function(target)
     this._domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoRequested, this._undoRedoRequested, this);
     this._domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoCompleted, this._undoRedoCompleted, this);
     WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameCreatedOrNavigated, this._mainFrameCreatedOrNavigated, this);
-    InspectorBackend.registerCSSDispatcher(new WebInspector.CSSDispatcher(this));
+    target.registerCSSDispatcher(new WebInspector.CSSDispatcher(this));
     this._agent.enable(this._wasEnabled.bind(this));
     this._resetStyleSheets();
 }

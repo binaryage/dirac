@@ -169,8 +169,6 @@ WebInspector.TargetManager.prototype = {
     observeTargets: function(targetObserver)
     {
         WebInspector.targetManager.targets().forEach(targetObserver.targetAdded.bind(targetObserver));
-        if (this._targets.length)
-            targetObserver.activeTargetChanged(this._targets[0]);
         this._observers.push(targetObserver);
     },
 
@@ -188,16 +186,13 @@ WebInspector.TargetManager.prototype = {
          */
         function callbackWrapper(newTarget)
         {
-            if (callback)
-                callback(newTarget);
-
             this._targets.push(newTarget);
             var copy = this._observers;
-            for (var i = 0; i < copy.length; ++i) {
+            for (var i = 0; i < copy.length; ++i)
                 copy[i].targetAdded(newTarget);
-                if (this._targets.length === 1)
-                    copy[i].activeTargetChanged(newTarget);
-            }
+
+            if (callback)
+                callback(newTarget);
         }
     },
 
@@ -235,11 +230,6 @@ WebInspector.TargetManager.Observer.prototype = {
      * @param {!WebInspector.Target} target
      */
     targetRemoved: function(target) { },
-
-    /**
-     * @param {?WebInspector.Target} target
-     */
-    activeTargetChanged: function(target) { }
 }
 
 /**
