@@ -2629,13 +2629,13 @@
                 "name": "setPropertyText",
                 "parameters": [
                     { "name": "styleSheetId", "$ref": "StyleSheetId" },
-                    { "name": "range", "$ref": "SourceRange" },
+                    { "name": "range", "$ref": "SourceRange", "description": "Either a source range of the property to be edited or an empty range representing a position for the property insertion." },
                     { "name": "text", "type": "string" }
                 ],
                 "returns": [
                     { "name": "style", "$ref": "CSSStyle", "description": "The resulting style after the property text modification." }
                 ],
-                "description": "Sets the new <code>text</code> for a property in the respective style, at offset <code>propertyIndex</code>. If <code>overwrite</code> is <code>true</code>, a property at the given offset is overwritten, otherwise inserted. <code>text</code> entirely replaces the property <code>name: value</code>."
+                "description": "Either replaces a property identified by <code>styleSheetId</code> and <code>range</code> with <code>text</code> or inserts a new property <code>text</code> at the position identified by an empty <code>range</code>."
             },
             {
                 "name": "setRuleSelector",
