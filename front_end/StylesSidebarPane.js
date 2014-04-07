@@ -1684,7 +1684,7 @@ WebInspector.StylePropertiesSection.prototype = {
 
         // This gets deleted in finishOperationAndMoveEditor(), which is called both on success and failure.
         this._parentPane._userOperation = true;
-        this._parentPane._target.cssModel.setRuleSelector(this.rule.id, selectedNode ? selectedNode.id : 0, newContent, successCallback.bind(this), finishOperationAndMoveEditor.bind(this, moveDirection));
+        this._parentPane._target.cssModel.setRuleSelector(this.rule, selectedNode ? selectedNode.id : 0, newContent, successCallback.bind(this), finishOperationAndMoveEditor.bind(this, moveDirection));
     },
 
     _updateRuleOrigin: function()

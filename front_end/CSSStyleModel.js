@@ -245,13 +245,13 @@ WebInspector.CSSStyleModel.prototype = {
     },
 
     /**
-     * @param {!CSSAgent.CSSRuleId} ruleId
+     * @param {!CSSAgent.CSSRule} rule
      * @param {!DOMAgent.NodeId} nodeId
      * @param {string} newSelector
      * @param {function(!WebInspector.CSSRule)} successCallback
      * @param {function()} failureCallback
      */
-    setRuleSelector: function(ruleId, nodeId, newSelector, successCallback, failureCallback)
+    setRuleSelector: function(rule, nodeId, newSelector, successCallback, failureCallback)
     {
         /**
          * @param {!DOMAgent.NodeId} nodeId
@@ -273,9 +273,8 @@ WebInspector.CSSStyleModel.prototype = {
             this._computeMatchingSelectors(rulePayload, nodeId, successCallback, failureCallback);
         }
 
-
         this._pendingCommandsMajorState.push(true);
-        this._agent.setRuleSelector(ruleId, newSelector, callback.bind(this, nodeId, successCallback, failureCallback, newSelector));
+        this._agent.setRuleSelector(rule.id.styleSheetId, rule.selectorRange, newSelector, callback.bind(this, nodeId, successCallback, failureCallback, newSelector));
     },
 
     /**
