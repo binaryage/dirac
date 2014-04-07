@@ -277,17 +277,17 @@ WebInspector.TimelineFrameOverview.prototype = {
         if (!this._barTimes.length)
             return WebInspector.TimelineOverviewBase.prototype.windowTimes.call(this, windowLeft, windowRight);
         var windowSpan = this._canvas.width;
-        var leftOffset = windowLeft * windowSpan - this._outerPadding + this._actualPadding;
-        var rightOffset = windowRight * windowSpan - this._outerPadding;
-        var firstBar = Math.floor(Math.max(leftOffset, 0) / this._actualOuterBarWidth);
-        var lastBar = Math.min(Math.floor(rightOffset / this._actualOuterBarWidth), this._barTimes.length - 1);
+        var leftOffset = windowLeft * windowSpan;
+        var rightOffset = windowRight * windowSpan;
+        var firstBar = Math.floor(Math.max(leftOffset - this._outerPadding + this._actualPadding, 0) / this._actualOuterBarWidth);
+        var lastBar = Math.min(Math.floor(Math.max(rightOffset - this._outerPadding, 0)/ this._actualOuterBarWidth), this._barTimes.length - 1);
         if (firstBar >= this._barTimes.length)
             return {startTime: Infinity, endTime: Infinity};
 
-        const snapToRightTolerancePixels = 3;
+        const snapTolerancePixels = 3;
         return {
-            startTime: this._barTimes[firstBar].startTime,
-            endTime: (rightOffset + snapToRightTolerancePixels > windowSpan) || (lastBar >= this._barTimes.length) ? Infinity : this._barTimes[lastBar].endTime
+            startTime: leftOffset > snapTolerancePixels ? this._barTimes[firstBar].startTime : this._model.minimumRecordTime(),
+            endTime: (rightOffset + snapTolerancePixels > windowSpan) || (lastBar >= this._barTimes.length) ? this._model.maximumRecordTime() : this._barTimes[lastBar].endTime
         }
     },
 
