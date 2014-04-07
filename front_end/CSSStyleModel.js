@@ -1009,7 +1009,10 @@ WebInspector.CSSRule = function(cssModel, payload, matchingSelectors)
         var lastRange = this.selectors.peekLast().range;
         this.selectorRange = new WebInspector.TextRange(firstRange.startLine, firstRange.startColumn, lastRange.endLine, lastRange.endColumn);
     }
-    this.sourceURL = payload.sourceURL;
+    if (this.styleSheetId) {
+        var styleSheetHeader = cssModel.styleSheetHeaderForId(this.styleSheetId);
+        this.sourceURL = styleSheetHeader.sourceURL;
+    }
     this.origin = payload.origin;
     this.style = WebInspector.CSSStyleDeclaration.parsePayload(this._cssModel, payload.style);
     this.style.parentRule = this;
