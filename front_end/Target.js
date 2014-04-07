@@ -53,6 +53,10 @@ WebInspector.Target.prototype = {
         if (!WebInspector.resourceTreeModel)
             WebInspector.resourceTreeModel = this.resourceTreeModel;
 
+        this.networkLog = new WebInspector.NetworkLog(this);
+        if (!WebInspector.networkLog)
+            WebInspector.networkLog = this.networkLog;
+
         this.debuggerModel = new WebInspector.DebuggerModel(this);
         if (!WebInspector.debuggerModel)
             WebInspector.debuggerModel = this.debuggerModel;

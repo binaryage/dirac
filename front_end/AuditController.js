@@ -80,7 +80,7 @@ WebInspector.AuditController.prototype = {
             resultCallback(mainResourceURL, results)
         }
 
-        var requests = WebInspector.networkLog.requests.slice();
+        var requests = this.target().networkLog.requests.slice();
         var compositeProgress = new WebInspector.CompositeProgress(this._progress);
         var subprogresses = [];
         for (var i = 0; i < categories.length; ++i)

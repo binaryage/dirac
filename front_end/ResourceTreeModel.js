@@ -30,11 +30,13 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
  * @param {!WebInspector.Target} target
  */
 WebInspector.ResourceTreeModel = function(target)
 {
+    WebInspector.TargetAwareObject.call(this, target);
+
     target.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestFinished, this);
     target.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdateDropped, this._onRequestUpdateDropped, this);
 
@@ -474,7 +476,7 @@ WebInspector.ResourceTreeModel.prototype = {
         this._agent.reload(ignoreCache, scriptToEvaluateOnLoad, scriptPreprocessor);
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**
@@ -514,6 +516,14 @@ WebInspector.ResourceTreeFrame = function(model, parentFrame, frameId, payload)
 }
 
 WebInspector.ResourceTreeFrame.prototype = {
+    /**
+     * @return {!WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._model.target();
+    },
+
     /**
      * @return {string}
      */

@@ -60,8 +60,9 @@ WebInspector.AuditLauncherView = function(auditController)
     this._headerElement.textContent = WebInspector.UIString("No audits to run");
     this._contentElement.appendChild(this._headerElement);
 
-    WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);
-    WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestFinished, this);
+    var target = this._auditController.target();
+    target.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);
+    target.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestFinished, this);
 
     var defaultSelectedAuditCategory = {};
     defaultSelectedAuditCategory[WebInspector.AuditLauncherView.AllCategoriesKey] = true;

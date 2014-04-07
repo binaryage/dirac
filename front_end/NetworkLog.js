@@ -30,15 +30,19 @@
 
 /**
  * @constructor
+ * @extends {WebInspector.TargetAware}
+ * @param {!WebInspector.Target} target
  */
-WebInspector.NetworkLog = function()
+WebInspector.NetworkLog = function(target)
 {
+    WebInspector.TargetAware.call(this, target);
+
     this._requests = [];
     this._requestForId = {};
-    WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._onLoad, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.DOMContentLoaded, this._onDOMContentLoaded, this);
+    target.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._onMainFrameNavigated, this);
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._onLoad, this);
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.DOMContentLoaded, this._onDOMContentLoaded, this);
 }
 
 WebInspector.NetworkLog.prototype = {
@@ -130,7 +134,9 @@ WebInspector.NetworkLog.prototype = {
     requestForId: function(requestId)
     {
         return this._requestForId[requestId];
-    }
+    },
+
+    __proto__: WebInspector.TargetAware.prototype
 }
 
 /**

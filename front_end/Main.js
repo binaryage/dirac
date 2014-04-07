@@ -261,7 +261,6 @@ WebInspector.Main.prototype = {
         WebInspector.console.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._updateErrorAndWarningCounts, this);
 
         WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.DebuggerPaused, this._debuggerPaused, this);
-        WebInspector.networkLog = new WebInspector.NetworkLog();
 
         WebInspector.zoomManager = new WebInspector.ZoomManager();
 

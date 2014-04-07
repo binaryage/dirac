@@ -30,12 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
  * @param {!WebInspector.Target} target
  */
 WebInspector.NetworkManager = function(target)
 {
-    WebInspector.Object.call(this);
+    WebInspector.TargetAwareObject.call(this, target);
     this._dispatcher = new WebInspector.NetworkDispatcher(this);
     this._target = target;
     this._networkAgent = target.networkAgent();
@@ -117,7 +117,7 @@ WebInspector.NetworkManager.prototype = {
         this._networkAgent.setCacheDisabled(enabled);
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**

@@ -42,6 +42,7 @@ importScript("ResourceWebSocketFrameView.js");
 /**
  * @constructor
  * @implements {WebInspector.Searchable}
+ * @implements {WebInspector.TargetManager.Observer}
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.FilterBar} filterBar
  * @param {!WebInspector.Setting} coulmnsVisibilitySetting
@@ -78,20 +79,12 @@ WebInspector.NetworkLogView = function(filterBar, coulmnsVisibilitySetting)
     this._createStatusBarItems();
     this._linkifier = new WebInspector.Linkifier();
 
-    WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);
-    WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdated, this._onRequestUpdated, this);
-    WebInspector.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestUpdated, this);
-
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._willReloadPage, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.DOMContentLoaded, this._domContentLoadedEventFired, this);
-
     this._addFilters();
     this._resetSuggestionBuilder();
     this._initializeView();
     this._recordButton.toggled = true;
-    WebInspector.networkLog.requests.forEach(this._appendRequest.bind(this));
+
+    WebInspector.targetManager.observeTargets(this);
 }
 
 WebInspector.NetworkLogView.HTTPSchemas = {"http": true, "https": true, "ws": true, "wss": true};
@@ -103,6 +96,38 @@ WebInspector.NetworkLogView._defaultColumnsVisibility = {
 WebInspector.NetworkLogView._defaultRefreshDelay = 500;
 
 WebInspector.NetworkLogView.prototype = {
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetAdded: function(target)
+    {
+        target.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);
+        target.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdated, this._onRequestUpdated, this);
+        target.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestUpdated, this);
+
+        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._willReloadPage, this);
+        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
+        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
+        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.DOMContentLoaded, this._domContentLoadedEventFired, this);
+
+        target.networkLog.requests.forEach(this._appendRequest.bind(this));
+    },
+
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    targetRemoved: function(target)
+    {
+        target.networkManager.removeEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);
+        target.networkManager.removeEventListener(WebInspector.NetworkManager.EventTypes.RequestUpdated, this._onRequestUpdated, this);
+        target.networkManager.removeEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestUpdated, this);
+
+        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.WillReloadPage, this._willReloadPage, this);
+        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameNavigated, this._mainFrameNavigated, this);
+        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._loadEventFired, this);
+        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.DOMContentLoaded, this._domContentLoadedEventFired, this);
+    },
+
     _addFilters: function()
     {
         this._textFilterUI = new WebInspector.TextFilterUI();
@@ -491,7 +516,7 @@ WebInspector.NetworkLogView.prototype = {
                 selectedRequestsNumber++;
                 selectedTransferSize += requestTransferSize;
             }
-            if (request.url === WebInspector.resourceTreeModel.inspectedPageURL())
+            if (request.url === request.target().resourceTreeModel.inspectedPageURL())
                 baseTime = request.startTime;
             if (request.endTime > maxTime)
                 maxTime = request.endTime;
@@ -854,7 +879,7 @@ WebInspector.NetworkLogView.prototype = {
 
         // Pick provisional load requests.
         var requestsToPick = [];
-        var requests = WebInspector.networkLog.requests;
+        var requests = frame.target().networkLog.requests;
         for (var i = 0; i < requests.length; ++i) {
             var request = requests[i];
             if (request.loaderId === loaderId)

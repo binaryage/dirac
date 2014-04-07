@@ -229,7 +229,7 @@ WebInspector.ConsoleMessage = function(target, source, level, messageText, type,
     this.isOutdated = isOutdated;
     this.executionContextId = executionContextId || 0;
 
-    this.request = requestId ? WebInspector.networkLog.requestForId(requestId) : null;
+    this.request = requestId ? target.networkLog.requestForId(requestId) : null;
 }
 
 WebInspector.ConsoleMessage.prototype = {
