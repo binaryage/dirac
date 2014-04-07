@@ -89,7 +89,7 @@ WebInspector.Database.prototype = {
             if (!error)
                 callback(names.sort());
         }
-        DatabaseAgent.getDatabaseTableNames(this._id, sortingCallback);
+        this._model._agent.getDatabaseTableNames(this._id, sortingCallback);
     },
 
     /**
@@ -124,19 +124,23 @@ WebInspector.Database.prototype = {
             }
             onSuccess(columnNames, values);
         }
-        DatabaseAgent.executeSQL(this._id, query, callback);
+        this._model._agent.executeSQL(this._id, query, callback);
     }
 }
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
+ * @param {!WebInspector.Target} target
  */
-WebInspector.DatabaseModel = function()
+WebInspector.DatabaseModel = function(target)
 {
+    WebInspector.TargetAwareObject.call(this, target);
+
     this._databases = [];
-    InspectorBackend.registerDatabaseDispatcher(new WebInspector.DatabaseDispatcher(this));
-    DatabaseAgent.enable();
+    target.registerDatabaseDispatcher(new WebInspector.DatabaseDispatcher(this));
+    this._agent = target.databaseAgent();
+    this._agent.enable();
 }
 
 WebInspector.DatabaseModel.Events = {
@@ -173,7 +177,7 @@ WebInspector.DatabaseModel.prototype = {
         this.dispatchEventToListeners(WebInspector.DatabaseModel.Events.DatabaseAdded, database);
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**

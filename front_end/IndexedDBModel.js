@@ -30,14 +30,16 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
  */
-WebInspector.IndexedDBModel = function()
+WebInspector.IndexedDBModel = function(target)
 {
-    IndexedDBAgent.enable();
+    WebInspector.TargetAwareObject.call(this, target);
+    this._agent = target.indexedDBAgent();
+    this._agent.enable();
 
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginAdded, this._securityOriginAdded, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginRemoved, this._securityOriginRemoved, this);
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginAdded, this._securityOriginAdded, this);
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginRemoved, this._securityOriginRemoved, this);
 
     /** @type {!Map.<!WebInspector.IndexedDBModel.DatabaseId, !WebInspector.IndexedDBModel.Database>} */
     this._databases = new Map();
@@ -145,7 +147,7 @@ WebInspector.IndexedDBModel.prototype = {
     {
         for (var securityOrigin in this._databaseNamesBySecurityOrigin)
             this._removeOrigin(securityOrigin);
-        var securityOrigins = WebInspector.resourceTreeModel.securityOrigins();
+        var securityOrigins = this.target().resourceTreeModel.securityOrigins();
         for (var i = 0; i < securityOrigins.length; ++i)
             this._addOrigin(securityOrigins[i]);
     },
@@ -171,7 +173,7 @@ WebInspector.IndexedDBModel.prototype = {
      */
     clearObjectStore: function(databaseId, objectStoreName, callback)
     {
-        IndexedDBAgent.clearObjectStore(databaseId.securityOrigin, databaseId.name, objectStoreName, callback);
+        this._agent.clearObjectStore(databaseId.securityOrigin, databaseId.name, objectStoreName, callback);
     },
 
     /**
@@ -280,7 +282,7 @@ WebInspector.IndexedDBModel.prototype = {
             this._updateOriginDatabaseNames(securityOrigin, databaseNames);
         }
 
-        IndexedDBAgent.requestDatabaseNames(securityOrigin, callback.bind(this));
+        this._agent.requestDatabaseNames(securityOrigin, callback.bind(this));
     },
 
     /**
@@ -320,7 +322,7 @@ WebInspector.IndexedDBModel.prototype = {
             this.dispatchEventToListeners(WebInspector.IndexedDBModel.EventTypes.DatabaseLoaded, databaseModel);
         }
 
-        IndexedDBAgent.requestDatabase(databaseId.securityOrigin, databaseId.name, callback.bind(this));
+        this._agent.requestDatabase(databaseId.securityOrigin, databaseId.name, callback.bind(this));
     },
 
     /**
@@ -388,10 +390,10 @@ WebInspector.IndexedDBModel.prototype = {
         }
 
         var keyRange = WebInspector.IndexedDBModel.keyRangeFromIDBKeyRange(idbKeyRange);
-        IndexedDBAgent.requestData(databaseId.securityOrigin, databaseName, objectStoreName, indexName, skipCount, pageSize, keyRange ? keyRange : undefined, innerCallback.bind(this));
+        this._agent.requestData(databaseId.securityOrigin, databaseName, objectStoreName, indexName, skipCount, pageSize, keyRange ? keyRange : undefined, innerCallback.bind(this));
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**

@@ -30,18 +30,19 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
+ * @param {!WebInspector.Target} target
  */
-WebInspector.FileSystemModel = function()
+WebInspector.FileSystemModel = function(target)
 {
-    WebInspector.Object.call(this);
+    WebInspector.TargetAwareObject.call(this, target);
 
     this._fileSystemsForOrigin = {};
 
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginAdded, this._securityOriginAdded, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginRemoved, this._securityOriginRemoved, this);
-
-    FileSystemAgent.enable();
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginAdded, this._securityOriginAdded, this);
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginRemoved, this._securityOriginRemoved, this);
+    this._agent = target.fileSystemAgent();
+    this._agent.enable();
 
     this._reset();
 }
@@ -51,7 +52,7 @@ WebInspector.FileSystemModel.prototype = {
     {
         for (var securityOrigin in this._fileSystemsForOrigin)
             this._removeOrigin(securityOrigin);
-        var securityOrigins = WebInspector.resourceTreeModel.securityOrigins();
+        var securityOrigins = this.target().resourceTreeModel.securityOrigins();
         for (var i = 0; i < securityOrigins.length; ++i)
             this._addOrigin(securityOrigins[i]);
     },
@@ -121,7 +122,7 @@ WebInspector.FileSystemModel.prototype = {
             callback(errorCode, backendRootEntry);
         }
 
-        FileSystemAgent.requestFileSystemRoot(origin, type, innerCallback);
+        this._agent.requestFileSystemRoot(origin, type, innerCallback);
     },
 
     /**
@@ -196,7 +197,7 @@ WebInspector.FileSystemModel.prototype = {
             callback(errorCode, backendEntries);
         }
 
-        FileSystemAgent.requestDirectoryContent(url, innerCallback);
+        this._agent.requestDirectoryContent(url, innerCallback);
     },
 
     /**
@@ -244,7 +245,7 @@ WebInspector.FileSystemModel.prototype = {
             callback(errorCode, metadata);
         }
 
-        FileSystemAgent.requestMetadata(entry.url, innerCallback);
+        this._agent.requestMetadata(entry.url, innerCallback);
     },
 
     /**
@@ -288,7 +289,7 @@ WebInspector.FileSystemModel.prototype = {
                 callback(errorCode, content, charset);
         }
 
-        FileSystemAgent.requestFileContent(url, readAsText, start, end, charset, innerCallback);
+        this._agent.requestFileContent(url, readAsText, start, end, charset, innerCallback);
     },
     /**
      * @param {!WebInspector.FileSystemModel.Entry} entry
@@ -332,7 +333,7 @@ WebInspector.FileSystemModel.prototype = {
                 callback(errorCode);
         }
 
-        FileSystemAgent.deleteEntry(url, innerCallback);
+        this._agent.deleteEntry(url, innerCallback);
     },
 
     /**
@@ -351,7 +352,7 @@ WebInspector.FileSystemModel.prototype = {
         }
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 

@@ -66,7 +66,6 @@ WebInspector.AuditLauncherView = function(auditController)
     var defaultSelectedAuditCategory = {};
     defaultSelectedAuditCategory[WebInspector.AuditLauncherView.AllCategoriesKey] = true;
     this._selectedCategoriesSetting = WebInspector.settings.createSetting("selectedAuditCategories", defaultSelectedAuditCategory);
-    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
 }
 
 WebInspector.AuditLauncherView.AllCategoriesKey = "__AllCategories";
@@ -167,7 +166,7 @@ WebInspector.AuditLauncherView.prototype = {
         {
             this._displayResourceLoadingProgress = false;
         }
-        this._auditController.initiateAudit(this._target, catIds, this._progressIndicator, this._auditPresentStateElement.checked, onAuditStarted.bind(this), this._setAuditRunning.bind(this, false));
+        this._auditController.initiateAudit(catIds, this._progressIndicator, this._auditPresentStateElement.checked, onAuditStarted.bind(this), this._setAuditRunning.bind(this, false));
     },
 
     _stopAudit: function()

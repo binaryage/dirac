@@ -632,9 +632,11 @@ WebInspector.CanvasProfileType = function()
     this._frameSelector = new WebInspector.StatusBarComboBox(this._dispatchViewUpdatedEvent.bind(this));
     this._frameSelector.element.title = WebInspector.UIString("Frame containing the canvases to capture.");
     this._frameSelector.element.classList.add("hidden");
-    WebInspector.resourceTreeModel.frames().forEach(this._addFrame, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, this._frameAdded, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameRemoved, this);
+
+    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+    this._target.resourceTreeModel.frames().forEach(this._addFrame, this);
+    this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, this._frameAdded, this);
+    this._target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameRemoved, this);
 
     this._dispatcher = new WebInspector.CanvasDispatcher(this);
     this._canvasAgentEnabled = false;
@@ -716,8 +718,7 @@ WebInspector.CanvasProfileType.prototype = {
     {
         if (error || this._lastProfileHeader && this._lastProfileHeader.traceLogId() === traceLogId)
             return;
-        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-        var profileHeader = new WebInspector.CanvasProfileHeader(target, this, traceLogId, frameId);
+        var profileHeader = new WebInspector.CanvasProfileHeader(this._target, this, traceLogId, frameId);
         this._lastProfileHeader = profileHeader;
         this.addProfile(profileHeader);
         profileHeader._updateCapturingStatus();
@@ -766,6 +767,7 @@ WebInspector.CanvasProfileType.prototype = {
         button.textContent = this._canvasAgentEnabled ? WebInspector.UIString("Disable") : WebInspector.UIString("Enable");
         button.addEventListener("click", this._onProfilerEnableButtonClick.bind(this, !this._canvasAgentEnabled), false);
 
+        var target = this._target;
         /**
          * @param {?Protocol.Error} error
          * @param {boolean} result
@@ -773,7 +775,7 @@ WebInspector.CanvasProfileType.prototype = {
         function hasUninstrumentedCanvasesCallback(error, result)
         {
             if (error || result)
-                WebInspector.resourceTreeModel.reloadPage();
+                target.resourceTreeModel.reloadPage();
         }
 
         if (forcePageReload) {
@@ -782,7 +784,7 @@ WebInspector.CanvasProfileType.prototype = {
             } else {
                 for (var frameId in this._framesWithCanvases) {
                     if (this._framesWithCanvases.hasOwnProperty(frameId)) {
-                        WebInspector.resourceTreeModel.reloadPage();
+                        target.resourceTreeModel.reloadPage();
                         break;
                     }
                 }

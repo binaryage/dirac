@@ -42,7 +42,7 @@ WebInspector.CSSStyleModel = function(target)
     this._styleLoader = new WebInspector.CSSStyleModel.ComputedStyleLoader(this);
     this._domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoRequested, this._undoRedoRequested, this);
     this._domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoCompleted, this._undoRedoCompleted, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameCreatedOrNavigated, this._mainFrameCreatedOrNavigated, this);
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameCreatedOrNavigated, this._mainFrameCreatedOrNavigated, this);
     target.registerCSSDispatcher(new WebInspector.CSSDispatcher(this));
     this._agent.enable(this._wasEnabled.bind(this));
     this._resetStyleSheets();
@@ -356,7 +356,7 @@ WebInspector.CSSStyleModel.prototype = {
      */
     requestViaInspectorStylesheet: function(node, callback)
     {
-        var frameId = node.frameId() || WebInspector.resourceTreeModel.mainFrame.id;
+        var frameId = node.frameId() || this.target().resourceTreeModel.mainFrame.id;
         for (var styleSheetId in this._styleSheetIdToHeader) {
             var styleSheetHeader = this._styleSheetIdToHeader[styleSheetId];
             if (styleSheetHeader.frameId === frameId && styleSheetHeader.isViaInspector()) {
@@ -1511,7 +1511,7 @@ WebInspector.CSSStyleSheetHeader.prototype = {
      */
     _viaInspectorResourceURL: function()
     {
-        var frame = WebInspector.resourceTreeModel.frameForId(this.frameId);
+        var frame = this._cssModel.target().resourceTreeModel.frameForId(this.frameId);
         console.assert(frame);
         var parsedURL = new WebInspector.ParsedURL(frame.url);
         var fakeURL = "inspector://" + parsedURL.host + parsedURL.folderPathComponents;

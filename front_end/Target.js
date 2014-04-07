@@ -80,6 +80,18 @@ WebInspector.Target.prototype = {
         if (!WebInspector.timelineManager)
             WebInspector.timelineManager = this.timelineManager;
 
+        this.databaseModel = new WebInspector.DatabaseModel(this);
+        if (!WebInspector.databaseModel)
+            WebInspector.databaseModel = this.databaseModel;
+
+        this.domStorageModel = new WebInspector.DOMStorageModel(this);
+        if (!WebInspector.domStorageModel)
+            WebInspector.domStorageModel = this.domStorageModel;
+
+        this.cpuProfilerModel = new WebInspector.CPUProfilerModel(this);
+        if (!WebInspector.cpuProfilerModel)
+            WebInspector.cpuProfilerModel = this.cpuProfilerModel;
+
         if (callback)
             callback(this);
     },

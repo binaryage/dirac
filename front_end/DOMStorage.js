@@ -30,11 +30,13 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
+ * @param {!WebInspector.DOMStorageModel} model
  * @param {string} securityOrigin
  * @param {boolean} isLocalStorage
  */
-WebInspector.DOMStorage = function(securityOrigin, isLocalStorage)
+WebInspector.DOMStorage = function(model, securityOrigin, isLocalStorage)
 {
+    this._model = model;
     this._securityOrigin = securityOrigin;
     this._isLocalStorage = isLocalStorage;
 }
@@ -81,7 +83,7 @@ WebInspector.DOMStorage.prototype = {
      */
     getItems: function(callback)
     {
-        DOMStorageAgent.getDOMStorageItems(this.id, callback);
+        this._model._agent.getDOMStorageItems(this.id, callback);
     },
 
     /**
@@ -90,7 +92,7 @@ WebInspector.DOMStorage.prototype = {
      */
     setItem: function(key, value)
     {
-        DOMStorageAgent.setDOMStorageItem(this.id, key, value);
+        this._model._agent.setDOMStorageItem(this.id, key, value);
     },
 
     /**
@@ -98,7 +100,7 @@ WebInspector.DOMStorage.prototype = {
      */
     removeItem: function(key)
     {
-        DOMStorageAgent.removeDOMStorageItem(this.id, key);
+        this._model._agent.removeDOMStorageItem(this.id, key);
     },
 
     __proto__: WebInspector.Object.prototype
@@ -106,16 +108,20 @@ WebInspector.DOMStorage.prototype = {
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
+ * @param {!WebInspector.Target} target
  */
-WebInspector.DOMStorageModel = function()
+WebInspector.DOMStorageModel = function(target)
 {
+    WebInspector.TargetAwareObject.call(this, target);
+
     /** @type {!Object.<string, !WebInspector.DOMStorage>} */
     this._storages = {};
-    InspectorBackend.registerDOMStorageDispatcher(new WebInspector.DOMStorageDispatcher(this));
-    DOMStorageAgent.enable();
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginAdded, this._securityOriginAdded, this);
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginRemoved, this._securityOriginRemoved, this);
+    target.registerDOMStorageDispatcher(new WebInspector.DOMStorageDispatcher(this));
+    this._agent = target.domstorageAgent();
+    this._agent.enable();
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginAdded, this._securityOriginAdded, this);
+    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.SecurityOriginRemoved, this._securityOriginRemoved, this);
 }
 
 WebInspector.DOMStorageModel.Events = {
@@ -133,13 +139,13 @@ WebInspector.DOMStorageModel.prototype = {
         var securityOrigin = /** @type {string} */ (event.data);
         var localStorageKey = this._storageKey(securityOrigin, true);
         console.assert(!this._storages[localStorageKey]);
-        var localStorage = new WebInspector.DOMStorage(securityOrigin, true);
+        var localStorage = new WebInspector.DOMStorage(this, securityOrigin, true);
         this._storages[localStorageKey] = localStorage;
         this.dispatchEventToListeners(WebInspector.DOMStorageModel.Events.DOMStorageAdded, localStorage);
 
         var sessionStorageKey = this._storageKey(securityOrigin, false);
         console.assert(!this._storages[sessionStorageKey]);
-        var sessionStorage = new WebInspector.DOMStorage(securityOrigin, false);
+        var sessionStorage = new WebInspector.DOMStorage(this, securityOrigin, false);
         this._storages[sessionStorageKey] = sessionStorage;
         this.dispatchEventToListeners(WebInspector.DOMStorageModel.Events.DOMStorageAdded, sessionStorage);
     },
@@ -251,7 +257,7 @@ WebInspector.DOMStorageModel.prototype = {
         return result;
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**

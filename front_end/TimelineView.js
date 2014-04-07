@@ -687,7 +687,7 @@ WebInspector.TimelineView.prototype = {
     {
         var rowElement = e.target.enclosingNodeOrSelfWithClass("timeline-tree-item");
         if (rowElement && rowElement.row && rowElement.row._record.record().highlightQuad)
-            this._highlightQuad(rowElement.row._record.record().highlightQuad);
+            this._highlightQuad(rowElement.row._record.record());
         else
             this._hideQuadHighlight();
 
@@ -779,21 +779,22 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
-     * @param {!Array.<number>} quad
+     * @param {!WebInspector.TimelineModel.Record} record
      */
-    _highlightQuad: function(quad)
+    _highlightQuad: function(record)
     {
-        if (this._highlightedQuad === quad)
+        if (this._highlightedQuadRecord === record)
             return;
-        this._highlightedQuad = quad;
-        DOMAgent.highlightQuad(quad, WebInspector.Color.PageHighlight.Content.toProtocolRGBA(), WebInspector.Color.PageHighlight.ContentOutline.toProtocolRGBA());
+        this._highlightedQuadRecord = record;
+        var quad = record.highlightQuad;
+        record.target().domAgent().highlightQuad(quad, WebInspector.Color.PageHighlight.Content.toProtocolRGBA(), WebInspector.Color.PageHighlight.ContentOutline.toProtocolRGBA());
     },
 
     _hideQuadHighlight: function()
     {
-        if (this._highlightedQuad) {
-            delete this._highlightedQuad;
-            DOMAgent.hideHighlight();
+        if (this._highlightedQuadRecord) {
+            this._highlightedQuadRecord.target().domAgent().hideHighlight();
+            delete this._highlightedQuadRecord;
         }
     },
 

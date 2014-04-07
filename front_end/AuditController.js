@@ -31,21 +31,23 @@
 
 /**
  * @constructor
+ * @extends {WebInspector.TargetAware}
+ * @param {!WebInspector.Target} target
  * @param {!WebInspector.AuditsPanel} auditsPanel
  */
-WebInspector.AuditController = function(auditsPanel)
+WebInspector.AuditController = function(target, auditsPanel)
 {
+    WebInspector.TargetAware.call(this, target);
     this._auditsPanel = auditsPanel;
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._didMainResourceLoad, this);
+    this.target().resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.Load, this._didMainResourceLoad, this);
 }
 
 WebInspector.AuditController.prototype = {
     /**
-     * @param {!WebInspector.Target} target
      * @param {!Array.<!WebInspector.AuditCategory>} categories
      * @param {function(string, !Array.<!WebInspector.AuditCategoryResult>)} resultCallback
      */
-    _executeAudit: function(target, categories, resultCallback)
+    _executeAudit: function(categories, resultCallback)
     {
         this._progress.setTitle(WebInspector.UIString("Running audit"));
 
@@ -64,7 +66,7 @@ WebInspector.AuditController.prototype = {
         }
 
         var results = [];
-        var mainResourceURL = target.resourceTreeModel.inspectedPageURL();
+        var mainResourceURL = this.target().resourceTreeModel.inspectedPageURL();
         var categoriesDone = 0;
 
         /**
@@ -87,7 +89,7 @@ WebInspector.AuditController.prototype = {
             var category = categories[i];
             var result = new WebInspector.AuditCategoryResult(category);
             results.push(result);
-            category.run(target, requests, ruleResultReadyCallback.bind(this, result), categoryDoneCallback.bind(this), subprogresses[i]);
+            category.run(this.target(), requests, ruleResultReadyCallback.bind(this, result), categoryDoneCallback.bind(this), subprogresses[i]);
         }
     },
 
@@ -104,14 +106,13 @@ WebInspector.AuditController.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Target} target
      * @param {!Array.<string>} categoryIds
      * @param {!WebInspector.Progress} progress
      * @param {boolean} runImmediately
      * @param {function()} startedCallback
      * @param {function()} finishedCallback
      */
-    initiateAudit: function(target, categoryIds, progress, runImmediately, startedCallback, finishedCallback)
+    initiateAudit: function(categoryIds, progress, runImmediately, startedCallback, finishedCallback)
     {
         if (!categoryIds || !categoryIds.length)
             return;
@@ -128,7 +129,7 @@ WebInspector.AuditController.prototype = {
         function startAuditWhenResourcesReady()
         {
             startedCallback();
-            this._executeAudit(target, categories, this._auditFinishedCallback.bind(this, finishedCallback));
+            this._executeAudit(categories, this._auditFinishedCallback.bind(this, finishedCallback));
         }
 
         if (runImmediately)
@@ -145,7 +146,7 @@ WebInspector.AuditController.prototype = {
     _reloadResources: function(callback)
     {
         this._pageReloadCallback = callback;
-        WebInspector.resourceTreeModel.reloadPage();
+        this.target().resourceTreeModel.reloadPage();
     },
 
     _didMainResourceLoad: function()
@@ -160,5 +161,7 @@ WebInspector.AuditController.prototype = {
     clearResults: function()
     {
         this._auditsPanel.clearResults();
-    }
+    },
+
+    __proto__: WebInspector.TargetAware.prototype
 }

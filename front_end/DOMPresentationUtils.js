@@ -112,13 +112,14 @@ WebInspector.DOMPresentationUtils.linkifyNodeReference = function(node)
 
 /**
  * @param {string} imageURL
+ * @param {!WebInspector.Target} target
  * @param {boolean} showDimensions
  * @param {function(!Element=)} userCallback
  * @param {!Object=} precomputedDimensions
  */
-WebInspector.DOMPresentationUtils.buildImagePreviewContents = function(imageURL, showDimensions, userCallback, precomputedDimensions)
+WebInspector.DOMPresentationUtils.buildImagePreviewContents = function(target, imageURL, showDimensions, userCallback, precomputedDimensions)
 {
-    var resource = WebInspector.resourceTreeModel.resourceForURL(imageURL);
+    var resource = target.resourceTreeModel.resourceForURL(imageURL);
     if (!resource) {
         userCallback();
         return;

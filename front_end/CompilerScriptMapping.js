@@ -191,7 +191,7 @@ WebInspector.CompilerScriptMapping.prototype = {
             callback(null);
             return;
         }
-        var scriptURL = WebInspector.ParsedURL.completeURL(WebInspector.resourceTreeModel.inspectedPageURL(), script.sourceURL);
+        var scriptURL = WebInspector.ParsedURL.completeURL(script.target().resourceTreeModel.inspectedPageURL(), script.sourceURL);
         if (!scriptURL) {
             callback(null);
             return;

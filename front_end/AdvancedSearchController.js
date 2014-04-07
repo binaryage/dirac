@@ -35,8 +35,6 @@ WebInspector.AdvancedSearchController = function()
     this._searchId = 0;
 
     WebInspector.settings.advancedSearchConfig = WebInspector.settings.createSetting("advancedSearchConfig", new WebInspector.SearchConfig("", true, false));
-
-    WebInspector.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, this._frameNavigated, this);
 }
 
 /**
@@ -68,11 +66,6 @@ WebInspector.AdvancedSearchController.prototype = {
             return true;
         }
         return false;
-    },
-
-    _frameNavigated: function()
-    {
-        this.resetSearch();
     },
 
     show: function()

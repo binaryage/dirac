@@ -469,29 +469,31 @@ WebInspector.ElementsPanel.prototype = {
     _getPopoverAnchor: function(element)
     {
         var anchor = element.enclosingNodeOrSelfWithClass("webkit-html-resource-link");
-        if (anchor) {
-            if (!anchor.href)
-                return null;
+        if (!anchor || !anchor.href)
+            return null;
 
-            var resource = WebInspector.resourceTreeModel.resourceForURL(anchor.href);
+        var treeOutlineElement = anchor.enclosingNodeOrSelfWithClass("elements-tree-outline");
+        if (!treeOutlineElement)
+            return null;
+
+        for (var i = 0; i < this._treeOutlines.length; ++i) {
+            if (this._treeOutlines[i].element !== treeOutlineElement)
+                continue;
+
+            var resource = this._treeOutlines[i].target().resourceTreeModel.resourceForURL(anchor.href);
             if (!resource || resource.type !== WebInspector.resourceTypes.Image)
                 return null;
-
             anchor.removeAttribute("title");
+            return anchor;
         }
-        return anchor;
+        return null;
     },
 
-    _loadDimensionsForNode: function(treeElement, callback)
+    /**
+     * @param {!WebInspector.DOMNode} node
+     */
+    _loadDimensionsForNode: function(node, callback)
     {
-        // We get here for CSS properties, too, so bail out early for non-DOM treeElements.
-        if (!(treeElement.treeOutline instanceof WebInspector.ElementsTreeOutline)) {
-            callback();
-            return;
-        }
-
-        var node = /** @type {!WebInspector.DOMNode} */ (treeElement.representedObject);
-
         if (!node.nodeName() || node.nodeName().toLowerCase() !== "img") {
             callback();
             return;
@@ -528,10 +530,15 @@ WebInspector.ElementsPanel.prototype = {
     _showPopover: function(anchor, popover)
     {
         var listItem = anchor.enclosingNodeOrSelfWithNodeName("li");
-        if (listItem && listItem.treeElement)
-            this._loadDimensionsForNode(listItem.treeElement, WebInspector.DOMPresentationUtils.buildImagePreviewContents.bind(WebInspector.DOMPresentationUtils, anchor.href, true, showPopover));
-        else
-            WebInspector.DOMPresentationUtils.buildImagePreviewContents(anchor.href, true, showPopover);
+        // We get here for CSS properties, too.
+        if (listItem && listItem.treeElement && listItem.treeElement.treeOutline instanceof WebInspector.ElementsTreeOutline) {
+            var node = /** @type {!WebInspector.DOMNode} */ (listItem.treeElement.representedObject);
+            this._loadDimensionsForNode(node, WebInspector.DOMPresentationUtils.buildImagePreviewContents.bind(WebInspector.DOMPresentationUtils, node.target(), anchor.href, true, showPopover));
+        } else {
+            var node = this.selectedDOMNode();
+            if (node)
+                WebInspector.DOMPresentationUtils.buildImagePreviewContents(node.target(), anchor.href, true, showPopover);
+        }
 
         /**
          * @param {!Element=} contents
