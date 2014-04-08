@@ -773,24 +773,46 @@ WebInspector.revertDomChanges = function(domChanges)
     }
 }
 
-WebInspector._coalescingLevel = 0;
-
-WebInspector.startBatchUpdate = function()
+/**
+ * @constructor
+ * @param {boolean} autoInvoke
+ */
+WebInspector.InvokeOnceHandlers = function(autoInvoke)
 {
-    if (!WebInspector._coalescingLevel)
-        WebInspector._postUpdateHandlers = new Map();
-    WebInspector._coalescingLevel++;
+    this._handlers = null;
+    this._autoInvoke = autoInvoke;
 }
 
-WebInspector.endBatchUpdate = function()
-{
-    if (--WebInspector._coalescingLevel)
-        return;
+WebInspector.InvokeOnceHandlers.prototype = {
+    /**
+     * @param {!Object} object
+     * @param {function()} method
+     */
+    add: function(object, method)
+    {
+        if (!this._handlers) {
+            this._handlers = new Map();
+            if (this._autoInvoke)
+                this.scheduleInvoke();
+        }
+        var methods = this._handlers.get(object);
+        if (!methods) {
+            methods = new Set();
+            this._handlers.put(object, methods);
+        }
+        methods.add(method);
+    },
 
-    var handlers = WebInspector._postUpdateHandlers;
-    delete WebInspector._postUpdateHandlers;
+    scheduleInvoke: function()
+    {
+        if (this._handlers)
+            requestAnimationFrame(this._invoke.bind(this));
+    },
 
-    window.requestAnimationFrame(function() {
+    _invoke: function()
+    {
+        var handlers = this._handlers;
+        this._handlers = null;
         var keys = handlers.keys();
         for (var i = 0; i < keys.length; ++i) {
             var object = keys[i];
@@ -798,7 +820,24 @@ WebInspector.endBatchUpdate = function()
             for (var j = 0; j < methods.length; ++j)
                 methods[j].call(object);
         }
-    });
+    }
+}
+
+WebInspector._coalescingLevel = 0;
+WebInspector._postUpdateHandlers = null;
+
+WebInspector.startBatchUpdate = function()
+{
+    if (!WebInspector._coalescingLevel++)
+        WebInspector._postUpdateHandlers = new WebInspector.InvokeOnceHandlers(false);
+}
+
+WebInspector.endBatchUpdate = function()
+{
+    if (--WebInspector._coalescingLevel)
+        return;
+    WebInspector._postUpdateHandlers.scheduleInvoke();
+    WebInspector._postUpdateHandlers = null;
 }
 
 /**
@@ -807,17 +846,9 @@ WebInspector.endBatchUpdate = function()
  */
 WebInspector.invokeOnceAfterBatchUpdate = function(object, method)
 {
-    if (!WebInspector._coalescingLevel) {
-        window.requestAnimationFrame(method.bind(object));
-        return;
-    }
-
-    var methods = WebInspector._postUpdateHandlers.get(object);
-    if (!methods) {
-        methods = new Set();
-        WebInspector._postUpdateHandlers.put(object, methods);
-    }
-    methods.add(method);
+    if (!WebInspector._postUpdateHandlers)
+        WebInspector._postUpdateHandlers = new WebInspector.InvokeOnceHandlers(true);
+    WebInspector._postUpdateHandlers.add(object, method);
 }
 
 ;(function() {
