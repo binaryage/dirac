@@ -37,7 +37,6 @@ importScript("NavigatorView.js");
 importScript("RevisionHistoryView.js");
 importScript("ScopeChainSidebarPane.js");
 importScript("SourcesNavigator.js");
-importScript("SourcesSearchScope.js");
 importScript("StyleSheetOutlineDialog.js");
 importScript("TabbedEditorContainer.js");
 importScript("WatchExpressionsSidebarPane.js");

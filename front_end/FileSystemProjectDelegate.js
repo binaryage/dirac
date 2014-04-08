@@ -214,17 +214,14 @@ WebInspector.FileSystemProjectDelegate.prototype = {
     },
 
     /**
-     * @param {!Array.<string>} queries
-     * @param {!Array.<string>} fileQueries
-     * @param {boolean} caseSensitive
-     * @param {boolean} isRegex
+     * @param {!WebInspector.ProjectSearchConfig} searchConfig
      * @param {!WebInspector.Progress} progress
      * @param {function(!Array.<string>)} callback
      */
-    findFilesMatchingSearchRequest: function(queries, fileQueries, caseSensitive, isRegex, progress, callback)
+    findFilesMatchingSearchRequest: function(searchConfig, progress, callback)
     {
         var result = null;
-        var queriesToRun = queries.slice();
+        var queriesToRun = searchConfig.queries().slice();
         if (!queriesToRun.length)
             queriesToRun.push("");
         progress.setTotalWork(queriesToRun.length);
@@ -240,7 +237,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
                 return;
             }
             var query = queriesToRun.shift();
-            this._searchInPath(isRegex ? "" : query, progress, innerCallback.bind(this));
+            this._searchInPath(searchConfig.isRegex() ? "" : query, progress, innerCallback.bind(this));
         }
 
         /**
@@ -263,23 +260,7 @@ WebInspector.FileSystemProjectDelegate.prototype = {
          */
         function matchFileQueries(files)
         {
-            var fileRegexes = [];
-            for (var i = 0; i < fileQueries.length; ++i)
-                fileRegexes.push(new RegExp(fileQueries[i], caseSensitive ? "" : "i"));
-
-            /**
-             * @param {!string} file
-             */
-            function filterOutNonMatchingFiles(file)
-            {
-                for (var i = 0; i < fileRegexes.length; ++i) {
-                    if (!file.match(fileRegexes[i]))
-                        return false;
-                }
-                return true;
-            }
-
-            files = files.filter(filterOutNonMatchingFiles);
+            files = files.filter(searchConfig.filePathMatchesFileQuery.bind(searchConfig));
             progress.done();
             callback(files);
         }

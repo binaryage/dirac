@@ -52,9 +52,9 @@ WebInspector.Main.prototype = {
     {
         var configuration;
         if (!Capabilities.isMainFrontend) {
-            configuration = ["main", "sources", "timeline", "profiles", "console", "codemirror"];
+            configuration = ["main", "sources", "timeline", "profiles", "console", "codemirror", "search"];
         } else {
-            configuration = ["main", "elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "codemirror", "extensions", "settings"];
+            configuration = ["main", "elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "codemirror", "extensions", "settings", "search"];
             if (WebInspector.experimentsSettings.layersPanel.isEnabled())
                 configuration.push("layers");
         }
@@ -264,8 +264,6 @@ WebInspector.Main.prototype = {
 
         WebInspector.zoomManager = new WebInspector.ZoomManager();
 
-        WebInspector.advancedSearchController = new WebInspector.AdvancedSearchController();
-
         InspectorBackend.registerInspectorDispatcher(this);
 
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
@@ -464,7 +462,10 @@ WebInspector.Main.prototype = {
         section.addKey(shortcut.makeDescriptor(shortcut.Keys.Esc), toggleDrawerLabel);
         section.addKey(shortcut.makeDescriptor("f", shortcut.Modifiers.CtrlOrMeta), WebInspector.UIString("Search"));
 
-        var advancedSearchShortcut = WebInspector.AdvancedSearchController.createShortcut();
+        var advancedSearchShortcutModifier = WebInspector.isMac()
+                ? WebInspector.KeyboardShortcut.Modifiers.Meta | WebInspector.KeyboardShortcut.Modifiers.Alt
+                : WebInspector.KeyboardShortcut.Modifiers.Ctrl | WebInspector.KeyboardShortcut.Modifiers.Shift;
+        var advancedSearchShortcut = shortcut.makeDescriptor("f", advancedSearchShortcutModifier);
         section.addKey(advancedSearchShortcut, WebInspector.UIString("Search across all sources"));
 
         var inspectElementModeShortcut = WebInspector.InspectElementModeController.createShortcut();
@@ -522,8 +523,6 @@ WebInspector.Main.prototype = {
             }
         }
 
-        if (!WebInspector.Dialog.currentInstance() && WebInspector.advancedSearchController.handleShortcut(event))
-            return;
         if (!WebInspector.Dialog.currentInstance() && WebInspector.inspectElementModeController && WebInspector.inspectElementModeController.handleShortcut(event))
             return;
 

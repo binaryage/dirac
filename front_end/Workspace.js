@@ -148,20 +148,55 @@ WebInspector.ProjectDelegate.prototype = {
     searchInFileContent: function(path, query, caseSensitive, isRegex, callback) { },
 
     /**
-     * @param {!Array.<string>} queries
-     * @param {!Array.<string>} fileQueries
-     * @param {boolean} caseSensitive
-     * @param {boolean} isRegex
+     * @param {!WebInspector.ProjectSearchConfig} searchConfig
      * @param {!WebInspector.Progress} progress
      * @param {function(!Array.<string>)} callback
      */
-    findFilesMatchingSearchRequest: function(queries, fileQueries, caseSensitive, isRegex, progress, callback) { },
+    findFilesMatchingSearchRequest: function(searchConfig, progress, callback) { },
 
     /**
      * @param {!WebInspector.Progress} progress
      * @param {function()} callback
      */
     indexContent: function(progress, callback) { }
+}
+
+/**
+ * @interface
+ */
+WebInspector.ProjectSearchConfig = function() {}
+
+WebInspector.ProjectSearchConfig.prototype = {
+    /**
+     * @return {string}
+     */
+    query: function() { },
+
+    /**
+     * @return {boolean}
+     */
+    ignoreCase: function() { },
+
+    /**
+     * @return {boolean}
+     */
+    isRegex: function() { },
+
+    /**
+     * @return {!Array.<string>}
+     */
+    fileQueries: function() { },
+
+    /**
+     * @return {!Array.<string>}
+     */
+    queries: function() { },
+
+    /**
+     * @param {string} filePath
+     * @return {boolean}
+     */
+    filePathMatchesFileQuery: function(filePath) { }
 }
 
 /**
@@ -458,16 +493,13 @@ WebInspector.Project.prototype = {
     },
 
     /**
-     * @param {!Array.<string>} queries
-     * @param {!Array.<string>} fileQueries
-     * @param {boolean} caseSensitive
-     * @param {boolean} isRegex
+     * @param {!WebInspector.ProjectSearchConfig} searchConfig
      * @param {!WebInspector.Progress} progress
      * @param {function(!Array.<string>)} callback
      */
-    findFilesMatchingSearchRequest: function(queries, fileQueries, caseSensitive, isRegex, progress, callback)
+    findFilesMatchingSearchRequest: function(searchConfig, progress, callback)
     {
-        this._projectDelegate.findFilesMatchingSearchRequest(queries, fileQueries, caseSensitive, isRegex, progress, callback);
+        this._projectDelegate.findFilesMatchingSearchRequest(searchConfig, progress, callback);
     },
 
     /**

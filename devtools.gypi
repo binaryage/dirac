@@ -35,7 +35,6 @@
         'debug_devtools%': 0,
         'devtools_files': [
             'front_end/inspector.html',
-            'front_end/AdvancedSearchController.js',
             'front_end/ApplicationCacheModel.js',
             'front_end/BreakpointManager.js',
             'front_end/Checkbox.js',
@@ -242,6 +241,12 @@
             'front_end/ConsoleView.js',
             'front_end/ConsoleViewMessage.js',
         ],
+        'devtools_search_js_files': [
+            'front_end/AdvancedSearchController.js',
+            'front_end/FileBasedSearchResultsPane.js',
+            'front_end/SearchConfig.js',
+            'front_end/SourcesSearchScope.js',
+        ],
         'devtools_elements_js_files': [
             'front_end/DOMSyntaxHighlighter.js',
             'front_end/ElementsTreeOutline.js',
@@ -300,7 +305,6 @@
             'front_end/SimpleHistoryManager.js',
             'front_end/SourcesNavigator.js',
             'front_end/SourcesPanel.js',
-            'front_end/SourcesSearchScope.js',
             'front_end/StyleSheetOutlineDialog.js',
             'front_end/TabbedEditorContainer.js',
             'front_end/UISourceCodeFrame.js',
@@ -392,6 +396,7 @@
         ],
         'devtools_modules_js_files': [
             '<@(devtools_console_js_files)',
+            '<@(devtools_search_js_files)',
             '<@(devtools_elements_js_files)',
             '<@(devtools_extensions_js_files)',
             '<@(devtools_resources_js_files)',

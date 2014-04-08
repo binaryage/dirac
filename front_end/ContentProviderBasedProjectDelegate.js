@@ -220,14 +220,11 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     },
 
     /**
-     * @param {!Array.<string>} queries
-     * @param {!Array.<string>} fileQueries
-     * @param {boolean} caseSensitive
-     * @param {boolean} isRegex
+     * @param {!WebInspector.ProjectSearchConfig} searchConfig
      * @param {!WebInspector.Progress} progress
      * @param {function(!Array.<string>)} callback
      */
-    findFilesMatchingSearchRequest: function(queries, fileQueries, caseSensitive, isRegex, progress, callback)
+    findFilesMatchingSearchRequest: function(searchConfig, progress, callback)
     {
         var result = [];
         var paths = Object.keys(this._contentProviders);
@@ -250,23 +247,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
         if (!WebInspector.settings.searchInContentScripts.get())
             paths = paths.filter(filterOutContentScripts.bind(this));
 
-        var fileRegexes = [];
-        for (var i = 0; i < fileQueries.length; ++i)
-            fileRegexes.push(new RegExp(fileQueries[i], caseSensitive ? "" : "i"));
-
-        /**
-         * @param {!string} file
-         */
-        function filterOutNonMatchingFiles(file)
-        {
-            for (var i = 0; i < fileRegexes.length; ++i) {
-                if (!file.match(fileRegexes[i]))
-                    return false;
-            }
-            return true;
-        }
-
-        paths = paths.filter(filterOutNonMatchingFiles);
+        paths = paths.filter(searchConfig.filePathMatchesFileQuery.bind(searchConfig));
         var barrier = new CallbackBarrier();
         progress.setTotalWork(paths.length);
         for (var i = 0; i < paths.length; ++i)
@@ -280,7 +261,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
          */
         function searchInContent(path, callback)
         {
-            var queriesToRun = queries.slice();
+            var queriesToRun = searchConfig.queries().slice();
             searchNextQuery.call(this);
 
             /**
@@ -293,7 +274,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
                     return;
                 }
                 var query = queriesToRun.shift();
-                this._contentProviders[path].searchInContent(query, caseSensitive, isRegex, contentCallback.bind(this));
+                this._contentProviders[path].searchInContent(query, !searchConfig.ignoreCase(), searchConfig.isRegex(), contentCallback.bind(this));
             }
 
             /**

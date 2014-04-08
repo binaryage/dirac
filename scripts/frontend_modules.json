@@ -155,7 +155,6 @@
         "name": "components",
         "dependencies": ["sdk", "ui"],
         "sources": [
-            "AdvancedSearchController.js",
             "HandlerRegistry.js",
             "CookiesTable.js",
             "DOMBreakpointsSidebarPane.js",
@@ -260,6 +259,16 @@
         ]
     },
     {
+        "name": "search",
+        "dependencies": ["components"],
+        "sources": [
+            "AdvancedSearchController.js",
+            "FileBasedSearchResultsPane.js",
+            "SearchConfig.js",
+            "SourcesSearchScope.js"
+        ]
+    },
+    {
         "name": "sources",
         "dependencies": ["components", "source_frame", "workers", "console"],
         "sources": [
@@ -278,7 +287,6 @@
             "SourcesView.js",
             "SourcesNavigator.js",
             "SourcesPanel.js",
-            "SourcesSearchScope.js",
             "StyleSheetOutlineDialog.js",
             "TabbedEditorContainer.js",
             "UISourceCodeFrame.js",

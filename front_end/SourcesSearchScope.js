@@ -73,9 +73,9 @@ WebInspector.SourcesSearchScope.prototype = {
     },
 
     /**
-     * @param {!WebInspector.SearchConfig} searchConfig
+     * @param {!WebInspector.ProjectSearchConfig} searchConfig
      * @param {!WebInspector.Progress} progress
-     * @param {function(!WebInspector.FileBasedSearchResultsPane.SearchResult)} searchResultCallback
+     * @param {function(!WebInspector.FileBasedSearchResult)} searchResultCallback
      * @param {function(boolean)} searchFinishedCallback
      */
     performSearch: function(searchConfig, progress, searchResultCallback, searchFinishedCallback)
@@ -96,7 +96,7 @@ WebInspector.SourcesSearchScope.prototype = {
             var searchContentProgress = projectProgress.createSubProgress();
             var barrierCallback = barrier.createCallback();
             var callback = this._processMatchingFilesForProject.bind(this, this._searchId, project, searchContentProgress, barrierCallback);
-            project.findFilesMatchingSearchRequest(searchConfig.queries(), searchConfig.fileQueries(), !searchConfig.ignoreCase, searchConfig.isRegex, findMatchingFilesProgress, callback);
+            project.findFilesMatchingSearchRequest(searchConfig, findMatchingFilesProgress, callback);
         }
         barrier.callWhenDone(this._searchFinishedCallback.bind(this, true));
     },
@@ -213,13 +213,13 @@ WebInspector.SourcesSearchScope.prototype = {
             var queries = this._searchConfig.queries();
             if (content !== null) {
                 for (var i = 0; i < queries.length; ++i) {
-                    var nextMatches = WebInspector.ContentProvider.performSearchInContent(content, queries[i], !this._searchConfig.ignoreCase, this._searchConfig.isRegex)
+                    var nextMatches = WebInspector.ContentProvider.performSearchInContent(content, queries[i], !this._searchConfig.ignoreCase(), this._searchConfig.isRegex())
                     matches = matches.mergeOrdered(nextMatches, matchesComparator);
                 }
             }
             var uiSourceCode = project.uiSourceCode(path);
             if (matches && uiSourceCode) {
-                var searchResult = new WebInspector.FileBasedSearchResultsPane.SearchResult(uiSourceCode, matches);
+                var searchResult = new WebInspector.FileBasedSearchResult(uiSourceCode, matches);
                 this._searchResultCallback(searchResult);
             }
 
@@ -234,7 +234,7 @@ WebInspector.SourcesSearchScope.prototype = {
     },
 
     /**
-     * @param {!WebInspector.SearchConfig} searchConfig
+     * @param {!WebInspector.ProjectSearchConfig} searchConfig
      * @return {!WebInspector.FileBasedSearchResultsPane}
      */
     createSearchResultsPane: function(searchConfig)

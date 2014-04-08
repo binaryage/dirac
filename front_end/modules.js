@@ -259,13 +259,6 @@ var allDescriptors = [
                 className: "WebInspector.SourcesSearchScope"
             },
             {
-                type: "drawer-view",
-                name: "search",
-                title: "Search",
-                order: "1",
-                className: "WebInspector.SearchView"
-            },
-            {
                 type: "@WebInspector.DrawerEditor",
                 className: "WebInspector.SourcesPanel.DrawerEditor"
             },
@@ -527,6 +520,33 @@ var allDescriptors = [
             }
         ],
         scripts: [ "ConsolePanel.js" ]
+    },
+    {
+        name: "search",
+        extensions: [
+             {
+                 type: "drawer-view",
+                 name: "search",
+                 title: "Search",
+                 order: "1",
+                 className: "WebInspector.SearchView"
+             },
+             {
+                 type: "@WebInspector.ActionDelegate",
+                 bindings: [
+                     {
+                         platform: "mac",
+                         shortcut: "Meta+Alt+F"
+                     },
+                     {
+                         platform: "windows,linux",
+                         shortcut: "Ctrl+Shift+F"
+                     }
+                 ],
+                 className: "WebInspector.AdvancedSearchController.ToggleDrawerViewActionDelegate"
+             }
+        ],
+        scripts: [ "AdvancedSearchController.js" ]
     },
     {
         name: "settings",
