@@ -164,9 +164,6 @@ WebInspector.NetworkDispatcher.prototype = {
      */
     _updateNetworkRequestWithResponse: function(networkRequest, response)
     {
-        if (!response)
-            return;
-
         if (response.url && networkRequest.url !== response.url)
             networkRequest.url = response.url;
         networkRequest.mimeType = response.mimeType;
@@ -236,17 +233,6 @@ WebInspector.NetworkDispatcher.prototype = {
     },
 
     /**
-     * @param {!NetworkAgent.Response} response
-     * @return {boolean}
-     */
-    _isNull: function(response)
-    {
-        if (!response)
-            return true;
-        return !response.status && !response.mimeType && (!response.headers || !Object.keys(response.headers).length);
-    },
-
-    /**
      * @param {!NetworkAgent.RequestId} requestId
      * @param {!PageAgent.FrameId} frameId
      * @param {!NetworkAgent.LoaderId} loaderId
@@ -296,10 +282,6 @@ WebInspector.NetworkDispatcher.prototype = {
      */
     responseReceived: function(requestId, frameId, loaderId, time, resourceType, response)
     {
-        // FIXME: move this check to the backend.
-        if (this._isNull(response))
-            return;
-
         var networkRequest = this._inflightRequestsById[requestId];
         if (!networkRequest) {
             // We missed the requestWillBeSent.
