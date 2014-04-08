@@ -53,6 +53,16 @@ Object.values = function(obj)
 }
 
 /**
+ * @param {number} n
+ * @param {number} m
+ * @return {number}
+ */
+function mod(m, n)
+{
+    return ((m % n) + n) % n;
+}
+
+/**
  * @param {string} string
  * @return {!Array.<number>}
  */

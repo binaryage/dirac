@@ -86,6 +86,14 @@ WebInspector.View.prototype = {
     },
 
     /**
+     * @return {!Array.<!WebInspector.View>}
+     */
+    children: function()
+    {
+        return this._children;
+    },
+
+    /**
      * @return {boolean}
      */
     isShowing: function()

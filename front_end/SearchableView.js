@@ -163,6 +163,20 @@ WebInspector.SearchableView.findPreviousShortcuts = function()
 
 WebInspector.SearchableView.prototype = {
     /**
+     * @return {!Element}
+     */
+    defaultFocusedElement: function()
+    {
+        var children = this.children();
+        for (var i = 0; i < children.length; ++i) {
+            var element = children[i].defaultFocusedElement();
+            if (element)
+                return element;
+        }
+        return WebInspector.View.prototype.defaultFocusedElement.call(this);
+    },
+
+    /**
      * @param {!KeyboardEvent} event
      */
     _onKeyDown: function(event)
@@ -239,7 +253,7 @@ WebInspector.SearchableView.prototype = {
     {
         this.cancelSearch();
         if (WebInspector.currentFocusElement().isDescendant(this._footerElementContainer))
-            WebInspector.setCurrentFocusElement(WebInspector.previousFocusElement());
+            this.focus();
     },
 
     _toggleSearchBar: function(toggled)

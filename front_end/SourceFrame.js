@@ -421,23 +421,17 @@ WebInspector.SourceFrame.prototype = {
 
     _editorFocused: function()
     {
+        this._resetCurrentSearchResultIndex();
+    },
+
+    _resetCurrentSearchResultIndex: function()
+    {
         if (!this._searchResults.length)
             return;
         this._currentSearchResultIndex = -1;
         if (this._currentSearchMatchChangedCallback)
             this._currentSearchMatchChangedCallback(this._currentSearchResultIndex);
         this._textEditor.highlightSearchResults(this._searchRegex, null);
-    },
-
-    _searchResultAfterSelectionIndex: function(selection)
-    {
-        if (!selection)
-            return 0;
-        for (var i = 0; i < this._searchResults.length; ++i) {
-            if (this._searchResults[i].compareTo(selection) >= 0)
-                return i;
-        }
-        return 0;
     },
 
     _resetSearch: function()
@@ -479,16 +473,24 @@ WebInspector.SourceFrame.prototype = {
         this.jumpToSearchResult(this._searchResults.length - 1);
     },
 
+    /**
+     * @return {number}
+     */
+    _searchResultIndexForCurrentSelection: function()
+    {
+        return insertionIndexForObjectInListSortedByFunction(this._textEditor.selection(), this._searchResults, WebInspector.TextRange.comparator);
+    },
+
     jumpToNextSearchResult: function()
     {
-        var currentIndex = this._searchResultAfterSelectionIndex(this._textEditor.selection());
+        var currentIndex = this._searchResultIndexForCurrentSelection();
         var nextIndex = this._currentSearchResultIndex === -1 ? currentIndex : currentIndex + 1;
         this.jumpToSearchResult(nextIndex);
     },
 
     jumpToPreviousSearchResult: function()
     {
-        var currentIndex = this._searchResultAfterSelectionIndex(this._textEditor.selection());
+        var currentIndex = this._searchResultIndexForCurrentSelection();
         this.jumpToSearchResult(currentIndex - 1);
     },
 
@@ -546,7 +548,7 @@ WebInspector.SourceFrame.prototype = {
      */
     replaceAllWith: function(query, replacement)
     {
-        this._textEditor.highlightSearchResults(this._searchRegex, null);
+        this._resetCurrentSearchResultIndex();
 
         var text = this._textEditor.text();
         var range = this._textEditor.range();
@@ -556,8 +558,25 @@ WebInspector.SourceFrame.prototype = {
         else
             text = text.replace(regex, function() { return replacement; });
 
+        var ranges = this._collectRegexMatches(regex);
+        if (!ranges.length)
+            return;
+
+        // Calculate the position of the end of the last range to be edited.
+        var currentRangeIndex = insertionIndexForObjectInListSortedByFunction(this._textEditor.selection(), ranges, WebInspector.TextRange.comparator);
+        var lastRangeIndex = mod(currentRangeIndex - 1, ranges.length);
+        var lastRange = ranges[lastRangeIndex];
+        var replacementLineEndings = replacement.lineEndings();
+        var replacementLineCount = replacementLineEndings.length;
+        var lastLineNumber = lastRange.startLine + replacementLineEndings.length - 1;
+        var lastColumnNumber = lastRange.startColumn;
+        if (replacementLineEndings.length > 1)
+            lastColumnNumber = replacementLineEndings[replacementLineCount - 1] - replacementLineEndings[replacementLineCount - 2] - 1;
+
         this._isReplacing = true;
         this._textEditor.editRange(range, text);
+        this._textEditor.revealPosition(lastLineNumber, lastColumnNumber);
+        this._textEditor.setSelection(WebInspector.TextRange.createFromLocation(lastLineNumber, lastColumnNumber));
         delete this._isReplacing;
     },
 
