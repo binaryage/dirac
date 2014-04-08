@@ -540,7 +540,9 @@ WebInspector.CPUProfileView.prototype = {
 
     _buildIdToNodeMap: function()
     {
-        var idToNode = this._idToNode = {};
+        /** @type {!Object.<string, !ProfilerAgent.CPUProfileNode>} */
+        this._idToNode = {};
+        var idToNode = this._idToNode;
         var stack = [this.profileHead];
         while (stack.length) {
             var node = stack.pop();
@@ -1164,6 +1166,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             entries[entries.length - 1].selfTime += samplingInterval;
         }
 
+        /** @type {!Array.<!ProfilerAgent.CPUProfileNode>} */
         var entryNodes = new Array(entries.length);
         var entryLevels = new Uint8Array(entries.length);
         var entryTotalTimes = new Float32Array(entries.length);
@@ -1187,6 +1190,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             entryOffsets: entryOffsets,
         };
 
+        /** @type {!Array.<!ProfilerAgent.CPUProfileNode>} */
         this._entryNodes = entryNodes;
         this._entrySelfTimes = entrySelfTimes;
 
@@ -1232,7 +1236,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         pushEntryInfoRow(WebInspector.UIString("Self time"), selfTime);
         pushEntryInfoRow(WebInspector.UIString("Total time"), totalTime);
         var target = this._cpuProfileView.profile.target();
-        var text = WebInspector.Linkifier.liveLocationText(node.scriptId, node.lineNumber, node.columnNumber);
+        var text = WebInspector.Linkifier.liveLocationText(target, node.scriptId, node.lineNumber, node.columnNumber);
         pushEntryInfoRow(WebInspector.UIString("URL"), text);
         pushEntryInfoRow(WebInspector.UIString("Aggregated self time"), Number.secondsToString(node.selfTime / 1000, true));
         pushEntryInfoRow(WebInspector.UIString("Aggregated total time"), Number.secondsToString(node.totalTime / 1000, true));
