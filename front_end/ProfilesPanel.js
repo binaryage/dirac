@@ -1246,8 +1246,9 @@ WebInspector.ProfilesSidebarTreeElement.prototype = {
 }
 
 
-importScript("ProfileDataGridTree.js");
-importScript("BottomUpProfileDataGridTree.js");
+importScript("CPUProfileDataGrid.js");
+importScript("CPUProfileBottomUpDataGrid.js");
+importScript("CPUProfileTopDownDataGrid.js");
 importScript("CPUProfileFlameChart.js");
 importScript("CPUProfileView.js");
 importScript("HeapSnapshotCommon.js");
@@ -1256,7 +1257,6 @@ importScript("HeapSnapshotDataGrids.js");
 importScript("HeapSnapshotGridNodes.js");
 importScript("HeapSnapshotView.js");
 importScript("ProfileLauncherView.js");
-importScript("TopDownProfileDataGridTree.js");
 importScript("CanvasProfileView.js");
 importScript("CanvasReplayStateView.js");
 importScript("PieChart.js");

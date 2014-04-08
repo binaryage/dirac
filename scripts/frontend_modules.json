@@ -390,18 +390,18 @@
         "name": "profiler",
         "dependencies": ["components"],
         "sources": [
-            "BottomUpProfileDataGridTree.js",
+            "CPUProfileBottomUpDataGrid.js",
+            "CPUProfileDataGrid.js",
             "CPUProfileFlameChart.js",
+            "CPUProfileTopDownDataGrid.js",
             "CPUProfileView.js",
             "HeapSnapshotCommon.js",
             "HeapSnapshotDataGrids.js",
             "HeapSnapshotGridNodes.js",
             "HeapSnapshotProxy.js",
             "HeapSnapshotView.js",
-            "ProfileDataGridTree.js",
             "ProfilesPanel.js",
             "ProfileLauncherView.js",
-            "TopDownProfileDataGridTree.js",
             "CanvasProfileView.js",
             "CanvasReplayStateView.js"
         ]
