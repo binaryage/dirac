@@ -57,6 +57,10 @@ WebInspector.ProfileDataGridNode.prototype = {
         {
             return WebInspector.UIString("%.1f\u2009ms", time);
         }
+        function formatPercent(value)
+        {
+            return WebInspector.UIString("%.2f\u2009%", value);
+        }
 
         var data = {};
 
@@ -66,18 +70,14 @@ WebInspector.ProfileDataGridNode.prototype = {
             marker.title = WebInspector.UIString("Not optimized: %s", this._deoptReason);
             content.createTextChild(this.functionName);
             data["function"] = content;
-        } else
+        } else {
             data["function"] = this.functionName;
+        }
 
-        if (this.tree.profileView.showSelfTimeAsPercent.get())
-            data["self"] = WebInspector.UIString("%.2f%", this.selfPercent);
-        else
-            data["self"] = formatMilliseconds(this.selfTime);
-
-        if (this.tree.profileView.showTotalTimeAsPercent.get())
-            data["total"] = WebInspector.UIString("%.2f%", this.totalPercent);
-        else
-            data["total"] = formatMilliseconds(this.totalTime);
+        data["self-percent"] = formatPercent(this.selfPercent);
+        data["self"] = formatMilliseconds(this.selfTime);
+        data["total-percent"] = formatPercent(this.totalPercent);
+        data["total"] = formatMilliseconds(this.totalTime);
 
         return data;
     },
@@ -89,7 +89,7 @@ WebInspector.ProfileDataGridNode.prototype = {
      */
     createCell: function(columnIdentifier)
     {
-        var cell = WebInspector.DataGridNode.prototype.createCell.call(this, columnIdentifier);
+        var cell = this._createValueCell(columnIdentifier) || WebInspector.DataGridNode.prototype.createCell.call(this, columnIdentifier);
 
         if (columnIdentifier === "self" && this._searchMatchedSelfColumn)
             cell.classList.add("highlight");
@@ -116,6 +116,33 @@ WebInspector.ProfileDataGridNode.prototype = {
             cell.insertBefore(urlElement, cell.firstChild);
         }
 
+        return cell;
+    },
+
+    /**
+     * @param {string} columnIdentifier
+     * @return {?Element}
+     */
+    _createValueCell: function(columnIdentifier)
+    {
+        if (columnIdentifier !== "self" && columnIdentifier !== "total")
+            return null;
+
+        var cell = document.createElement("td");
+        cell.className = "numeric-column";
+        var div = document.createElement("div");
+        var valueSpan = document.createElement("span");
+        valueSpan.textContent = this.data[columnIdentifier];
+        div.appendChild(valueSpan);
+        var percentColumn = columnIdentifier + "-percent";
+        if (percentColumn in this.data) {
+            var percentSpan = document.createElement("span");
+            percentSpan.className = "percent-column";
+            percentSpan.textContent = this.data[percentColumn];
+            div.appendChild(percentSpan);
+            div.classList.add("profile-multiple-values");
+        }
+        cell.appendChild(div);
         return cell;
     },
 

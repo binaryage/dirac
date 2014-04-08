@@ -31,22 +31,17 @@
 WebInspector.CPUProfileView = function(profileHeader)
 {
     WebInspector.VBox.call(this);
-
     this.element.classList.add("cpu-profile-view");
 
-    this.showSelfTimeAsPercent = WebInspector.settings.createSetting("cpuProfilerShowSelfTimeAsPercent", true);
-    this.showTotalTimeAsPercent = WebInspector.settings.createSetting("cpuProfilerShowTotalTimeAsPercent", true);
-    this.showAverageTimeAsPercent = WebInspector.settings.createSetting("cpuProfilerShowAverageTimeAsPercent", true);
     this._viewType = WebInspector.settings.createSetting("cpuProfilerView", WebInspector.CPUProfileView._TypeHeavy);
 
     var columns = [];
-    columns.push({id: "self", title: WebInspector.UIString("Self"), width: "72px", sort: WebInspector.DataGrid.Order.Descending, sortable: true});
-    columns.push({id: "total", title: WebInspector.UIString("Total"), width: "72px", sortable: true});
+    columns.push({id: "self", title: WebInspector.UIString("Self"), width: "110px", sort: WebInspector.DataGrid.Order.Descending, sortable: true});
+    columns.push({id: "total", title: WebInspector.UIString("Total"), width: "110px", sortable: true});
     columns.push({id: "function", title: WebInspector.UIString("Function"), disclosure: true, sortable: true});
 
     this.dataGrid = new WebInspector.DataGrid(columns);
     this.dataGrid.addEventListener(WebInspector.DataGrid.Events.SortingChanged, this._sortProfile, this);
-    this.dataGrid.element.addEventListener("mousedown", this._mouseDownInDataGrid.bind(this), true);
     this.dataGrid.show(this.element);
 
     this.viewSelectComboBox = new WebInspector.StatusBarComboBox(this._changeView.bind(this));
@@ -61,10 +56,6 @@ WebInspector.CPUProfileView = function(profileHeader)
     this.viewSelectComboBox.select(option);
 
     this._statusBarButtonsElement = document.createElement("span");
-
-    this.percentButton = new WebInspector.StatusBarButton("", "percent-time-status-bar-item");
-    this.percentButton.addEventListener("click", this._percentClicked, this);
-    this._statusBarButtonsElement.appendChild(this.percentButton.element);
 
     this.focusButton = new WebInspector.StatusBarButton(WebInspector.UIString("Focus selected function."), "focus-profile-node-status-bar-item");
     this.focusButton.setEnabled(false);
@@ -122,7 +113,6 @@ WebInspector.CPUProfileView.prototype = {
         if (this.samples)
             this._buildIdToNodeMap();
         this._changeView();
-        this._updatePercentButton();
         if (this._flameChart)
             this._flameChart.update();
     },
@@ -180,12 +170,6 @@ WebInspector.CPUProfileView.prototype = {
             child.refresh();
             child = child.traverseNextNode(false, null, true);
         }
-    },
-
-    refreshShowAsPercents: function()
-    {
-        this._updatePercentButton();
-        this.refreshVisibleData();
     },
 
     searchCanceled: function()
@@ -447,26 +431,6 @@ WebInspector.CPUProfileView.prototype = {
         this.performSearch(this.currentQuery, this._searchFinishedCallback);
     },
 
-    _percentClicked: function(event)
-    {
-        var currentState = this.showSelfTimeAsPercent.get() && this.showTotalTimeAsPercent.get() && this.showAverageTimeAsPercent.get();
-        this.showSelfTimeAsPercent.set(!currentState);
-        this.showTotalTimeAsPercent.set(!currentState);
-        this.showAverageTimeAsPercent.set(!currentState);
-        this.refreshShowAsPercents();
-    },
-
-    _updatePercentButton: function()
-    {
-        if (this.showSelfTimeAsPercent.get() && this.showTotalTimeAsPercent.get() && this.showAverageTimeAsPercent.get()) {
-            this.percentButton.title = WebInspector.UIString("Show absolute total and self times.");
-            this.percentButton.toggled = true;
-        } else {
-            this.percentButton.title = WebInspector.UIString("Show total and self times as percentages.");
-            this.percentButton.toggled = false;
-        }
-    },
-
     _focusClicked: function(event)
     {
         if (!this.dataGrid.selectedNode)
@@ -527,27 +491,6 @@ WebInspector.CPUProfileView.prototype = {
         this.profileDataGridTree.sort(WebInspector.ProfileDataGridTree.propertyComparator(sortProperty, sortAscending));
 
         this.refresh();
-    },
-
-    _mouseDownInDataGrid: function(event)
-    {
-        if (event.detail < 2)
-            return;
-
-        var cell = event.target.enclosingNodeOrSelfWithNodeName("td");
-        if (!cell || (!cell.classList.contains("total-column") && !cell.classList.contains("self-column") && !cell.classList.contains("average-column")))
-            return;
-
-        if (cell.classList.contains("total-column"))
-            this.showTotalTimeAsPercent.set(!this.showTotalTimeAsPercent.get());
-        else if (cell.classList.contains("self-column"))
-            this.showSelfTimeAsPercent.set(!this.showSelfTimeAsPercent.get());
-        else if (cell.classList.contains("average-column"))
-            this.showAverageTimeAsPercent.set(!this.showAverageTimeAsPercent.get());
-
-        this.refreshShowAsPercents();
-
-        event.consume(true);
     },
 
     _calculateTimes: function(profile)

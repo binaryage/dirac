@@ -256,7 +256,7 @@ WebInspector.HeapSnapshotGridNode.prototype = {
                 percentSpan.className = "percent-column";
                 percentSpan.textContent = this.data[percentColumn];
                 div.appendChild(percentSpan);
-                div.classList.add("heap-snapshot-multiple-values");
+                div.classList.add("profile-multiple-values");
             }
             cell.appendChild(div);
         }

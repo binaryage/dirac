@@ -42,6 +42,24 @@
     background-color: rgba(0, 0, 0, 0.1);
 }
 
+.profile-view .data-grid td.numeric-column {
+    text-align: right;
+}
+
+.profile-view .data-grid div.profile-multiple-values {
+    float: right;
+}
+
+.profile-view .data-grid span.percent-column {
+    color: #999;
+    width: 44px;
+    display: inline-block;
+}
+
+.profile-view .data-grid tr.selected span {
+    color: inherit;
+}
+
 .profiles.panel .status-bar {
     border-bottom: 1px solid rgb(202, 202, 202);
     border-top: none;
@@ -108,31 +126,11 @@
     flex: auto;
 }
 
-.cpu-profile-view .data-grid th.average-column {
-    text-align: center;
-}
-
-.cpu-profile-view .data-grid td.average-column {
-    text-align: right;
-}
-
 .cpu-profile-view .data-grid th.self-column {
     text-align: center;
 }
 
-.cpu-profile-view .data-grid td.self-column {
-    text-align: right;
-}
-
 .cpu-profile-view .data-grid th.total-column {
-    text-align: center;
-}
-
-.cpu-profile-view .data-grid td.total-column {
-    text-align: right;
-}
-
-.cpu-profile-view .data-grid .calls-column {
     text-align: center;
 }
 
@@ -158,10 +156,6 @@
 
 .data-grid:focus tr.selected .profile-node-file {
     color: white;
-}
-
-.percent-time-status-bar-item .glyph {
-    -webkit-mask-position: -192px -24px;
 }
 
 .focus-profile-node-status-bar-item .glyph {

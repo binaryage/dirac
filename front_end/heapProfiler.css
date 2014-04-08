@@ -60,22 +60,8 @@
     visibility: hidden;
 }
 
-.heap-snapshot-view .data-grid tr.selected span {
-    color: inherit;
-}
-
-.heap-snapshot-view .data-grid td.numeric-column {
-    text-align: right;
-}
-
-.heap-snapshot-view .data-grid div.heap-snapshot-multiple-values {
-    float: right;
-}
-
 .heap-snapshot-view .data-grid span.percent-column {
-    color: #999;
     width: 32px;
-    display: inline-block;
 }
 
 .heap-snapshot-view .console-formatted-object,
