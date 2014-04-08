@@ -203,7 +203,9 @@ WebInspector.ScriptSnippetModel.prototype = {
         var expression = uiSourceCode.workingCopy();
         
         WebInspector.console.show();
-        DebuggerAgent.compileScript(expression, evaluationUrl, compileCallback.bind(this));
+        var executionContext = WebInspector.runtimeModel.currentExecutionContext();
+        var executionContextId = executionContext ? executionContext.id : undefined;
+        DebuggerAgent.compileScript(expression, evaluationUrl, executionContextId, compileCallback.bind(this));
 
         /**
          * @param {?string} error
@@ -234,17 +236,17 @@ WebInspector.ScriptSnippetModel.prototype = {
             var breakpointLocations = this._removeBreakpoints(uiSourceCode);
             this._restoreBreakpoints(uiSourceCode, breakpointLocations);
 
-            this._runScript(scriptId);
+            this._runScript(scriptId, executionContextId);
         }
     },
 
     /**
      * @param {!DebuggerAgent.ScriptId} scriptId
+     * @param {number=} executionContextId
      */
-    _runScript: function(scriptId)
+    _runScript: function(scriptId, executionContextId)
     {
-        var currentExecutionContext = WebInspector.runtimeModel.currentExecutionContext();
-        DebuggerAgent.runScript(scriptId, currentExecutionContext ? currentExecutionContext.id : undefined, "console", false, runCallback.bind(this));
+        DebuggerAgent.runScript(scriptId, executionContextId, "console", false, runCallback.bind(this));
 
         /**
          * @param {?string} error
