@@ -454,7 +454,7 @@ WebInspector.StylesSidebarPane.prototype = {
          */
         function refreshContents()
         {
-            this._rebuildUpdate();
+            this._styleSheetOrMediaQueryResultChanged();
             delete this._activeTimer;
         }
 
