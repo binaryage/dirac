@@ -765,8 +765,9 @@ WebInspector.TimelinePanel.prototype = {
     /**
      * @param {boolean} revealRecord
      * @param {boolean} shouldJump
+     * @param {boolean=} jumpBackwards
      */
-    _updateSearchHighlight: function(revealRecord, shouldJump)
+    _updateSearchHighlight: function(revealRecord, shouldJump, jumpBackwards)
     {
         if (this._textFilter || !this._searchRegex) {
             this._clearHighlight();
@@ -774,11 +775,15 @@ WebInspector.TimelinePanel.prototype = {
         }
 
         if (!this._searchResults)
-            this._updateSearchResults(shouldJump);
+            this._updateSearchResults(shouldJump, jumpBackwards);
         this._currentViews[0].highlightSearchResult(this._selectedSearchResult, this._searchRegex, revealRecord);
     },
 
-    _updateSearchResults: function(shouldJump)
+    /**
+     * @param {boolean} shouldJump
+     * @param {boolean=} jumpBackwards
+     */
+    _updateSearchResults: function(shouldJump, jumpBackwards)
     {
         var searchRegExp = this._searchRegex;
         if (!searchRegExp)
@@ -803,7 +808,7 @@ WebInspector.TimelinePanel.prototype = {
 
             var selectedIndex = matches.indexOf(this._selectedSearchResult);
             if (shouldJump && selectedIndex === -1)
-                selectedIndex = 0;
+                selectedIndex = jumpBackwards ? this._searchResults.length - 1 : 0;
             this._selectSearchResult(selectedIndex);
         } else {
             this._searchableView.updateSearchMatchesCount(0);
@@ -822,12 +827,13 @@ WebInspector.TimelinePanel.prototype = {
     /**
      * @param {string} query
      * @param {boolean} shouldJump
+     * @param {boolean=} jumpBackwards
      */
-    performSearch: function(query, shouldJump)
+    performSearch: function(query, shouldJump, jumpBackwards)
     {
         this._searchRegex = createPlainTextSearchRegex(query, "i");
         delete this._searchResults;
-        this._updateSearchHighlight(true, shouldJump);
+        this._updateSearchHighlight(true, shouldJump, jumpBackwards);
     },
 
     _updateSelectionDetails: function()

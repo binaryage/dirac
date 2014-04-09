@@ -868,8 +868,9 @@ WebInspector.ConsoleView.prototype = {
     /**
      * @param {string} query
      * @param {boolean} shouldJump
+     * @param {boolean=} jumpBackwards
      */
-    performSearch: function(query, shouldJump)
+    performSearch: function(query, shouldJump, jumpBackwards)
     {
         this.searchCanceled();
         this._searchableView.updateSearchMatchesCount(0);
@@ -883,24 +884,21 @@ WebInspector.ConsoleView.prototype = {
         this._searchableView.updateSearchMatchesCount(this._searchResults.length);
         this._currentSearchResultIndex = -1;
         if (shouldJump && this._searchResults.length)
-            this._jumpToSearchResult(0);
+            this._jumpToSearchResult(jumpBackwards ? -1 : 0);
     },
 
     jumpToNextSearchResult: function()
     {
         if (!this._searchResults || !this._searchResults.length)
             return;
-        this._jumpToSearchResult((this._currentSearchResultIndex + 1) % this._searchResults.length);
+        this._jumpToSearchResult(this._currentSearchResultIndex + 1);
     },
 
     jumpToPreviousSearchResult: function()
     {
         if (!this._searchResults || !this._searchResults.length)
             return;
-        var index = this._currentSearchResultIndex - 1;
-        if (index === -1)
-            index = this._searchResults.length - 1;
-        this._jumpToSearchResult(index);
+        this._jumpToSearchResult(this._currentSearchResultIndex - 1);
     },
 
     _clearCurrentSearchResultHighlight: function()
@@ -916,6 +914,7 @@ WebInspector.ConsoleView.prototype = {
 
     _jumpToSearchResult: function(index)
     {
+        index %= this._searchResults.length;
         this._clearCurrentSearchResultHighlight();
         this._currentSearchResultIndex = index;
         this._searchableView.updateCurrentMatchIndex(this._currentSearchResultIndex);

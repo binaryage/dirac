@@ -381,11 +381,12 @@ WebInspector.SourceFrame.prototype = {
     /**
      * @param {string} query
      * @param {boolean} shouldJump
+     * @param {boolean} jumpBackwards
      * @param {function(!WebInspector.View, number)} callback
      * @param {function(number)} currentMatchChangedCallback
      * @param {function()} searchResultsChangedCallback
      */
-    performSearch: function(query, shouldJump, callback, currentMatchChangedCallback, searchResultsChangedCallback)
+    performSearch: function(query, shouldJump, jumpBackwards, callback, currentMatchChangedCallback, searchResultsChangedCallback)
     {
         /**
          * @param {string} query
@@ -401,6 +402,8 @@ WebInspector.SourceFrame.prototype = {
             this._searchResults = this._collectRegexMatches(regex);
             if (!this._searchResults.length)
                 this._textEditor.cancelSearchResultsHighlight();
+            else if (shouldJump && jumpBackwards)
+                this.jumpToPreviousSearchResult();
             else if (shouldJump)
                 this.jumpToNextSearchResult();
             else

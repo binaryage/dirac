@@ -395,8 +395,9 @@ WebInspector.ElementsPanel.prototype = {
     /**
      * @param {string} query
      * @param {boolean} shouldJump
+     * @param {boolean=} jumpBackwards
      */
-    performSearch: function(query, shouldJump)
+    performSearch: function(query, shouldJump, jumpBackwards)
     {
         // Call searchCanceled since it will reset everything we need before doing a new search.
         this.searchCanceled();
@@ -417,10 +418,10 @@ WebInspector.ElementsPanel.prototype = {
             if (!resultCount)
                 return;
 
-            this._searchResults = new Array(resultCount);
             this._currentSearchResultIndex = -1;
+            this._searchResults = new Array(resultCount);
             if (shouldJump)
-                this.jumpToNextSearchResult();
+                this._jumpToSearchResult(jumpBackwards ? -1 : 0);
         }
         WebInspector.domModel.performSearch(whitespaceTrimmedQuery, resultCountCallback.bind(this));
     },
@@ -552,28 +553,25 @@ WebInspector.ElementsPanel.prototype = {
         }
     },
 
+    _jumpToSearchResult: function(index)
+    {
+        this._hideSearchHighlights();
+        this._currentSearchResultIndex = (index + this._searchResults.length) % this._searchResults.length;
+        this._highlightCurrentSearchResult();
+    },
+
     jumpToNextSearchResult: function()
     {
         if (!this._searchResults)
             return;
-
-        this._hideSearchHighlights();
-        if (++this._currentSearchResultIndex >= this._searchResults.length)
-            this._currentSearchResultIndex = 0;
-
-        this._highlightCurrentSearchResult();
+        this._jumpToSearchResult(this._currentSearchResultIndex + 1);
     },
 
     jumpToPreviousSearchResult: function()
     {
         if (!this._searchResults)
             return;
-
-        this._hideSearchHighlights();
-        if (--this._currentSearchResultIndex < 0)
-            this._currentSearchResultIndex = (this._searchResults.length - 1);
-
-        this._highlightCurrentSearchResult();
+        this._jumpToSearchResult(this._currentSearchResultIndex - 1);
     },
 
     _highlightCurrentSearchResult: function()

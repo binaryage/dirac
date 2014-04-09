@@ -841,8 +841,9 @@ WebInspector.ProfilesPanel.prototype = {
     /**
      * @param {string} query
      * @param {boolean} shouldJump
+     * @param {boolean=} jumpBackwards
      */
-    performSearch: function(query, shouldJump)
+    performSearch: function(query, shouldJump, jumpBackwards)
     {
         this.searchCanceled();
 
@@ -860,7 +861,10 @@ WebInspector.ProfilesPanel.prototype = {
             this._searchableView.updateSearchMatchesCount(searchMatches);
             this._searchResultsView = view;
             if (shouldJump) {
-                view.jumpToFirstSearchResult();
+                if (jumpBackwards)
+                    view.jumpToLastSearchResult();
+                else
+                    view.jumpToFirstSearchResult();
                 this._searchableView.updateCurrentMatchIndex(view.currentSearchResultIndex());
             }
         }

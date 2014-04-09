@@ -82,7 +82,7 @@ WebInspector.SearchableView = function(searchable)
     this._findButtonElement = this._firstRowElement.createChild("td").createChild("button", "hidden");
     this._findButtonElement.textContent = WebInspector.UIString("Find");
     this._findButtonElement.tabIndex = -1;
-    this._findButtonElement.addEventListener("click", this._onNextButtonSearch.bind(this), false);
+    this._findButtonElement.addEventListener("click", this._onFindClick.bind(this), false);
 
     this._replaceButtonElement = this._secondRowElement.createChild("td").createChild("button");
     this._replaceButtonElement.textContent = WebInspector.UIString("Replace");
@@ -93,9 +93,8 @@ WebInspector.SearchableView = function(searchable)
     // Column 3
     this._prevButtonElement = this._firstRowElement.createChild("td").createChild("button", "hidden");
     this._prevButtonElement.textContent = WebInspector.UIString("Previous");
-    this._prevButtonElement.disabled = true;
     this._prevButtonElement.tabIndex = -1;
-    this._prevButtonElement.addEventListener("click", this._onPrevButtonSearch.bind(this), false);
+    this._prevButtonElement.addEventListener("click", this._onPreviousClick.bind(this), false);
 
     this._replaceAllButtonElement = this._secondRowElement.createChild("td").createChild("button");
     this._replaceAllButtonElement.textContent = WebInspector.UIString("Replace All");
@@ -326,7 +325,6 @@ WebInspector.SearchableView.prototype = {
     _updateSearchNavigationButtonState: function(enabled)
     {
         this._replaceButtonElement.disabled = !enabled;
-        this._prevButtonElement.disabled = !enabled;
         if (enabled) {
             this._searchNavigationPrevElement.classList.add("enabled");
             this._searchNavigationNextElement.classList.add("enabled");
@@ -397,13 +395,13 @@ WebInspector.SearchableView.prototype = {
      */
     _onSearchKeyDown: function(event)
     {
-        if (isEnterKey(event)) {
-            // FIXME: This won't start backwards search with Shift+Enter correctly.
-            if (!this._currentQuery)
-                this._performSearch(true, true);
-            else
-                this._jumpToNextSearchResult(event.shiftKey);
-        }
+        if (!isEnterKey(event))
+            return;
+
+        if (!this._currentQuery)
+            this._performSearch(true, true, event.shiftKey);
+        else
+            this._jumpToNextSearchResult(event.shiftKey);
     },
 
     /**
@@ -433,7 +431,6 @@ WebInspector.SearchableView.prototype = {
     {
         if (!this._searchNavigationNextElement.classList.contains("enabled"))
             return;
-        // Simulate next search on search-navigation-button click.
         this._jumpToNextSearchResult();
         this._searchInputElement.focus();
     },
@@ -442,8 +439,25 @@ WebInspector.SearchableView.prototype = {
     {
         if (!this._searchNavigationPrevElement.classList.contains("enabled"))
             return;
-        // Simulate previous search on search-navigation-button click.
         this._jumpToNextSearchResult(true);
+        this._searchInputElement.focus();
+    },
+
+    _onFindClick: function(event)
+    {
+        if (!this._currentQuery)
+            this._performSearch(true, true);
+        else
+            this._jumpToNextSearchResult();
+        this._searchInputElement.focus();
+    },
+
+    _onPreviousClick: function(event)
+    {
+        if (!this._currentQuery)
+            this._performSearch(true, true, true);
+        else
+            this._jumpToNextSearchResult(true);
         this._searchInputElement.focus();
     },
 
@@ -460,8 +474,9 @@ WebInspector.SearchableView.prototype = {
     /**
      * @param {boolean} forceSearch
      * @param {boolean} shouldJump
+     * @param {boolean=} jumpBackwards
      */
-    _performSearch: function(forceSearch, shouldJump)
+    _performSearch: function(forceSearch, shouldJump, jumpBackwards)
     {
         var query = this._searchInputElement.value;
         if (!query || (!forceSearch && query.length < this._minimalSearchQuerySize && !this._currentQuery)) {
@@ -471,7 +486,7 @@ WebInspector.SearchableView.prototype = {
 
         this._currentQuery = query;
         this._searchProvider.currentQuery = query;
-        this._searchProvider.performSearch(query, shouldJump);
+        this._searchProvider.performSearch(query, shouldJump, jumpBackwards);
     },
 
     _updateSecondRowVisibility: function()
@@ -529,8 +544,9 @@ WebInspector.Searchable.prototype = {
     /**
      * @param {string} query
      * @param {boolean} shouldJump
+     * @param {boolean=} jumpBackwards
      */
-    performSearch: function(query, shouldJump) { },
+    performSearch: function(query, shouldJump, jumpBackwards) { },
 
     jumpToNextSearchResult: function() { },
 
