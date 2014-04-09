@@ -109,6 +109,7 @@ WebInspector.TextPrompt.prototype = {
         this._element = element;
 
         this._boundOnKeyDown = this.onKeyDown.bind(this);
+        this._boundOnInput = this.onInput.bind(this);
         this._boundOnMouseWheel = this.onMouseWheel.bind(this);
         this._boundSelectStart = this._selectStart.bind(this);
         this._boundHideSuggestBox = this.hideSuggestBox.bind(this);
@@ -118,6 +119,7 @@ WebInspector.TextPrompt.prototype = {
         this.proxyElement.appendChild(element);
         this._element.classList.add("text-prompt");
         this._element.addEventListener("keydown", this._boundOnKeyDown, false);
+        this._element.addEventListener("input", this._boundOnInput, false);
         this._element.addEventListener("mousewheel", this._boundOnMouseWheel, false);
         this._element.addEventListener("selectstart", this._boundSelectStart, false);
         this._element.addEventListener("blur", this._boundHideSuggestBox, false);
@@ -135,9 +137,6 @@ WebInspector.TextPrompt.prototype = {
         this.proxyElement.remove();
         delete this._proxyElement;
         this._element.classList.remove("text-prompt");
-        this._element.removeEventListener("keydown", this._boundOnKeyDown, false);
-        this._element.removeEventListener("mousewheel", this._boundOnMouseWheel, false);
-        this._element.removeEventListener("selectstart", this._boundSelectStart, false);
         WebInspector.restoreFocusFromElement(this._element);
     },
 
@@ -170,6 +169,7 @@ WebInspector.TextPrompt.prototype = {
     {
         this.clearAutoComplete(true);
         this._element.removeEventListener("keydown", this._boundOnKeyDown, false);
+        this._element.removeEventListener("input", this._boundOnInput, false);
         this._element.removeEventListener("selectstart", this._boundSelectStart, false);
         this._element.removeEventListener("blur", this._boundHideSuggestBox, false);
         if (this._isEditing)
@@ -236,16 +236,6 @@ WebInspector.TextPrompt.prototype = {
 
     /**
      * @param {boolean=} force
-     * @return {boolean}
-     */
-    defaultKeyHandler: function(event, force)
-    {
-        this._updateAutoComplete(force);
-        return false;
-    },
-
-    /**
-     * @param {boolean=} force
      */
     _updateAutoComplete: function(force)
     {
@@ -263,12 +253,11 @@ WebInspector.TextPrompt.prototype = {
 
     /**
      * @param {?Event} event
-     * @return {boolean}
      */
     onKeyDown: function(event)
     {
         var handled = false;
-        var invokeDefault = true;
+        delete this._needUpdateAutocomplete;
 
         switch (event.keyIdentifier) {
         case "U+0009": // Tab
@@ -277,7 +266,6 @@ WebInspector.TextPrompt.prototype = {
         case "Left":
         case "Home":
             this._removeSuggestionAids();
-            invokeDefault = false;
             break;
         case "Right":
         case "End":
@@ -285,7 +273,6 @@ WebInspector.TextPrompt.prototype = {
                 handled = this.acceptAutoComplete();
             else
                 this._removeSuggestionAids();
-            invokeDefault = false;
             break;
         case "U+001B": // Esc
             if (this.isSuggestBoxVisible()) {
@@ -295,7 +282,7 @@ WebInspector.TextPrompt.prototype = {
             break;
         case "U+0020": // Space
             if (event.ctrlKey && !event.metaKey && !event.altKey && !event.shiftKey) {
-                this.defaultKeyHandler(event, true);
+                this._updateAutoComplete(true);
                 handled = true;
             }
             break;
@@ -303,20 +290,26 @@ WebInspector.TextPrompt.prototype = {
         case "Meta":
         case "Shift":
         case "Control":
-            invokeDefault = false;
             break;
         }
 
         if (!handled && this.isSuggestBoxVisible())
             handled = this._suggestBox.keyPressed(event);
 
-        if (!handled && invokeDefault)
-            handled = this.defaultKeyHandler(event);
+        if (!handled)
+            this._needUpdateAutocomplete = true;
 
         if (handled)
             event.consume(true);
+    },
 
-        return handled;
+    /**
+     * @param {?Event} event
+     */
+    onInput: function(event)
+    {
+        if (this._needUpdateAutocomplete)
+            this._updateAutoComplete();
     },
 
     /**
@@ -349,24 +342,6 @@ WebInspector.TextPrompt.prototype = {
 
         this.autoCompleteElement.remove();
         delete this.autoCompleteElement;
-
-        if (!this._userEnteredRange || !this._userEnteredText)
-            return;
-
-        this._userEnteredRange.deleteContents();
-        this._element.normalize();
-
-        var userTextNode = document.createTextNode(this._userEnteredText);
-        this._userEnteredRange.insertNode(userTextNode);
-
-        var selectionRange = document.createRange();
-        selectionRange.setStart(userTextNode, this._userEnteredText.length);
-        selectionRange.setEnd(userTextNode, this._userEnteredText.length);
-
-        var selection = window.getSelection();
-        selection.removeAllRanges();
-        selection.addRange(selectionRange);
-
         delete this._userEnteredRange;
         delete this._userEnteredText;
     },
@@ -871,22 +846,21 @@ WebInspector.TextPromptWithHistory.prototype = {
 
     /**
      * @override
-     * @return {boolean}
      */
-    defaultKeyHandler: function(event, force)
+    onKeyDown: function(event)
     {
         var newText;
         var isPrevious;
 
         switch (event.keyIdentifier) {
         case "Up":
-            if (!this.isCaretOnFirstLine())
+            if (!this.isCaretOnFirstLine() || this.isSuggestBoxVisible())
                 break;
             newText = this._previous();
             isPrevious = true;
             break;
         case "Down":
-            if (!this.isCaretOnLastLine())
+            if (!this.isCaretOnLastLine() || this.isSuggestBoxVisible())
                 break;
             newText = this._next();
             break;
@@ -922,10 +896,10 @@ WebInspector.TextPromptWithHistory.prototype = {
                 }
             }
 
-            return true;
+            return;
         }
 
-        return WebInspector.TextPrompt.prototype.defaultKeyHandler.apply(this, arguments);
+        WebInspector.TextPrompt.prototype.onKeyDown.apply(this, arguments);
     },
 
     __proto__: WebInspector.TextPrompt.prototype

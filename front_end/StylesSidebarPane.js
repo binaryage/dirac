@@ -3218,7 +3218,6 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt = function(cssCompletions, side
 WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
     /**
      * @param {?Event} event
-     * @return {boolean}
      */
     onKeyDown: function(event)
     {
@@ -3229,18 +3228,18 @@ WebInspector.StylesSidebarPane.CSSPropertyPrompt.prototype = {
         case "PageDown":
             if (this._handleNameOrValueUpDown(event)) {
                 event.preventDefault();
-                return true;
+                return;
             }
             break;
         case "Enter":
             if (this.autoCompleteElement && !this.autoCompleteElement.textContent.length) {
                 this.tabKeyPressed();
-                return true;
+                return;
             }
             break;
         }
 
-        return WebInspector.TextPrompt.prototype.onKeyDown.call(this, event);
+        WebInspector.TextPrompt.prototype.onKeyDown.call(this, event);
     },
 
     onMouseWheel: function(event)
