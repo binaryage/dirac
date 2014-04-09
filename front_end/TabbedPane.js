@@ -36,6 +36,7 @@ WebInspector.TabbedPane = function()
 {
     WebInspector.VBox.call(this);
     this.element.classList.add("tabbed-pane");
+    this.element.tabIndex = -1;
     this._headerElement = this.element.createChild("div", "tabbed-pane-header");
     this._headerContentsElement = this._headerElement.createChild("div", "tabbed-pane-header-contents");
     this._tabsElement = this._headerContentsElement.createChild("div", "tabbed-pane-header-tabs");
@@ -117,7 +118,7 @@ WebInspector.TabbedPane.prototype = {
         if (this.visibleView)
             this.visibleView.focus();
         else
-            WebInspector.View.prototype.focus.call(this);
+            this.element.focus();
     },
 
     /**
@@ -197,18 +198,21 @@ WebInspector.TabbedPane.prototype = {
         this.closeTabs([id], userGesture);
     },
 
-     /**
-      * @param {!Array.<string>} ids
-      * @param {boolean=} userGesture
-      */
-     closeTabs: function(ids, userGesture)
-     {
-         for (var i = 0; i < ids.length; ++i)
-             this._innerCloseTab(ids[i], userGesture);
-         this._updateTabElements();
-         if (this._tabsHistory.length)
-             this.selectTab(this._tabsHistory[0].id, false);
-     },
+    /**
+     * @param {!Array.<string>} ids
+     * @param {boolean=} userGesture
+     */
+    closeTabs: function(ids, userGesture)
+    {
+        var focused = this.hasFocus();
+        for (var i = 0; i < ids.length; ++i)
+            this._innerCloseTab(ids[i], userGesture);
+        this._updateTabElements();
+        if (this._tabsHistory.length)
+            this.selectTab(this._tabsHistory[0].id, false);
+        if (focused)
+            this.focus();
+    },
 
     /**
      * @param {string} id
@@ -278,6 +282,7 @@ WebInspector.TabbedPane.prototype = {
      */
     selectTab: function(id, userGesture)
     {
+        var focused = this.hasFocus();
         var tab = this._tabsById[id];
         if (!tab)
             return;
@@ -290,8 +295,10 @@ WebInspector.TabbedPane.prototype = {
 
         this._tabsHistory.splice(this._tabsHistory.indexOf(tab), 1);
         this._tabsHistory.splice(0, 0, tab);
-        
+
         this._updateTabElements();
+        if (focused)
+            this.focus();
 
         var eventData = { tabId: id, view: tab.view, isUserGesture: userGesture };
         this.dispatchEventToListeners(WebInspector.TabbedPane.EventTypes.TabSelected, eventData);

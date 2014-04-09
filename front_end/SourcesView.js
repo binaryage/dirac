@@ -251,11 +251,11 @@ WebInspector.SourcesView.prototype = {
      */
     _removeUISourceCodes: function(uiSourceCodes)
     {
+        this._editorContainer.removeUISourceCodes(uiSourceCodes);
         for (var i = 0; i < uiSourceCodes.length; ++i) {
             this._removeSourceFrame(uiSourceCodes[i]);
             this._historyManager.removeHistoryForSourceCode(uiSourceCodes[i]);
         }
-        this._editorContainer.removeUISourceCodes(uiSourceCodes);
     },
 
     _projectWillReset: function(event)

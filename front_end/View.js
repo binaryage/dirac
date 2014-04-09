@@ -498,6 +498,15 @@ WebInspector.View.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    hasFocus: function()
+    {
+        var activeElement = document.activeElement;
+        return activeElement && activeElement.isSelfOrDescendant(this.element);
+    },
+
+    /**
      * @return {!Size}
      */
     measurePreferredSize: function()
