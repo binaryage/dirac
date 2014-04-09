@@ -270,8 +270,6 @@ WebInspector.Main.prototype = {
         WebInspector.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(WebInspector.isolatedFileSystemManager);
         WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
 
-        WebInspector.tracingAgent = new WebInspector.TracingAgent();
-
         if (Capabilities.isMainFrontend) {
             WebInspector.inspectElementModeController = new WebInspector.InspectElementModeController();
             WebInspector.workerFrontendManager = new WebInspector.WorkerFrontendManager();

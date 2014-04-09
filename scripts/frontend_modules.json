@@ -82,7 +82,6 @@
             "ResourceType.js",
             "ResourceUtils.js",
             "SourceMap.js",
-            "TracingAgent.js",
             "TracingModel.js",
             "NetworkManager.js",
             "NetworkRequest.js",

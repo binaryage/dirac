@@ -29,12 +29,8 @@ WebInspector.TimelineTracingView.prototype = {
     {
         if (this._recordingTrace)
             return;
-        if (!this._boundTraceEventListener)
-            this._boundTraceEventListener = this._onTraceEventsCollected.bind(this);
         this._recordingTrace = true;
-        WebInspector.tracingAgent.addEventListener(WebInspector.TracingAgent.Events.EventsCollected, this._boundTraceEventListener);
-        this._tracingModel.reset();
-        WebInspector.tracingAgent.start("*,disabled-by-default-cc.debug", "");
+        this._tracingModel.start("*,disabled-by-default-cc.debug", "");
     },
 
     timelineStopped: function()
@@ -47,20 +43,10 @@ WebInspector.TimelineTracingView.prototype = {
          */
         function onTraceDataComplete()
         {
-            WebInspector.tracingAgent.removeEventListener(WebInspector.TracingAgent.Events.EventsCollected, this._boundTraceEventListener);
             this.refreshRecords(null);
         }
-        WebInspector.tracingAgent.stop(onTraceDataComplete.bind(this));
+        this._tracingModel.stop(onTraceDataComplete.bind(this));
         this._recordingTrace = false;
-    },
-
-    /**
-      * @param {!WebInspector.Event} event
-     */
-    _onTraceEventsCollected: function(event)
-    {
-        var events = /** @type {!Array.<!WebInspector.TracingAgent.Event>} */ (event.data);
-        this._tracingModel.addEvents(events);
     },
 
     /**
@@ -79,6 +65,7 @@ WebInspector.TimelineTracingView.prototype = {
 
     reset: function()
     {
+        this._tracingModel.reset();
         this._dataProvider.reset();
         this._mainView.setWindowTimes(0, Infinity);
     },
@@ -350,7 +337,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
     canJumpToEntry: function(entryIndex)
     {
         var record = this._records[entryIndex];
-        return record.phase === WebInspector.TracingAgent.Phase.SnapshotObject;
+        return record.phase === WebInspector.TracingModel.Phase.SnapshotObject;
     },
 
     /**
@@ -360,7 +347,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
     entryColor: function(entryIndex)
     {
         var record = this._records[entryIndex];
-        if (record.phase === WebInspector.TracingAgent.Phase.SnapshotObject)
+        if (record.phase === WebInspector.TracingModel.Phase.SnapshotObject)
             return "rgb(20, 150, 20)";
         if (record === this._processHeaderRecord)
             return "#555";
@@ -448,7 +435,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
         var index = this._records.length;
         this._records.push(record);
         this._timelineData.entryLevels[index] = this._currentLevel + record.level;
-        this._timelineData.entryTotalTimes[index] = this._toTimelineTime(record.phase === WebInspector.TracingAgent.Phase.SnapshotObject ? NaN : record.duration || 0);
+        this._timelineData.entryTotalTimes[index] = this._toTimelineTime(record.phase === WebInspector.TracingModel.Phase.SnapshotObject ? NaN : record.duration || 0);
         this._timelineData.entryOffsets[index] = this._toTimelineTime(record.startTime - this._zeroTime);
     },
 

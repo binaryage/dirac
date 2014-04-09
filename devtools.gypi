@@ -173,7 +173,6 @@
             'front_end/TextUtils.js',
             'front_end/TimelineGrid.js',
             'front_end/TimelineManager.js',
-            'front_end/TracingAgent.js',
             'front_end/TracingModel.js',
             'front_end/treeoutline.js',
             'front_end/UISourceCode.js',
