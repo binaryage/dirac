@@ -48,40 +48,37 @@ WebInspector.ProfileDataGridNode = function(profileNode, owningTree, hasChildren
     this.functionName = profileNode.functionName;
     this._deoptReason = (!profileNode.deoptReason || profileNode.deoptReason === "no reason") ? "" : profileNode.deoptReason;
     this.url = profileNode.url;
+
+    function formatMilliseconds(time)
+    {
+        return WebInspector.UIString("%.1f\u2009ms", time);
+    }
+    function formatPercent(value)
+    {
+        return WebInspector.UIString("%.2f\u2009%", value);
+    }
+
+    var functionName;
+    if (this._deoptReason) {
+        var content = document.createDocumentFragment();
+        var marker = content.createChild("span", "profile-warn-marker");
+        marker.title = WebInspector.UIString("Not optimized: %s", this._deoptReason);
+        content.createTextChild(this.functionName);
+        functionName = content;
+    } else {
+        functionName = this.functionName;
+    }
+
+    this.data = {
+        "function": this.functionName,
+        "self-percent": formatPercent(this.selfPercent),
+        "self": formatMilliseconds(this.selfTime),
+        "total-percent": formatPercent(this.totalPercent),
+        "total": formatMilliseconds(this.totalTime),
+    };
 }
 
 WebInspector.ProfileDataGridNode.prototype = {
-    get data()
-    {
-        function formatMilliseconds(time)
-        {
-            return WebInspector.UIString("%.1f\u2009ms", time);
-        }
-        function formatPercent(value)
-        {
-            return WebInspector.UIString("%.2f\u2009%", value);
-        }
-
-        var data = {};
-
-        if (this._deoptReason) {
-            var content = document.createDocumentFragment();
-            var marker = content.createChild("span", "profile-warn-marker");
-            marker.title = WebInspector.UIString("Not optimized: %s", this._deoptReason);
-            content.createTextChild(this.functionName);
-            data["function"] = content;
-        } else {
-            data["function"] = this.functionName;
-        }
-
-        data["self-percent"] = formatPercent(this.selfPercent);
-        data["self"] = formatMilliseconds(this.selfTime);
-        data["total-percent"] = formatPercent(this.totalPercent);
-        data["total"] = formatMilliseconds(this.totalTime);
-
-        return data;
-    },
-
     /**
      * @override
      * @param {string} columnIdentifier
