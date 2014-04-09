@@ -1036,6 +1036,7 @@ WebInspector.ConsoleViewFilter.prototype = {
         WebInspector.settings.messageURLFilters.set(this._messageURLFilters);
         WebInspector.settings.messageLevelFilters.set({});
         this._view._showAllMessagesCheckbox._checkbox.checked = true;
+        this._textFilterUI.setValue("");
         this._filterChanged();
     },
 
