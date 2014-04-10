@@ -90,6 +90,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         "Enter": "smartNewlineAndIndent",
         "Ctrl-Space": "autocomplete",
         "Ctrl-D": "selectNextOccurrence",
+        "Ctrl-U": "undoLastSelection",
         "Esc": "dismissMultipleSelections"
     };
 
@@ -197,6 +198,15 @@ WebInspector.CodeMirrorTextEditor.autocompleteCommand = function(codeMirror)
     codeMirror._codeMirrorTextEditor._autocompleteController.autocomplete();
 }
 CodeMirror.commands.autocomplete = WebInspector.CodeMirrorTextEditor.autocompleteCommand;
+
+/**
+ * @param {!CodeMirror} codeMirror
+ */
+WebInspector.CodeMirrorTextEditor.undoLastSelectionCommand = function(codeMirror)
+{
+    codeMirror._codeMirrorTextEditor._selectNextOccurrenceController.undoLastSelection();
+}
+CodeMirror.commands.undoLastSelection = WebInspector.CodeMirrorTextEditor.undoLastSelectionCommand;
 
 /**
  * @param {!CodeMirror} codeMirror
@@ -1975,6 +1985,13 @@ WebInspector.CodeMirrorTextEditor.SelectNextOccurrenceController.prototype = {
                 return true;
         }
         return false;
+    },
+
+    undoLastSelection: function()
+    {
+        this._muteSelectionListener = true;
+        this._codeMirror.execCommand("undoSelection");
+        this._muteSelectionListener = false;
     },
 
     selectNextOccurrence: function()
