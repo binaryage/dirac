@@ -202,6 +202,11 @@ WebInspector.TextEditor.prototype = {
     selection: function() { },
 
     /**
+     * @return {!Array.<!WebInspector.TextRange>}
+     */
+    selections: function() { },
+
+    /**
      * @return {?WebInspector.TextRange}
      */
     lastSelection: function() { },

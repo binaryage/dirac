@@ -755,19 +755,21 @@ WebInspector.SourceFrame.prototype = {
      */
     selectionChanged: function(textRange)
     {
-        this._updateSourcePosition(textRange);
+        this._updateSourcePosition();
         this.dispatchEventToListeners(WebInspector.SourceFrame.Events.SelectionChanged, textRange);
         WebInspector.notifications.dispatchEventToListeners(WebInspector.SourceFrame.Events.SelectionChanged, textRange);
     },
 
-    /**
-     * @param {!WebInspector.TextRange} textRange
-     */
-    _updateSourcePosition: function(textRange)
+    _updateSourcePosition: function()
     {
-        if (!textRange)
+        var selections = this._textEditor.selections();
+        if (!selections.length)
             return;
-
+        if (selections.length > 1) {
+            this._sourcePosition.setText(WebInspector.UIString("%d selection regions", selections.length));
+            return;
+        }
+        var textRange = selections[0];
         if (textRange.isEmpty()) {
             this._sourcePosition.setText(WebInspector.UIString("Line %d, Column %d", textRange.endLine + 1, textRange.endColumn + 1));
             return;
