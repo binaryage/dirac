@@ -10,12 +10,13 @@
  * @implements {WebInspector.FlameChartDelegate}
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
+ * @param {!WebInspector.TracingModel} tracingModel
  */
-WebInspector.TimelineTracingView = function(delegate)
+WebInspector.TimelineTracingView = function(delegate, tracingModel)
 {
     WebInspector.VBox.call(this);
     this._delegate = delegate;
-    this._tracingModel = new WebInspector.TracingModel();
+    this._tracingModel = tracingModel;
     this.element.classList.add("timeline-flamechart");
     this.registerRequiredCSS("flameChart.css");
     this._dataProvider = new WebInspector.TraceViewFlameChartDataProvider(this._tracingModel);
@@ -25,30 +26,6 @@ WebInspector.TimelineTracingView = function(delegate)
 }
 
 WebInspector.TimelineTracingView.prototype = {
-    timelineStarted: function()
-    {
-        if (this._recordingTrace)
-            return;
-        this._recordingTrace = true;
-        this._tracingModel.start("*,disabled-by-default-cc.debug", "");
-    },
-
-    timelineStopped: function()
-    {
-        if (!this._recordingTrace)
-            return;
-
-        /**
-         * @this {WebInspector.TimelineTracingView}
-         */
-        function onTraceDataComplete()
-        {
-            this.refreshRecords(null);
-        }
-        this._tracingModel.stop(onTraceDataComplete.bind(this));
-        this._recordingTrace = false;
-    },
-
     /**
      * @param {number} windowStartTime
      * @param {number} windowEndTime

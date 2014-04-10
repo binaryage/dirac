@@ -247,12 +247,22 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
+     * @return {!WebInspector.TracingModel}
+     */
+    _tracingModel: function()
+    {
+        if (!this._lazyTracingModel)
+            this._lazyTracingModel = new WebInspector.TracingModel();
+        return this._lazyTracingModel;
+    },
+
+    /**
      * @return {!WebInspector.TimelineTracingView}
      */
     _tracingView: function()
     {
         if (!this._lazyTracingView)
-            this._lazyTracingView = new WebInspector.TimelineTracingView(this);
+            this._lazyTracingView = new WebInspector.TimelineTracingView(this, this._tracingModel());
         return this._lazyTracingView;
     },
 
@@ -549,7 +559,7 @@ WebInspector.TimelinePanel.prototype = {
         this._overviewItems[mode].revealAndSelect(false);
     },
 
-    _refreshViews: function(totalUpdate)
+    _refreshViews: function()
     {
         for (var i = 0; i < this._currentViews.length; ++i) {
             var view = this._currentViews[i];
@@ -585,12 +595,12 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._userInitiatedRecording = userInitiated;
         this._model.startRecording();
-        for (var i = 0; i < this._presentationModes.length; ++i) {
-            var views = this._viewsForMode(this._presentationModes[i]);
-            views.overviewView.timelineStarted();
-            for (var j = 0; j < views.mainViews.length; ++j)
-                views.mainViews[j].timelineStarted();
-        }
+        if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled())
+            this._tracingModel().start("*,disabled-by-default-cc.debug", "");
+
+        for (var i = 0; i < this._presentationModes.length; ++i)
+            this._viewsForMode(this._presentationModes[i]).overviewView.timelineStarted();
+
         if (userInitiated)
             WebInspector.userMetrics.TimelineStarted.record();
     },
@@ -599,12 +609,10 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._userInitiatedRecording = false;
         this._model.stopRecording();
-        for (var i = 0; i < this._presentationModes.length; ++i) {
-            var views = this._viewsForMode(this._presentationModes[i]);
-            views.overviewView.timelineStopped();
-            for (var j = 0; j < views.mainViews.length; ++j)
-                views.mainViews[j].timelineStopped();
-        }
+        if (this._lazyTracingModel)
+            this._lazyTracingModel.stop(this._refreshViews.bind(this));
+        for (var i = 0; i < this._presentationModes.length; ++i)
+            this._viewsForMode(this._presentationModes[i]).overviewView.timelineStopped();
     },
 
     /**
@@ -1036,10 +1044,6 @@ WebInspector.TimelineModeView.prototype = {
      * @param {?WebInspector.TimelineModel.Record} record
      */
     setSelectedRecord: function(record) {},
-
-    timelineStarted: function() {},
-
-    timelineStopped: function() {},
 }
 
 /**

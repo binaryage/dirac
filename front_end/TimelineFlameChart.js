@@ -421,14 +421,6 @@ WebInspector.TimelineFlameChart = function(delegate, model, frameModel)
 }
 
 WebInspector.TimelineFlameChart.prototype = {
-    timelineStarted: function()
-    {
-    },
-
-    timelineStopped: function()
-    {
-    },
-
     /**
      * @param {number} windowStartTime
      * @param {number} windowEndTime
