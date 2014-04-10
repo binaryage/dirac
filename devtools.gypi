@@ -45,6 +45,7 @@
             'front_end/ContentProvider.js',
             'front_end/ContentProviderBasedProjectDelegate.js',
             'front_end/ContentProviders.js',
+            'front_end/Context.js',
             'front_end/ContextMenu.js',
             'front_end/CookieItemsView.js',
             'front_end/CookieParser.js',

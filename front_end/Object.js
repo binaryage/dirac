@@ -61,10 +61,8 @@ WebInspector.Object.prototype = {
             return;
         var listeners = this._listeners[eventType];
         for (var i = 0; i < listeners.length; ++i) {
-            if (listener && listeners[i].listener === listener && listeners[i].thisObject === thisObject)
-                listeners.splice(i, 1);
-            else if (!listener && thisObject && listeners[i].thisObject === thisObject)
-                listeners.splice(i, 1);
+            if (listeners[i].listener === listener && listeners[i].thisObject === thisObject)
+                listeners.splice(i--, 1);
         }
 
         if (!listeners.length)
