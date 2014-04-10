@@ -183,7 +183,7 @@ WebInspector.FileBasedSearchResultsPane.FileTreeElement.prototype = {
      */
     _createAnchor: function(uiSourceCode, lineNumber, columnNumber)
     {
-        return WebInspector.Linkifier.linkifyUsingRevealer(new WebInspector.UILocation(uiSourceCode, lineNumber, columnNumber), "", uiSourceCode.url, lineNumber);
+        return WebInspector.Linkifier.linkifyUsingRevealer(uiSourceCode.uiLocation(lineNumber, columnNumber), "", uiSourceCode.url, lineNumber);
     },
 
     /**

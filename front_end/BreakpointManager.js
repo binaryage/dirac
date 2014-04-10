@@ -287,7 +287,7 @@ WebInspector.BreakpointManager.prototype = {
                 var columnNumber = parseInt(columnNumbers[j], 10);
                 for (var k = 0; k < columnBreakpoints.length; ++k) {
                     var breakpoint = columnBreakpoints[k];
-                    var uiLocation = new WebInspector.UILocation(uiSourceCode, lineNumber, columnNumber);
+                    var uiLocation = uiSourceCode.uiLocation(lineNumber, columnNumber);
                     result.push({breakpoint: breakpoint, uiLocation: uiLocation});
                 }
             }
@@ -664,7 +664,7 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
         var uiSourceCode = this._breakpointManager._workspace.uiSourceCode(this._projectId, this._path);
         if (!uiSourceCode)
             return;
-        var uiLocation = new WebInspector.UILocation(uiSourceCode, this._lineNumber, this._columnNumber);
+        var uiLocation = uiSourceCode.uiLocation(this._lineNumber, this._columnNumber);
         this._uiLocations[""] = uiLocation;
         this._breakpointManager._uiLocationAdded(this, uiLocation);
     }

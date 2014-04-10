@@ -405,7 +405,7 @@ WebInspector.Main.prototype = {
 
             var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(anchor.href);
             if (uiSourceCode) {
-                WebInspector.Revealer.reveal(new WebInspector.UILocation(uiSourceCode, anchor.lineNumber || 0, anchor.columnNumber || 0));
+                WebInspector.Revealer.reveal(uiSourceCode.uiLocation(anchor.lineNumber || 0, anchor.columnNumber || 0));
                 return;
             }
 

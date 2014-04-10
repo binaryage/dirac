@@ -40,7 +40,7 @@ WebInspector.FormatterScriptMapping.prototype = {
         var lineNumber = debuggerModelLocation.lineNumber;
         var columnNumber = debuggerModelLocation.columnNumber || 0;
         var formattedLocation = mapping.originalToFormatted(lineNumber, columnNumber);
-        return new WebInspector.UILocation(uiSourceCode, formattedLocation[0], formattedLocation[1]);
+        return uiSourceCode.uiLocation(formattedLocation[0], formattedLocation[1]);
     },
 
     /**

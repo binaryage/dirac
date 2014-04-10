@@ -671,7 +671,7 @@ WebInspector.CSSStyleModel.LiveLocation.prototype = {
         var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(cssLocation.url);
         if (!uiSourceCode)
             return null;
-        return new WebInspector.UILocation(uiSourceCode, cssLocation.lineNumber, cssLocation.columnNumber);
+        return uiSourceCode.uiLocation(cssLocation.lineNumber, cssLocation.columnNumber);
     },
 
     dispose: function()

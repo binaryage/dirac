@@ -59,7 +59,7 @@ WebInspector.ResourceScriptMapping.prototype = {
         var scriptFile = uiSourceCode.scriptFile();
         if (scriptFile && ((scriptFile.hasDivergedFromVM() && !scriptFile.isMergingToVM()) || scriptFile.isDivergingFromVM()))
             return null;
-        return new WebInspector.UILocation(uiSourceCode, debuggerModelLocation.lineNumber, debuggerModelLocation.columnNumber || 0);
+        return uiSourceCode.uiLocation(debuggerModelLocation.lineNumber, debuggerModelLocation.columnNumber || 0);
     },
 
     /**

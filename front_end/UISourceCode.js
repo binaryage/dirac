@@ -733,6 +733,18 @@ WebInspector.UISourceCode.prototype = {
         this.dispatchEventToListeners(WebInspector.UISourceCode.Events.SourceMappingChanged, data);
     },
 
+    /**
+     * @param {number} lineNumber
+     * @param {number=} columnNumber
+     * @return {!WebInspector.UILocation}
+     */
+    uiLocation: function(lineNumber, columnNumber)
+    {
+        if (typeof columnNumber === "undefined")
+            columnNumber = 0;
+        return new WebInspector.UILocation(this, lineNumber, columnNumber);
+    },
+
     __proto__: WebInspector.Object.prototype
 }
 

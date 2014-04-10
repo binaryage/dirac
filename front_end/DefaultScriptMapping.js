@@ -56,7 +56,7 @@ WebInspector.DefaultScriptMapping.prototype = {
         var uiSourceCode = this._uiSourceCodeForScriptId[script.scriptId];
         var lineNumber = debuggerModelLocation.lineNumber;
         var columnNumber = debuggerModelLocation.columnNumber || 0;
-        return new WebInspector.UILocation(uiSourceCode, lineNumber, columnNumber);
+        return uiSourceCode.uiLocation(lineNumber, columnNumber);
     },
 
     /**

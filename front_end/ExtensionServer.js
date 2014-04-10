@@ -311,7 +311,7 @@ WebInspector.ExtensionServer.prototype = {
     {
         var uiSourceCode = WebInspector.workspace.uiSourceCodeForURL(message.url);
         if (uiSourceCode) {
-            WebInspector.Revealer.reveal(new WebInspector.UILocation(uiSourceCode, message.lineNumber, 0));
+            WebInspector.Revealer.reveal(uiSourceCode.uiLocation(message.lineNumber, 0));
             return this._status.OK();
         }
 

@@ -61,7 +61,7 @@ WebInspector.StylesSourceMapping.prototype = {
         var uiSourceCode = this._workspace.uiSourceCodeForURL(location.url);
         if (!uiSourceCode)
             return null;
-        return new WebInspector.UILocation(uiSourceCode, location.lineNumber, location.columnNumber);
+        return uiSourceCode.uiLocation(location.lineNumber, location.columnNumber);
     },
 
     /**

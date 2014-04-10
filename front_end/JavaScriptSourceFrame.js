@@ -176,7 +176,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         function liveEdit()
         {
             var liveEditUISourceCode = WebInspector.liveEditSupport.uiSourceCodeForLiveEdit(this._uiSourceCode);
-            this._scriptsPanel.showUISourceCode(liveEditUISourceCode, lineNumber)
+            WebInspector.Revealer.reveal(liveEditUISourceCode.uiLocation(lineNumber));
         }
 
         WebInspector.UISourceCodeFrame.prototype.populateTextAreaContextMenu.call(this, contextMenu, lineNumber);

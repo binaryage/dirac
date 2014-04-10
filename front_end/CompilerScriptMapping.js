@@ -74,7 +74,7 @@ WebInspector.CompilerScriptMapping.prototype = {
         var uiSourceCode = this._workspace.uiSourceCodeForURL(url);
         if (!uiSourceCode)
             return null;
-        return new WebInspector.UILocation(uiSourceCode, /** @type {number} */ (entry[3]), /** @type {number} */ (entry[4]));
+        return uiSourceCode.uiLocation(/** @type {number} */ (entry[3]), /** @type {number} */ (entry[4]));
     },
 
     /**

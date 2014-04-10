@@ -549,7 +549,7 @@ WebInspector.SASSSourceMapping.prototype = {
         var uiSourceCode = this._workspace.uiSourceCodeForURL(entry[2]);
         if (!uiSourceCode)
             return null;
-        return new WebInspector.UILocation(uiSourceCode, entry[3], entry[4]);
+        return uiSourceCode.uiLocation(entry[3], entry[4]);
     },
 
     /**
