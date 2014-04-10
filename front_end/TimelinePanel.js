@@ -251,8 +251,10 @@ WebInspector.TimelinePanel.prototype = {
      */
     _tracingModel: function()
     {
-        if (!this._lazyTracingModel)
+        if (!this._lazyTracingModel) {
             this._lazyTracingModel = new WebInspector.TracingModel();
+            this._lazyTracingModel.addEventListener(WebInspector.TracingModel.Events.BufferUsage, this._onTracingBufferUsage, this);
+        }
         return this._lazyTracingModel;
     },
 
@@ -655,29 +657,13 @@ WebInspector.TimelinePanel.prototype = {
     {
         this.toggleTimelineButton.title = WebInspector.UIString("Stop");
         this.toggleTimelineButton.toggled = true;
-        this._showProgressPane();
+        if (WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled())
+            this._updateProgress(WebInspector.UIString("%d events collected", 0));
     },
 
     _recordingInProgress: function()
     {
         return this.toggleTimelineButton.toggled;
-    },
-
-    _showProgressPane: function()
-    {
-        if (!WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled())
-            return;
-        this._hideProgressPane();
-        this._progressElement = this._detailsSplitView.mainElement().createChild("div", "timeline-progress-pane");
-        this._progressElement.textContent = WebInspector.UIString("%d events collected", 0);
-    },
-
-    _hideProgressPane: function()
-    {
-        if (!WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled())
-            return;
-        if (this._progressElement)
-            this._progressElement.remove();
     },
 
     /**
@@ -687,7 +673,39 @@ WebInspector.TimelinePanel.prototype = {
     {
         if (!WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled())
             return;
-        this._progressElement.textContent = WebInspector.UIString("%d events collected", event.data);
+        this._updateProgress(WebInspector.UIString("%d events collected", event.data));
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onTracingBufferUsage: function(event)
+    {
+        var usage = /** @type {number} */ (event.data);
+        this._updateProgress(WebInspector.UIString("Buffer usage %d%", Math.round(usage * 100)));
+    },
+
+    /**
+     * @param {string} progressMessage
+     */
+    _updateProgress: function(progressMessage)
+    {
+        if (!this._progressElement)
+            this._showProgressPane();
+        this._progressElement.textContent = progressMessage;
+    },
+
+    _showProgressPane: function()
+    {
+        this._hideProgressPane();
+        this._progressElement = this._detailsSplitView.mainElement().createChild("div", "timeline-progress-pane");
+    },
+
+    _hideProgressPane: function()
+    {
+        if (this._progressElement)
+            this._progressElement.remove();
+        delete this._progressElement;
     },
 
     _onRecordingStopped: function()

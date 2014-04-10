@@ -3995,7 +3995,8 @@
                 "async": true,
                 "parameters": [
                     { "name": "categories", "type": "string", "description": "Category/tag filter" },
-                    { "name": "options", "type": "string", "description": "Tracing options" }
+                    { "name": "options", "type": "string", "description": "Tracing options" },
+                    { "name": "bufferUsageReportingInterval", "type": "number", "optional": true, "description": "If set, the agent will issue bufferUsage events at this interval, specified in milliseconds" }
                 ],
                 "handlers": ["browser", "frontend"]
             },
@@ -4015,6 +4016,13 @@
             },
             {
                 "name": "tracingComplete",
+                "handlers": ["browser", "frontend"]
+            },
+            {
+                "name": "bufferUsage",
+                "parameters": [
+                    { "name": "value", "type": "number", "description": "A number in range [0..1] that indicates the used size of event buffer as a fraction of its total size." }
+                ],
                 "handlers": ["browser", "frontend"]
             }
         ]

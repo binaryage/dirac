@@ -6,12 +6,18 @@
 
 /**
  * @constructor
+ * @extends {WebInspector.Object}
  */
 WebInspector.TracingModel = function()
 {
+    WebInspector.Object.call(this);
     this.reset();
     this._active = false;
     InspectorBackend.registerTracingDispatcher(new WebInspector.TracingDispatcher(this));
+}
+
+WebInspector.TracingModel.Events = {
+    "BufferUsage": "BufferUsage"
 }
 
 /** @typedef {!{
@@ -68,7 +74,8 @@ WebInspector.TracingModel.prototype = {
     start: function(categoryPatterns, options, callback)
     {
         this.reset();
-        TracingAgent.start(categoryPatterns, options, callback);
+        var bufferUsageReportingIntervalMs = 500;
+        TracingAgent.start(categoryPatterns, options, bufferUsageReportingIntervalMs, callback);
         this._active = true;
     },
 
@@ -83,6 +90,14 @@ WebInspector.TracingModel.prototype = {
         }
         this._pendingStopCallback = callback;
         TracingAgent.end();
+    },
+
+    /**
+     * @param {number} usage
+     */
+    _bufferUsage: function(usage)
+    {
+        this.dispatchEventToListeners(WebInspector.TracingModel.Events.BufferUsage, usage);
     },
 
     /**
@@ -174,7 +189,9 @@ WebInspector.TracingModel.prototype = {
     sortedProcesses: function()
     {
         return WebInspector.TracingModel.NamedObject._sort(Object.values(this._processById));
-    }
+    },
+
+    __proto__: WebInspector.Object.prototype
 }
 
 /**
@@ -416,6 +433,11 @@ WebInspector.TracingDispatcher = function(tracingModel)
 }
 
 WebInspector.TracingDispatcher.prototype = {
+    bufferUsage: function(usage)
+    {
+        this._tracingModel._bufferUsage(usage);
+    },
+
     dataCollected: function(data)
     {
         this._tracingModel._eventsCollected(data);
