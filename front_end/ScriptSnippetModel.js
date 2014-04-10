@@ -48,8 +48,9 @@ WebInspector.ScriptSnippetModel = function(workspace)
     this._snippetStorage = new WebInspector.SnippetStorage("script", "Script snippet #");
     this._lastSnippetEvaluationIndexSetting = WebInspector.settings.createSetting("lastSnippetEvaluationIndex", 0);
     this._snippetScriptMapping = new WebInspector.SnippetScriptMapping(this);
-    this._projectDelegate = new WebInspector.SnippetsProjectDelegate(this);
-    this._project = this._workspace.addProject(this._projectDelegate);
+    this._projectId = WebInspector.projectTypes.Snippets + ":";
+    this._projectDelegate = new WebInspector.SnippetsProjectDelegate(workspace, this, this._projectId);
+    this._project = this._workspace.project(this._projectId);
     this.reset();
     WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 }
@@ -96,7 +97,7 @@ WebInspector.ScriptSnippetModel.prototype = {
     _addScriptSnippet: function(snippet)
     {
         var path = this._projectDelegate.addSnippet(snippet.name, new WebInspector.SnippetContentProvider(snippet));
-        var uiSourceCode = this._workspace.uiSourceCode(this._projectDelegate.id(), path);
+        var uiSourceCode = this._workspace.uiSourceCode(this._projectId, path);
         if (!uiSourceCode) {
             console.assert(uiSourceCode);
             return "";
@@ -114,7 +115,7 @@ WebInspector.ScriptSnippetModel.prototype = {
      */
     deleteScriptSnippet: function(path)
     {
-        var uiSourceCode = this._workspace.uiSourceCode(this._projectDelegate.id(), path);
+        var uiSourceCode = this._workspace.uiSourceCode(this._projectId, path);
         if (!uiSourceCode)
             return;
         var snippetId = this._snippetIdForUISourceCode.get(uiSourceCode) || "";
@@ -608,24 +609,17 @@ WebInspector.SnippetContentProvider.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ContentProviderBasedProjectDelegate}
+ * @param {!WebInspector.Workspace} workspace
  * @param {!WebInspector.ScriptSnippetModel} model
+ * @param {string} id
  */
-WebInspector.SnippetsProjectDelegate = function(model)
+WebInspector.SnippetsProjectDelegate = function(workspace, model, id)
 {
-    WebInspector.ContentProviderBasedProjectDelegate.call(this, WebInspector.projectTypes.Snippets);
+    WebInspector.ContentProviderBasedProjectDelegate.call(this, workspace, id, WebInspector.projectTypes.Snippets);
     this._model = model;
 }
 
 WebInspector.SnippetsProjectDelegate.prototype = {
-    /**
-     * @override
-     * @return {string}
-     */
-    id: function()
-    {
-        return WebInspector.projectTypes.Snippets + ":";
-    },
-
     /**
      * @param {string} name
      * @param {!WebInspector.ContentProvider} contentProvider

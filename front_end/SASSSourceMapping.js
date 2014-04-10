@@ -33,16 +33,16 @@
  * @implements {WebInspector.SourceMapping}
  * @param {!WebInspector.CSSStyleModel} cssModel
  * @param {!WebInspector.Workspace} workspace
- * @param {!WebInspector.SimpleWorkspaceProvider} networkWorkspaceProvider
+ * @param {!WebInspector.NetworkWorkspaceBinding} networkWorkspaceBinding
  */
-WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceProvider)
+WebInspector.SASSSourceMapping = function(cssModel, workspace, networkWorkspaceBinding)
 {
     this.pollPeriodMs = 5000;
     this.pollIntervalMs = 200;
 
     this._cssModel = cssModel;
     this._workspace = workspace;
-    this._networkWorkspaceProvider = networkWorkspaceProvider;
+    this._networkWorkspaceBinding = networkWorkspaceBinding;
     this._addingRevisionCounter = 0;
     this._reset();
     WebInspector.fileManager.addEventListener(WebInspector.FileManager.EventTypes.SavedURL, this._fileSaveFinished, this);
@@ -527,7 +527,7 @@ WebInspector.SASSSourceMapping.prototype = {
             this._addCSSURLforSASSURL(rawURL, url);
             if (!this._workspace.hasMappingForURL(url) && !this._workspace.uiSourceCodeForURL(url)) {
                 var contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.Stylesheet);
-                this._networkWorkspaceProvider.addFileForURL(url, contentProvider, true);
+                this._networkWorkspaceBinding.addFileForURL(url, contentProvider, true);
             }
         }
     },

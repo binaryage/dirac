@@ -31,28 +31,21 @@
  /**
  * @constructor
  * @implements {WebInspector.ProjectDelegate}
- * @extends {WebInspector.Object}
+ * @param {!WebInspector.Workspace} workspace
+ * @param {string} id
  * @param {string} type
  */
-WebInspector.ContentProviderBasedProjectDelegate = function(type)
+WebInspector.ContentProviderBasedProjectDelegate = function(workspace, id, type)
 {
     this._type = type;
     /** @type {!Object.<string, !WebInspector.ContentProvider>} */
     this._contentProviders = {};
     /** @type {!Object.<string, boolean>} */
     this._isContentScriptMap = {};
+    this._projectStore = workspace.addProject(id, this);
 }
 
 WebInspector.ContentProviderBasedProjectDelegate.prototype = {
-    /**
-     * @return {string}
-     */
-    id: function()
-    {
-        // Overriddden by subclasses
-        return "";
-    },
-
     /**
      * @return {string}
      */
@@ -311,17 +304,10 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
 
     /**
      * @param {!WebInspector.Progress} progress
-     * @param {function()} callback
      */
-    indexContent: function(progress, callback)
+    indexContent: function(progress)
     {
-        setTimeout(innerCallback, 0);
-
-        function innerCallback()
-        {
-            progress.done();
-            callback();
-        }
+        setTimeout(progress.done.bind(progress), 0);
     },
 
     /**
@@ -341,7 +327,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
         var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, url, url, contentProvider.contentType(), isEditable, isContentScript);
         this._contentProviders[path] = contentProvider;
         this._isContentScriptMap[path] = isContentScript || false;
-        this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.FileAdded, fileDescriptor);
+        this._projectStore.addFile(fileDescriptor);
         return path;
     },
 
@@ -352,7 +338,7 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     {
         delete this._contentProviders[path];
         delete this._isContentScriptMap[path];
-        this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.FileRemoved, path);
+        this._projectStore.removeFile(path);
     },
 
     /**
@@ -367,8 +353,6 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     {
         this._contentProviders = {};
         this._isContentScriptMap = {};
-        this.dispatchEventToListeners(WebInspector.ProjectDelegate.Events.Reset, null);
-    },
-    
-    __proto__: WebInspector.Object.prototype
+        this._projectStore.reset();
+    }
 }

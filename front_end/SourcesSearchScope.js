@@ -47,15 +47,14 @@ WebInspector.SourcesSearchScope.prototype = {
         this.stopSearch();
 
         var projects = this._workspace.projects().filter(this._filterOutServiceProjects);
-        var barrier = new CallbackBarrier();
         var compositeProgress = new WebInspector.CompositeProgress(progress);
         progress.addEventListener(WebInspector.Progress.Events.Canceled, indexingCanceled);
         for (var i = 0; i < projects.length; ++i) {
             var project = projects[i];
             var projectProgress = compositeProgress.createSubProgress(project.uiSourceCodes().length);
-            project.indexContent(projectProgress, barrier.createCallback());
+            project.indexContent(projectProgress);
         }
-        barrier.callWhenDone(indexingFinishedCallback.bind(this, true));
+        compositeProgress.addEventListener(WebInspector.Progress.Events.Done, indexingFinishedCallback.bind(this, true));
 
         function indexingCanceled()
         {
