@@ -719,6 +719,10 @@ WebInspector.ConsoleView.prototype = {
         section.addKey(shortcut.makeDescriptor(shortcut.Keys.Tab), WebInspector.UIString("Autocomplete common prefix"));
         section.addKey(shortcut.makeDescriptor(shortcut.Keys.Right), WebInspector.UIString("Accept suggestion"));
 
+        var shortcutU = shortcut.makeDescriptor("u", WebInspector.KeyboardShortcut.Modifiers.Ctrl);
+        this._shortcuts[shortcutU.key] = this._clearPromptBackwards.bind(this);
+        section.addAlternateKeys([shortcutU], WebInspector.UIString("Clear console prompt"));
+
         keys = [
             shortcut.makeDescriptor(shortcut.Keys.Down),
             shortcut.makeDescriptor(shortcut.Keys.Up)
@@ -734,6 +738,11 @@ WebInspector.ConsoleView.prototype = {
         }
 
         section.addKey(shortcut.makeDescriptor(shortcut.Keys.Enter), WebInspector.UIString("Execute command"));
+    },
+
+    _clearPromptBackwards: function()
+    {
+        this.prompt.text = "";
     },
 
     _requestClearMessages: function()
