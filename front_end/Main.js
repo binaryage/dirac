@@ -70,8 +70,8 @@ WebInspector.Main.prototype = {
         if (WebInspector.dockController.element)
             WebInspector.inspectorView.appendToRightToolbar(WebInspector.dockController.element);
 
-        if (WebInspector._screencastController)
-            WebInspector.inspectorView.appendToRightToolbar(WebInspector._screencastController.statusBarItem());
+        if (this._screencastController)
+            WebInspector.inspectorView.appendToRightToolbar(this._screencastController.statusBarItem());
     },
 
     _createRootView: function()
