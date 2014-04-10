@@ -102,14 +102,15 @@ WebInspector.TextUtils = {
 
     /**
      * @param {string} text
+     * @param {function(string):boolean} isWordChar
      * @return {!Array.<string>}
      */
-    textToWords: function(text)
+    textToWords: function(text, isWordChar)
     {
         var words = [];
         var startWord = -1;
         for(var i = 0; i < text.length; ++i) {
-            if (!WebInspector.TextUtils.isWordChar(text.charAt(i))) {
+            if (!isWordChar(text.charAt(i))) {
                 if (startWord !== -1)
                     words.push(text.substring(startWord, i));
                 startWord = -1;
