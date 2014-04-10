@@ -444,7 +444,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _userAgentChanged: function()
     {
-        if (WebInspector.OverridesSupport.isInspectingDevice() || this._userAgentChangedListenerMuted)
+        if (this._userAgentChangedListenerMuted)
             return;
         var userAgent = WebInspector.settings.overrideUserAgent.get() ? WebInspector.settings.userAgent.get() : "";
         NetworkAgent.setUserAgentOverride(userAgent);

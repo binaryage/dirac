@@ -675,7 +675,6 @@ WebInspector.OverridesView.UserAgentTab = function()
     WebInspector.OverridesView.Tab.call(this, "user-agent", WebInspector.UIString("User Agent"), [WebInspector.settings.overrideUserAgent]);
     this.element.classList.add("overrides-user-agent");
     var checkbox = this._createSettingCheckbox(WebInspector.UIString("Spoof user agent"), WebInspector.settings.overrideUserAgent);
-    checkbox.firstChild.disabled = WebInspector.OverridesSupport.isInspectingDevice();
     this.element.appendChild(checkbox);
     this.element.appendChild(this._createUserAgentSelectRowElement());
 }
@@ -723,8 +722,6 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
         var userAgents = WebInspector.OverridesView.UserAgentTab._userAgents.concat([[WebInspector.UIString("Other"), "Other"]]);
 
         var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.overrideUserAgent);
-        if (WebInspector.OverridesSupport.isInspectingDevice())
-            fieldsetElement.disabled = true;
 
         this._selectElement = fieldsetElement.createChild("select");
         fieldsetElement.createChild("br");
