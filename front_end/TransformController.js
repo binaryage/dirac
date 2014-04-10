@@ -49,11 +49,8 @@ WebInspector.TransformController.prototype = {
      */
     _onMouseMove: function(event)
     {
-        if (event.which !== 1)
+        if (event.which !== 1 || typeof this._originX !== "number")
             return;
-        // Set reference point if we missed mousedown.
-        if (typeof this._originX !== "number")
-            this._setReferencePoint(event);
         this._rotateX = this._oldRotateX + (this._originY - event.clientY) / 2;
         this._rotateY = this._oldRotateY - (this._originX - event.clientX) / 4;
         this._postChangeEvent(WebInspector.TransformController.TransformType.Rotation);
@@ -113,7 +110,7 @@ WebInspector.TransformController.prototype = {
      */
     _onMouseWheel: function(event)
     {
-        if (event.shiftKey) {
+        if (!event.altKey) {
             const zoomFactor = 1.1;
             const mouseWheelZoomSpeed = 1 / 120;
             var scaleFactor = Math.pow(zoomFactor, event.wheelDeltaY * mouseWheelZoomSpeed);

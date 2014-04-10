@@ -120,6 +120,33 @@ WebInspector.Geometry.crossProduct = function(u, v)
 /**
  * @param {!WebInspector.Geometry.Vector} u
  * @param {!WebInspector.Geometry.Vector} v
+ * @return {!WebInspector.Geometry.Vector}
+ */
+WebInspector.Geometry.subtract = function(u, v)
+{
+    var x = u.x - v.x;
+    var y = u.y - v.y;
+    var z = u.z - v.z;
+    return new WebInspector.Geometry.Vector(x, y, z);
+}
+
+/**
+ * @param {!WebInspector.Geometry.Vector} v
+ * @param {!CSSMatrix} m
+ * @return {!WebInspector.Geometry.Vector}
+ */
+WebInspector.Geometry.multiplyVectorByMatrixAndNormalize = function(v, m)
+{
+    var t = v.x * m.m14 + v.y * m.m24 + v.z * m.m34 + m.m44;
+    var x = (v.x * m.m11 + v.y * m.m21 + v.z * m.m31 + m.m41) / t;
+    var y = (v.x * m.m12 + v.y * m.m22 + v.z * m.m32 + m.m42) / t;
+    var z = (v.x * m.m13 + v.y * m.m23 + v.z * m.m33 + m.m43) / t;
+    return new WebInspector.Geometry.Vector(x, y, z);
+}
+
+/**
+ * @param {!WebInspector.Geometry.Vector} u
+ * @param {!WebInspector.Geometry.Vector} v
  * @return {number}
  */
 WebInspector.Geometry.calculateAngle = function(u, v)

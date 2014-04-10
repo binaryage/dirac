@@ -178,6 +178,7 @@ WebInspector.LayerTreeModel.prototype = {
                 this._root = layer;
             }
         }
+        this._root._calculateQuad(new WebKitCSSMatrix());
         this._lastPaintRectByLayerId = {};
     },
 
@@ -467,8 +468,77 @@ WebInspector.Layer.prototype = {
         this._paintCount = 0;
         this._layerPayload = layerPayload;
         this._image = null;
-        this._nodeId = 0;
         this._scrollRects = this._layerPayload.scrollRects || [];
+    },
+
+    /**
+     * @param {!Array.<number>} a
+     * @return {!CSSMatrix}
+     */
+    _matrixFromArray: function(a)
+    {
+        function toFixed9(x) { return x.toFixed(9); }
+        return new WebKitCSSMatrix("matrix3d(" + a.map(toFixed9).join(",") + ")");
+    },
+
+    /**
+     * @param {!CSSMatrix} parentTransform
+     * @return {!CSSMatrix}
+     */
+    _calculateTransformToViewport: function(parentTransform)
+    {
+        var offsetMatrix = new WebKitCSSMatrix().translate(this._layerPayload.offsetX, this._layerPayload.offsetY);
+        var matrix = offsetMatrix;
+
+        if (this._layerPayload.transform) {
+            var transformMatrix = this._matrixFromArray(this._layerPayload.transform);
+            var anchorVector = new WebInspector.Geometry.Vector(this._layerPayload.width * this.anchorPoint()[0], this._layerPayload.height * this.anchorPoint()[1], this.anchorPoint()[2]);
+            var anchorPoint = WebInspector.Geometry.multiplyVectorByMatrixAndNormalize(anchorVector, matrix);
+            var anchorMatrix = new WebKitCSSMatrix().translate(-anchorPoint.x, -anchorPoint.y, -anchorPoint.z);
+            matrix = anchorMatrix.inverse().multiply(transformMatrix.multiply(anchorMatrix.multiply(matrix)));
+        }
+
+        matrix = parentTransform.multiply(matrix);
+        return matrix;
+    },
+
+    /**
+     * @param {number} width
+     * @param {number} height
+     * @return {!Array.<number>}
+     */
+    _createVertexArrayForRect: function(width, height)
+    {
+        return [0, 0, 0, 0, height, 0, width, height, 0, width, 0, 0];
+    },
+
+    /**
+     * @param {!CSSMatrix} parentTransform
+     */
+    _calculateQuad: function(parentTransform)
+    {
+        var matrix = this._calculateTransformToViewport(parentTransform);
+        this._quad = [];
+        var vertices = this._createVertexArrayForRect(this._layerPayload.width, this._layerPayload.height);
+        for (var i = 0; i < 4; ++i) {
+            var point = WebInspector.Geometry.multiplyVectorByMatrixAndNormalize(new WebInspector.Geometry.Vector(vertices[i * 3], vertices[i * 3 + 1], vertices[i * 3 + 2]), matrix);
+            this._quad.push(point.x, point.y);
+        }
+
+        function calculateQuadForLayer(layer)
+        {
+            layer._calculateQuad(matrix);
+        }
+
+        this._children.forEach(calculateQuadForLayer);
+    },
+
+    /**
+     * @return {!Array.<number>}
+     */
+    quad: function()
+    {
+        return this._quad;
     }
 }
 
