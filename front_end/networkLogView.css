@@ -201,6 +201,21 @@
     content: url(Images/resourceDocumentIconSmall.png);
 }
 
+.network-log-grid.data-grid .network-type-media .icon {
+    content: url(Images/resourcePlainIcon.png); // FIXME: media icon
+}
+
+.network-log-grid.data-grid.small .network-type-media .icon {
+    content: url(Images/resourcePlainIconSmall.png); // FIXME: media icon
+}
+.network-log-grid.data-grid .network-type-texttrack .icon {
+    content: url(Images/resourcePlainIcon.png); // FIXME: vtt icon
+}
+
+.network-log-grid.data-grid.small .network-type-texttrack .icon {
+    content: url(Images/resourcePlainIconSmall.png); // FIXME: vtt icon
+}
+
 .network-log-grid.data-grid .network-type-image .icon {
     position: relative;
     background-image: url(Images/resourcePlainIcon.png);
@@ -404,6 +419,14 @@
                 inset 0 1px 0 2px hsla(273, 38%, 65%, 0.85);
 }
 
+.network-type-media .network-graph-bar {
+    -webkit-border-image: url(Images/timelinePillPurple.png) 6 7 6 7;
+}
+
+.network-type-media.resource-cached .network-graph-bar {
+    border-image: url(Images/timelineHollowPillPurple.png) 7 7 7 7;
+}
+
 .network-type-font .network-graph-bar {
     border-color: hsl(8, 49%, 52%);
     background: linear-gradient(0deg, hsl(8, 72%, 61%), hsl(8, 100%, 69%));
@@ -414,6 +437,14 @@
     box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
                 inset 0 0 0 2px hsl(8, 72%, 61%),
                 inset 0 1px 0 2px hsla(8, 59%, 65%, 0.85);
+}
+
+.network-type-texttrack .network-graph-bar {
+    -webkit-border-image: url(Images/timelinePillRed.png) 6 7 6 7;
+}
+
+.network-type-texttrack.resource-cached .network-graph-bar {
+    border-image: url(Images/timelineHollowPillRed.png) 7 7 7 7;
 }
 
 .network-type-script .network-graph-bar {

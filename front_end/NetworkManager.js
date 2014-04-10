@@ -96,6 +96,7 @@ WebInspector.NetworkManager._MIMETypes = {
     "text/javascript1.3":          {"script": true},
     "text/jscript":                {"script": true},
     "text/livescript":             {"script": true},
+    "text/vtt":                    {"texttrack": true},
 }
 
 WebInspector.NetworkManager.prototype = {
@@ -219,6 +220,7 @@ WebInspector.NetworkDispatcher.prototype = {
 
         if (typeof networkRequest.type === "undefined"
             || networkRequest.type === WebInspector.resourceTypes.Other
+            || networkRequest.type === WebInspector.resourceTypes.Media
             || networkRequest.type === WebInspector.resourceTypes.XHR
             || networkRequest.type === WebInspector.resourceTypes.WebSocket)
             return true;
