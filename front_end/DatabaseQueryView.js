@@ -44,8 +44,8 @@ WebInspector.DatabaseQueryView = function(database)
     this._promptElement.addEventListener("keydown", this._promptKeyDown.bind(this), true);
     this.element.appendChild(this._promptElement);
 
-    this.prompt = new WebInspector.TextPromptWithHistory(this.completions.bind(this), " ");
-    this.prompt.attach(this._promptElement);
+    this._prompt = new WebInspector.TextPromptWithHistory(this.completions.bind(this), " ");
+    this._prompt.attach(this._promptElement);
 
     this.element.addEventListener("click", this._messagesClicked.bind(this), true);
 }
@@ -57,8 +57,8 @@ WebInspector.DatabaseQueryView.Events = {
 WebInspector.DatabaseQueryView.prototype = {
     _messagesClicked: function()
     {
-        if (!this.prompt.isCaretInsidePrompt() && window.getSelection().isCollapsed)
-            this.prompt.moveCaretToEndOfPrompt();
+        if (!this._prompt.isCaretInsidePrompt() && window.getSelection().isCollapsed)
+            this._prompt.moveCaretToEndOfPrompt();
     },
     
     /**
@@ -101,7 +101,7 @@ WebInspector.DatabaseQueryView.prototype = {
         if (this._selectionTimeout)
             clearTimeout(this._selectionTimeout);
 
-        this.prompt.clearAutoComplete();
+        this._prompt.clearAutoComplete();
 
         /**
          * @this {WebInspector.DatabaseQueryView}
@@ -109,9 +109,9 @@ WebInspector.DatabaseQueryView.prototype = {
         function moveBackIfOutside()
         {
             delete this._selectionTimeout;
-            if (!this.prompt.isCaretInsidePrompt() && window.getSelection().isCollapsed)
-                this.prompt.moveCaretToEndOfPrompt();
-            this.prompt.autoCompleteSoon();
+            if (!this._prompt.isCaretInsidePrompt() && window.getSelection().isCollapsed)
+                this._prompt.moveCaretToEndOfPrompt();
+            this._prompt.autoCompleteSoon();
         }
 
         this._selectionTimeout = setTimeout(moveBackIfOutside.bind(this), 100);
@@ -129,14 +129,14 @@ WebInspector.DatabaseQueryView.prototype = {
     {
         event.consume(true);
 
-        this.prompt.clearAutoComplete(true);
+        this._prompt.clearAutoComplete(true);
 
-        var query = this.prompt.text;
+        var query = this._prompt.text;
         if (!query.length)
             return;
 
-        this.prompt.pushHistoryItem(query);
-        this.prompt.text = "";
+        this._prompt.pushHistoryItem(query);
+        this._prompt.text = "";
 
         this.database.executeSql(query, this._queryFinished.bind(this, query), this._queryError.bind(this, query));
     },
@@ -190,7 +190,7 @@ WebInspector.DatabaseQueryView.prototype = {
     {
         var element = document.createElement("div");
         element.className = "database-user-query";
-        this.element.insertBefore(element, this.prompt.proxyElement);
+        this.element.insertBefore(element, this._prompt.proxyElement);
 
         var commandTextElement = document.createElement("span");
         commandTextElement.className = "database-query-text";
