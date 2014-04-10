@@ -861,6 +861,13 @@ String.tokenizeFormatString = function(format, formatters)
         addStringToken(format.substring(index, precentIndex));
         index = precentIndex + 1;
 
+        if (format[index] === "%") {
+            // %% escape sequence.
+            addStringToken("%");
+            ++index;
+            continue;
+        }
+
         if (isDigit(format[index])) {
             // The first character is a number, it might be a substitution index.
             var number = parseInt(format.substring(index), 10);
