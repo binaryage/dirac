@@ -86,6 +86,8 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this.promptElement.id = "console-prompt";
     this.promptElement.className = "source-code";
     this.promptElement.spellcheck = false;
+    this.promptElement.addEventListener("paste", this._onPasteIntoPrompt.bind(this), false);
+    this.promptElement.addEventListener("drop", this._onPasteIntoPrompt.bind(this), false);
     this.messagesElement.appendChild(this.promptElement);
     this.messagesElement.appendChild(document.createElement("br"));
 
@@ -119,7 +121,10 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this.prompt.renderAsBlock();
     this.prompt.attach(this.promptElement);
     this.prompt.proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), false);
-    this.prompt.setHistoryData(WebInspector.settings.consoleHistory.get());
+    var historyData = WebInspector.settings.consoleHistory.get();
+    this.prompt.setHistoryData(historyData);
+    if (!WebInspector.settings.allowPastingJavaScript.get() && historyData && historyData.length > 10)
+        WebInspector.settings.allowPastingJavaScript.set(true);
 
     WebInspector.targetManager.observeTargets(this);
 
@@ -279,8 +284,6 @@ WebInspector.ConsoleView.prototype = {
      */
     _currentTarget: function()
     {
-//         var executionContext = this._currentExecutionContext();
-//         return executionContext ? executionContext.target() : null;
         return WebInspector.targetManager.activeTarget();
     },
 
@@ -928,6 +931,21 @@ WebInspector.ConsoleView.prototype = {
         this._currentSearchResultIndex = index;
         this._searchableView.updateCurrentMatchIndex(this._currentSearchResultIndex);
         this._searchResults[index].highlightSearchResults(this._searchRegex);
+    },
+
+    /**
+     * @param {?Event} e
+     */
+    _onPasteIntoPrompt: function(e)
+    {
+        if (WebInspector.settings.allowPastingJavaScript.get())
+            return;
+        var result = prompt(WebInspector.UIString("You may be a victim of a scam. Executing this code is probably bad for you. \n\nType 'always allow' in the input field below to allow this action"));
+        if (result === "always allow") {
+            WebInspector.settings.allowPastingJavaScript.set(true);
+            return;
+        }
+        e.consume(true);
     },
 
     __proto__: WebInspector.VBox.prototype
