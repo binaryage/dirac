@@ -46,6 +46,10 @@ WebInspector.ProgressIndicator = function()
     this._worked = 0;
 }
 
+WebInspector.ProgressIndicator.Events = {
+    Done: "Done"
+}
+
 WebInspector.ProgressIndicator.prototype = {
     /**
      * @param {!Element} parent
@@ -68,7 +72,7 @@ WebInspector.ProgressIndicator.prototype = {
             return;
         this._isDone = true;
         this.hide();
-        this.dispatchEventToListeners(WebInspector.Progress.Events.Done);
+        this.dispatchEventToListeners(WebInspector.ProgressIndicator.Events.Done);
     },
 
     cancel: function()

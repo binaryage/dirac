@@ -33,14 +33,14 @@
  * @implements {WebInspector.ScriptSourceMapping}
  * @param {!WebInspector.DebuggerModel} debuggerModel
  * @param {!WebInspector.Workspace} workspace
- * @param {!WebInspector.NetworkWorkspaceBinding} networkWorkspaceBinding
+ * @param {!WebInspector.SimpleWorkspaceProvider} networkWorkspaceProvider
  */
-WebInspector.CompilerScriptMapping = function(debuggerModel, workspace, networkWorkspaceBinding)
+WebInspector.CompilerScriptMapping = function(debuggerModel, workspace, networkWorkspaceProvider)
 {
     this._debuggerModel = debuggerModel;
     this._workspace = workspace;
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
-    this._networkWorkspaceBinding = networkWorkspaceBinding;
+    this._networkWorkspaceProvider = networkWorkspaceProvider;
     /** @type {!Object.<string, !WebInspector.SourceMap>} */
     this._sourceMapForSourceMapURL = {};
     /** @type {!Object.<string, !Array.<function(?WebInspector.SourceMap)>>} */
@@ -130,7 +130,7 @@ WebInspector.CompilerScriptMapping.prototype = {
                 this._sourceMapForURL.put(sourceURL, sourceMap);
                 if (!this._workspace.hasMappingForURL(sourceURL) && !this._workspace.uiSourceCodeForURL(sourceURL)) {
                     var contentProvider = sourceMap.sourceContentProvider(sourceURL, WebInspector.resourceTypes.Script);
-                    this._networkWorkspaceBinding.addFileForURL(sourceURL, contentProvider, true);
+                    this._networkWorkspaceProvider.addFileForURL(sourceURL, contentProvider, true);
                 }
                 var uiSourceCode = this._workspace.uiSourceCodeForURL(sourceURL);
                 if (uiSourceCode) {

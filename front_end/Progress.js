@@ -37,8 +37,7 @@ WebInspector.Progress = function()
 }
 
 WebInspector.Progress.Events = {
-    Canceled: "Canceled",
-    Done: "Done"
+    Canceled: "Canceled"
 }
 
 WebInspector.Progress.prototype = {
@@ -171,7 +170,6 @@ WebInspector.SubProgress.prototype = {
     {
         this.setWorked(this._totalWork);
         this._composite._childDone();
-        this.dispatchEventToListeners(WebInspector.Progress.Events.Done);
     },
 
     /**

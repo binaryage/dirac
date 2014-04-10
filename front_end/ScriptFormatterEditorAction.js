@@ -15,8 +15,9 @@ WebInspector.FormatterScriptMapping = function(workspace, debuggerModel)
 
     this._init();
 
-    this._projectId = "formatter:";
-    this._projectDelegate = new WebInspector.FormatterProjectDelegate(workspace, this._projectId);
+    this._projectDelegate = new WebInspector.FormatterProjectDelegate();
+    this._workspace.addProject(this._projectDelegate);
+
     this._debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
 }
 
@@ -117,7 +118,7 @@ WebInspector.FormatterScriptMapping.prototype = {
         var path = this._formattedPaths.get(uiSourceCode.project().id() + ":" + uiSourceCode.path());
         if (path) {
             var uiSourceCodePath = path;
-            var formattedUISourceCode = this._workspace.uiSourceCode(this._projectId, uiSourceCodePath);
+            var formattedUISourceCode = this._workspace.uiSourceCode(this._projectDelegate.id(), uiSourceCodePath);
             var formatData = formattedUISourceCode ? this._formatData.get(formattedUISourceCode) : null;
             if (!formatData)
                 callback(null);
@@ -156,7 +157,7 @@ WebInspector.FormatterScriptMapping.prototype = {
             else
                 name = uiSourceCode.name() || scripts[0].scriptId;
             path = this._projectDelegate._addFormatted(name, uiSourceCode.url, uiSourceCode.contentType(), formattedContent);
-            var formattedUISourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(this._projectId, path));
+            var formattedUISourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(this._projectDelegate.id(), path));
 
             var formatData = new WebInspector.FormatterScriptMapping.FormatData(uiSourceCode.project().id(), uiSourceCode.path(), formatterMapping, scripts);
             this._formatData.put(formattedUISourceCode, formatData);
@@ -208,16 +209,22 @@ WebInspector.FormatterScriptMapping.FormatData = function(projectId, path, mappi
 
 /**
  * @constructor
- * @param {!WebInspector.Workspace} workspace
- * @param {string} id
  * @extends {WebInspector.ContentProviderBasedProjectDelegate}
  */
-WebInspector.FormatterProjectDelegate = function(workspace, id)
+WebInspector.FormatterProjectDelegate = function()
 {
-    WebInspector.ContentProviderBasedProjectDelegate.call(this, workspace, id, WebInspector.projectTypes.Formatter);
+    WebInspector.ContentProviderBasedProjectDelegate.call(this, WebInspector.projectTypes.Formatter);
 }
 
 WebInspector.FormatterProjectDelegate.prototype = {
+    /**
+     * @return {string}
+     */
+    id: function()
+    {
+        return "formatter:";
+    },
+
     /**
      * @return {string}
      */

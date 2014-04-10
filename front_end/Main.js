@@ -307,10 +307,10 @@ WebInspector.Main.prototype = {
 
         new WebInspector.WorkspaceController(WebInspector.workspace);
 
-        WebInspector.fileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(WebInspector.isolatedFileSystemManager, WebInspector.workspace);
+        WebInspector.fileSystemWorkspaceProvider = new WebInspector.FileSystemWorkspaceProvider(WebInspector.isolatedFileSystemManager, WebInspector.workspace);
 
-        WebInspector.networkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(WebInspector.workspace);
-        new WebInspector.NetworkUISourceCodeProvider(WebInspector.networkWorkspaceBinding, WebInspector.workspace);
+        WebInspector.networkWorkspaceProvider = new WebInspector.SimpleWorkspaceProvider(WebInspector.workspace, WebInspector.projectTypes.Network);
+        new WebInspector.NetworkUISourceCodeProvider(WebInspector.networkWorkspaceProvider, WebInspector.workspace);
 
         WebInspector.breakpointManager = new WebInspector.BreakpointManager(WebInspector.settings.breakpoints, WebInspector.debuggerModel, WebInspector.workspace);
 
@@ -319,9 +319,9 @@ WebInspector.Main.prototype = {
         WebInspector.overridesSupport = new WebInspector.OverridesSupport();
         WebInspector.overridesSupport.applyInitialOverrides();
 
-        new WebInspector.DebuggerScriptMapping(WebInspector.debuggerModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
+        new WebInspector.DebuggerScriptMapping(WebInspector.debuggerModel, WebInspector.workspace, WebInspector.networkWorkspaceProvider);
         WebInspector.liveEditSupport = new WebInspector.LiveEditSupport(WebInspector.workspace);
-        new WebInspector.CSSStyleSheetMapping(WebInspector.cssModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
+        new WebInspector.CSSStyleSheetMapping(WebInspector.cssModel, WebInspector.workspace, WebInspector.networkWorkspaceProvider);
         new WebInspector.PresentationConsoleMessageHelper(WebInspector.workspace);
 
         // Create settings before loading modules.

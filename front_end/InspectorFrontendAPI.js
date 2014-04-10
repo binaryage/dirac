@@ -141,43 +141,28 @@ var InspectorFrontendAPI = {
         WebInspector.isolatedFileSystemDispatcher.fileSystemAdded(errorMessage, fileSystem);
     },
 
-    /**
-     * @param {number} requestId
-     * @param {string} fileSystemPath
-     * @param {number} totalWork
-     */
     indexingTotalWorkCalculated: function(requestId, fileSystemPath, totalWork)
     {
-        WebInspector.fileSystemWorkspaceBinding.indexingTotalWorkCalculated(requestId, fileSystemPath, totalWork);
+        var projectDelegate = WebInspector.fileSystemWorkspaceProvider.delegate(fileSystemPath);
+        projectDelegate.indexingTotalWorkCalculated(requestId, totalWork);
     },
 
-    /**
-     * @param {number} requestId
-     * @param {string} fileSystemPath
-     * @param {number} worked
-     */
     indexingWorked: function(requestId, fileSystemPath, worked)
     {
-        WebInspector.fileSystemWorkspaceBinding.indexingWorked(requestId, fileSystemPath, worked);
+        var projectDelegate = WebInspector.fileSystemWorkspaceProvider.delegate(fileSystemPath);
+        projectDelegate.indexingWorked(requestId, worked);
     },
 
-    /**
-     * @param {number} requestId
-     * @param {string} fileSystemPath
-     */
     indexingDone: function(requestId, fileSystemPath)
     {
-        WebInspector.fileSystemWorkspaceBinding.indexingDone(requestId, fileSystemPath);
+        var projectDelegate = WebInspector.fileSystemWorkspaceProvider.delegate(fileSystemPath);
+        projectDelegate.indexingDone(requestId);
     },
 
-    /**
-     * @param {number} requestId
-     * @param {string} fileSystemPath
-     * @param {!Array.<string>} files
-     */
     searchCompleted: function(requestId, fileSystemPath, files)
     {
-        WebInspector.fileSystemWorkspaceBinding.searchCompleted(requestId, fileSystemPath, files);
+        var projectDelegate = WebInspector.fileSystemWorkspaceProvider.delegate(fileSystemPath);
+        projectDelegate.searchCompleted(requestId, files);
     },
 
     /**

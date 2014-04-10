@@ -37,9 +37,9 @@
 WebInspector.DefaultScriptMapping = function(debuggerModel, workspace)
 {
     this._debuggerModel = debuggerModel;
+    this._projectDelegate = new WebInspector.DebuggerProjectDelegate();
     this._workspace = workspace;
-    this._projectId = "debugger:";
-    this._projectDelegate = new WebInspector.DebuggerProjectDelegate(this._workspace, this._projectId, WebInspector.projectTypes.Debugger);
+    this._workspace.addProject(this._projectDelegate);
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     this._debuggerReset();
 }
@@ -78,7 +78,7 @@ WebInspector.DefaultScriptMapping.prototype = {
     addScript: function(script)
     {
         var path = this._projectDelegate.addScript(script);
-        var uiSourceCode = this._workspace.uiSourceCode(this._projectId, path);
+        var uiSourceCode = this._workspace.uiSourceCode(this._projectDelegate.id(), path);
         if (!uiSourceCode) {
             console.assert(uiSourceCode);
             return;
@@ -119,37 +119,41 @@ WebInspector.DefaultScriptMapping.prototype = {
 
 /**
  * @constructor
- * @param {!WebInspector.Workspace} workspace
- * @param {string} id
- * @param {string} type
  * @extends {WebInspector.ContentProviderBasedProjectDelegate}
  */
-WebInspector.DebuggerProjectDelegate = function(workspace, id, type)
+WebInspector.DebuggerProjectDelegate = function()
 {
-    WebInspector.ContentProviderBasedProjectDelegate.call(this, workspace, id, type);
+    WebInspector.ContentProviderBasedProjectDelegate.call(this, WebInspector.projectTypes.Debugger);
 }
 
 WebInspector.DebuggerProjectDelegate.prototype = {
     /**
      * @return {string}
      */
+    id: function()
+    {
+        return "debugger:";
+    },
+
+    /**
+     * @return {string}
+     */
     displayName: function()
     {
-        return "";
+        return "debugger";
     },
 
     /**
      * @param {!WebInspector.Script} script
-     * @param {boolean=} editable
      * @return {string}
      */
-    addScript: function(script, editable)
+    addScript: function(script)
     {
         var contentProvider = script.isInlineScript() ? new WebInspector.ConcatenatedScriptsContentProvider([script]) : script;
         var splitURL = WebInspector.ParsedURL.splitURL(script.sourceURL);
         var name = splitURL[splitURL.length - 1];
         name = "VM" + script.scriptId + (name ? " " + name : "");
-        return this.addContentProvider("", name, script.sourceURL, contentProvider, !!editable, script.isContentScript);
+        return this.addContentProvider("", name, script.sourceURL, contentProvider, false, script.isContentScript);
     },
     
     __proto__: WebInspector.ContentProviderBasedProjectDelegate.prototype

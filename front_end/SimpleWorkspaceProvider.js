@@ -31,17 +31,31 @@
 /**
  * @constructor
  * @extends {WebInspector.ContentProviderBasedProjectDelegate}
- * @param {!WebInspector.Workspace} workspace
  * @param {string} name
+ * @param {string} type
  */
-WebInspector.NetworkProjectDelegate = function(workspace, name)
+WebInspector.SimpleProjectDelegate = function(name, type)
 {
+    WebInspector.ContentProviderBasedProjectDelegate.call(this, type);
     this._name = name;
-    WebInspector.ContentProviderBasedProjectDelegate.call(this, workspace, this._name, WebInspector.projectTypes.Network);
     this._lastUniqueSuffix = 0;
 }
 
-WebInspector.NetworkProjectDelegate.prototype = {
+WebInspector.SimpleProjectDelegate.projectId = function(name, type)
+{
+    var typePrefix = type !== WebInspector.projectTypes.Network ? (type + ":") : "";
+    return typePrefix + name;
+}
+
+WebInspector.SimpleProjectDelegate.prototype = {
+    /**
+     * @return {string}
+     */
+    id: function()
+    {
+        return WebInspector.SimpleProjectDelegate.projectId(this._name, this.type());
+    },
+
     /**
      * @return {string}
      */
@@ -105,27 +119,30 @@ WebInspector.NetworkProjectDelegate.prototype = {
  * @constructor
  * @extends {WebInspector.Object}
  * @param {!WebInspector.Workspace} workspace
+ * @param {string} type
  */
-WebInspector.NetworkWorkspaceBinding = function(workspace)
+WebInspector.SimpleWorkspaceProvider = function(workspace, type)
 {
     this._workspace = workspace;
-    this._projectDelegates = {};
+    this._type = type;
+    this._simpleProjectDelegates = {};
 }
 
-WebInspector.NetworkWorkspaceBinding.prototype = {
+WebInspector.SimpleWorkspaceProvider.prototype = {
     /**
      * @param {string} projectName
-     * @return {!WebInspector.NetworkProjectDelegate}
+     * @return {!WebInspector.SimpleProjectDelegate}
      */
     _projectDelegate: function(projectName)
     {
-        if (this._projectDelegates[projectName])
-            return this._projectDelegates[projectName];
-        var projectDelegate = new WebInspector.NetworkProjectDelegate(this._workspace, projectName);
-        this._projectDelegates[projectName] = projectDelegate;
-        return projectDelegate;
+        if (this._simpleProjectDelegates[projectName])
+            return this._simpleProjectDelegates[projectName];
+        var simpleProjectDelegate = new WebInspector.SimpleProjectDelegate(projectName, this._type);
+        this._simpleProjectDelegates[projectName] = simpleProjectDelegate;
+        this._workspace.addProject(simpleProjectDelegate);
+        return simpleProjectDelegate;
     },
-
+ 
     /**
      * @param {string} url
      * @param {!WebInspector.ContentProvider} contentProvider
@@ -166,17 +183,17 @@ WebInspector.NetworkWorkspaceBinding.prototype = {
         var name = splitURL[splitURL.length - 1];
         var projectDelegate = this._projectDelegate(projectName);
         var path = projectDelegate.addFile(parentPath, name, forceUnique, url, contentProvider, isEditable, isContentScript);
-        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(projectName, path));
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(projectDelegate.id(), path));
         console.assert(uiSourceCode);
         return uiSourceCode;
     },
 
     reset: function()
     {
-        for (var projectName in this._projectDelegates)
-            this._projectDelegates[projectName].reset();
-        this._projectDelegates = {};
+        for (var projectName in this._simpleProjectDelegates)
+            this._simpleProjectDelegates[projectName].reset();
+        this._simpleProjectDelegates = {};
     },
-
+    
     __proto__: WebInspector.Object.prototype
 }

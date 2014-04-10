@@ -470,7 +470,7 @@ WebInspector.TimelinePanel.prototype = {
             this._stopRecording();
         }
         var progressIndicator = new WebInspector.ProgressIndicator();
-        progressIndicator.addEventListener(WebInspector.Progress.Events.Done, this._setOperationInProgress.bind(this, null));
+        progressIndicator.addEventListener(WebInspector.ProgressIndicator.Events.Done, this._setOperationInProgress.bind(this, null));
         this._setOperationInProgress(progressIndicator);
         return progressIndicator;
     },
