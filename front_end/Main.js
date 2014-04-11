@@ -569,7 +569,7 @@ WebInspector.Main.prototype = {
     inspect: function(payload, hints)
     {
         var object = WebInspector.runtimeModel.createRemoteObject(payload);
-        if (object.subtype === "node") {
+        if (object.isNode()) {
             object.pushNodeToFrontend(callback);
             var elementsPanel = /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements"));
             elementsPanel.omitDefaultSelection();

@@ -114,6 +114,19 @@ WebInspector.RemoteObject.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isNode: function()
+    {
+        return false;
+    },
+
+    reveal: function()
+    {
+        WebInspector.Revealer.reveal(this);
+    },
+
+    /**
      * @param {function(?DebuggerAgent.FunctionDetails)} callback
      */
     functionDetails: function(callback)
@@ -418,7 +431,7 @@ WebInspector.RemoteObjectImpl.prototype = {
      */
     pushNodeToFrontend: function(callback)
     {
-        if (this._objectId)
+        if (this.isNode())
             this._domModel.pushNodeToFrontend(this._objectId, callback);
         else
             callback(null);
@@ -507,6 +520,14 @@ WebInspector.RemoteObjectImpl.prototype = {
     target: function()
     {
         return this._target;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isNode: function()
+    {
+        return !!this._objectId && this.type === "object" && this.subtype === "node";
     },
 
     /**

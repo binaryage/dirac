@@ -146,6 +146,11 @@ var allDescriptors = [
                 className: "WebInspector.ElementsPanel.DOMNodeRevealer"
             },
             {
+                type: "@WebInspector.Revealer",
+                contextTypes: ["WebInspector.RemoteObject"],
+                className: "WebInspector.ElementsPanel.NodeRemoteObjectRevealer"
+            },
+            {
                 type: "ui-setting",
                 section: "Elements",
                 title: "Color format",

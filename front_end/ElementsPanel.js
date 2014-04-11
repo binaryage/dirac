@@ -1214,28 +1214,11 @@ WebInspector.ElementsPanel.prototype = {
      */
     appendApplicableItems: function(event, contextMenu, object)
     {
-        /**
-         * @param {?WebInspector.DOMNode} node
-         */
-        function selectNode(node)
-        {
-            if (node)
-                node.reveal();
-        }
-
-        /**
-         * @param {!WebInspector.RemoteObject} remoteObject
-         */
-        function revealElement(remoteObject)
-        {
-            remoteObject.pushNodeToFrontend(selectNode);
-        }
-
         var commandCallback;
         if (object instanceof WebInspector.RemoteObject) {
             var remoteObject = /** @type {!WebInspector.RemoteObject} */ (object);
-            if (remoteObject.subtype === "node")
-                commandCallback = revealElement.bind(null, remoteObject);
+            if (remoteObject.isNode())
+                commandCallback = remoteObject.reveal.bind(remoteObject);
         } else if (object instanceof WebInspector.DOMNode) {
             var domNode = /** @type {!WebInspector.DOMNode} */ (object);
             commandCallback = domNode.reveal.bind(domNode);
@@ -1432,14 +1415,62 @@ WebInspector.ElementsPanel.DOMNodeRevealer.prototype = {
      */
     reveal: function(node)
     {
-        if (!(node instanceof WebInspector.DOMNode))
-            return;
-
         if (WebInspector.inspectElementModeController && WebInspector.inspectElementModeController.enabled()) {
             InspectorFrontendHost.bringToFront();
             WebInspector.inspectElementModeController.disable();
         }
 
-        /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements")).revealAndSelectNode(node);
+        /** @type {!WebInspector.ElementsPanel} */ (WebInspector.inspectorView.panel("elements")).revealAndSelectNode(/** @type {!WebInspector.DOMNode} */ (node));
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.Revealer}
+ */
+WebInspector.ElementsPanel.NodeRemoteObjectRevealer = function()
+{
+}
+
+WebInspector.ElementsPanel.NodeRemoteObjectRevealer.prototype = {
+    /**
+     * @param {!Object} remoteObject
+     */
+    reveal: function(remoteObject)
+    {
+        revealElement(/** @type {!WebInspector.RemoteObject} */ (remoteObject));
+
+        /**
+         * @param {?WebInspector.RemoteObject} remoteObject
+         */
+        function revealElement(remoteObject)
+        {
+            if (remoteObject)
+                remoteObject.pushNodeToFrontend(selectNode.bind(null, remoteObject));
+        }
+
+        /**
+         * @param {?WebInspector.RemoteObject} remoteObject
+         * @param {?WebInspector.DOMNode} node
+         */
+        function selectNode(remoteObject, node)
+        {
+            if (node) {
+                node.reveal();
+                return;
+            }
+            if (!remoteObject || remoteObject.description !== "#text" || !remoteObject.isNode())
+                return;
+            remoteObject.callFunction(parentElement, undefined, revealElement);
+        }
+
+        /**
+         * @suppressReceiverCheck
+         * @this {Element}
+         */
+        function parentElement()
+        {
+            return this.parentElement;
+        }
     }
 }
