@@ -927,6 +927,12 @@ WebInspector.TimelinePanel.prototype = {
         var startOffset = startTime - this._model.minimumRecordTime();
         var endOffset = endTime - this._model.minimumRecordTime();
         var title = WebInspector.UIString("%s \u2013 %s", Number.millisToString(startOffset), Number.millisToString(endOffset));
+
+        if (Capabilities.canProfilePower) {
+            var powerOverview = /** @type {!WebInspector.TimelinePowerOverview} */ (this._viewsForMode(WebInspector.TimelinePanel.Mode.Power).overviewView);
+            energy = powerOverview.calculateEnergy(startTime, endTime);
+            title += WebInspector.UIString("  Energy: %.2f Joules", energy);
+        }
         this._detailsView.setContent(title, fragment);
     },
 

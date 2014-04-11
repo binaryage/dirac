@@ -9,6 +9,8 @@
 WebInspector.TimelinePowerOverviewDataProvider = function()
 {
     this._records = [];
+    this._energies = [];
+    this._times = [];
     if (Capabilities.canProfilePower)
         WebInspector.powerProfiler.addEventListener(WebInspector.PowerProfiler.EventTypes.PowerEventRecorded, this._onRecordAdded, this);
 }
@@ -23,15 +25,57 @@ WebInspector.TimelinePowerOverviewDataProvider.prototype = {
         return this._records.slice(0, this._records.length - 1);
     },
 
+    /**
+     * @param {number} minTime
+     * @param {number} maxTime
+     * @return {number} energy in joules.
+     */
+    _calculateEnergy : function(minTime, maxTime)
+    {
+        var times = this._times;
+        var energies = this._energies;
+        var last = times.length - 1;
+
+        if (last < 1 || minTime >= times[last] || maxTime <= times[0])
+            return 0;
+
+        // Maximum index of element whose time <= minTime.
+        var start = Number.constrain(times.upperBound(minTime) - 1, 0, last);
+
+        // Minimum index of element whose time >= maxTime.
+        var end = Number.constrain(times.lowerBound(maxTime), 0, last);
+
+        var startTime = minTime < times[0] ? times[0] : minTime;
+        var endTime = maxTime > times[last] ? times[last] : maxTime;
+
+        if (start + 1 === end)
+           return (endTime - startTime) / (times[end] - times[start]) * (energies[end] - energies[start]) / 1000;
+
+        var totalEnergy = 0;
+        totalEnergy += energies[end - 1] - energies[start + 1];
+        totalEnergy += (times[start + 1] - startTime) / (times[start + 1] - times[start]) * (energies[start + 1] - energies[start]);
+        totalEnergy += (endTime - times[end - 1]) / (times[end] - times[end - 1]) * (energies[end] - energies[end - 1]);
+        return totalEnergy / 1000;
+    },
+
     _onRecordAdded: function(event)
     {
         // "value" of original PowerEvent means the average power between previous sampling to current one.
         // Here, it is converted to average power between current sampling to next one.
         var record = event.data;
+        var curTime = record.timestamp;
         var length = this._records.length;
-        if (length)
+        var accumulatedEnergy = 0;
+        if (length) {
             this._records[length - 1].value = record.value;
+
+            var prevTime = this._records[length - 1].timestamp;
+            accumulatedEnergy = this._energies[length - 1];
+            accumulatedEnergy += (curTime - prevTime) * record.value;
+        }
+        this._energies.push(accumulatedEnergy);
         this._records.push(record);
+        this._times.push(curTime);
     },
 
     __proto__: WebInspector.Object.prototype
@@ -145,7 +189,17 @@ WebInspector.TimelinePowerOverview.prototype = {
         ctx.restore();
 
         this._maxPowerLabel.textContent = WebInspector.UIString("%.2f\u2009watts", maxPower);
-        this._minPowerLabel.textContent = WebInspector.UIString("%.2f\u2009watts", minPower);;
+        this._minPowerLabel.textContent = WebInspector.UIString("%.2f\u2009watts", minPower);
+    },
+
+    /**
+     * @param {number} minTime
+     * @param {number} maxTime
+     * @return {number} energy in joules.
+     */
+    calculateEnergy: function(minTime, maxTime)
+    {
+        return this._dataProvider._calculateEnergy(minTime, maxTime);
     },
 
     __proto__: WebInspector.TimelineOverviewBase.prototype
