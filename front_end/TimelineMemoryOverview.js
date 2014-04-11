@@ -52,6 +52,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
     update: function()
     {
         this.resetCanvas();
+        var ratio = window.devicePixelRatio;
 
         var records = this._model.records();
         if (!records.length) {
@@ -59,7 +60,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
             return;
         }
 
-        var lowerOffset = 3;
+        var lowerOffset = 3 * ratio;
         var maxUsedHeapSize = 0;
         var minUsedHeapSize = 100000000000;
         var minTime = this._model.minimumRecordTime();
@@ -72,7 +73,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
         });
         minUsedHeapSize = Math.min(minUsedHeapSize, maxUsedHeapSize);
 
-        var lineWidth = 2;
+        var lineWidth = 2 * ratio;
         var width = this._canvas.width;
         var height = this._canvas.height - lowerOffset;
         var xFactor = width / (maxTime - minTime);
@@ -117,7 +118,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
         }
 
         ctx.save();
-        ctx.translate(0, 2);
+        ctx.translate(0, 2 * ratio);
         drawGraph();
         ctx.lineWidth = lineWidth;
         ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
