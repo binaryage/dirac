@@ -64,6 +64,7 @@ WebInspector.SuggestBox = function(suggestBoxDelegate, anchorElement, className,
     this._selectedElement = null;
     this._maxItemsHeight = maxItemsHeight;
     this._bodyElement = anchorElement.ownerDocument.body;
+    this._maybeHideBound = this._maybeHide.bind(this);
     this._element = anchorElement.ownerDocument.createElement("div");
     this._element.className = "suggest-box " + (className || "");
     this._element.addEventListener("mousedown", this._onBoxMouseDown.bind(this), true);
@@ -154,7 +155,17 @@ WebInspector.SuggestBox.prototype = {
      */
     _onBoxMouseDown: function(event)
     {
+        if (this._hideTimeoutId) {
+            window.clearTimeout(this._hideTimeoutId);
+            delete this._hideTimeoutId;
+        }
         event.preventDefault();
+    },
+
+    _maybeHide: function()
+    {
+        if (!this._hideTimeoutId)
+            this._hideTimeoutId = window.setTimeout(this.hide.bind(this), 0);
     },
 
     hide: function()
@@ -163,6 +174,7 @@ WebInspector.SuggestBox.prototype = {
             return;
 
         this._element.remove();
+        this._bodyElement.removeEventListener("mousedown", this._maybeHideBound, true);
         delete this._selectedElement;
         this._selectedIndex = -1;
     },
@@ -336,8 +348,10 @@ WebInspector.SuggestBox.prototype = {
         if (this._canShowBox(completions, canShowForSingleItem, userEnteredText)) {
             this._updateItems(completions, selectedIndex, userEnteredText);
             this._updateBoxPosition(anchorBox);
-            if (!this.visible())
+            if (!this.visible()) {
                 this._bodyElement.appendChild(this._element);
+                this._bodyElement.addEventListener("mousedown", this._maybeHideBound, true);
+            }
             this._rememberRowCountPerViewport();
         } else
             this.hide();
