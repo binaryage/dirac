@@ -805,6 +805,7 @@ WebInspector.SourcesPanel.prototype = {
         function mapNetworkToFileSystem(uiSourceCode)
         {
             this._workspace.addMapping(networkUISourceCode, uiSourceCode, WebInspector.fileSystemWorkspaceProvider);
+            this._suggestReload();
         }
     },
 
