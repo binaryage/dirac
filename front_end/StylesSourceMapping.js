@@ -333,6 +333,8 @@ WebInspector.StyleFile.prototype = {
         if (this._isAddingRevision)
             return;
 
+        if (this._incrementalUpdateTimer)
+            return;
         // FIXME: Extensions tests override updateTimeout because extensions don't have any control over applying changes to domain specific bindings.
         if (WebInspector.StyleFile.updateTimeout >= 0) {
             this._incrementalUpdateTimer = setTimeout(this._commitIncrementalEdit.bind(this, false), WebInspector.StyleFile.updateTimeout)
