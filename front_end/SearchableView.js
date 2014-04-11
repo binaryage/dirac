@@ -105,12 +105,14 @@ WebInspector.SearchableView = function(searchable)
 
     this._replaceCheckboxElement = this._replaceElement.createChild("input");
     this._replaceCheckboxElement.type = "checkbox";
-    this._replaceCheckboxElement.id = "search-replace-trigger";
+    this._uniqueId = ++WebInspector.SearchableView._lastUniqueId;
+    var replaceCheckboxId = "search-replace-trigger" + this._uniqueId;
+    this._replaceCheckboxElement.id = replaceCheckboxId;
     this._replaceCheckboxElement.addEventListener("change", this._updateSecondRowVisibility.bind(this), false);
 
     this._replaceLabelElement = this._replaceElement.createChild("label");
     this._replaceLabelElement.textContent = WebInspector.UIString("Replace");
-    this._replaceLabelElement.setAttribute("for", "search-replace-trigger");
+    this._replaceLabelElement.setAttribute("for", replaceCheckboxId);
 
     // Column 5
     var cancelButtonElement = this._firstRowElement.createChild("td").createChild("button");
@@ -121,6 +123,8 @@ WebInspector.SearchableView = function(searchable)
 
     this._registerShortcuts();
 }
+
+WebInspector.SearchableView._lastUniqueId = 0;
 
 WebInspector.SearchableView.findShortcuts = function()
 {
