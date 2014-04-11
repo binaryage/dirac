@@ -818,6 +818,13 @@
                     { "name": "context", "$ref": "ExecutionContextDescription", "description": "A newly created execution contex." }
                 ],
                 "description": "Issued when new execution context is created."
+            },
+            {
+                "name": "executionContextDestroyed",
+                "parameters": [
+                    { "name": "executionContextId", "$ref": "ExecutionContextId", "description": "Id of the destroyed context" }
+                ],
+                "description": "Issued when execution context is destroyed."
             }
         ]
     },

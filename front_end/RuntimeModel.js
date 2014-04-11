@@ -435,6 +435,10 @@ WebInspector.RuntimeDispatcher.prototype = {
     executionContextCreated: function(context)
     {
         this._runtimeModel._executionContextCreated(context);
+    },
+
+    executionContextDestroyed: function (executionContextId)
+    {
     }
 }
 
