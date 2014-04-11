@@ -37,7 +37,8 @@ WebInspector.Progress = function()
 }
 
 WebInspector.Progress.Events = {
-    Canceled: "Canceled"
+    Canceled: "Canceled",
+    Done: "Done"
 }
 
 WebInspector.Progress.prototype = {
@@ -95,8 +96,10 @@ WebInspector.CompositeProgress = function(parent)
 WebInspector.CompositeProgress.prototype = {
     _childDone: function()
     {
-        if (++this._childrenDone === this._children.length)
-            this._parent.done();
+        if (++this._childrenDone !== this._children.length)
+            return;
+        this.dispatchEventToListeners(WebInspector.Progress.Events.Done);
+        this._parent.done();
     },
 
     _parentCanceled: function()
@@ -170,6 +173,7 @@ WebInspector.SubProgress.prototype = {
     {
         this.setWorked(this._totalWork);
         this._composite._childDone();
+        this.dispatchEventToListeners(WebInspector.Progress.Events.Done);
     },
 
     /**

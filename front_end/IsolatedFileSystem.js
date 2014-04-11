@@ -80,6 +80,19 @@ WebInspector.IsolatedFileSystem.prototype = {
     /**
      * @return {string}
      */
+    normalizedPath: function()
+    {
+        if (this._normalizedPath)
+            return this._normalizedPath;
+        this._normalizedPath = this._path;
+        if (WebInspector.isWin())
+            this._normalizedPath = this._normalizedPath.replace(/\\/g, "/");
+        return this._normalizedPath;
+    },
+
+    /**
+     * @return {string}
+     */
     name: function()
     {
         return this._name;

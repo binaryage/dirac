@@ -775,7 +775,7 @@ WebInspector.SourcesPanel.prototype = {
          */
         function mapFileSystemToNetwork(networkUISourceCode)
         {
-            this._workspace.addMapping(networkUISourceCode, uiSourceCode, WebInspector.fileSystemWorkspaceProvider);
+            this._workspace.addMapping(networkUISourceCode, uiSourceCode, WebInspector.fileSystemWorkspaceBinding);
             this._suggestReload();
         }
     },
@@ -804,7 +804,7 @@ WebInspector.SourcesPanel.prototype = {
          */
         function mapNetworkToFileSystem(uiSourceCode)
         {
-            this._workspace.addMapping(networkUISourceCode, uiSourceCode, WebInspector.fileSystemWorkspaceProvider);
+            this._workspace.addMapping(networkUISourceCode, uiSourceCode, WebInspector.fileSystemWorkspaceBinding);
             this._suggestReload();
         }
     },

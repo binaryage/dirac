@@ -31,12 +31,12 @@
 /**
  * @constructor
  * @implements {WebInspector.TargetManager.Observer}
- * @param {!WebInspector.SimpleWorkspaceProvider} networkWorkspaceProvider
+ * @param {!WebInspector.NetworkWorkspaceBinding} networkWorkspaceBinding
  * @param {!WebInspector.Workspace} workspace
  */
-WebInspector.NetworkUISourceCodeProvider = function(networkWorkspaceProvider, workspace)
+WebInspector.NetworkUISourceCodeProvider = function(networkWorkspaceBinding, workspace)
 {
-    this._networkWorkspaceProvider = networkWorkspaceProvider;
+    this._networkWorkspaceBinding = networkWorkspaceBinding;
     this._workspace = workspace;
     WebInspector.targetManager.observeTargets(this);
     this._processedURLs = {};
@@ -148,13 +148,13 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
             return;
         this._processedURLs[url] = true;
         var isEditable = type !== WebInspector.resourceTypes.Document;
-        this._networkWorkspaceProvider.addFileForURL(url, contentProvider, isEditable, isContentScript);
+        this._networkWorkspaceBinding.addFileForURL(url, contentProvider, isEditable, isContentScript);
     },
 
     _reset: function()
     {
         this._processedURLs = {};
-        this._networkWorkspaceProvider.reset();
+        this._networkWorkspaceBinding.reset();
         this._populate();
     }
 }
@@ -261,6 +261,6 @@ WebInspector.NetworkUISourceCodeProvider.FallbackResource.prototype = {
 }
 
 /**
- * @type {!WebInspector.SimpleWorkspaceProvider}
+ * @type {!WebInspector.NetworkWorkspaceBinding}
  */
-WebInspector.networkWorkspaceProvider;
+WebInspector.networkWorkspaceBinding;

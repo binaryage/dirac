@@ -32,14 +32,14 @@
  * @constructor
  * @param {!WebInspector.CSSStyleModel} cssModel
  * @param {!WebInspector.Workspace} workspace
- * @param {!WebInspector.SimpleWorkspaceProvider} networkWorkspaceProvider
+ * @param {!WebInspector.NetworkWorkspaceBinding} networkWorkspaceBinding
  */
-WebInspector.CSSStyleSheetMapping = function(cssModel, workspace, networkWorkspaceProvider)
+WebInspector.CSSStyleSheetMapping = function(cssModel, workspace, networkWorkspaceBinding)
 {
     this._cssModel = cssModel;
     this._workspace = workspace;
     this._stylesSourceMapping = new WebInspector.StylesSourceMapping(cssModel, workspace);
-    this._sassSourceMapping = new WebInspector.SASSSourceMapping(cssModel, workspace, networkWorkspaceProvider);
+    this._sassSourceMapping = new WebInspector.SASSSourceMapping(cssModel, workspace, networkWorkspaceBinding);
 
     cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetAdded, this._styleSheetAdded, this);
     cssModel.addEventListener(WebInspector.CSSStyleModel.Events.StyleSheetRemoved, this._styleSheetRemoved, this);
