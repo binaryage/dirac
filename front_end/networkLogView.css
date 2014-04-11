@@ -420,11 +420,15 @@
 }
 
 .network-type-media .network-graph-bar {
-    -webkit-border-image: url(Images/timelinePillPurple.png) 6 7 6 7;
+    border-color: hsl(272, 31%, 52%);
+    background: linear-gradient(0deg, hsl(272, 46%, 61%), hsl(272, 64%, 69%));
 }
 
 .network-type-media.resource-cached .network-graph-bar {
-    border-image: url(Images/timelineHollowPillPurple.png) 7 7 7 7;
+    background: hsl(272, 65%, 86%);
+    box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
+                inset 0 0 0 2px hsl(272, 47%, 61%),
+                inset 0 1px 0 2px hsla(273, 38%, 65%, 0.85);
 }
 
 .network-type-font .network-graph-bar {
@@ -440,11 +444,15 @@
 }
 
 .network-type-texttrack .network-graph-bar {
-    -webkit-border-image: url(Images/timelinePillRed.png) 6 7 6 7;
+    border-color: hsl(8, 49%, 52%);
+    background: linear-gradient(0deg, hsl(8, 72%, 61%), hsl(8, 100%, 69%));
 }
 
 .network-type-texttrack.resource-cached .network-graph-bar {
-    border-image: url(Images/timelineHollowPillRed.png) 7 7 7 7;
+    background: hsl(8, 100%, 86%);
+    box-shadow: inset 0 1px 1px 0px rgba(255, 255, 255, 0.8),
+                inset 0 0 0 2px hsl(8, 72%, 61%),
+                inset 0 1px 0 2px hsla(8, 59%, 65%, 0.85);
 }
 
 .network-type-script .network-graph-bar {
