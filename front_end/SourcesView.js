@@ -25,7 +25,7 @@ WebInspector.SourcesView = function(workspace, sourcesPanel)
     this._searchableView.setMinimalSearchQuerySize(0);
     this._searchableView.show(this.element);
 
-    /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.SourceFrame>} */
+    /** @type {!Map.<!WebInspector.UISourceCode, !WebInspector.UISourceCodeFrame>} */
     this._sourceFramesByUISourceCode = new Map();
 
     var tabbedEditorPlaceholderText = WebInspector.isMac() ? WebInspector.UIString("Hit Cmd+O to open a file") : WebInspector.UIString("Hit Ctrl+O to open a file");
@@ -114,6 +114,7 @@ WebInspector.SourcesView.prototype = {
         registerShortcut.call(this, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.GoToMember, this._showOutlineDialog.bind(this));
         registerShortcut.call(this, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.ToggleBreakpoint, this._toggleBreakpoint.bind(this));
         registerShortcut.call(this, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.Save, this._save.bind(this));
+        registerShortcut.call(this, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.SaveAll, this._saveAll.bind(this));
     },
 
     /**
@@ -324,7 +325,7 @@ WebInspector.SourcesView.prototype = {
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @return {!WebInspector.SourceFrame}
+     * @return {!WebInspector.UISourceCodeFrame}
      */
     _createSourceFrame: function(uiSourceCode)
     {
@@ -351,7 +352,7 @@ WebInspector.SourcesView.prototype = {
 
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
-     * @return {!WebInspector.SourceFrame}
+     * @return {!WebInspector.UISourceCodeFrame}
      */
     _getOrCreateSourceFrame: function(uiSourceCode)
     {
@@ -635,16 +636,32 @@ WebInspector.SourcesView.prototype = {
      */
     _save: function()
     {
-        var sourceFrame = this.currentSourceFrame();
-        if (!sourceFrame)
-            return true;
-        if (!(sourceFrame instanceof WebInspector.UISourceCodeFrame))
-            return true;
-        var uiSourceCodeFrame = /** @type {!WebInspector.UISourceCodeFrame} */ (sourceFrame);
-        uiSourceCodeFrame.commitEditing();
+        this._saveSourceFrame(this.currentSourceFrame());
         return true;
     },
 
+    /**
+     * @return {boolean}
+     */
+    _saveAll: function()
+    {
+        var sourceFrames = this._editorContainer.fileViews();
+        sourceFrames.forEach(this._saveSourceFrame.bind(this));
+        return true;
+    },
+
+    /**
+     * @param {?WebInspector.SourceFrame} sourceFrame
+     */
+    _saveSourceFrame: function(sourceFrame)
+    {
+        if (!sourceFrame)
+            return;
+        if (!(sourceFrame instanceof WebInspector.UISourceCodeFrame))
+            return;
+        var uiSourceCodeFrame = /** @type {!WebInspector.UISourceCodeFrame} */ (sourceFrame);
+        uiSourceCodeFrame.commitEditing();
+    },
     /**
      * @return {boolean}
      */

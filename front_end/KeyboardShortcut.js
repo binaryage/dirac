@@ -48,6 +48,11 @@ WebInspector.KeyboardShortcut.Modifiers = {
     {
         // "default" command/ctrl key for platform, Command on Mac, Ctrl on other platforms
         return WebInspector.isMac() ? this.Meta : this.Ctrl;
+    },
+    get ShiftOrOption()
+    {
+        // Shift on Mac, Alt on other platforms
+        return WebInspector.isMac() ? this.Shift : this.Alt;
     }
 };
 

@@ -442,6 +442,10 @@ WebInspector.ShortcutsScreen.SourcesPanelShortcuts = {
     Save: [
         WebInspector.KeyboardShortcut.makeDescriptor("s", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
     ],
+
+    SaveAll: [
+        WebInspector.KeyboardShortcut.makeDescriptor("s", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta | WebInspector.KeyboardShortcut.Modifiers.ShiftOrOption)
+    ],
 };
 
 WebInspector.ShortcutsScreen.TimelinePanelShortcuts = {

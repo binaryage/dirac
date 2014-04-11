@@ -41,8 +41,11 @@ WebInspector.TabbedPane = function()
     this._headerContentsElement = this._headerElement.createChild("div", "tabbed-pane-header-contents");
     this._tabsElement = this._headerContentsElement.createChild("div", "tabbed-pane-header-tabs");
     this._contentElement = this.element.createChild("div", "tabbed-pane-content scroll-target");
+    /** @type {!Array.<!WebInspector.TabbedPaneTab>} */
     this._tabs = [];
+    /** @type {!Array.<!WebInspector.TabbedPaneTab>} */
     this._tabsHistory = [];
+    /** @type {!Object.<string, !WebInspector.TabbedPaneTab>} */
     this._tabsById = {};
 
     this._dropDownButton = this._createDropDownButton();
@@ -60,6 +63,22 @@ WebInspector.TabbedPane.prototype = {
     get visibleView()
     {
         return this._currentTab ? this._currentTab.view : null;
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.View>}
+     */
+    tabViews: function()
+    {
+        /**
+         * @param {!WebInspector.TabbedPaneTab} tab
+         * @return {!WebInspector.View}
+         */
+        function tabToView(tab)
+        {
+            return tab.view;
+        }
+        return this._tabs.map(tabToView);
     },
 
     /**

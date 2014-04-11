@@ -95,6 +95,14 @@ WebInspector.TabbedEditorContainer.prototype = {
     },
 
     /**
+     * @return {!Array.<!WebInspector.SourceFrame>}
+     */
+    fileViews: function()
+    {
+        return /** @type {!Array.<!WebInspector.SourceFrame>} */ (this._tabbedPane.tabViews());
+    },
+
+    /**
      * @param {!Element} parentElement
      */
     show: function(parentElement)
