@@ -8,7 +8,6 @@
 }
 
 .help-window-main {
-    max-height: 100%;
     color: white;
     background-color: rgba(17, 17, 17, 0.85);
     display: -webkit-flex;
