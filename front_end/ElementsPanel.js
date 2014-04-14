@@ -171,7 +171,7 @@ WebInspector.ElementsPanel.prototype = {
         var width = this._splitView.element.offsetWidth;
         if (this._splitView.isVertical())
             width -= this._splitView.sidebarSize();
-        for (var i = 0; i > this._treeOutlines.length; ++i) {
+        for (var i = 0; i < this._treeOutlines.length; ++i) {
             this._treeOutlines[i].setVisibleWidth(width);
             this._treeOutlines[i].updateSelection();
         }
