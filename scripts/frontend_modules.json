@@ -425,8 +425,15 @@
         ]
     },
     {
+        "name": "input",
+        "dependencies": ["sources"],
+        "sources": [
+            "ForwardedInputEventHandler.js"
+        ]
+    },
+    {
         "name": "host_stub",
-        "dependencies": ["components", "profiler", "timeline"],
+        "dependencies": ["components", "profiler", "timeline", "sources", "input"],
         "sources": [
             "InspectorFrontendAPI.js",
             "InspectorFrontendHostStub.js"

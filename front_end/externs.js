@@ -183,11 +183,11 @@ DOMFileSystem.prototype.root = null;
 
 /** @interface */
 function InspectorFrontendHostAPI() {}
-/** @param {!Function=} callback callback */
+/** @param {!Function=} callback */
 InspectorFrontendHostAPI.prototype.addFileSystem = function(callback) {}
-/** @param {!Function=} callback callback */
+/** @param {!Function=} callback */
 InspectorFrontendHostAPI.prototype.append = function(url, content, callback) {}
-/** @param {!Function=} callback callback */
+/** @param {!Function=} callback */
 InspectorFrontendHostAPI.prototype.indexPath = function(requestId, fileSystemPath, callback) {}
 /** @return {string} */
 InspectorFrontendHostAPI.prototype.getSelectionBackgroundColor = function() {}
@@ -202,20 +202,22 @@ InspectorFrontendHost.isUnderTest = function() {}
  * @param {{width: number, height: number}} minSize
  */
 InspectorFrontendHostAPI.prototype.setContentsResizingStrategy = function(insets, minSize) {}
+/** @param {string} shortcuts */
+InspectorFrontendHostAPI.prototype.setWhitelistedShortcuts = function(shortcuts) {}
 InspectorFrontendHostAPI.prototype.inspectElementCompleted = function() {}
-/** @param {!Function=} callback callback */
+/** @param {!Function=} callback */
 InspectorFrontendHostAPI.prototype.moveWindowBy = function(x, y, callback) {}
-/** @param {!Function=} callback callback */
+/** @param {!Function=} callback */
 InspectorFrontendHostAPI.prototype.openInNewTab = function(url, callback) {}
-/** @param {!Function=} callback callback */
+/** @param {!Function=} callback */
 InspectorFrontendHostAPI.prototype.removeFileSystem = function(fileSystemPath, callback) {}
-/** @param {!Function=} callback callback */
+/** @param {!Function=} callback */
 InspectorFrontendHostAPI.prototype.requestFileSystems = function(callback) {}
-/** @param {!Function=} callback callback */
+/** @param {!Function=} callback */
 InspectorFrontendHostAPI.prototype.save = function(url, content, forceSaveAs, callback) {}
-/** @param {!Function=} callback callback */
+/** @param {!Function=} callback */
 InspectorFrontendHostAPI.prototype.searchInPath = function(requestId, fileSystemPath, query, callback) {}
-/** @param {!Function=} callback callback */
+/** @param {!Function=} callback */
 InspectorFrontendHostAPI.prototype.stopIndexing = function(requestId, callback) {}
 
 InspectorFrontendHostAPI.prototype.bringToFront = function() {}

@@ -82,6 +82,7 @@
             'front_end/FilterSuggestionBuilder.js',
             'front_end/FlameChart.js',
             'front_end/FontView.js',
+            'front_end/ForwardedInputEventHandler.js',
             'front_end/Geometry.js',
             'front_end/GoToLineDialog.js',
             'front_end/HAREntry.js',

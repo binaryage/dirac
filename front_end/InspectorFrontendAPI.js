@@ -181,6 +181,16 @@ var InspectorFrontendAPI = {
     },
 
     /**
+     * @param {!InspectorFrontendAPI.ForwardedKeyboardEvent} event
+     */
+    keyEventUnhandled: function(event)
+    {
+        InspectorFrontendAPI._runOnceLoaded(function() {
+            WebInspector.forwardedEventHandler.keyEventReceived(event.type, event.keyIdentifier, event.keyCode, event.modifiers);
+        });
+    },
+
+    /**
      * @param {string} url
      */
     savedURL: function(url)
@@ -271,6 +281,9 @@ var InspectorFrontendAPI = {
         InspectorFrontendAPI._pendingCommands.push(command);
     }
 }
+
+/** @typedef {!Object.<{type: string, keyCode: (number|undefined), keyIdentifier: (string|undefined), modifiers: (number|undefined)}>} */
+InspectorFrontendAPI.ForwardedKeyboardEvent;
 
 function onMessageFromOpener(event)
 {

@@ -246,6 +246,7 @@ WebInspector.Main.prototype = {
     _doLoadedDoneWithCapabilities: function(mainTarget)
     {
         new WebInspector.VersionController().updateVersion();
+        InspectorFrontendHost.setWhitelistedShortcuts(JSON.stringify([{keyCode: WebInspector.KeyboardShortcut.Keys.F8.code}]));
         WebInspector.shortcutsScreen = new WebInspector.ShortcutsScreen();
         this._registerShortcuts();
 

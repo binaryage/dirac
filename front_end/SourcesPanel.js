@@ -486,7 +486,7 @@ WebInspector.SourcesPanel.prototype = {
     /**
      * @return {boolean}
      */
-    _togglePause: function()
+    togglePause: function()
     {
         if (this._paused) {
             delete this._skipExecutionLineRevealing;
@@ -634,7 +634,7 @@ WebInspector.SourcesPanel.prototype = {
         this._runSnippetButton.element.classList.add("hidden");
 
         // Continue.
-        handler = this._togglePause.bind(this);
+        handler = this.togglePause.bind(this);
         this._pauseButton = this._createButtonAndRegisterShortcuts("scripts-pause", "", handler, WebInspector.ShortcutsScreen.SourcesPanelShortcuts.PauseContinue);
         debugToolbar.appendChild(this._pauseButton.element);
 

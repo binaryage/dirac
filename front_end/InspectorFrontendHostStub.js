@@ -218,6 +218,10 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     {
     },
 
+    setWhitelistedShortcuts: function(shortcuts)
+    {
+    },
+
     /**
      * @return {boolean}
      */
