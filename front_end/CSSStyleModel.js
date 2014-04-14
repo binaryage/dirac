@@ -731,8 +731,6 @@ WebInspector.CSSStyleDeclaration = function(cssModel, payload)
 {
     this._cssModel = cssModel;
     this.styleSheetId = payload.styleSheetId;
-    this.width = payload.width;
-    this.height = payload.height;
     this.range = payload.range ? WebInspector.TextRange.fromObject(payload.range) : null;
     this._shorthandValues = WebInspector.CSSStyleDeclaration.buildShorthandValueMap(payload.shorthandEntries);
     this._livePropertyMap = {}; // LIVE properties (source-based or style-based) : { name -> CSSProperty }
