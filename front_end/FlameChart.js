@@ -625,6 +625,7 @@ WebInspector.FlameChart.prototype = {
                 var barLevel = entryLevels[entryIndex];
                 var barY = this._levelToHeight(barLevel);
                 if (isNaN(entryTotalTimes[entryIndex])) {
+                    context.moveTo(barX + this._markerRadius, barY + barHeight / 2);
                     context.arc(barX, barY + barHeight / 2, this._markerRadius, 0, Math.PI * 2);
                     markerIndices[nextMarkerIndex++] = entryIndex;
                 } else {
@@ -637,16 +638,17 @@ WebInspector.FlameChart.prototype = {
         }
 
         context.strokeStyle = "rgb(0, 0, 0)";
+        context.beginPath();
         for (var m = 0; m < nextMarkerIndex; ++m) {
             var entryIndex = markerIndices[m];
             var entryOffset = entryOffsets[entryIndex];
             var barX = this._offsetToPosition(entryOffset);
             var barLevel = entryLevels[entryIndex];
             var barY = this._levelToHeight(barLevel);
-            context.beginPath();
+            context.moveTo(barX + this._markerRadius, barY + barHeight / 2);
             context.arc(barX, barY + barHeight / 2, this._markerRadius, 0, Math.PI * 2);
-            context.stroke();
         }
+        context.stroke();
 
         context.textBaseline = "alphabetic";
 
