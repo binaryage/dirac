@@ -243,8 +243,8 @@ WebInspector.Layers3DView.prototype = {
         var scaleY = (canvasHeight - rootLayerPadding) / rootHeight;
         var viewScale = Math.min(scaleX, scaleY);
         var scale = this._transformController.scale();
-        var offsetX = this._transformController.offsetX();
-        var offsetY = this._transformController.offsetY();
+        var offsetX = this._transformController.offsetX() * window.devicePixelRatio;
+        var offsetY = this._transformController.offsetY() * window.devicePixelRatio;
         var rotateX = this._transformController.rotateX();
         var rotateY = this._transformController.rotateY();
         return new WebKitCSSMatrix().translate(offsetX, offsetY, 0).scale(scale, scale, scale).translate(canvasWidth / 2, canvasHeight / 2, 0)
@@ -502,8 +502,8 @@ WebInspector.Layers3DView.prototype = {
         var closestIntersectionPoint = Infinity;
         var closestLayer = null;
         var projectionMatrix = new WebKitCSSMatrix().scale(1, -1, -1).translate(-1, -1, 0).multiply(this._calculateProjectionMatrix());
-        var x0 = (event.clientX - this._canvasElement.totalOffsetLeft());
-        var y0 = -(event.clientY - this._canvasElement.totalOffsetTop());
+        var x0 = (event.clientX - this._canvasElement.totalOffsetLeft()) * window.devicePixelRatio;
+        var y0 = -(event.clientY - this._canvasElement.totalOffsetTop()) * window.devicePixelRatio;
 
         /**
          * @this {WebInspector.Layers3DView}
