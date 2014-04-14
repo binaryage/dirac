@@ -930,7 +930,7 @@ WebInspector.TimelinePanel.prototype = {
 
         if (Capabilities.canProfilePower) {
             var powerOverview = /** @type {!WebInspector.TimelinePowerOverview} */ (this._viewsForMode(WebInspector.TimelinePanel.Mode.Power).overviewView);
-            energy = powerOverview.calculateEnergy(startTime, endTime);
+            var energy = powerOverview.calculateEnergy(startTime, endTime);
             title += WebInspector.UIString("  Energy: %.2f Joules", energy);
         }
         this._detailsView.setContent(title, fragment);
