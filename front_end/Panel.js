@@ -86,11 +86,6 @@ WebInspector.Panel.prototype = {
     {
     },
 
-    // Should be implemented by ancestors.
-    get statusBarItems()
-    {
-    },
-
     /**
      * @return {!Array.<!Element>}
      */
