@@ -243,7 +243,7 @@
             'front_end/ConsoleViewMessage.js',
         ],
         'devtools_search_js_files': [
-            'front_end/AdvancedSearchController.js',
+            'front_end/AdvancedSearchView.js',
             'front_end/FileBasedSearchResultsPane.js',
             'front_end/SearchConfig.js',
             'front_end/SourcesSearchScope.js',

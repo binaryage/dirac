@@ -68,7 +68,7 @@ except:
 # the module header list.
 allowed_import_statements_files = [
     "utilities.js",
-    "AdvancedSearchController.js",
+    "AdvancedSearchView.js",
     "ConsolePanel.js",
     "ElementsPanel.js",
     "ResourcesPanel.js",

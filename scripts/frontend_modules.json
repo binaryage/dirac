@@ -262,7 +262,7 @@
         "name": "search",
         "dependencies": ["components"],
         "sources": [
-            "AdvancedSearchController.js",
+            "AdvancedSearchView.js",
             "FileBasedSearchResultsPane.js",
             "SearchConfig.js",
             "SourcesSearchScope.js"

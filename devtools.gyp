@@ -177,7 +177,7 @@
                         'input_pages': [
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
                             '<(PRODUCT_DIR)/resources/inspector/Main.js',
-                            '<(PRODUCT_DIR)/resources/inspector/AdvancedSearchController.js',
+                            '<(PRODUCT_DIR)/resources/inspector/AdvancedSearchView.js',
                             '<(PRODUCT_DIR)/resources/inspector/ConsolePanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/ElementsPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/ExtensionServer.js',
@@ -347,13 +347,13 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_search_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/AdvancedSearchController.js',
+                        'input_file': 'front_end/AdvancedSearchView.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_search_js_files)',
                         ],
                         'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/AdvancedSearchController.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/AdvancedSearchView.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
                     }],
                 },
