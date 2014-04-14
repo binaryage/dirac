@@ -28,6 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+/** @typedef {!{
+        bounds: {height: number, width: number},
+        children: Array.<!WebInspector.TracingLayerPayload>,
+        layer_id: number,
+        position: Array.<number>,
+        scroll_offset: Array.<number>,
+        layer_quad: Array.<number>,
+        draws_content: number,
+        transform: Array.<number>
+    }}
+*/
+WebInspector.TracingLayerPayload;
+
 /**
   * @constructor
   * @extends {WebInspector.TargetAwareObject}
@@ -77,6 +90,15 @@ WebInspector.LayerTreeModel.prototype = {
     {
         this.disable();
         this._resolveNodesAndRepopulate(snapshot.layers);
+    },
+
+    /**
+     * @param {!WebInspector.TracingLayerSnapshot} snapshot
+     */
+    setTracingSnapshot: function(snapshot)
+    {
+        this.disable();
+        this._importTracingLayers(snapshot.root);
     },
 
     /**
@@ -156,7 +178,7 @@ WebInspector.LayerTreeModel.prototype = {
             if (layer)
                 layer._reset(layers[i]);
             else
-                layer = new WebInspector.Layer(layers[i]);
+                layer = new WebInspector.AgentLayer(layers[i]);
             this._layersById[layerId] = layer;
             if (layers[i].backendNodeId) {
                 layer._setNode(this._target.domModel.nodeForId(this._backendNodeIdToNodeId[layers[i].backendNodeId]));
@@ -180,6 +202,31 @@ WebInspector.LayerTreeModel.prototype = {
         }
         this._root._calculateQuad(new WebKitCSSMatrix());
         this._lastPaintRectByLayerId = {};
+    },
+
+    /**
+     * @param {!WebInspector.TracingLayerPayload} root
+     */
+    _importTracingLayers: function(root)
+    {
+        this._layersById = {};
+        this._contentRoot = null;
+        this._root = this._innerImportTracingLayers(root);
+        this.dispatchEventToListeners(WebInspector.LayerTreeModel.Events.LayerTreeChanged);
+    },
+
+    /**
+     * @param {!WebInspector.TracingLayerPayload} payload
+     * @return {!WebInspector.TracingLayer}
+     */
+    _innerImportTracingLayers: function(payload)
+    {
+        var layer = new WebInspector.TracingLayer(payload);
+        if (!this._contentRoot && payload.draws_content)
+            this._contentRoot = layer;
+        for (var i = 0; i < payload.children.length; ++i)
+            layer.addChild(this._innerImportTracingLayers(payload.children[i]));
+        return layer;
     },
 
     /**
@@ -257,16 +304,131 @@ WebInspector.LayerTreeModel.prototype = {
 }
 
 /**
+ * @interface
+ */
+WebInspector.Layer = function()
+{
+}
+
+WebInspector.Layer.prototype = {
+    /**
+     * @return {string}
+     */
+    id: function() { },
+
+    /**
+     * @return {?string}
+     */
+    parentId: function() { },
+
+    /**
+     * @return {?WebInspector.Layer}
+     */
+    parent: function() { },
+
+    /**
+     * @return {boolean}
+     */
+    isRoot: function() { },
+
+    /**
+     * @return {!Array.<!WebInspector.Layer>}
+     */
+    children: function() { },
+
+    /**
+     * @param {!WebInspector.Layer} child
+     */
+    addChild: function(child) { },
+
+    /**
+     * @return {?WebInspector.DOMNode}
+     */
+    node: function() { },
+
+    /**
+     * @return {?WebInspector.DOMNode}
+     */
+    nodeForSelfOrAncestor: function() { },
+
+    /**
+     * @return {number}
+     */
+    offsetX: function() { },
+
+    /**
+     * @return {number}
+     */
+    offsetY: function() { },
+
+    /**
+     * @return {number}
+     */
+    width: function() { },
+
+    /**
+     * @return {number}
+     */
+    height: function() { },
+
+    /**
+     * @return {?Array.<number>}
+     */
+    transform: function() { },
+
+    /**
+     * @return {?Array.<number>}
+     */
+    quad: function() { },
+
+    /**
+     * @return {!Array.<number>}
+     */
+    anchorPoint: function() { },
+
+    /**
+     * @return {boolean}
+     */
+    invisible: function() { },
+
+    /**
+     * @return {number}
+     */
+    paintCount: function() { },
+
+    /**
+     * @return {?DOMAgent.Rect}
+     */
+    lastPaintRect: function() { },
+
+    /**
+     * @return {!Array.<!LayerTreeAgent.ScrollRect>}
+     */
+    scrollRects: function() { },
+
+    /**
+     * @param {function(!Array.<string>)} callback
+     */
+    requestCompositingReasons: function(callback) { },
+
+    /**
+     * @param {function(!WebInspector.PaintProfilerSnapshot=)} callback
+     */
+    requestSnapshot: function(callback) { },
+}
+
+/**
  * @constructor
+ * @implements {WebInspector.Layer}
  * @param {!LayerTreeAgent.Layer} layerPayload
  */
-WebInspector.Layer = function(layerPayload)
+WebInspector.AgentLayer = function(layerPayload)
 {
     this._scrollRects = [];
     this._reset(layerPayload);
 }
 
-WebInspector.Layer.prototype = {
+WebInspector.AgentLayer.prototype = {
     /**
      * @return {string}
      */
@@ -276,7 +438,7 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @return {string}
+     * @return {?string}
      */
     parentId: function()
     {
@@ -284,7 +446,7 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @return {!WebInspector.Layer}
+     * @return {?WebInspector.Layer}
      */
     parent: function()
     {
@@ -379,11 +541,19 @@ WebInspector.Layer.prototype = {
     },
 
     /**
-     * @return {!Array.<number>}
+     * @return {?Array.<number>}
      */
     transform: function()
     {
         return this._layerPayload.transform;
+    },
+
+    /**
+     * @return {?Array.<number>}
+     */
+    quad: function()
+    {
+        return this._quad;
     },
 
     /**
@@ -532,13 +702,199 @@ WebInspector.Layer.prototype = {
 
         this._children.forEach(calculateQuadForLayer);
     },
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.TracingLayerPayload} payload
+ * @implements {WebInspector.Layer}
+ */
+WebInspector.TracingLayer = function(payload)
+{
+    this._layerId = String(payload.layer_id);
+    this._offsetX = payload.position[0];
+    this._offsetY = payload.position[1];
+    this._width = payload.bounds.width;
+    this._height = payload.bounds.height;
+    this._children = [];
+    this._parentLayerId = null;
+    this._parent = null;
+    this._quad = payload.layer_quad;
+}
+
+WebInspector.TracingLayer.prototype = {
+    /**
+     * @return {string}
+     */
+    id: function()
+    {
+        return this._layerId;
+    },
 
     /**
-     * @return {!Array.<number>}
+     * @return {?string}
+     */
+    parentId: function()
+    {
+        return this._parentLayerId;
+    },
+
+    /**
+     * @return {?WebInspector.Layer}
+     */
+    parent: function()
+    {
+        return this._parent;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isRoot: function()
+    {
+        return !this.parentId();
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.Layer>}
+     */
+    children: function()
+    {
+        return this._children;
+    },
+
+    /**
+     * @param {!WebInspector.Layer} child
+     */
+    addChild: function(child)
+    {
+        if (child._parent)
+            console.assert(false, "Child already has a parent");
+        this._children.push(child);
+        child._parent = this;
+        child._parentLayerId = this._layerId;
+    },
+
+    /**
+     * @return {?WebInspector.DOMNode}
+     */
+    node: function()
+    {
+        return null;
+    },
+
+    /**
+     * @return {?WebInspector.DOMNode}
+     */
+    nodeForSelfOrAncestor: function()
+    {
+        return null;
+    },
+
+    /**
+     * @return {number}
+     */
+    offsetX: function()
+    {
+        return this._offsetX;
+    },
+
+    /**
+     * @return {number}
+     */
+    offsetY: function()
+    {
+        return this._offsetY;
+    },
+
+    /**
+     * @return {number}
+     */
+    width: function()
+    {
+        return this._width;
+    },
+
+    /**
+     * @return {number}
+     */
+    height: function()
+    {
+        return this._height;
+    },
+
+    /**
+     * @return {?Array.<number>}
+     */
+    transform: function()
+    {
+        return null;
+    },
+
+    /**
+     * @return {?Array.<number>}
      */
     quad: function()
     {
         return this._quad;
+    },
+
+    /**
+     * @return {!Array.<number>}
+     */
+    anchorPoint: function()
+    {
+        return [0.5, 0.5, 0];
+    },
+
+    /**
+     * @return {boolean}
+     */
+    invisible: function()
+    {
+        return false;
+    },
+
+    /**
+     * @return {number}
+     */
+    paintCount: function()
+    {
+        return 0;
+    },
+
+    /**
+     * @return {?DOMAgent.Rect}
+     */
+    lastPaintRect: function()
+    {
+        return null;
+    },
+
+    /**
+     * @return {!Array.<!LayerTreeAgent.ScrollRect>}
+     */
+    scrollRects: function()
+    {
+        return [];
+    },
+
+    /**
+     * @param {function(!Array.<string>)} callback
+     */
+    requestCompositingReasons: function(callback)
+    {
+        var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.reasonsForCompositingLayer(): ", undefined, []);
+        LayerTreeAgent.compositingReasons(this.id(), wrappedCallback);
+    },
+
+    /**
+     * @param {function(!WebInspector.PaintProfilerSnapshot=)} callback
+     */
+    requestSnapshot: function(callback)
+    {
+        var wrappedCallback = InspectorBackend.wrapClientCallback(callback, "LayerTreeAgent.makeSnapshot(): ", WebInspector.PaintProfilerSnapshot);
+        LayerTreeAgent.makeSnapshot(this.id(), wrappedCallback);
     }
 }
 
@@ -549,6 +905,15 @@ WebInspector.Layer.prototype = {
 WebInspector.LayerTreeSnapshot = function(layers)
 {
     this.layers = layers;
+}
+
+/**
+ * @constructor
+ * @param {!WebInspector.TracingLayerPayload} root
+ */
+WebInspector.TracingLayerSnapshot = function(root)
+{
+    this.root = root;
 }
 
 /**

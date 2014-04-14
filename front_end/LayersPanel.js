@@ -101,6 +101,14 @@ WebInspector.LayersPanel.prototype = {
         this._model.setSnapshot(snapshot);
     },
 
+    /**
+     * @param {!WebInspector.TracingLayerSnapshot} snapshot
+     */
+    _showTracingSnapshot: function(snapshot)
+    {
+        this._model.setTracingSnapshot(snapshot);
+    },
+
     _onLayerTreeUpdated: function()
     {
         if (this._currentlySelectedLayer && !this._model.layerById(this._currentlySelectedLayer.id()))
@@ -185,11 +193,13 @@ WebInspector.LayersPanel.LayerTreeRevealer = function()
 
 WebInspector.LayersPanel.LayerTreeRevealer.prototype = {
     /**
-     * @param {!Object} layerTree
+     * @param {!Object} snapshotData
      */
-    reveal: function(layerTree)
+    reveal: function(snapshotData)
     {
-        if (layerTree instanceof WebInspector.LayerTreeSnapshot)
-            /** @type {!WebInspector.LayersPanel} */ (WebInspector.inspectorView.showPanel("layers"))._showSnapshot(layerTree);
+        if (snapshotData instanceof WebInspector.LayerTreeSnapshot)
+            /** @type {!WebInspector.LayersPanel} */ (WebInspector.inspectorView.showPanel("layers"))._showSnapshot(snapshotData);
+        else if (snapshotData instanceof WebInspector.TracingLayerSnapshot)
+            /** @type {!WebInspector.LayersPanel} */ (WebInspector.inspectorView.showPanel("layers"))._showTracingSnapshot(snapshotData);
     }
 }

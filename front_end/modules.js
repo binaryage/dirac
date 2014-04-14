@@ -589,7 +589,7 @@ var allDescriptors = [
             },
             {
                 type: "@WebInspector.Revealer",
-                contextTypes: ["WebInspector.LayerTreeSnapshot"],
+                contextTypes: ["WebInspector.LayerTreeSnapshot", "WebInspector.TracingLayerSnapshot"],
                 className: "WebInspector.LayersPanel.LayerTreeRevealer"
             }
         ],

@@ -105,7 +105,17 @@ WebInspector.TimelineTracingView.prototype = {
         contentHelper.appendTextRow(WebInspector.UIString("Duration"), Number.millisToString(this._dataProvider._toTimelineTime(record.duration), true));
         if (!Object.isEmpty(record.args))
             contentHelper.appendElementRow(WebInspector.UIString("Arguments"), this._formatArguments(record.args));
-
+        function reveal()
+        {
+            WebInspector.Revealer.reveal(new WebInspector.TracingLayerSnapshot(record.args["snapshot"]["active_tree"]["root_layer"]));
+        }
+        if (record.name === "cc::LayerTreeHostImpl") {
+            var link = document.createElement("span");
+            link.classList.add("revealable-link");
+            link.textContent = "show";
+            link.addEventListener("click", reveal, false);
+            contentHelper.appendElementRow(WebInspector.UIString("Layer tree"), link);
+        }
         this._delegate.showInDetails(WebInspector.UIString("Selected Event"), contentHelper.element);
     },
 
