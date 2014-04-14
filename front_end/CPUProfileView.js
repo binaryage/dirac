@@ -125,8 +125,8 @@ WebInspector.CPUProfileView = function(profileHeader)
     this._viewType = WebInspector.settings.createSetting("cpuProfilerView", WebInspector.CPUProfileView._TypeHeavy);
 
     var columns = [];
-    columns.push({id: "self", title: WebInspector.UIString("Self"), width: "110px", sort: WebInspector.DataGrid.Order.Descending, sortable: true});
-    columns.push({id: "total", title: WebInspector.UIString("Total"), width: "110px", sortable: true});
+    columns.push({id: "self", title: WebInspector.UIString("Self"), width: "120px", sort: WebInspector.DataGrid.Order.Descending, sortable: true});
+    columns.push({id: "total", title: WebInspector.UIString("Total"), width: "120px", sortable: true});
     columns.push({id: "function", title: WebInspector.UIString("Function"), disclosure: true, sortable: true});
 
     this.dataGrid = new WebInspector.DataGrid(columns);
