@@ -172,25 +172,16 @@ WebInspector.OverridesView.Tab.prototype = {
      */
     _createSettingCheckbox: function(name, setting, callback)
     {
-        var checkbox = WebInspector.SettingsUI.createCheckbox(name, setting.get.bind(setting), listener, true);
+        var checkbox = WebInspector.SettingsUI.createSettingCheckbox(name, setting, true);
 
-        function listener(value)
+        function changeListener(value)
         {
-            if (setting.get() === value)
-                return;
-
-            setting.set(value);
-            if (callback)
-                callback(value);
+            callback(setting.get());
         }
 
-        setting.addChangeListener(changeListener);
+        if (callback)
+            setting.addChangeListener(changeListener);
 
-        function changeListener()
-        {
-            if (checkbox.firstChild.checked !== setting.get())
-                checkbox.firstChild.checked = setting.get();
-        }
         return checkbox;
     },
 

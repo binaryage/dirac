@@ -600,7 +600,7 @@ select.status-bar-item {
 }
 
 .status-bar-item.checkbox {
-    margin: auto 0;
+    margin: auto 6px auto 0;
     height: auto;
     display: flex;
 }

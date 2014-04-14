@@ -187,7 +187,14 @@ WebInspector.NetworkLogView.prototype = {
 
     get statusBarItems()
     {
-        return [this._recordButton.element, this._clearButton.element, this._filterBar.filterButton().element, this._largerRequestsButton.element, this._preserveLogCheckbox.element, this._progressBarContainer];
+        return [
+            this._recordButton.element,
+            this._clearButton.element,
+            this._filterBar.filterButton().element,
+            this._largerRequestsButton.element,
+            this._preserveLogCheckbox.element,
+            this._disableCacheCheckbox.element,
+            this._progressBarContainer];
     },
 
     get useLargeRows()
@@ -671,6 +678,10 @@ WebInspector.NetworkLogView.prototype = {
 
         this._preserveLogCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Preserve log"));
         this._preserveLogCheckbox.element.title = WebInspector.UIString("Do not clear log on page reload / navigation.");
+
+        this._disableCacheCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Disable cache"));
+        WebInspector.SettingsUI.bindCheckbox(this._disableCacheCheckbox.inputElement, WebInspector.settings.cacheDisabled);
+        this._disableCacheCheckbox.element.title = WebInspector.UIString("Disable cache (while DevTools is open).");
     },
 
     _loadEventFired: function(event)

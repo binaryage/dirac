@@ -32,25 +32,18 @@ WebInspector.SettingsUI = {}
 
 /**
  * @param {string} name
- * @param {function(): *} getter
- * @param {function(*)} setter
+ * @param {!WebInspector.Setting} setting
  * @param {boolean=} omitParagraphElement
  * @param {!Element=} inputElement
  * @param {string=} tooltip
  * @return {!Element}
  */
-WebInspector.SettingsUI.createCheckbox = function(name, getter, setter, omitParagraphElement, inputElement, tooltip)
+WebInspector.SettingsUI.createSettingCheckbox = function(name, setting, omitParagraphElement, inputElement, tooltip)
 {
     var input = inputElement || document.createElement("input");
     input.type = "checkbox";
     input.name = name;
-    input.checked = getter();
-
-    function listener()
-    {
-        setter(input.checked);
-    }
-    input.addEventListener("change", listener, false);
+    WebInspector.SettingsUI.bindCheckbox(input, setting);
 
     var label = document.createElement("label");
     label.appendChild(input);
@@ -67,16 +60,25 @@ WebInspector.SettingsUI.createCheckbox = function(name, getter, setter, omitPara
 }
 
 /**
- * @param {string} name
+ * @param {!Element} input
  * @param {!WebInspector.Setting} setting
- * @param {boolean=} omitParagraphElement
- * @param {!Element=} inputElement
- * @param {string=} tooltip
- * @return {!Element}
  */
-WebInspector.SettingsUI.createSettingCheckbox = function(name, setting, omitParagraphElement, inputElement, tooltip)
+WebInspector.SettingsUI.bindCheckbox = function(input, setting)
 {
-    return WebInspector.SettingsUI.createCheckbox(name, setting.get.bind(setting), setting.set.bind(setting), omitParagraphElement, inputElement, tooltip);
+    function settingChanged()
+    {
+        if (input.checked !== setting.get())
+            input.checked = setting.get();
+    }
+    setting.addChangeListener(settingChanged);
+    settingChanged();
+
+    function inputChanged()
+    {
+        if (setting.get() !== input.checked)
+            setting.set(input.checked);
+    }
+    input.addEventListener("change", inputChanged, false);
 }
 
 /**

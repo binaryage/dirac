@@ -561,8 +561,8 @@ WebInspector.StatusBarCheckbox = function(title)
 {
     WebInspector.StatusBarItem.call(this, "label");
     this.element.classList.add("status-bar-item", "checkbox");
-    this._checkbox = this.element.createChild("input");
-    this._checkbox.type = "checkbox";
+    this.inputElement = this.element.createChild("input");
+    this.inputElement.type = "checkbox";
     this.element.createTextChild(title);
 }
 
@@ -572,7 +572,7 @@ WebInspector.StatusBarCheckbox.prototype = {
      */
     checked: function()
     {
-        return this._checkbox.checked;
+        return this.inputElement.checked;
     },
 
     __proto__: WebInspector.StatusBarItem.prototype

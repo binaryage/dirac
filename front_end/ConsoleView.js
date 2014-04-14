@@ -91,8 +91,8 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._messagesElement.appendChild(document.createElement("br"));
 
     this._showAllMessagesCheckbox = new WebInspector.StatusBarCheckbox(WebInspector.UIString("Show all messages"));
-    this._showAllMessagesCheckbox._checkbox.checked = true;
-    this._showAllMessagesCheckbox._checkbox.addEventListener("change", this._updateMessageList.bind(this), false);
+    this._showAllMessagesCheckbox.inputElement.checked = true;
+    this._showAllMessagesCheckbox.inputElement.addEventListener("change", this._updateMessageList.bind(this), false);
 
     if (!WebInspector.experimentsSettings.workersInMainWindow.isEnabled())
         this._showAllMessagesCheckbox.element.classList.add("hidden");
@@ -1056,7 +1056,7 @@ WebInspector.ConsoleViewFilter.prototype = {
         this._messageURLFilters = {};
         WebInspector.settings.messageURLFilters.set(this._messageURLFilters);
         WebInspector.settings.messageLevelFilters.set({});
-        this._view._showAllMessagesCheckbox._checkbox.checked = true;
+        this._view._showAllMessagesCheckbox.inputElement.checked = true;
         this._textFilterUI.setValue("");
         this._filterChanged();
     },
