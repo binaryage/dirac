@@ -270,7 +270,7 @@ WebInspector.DebuggerModel.prototype = {
         function didSetBreakpoint(error, breakpointId, locations)
         {
             if (callback) {
-                var rawLocations = locations.map(WebInspector.DebuggerModel.Location.fromPayload.bind(WebInspector.DebuggerModel.Location, target));
+                var rawLocations = locations ? locations.map(WebInspector.DebuggerModel.Location.fromPayload.bind(WebInspector.DebuggerModel.Location, target)) : [];
                 callback(error ? null : breakpointId, rawLocations);
             }
         }

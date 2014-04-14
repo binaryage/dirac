@@ -63,7 +63,7 @@ WebInspector.LiveEditSupport.prototype = {
         var path = this._projectDelegate.addScript(script, true);
         var liveEditUISourceCode = this._workspace.uiSourceCode(this._projectId, path);
 
-        liveEditUISourceCode.setScriptFile(new WebInspector.LiveEditScriptFile(uiSourceCode, liveEditUISourceCode, script.scriptId));
+        liveEditUISourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
         this._uiSourceCodeForScriptId[script.scriptId] = liveEditUISourceCode;
         this._scriptIdForUISourceCode.put(liveEditUISourceCode, script.scriptId);
         return liveEditUISourceCode;
@@ -77,6 +77,30 @@ WebInspector.LiveEditSupport.prototype = {
         this._scriptIdForUISourceCode = new Map();
         this._projectDelegate.reset();
     },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _workingCopyCommitted: function(event)
+    {
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.target);
+        var scriptId = /** @type {string} */ (this._scriptIdForUISourceCode.get(uiSourceCode));
+        WebInspector.debuggerModel.setScriptSource(scriptId, uiSourceCode.workingCopy(), innerCallback);
+
+        /**
+         * @param {?string} error
+         * @param {!DebuggerAgent.SetScriptSourceError=} errorData
+         */
+        function innerCallback(error, errorData)
+        {
+            if (error) {
+                var script = WebInspector.debuggerModel.scriptForId(scriptId);
+                WebInspector.LiveEditSupport.logDetailedError(error, errorData, script);
+                return;
+            }
+            WebInspector.LiveEditSupport.logSuccess();
+        }
+    }
 }
 
 /**
@@ -105,76 +129,6 @@ WebInspector.LiveEditSupport.logDetailedError = function(error, errorData, conte
 WebInspector.LiveEditSupport.logSuccess = function()
 {
     WebInspector.console.log(WebInspector.UIString("Recompilation and update succeeded."), WebInspector.ConsoleMessage.MessageLevel.Debug, false);
-}
-
-/**
- * @constructor
- * @implements {WebInspector.ScriptFile}
- * @extends {WebInspector.Object}
- * @param {!WebInspector.UISourceCode} uiSourceCode
- * @param {!WebInspector.UISourceCode} liveEditUISourceCode
- * @param {string} scriptId
- */
-WebInspector.LiveEditScriptFile = function(uiSourceCode, liveEditUISourceCode, scriptId)
-{
-    WebInspector.ScriptFile.call(this);
-    this._uiSourceCode = uiSourceCode;
-    this._liveEditUISourceCode = liveEditUISourceCode;
-    this._scriptId = scriptId;
-    this._liveEditUISourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
-}
-
-WebInspector.LiveEditScriptFile.prototype = {
-    _workingCopyCommitted: function(event)
-    {
-        /**
-         * @param {?string} error
-         * @param {!DebuggerAgent.SetScriptSourceError=} errorData
-         * @this {WebInspector.LiveEditScriptFile}
-         */
-        function innerCallback(error, errorData)
-        {
-            if (error) {
-                var script = WebInspector.debuggerModel.scriptForId(this._scriptId);
-                WebInspector.LiveEditSupport.logDetailedError(error, errorData, script);
-                return;
-            }
-            WebInspector.LiveEditSupport.logSuccess();
-        }
-
-        var script = WebInspector.debuggerModel.scriptForId(this._scriptId);
-        WebInspector.debuggerModel.setScriptSource(script.scriptId, this._liveEditUISourceCode.workingCopy(), innerCallback.bind(this));
-    },
-
-    /**
-     * @return {boolean}
-     */
-    hasDivergedFromVM: function()
-    {
-        return true;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isDivergingFromVM: function()
-    {
-        return false;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isMergingToVM: function()
-    {
-        return false;
-    },
-
-    checkMapping: function()
-    {
-    },
-
-    __proto__: WebInspector.Object.prototype
 }
 
 /** @type {!WebInspector.LiveEditSupport} */
