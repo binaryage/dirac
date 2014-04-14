@@ -393,6 +393,7 @@
             "CPUProfileBottomUpDataGrid.js",
             "CPUProfileDataGrid.js",
             "CPUProfileFlameChart.js",
+            "CPUProfileModel.js",
             "CPUProfileTopDownDataGrid.js",
             "CPUProfileView.js",
             "HeapSnapshotCommon.js",

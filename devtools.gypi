@@ -335,6 +335,7 @@
             'front_end/CPUProfileBottomUpDataGrid.js',
             'front_end/CPUProfileDataGrid.js',
             'front_end/CPUProfileFlameChart.js',
+            'front_end/CPUProfileModel.js',
             'front_end/CPUProfileTopDownDataGrid.js',
             'front_end/CPUProfileView.js',
             'front_end/HeapSnapshotCommon.js',
