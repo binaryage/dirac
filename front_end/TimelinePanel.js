@@ -156,6 +156,14 @@ WebInspector.TimelinePanel.headerHeight = 20;
 WebInspector.TimelinePanel.durationFilterPresetsMs = [0, 1, 15];
 
 WebInspector.TimelinePanel.prototype = {
+    /**
+     * @return {?WebInspector.SearchableView}
+     */
+    searchableView: function()
+    {
+        return this._searchableView;
+    },
+
     wasShown: function()
     {
         if (!WebInspector.TimelinePanel._categoryStylesInitialized) {
