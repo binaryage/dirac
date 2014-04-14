@@ -819,13 +819,17 @@ WebInspector.TimelinePanel.prototype = {
 
         /**
          * @param {!WebInspector.TimelineModel.Record} record
+         * @this {WebInspector.TimelinePanel}
          */
         function processRecord(record)
         {
+            if (record.endTime < this._windowStartTime ||
+                record.startTime > this._windowEndTime)
+                return;
             if (record.testContentMatching(searchRegExp))
                 matches.push(record);
         }
-        this._model.forAllFilteredRecords(processRecord);
+        this._model.forAllFilteredRecords(processRecord.bind(this));
 
         var matchesCount = matches.length;
         if (matchesCount) {
