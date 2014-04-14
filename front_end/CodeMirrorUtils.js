@@ -37,6 +37,29 @@ WebInspector.CodeMirrorUtils = function()
     WebInspector.InplaceEditor.call(this);
 }
 
+/**
+ * @param {!WebInspector.TextRange} range
+ * @return {!{start: !CodeMirror.Pos, end: !CodeMirror.Pos}}
+ */
+WebInspector.CodeMirrorUtils.toPos = function(range)
+{
+    return {
+        start: new CodeMirror.Pos(range.startLine, range.startColumn),
+        end: new CodeMirror.Pos(range.endLine, range.endColumn)
+    }
+},
+
+/**
+ * @param {!CodeMirror.Pos} start
+ * @param {!CodeMirror.Pos} end
+ * @return {!WebInspector.TextRange}
+ */
+WebInspector.CodeMirrorUtils.toRange = function(start, end)
+{
+    return new WebInspector.TextRange(start.line, start.ch, end.line, end.ch);
+},
+
+
 WebInspector.CodeMirrorUtils.prototype = {
     /**
      * @return {string}

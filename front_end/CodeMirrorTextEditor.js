@@ -182,10 +182,10 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._setupWhitespaceHighlight();
 }
 
-/** @typedef {{canceled: boolean, from: CodeMirror.Pos, to: CodeMirror.Pos, text: string, origin: string, cancel: function()}} */
+/** @typedef {{canceled: boolean, from: !CodeMirror.Pos, to: !CodeMirror.Pos, text: string, origin: string, cancel: function()}} */
 WebInspector.CodeMirrorTextEditor.BeforeChangeObject;
 
-/** @typedef {{from: CodeMirror.Pos, to: CodeMirror.Pos, origin: string, text: !Array.<string>, removed: !Array.<string>}} */
+/** @typedef {{from: !CodeMirror.Pos, to: !CodeMirror.Pos, origin: string, text: !Array.<string>, removed: !Array.<string>}} */
 WebInspector.CodeMirrorTextEditor.ChangeObject;
 
 WebInspector.CodeMirrorTextEditor.maxHighlightLength = 1000;
@@ -266,11 +266,18 @@ CodeMirror.commands.redoAndReveal = function(codemirror)
 
 CodeMirror.commands.dismissMultipleSelections = function(codemirror)
 {
-    if (codemirror.getSelections().length <= 1)
-        return CodeMirror.Pass;
-    var range = codemirror.listSelections()[0];
-    codemirror.setSelection(range.anchor, range.head, {scroll: false});
-    codemirror._codeMirrorTextEditor._revealLine(range.anchor.line);
+    var selections = codemirror.listSelections();
+    var selection = selections[0];
+    if (selections.length === 1) {
+        if (WebInspector.CodeMirrorUtils.toRange(selection.anchor, selection.head).isEmpty())
+            return CodeMirror.Pass;
+        codemirror.setSelection(selection.anchor, selection.anchor, {scroll: false});
+        codemirror._codeMirrorTextEditor._revealLine(selection.anchor.line);
+        return;
+    }
+
+    codemirror.setSelection(selection.anchor, selection.head, {scroll: false});
+    codemirror._codeMirrorTextEditor._revealLine(selection.anchor.line);
 }
 
 WebInspector.CodeMirrorTextEditor.LongLineModeLineLengthThreshold = 2000;
@@ -486,7 +493,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
             y >= gutterBox.y && y <= gutterBox.y + gutterBox.height)
             return null;
         var coords = this._codeMirror.coordsChar({left: x, top: y});
-        return this._toRange(coords, coords);
+        return WebInspector.CodeMirrorUtils.toRange(coords, coords);
     },
 
     /**
@@ -514,7 +521,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     copyRange: function(textRange)
     {
-        var pos = this._toPos(textRange.normalize());
+        var pos = WebInspector.CodeMirrorUtils.toPos(textRange.normalize());
         return this._codeMirror.getRange(pos.start, pos.end);
     },
 
@@ -646,7 +653,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     highlightRange: function(range, cssClass)
     {
         cssClass = "CodeMirror-persist-highlight " + cssClass;
-        var pos = this._toPos(range);
+        var pos = WebInspector.CodeMirrorUtils.toPos(range);
         ++pos.end.ch;
         return this._codeMirror.markText(pos.start, pos.end, {
             className: cssClass,
@@ -893,9 +900,9 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     editRange: function(range, text)
     {
-        var pos = this._toPos(range);
+        var pos = WebInspector.CodeMirrorUtils.toPos(range);
         this._codeMirror.replaceRange(text, pos.start, pos.end);
-        var newRange = this._toRange(pos.start, this._codeMirror.posFromIndex(this._codeMirror.indexFromPos(pos.start) + text.length));
+        var newRange = WebInspector.CodeMirrorUtils.toRange(pos.start, this._codeMirror.posFromIndex(this._codeMirror.indexFromPos(pos.start) + text.length));
         this._delegate.onTextChanged(range, newRange);
         if (WebInspector.settings.textEditorAutoDetectIndent.get())
             this._updateEditorIndentation();
@@ -929,7 +936,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
      */
     _changeObjectToEditOperation: function(changeObject)
     {
-        var oldRange = this._toRange(changeObject.from, changeObject.to);
+        var oldRange = WebInspector.CodeMirrorUtils.toRange(changeObject.from, changeObject.to);
         var newRange = oldRange.clone();
         var linesAdded = changeObject.text.length;
         if (linesAdded === 0) {
@@ -979,7 +986,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         var start = this._codeMirror.getCursor("anchor");
         var end = this._codeMirror.getCursor("head");
-        this._delegate.selectionChanged(this._toRange(start, end));
+        this._delegate.selectionChanged(WebInspector.CodeMirrorUtils.toRange(start, end));
         if (!this._tokenHighlighter.highlightedRegex())
             this._codeMirror.operation(this._tokenHighlighter.highlightSelectedTokens.bind(this._tokenHighlighter));
     },
@@ -996,7 +1003,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         if (!selection.ranges.length)
             return;
         var primarySelection = selection.ranges[0];
-        this._reportJump(this.selection(), this._toRange(primarySelection.anchor, primarySelection.head));
+        this._reportJump(this.selection(), WebInspector.CodeMirrorUtils.toRange(primarySelection.anchor, primarySelection.head));
     },
 
     /**
@@ -1058,7 +1065,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var start = this._codeMirror.getCursor("anchor");
         var end = this._codeMirror.getCursor("head");
 
-        return this._toRange(start, end);
+        return WebInspector.CodeMirrorUtils.toRange(start, end);
     },
 
     /**
@@ -1070,7 +1077,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var result = [];
         for (var i = 0; i < selectionList.length; ++i) {
             var selection = selectionList[i];
-            result.push(this._toRange(selection.anchor, selection.head));
+            result.push(WebInspector.CodeMirrorUtils.toRange(selection.anchor, selection.head));
         }
         return result;
     },
@@ -1089,7 +1096,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     setSelection: function(textRange)
     {
         this._lastSelection = textRange;
-        var pos = this._toPos(textRange);
+        var pos = WebInspector.CodeMirrorUtils.toPos(textRange);
         this._codeMirror.setSelection(pos.start, pos.end);
     },
 
@@ -1101,7 +1108,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         var selections = [];
         for (var i = 0; i < ranges.length; ++i) {
-            var selection = this._toPos(ranges[i]);
+            var selection = WebInspector.CodeMirrorUtils.toPos(ranges[i]);
             selections.push({
                 anchor: selection.start,
                 head: selection.end
@@ -1154,7 +1161,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     {
         var lineCount = this.linesCount;
         var lastLine = this._codeMirror.getLine(lineCount - 1);
-        return this._toRange(new CodeMirror.Pos(0, 0), new CodeMirror.Pos(lineCount - 1, lastLine.length));
+        return WebInspector.CodeMirrorUtils.toRange(new CodeMirror.Pos(0, 0), new CodeMirror.Pos(lineCount - 1, lastLine.length));
     },
 
     /**
@@ -1212,23 +1219,6 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var handle = this._codeMirror.getLineHandle(line);
         if (handle && handle.attributes)
             delete handle.attributes[name];
-    },
-
-    /**
-     * @param {!WebInspector.TextRange} range
-     * @return {!{start: !CodeMirror.Pos, end: !CodeMirror.Pos}}
-     */
-    _toPos: function(range)
-    {
-        return {
-            start: new CodeMirror.Pos(range.startLine, range.startColumn),
-            end: new CodeMirror.Pos(range.endLine, range.endColumn)
-        }
-    },
-
-    _toRange: function(start, end)
-    {
-        return new WebInspector.TextRange(start.line, start.ch, end.line, end.ch);
     },
 
     /**
@@ -1321,7 +1311,7 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
             this._setHighlighter(this._searchHighlighter.bind(this, this._highlightRegex), selectionStart);
         }
         if (this._highlightRange) {
-            var pos = WebInspector.CodeMirrorTextEditor.prototype._toPos(this._highlightRange);
+            var pos = WebInspector.CodeMirrorUtils.toPos(this._highlightRange);
             this._searchResultMarker = this._codeMirror.markText(pos.start, pos.end, {className: "cm-column-with-selection"});
         }
     },
