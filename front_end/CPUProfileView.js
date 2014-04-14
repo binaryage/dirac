@@ -23,6 +23,95 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+
+/**
+ * @constructor
+ * @param {!ProfilerAgent.CPUProfile} profile
+ */
+WebInspector.CPUProfileDataModel = function(profile)
+{
+    this.profileHead = profile.head;
+    this.samples = profile.samples;
+    this._calculateTimes(profile);
+    this._assignParentsInProfile();
+    if (this.samples)
+        this._buildIdToNodeMap();
+}
+
+WebInspector.CPUProfileDataModel.prototype = {
+    /**
+     * @param {!ProfilerAgent.CPUProfile} profile
+     */
+    _calculateTimes: function(profile)
+    {
+        function totalHitCount(node) {
+            var result = node.hitCount;
+            for (var i = 0; i < node.children.length; i++)
+                result += totalHitCount(node.children[i]);
+            return result;
+        }
+        profile.totalHitCount = totalHitCount(profile.head);
+
+        var durationMs = 1000 * (profile.endTime - profile.startTime);
+        var samplingInterval = durationMs / profile.totalHitCount;
+        this.samplingIntervalMs = samplingInterval;
+
+        function calculateTimesForNode(node) {
+            node.selfTime = node.hitCount * samplingInterval;
+            var totalHitCount = node.hitCount;
+            for (var i = 0; i < node.children.length; i++)
+                totalHitCount += calculateTimesForNode(node.children[i]);
+            node.totalTime = totalHitCount * samplingInterval;
+            return totalHitCount;
+        }
+        calculateTimesForNode(profile.head);
+    },
+
+    _assignParentsInProfile: function()
+    {
+        var head = this.profileHead;
+        head.parent = null;
+        head.head = null;
+        var nodesToTraverse = [ head ];
+        while (nodesToTraverse.length) {
+            var parent = nodesToTraverse.pop();
+            var children = parent.children;
+            var length = children.length;
+            for (var i = 0; i < length; ++i) {
+                var child = children[i];
+                child.head = head;
+                child.parent = parent;
+                if (child.children.length)
+                    nodesToTraverse.push(child);
+            }
+        }
+    },
+
+    _buildIdToNodeMap: function()
+    {
+        /** @type {!Object.<number, !ProfilerAgent.CPUProfileNode>} */
+        this._idToNode = {};
+        var idToNode = this._idToNode;
+        var stack = [this.profileHead];
+        while (stack.length) {
+            var node = stack.pop();
+            idToNode[node.id] = node;
+            for (var i = 0; i < node.children.length; i++)
+                stack.push(node.children[i]);
+        }
+
+        var topLevelNodes = this.profileHead.children;
+        for (var i = 0; i < topLevelNodes.length; i++) {
+            var node = topLevelNodes[i];
+            if (node.functionName === "(garbage collector)") {
+                this._gcNode = node;
+                break;
+            }
+        }
+    }
+}
+
+
 /**
  * @constructor
  * @extends {WebInspector.VBox}
@@ -72,15 +161,14 @@ WebInspector.CPUProfileView = function(profileHeader)
     this.resetButton.addEventListener("click", this._resetClicked, this);
     this._statusBarButtonsElement.appendChild(this.resetButton.element);
 
-    this.profileHead = /** @type {?ProfilerAgent.CPUProfileNode} */ (null);
-    this.profile = profileHeader;
-
+    this._profileHeader = profileHeader;
     this._linkifier = new WebInspector.Linkifier(new WebInspector.Linkifier.DefaultFormatter(30));
 
-    if (this.profile._profile) // If the profile has been loaded from file then use it.
-        this._processProfileData(this.profile._profile);
-    else
-        this._processProfileData(this.profile.protocolProfile());
+    this.profile = new WebInspector.CPUProfileDataModel(profileHeader._profile || profileHeader.protocolProfile());
+
+    this._changeView();
+    if (this._flameChart)
+        this._flameChart.update();
 }
 
 WebInspector.CPUProfileView._TypeFlame = "Flame";
@@ -99,24 +187,6 @@ WebInspector.CPUProfileView.prototype = {
         this._flameChart.selectRange(timeLeft, timeRight);
     },
 
-    /**
-     * @param {?ProfilerAgent.CPUProfile} profile
-     */
-    _processProfileData: function(profile)
-    {
-        this.profileHead = profile.head;
-        this.samples = profile.samples;
-
-        this._calculateTimes(profile);
-
-        this._assignParentsInProfile();
-        if (this.samples)
-            this._buildIdToNodeMap();
-        this._changeView();
-        if (this._flameChart)
-            this._flameChart.update();
-    },
-
     get statusBarItems()
     {
         return [this.viewSelectComboBox.element, this._statusBarButtonsElement];
@@ -128,7 +198,7 @@ WebInspector.CPUProfileView.prototype = {
     _getBottomUpProfileDataGridTree: function()
     {
         if (!this._bottomUpProfileDataGridTree)
-            this._bottomUpProfileDataGridTree = new WebInspector.BottomUpProfileDataGridTree(this, /** @type {!ProfilerAgent.CPUProfileNode} */ (this.profileHead));
+            this._bottomUpProfileDataGridTree = new WebInspector.BottomUpProfileDataGridTree(this, /** @type {!ProfilerAgent.CPUProfileNode} */ (this.profile.profileHead));
         return this._bottomUpProfileDataGridTree;
     },
 
@@ -138,7 +208,7 @@ WebInspector.CPUProfileView.prototype = {
     _getTopDownProfileDataGridTree: function()
     {
         if (!this._topDownProfileDataGridTree)
-            this._topDownProfileDataGridTree = new WebInspector.TopDownProfileDataGridTree(this, /** @type {!ProfilerAgent.CPUProfileNode} */ (this.profileHead));
+            this._topDownProfileDataGridTree = new WebInspector.TopDownProfileDataGridTree(this, /** @type {!ProfilerAgent.CPUProfileNode} */ (this.profile.profileHead));
         return this._topDownProfileDataGridTree;
     },
 
@@ -370,7 +440,7 @@ WebInspector.CPUProfileView.prototype = {
     {
         if (this._flameChart)
             return;
-        this._dataProvider = new WebInspector.CPUFlameChartDataProvider(this);
+        this._dataProvider = new WebInspector.CPUFlameChartDataProvider(this.profile, this._profileHeader.target());
         this._flameChart = new WebInspector.CPUProfileFlameChart(this._dataProvider);
         this._flameChart.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected.bind(this));
     },
@@ -491,74 +561,6 @@ WebInspector.CPUProfileView.prototype = {
         this.profileDataGridTree.sort(WebInspector.ProfileDataGridTree.propertyComparator(sortProperty, sortAscending));
 
         this.refresh();
-    },
-
-    _calculateTimes: function(profile)
-    {
-        function totalHitCount(node) {
-            var result = node.hitCount;
-            for (var i = 0; i < node.children.length; i++)
-                result += totalHitCount(node.children[i]);
-            return result;
-        }
-        profile.totalHitCount = totalHitCount(profile.head);
-
-        var durationMs = 1000 * (profile.endTime - profile.startTime);
-        var samplingInterval = durationMs / profile.totalHitCount;
-        this.samplingIntervalMs = samplingInterval;
-
-        function calculateTimesForNode(node) {
-            node.selfTime = node.hitCount * samplingInterval;
-            var totalHitCount = node.hitCount;
-            for (var i = 0; i < node.children.length; i++)
-                totalHitCount += calculateTimesForNode(node.children[i]);
-            node.totalTime = totalHitCount * samplingInterval;
-            return totalHitCount;
-        }
-        calculateTimesForNode(profile.head);
-    },
-
-    _assignParentsInProfile: function()
-    {
-        var head = this.profileHead;
-        head.parent = null;
-        head.head = null;
-        var nodesToTraverse = [ head ];
-        while (nodesToTraverse.length) {
-            var parent = nodesToTraverse.pop();
-            var children = parent.children;
-            var length = children.length;
-            for (var i = 0; i < length; ++i) {
-                var child = children[i];
-                child.head = head;
-                child.parent = parent;
-                if (child.children.length)
-                    nodesToTraverse.push(child);
-            }
-        }
-    },
-
-    _buildIdToNodeMap: function()
-    {
-        /** @type {!Object.<string, !ProfilerAgent.CPUProfileNode>} */
-        this._idToNode = {};
-        var idToNode = this._idToNode;
-        var stack = [this.profileHead];
-        while (stack.length) {
-            var node = stack.pop();
-            idToNode[node.id] = node;
-            for (var i = 0; i < node.children.length; i++)
-                stack.push(node.children[i]);
-        }
-
-        var topLevelNodes = this.profileHead.children;
-        for (var i = 0; i < topLevelNodes.length; i++) {
-            var node = topLevelNodes[i];
-            if (node.functionName === "(garbage collector)") {
-                this._gcNode = node;
-                break;
-            }
-        }
     },
 
     __proto__: WebInspector.VBox.prototype
@@ -998,12 +1000,14 @@ WebInspector.CPUProfileView.colorGenerator = function()
 /**
  * @constructor
  * @implements {WebInspector.FlameChartDataProvider}
- * @param {!WebInspector.CPUProfileView} cpuProfileView
+ * @param {!WebInspector.CPUProfileDataModel} cpuProfile
+ * @param {!WebInspector.Target} target
  */
-WebInspector.CPUFlameChartDataProvider = function(cpuProfileView)
+WebInspector.CPUFlameChartDataProvider = function(cpuProfile, target)
 {
     WebInspector.FlameChartDataProvider.call(this);
-    this._cpuProfileView = cpuProfileView;
+    this._cpuProfile = cpuProfile;
+    this._target = target;
     this._colorGenerator = WebInspector.CPUProfileView.colorGenerator();
 }
 
@@ -1055,7 +1059,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
      */
     totalTime: function()
     {
-        return this._cpuProfileView.profileHead.totalTime;
+        return this._cpuProfile.profileHead.totalTime;
     },
 
     /**
@@ -1079,14 +1083,14 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
      */
     _calculateTimelineData: function()
     {
-        if (!this._cpuProfileView.profileHead)
+        if (!this._cpuProfile.profileHead)
             return null;
 
-        var samples = this._cpuProfileView.samples;
-        var idToNode = this._cpuProfileView._idToNode;
-        var gcNode = this._cpuProfileView._gcNode;
+        var samples = this._cpuProfile.samples;
+        var idToNode = this._cpuProfile._idToNode;
+        var gcNode = this._cpuProfile._gcNode;
         var samplesCount = samples.length;
-        var samplingInterval = this._cpuProfileView.samplingIntervalMs;
+        var samplingInterval = this._cpuProfile.samplingIntervalMs;
 
         var index = 0;
 
@@ -1235,7 +1239,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         var totalTime = this._millisecondsToString(timelineData.entryTotalTimes[entryIndex]);
         pushEntryInfoRow(WebInspector.UIString("Self time"), selfTime);
         pushEntryInfoRow(WebInspector.UIString("Total time"), totalTime);
-        var target = this._cpuProfileView.profile.target();
+        var target = this._target;
         var text = WebInspector.Linkifier.liveLocationText(target, node.scriptId, node.lineNumber, node.columnNumber);
         pushEntryInfoRow(WebInspector.UIString("URL"), text);
         pushEntryInfoRow(WebInspector.UIString("Aggregated self time"), Number.secondsToString(node.selfTime / 1000, true));
