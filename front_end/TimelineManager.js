@@ -85,9 +85,24 @@ WebInspector.TimelineManager.prototype = {
             return;
         }
         if (!this._enablementCount)
-            TimelineAgent.stop(callback);
+            TimelineAgent.stop(this._stopped.bind(this, callback));
         else if (callback)
             callback(null);
+    },
+
+    /**
+     * @param {function(?Protocol.Error)|undefined} callback
+     * @param {?Protocol.Error} error
+     * @param {!Array.<!TimelineAgent.TimelineEvent>=} events
+     */
+    _stopped: function(callback, error, events)
+    {
+        if (events) {
+            for (var i = 0; i < events.length; ++i)
+                this._dispatcher.eventRecorded(events[i]);
+        }
+        if (callback)
+            callback(error);
     },
 
     __proto__: WebInspector.TargetAwareObject.prototype

@@ -326,17 +326,11 @@ WebInspector.TimelineModel.prototype = {
 
     /**
      * @param {?Protocol.Error} error
-     * @param {!Array.<!TimelineAgent.TimelineEvent>=} events
      */
-    _fireRecordingStopped: function(error, events)
+    _fireRecordingStopped: function(error)
     {
         this._bufferEvents = false;
         this._collectionEnabled = false;
-        if (events && events.length) {
-            this.reset();
-            for (var i = 0; i < events.length; ++i)
-                this._addRecord(events[i]);
-        }
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStopped);
     },
 
