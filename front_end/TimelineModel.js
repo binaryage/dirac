@@ -100,8 +100,6 @@ WebInspector.TimelineModel.RecordType = {
     FunctionCall: "FunctionCall",
     GCEvent: "GCEvent",
 
-    UpdateCounters: "UpdateCounters",
-
     RequestAnimationFrame: "RequestAnimationFrame",
     CancelAnimationFrame: "CancelAnimationFrame",
     FireAnimationFrame: "FireAnimationFrame",
@@ -846,6 +844,30 @@ WebInspector.TimelineModel.Record.prototype = {
     get frameId()
     {
         return this._record.frameId || "";
+    },
+
+    /**
+     * @return {number}
+     */
+    get usedHeapSizeDelta()
+    {
+        return this._record.usedHeapSizeDelta || 0;
+    },
+
+    /**
+     * @return {number}
+     */
+    get jsHeapSizeUsed()
+    {
+        return this._record.counters ? this._record.counters.jsHeapSizeUsed || 0 : 0;
+    },
+
+    /**
+     * @return {!Object|undefined}
+     */
+    get counters()
+    {
+        return this._record.counters;
     },
 
     /**

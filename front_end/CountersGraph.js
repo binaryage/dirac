@@ -163,15 +163,8 @@ WebInspector.CountersGraph.prototype = {
     _revealRecordAt: function(time)
     {
         var recordToReveal;
-        /**
-         * @param {!WebInspector.TimelineModel.Record} record
-         * @return {boolean}
-         * @this {WebInspector.CountersGraph}
-         */
         function findRecordToReveal(record)
         {
-            if (!this._model.isVisible(record))
-                return false;
             if (record.startTime <= time && time <= record.endTime) {
                 recordToReveal = record;
                 return true;
@@ -181,7 +174,7 @@ WebInspector.CountersGraph.prototype = {
                 recordToReveal = record;
             return false;
         }
-        this._model.forAllRecords(null, findRecordToReveal.bind(this));
+        this._model.forAllRecords(null, findRecordToReveal);
         this._delegate.selectRecord(recordToReveal);
     },
 

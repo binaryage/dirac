@@ -628,6 +628,15 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
     if (record.scriptName && record.type !== recordTypes.FunctionCall)
         contentHelper.appendLocationRow(WebInspector.UIString("Function Call"), record.scriptName, record.scriptLine);
 
+    if (record.jsHeapSizeUsed) {
+        if (record.usedHeapSizeDelta) {
+            var sign = record.usedHeapSizeDelta > 0 ? "+" : "-";
+            contentHelper.appendTextRow(WebInspector.UIString("Used JavaScript Heap Size"),
+                WebInspector.UIString("%s (%s%s)", Number.bytesToString(record.jsHeapSizeUsed), sign, Number.bytesToString(Math.abs(record.usedHeapSizeDelta))));
+        } else if (record.category === WebInspector.TimelineUIUtils.categories().scripting)
+            contentHelper.appendTextRow(WebInspector.UIString("Used JavaScript Heap Size"), Number.bytesToString(record.jsHeapSizeUsed));
+    }
+
     if (record.callSiteStackTrace)
         contentHelper.appendStackTrace(callSiteStackTraceLabel || WebInspector.UIString("Call Site stack"), record.callSiteStackTrace);
 

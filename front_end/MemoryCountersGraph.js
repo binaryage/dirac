@@ -42,7 +42,6 @@ WebInspector.MemoryCountersGraph = function(delegate, model)
     this._countersByName["documents"] = this.createCounter(WebInspector.UIString("Documents"), WebInspector.UIString("Documents: %d"), "#d00");
     this._countersByName["nodes"] = this.createCounter(WebInspector.UIString("Nodes"), WebInspector.UIString("Nodes: %d"), "#0a0");
     this._countersByName["jsEventListeners"] = this.createCounter(WebInspector.UIString("Listeners"), WebInspector.UIString("Listeners: %d"), "#00d");
-    this._countersByName["jsHeapSizeUsed"] = this.createCounter(WebInspector.UIString("Used JS Heap"), WebInspector.UIString("JS Heap Size: %d"), "rgb(110, 156, 247)");
     if (WebInspector.experimentsSettings.gpuTimeline.isEnabled()) {
         this._gpuMemoryCounter = this.createCounter(WebInspector.UIString("GPU Memory"), WebInspector.UIString("GPU Memory [KB]: %d"), "#c0c");
         this._countersByName["gpuMemoryUsedKB"] = this._gpuMemoryCounter;
@@ -69,9 +68,10 @@ WebInspector.MemoryCountersGraph.prototype = {
          */
         function addStatistics(record)
         {
-            if (record.type !== WebInspector.TimelineModel.RecordType.UpdateCounters)
+            var counters = record.counters;
+            if (!counters)
                 return;
-            var counters = record.data;
+
             for (var name in counters) {
                 var counter = this._countersByName[name];
                 if (counter)

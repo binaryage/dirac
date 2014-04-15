@@ -1232,7 +1232,6 @@ WebInspector.TimelineHiddenFilter = function()
     this._hiddenRecords[WebInspector.TimelineModel.RecordType.DrawFrame] = 1;
     this._hiddenRecords[WebInspector.TimelineModel.RecordType.BeginFrame] = 1;
     this._hiddenRecords[WebInspector.TimelineModel.RecordType.UpdateLayerTree] = 1;
-    this._hiddenRecords[WebInspector.TimelineModel.RecordType.UpdateCounters] = 1;
 }
 
 WebInspector.TimelineHiddenFilter.prototype = {
