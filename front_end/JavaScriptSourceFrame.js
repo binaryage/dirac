@@ -195,8 +195,12 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _workingCopyCommitted: function(event)
     {
-        if (this._supportsEnabledBreakpointsWhileEditing() || this._scriptFile)
+        if (this._supportsEnabledBreakpointsWhileEditing())
             return;
+        if (this._scriptFile) {
+            this._scriptFile.commitLiveEdit();
+            return;
+        }
         this._restoreBreakpointsAfterEditing();
     },
 
