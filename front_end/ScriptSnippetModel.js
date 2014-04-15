@@ -102,12 +102,22 @@ WebInspector.ScriptSnippetModel.prototype = {
             console.assert(uiSourceCode);
             return "";
         }
-        var scriptFile = new WebInspector.SnippetScriptFile(this, uiSourceCode);
-        uiSourceCode.setScriptFile(scriptFile);
+        uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
         this._snippetIdForUISourceCode.put(uiSourceCode, snippet.id);
+        var breakpointLocations = this._removeBreakpoints(uiSourceCode);
         uiSourceCode.setSourceMapping(this._snippetScriptMapping);
+        this._restoreBreakpoints(uiSourceCode, breakpointLocations);
         this._uiSourceCodeForSnippetId[snippet.id] = uiSourceCode;
         return path;
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _workingCopyChanged: function(event)
+    {
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (event.target);
+        this._scriptSnippetEdited(uiSourceCode);
     },
 
     /**
@@ -329,7 +339,6 @@ WebInspector.ScriptSnippetModel.prototype = {
         console.assert(!this._scriptForUISourceCode.get(uiSourceCode));
         this._uiSourceCodeForScriptId[script.scriptId] = uiSourceCode;
         this._scriptForUISourceCode.put(uiSourceCode, script);
-        uiSourceCode.scriptFile().setHasDivergedFromVM(false);
         script.pushSourceMapping(this._snippetScriptMapping);
     },
 
@@ -367,12 +376,9 @@ WebInspector.ScriptSnippetModel.prototype = {
         if (!script)
             return null;
 
-        uiSourceCode.scriptFile().setIsDivergingFromVM(true);
-        uiSourceCode.scriptFile().setHasDivergedFromVM(true);
         delete this._uiSourceCodeForScriptId[script.scriptId];
         this._scriptForUISourceCode.remove(uiSourceCode);
         delete uiSourceCode._evaluationIndex;
-        uiSourceCode.scriptFile().setIsDivergingFromVM(false);
     },
 
     _debuggerReset: function()
@@ -418,75 +424,6 @@ WebInspector.ScriptSnippetModel.prototype = {
         this._snippetIdForUISourceCode = new Map();
         this._projectDelegate.reset();
         this._loadSnippets();
-    },
-
-    __proto__: WebInspector.Object.prototype
-}
-
-/**
- * @constructor
- * @implements {WebInspector.ScriptFile}
- * @extends {WebInspector.Object}
- * @param {!WebInspector.ScriptSnippetModel} scriptSnippetModel
- * @param {!WebInspector.UISourceCode} uiSourceCode
- */
-WebInspector.SnippetScriptFile = function(scriptSnippetModel, uiSourceCode)
-{
-    WebInspector.ScriptFile.call(this);
-    this._scriptSnippetModel = scriptSnippetModel;
-    this._uiSourceCode = uiSourceCode;
-    this._hasDivergedFromVM = true;
-    this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
-}
-
-WebInspector.SnippetScriptFile.prototype = {
-    /**
-     * @return {boolean}
-     */
-    hasDivergedFromVM: function()
-    {
-        return this._hasDivergedFromVM;
-    },
-
-    /**
-     * @param {boolean} hasDivergedFromVM
-     */
-    setHasDivergedFromVM: function(hasDivergedFromVM)
-    {
-        this._hasDivergedFromVM = hasDivergedFromVM;
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isDivergingFromVM: function()
-    {
-        return this._isDivergingFromVM;
-    },
-
-    checkMapping: function()
-    {
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isMergingToVM: function()
-    {
-        return false;
-    },
-
-    /**
-     * @param {boolean} isDivergingFromVM
-     */
-    setIsDivergingFromVM: function(isDivergingFromVM)
-    {
-        this._isDivergingFromVM = isDivergingFromVM;
-    },
-
-    _workingCopyChanged: function()
-    {
-        this._scriptSnippetModel._scriptSnippetEdited(this._uiSourceCode);
     },
 
     __proto__: WebInspector.Object.prototype
