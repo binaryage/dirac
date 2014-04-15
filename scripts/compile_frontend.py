@@ -324,11 +324,12 @@ for line in moduleCompileOut.splitlines():
         if not match:
             continue
         in_module = True
+        module_error_count = 0
+        module_output = []
         module_name = match.group(1)
         skip_module = skipped_modules.get(module_name)
         if skip_module:
             skip_dependents(module_name)
-        module_output = ["Skipping module %s...\n" % module_name if skip_module else "Module %s:" % module_name]
     else:
         match = re.search(end_module_regex, line)
         if not match:
@@ -336,11 +337,18 @@ for line in moduleCompileOut.splitlines():
                 module_output.append(line)
                 if hasErrors(line):
                     error_count += 1
+                    module_error_count += 1
                     skip_dependents(module_name)
             continue
 
         in_module = False
-        print os.linesep.join(module_output)
+        if skip_module:
+            print "Skipping module %s..." % module_name
+        elif not module_error_count:
+            print "Module %s compiled successfully: %s" % (module_name, module_output[0])
+        else:
+            print "Module %s compile failed: %s errors\n" % (module_name, module_error_count)
+            print os.linesep.join(module_output)
 
 if error_count:
     print "Total Closure errors: %d\n" % error_count
