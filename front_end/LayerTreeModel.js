@@ -62,6 +62,13 @@ WebInspector.LayerTreeModel.Events = {
     LayerPainted: "LayerPainted",
 }
 
+WebInspector.LayerTreeModel.ScrollRectType = {
+    NonFastScrollable: "NonFastScrollable",
+    TouchEventHandler: "TouchEventHandler",
+    WheelEventHandler: "WheelEventHandler",
+    RepaintsOnScroll: "RepaintsOnScroll"
+}
+
 WebInspector.LayerTreeModel.prototype = {
     disable: function()
     {
@@ -377,7 +384,7 @@ WebInspector.Layer.prototype = {
     transform: function() { },
 
     /**
-     * @return {?Array.<number>}
+     * @return {!Array.<number>}
      */
     quad: function() { },
 
@@ -549,7 +556,7 @@ WebInspector.AgentLayer.prototype = {
     },
 
     /**
-     * @return {?Array.<number>}
+     * @return {!Array.<number>}
      */
     quad: function()
     {
@@ -679,7 +686,7 @@ WebInspector.AgentLayer.prototype = {
      */
     _createVertexArrayForRect: function(width, height)
     {
-        return [0, 0, 0, 0, height, 0, width, height, 0, width, 0, 0];
+        return [0, 0, 0, width, 0, 0, width, height, 0, 0, height, 0];
     },
 
     /**
@@ -701,7 +708,7 @@ WebInspector.AgentLayer.prototype = {
         }
 
         this._children.forEach(calculateQuadForLayer);
-    },
+    }
 }
 
 /**
@@ -719,7 +726,8 @@ WebInspector.TracingLayer = function(payload)
     this._children = [];
     this._parentLayerId = null;
     this._parent = null;
-    this._quad = payload.layer_quad;
+    this._quad = payload.layer_quad || [];
+    this._createScrollRects(payload);
 }
 
 WebInspector.TracingLayer.prototype = {
@@ -832,7 +840,7 @@ WebInspector.TracingLayer.prototype = {
     },
 
     /**
-     * @return {?Array.<number>}
+     * @return {!Array.<number>}
      */
     quad: function()
     {
@@ -876,7 +884,33 @@ WebInspector.TracingLayer.prototype = {
      */
     scrollRects: function()
     {
-        return [];
+        return this._scrollRects;
+    },
+
+    /**
+     * @param {!Array.<number>} params
+     * @param {string} type
+     * @return {!Object}
+     */
+    _scrollRectsFromParams: function(params, type)
+    {
+        return {rect: {x: params[0], y: params[1], width: params[2], height: params[3]}, type: type};
+    },
+
+    /**
+     * @param {!WebInspector.TracingLayerPayload} payload
+     */
+    _createScrollRects: function(payload)
+    {
+        this._scrollRects = [];
+        if (payload.non_fast_scrollable_region)
+            this._scrollRects.push(this._scrollRectsFromParams(payload.non_fast_scrollable_region, WebInspector.LayerTreeModel.ScrollRectType.NonFastScrollable));
+        if (payload.touch_event_handler_region)
+            this._scrollRects.push(this._scrollRectsFromParams(payload.touch_event_handler_region, WebInspector.LayerTreeModel.ScrollRectType.TouchEventHandler));
+        if (payload.wheel_event_handler_region)
+            this._scrollRects.push(this._scrollRectsFromParams(payload.wheel_event_handler_region, WebInspector.LayerTreeModel.ScrollRectType.WheelEventHandler));
+        if (payload.scroll_event_handler_region)
+            this._scrollRects.push(this._scrollRectsFromParams(payload.scroll_event_handler_region, WebInspector.LayerTreeModel.ScrollRectType.RepaintsOnScroll));
     },
 
     /**

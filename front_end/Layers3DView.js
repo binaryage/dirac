@@ -109,6 +109,8 @@ WebInspector.Layers3DView.SelectedBackgroundColor = [20, 40, 110, 0.66];
 WebInspector.Layers3DView.BackgroundColor = [0, 0, 0, 0];
 WebInspector.Layers3DView.HoveredBorderColor = [0, 0, 255, 1];
 WebInspector.Layers3DView.BorderColor = [0, 0, 0, 1];
+WebInspector.Layers3DView.ScrollRectBackgroundColor = [178, 0, 0, 0.4];
+WebInspector.Layers3DView.ScrollRectBorderColor = [178, 0, 0, 1];
 
 WebInspector.Layers3DView.prototype = {
     onResize: function()
@@ -341,7 +343,7 @@ WebInspector.Layers3DView.prototype = {
     _drawRectangle: function(vertices, color, glMode, texture)
     {
         this._setVertexAttribute(this._shaderProgram.vertexPositionAttribute, vertices, 3);
-        this._setVertexAttribute(this._shaderProgram.textureCoordAttribute, [0, 1, 0, 0, 1, 0, 1, 1], 2);
+        this._setVertexAttribute(this._shaderProgram.textureCoordAttribute, [0, 1, 1, 1, 1, 0, 0, 0], 2);
 
         if (texture) {
             var white = [255, 255, 255, 1];
@@ -372,14 +374,70 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Layer} layer
+     * @param {!Array.<number>} quad
+     * @param {number} z
      * @return {!Array.<number>}
      */
-    _calculateVerticesForLayer: function(layer)
+    _calculateVerticesForQuad: function(quad, z)
+    {
+        return [quad[0], quad[1], z, quad[2], quad[3], z, quad[4], quad[5], z, quad[6], quad[7], z];
+    },
+
+    /**
+     * Finds coordinates of point on layer quad, having offsets (ratioX * width) and (ratioY * height)
+     * from the left corner of the initial layer rect, where width and heigth are layer bounds.
+     * @param {!Array.<number>} quad
+     * @param {number} ratioX
+     * @param {number} ratioY
+     * @return {!Array.<number>}
+     */
+    _calculatePointOnQuad: function(quad, ratioX, ratioY)
+    {
+        var x0 = quad[0];
+        var y0 = quad[1];
+        var x1 = quad[2];
+        var y1 = quad[3];
+        var x2 = quad[4];
+        var y2 = quad[5];
+        var x3 = quad[6];
+        var y3 = quad[7];
+        // Point on the first quad side clockwise
+        var firstSidePointX = x0 + ratioX * (x1 - x0);
+        var firstSidePointY = y0 + ratioX * (y1 - y0);
+        // Point on the third quad side clockwise
+        var thirdSidePointX = x3 + ratioX * (x2 - x3);
+        var thirdSidePointY = y3 + ratioX * (y2 - y3);
+        var x = firstSidePointX + ratioY * (thirdSidePointX - firstSidePointX);
+        var y = firstSidePointY + ratioY * (thirdSidePointY - firstSidePointY);
+        return [x, y];
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     * @param {!DOMAgent.Rect} rect
+     * @return {!Array.<number>}
+     */
+    _calculateRectQuad: function(layer, rect)
     {
         var quad = layer.quad();
-        var z = this._depthByLayerId[layer.id()] * 20;
-        return [quad[0], quad[1], z, quad[2], quad[3], z, quad[4], quad[5], z, quad[6], quad[7], z];
+        var rx1 = rect.x / layer.width();
+        var rx2 = (rect.x + rect.width) / layer.width();
+        var ry1 = rect.y / layer.height();
+        var ry2 = (rect.y + rect.height) / layer.height();
+        return this._calculatePointOnQuad(quad, rx1, ry1).concat(this._calculatePointOnQuad(quad, rx2, ry1))
+            .concat(this._calculatePointOnQuad(quad, rx2, ry2)).concat(this._calculatePointOnQuad(quad, rx1, ry2));
+    },
+
+    /**
+     * @param {!WebInspector.Layer} layer
+     * @return {!Array.<!Array.<number>>}
+     */
+    _calculateScrollRectQuadsForLayer: function(layer)
+    {
+        var quads = [];
+        for (var i = 0; i < layer.scrollRects().length; ++i)
+            quads.push(this._calculateRectQuad(layer, layer.scrollRects()[i].rect));
+        return quads;
     },
 
     /**
@@ -387,13 +445,20 @@ WebInspector.Layers3DView.prototype = {
      */
     _drawLayer: function(layer)
     {
-        if (typeof this._depthByLayerId[layer.id()] !== "number")
-            return;
         var gl = this._gl;
-        var vertices = this._calculateVerticesForLayer(layer);
-        var colors = this._colorsForLayer(layer);
-        this._drawRectangle(vertices, colors.color, gl.TRIANGLE_FAN, this._textureForLayer[layer.id()]);
-        this._drawRectangle(vertices, colors.borderColor, gl.LINE_LOOP);
+        var vertices;
+        if (typeof this._depthByLayerId[layer.id()] === "number") {
+            vertices = this._calculateVerticesForQuad(layer.quad(), this._depthByLayerId[layer.id()] * 20);
+            var colors = this._colorsForLayer(layer);
+            this._drawRectangle(vertices, colors.color, gl.TRIANGLE_FAN, this._textureForLayer[layer.id()]);
+            this._drawRectangle(vertices, colors.borderColor, gl.LINE_LOOP);
+        }
+        var scrollRectQuads = this._calculateScrollRectQuadsForLayer(layer);
+        for (var i = 0; i < scrollRectQuads.length; ++i) {
+            vertices = this._calculateVerticesForQuad(scrollRectQuads[i], 1);
+            this._drawRectangle(vertices, WebInspector.Layers3DView.ScrollRectBackgroundColor, gl.TRIANGLE_FAN);
+            this._drawRectangle(vertices, WebInspector.Layers3DView.ScrollRectBorderColor, gl.LINE_LOOP);
+        }
     },
 
     _calculateDepths: function()
@@ -512,7 +577,7 @@ WebInspector.Layers3DView.prototype = {
         {
             if (typeof this._depthByLayerId[layer.id()] !== "number")
                 return;
-            var t = this._intersectLineAndRect(this._calculateVerticesForLayer(layer), projectionMatrix,x0, y0);
+            var t = this._intersectLineAndRect(this._calculateVerticesForQuad(layer.quad(), this._depthByLayerId[layer.id()] * 20), projectionMatrix,x0, y0);
             if (t < closestIntersectionPoint) {
                 closestIntersectionPoint = t;
                 closestLayer = layer;
