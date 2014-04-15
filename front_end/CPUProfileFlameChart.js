@@ -165,53 +165,6 @@ WebInspector.CPUProfileFlameChart.OverviewCalculator.prototype = {
 
 /**
  * @constructor
- */
-WebInspector.CPUProfileFlameChart.ColorGenerator = function()
-{
-    this._colors = {};
-    this._currentColorIndex = 0;
-}
-
-WebInspector.CPUProfileFlameChart.ColorGenerator.prototype = {
-    /**
-     * @param {string} id
-     * @param {string|!CanvasGradient} color
-     */
-    setColorForID: function(id, color)
-    {
-        this._colors[id] = color;
-    },
-
-    /**
-     * @param {!string} id
-     * @param {number=} sat
-     * @return {!string}
-     */
-    colorForID: function(id, sat)
-    {
-        if (typeof sat !== "number")
-            sat = 100;
-        var color = this._colors[id];
-        if (!color) {
-            color = this._createColor(this._currentColorIndex++, sat);
-            this._colors[id] = color;
-        }
-        return color;
-    },
-
-    /**
-     * @param {!number} index
-     * @param {!number} sat
-     */
-    _createColor: function(index, sat)
-    {
-        var hue = (index * 7 + 12 * (index % 2)) % 360;
-        return "hsla(" + hue + ", " + sat + "%, 66%, 0.7)";
-    }
-}
-
-/**
- * @constructor
  * @extends {WebInspector.VBox}
  * @implements {WebInspector.FlameChartDelegate}
  * @param {!WebInspector.FlameChartDataProvider} dataProvider

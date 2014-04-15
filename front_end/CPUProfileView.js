@@ -893,18 +893,3 @@ WebInspector.CPUProfileHeader.prototype = {
 
     __proto__: WebInspector.ProfileHeader.prototype
 }
-
-/**
- * @return {!WebInspector.CPUProfileFlameChart.ColorGenerator}
- */
-WebInspector.CPUProfileView.colorGenerator = function()
-{
-    if (!WebInspector.CPUProfileView._colorGenerator) {
-        var colorGenerator = new WebInspector.CPUProfileFlameChart.ColorGenerator();
-        colorGenerator.colorForID("(idle)::0", 50);
-        colorGenerator.colorForID("(program)::0", 50);
-        colorGenerator.colorForID("(garbage collector)::0", 50);
-        WebInspector.CPUProfileView._colorGenerator = colorGenerator;
-    }
-    return WebInspector.CPUProfileView._colorGenerator;
-}

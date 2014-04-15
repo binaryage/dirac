@@ -102,7 +102,7 @@ WebInspector.CPUFlameChartDataProvider = function(cpuProfile, target)
     WebInspector.FlameChartDataProvider.call(this);
     this._cpuProfile = cpuProfile;
     this._target = target;
-    this._colorGenerator = WebInspector.CPUProfileView.colorGenerator();
+    this._colorGenerator = WebInspector.CPUFlameChartDataProvider.colorGenerator();
 }
 
 WebInspector.CPUFlameChartDataProvider.prototype = {
@@ -441,5 +441,69 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     textColor: function(entryIndex)
     {
         return "#333";
+    }
+}
+
+
+/**
+ * @return {!WebInspector.CPUFlameChartDataProvider.ColorGenerator}
+ */
+WebInspector.CPUFlameChartDataProvider.colorGenerator = function()
+{
+    if (!WebInspector.CPUFlameChartDataProvider._colorGenerator) {
+        var colorGenerator = new WebInspector.CPUFlameChartDataProvider.ColorGenerator();
+        colorGenerator.colorForID("(idle)::0", 50);
+        colorGenerator.colorForID("(program)::0", 50);
+        colorGenerator.colorForID("(garbage collector)::0", 50);
+        WebInspector.CPUFlameChartDataProvider._colorGenerator = colorGenerator;
+    }
+    return WebInspector.CPUFlameChartDataProvider._colorGenerator;
+}
+
+
+/**
+ * @constructor
+ */
+WebInspector.CPUFlameChartDataProvider.ColorGenerator = function()
+{
+    this._colors = {};
+    this._currentColorIndex = 0;
+}
+
+WebInspector.CPUFlameChartDataProvider.ColorGenerator.prototype = {
+    /**
+     * @param {string} id
+     * @param {string|!CanvasGradient} color
+     */
+    setColorForID: function(id, color)
+    {
+        this._colors[id] = color;
+    },
+
+    /**
+     * @param {!string} id
+     * @param {number=} sat
+     * @return {!string}
+     */
+    colorForID: function(id, sat)
+    {
+        if (typeof sat !== "number")
+            sat = 100;
+        var color = this._colors[id];
+        if (!color) {
+            color = this._createColor(this._currentColorIndex++, sat);
+            this._colors[id] = color;
+        }
+        return color;
+    },
+
+    /**
+     * @param {!number} index
+     * @param {!number} sat
+     */
+    _createColor: function(index, sat)
+    {
+        var hue = (index * 7 + 12 * (index % 2)) % 360;
+        return "hsla(" + hue + ", " + sat + "%, 66%, 0.7)";
     }
 }
