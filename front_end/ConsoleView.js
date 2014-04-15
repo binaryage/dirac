@@ -122,8 +122,6 @@ WebInspector.ConsoleView = function(hideContextSelector)
     if (!WebInspector.settings.allowPastingJavaScript.get() && historyData && historyData.length > 10)
         WebInspector.settings.allowPastingJavaScript.set(true);
 
-    WebInspector.targetManager.observeTargets(this);
-
     this._filterStatusMessageElement = document.createElement("div");
     this._filterStatusMessageElement.classList.add("console-message");
     this._filterStatusTextElement = this._filterStatusMessageElement.createChild("span", "console-info");
@@ -134,6 +132,8 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
     this._updateFilterStatus();
     WebInspector.settings.consoleTimestampsEnabled.addChangeListener(this._consoleTimestampsSettingChanged, this);
+
+    WebInspector.targetManager.observeTargets(this);
 }
 
 WebInspector.ConsoleView.prototype = {
