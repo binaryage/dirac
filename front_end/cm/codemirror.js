@@ -1131,7 +1131,6 @@
 
   // Set a new selection.
   function setSelection(doc, sel, options) {
-    if (options && options.origin && doc.cm) doc.cm.curOp.origin = options.origin;
     setSelectionNoUndo(doc, sel, options);
     addSelectionToHistory(doc, doc.sel, doc.cm ? doc.cm.curOp.id : NaN, options);
   }
@@ -1152,9 +1151,10 @@
 
     doc.sel = sel;
 
-    if (doc.cm)
-      doc.cm.curOp.updateInput = doc.cm.curOp.selectionChanged =
-        doc.cm.curOp.cursorActivity = true;
+    if (doc.cm) {
+      doc.cm.curOp.updateInput = doc.cm.curOp.selectionChanged = true;
+      signalCursorActivity(doc.cm);
+    }
     signalLater(doc, "cursorActivity", doc);
   }
 
@@ -1454,8 +1454,9 @@
     if (display.cachedPaddingH) return display.cachedPaddingH;
     var e = removeChildrenAndAdd(display.measure, elt("pre", "x"));
     var style = window.getComputedStyle ? window.getComputedStyle(e) : e.currentStyle;
-    return display.cachedPaddingH = {left: parseInt(style.paddingLeft),
-                                     right: parseInt(style.paddingRight)};
+    var data = {left: parseInt(style.paddingLeft), right: parseInt(style.paddingRight)};
+    if (!isNaN(data.left) && !isNaN(data.right)) display.cachedPaddingH = data;
+    return data;
   }
 
   // Ensure the lineView.wrapping.heights array is populated. This is
@@ -1889,8 +1890,7 @@
       updateInput: null,       // Whether to reset the input textarea
       typing: false,           // Whether this reset should be careful to leave existing text (for compositing)
       changeObjs: null,        // Accumulated changes, for firing change events
-      origin: null,            // Selection's origin
-      cursorActivity: false,   // Whether to fire a cursorActivity event
+      cursorActivityHandlers: null, // Set of handlers to fire cursorActivity on
       selectionChanged: false, // Whether the selection needs to be redrawn
       updateMaxLine: false,    // Set when the widest line needs to be determined anew
       scrollLeft: null, scrollTop: null, // Intermediate scroll position, not pushed to DOM yet
@@ -1955,13 +1955,12 @@
       delayedCallbacks = null;
     }
     // Fire change events, and delayed event handlers
-    if (op.changeObjs) {
-      for (var i = 0; i < op.changeObjs.length; i++)
-        signal(cm, "change", cm, op.changeObjs[i]);
+    if (op.changeObjs)
       signal(cm, "changes", cm, op.changeObjs);
-    }
-    if (op.cursorActivity) signal(cm, "cursorActivity", cm, op.origin);
     if (delayed) for (var i = 0; i < delayed.length; ++i) delayed[i]();
+    if (op.cursorActivityHandlers)
+      for (var i = 0; i < op.cursorActivityHandlers.length; i++)
+        op.cursorActivityHandlers[i](cm);
   }
 
   // Run the given function in an operation
@@ -2224,7 +2223,8 @@
     // possible when it is clear that nothing happened. hasSelection
     // will be the case when there is a lot of text in the textarea,
     // in which case reading its value would be expensive.
-    if (!cm.state.focused || hasSelection(input) || isReadOnly(cm) || cm.options.disableInput) return false;
+    if (!cm.state.focused || (hasSelection(input) && !prevInput) || isReadOnly(cm) || cm.options.disableInput)
+      return false;
     // See paste handler for more on the fakedLastChar kludge
     if (cm.state.pasteIncoming && cm.state.fakedLastChar) {
       input.value = input.value.substring(0, input.value.length - 1);
@@ -3103,7 +3103,10 @@
       signal(cm, "focus", cm);
       cm.state.focused = true;
       addClass(cm.display.wrapper, "CodeMirror-focused");
-      if (!cm.curOp) {
+      // The prevInput test prevents this from firing when a context
+      // menu is closed (since the resetInput would kill the
+      // select-all detection hack)
+      if (!cm.curOp && cm.display.prevInput != "\u200b") {
         resetInput(cm);
         if (webkit) setTimeout(bind(resetInput, cm, true), 0); // Issue #1730
       }
@@ -3172,7 +3175,7 @@
       if (display.input.selectionStart != null) {
         if (!ie || ie_upto8) prepareSelectAllHack();
         clearTimeout(detectingSelectAll);
-        var i = 0, poll = function(){
+        var i = 0, poll = function() {
           if (display.prevInput == "\u200b" && display.input.selectionStart == 0)
             operation(cm, commands.selectAll)(cm);
           else if (i++ < 10) detectingSelectAll = setTimeout(poll, 500);
@@ -3449,7 +3452,7 @@
     }
 
     if (doc.sel.contains(change.from, change.to) > -1)
-      cm.curOp.cursorActivity = true;
+      signalCursorActivity(cm);
 
     updateDoc(doc, change, spans, estimateHeight(cm));
 
@@ -3477,13 +3480,17 @@
     else
       regChange(cm, from.line, to.line + 1, lendiff);
 
-    if (hasHandler(cm, "change") || hasHandler(cm, "changes"))
-      (cm.curOp.changeObjs || (cm.curOp.changeObjs = [])).push({
+    var changesHandler = hasHandler(cm, "changes"), changeHandler = hasHandler(cm, "change");
+    if (changeHandler || changesHandler) {
+      var obj = {
         from: from, to: to,
         text: change.text,
         removed: change.removed,
         origin: change.origin
-      });
+      };
+      if (changeHandler) signalLater(cm, "change", cm, obj);
+      if (changesHandler) (cm.curOp.changeObjs || (cm.curOp.changeObjs = [])).push(obj);
+    }
   }
 
   function replaceRange(doc, code, from, to, origin) {
@@ -3914,13 +3921,16 @@
       pos = clipPos(this.doc, pos);
       var styles = getLineStyles(this, getLine(this.doc, pos.line));
       var before = 0, after = (styles.length - 1) / 2, ch = pos.ch;
-      if (ch == 0) return styles[2];
-      for (;;) {
+      var type;
+      if (ch == 0) type = styles[2];
+      else for (;;) {
         var mid = (before + after) >> 1;
         if ((mid ? styles[mid * 2 - 1] : 0) >= ch) after = mid;
         else if (styles[mid * 2 + 1] < ch) before = mid + 1;
-        else return styles[mid * 2 + 2];
+        else { type = styles[mid * 2 + 2]; break; }
       }
+      var cut = type ? type.indexOf("cm-overlay ") : -1;
+      return cut < 0 ? type : cut == 0 ? null : type.slice(0, cut - 1);
     },
 
     getModeAt: function(pos) {
@@ -5636,12 +5646,12 @@
         }
         if (!style) return;
         if (overlay.opaque) {
-          st.splice(start, i - start, end, style);
+          st.splice(start, i - start, end, "cm-overlay " + style);
           i = start + 2;
         } else {
           for (; start < i; start += 2) {
             var cur = st[start+1];
-            st[start+1] = cur ? cur + " " + style : style;
+            st[start+1] = (cur ? cur + " " : "") + "cm-overlay " + style;
           }
         }
       }, lineClasses);
@@ -6909,6 +6919,14 @@
   function signalDOMEvent(cm, e, override) {
     signal(cm, override || e.type, cm, e);
     return e_defaultPrevented(e) || e.codemirrorIgnore;
+  }
+
+  function signalCursorActivity(cm) {
+    var arr = cm._handlers && cm._handlers.cursorActivity;
+    if (!arr) return;
+    var set = cm.curOp.cursorActivityHandlers || (cm.curOp.cursorActivityHandlers = []);
+    for (var i = 0; i < arr.length; ++i) if (indexOf(set, arr[i]) == -1)
+      set.push(arr[i]);
   }
 
   function hasHandler(emitter, type) {
