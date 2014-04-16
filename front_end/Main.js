@@ -57,6 +57,8 @@ WebInspector.Main.prototype = {
             configuration = ["main", "elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "codemirror", "extensions", "settings", "search"];
             if (WebInspector.experimentsSettings.layersPanel.isEnabled())
                 configuration.push("layers");
+            if (WebInspector.experimentsSettings.devicesPanel.isEnabled() && !WebInspector.queryParam("remoteFrontend"))
+                configuration.push("devices");
         }
         WebInspector.moduleManager.registerModules(configuration);
     },
@@ -270,6 +272,7 @@ WebInspector.Main.prototype = {
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
         WebInspector.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(WebInspector.isolatedFileSystemManager);
         WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
+        WebInspector.devicesModel = new WebInspector.DevicesModel();
 
         if (Capabilities.isMainFrontend) {
             WebInspector.inspectElementModeController = new WebInspector.InspectElementModeController();

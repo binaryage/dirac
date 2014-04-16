@@ -59,6 +59,7 @@
             'front_end/DataGrid.js',
             'front_end/DebuggerModel.js',
             'front_end/DebuggerScriptMapping.js',
+            'front_end/DevicesModel.js',
             'front_end/Tests.js',
             'front_end/Dialog.js',
             'front_end/DOMModel.js',
@@ -209,6 +210,7 @@
             'front_end/cm/cmdevtools.css',
             'front_end/cm/codemirror.css',
             'front_end/dataGrid.css',
+            'front_end/devicesView.css',
             'front_end/elementsPanel.css',
             'front_end/filter.css',
             'front_end/filteredItemSelectionDialog.css',
@@ -247,6 +249,9 @@
             'front_end/FileBasedSearchResultsPane.js',
             'front_end/SearchConfig.js',
             'front_end/SourcesSearchScope.js',
+        ],
+        'devtools_devices_js_files': [
+            'front_end/DevicesView.js',
         ],
         'devtools_elements_js_files': [
             'front_end/DOMSyntaxHighlighter.js',
@@ -399,6 +404,7 @@
         'devtools_modules_js_files': [
             '<@(devtools_console_js_files)',
             '<@(devtools_search_js_files)',
+            '<@(devtools_devices_js_files)',
             '<@(devtools_elements_js_files)',
             '<@(devtools_extensions_js_files)',
             '<@(devtools_resources_js_files)',

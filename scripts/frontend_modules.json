@@ -39,11 +39,12 @@
             "CSSStyleModel.js",
             "CSSStyleSheetMapping.js",
             "BreakpointManager.js",
-            "Database.js",
             "DOMModel.js",
             "DOMStorage.js",
+            "Database.js",
             "DebuggerModel.js",
             "DebuggerScriptMapping.js",
+            "DevicesModel.js",
             "FileManager.js",
             "FileSystemMapping.js",
             "FileSystemModel.js",
@@ -266,6 +267,13 @@
             "FileBasedSearchResultsPane.js",
             "SearchConfig.js",
             "SourcesSearchScope.js"
+            ]
+    },
+    {
+        "name": "devices",
+        "dependencies": ["sdk", "ui"],
+        "sources": [
+            "DevicesView.js"
         ]
     },
     {

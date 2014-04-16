@@ -554,6 +554,20 @@ var allDescriptors = [
         scripts: [ "AdvancedSearchView.js" ]
     },
     {
+        name: "devices",
+        extensions: [
+            {
+                type: "drawer-view",
+                name: "devices",
+                title: "Devices",
+                order: "12",
+                experiment: "devicesPanel",
+                className: "WebInspector.DevicesView"
+            }
+        ],
+        scripts: [ "DevicesView.js" ]
+    },
+    {
         name: "settings",
         extensions: [
             {

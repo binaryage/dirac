@@ -191,6 +191,15 @@ var InspectorFrontendAPI = {
     },
 
     /**
+     * @param {!Array.<!Adb.Device>} targets
+     */
+    populateRemoteDevices: function(targets)
+    {
+        // FIXME: this needs to be changed for the sake of modularity.
+        WebInspector.devicesModel.populateRemoteDevices(targets);
+    },
+
+    /**
      * @param {string} url
      */
     savedURL: function(url)

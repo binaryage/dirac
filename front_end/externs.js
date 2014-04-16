@@ -221,6 +221,7 @@ InspectorFrontendHostAPI.prototype.searchInPath = function(requestId, fileSystem
 InspectorFrontendHostAPI.prototype.stopIndexing = function(requestId, callback) {}
 
 InspectorFrontendHostAPI.prototype.bringToFront = function() {}
+InspectorFrontendHostAPI.prototype.openUrlOnRemoteDeviceAndInspect = function(browserId, url) {}
 InspectorFrontendHostAPI.prototype.closeWindow = function() {}
 InspectorFrontendHostAPI.prototype.copyText = function(text) {}
 InspectorFrontendHostAPI.prototype.inspectedURLChanged = function(url) {}
@@ -235,6 +236,8 @@ InspectorFrontendHostAPI.prototype.sendMessageToEmbedder = function(message) {}
 InspectorFrontendHostAPI.prototype.setInjectedScriptForOrigin = function(origin, script) {}
 InspectorFrontendHostAPI.prototype.setIsDocked = function(isDocked) {}
 InspectorFrontendHostAPI.prototype.setZoomFactor = function(zoom) {}
+InspectorFrontendHostAPI.prototype.startRemoteDevicesListener = function() {}
+InspectorFrontendHostAPI.prototype.stopRemoteDevicesListener = function() {}
 InspectorFrontendHostAPI.prototype.zoomFactor = function() {}
 InspectorFrontendHostAPI.prototype.zoomIn = function() {}
 InspectorFrontendHostAPI.prototype.zoomOut = function() {}
@@ -248,6 +251,7 @@ var FormatterWorker = {}
 var WebInspector = {}
 
 WebInspector.panels = {};
+WebInspector.devicesModel = {};
 
 WebInspector.reload = function() { }
 

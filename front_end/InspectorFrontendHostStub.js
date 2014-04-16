@@ -226,6 +226,22 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     isUnderTest: function()
     {
         return false;
+    },
+
+    /**
+     * @param {string} browserId
+     * @param {string} url
+     */
+    openUrlOnRemoteDeviceAndInspect: function(browserId, url)
+    {
+    },
+
+    startRemoteDevicesListener: function()
+    {
+    },
+
+    stopRemoteDevicesListener: function()
+    {
     }
 }
 
