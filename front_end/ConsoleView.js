@@ -80,6 +80,13 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._messagesElement.addEventListener("click", this._messagesClicked.bind(this), true);
     this._scrolledToBottom = true;
 
+    this._filterStatusMessageElement = this._messagesElement.createChild("div", "console-message");
+    this._filterStatusTextElement = this._filterStatusMessageElement.createChild("span", "console-info");
+    this._filterStatusMessageElement.createTextChild(" ");
+    var resetFiltersLink = this._filterStatusMessageElement.createChild("span", "console-info node-link");
+    resetFiltersLink.textContent = WebInspector.UIString("Show all messages.");
+    resetFiltersLink.addEventListener("click", this._filter.reset.bind(this._filter), true);
+
     this._topGroup = new WebInspector.ConsoleGroup(null);
     this._currentGroup = this._topGroup;
     this._messagesElement.appendChild(this._topGroup.element);
@@ -123,14 +130,6 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._prompt.setHistoryData(historyData);
     if (!WebInspector.settings.allowPastingJavaScript.get() && historyData && historyData.length > 10)
         WebInspector.settings.allowPastingJavaScript.set(true);
-
-    this._filterStatusMessageElement = document.createElement("div");
-    this._filterStatusMessageElement.classList.add("console-message");
-    this._filterStatusTextElement = this._filterStatusMessageElement.createChild("span", "console-info");
-    this._filterStatusMessageElement.createTextChild(" ");
-    var resetFiltersLink = this._filterStatusMessageElement.createChild("span", "console-info node-link");
-    resetFiltersLink.textContent = WebInspector.UIString("Show all messages.");
-    resetFiltersLink.addEventListener("click", this._filter.reset.bind(this._filter), true);
 
     this._updateFilterStatus();
     WebInspector.settings.consoleTimestampsEnabled.addChangeListener(this._consoleTimestampsSettingChanged, this);
