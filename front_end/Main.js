@@ -470,7 +470,7 @@ WebInspector.Main.prototype = {
         var inspectElementModeShortcut = WebInspector.InspectElementModeController.createShortcut();
         section.addKey(inspectElementModeShortcut, WebInspector.UIString("Select node to inspect"));
 
-        var openResourceShortcut = WebInspector.KeyboardShortcut.makeDescriptor("o", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta);
+        var openResourceShortcut = WebInspector.KeyboardShortcut.makeDescriptor("p", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta);
         section.addKey(openResourceShortcut, WebInspector.UIString("Go to source"));
 
         if (WebInspector.isMac()) {
