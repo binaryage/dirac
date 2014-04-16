@@ -240,22 +240,18 @@ WebInspector.CompilerScriptMapping.prototype = {
     _debuggerReset: function()
     {
         /**
-         * @param {!WebInspector.SourceMap} sourceMap
+         * @param {string} sourceURL
          * @this {WebInspector.CompilerScriptMapping}
          */
-        function unbindUISourceCodesForSourceMap(sourceMap)
+        function unbindUISourceCodeForURL(sourceURL)
         {
-            var sourceURLs = sourceMap.sources();
-            for (var i = 0; i < sourceURLs.length; ++i) {
-                var sourceURL = sourceURLs[i];
-                var uiSourceCode = this._workspace.uiSourceCodeForURL(sourceURL);
-                if (!uiSourceCode)
-                    continue;
-                this._unbindUISourceCode(uiSourceCode);
-            }
+            var uiSourceCode = this._workspace.uiSourceCodeForURL(sourceURL);
+            if (!uiSourceCode)
+                return;
+            this._unbindUISourceCode(uiSourceCode);
         }
 
-        this._sourceMapForURL.values().forEach(unbindUISourceCodesForSourceMap.bind(this));
+        this._sourceMapForURL.keys().forEach(unbindUISourceCodeForURL.bind(this));
 
         this._sourceMapForSourceMapURL = {};
         this._pendingSourceMapLoadingCallbacks = {};
