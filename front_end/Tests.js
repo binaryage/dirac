@@ -527,11 +527,11 @@ TestSuite.prototype.testConsoleOnNavigateBack = function()
     this.takeControl();
 };
 
-
 TestSuite.prototype.testReattachAfterCrash = function()
 {
-    this.evaluateInConsole_("1+1;", this.releaseControl.bind(this));
-    this.takeControl();
+    PageAgent.navigate("about:crash");
+    PageAgent.navigate("about:blank");
+    WebInspector.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, this.releaseControl, this);
 };
 
 

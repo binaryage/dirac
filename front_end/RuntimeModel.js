@@ -49,6 +49,7 @@ WebInspector.RuntimeModel = function(target)
 WebInspector.RuntimeModel.Events = {
     ExecutionContextListAdded: "ExecutionContextListAdded",
     ExecutionContextListRemoved: "ExecutionContextListRemoved",
+    ExecutionContextCreated: "ExecutionContextCreated",
 }
 
 WebInspector.RuntimeModel.prototype = {
@@ -151,7 +152,9 @@ WebInspector.RuntimeModel.prototype = {
     {
         var contextList = this._contextListById[context.frameId];
         console.assert(contextList);
-        contextList._addExecutionContext(new WebInspector.ExecutionContext(this.target(), context.id, context.name, context.isPageContext));
+        var executionContext = new WebInspector.ExecutionContext(this.target(), context.id, context.name, context.isPageContext);
+        contextList._addExecutionContext(executionContext);
+        this.dispatchEventToListeners(WebInspector.RuntimeModel.Events.ExecutionContextCreated, executionContext)
     },
 
     /**
