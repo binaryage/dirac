@@ -92,6 +92,8 @@ WebInspector.KeyboardShortcut.Keys = {
     F11: { code: 122, name: "F11" },
     F12: { code: 123, name: "F12" },
     Semicolon: { code: 186, name: ";" },
+    NumpadPlus: { code: 107, name: "Numpad +" },
+    NumpadMinus: { code: 109, name: "Numpad -" },
     Plus: { code: 187, name: "+" },
     Comma: { code: 188, name: "," },
     Minus: { code: 189, name: "-" },

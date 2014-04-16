@@ -16,7 +16,7 @@ WebInspector.TransformController = function(element)
     element.addEventListener("mousedown", this._onMouseDown.bind(this), false);
     element.addEventListener("mouseup", this._onMouseUp.bind(this), false);
     element.addEventListener("mousewheel", this._onMouseWheel.bind(this), false);
-    this.reset();
+    this._reset();
 }
 
 /**
@@ -26,43 +26,51 @@ WebInspector.TransformController.Events = {
     TransformChanged: "TransformChanged"
 }
 
-/**
- * @enum {number}
- */
-WebInspector.TransformController.TransformType = {
-    Offset: 1 << 0,
-    Scale: 1 << 1,
-    Rotation: 1 << 2
-}
-
 WebInspector.TransformController.prototype = {
     /**
-     * @param {number} changeType
+     * @param {function(!Array.<!WebInspector.KeyboardShortcut.Descriptor>, function(?Event=))} registerShortcutDelegate
      */
-    _postChangeEvent: function(changeType)
+    registerShortcuts: function(registerShortcutDelegate)
     {
-        this.dispatchEventToListeners(WebInspector.TransformController.Events.TransformChanged, changeType);
+        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ResetView, this._resetAndNotify.bind(this));
+        var zoomFactor = 1.1;
+        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomIn, this._onKeyboardZoom.bind(this, zoomFactor));
+        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomOut, this._onKeyboardZoom.bind(this, 1 / zoomFactor));
+        var panDistanceInPixels = 6;
+        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanUp, this._onPan.bind(this, 0, -panDistanceInPixels));
+        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanDown, this._onPan.bind(this, 0, panDistanceInPixels));
+        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanLeft, this._onPan.bind(this, -panDistanceInPixels, 0));
+        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanRight, this._onPan.bind(this, panDistanceInPixels, 0));
+        var rotateDegrees = 5;
+        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCWX, this._onKeyboardRotate.bind(this, rotateDegrees, 0));
+        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCCWX, this._onKeyboardRotate.bind(this, -rotateDegrees, 0));
+        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCWY, this._onKeyboardRotate.bind(this, 0, -rotateDegrees));
+        registerShortcutDelegate(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCCWY, this._onKeyboardRotate.bind(this, 0, rotateDegrees));
     },
 
-    /**
-     * @param {?Event} event
-     */
-    _onMouseMove: function(event)
+    _postChangeEvent: function()
     {
-        if (event.which !== 1 || typeof this._originX !== "number")
-            return;
-        this._rotateX = this._oldRotateX + (this._originY - event.clientY) / 2;
-        this._rotateY = this._oldRotateY - (this._originX - event.clientX) / 4;
-        this._postChangeEvent(WebInspector.TransformController.TransformType.Rotation);
+        this.dispatchEventToListeners(WebInspector.TransformController.Events.TransformChanged);
     },
 
-    reset: function()
+    _reset: function()
     {
         this._scale = 1;
         this._offsetX = 0;
         this._offsetY = 0;
         this._rotateX = 0;
         this._rotateY = 0;
+    },
+
+    /**
+     * @param {?Event=} event
+     */
+    _resetAndNotify: function(event)
+    {
+        this._reset();
+        this._postChangeEvent();
+        if (event)
+            event.preventDefault();
     },
 
     /**
@@ -106,23 +114,84 @@ WebInspector.TransformController.prototype = {
     },
 
     /**
+     * @param {number} scaleFactor
+     * @param {number} x
+     * @param {number} y
+     */
+    _onScale: function(scaleFactor, x, y)
+    {
+        this._scale *= scaleFactor;
+        this._offsetX -= (x - this._offsetX) * (scaleFactor - 1);
+        this._offsetY -= (y - this._offsetY) * (scaleFactor - 1);
+        this._postChangeEvent();
+    },
+
+    /**
+     * @param {number} offsetX
+     * @param {number} offsetY
+     */
+    _onPan: function(offsetX, offsetY)
+    {
+        this._offsetX += offsetX;
+        this._offsetY += offsetY;
+        this._postChangeEvent();
+    },
+
+    /**
+     * @param {number} rotateX
+     * @param {number} rotateY
+     */
+    _onRotate: function(rotateX, rotateY)
+    {
+        this._rotateX = rotateX;
+        this._rotateY = rotateY;
+        this._postChangeEvent();
+    },
+
+    /**
+     * @param {number} zoomFactor
+     */
+    _onKeyboardZoom: function(zoomFactor)
+    {
+        this._onScale(zoomFactor, this.element.clientWidth / 2, this.element.clientHeight / 2);
+    },
+
+    /**
+     * @param {number} rotateX
+     * @param {number} rotateY
+     */
+    _onKeyboardRotate: function(rotateX, rotateY)
+    {
+        this._onRotate(this._rotateX + rotateX, this._rotateY + rotateY);
+    },
+
+    /**
      * @param {?Event} event
      */
     _onMouseWheel: function(event)
     {
         if (!event.altKey) {
-            const zoomFactor = 1.1;
-            const mouseWheelZoomSpeed = 1 / 120;
+            /** @const */
+            var zoomFactor = 1.1;
+            /** @const */
+            var mouseWheelZoomSpeed = 1 / 120;
             var scaleFactor = Math.pow(zoomFactor, event.wheelDeltaY * mouseWheelZoomSpeed);
-            this._scale *= scaleFactor;
-            this._offsetX -= (event.clientX - this.element.totalOffsetLeft() - this._offsetX) * (scaleFactor - 1);
-            this._offsetY -= (event.clientY - this.element.totalOffsetTop() - this._offsetY) * (scaleFactor - 1);
-            this._postChangeEvent(WebInspector.TransformController.TransformType.Scale | WebInspector.TransformController.TransformType.Offset);
+            this._onScale(scaleFactor, event.clientX - this.element.totalOffsetLeft(), event.clientY - this.element.totalOffsetTop());
         } else {
-            this._offsetX += event.wheelDeltaX;
-            this._offsetY += event.wheelDeltaY;
-            this._postChangeEvent(WebInspector.TransformController.TransformType.Offset);
+            /** @const */
+            var moveFactor = 1 / 20;
+            this._onPan(event.wheelDeltaX * moveFactor, event.wheelDeltaY * moveFactor);
         }
+    },
+
+    /**
+     * @param {?Event} event
+     */
+    _onMouseMove: function(event)
+    {
+        if (event.which !== 1 || typeof this._originX !== "number")
+            return;
+        this._onRotate(this._oldRotateX + (this._originY - event.clientY) / this.element.clientHeight * 180, this._oldRotateY - (this._originX - event.clientX) / this.element.clientWidth * 180);
     },
 
     /**

@@ -280,6 +280,23 @@ WebInspector.ShortcutsScreen.registerShortcuts = function()
     // Profiles panel
     section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Profiles Panel"));
     section.addAlternateKeys(WebInspector.ShortcutsScreen.ProfilesPanelShortcuts.StartStopRecording, WebInspector.UIString("Start/stop recording"));
+
+    // Layers panel
+    if (WebInspector.experimentsSettings.isEnabled("layersPanel")) {
+        section = WebInspector.shortcutsScreen.section(WebInspector.UIString("Layers Panel"));
+        section.addAlternateKeys(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ResetView, WebInspector.UIString("Reset view"));
+        section.addAlternateKeys(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomIn, WebInspector.UIString("Zoom in"));
+        section.addAlternateKeys(WebInspector.ShortcutsScreen.LayersPanelShortcuts.ZoomOut, WebInspector.UIString("Zoom out"));
+        var PanUpDown = WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanUp.concat(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanDown);
+        section.addRelatedKeys(PanUpDown, WebInspector.UIString("Pan up/down"));
+        var PanLeftRight = WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanLeft.concat(WebInspector.ShortcutsScreen.LayersPanelShortcuts.PanRight);
+        section.addRelatedKeys(PanLeftRight, WebInspector.UIString("Pan left/right"));
+        var rotate = WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCWX
+            .concat(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCCWX)
+            .concat(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCWY)
+            .concat(WebInspector.ShortcutsScreen.LayersPanelShortcuts.RotateCCWY);
+        section.addRelatedKeys(rotate, WebInspector.UIString("Rotate"));
+    }
 }
 
 WebInspector.ShortcutsScreen.ElementsPanelShortcuts = {
@@ -465,5 +482,53 @@ WebInspector.ShortcutsScreen.TimelinePanelShortcuts = {
 WebInspector.ShortcutsScreen.ProfilesPanelShortcuts = {
     StartStopRecording: [
         WebInspector.KeyboardShortcut.makeDescriptor("e", WebInspector.KeyboardShortcut.Modifiers.CtrlOrMeta)
+    ]
+};
+
+WebInspector.ShortcutsScreen.LayersPanelShortcuts = {
+    ResetView: [
+        WebInspector.KeyboardShortcut.makeDescriptor("0")
+    ],
+
+    ZoomIn: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Plus, WebInspector.KeyboardShortcut.Modifiers.Shift),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.NumpadPlus)
+    ],
+
+    ZoomOut: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Minus, WebInspector.KeyboardShortcut.Modifiers.Shift),
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.NumpadMinus)
+    ],
+
+    PanUp: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Up, WebInspector.KeyboardShortcut.Modifiers.Shift)
+    ],
+
+    PanDown: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Down, WebInspector.KeyboardShortcut.Modifiers.Shift)
+    ],
+
+    PanLeft: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Left, WebInspector.KeyboardShortcut.Modifiers.Shift)
+    ],
+
+    PanRight: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Right, WebInspector.KeyboardShortcut.Modifiers.Shift)
+    ],
+
+    RotateCWX: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Up),
+    ],
+
+    RotateCCWX: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Down),
+    ],
+
+    RotateCWY: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Left),
+    ],
+
+    RotateCCWY: [
+        WebInspector.KeyboardShortcut.makeDescriptor(WebInspector.KeyboardShortcut.Keys.Right),
     ]
 }

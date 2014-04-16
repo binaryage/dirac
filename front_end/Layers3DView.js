@@ -113,6 +113,14 @@ WebInspector.Layers3DView.ScrollRectBackgroundColor = [178, 0, 0, 0.4];
 WebInspector.Layers3DView.ScrollRectBorderColor = [178, 0, 0, 1];
 
 WebInspector.Layers3DView.prototype = {
+    /**
+     * @param {function(!Array.<!WebInspector.KeyboardShortcut.Descriptor>, function(?Event=))} registerShortcutDelegate
+     */
+    registerShortcuts: function(registerShortcutDelegate)
+    {
+        this._transformController.registerShortcuts(registerShortcutDelegate);
+    },
+
     onResize: function()
     {
         this._update();
@@ -595,10 +603,10 @@ WebInspector.Layers3DView.prototype = {
     {
         var layer = this._layerFromEventPoint(event);
         var node = layer ? layer.nodeForSelfOrAncestor() : null;
-        if (!node)
-            return;
         var contextMenu = new WebInspector.ContextMenu(event);
-        contextMenu.appendApplicableItems(node);
+        contextMenu.appendItem("Reset view", this._transformController._resetAndNotify.bind(this._transformController), false);
+        if (node)
+            contextMenu.appendApplicableItems(node);
         contextMenu.show();
     },
 

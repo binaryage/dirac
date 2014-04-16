@@ -64,6 +64,7 @@ WebInspector.LayersPanel = function()
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.LayerSelected, this._onLayerSelected, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.LayerHovered, this._onLayerHovered, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.LayerSnapshotRequested, this._onSnapshotRequested, this);
+    this._layers3DView.registerShortcuts(this.registerShortcuts.bind(this));
 
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.show(this._rightSplitView.sidebarElement());
