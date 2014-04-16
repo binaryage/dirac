@@ -108,7 +108,7 @@ WebInspector.CPUProfileFlameChart.OverviewCalculator.prototype = {
         this._minimumBoundaries = 0;
         var totalTime = overviewPane._dataProvider.totalTime();
         this._maximumBoundaries = totalTime;
-        this._xScaleFactor = overviewPane._overviewCanvas.width / totalTime;
+        this._xScaleFactor = overviewPane._overviewContainer.clientWidth / totalTime;
     },
 
     /**
@@ -230,13 +230,60 @@ WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
         this._resetCanvas(this._overviewContainer.clientWidth, this._overviewContainer.clientHeight - WebInspector.FlameChart.DividersBarHeight);
         this._overviewCalculator._updateBoundaries(this);
         this._overviewGrid.updateDividers(this._overviewCalculator);
-        WebInspector.CPUProfileFlameChart.OverviewPane.drawOverviewCanvas(
-            this._dataProvider,
-            timelineData,
-            this._overviewCanvas.getContext("2d"),
-            this._overviewContainer.clientWidth,
-            this._overviewContainer.clientHeight - WebInspector.FlameChart.DividersBarHeight
-        );
+        this._drawOverviewCanvas();
+    },
+
+    _drawOverviewCanvas: function()
+    {
+        var canvasWidth = this._overviewCanvas.width;
+        var canvasHeight = this._overviewCanvas.height;
+        var drawData = this._calculateDrawData(canvasWidth);
+        var context = this._overviewCanvas.getContext("2d");
+        var ratio = window.devicePixelRatio;
+        var offsetFromBottom = ratio;
+        var lineWidth = 1;
+        var yScaleFactor = canvasHeight / (this._dataProvider.maxStackDepth() * 1.1);
+        context.lineWidth = lineWidth;
+        context.translate(0.5, 0.5);
+        context.strokeStyle = "rgba(20,0,0,0.4)";
+        context.fillStyle = "rgba(214,225,254,0.8)";
+        context.moveTo(-lineWidth, canvasHeight + lineWidth);
+        context.lineTo(-lineWidth, Math.round(canvasHeight - drawData[0] * yScaleFactor - offsetFromBottom));
+        var value;
+        for (var x = 0; x < canvasWidth; ++x) {
+            value = Math.round(canvasHeight - drawData[x] * yScaleFactor - offsetFromBottom);
+            context.lineTo(x, value);
+        }
+        context.lineTo(canvasWidth + lineWidth, value);
+        context.lineTo(canvasWidth + lineWidth, canvasHeight + lineWidth);
+        context.fill();
+        context.stroke();
+        context.closePath();
+    },
+
+    /**
+     * @param {number} width
+     * @return {!Uint8Array}
+     */
+    _calculateDrawData: function(width)
+    {
+        var dataProvider = this._dataProvider;
+        var timelineData = this._timelineData();
+        var entryOffsets = timelineData.entryOffsets;
+        var entryTotalTimes = timelineData.entryTotalTimes;
+        var entryLevels = timelineData.entryLevels;
+        var length = entryOffsets.length;
+
+        var drawData = new Uint8Array(width);
+        var scaleFactor = width / dataProvider.totalTime();
+
+        for (var entryIndex = 0; entryIndex < length; ++entryIndex) {
+            var start = Math.floor(entryOffsets[entryIndex] * scaleFactor);
+            var finish = Math.floor((entryOffsets[entryIndex] + entryTotalTimes[entryIndex]) * scaleFactor);
+            for (var x = start; x <= finish; ++x)
+                drawData[x] = Math.max(drawData[x], entryLevels[entryIndex] + 1);
+        }
+        return drawData;
     },
 
     /**
@@ -248,67 +295,9 @@ WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
         var ratio = window.devicePixelRatio;
         this._overviewCanvas.width = width * ratio;
         this._overviewCanvas.height = height * ratio;
+        this._overviewCanvas.style.width = width + "px";
+        this._overviewCanvas.style.height = height + "px";
     },
 
     __proto__: WebInspector.VBox.prototype
-}
-
-/**
- * @param {!WebInspector.FlameChartDataProvider} dataProvider
- * @param {!WebInspector.FlameChart.TimelineData} timelineData
- * @param {!number} width
- */
-WebInspector.CPUProfileFlameChart.OverviewPane.calculateDrawData = function(dataProvider, timelineData, width)
-{
-    var entryOffsets = timelineData.entryOffsets;
-    var entryTotalTimes = timelineData.entryTotalTimes;
-    var entryLevels = timelineData.entryLevels;
-    var length = entryOffsets.length;
-
-    var drawData = new Uint8Array(width);
-    var scaleFactor = width / dataProvider.totalTime();
-
-    for (var entryIndex = 0; entryIndex < length; ++entryIndex) {
-        var start = Math.floor(entryOffsets[entryIndex] * scaleFactor);
-        var finish = Math.floor((entryOffsets[entryIndex] + entryTotalTimes[entryIndex]) * scaleFactor);
-        for (var x = start; x <= finish; ++x)
-            drawData[x] = Math.max(drawData[x], entryLevels[entryIndex] + 1);
-    }
-    return drawData;
-}
-
-/**
- * @param {!WebInspector.FlameChartDataProvider} dataProvider
- * @param {!WebInspector.FlameChart.TimelineData} timelineData
- * @param {!Object} context
- * @param {!number} width
- * @param {!number} height
- */
-WebInspector.CPUProfileFlameChart.OverviewPane.drawOverviewCanvas = function(dataProvider, timelineData, context, width, height)
-{
-    var ratio = window.devicePixelRatio;
-    var canvasWidth = width * ratio;
-    var canvasHeight = height * ratio;
-
-    var drawData = WebInspector.CPUProfileFlameChart.OverviewPane.calculateDrawData(dataProvider, timelineData, canvasWidth);
-    if (!drawData)
-        return;
-
-    var yScaleFactor = canvasHeight / (dataProvider.maxStackDepth() * 1.1);
-    context.lineWidth = 1;
-    context.translate(0.5, 0.5);
-    context.strokeStyle = "rgba(20,0,0,0.4)";
-    context.fillStyle = "rgba(214,225,254,0.8)";
-    context.moveTo(-1, canvasHeight - 1);
-    context.lineTo(-1, Math.round(canvasHeight - drawData[0] * yScaleFactor - 1));
-    var value;
-    for (var x = 0; x < canvasWidth; ++x) {
-        value = Math.round(canvasHeight - drawData[x] * yScaleFactor - 1);
-        context.lineTo(x, value);
-    }
-    context.lineTo(canvasWidth + 1, value);
-    context.lineTo(canvasWidth + 1, canvasHeight - 1);
-    context.fill();
-    context.stroke();
-    context.closePath();
 }
