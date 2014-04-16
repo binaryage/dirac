@@ -87,6 +87,8 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._promptElement = this._messagesElement.createChild("div", "source-code");
     this._promptElement.id = "console-prompt";
     this._promptElement.spellcheck = false;
+    this._promptElement.addEventListener("paste", this._onPasteIntoPrompt.bind(this), false);
+    this._promptElement.addEventListener("drop", this._onPasteIntoPrompt.bind(this), false);
     this._messagesElement.appendChild(this._promptElement);
     this._messagesElement.appendChild(document.createElement("br"));
 
