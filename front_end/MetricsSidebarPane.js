@@ -159,6 +159,11 @@ WebInspector.MetricsSidebarPane.prototype = {
         return { left: left, top: top, right: right, bottom: bottom };
     },
 
+    /**
+     * @param {boolean} showHighlight
+     * @param {string} mode
+     * @param {?Event} event
+     */
     _highlightDOMNode: function(showHighlight, mode, event)
     {
         event.consume();
@@ -333,7 +338,7 @@ WebInspector.MetricsSidebarPane.prototype = {
         }
 
         metricsElement.appendChild(previousBox);
-        metricsElement.addEventListener("mouseover", this._highlightDOMNode.bind(this, false, ""), false);
+        metricsElement.addEventListener("mouseover", this._highlightDOMNode.bind(this, false, "all"), false);
         this.bodyElement.removeChildren();
         this.bodyElement.appendChild(metricsElement);
     },
