@@ -76,7 +76,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
         });
         minUsedHeapSize = Math.min(minUsedHeapSize, maxUsedHeapSize);
 
-        var lineWidth = 2 * ratio;
+        var lineWidth = 1;
         var width = this._canvas.width;
         var height = this._canvas.height - lowerOffset;
         var xFactor = width / (maxTime - minTime);
@@ -97,41 +97,31 @@ WebInspector.TimelineMemoryOverview.prototype = {
         var ctx = this._context;
         var heightBeyondView = height + lowerOffset + lineWidth;
 
-        function drawGraph() {
-            ctx.beginPath();
-            ctx.moveTo(-lineWidth, heightBeyondView);
-            var y = 0;
-            var isFirstPoint = true;
-            var lastX = 0;
-            for (var x = 0; x < histogram.length; x++) {
-                if (typeof histogram[x] === "undefined")
-                    continue;
-                if (isFirstPoint) {
-                    isFirstPoint = false;
-                    y = histogram[x];
-                    ctx.lineTo(-lineWidth, height - y);
-                }
-                var nextY = histogram[x];
-                if (Math.abs(nextY - y) > 2 && Math.abs(x - lastX) > 1)
-                    ctx.lineTo(x, height - y);
-                y = nextY;
-                ctx.lineTo(x, height - y);
-                lastX = x;
+        ctx.translate(0.5, 0.5);
+        ctx.beginPath();
+        ctx.moveTo(-lineWidth, heightBeyondView);
+        var y = 0;
+        var isFirstPoint = true;
+        var lastX = 0;
+        for (var x = 0; x < histogram.length; x++) {
+            if (typeof histogram[x] === "undefined")
+                continue;
+            if (isFirstPoint) {
+                isFirstPoint = false;
+                y = histogram[x];
+                ctx.lineTo(-lineWidth, height - y);
             }
-            ctx.lineTo(width + lineWidth, height - y);
-            ctx.lineTo(width + lineWidth, heightBeyondView);
-            ctx.closePath();
+            var nextY = histogram[x];
+            if (Math.abs(nextY - y) > 2 && Math.abs(x - lastX) > 1)
+                ctx.lineTo(x, height - y);
+            y = nextY;
+            ctx.lineTo(x, height - y);
+            lastX = x;
         }
+        ctx.lineTo(width + lineWidth, height - y);
+        ctx.lineTo(width + lineWidth, heightBeyondView);
+        ctx.closePath();
 
-        ctx.save();
-        ctx.translate(0, 2 * ratio);
-        drawGraph();
-        ctx.lineWidth = lineWidth;
-        ctx.strokeStyle = "rgba(0, 0, 0, 0.1)";
-        ctx.stroke();
-        ctx.restore();
-
-        drawGraph();
         ctx.fillStyle = "hsla(220, 90%, 70%, 0.2)";
         ctx.fill();
         ctx.lineWidth = lineWidth;
