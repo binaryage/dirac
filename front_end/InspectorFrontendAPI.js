@@ -257,11 +257,6 @@ var InspectorFrontendAPI = {
     // Testing harness support
     //////////////////////////
 
-    evaluateForTest: function(callId, script)
-    {
-        WebInspector.evaluateForTestInFrontend(callId, script);
-    },
-
     dispatchMessageAsync: function(messageObject)
     {
         WebInspector.dispatch(messageObject);
