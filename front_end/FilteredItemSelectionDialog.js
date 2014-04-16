@@ -118,7 +118,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     {
         if (!this._delegate.itemCount())
             return;
-        var selectedIndex = this._selectedIndexInFiltered < this._filteredItems.length ? this._filteredItems[this._selectedIndexInFiltered] : null;
+        var selectedIndex = this._shouldShowMatchingItems() && this._selectedIndexInFiltered < this._filteredItems.length ? this._filteredItems[this._selectedIndexInFiltered] : null;
         this._delegate.selectItem(selectedIndex, this._promptElement.value.trim());
     },
 
