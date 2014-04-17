@@ -87,7 +87,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     resetFiltersLink.textContent = WebInspector.UIString("Show all messages.");
     resetFiltersLink.addEventListener("click", this._filter.reset.bind(this._filter), true);
 
-    this._topGroup = new WebInspector.ConsoleGroup(null);
+    this._topGroup = new WebInspector.ConsoleGroup(null, null);
     this._currentGroup = this._topGroup;
     this._messagesElement.appendChild(this._topGroup.element);
 
@@ -457,19 +457,12 @@ WebInspector.ConsoleView.prototype = {
 
         this._visibleViewMessages.push(viewMessage);
 
-        if (message.type === WebInspector.ConsoleMessage.MessageType.EndGroup) {
-            var parentGroup = this._currentGroup.parentGroup;
-            if (parentGroup)
-                this._currentGroup = parentGroup;
-        } else {
-            if (message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed) {
-                var group = new WebInspector.ConsoleGroup(this._currentGroup);
-                this._currentGroup._messagesElement.appendChild(group.element);
-                this._currentGroup = group;
-                viewMessage.group = group;
-            }
+        if (message.type === WebInspector.ConsoleMessage.MessageType.EndGroup)
+            this._currentGroup = this._currentGroup.parentGroup() || this._currentGroup;
+        else if (message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed)
+            this._currentGroup = this._currentGroup.createChildGroup(viewMessage);
+        else
             this._currentGroup.addMessage(viewMessage);
-        }
 
         if (this._searchRegex && viewMessage.matchesRegex(this._searchRegex)) {
             this._searchResults.push(viewMessage);
@@ -588,7 +581,7 @@ WebInspector.ConsoleView.prototype = {
 
     _updateMessageList: function()
     {
-        var group = this._topGroup;
+        var currentGroup = this._topGroup;
         var visibleMessageIndex = 0;
         var newVisibleMessages = [];
         this._hiddenByFilterCount = 0;
@@ -623,13 +616,14 @@ WebInspector.ConsoleView.prototype = {
                     this._searchResults.push(visibleViewMessage);
 
                 if (visibleMessage.type === WebInspector.ConsoleMessage.MessageType.EndGroup) {
-                    anchor = group.element;
-                    group = group.parentGroup || group;
+                    anchor = currentGroup.element;
+                    currentGroup = currentGroup.parentGroup() || currentGroup;
                 } else if (visibleMessage.type === WebInspector.ConsoleMessage.MessageType.StartGroup || visibleMessage.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed) {
-                    group = visibleViewMessage.group;
-                    anchor = group._messagesElement.firstChild;
-                } else
+                    currentGroup = visibleViewMessage._group;
+                    anchor = currentGroup._messagesElement.firstChild;
+                } else {
                     anchor = visibleViewMessage.toMessageElement();
+                }
             } else {
                 if (this._tryToCollapseMessages(sourceMessage, lastVisibleViewMessage))
                     continue;
@@ -642,7 +636,7 @@ WebInspector.ConsoleView.prototype = {
                 if (this._searchRegex && sourceViewMessage.matchesRegex(this._searchRegex))
                     this._searchResults.push(sourceViewMessage);
 
-                group.addMessage(sourceViewMessage, anchor ? anchor.nextSibling : group._messagesElement.firstChild);
+                currentGroup.addMessage(sourceViewMessage, anchor ? anchor.nextSibling : currentGroup._messagesElement.firstChild);
                 newVisibleMessages.push(sourceViewMessage);
                 sourceViewMessage.resetIncrementRepeatCount();
                 anchor = sourceViewMessage.toMessageElement();
@@ -1167,29 +1161,50 @@ WebInspector.ConsoleCommandResult.prototype = {
 /**
  * @constructor
  * @param {?WebInspector.ConsoleGroup} parentGroup
+ * @param {?WebInspector.ConsoleViewMessage} groupMessage
  */
-WebInspector.ConsoleGroup = function(parentGroup)
+WebInspector.ConsoleGroup = function(parentGroup, groupMessage)
 {
-    this.parentGroup = parentGroup;
+    this._parentGroup = parentGroup;
 
-    var element = document.createElement("div");
-    element.className = "console-group";
-    element.group = this;
-    this.element = element;
+    this.element = document.createElement("div");
+    this.element.className = "console-group";
+    this.element.group = this;
+    if (parentGroup)
+        this.element.createChild("div", "console-group-bracket");
 
-    if (parentGroup) {
-        var bracketElement = document.createElement("div");
-        bracketElement.className = "console-group-bracket";
-        element.appendChild(bracketElement);
+    if (groupMessage) {
+        groupMessage._group = this;
+        this._titleElement = groupMessage.toMessageElement();
+        this.element.appendChild(this._titleElement);
+        this._titleElement.addEventListener("click", this._titleClicked.bind(this), false);
+        if (groupMessage.consoleMessage().type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed)
+            this.element.classList.add("collapsed");
     }
 
-    var messagesElement = document.createElement("div");
-    messagesElement.className = "console-group-messages";
-    element.appendChild(messagesElement);
-    this._messagesElement = messagesElement;
+    this._messagesElement = this.element.createChild("div", "console-group-messages");
 }
 
 WebInspector.ConsoleGroup.prototype = {
+    /**
+     * @param {!WebInspector.ConsoleViewMessage} viewMessage
+     * @return {!WebInspector.ConsoleGroup}
+     */
+    createChildGroup: function(viewMessage)
+    {
+        var group = new WebInspector.ConsoleGroup(this, viewMessage);
+        this._messagesElement.appendChild(group.element);
+        return group;
+    },
+
+    /**
+     * @return {?WebInspector.ConsoleGroup}
+     */
+    parentGroup: function()
+    {
+        return this._parentGroup;
+    },
+
     /**
      * @param {!WebInspector.ConsoleViewMessage} viewMessage
      * @param {!Node=} node
@@ -1198,34 +1213,21 @@ WebInspector.ConsoleGroup.prototype = {
     {
         var message = viewMessage.consoleMessage();
         var element = viewMessage.toMessageElement();
-
-        if (message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed) {
-            this._messagesElement.parentNode.insertBefore(element, this._messagesElement);
-            element.addEventListener("click", this._titleClicked.bind(this), false);
-            var groupElement = element.enclosingNodeOrSelfWithClass("console-group");
-            if (groupElement && message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed)
-                groupElement.classList.add("collapsed");
-        } else {
-            this._messagesElement.insertBefore(element, node || null);
-            viewMessage.wasShown();
-        }
+        this._messagesElement.insertBefore(element, node || null);
+        viewMessage.wasShown();
 
         if (element.previousSibling && viewMessage.originatingCommand && element.previousSibling.command === viewMessage.originatingCommand)
             element.previousSibling.classList.add("console-adjacent-user-command-result");
     },
 
+    /**
+     * @param {?Event} event
+     */
     _titleClicked: function(event)
     {
-        var groupTitleElement = event.target.enclosingNodeOrSelfWithClass("console-group-title");
-        if (groupTitleElement) {
-            var groupElement = groupTitleElement.enclosingNodeOrSelfWithClass("console-group");
-            if (groupElement && !groupElement.classList.toggle("collapsed")) {
-                if (groupElement.group) {
-                    groupElement.group.wasShown();
-                }
-            }
-            groupTitleElement.scrollIntoViewIfNeeded(true);
-        }
+        if (!this.element.classList.toggle("collapsed"))
+            this.wasShown();
+        this._titleElement.scrollIntoViewIfNeeded(true);
         event.consume(true);
     },
 
