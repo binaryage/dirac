@@ -1381,7 +1381,7 @@ WebInspector.CodeMirrorTextEditor.TokenHighlighter.prototype = {
         if (stream.column() === 0)
             delete this._searchMatchLength;
         if (this._searchMatchLength) {
-            if (this._searchMatchLength > 1) {
+            if (this._searchMatchLength > 2) {
                 for (var i = 0; i < this._searchMatchLength - 2; ++i)
                     stream.next();
                 this._searchMatchLength = 1;
