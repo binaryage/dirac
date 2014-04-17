@@ -242,6 +242,7 @@ WebInspector.Main.prototype = {
             WebInspector.setToolbarColors(WebInspector.queryParam("toolbarColor"), WebInspector.queryParam("textColor"));
 
         WebInspector.targetManager = new WebInspector.TargetManager();
+        this._executionContextSelector = new WebInspector.ExecutionContextSelector();
         WebInspector.targetManager.createTarget(connection, this._doLoadedDoneWithCapabilities.bind(this));
     },
 

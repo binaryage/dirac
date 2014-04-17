@@ -67,22 +67,6 @@ WebInspector.RuntimeModel.prototype = {
     },
 
     /**
-     * @param {?WebInspector.ExecutionContext} executionContext
-     */
-    setCurrentExecutionContext: function(executionContext)
-    {
-        this._currentExecutionContext = executionContext;
-    },
-
-    /**
-     * @return {?WebInspector.ExecutionContext}
-     */
-    currentExecutionContext: function()
-    {
-        return this._currentExecutionContext;
-    },
-
-    /**
      * @return {!Array.<!WebInspector.ExecutionContextList>}
      */
     contextLists: function()
@@ -104,7 +88,7 @@ WebInspector.RuntimeModel.prototype = {
      */
     _frameAdded: function(event)
     {
-        console.assert(!this.target().isWorkerTarget() ,"Frame was added in a worker target.t");
+        console.assert(!this.target().isWorkerTarget() ,"Frame was added in a worker target.");
         var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
         var contextList = new WebInspector.FrameExecutionContextList(this.target(), frame);
         this._addContextList(contextList);
@@ -152,10 +136,113 @@ WebInspector.RuntimeModel.prototype = {
     {
         var contextList = this._contextListById[context.frameId];
         console.assert(contextList);
-        var executionContext = new WebInspector.ExecutionContext(this.target(), context.id, context.name, context.isPageContext);
+        var executionContext = new WebInspector.ExecutionContext(this.target(), context.id, context.name, context.isPageContext, context.frameId);
         contextList._addExecutionContext(executionContext);
-        this.dispatchEventToListeners(WebInspector.RuntimeModel.Events.ExecutionContextCreated, executionContext)
+        this.dispatchEventToListeners(WebInspector.RuntimeModel.Events.ExecutionContextCreated, executionContext);
     },
+
+    /**
+     * @return {!WebInspector.RemoteObject}
+     */
+    createRemoteObject: function(payload)
+    {
+        console.assert(typeof payload === "object", "Remote object payload should only be an object");
+        return new WebInspector.RemoteObjectImpl(this.target(), payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
+    },
+
+    /**
+     * @param {number|string|boolean} value
+     * @return {!WebInspector.RemoteObject}
+     */
+    createRemoteObjectFromPrimitiveValue: function(value)
+    {
+        return new WebInspector.RemoteObjectImpl(this.target(), undefined, typeof value, undefined, value);
+    },
+
+    /**
+     * @param {string} name
+     * @param {string} value
+     * @return {!WebInspector.RemoteObjectProperty}
+     */
+    createRemotePropertyFromPrimitiveValue: function(name, value)
+    {
+        return new WebInspector.RemoteObjectProperty(name, this.createRemoteObjectFromPrimitiveValue(value));
+    },
+
+    /**
+     * @param {!RuntimeAgent.RemoteObject} payload
+     * @param {!WebInspector.ScopeRef=} scopeRef
+     * @return {!WebInspector.RemoteObject}
+     */
+    createScopedObject: function(payload, scopeRef)
+    {
+        if (scopeRef)
+            return new WebInspector.ScopeRemoteObject(this.target(), payload.objectId, scopeRef, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
+        else
+            return new WebInspector.RemoteObjectImpl(this.target(), payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
+    },
+
+    __proto__: WebInspector.TargetAwareObject.prototype
+}
+
+/**
+ * @constructor
+ * @implements {RuntimeAgent.Dispatcher}
+ * @param {!WebInspector.RuntimeModel} runtimeModel
+ */
+WebInspector.RuntimeDispatcher = function(runtimeModel)
+{
+    this._runtimeModel = runtimeModel;
+}
+
+WebInspector.RuntimeDispatcher.prototype = {
+    executionContextCreated: function(context)
+    {
+        this._runtimeModel._executionContextCreated(context);
+    },
+
+    executionContextDestroyed: function(executionContextId)
+    {
+
+    }
+
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.TargetAware}
+ * @param {!WebInspector.Target} target
+ * @param {number|undefined} id
+ * @param {string} name
+ * @param {boolean} isPageContext
+ * @param {string=} frameId
+ */
+WebInspector.ExecutionContext = function(target, id, name, isPageContext, frameId)
+{
+    WebInspector.TargetAware.call(this, target);
+    this.id = id;
+    this.name = (isPageContext && !name) ? "<page context>" : name;
+    this.isMainWorldContext = isPageContext;
+    this._debuggerModel = target.debuggerModel;
+    this.frameId = frameId;
+}
+
+/**
+ * @param {!WebInspector.ExecutionContext} a
+ * @param {!WebInspector.ExecutionContext} b
+ * @return {number}
+ */
+WebInspector.ExecutionContext.comparator = function(a, b)
+{
+    // Main world context should always go first.
+    if (a.isMainWorldContext)
+        return -1;
+    if (b.isMainWorldContext)
+        return +1;
+    return a.name.localeCompare(b.name);
+}
+
+WebInspector.ExecutionContext.prototype = {
 
     /**
      * @param {string} expression
@@ -168,6 +255,7 @@ WebInspector.RuntimeModel.prototype = {
      */
     evaluate: function(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback)
     {
+        //FIXME: It will be moved to separate ExecutionContext
         if (this._debuggerModel.selectedCallFrame()) {
             this._debuggerModel.evaluateOnSelectedCallFrame(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, returnByValue, generatePreview, callback);
             return;
@@ -179,7 +267,7 @@ WebInspector.RuntimeModel.prototype = {
         }
 
         /**
-         * @this {WebInspector.RuntimeModel}
+         * @this {WebInspector.ExecutionContext}
          * @param {?Protocol.Error} error
          * @param {!RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
@@ -196,7 +284,7 @@ WebInspector.RuntimeModel.prototype = {
             else
                 callback(this.target().runtimeModel.createRemoteObject(result), !!wasThrown);
         }
-        this._agent.evaluate(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, this._currentExecutionContext ? this._currentExecutionContext.id : undefined, returnByValue, generatePreview, evalCallback.bind(this));
+        this.target().runtimeAgent().evaluate(expression, objectGroup, includeCommandLineAPI, doNotPauseOnExceptionsAndMuteConsole, this.id, returnByValue, generatePreview, evalCallback.bind(this));
     },
 
     /**
@@ -247,7 +335,7 @@ WebInspector.RuntimeModel.prototype = {
             this.evaluate(expressionString, "completion", true, true, false, false, evaluated.bind(this));
 
         /**
-         * @this {WebInspector.RuntimeModel}
+         * @this {WebInspector.ExecutionContext}
          */
         function evaluated(result, wasThrown)
         {
@@ -259,7 +347,7 @@ WebInspector.RuntimeModel.prototype = {
             /**
              * @param {string} primitiveType
              * @suppressReceiverCheck
-             * @this {WebInspector.RuntimeModel}
+             * @this {WebInspector.ExecutionContext}
              */
             function getCompletions(primitiveType)
             {
@@ -295,7 +383,7 @@ WebInspector.RuntimeModel.prototype = {
          * @param {?WebInspector.RemoteObject} notRelevant
          * @param {boolean} wasThrown
          * @param {?RuntimeAgent.RemoteObject=} result
-         * @this {WebInspector.RuntimeModel}
+         * @this {WebInspector.ExecutionContext}
          */
         function receivedPropertyNamesFromEval(notRelevant, wasThrown, result)
         {
@@ -306,11 +394,11 @@ WebInspector.RuntimeModel.prototype = {
         }
 
         /**
-         * @this {WebInspector.RuntimeModel}
+         * @this {WebInspector.ExecutionContext}
          */
         function receivedPropertyNames(propertyNames)
         {
-            this._agent.releaseObjectGroup("completion");
+            this.target().runtimeAgent().releaseObjectGroup("completion");
             if (!propertyNames) {
                 completionsReadyCallback([]);
                 return;
@@ -373,113 +461,6 @@ WebInspector.RuntimeModel.prototype = {
             results.push(property);
         }
         completionsReadyCallback(results);
-    },
-
-    /**
-     * @return {!WebInspector.RemoteObject}
-     */
-    createRemoteObject: function(payload)
-    {
-        console.assert(typeof payload === "object", "Remote object payload should only be an object");
-        return new WebInspector.RemoteObjectImpl(this.target(), payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
-    },
-
-    /**
-     * @param {number|string|boolean} value
-     * @return {!WebInspector.RemoteObject}
-     */
-    createRemoteObjectFromPrimitiveValue: function(value)
-    {
-        return new WebInspector.RemoteObjectImpl(this.target(), undefined, typeof value, undefined, value);
-    },
-
-    /**
-     * @param {string} name
-     * @param {string} value
-     * @return {!WebInspector.RemoteObjectProperty}
-     */
-    createRemotePropertyFromPrimitiveValue: function(name, value)
-    {
-        return new WebInspector.RemoteObjectProperty(name, this.createRemoteObjectFromPrimitiveValue(value));
-    },
-
-    /**
-     * @param {!RuntimeAgent.RemoteObject} payload
-     * @param {!WebInspector.ScopeRef=} scopeRef
-     * @return {!WebInspector.RemoteObject}
-     */
-    createScopedObject: function(payload, scopeRef)
-    {
-        if (scopeRef)
-            return new WebInspector.ScopeRemoteObject(this.target(), payload.objectId, scopeRef, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
-        else
-            return new WebInspector.RemoteObjectImpl(this.target(), payload.objectId, payload.type, payload.subtype, payload.value, payload.description, payload.preview);
-    },
-
-    __proto__: WebInspector.TargetAwareObject.prototype
-}
-
-/**
- * @type {!WebInspector.RuntimeModel}
- */
-WebInspector.runtimeModel;
-
-/**
- * @constructor
- * @implements {RuntimeAgent.Dispatcher}
- * @param {!WebInspector.RuntimeModel} runtimeModel
- */
-WebInspector.RuntimeDispatcher = function(runtimeModel)
-{
-    this._runtimeModel = runtimeModel;
-}
-
-WebInspector.RuntimeDispatcher.prototype = {
-    executionContextCreated: function(context)
-    {
-        this._runtimeModel._executionContextCreated(context);
-    },
-
-    executionContextDestroyed: function (executionContextId)
-    {
-    }
-}
-
-/**
- * @constructor
- * @extends {WebInspector.TargetAware}
- * @param {!WebInspector.Target} target
- * @param {number} id
- * @param {string} name
- * @param {boolean} isPageContext
- */
-WebInspector.ExecutionContext = function(target, id, name, isPageContext)
-{
-    WebInspector.TargetAware.call(this, target);
-    this.id = id;
-    this.name = (isPageContext && !name) ? "<page context>" : name;
-    this.isMainWorldContext = isPageContext;
-}
-
-/**
- * @param {!WebInspector.ExecutionContext} a
- * @param {!WebInspector.ExecutionContext} b
- * @return {number}
- */
-WebInspector.ExecutionContext.comparator = function(a, b)
-{
-    // Main world context should always go first.
-    if (a.isMainWorldContext)
-        return -1;
-    if (b.isMainWorldContext)
-        return +1;
-    return a.name.localeCompare(b.name);
-}
-
-WebInspector.ExecutionContext.prototype = {
-    makeCurrent: function()
-    {
-        this.target().runtimeModel.setCurrentExecutionContext(this);
     },
 
     __proto__: WebInspector.TargetAware.prototype
@@ -671,3 +652,8 @@ WebInspector.WorkerExecutionContextList.prototype = {
 
     __proto__: WebInspector.ExecutionContextList.prototype
 }
+
+/**
+ * @type {!WebInspector.RuntimeModel}
+ */
+WebInspector.runtimeModel;

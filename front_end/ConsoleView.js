@@ -120,7 +120,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     /** @type {!Array.<!WebInspector.ConsoleMessage>} */
     this._consoleMessages = [];
 
-    this._prompt = new WebInspector.TextPromptWithHistory(this._completionsForTextPrompt.bind(this));
+    this._prompt = new WebInspector.TextPromptWithHistory(WebInspector.ExecutionContextSelector.completionsForTextPromptInCurrentContext);
     this._prompt.setSuggestBoxEnabled("generic-suggest");
     this._prompt.renderAsBlock();
     this._prompt.attach(this._promptElement);
@@ -258,8 +258,7 @@ WebInspector.ConsoleView.prototype = {
     _executionContextChanged: function()
     {
         var newContext = this._currentExecutionContext();
-        if (newContext)
-            newContext.makeCurrent();
+        WebInspector.context.setFlavor(WebInspector.ExecutionContext, newContext);
         this._prompt.clearAutoComplete(true);
         if (!this._showAllMessagesCheckbox.checked())
             this._updateMessageList();
@@ -272,30 +271,6 @@ WebInspector.ConsoleView.prototype = {
     {
         var option = this._executionContextSelector.selectedOption();
         return option ? option._executionContext : null;
-    },
-
-    /**
-     * @return {?WebInspector.Target}
-     */
-    _currentTarget: function()
-    {
-        return WebInspector.targetManager.activeTarget();
-    },
-
-    /**
-     * @param {!Element} proxyElement
-     * @param {!Range} wordRange
-     * @param {boolean} force
-     * @param {function(!Array.<string>, number=)} completionsReadyCallback
-     */
-    _completionsForTextPrompt: function(proxyElement, wordRange, force, completionsReadyCallback)
-    {
-        var target = this._currentTarget();
-        if (!target) {
-            completionsReadyCallback([]);
-            return;
-        }
-        target.runtimeModel.completionsForTextPrompt(proxyElement, wordRange, force, completionsReadyCallback);
     },
 
     /**
@@ -322,7 +297,7 @@ WebInspector.ConsoleView.prototype = {
      */
     _contextListChanged: function(contextList)
     {
-        var currentExecutionContext = this._currentExecutionContext();
+        var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         var shouldSelectOption = this._removeSubOptions(contextList.id());
 
         var topLevelOption = this._topLevelOptionByContextListId[contextList.id()];
@@ -840,10 +815,11 @@ WebInspector.ConsoleView.prototype = {
      */
     _appendCommand: function(text, useCommandLineAPI)
     {
+
         this._prompt.text = "";
-        var target = this._currentTarget();
-        if (target)
-            target.consoleModel.evaluateCommand(text, useCommandLineAPI);
+        var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        if (currentExecutionContext)
+            WebInspector.ConsoleModel.evaluateCommandInConsole(currentExecutionContext, text, useCommandLineAPI);
     },
 
     /**
@@ -1026,8 +1002,8 @@ WebInspector.ConsoleViewFilter.prototype = {
      */
     shouldBeVisible: function(message)
     {
-        var executionContext = this._view._currentExecutionContext();
-        if (!this._view._showAllMessagesCheckbox.checked() && (message.target() !== executionContext.target() || message.executionContextId !== executionContext.id))
+        var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        if (!this._view._showAllMessagesCheckbox.checked() && executionContext && (message.target() !== executionContext.target() || message.executionContextId !== executionContext.id))
             return false;
 
         if ((message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed || message.type === WebInspector.ConsoleMessage.MessageType.EndGroup))

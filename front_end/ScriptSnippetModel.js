@@ -200,9 +200,10 @@ WebInspector.ScriptSnippetModel.prototype = {
     },
 
     /**
+     * @param {!WebInspector.ExecutionContext} executionContext
      * @param {!WebInspector.UISourceCode} uiSourceCode
      */
-    evaluateScriptSnippet: function(uiSourceCode)
+    evaluateScriptSnippet: function(executionContext, uiSourceCode)
     {
         var breakpointLocations = this._removeBreakpoints(uiSourceCode);
         this._releaseSnippetScript(uiSourceCode);
@@ -214,17 +215,17 @@ WebInspector.ScriptSnippetModel.prototype = {
         var expression = uiSourceCode.workingCopy();
         
         WebInspector.console.show();
-        var executionContext = WebInspector.runtimeModel.currentExecutionContext();
-        var executionContextId = executionContext ? executionContext.id : undefined;
-        DebuggerAgent.compileScript(expression, evaluationUrl, executionContextId, compileCallback.bind(this));
+        var target = executionContext.target();
+        target.debuggerAgent().compileScript(expression, evaluationUrl, executionContext.id, compileCallback.bind(this, target));
 
         /**
+         * @param {!WebInspector.Target} target
          * @param {?string} error
          * @param {string=} scriptId
          * @param {string=} syntaxErrorMessage
          * @this {WebInspector.ScriptSnippetModel}
          */
-        function compileCallback(error, scriptId, syntaxErrorMessage)
+        function compileCallback(target, error, scriptId, syntaxErrorMessage)
         {
             if (!uiSourceCode || uiSourceCode._evaluationIndex !== evaluationIndex)
                 return;
@@ -236,54 +237,57 @@ WebInspector.ScriptSnippetModel.prototype = {
 
             if (!scriptId) {
                 var consoleMessage = new WebInspector.ConsoleMessage(
-                        WebInspector.console.target(),
+                        target,
                         WebInspector.ConsoleMessage.MessageSource.JS,
                         WebInspector.ConsoleMessage.MessageLevel.Error,
                         syntaxErrorMessage || "");
-                WebInspector.console.addMessage(consoleMessage);
+                target.consoleModel.addMessage(consoleMessage);
                 return;
             }
 
             var breakpointLocations = this._removeBreakpoints(uiSourceCode);
             this._restoreBreakpoints(uiSourceCode, breakpointLocations);
 
-            this._runScript(scriptId, executionContextId);
+            this._runScript(scriptId, executionContext);
         }
     },
 
     /**
      * @param {!DebuggerAgent.ScriptId} scriptId
-     * @param {number=} executionContextId
+     * @param {!WebInspector.ExecutionContext} executionContext
      */
-    _runScript: function(scriptId, executionContextId)
+    _runScript: function(scriptId, executionContext)
     {
-        DebuggerAgent.runScript(scriptId, executionContextId, "console", false, runCallback.bind(this));
+        var target = executionContext.target();
+        target.debuggerAgent().runScript(scriptId, executionContext.id, "console", false, runCallback.bind(this, target));
 
         /**
+         * @param {!WebInspector.Target} target
          * @param {?string} error
          * @param {?RuntimeAgent.RemoteObject} result
          * @param {boolean=} wasThrown
          * @this {WebInspector.ScriptSnippetModel}
          */
-        function runCallback(error, result, wasThrown)
+        function runCallback(target, error, result, wasThrown)
         {
             if (error) {
                 console.error(error);
                 return;
             }
 
-            this._printRunScriptResult(result, wasThrown);
+            this._printRunScriptResult(target, result, wasThrown);
         }
     },
 
     /**
+     * @param {!WebInspector.Target} target
      * @param {?RuntimeAgent.RemoteObject} result
      * @param {boolean=} wasThrown
      */
-    _printRunScriptResult: function(result, wasThrown)
+    _printRunScriptResult: function(target, result, wasThrown)
     {
         var level = (wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log);
-        var message = new WebInspector.ConsoleMessage(WebInspector.console.target(),
+        var message = new WebInspector.ConsoleMessage(target,
             WebInspector.ConsoleMessage.MessageSource.JS,
             level,
             "",
@@ -293,7 +297,7 @@ WebInspector.ScriptSnippetModel.prototype = {
             undefined,
             undefined,
             [result]);
-        WebInspector.console.addMessage(message);
+        target.consoleModel.addMessage(message);
     },
 
     /**

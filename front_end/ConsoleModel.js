@@ -94,46 +94,9 @@ WebInspector.ConsoleModel.prototype = {
         this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.MessageAdded, msg);
     },
 
-    /**
-     * @param {string} text
-     * @param {boolean} useCommandLineAPI
-     */
-    evaluateCommand: function(text, useCommandLineAPI)
-    {
-        this.show();
-
-        var commandMessage = new WebInspector.ConsoleMessage(this.target(), WebInspector.ConsoleMessage.MessageSource.JS, null, text, WebInspector.ConsoleMessage.MessageType.Command);
-        this.addMessage(commandMessage);
-
-        /**
-         * @param {?WebInspector.RemoteObject} result
-         * @param {boolean} wasThrown
-         * @param {?RuntimeAgent.RemoteObject=} valueResult
-         * @this {WebInspector.ConsoleModel}
-         */
-        function printResult(result, wasThrown, valueResult)
-        {
-            if (!result)
-                return;
-
-            this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.CommandEvaluated, {result: result, wasThrown: wasThrown, text: text, commandMessage: commandMessage});
-        }
-        this.target().runtimeModel.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult.bind(this));
-
-        WebInspector.userMetrics.ConsoleEvaluated.record();
-    },
-
     show: function()
     {
         WebInspector.Revealer.reveal(this);
-    },
-
-    /**
-     * @param {string} expression
-     */
-    evaluate: function(expression)
-    {
-        this.evaluateCommand(expression, false);
     },
 
     /**
@@ -194,6 +157,39 @@ WebInspector.ConsoleModel.prototype = {
 
     __proto__: WebInspector.TargetAwareObject.prototype
 }
+
+/**
+ * @param {!WebInspector.ExecutionContext} executionContext
+ * @param {string} text
+ * @param {boolean=} useCommandLineAPI
+ */
+WebInspector.ConsoleModel.evaluateCommandInConsole = function(executionContext, text, useCommandLineAPI)
+{
+    useCommandLineAPI = !!useCommandLineAPI;
+    var target = executionContext.target();
+
+    var commandMessage = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.JS, null, text, WebInspector.ConsoleMessage.MessageType.Command);
+    target.consoleModel.addMessage(commandMessage);
+
+    /**
+     * @param {?WebInspector.RemoteObject} result
+     * @param {boolean} wasThrown
+     * @param {?RuntimeAgent.RemoteObject=} valueResult
+     * @this {WebInspector.ConsoleModel}
+     */
+    function printResult(result, wasThrown, valueResult)
+    {
+        if (!result)
+            return;
+
+        this.dispatchEventToListeners(WebInspector.ConsoleModel.Events.CommandEvaluated, {result: result, wasThrown: wasThrown, text: text, commandMessage: commandMessage});
+    }
+
+    executionContext.evaluate(text, "console", useCommandLineAPI, false, false, true, printResult.bind(target.consoleModel));
+
+    WebInspector.userMetrics.ConsoleEvaluated.record();
+},
+
 
 /**
  * @constructor
@@ -307,7 +303,7 @@ WebInspector.ConsoleMessage.prototype = {
             }
         }
 
-        return (this.target() == msg.target())
+        return (this.target() === msg.target())
             && (this.source === msg.source)
             && (this.type === msg.type)
             && (this.level === msg.level)
@@ -315,7 +311,7 @@ WebInspector.ConsoleMessage.prototype = {
             && (this.url === msg.url)
             && (this.messageText === msg.messageText)
             && (this.request === msg.request)
-            && (this.executionContextId == msg.executionContextId);
+            && (this.executionContextId === msg.executionContextId);
     },
 
     __proto__: WebInspector.TargetAware.prototype

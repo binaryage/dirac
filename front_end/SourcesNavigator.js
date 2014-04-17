@@ -171,9 +171,10 @@ WebInspector.SnippetsNavigatorView.prototype = {
      */
     _handleEvaluateSnippet: function(uiSourceCode)
     {
-        if (uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets)
+        var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        if (uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets || !executionContext)
             return;
-        WebInspector.scriptSnippetModel.evaluateScriptSnippet(uiSourceCode);
+        WebInspector.scriptSnippetModel.evaluateScriptSnippet(executionContext, uiSourceCode);
     },
 
     /**

@@ -451,7 +451,12 @@ WebInspector.SourcesPanel.prototype = {
         var uiSourceCode = this._sourcesView.currentUISourceCode();
         if (uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets)
             return false;
-        WebInspector.scriptSnippetModel.evaluateScriptSnippet(uiSourceCode);
+
+        var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        if (!currentExecutionContext)
+            return false;
+
+        WebInspector.scriptSnippetModel.evaluateScriptSnippet(currentExecutionContext, uiSourceCode);
         return true;
     },
 
@@ -887,13 +892,17 @@ WebInspector.SourcesPanel.prototype = {
      */
     _saveToTempVariable: function(remoteObject)
     {
-        WebInspector.runtimeModel.evaluate("window", "", false, true, false, false, didGetGlobalObject);
+        var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        if (!currentExecutionContext)
+            return;
 
+        currentExecutionContext.evaluate("window", "", false, true, false, false, didGetGlobalObject.bind(null, currentExecutionContext.target()));
         /**
+         * @param {!WebInspector.Target} target
          * @param {?WebInspector.RemoteObject} global
          * @param {boolean=} wasThrown
          */
-        function didGetGlobalObject(global, wasThrown)
+        function didGetGlobalObject(target, global, wasThrown)
         {
             /**
              * @suppressReceiverCheck
@@ -911,7 +920,7 @@ WebInspector.SourcesPanel.prototype = {
             }
 
             if (wasThrown || !global)
-                failedToSave(global);
+                failedToSave(target, global);
             else
                 global.callFunction(remoteFunction, [WebInspector.RemoteObject.toCallArgument(remoteObject)], didSave.bind(null, global));
         }
@@ -923,24 +932,26 @@ WebInspector.SourcesPanel.prototype = {
          */
         function didSave(global, result, wasThrown)
         {
+            var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
             global.release();
-            if (wasThrown || !result || result.type !== "string")
-                failedToSave(result);
+            if (!currentExecutionContext || wasThrown || !result || result.type !== "string")
+                failedToSave(global.target(), result);
             else
-                WebInspector.console.evaluate(result.value);
+                WebInspector.ConsoleModel.evaluateCommandInConsole(currentExecutionContext, result.value);
         }
 
         /**
+         * @param {!WebInspector.Target} target
          * @param {?WebInspector.RemoteObject} result
          */
-        function failedToSave(result)
+        function failedToSave(target, result)
         {
             var message = WebInspector.UIString("Failed to save to temp variable.");
             if (result) {
                 message += " " + result.description;
                 result.release();
             }
-            WebInspector.console.showErrorMessage(message)
+            target.consoleModel.showErrorMessage(message)
         }
     },
 

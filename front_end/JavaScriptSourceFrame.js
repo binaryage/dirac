@@ -111,7 +111,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
      */
     _evaluateInConsole: function(expression)
     {
-        WebInspector.console.evaluate(expression);
+        var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        if (currentExecutionContext)
+            WebInspector.ConsoleModel.evaluateCommandInConsole(currentExecutionContext, expression);
     },
 
     // View events

@@ -73,6 +73,7 @@
             'front_end/DropDownMenu.js',
             'front_end/EditFileSystemDialog.js',
             'front_end/EmptyView.js',
+            'front_end/ExecutionContextSelector.js',
             'front_end/ExtensionServerProxy.js',
             'front_end/FileManager.js',
             'front_end/FileSystemMapping.js',

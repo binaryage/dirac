@@ -31,7 +31,6 @@
             "ContentProvider.js",
             "ContentProviderBasedProjectDelegate.js",
             "ContentProviders.js",
-            "Context.js",
             "CookieParser.js",
             "CPUProfilerModel.js",
             "CSSMetadata.js",
@@ -99,6 +98,7 @@
         "sources": [
             "Checkbox.js",
             "ContextMenu.js",
+            "Context.js",
             "CompletionDictionary.js",
             "DataGrid.js",
             "Dialog.js",
@@ -156,6 +156,7 @@
         "name": "components",
         "dependencies": ["sdk", "ui"],
         "sources": [
+            "ExecutionContextSelector.js",
             "HandlerRegistry.js",
             "CookiesTable.js",
             "DOMBreakpointsSidebarPane.js",

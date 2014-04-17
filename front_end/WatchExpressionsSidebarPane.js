@@ -189,7 +189,7 @@ WebInspector.WatchExpressionsSection.prototype = {
         }
 
         // TODO: pass exact injected script id.
-        RuntimeAgent.releaseObjectGroup(this._watchObjectGroupId)
+        WebInspector.targetManager.targets().forEach(function(target) {target.runtimeAgent().releaseObjectGroup(this._watchObjectGroupId)}, this);
         var properties = [];
 
         // Count the properties, so we known when to call this.updateProperties()
@@ -203,12 +203,15 @@ WebInspector.WatchExpressionsSection.prototype = {
 
         // Now process all the expressions, since we have the actual count,
         // which is checked in the appendResult inner function.
-        for (var i = 0; i < this.watchExpressions.length; ++i) {
-            var expression = this.watchExpressions[i];
-            if (!expression)
-                continue;
+        var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        if (currentExecutionContext) {
+            for (var i = 0; i < this.watchExpressions.length; ++i) {
+                var expression = this.watchExpressions[i];
+                if (!expression)
+                    continue;
 
-            WebInspector.runtimeModel.evaluate(expression, this._watchObjectGroupId, false, true, false, false, appendResult.bind(this, expression, i));
+                currentExecutionContext.evaluate(expression, this._watchObjectGroupId, false, true, false, false, appendResult.bind(this, expression, i));
+            }
         }
 
         if (!propertyCount) {

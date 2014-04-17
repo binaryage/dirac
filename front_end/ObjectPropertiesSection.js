@@ -327,7 +327,7 @@ WebInspector.ObjectPropertyTreeElement.prototype = {
 
         this.listItemElement.classList.add("editing-sub-part");
 
-        this._prompt = new WebInspector.ObjectPropertyPrompt(this.editingCommitted.bind(this, null, elementToEdit.textContent, context.previousContent, context), this.editingCancelled.bind(this, null, context), this.renderPromptAsBlock());
+        this._prompt = new WebInspector.ObjectPropertyPrompt(this.renderPromptAsBlock());
 
         /**
          * @this {WebInspector.ObjectPropertyTreeElement}
@@ -980,9 +980,9 @@ WebInspector.ArrayGroupingTreeElement.prototype = {
  * @extends {WebInspector.TextPrompt}
  * @param {boolean=} renderAsBlock
  */
-WebInspector.ObjectPropertyPrompt = function(commitHandler, cancelHandler, renderAsBlock)
+WebInspector.ObjectPropertyPrompt = function(renderAsBlock)
 {
-    WebInspector.TextPrompt.call(this, WebInspector.runtimeModel.completionsForTextPrompt.bind(WebInspector.runtimeModel));
+    WebInspector.TextPrompt.call(this, WebInspector.ExecutionContextSelector.completionsForTextPromptInCurrentContext);
     this.setSuggestBoxEnabled("generic-suggest");
     if (renderAsBlock)
         this.renderAsBlock();
