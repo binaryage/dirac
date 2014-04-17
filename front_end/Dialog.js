@@ -42,6 +42,7 @@ WebInspector.Dialog = function(relativeToElement, delegate)
     // Install glass pane capturing events.
     this._glassPane.element.tabIndex = 0;
     this._glassPane.element.addEventListener("focus", this._onGlassPaneFocus.bind(this), false);
+    this._glassPane.element.addEventListener("keydown", this._onGlassPaneKeyDown.bind(this), false);
 
     this._element = this._glassPane.element.createChild("div");
     this._element.tabIndex = 0;
@@ -100,6 +101,20 @@ WebInspector.Dialog.prototype = {
     _onGlassPaneFocus: function(event)
     {
         this._hide();
+    },
+
+    /**
+     * @param {?Event} event
+     */
+    _onGlassPaneKeyDown: function(event)
+    {
+        var actions = WebInspector.KeyboardShortcut.applicableActions(/** @type {!KeyboardEvent} */ (event));
+        for (var i = 0; i < actions.length; ++i) {
+            if (actions[i].descriptor()["executeInDialog"])
+                return;
+        }
+        if (actions.length)
+            event.consume(true);
     },
 
     _onFocus: function(event)

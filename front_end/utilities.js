@@ -1114,6 +1114,18 @@ var Set = function()
     this._size = 0;
 }
 
+/**
+ * @param {!Array.<!T>} array
+ * @return {!Set.<T>}
+ * @template T
+ */
+Set.fromArray = function(array)
+{
+    var result = new Set();
+    array.forEach(function(item) { result.add(item); });
+    return result;
+}
+
 Set.prototype = {
     /**
      * @param {!T} item
@@ -1160,7 +1172,7 @@ Set.prototype = {
      * @param {!T} item
      * @return {boolean}
      */
-    hasItem: function(item)
+    contains: function(item)
     {
         return !!this._set[item.__identifier];
     },
@@ -1454,6 +1466,7 @@ var StringSet = function()
 
 /**
  * @param {!Array.<string>} array
+ * @return {!StringSet}
  */
 StringSet.fromArray = function(array)
 {

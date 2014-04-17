@@ -280,32 +280,50 @@ WebInspector.KeyboardShortcut._modifiersToString = function(modifiers)
 
 /**
  * @param {!KeyboardEvent} event
+ * @return {!Array.<!WebInspector.ModuleManager.Extension>}
+ */
+WebInspector.KeyboardShortcut.applicableActions = function(event)
+{
+    var key = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
+    var extensions = WebInspector.KeyboardShortcut._keyToAction[key];
+    if (!extensions)
+        return [];
+
+    return WebInspector.context.applicableExtensions(extensions).items();
+}
+
+/**
+ * @param {!KeyboardEvent} event
  */
 WebInspector.KeyboardShortcut.handleShortcut = function(event)
 {
-    var key = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
-    var extensions = WebInspector.KeyboardShortcut._keysToActionExtensions[key];
-    if (!extensions)
+    var extensions = WebInspector.KeyboardShortcut.applicableActions(event);
+    if (!extensions.length)
         return;
 
+    for (var i = 0; i < extensions.length; ++i) {
+        var extension = extensions[i];
+        var ident = event.keyIdentifier;
+        if (/^F\d+|Control|Shift|Alt|Meta|Win|U\+001B$/.test(ident) || event.ctrlKey || event.altKey || event.metaKey) {
+            if (handler(extension))
+                return;
+        } else {
+            WebInspector.KeyboardShortcut._pendingActionTimer = setTimeout(handler.bind(null, extension), 0);
+            break;
+        }
+    }
+
+    /**
+     * @param {!WebInspector.ModuleManager.Extension} extension
+     * @return {boolean}
+     */
     function handler(extension)
     {
-        var result = extension.instance().handleAction(event);
+        var result = WebInspector.actionRegistry.execute(extension.descriptor()["actionId"], event);
         if (result)
             event.consume(true);
         delete WebInspector.KeyboardShortcut._pendingActionTimer;
         return result;
-    }
-
-    for (var i = 0; i < extensions.length; ++i) {
-        var ident = event.keyIdentifier;
-        if (/^F\d+|Control|Shift|Alt|Meta|Win|U\+001B$/.test(ident) || event.ctrlKey || event.altKey || event.metaKey) {
-            if (handler(extensions[i]))
-                return;
-        } else {
-            WebInspector.KeyboardShortcut._pendingActionTimer = setTimeout(handler.bind(null, extensions[i]), 0);
-            break;
-        }
     }
 }
 
@@ -323,19 +341,19 @@ WebInspector.KeyboardShortcut._onKeyPress = function(event)
     }
 }
 
-WebInspector.KeyboardShortcut.registerActions = function()
+WebInspector.KeyboardShortcut.registerBindings = function()
 {
     document.addEventListener("keypress", WebInspector.KeyboardShortcut._onKeyPress, true);
-    WebInspector.KeyboardShortcut._keysToActionExtensions = {};
+    WebInspector.KeyboardShortcut._keyToAction = {};
     var extensions = WebInspector.moduleManager.extensions(WebInspector.ActionDelegate);
-    extensions.forEach(registerBindings);
+    extensions.forEach(registerExtension);
 
     /**
      * @param {!WebInspector.ModuleManager.Extension} extension
      */
-    function registerBindings(extension)
+    function registerExtension(extension)
     {
-        var bindings = extension.descriptor().bindings;
+        var bindings = extension.descriptor()["bindings"];
         for (var i = 0; bindings && i < bindings.length; ++i) {
             if (!platformMatches(bindings[i].platform))
                 continue;
@@ -346,17 +364,16 @@ WebInspector.KeyboardShortcut.registerActions = function()
 
     /**
      * @param {!WebInspector.ModuleManager.Extension} extension
-     * @param {string} shortcut
      */
     function registerShortcut(extension, shortcut)
     {
         var key = WebInspector.KeyboardShortcut.makeKeyFromBindingShortcut(shortcut);
         if (!key)
             return;
-        if (WebInspector.KeyboardShortcut._keysToActionExtensions[key])
-            WebInspector.KeyboardShortcut._keysToActionExtensions[key].push(extension);
+        if (WebInspector.KeyboardShortcut._keyToAction[key])
+            WebInspector.KeyboardShortcut._keyToAction[key].push(extension);
         else
-            WebInspector.KeyboardShortcut._keysToActionExtensions[key] = [extension];
+            WebInspector.KeyboardShortcut._keyToAction[key] = [extension];
     }
 
     /**

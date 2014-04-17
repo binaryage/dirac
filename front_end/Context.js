@@ -20,7 +20,7 @@ WebInspector.Context.Events = {
 
 WebInspector.Context.prototype = {
     /**
-     * @param {function(new:T)} flavorType
+     * @param {function(new:T, ...)} flavorType
      * @param {?T} flavorValue
      * @template T
      */
@@ -38,7 +38,7 @@ WebInspector.Context.prototype = {
     },
 
     /**
-     * @param {function(new:T)} flavorType
+     * @param {function(new:T, ...)} flavorType
      * @param {?T} flavorValue
      * @template T
      */
@@ -51,7 +51,7 @@ WebInspector.Context.prototype = {
     },
 
     /**
-     * @param {function(new:Object)} flavorType
+     * @param {function(new:Object, ...)} flavorType
      * @param {function(!WebInspector.Event)} listener
      * @param {!Object=} thisObject
      */
@@ -66,7 +66,7 @@ WebInspector.Context.prototype = {
     },
 
     /**
-     * @param {function(new:Object)} flavorType
+     * @param {function(new:Object, ...)} flavorType
      * @param {function(!WebInspector.Event)} listener
      * @param {!Object=} thisObject
      */
@@ -81,7 +81,7 @@ WebInspector.Context.prototype = {
     },
 
     /**
-     * @param {function(new:T)} flavorType
+     * @param {function(new:T, ...)} flavorType
      * @return {?T}
      * @template T
      */
@@ -91,11 +91,28 @@ WebInspector.Context.prototype = {
     },
 
     /**
-     * @return {!Array.<function(new:Object)>}
+     * @return {!Array.<function(new:Object, ...)>}
      */
     flavors: function()
     {
         return this._flavors.keys();
+    },
+
+    /**
+     * @param {!Array.<!WebInspector.ModuleManager.Extension>} extensions
+     * @return {!Set.<!WebInspector.ModuleManager.Extension>}
+     */
+    applicableExtensions: function(extensions)
+    {
+        var targetExtensionSet = new Set();
+
+        var availableFlavors = Set.fromArray(this.flavors());
+        extensions.forEach(function(extension) {
+            if (WebInspector.ModuleManager.isExtensionApplicableToContextTypes(extension, availableFlavors))
+                targetExtensionSet.add(extension);
+        });
+
+        return targetExtensionSet;
     }
 }
 

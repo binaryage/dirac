@@ -58,7 +58,7 @@ WebInspector.TabbedPane.EventTypes = {
 
 WebInspector.TabbedPane.prototype = {
     /**
-     * @return {!WebInspector.View}
+     * @return {?WebInspector.View}
      */
     get visibleView()
     {
@@ -82,7 +82,7 @@ WebInspector.TabbedPane.prototype = {
     },
 
     /**
-     * @return {string}
+     * @return {?string}
      */
     get selectedTabId()
     {
@@ -1144,6 +1144,8 @@ WebInspector.ExtensibleTabbedPaneController.prototype = {
     _tabSelected: function(event)
     {
         var tabId = this._tabbedPane.selectedTabId;
+        if (!tabId)
+            return;
         var view = this._viewForId(tabId);
         if (view)
             this._tabbedPane.changeTabView(tabId, view);

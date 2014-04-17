@@ -35,6 +35,7 @@
         'debug_devtools%': 0,
         'devtools_files': [
             'front_end/inspector.html',
+            'front_end/ActionRegistry.js',
             'front_end/ApplicationCacheModel.js',
             'front_end/BreakpointManager.js',
             'front_end/Checkbox.js',

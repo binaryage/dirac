@@ -35,6 +35,8 @@ var allDescriptors = [
         extensions: [
             {
                 type: "@WebInspector.ActionDelegate",
+                actionId: "main.reload",
+                className: "WebInspector.Main.ReloadActionDelegate",
                 bindings: [
                     {
                         platform: "windows,linux",
@@ -44,11 +46,12 @@ var allDescriptors = [
                         platform: "mac",
                         shortcut: "Meta+R"
                     }
-                ],
-                className: "WebInspector.Main.ReloadActionDelegate"
+                ]
             },
             {
                 type: "@WebInspector.ActionDelegate",
+                actionId: "main.hard-reload",
+                className: "WebInspector.Main.HardReloadActionDelegate",
                 bindings: [
                     {
                         platform: "windows,linux",
@@ -58,26 +61,27 @@ var allDescriptors = [
                         platform: "mac",
                         shortcut: "Shift+Meta+R"
                     }
-                ],
-                className: "WebInspector.Main.HardReloadActionDelegate"
+                ]
             },
             {
                 type: "@WebInspector.ActionDelegate",
+                actionId: "main.toggle-drawer",
+                className: "WebInspector.InspectorView.DrawerToggleActionDelegate",
                 bindings: [
                     {
                         shortcut: "Esc"
                     }
-                ],
-                className: "WebInspector.InspectorView.DrawerToggleActionDelegate"
+                ]
             },
             {
                 type: "@WebInspector.ActionDelegate",
+                actionId: "main.debug-reload",
+                className: "WebInspector.Main.DebugReloadActionDelegate",
                 bindings: [
                     {
-                        shortcut: "Alt+R"
+                        shortcut: "Alt+R",
                     }
-                ],
-                className: "WebInspector.Main.DebugReloadActionDelegate"
+                ]
             },
             {
                 type: "ui-setting",
@@ -303,6 +307,8 @@ var allDescriptors = [
             },
             {
                 type: "@WebInspector.ActionDelegate",
+                actionId: "sources.go-to-source",
+                className: "WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate",
                 bindings: [
                     {
                         platform: "mac",
@@ -312,8 +318,7 @@ var allDescriptors = [
                         platform: "windows,linux",
                         shortcut: "Ctrl+O Ctrl+P"
                     }
-                ],
-                className: "WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate"
+                ]
             },
             {
                 type: "ui-setting",
@@ -495,12 +500,13 @@ var allDescriptors = [
             },
             {
                 type: "@WebInspector.ActionDelegate",
+                actionId: "console.show",
+                className: "WebInspector.ConsoleView.ShowConsoleActionDelegate",
                 bindings: [
                     {
                         shortcut: "Ctrl+`"
                     }
-                ],
-                className: "WebInspector.ConsoleView.ShowConsoleActionDelegate"
+                ]
             },
             {
                 type: "ui-setting",
@@ -538,6 +544,8 @@ var allDescriptors = [
              },
              {
                  type: "@WebInspector.ActionDelegate",
+                 actionId: "search.toggle",
+                 className: "WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate",
                  bindings: [
                      {
                          platform: "mac",
@@ -547,8 +555,7 @@ var allDescriptors = [
                          platform: "windows,linux",
                          shortcut: "Ctrl+Shift+F"
                      }
-                 ],
-                 className: "WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate"
+                 ]
              }
         ],
         scripts: [ "AdvancedSearchView.js" ]
@@ -572,12 +579,13 @@ var allDescriptors = [
         extensions: [
             {
                 type: "@WebInspector.ActionDelegate",
+                actionId: "settings.show",
+                className: "WebInspector.SettingsController.SettingsScreenActionDelegate",
                 bindings: [
                     {
                         shortcut: "F1 Shift+?"
                     }
-                ],
-                className: "WebInspector.SettingsController.SettingsScreenActionDelegate"
+                ]
             }
         ]
     },

@@ -160,7 +160,7 @@ WebInspector.Drawer.prototype = {
     },
 
     /**
-     * @return {!WebInspector.View} view
+     * @return {?WebInspector.View} view
      */
     _visibleView: function()
     {
@@ -173,7 +173,7 @@ WebInspector.Drawer.prototype = {
     _tabSelected: function(event)
     {
         var tabId = this._tabbedPane.selectedTabId;
-        if (event.data["isUserGesture"] && !this._tabbedPane.isTabCloseable(tabId))
+        if (tabId && event.data["isUserGesture"] && !this._tabbedPane.isTabCloseable(tabId))
             this._lastSelectedViewSetting.set(tabId);
     },
 
@@ -194,7 +194,7 @@ WebInspector.Drawer.prototype = {
     },
 
     /**
-     * @return {string}
+     * @return {?string}
      */
     selectedViewId: function()
     {

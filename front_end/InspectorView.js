@@ -196,6 +196,8 @@ WebInspector.InspectorView.prototype = {
     _tabSelected: function()
     {
         var panelName = this._tabbedPane.selectedTabId;
+        if (!panelName)
+            return;
         var panel = this._panelDescriptors[this._tabbedPane.selectedTabId].panel();
         this._tabbedPane.changeTabView(panelName, panel);
 
@@ -259,7 +261,7 @@ WebInspector.InspectorView.prototype = {
     },
 
     /**
-     * @return {string}
+     * @return {?string}
      */
     selectedViewInDrawer: function()
     {

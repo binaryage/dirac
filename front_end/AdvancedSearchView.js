@@ -362,13 +362,10 @@ WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate = function()
 
 WebInspector.AdvancedSearchView.ToggleDrawerViewActionDelegate.prototype = {
     /**
-     * @param {!Event} event
      * @return {boolean}
      */
-    handleAction: function(event)
+    handleAction: function()
     {
-        if (WebInspector.Dialog.currentInstance())
-            return false;
         var searchView = this._searchView();
         if (!searchView)
             return false;

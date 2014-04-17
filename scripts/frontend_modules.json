@@ -96,9 +96,10 @@
         "name": "ui",
         "dependencies": ["common"],
         "sources": [
+            "ActionRegistry.js",
             "Checkbox.js",
-            "ContextMenu.js",
             "Context.js",
+            "ContextMenu.js",
             "CompletionDictionary.js",
             "DataGrid.js",
             "Dialog.js",

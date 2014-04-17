@@ -333,7 +333,8 @@ WebInspector.Main.prototype = {
         WebInspector.settings.initializeBackendSettings();
 
         this._registerModules();
-        WebInspector.KeyboardShortcut.registerActions();
+        WebInspector.actionRegistry = new WebInspector.ActionRegistry();
+        WebInspector.KeyboardShortcut.registerBindings();
 
         WebInspector.panels = {};
         WebInspector.inspectorView = new WebInspector.InspectorView();
@@ -673,10 +674,8 @@ WebInspector.Main.ReloadActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        if (!WebInspector.Dialog.currentInstance()) {
-            WebInspector.debuggerModel.skipAllPauses(true, true);
-            WebInspector.resourceTreeModel.reloadPage(false);
-        }
+        WebInspector.debuggerModel.skipAllPauses(true, true);
+        WebInspector.resourceTreeModel.reloadPage(false);
         return true;
     }
 }
@@ -695,10 +694,8 @@ WebInspector.Main.HardReloadActionDelegate.prototype = {
      */
     handleAction: function()
     {
-        if (!WebInspector.Dialog.currentInstance()) {
-            WebInspector.debuggerModel.skipAllPauses(true, true);
-            WebInspector.resourceTreeModel.reloadPage(true);
-        }
+        WebInspector.debuggerModel.skipAllPauses(true, true);
+        WebInspector.resourceTreeModel.reloadPage(true);
         return true;
     }
 }
