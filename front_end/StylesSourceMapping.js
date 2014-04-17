@@ -319,27 +319,58 @@ WebInspector.StyleFile = function(uiSourceCode, mapping)
 
 WebInspector.StyleFile.updateTimeout = 200;
 
+/**
+ * @enum {string}
+ */
+WebInspector.StyleFile.PendingChangeType = {
+    Major: "Major",
+    Minor: "Minor"
+}
+
 WebInspector.StyleFile.prototype = {
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _workingCopyCommitted: function(event)
     {
         if (this._isAddingRevision)
             return;
 
-        this._commitIncrementalEdit(true);
+        this._pendingChangeType = WebInspector.StyleFile.PendingChangeType.Major;
+        this._maybeProcessChange();
     },
 
+    /**
+     * @param {!WebInspector.Event} event
+     */
     _workingCopyChanged: function(event)
     {
         if (this._isAddingRevision)
             return;
 
+        if (this._pendingChangeType === WebInspector.StyleFile.PendingChangeType.Major)
+            return;
+        this._pendingChangeType = WebInspector.StyleFile.PendingChangeType.Minor;
+        this._maybeProcessChange();
+    },
+
+    _maybeProcessChange: function()
+    {
+        if (this._isSettingContent)
+            return;
+        if (!this._pendingChangeType)
+            return;
+
+        if (this._pendingChangeType === WebInspector.StyleFile.PendingChangeType.Major) {
+            this._clearIncrementalUpdateTimer();
+            delete this._pendingChangeType;
+            this._commitIncrementalEdit(true);
+            return;
+        }
+
         if (this._incrementalUpdateTimer)
             return;
-        // FIXME: Extensions tests override updateTimeout because extensions don't have any control over applying changes to domain specific bindings.
-        if (WebInspector.StyleFile.updateTimeout >= 0) {
-            this._incrementalUpdateTimer = setTimeout(this._commitIncrementalEdit.bind(this, false), WebInspector.StyleFile.updateTimeout)
-        } else
-            this._commitIncrementalEdit(false);
+        this._incrementalUpdateTimer = setTimeout(this._commitIncrementalEdit.bind(this, false), WebInspector.StyleFile.updateTimeout);
     },
 
     /**
@@ -348,6 +379,8 @@ WebInspector.StyleFile.prototype = {
     _commitIncrementalEdit: function(majorChange)
     {
         this._clearIncrementalUpdateTimer();
+        delete this._pendingChangeType;
+        this._isSettingContent = true;
         this._mapping._setStyleContent(this._uiSourceCode, this._uiSourceCode.workingCopy(), majorChange, this._styleContentSet.bind(this));
     },
 
@@ -358,6 +391,8 @@ WebInspector.StyleFile.prototype = {
     {
         if (error)
             WebInspector.console.showErrorMessage(error);
+        delete this._isSettingContent;
+        this._maybeProcessChange();
     },
 
     _clearIncrementalUpdateTimer: function()
