@@ -82,11 +82,20 @@ WebInspector.RequestPreviewView.prototype = {
             return new WebInspector.RequestJSONView(this.request, parsedJSON);
     },
 
-    _htmlView: function()
+    /**
+     * @return {?WebInspector.RequestHTMLView}
+     */
+    _htmlErrorPreview: function()
     {
+        var whitelist = ["text/html", "text/plain", "application/xhtml+xml"];
+        if (whitelist.indexOf(this.request.mimeType) === -1)
+            return null;
+
         var dataURL = this.request.asDataURL();
-        if (dataURL !== null)
-            return new WebInspector.RequestHTMLView(this.request, dataURL);
+        if (dataURL === null)
+            return null;
+
+        return new WebInspector.RequestHTMLView(this.request, dataURL);
     },
 
     _createPreviewView: function()
@@ -94,29 +103,26 @@ WebInspector.RequestPreviewView.prototype = {
         if (this.request.contentError())
             return this._createMessageView(WebInspector.UIString("Failed to load response data"));
 
-        var jsonMediaTypeRE = /^application\/[^;]*\+json/;
-        if (this.request.mimeType === "application/json" || jsonMediaTypeRE.test(this.request.mimeType)) {
+        var mimeType = this.request.mimeType || "";
+        if (mimeType === "application/json" || mimeType.endsWith("+json")) {
             var jsonView = this._jsonView();
             if (jsonView)
                 return jsonView;
         }
 
         if (this.request.hasErrorStatusCode()) {
-            var htmlView = this._htmlView();
-            if (htmlView)
-                return htmlView;
+            var htmlErrorPreview = this._htmlErrorPreview();
+            if (htmlErrorPreview)
+                return htmlErrorPreview;
         }
 
         if (this.request.type === WebInspector.resourceTypes.XHR) {
             var jsonView = this._jsonView();
             if (jsonView)
                 return jsonView;
-        }
-
-        if (this.request.type === WebInspector.resourceTypes.XHR && this.request.mimeType === "text/html") {
-            var htmlView = this._htmlView();
-            if (htmlView)
-                return htmlView;
+            var htmlErrorPreview = this._htmlErrorPreview();
+            if (htmlErrorPreview)
+                return htmlErrorPreview;
         }
 
         if (this._responseView.sourceView)
