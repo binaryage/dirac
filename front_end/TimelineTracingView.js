@@ -115,6 +115,12 @@ WebInspector.TimelineTracingView.prototype = {
             link.textContent = "show";
             link.addEventListener("click", reveal, false);
             contentHelper.appendElementRow(WebInspector.UIString("Layer tree"), link);
+        } else if (record.name === "cc::Picture") {
+            var div = document.createElement("div");
+            div.className = "image-preview-container";
+            var img = div.createChild("img");
+            contentHelper.appendElementRow("Preview", div);
+            this._requestThumbnail(img, record.args["snapshot"]["skp64"]);
         }
         this._delegate.showInDetails(WebInspector.UIString("Selected Event"), contentHelper.element);
     },
@@ -140,6 +146,43 @@ WebInspector.TimelineTracingView.prototype = {
             }
         }
         return table;
+    },
+
+    /**
+     * @param {!Element} img
+     * @param {string} encodedPicture
+     */
+    _requestThumbnail: function(img, encodedPicture)
+    {
+        var snapshotId;
+        LayerTreeAgent.loadSnapshot(encodedPicture, onSnapshotLoaded);
+        /**
+         * @param {string} error
+         * @param {string} id
+         */
+        function onSnapshotLoaded(error, id)
+        {
+            if (error) {
+                console.error("LayerTreeAgent.loadSnapshot(): " + error);
+                return;
+            }
+            snapshotId = id;
+            LayerTreeAgent.replaySnapshot(snapshotId, onSnapshotReplayed);
+        }
+
+        /**
+         * @param {string} error
+         * @param {string} encodedBitmap
+         */
+        function onSnapshotReplayed(error, encodedBitmap)
+        {
+            LayerTreeAgent.releaseSnapshot(snapshotId);
+            if (error) {
+                console.error("LayerTreeAgent.replaySnapshot(): " + error);
+                return;
+            }
+            img.src = encodedBitmap;
+        }
     },
 
     __proto__: WebInspector.VBox.prototype

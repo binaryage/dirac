@@ -3905,6 +3905,16 @@
                 ]
             },
             {
+                "name": "loadSnapshot",
+                "parameters": [
+                    { "name": "data", "type": "string", "description": "Base64-encoded snapshot data." }
+                ],
+                "description": "Returns the snapshot identifier.",
+                "returns": [
+                    { "name": "snapshotId", "$ref": "SnapshotId", "description": "The id of the snapshot." }
+                ]
+            },
+            {
                 "name": "releaseSnapshot",
                 "parameters": [
                     { "name": "snapshotId", "$ref": "SnapshotId", "description": "The id of the layer snapshot." }
