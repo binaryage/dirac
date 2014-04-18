@@ -60,6 +60,20 @@ WebInspector.TimelineFrameOverview = function(model, frameModel)
 }
 
 WebInspector.TimelineFrameOverview.prototype = {
+    /**
+     * @param {!WebInspector.OverviewGrid} grid
+     */
+    setOverviewGrid: function(grid)
+    {
+        this._overviewGrid = grid;
+        this._overviewGrid.element.classList.add("timeline-overview-frames-mode");
+    },
+
+    dispose: function()
+    {
+        this._overviewGrid.element.classList.remove("timeline-overview-frames-mode");
+    },
+
     reset: function()
     {
         this._recordsPerBar = 1;

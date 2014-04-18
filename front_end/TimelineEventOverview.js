@@ -59,6 +59,13 @@ WebInspector.TimelineEventOverview._numberOfStrips = 3;
 WebInspector.TimelineEventOverview._stripGradientHeight = 120;
 
 WebInspector.TimelineEventOverview.prototype = {
+    dispose: function()
+    {
+        var categories = WebInspector.TimelineUIUtils.categories();
+        for (var category in categories)
+            categories[category].removeEventListener(WebInspector.TimelineCategory.Events.VisibilityChanged, this._onCategoryVisibilityChanged, this);
+    },
+
     update: function()
     {
         this.resetCanvas();

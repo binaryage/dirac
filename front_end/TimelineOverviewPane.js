@@ -79,8 +79,10 @@ WebInspector.TimelineOverviewPane.prototype = {
         if (this._overviewControl) {
             windowTimes = this._overviewControl.windowTimes(this._overviewGrid.windowLeft(), this._overviewGrid.windowRight());
             this._overviewControl.detach();
+            this._overviewControl.dispose();
         }
         this._overviewControl = overviewControl;
+        this._overviewControl.setOverviewGrid(this._overviewGrid);
         this._overviewControl.show(this._overviewGrid.element);
         this._update();
         if (windowTimes)
@@ -311,7 +313,14 @@ WebInspector.TimelineOverview.prototype = {
      */
     show: function(parentElement, insertBefore) { },
 
+    /**
+     * @param {!WebInspector.OverviewGrid} grid
+     */
+    setOverviewGrid: function(grid) { },
+
     update: function() { },
+
+    dispose: function() { },
 
     reset: function() { },
 
@@ -327,7 +336,7 @@ WebInspector.TimelineOverview.prototype = {
      * @param {number} endTime
      * @return {!{left: number, right: number}}
      */
-    windowBoundaries: function(startTime, endTime) { }
+    windowBoundaries: function(startTime, endTime) { },
 }
 
 /**
@@ -346,17 +355,33 @@ WebInspector.TimelineOverviewBase = function(model)
 }
 
 WebInspector.TimelineOverviewBase.prototype = {
+    /**
+     * @param {!WebInspector.OverviewGrid} grid
+     */
+    setOverviewGrid: function(grid)
+    {
+    },
+
     update: function()
     {
         this.resetCanvas();
+    },
+
+    dispose: function()
+    {
     },
 
     reset: function()
     {
     },
 
-    timelineStarted: function() { },
-    timelineStopped: function() { },
+    timelineStarted: function()
+    {
+    },
+
+    timelineStopped: function()
+    {
+    },
 
     /**
      * @param {number} windowLeft

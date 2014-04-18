@@ -18,6 +18,12 @@ WebInspector.TimelinePowerGraph = function(delegate, model)
 }
 
 WebInspector.TimelinePowerGraph.prototype = {
+    dispose: function()
+    {
+        WebInspector.CountersGraph.prototype.dispose.call(this);
+        WebInspector.powerProfiler.removeEventListener(WebInspector.PowerProfiler.EventTypes.PowerEventRecorded, this._onRecordAdded, this);
+    },
+
     _onRecordAdded: function(event)
     {
         var record = event.data;

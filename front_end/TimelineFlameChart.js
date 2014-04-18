@@ -421,6 +421,12 @@ WebInspector.TimelineFlameChart = function(delegate, model, frameModel)
 }
 
 WebInspector.TimelineFlameChart.prototype = {
+    dispose: function()
+    {
+        this._model.removeEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
+        this._mainView.removeEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected, this);
+    },
+
     /**
      * @param {number} windowStartTime
      * @param {number} windowEndTime
@@ -442,6 +448,15 @@ WebInspector.TimelineFlameChart.prototype = {
     wasShown: function()
     {
         this._mainView._scheduleUpdate();
+    },
+
+
+    /**
+     * @return {!WebInspector.View}
+     */
+    view: function()
+    {
+        return this;
     },
 
     reset: function()

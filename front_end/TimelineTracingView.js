@@ -40,6 +40,18 @@ WebInspector.TimelineTracingView.prototype = {
         this._mainView._scheduleUpdate();
     },
 
+    /**
+     * @return {!WebInspector.View}
+     */
+    view: function()
+    {
+        return this;
+    },
+
+    dispose: function()
+    {
+    },
+
     reset: function()
     {
         this._tracingModel.reset();

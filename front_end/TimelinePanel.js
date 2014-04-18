@@ -81,10 +81,13 @@ WebInspector.TimelinePanel = function()
     this._model.addFilter(this._durationFilter);
     this._model.addFilter(this._textFilter);
 
+    /** @type {!Array.<!WebInspector.TimelineModeView>} */
+    this._currentViews = [];
+
     this._presentationModes = [
         WebInspector.TimelinePanel.Mode.Events,
         WebInspector.TimelinePanel.Mode.Frames,
-        WebInspector.TimelinePanel.Mode.Memory
+        WebInspector.TimelinePanel.Mode.Memory,
     ];
     if (WebInspector.experimentsSettings.timelineFlameChart.isEnabled())
         this._presentationModes.push(WebInspector.TimelinePanel.Mode.FlameChart);
@@ -267,16 +270,6 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @return {!WebInspector.TimelineTracingView}
-     */
-    _tracingView: function()
-    {
-        if (!this._lazyTracingView)
-            this._lazyTracingView = new WebInspector.TimelineTracingView(this, this._tracingModel());
-        return this._lazyTracingView;
-    },
-
-    /**
      * @return {!WebInspector.TimelineView}
      */
     _timelineView: function()
@@ -287,54 +280,29 @@ WebInspector.TimelinePanel.prototype = {
     },
 
     /**
-     * @param {string} mode
-     * @return {!{overviewView: !WebInspector.TimelineOverview, mainViews: !Array.<!WebInspector.TimelineView>}}
+     * @param {!WebInspector.TimelineModeView} modeView
      */
-    _viewsForMode: function(mode)
+    _addModeView: function(modeView)
     {
-        var views = this._viewsMap[mode];
-        if (!views) {
-            views = {};
-            switch (mode) {
-            case WebInspector.TimelinePanel.Mode.Events:
-                views.overviewView = new WebInspector.TimelineEventOverview(this._model);
-                views.mainViews = [this._timelineView()];
-                break;
-            case WebInspector.TimelinePanel.Mode.Frames:
-                views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());
-                views.mainViews = [this._timelineView()];
-                break;
-            case WebInspector.TimelinePanel.Mode.Memory:
-                views.overviewView = new WebInspector.TimelineMemoryOverview(this._model);
-                views.mainViews = [this._timelineView(), new WebInspector.MemoryCountersGraph(this, this._model)];
-                break;
-            case WebInspector.TimelinePanel.Mode.FlameChart:
-                views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());
-                views.mainViews = [new WebInspector.TimelineFlameChart(this, this._model, this._frameModel())];
-                break;
-            case WebInspector.TimelinePanel.Mode.Power:
-                views.overviewView = new WebInspector.TimelinePowerOverview(this._model);
-                views.mainViews = [this._timelineView(), new WebInspector.TimelinePowerGraph(this, this._model)];
-                break;
-            case WebInspector.TimelinePanel.Mode.Tracing:
-                views.overviewView = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());
-                views.mainViews = [this._tracingView()];
-                break;
-            default:
-                console.assert(false, "Unknown mode: " + mode);
-            }
-            for (var i = 0; i < views.mainViews.length; ++i)
-                views.mainViews[i].addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
-            this._viewsMap[mode] = views;
-        }
+        modeView.setWindowTimes(this.windowStartTime(), this.windowEndTime());
+        this._stackView.appendView(modeView.view(), "timelinePanelTimelineStackSplitViewState");
+        modeView.refreshRecords(this._textFilter._regex);
+        modeView.view().addEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
+        this._currentViews.push(modeView);
+    },
 
-        return views;
+    _removeAllModeViews: function()
+    {
+        for (var i = 0; i < this._currentViews.length; ++i) {
+            this._currentViews[i].removeEventListener(WebInspector.SplitView.Events.SidebarSizeChanged, this._sidebarResized, this);
+            this._currentViews[i].dispose();
+        }
+        this._currentViews = [];
+        this._stackView.detachChildViews();
     },
 
     _createPresentationSelector: function()
     {
-        this._viewsMap = {};
-
         var topPaneSidebarElement = this._topPane.sidebarElement();
         topPaneSidebarElement.id = "timeline-overview-sidebar";
 
@@ -580,20 +548,42 @@ WebInspector.TimelinePanel.prototype = {
 
     _onModeChanged: function(mode)
     {
-        this.element.classList.remove("timeline-" + this._presentationModeSetting.get().toLowerCase() + "-view");
         this._presentationModeSetting.set(mode);
-        this.element.classList.add("timeline-" + mode.toLowerCase() + "-view");
-        this._stackView.detachChildViews();
-        var views = this._viewsForMode(mode);
-        this._currentViews = views.mainViews;
-        for (var i = 0; i < this._currentViews.length; ++i) {
-            var view = this._currentViews[i];
-            view.setWindowTimes(this.windowStartTime(), this.windowEndTime());
-            this._stackView.appendView(view, "timelinePanelTimelineStackSplitViewState");
-            view.refreshRecords(this._textFilter._regex);
+        this._removeAllModeViews();
+
+        var mainViews = [];
+        switch (mode) {
+        case WebInspector.TimelinePanel.Mode.Events:
+            this._overviewControl = new WebInspector.TimelineEventOverview(this._model);
+            this._addModeView(this._timelineView());
+            break;
+        case WebInspector.TimelinePanel.Mode.Frames:
+            this._overviewControl = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());
+            this._addModeView(this._timelineView());
+            break;
+        case WebInspector.TimelinePanel.Mode.Memory:
+            this._overviewControl = new WebInspector.TimelineEventOverview(this._model);
+            this._addModeView(this._timelineView());
+            this._addModeView(new WebInspector.MemoryCountersGraph(this, this._model));
+            break;
+        case WebInspector.TimelinePanel.Mode.FlameChart:
+            this._overviewControl = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());
+            this._addModeView(new WebInspector.TimelineFlameChart(this, this._model, this._frameModel()));
+            break;
+        case WebInspector.TimelinePanel.Mode.Power:
+            this._overviewControl = new WebInspector.TimelinePowerOverview(this._model);
+            this._addModeView(this._timelineView());
+            this._addModeView(new WebInspector.TimelinePowerGraph(this, this._model));
+            break;
+        case WebInspector.TimelinePanel.Mode.Tracing:
+            this._overviewControl = new WebInspector.TimelineFrameOverview(this._model, this._frameModel());
+            this._addModeView(new WebInspector.TimelineTracingView(this, this._tracingModel()));
+            break;
+        default:
+            console.assert(false, "Unknown mode: " + mode);
         }
+
         this._timelineView().setFrameModel(mode === WebInspector.TimelinePanel.Mode.Frames ? this._frameModel() : null);
-        this._overviewControl = views.overviewView;
         this._overviewPane.setOverviewControl(this._overviewControl);
         this._updateSelectionDetails();
     },
@@ -607,9 +597,7 @@ WebInspector.TimelinePanel.prototype = {
         this._model.startRecording();
         if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled())
             this._tracingModel().start("*,disabled-by-default-cc.debug", "");
-
-        for (var i = 0; i < this._presentationModes.length; ++i)
-            this._viewsForMode(this._presentationModes[i]).overviewView.timelineStarted();
+        this._overviewControl.timelineStarted();
 
         if (userInitiated)
             WebInspector.userMetrics.TimelineStarted.record();
@@ -621,8 +609,7 @@ WebInspector.TimelinePanel.prototype = {
         this._model.stopRecording();
         if (this._lazyTracingModel)
             this._lazyTracingModel.stop(this._refreshViews.bind(this));
-        for (var i = 0; i < this._presentationModes.length; ++i)
-            this._viewsForMode(this._presentationModes[i]).overviewView.timelineStopped();
+        this._overviewControl.timelineStopped();
     },
 
     /**
@@ -941,8 +928,8 @@ WebInspector.TimelinePanel.prototype = {
         var title = WebInspector.UIString("%s \u2013 %s", Number.millisToString(startOffset), Number.millisToString(endOffset));
 
         if (Capabilities.canProfilePower) {
-            var powerOverview = /** @type {!WebInspector.TimelinePowerOverview} */ (this._viewsForMode(WebInspector.TimelinePanel.Mode.Power).overviewView);
-            var energy = powerOverview.calculateEnergy(startTime, endTime);
+            if (this._overviewControl instanceof WebInspector.TimelinePowerOverview)
+                var energy = this._overviewControl.calculateEnergy(startTime, endTime);
             title += WebInspector.UIString("  Energy: %.2f Joules", energy);
         }
         this._detailsView.setContent(title, fragment);
@@ -1046,6 +1033,13 @@ WebInspector.TimelineModeView = function()
 }
 
 WebInspector.TimelineModeView.prototype = {
+    /**
+     * @return {!WebInspector.View}
+     */
+    view: function() {},
+
+    dispose: function() {},
+
     reset: function() {},
 
     /**

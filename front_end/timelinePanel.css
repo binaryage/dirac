@@ -54,18 +54,13 @@
 #timeline-overview-sidebar {
     flex: none;
     padding-right: 10px;
-    border-right: 1px solid rgb(64%, 64%, 64%);
 }
 
 #timeline-overview-grid {
     background-color: rgb(255, 255, 255);
 }
 
-.timeline-frames-view .timeline-records-counter {
-    display: none;
-}
-
-.timeline-frames-view #timeline-overview-grid {
+.timeline-overview-frames-mode #timeline-overview-grid {
     display: none;
 }
 
@@ -73,8 +68,8 @@
     pointer-events: auto;
 }
 
-.timeline-frames-view .overview-grid-window,
-.timeline-frames-view .overview-grid-dividers-background {
+.timeline-overview-frames-mode .overview-grid-window,
+.timeline-overview-frames-mode .overview-grid-dividers-background {
     height: 100%;
 }
 
@@ -819,14 +814,6 @@
 .timeline-aggregated-info .pie-chart {
     margin-left: 20px;
     margin-bottom: 10px;
-}
-
-.timeline-flamechart-view #timeline-overview-grid {
-    display: none;
-}
-
-.timeline-flamechart-view .flame-chart-main-pane .resources-divider-label {
-    text-align: center;
 }
 
 .timeline-flamechart {

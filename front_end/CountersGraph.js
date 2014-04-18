@@ -88,6 +88,18 @@ WebInspector.CountersGraph.prototype = {
         return counter;
     },
 
+    /**
+     * @return {!WebInspector.View}
+     */
+    view: function()
+    {
+        return this;
+    },
+
+    dispose: function()
+    {
+    },
+
     reset: function()
     {
         for (var i = 0; i < this._counters.length; ++i) {

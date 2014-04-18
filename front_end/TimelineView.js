@@ -247,6 +247,19 @@ WebInspector.TimelineView.prototype = {
         this._presentationModel.reset();
     },
 
+
+    /**
+     * @return {!WebInspector.View}
+     */
+    view: function()
+    {
+        return this;
+    },
+
+    dispose: function()
+    {
+    },
+
     reset: function()
     {
         this._resetView();

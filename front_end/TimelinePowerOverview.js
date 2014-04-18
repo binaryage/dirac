@@ -11,11 +11,15 @@ WebInspector.TimelinePowerOverviewDataProvider = function()
     this._records = [];
     this._energies = [];
     this._times = [];
-    if (Capabilities.canProfilePower)
-        WebInspector.powerProfiler.addEventListener(WebInspector.PowerProfiler.EventTypes.PowerEventRecorded, this._onRecordAdded, this);
+    WebInspector.powerProfiler.addEventListener(WebInspector.PowerProfiler.EventTypes.PowerEventRecorded, this._onRecordAdded, this);
 }
 
 WebInspector.TimelinePowerOverviewDataProvider.prototype = {
+    dispose: function()
+    {
+        WebInspector.powerProfiler.removeEventListener(WebInspector.PowerProfiler.EventTypes.PowerEventRecorded, this._onRecordAdded, this);
+    },
+
     /**
      * @return {!Array.<!PowerAgent.PowerEvent>}
      */
@@ -97,6 +101,11 @@ WebInspector.TimelinePowerOverview = function(model)
 }
 
 WebInspector.TimelinePowerOverview.prototype = {
+    dispose: function()
+    {
+        this._dataProvider.dispose();
+    },
+
     timelineStarted: function()
     {
         if (Capabilities.canProfilePower)
