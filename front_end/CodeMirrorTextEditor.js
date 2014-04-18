@@ -89,8 +89,6 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         "Shift-Tab": "indentLess",
         "Enter": "smartNewlineAndIndent",
         "Ctrl-Space": "autocomplete",
-        "Ctrl-D": "selectNextOccurrence",
-        "Ctrl-U": "undoLastSelection",
         "Esc": "dismissMultipleSelections"
     };
 
@@ -110,6 +108,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         "Ctrl-Backspace": "delGroupBefore",
         "Ctrl-Delete": "delGroupAfter",
         "Ctrl-/": "toggleComment",
+        "Ctrl-D": "selectNextOccurrence",
+        "Ctrl-U": "undoLastSelection",
         fallthrough: "devtools-common"
     };
 
@@ -126,6 +126,8 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
         "Alt-Backspace": "delGroupBefore",
         "Alt-Delete": "delGroupAfter",
         "Cmd-/": "toggleComment",
+        "Cmd-D": "selectNextOccurrence",
+        "Cmd-U": "undoLastSelection",
         fallthrough: "devtools-common"
     };
 
