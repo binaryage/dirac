@@ -453,9 +453,9 @@ WebInspector.CPUFlameChartDataProvider.colorGenerator = function()
 {
     if (!WebInspector.CPUFlameChartDataProvider._colorGenerator) {
         var colorGenerator = new WebInspector.CPUFlameChartDataProvider.ColorGenerator();
-        colorGenerator.colorForID("(idle)::0", 50);
-        colorGenerator.colorForID("(program)::0", 50);
-        colorGenerator.colorForID("(garbage collector)::0", 50);
+        colorGenerator.colorForID("(idle)::0", 40);
+        colorGenerator.colorForID("(program)::0", 40);
+        colorGenerator.colorForID("(garbage collector)::0", 40);
         WebInspector.CPUFlameChartDataProvider._colorGenerator = colorGenerator;
     }
     return WebInspector.CPUFlameChartDataProvider._colorGenerator;
@@ -489,7 +489,7 @@ WebInspector.CPUFlameChartDataProvider.ColorGenerator.prototype = {
     colorForID: function(id, sat)
     {
         if (typeof sat !== "number")
-            sat = 100;
+            sat = 67;
         var color = this._colors[id];
         if (!color) {
             color = this._createColor(this._currentColorIndex++, sat);
@@ -504,7 +504,7 @@ WebInspector.CPUFlameChartDataProvider.ColorGenerator.prototype = {
      */
     _createColor: function(index, sat)
     {
-        var hue = (index * 7 + 12 * (index % 2)) % 360;
-        return "hsla(" + hue + ", " + sat + "%, 66%, 0.7)";
+        var hue = (index * 20) % 360;
+        return "hsl(" + hue + ", " + sat + "%, 80%)";
     }
 }
