@@ -70,7 +70,6 @@
                         ['debug_devtools==1', {
                             'files': [
                                 '<@(devtools_files)',
-                                'front_end/OnErrorHandler.js',
                                 '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
                                 '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js',
                                 '<@(devtools_heap_snapshot_worker_js_files)',
