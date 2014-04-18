@@ -470,7 +470,7 @@ Object.defineProperty(Array.prototype, "rotate",
 });
 
 Object.defineProperty(Uint32Array.prototype, "sort", {
-   value: Array.prototype.sort
+    value: Array.prototype.sort
 });
 
 (function() {
@@ -697,6 +697,14 @@ Object.defineProperty(Array.prototype, "upperBound",
         }
         return r;
     }
+});
+
+Object.defineProperty(Uint32Array.prototype, "lowerBound", {
+    value: Array.prototype.lowerBound
+});
+
+Object.defineProperty(Uint32Array.prototype, "upperBound", {
+    value: Array.prototype.upperBound
 });
 
 Object.defineProperty(Array.prototype, "binaryIndexOf",

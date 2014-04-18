@@ -282,6 +282,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
         this._maxStackDepth = Math.max(maxDepth, depth);
 
+        /** @type {!WebInspector.FlameChart.TimelineData} */
         this._timelineData = {
             entryLevels: entryLevels,
             entryTotalTimes: entryTotalTimes,
@@ -292,7 +293,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         this._entryNodes = entryNodes;
         this._entrySelfTimes = entrySelfTimes;
 
-        return /** @type {!WebInspector.FlameChart.TimelineData} */ (this._timelineData);
+        return this._timelineData;
     },
 
     /**

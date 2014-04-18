@@ -101,9 +101,9 @@ WebInspector.FlameChartDataProvider = function()
 }
 
 /** @typedef {!{
-        entryLevels: !Array.<number>,
-        entryTotalTimes: !Array.<number>,
-        entryOffsets: !Array.<number>
+        entryLevels: (!Array.<number>|!Uint8Array),
+        entryTotalTimes: (!Array.<number>|!Float32Array),
+        entryOffsets: (!Array.<number>|!Float32Array)
     }}
  */
 WebInspector.FlameChart.TimelineData;
@@ -318,7 +318,10 @@ WebInspector.FlameChart.prototype = {
      */
     _timelineData: function()
     {
-        return this._dataProvider.timelineData();
+        var timelineData = this._dataProvider.timelineData();
+        if (timelineData !== this._rawTimelineData || timelineData.entryOffsets.length !== this._rawTimelineDataLength)
+            this._processTimelineData(timelineData);
+        return this._rawTimelineData;
     },
 
     /**
@@ -477,8 +480,9 @@ WebInspector.FlameChart.prototype = {
     },
 
     /**
-     * @param {!number} x
-     * @param {!number} y
+     * @param {number} x
+     * @param {number} y
+     * @return {number}
      */
     _coordinatesToEntryIndex: function(x, y)
     {
@@ -498,32 +502,51 @@ WebInspector.FlameChart.prototype = {
         }
         var entryOffsets = timelineData.entryOffsets;
         var entryTotalTimes = timelineData.entryTotalTimes;
-        var entryLevels = timelineData.entryLevels;
-        var length = entryOffsets.length;
-        var markerHitThreshold = Math.sqrt(Math.pow(this._markerRadius, 2) - Math.pow(this._barHeight / 2 - offsetFromLevel, 2)) * this._pixelToTime;
-        for (var i = 0; i < length; ++i) {
-            var entryLevel = entryLevels[i];
-            if (cursorLevel !== entryLevel)
-                continue;
-            if (isNaN(entryTotalTimes[i])) {
-                if (Math.abs(cursorTimeOffset - entryOffsets[i]) < markerHitThreshold)
-                    return i;
-                if (cursorTimeOffset < entryOffsets[i])
-                    return -1;
-            }
-            if (cursorTimeOffset < entryOffsets[i])
-                return -1;
-            if (cursorTimeOffset < (entryOffsets[i] + entryTotalTimes[i]))
-                return i;
+        var entryIndexes = this._timelineLevels[cursorLevel];
+        if (!entryIndexes || !entryIndexes.length)
+            return -1;
+
+        function comparator(time, entryIndex)
+        {
+            return time - entryOffsets[entryIndex];
         }
+        var indexOnLevel = Math.max(entryIndexes.upperBound(cursorTimeOffset, comparator) - 1, 0);
+
+        /**
+         * @this {WebInspector.FlameChart}
+         * @param {number} entryIndex
+         * @return {boolean}
+         */
+        function checkEntryHit(entryIndex)
+        {
+            if (entryIndex === undefined)
+                return false;
+            var startTime = entryOffsets[entryIndex];
+            var duration = entryTotalTimes[entryIndex];
+            if (isNaN(duration)) {
+                var dx = (startTime - cursorTimeOffset) / this._pixelToTime;
+                var dy = this._barHeight / 2 - offsetFromLevel;
+                return dx * dx + dy * dy < this._markerRadius * this._markerRadius;
+            }
+            var endTime = startTime + duration;
+            var barThreshold = 3 * this._pixelToTime;
+            return startTime - barThreshold < cursorTimeOffset && cursorTimeOffset < endTime + barThreshold;
+        }
+
+        var entryIndex = entryIndexes[indexOnLevel];
+        if (checkEntryHit.call(this, entryIndex))
+            return entryIndex;
+        entryIndex = entryIndexes[indexOnLevel + 1];
+        if (checkEntryHit.call(this, entryIndex))
+            return entryIndex;
         return -1;
     },
 
     /**
-     * @param {!number} height
-     * @param {!number} width
+     * @param {number} height
+     * @param {number} width
      */
-    draw: function(width, height)
+    _draw: function(width, height)
     {
         var timelineData = this._timelineData();
         if (!timelineData)
@@ -552,10 +575,6 @@ WebInspector.FlameChart.prototype = {
         this._minTextWidth = 2 * textPadding + this._measureWidth(context, "\u2026");
         var minTextWidth = this._minTextWidth;
 
-        var lastDrawOffset = new Int32Array(this._dataProvider.maxStackDepth());
-        for (var i = 0; i < lastDrawOffset.length; ++i)
-            lastDrawOffset[i] = -1;
-
         var barHeight = this._barHeight;
 
         var offsetToPosition = this._offsetToPosition.bind(this);
@@ -563,51 +582,44 @@ WebInspector.FlameChart.prototype = {
         var colorBuckets = {};
         var minVisibleBarLevel = Math.max(0, Math.floor((this._scrollTop - this._baseHeight) / barHeight));
         var maxVisibleBarLevel = Math.min(this._dataProvider.maxStackDepth(), Math.ceil((height + this._scrollTop) / barHeight));
-        var visibleBarsCount = maxVisibleBarLevel - minVisibleBarLevel + 1;
 
         context.translate(0, -this._scrollTop);
-        var levelsCompleted = 0;
-        var lastEntryOnLevelPainted = [];
-        for (var i = 0; i < visibleBarsCount; ++i)
-            lastEntryOnLevelPainted[i] = false;
 
-        for (var entryIndex = 0; levelsCompleted < visibleBarsCount && entryIndex < entryOffsets.length; ++entryIndex) {
-            // skip if it is not visible (top/bottom side)
-            var barLevel = entryLevels[entryIndex];
-            if (barLevel < minVisibleBarLevel || barLevel > maxVisibleBarLevel || lastEntryOnLevelPainted[barLevel - minVisibleBarLevel])
-                continue;
+        function comparator(time, entryIndex)
+        {
+            return time - entryOffsets[entryIndex];
+        }
 
-            // stop if we reached right border in time (entries were ordered by start time).
-            var entryOffset = entryOffsets[entryIndex];
-            if (entryOffset > timeWindowRight) {
-                lastEntryOnLevelPainted[barLevel - minVisibleBarLevel] = true;
-                levelsCompleted++;
-                continue;
+        for (var level = minVisibleBarLevel; level <= maxVisibleBarLevel; ++level) {
+            // Entries are ordered by start time within a level, so find the last visible entry.
+            var levelIndexes = this._timelineLevels[level];
+            var rightIndexOnLevel = levelIndexes.lowerBound(timeWindowRight, comparator) - 1;
+            var lastDrawOffset = Infinity;
+            for (var entryIndexOnLevel = rightIndexOnLevel; entryIndexOnLevel >= 0; --entryIndexOnLevel) {
+                var entryIndex = levelIndexes[entryIndexOnLevel];
+                var entryOffset = entryOffsets[entryIndex];
+                var entryOffsetRight = entryOffset + (isNaN(entryTotalTimes[entryIndex]) ? 0 : entryTotalTimes[entryIndex]);
+                if (entryOffsetRight <= timeWindowLeft)
+                    break;
+
+                var barX = this._offsetToPosition(entryOffset);
+                if (barX >= lastDrawOffset)
+                    continue;
+                var barRight = Math.min(this._offsetToPosition(entryOffsetRight), lastDrawOffset);
+                lastDrawOffset = barX;
+
+                var color = this._dataProvider.entryColor(entryIndex);
+                var bucket = colorBuckets[color];
+                if (!bucket) {
+                    bucket = [];
+                    colorBuckets[color] = bucket;
+                }
+                bucket.push(entryIndex);
             }
-
-            // skip if it is not visible (left side).
-            var entryOffsetRight = entryOffset + (isNaN(entryTotalTimes[entryIndex]) ? 0 : entryTotalTimes[entryIndex]);
-            if (entryOffsetRight < timeWindowLeft)
-                continue;
-
-            var barRight = this._offsetToPosition(entryOffsetRight);
-            if (barRight <= lastDrawOffset[barLevel])
-                continue;
-            var barX = Math.max(this._offsetToPosition(entryOffset), lastDrawOffset[barLevel]);
-            lastDrawOffset[barLevel] = barRight;
-
-            var barWidth = barRight - barX;
-            var color = this._dataProvider.entryColor(entryIndex);
-            var bucket = colorBuckets[color];
-            if (!bucket) {
-                bucket = [];
-                colorBuckets[color] = bucket;
-            }
-            bucket.push(entryIndex);
         }
 
         var colors = Object.keys(colorBuckets);
-        // We don't use for in here because it couldn't be optimized.
+        // We don't use for-in here because it couldn't be optimized.
         for (var c = 0; c < colors.length; ++c) {
             var color = colors[c];
             context.fillStyle = color;
@@ -616,7 +628,7 @@ WebInspector.FlameChart.prototype = {
 
             // First fill the boxes.
             context.beginPath();
-            for (i = 0; i < indexes.length; ++i) {
+            for (var i = 0; i < indexes.length; ++i) {
                 var entryIndex = indexes[i];
                 var entryOffset = entryOffsets[entryIndex];
                 var barX = this._offsetToPosition(entryOffset);
@@ -684,6 +696,38 @@ WebInspector.FlameChart.prototype = {
         this._updateElementPosition(this._selectedElement, this._selectedEntryIndex);
     },
 
+    /**
+     * @param {?WebInspector.FlameChart.TimelineData} timelineData
+     */
+    _processTimelineData: function(timelineData)
+    {
+        if (!timelineData) {
+            this._timelineLevels = null;
+            this._rawTimelineData = null;
+            this._rawTimelineDataLength = 0;
+            return;
+        }
+
+        var entryCounters = new Uint32Array(this._dataProvider.maxStackDepth() + 1);
+        for (var i = 0; i < timelineData.entryLevels.length; ++i)
+            ++entryCounters[timelineData.entryLevels[i]];
+        var levelIndexes = new Array(entryCounters.length);
+        for (var i = 0; i < levelIndexes.length; ++i) {
+            levelIndexes[i] = new Uint32Array(entryCounters[i]);
+            entryCounters[i] = 0;
+        }
+        for (var i = 0; i < timelineData.entryLevels.length; ++i) {
+            var level = timelineData.entryLevels[i];
+            levelIndexes[level][entryCounters[level]++] = i;
+        }
+        this._timelineLevels = levelIndexes;
+        this._rawTimelineData = timelineData;
+        this._rawTimelineDataLength = timelineData.entryOffsets.length;
+    },
+
+    /**
+     * @param {number} entryIndex
+     */
     setSelectedEntry: function(entryIndex)
     {
         this._selectedEntryIndex = entryIndex;
@@ -848,7 +892,7 @@ WebInspector.FlameChart.prototype = {
         this._resetCanvas();
         this._updateBoundaries();
         this._calculator._updateBoundaries(this);
-        this.draw(this._offsetWidth, this._offsetHeight);
+        this._draw(this._offsetWidth, this._offsetHeight);
     },
 
     reset: function()
