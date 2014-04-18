@@ -254,14 +254,6 @@ var InspectorFrontendAPI = {
             InspectorFrontendAPI._dispatch(JSON.parse(window.decodeURI(dispatchParameter)));
     },
 
-    // Testing harness support
-    //////////////////////////
-
-    dispatchMessageAsync: function(messageObject)
-    {
-        WebInspector.dispatch(messageObject);
-    },
-
     // Implementation details
     /////////////////////////
 
