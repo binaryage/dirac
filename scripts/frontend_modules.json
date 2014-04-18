@@ -473,7 +473,8 @@
             "workers"
         ],
         "sources": [
-            "Main.js"
+            "Main.js",
+            "OnErrorHandler.js"
         ]
     },
     {

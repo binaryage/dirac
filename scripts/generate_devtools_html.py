@@ -55,6 +55,8 @@ def write_devtools_html(inspector_file, devtools_file, debug):
         devtools_file.write(line)
         if '<head>' in line:
             devtools_file.write(generate_include_tag("buildSystemOnly.js"))
+        if debug and '<head>' in line:
+            devtools_file.write(generate_include_tag("OnErrorHandler.js"))
 
 
 def main(argv):
