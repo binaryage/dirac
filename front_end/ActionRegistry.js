@@ -32,14 +32,13 @@ WebInspector.ActionRegistry.prototype = {
 
     /**
      * @param {string} actionId
-     * @param {!Event} event
      * @return {boolean}
      */
-    execute: function(actionId, event)
+    execute: function(actionId)
     {
         var extension = this._actionsById.get(actionId);
         console.assert(extension, "No action found for actionId '" + actionId + "'");
-        return extension.instance().handleAction(WebInspector.context, event);
+        return extension.instance().handleAction(WebInspector.context);
     }
 }
 
@@ -53,10 +52,9 @@ WebInspector.ActionDelegate = function()
 WebInspector.ActionDelegate.prototype = {
     /**
      * @param {!WebInspector.Context} context
-     * @param {!Event} event
      * @return {boolean}
      */
-    handleAction: function(context, event) {}
+    handleAction: function(context) {}
 }
 
 /** @type {!WebInspector.ActionRegistry} */

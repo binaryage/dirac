@@ -108,7 +108,7 @@ WebInspector.Dialog.prototype = {
      */
     _onGlassPaneKeyDown: function(event)
     {
-        var actions = WebInspector.KeyboardShortcut.applicableActions(/** @type {!KeyboardEvent} */ (event));
+        var actions = WebInspector.shortcutRegistry.applicableActions(WebInspector.KeyboardShortcut.makeKeyFromEvent(/** @type {?KeyboardEvent} */ (event)));
         for (var i = 0; i < actions.length; ++i) {
             if (actions[i].descriptor()["executeInDialog"])
                 return;

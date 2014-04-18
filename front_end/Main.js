@@ -334,7 +334,7 @@ WebInspector.Main.prototype = {
 
         this._registerModules();
         WebInspector.actionRegistry = new WebInspector.ActionRegistry();
-        WebInspector.KeyboardShortcut.registerBindings();
+        WebInspector.shortcutRegistry = new WebInspector.ShortcutRegistry(WebInspector.actionRegistry);
 
         WebInspector.panels = {};
         WebInspector.inspectorView = new WebInspector.InspectorView();
@@ -537,7 +537,8 @@ WebInspector.Main.prototype = {
             event.consume(true);
             return;
         }
-        WebInspector.KeyboardShortcut.handleShortcut(event);
+
+        WebInspector.shortcutRegistry.handleShortcut(event);
     },
 
     _documentCanCopy: function(event)

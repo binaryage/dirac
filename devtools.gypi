@@ -156,6 +156,7 @@
             'front_end/SidebarPane.js',
             'front_end/SidebarTreeElement.js',
             'front_end/NetworkWorkspaceBinding.js',
+            'front_end/ShortcutRegistry.js',
             'front_end/SnippetStorage.js',
             'front_end/SoftContextMenu.js',
             'front_end/SourceFrame.js',

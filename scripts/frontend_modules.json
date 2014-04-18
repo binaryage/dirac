@@ -125,6 +125,7 @@
             "SettingsUI.js",
             "SidebarPane.js",
             "SidebarTreeElement.js",
+            "ShortcutRegistry.js",
             "ShortcutsScreen.js",
             "ShowMoreDataGridNode.js",
             "SoftContextMenu.js",
