@@ -66,6 +66,113 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
 }
 
 WebInspector.JavaScriptSourceFrame.prototype = {
+    /**
+     * @param {!Element} infobarElement
+     */
+    _showInfobar: function(infobarElement)
+    {
+        if (this._infobarElement)
+            this._infobarElement.remove();
+        this._infobarElement = infobarElement;
+        this._infobarElement.classList.add("java-script-source-frame-infobar");
+        this.element.insertBefore(this._infobarElement, this.element.children[0]);
+        this.doResize();
+    },
+
+    /**
+     * @param {!Element} infobarElement
+     */
+    _hideInfobar: function(infobarElement)
+    {
+        infobarElement.remove();
+        this.doResize();
+    },
+
+    _showDivergedInfobar: function()
+    {
+        var target = this._scriptFile.target();
+        if (!target)
+            return;
+
+        this._divergedInfobarElement = document.createElement("div");
+        var infobarMainRow = this._divergedInfobarElement.createChild("div", "java-script-source-frame-infobar-main-row");
+        var infobarDetailsContainer = this._divergedInfobarElement.createChild("span", "java-script-source-frame-infobar-details-container");
+
+        infobarMainRow.createChild("span", "java-script-source-frame-infobar-warning-icon");
+        var infobarMessage = infobarMainRow.createChild("span", "java-script-source-frame-infobar-row-message");
+        infobarMessage.textContent = WebInspector.UIString("Workspace mapping mismatch");
+
+        /**
+         * @this {WebInspector.JavaScriptSourceFrame}
+         */
+        function updateDetailsVisibility()
+        {
+            detailsToggleElement.textContent = detailsToggleElement._toggled ? WebInspector.UIString("less") : WebInspector.UIString("more");
+            infobarDetailsContainer.classList.toggle("hidden", !detailsToggleElement._toggled);
+            this.doResize();
+        }
+
+        /**
+         * @this {WebInspector.JavaScriptSourceFrame}
+         */
+        function toggleDetails()
+        {
+            detailsToggleElement._toggled = !detailsToggleElement._toggled;
+            updateDetailsVisibility.call(this);
+        }
+
+        infobarMainRow.appendChild(document.createTextNode("\u00a0"));
+        var detailsToggleElement = infobarMainRow.createChild("div", "java-script-source-frame-infobar-toggle");
+        detailsToggleElement.addEventListener("click", toggleDetails.bind(this));
+        updateDetailsVisibility.call(this);
+
+        function createDetailsRowMessage()
+        {
+            var infobarDetailsRow = infobarDetailsContainer.createChild("div", "java-script-source-frame-infobar-details-row");
+            return infobarDetailsRow.createChild("span", "java-script-source-frame-infobar-row-message");
+        }
+
+        var infobarDetailsRowMessage;
+
+        infobarDetailsRowMessage = createDetailsRowMessage();
+        infobarDetailsRowMessage.appendChild(document.createTextNode(WebInspector.UIString("The content of this file on the file system:\u00a0")));
+        var fileURL = this._uiSourceCode.originURL();
+        infobarDetailsRowMessage.appendChild(WebInspector.linkifyURLAsNode(fileURL, fileURL, "java-script-source-frame-infobar-details-url", true, fileURL));
+
+        infobarDetailsRowMessage = createDetailsRowMessage();
+        infobarDetailsRowMessage.appendChild(document.createTextNode(WebInspector.UIString("does not match the loaded script:\u00a0")));
+        var scriptURL = this._uiSourceCode.url;
+        infobarDetailsRowMessage.appendChild(WebInspector.linkifyURLAsNode(scriptURL, scriptURL, "java-script-source-frame-infobar-details-url", true, scriptURL));
+
+        // Add an empty row
+        createDetailsRowMessage();
+
+        createDetailsRowMessage().textContent = WebInspector.UIString("Possible solutions are:");;
+
+        function createDetailsRowMessageAction(title)
+        {
+            infobarDetailsRowMessage = createDetailsRowMessage();
+            infobarDetailsRowMessage.appendChild(document.createTextNode(" - "));
+            infobarDetailsRowMessage.appendChild(document.createTextNode(title));
+        }
+
+        if (WebInspector.settings.cacheDisabled.get())
+            createDetailsRowMessageAction(WebInspector.UIString("Reload inspected page"));
+        else
+            createDetailsRowMessageAction(WebInspector.UIString("Check \"Disable cache\" in settings and reload inspected page (recommended setup for authoring and debugging)"));
+        createDetailsRowMessageAction(WebInspector.UIString("Check that your file and script are both loaded from the correct source and their contents match."));
+
+        this._showInfobar(this._divergedInfobarElement);
+    },
+
+    _hideDivergedInfobar: function()
+    {
+        if (!this._divergedInfobarElement)
+            return;
+        this._hideInfobar(this._divergedInfobarElement);
+        delete this._divergedInfobarElement;
+    },
+
     _registerShortcuts: function()
     {
         var shortcutKeys = WebInspector.ShortcutsScreen.SourcesPanelShortcuts;
@@ -200,6 +307,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this._supportsEnabledBreakpointsWhileEditing())
             return;
         if (this._scriptFile) {
+            this._hasCommittedLiveEdit = true;
             this._scriptFile.commitLiveEdit();
             return;
         }
@@ -210,6 +318,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     {
         if (this._supportsEnabledBreakpointsWhileEditing())
             return;
+        this._updateDivergedInfobar();
         this._restoreBreakpointsAfterEditing();
     },
 
@@ -217,6 +326,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     {
         if (this._supportsEnabledBreakpointsWhileEditing())
             return;
+        this._updateDivergedInfobar();
         this._muteBreakpointsWhileEditing();
     },
 
@@ -232,6 +342,21 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             this._addBreakpointDecoration(lineNumber, breakpointDecoration.columnNumber, breakpointDecoration.condition, breakpointDecoration.enabled, true);
         }
         this._muted = true;
+    },
+
+    _updateDivergedInfobar: function()
+    {
+        if (this._uiSourceCode.project().type() !== WebInspector.projectTypes.FileSystem) {
+            this._hideDivergedInfobar();
+            return;
+        }
+        if (this._divergedInfobarElement) {
+            if (!this._scriptFile || !this._scriptFile.hasDivergedFromVM() || this._hasCommittedLiveEdit)
+                this._hideDivergedInfobar();
+        } else {
+            if (this._scriptFile && this._scriptFile.hasDivergedFromVM() && !this._uiSourceCode.isDirty() && !this._hasCommittedLiveEdit)
+                this._showDivergedInfobar();
+        }
     },
 
     _supportsEnabledBreakpointsWhileEditing: function()
@@ -558,7 +683,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             if (this._muted && !this._uiSourceCode.isDirty())
                 this._restoreBreakpointsAfterEditing();
         }
+        delete this._hasCommittedLiveEdit;
         this._scriptFile = this._uiSourceCode.scriptFile();
+        this._updateDivergedInfobar();
         if (this._scriptFile) {
             this._scriptFile.addEventListener(WebInspector.ScriptFile.Events.DidMergeToVM, this._didMergeToVM, this);
             this._scriptFile.addEventListener(WebInspector.ScriptFile.Events.DidDivergeFromVM, this._didDivergeFromVM, this);

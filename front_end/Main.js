@@ -396,8 +396,13 @@ WebInspector.Main.prototype = {
     _documentClick: function(event)
     {
         var anchor = event.target.enclosingNodeOrSelfWithNodeName("a");
-        if (!anchor || !anchor.href || (anchor.target === "_blank"))
+        if (!anchor || !anchor.href)
             return;
+
+        if (anchor.target === "_blank") {
+            InspectorFrontendHost.openInNewTab(anchor.href);
+            return;
+        }
 
         // Prevent the link from navigating, since we don't do any navigation by following links normally.
         event.consume(true);

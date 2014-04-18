@@ -232,6 +232,11 @@ WebInspector.ScriptFile.prototype = {
     isMergingToVM: function() { return false; },
 
     checkMapping: function() { },
+
+    /**
+     * @return {?WebInspector.Target}
+     */
+    target: function() { return null; },
 }
 
 /**
@@ -378,6 +383,16 @@ WebInspector.ResourceScriptFile.prototype = {
             this._scriptSource = source;
             this._update();
         }
+    },
+
+    /**
+     * @return {?WebInspector.Target}
+     */
+    target: function()
+    {
+        if (!this._script)
+            return null;
+        return this._script.target();
     },
 
     dispose: function()
