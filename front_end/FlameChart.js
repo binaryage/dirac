@@ -740,28 +740,29 @@ WebInspector.FlameChart.prototype = {
         return infoTable;
     },
 
+    /**
+     * @param {!CanvasRenderingContext2D} context
+     * @param {string} title
+     * @param {number} maxSize
+     * @return {string}
+     */
     _prepareText: function(context, title, maxSize)
     {
         var titleWidth = this._measureWidth(context, title);
-        if (maxSize > titleWidth)
+        if (maxSize >= titleWidth)
             return title;
 
-        var l = 3;
+        var l = 2;
         var r = title.length;
         while (l < r) {
             var m = (l + r) >> 1;
-            if (this._measureWidth(context, title.trimMiddle(m)) < maxSize)
+            if (this._measureWidth(context, title.trimMiddle(m)) <= maxSize)
                 l = m + 1;
             else
                 r = m;
         }
         title = title.trimMiddle(r - 1);
-        titleWidth = this._measureWidth(context, title);
-        if (titleWidth <= maxSize)
-            return title;
-        if (maxSize > this._measureWidth(context, "\u2026"))
-            return "\u2026";
-        return "";
+        return title !== "\u2026" ? title : "";
     },
 
     /**
