@@ -250,10 +250,12 @@ WebInspector.ModuleManager.prototype = {
     resolve: function(typeName)
     {
         if (!this._cachedTypeClasses[typeName]) {
-            try {
-                this._cachedTypeClasses[typeName] = /** @type function(new:Object) */ (window.eval(typeName.substring(1)));
-            } catch (e) {
-            }
+            var path = typeName.substring(1).split(".");
+            var object = window;
+            for (var i = 0; object && (i < path.length); ++i)
+                object = object[path[i]];
+            if (object)
+                this._cachedTypeClasses[typeName] = /** @type function(new:Object) */(object);
         }
         return this._cachedTypeClasses[typeName];
     }
