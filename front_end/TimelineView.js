@@ -229,7 +229,6 @@ WebInspector.TimelineView.prototype = {
     {
         this._closeRecordDetails();
         this._graphRowsElementWidth = this._graphRowsElement.offsetWidth;
-        this._containerElementHeight = this._containerElement.clientHeight;
         this._headerElement.style.left = sidebarWidth + "px";
         this._headerElement.style.width = this._itemsGraphsElement.offsetWidth + "px";
         this._scheduleRefresh(false, true);
@@ -479,6 +478,7 @@ WebInspector.TimelineView.prototype = {
 
     _refreshRecords: function()
     {
+        this._containerElementHeight = this._containerElement.clientHeight;
         var recordsInWindow = this._presentationModel.filteredRecords();
 
         // Calculate the visible area.
