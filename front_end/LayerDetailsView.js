@@ -45,6 +45,13 @@ WebInspector.LayerDetailsView = function(model)
 }
 
 /**
+ * @enum {string}
+ */
+WebInspector.LayerDetailsView.Events = {
+    ObjectSelected: "ObjectSelected"
+}
+
+/**
  * @type {!Object.<string, string>}
  */
 WebInspector.LayerDetailsView.CompositingReasonDetail = {
@@ -84,11 +91,12 @@ WebInspector.LayerDetailsView.CompositingReasonDetail = {
 
 WebInspector.LayerDetailsView.prototype = {
     /**
-     * @param {?WebInspector.Layer} layer
+     * @param {!WebInspector.LayersPanel.ActiveObject} activeObject
      */
-    setLayer: function(layer)
+    setObject: function(activeObject)
     {
-        this._layer = layer;
+        this._layer = activeObject ? activeObject.layer : null;
+        this._scrollRectIndex = activeObject ? activeObject.scrollRectIndex : null;
         if (this.isShowing())
             this._update();
     },
@@ -115,6 +123,32 @@ WebInspector.LayerDetailsView.prototype = {
             this._paintCountCell.textContent = layer.paintCount();
     },
 
+    /**
+     * @param {number} index
+     * @param {?Event} event
+     */
+    _onScrollRectClicked: function(index, event)
+    {
+        if (event.which !== 1)
+            return;
+        this.dispatchEventToListeners(WebInspector.LayerDetailsView.Events.ObjectSelected, {layer: this._layer, scrollRectIndex: index});
+    },
+
+    /**
+     * @param {!LayerTreeAgent.ScrollRect} scrollRect
+     * @param {number} index
+     */
+    _createScrollRectElement: function(scrollRect, index)
+    {
+        if (index)
+            this._scrollRectsCell.createTextChild(", ");
+        var element = this._scrollRectsCell.createChild("span");
+        element.className = index === this._scrollRectIndex ? "scroll-rect active" : "scroll-rect";
+        element.textContent = WebInspector.LayerTreeModel.ScrollRectType[scrollRect.type].description + " (" + scrollRect.rect.x + ", " + scrollRect.rect.y +
+            ", " + scrollRect.rect.width + ", " + scrollRect.rect.height + ")";
+        element.addEventListener("click", this._onScrollRectClicked.bind(this, index), false);
+    },
+
     _update: function()
     {
         if (!this._layer) {
@@ -130,6 +164,8 @@ WebInspector.LayerDetailsView.prototype = {
         const bytesPerPixel = 4;
         this._memoryEstimateCell.textContent = Number.bytesToString(this._layer.invisible() ? 0 : this._layer.width() * this._layer.height() * bytesPerPixel);
         this._layer.requestCompositingReasons(this._updateCompositingReasons.bind(this));
+        this._scrollRectsCell.removeChildren();
+        this._layer.scrollRects().forEach(this._createScrollRectElement.bind(this));
     },
 
     _createTable: function()
@@ -141,6 +177,7 @@ WebInspector.LayerDetailsView.prototype = {
         this._compositingReasonsCell = this._createRow(WebInspector.UIString("Compositing Reasons:"));
         this._memoryEstimateCell = this._createRow(WebInspector.UIString("Memory estimate:"));
         this._paintCountCell = this._createRow(WebInspector.UIString("Paint count:"));
+        this._scrollRectsCell = this._createRow(WebInspector.UIString("Slow scroll regions:"));
     },
 
     /**

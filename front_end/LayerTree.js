@@ -56,7 +56,7 @@ WebInspector.LayerTree.Events = {
 
 WebInspector.LayerTree.prototype = {
     /**
-     * @param {!WebInspector.Layer} layer
+     * @param {?WebInspector.Layer} layer
      */
     selectLayer: function(layer)
     {
@@ -98,7 +98,7 @@ WebInspector.LayerTree.prototype = {
                 console.assert(false, "Duplicate layer id: " + id);
             seenLayers[id] = true;
             var node = this._treeOutline.getCachedTreeElement(layer);
-            var parent = layer === this._model.contentRoot() ? this._treeOutline : this._treeOutline.getCachedTreeElement(layer.parent());
+            var parent = layer === this._model.root() ? this._treeOutline : this._treeOutline.getCachedTreeElement(layer.parent());
             if (!parent)
                 console.assert(false, "Parent is not in the tree");
             if (!node) {
@@ -112,8 +112,8 @@ WebInspector.LayerTree.prototype = {
                 node._update();
             }
         }
-        if (this._model.contentRoot())
-            this._model.forEachLayer(updateLayer.bind(this), this._model.contentRoot());
+        if (this._model.root())
+            this._model.forEachLayer(updateLayer.bind(this), this._model.root());
         // Cleanup layers that don't exist anymore from tree.
         for (var node = /** @type {!TreeElement|!TreeOutline|null} */(this._treeOutline.children[0]); node && !node.root;) {
             if (seenLayers[node.representedObject.id()]) {
@@ -136,7 +136,7 @@ WebInspector.LayerTree.prototype = {
         var node = this._treeOutline.treeElementFromPoint(event.pageX, event.pageY);
         if (node === this._lastHoveredNode)
             return;
-        this.dispatchEventToListeners(WebInspector.LayerTree.Events.LayerHovered, node && node.representedObject);
+        this.dispatchEventToListeners(WebInspector.LayerTree.Events.LayerHovered, node && node.representedObject ? {layer: node.representedObject} : null);
     },
 
     /**
@@ -145,7 +145,7 @@ WebInspector.LayerTree.prototype = {
     _selectedNodeChanged: function(node)
     {
         var layer = /** @type {!WebInspector.Layer} */ (node.representedObject);
-        this.dispatchEventToListeners(WebInspector.LayerTree.Events.LayerSelected, layer);
+        this.dispatchEventToListeners(WebInspector.LayerTree.Events.LayerSelected, {layer: layer});
     },
 
     /**

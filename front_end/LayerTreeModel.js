@@ -63,10 +63,10 @@ WebInspector.LayerTreeModel.Events = {
 }
 
 WebInspector.LayerTreeModel.ScrollRectType = {
-    NonFastScrollable: "NonFastScrollable",
-    TouchEventHandler: "TouchEventHandler",
-    WheelEventHandler: "WheelEventHandler",
-    RepaintsOnScroll: "RepaintsOnScroll"
+    NonFastScrollable: {name: "NonFastScrollable", description: "Non fast scrollable"},
+    TouchEventHandler: {name: "TouchEventHandler", description: "Touch event handler"},
+    WheelEventHandler: {name: "WheelEventHandler", description: "Wheel event handler"},
+    RepaintsOnScroll: {name: "RepaintsOnScroll", description: "Repaints on scroll"}
 }
 
 WebInspector.LayerTreeModel.prototype = {
@@ -904,13 +904,13 @@ WebInspector.TracingLayer.prototype = {
     {
         this._scrollRects = [];
         if (payload.non_fast_scrollable_region)
-            this._scrollRects.push(this._scrollRectsFromParams(payload.non_fast_scrollable_region, WebInspector.LayerTreeModel.ScrollRectType.NonFastScrollable));
+            this._scrollRects.push(this._scrollRectsFromParams(payload.non_fast_scrollable_region, WebInspector.LayerTreeModel.ScrollRectType.NonFastScrollable.name));
         if (payload.touch_event_handler_region)
-            this._scrollRects.push(this._scrollRectsFromParams(payload.touch_event_handler_region, WebInspector.LayerTreeModel.ScrollRectType.TouchEventHandler));
+            this._scrollRects.push(this._scrollRectsFromParams(payload.touch_event_handler_region, WebInspector.LayerTreeModel.ScrollRectType.TouchEventHandler.name));
         if (payload.wheel_event_handler_region)
-            this._scrollRects.push(this._scrollRectsFromParams(payload.wheel_event_handler_region, WebInspector.LayerTreeModel.ScrollRectType.WheelEventHandler));
+            this._scrollRects.push(this._scrollRectsFromParams(payload.wheel_event_handler_region, WebInspector.LayerTreeModel.ScrollRectType.WheelEventHandler.name));
         if (payload.scroll_event_handler_region)
-            this._scrollRects.push(this._scrollRectsFromParams(payload.scroll_event_handler_region, WebInspector.LayerTreeModel.ScrollRectType.RepaintsOnScroll));
+            this._scrollRects.push(this._scrollRectsFromParams(payload.scroll_event_handler_region, WebInspector.LayerTreeModel.ScrollRectType.RepaintsOnScroll.name));
     },
 
     /**
