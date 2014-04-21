@@ -821,7 +821,7 @@ WebInspector.OverridesView.SensorsTab = function()
     WebInspector.OverridesView.Tab.call(this, "sensors", WebInspector.UIString("Sensors"), [WebInspector.settings.emulateTouchEvents, WebInspector.settings.overrideGeolocation, WebInspector.settings.overrideDeviceOrientation]);
     this.element.classList.add("overrides-sensors");
     this.registerRequiredCSS("accelerometer.css");
-    if (!WebInspector.OverridesSupport.isInspectingDevice())
+    if (!WebInspector.OverridesSupport.hasTouchInputs())
         this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Emulate touch screen"), WebInspector.settings.emulateTouchEvents));
     this._appendGeolocationOverrideControl();
     this._apendDeviceOrientationOverrideControl();

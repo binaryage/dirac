@@ -16,7 +16,17 @@ WebInspector.Target = function(connection, callback)
     this._connection = connection;
     this.isMainFrontend = false;
 
+    /**
+     * @type {boolean}
+     */
+    this.canScreencast = false;
     this.pageAgent().canScreencast(this._initializeCapability.bind(this, "canScreencast", null));
+
+    /**
+     * @type {boolean}
+     */
+    this.hasTouchInputs = false;
+    this.pageAgent().hasTouchInputs(this._initializeCapability.bind(this, "hasTouchInputs", null));
 
     if (WebInspector.experimentsSettings.powerProfiler.isEnabled())
         this.powerAgent().canProfilePower(this._initializeCapability.bind(this, "canProfilePower", null));

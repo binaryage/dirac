@@ -435,6 +435,14 @@
                 "hidden": true
             },
             {
+                "name": "hasTouchInputs",
+                "description": "Tells whether touch inputs are present.",
+                "returns": [
+                    { "name": "result", "type": "boolean", "description": "True if touch inputs are present." }
+                ],
+                "hidden": true
+            },
+            {
                 "name": "setTouchEmulationEnabled",
                 "parameters": [
                     { "name": "enabled", "type": "boolean", "description": "Whether the touch event emulation should be enabled." }

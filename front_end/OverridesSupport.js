@@ -68,6 +68,15 @@ WebInspector.OverridesSupport.isInspectingDevice = function()
     return !!WebInspector.queryParam("remoteFrontend");
 }
 
+/**
+ * @return {boolean}
+ */
+WebInspector.OverridesSupport.hasTouchInputs = function()
+{
+    var target = WebInspector.targetManager.activeTarget();
+    return !!target && target.hasTouchInputs;
+}
+
 WebInspector.OverridesSupport.Events = {
     OverridesWarningUpdated: "OverridesWarningUpdated",
     HasActiveOverridesChanged: "HasActiveOverridesChanged",
@@ -527,7 +536,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _emulateTouchEventsChanged: function()
     {
-        if (WebInspector.OverridesSupport.isInspectingDevice() && WebInspector.settings.emulateTouchEvents.get())
+        if (WebInspector.OverridesSupport.hasTouchInputs() && WebInspector.settings.emulateTouchEvents.get())
             return;
 
         var emulateTouch = WebInspector.settings.emulateTouchEvents.get();
