@@ -458,11 +458,8 @@ WebInspector.InspectorView.DrawerToggleActionDelegate.prototype = {
             WebInspector.inspectorView.closeDrawer();
             return true;
         }
-        if (!WebInspector.experimentsSettings.doNotOpenDrawerOnEsc.isEnabled()) {
-            WebInspector.inspectorView.showDrawer();
-            return true;
-        }
-        return false;
+        WebInspector.inspectorView.showDrawer();
+        return true;
     }
 }
 
