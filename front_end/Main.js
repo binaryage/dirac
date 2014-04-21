@@ -399,13 +399,13 @@ WebInspector.Main.prototype = {
         if (!anchor || !anchor.href)
             return;
 
+        // Prevent the link from navigating, since we don't do any navigation by following links normally.
+        event.consume(true);
+
         if (anchor.target === "_blank") {
             InspectorFrontendHost.openInNewTab(anchor.href);
             return;
         }
-
-        // Prevent the link from navigating, since we don't do any navigation by following links normally.
-        event.consume(true);
 
         function followLink()
         {
