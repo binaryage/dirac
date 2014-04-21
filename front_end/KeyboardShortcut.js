@@ -255,6 +255,15 @@ WebInspector.KeyboardShortcut._makeKeyFromCodeAndModifiers = function(keyCode, m
 };
 
 /**
+ * @param {number} key
+ * @return {!{keyCode: number, modifiers: number}}
+ */
+WebInspector.KeyboardShortcut.keyCodeAndModifiersFromKey = function(key)
+{
+    return { keyCode: key & 255, modifiers: key >> 8 };
+}
+
+/**
  * @param {number|undefined} modifiers
  * @return {string}
  */

@@ -249,7 +249,6 @@ WebInspector.Main.prototype = {
     _doLoadedDoneWithCapabilities: function(mainTarget)
     {
         new WebInspector.VersionController().updateVersion();
-        InspectorFrontendHost.setWhitelistedShortcuts(JSON.stringify([{keyCode: WebInspector.KeyboardShortcut.Keys.F8.code}]));
         WebInspector.shortcutsScreen = new WebInspector.ShortcutsScreen();
         this._registerShortcuts();
 
@@ -335,6 +334,7 @@ WebInspector.Main.prototype = {
         this._registerModules();
         WebInspector.actionRegistry = new WebInspector.ActionRegistry();
         WebInspector.shortcutRegistry = new WebInspector.ShortcutRegistry(WebInspector.actionRegistry);
+        this._registerForwardedShortcuts();
 
         WebInspector.panels = {};
         WebInspector.inspectorView = new WebInspector.InspectorView();
@@ -391,6 +391,15 @@ WebInspector.Main.prototype = {
         this._loadCompletedForWorkers();
         InspectorFrontendAPI.loadCompleted();
         WebInspector.notifications.dispatchEventToListeners(WebInspector.NotificationService.Events.InspectorLoaded);
+    },
+
+    _registerForwardedShortcuts: function()
+    {
+        /** @const */ var forwardedActions = ["main.reload", "main.hard-reload"];
+        var actionKeys = WebInspector.shortcutRegistry.keysForActions(forwardedActions).map(WebInspector.KeyboardShortcut.keyCodeAndModifiersFromKey);
+
+        actionKeys.push({keyCode: WebInspector.KeyboardShortcut.Keys.F8.code});
+        InspectorFrontendHost.setWhitelistedShortcuts(JSON.stringify(actionKeys));
     },
 
     _documentClick: function(event)

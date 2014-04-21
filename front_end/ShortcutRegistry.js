@@ -27,6 +27,26 @@ WebInspector.ShortcutRegistry.prototype = {
     },
 
     /**
+     * @param {!Array.<string>} actionIds
+     * @return {!Array.<number>}
+     */
+    keysForActions: function(actionIds)
+    {
+        var actionIdSet = actionIds.keySet();
+        var result = [];
+        for (var key in this._keyToAction) {
+            var extensions = this._keyToAction[key];
+            extensions.some(function(extension) {
+               if (actionIdSet.hasOwnProperty(extension.descriptor()["actionId"])) {
+                   result.push(key);
+                   return true;
+               }
+            });
+        }
+        return result;
+    },
+
+    /**
      * @param {!KeyboardEvent} event
      */
     handleShortcut: function(event)
