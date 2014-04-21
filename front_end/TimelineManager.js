@@ -68,6 +68,10 @@ WebInspector.TimelineManager.prototype = {
     start: function(maxCallStackDepth, bufferEvents, liveEvents, includeCounters, includeGPUEvents, callback)
     {
         this._enablementCount++;
+        if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled()) {
+            this._configureCpuProfilerSamplingInterval();
+            ProfilerAgent.start();
+        }
         if (this._enablementCount === 1)
             TimelineAgent.start(maxCallStackDepth, bufferEvents, liveEvents, includeCounters, includeGPUEvents, callback);
         else if (callback)
@@ -75,7 +79,7 @@ WebInspector.TimelineManager.prototype = {
     },
 
     /**
-     * @param {function(?Protocol.Error)=} callback
+     * @param {function(?Protocol.Error,?ProfilerAgent.CPUProfile)} callback
      */
     stop: function(callback)
     {
@@ -84,10 +88,40 @@ WebInspector.TimelineManager.prototype = {
             console.error("WebInspector.TimelineManager start/stop calls are unbalanced " + new Error().stack);
             return;
         }
+
+        var masterError = null;
+        var masterProfile = null;
+        var callbackBarrier = new CallbackBarrier();
+
+        if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled())
+            ProfilerAgent.stop(callbackBarrier.createCallback(profilerCallback));
         if (!this._enablementCount)
-            TimelineAgent.stop(this._stopped.bind(this, callback));
-        else if (callback)
-            callback(null);
+            TimelineAgent.stop(callbackBarrier.createCallback(this._processBufferedEvents.bind(this, timelineCallback)));
+
+        callbackBarrier.callWhenDone(allDoneCallback);
+
+        /**
+         * @param {?Protocol.Error} error
+         */
+        function timelineCallback(error)
+        {
+            masterError = masterError || error;
+        }
+
+        /**
+         * @param {?Protocol.Error} error
+         * @param {!ProfilerAgent.CPUProfile} profile
+         */
+        function profilerCallback(error, profile)
+        {
+            masterError = masterError || error;
+            masterProfile = profile;
+        }
+
+        function allDoneCallback()
+        {
+            callback(masterError, masterProfile);
+        }
     },
 
     /**
@@ -95,7 +129,7 @@ WebInspector.TimelineManager.prototype = {
      * @param {?Protocol.Error} error
      * @param {!Array.<!TimelineAgent.TimelineEvent>=} events
      */
-    _stopped: function(callback, error, events)
+    _processBufferedEvents: function(callback, error, events)
     {
         if (events) {
             for (var i = 0; i < events.length; ++i)
@@ -103,6 +137,17 @@ WebInspector.TimelineManager.prototype = {
         }
         if (callback)
             callback(error);
+    },
+
+    _configureCpuProfilerSamplingInterval: function()
+    {
+        var intervalUs = WebInspector.settings.highResolutionCpuProfiling.get() ? 100 : 1000;
+        ProfilerAgent.setSamplingInterval(intervalUs, didChangeInterval);
+        function didChangeInterval(error)
+        {
+            if (error)
+                WebInspector.console.showErrorMessage(error);
+        }
     },
 
     __proto__: WebInspector.TargetAwareObject.prototype
@@ -157,6 +202,9 @@ WebInspector.TimelineDispatcher.prototype = {
         this._manager.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineStopped, consoleTimeline);
     },
 
+    /**
+     * @param {number} count
+     */
     progress: function(count)
     {
         this._manager.dispatchEventToListeners(WebInspector.TimelineManager.EventTypes.TimelineProgress, count);

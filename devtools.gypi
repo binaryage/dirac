@@ -322,10 +322,12 @@
             'front_end/ThreadsToolbar.js',
         ],
         'devtools_timeline_js_files': [
+            'front_end/CPUProfileModel.js',
             'front_end/CountersGraph.js',
             'front_end/MemoryCountersGraph.js',
             'front_end/PieChart.js',
             'front_end/TimelineFrameModel.js',
+            'front_end/TimelineJSProfile.js',
             'front_end/TimelineModel.js',
             'front_end/TimelinePresentationModel.js',
             'front_end/TimelineOverviewPane.js',

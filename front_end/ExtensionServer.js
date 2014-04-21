@@ -709,7 +709,7 @@ WebInspector.ExtensionServer.prototype = {
          */
         function onTimelineSubscriptionStopped()
         {
-            WebInspector.timelineManager.stop();
+            WebInspector.timelineManager.stop(function() {});
             WebInspector.timelineManager.removeEventListener(WebInspector.TimelineManager.EventTypes.TimelineEventRecorded,
                 this._notifyTimelineEventRecorded, this);
         }

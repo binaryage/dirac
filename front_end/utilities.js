@@ -1609,9 +1609,8 @@ function CallbackBarrier()
 
 CallbackBarrier.prototype = {
     /**
-     * @param {function(!T)=} userCallback
-     * @return {function(!T=)}
-     * @template T
+     * @param {function(...)=} userCallback
+     * @return {function(...)}
      */
     createCallback: function(userCallback)
     {

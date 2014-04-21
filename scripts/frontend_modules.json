@@ -160,6 +160,7 @@
         "sources": [
             "ExecutionContextSelector.js",
             "HandlerRegistry.js",
+            "CPUProfileModel.js",
             "CookiesTable.js",
             "DOMBreakpointsSidebarPane.js",
             "DOMPresentationUtils.js",
@@ -323,6 +324,7 @@
             "TimelineEventOverview.js",
             "TimelineFrameModel.js",
             "TimelineFrameOverview.js",
+            "TimelineJSProfile.js",
             "TimelineMemoryOverview.js",
             "TimelinePowerGraph.js",
             "TimelinePowerOverview.js",
@@ -404,7 +406,6 @@
             "CPUProfileBottomUpDataGrid.js",
             "CPUProfileDataGrid.js",
             "CPUProfileFlameChart.js",
-            "CPUProfileModel.js",
             "CPUProfileTopDownDataGrid.js",
             "CPUProfileView.js",
             "HeapSnapshotCommon.js",

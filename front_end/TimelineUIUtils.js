@@ -90,6 +90,7 @@ WebInspector.TimelineUIUtils._initRecordStyles = function()
     recordStyles[recordTypes.FunctionCall] = { title: WebInspector.UIString("Function Call"), category: categories["scripting"] };
     recordStyles[recordTypes.ResourceReceivedData] = { title: WebInspector.UIString("Receive Data"), category: categories["loading"] };
     recordStyles[recordTypes.GCEvent] = { title: WebInspector.UIString("GC Event"), category: categories["scripting"] };
+    recordStyles[recordTypes.JSFrame] = { title: WebInspector.UIString("JS Frame"), category: categories["scripting"] };
     recordStyles[recordTypes.MarkDOMContent] = { title: WebInspector.UIString("DOMContentLoaded event"), category: categories["scripting"] };
     recordStyles[recordTypes.MarkLoad] = { title: WebInspector.UIString("Load event"), category: categories["scripting"] };
     recordStyles[recordTypes.MarkFirstPaint] = { title: WebInspector.UIString("First paint"), category: categories["painting"] };
@@ -240,6 +241,8 @@ WebInspector.TimelineUIUtils.recordTitle = function(record)
 {
     if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp)
         return record.data["message"];
+    if (record.type === WebInspector.TimelineModel.RecordType.JSFrame)
+        return record.data["functionName"];
     if (WebInspector.TimelineUIUtils.isEventDivider(record)) {
         var startTime = Number.millisToString(record.startTimeOffset);
         return WebInspector.UIString("%s at %s", WebInspector.TimelineUIUtils.recordStyle(record).title, startTime, true);

@@ -94,15 +94,15 @@ WebInspector.CPUProfileDataModel.prototype = {
     /**
      * @param {function(number, !ProfilerAgent.CPUProfileNode, number)} openFrameCallback
      * @param {function(number, !ProfilerAgent.CPUProfileNode, number, number, number)} closeFrameCallback
-     * @param {number=} startIndex
+     * @param {number=} startTime
      * @param {number=} stopTime
-     * @return {number}
      */
-    forEachFrame: function(openFrameCallback, closeFrameCallback, startIndex, stopTime)
+    forEachFrame: function(openFrameCallback, closeFrameCallback, startTime, stopTime)
     {
         if (!this.profileHead)
-            return 0;
+            return;
 
+        startTime = startTime || 0;
         stopTime = stopTime || Infinity;
         var samples = this.samples;
         var idToNode = this._idToNode;
@@ -114,8 +114,9 @@ WebInspector.CPUProfileDataModel.prototype = {
         var stackTrace = [];
         var depth = 0;
         var currentInterval;
+        var startIndex = Math.ceil(startTime / samplingInterval);
 
-        for (var sampleIndex = startIndex || 0; sampleIndex < samplesCount; sampleIndex++) {
+        for (var sampleIndex = startIndex; sampleIndex < samplesCount; sampleIndex++) {
             var sampleTime = sampleIndex * samplingInterval;
             if (sampleTime >= stopTime)
                 break;
@@ -168,7 +169,6 @@ WebInspector.CPUProfileDataModel.prototype = {
             currentInterval = openIntervals.pop();
             closeFrameCallback(openIntervals.length, currentInterval.node, currentInterval.startTime, currentInterval.duration, currentInterval.selfTime);
         }
-        return sampleIndex;
     }
 }
 

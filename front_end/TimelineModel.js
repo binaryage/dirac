@@ -99,6 +99,7 @@ WebInspector.TimelineModel.RecordType = {
 
     FunctionCall: "FunctionCall",
     GCEvent: "GCEvent",
+    JSFrame: "JSFrame",
 
     UpdateCounters: "UpdateCounters",
 
@@ -309,7 +310,7 @@ WebInspector.TimelineModel.prototype = {
     {
         if (event.data) {
             // Stopped from console.
-            this._fireRecordingStopped(null);
+            this._fireRecordingStopped(null, null);
         }
     },
 
@@ -329,11 +330,14 @@ WebInspector.TimelineModel.prototype = {
 
     /**
      * @param {?Protocol.Error} error
+     * @param {?ProfilerAgent.CPUProfile} cpuProfile
      */
-    _fireRecordingStopped: function(error)
+    _fireRecordingStopped: function(error, cpuProfile)
     {
         this._bufferEvents = false;
         this._collectionEnabled = false;
+        if (cpuProfile)
+            WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline(this, cpuProfile);
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordingStopped);
     },
 

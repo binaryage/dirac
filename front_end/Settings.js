@@ -345,6 +345,7 @@ WebInspector.ExperimentsSettings = function(experimentsEnabled)
     this.powerProfiler = this._createExperiment("powerProfiler", "Enable power mode in Timeline");
     this.timelineTracingMode = this._createExperiment("timelineTracingMode", "Enable Tracing mode in Timeline");
     this.devicesPanel = this._createExperiment("devicesPanel", "Show devices in drawer");
+    this.timelineJSCPUProfile = this._createExperiment("timelineJSCPUProfile", "Collect JavaScript CPU profile while recording timeline");
 
     this._cleanUpSetting();
 }
