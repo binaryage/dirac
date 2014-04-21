@@ -185,7 +185,7 @@ WebInspector.DOMPresentationUtils.simpleSelector = function(node)
     if (node.getAttribute("id"))
         return lowerCaseName + "#" + node.getAttribute("id");
     if (node.getAttribute("class"))
-        return lowerCaseName + "." + node.getAttribute("class").trim().replace(/\s+/g, ".");
+        return (lowerCaseName === "div" ? "" : lowerCaseName) + "." + node.getAttribute("class").trim().replace(/\s+/g, ".");
     return lowerCaseName;
 }
 
