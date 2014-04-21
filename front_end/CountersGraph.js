@@ -31,10 +31,11 @@
 /**
  * @constructor
  * @extends {WebInspector.SplitView}
+ * @param {string} title
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
  */
-WebInspector.CountersGraph = function(delegate, model)
+WebInspector.CountersGraph = function(title, delegate, model)
 {
     WebInspector.SplitView.call(this, true, false);
 
@@ -62,7 +63,7 @@ WebInspector.CountersGraph = function(delegate, model)
     this._canvasContainer.appendChild(this._timelineGrid.dividersElement);
 
     // Populate sidebar
-    this.sidebarElement().createChild("div", "sidebar-tree sidebar-tree-section").textContent = WebInspector.UIString("COUNTERS");
+    this.sidebarElement().createChild("div", "sidebar-tree sidebar-tree-section").textContent = title;
     this._counters = [];
     this._counterUI = [];
 }

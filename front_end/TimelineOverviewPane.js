@@ -49,6 +49,7 @@ WebInspector.TimelineOverviewPane = function(model)
 
     model.addEventListener(WebInspector.TimelineModel.Events.RecordsCleared, this._reset, this);
     this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
+    this._overviewControls = [];
 }
 
 WebInspector.TimelineOverviewPane.Events = {
@@ -67,26 +68,22 @@ WebInspector.TimelineOverviewPane.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TimelineOverview} overviewControl
+     * @param {!Array.<!WebInspector.TimelineOverview>} overviewControls
      */
-    setOverviewControl: function(overviewControl)
+    setOverviewControls: function(overviewControls)
     {
-        if (this._overviewControl === overviewControl)
-            return;
-
-        var windowTimes = null;
-
-        if (this._overviewControl) {
-            windowTimes = this._overviewControl.windowTimes(this._overviewGrid.windowLeft(), this._overviewGrid.windowRight());
-            this._overviewControl.detach();
-            this._overviewControl.dispose();
+        for (var i = 0; i < this._overviewControls.length; ++i) {
+            var overviewControl = this._overviewControls[i];
+            overviewControl.detach();
+            overviewControl.dispose();
         }
-        this._overviewControl = overviewControl;
-        this._overviewControl.setOverviewGrid(this._overviewGrid);
-        this._overviewControl.show(this._overviewGrid.element);
+
+        for (var i = 0; i < overviewControls.length; ++i) {
+            overviewControls[i].setOverviewGrid(this._overviewGrid);
+            overviewControls[i].show(this._overviewGrid.element);
+        }
+        this._overviewControls = overviewControls;
         this._update();
-        if (windowTimes)
-            this.requestWindowTimes(windowTimes.startTime, windowTimes.endTime);
     },
 
     _update: function()
@@ -95,8 +92,8 @@ WebInspector.TimelineOverviewPane.prototype = {
 
         this._overviewCalculator._setWindow(this._model.minimumRecordTime(), this._model.maximumRecordTime());
         this._overviewCalculator._setDisplayWindow(0, this._overviewGrid.clientWidth());
-        if (this._overviewControl)
-            this._overviewControl.update();
+        for (var i = 0; i < this._overviewControls.length; ++i)
+            this._overviewControls[i].update();
         this._overviewGrid.updateDividers(this._overviewCalculator);
         this._updateEventDividers();
         this._updateWindow();
@@ -142,8 +139,8 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewGrid.setResizeEnabled(false);
         this._eventDividers = [];
         this._overviewGrid.updateDividers(this._overviewCalculator);
-        if (this._overviewControl)
-            this._overviewControl.reset();
+        for (var i = 0; i < this._overviewControls.length; ++i)
+            this._overviewControls[i].reset();
         this._update();
     },
 
@@ -154,7 +151,10 @@ WebInspector.TimelineOverviewPane.prototype = {
     {
         if (this._muteOnWindowChanged)
             return;
-        var windowTimes = this._overviewControl.windowTimes(this._overviewGrid.windowLeft(), this._overviewGrid.windowRight());
+        // Always use first control as a time converter.
+        if (!this._overviewControls.length)
+            return;
+        var windowTimes = this._overviewControls[0].windowTimes(this._overviewGrid.windowLeft(), this._overviewGrid.windowRight());
         this._windowStartTime = windowTimes.startTime;
         this._windowEndTime = windowTimes.endTime;
         this.dispatchEventToListeners(WebInspector.TimelineOverviewPane.Events.WindowChanged, windowTimes);
@@ -176,7 +176,9 @@ WebInspector.TimelineOverviewPane.prototype = {
 
     _updateWindow: function()
     {
-        var windowBoundaries = this._overviewControl.windowBoundaries(this._windowStartTime, this._windowEndTime);
+        if (!this._overviewControls.length)
+            return;
+        var windowBoundaries = this._overviewControls[0].windowBoundaries(this._windowStartTime, this._windowEndTime);
         this._muteOnWindowChanged = true;
         this._overviewGrid.setWindow(windowBoundaries.left, windowBoundaries.right);
         this._overviewGrid.setResizeEnabled(!!this._model.records().length);

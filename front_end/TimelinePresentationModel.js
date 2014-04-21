@@ -88,8 +88,6 @@ WebInspector.TimelinePresentationModel.prototype = {
         this._rootRecord = new WebInspector.TimelinePresentationModel.Record(rootRecord, null);
         /** @type {!Object.<string, !WebInspector.TimelinePresentationModel.Record>} */
         this._coalescingBuckets = {};
-        this._windowStartTime = 0;
-        this._windowEndTime = Infinity;
     },
 
     /**

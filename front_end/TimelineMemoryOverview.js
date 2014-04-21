@@ -38,15 +38,13 @@ WebInspector.TimelineMemoryOverview = function(model)
     WebInspector.TimelineOverviewBase.call(this, model);
     this.element.id = "timeline-overview-memory";
 
-    this._maxHeapSizeLabel = this.element.createChild("div", "max memory-graph-label");
-    this._minHeapSizeLabel = this.element.createChild("div", "min memory-graph-label");
+    this._heapSizeLabel = this.element.createChild("div", "memory-graph-label");
 }
 
 WebInspector.TimelineMemoryOverview.prototype = {
     resetHeapSizeLabels: function()
     {
-        this._maxHeapSizeLabel.textContent = "";
-        this._minHeapSizeLabel.textContent = "";
+        this._heapSizeLabel.textContent = "";
     },
 
     update: function()
@@ -128,8 +126,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
         ctx.strokeStyle = "hsl(220, 90%, 70%)";
         ctx.stroke();
 
-        this._maxHeapSizeLabel.textContent = Number.bytesToString(maxUsedHeapSize);
-        this._minHeapSizeLabel.textContent = Number.bytesToString(minUsedHeapSize);
+        this._heapSizeLabel.textContent = WebInspector.UIString("%s \u2013 %s", Number.bytesToString(minUsedHeapSize), Number.bytesToString(maxUsedHeapSize));
     },
 
     __proto__: WebInspector.TimelineOverviewBase.prototype

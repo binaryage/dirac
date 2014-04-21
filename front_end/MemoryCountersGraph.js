@@ -37,14 +37,14 @@
  */
 WebInspector.MemoryCountersGraph = function(delegate, model)
 {
-    WebInspector.CountersGraph.call(this, delegate, model);
+    WebInspector.CountersGraph.call(this, WebInspector.UIString("MEMORY"), delegate, model);
     this._countersByName = {};
-    this._countersByName["documents"] = this.createCounter(WebInspector.UIString("Documents"), WebInspector.UIString("Documents: %d"), "#d00");
-    this._countersByName["nodes"] = this.createCounter(WebInspector.UIString("Nodes"), WebInspector.UIString("Nodes: %d"), "#0a0");
-    this._countersByName["jsEventListeners"] = this.createCounter(WebInspector.UIString("Listeners"), WebInspector.UIString("Listeners: %d"), "#00d");
-    this._countersByName["jsHeapSizeUsed"] = this.createCounter(WebInspector.UIString("Used JS Heap"), WebInspector.UIString("JS Heap Size: %d"), "rgb(110, 156, 247)");
+    this._countersByName["jsHeapSizeUsed"] = this.createCounter(WebInspector.UIString("Used JS Heap"), WebInspector.UIString("JS Heap Size: %d"), "hsl(220, 90%, 43%)");
+    this._countersByName["documents"] = this.createCounter(WebInspector.UIString("Documents"), WebInspector.UIString("Documents: %d"), "hsl(0, 90%, 43%)");
+    this._countersByName["nodes"] = this.createCounter(WebInspector.UIString("Nodes"), WebInspector.UIString("Nodes: %d"), "hsl(120, 90%, 43%)");
+    this._countersByName["jsEventListeners"] = this.createCounter(WebInspector.UIString("Listeners"), WebInspector.UIString("Listeners: %d"), "hsl(38, 90%, 43%)");
     if (WebInspector.experimentsSettings.gpuTimeline.isEnabled()) {
-        this._gpuMemoryCounter = this.createCounter(WebInspector.UIString("GPU Memory"), WebInspector.UIString("GPU Memory [KB]: %d"), "#c0c");
+        this._gpuMemoryCounter = this.createCounter(WebInspector.UIString("GPU Memory"), WebInspector.UIString("GPU Memory [KB]: %d"), "hsl(300, 90%, 43%)");
         this._countersByName["gpuMemoryUsedKB"] = this._gpuMemoryCounter;
     }
 }

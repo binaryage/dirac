@@ -92,7 +92,6 @@ WebInspector.Settings = function()
     this.textEditorAutocompletion = this.createSetting("textEditorAutocompletion", true);
     this.textEditorBracketMatching = this.createSetting("textEditorBracketMatching", true);
     this.cssReloadEnabled = this.createSetting("cssReloadEnabled", false);
-    this.timelineCaptureStacks = this.createSetting("timelineCaptureStacks", true);
     this.timelineLiveUpdate = this.createSetting("timelineLiveUpdate", true);
     this.showMetricsRulers = this.createSetting("showMetricsRulers", false);
     this.overrideCSSMedia = this.createSetting("overrideCSSMedia", false);

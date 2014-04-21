@@ -11,7 +11,7 @@
  */
 WebInspector.TimelinePowerGraph = function(delegate, model)
 {
-    WebInspector.CountersGraph.call(this, delegate, model);
+    WebInspector.CountersGraph.call(this, WebInspector.UIString("POWER"), delegate, model);
 
     this._counter = this.createCounter(WebInspector.UIString("Power"), WebInspector.UIString("Power: %.2f\u2009watts"), "#d00");
     WebInspector.powerProfiler.addEventListener(WebInspector.PowerProfiler.EventTypes.PowerEventRecorded, this._onRecordAdded, this);

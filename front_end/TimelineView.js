@@ -287,13 +287,6 @@ WebInspector.TimelineView.prototype = {
         this._invalidateAndScheduleRefresh(false, true);
     },
 
-    wasShown: function()
-    {
-        WebInspector.View.prototype.wasShown.call(this);
-        this._onViewportResize();
-        this._refresh();
-    },
-
     willHide: function()
     {
         this._closeRecordDetails();
