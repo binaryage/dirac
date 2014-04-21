@@ -296,6 +296,10 @@ print "Checking generated code in InjectedScriptCanvasModuleSource.js..."
 check_injected_webgl_calls_command = "%s/check_injected_webgl_calls_info.py %s %s/InjectedScriptCanvasModuleSource.js" % (scripts_path, webgl_rendering_context_idl_path, inspector_path)
 canvasModuleCompileProc = subprocess.Popen(check_injected_webgl_calls_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
+print "Validating InjectedScriptSource.js..."
+check_injected_script_command = "%s/check_injected_script_source.py %s/InjectedScriptSource.js" % (scripts_path, inspector_path)
+validateInjectedScriptProc = subprocess.Popen(check_injected_script_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
+
 print
 
 (jsdocValidatorOut, _) = jsdocValidatorProc.communicate()
@@ -361,6 +365,10 @@ errors_found |= hasErrors(injectedScriptCompileOut)
 (canvasModuleCompileOut, _) = canvasModuleCompileProc.communicate()
 print "InjectedScriptCanvasModuleSource.js generated code check output:\n", canvasModuleCompileOut
 errors_found |= hasErrors(canvasModuleCompileOut)
+
+(validateInjectedScriptOut, _) = validateInjectedScriptProc.communicate()
+print "Validate InjectedScriptSource.js output:\n", validateInjectedScriptOut
+errors_found |= hasErrors(validateInjectedScriptOut)
 
 if errors_found:
     print "ERRORS DETECTED"
