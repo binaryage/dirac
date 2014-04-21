@@ -47,20 +47,31 @@ WebInspector.ShortcutRegistry.prototype = {
 
         for (var i = 0; i < extensions.length; ++i) {
             var keyModifiers = key >> 8;
-            var modifiers = WebInspector.KeyboardShortcut.Modifiers;
-            var possiblyPrintableKey = !!event && (!keyModifiers || !!(keyModifiers & modifiers.Shift));
-            if (!possiblyPrintableKey && WebInspector.isWin()) {
-                var altGrMask = modifiers.Ctrl | modifiers.Alt;
-                possiblyPrintableKey = (keyModifiers & altGrMask) === altGrMask;
-            }
-
-            if (!possiblyPrintableKey || /^F\d+|Control|Shift|Alt|Meta|Win|U\+001B$/.test(keyIdentifier)) {
+            if (!isPossiblyInputKey()) {
                 if (handler.call(this, extensions[i]))
-                    return;
+                    break;
             } else {
                 this._pendingActionTimer = setTimeout(handler.bind(this, extensions[i]), 0);
                 break;
             }
+        }
+
+        /**
+         * @return {boolean}
+         */
+        function isPossiblyInputKey()
+        {
+            if (!event || !WebInspector.isBeingEdited(event.target) || /^F\d+|Control|Shift|Alt|Meta|Win|U\+001B$/.test(keyIdentifier))
+                return false;
+
+            if (!keyModifiers)
+                return true;
+
+            var modifiers = WebInspector.KeyboardShortcut.Modifiers;
+            if ((keyModifiers & (modifiers.Ctrl | modifiers.Alt)) === (modifiers.Ctrl | modifiers.Alt))
+                return WebInspector.isWin();
+
+            return keyModifiers !== modifiers.Ctrl && keyModifiers !== modifiers.Alt && keyModifiers !== modifiers.Meta;
         }
 
         /**
@@ -81,12 +92,9 @@ WebInspector.ShortcutRegistry.prototype = {
     /**
      * @param {?Event} event
      */
-    _onKeyPress: function(event)
+    _onInput: function(event)
     {
-        if (!this._pendingActionTimer)
-            return;
-
-        if (WebInspector.isBeingEdited(event.target)) {
+        if (this._pendingActionTimer) {
             clearTimeout(this._pendingActionTimer);
             delete this._pendingActionTimer;
         }
@@ -94,7 +102,7 @@ WebInspector.ShortcutRegistry.prototype = {
 
     _registerBindings: function()
     {
-        document.addEventListener("keypress", this._onKeyPress.bind(this), true);
+        document.addEventListener("input", this._onInput.bind(this), true);
         this._keyToAction = {};
         var extensions = WebInspector.moduleManager.extensions(WebInspector.ActionDelegate);
         extensions.forEach(registerExtension, this);
