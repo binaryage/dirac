@@ -459,7 +459,7 @@ WebInspector.ConsoleView.prototype = {
 
         if (message.type === WebInspector.ConsoleMessage.MessageType.EndGroup)
             this._currentGroup = this._currentGroup.parentGroup() || this._currentGroup;
-        else if (message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed)
+        else if (WebInspector.ConsoleGroup.isGroupStartMessage(message))
             this._currentGroup = this._currentGroup.createChildGroup(viewMessage);
         else
             this._currentGroup.addMessage(viewMessage);
@@ -582,69 +582,64 @@ WebInspector.ConsoleView.prototype = {
     _updateMessageList: function()
     {
         var currentGroup = this._topGroup;
-        var visibleMessageIndex = 0;
         var newVisibleMessages = [];
-        this._hiddenByFilterCount = 0;
-        if (this._searchRegex)
-            this._searchResults = [];
-
-        var anchor = null;
-        for (var i = 0; i < this._consoleMessages.length; ++i) {
-            var sourceMessage = this._consoleMessages[i];
-            var visibleViewMessage = this._visibleViewMessages[visibleMessageIndex];
-            var visibleMessage = visibleViewMessage ? visibleViewMessage.consoleMessage() : null;
-            var lastVisibleViewMessage = newVisibleMessages.peekLast();
-            if (visibleMessage === sourceMessage) {
-                ++visibleMessageIndex;
-                if (!this._filter.shouldBeVisible(visibleMessage)) {
-                    visibleViewMessage.willHide();
-                    visibleViewMessage.toMessageElement().remove();
-                    this._hiddenByFilterCount++;
-                    continue;
-                }
-
-                if (this._tryToCollapseMessages(visibleMessage, lastVisibleViewMessage)) {
-                    visibleViewMessage.willHide();
-                    visibleViewMessage.toMessageElement().remove();
-                    continue;
-                }
-
-                newVisibleMessages.push(visibleViewMessage);
-                visibleViewMessage.resetIncrementRepeatCount();
-
-                if (this._searchRegex && visibleViewMessage.matchesRegex(this._searchRegex))
-                    this._searchResults.push(visibleViewMessage);
-
-                if (visibleMessage.type === WebInspector.ConsoleMessage.MessageType.EndGroup) {
-                    anchor = currentGroup.element;
-                    currentGroup = currentGroup.parentGroup() || currentGroup;
-                } else if (visibleMessage.type === WebInspector.ConsoleMessage.MessageType.StartGroup || visibleMessage.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed) {
-                    currentGroup = visibleViewMessage._group;
-                    anchor = currentGroup._messagesElement.firstChild;
-                } else {
-                    anchor = visibleViewMessage.toMessageElement();
-                }
-            } else {
-                if (this._tryToCollapseMessages(sourceMessage, lastVisibleViewMessage))
-                    continue;
-
-                if (!this._filter.shouldBeVisible(sourceMessage)) {
-                    this._hiddenByFilterCount++;
-                    continue;
-                }
-                var sourceViewMessage = this._viewMessageBy(sourceMessage);
-                if (this._searchRegex && sourceViewMessage.matchesRegex(this._searchRegex))
-                    this._searchResults.push(sourceViewMessage);
-
-                currentGroup.addMessage(sourceViewMessage, anchor ? anchor.nextSibling : currentGroup._messagesElement.firstChild);
-                newVisibleMessages.push(sourceViewMessage);
-                sourceViewMessage.resetIncrementRepeatCount();
-                anchor = sourceViewMessage.toMessageElement();
+        /**
+         * @param {!WebInspector.ConsoleMessage} consoleMessage
+         * @param {?WebInspector.ConsoleViewMessage} beforeVisibleMessage
+         * @this {WebInspector.ConsoleView}
+         */
+        function insertConsoleMessage(consoleMessage, beforeVisibleMessage)
+        {
+            if (!this._filter.shouldBeVisible(consoleMessage)) {
+                this._hiddenByFilterCount++;
+                return;
             }
+            if (this._tryToCollapseMessages(consoleMessage, newVisibleMessages.peekLast()))
+                return;
+            var sourceViewMessage = this._viewMessageBy(consoleMessage);
+            currentGroup.addMessage(sourceViewMessage, beforeVisibleMessage);
+            newVisibleMessages.push(sourceViewMessage);
+            sourceViewMessage.resetIncrementRepeatCount();
         }
 
-        if (this._searchRegex)
+        this._hiddenByFilterCount = 0;
+        var consoleMessageIndex = 0;
+        for (var i = 0; i < this._visibleViewMessages.length; ++i) {
+            var visibleViewMessage = this._visibleViewMessages[i];
+            var visibleMessage = visibleViewMessage.consoleMessage();
+            for (; visibleMessage !== this._consoleMessages[consoleMessageIndex]; ++consoleMessageIndex)
+                insertConsoleMessage.call(this, this._consoleMessages[consoleMessageIndex], visibleViewMessage)
+
+            ++consoleMessageIndex;
+            if (!this._filter.shouldBeVisible(visibleMessage)) {
+                currentGroup.removeMessage(visibleViewMessage);
+                this._hiddenByFilterCount++;
+                continue;
+            }
+            if (this._tryToCollapseMessages(visibleMessage, newVisibleMessages.peekLast())) {
+                currentGroup.removeMessage(visibleViewMessage);
+                continue;
+            }
+
+            newVisibleMessages.push(visibleViewMessage);
+            visibleViewMessage.resetIncrementRepeatCount();
+            if (visibleMessage.type === WebInspector.ConsoleMessage.MessageType.EndGroup)
+                currentGroup = currentGroup.parentGroup() || currentGroup;
+            else if (WebInspector.ConsoleGroup.isGroupStartMessage(visibleMessage))
+                currentGroup = visibleViewMessage._group;
+        }
+        for (; consoleMessageIndex < this._consoleMessages.length; ++consoleMessageIndex)
+            insertConsoleMessage.call(this, this._consoleMessages[consoleMessageIndex], null);
+
+        if (this._searchRegex) {
+            this._searchResults = [];
+            for (var i = 0; i < newVisibleMessages.length; ++i) {
+                var viewMessage = newVisibleMessages[i];
+                if (viewMessage.matchesRegex(this._searchRegex))
+                    this._searchResults.push(viewMessage);
+            }
             this._searchableView.updateSearchMatchesCount(this._searchResults.length);
+        }
 
         this._visibleViewMessages = newVisibleMessages;
         this._updateFilterStatus();
@@ -1000,7 +995,7 @@ WebInspector.ConsoleViewFilter.prototype = {
         if (!this._view._showAllMessagesCheckbox.checked() && executionContext && (message.target() !== executionContext.target() || message.executionContextId !== executionContext.id))
             return false;
 
-        if ((message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed || message.type === WebInspector.ConsoleMessage.MessageType.EndGroup))
+        if (WebInspector.ConsoleGroup.isGroupStartMessage(message) || message.type === WebInspector.ConsoleMessage.MessageType.EndGroup)
             return true;
 
         if (message.type === WebInspector.ConsoleMessage.MessageType.Result || message.type === WebInspector.ConsoleMessage.MessageType.Command)
@@ -1166,14 +1161,12 @@ WebInspector.ConsoleCommandResult.prototype = {
 WebInspector.ConsoleGroup = function(parentGroup, groupMessage)
 {
     this._parentGroup = parentGroup;
-
     this.element = document.createElement("div");
     this.element.className = "console-group";
     this.element.group = this;
-    if (parentGroup)
-        this.element.createChild("div", "console-group-bracket");
 
     if (groupMessage) {
+        this.element.createChild("div", "console-group-bracket");
         groupMessage._group = this;
         this._titleElement = groupMessage.toMessageElement();
         this.element.appendChild(this._titleElement);
@@ -1183,6 +1176,15 @@ WebInspector.ConsoleGroup = function(parentGroup, groupMessage)
     }
 
     this._messagesElement = this.element.createChild("div", "console-group-messages");
+}
+
+/**
+ * @param {!WebInspector.ConsoleMessage} message
+ * @return {boolean}
+ */
+WebInspector.ConsoleGroup.isGroupStartMessage = function(message)
+{
+    return message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed;
 }
 
 WebInspector.ConsoleGroup.prototype = {
@@ -1207,17 +1209,29 @@ WebInspector.ConsoleGroup.prototype = {
 
     /**
      * @param {!WebInspector.ConsoleViewMessage} viewMessage
-     * @param {!Node=} node
+     * @param {!WebInspector.ConsoleViewMessage=} insertBefore
      */
-    addMessage: function(viewMessage, node)
+    addMessage: function(viewMessage, insertBefore)
     {
         var message = viewMessage.consoleMessage();
         var element = viewMessage.toMessageElement();
-        this._messagesElement.insertBefore(element, node || null);
+        var anchor = null;
+        if (insertBefore && insertBefore.consoleMessage().type !== WebInspector.ConsoleMessage.MessageType.EndGroup)
+            anchor = insertBefore._group ? insertBefore._group.element : insertBefore.toMessageElement();
+        this._messagesElement.insertBefore(element, anchor);
         viewMessage.wasShown();
 
         if (element.previousSibling && viewMessage.originatingCommand && element.previousSibling.command === viewMessage.originatingCommand)
             element.previousSibling.classList.add("console-adjacent-user-command-result");
+    },
+
+    /**
+     * @param {!WebInspector.ConsoleViewMessage} visibleViewMessage
+     */
+    removeMessage: function(visibleViewMessage)
+    {
+        visibleViewMessage.willHide();
+        visibleViewMessage.toMessageElement().remove();
     },
 
     /**
