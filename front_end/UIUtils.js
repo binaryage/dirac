@@ -164,8 +164,11 @@ WebInspector.GlassPane.prototype = {
     }
 }
 
-WebInspector.isBeingEdited = function(element)
+WebInspector.isBeingEdited = function(node)
 {
+    if (node.nodeType !== Node.ELEMENT_NODE)
+        return false;
+    var element = /** {!Element} */ (node);
     if (element.classList.contains("text-prompt") || element.nodeName === "INPUT" || element.nodeName === "TEXTAREA")
         return true;
 
