@@ -618,7 +618,6 @@
     outline: none !important;
     border: none;
     width: 100%;
-    height: 18px; /* FIXME: A http://crbug.com/361014 workaround to make the placeholder visible. */
     margin: 0 4px;
     background: transparent;
 }
