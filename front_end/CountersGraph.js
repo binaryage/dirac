@@ -356,10 +356,8 @@ WebInspector.CountersGraph.Counter.prototype = {
         var xFactor = width / (this._maxTime - this._minTime);
 
         this.x = new Array(this.values.length);
-        this.x[this._minimumIndex] = 0;
-        for (var i = this._minimumIndex + 1; i < this._maximumIndex; i++)
+        for (var i = this._minimumIndex + 1; i <= this._maximumIndex; i++)
              this.x[i] = xFactor * (this.times[i] - this._minTime);
-        this.x[this._maximumIndex] = width;
     }
 }
 
