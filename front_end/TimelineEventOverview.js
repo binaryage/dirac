@@ -96,7 +96,7 @@ WebInspector.TimelineEventOverview.prototype = {
                 return;
             var bar = lastBarByGroup[category.overviewStripGroupIndex];
             // This bar may be merged with previous -- so just adjust the previous bar.
-            const barsMergeThreshold = 2;
+            const barsMergeThreshold = 0;
             if (bar && bar.category === category && bar.end + barsMergeThreshold >= recordStart) {
                 if (recordEnd > bar.end)
                     bar.end = recordEnd;
@@ -129,17 +129,22 @@ WebInspector.TimelineEventOverview.prototype = {
         const stripPadding = 4 * window.devicePixelRatio;
         const innerStripHeight = height - 2 * stripPadding;
 
-        var x = begin + 0.5;
+        var x = begin;
         var y = category.overviewStripGroupIndex * height + stripPadding + 0.5;
         var width = Math.max(end - begin, 1);
 
         this._context.save();
         this._context.translate(x, y);
+        this._context.beginPath();
         this._context.scale(1, innerStripHeight / WebInspector.TimelineEventOverview._stripGradientHeight);
         this._context.fillStyle = category.hidden ? this._disabledCategoryFillStyle : this._fillStyles[category.name];
         this._context.fillRect(0, 0, width, WebInspector.TimelineEventOverview._stripGradientHeight);
         this._context.strokeStyle = category.hidden ? this._disabledCategoryBorderStyle : category.borderColor;
-        this._context.strokeRect(0, 0, width, WebInspector.TimelineEventOverview._stripGradientHeight);
+        this._context.moveTo(0, 0);
+        this._context.lineTo(width, 0);
+        this._context.moveTo(0, WebInspector.TimelineEventOverview._stripGradientHeight);
+        this._context.lineTo(width, WebInspector.TimelineEventOverview._stripGradientHeight);
+        this._context.stroke();
         this._context.restore();
     },
 
