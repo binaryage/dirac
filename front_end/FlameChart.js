@@ -580,8 +580,8 @@ WebInspector.FlameChart.prototype = {
         var offsetToPosition = this._offsetToPosition.bind(this);
         var textBaseHeight = this._baseHeight + barHeight - this._dataProvider.textBaseline();
         var colorBuckets = {};
-        var minVisibleBarLevel = Math.max(0, Math.floor((this._scrollTop - this._baseHeight) / barHeight));
-        var maxVisibleBarLevel = Math.min(this._dataProvider.maxStackDepth(), Math.ceil((height + this._scrollTop) / barHeight));
+        var minVisibleBarLevel = Math.max(Math.floor((this._scrollTop - this._baseHeight) / barHeight), 0);
+        var maxVisibleBarLevel = Math.min(Math.floor((this._scrollTop - this._baseHeight + height) / barHeight), this._dataProvider.maxStackDepth());
 
         context.translate(0, -this._scrollTop);
 
