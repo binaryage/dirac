@@ -11,6 +11,8 @@ WebInspector.CPUProfileDataModel = function(profile)
 {
     this.profileHead = profile.head;
     this.samples = profile.samples;
+    this.startTime = profile.startTime * 1000;
+    this.endTime = profile.endTime * 1000;
     this._calculateTimes(profile);
     this._assignParentsInProfile();
     if (this.samples)
@@ -31,9 +33,9 @@ WebInspector.CPUProfileDataModel.prototype = {
         }
         profile.totalHitCount = totalHitCount(profile.head);
 
-        var durationMs = 1000 * (profile.endTime - profile.startTime);
-        var samplingInterval = durationMs / profile.totalHitCount;
-        this.samplingIntervalMs = samplingInterval;
+        var duration = this.endTime - this.startTime;
+        var samplingInterval = duration / profile.totalHitCount;
+        this.samplingInterval = samplingInterval;
 
         function calculateTimesForNode(node) {
             node.selfTime = node.hitCount * samplingInterval;
@@ -87,6 +89,86 @@ WebInspector.CPUProfileDataModel.prototype = {
                 break;
             }
         }
+    },
+
+    /**
+     * @param {function(number, !ProfilerAgent.CPUProfileNode, number)} openFrameCallback
+     * @param {function(number, !ProfilerAgent.CPUProfileNode, number, number, number)} closeFrameCallback
+     * @param {number=} startIndex
+     * @param {number=} stopTime
+     * @return {number}
+     */
+    forEachFrame: function(openFrameCallback, closeFrameCallback, startIndex, stopTime)
+    {
+        if (!this.profileHead)
+            return 0;
+
+        stopTime = stopTime || Infinity;
+        var samples = this.samples;
+        var idToNode = this._idToNode;
+        var gcNode = this._gcNode;
+        var samplesCount = samples.length;
+        var samplingInterval = this.samplingInterval;
+
+        var openIntervals = [];
+        var stackTrace = [];
+        var depth = 0;
+        var currentInterval;
+
+        for (var sampleIndex = startIndex || 0; sampleIndex < samplesCount; sampleIndex++) {
+            var sampleTime = sampleIndex * samplingInterval;
+            if (sampleTime >= stopTime)
+                break;
+
+            stackTrace.length = 0;
+            for (var node = idToNode[samples[sampleIndex]]; node.parent; node = node.parent)
+                stackTrace.push(node);
+
+            depth = 0;
+            node = stackTrace.pop();
+
+            // GC samples have no stack, so we just put GC node on top of the last recoreded sample.
+            if (node === gcNode) {
+                while (depth < openIntervals.length) {
+                    currentInterval = openIntervals[depth];
+                    currentInterval.duration += samplingInterval;
+                    ++depth;
+                }
+                // If previous stack is also GC then just continue.
+                if (openIntervals.length > 0 && openIntervals.peekLast().node === node) {
+                    currentInterval.selfTime += samplingInterval;
+                    continue;
+                }
+            }
+
+            while (node && depth < openIntervals.length && node === openIntervals[depth].node) {
+                currentInterval = openIntervals[depth];
+                currentInterval.duration += samplingInterval;
+                node = stackTrace.pop();
+                ++depth;
+            }
+            while (openIntervals.length > depth) {
+                currentInterval = openIntervals.pop();
+                closeFrameCallback(openIntervals.length, currentInterval.node, currentInterval.startTime, currentInterval.duration, currentInterval.selfTime);
+            }
+            if (!node) {
+                currentInterval.selfTime += samplingInterval;
+                continue;
+            }
+            while (node) {
+                openIntervals.push({node: node, depth: depth, duration: samplingInterval, startTime: sampleTime, selfTime: 0});
+                openFrameCallback(depth, node, sampleTime);
+                node = stackTrace.pop();
+                ++depth;
+            }
+            openIntervals.peekLast().selfTime += samplingInterval;
+        }
+
+        while (openIntervals.length) {
+            currentInterval = openIntervals.pop();
+            closeFrameCallback(openIntervals.length, currentInterval.node, currentInterval.startTime, currentInterval.duration, currentInterval.selfTime);
+        }
+        return sampleIndex;
     }
 }
 
@@ -177,22 +259,6 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
      */
     _calculateTimelineData: function()
     {
-        if (!this._cpuProfile.profileHead)
-            return null;
-
-        var samples = this._cpuProfile.samples;
-        var idToNode = this._cpuProfile._idToNode;
-        var gcNode = this._cpuProfile._gcNode;
-        var samplesCount = samples.length;
-        var samplingInterval = this._cpuProfile.samplingIntervalMs;
-
-        var index = 0;
-
-        var openIntervals = [];
-        var stackTrace = [];
-        var maxDepth = 5; // minimum stack depth for the case when we see no activity.
-        var depth = 0;
-
         /**
          * @constructor
          * @param {number} depth
@@ -200,69 +266,35 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
          * @param {number} startTime
          * @param {!Object} node
          */
-        function ChartEntry(depth, duration, startTime, node)
+        function ChartEntry(depth, duration, startTime, selfTime, node)
         {
             this.depth = depth;
             this.duration = duration;
             this.startTime = startTime;
             this.node = node;
-            this.selfTime = 0;
+            this.selfTime = selfTime;
         }
-        var entries = /** @type {!Array.<!ChartEntry>} */ ([]);
 
-        for (var sampleIndex = 0; sampleIndex < samplesCount; sampleIndex++) {
-            var node = idToNode[samples[sampleIndex]];
-            stackTrace.length = 0;
-            while (node) {
-                stackTrace.push(node);
-                node = node.parent;
-            }
-            stackTrace.pop(); // Remove (root) node
+        /** @type {!Array.<?ChartEntry>} */
+        var entries = [];
+        /** @type {!Array.<number>} */
+        var stack = [];
+        var maxDepth = 5;
 
+        function onOpenFrame()
+        {
+            stack.push(entries.length);
+            // Reserve space for the entry, as they have to be ordered by startTime.
+            // The entry itself will be put there in onCloseFrame.
+            entries.push(null);
+        }
+        function onCloseFrame(depth, node, startTime, totalTime, selfTime)
+        {
+            var index = stack.pop();
+            entries[index] = new ChartEntry(depth, totalTime, startTime, selfTime, node);
             maxDepth = Math.max(maxDepth, depth);
-            depth = 0;
-            node = stackTrace.pop();
-            var intervalIndex;
-
-            // GC samples have no stack, so we just put GC node on top of the last recoreded sample.
-            if (node === gcNode) {
-                while (depth < openIntervals.length) {
-                    intervalIndex = openIntervals[depth].index;
-                    entries[intervalIndex].duration += samplingInterval;
-                    ++depth;
-                }
-                // If previous stack is also GC then just continue.
-                if (openIntervals.length > 0 && openIntervals.peekLast().node === node) {
-                    entries[intervalIndex].selfTime += samplingInterval;
-                    continue;
-                }
-            }
-
-            while (node && depth < openIntervals.length && node === openIntervals[depth].node) {
-                intervalIndex = openIntervals[depth].index;
-                entries[intervalIndex].duration += samplingInterval;
-                node = stackTrace.pop();
-                ++depth;
-            }
-            if (depth < openIntervals.length)
-                openIntervals.length = depth;
-            if (!node) {
-                entries[intervalIndex].selfTime += samplingInterval;
-                continue;
-            }
-
-            var colorGenerator = this._colorGenerator;
-            var color = "";
-            while (node) {
-                entries.push(new ChartEntry(depth, samplingInterval, sampleIndex * samplingInterval, node));
-                openIntervals.push({node: node, index: index});
-                ++index;
-
-                node = stackTrace.pop();
-                ++depth;
-            }
-            entries[entries.length - 1].selfTime += samplingInterval;
         }
+        this._cpuProfile.forEachFrame(onOpenFrame, onCloseFrame);
 
         /** @type {!Array.<!ProfilerAgent.CPUProfileNode>} */
         var entryNodes = new Array(entries.length);
@@ -280,7 +312,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
             entrySelfTimes[i] = entry.selfTime;
         }
 
-        this._maxStackDepth = Math.max(maxDepth, depth);
+        this._maxStackDepth = maxDepth;
 
         /** @type {!WebInspector.FlameChart.TimelineData} */
         this._timelineData = {
