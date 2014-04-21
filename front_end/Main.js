@@ -765,8 +765,6 @@ WebInspector.Main._addWebSocketTarget = function(ws)
 
 new WebInspector.Main();
 
-window.DEBUG = true;
-
 // These methods are added for backwards compatibility with Devtools CodeSchool extension.
 // DO NOT REMOVE
 
