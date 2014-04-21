@@ -203,7 +203,10 @@ WebInspector.RuntimeDispatcher.prototype = {
 
     executionContextDestroyed: function(executionContextId)
     {
+    },
 
+    executionContextsCleared: function()
+    {
     }
 
 }

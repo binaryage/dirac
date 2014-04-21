@@ -825,6 +825,10 @@
                     { "name": "executionContextId", "$ref": "ExecutionContextId", "description": "Id of the destroyed context" }
                 ],
                 "description": "Issued when execution context is destroyed."
+            },
+            {
+                "name": "executionContextsCleared",
+                "description": "Issued when all executionContexts were cleared in browser"
             }
         ]
     },
