@@ -492,33 +492,6 @@ WebInspector.Main.prototype = {
         }
     },
 
-    /**
-     * @param {?Event} event
-     * @return {boolean}
-     */
-    _handleZoomEvent: function(event)
-    {
-        switch (event.keyCode) {
-        case 107: // +
-        case 187: // +
-            InspectorFrontendHost.zoomIn();
-            return true;
-        case 109: // -
-        case 189: // -
-            InspectorFrontendHost.zoomOut();
-            return true;
-        case 48: // 0
-        case 96: // Numpad 0
-            // Zoom reset shortcut does not allow "Shift" when handled by the browser.
-            if (!event.shiftKey) {
-                InspectorFrontendHost.resetZoom();
-                return true;
-            }
-            break;
-        }
-        return false;
-    },
-
     _postDocumentKeyDown: function(event)
     {
         if (event.handled)
@@ -530,17 +503,6 @@ WebInspector.Main.prototype = {
                 event.consume(true);
                 return;
             }
-        }
-
-        if (!WebInspector.Dialog.currentInstance() && WebInspector.inspectElementModeController && WebInspector.inspectElementModeController.handleShortcut(event))
-            return;
-
-        var isValidZoomShortcut = WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) &&
-            !event.altKey &&
-            !InspectorFrontendHost.isStub;
-        if (!WebInspector.Dialog.currentInstance() && isValidZoomShortcut && this._handleZoomEvent(event)) {
-            event.consume(true);
-            return;
         }
 
         WebInspector.shortcutRegistry.handleShortcut(event);
@@ -721,6 +683,72 @@ WebInspector.Main.DebugReloadActionDelegate.prototype = {
     handleAction: function()
     {
         WebInspector.reload();
+        return true;
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.Main.ZoomInActionDelegate = function()
+{
+}
+
+WebInspector.Main.ZoomInActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        if (InspectorFrontendHost.isStub)
+            return false;
+
+        InspectorFrontendHost.zoomIn();
+        return true;
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.Main.ZoomOutActionDelegate = function()
+{
+}
+
+WebInspector.Main.ZoomOutActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        if (InspectorFrontendHost.isStub)
+            return false;
+
+        InspectorFrontendHost.zoomOut();
+        return true;
+    }
+}
+
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.Main.ZoomResetActionDelegate = function()
+{
+}
+
+WebInspector.Main.ZoomResetActionDelegate.prototype = {
+    /**
+     * @return {boolean}
+     */
+    handleAction: function()
+    {
+        if (InspectorFrontendHost.isStub)
+            return false;
+
+        InspectorFrontendHost.resetZoom();
         return true;
     }
 }

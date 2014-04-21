@@ -71,7 +71,16 @@ WebInspector.ShortcutRegistry.prototype = {
             if ((keyModifiers & (modifiers.Ctrl | modifiers.Alt)) === (modifiers.Ctrl | modifiers.Alt))
                 return WebInspector.isWin();
 
-            return keyModifiers !== modifiers.Ctrl && keyModifiers !== modifiers.Alt && keyModifiers !== modifiers.Meta;
+            return !hasModifier(modifiers.Ctrl) && !hasModifier(modifiers.Alt) && !hasModifier(modifiers.Meta);
+        }
+
+        /**
+         * @param {number} mod
+         * @return {boolean}
+         */
+        function hasModifier(mod)
+        {
+            return !!(keyModifiers & mod);
         }
 
         /**
@@ -82,7 +91,7 @@ WebInspector.ShortcutRegistry.prototype = {
         function handler(extension)
         {
             var result = this._actionRegistry.execute(extension.descriptor()["actionId"]);
-            if (result)
+            if (result && event)
                 event.consume(true);
             delete this._pendingActionTimer;
             return result;

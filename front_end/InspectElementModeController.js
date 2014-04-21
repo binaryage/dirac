@@ -64,18 +64,26 @@ WebInspector.InspectElementModeController.prototype = {
         var targets = WebInspector.targetManager.targets();
         for (var i = 0; i < targets.length; ++i)
             targets[i].domModel.setInspectModeEnabled(enabled, WebInspector.settings.showUAShadowDOM.get());
-    },
+    }
+}
 
+/**
+ * @constructor
+ * @implements {WebInspector.ActionDelegate}
+ */
+WebInspector.InspectElementModeController.ToggleSearchActionDelegate = function()
+{
+}
+
+WebInspector.InspectElementModeController.ToggleSearchActionDelegate.prototype = {
     /**
-     * @param {!KeyboardEvent} event
      * @return {boolean}
      */
-    handleShortcut: function(event)
+    handleAction: function()
     {
-        if (WebInspector.KeyboardShortcut.makeKeyFromEvent(event) !== this._shortcut.key)
+        if (!WebInspector.inspectElementModeController)
             return false;
-        this.toggleSearch();
-        event.consume(true);
+        WebInspector.inspectElementModeController.toggleSearch();
         return true;
     }
 }

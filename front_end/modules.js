@@ -84,6 +84,66 @@ var allDescriptors = [
                 ]
             },
             {
+                type: "@WebInspector.ActionDelegate",
+                actionId: "main.toggle-element-search",
+                className: "WebInspector.InspectElementModeController.ToggleSearchActionDelegate",
+                bindings: [
+                    {
+                        platform: "windows,linux",
+                        shortcut: "Ctrl+Shift+C"
+                    },
+                    {
+                        platform: "mac",
+                        shortcut: "Meta+Shift+C"
+                    }
+                ]
+            },
+            {
+                type: "@WebInspector.ActionDelegate",
+                actionId: "main.zoom-in",
+                className: "WebInspector.Main.ZoomInActionDelegate",
+                bindings: [
+                    {
+                        platform: "windows,linux",
+                        shortcut: "Ctrl+Plus Ctrl+Shift+Plus Ctrl+NumpadPlus Ctrl+Shift+NumpadPlus"
+                    },
+                    {
+                        platform: "mac",
+                        shortcut: "Meta+Plus Meta+Shift+Plus Meta+NumpadPlus Meta+Shift+NumpadPlus"
+                    }
+                ]
+            },
+            {
+                type: "@WebInspector.ActionDelegate",
+                actionId: "main.zoom-out",
+                className: "WebInspector.Main.ZoomOutActionDelegate",
+                bindings: [
+                    {
+                        platform: "windows,linux",
+                        shortcut: "Ctrl+Minus Ctrl+Shift+Minus Ctrl+NumpadMinus Ctrl+Shift+NumpadMinus"
+                    },
+                    {
+                        platform: "mac",
+                        shortcut: "Meta+Minus Meta+Shift+Minus Meta+NumpadMinus Meta+Shift+NumpadMinus"
+                    }
+                ]
+            },
+            {
+                type: "@WebInspector.ActionDelegate",
+                actionId: "main.zoom-reset",
+                className: "WebInspector.Main.ZoomResetActionDelegate",
+                bindings: [
+                    {
+                        platform: "windows,linux",
+                        shortcut: "Ctrl+0 Ctrl+Numpad0"
+                    },
+                    {
+                        platform: "mac",
+                        shortcut: "Meta+0 Meta+Numpad0"
+                    }
+                ]
+            },
+            {
                 type: "ui-setting",
                 title: "Disable cache (while DevTools is open)",
                 settingName: "cacheDisabled",
