@@ -568,7 +568,7 @@ WebInspector.SnippetsProjectDelegate.prototype = {
      */
     addSnippet: function(name, contentProvider)
     {
-        return this.addContentProvider("", name, name, contentProvider, true, false);
+        return this.addContentProvider("", name, name, contentProvider, true);
     },
 
     /**

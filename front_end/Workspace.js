@@ -36,9 +36,8 @@
  * @param {string} url
  * @param {!WebInspector.ResourceType} contentType
  * @param {boolean} isEditable
- * @param {boolean=} isContentScript
  */
-WebInspector.FileDescriptor = function(parentPath, name, originURL, url, contentType, isEditable, isContentScript)
+WebInspector.FileDescriptor = function(parentPath, name, originURL, url, contentType, isEditable)
 {
     this.parentPath = parentPath;
     this.name = name;
@@ -46,7 +45,6 @@ WebInspector.FileDescriptor = function(parentPath, name, originURL, url, content
     this.url = url;
     this.contentType = contentType;
     this.isEditable = isEditable;
-    this.isContentScript = isContentScript || false;
 }
 
 /**
@@ -288,7 +286,6 @@ WebInspector.Project.prototype = {
             return;
 
         uiSourceCode = new WebInspector.UISourceCode(this, fileDescriptor.parentPath, fileDescriptor.name, fileDescriptor.originURL, fileDescriptor.url, fileDescriptor.contentType, fileDescriptor.isEditable);
-        uiSourceCode.isContentScript = fileDescriptor.isContentScript;
 
         this._uiSourceCodesMap[path] = {uiSourceCode: uiSourceCode, index: this._uiSourceCodesList.length};
         this._uiSourceCodesList.push(uiSourceCode);
@@ -533,13 +530,17 @@ WebInspector.Project.prototype = {
     }
 }
 
+/**
+ * @enum {string}
+ */
 WebInspector.projectTypes = {
     Debugger: "debugger",
     Formatter: "formatter",
     LiveEdit: "liveedit",
     Network: "network",
     Snippets: "snippets",
-    FileSystem: "filesystem"
+    FileSystem: "filesystem",
+    ContentScripts: "contentscripts"
 }
 
 /**
@@ -592,9 +593,10 @@ WebInspector.Workspace.prototype = {
      */
     uiSourceCodeForOriginURL: function(originURL)
     {
-        var networkProjects = this.projectsForType(WebInspector.projectTypes.Network)
-        for (var i = 0; i < networkProjects.length; ++i) {
-            var project = networkProjects[i];
+        var projects = this.projectsForType(WebInspector.projectTypes.Network);
+        projects = projects.concat(this.projectsForType(WebInspector.projectTypes.ContentScripts));
+        for (var i = 0; i < projects.length; ++i) {
+            var project = projects[i];
             var uiSourceCode = project.uiSourceCodeForOriginURL(originURL);
             if (uiSourceCode)
                 return uiSourceCode;
@@ -709,11 +711,23 @@ WebInspector.Workspace.prototype = {
      * @param {string} url
      * @return {?WebInspector.UISourceCode}
      */
+    _contentScriptUISourceCodeForURL: function(url)
+    {
+        var splitURL = WebInspector.ParsedURL.splitURL(url);
+        var projectId = "contentscripts:" + splitURL[0];
+        var project = this.project(projectId);
+        return project ? project.uiSourceCode(splitURL.slice(1).join("/")) : null;
+    },
+
+    /**
+     * @param {string} url
+     * @return {?WebInspector.UISourceCode}
+     */
     uiSourceCodeForURL: function(url)
     {
         var file = this._fileSystemMapping.fileForURL(url);
         if (!file)
-            return this._networkUISourceCodeForURL(url);
+            return this._networkUISourceCodeForURL(url) || this._contentScriptUISourceCodeForURL(url);
 
         var projectId = WebInspector.FileSystemWorkspaceBinding.projectId(file.fileSystemPath);
         var project = this.project(projectId);

@@ -47,7 +47,7 @@ WebInspector.Script = function(target, scriptId, sourceURL, startLine, startColu
     this.columnOffset = startColumn;
     this.endLine = endLine;
     this.endColumn = endColumn;
-    this.isContentScript = isContentScript;
+    this._isContentScript = isContentScript;
     this.sourceMapURL = sourceMapURL;
     this.hasSourceURL = hasSourceURL;
     /** @type {!Set.<!WebInspector.Script.Location>} */
@@ -74,6 +74,14 @@ WebInspector.Script._trimSourceURLComment = function(source)
 
 
 WebInspector.Script.prototype = {
+    /**
+     * @return {boolean}
+     */
+    isContentScript: function()
+    {
+        return this._isContentScript;
+    },
+
     /**
      * @return {string}
      */

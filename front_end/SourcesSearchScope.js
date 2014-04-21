@@ -46,7 +46,7 @@ WebInspector.SourcesSearchScope.prototype = {
     {
         this.stopSearch();
 
-        var projects = this._workspace.projects().filter(this._filterOutServiceProjects);
+        var projects = this._projects();
         var compositeProgress = new WebInspector.CompositeProgress(progress);
         progress.addEventListener(WebInspector.Progress.Events.Canceled, indexingCanceled);
         for (var i = 0; i < projects.length; ++i) {
@@ -64,11 +64,29 @@ WebInspector.SourcesSearchScope.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Project} project
+     * @return {!Array.<!WebInspector.Project>}
      */
-    _filterOutServiceProjects: function(project)
+    _projects: function()
     {
-        return !project.isServiceProject() || project.type() === WebInspector.projectTypes.Formatter;
+        /**
+         * @param {!WebInspector.Project} project
+         * @return {boolean}
+         */
+        function filterOutServiceProjects(project)
+        {
+            return !project.isServiceProject() || project.type() === WebInspector.projectTypes.Formatter;
+        }
+
+        /**
+         * @param {!WebInspector.Project} project
+         * @return {boolean}
+         */
+        function filterOutContentScriptsIfNeeded(project)
+        {
+            return WebInspector.settings.searchInContentScripts.get() || project.type() !== WebInspector.projectTypes.ContentScripts;
+        }
+
+        return this._workspace.projects().filter(filterOutServiceProjects).filter(filterOutContentScriptsIfNeeded);
     },
 
     /**
@@ -84,7 +102,7 @@ WebInspector.SourcesSearchScope.prototype = {
         this._searchFinishedCallback = searchFinishedCallback;
         this._searchConfig = searchConfig;
 
-        var projects = this._workspace.projects().filter(this._filterOutServiceProjects);
+        var projects = this._projects();
         var barrier = new CallbackBarrier();
         var compositeProgress = new WebInspector.CompositeProgress(progress);
         for (var i = 0; i < projects.length; ++i) {

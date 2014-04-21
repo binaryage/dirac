@@ -130,15 +130,13 @@ WebInspector.CompilerScriptMapping.prototype = {
                 this._sourceMapForURL.put(sourceURL, sourceMap);
                 if (!this._workspace.hasMappingForURL(sourceURL) && !this._workspace.uiSourceCodeForURL(sourceURL)) {
                     var contentProvider = sourceMap.sourceContentProvider(sourceURL, WebInspector.resourceTypes.Script);
-                    this._networkWorkspaceBinding.addFileForURL(sourceURL, contentProvider, true);
+                    this._networkWorkspaceBinding.addFileForURL(sourceURL, contentProvider, true, script.isContentScript());
                 }
                 var uiSourceCode = this._workspace.uiSourceCodeForURL(sourceURL);
-                if (uiSourceCode) {
+                if (uiSourceCode)
                     this._bindUISourceCode(uiSourceCode);
-                    uiSourceCode.isContentScript = script.isContentScript;
-                } else {
+                else
                     WebInspector.console.showErrorMessage(WebInspector.UIString("Failed to locate workspace file mapped to URL %s from source map %s", sourceURL, sourceMap.url()));
-                }
             }
             script.updateLocations();
         }

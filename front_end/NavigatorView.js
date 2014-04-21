@@ -503,7 +503,8 @@ WebInspector.SourcesNavigatorView.prototype = {
     {
         if (!WebInspector.NavigatorView.prototype.accept(uiSourceCode))
             return false;
-        return !uiSourceCode.isContentScript && uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets;
+        return uiSourceCode.project().type() !== WebInspector.projectTypes.ContentScripts && uiSourceCode.project().type() !== WebInspector.projectTypes.Snippets;
+
     },
 
     /**
@@ -551,7 +552,7 @@ WebInspector.ContentScriptsNavigatorView.prototype = {
     {
         if (!WebInspector.NavigatorView.prototype.accept(uiSourceCode))
             return false;
-        return uiSourceCode.isContentScript;
+        return uiSourceCode.project().type() === WebInspector.projectTypes.ContentScripts;
     },
 
     __proto__: WebInspector.NavigatorView.prototype

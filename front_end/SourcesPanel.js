@@ -772,7 +772,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     _mapFileSystemToNetwork: function(uiSourceCode)
     {
-        WebInspector.SelectUISourceCodeForProjectTypeDialog.show(uiSourceCode.name(), WebInspector.projectTypes.Network, mapFileSystemToNetwork.bind(this), this.editorView.mainElement())
+        WebInspector.SelectUISourceCodeForProjectTypesDialog.show(uiSourceCode.name(), [WebInspector.projectTypes.Network, WebInspector.projectTypes.ContentScripts], mapFileSystemToNetwork.bind(this), this.editorView.mainElement())
 
         /**
          * @param {!WebInspector.UISourceCode} networkUISourceCode
@@ -801,7 +801,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     _mapNetworkToFileSystem: function(networkUISourceCode)
     {
-        WebInspector.SelectUISourceCodeForProjectTypeDialog.show(networkUISourceCode.name(), WebInspector.projectTypes.FileSystem, mapNetworkToFileSystem.bind(this), this.editorView.mainElement())
+        WebInspector.SelectUISourceCodeForProjectTypesDialog.show(networkUISourceCode.name(), [WebInspector.projectTypes.FileSystem], mapNetworkToFileSystem.bind(this), this.editorView.mainElement())
 
         /**
          * @param {!WebInspector.UISourceCode} uiSourceCode
@@ -836,7 +836,7 @@ WebInspector.SourcesPanel.prototype = {
             return project.type() === WebInspector.projectTypes.FileSystem;
         }
 
-        if (uiSourceCode.project().type() === WebInspector.projectTypes.Network) {
+        if (uiSourceCode.project().type() === WebInspector.projectTypes.Network || uiSourceCode.project().type() === WebInspector.projectTypes.ContentScripts) {
             if (!this._workspace.projects().filter(filterProject).length)
                 return;
             if (this._workspace.uiSourceCodeForURL(uiSourceCode.url) === uiSourceCode)

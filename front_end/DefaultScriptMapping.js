@@ -121,7 +121,7 @@ WebInspector.DefaultScriptMapping.prototype = {
  * @constructor
  * @param {!WebInspector.Workspace} workspace
  * @param {string} id
- * @param {string} type
+ * @param {!WebInspector.projectTypes} type
  * @extends {WebInspector.ContentProviderBasedProjectDelegate}
  */
 WebInspector.DebuggerProjectDelegate = function(workspace, id, type)
@@ -149,7 +149,7 @@ WebInspector.DebuggerProjectDelegate.prototype = {
         var splitURL = WebInspector.ParsedURL.splitURL(script.sourceURL);
         var name = splitURL[splitURL.length - 1];
         name = "VM" + script.scriptId + (name ? " " + name : "");
-        return this.addContentProvider("", name, script.sourceURL, contentProvider, !!editable, script.isContentScript);
+        return this.addContentProvider("", name, script.sourceURL, contentProvider, !!editable);
     },
     
     __proto__: WebInspector.ContentProviderBasedProjectDelegate.prototype

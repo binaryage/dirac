@@ -834,17 +834,17 @@ WebInspector.OpenResourceDialog.show = function(sourcesView, relativeToElement, 
 /**
  * @constructor
  * @extends {WebInspector.SelectUISourceCodeDialog}
- * @param {string} type
+ * @param {!Array.<string>} types
  * @param {function(!WebInspector.UISourceCode)} callback
  */
-WebInspector.SelectUISourceCodeForProjectTypeDialog = function(type, callback)
+WebInspector.SelectUISourceCodeForProjectTypesDialog = function(types, callback)
 {
-    this._type = type;
+    this._types = types;
     WebInspector.SelectUISourceCodeDialog.call(this);
     this._callback = callback;
 }
 
-WebInspector.SelectUISourceCodeForProjectTypeDialog.prototype = {
+WebInspector.SelectUISourceCodeForProjectTypesDialog.prototype = {
     /**
      * @param {!WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber
@@ -861,23 +861,23 @@ WebInspector.SelectUISourceCodeForProjectTypeDialog.prototype = {
      */
     filterProject: function(project)
     {
-        return project.type() === this._type;
+        return this._types.indexOf(project.type()) !== -1;
     },
 
     __proto__: WebInspector.SelectUISourceCodeDialog.prototype
 }
 
 /**
- * @param {string} type
+ * @param {!Array.<string>} types
  * @param {function(!WebInspector.UISourceCode)} callback
  * @param {!Element} relativeToElement
  */
-WebInspector.SelectUISourceCodeForProjectTypeDialog.show = function(name, type, callback, relativeToElement)
+WebInspector.SelectUISourceCodeForProjectTypesDialog.show = function(name, types, callback, relativeToElement)
 {
     if (WebInspector.Dialog.currentInstance())
         return;
 
-    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.SelectUISourceCodeForProjectTypeDialog(type, callback));
+    var filteredItemSelectionDialog = new WebInspector.FilteredItemSelectionDialog(new WebInspector.SelectUISourceCodeForProjectTypesDialog(types, callback));
     filteredItemSelectionDialog.setQuery(name);
     filteredItemSelectionDialog.renderAsTwoRows();
     WebInspector.Dialog.show(relativeToElement, filteredItemSelectionDialog);

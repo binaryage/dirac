@@ -94,12 +94,12 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
         if (!script.sourceURL || script.isInlineScript() || script.isSnippet())
             return;
         // Filter out embedder injected content scripts.
-        if (script.isContentScript && !script.hasSourceURL) {
+        if (script.isContentScript() && !script.hasSourceURL) {
             var parsedURL = new WebInspector.ParsedURL(script.sourceURL);
             if (!parsedURL.isValid)
                 return;
         }
-        this._addFile(script.sourceURL, script, script.isContentScript);
+        this._addFile(script.sourceURL, script, script.isContentScript());
     },
 
     /**

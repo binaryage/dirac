@@ -32,16 +32,27 @@
  * @constructor
  * @extends {WebInspector.ContentProviderBasedProjectDelegate}
  * @param {!WebInspector.Workspace} workspace
- * @param {string} name
+ * @param {string} projectId
+ * @param {string} projectName
+ * @param {!WebInspector.projectTypes} projectType
  */
-WebInspector.NetworkProjectDelegate = function(workspace, name)
+WebInspector.NetworkProjectDelegate = function(workspace, projectId, projectName, projectType)
 {
-    this._name = name;
-    WebInspector.ContentProviderBasedProjectDelegate.call(this, workspace, this._name, WebInspector.projectTypes.Network);
+    this._name = projectName;
+    this._id = projectId;
+    WebInspector.ContentProviderBasedProjectDelegate.call(this, workspace, projectId, projectType);
     this._lastUniqueSuffix = 0;
 }
 
 WebInspector.NetworkProjectDelegate.prototype = {
+    /**
+     * @return {string}
+     */
+    id: function()
+    {
+        return this._id;
+    },
+
     /**
      * @return {string}
      */
@@ -50,7 +61,7 @@ WebInspector.NetworkProjectDelegate.prototype = {
         if (typeof this._displayName !== "undefined")
             return this._displayName;
         if (!this._name) {
-            this._displayName = this.type() !== WebInspector.projectTypes.Snippets ? WebInspector.UIString("(no domain)") : "";
+            this._displayName = WebInspector.UIString("(no domain)");
             return this._displayName;
         }
         var parsedURL = new WebInspector.ParsedURL(this._name);
@@ -70,14 +81,13 @@ WebInspector.NetworkProjectDelegate.prototype = {
      * @param {string} url
      * @param {!WebInspector.ContentProvider} contentProvider
      * @param {boolean} isEditable
-     * @param {boolean=} isContentScript
      * @return {string}
      */
-    addFile: function(parentPath, name, forceUniquePath, url, contentProvider, isEditable, isContentScript)
+    addFile: function(parentPath, name, forceUniquePath, url, contentProvider, isEditable)
     {
         if (forceUniquePath)
             name = this._ensureUniqueName(parentPath, name);
-        return this.addContentProvider(parentPath, name, url, contentProvider, isEditable, isContentScript);
+        return this.addContentProvider(parentPath, name, url, contentProvider, isEditable);
     },
 
     /**
@@ -115,14 +125,18 @@ WebInspector.NetworkWorkspaceBinding = function(workspace)
 WebInspector.NetworkWorkspaceBinding.prototype = {
     /**
      * @param {string} projectName
+     * @param {boolean} isContentScripts
      * @return {!WebInspector.NetworkProjectDelegate}
      */
-    _projectDelegate: function(projectName)
+    _projectDelegate: function(projectName, isContentScripts)
     {
-        if (this._projectDelegates[projectName])
-            return this._projectDelegates[projectName];
-        var projectDelegate = new WebInspector.NetworkProjectDelegate(this._workspace, projectName);
-        this._projectDelegates[projectName] = projectDelegate;
+        var projectId = (isContentScripts ? "contentscripts:" : "") + projectName;
+        var projectType = isContentScripts ? WebInspector.projectTypes.ContentScripts : WebInspector.projectTypes.Network;
+
+        if (this._projectDelegates[projectId])
+            return this._projectDelegates[projectId];
+        var projectDelegate = new WebInspector.NetworkProjectDelegate(this._workspace, projectId, projectName, projectType);
+        this._projectDelegates[projectId] = projectDelegate;
         return projectDelegate;
     },
 
@@ -164,17 +178,17 @@ WebInspector.NetworkWorkspaceBinding.prototype = {
         var projectName = splitURL[0];
         var parentPath = splitURL.slice(1, splitURL.length - 1).join("/");
         var name = splitURL[splitURL.length - 1];
-        var projectDelegate = this._projectDelegate(projectName);
-        var path = projectDelegate.addFile(parentPath, name, forceUnique, url, contentProvider, isEditable, isContentScript);
-        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(projectName, path));
+        var projectDelegate = this._projectDelegate(projectName, isContentScript || false);
+        var path = projectDelegate.addFile(parentPath, name, forceUnique, url, contentProvider, isEditable);
+        var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(projectDelegate.id(), path));
         console.assert(uiSourceCode);
         return uiSourceCode;
     },
 
     reset: function()
     {
-        for (var projectName in this._projectDelegates)
-            this._projectDelegates[projectName].reset();
+        for (var projectId in this._projectDelegates)
+            this._projectDelegates[projectId].reset();
         this._projectDelegates = {};
     },
 

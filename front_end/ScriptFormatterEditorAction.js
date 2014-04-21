@@ -236,7 +236,7 @@ WebInspector.FormatterProjectDelegate.prototype = {
     _addFormatted: function(name, sourceURL, contentType, content)
     {
         var contentProvider = new WebInspector.StaticContentProvider(contentType, content);
-        return this.addContentProvider(sourceURL, name + ":formatted", "deobfuscated:" + sourceURL, contentProvider, false, false);
+        return this.addContentProvider(sourceURL, name + ":formatted", "deobfuscated:" + sourceURL, contentProvider, false);
     },
 
     /**
@@ -319,8 +319,8 @@ WebInspector.ScriptFormatterEditorAction.prototype = {
     {
         if (!uiSourceCode)
             return false;
-        var projectType = uiSourceCode.project().type();
-        if (projectType !== WebInspector.projectTypes.Network && projectType !== WebInspector.projectTypes.Debugger)
+        var supportedProjectTypes = [WebInspector.projectTypes.Network, WebInspector.projectTypes.Debugger, WebInspector.projectTypes.ContentScripts];
+        if (supportedProjectTypes.indexOf(uiSourceCode.project().type()) === -1)
             return false;
         var contentType = uiSourceCode.contentType();
         return contentType === WebInspector.resourceTypes.Script || contentType === WebInspector.resourceTypes.Document;

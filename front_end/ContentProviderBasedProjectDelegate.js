@@ -33,15 +33,13 @@
  * @implements {WebInspector.ProjectDelegate}
  * @param {!WebInspector.Workspace} workspace
  * @param {string} id
- * @param {string} type
+ * @param {!WebInspector.projectTypes} type
  */
 WebInspector.ContentProviderBasedProjectDelegate = function(workspace, id, type)
 {
     this._type = type;
     /** @type {!Object.<string, !WebInspector.ContentProvider>} */
     this._contentProviders = {};
-    /** @type {!Object.<string, boolean>} */
-    this._isContentScriptMap = {};
     this._projectStore = workspace.addProject(id, this);
 }
 
@@ -228,18 +226,6 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
             return;
         }
 
-        /**
-         * @param {string} path
-         * @this {WebInspector.ContentProviderBasedProjectDelegate}
-         */
-        function filterOutContentScripts(path)
-        {
-            return !this._isContentScriptMap[path];
-        }
-
-        if (!WebInspector.settings.searchInContentScripts.get())
-            paths = paths.filter(filterOutContentScripts.bind(this));
-
         paths = paths.filter(searchConfig.filePathMatchesFileQuery.bind(searchConfig));
         var barrier = new CallbackBarrier();
         progress.setTotalWork(paths.length);
@@ -316,17 +302,15 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
      * @param {string} url
      * @param {!WebInspector.ContentProvider} contentProvider
      * @param {boolean} isEditable
-     * @param {boolean=} isContentScript
      * @return {string}
      */
-    addContentProvider: function(parentPath, name, url, contentProvider, isEditable, isContentScript)
+    addContentProvider: function(parentPath, name, url, contentProvider, isEditable)
     {
         var path = parentPath ? parentPath + "/" + name : name;
         if (this._contentProviders[path])
             return path;
-        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, url, url, contentProvider.contentType(), isEditable, isContentScript);
+        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, url, url, contentProvider.contentType(), isEditable);
         this._contentProviders[path] = contentProvider;
-        this._isContentScriptMap[path] = isContentScript || false;
         this._projectStore.addFile(fileDescriptor);
         return path;
     },
@@ -337,7 +321,6 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     removeFile: function(path)
     {
         delete this._contentProviders[path];
-        delete this._isContentScriptMap[path];
         this._projectStore.removeFile(path);
     },
 
@@ -352,7 +335,6 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
     reset: function()
     {
         this._contentProviders = {};
-        this._isContentScriptMap = {};
         this._projectStore.reset();
     }
 }
