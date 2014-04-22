@@ -38,6 +38,7 @@
             'front_end/ActionRegistry.js',
             'front_end/ApplicationCacheModel.js',
             'front_end/BreakpointManager.js',
+            'front_end/CPUProfileModel.js',
             'front_end/Checkbox.js',
             'front_end/Color.js',
             'front_end/CompilerScriptMapping.js',
@@ -322,7 +323,6 @@
             'front_end/ThreadsToolbar.js',
         ],
         'devtools_timeline_js_files': [
-            'front_end/CPUProfileModel.js',
             'front_end/CountersGraph.js',
             'front_end/MemoryCountersGraph.js',
             'front_end/PieChart.js',
@@ -346,7 +346,6 @@
             'front_end/CPUProfileBottomUpDataGrid.js',
             'front_end/CPUProfileDataGrid.js',
             'front_end/CPUProfileFlameChart.js',
-            'front_end/CPUProfileModel.js',
             'front_end/CPUProfileTopDownDataGrid.js',
             'front_end/CPUProfileView.js',
             'front_end/HeapSnapshotCommon.js',
