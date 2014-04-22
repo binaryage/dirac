@@ -39,11 +39,21 @@ def validate_injected_script(fileName):
 
     array_proto_functions = "|".join(["concat", "every", "filter", "forEach", "indexOf", "join", "lastIndexOf", "map", "pop", "push", "reduce", "reduceRight", "reverse", "shift", "slice", "some", "sort", "splice", "toLocaleString", "toString", "unshift"])
 
-    black_list_call_regex = re.compile(r"\.(bind|toString|" + array_proto_functions + r")\(")
+    # Black list:
+    # - Function.prototype.bind()
+    # - Object.prototype.toString()
+    # - Array.prototype.*
+    # - Math.*
+    black_list_call_regex = re.compile(r"\bMath\.\w+\(|\.(bind|toString|" + array_proto_functions + r")\(")
 
+    errors_found = False
     for i, line in enumerate(lines):
         for match in re.finditer(black_list_call_regex, line):
+            errors_found = True
             print "ERROR: Black list function call in %s at line %02d column %02d: %s" % (os.path.basename(fileName), i + 1, match.start(), match.group(0))
+
+    if not errors_found:
+        print "OK"
 
 
 def main(argv):
