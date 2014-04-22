@@ -182,8 +182,8 @@ WebInspector.Popover.prototype = {
         } else {
             // Positioning below the anchor.
             newElementPosition.y = anchorBox.y + anchorBox.height + arrowHeight;
-            if ((newElementPosition.y + newElementPosition.height + arrowHeight - borderWidth >= totalHeight) && (arrowDirection !== WebInspector.Popover.Orientation.Top)) {
-                newElementPosition.height = totalHeight - anchorBox.y - anchorBox.height - borderRadius * 2 - arrowHeight;
+            if ((newElementPosition.y + newElementPosition.height + borderRadius >= totalHeight) && (arrowDirection !== WebInspector.Popover.Orientation.Top)) {
+                newElementPosition.height = totalHeight - borderRadius - newElementPosition.y;
                 if (this._hasFixedHeight && newElementPosition.height < preferredHeight) {
                     newElementPosition.y = totalHeight - preferredHeight - borderRadius;
                     newElementPosition.height = preferredHeight;
