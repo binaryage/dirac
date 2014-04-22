@@ -28,7 +28,7 @@
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 import os
-import os.path
+import os.path as path
 import generate_protocol_externs
 import re
 import shutil
@@ -40,24 +40,27 @@ try:
 except ImportError:
     import simplejson as json
 
-scripts_path = os.path.dirname(os.path.abspath(__file__))
-devtools_path = os.path.dirname(scripts_path)
-inspector_path = os.path.dirname(devtools_path) + "/core/inspector"
-devtools_frontend_path = devtools_path + "/front_end"
-protocol_externs_file = devtools_frontend_path + "/protocol_externs.js"
-webgl_rendering_context_idl_path = os.path.dirname(devtools_path) + "/core/html/canvas/WebGLRenderingContextBase.idl"
-closure_compiler_jar = scripts_path + "/closure/compiler.jar"
-closure_runner_jar = scripts_path + "/compiler-runner/closure-runner.jar"
-jsdoc_validator_jar = scripts_path + "/jsdoc-validator/jsdoc-validator.jar"
+scripts_path = path.dirname(path.abspath(__file__))
+devtools_path = path.dirname(scripts_path)
+inspector_path = path.join(path.dirname(devtools_path), "core", "inspector")
+devtools_frontend_path = path.join(devtools_path, "front_end")
+global_externs_file = path.join(devtools_frontend_path, "externs.js")
+protocol_externs_file = path.join(devtools_frontend_path, "protocol_externs.js")
+webgl_rendering_context_idl_path = path.join(path.dirname(devtools_path), "core", "html", "canvas", "WebGLRenderingContextBase.idl")
+injected_script_source_name = path.join(inspector_path, "InjectedScriptSource.js")
+canvas_injected_script_source_name = path.join(inspector_path, "InjectedScriptCanvasModuleSource.js")
+closure_compiler_jar = path.join(scripts_path, "closure", "compiler.jar")
+closure_runner_jar = path.join(scripts_path, "compiler-runner", "closure-runner.jar")
+jsdoc_validator_jar = path.join(scripts_path, "jsdoc-validator", "jsdoc-validator.jar")
 java_exec = "java -Xms1024m -server -XX:+TieredCompilation"
 
-generate_protocol_externs.generate_protocol_externs(protocol_externs_file, devtools_path + "/protocol.json")
+generate_protocol_externs.generate_protocol_externs(protocol_externs_file, path.join(devtools_path, "protocol.json"))
 
 jsmodule_name_prefix = "jsmodule_"
 js_modules_name = "frontend_modules.json"
 
 try:
-    with open(os.path.join(scripts_path, js_modules_name), "rt") as js_modules_file:
+    with open(path.join(scripts_path, js_modules_name), "rt") as js_modules_file:
         modules = json.loads(js_modules_file.read())
 except:
     print "ERROR: Failed to read %s" % js_modules_name
@@ -106,7 +109,7 @@ def verify_importScript_usage():
         for file_name in module['sources']:
             if file_name in allowed_import_statements_files:
                 continue
-            sourceFile = open(devtools_frontend_path + "/" + file_name, "r")
+            sourceFile = open(path.join(devtools_frontend_path, file_name), "r")
             source = sourceFile.read()
             sourceFile.close()
             if "importScript(" in source:
@@ -119,7 +122,7 @@ def dump_all_checked_files():
     files = {}
     for module in modules:
         for source in module["sources"]:
-            files[devtools_frontend_path + "/" + source] = True
+            files[path.join(devtools_frontend_path, source)] = True
     return " ".join(files.keys())
 
 
@@ -130,9 +133,9 @@ def verify_jsdoc_extra():
 def verify_jsdoc():
     errors_found = False
     for module in modules:
-        for file_name in module['sources']:
+        for file_name in module["sources"]:
             lineIndex = 0
-            full_file_name = devtools_frontend_path + "/" + file_name
+            full_file_name = path.join(devtools_frontend_path, file_name)
             with open(full_file_name, "r") as sourceFile:
                 for line in sourceFile:
                     line = line.rstrip()
@@ -188,12 +191,14 @@ closure_runner_command = "%s -jar %s --compiler-args-file %s" % (java_exec, clos
 spawned_compiler_command = "%s -jar %s %s \\\n" % (java_exec, closure_compiler_jar, common_closure_args)
 
 modules_by_name = {}
-for module in modules:
-    modules_by_name[module["name"]] = module
-
+standalone_modules_by_name = {}
 dependents_by_module_name = {}
+
 for module in modules:
     name = module["name"]
+    modules_by_name[name] = module
+    if "standalone" in module:
+        standalone_modules_by_name[name] = module
     for dep in module["dependencies"]:
         list = dependents_by_module_name.get(dep)
         if not list:
@@ -201,23 +206,36 @@ for module in modules:
             dependents_by_module_name[dep] = list
         list.append(name)
 
-standalone_modules = []
-for module in modules:
-    if "standalone" in module:
-        standalone_modules.append(module)
-
 
 def verify_standalone_modules():
-    standalone_module_names = {}
-    for standalone_module in standalone_modules:
-        standalone_module_names[standalone_module["name"]] = True
     for module in modules:
         for dependency in module["dependencies"]:
-            if dependency in standalone_module_names:
-                print "ERROR: Standalone module %s cannot be in dependencies of %s" % (dependency, module["name"])
+            if dependency in standalone_modules_by_name:
+                print "ERROR: Standalone module %s may not be present among the dependencies of %s" % (dependency, module["name"])
                 errors_found = True
 
 verify_standalone_modules()
+
+
+def check_duplicate_files():
+
+    def check_module(module, seen_files, seen_modules):
+        name = module["name"]
+        seen_modules[name] = True
+        for dep_name in module["dependencies"]:
+            if not dep_name in seen_modules:
+                check_module(modules_by_name[dep_name], seen_files, seen_modules)
+        for source in module["sources"]:
+            referencing_module = seen_files.get(source)
+            if referencing_module:
+                print "ERROR: Duplicate use of %s in '%s' (previously seen in '%s')" % (source, name, referencing_module)
+            seen_files[source] = name
+
+    for module_name in standalone_modules_by_name:
+        check_module(standalone_modules_by_name[module_name], {}, {})
+
+print "Checking duplicate files across modules..."
+check_duplicate_files()
 
 
 def dump_module(name, recursively, processed_modules):
@@ -240,14 +258,14 @@ def dump_module(name, recursively, processed_modules):
         firstDependency = False
         command += jsmodule_name_prefix + dependency
     for script in module["sources"]:
-        command += " --js " + devtools_frontend_path + "/" + script
+        command += " --js " + path.join(devtools_frontend_path, script)
     return command
 
 print "Compiling frontend..."
 
 for module in modules:
     closure_args = common_closure_args
-    closure_args += " --externs " + devtools_frontend_path + "/externs.js"
+    closure_args += " --externs " + global_externs_file
     closure_args += " --externs " + protocol_externs_file
     closure_args += dump_module(module["name"], True, {})
     compiler_args_file.write("%s %s\n" % (module["name"], closure_args))
@@ -274,15 +292,15 @@ def unclosure_injected_script(sourceFileName, outFileName):
     outFileName.write(source)
     outFileName.close()
 
-injectedScriptSourceTmpFile = inspector_path + "/" + "InjectedScriptSourceTmp.js"
-injectedScriptCanvasModuleSourceTmpFile = inspector_path + "/" + "InjectedScriptCanvasModuleSourceTmp.js"
+injectedScriptSourceTmpFile = path.join(inspector_path, "InjectedScriptSourceTmp.js")
+injectedScriptCanvasModuleSourceTmpFile = path.join(inspector_path, "InjectedScriptCanvasModuleSourceTmp.js")
 
-unclosure_injected_script(inspector_path + "/" + "InjectedScriptSource.js", injectedScriptSourceTmpFile)
-unclosure_injected_script(inspector_path + "/" + "InjectedScriptCanvasModuleSource.js", injectedScriptCanvasModuleSourceTmpFile)
+unclosure_injected_script(injected_script_source_name, injectedScriptSourceTmpFile)
+unclosure_injected_script(canvas_injected_script_source_name, injectedScriptCanvasModuleSourceTmpFile)
 
 print "Compiling InjectedScriptSource.js and InjectedScriptCanvasModuleSource.js..."
 command = spawned_compiler_command
-command += "    --externs " + inspector_path + "/" + "InjectedScriptExterns.js" + " \\\n"
+command += "    --externs " + path.join(inspector_path, "InjectedScriptExterns.js") + " \\\n"
 command += "    --externs " + protocol_externs_file + " \\\n"
 command += "    --module " + jsmodule_name_prefix + "injected_script" + ":1" + " \\\n"
 command += "        --js " + injectedScriptSourceTmpFile + " \\\n"
@@ -293,11 +311,11 @@ command += "\n"
 injectedScriptCompileProc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
 print "Checking generated code in InjectedScriptCanvasModuleSource.js..."
-check_injected_webgl_calls_command = "%s/check_injected_webgl_calls_info.py %s %s/InjectedScriptCanvasModuleSource.js" % (scripts_path, webgl_rendering_context_idl_path, inspector_path)
+check_injected_webgl_calls_command = "%s/check_injected_webgl_calls_info.py %s %s" % (scripts_path, webgl_rendering_context_idl_path, canvas_injected_script_source_name)
 canvasModuleCompileProc = subprocess.Popen(check_injected_webgl_calls_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
 print "Validating InjectedScriptSource.js..."
-check_injected_script_command = "%s/check_injected_script_source.py %s/InjectedScriptSource.js" % (scripts_path, inspector_path)
+check_injected_script_command = "%s/check_injected_script_source.py %s" % (scripts_path, injected_script_source_name)
 validateInjectedScriptProc = subprocess.Popen(check_injected_script_command, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, shell=True)
 
 print
@@ -367,7 +385,7 @@ print "InjectedScriptCanvasModuleSource.js generated code check output:\n", canv
 errors_found |= hasErrors(canvasModuleCompileOut)
 
 (validateInjectedScriptOut, _) = validateInjectedScriptProc.communicate()
-print "Validate InjectedScriptSource.js output:\n", validateInjectedScriptOut
+print "Validate InjectedScriptSource.js output:\n", (validateInjectedScriptOut if validateInjectedScriptOut else "<empty>")
 errors_found |= hasErrors(validateInjectedScriptOut)
 
 if errors_found:
