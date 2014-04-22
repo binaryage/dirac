@@ -578,7 +578,6 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
     }
 
     this._selfTime = this.endTime - this.startTime;
-    this._lastChildEndTime = this.endTime;
     this._startTimeOffset = this.startTime - model.minimumRecordTime();
 
     if (record.data) {
@@ -731,24 +730,9 @@ WebInspector.TimelineModel.Record.prototype = {
         return this._model;
     },
 
-    get lastChildEndTime()
-    {
-        return this._lastChildEndTime;
-    },
-
-    set lastChildEndTime(time)
-    {
-        this._lastChildEndTime = time;
-    },
-
     get selfTime()
     {
         return this._selfTime;
-    },
-
-    get cpuTime()
-    {
-        return this._cpuTime;
     },
 
     /**
@@ -892,15 +876,12 @@ WebInspector.TimelineModel.Record.prototype = {
     calculateAggregatedStats: function()
     {
         this._aggregatedStats = {};
-        this._cpuTime = this._selfTime;
 
         for (var index = this._children.length; index; --index) {
             var child = this._children[index - 1];
             for (var category in child._aggregatedStats)
                 this._aggregatedStats[category] = (this._aggregatedStats[category] || 0) + child._aggregatedStats[category];
         }
-        for (var category in this._aggregatedStats)
-            this._cpuTime += this._aggregatedStats[category];
         this._aggregatedStats[this.category.name] = (this._aggregatedStats[this.category.name] || 0) + this._selfTime;
     },
 

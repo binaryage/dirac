@@ -1180,7 +1180,7 @@ WebInspector.TimelineIsLongFilter.prototype = {
      */
     accept: function(record)
     {
-        return this._minimumRecordDuration ? ((record.lastChildEndTime - record.startTime) >= this._minimumRecordDuration) : true;
+        return this._minimumRecordDuration ? ((record.endTime - record.startTime) >= this._minimumRecordDuration) : true;
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype

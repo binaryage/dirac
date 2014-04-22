@@ -174,7 +174,6 @@ WebInspector.TimelinePresentationModel.prototype = {
         var rawRecord = {
             type: record.type,
             startTime: record.startTime,
-            endTime: record.endTime,
             data: { }
         };
         if (record.thread)
@@ -210,10 +209,8 @@ WebInspector.TimelinePresentationModel.prototype = {
         WebInspector.TimelineUIUtils.aggregateTimeByCategory(parentRecord.aggregatedStats, record.aggregatedStats);
         if (parentRecord.startTime > record.startTime)
             parentRecord.startTime = record.startTime;
-        if (parentRecord.endTime < record.endTime) {
+        if (parentRecord.endTime < record.endTime)
             parentRecord.endTime = record.endTime;
-            parentRecord.lastChildEndTime = parentRecord.endTime;
-        }
     },
 
     /**

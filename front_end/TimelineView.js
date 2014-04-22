@@ -524,7 +524,7 @@ WebInspector.TimelineView.prototype = {
                 var lastChildIndex = i + record.visibleChildrenCount();
                 if (lastChildIndex >= startIndex && lastChildIndex < endIndex) {
                     var expandElement = new WebInspector.TimelineExpandableElement(this._expandElements);
-                    var positions = this._calculator.computeBarGraphWindowPosition(record);
+                    var positions = this._calculator.computeBarGraphWindowPosition(record.record());
                     expandElement._update(record, i, positions.left - this._expandOffset, positions.width);
                 }
             } else {
@@ -880,19 +880,20 @@ WebInspector.TimelineCalculator.prototype = {
     },
 
     /**
-     * @return {!{start: number, end: number, endWithChildren: number, cpuWidth: number}}
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {!{start: number, end: number, cpuWidth: number}}
      */
     computeBarGraphPercentages: function(record)
     {
         var start = (record.startTime - this._minimumBoundary) / this.boundarySpan() * 100;
         var end = (record.startTime + record.selfTime - this._minimumBoundary) / this.boundarySpan() * 100;
-        var endWithChildren = (record.lastChildEndTime - this._minimumBoundary) / this.boundarySpan() * 100;
-        var cpuWidth = record.cpuTime / this.boundarySpan() * 100;
-        return {start: start, end: end, endWithChildren: endWithChildren, cpuWidth: cpuWidth};
+        var cpuWidth = (record.endTime - record.startTime) / this.boundarySpan() * 100;
+        return {start: start, end: end, cpuWidth: cpuWidth};
     },
 
     /**
-     * @return {!{left: number, width: number, widthWithChildren: number, cpuWidth: number}}
+     * @param {!WebInspector.TimelineModel.Record} record
+     * @return {!{left: number, width: number, cpuWidth: number}}
      */
     computeBarGraphWindowPosition: function(record)
     {
@@ -905,11 +906,8 @@ WebInspector.TimelineCalculator.prototype = {
             widthAdjustment = WebInspector.TimelineCalculator._minWidth - width;
             width = WebInspector.TimelineCalculator._minWidth;
         }
-        var widthWithChildren = (percentages.endWithChildren - percentages.start) / 100 * this._workingArea + widthAdjustment;
         var cpuWidth = percentages.cpuWidth / 100 * this._workingArea + widthAdjustment;
-        if (percentages.endWithChildren > percentages.end)
-            widthWithChildren += widthAdjustment;
-        return {left: left, width: width, widthWithChildren: widthWithChildren, cpuWidth: cpuWidth};
+        return {left: left, width: width, cpuWidth: cpuWidth};
     },
 
     setWindow: function(minimumBoundary, maximumBoundary)
@@ -1121,11 +1119,6 @@ WebInspector.TimelineRecordGraphRow = function(graphContainer, selectRecord, sch
     this._barAreaElement.className = "timeline-graph-bar-area";
     this.element.appendChild(this._barAreaElement);
 
-    this._barWithChildrenElement = document.createElement("div");
-    this._barWithChildrenElement.className = "timeline-graph-bar with-children";
-    this._barWithChildrenElement.row = this;
-    this._barAreaElement.appendChild(this._barWithChildrenElement);
-
     this._barCpuElement = document.createElement("div");
     this._barCpuElement.className = "timeline-graph-bar cpu"
     this._barCpuElement.row = this;
@@ -1158,12 +1151,10 @@ WebInspector.TimelineRecordGraphRow.prototype = {
             this.element.classList.add("background");
 
         var barPosition = calculator.computeBarGraphWindowPosition(record);
-        this._barWithChildrenElement.style.left = barPosition.left + "px";
-        this._barWithChildrenElement.style.width = barPosition.widthWithChildren + "px";
         this._barElement.style.left = barPosition.left + "px";
-        this._barElement.style.width = (presentationRecord.coalesced() ? barPosition.widthWithChildren : barPosition.width) + "px";
+        this._barElement.style.width = barPosition.width + "px";
         this._barCpuElement.style.left = barPosition.left + "px";
-        this._barCpuElement.style.width = (presentationRecord.coalesced() ? barPosition.widthWithChildren : barPosition.cpuWidth) + "px";
+        this._barCpuElement.style.width = barPosition.cpuWidth + "px";
         this._expandElement._update(presentationRecord, index, barPosition.left - expandOffset, barPosition.width);
         this._record.setGraphRow(this);
     },
