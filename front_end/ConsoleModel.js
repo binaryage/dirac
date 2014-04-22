@@ -229,6 +229,21 @@ WebInspector.ConsoleMessage = function(target, source, level, messageText, type,
 }
 
 WebInspector.ConsoleMessage.prototype = {
+    /**
+     * @param {!WebInspector.ConsoleMessage} originatingMessage
+     */
+    setOriginatingMessage: function(originatingMessage)
+    {
+        this._originatingConsoleMessage = originatingMessage;
+    },
+
+    /**
+     * @return {?WebInspector.ConsoleMessage}
+     */
+    originatingMessage: function()
+    {
+        return this._originatingConsoleMessage;
+    },
 
     /**
      * @return {boolean}

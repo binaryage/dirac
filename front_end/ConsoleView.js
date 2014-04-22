@@ -115,9 +115,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
     this._linkifier = new WebInspector.Linkifier();
 
-    /** @type {!Map.<!WebInspector.ConsoleMessage, !WebInspector.ConsoleViewMessage>} */
-    this._messageToViewMessage = new Map();
-    /** @type {!Array.<!WebInspector.ConsoleMessage>} */
+    /** @type {!Array.<!WebInspector.ConsoleViewMessage>} */
     this._consoleMessages = [];
 
     this._prompt = new WebInspector.TextPromptWithHistory(WebInspector.ExecutionContextSelector.completionsForTextPromptInCurrentContext);
@@ -143,10 +141,20 @@ WebInspector.ConsoleView.prototype = {
      */
     targetAdded: function(target)
     {
+        /**
+         * @param {!WebInspector.ConsoleMessage} message
+         * @this {WebInspector.ConsoleView}
+         */
+        function appendMessage(message)
+        {
+             var viewMessage = this._createViewMessage(message);
+             this._consoleMessageAdded(viewMessage);
+        }
+
         target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
         target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
         target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
-        target.consoleModel.messages.forEach(this._consoleMessageAdded, this);
+        target.consoleModel.messages.forEach(appendMessage, this);
 
         /**
          * @param {!WebInspector.ExecutionContextList} contextList
@@ -181,7 +189,7 @@ WebInspector.ConsoleView.prototype = {
     {
         var enabled = /** @type {boolean} */ (event.data);
         this._updateMessageList();
-        this._messageToViewMessage.values().forEach(function(viewMessage) {
+        this._consoleMessages.forEach(function(viewMessage) {
             viewMessage.updateTimestamp(enabled);
         });
     },
@@ -410,24 +418,33 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ConsoleMessage} message
+     * @param {!WebInspector.ConsoleViewMessage} viewMessage
      */
-    _consoleMessageAdded: function(message)
+    _consoleMessageAdded: function(viewMessage)
     {
+        /**
+         * @param {!WebInspector.ConsoleViewMessage} viewMessage1
+         * @param {!WebInspector.ConsoleViewMessage} viewMessage2
+         * @return {number}
+         */
+        function compareTimestamps(viewMessage1, viewMessage2)
+        {
+            return WebInspector.ConsoleMessage.timestampComparator(viewMessage1.consoleMessage(), viewMessage2.consoleMessage());
+        }
+        var insertAt = insertionIndexForObjectInListSortedByFunction(viewMessage, this._consoleMessages, compareTimestamps, true);
+        this._consoleMessages.splice(insertAt, 0, viewMessage);
+
+        var message = viewMessage.consoleMessage();
         if (this._urlToMessageCount[message.url])
             this._urlToMessageCount[message.url]++;
         else
             this._urlToMessageCount[message.url] = 1;
 
-        var insertAt = insertionIndexForObjectInListSortedByFunction(message, this._consoleMessages, WebInspector.ConsoleMessage.timestampComparator, true);
-        this._consoleMessages.splice(insertAt, 0, message);
-
-        if (this._tryToCollapseMessages(message, this._visibleViewMessages.peekLast()))
+        if (this._tryToCollapseMessages(viewMessage, this._visibleViewMessages.peekLast()))
             return;
 
-
-        if (this._filter.shouldBeVisible(message))
-            this._showConsoleMessage(this._viewMessageBy(message))
+        if (this._filter.shouldBeVisible(viewMessage))
+            this._showConsoleMessage(viewMessage)
         else {
             this._hiddenByFilterCount++;
             this._updateFilterStatus();
@@ -440,7 +457,8 @@ WebInspector.ConsoleView.prototype = {
     _onConsoleMessageAdded: function(event)
     {
         var message = /** @type {!WebInspector.ConsoleMessage} */ (event.data);
-        this._consoleMessageAdded(message);
+        var viewMessage = this._createViewMessage(message);
+        this._consoleMessageAdded(viewMessage);
     },
 
     /**
@@ -459,7 +477,7 @@ WebInspector.ConsoleView.prototype = {
 
         if (message.type === WebInspector.ConsoleMessage.MessageType.EndGroup)
             this._currentGroup = this._currentGroup.parentGroup() || this._currentGroup;
-        else if (WebInspector.ConsoleGroup.isGroupStartMessage(message))
+        else if (WebInspector.ConsoleGroup.isGroupStartMessage(viewMessage))
             this._currentGroup = this._currentGroup.createChildGroup(viewMessage);
         else
             this._currentGroup.addMessage(viewMessage);
@@ -474,17 +492,16 @@ WebInspector.ConsoleView.prototype = {
      * @param {!WebInspector.ConsoleMessage} message
      * @return {!WebInspector.ConsoleViewMessage}
      */
-    _viewMessageBy: function(message)
+    _createViewMessage: function(message)
     {
-        var viewMessage = this._messageToViewMessage.get(message);
-        if (viewMessage)
-            return viewMessage;
-        if (message.type === WebInspector.ConsoleMessage.MessageType.Command)
-            viewMessage = new WebInspector.ConsoleCommand(message);
-        else
-            viewMessage = new WebInspector.ConsoleViewMessage(message, this._linkifier);
-        this._messageToViewMessage.put(message, viewMessage);
-        return viewMessage;
+        switch (message.type) {
+        case WebInspector.ConsoleMessage.MessageType.Command:
+            return new WebInspector.ConsoleCommand(message);
+        case WebInspector.ConsoleMessage.MessageType.Result:
+            return new WebInspector.ConsoleCommandResult(message, this._linkifier);
+        default:
+            return new WebInspector.ConsoleViewMessage(message, this._linkifier);
+        }
     },
 
     _consoleCleared: function()
@@ -498,7 +515,6 @@ WebInspector.ConsoleView.prototype = {
 
         this._visibleViewMessages = [];
         this._searchResults = [];
-        this._messageToViewMessage.clear();
         this._consoleMessages = [];
 
         if (this._searchRegex)
@@ -565,13 +581,13 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ConsoleMessage} message
+     * @param {!WebInspector.ConsoleViewMessage} lastMessage
      * @param {?WebInspector.ConsoleViewMessage} viewMessage
      * @return {boolean}
      */
-    _tryToCollapseMessages: function(message, viewMessage)
+    _tryToCollapseMessages: function(lastMessage, viewMessage)
     {
-        if (!WebInspector.settings.consoleTimestampsEnabled.get() && viewMessage && !message.isGroupMessage() && message.isEqual(viewMessage.consoleMessage())) {
+        if (!WebInspector.settings.consoleTimestampsEnabled.get() && viewMessage && !lastMessage.consoleMessage().isGroupMessage() && lastMessage.consoleMessage().isEqual(viewMessage.consoleMessage())) {
             viewMessage.incrementRepeatCount();
             return true;
         }
@@ -584,7 +600,7 @@ WebInspector.ConsoleView.prototype = {
         var currentGroup = this._topGroup;
         var newVisibleMessages = [];
         /**
-         * @param {!WebInspector.ConsoleMessage} consoleMessage
+         * @param {!WebInspector.ConsoleViewMessage} consoleMessage
          * @param {?WebInspector.ConsoleViewMessage} beforeVisibleMessage
          * @this {WebInspector.ConsoleView}
          */
@@ -596,37 +612,35 @@ WebInspector.ConsoleView.prototype = {
             }
             if (this._tryToCollapseMessages(consoleMessage, newVisibleMessages.peekLast()))
                 return;
-            var sourceViewMessage = this._viewMessageBy(consoleMessage);
-            currentGroup.addMessage(sourceViewMessage, beforeVisibleMessage);
-            newVisibleMessages.push(sourceViewMessage);
-            sourceViewMessage.resetIncrementRepeatCount();
+            currentGroup.addMessage(consoleMessage, beforeVisibleMessage);
+            newVisibleMessages.push(consoleMessage);
+            consoleMessage.resetIncrementRepeatCount();
         }
 
         this._hiddenByFilterCount = 0;
         var consoleMessageIndex = 0;
         for (var i = 0; i < this._visibleViewMessages.length; ++i) {
-            var visibleViewMessage = this._visibleViewMessages[i];
-            var visibleMessage = visibleViewMessage.consoleMessage();
+            var visibleMessage = this._visibleViewMessages[i];
             for (; visibleMessage !== this._consoleMessages[consoleMessageIndex]; ++consoleMessageIndex)
-                insertConsoleMessage.call(this, this._consoleMessages[consoleMessageIndex], visibleViewMessage)
+                insertConsoleMessage.call(this, this._consoleMessages[consoleMessageIndex], visibleMessage)
 
             ++consoleMessageIndex;
             if (!this._filter.shouldBeVisible(visibleMessage)) {
-                currentGroup.removeMessage(visibleViewMessage);
+                currentGroup.removeMessage(visibleMessage);
                 this._hiddenByFilterCount++;
                 continue;
             }
             if (this._tryToCollapseMessages(visibleMessage, newVisibleMessages.peekLast())) {
-                currentGroup.removeMessage(visibleViewMessage);
+                currentGroup.removeMessage(visibleMessage);
                 continue;
             }
 
-            newVisibleMessages.push(visibleViewMessage);
-            visibleViewMessage.resetIncrementRepeatCount();
-            if (visibleMessage.type === WebInspector.ConsoleMessage.MessageType.EndGroup)
+            newVisibleMessages.push(visibleMessage);
+            visibleMessage.resetIncrementRepeatCount();
+            if (visibleMessage.consoleMessage().type === WebInspector.ConsoleMessage.MessageType.EndGroup)
                 currentGroup = currentGroup.parentGroup() || currentGroup;
             else if (WebInspector.ConsoleGroup.isGroupStartMessage(visibleMessage))
-                currentGroup = visibleViewMessage._group;
+                currentGroup = visibleMessage._group;
         }
         for (; consoleMessageIndex < this._consoleMessages.length; ++consoleMessageIndex)
             insertConsoleMessage.call(this, this._consoleMessages[consoleMessageIndex], null);
@@ -745,9 +759,9 @@ WebInspector.ConsoleView.prototype = {
     /**
      * @param {?WebInspector.RemoteObject} result
      * @param {boolean} wasThrown
-     * @param {?WebInspector.ConsoleCommand} originatingCommand
+     * @param {!WebInspector.ConsoleMessage} originatingConsoleMessage
      */
-    _printResult: function(result, wasThrown, originatingCommand)
+    _printResult: function(result, wasThrown, originatingConsoleMessage)
     {
         if (!result)
             return;
@@ -757,30 +771,29 @@ WebInspector.ConsoleView.prototype = {
          * @param {string=} url
          * @param {number=} lineNumber
          * @param {number=} columnNumber
-         * @this {WebInspector.ConsoleView}
          */
         function addMessage(url, lineNumber, columnNumber)
         {
-            var resultMessage = new WebInspector.ConsoleCommandResult(/** @type {!WebInspector.RemoteObject} */ (result), wasThrown, originatingCommand, this._linkifier, url, lineNumber, columnNumber);
-            this._messageToViewMessage.put(resultMessage.consoleMessage(), resultMessage);
-            target.consoleModel.addMessage(resultMessage.consoleMessage());
+            var level = wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log;
+            var message = new WebInspector.ConsoleMessage(target, WebInspector.ConsoleMessage.MessageSource.JS, level, "", WebInspector.ConsoleMessage.MessageType.Result, url, lineNumber, columnNumber, undefined, [result]);
+            message.setOriginatingMessage(originatingConsoleMessage);
+            target.consoleModel.addMessage(message);
         }
 
         if (result.type !== "function") {
-            addMessage.call(this);
+            addMessage();
             return;
         }
 
-        result.functionDetails(didGetDetails.bind(this));
+        result.functionDetails(didGetDetails);
 
         /**
          * @param {?DebuggerAgent.FunctionDetails} response
-         * @this {WebInspector.ConsoleView}
          */
         function didGetDetails(response)
         {
             if (!response) {
-                addMessage.call(this);
+                addMessage();
                 return;
             }
 
@@ -794,7 +807,7 @@ WebInspector.ConsoleView.prototype = {
                 columnNumber = response.location.columnNumber + 1;
             }
             // FIXME: this should be using live location.
-            addMessage.call(this, url, lineNumber, columnNumber);
+            addMessage(url, lineNumber, columnNumber);
         }
     },
 
@@ -819,7 +832,7 @@ WebInspector.ConsoleView.prototype = {
         var data = /**{{result: ?WebInspector.RemoteObject, wasThrown: boolean, text: string, commandMessage: !WebInspector.ConsoleMessage}} */ (event.data);
         this._prompt.pushHistoryItem(data.text);
         WebInspector.settings.consoleHistory.set(this._prompt.historyData.slice(-30));
-        this._printResult(data.result, data.wasThrown, /** @type {!WebInspector.ConsoleCommand} */ (this._messageToViewMessage.get(data.commandMessage)));
+        this._printResult(data.result, data.wasThrown, data.commandMessage);
     },
 
     /**
@@ -986,16 +999,17 @@ WebInspector.ConsoleViewFilter.prototype = {
     },
 
     /**
-     * @param {!WebInspector.ConsoleMessage} message
+     * @param {!WebInspector.ConsoleViewMessage} viewMessage
      * @return {boolean}
      */
-    shouldBeVisible: function(message)
+    shouldBeVisible: function(viewMessage)
     {
+        var message = viewMessage.consoleMessage();
         var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
         if (!this._view._showAllMessagesCheckbox.checked() && executionContext && (message.target() !== executionContext.target() || message.executionContextId !== executionContext.id))
             return false;
 
-        if (WebInspector.ConsoleGroup.isGroupStartMessage(message) || message.type === WebInspector.ConsoleMessage.MessageType.EndGroup)
+        if (WebInspector.ConsoleGroup.isGroupStartMessage(viewMessage) || message.type === WebInspector.ConsoleMessage.MessageType.EndGroup)
             return true;
 
         if (message.type === WebInspector.ConsoleMessage.MessageType.Result || message.type === WebInspector.ConsoleMessage.MessageType.Command)
@@ -1009,7 +1023,6 @@ WebInspector.ConsoleViewFilter.prototype = {
 
         if (this._filterRegex) {
             this._filterRegex.lastIndex = 0;
-            var viewMessage = this._view._viewMessageBy(message);
             if (!viewMessage.matchesRegex(this._filterRegex))
                 return false;
         }
@@ -1091,7 +1104,7 @@ WebInspector.ConsoleCommand.prototype = {
     {
         if (!this._element) {
             this._element = document.createElement("div");
-            this._element.command = this;
+            this._element.message = this;
             this._element.className = "console-user-command";
 
             this._formatCommand();
@@ -1113,19 +1126,11 @@ WebInspector.ConsoleCommand.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.ConsoleViewMessage}
- * @param {!WebInspector.RemoteObject} result
- * @param {boolean} wasThrown
- * @param {?WebInspector.ConsoleCommand} originatingCommand
+ * @param {!WebInspector.ConsoleMessage} message
  * @param {!WebInspector.Linkifier} linkifier
- * @param {string=} url
- * @param {number=} lineNumber
- * @param {number=} columnNumber
  */
-WebInspector.ConsoleCommandResult = function(result, wasThrown, originatingCommand, linkifier, url, lineNumber, columnNumber)
+WebInspector.ConsoleCommandResult = function(message, linkifier)
 {
-    this.originatingCommand = originatingCommand;
-    var level = wasThrown ? WebInspector.ConsoleMessage.MessageLevel.Error : WebInspector.ConsoleMessage.MessageLevel.Log;
-    var message = new WebInspector.ConsoleMessage(/** @type {!WebInspector.Target} */ (result.target()), WebInspector.ConsoleMessage.MessageSource.JS, level, "", WebInspector.ConsoleMessage.MessageType.Result, url, lineNumber, columnNumber, undefined, [result]);
     WebInspector.ConsoleViewMessage.call(this, message, linkifier);
 }
 
@@ -1179,12 +1184,13 @@ WebInspector.ConsoleGroup = function(parentGroup, groupMessage)
 }
 
 /**
- * @param {!WebInspector.ConsoleMessage} message
+ * @param {!WebInspector.ConsoleViewMessage} viewMessage
  * @return {boolean}
  */
-WebInspector.ConsoleGroup.isGroupStartMessage = function(message)
+WebInspector.ConsoleGroup.isGroupStartMessage = function(viewMessage)
 {
-    return message.type === WebInspector.ConsoleMessage.MessageType.StartGroup || message.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed;
+    var messageType = viewMessage.consoleMessage().type;
+    return messageType === WebInspector.ConsoleMessage.MessageType.StartGroup || messageType === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed;
 }
 
 WebInspector.ConsoleGroup.prototype = {
@@ -1221,7 +1227,8 @@ WebInspector.ConsoleGroup.prototype = {
         this._messagesElement.insertBefore(element, anchor);
         viewMessage.wasShown();
 
-        if (element.previousSibling && viewMessage.originatingCommand && element.previousSibling.command === viewMessage.originatingCommand)
+        var originatingMessage = viewMessage.consoleMessage().originatingMessage();
+        if (element.previousSibling && originatingMessage && element.previousSibling.message && element.previousSibling.message.consoleMessage() === originatingMessage)
             element.previousSibling.classList.add("console-adjacent-user-command-result");
     },
 
