@@ -84,14 +84,14 @@ WebInspector.CPUProfileDataModel.prototype = {
         }
 
         var topLevelNodes = this.profileHead.children;
-        for (var i = 0; i < topLevelNodes.length && !(this._gcNode && this._programNode && this._idleNode); i++) {
+        for (var i = 0; i < topLevelNodes.length && !(this.gcNode && this.programNode && this.idleNode); i++) {
             var node = topLevelNodes[i];
             if (node.functionName === "(garbage collector)")
-                this._gcNode = node;
+                this.gcNode = node;
             else if (node.functionName === "(program)")
-                this._programNode = node;
+                this.programNode = node;
             else if (node.functionName === "(idle)")
-                this._idleNode = node;
+                this.idleNode = node;
         }
     },
 
@@ -105,12 +105,12 @@ WebInspector.CPUProfileDataModel.prototype = {
         // with the preceeding sample.
         var samples = this.samples;
         var samplesCount = samples.length;
-        if (!this._programNode || samplesCount < 3)
+        if (!this.programNode || samplesCount < 3)
             return;
         var idToNode = this._idToNode;
-        var programNodeId = this._programNode.id;
-        var gcNodeId = this._gcNode ? this._gcNode.id : -1;
-        var idleNodeId = this._idleNode ? this._idleNode.id : -1;
+        var programNodeId = this.programNode.id;
+        var gcNodeId = this.gcNode ? this.gcNode.id : -1;
+        var idleNodeId = this.idleNode ? this.idleNode.id : -1;
         var prevNodeId = samples[0];
         var nodeId = samples[1];
         for (var sampleIndex = 1; sampleIndex < samplesCount - 1; sampleIndex++) {
@@ -160,7 +160,7 @@ WebInspector.CPUProfileDataModel.prototype = {
         stopTime = stopTime || Infinity;
         var samples = this.samples;
         var idToNode = this._idToNode;
-        var gcNode = this._gcNode;
+        var gcNode = this.gcNode;
         var samplesCount = samples.length;
         var samplingInterval = this.samplingInterval;
 
