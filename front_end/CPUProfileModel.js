@@ -15,8 +15,10 @@ WebInspector.CPUProfileDataModel = function(profile)
     this.profileEndTime = profile.endTime * 1000;
     this._calculateTimes(profile);
     this._assignParentsInProfile();
-    if (this.samples)
+    if (this.samples) {
         this._buildIdToNodeMap();
+        this._fixMissingSamples();
+    }
 }
 
 WebInspector.CPUProfileDataModel.prototype = {
@@ -82,12 +84,63 @@ WebInspector.CPUProfileDataModel.prototype = {
         }
 
         var topLevelNodes = this.profileHead.children;
-        for (var i = 0; i < topLevelNodes.length; i++) {
+        for (var i = 0; i < topLevelNodes.length && !(this._gcNode && this._programNode && this._idleNode); i++) {
             var node = topLevelNodes[i];
-            if (node.functionName === "(garbage collector)") {
+            if (node.functionName === "(garbage collector)")
                 this._gcNode = node;
-                break;
+            else if (node.functionName === "(program)")
+                this._programNode = node;
+            else if (node.functionName === "(idle)")
+                this._idleNode = node;
+        }
+    },
+
+    _fixMissingSamples: function()
+    {
+        // Sometimes sampler is not able to parse the JS stack and returns
+        // a (program) sample instead. The issue leads to call frames belong
+        // to the same function invocation being split apart.
+        // Here's a workaround for that. When there's a single (program) sample
+        // between two call stacks sharing the same bottom node, it is replaced
+        // with the preceeding sample.
+        var samples = this.samples;
+        var samplesCount = samples.length;
+        if (!this._programNode || samplesCount < 3)
+            return;
+        var idToNode = this._idToNode;
+        var programNodeId = this._programNode.id;
+        var gcNodeId = this._gcNode ? this._gcNode.id : -1;
+        var idleNodeId = this._idleNode ? this._idleNode.id : -1;
+        var prevNodeId = samples[0];
+        var nodeId = samples[1];
+        for (var sampleIndex = 1; sampleIndex < samplesCount - 1; sampleIndex++) {
+            var nextNodeId = samples[sampleIndex + 1];
+            if (nodeId === programNodeId && !isSystemNode(prevNodeId) && !isSystemNode(nextNodeId)
+                && bottomNode(idToNode[prevNodeId]) === bottomNode(idToNode[nextNodeId])) {
+                samples[sampleIndex] = prevNodeId;
             }
+            prevNodeId = nodeId;
+            nodeId = nextNodeId;
+        }
+
+        /**
+         * @param {!ProfilerAgent.CPUProfileNode} node
+         * @return {!ProfilerAgent.CPUProfileNode}
+         */
+        function bottomNode(node)
+        {
+            while (node.parent)
+                node = node.parent;
+            return node;
+        }
+
+        /**
+         * @param {number} nodeId
+         * @return {boolean}
+         */
+        function isSystemNode(nodeId)
+        {
+            return nodeId === programNodeId || nodeId === gcNodeId || nodeId === idleNodeId;
         }
     },
 
