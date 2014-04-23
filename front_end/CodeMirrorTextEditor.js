@@ -159,7 +159,7 @@ WebInspector.CodeMirrorTextEditor = function(url, delegate)
     this._codeMirror.on("beforeSelectionChange", this._beforeSelectionChange.bind(this));
     this._codeMirror.on("scroll", this._scroll.bind(this));
     this._codeMirror.on("focus", this._focus.bind(this));
-    this.element.addEventListener("contextmenu", this._contextMenu.bind(this), false);
+    this._codeMirror.on("contextmenu", this._contextMenu.bind(this));
     /**
      * @this {WebInspector.CodeMirrorTextEditor}
      */
@@ -724,7 +724,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         this.dispatchEventToListeners(WebInspector.TextEditor.Events.GutterClick, { lineNumber: lineNumber, event: event });
     },
 
-    _contextMenu: function(event)
+    _contextMenu: function(codeMirror, event)
     {
         var contextMenu = new WebInspector.ContextMenu(event);
         var target = event.target.enclosingNodeOrSelfWithClass("CodeMirror-gutter-elt");

@@ -223,7 +223,7 @@ WebInspector.ContextMenu.prototype = {
             } else {
                 InspectorFrontendHost.showContextMenu(this._event, menuObject);
             }
-            this._event.consume();
+            this._event.consume(true);
         }
     },
 
