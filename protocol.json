@@ -2762,7 +2762,10 @@
         "commands": [
             {
                 "name": "enable",
-                "description": "Enables timeline. After this call, timeline can be started from within the page (for example upon console.timeline)."
+                "description": "Enables timeline. After this call, timeline can be started from within the page (for example upon console.timeline).",
+                "parameters": [
+                    { "name": "traceEventCategoryFilter", "optional": true, "type": "string", "description": "If set, the timeline agent will automatically start tracing with the specified category filter when timeline is started." }
+                ]
             },
             {
                 "name": "disable",
