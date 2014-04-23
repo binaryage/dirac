@@ -106,7 +106,7 @@ WebInspector.WorkersSidebarPane.prototype = {
 
     _workerItemClicked: function(workerId, event)
     {
-        event.preventDefault();
+        event.consume(true);
         WebInspector.workerFrontendManager.openWorkerInspector(workerId);
     },
 
