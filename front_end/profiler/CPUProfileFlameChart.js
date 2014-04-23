@@ -42,10 +42,10 @@ WebInspector.CPUProfileFlameChart = function(dataProvider)
     this._overviewPane = new WebInspector.CPUProfileFlameChart.OverviewPane(dataProvider);
     this._overviewPane.show(this.element);
 
-    this._mainPane = new WebInspector.FlameChart(dataProvider, this._overviewPane, true, false);
+    this._mainPane = new WebInspector.FlameChart(dataProvider, this._overviewPane, true);
     this._mainPane.show(this.element);
     this._mainPane.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected, this);
-    this._overviewPane._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
+    this._overviewPane.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
 }
 
 WebInspector.CPUProfileFlameChart.prototype = {
@@ -54,7 +54,9 @@ WebInspector.CPUProfileFlameChart.prototype = {
      */
     _onWindowChanged: function(event)
     {
-        this._mainPane.changeWindow(this._overviewPane._overviewGrid.windowLeft(), this._overviewPane._overviewGrid.windowRight());
+        var windowLeft = event.data.windowTimeLeft;
+        var windowRight = event.data.windowTimeRight;
+        this._mainPane.setWindowTimes(windowLeft, windowRight);
     },
 
     /**
@@ -105,9 +107,9 @@ WebInspector.CPUProfileFlameChart.OverviewCalculator.prototype = {
      */
     _updateBoundaries: function(overviewPane)
     {
-        this._minimumBoundaries = 0;
+        this._minimumBoundaries = overviewPane._dataProvider.zeroTime();
         var totalTime = overviewPane._dataProvider.totalTime();
-        this._maximumBoundaries = totalTime;
+        this._maximumBoundaries = this._minimumBoundaries + totalTime;
         this._xScaleFactor = overviewPane._overviewContainer.clientWidth / totalTime;
     },
 
@@ -127,7 +129,7 @@ WebInspector.CPUProfileFlameChart.OverviewCalculator.prototype = {
      */
     formatTime: function(value, precision)
     {
-        return Number.secondsToString((value + this._minimumBoundaries) / 1000);
+        return Number.secondsToString((value - this._minimumBoundaries) / 1000);
     },
 
     /**
@@ -180,6 +182,7 @@ WebInspector.CPUProfileFlameChart.OverviewPane = function(dataProvider)
     this._overviewContainer.appendChild(this._overviewGrid.element);
     this._overviewCalculator = new WebInspector.CPUProfileFlameChart.OverviewCalculator();
     this._dataProvider = dataProvider;
+    this._overviewGrid.addEventListener(WebInspector.OverviewGrid.Events.WindowChanged, this._onWindowChanged, this);
 }
 
 WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
@@ -189,7 +192,7 @@ WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
      */
     requestWindowTimes: function(windowStartTime, windowEndTime)
     {
-        this._overviewGrid.setWindow(windowStartTime / this._dataProvider.totalTime(), windowEndTime / this._dataProvider.totalTime());
+        this._selectRange(windowStartTime, windowEndTime);
     },
 
     /**
@@ -198,7 +201,23 @@ WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
      */
     _selectRange: function(timeLeft, timeRight)
     {
-        this._overviewGrid.setWindow(timeLeft / this._dataProvider.totalTime(), timeRight / this._dataProvider.totalTime());
+        var startTime = this._dataProvider.zeroTime();
+        var totalTime = this._dataProvider.totalTime();
+        this._overviewGrid.setWindow((timeLeft - startTime) / totalTime, (timeRight - startTime) / totalTime);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onWindowChanged: function(event)
+    {
+        var startTime = this._dataProvider.zeroTime();
+        var totalTime = this._dataProvider.totalTime();
+        var data = {
+            windowTimeLeft: startTime + this._overviewGrid.windowLeft() * totalTime,
+            windowTimeRight: startTime + this._overviewGrid.windowRight() * totalTime
+        };
+        this.dispatchEventToListeners(WebInspector.OverviewGrid.Events.WindowChanged, data);
     },
 
     /**

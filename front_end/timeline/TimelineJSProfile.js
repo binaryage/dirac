@@ -14,9 +14,6 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
     if (!jsProfile.samples)
         return;
     var jsProfileModel = new WebInspector.CPUProfileDataModel(jsProfile);
-    var profileStartTime = jsProfileModel.startTime;
-    var samples = jsProfileModel.samples;
-    var samplingInterval = jsProfileModel.samplingInterval;
 
     /**
      * @param {!WebInspector.TimelineModel.Record} record
@@ -43,7 +40,7 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
             var event = {
                 type: "JSFrame",
                 data: node,
-                startTime: profileStartTime + startTime
+                startTime: startTime
             };
             parentRecord = new WebInspector.TimelineModel.Record(timelineModel, event, parentRecord);
         }
@@ -57,12 +54,12 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
          */
         function onCloseFrame(depth, node, startTime, totalTime, selfTime)
         {
-            parentRecord.endTime = Math.min(profileStartTime + startTime + totalTime, recordEndTime);
+            parentRecord.endTime = Math.min(startTime + totalTime, recordEndTime);
             parentRecord._selfTime = parentRecord.endTime - parentRecord.startTime;
             parentRecord = parentRecord.parent;
         }
 
-        jsProfileModel.forEachFrame(onOpenFrame, onCloseFrame, recordStartTime - profileStartTime, recordEndTime - profileStartTime);
+        jsProfileModel.forEachFrame(onOpenFrame, onCloseFrame, recordStartTime, recordEndTime);
     }
 
     timelineModel.forAllRecords(processRecord);

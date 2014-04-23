@@ -11,8 +11,8 @@ WebInspector.CPUProfileDataModel = function(profile)
 {
     this.profileHead = profile.head;
     this.samples = profile.samples;
-    this.startTime = profile.startTime * 1000;
-    this.endTime = profile.endTime * 1000;
+    this.profileStartTime = profile.startTime * 1000;
+    this.profileEndTime = profile.endTime * 1000;
     this._calculateTimes(profile);
     this._assignParentsInProfile();
     if (this.samples)
@@ -33,7 +33,7 @@ WebInspector.CPUProfileDataModel.prototype = {
         }
         profile.totalHitCount = totalHitCount(profile.head);
 
-        var duration = this.endTime - this.startTime;
+        var duration = this.profileEndTime - this.profileStartTime;
         var samplingInterval = duration / profile.totalHitCount;
         this.samplingInterval = samplingInterval;
 
@@ -102,7 +102,8 @@ WebInspector.CPUProfileDataModel.prototype = {
         if (!this.profileHead)
             return;
 
-        startTime = startTime || 0;
+        var profileStartTime = this.profileStartTime;
+        startTime = Math.max(startTime || 0, profileStartTime);
         stopTime = stopTime || Infinity;
         var samples = this.samples;
         var idToNode = this._idToNode;
@@ -114,10 +115,10 @@ WebInspector.CPUProfileDataModel.prototype = {
         var stackTrace = [];
         var depth = 0;
         var currentInterval;
-        var startIndex = Math.ceil(startTime / samplingInterval);
+        var startIndex = Math.ceil((startTime - profileStartTime) / samplingInterval);
 
         for (var sampleIndex = startIndex; sampleIndex < samplesCount; sampleIndex++) {
-            var sampleTime = sampleIndex * samplingInterval;
+            var sampleTime = sampleIndex * samplingInterval + profileStartTime;
             if (sampleTime >= stopTime)
                 break;
 
@@ -227,7 +228,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
      */
     zeroTime: function()
     {
-        return 0;
+        return this._cpuProfile.profileStartTime;
     },
 
     /**
@@ -302,13 +303,14 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         var entryTotalTimes = new Float32Array(entries.length);
         var entrySelfTimes = new Float32Array(entries.length);
         var entryOffsets = new Float32Array(entries.length);
+        var zeroTime = this.zeroTime();
 
         for (var i = 0; i < entries.length; ++i) {
             var entry = entries[i];
             entryNodes[i] = entry.node;
             entryLevels[i] = entry.depth;
             entryTotalTimes[i] = entry.duration;
-            entryOffsets[i] = entry.startTime;
+            entryOffsets[i] = entry.startTime - zeroTime;
             entrySelfTimes[i] = entry.selfTime;
         }
 

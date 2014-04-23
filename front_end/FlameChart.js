@@ -47,15 +47,13 @@ WebInspector.FlameChartDelegate.prototype = {
  * @param {!WebInspector.FlameChartDataProvider} dataProvider
  * @param {!WebInspector.FlameChartDelegate} flameChartDelegate
  * @param {boolean} isTopDown
- * @param {boolean} timeBasedWindow
  */
-WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown, timeBasedWindow)
+WebInspector.FlameChart = function(dataProvider, flameChartDelegate, isTopDown)
 {
     WebInspector.HBox.call(this);
     this.element.classList.add("flame-chart-main-pane");
     this._flameChartDelegate = flameChartDelegate;
     this._isTopDown = isTopDown;
-    this._timeBasedWindow = timeBasedWindow;
 
     this._calculator = new WebInspector.FlameChart.Calculator();
 
@@ -392,26 +390,11 @@ WebInspector.FlameChart.prototype = {
     },
 
     /**
-     * @param {!number} windowLeft
-     * @param {!number} windowRight
-     */
-    changeWindow: function(windowLeft, windowRight)
-    {
-        console.assert(!this._timeBasedWindow);
-        this._windowLeft = windowLeft;
-        this._windowRight = windowRight;
-        this._windowWidth = this._windowRight - this._windowLeft;
-
-        this._scheduleUpdate();
-    },
-
-    /**
      * @param {number} startTime
      * @param {number} endTime
      */
     setWindowTimes: function(startTime, endTime)
     {
-        console.assert(this._timeBasedWindow);
         this._timeWindowLeft = startTime;
         this._timeWindowRight = endTime;
         this._scheduleUpdate();
@@ -904,19 +887,15 @@ WebInspector.FlameChart.prototype = {
     {
         this._totalTime = this._dataProvider.totalTime();
         this._zeroTime = this._dataProvider.zeroTime();
-        if (this._timeBasedWindow) {
-            if (this._timeWindowRight !== Infinity) {
-                this._windowLeft = (this._timeWindowLeft - this._zeroTime) / this._totalTime;
-                this._windowRight = (this._timeWindowRight - this._zeroTime) / this._totalTime;
-                this._windowWidth = this._windowRight - this._windowLeft;
-            } else {
-                this._windowLeft = 0;
-                this._windowRight = 1;
-                this._windowWidth = 1;
-            }
+
+        if (this._timeWindowRight !== Infinity) {
+            this._windowLeft = (this._timeWindowLeft - this._zeroTime) / this._totalTime;
+            this._windowRight = (this._timeWindowRight - this._zeroTime) / this._totalTime;
+            this._windowWidth = this._windowRight - this._windowLeft;
         } else {
-            this._timeWindowLeft = this._windowLeft * this._totalTime;
-            this._timeWindowRight = this._windowRight * this._totalTime;
+            this._windowLeft = 0;
+            this._windowRight = 1;
+            this._windowWidth = 1;
         }
 
         this._pixelWindowWidth = this._offsetWidth - this._paddingLeft;

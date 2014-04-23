@@ -431,7 +431,7 @@ WebInspector.TimelineFlameChart = function(delegate, model, frameModel)
     this._delegate = delegate;
     this._model = model;
     this._dataProvider = new WebInspector.TimelineFlameChartDataProvider(model, frameModel);
-    this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true, true);
+    this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
     this._mainView.show(this.element);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordingStarted, this._onRecordingStarted, this);
     this._mainView.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected, this);

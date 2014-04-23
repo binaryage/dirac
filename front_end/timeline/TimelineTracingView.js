@@ -20,7 +20,7 @@ WebInspector.TimelineTracingView = function(delegate, tracingModel)
     this.element.classList.add("timeline-flamechart");
     this.registerRequiredCSS("flameChart.css");
     this._dataProvider = new WebInspector.TraceViewFlameChartDataProvider(this._tracingModel);
-    this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true, true);
+    this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
     this._mainView.show(this.element);
     this._mainView.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected, this);
 }
