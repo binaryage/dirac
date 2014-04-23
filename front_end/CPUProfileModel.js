@@ -479,64 +479,16 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
 
 /**
- * @return {!WebInspector.CPUFlameChartDataProvider.ColorGenerator}
+ * @return {!WebInspector.FlameChart.ColorGenerator}
  */
 WebInspector.CPUFlameChartDataProvider.colorGenerator = function()
 {
     if (!WebInspector.CPUFlameChartDataProvider._colorGenerator) {
-        var colorGenerator = new WebInspector.CPUFlameChartDataProvider.ColorGenerator();
-        colorGenerator.colorForID("(idle)::0", 40);
-        colorGenerator.colorForID("(program)::0", 40);
-        colorGenerator.colorForID("(garbage collector)::0", 40);
+        var colorGenerator = new WebInspector.FlameChart.ColorGenerator();
+        colorGenerator.setColorForID("(idle)::0", "hsl(0, 0%, 80%)");
+        colorGenerator.setColorForID("(program)::0", "hsl(0, 0%, 80%)");
+        colorGenerator.setColorForID("(garbage collector)::0", "hsl(0, 0%, 80%)");
         WebInspector.CPUFlameChartDataProvider._colorGenerator = colorGenerator;
     }
     return WebInspector.CPUFlameChartDataProvider._colorGenerator;
-}
-
-
-/**
- * @constructor
- */
-WebInspector.CPUFlameChartDataProvider.ColorGenerator = function()
-{
-    this._colors = {};
-    this._currentColorIndex = 0;
-}
-
-WebInspector.CPUFlameChartDataProvider.ColorGenerator.prototype = {
-    /**
-     * @param {string} id
-     * @param {string|!CanvasGradient} color
-     */
-    setColorForID: function(id, color)
-    {
-        this._colors[id] = color;
-    },
-
-    /**
-     * @param {!string} id
-     * @param {number=} sat
-     * @return {!string}
-     */
-    colorForID: function(id, sat)
-    {
-        if (typeof sat !== "number")
-            sat = 67;
-        var color = this._colors[id];
-        if (!color) {
-            color = this._createColor(this._currentColorIndex++, sat);
-            this._colors[id] = color;
-        }
-        return color;
-    },
-
-    /**
-     * @param {!number} index
-     * @param {!number} sat
-     */
-    _createColor: function(index, sat)
-    {
-        var hue = (index * 20) % 360;
-        return "hsl(" + hue + ", " + sat + "%, 80%)";
-    }
 }

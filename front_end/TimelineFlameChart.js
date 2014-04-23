@@ -280,6 +280,9 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (record === this._cpuThreadRecord || record === this._gpuThreadRecord)
             return "#555";
 
+        if (record.type === WebInspector.TimelineModel.RecordType.JSFrame)
+            return WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator().colorForID(record.data["functionName"]);
+
         var category = WebInspector.TimelineUIUtils.categoryForRecord(record);
         return category.fillColorStop1;
     },
@@ -391,6 +394,24 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     {
         return "white";
     }
+}
+
+
+/**
+ * @return {!WebInspector.FlameChart.ColorGenerator}
+ */
+WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator = function()
+{
+    if (!WebInspector.TimelineFlameChartDataProvider._jsFrameColorGenerator) {
+        var hueSpace = { min: 30, max: 65, count: 7 };
+        var satSpace = { min: 70, max: 100, count: 5 };
+        var colorGenerator = new WebInspector.FlameChart.ColorGenerator(hueSpace, satSpace, 60);
+        colorGenerator.setColorForID("(idle)", "hsl(0, 0%, 60%)");
+        colorGenerator.setColorForID("(program)", "hsl(0, 0%, 60%)");
+        colorGenerator.setColorForID("(garbage collector)", "hsl(0, 0%, 60%)");
+        WebInspector.TimelineFlameChartDataProvider._jsFrameColorGenerator = colorGenerator;
+    }
+    return WebInspector.TimelineFlameChartDataProvider._jsFrameColorGenerator;
 }
 
 /**

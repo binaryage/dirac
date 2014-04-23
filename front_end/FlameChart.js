@@ -221,6 +221,73 @@ WebInspector.FlameChart.Events = {
     EntrySelected: "EntrySelected"
 }
 
+
+/**
+ * @constructor
+ * @param {!{min: number, max: number, count: number}|number=} hueSpace
+ * @param {!{min: number, max: number, count: number}|number=} satSpace
+ * @param {!{min: number, max: number, count: number}|number=} lightnessSpace
+ */
+WebInspector.FlameChart.ColorGenerator = function(hueSpace, satSpace, lightnessSpace)
+{
+    this._hueSpace = hueSpace || { min: 0, max: 360, count: 20 };
+    this._satSpace = satSpace || 67;
+    this._lightnessSpace = lightnessSpace || 80;
+    this._colors = {};
+    this._currentColorIndex = 0;
+}
+
+WebInspector.FlameChart.ColorGenerator.prototype = {
+    /**
+     * @param {string} id
+     * @param {string|!CanvasGradient} color
+     */
+    setColorForID: function(id, color)
+    {
+        this._colors[id] = color;
+    },
+
+    /**
+     * @param {string} id
+     * @return {string}
+     */
+    colorForID: function(id)
+    {
+        var color = this._colors[id];
+        if (!color) {
+            color = this._createColor(this._currentColorIndex++);
+            this._colors[id] = color;
+        }
+        return color;
+    },
+
+    /**
+     * @param {number} index
+     * @return {string}
+     */
+    _createColor: function(index)
+    {
+        var h = this._indexToValueInSpace(index, this._hueSpace);
+        var s = this._indexToValueInSpace(index, this._satSpace);
+        var l = this._indexToValueInSpace(index, this._lightnessSpace);
+        return "hsl(" + h + ", " + s + "%, " + l + "%)";
+    },
+
+    /**
+     * @param {number} index
+     * @param {!{min: number, max: number, count: number}|number} space
+     * @return {number}
+     */
+    _indexToValueInSpace: function(index, space)
+    {
+        if (typeof space === "number")
+            return space;
+        index %= space.count;
+        return space.min + index / space.count * (space.max - space.min);
+    }
+}
+
+
 /**
  * @constructor
  * @implements {WebInspector.TimelineGrid.Calculator}
