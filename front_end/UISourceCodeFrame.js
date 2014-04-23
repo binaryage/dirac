@@ -78,7 +78,12 @@ WebInspector.UISourceCodeFrame.prototype = {
      */
     canEditSource: function()
     {
-        return this._uiSourceCode.isEditable();
+        var projectType = this._uiSourceCode.project().type();
+        if (projectType === WebInspector.projectTypes.Debugger || projectType === WebInspector.projectTypes.Formatter)
+            return false;
+        if (projectType === WebInspector.projectTypes.Network && this._uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
+            return false;
+        return true;
     },
 
     _windowFocused: function(event)

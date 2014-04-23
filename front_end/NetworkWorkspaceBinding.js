@@ -80,32 +80,11 @@ WebInspector.NetworkProjectDelegate.prototype = {
      * @param {string} name
      * @param {string} url
      * @param {!WebInspector.ContentProvider} contentProvider
-     * @param {boolean} isEditable
      * @return {string}
      */
-    addFile: function(parentPath, name, forceUniquePath, url, contentProvider, isEditable)
+    addFile: function(parentPath, name, url, contentProvider)
     {
-        if (forceUniquePath)
-            name = this._ensureUniqueName(parentPath, name);
-        return this.addContentProvider(parentPath, name, url, contentProvider, isEditable);
-    },
-
-    /**
-     * @param {string} parentPath
-     * @param {string} name
-     * @return {string}
-     */
-    _ensureUniqueName: function(parentPath, name)
-     {
-        var path = parentPath ? parentPath + "/" + name : name;
-        var uniquePath = path;
-        var suffix = "";
-        var contentProviders = this.contentProviders();
-        while (contentProviders[uniquePath]) {
-            suffix = " (" + (++this._lastUniqueSuffix) + ")";
-            uniquePath = path + suffix;
-        }
-        return name + suffix;
+        return this.addContentProvider(parentPath, name, url, contentProvider);
     },
 
     __proto__: WebInspector.ContentProviderBasedProjectDelegate.prototype
@@ -143,43 +122,17 @@ WebInspector.NetworkWorkspaceBinding.prototype = {
     /**
      * @param {string} url
      * @param {!WebInspector.ContentProvider} contentProvider
-     * @param {boolean} isEditable
      * @param {boolean=} isContentScript
      * @return {!WebInspector.UISourceCode}
      */
-    addFileForURL: function(url, contentProvider, isEditable, isContentScript)
-    {
-        return this._innerAddFileForURL(url, contentProvider, isEditable, false, isContentScript);
-    },
-
-    /**
-     * @param {string} url
-     * @param {!WebInspector.ContentProvider} contentProvider
-     * @param {boolean} isEditable
-     * @param {boolean=} isContentScript
-     * @return {!WebInspector.UISourceCode}
-     */
-    addUniqueFileForURL: function(url, contentProvider, isEditable, isContentScript)
-    {
-        return this._innerAddFileForURL(url, contentProvider, isEditable, true, isContentScript);
-    },
-
-    /**
-     * @param {string} url
-     * @param {!WebInspector.ContentProvider} contentProvider
-     * @param {boolean} isEditable
-     * @param {boolean} forceUnique
-     * @param {boolean=} isContentScript
-     * @return {!WebInspector.UISourceCode}
-     */
-    _innerAddFileForURL: function(url, contentProvider, isEditable, forceUnique, isContentScript)
+    addFileForURL: function(url, contentProvider, isContentScript)
     {
         var splitURL = WebInspector.ParsedURL.splitURL(url);
         var projectName = splitURL[0];
         var parentPath = splitURL.slice(1, splitURL.length - 1).join("/");
         var name = splitURL[splitURL.length - 1];
         var projectDelegate = this._projectDelegate(projectName, isContentScript || false);
-        var path = projectDelegate.addFile(parentPath, name, forceUnique, url, contentProvider, isEditable);
+        var path = projectDelegate.addFile(parentPath, name, url, contentProvider);
         var uiSourceCode = /** @type {!WebInspector.UISourceCode} */ (this._workspace.uiSourceCode(projectDelegate.id(), path));
         console.assert(uiSourceCode);
         return uiSourceCode;

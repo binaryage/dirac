@@ -563,7 +563,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
         var extension = this._extensionForPath(name);
         var contentType = this._contentTypeForExtension(extension);
 
-        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, this._fileSystemURL + filePath, url, contentType, true);
+        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, this._fileSystemURL + filePath, url, contentType);
         this._projectStore.addFile(fileDescriptor);
     },
 

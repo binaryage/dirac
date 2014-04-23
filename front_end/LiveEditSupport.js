@@ -60,7 +60,7 @@ WebInspector.LiveEditSupport.prototype = {
             return this._uiSourceCodeForScriptId[script.scriptId];
 
         console.assert(!script.isInlineScript());
-        var path = this._projectDelegate.addScript(script, true);
+        var path = this._projectDelegate.addScript(script);
         var liveEditUISourceCode = this._workspace.uiSourceCode(this._projectId, path);
 
         liveEditUISourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);

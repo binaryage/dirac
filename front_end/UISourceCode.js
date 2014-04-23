@@ -38,9 +38,8 @@
  * @param {string} name
  * @param {string} url
  * @param {!WebInspector.ResourceType} contentType
- * @param {boolean} isEditable
  */
-WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, contentType, isEditable)
+WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, contentType)
 {
     this._project = project;
     this._parentPath = parentPath;
@@ -48,7 +47,6 @@ WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, 
     this._originURL = originURL;
     this._url = url;
     this._contentType = contentType;
-    this._isEditable = isEditable;
     /** @type {!Array.<function(?string)>} */
     this._requestContentCallbacks = [];
     /** @type {!Array.<!WebInspector.PresentationConsoleMessage>} */
@@ -56,7 +54,7 @@ WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, 
     
     /** @type {!Array.<!WebInspector.Revision>} */
     this.history = [];
-    if (this.isEditable() && this._url)
+    if (!this._project.isServiceProject() && this._url)
         this._restoreRevisionHistory();
 }
 
@@ -410,7 +408,7 @@ WebInspector.UISourceCode.prototype = {
      */
     hasUnsavedCommittedChanges: function()
     {
-        if (this._savedWithFileManager || this.project().canSetFileContent() || !this._isEditable)
+        if (this._savedWithFileManager || this.project().canSetFileContent() || this._project.isServiceProject())
             return false;
         if (this._project.workspace().hasResourceContentTrackingExtensions())
             return false;
@@ -519,14 +517,6 @@ WebInspector.UISourceCode.prototype = {
             action: WebInspector.UserMetrics.UserActionNames.RevertRevision,
             url: this.url
         });
-    },
-
-    /**
-     * @return {boolean}
-     */
-    isEditable: function()
-    {
-        return this._isEditable;
     },
 
     /**

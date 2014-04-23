@@ -301,15 +301,14 @@ WebInspector.ContentProviderBasedProjectDelegate.prototype = {
      * @param {string} name
      * @param {string} url
      * @param {!WebInspector.ContentProvider} contentProvider
-     * @param {boolean} isEditable
      * @return {string}
      */
-    addContentProvider: function(parentPath, name, url, contentProvider, isEditable)
+    addContentProvider: function(parentPath, name, url, contentProvider)
     {
         var path = parentPath ? parentPath + "/" + name : name;
         if (this._contentProviders[path])
             return path;
-        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, url, url, contentProvider.contentType(), isEditable);
+        var fileDescriptor = new WebInspector.FileDescriptor(parentPath, name, url, url, contentProvider.contentType());
         this._contentProviders[path] = contentProvider;
         this._projectStore.addFile(fileDescriptor);
         return path;

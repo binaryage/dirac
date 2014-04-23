@@ -236,7 +236,7 @@ WebInspector.FormatterProjectDelegate.prototype = {
     _addFormatted: function(name, sourceURL, contentType, content)
     {
         var contentProvider = new WebInspector.StaticContentProvider(contentType, content);
-        return this.addContentProvider(sourceURL, name + ":formatted", "deobfuscated:" + sourceURL, contentProvider, false);
+        return this.addContentProvider(sourceURL, name + ":formatted", "deobfuscated:" + sourceURL, contentProvider);
     },
 
     /**

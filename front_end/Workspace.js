@@ -35,16 +35,14 @@
  * @param {string} originURL
  * @param {string} url
  * @param {!WebInspector.ResourceType} contentType
- * @param {boolean} isEditable
  */
-WebInspector.FileDescriptor = function(parentPath, name, originURL, url, contentType, isEditable)
+WebInspector.FileDescriptor = function(parentPath, name, originURL, url, contentType)
 {
     this.parentPath = parentPath;
     this.name = name;
     this.originURL = originURL;
     this.url = url;
     this.contentType = contentType;
-    this.isEditable = isEditable;
 }
 
 /**
@@ -285,7 +283,7 @@ WebInspector.Project.prototype = {
         if (uiSourceCode)
             return;
 
-        uiSourceCode = new WebInspector.UISourceCode(this, fileDescriptor.parentPath, fileDescriptor.name, fileDescriptor.originURL, fileDescriptor.url, fileDescriptor.contentType, fileDescriptor.isEditable);
+        uiSourceCode = new WebInspector.UISourceCode(this, fileDescriptor.parentPath, fileDescriptor.name, fileDescriptor.originURL, fileDescriptor.url, fileDescriptor.contentType);
 
         this._uiSourceCodesMap[path] = {uiSourceCode: uiSourceCode, index: this._uiSourceCodesList.length};
         this._uiSourceCodesList.push(uiSourceCode);

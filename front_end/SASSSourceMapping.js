@@ -527,7 +527,7 @@ WebInspector.SASSSourceMapping.prototype = {
             this._addCSSURLforSASSURL(rawURL, url);
             if (!this._workspace.hasMappingForURL(url) && !this._workspace.uiSourceCodeForURL(url)) {
                 var contentProvider = sourceMap.sourceContentProvider(url, WebInspector.resourceTypes.Stylesheet);
-                this._networkWorkspaceBinding.addFileForURL(url, contentProvider, true);
+                this._networkWorkspaceBinding.addFileForURL(url, contentProvider);
             }
         }
     },

@@ -140,16 +140,15 @@ WebInspector.DebuggerProjectDelegate.prototype = {
 
     /**
      * @param {!WebInspector.Script} script
-     * @param {boolean=} editable
      * @return {string}
      */
-    addScript: function(script, editable)
+    addScript: function(script)
     {
         var contentProvider = script.isInlineScript() ? new WebInspector.ConcatenatedScriptsContentProvider([script]) : script;
         var splitURL = WebInspector.ParsedURL.splitURL(script.sourceURL);
         var name = splitURL[splitURL.length - 1];
         name = "VM" + script.scriptId + (name ? " " + name : "");
-        return this.addContentProvider("", name, script.sourceURL, contentProvider, !!editable);
+        return this.addContentProvider("", name, script.sourceURL, contentProvider);
     },
     
     __proto__: WebInspector.ContentProviderBasedProjectDelegate.prototype

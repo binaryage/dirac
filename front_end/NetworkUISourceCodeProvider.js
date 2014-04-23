@@ -147,8 +147,7 @@ WebInspector.NetworkUISourceCodeProvider.prototype = {
         if (this._processedURLs[url])
             return;
         this._processedURLs[url] = true;
-        var isEditable = type !== WebInspector.resourceTypes.Document;
-        this._networkWorkspaceBinding.addFileForURL(url, contentProvider, isEditable, isContentScript);
+        this._networkWorkspaceBinding.addFileForURL(url, contentProvider, isContentScript);
     },
 
     _reset: function()
