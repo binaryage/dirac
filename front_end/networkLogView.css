@@ -49,7 +49,12 @@
 }
 
 .network-log-grid.data-grid table.data {
-    background: transparent;
+    background-size: 128px 82px;
+    background-image: linear-gradient(to bottom, white, white 50%, #eee 50%, #eee);
+}
+
+.network-log-grid.data-grid.small table.data {
+    background-size: 128px 42px;
 }
 
 .network-log-grid.data-grid td {
@@ -93,18 +98,6 @@
     border: none;
     width: 100%;
     color: inherit;
-}
-
-.network-log-grid.data-grid.small tr.offscreen {
-    height: 21px;
-}
-
-.network-log-grid.data-grid tr.offscreen {
-    height: 41px;
-}
-
-.network-log-grid.data-grid tr.odd:not(.selected) {
-    background-color: #f3f3f3;
 }
 
 .network-log-grid.data-grid tr.offscreen > td > div {

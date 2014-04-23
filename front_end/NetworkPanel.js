@@ -456,7 +456,6 @@ WebInspector.NetworkLogView.prototype = {
 
         this._dataGrid.sortNodes(sortingFunction, !this._dataGrid.isSortOrderAscending());
         this._timelineSortSelector.selectedIndex = 0;
-        this._updateRows();
 
         this.searchCanceled();
 
@@ -484,7 +483,6 @@ WebInspector.NetworkLogView.prototype = {
         else
             this._timelineGrid.showEventDividers();
         this._dataGrid.markColumnAsSortedBy("timeline", WebInspector.DataGrid.Order.Ascending);
-        this._updateRows();
     },
 
     _createStatusBarItems: function()
@@ -1184,34 +1182,6 @@ WebInspector.NetworkLogView.prototype = {
             NetworkAgent.clearBrowserCookies();
     },
 
-    _updateRows: function()
-    {
-        var dataTableBody = this._dataGrid.dataTableBody;
-        var rows = dataTableBody.children;
-        var recordsCount = rows.length;
-        if (recordsCount < 2)
-            return;  // Filler row only.
-
-        // Filler is at recordsCount - 1.
-        var unfilteredRowIndex = 0;
-        for (var i = 0; i < recordsCount - 1; ++i) {
-            var row = rows[i];
-
-            var dataGridNode = this._dataGrid.dataGridNodeFromNode(row);
-            if (dataGridNode.isFilteredOut()) {
-                row.classList.remove("offscreen");
-                continue;
-            }
-
-            var rowIsOdd = !!(unfilteredRowIndex & 1);
-            if (rowIsOdd !== row.rowIsOdd) {
-                row.classList.toggle("odd", rowIsOdd);
-                row.rowIsOdd = rowIsOdd;
-            }
-            unfilteredRowIndex++;
-        }
-    },
-
     _matchRequest: function(request)
     {
         if (!this._searchRegExp)
@@ -1430,7 +1400,6 @@ WebInspector.NetworkLogView.prototype = {
         for (var i = 0; i < nodes.length; ++i)
             this._applyFilter(nodes[i]);
         this._updateSummaryBar();
-        this._updateRows();
     },
 
     jumpToPreviousSearchResult: function()
