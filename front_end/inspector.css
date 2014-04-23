@@ -2667,7 +2667,7 @@ button.record-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
 /* Generic suggest box style */
 
 .suggest-box.generic-suggest {
-    margin-left: -1px;
+    margin-left: -3px;
     border-color: rgb(66%, 66%, 66%);
 }
 

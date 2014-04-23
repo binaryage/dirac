@@ -1847,12 +1847,13 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
 
         wordsWithPrefix.sort(sortSuggestions);
 
-        if (!this._suggestBox) {
+        if (!this._suggestBox)
             this._suggestBox = new WebInspector.SuggestBox(this, this._textEditor.element, "generic-suggest", 6);
-            this._anchorBox = this._anchorBoxForPosition(cursor.line, cursor.ch);
-        }
-        this._suggestBox.updateSuggestions(this._anchorBox, wordsWithPrefix, 0, true, this._textEditor.copyRange(prefixRange));
+        var oldPrefixRange = this._prefixRange;
         this._prefixRange = prefixRange;
+        if (!oldPrefixRange || prefixRange.startLine !== oldPrefixRange.startLine || prefixRange.startColumn !== oldPrefixRange.startColumn)
+            this._updateAnchorBox();
+        this._suggestBox.updateSuggestions(this._anchorBox, wordsWithPrefix, 0, true, this._textEditor.copyRange(prefixRange));
         if (!this._suggestBox.visible())
             this.finishAutocomplete();
     },
@@ -1921,7 +1922,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
         if (cursor.line < topmostLineNumber || cursor.line > bottomLine)
             this.finishAutocomplete();
         else {
-            this._anchorBox = this._anchorBoxForPosition(cursor.line, cursor.ch);
+            this._updateAnchorBox();
             this._suggestBox.setPosition(this._anchorBox);
         }
     },
@@ -1935,15 +1936,12 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
             this.finishAutocomplete();
     },
 
-    /**
-     * @param {number} line
-     * @param {number} column
-     * @return {?AnchorBox}
-     */
-    _anchorBoxForPosition: function(line, column)
+    _updateAnchorBox: function()
     {
+        var line = this._prefixRange.startLine;
+        var column = this._prefixRange.startColumn;
         var metrics = this._textEditor.cursorPositionToCoordinates(line, column);
-        return metrics ? new AnchorBox(metrics.x, metrics.y, 0, metrics.height) : null;
+        this._anchorBox = metrics ? new AnchorBox(metrics.x, metrics.y, 0, metrics.height) : null;
     },
 }
 
