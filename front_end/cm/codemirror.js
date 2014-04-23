@@ -33,6 +33,7 @@
   var presto = /Opera\//.test(navigator.userAgent);
   var safari = /Apple Computer/.test(navigator.vendor);
   var khtml = /KHTML\//.test(navigator.userAgent);
+  var mac_geLion = /Mac OS X 1\d\D([7-9]|\d\d)\D/.test(navigator.userAgent);
   var mac_geMountainLion = /Mac OS X 1\d\D([8-9]|\d\d)\D/.test(navigator.userAgent);
   var phantom = /PhantomJS/.test(navigator.userAgent);
 
@@ -436,18 +437,14 @@
       d.gutterFiller.style.width = d.gutters.offsetWidth + "px";
     } else d.gutterFiller.style.display = "";
 
-    if (!cm.state.checkedOverlayScrollbar && measure.clientHeight > 0) {
-      if (scrollbarWidth(d.measure) === 0) {
-        var w = mac && !mac_geMountainLion ? "12px" : "18px";
-        d.scrollbarV.style.minWidth = d.scrollbarH.style.minHeight = w;
-        var barMouseDown = function(e) {
-          if (e_target(e) != d.scrollbarV && e_target(e) != d.scrollbarH)
-            operation(cm, onMouseDown)(e);
-        };
-        on(d.scrollbarV, "mousedown", barMouseDown);
-        on(d.scrollbarH, "mousedown", barMouseDown);
-      }
-      cm.state.checkedOverlayScrollbar = true;
+    if (mac_geLion && scrollbarWidth(d.measure) === 0) {
+      d.scrollbarV.style.minWidth = d.scrollbarH.style.minHeight = mac_geMountainLion ? "18px" : "12px";
+      var barMouseDown = function(e) {
+        if (e_target(e) != d.scrollbarV && e_target(e) != d.scrollbarH)
+          operation(cm, onMouseDown)(e);
+      };
+      on(d.scrollbarV, "mousedown", barMouseDown);
+      on(d.scrollbarH, "mousedown", barMouseDown);
     }
   }
 
@@ -2510,7 +2507,7 @@
     var coords = coordsChar(cm, x, y), line;
     if (forRect && coords.xRel == 1 && (line = getLine(cm.doc, coords.line).text).length == coords.ch) {
       var colDiff = countColumn(line, line.length, cm.options.tabSize) - line.length;
-      coords = Pos(coords.line, Math.max(0, Math.round((x - paddingH(cm.display).left) / charWidth(cm.display)) - colDiff));
+      coords = Pos(coords.line, Math.round((x - paddingH(cm.display).left) / charWidth(cm.display)) - colDiff);
     }
     return coords;
   }
@@ -2613,7 +2610,7 @@
     e_preventDefault(e);
 
     var ourRange, ourIndex, startSel = doc.sel;
-    if (addNew && !e.shiftKey) {
+    if (addNew) {
       ourIndex = doc.sel.contains(start);
       if (ourIndex > -1)
         ourRange = doc.sel.ranges[ourIndex];
@@ -2647,7 +2644,6 @@
     if (!addNew) {
       ourIndex = 0;
       setSelection(doc, new Selection([ourRange], 0), sel_mouse);
-      startSel = doc.sel;
     } else if (ourIndex > -1) {
       replaceOneSelection(doc, ourIndex, ourRange, sel_mouse);
     } else {
@@ -2781,7 +2777,7 @@
     if (signalDOMEvent(cm, e) || eventInWidget(cm.display, e))
       return;
     e_preventDefault(e);
-    if (ie) lastDrop = +new Date;
+    if (ie_upto10) lastDrop = +new Date;
     var pos = posFromMouse(cm, e, true), files = e.dataTransfer.files;
     if (!pos || isReadOnly(cm)) return;
     // Might be a file drop, in which case we simply extract the text
@@ -2826,7 +2822,7 @@
   }
 
   function onDragStart(cm, e) {
-    if (ie && (!cm.state.draggingText || +new Date - lastDrop < 100)) { e_stop(e); return; }
+    if (ie_upto10 && (!cm.state.draggingText || +new Date - lastDrop < 100)) { e_stop(e); return; }
     if (signalDOMEvent(cm, e) || eventInWidget(cm.display, e)) return;
 
     e.dataTransfer.setData("Text", cm.getSelection());
@@ -3110,7 +3106,7 @@
       // The prevInput test prevents this from firing when a context
       // menu is closed (since the resetInput would kill the
       // select-all detection hack)
-      if (!cm.curOp && cm.display.selForContextMenu == cm.doc.sel) {
+      if (!cm.curOp && cm.display.prevInput != "\u200b") {
         resetInput(cm);
         if (webkit) setTimeout(bind(resetInput, cm, true), 0); // Issue #1730
       }
@@ -3130,6 +3126,7 @@
 
   // CONTEXT MENU HANDLING
 
+  var detectingSelectAll;
   // To make the context menu work, we need to briefly unhide the
   // textarea (making it as unobtrusive as possible) to let the
   // right-click take effect on it.
@@ -3157,17 +3154,14 @@
     resetInput(cm);
     // Adds "Select all" to context menu in FF
     if (!cm.somethingSelected()) display.input.value = display.prevInput = " ";
-    display.selForContextMenu = cm.doc.sel;
-    clearTimeout(display.detectingSelectAll);
 
     // Select-all will be greyed out if there's nothing to select, so
     // this adds a zero-width space so that we can later check whether
     // it got selected.
     function prepareSelectAllHack() {
       if (display.input.selectionStart != null) {
-        var selected = cm.somethingSelected();
-        var extval = display.input.value = "\u200b" + (selected ? display.input.value : "");
-        display.prevInput = selected ? "" : "\u200b";
+        var extval = display.input.value = "\u200b" + (cm.somethingSelected() ? display.input.value : "");
+        display.prevInput = "\u200b";
         display.input.selectionStart = 1; display.input.selectionEnd = extval.length;
       }
     }
@@ -3180,13 +3174,14 @@
       // Try to detect the user choosing select-all
       if (display.input.selectionStart != null) {
         if (!ie || ie_upto8) prepareSelectAllHack();
+        clearTimeout(detectingSelectAll);
         var i = 0, poll = function() {
-          if (display.selForContextMenu == cm.doc.sel && display.input.selectionStart == 0)
+          if (display.prevInput == "\u200b" && display.input.selectionStart == 0)
             operation(cm, commands.selectAll)(cm);
-          else if (i++ < 10) display.detectingSelectAll = setTimeout(poll, 500);
+          else if (i++ < 10) detectingSelectAll = setTimeout(poll, 500);
           else resetInput(cm);
         };
-        display.detectingSelectAll = setTimeout(poll, 200);
+        detectingSelectAll = setTimeout(poll, 200);
       }
     }
 
@@ -6259,13 +6254,13 @@
       }
       return parts;
     },
-    replaceSelection: function(code, collapse, origin) {
+    replaceSelection: docMethodOp(function(code, collapse, origin) {
       var dup = [];
       for (var i = 0; i < this.sel.ranges.length; i++)
         dup[i] = code;
       this.replaceSelections(dup, collapse, origin || "+input");
-    },
-    replaceSelections: docMethodOp(function(code, collapse, origin) {
+    }),
+    replaceSelections: function(code, collapse, origin) {
       var changes = [], sel = this.sel;
       for (var i = 0; i < sel.ranges.length; i++) {
         var range = sel.ranges[i];
@@ -6276,7 +6271,7 @@
         makeChange(this, changes[i]);
       if (newSel) setSelectionReplaceHistory(this, newSel);
       else if (this.cm) ensureCursorVisible(this.cm);
-    }),
+    },
     undo: docMethodOp(function() {makeChangeFromHistory(this, "undo");}),
     redo: docMethodOp(function() {makeChangeFromHistory(this, "redo");}),
     undoSelection: docMethodOp(function() {makeChangeFromHistory(this, "undo", true);}),
@@ -7519,7 +7514,7 @@
 
   // THE END
 
-  CodeMirror.version = "4.1.1";
+  CodeMirror.version = "4.0.4";
 
   return CodeMirror;
 });
