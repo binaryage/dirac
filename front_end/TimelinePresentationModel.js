@@ -207,8 +207,6 @@ WebInspector.TimelinePresentationModel.prototype = {
         var record = presentationRecord.record();
         var parentRecord = presentationRecord._presentationParent.record();
         WebInspector.TimelineUIUtils.aggregateTimeByCategory(parentRecord.aggregatedStats, record.aggregatedStats);
-        if (parentRecord.startTime > record.startTime)
-            parentRecord.startTime = record.startTime;
         if (parentRecord.endTime < record.endTime)
             parentRecord.endTime = record.endTime;
     },

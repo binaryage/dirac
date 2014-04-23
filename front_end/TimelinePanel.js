@@ -988,7 +988,7 @@ WebInspector.TimelinePanel.prototype = {
             this._updateSelectionDetails();
             return;
         }
-        WebInspector.TimelineUIUtils.generatePopupContent(record, this._detailsLinkifier, showCallback.bind(this), this._model.loadedFromFile());
+        WebInspector.TimelineUIUtils.generatePopupContent(record, this._model, this._detailsLinkifier, showCallback.bind(this), this._model.loadedFromFile());
 
         /**
          * @param {!DocumentFragment} element

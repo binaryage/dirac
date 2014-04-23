@@ -235,16 +235,17 @@ WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(model,
 
 /**
  * @param {!WebInspector.TimelineModel.Record} record
+ * @param {!WebInspector.TimelineModel} model
  * @return {string}
  */
-WebInspector.TimelineUIUtils.recordTitle = function(record)
+WebInspector.TimelineUIUtils.recordTitle = function(record, model)
 {
     if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp)
         return record.data["message"];
     if (record.type === WebInspector.TimelineModel.RecordType.JSFrame)
         return record.data["functionName"];
     if (WebInspector.TimelineUIUtils.isEventDivider(record)) {
-        var startTime = Number.millisToString(record.startTimeOffset);
+        var startTime = Number.millisToString(record.startTime - model.minimumRecordTime());
         return WebInspector.UIString("%s at %s", WebInspector.TimelineUIUtils.recordStyle(record).title, startTime, true);
     }
     return WebInspector.TimelineUIUtils.recordStyle(record).title;
@@ -442,11 +443,12 @@ WebInspector.TimelineUIUtils.createStyleRuleForCategory = function(category)
 
 /**
  * @param {!WebInspector.TimelineModel.Record} record
+ * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.Linkifier} linkifier
  * @param {function(!DocumentFragment)} callback
  * @param {boolean} loadedFromFile
  */
-WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, callback, loadedFromFile)
+WebInspector.TimelineUIUtils.generatePopupContent = function(record, model, linkifier, callback, loadedFromFile)
 {
     var imageElement = /** @type {?Element} */ (record.getUserObject("TimelineUIUtils::preview-element") || null);
     var relatedNode = null;
@@ -478,19 +480,20 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, linkifier, 
 
     function callbackWrapper()
     {
-        callback(WebInspector.TimelineUIUtils._generatePopupContentSynchronously(record, linkifier, imageElement, relatedNode, loadedFromFile));
+        callback(WebInspector.TimelineUIUtils._generatePopupContentSynchronously(record, model, linkifier, imageElement, relatedNode, loadedFromFile));
     }
 }
 
 /**
  * @param {!WebInspector.TimelineModel.Record} record
+ * @param {!WebInspector.TimelineModel} model
  * @param {!WebInspector.Linkifier} linkifier
  * @param {?Element} imagePreviewElement
  * @param {?WebInspector.DOMNode} relatedNode
  * @param {boolean} loadedFromFile
  * @return {!DocumentFragment}
  */
-WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(record, linkifier, imagePreviewElement, relatedNode, loadedFromFile)
+WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(record, model, linkifier, imagePreviewElement, relatedNode, loadedFromFile)
 {
     var fragment = document.createDocumentFragment();
     if (record.children.length)
@@ -507,7 +510,7 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
 
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(record.target(), linkifier, true);
     contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(record.selfTime, true));
-    contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString(record.startTimeOffset));
+    contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString(record.startTime - model.minimumRecordTime()));
 
     switch (record.type) {
         case recordTypes.GCEvent:

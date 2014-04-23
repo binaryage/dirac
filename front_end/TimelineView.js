@@ -132,7 +132,7 @@ WebInspector.TimelineView.prototype = {
             var dividerPosition = Math.round(positions.left);
             if (dividerPosition < 0 || dividerPosition >= clientWidth || dividers[dividerPosition])
                 continue;
-            var divider = WebInspector.TimelineUIUtils.createEventDivider(record.type, WebInspector.TimelineUIUtils.recordTitle(record));
+            var divider = WebInspector.TimelineUIUtils.createEventDivider(record.type, WebInspector.TimelineUIUtils.recordTitle(record, this._model));
             divider.style.left = dividerPosition + "px";
             dividers[dividerPosition] = divider;
         }
