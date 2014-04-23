@@ -456,8 +456,8 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, model, link
     var barrier = new CallbackBarrier();
     if (!imageElement && WebInspector.TimelineUIUtils.needsPreviewElement(record.type))
         WebInspector.DOMPresentationUtils.buildImagePreviewContents(record.target(), record.url, false, barrier.createCallback(saveImage));
-    if (record.relatedBackendNodeId())
-        record.target().domModel.pushNodesByBackendIdsToFrontend([record.relatedBackendNodeId()], barrier.createCallback(setRelatedNode));
+    if (record.data["backendNodeId"])
+        record.target().domModel.pushNodesByBackendIdsToFrontend([record.data["backendNodeId"]], barrier.createCallback(setRelatedNode));
     barrier.callWhenDone(callbackWrapper);
 
     /**

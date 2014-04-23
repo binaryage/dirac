@@ -582,10 +582,6 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
     if (record.data) {
         if (record.data["url"])
             this.url = record.data["url"];
-        if (record.data["rootNode"])
-            this._relatedBackendNodeId = record.data["rootNode"];
-        else if (record.data["elementId"])
-            this._relatedBackendNodeId = record.data["elementId"];
         if (record.data["scriptName"] || record.data["scriptId"]) {
             this.scriptId = record.data["scriptId"];
             this.scriptName = record.data["scriptName"];
@@ -676,7 +672,6 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
 
         bindings._layoutInvalidateStack[this.frameId] = null;
         this.highlightQuad = record.data.root || WebInspector.TimelineModel._quadFromRectData(record.data);
-        this._relatedBackendNodeId = record.data["rootNode"];
         break;
 
     case recordTypes.AutosizeText:
@@ -833,14 +828,6 @@ WebInspector.TimelineModel.Record.prototype = {
         if (!this._userObjects)
             this._userObjects = new StringMap();
         this._userObjects.put(key, value);
-    },
-
-    /**
-     * @return {number} nodeId
-     */
-    relatedBackendNodeId: function()
-    {
-        return this._relatedBackendNodeId;
     },
 
     _calculateAggregatedStats: function()
