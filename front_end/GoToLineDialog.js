@@ -36,7 +36,7 @@
 WebInspector.GoToLineDialog = function(sourceFrame)
 {
     WebInspector.DialogDelegate.call(this);
-    
+
     this.element = document.createElement("div");
     this.element.className = "go-to-line-dialog";
 
@@ -91,13 +91,13 @@ WebInspector.GoToLineDialog.prototype = {
         WebInspector.setCurrentFocusElement(this._input);
         this._input.select();
     },
-    
+
     _onGoClick: function()
     {
         this._applyLineNumber();
         WebInspector.Dialog.hide();
     },
-    
+
     _applyLineNumber: function()
     {
         var value = this._input.value;
@@ -105,7 +105,7 @@ WebInspector.GoToLineDialog.prototype = {
         if (!isNaN(lineNumber) && lineNumber >= 0)
             this._sourceFrame.revealPosition(lineNumber, 0, true);
     },
-    
+
     onEnter: function()
     {
         this._applyLineNumber();

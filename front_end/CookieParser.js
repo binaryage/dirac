@@ -343,8 +343,8 @@ WebInspector.Cookie.prototype = {
     },
 
     /**
-     * @param {string} key 
-     * @param {string=} value 
+     * @param {string} key
+     * @param {string=} value
      */
     addAttribute: function(key, value)
     {
@@ -376,7 +376,7 @@ WebInspector.Cookies = {}
 WebInspector.Cookies.getCookiesAsync = function(callback)
 {
     /**
-     * @param {?Protocol.Error} error 
+     * @param {?Protocol.Error} error
      * @param {!Array.<!PageAgent.Cookie>} cookies
      */
     function mycallback(error, cookies)
@@ -424,7 +424,7 @@ WebInspector.Cookies.cookieMatchesResourceURL = function(cookie, resourceURL)
 }
 
 /**
- * @param {string} cookieDomain 
+ * @param {string} cookieDomain
  * @param {string} resourceDomain
  */
 WebInspector.Cookies.cookieDomainMatchesResourceDomain = function(cookieDomain, resourceDomain)

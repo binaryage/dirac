@@ -60,7 +60,7 @@ WebInspector.RequestView.prototype = {
 WebInspector.RequestView.hasTextContent = function(request)
 {
     if (request.type.isTextType())
-        return true; 
+        return true;
     if (request.type === WebInspector.resourceTypes.Other || request.hasErrorStatusCode())
         return request.content && !request.contentEncoded;
     return false;

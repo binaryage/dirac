@@ -451,7 +451,7 @@ WebInspector.TabbedPane.prototype = {
                 delete this._noTabsMessageElement;
             }
         }
-        
+
         if (!this._measuredDropDownButtonWidth)
             this._measureDropDownButton();
 
@@ -522,7 +522,7 @@ WebInspector.TabbedPane.prototype = {
             if (!tab._shown)
                 this._showTabElement(i, tab);
         }
-        
+
         this._populateDropDownFromIndex();
     },
 
@@ -637,7 +637,7 @@ WebInspector.TabbedPane.prototype = {
             totalExtraWidth += (measuredWidths.length - i) * extraWidth;
 
             if (totalWidth + totalExtraWidth >= totalMeasuredWidth)
-                return measuredWidths[i - 1] + (totalWidth + totalExtraWidth - totalMeasuredWidth) / (measuredWidths.length - i); 
+                return measuredWidths[i - 1] + (totalWidth + totalExtraWidth - totalMeasuredWidth) / (measuredWidths.length - i);
         }
 
         return totalWidth / measuredWidths.length;
@@ -671,7 +671,7 @@ WebInspector.TabbedPane.prototype = {
 
         return tabsToShowIndexes;
     },
-    
+
     _hideCurrentTab: function()
     {
         if (!this._currentTab)
@@ -977,7 +977,7 @@ WebInspector.TabbedPaneTab.prototype = {
         {
             this._closeTabs([this.id]);
         }
-  
+
         /**
          * @this {WebInspector.TabbedPaneTab}
          */
@@ -985,7 +985,7 @@ WebInspector.TabbedPaneTab.prototype = {
         {
             this._closeTabs(this._tabbedPane.otherTabs(this.id));
         }
-  
+
         /**
          * @this {WebInspector.TabbedPaneTab}
          */
@@ -993,7 +993,7 @@ WebInspector.TabbedPaneTab.prototype = {
         {
             this._closeTabs(this._tabbedPane.allTabs());
         }
-  
+
         var contextMenu = new WebInspector.ContextMenu(event);
         contextMenu.appendItem(WebInspector.UIString("Close"), close.bind(this));
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Close others" : "Close Others"), closeOthers.bind(this));

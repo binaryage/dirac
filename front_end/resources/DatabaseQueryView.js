@@ -60,7 +60,7 @@ WebInspector.DatabaseQueryView.prototype = {
         if (!this._prompt.isCaretInsidePrompt() && window.getSelection().isCollapsed)
             this._prompt.moveCaretToEndOfPrompt();
     },
-    
+
     /**
      * @param {!Element} proxyElement
      * @param {!Range} wordRange

@@ -68,6 +68,7 @@
             "SASSSourceMapping.js",
             "Script.js",
             "ScriptSnippetModel.js",
+            "SearchConfig.js",
             "NetworkWorkspaceBinding.js",
             "SnippetStorage.js",
             "SourceMapping.js",
@@ -150,17 +151,17 @@
         "name": "codemirror",
         "dependencies": ["common", "ui"],
         "sources": [
-            "CodeMirrorTextEditor.js",
-            "CodeMirrorUtils.js"
+            "codemirror/CodeMirrorTextEditor.js",
+            "codemirror/CodeMirrorUtils.js"
         ]
     },
     {
         "name": "components",
         "dependencies": ["sdk", "ui"],
         "sources": [
+            "CPUProfileModel.js",
             "ExecutionContextSelector.js",
             "HandlerRegistry.js",
-            "CPUProfileModel.js",
             "CookiesTable.js",
             "DOMBreakpointsSidebarPane.js",
             "DOMPresentationUtils.js",
@@ -202,49 +203,49 @@
         "name": "elements",
         "dependencies": ["components", "codemirror"],
         "sources": [
-            "DOMSyntaxHighlighter.js",
-            "ElementsPanel.js",
-            "ElementsTreeOutline.js",
-            "EventListenersSidebarPane.js",
-            "MetricsSidebarPane.js",
-            "OverridesView.js",
-            "PlatformFontsSidebarPane.js",
-            "PropertiesSidebarPane.js",
-            "StylesSidebarPane.js",
-            "RenderingOptionsView.js"
+            "elements/DOMSyntaxHighlighter.js",
+            "elements/ElementsPanel.js",
+            "elements/ElementsTreeOutline.js",
+            "elements/EventListenersSidebarPane.js",
+            "elements/MetricsSidebarPane.js",
+            "elements/OverridesView.js",
+            "elements/PlatformFontsSidebarPane.js",
+            "elements/PropertiesSidebarPane.js",
+            "elements/StylesSidebarPane.js",
+            "elements/RenderingOptionsView.js"
         ]
     },
     {
         "name": "network",
         "dependencies": ["components", "resource_views"],
         "sources": [
-            "NetworkItemView.js",
-            "RequestCookiesView.js",
-            "RequestHeadersView.js",
-            "RequestHTMLView.js",
-            "RequestJSONView.js",
-            "RequestPreviewView.js",
-            "RequestResponseView.js",
-            "RequestTimingView.js",
-            "RequestView.js",
-            "ResourceWebSocketFrameView.js",
-            "NetworkPanel.js"
+            "network/NetworkItemView.js",
+            "network/RequestCookiesView.js",
+            "network/RequestHeadersView.js",
+            "network/RequestHTMLView.js",
+            "network/RequestJSONView.js",
+            "network/RequestPreviewView.js",
+            "network/RequestResponseView.js",
+            "network/RequestTimingView.js",
+            "network/RequestView.js",
+            "network/ResourceWebSocketFrameView.js",
+            "network/NetworkPanel.js"
         ]
     },
     {
         "name": "resources",
         "dependencies": ["components", "resource_views"],
         "sources": [
-            "ApplicationCacheItemsView.js",
-            "CookieItemsView.js",
-            "DatabaseQueryView.js",
-            "DatabaseTableView.js",
-            "DirectoryContentView.js",
-            "DOMStorageItemsView.js",
-            "FileContentView.js",
-            "FileSystemView.js",
-            "IndexedDBViews.js",
-            "ResourcesPanel.js"
+            "resources/ApplicationCacheItemsView.js",
+            "resources/CookieItemsView.js",
+            "resources/DatabaseQueryView.js",
+            "resources/DatabaseTableView.js",
+            "resources/DirectoryContentView.js",
+            "resources/DOMStorageItemsView.js",
+            "resources/FileContentView.js",
+            "resources/FileSystemView.js",
+            "resources/IndexedDBViews.js",
+            "resources/ResourcesPanel.js"
         ]
     },
     {
@@ -258,122 +259,121 @@
         "name": "console",
         "dependencies": ["components"],
         "sources": [
-            "ConsoleView.js",
-            "ConsoleViewMessage.js",
-            "ConsolePanel.js"
+            "console/ConsoleView.js",
+            "console/ConsoleViewMessage.js",
+            "console/ConsolePanel.js"
         ]
     },
     {
         "name": "search",
         "dependencies": ["components"],
         "sources": [
-            "AdvancedSearchView.js",
-            "FileBasedSearchResultsPane.js",
-            "SearchConfig.js",
-            "SourcesSearchScope.js"
-            ]
+            "search/AdvancedSearchView.js",
+            "search/FileBasedSearchResultsPane.js",
+            "search/SourcesSearchScope.js"
+        ]
     },
     {
         "name": "devices",
         "dependencies": ["sdk", "ui"],
         "sources": [
-            "DevicesView.js"
+            "devices/DevicesView.js"
         ]
     },
     {
         "name": "sources",
         "dependencies": ["components", "source_frame", "workers", "console"],
         "sources": [
-            "BreakpointsSidebarPane.js",
-            "CSSSourceFrame.js",
-            "CallStackSidebarPane.js",
-            "EditingLocationHistoryManager.js",
-            "FilePathScoreFunction.js",
-            "FilteredItemSelectionDialog.js",
-            "JavaScriptSourceFrame.js",
-            "NavigatorView.js",
-            "RevisionHistoryView.js",
-            "ScopeChainSidebarPane.js",
-            "ScriptFormatter.js",
-            "SimpleHistoryManager.js",
-            "SourcesView.js",
-            "SourcesNavigator.js",
-            "SourcesPanel.js",
-            "StyleSheetOutlineDialog.js",
-            "TabbedEditorContainer.js",
-            "UISourceCodeFrame.js",
-            "WatchExpressionsSidebarPane.js",
-            "WorkersSidebarPane.js",
-            "ThreadsToolbar.js"
+            "sources/BreakpointsSidebarPane.js",
+            "sources/CSSSourceFrame.js",
+            "sources/CallStackSidebarPane.js",
+            "sources/EditingLocationHistoryManager.js",
+            "sources/FilePathScoreFunction.js",
+            "sources/FilteredItemSelectionDialog.js",
+            "sources/JavaScriptSourceFrame.js",
+            "sources/NavigatorView.js",
+            "sources/RevisionHistoryView.js",
+            "sources/ScopeChainSidebarPane.js",
+            "sources/ScriptFormatter.js",
+            "sources/SimpleHistoryManager.js",
+            "sources/SourcesView.js",
+            "sources/SourcesNavigator.js",
+            "sources/SourcesPanel.js",
+            "sources/StyleSheetOutlineDialog.js",
+            "sources/TabbedEditorContainer.js",
+            "sources/UISourceCodeFrame.js",
+            "sources/WatchExpressionsSidebarPane.js",
+            "sources/WorkersSidebarPane.js",
+            "sources/ThreadsToolbar.js"
         ]
     },
     {
         "name": "formatter_editor_actions",
         "dependencies": ["sources"],
         "sources": [
-            "ScriptFormatterEditorAction.js",
-            "InplaceFormatterEditorAction.js"
+            "sources/ScriptFormatterEditorAction.js",
+            "sources/InplaceFormatterEditorAction.js"
         ]
     },
     {
         "name": "timeline",
         "dependencies": ["components"],
         "sources": [
-            "CountersGraph.js",
-            "MemoryCountersGraph.js",
-            "TimelineEventOverview.js",
-            "TimelineFrameModel.js",
-            "TimelineFrameOverview.js",
-            "TimelineJSProfile.js",
-            "TimelineMemoryOverview.js",
-            "TimelinePowerGraph.js",
-            "TimelinePowerOverview.js",
-            "TimelineModel.js",
-            "TimelineOverviewPane.js",
-            "TimelineFlameChart.js",
-            "TimelinePanel.js",
-            "TimelinePresentationModel.js",
-            "TimelineUIUtils.js",
-            "TimelineView.js",
-            "TimelineTracingView.js"
+            "timeline/CountersGraph.js",
+            "timeline/MemoryCountersGraph.js",
+            "timeline/TimelineEventOverview.js",
+            "timeline/TimelineFrameModel.js",
+            "timeline/TimelineFrameOverview.js",
+            "timeline/TimelineJSProfile.js",
+            "timeline/TimelineMemoryOverview.js",
+            "timeline/TimelinePowerGraph.js",
+            "timeline/TimelinePowerOverview.js",
+            "timeline/TimelineModel.js",
+            "timeline/TimelineOverviewPane.js",
+            "timeline/TimelineFlameChart.js",
+            "timeline/TimelinePanel.js",
+            "timeline/TimelinePresentationModel.js",
+            "timeline/TimelineUIUtils.js",
+            "timeline/TimelineView.js",
+            "timeline/TimelineTracingView.js"
         ]
     },
     {
         "name": "audits",
         "dependencies": ["components"],
         "sources": [
-            "AuditCategories.js",
-            "AuditCategory.js",
-            "AuditController.js",
-            "AuditFormatters.js",
-            "AuditLauncherView.js",
-            "AuditResultView.js",
-            "AuditRules.js",
-            "AuditsPanel.js"
+            "audits/AuditCategories.js",
+            "audits/AuditCategory.js",
+            "audits/AuditController.js",
+            "audits/AuditFormatters.js",
+            "audits/AuditLauncherView.js",
+            "audits/AuditResultView.js",
+            "audits/AuditRules.js",
+            "audits/AuditsPanel.js"
         ]
     },
     {
         "name": "layers",
         "dependencies": ["components"],
         "sources": [
-            "LayersPanel.js",
-            "LayerTree.js",
-            "Layers3DView.js",
-            "LayerDetailsView.js",
-            "PaintProfilerView.js",
-            "TransformController.js"
+            "layers/LayersPanel.js",
+            "layers/LayerTree.js",
+            "layers/Layers3DView.js",
+            "layers/LayerDetailsView.js",
+            "layers/PaintProfilerView.js",
+            "layers/TransformController.js"
         ]
     },
     {
         "name": "extensions",
         "dependencies": ["components", "audits", "sources"],
         "sources": [
-            "ExtensionAPI.js",
-            "ExtensionAuditCategory.js",
-            "ExtensionPanel.js",
-            "ExtensionRegistryStub.js",
-            "ExtensionServer.js",
-            "ExtensionView.js"
+            "extensions/ExtensionAPI.js",
+            "extensions/ExtensionAuditCategory.js",
+            "extensions/ExtensionPanel.js",
+            "extensions/ExtensionRegistryStub.js",
+            "extensions/ExtensionServer.js",
+            "extensions/ExtensionView.js"
         ]
     },
     {
@@ -396,27 +396,27 @@
         "standalone": true,
         "dependencies": [],
         "sources": [
-            "TempStorageSharedWorker.js"
+            "temp_storage_shared_worker/TempStorageSharedWorker.js"
         ]
     },
     {
         "name": "profiler",
         "dependencies": ["components"],
         "sources": [
-            "CPUProfileBottomUpDataGrid.js",
-            "CPUProfileDataGrid.js",
-            "CPUProfileFlameChart.js",
-            "CPUProfileTopDownDataGrid.js",
-            "CPUProfileView.js",
-            "HeapSnapshotCommon.js",
-            "HeapSnapshotDataGrids.js",
-            "HeapSnapshotGridNodes.js",
-            "HeapSnapshotProxy.js",
-            "HeapSnapshotView.js",
-            "ProfilesPanel.js",
-            "ProfileLauncherView.js",
-            "CanvasProfileView.js",
-            "CanvasReplayStateView.js"
+            "profiler/CPUProfileBottomUpDataGrid.js",
+            "profiler/CPUProfileDataGrid.js",
+            "profiler/CPUProfileFlameChart.js",
+            "profiler/CPUProfileTopDownDataGrid.js",
+            "profiler/CPUProfileView.js",
+            "profiler/HeapSnapshotCommon.js",
+            "profiler/HeapSnapshotDataGrids.js",
+            "profiler/HeapSnapshotGridNodes.js",
+            "profiler/HeapSnapshotProxy.js",
+            "profiler/HeapSnapshotView.js",
+            "profiler/ProfilesPanel.js",
+            "profiler/ProfileLauncherView.js",
+            "profiler/CanvasProfileView.js",
+            "profiler/CanvasReplayStateView.js"
         ]
     },
     {
@@ -424,16 +424,16 @@
         "standalone": true,
         "dependencies": [],
         "sources": [
-            "AllocationProfile.js",
-            "HeapSnapshot.js",
-            "HeapSnapshotCommon.js",
-            "HeapSnapshotLoader.js",
-            "HeapSnapshotWorker.js",
-            "HeapSnapshotWorkerDispatcher.js",
-            "JSHeapSnapshot.js",
             "TextUtils.js",
             "UIString.js",
-            "utilities.js"
+            "utilities.js",
+            "profiler/HeapSnapshotCommon.js",
+            "profiler/heap_snapshot_worker/AllocationProfile.js",
+            "profiler/heap_snapshot_worker/HeapSnapshot.js",
+            "profiler/heap_snapshot_worker/HeapSnapshotLoader.js",
+            "profiler/heap_snapshot_worker/HeapSnapshotWorker.js",
+            "profiler/heap_snapshot_worker/HeapSnapshotWorkerDispatcher.js",
+            "profiler/heap_snapshot_worker/JSHeapSnapshot.js"
         ]
     },
     {
@@ -456,10 +456,10 @@
         "standalone": true,
         "dependencies": [],
         "sources": [
-            "CSSFormatter.js",
-            "JavaScriptFormatter.js",
-            "ScriptFormatterWorker.js",
-            "utilities.js"
+            "utilities.js",
+            "script_formatter_worker/CSSFormatter.js",
+            "script_formatter_worker/JavaScriptFormatter.js",
+            "script_formatter_worker/ScriptFormatterWorker.js"
         ]
     },
     {

@@ -59,7 +59,7 @@ WebInspector.ProjectDelegate.prototype = {
     /**
      * @return {string}
      */
-    displayName: function() { }, 
+    displayName: function() { },
 
     /**
      * @param {string} path
@@ -254,13 +254,13 @@ WebInspector.Project.prototype = {
      */
     type: function()
     {
-        return this._projectDelegate.type(); 
+        return this._projectDelegate.type();
     },
 
     /**
      * @return {string}
      */
-    displayName: function() 
+    displayName: function()
     {
         return this._displayName;
     },

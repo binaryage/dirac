@@ -51,20 +51,20 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
             return this._sortedScriptsArray;
 
         this._sortedScriptsArray = [];
-        
+
         var scripts = this._scripts.slice();
         scripts.sort(function(x, y) { return x.lineOffset - y.lineOffset || x.columnOffset - y.columnOffset; });
-        
+
         var scriptOpenTagLength = WebInspector.ConcatenatedScriptsContentProvider.scriptOpenTag.length;
         var scriptCloseTagLength = WebInspector.ConcatenatedScriptsContentProvider.scriptCloseTag.length;
-        
+
         this._sortedScriptsArray.push(scripts[0]);
         for (var i = 1; i < scripts.length; ++i) {
             var previousScript = this._sortedScriptsArray[this._sortedScriptsArray.length - 1];
-            
+
             var lineNumber = previousScript.endLine;
             var columnNumber = previousScript.endColumn + scriptCloseTagLength + scriptOpenTagLength;
-            
+
             if (lineNumber < scripts[i].lineOffset || (lineNumber === scripts[i].lineOffset && columnNumber <= scripts[i].columnOffset))
                 this._sortedScriptsArray.push(scripts[i]);
         }
@@ -86,7 +86,7 @@ WebInspector.ConcatenatedScriptsContentProvider.prototype = {
     {
         return WebInspector.resourceTypes.Document;
     },
-    
+
     /**
      * @param {function(?string)} callback
      */
@@ -212,7 +212,7 @@ WebInspector.CompilerSourceMappingContentProvider.prototype = {
     {
         return this._contentType;
     },
-    
+
     /**
      * @param {function(?string)} callback
      */

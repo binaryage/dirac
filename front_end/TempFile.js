@@ -312,7 +312,7 @@ WebInspector.BufferedTempFileWriter.prototype = {
  */
 WebInspector.TempStorageCleaner = function()
 {
-    this._worker = new SharedWorker("TempStorageSharedWorker.js", "TempStorage");
+    this._worker = new SharedWorker("temp_storage_shared_worker/TempStorageSharedWorker.js", "TempStorage");
     this._callbacks = [];
     this._worker.port.onmessage = this._handleMessage.bind(this);
     this._worker.port.onerror = this._handleError.bind(this);

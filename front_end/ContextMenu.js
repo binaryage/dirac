@@ -273,11 +273,11 @@ WebInspector.ContextMenu.prototype = {
 /**
  * @interface
  */
-WebInspector.ContextMenu.Provider = function() { 
+WebInspector.ContextMenu.Provider = function() {
 }
 
 WebInspector.ContextMenu.Provider.prototype = {
-    /** 
+    /**
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */

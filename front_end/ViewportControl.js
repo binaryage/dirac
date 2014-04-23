@@ -50,11 +50,11 @@ WebInspector.ViewportControl = function(provider)
 /**
  * @interface
  */
-WebInspector.ViewportControl.Provider = function() 
+WebInspector.ViewportControl.Provider = function()
 {
 }
 
-WebInspector.ViewportControl.Provider.prototype = { 
+WebInspector.ViewportControl.Provider.prototype = {
     /**
      * @return {number}
      */
@@ -103,7 +103,7 @@ WebInspector.ViewportControl.prototype = {
         this._lastVisibleIndex = Math.min(Math.ceil(visibleTo / this._rowHeight), itemCount) - 1;
 
         this._topGapElement.style.height = (this._rowHeight * this._firstVisibleIndex) + "px";
-        this._bottomGapElement.style.height = (this._rowHeight * (itemCount - this._lastVisibleIndex - 1)) + "px"; 
+        this._bottomGapElement.style.height = (this._rowHeight * (itemCount - this._lastVisibleIndex - 1)) + "px";
 
         for (var i = this._firstVisibleIndex; i <= this._lastVisibleIndex; ++i)
             this._contentElement.appendChild(this._provider.itemElement(i));

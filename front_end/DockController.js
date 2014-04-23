@@ -129,7 +129,7 @@ WebInspector.DockController.prototype = {
             body.classList.remove("dock-to-left");
             body.classList.add("dock-to-bottom");
             break;
-        case WebInspector.DockController.State.DockedToRight: 
+        case WebInspector.DockController.State.DockedToRight:
             body.classList.remove("undocked");
             body.classList.add("dock-to-right");
             body.classList.remove("dock-to-left");

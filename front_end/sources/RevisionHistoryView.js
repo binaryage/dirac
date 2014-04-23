@@ -64,7 +64,7 @@ WebInspector.RevisionHistoryView = function()
  */
 WebInspector.RevisionHistoryView.showHistory = function(uiSourceCode)
 {
-    if (!WebInspector.RevisionHistoryView._view) 
+    if (!WebInspector.RevisionHistoryView._view)
         WebInspector.RevisionHistoryView._view = new WebInspector.RevisionHistoryView();
     var view = WebInspector.RevisionHistoryView._view;
     WebInspector.inspectorView.showCloseableViewInDrawer("history", WebInspector.UIString("History"), view);

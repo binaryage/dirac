@@ -48,7 +48,7 @@ WebInspector.JavaScriptBreakpointsSidebarPane = function(debuggerModel, breakpoi
     this.bodyElement.appendChild(this.emptyElement);
 
     this._items = new Map();
-    
+
     var breakpointLocations = this._breakpointManager.allBreakpointLocations();
     for (var i = 0; i < breakpointLocations.length; ++i)
         this._addBreakpoint(breakpointLocations[i].breakpoint, breakpointLocations[i].uiLocation);

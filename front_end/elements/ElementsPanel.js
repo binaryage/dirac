@@ -1208,7 +1208,7 @@ WebInspector.ElementsPanel.prototype = {
         this.selectDOMNode(node, true);
     },
 
-    /** 
+    /**
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} object
      */

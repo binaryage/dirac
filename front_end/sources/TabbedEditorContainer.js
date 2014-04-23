@@ -200,11 +200,11 @@ WebInspector.TabbedEditorContainer.prototype = {
         this._currentFile = uiSourceCode;
 
         var tabId = this._tabIds.get(uiSourceCode) || this._appendFileTab(uiSourceCode, userGesture);
-        
+
         this._tabbedPane.selectTab(tabId, userGesture);
         if (userGesture)
             this._editorSelectedByUserAction();
-        
+
         this._currentView = this.visibleView;
         this._addViewListeners();
 
@@ -351,7 +351,7 @@ WebInspector.TabbedEditorContainer.prototype = {
         {
             return this._files[tabId].uri();
         }
-        
+
         this._history.update(tabIds.map(tabIdToURI.bind(this)));
         this._history.save(this._previouslyViewedFilesSetting);
     },
@@ -679,7 +679,7 @@ WebInspector.TabbedEditorContainer.History.prototype = {
             this._rebuildItemIndex();
         }
     },
-    
+
     /**
      * @param {!WebInspector.Setting} setting
      */
@@ -687,7 +687,7 @@ WebInspector.TabbedEditorContainer.History.prototype = {
     {
         setting.set(this._serializeToObject());
     },
-    
+
     /**
      * @return {!Array.<!Object>}
      */

@@ -673,7 +673,7 @@ WebInspector.BaseNavigatorTreeElement.prototype = {
             this.imageElement.className = "icon";
             this.listItemElement.appendChild(this.imageElement);
         }
-        
+
         this.titleElement = document.createElement("div");
         this.titleElement.className = "base-navigator-tree-element-title";
         this._titleTextNode = document.createTextNode("");
@@ -713,7 +713,7 @@ WebInspector.BaseNavigatorTreeElement.prototype = {
         if (this.titleElement)
             this.titleElement.textContent = this._titleText;
     },
-    
+
     /**
      * @return {string}
      */

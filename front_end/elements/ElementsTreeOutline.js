@@ -1228,7 +1228,7 @@ WebInspector.ElementsTreeElement.prototype = {
         {
             TreeElement.prototype.expandRecursively.call(this, Number.MAX_VALUE);
         }
-        
+
         this._node.getSubtree(-1, callback.bind(this));
     },
 
@@ -1426,7 +1426,7 @@ WebInspector.ElementsTreeElement.prototype = {
     _populateScrollIntoView: function(contextMenu)
     {
         contextMenu.appendSeparator();
-        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Scroll into view" : "Scroll into View"), this._scrollIntoView.bind(this)); 
+        contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Scroll into view" : "Scroll into View"), this._scrollIntoView.bind(this));
     },
 
     _populateForcedPseudoStateItems: function(subMenu)
@@ -1560,7 +1560,7 @@ WebInspector.ElementsTreeElement.prototype = {
         removeZeroWidthSpaceRecursive(attribute);
 
         var config = new WebInspector.InplaceEditor.Config(this._attributeEditingCommitted.bind(this), this._editingCancelled.bind(this), attributeName);
-        
+
         function handleKeyDownEvents(event)
         {
             var isMetaOrCtrl = WebInspector.isMac() ?
@@ -2401,7 +2401,7 @@ WebInspector.ElementsTreeElement.prototype = {
             if (object)
                 object.callFunction(scrollIntoView);
         }
-        
+
         this._node.resolveToObject("", scrollIntoViewCallback);
     },
 

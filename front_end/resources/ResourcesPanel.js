@@ -29,6 +29,7 @@
  */
 
 importScript("ApplicationCacheItemsView.js");
+importScript("CookieItemsView.js");
 importScript("DOMStorageItemsView.js");
 importScript("DatabaseQueryView.js");
 importScript("DatabaseTableView.js");

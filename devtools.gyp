@@ -51,9 +51,9 @@
                                      'concatenated_devtools_resources_js',
                                      'concatenated_devtools_network_js',
                                      'concatenated_devtools_extensions_js',
-                                     'concatenated_devtools_scripts_js',
+                                     'concatenated_devtools_sources_js',
                                      'concatenated_devtools_timeline_js',
-                                     'concatenated_devtools_profiles_js',
+                                     'concatenated_devtools_profiler_js',
                                      'concatenated_devtools_audits_js',
                                      'concatenated_devtools_codemirror_js',
                                      'concatenated_devtools_layers_js',
@@ -69,12 +69,217 @@
                     'conditions': [
                         ['debug_devtools==1', {
                             'files': [
-                                '<@(devtools_files)',
+                                '<@(core_devtools_files)',
                                 '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
                                 '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/audits',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_audits_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/codemirror',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_codemirror_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/console',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_console_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/devices',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_devices_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/elements',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_elements_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/extensions',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_extensions_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/profiler/heap_snapshot_worker',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
                                 '<@(devtools_heap_snapshot_worker_js_files)',
-                                '<@(devtools_temp_storage_shared_worker_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/layers',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_layers_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/network',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_network_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/profiler',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_profiler_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/resources',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_resources_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/script_formatter_worker',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
                                 '<@(devtools_script_formatter_worker_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/search',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_search_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/sources',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_sources_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_temp_storage_shared_worker_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/timeline',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_timeline_js_files)',
                             ],
                         },
                         {
@@ -163,9 +368,9 @@
                                      'concatenated_devtools_resources_js',
                                      'concatenated_devtools_network_js',
                                      'concatenated_devtools_extensions_js',
-                                     'concatenated_devtools_scripts_js',
+                                     'concatenated_devtools_sources_js',
                                      'concatenated_devtools_timeline_js',
-                                     'concatenated_devtools_profiles_js',
+                                     'concatenated_devtools_profiler_js',
                                      'concatenated_devtools_audits_js',
                                      'concatenated_devtools_codemirror_js',
                                      'concatenated_devtools_layers_js',
@@ -176,25 +381,26 @@
                     'actions': [{
                         'action_name': 'generate_devtools_grd',
                         'script_name': 'scripts/generate_devtools_grd.py',
+                        'relative_path_dir': '<(PRODUCT_DIR)/resources/inspector',
                         'input_pages': [
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
                             '<(PRODUCT_DIR)/resources/inspector/Main.js',
-                            '<(PRODUCT_DIR)/resources/inspector/AdvancedSearchView.js',
-                            '<(PRODUCT_DIR)/resources/inspector/ConsolePanel.js',
-                            '<(PRODUCT_DIR)/resources/inspector/ElementsPanel.js',
-                            '<(PRODUCT_DIR)/resources/inspector/ExtensionServer.js',
-                            '<(PRODUCT_DIR)/resources/inspector/ResourcesPanel.js',
-                            '<(PRODUCT_DIR)/resources/inspector/NetworkPanel.js',
-                            '<(PRODUCT_DIR)/resources/inspector/SourcesPanel.js',
-                            '<(PRODUCT_DIR)/resources/inspector/TimelinePanel.js',
-                            '<(PRODUCT_DIR)/resources/inspector/ProfilesPanel.js',
-                            '<(PRODUCT_DIR)/resources/inspector/AuditsPanel.js',
-                            '<(PRODUCT_DIR)/resources/inspector/LayersPanel.js',
-                            '<(PRODUCT_DIR)/resources/inspector/CodeMirrorTextEditor.js',
-                            '<(PRODUCT_DIR)/resources/inspector/HeapSnapshotWorker.js',
-                            '<(PRODUCT_DIR)/resources/inspector/ScriptFormatterWorker.js',
-                            '<(PRODUCT_DIR)/resources/inspector/TempStorageSharedWorker.js',
-                            '<(PRODUCT_DIR)/resources/inspector/DevicesView.js',
+                            '<(PRODUCT_DIR)/resources/inspector/search/AdvancedSearchView.js',
+                            '<(PRODUCT_DIR)/resources/inspector/console/ConsolePanel.js',
+                            '<(PRODUCT_DIR)/resources/inspector/elements/ElementsPanel.js',
+                            '<(PRODUCT_DIR)/resources/inspector/extensions/ExtensionServer.js',
+                            '<(PRODUCT_DIR)/resources/inspector/resources/ResourcesPanel.js',
+                            '<(PRODUCT_DIR)/resources/inspector/network/NetworkPanel.js',
+                            '<(PRODUCT_DIR)/resources/inspector/sources/SourcesPanel.js',
+                            '<(PRODUCT_DIR)/resources/inspector/timeline/TimelinePanel.js',
+                            '<(PRODUCT_DIR)/resources/inspector/profiler/ProfilesPanel.js',
+                            '<(PRODUCT_DIR)/resources/inspector/audits/AuditsPanel.js',
+                            '<(PRODUCT_DIR)/resources/inspector/layers/LayersPanel.js',
+                            '<(PRODUCT_DIR)/resources/inspector/codemirror/CodeMirrorTextEditor.js',
+                            '<(PRODUCT_DIR)/resources/inspector/profiler/heap_snapshot_worker/HeapSnapshotWorker.js',
+                            '<(PRODUCT_DIR)/resources/inspector/script_formatter_worker/ScriptFormatterWorker.js',
+                            '<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker/TempStorageSharedWorker.js',
+                            '<(PRODUCT_DIR)/resources/inspector/devices/DevicesView.js',
                             '<(PRODUCT_DIR)/resources/inspector/inspector.css',
                             '<(PRODUCT_DIR)/resources/inspector/devtools_extension_api.js',
                             '<@(devtools_standalone_files)',
@@ -207,11 +413,11 @@
                             '<@(_input_pages)',
                             '<@(_images)',
                         ],
-                        'search_path': [
+                        'images_path': [
                             'front_end/Images',
                         ],
                         'outputs': ['<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_pages)', '--images', '<@(_search_path)', '--output', '<@(_outputs)'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_pages)', '--relative_path_dir', '<@(_relative_path_dir)', '--images', '<@(_images_path)', '--output', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -222,8 +428,9 @@
                     'actions': [{
                         'action_name': 'generate_devtools_grd',
                         'script_name': 'scripts/generate_devtools_grd.py',
+                        'relative_path_dir': '<(SHARED_INTERMEDIATE_DIR)/devtools',
                         'input_pages': [
-                            '<@(devtools_files)',
+                            '<@(all_devtools_files)',
                             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
                             '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js',
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
@@ -236,12 +443,12 @@
                             '<@(_input_pages)',
                             '<@(_images)',
                         ],
-                        'search_path': [
+                        'images_path': [
                             'front_end/Images',
                         ],
                         # Note that other files are put under /devtools directory, together with declared devtools_resources.grd
                         'outputs': ['<(SHARED_INTERMEDIATE_DIR)/devtools/devtools_resources.grd'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_pages)', '--images', '<@(_search_path)', '--output', '<@(_outputs)'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_pages)', '--relative_path_dir', '<@(_relative_path_dir)', '--images', '<@(_images_path)', '--output', '<@(_outputs)'],
                     }],
                 }],
             ],
@@ -316,7 +523,7 @@
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_page)',
-                            '<@(devtools_files)',
+                            '<@(core_devtools_files)',
                             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
                             '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js'
                         ],
@@ -334,14 +541,13 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_console_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/ConsolePanel.js',
+                        'input_file': 'front_end/console/ConsolePanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_console_js_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/ConsolePanel.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/console/ConsolePanel.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -350,14 +556,13 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_search_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/AdvancedSearchView.js',
+                        'input_file': 'front_end/search/AdvancedSearchView.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_search_js_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/AdvancedSearchView.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/search/AdvancedSearchView.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -366,14 +571,13 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_devices_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/DevicesView.js',
+                        'input_file': 'front_end/devices/DevicesView.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_devices_js_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/DevicesView.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/devices/DevicesView.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -382,14 +586,13 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_elements_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/ElementsPanel.js',
+                        'input_file': 'front_end/elements/ElementsPanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_elements_js_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/ElementsPanel.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/elements/ElementsPanel.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -398,14 +601,13 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_resources_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/ResourcesPanel.js',
+                        'input_file': 'front_end/resources/ResourcesPanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_resources_js_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/ResourcesPanel.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/resources/ResourcesPanel.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -414,14 +616,13 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_network_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/NetworkPanel.js',
+                        'input_file': 'front_end/network/NetworkPanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_network_js_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/NetworkPanel.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/network/NetworkPanel.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -430,30 +631,28 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_extensions_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/ExtensionServer.js',
+                        'input_file': 'front_end/extensions/ExtensionServer.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_extensions_js_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/ExtensionServer.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/extensions/ExtensionServer.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
-                    'target_name': 'concatenated_devtools_scripts_js',
+                    'target_name': 'concatenated_devtools_sources_js',
                     'type': 'none',
                     'actions': [{
-                        'action_name': 'concatenate_devtools_scripts_js',
+                        'action_name': 'concatenate_devtools_sources_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/SourcesPanel.js',
+                        'input_file': 'front_end/sources/SourcesPanel.js',
                         'inputs': [
                             '<@(_script_name)',
-                            '<@(devtools_scripts_js_files)',
+                            '<@(devtools_sources_js_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/SourcesPanel.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/sources/SourcesPanel.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -462,30 +661,28 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_timeline_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/TimelinePanel.js',
+                        'input_file': 'front_end/timeline/TimelinePanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_timeline_js_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/TimelinePanel.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/timeline/TimelinePanel.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
-                    'target_name': 'concatenated_devtools_profiles_js',
+                    'target_name': 'concatenated_devtools_profiler_js',
                     'type': 'none',
                     'actions': [{
-                        'action_name': 'concatenate_devtools_profiles_js',
+                        'action_name': 'concatenate_devtools_profiler_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/ProfilesPanel.js',
+                        'input_file': 'front_end/profiler/ProfilesPanel.js',
                         'inputs': [
                             '<@(_script_name)',
-                            '<@(devtools_profiles_js_files)',
+                            '<@(devtools_profiler_js_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/ProfilesPanel.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/profiler/ProfilesPanel.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -494,14 +691,13 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_audits_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/AuditsPanel.js',
+                        'input_file': 'front_end/audits/AuditsPanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_audits_js_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/AuditsPanel.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/audits/AuditsPanel.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -510,15 +706,14 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_codemirror_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/CodeMirrorTextEditor.js',
+                        'input_file': 'front_end/codemirror/CodeMirrorTextEditor.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_codemirror_js_files)',
                             '<@(devtools_cm_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/CodeMirrorTextEditor.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/codemirror/CodeMirrorTextEditor.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -527,15 +722,14 @@
                     'actions': [{
                         'action_name': 'concatenate_heap_snapshot_worker_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/HeapSnapshotWorker.js',
+                        'input_file': 'front_end/profiler/heap_snapshot_worker/HeapSnapshotWorker.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_file)',
                             '<@(devtools_heap_snapshot_worker_js_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/HeapSnapshotWorker.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/profiler/heap_snapshot_worker/HeapSnapshotWorker.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -544,15 +738,14 @@
                     'actions': [{
                         'action_name': 'concatenate_script_formatter_worker_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/ScriptFormatterWorker.js',
+                        'input_file': 'front_end/script_formatter_worker/ScriptFormatterWorker.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_file)',
                             '<@(devtools_uglify_files)'
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/ScriptFormatterWorker.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/script_formatter_worker/ScriptFormatterWorker.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -561,14 +754,13 @@
                     'actions': [{
                         'action_name': 'concatenate_temp_storage_shared_worker_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/TempStorageSharedWorker.js',
+                        'input_file': 'front_end/temp_storage_shared_worker/TempStorageSharedWorker.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_temp_storage_shared_worker_js_files)'
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/TempStorageSharedWorker.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker/TempStorageSharedWorker.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -577,14 +769,13 @@
                     'actions': [{
                         'action_name': 'concatenate_devtools_layers_js',
                         'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/LayersPanel.js',
+                        'input_file': 'front_end/layers/LayersPanel.js',
                         'inputs': [
                             '<@(_script_name)',
                             '<@(devtools_layers_js_files)',
                         ],
-                        'search_path': 'front_end',
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/LayersPanel.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_search_path)', '<@(_outputs)'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/layers/LayersPanel.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
                 {
@@ -600,7 +791,7 @@
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_page)',
-                            '<@(devtools_files)',
+                            '<@(all_devtools_files)',
                         ],
                         'search_path': [ 'front_end' ],
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/inspector.css'],

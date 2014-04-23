@@ -44,7 +44,7 @@ WebInspector.ScriptSnippetModel = function(workspace)
     this._uiSourceCodeForSnippetId = {};
     /** @type {!Map.<!WebInspector.UISourceCode, string>} */
     this._snippetIdForUISourceCode = new Map();
-    
+
     this._snippetStorage = new WebInspector.SnippetStorage("script", "Script snippet #");
     this._lastSnippetEvaluationIndexSetting = WebInspector.settings.createSetting("lastSnippetEvaluationIndex", 0);
     this._snippetScriptMapping = new WebInspector.SnippetScriptMapping(this);
@@ -213,7 +213,7 @@ WebInspector.ScriptSnippetModel.prototype = {
         uiSourceCode._evaluationIndex = evaluationIndex;
         var evaluationUrl = this._evaluationSourceURL(uiSourceCode);
         var expression = uiSourceCode.workingCopy();
-        
+
         WebInspector.console.show();
         var target = executionContext.target();
         target.debuggerAgent().compileScript(expression, evaluationUrl, executionContext.id, compileCallback.bind(this, target));

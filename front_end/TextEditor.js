@@ -223,7 +223,7 @@ WebInspector.TextEditor.prototype = {
     copyRange: function(range) { },
 
     /**
-     * @param {string} text 
+     * @param {string} text
      */
     setText: function(text) { },
 
@@ -250,14 +250,14 @@ WebInspector.TextEditor.prototype = {
 
     /**
      * @param {number} line
-     * @param {string} name  
+     * @param {string} name
      * @param {?Object} value
      */
     setAttribute: function(line, name, value) { },
 
     /**
      * @param {number} line
-     * @param {string} name  
+     * @param {string} name
      * @return {?Object} value
      */
     getAttribute: function(line, name) { },

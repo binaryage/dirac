@@ -150,6 +150,6 @@ WebInspector.DebuggerProjectDelegate.prototype = {
         name = "VM" + script.scriptId + (name ? " " + name : "");
         return this.addContentProvider("", name, script.sourceURL, contentProvider);
     },
-    
+
     __proto__: WebInspector.ContentProviderBasedProjectDelegate.prototype
 }

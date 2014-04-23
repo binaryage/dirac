@@ -80,7 +80,6 @@ WebInspector.CodeMirrorUtils.prototype = {
     {
         var element = editingContext.element;
         var config = editingContext.config;
-        loadScript("CodeMirrorTextEditor.js");
         editingContext.cssLoadView = new WebInspector.CodeMirrorCSSLoadView();
         editingContext.cssLoadView.show(element);
         WebInspector.setCurrentFocusElement(element);

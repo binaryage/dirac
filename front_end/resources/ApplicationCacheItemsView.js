@@ -30,7 +30,7 @@
 WebInspector.ApplicationCacheItemsView = function(model, frameId)
 {
     WebInspector.VBox.call(this);
-    
+
     this._model = model;
 
     this.element.classList.add("storage-view");
@@ -60,10 +60,10 @@ WebInspector.ApplicationCacheItemsView = function(model, frameId)
     this._emptyView.show(this.element);
 
     this._markDirty();
-    
+
     var status = this._model.frameManifestStatus(frameId);
     this.updateStatus(status);
-    
+
     this.updateNetworkState(this._model.onLine);
 
     // FIXME: Status bar items don't work well enough yet, so they are being hidden.
@@ -95,7 +95,7 @@ WebInspector.ApplicationCacheItemsView.prototype = {
     {
         if (!this.isShowing() || !this._viewDirty)
             return;
-        
+
         this._update();
         this._viewDirty = false;
     },
@@ -112,9 +112,9 @@ WebInspector.ApplicationCacheItemsView.prototype = {
     {
         var oldStatus = this._status;
         this._status = status;
-        
+
         var statusInformation = {};
-        // We should never have UNCACHED status, since we remove frames with UNCACHED application cache status from the tree. 
+        // We should never have UNCACHED status, since we remove frames with UNCACHED application cache status from the tree.
         statusInformation[applicationCache.UNCACHED]    = { className: "red-ball", text: "UNCACHED" };
         statusInformation[applicationCache.IDLE]        = { className: "green-ball", text: "IDLE" };
         statusInformation[applicationCache.CHECKING]    = { className: "orange-ball",  text: "CHECKING" };
@@ -162,7 +162,7 @@ WebInspector.ApplicationCacheItemsView.prototype = {
             delete this._updateTime;
             delete this._size;
             delete this._resources;
-            
+
             this._emptyView.show(this.element);
             this.deleteButton.visible = false;
             if (this._dataGrid)

@@ -51,7 +51,7 @@ WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, 
     this._requestContentCallbacks = [];
     /** @type {!Array.<!WebInspector.PresentationConsoleMessage>} */
     this._consoleMessages = [];
-    
+
     /** @type {!Array.<!WebInspector.Revision>} */
     this.history = [];
     if (!this._project.isServiceProject() && this._url)
@@ -468,7 +468,7 @@ WebInspector.UISourceCode.prototype = {
         delete registry[this.url];
         window.localStorage["revision-history"] = JSON.stringify(registry);
     },
-   
+
     revertToOriginal: function()
     {
         /**

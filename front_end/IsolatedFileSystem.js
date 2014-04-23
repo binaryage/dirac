@@ -551,7 +551,7 @@ WebInspector.IsolatedFileSystem.prototype = {
         function toArray(list)
         {
             return Array.prototype.slice.call(list || [], 0);
-        }    
+        }
 
         dirReader.readEntries(innerCallback, errorHandler);
 

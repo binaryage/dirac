@@ -1583,19 +1583,35 @@ var _importedScripts = {};
  */
 function importScript(scriptName)
 {
-    if (_importedScripts[scriptName])
+    var sourceURL = self._importScriptPathPrefix + scriptName;
+    if (_importedScripts[sourceURL])
         return;
     var xhr = new XMLHttpRequest();
-    _importedScripts[scriptName] = true;
-    xhr.open("GET", scriptName, false);
-    xhr.send(null);
+    _importedScripts[sourceURL] = true;
+    xhr.open("GET", sourceURL, false);
+    var stack = new Error().stack;
+    try {
+        xhr.send(null);
+    } catch (e) {
+        console.error(scriptName + " -> " + stack);
+        throw e;
+    }
     if (!xhr.responseText)
-        throw "empty response arrived for script '" + scriptName + "'";
-    var baseUrl = location.origin + location.pathname;
-    baseUrl = baseUrl.substring(0, baseUrl.lastIndexOf("/"));
-    var sourceURL = baseUrl + "/" + scriptName;
-    self.eval(xhr.responseText + "\n//# sourceURL=" + sourceURL);
+        throw "empty response arrived for script '" + sourceURL + "'";
+
+    var oldPrefix = self._importScriptPathPrefix;
+    self._importScriptPathPrefix += scriptName.substring(0, scriptName.lastIndexOf("/") + 1);
+    try {
+        self.eval(xhr.responseText + "\n//# sourceURL=" + sourceURL);
+    } finally {
+        self._importScriptPathPrefix = oldPrefix;
+    }
 }
+
+(function() {
+    var baseUrl = location.origin + location.pathname;
+    self._importScriptPathPrefix = baseUrl.substring(0, baseUrl.lastIndexOf("/") + 1);
+})();
 
 var loadScript = importScript;
 

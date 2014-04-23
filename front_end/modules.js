@@ -256,7 +256,7 @@ var allDescriptors = [
                 settingType: "checkbox"
             }
         ],
-        scripts: [ "ElementsPanel.js" ]
+        scripts: [ "elements/ElementsPanel.js" ]
     },
     {
         name: "network",
@@ -279,7 +279,7 @@ var allDescriptors = [
                 className: "WebInspector.NetworkPanel.RequestRevealer"
             }
         ],
-        scripts: [ "NetworkPanel.js" ]
+        scripts: [ "network/NetworkPanel.js" ]
     },
     {
         name: "codemirror",
@@ -306,7 +306,7 @@ var allDescriptors = [
                 ]
             }
         ],
-        scripts: [ "CodeMirrorTextEditor.js" ]
+        scripts: [ "codemirror/CodeMirrorTextEditor.js" ]
     },
     {
         name: "sources",
@@ -458,7 +458,7 @@ var allDescriptors = [
                 className: "WebInspector.SourcesPanel.SkipStackFramePatternSettingDelegate"
             }
         ],
-        scripts: [ "SourcesPanel.js" ]
+        scripts: [ "sources/SourcesPanel.js" ]
     },
     {
         name: "timeline",
@@ -471,7 +471,7 @@ var allDescriptors = [
                 className: "WebInspector.TimelinePanel"
             }
         ],
-        scripts: [ "TimelinePanel.js" ]
+        scripts: [ "timeline/TimelinePanel.js" ]
     },
     {
         name: "profiles",
@@ -503,7 +503,7 @@ var allDescriptors = [
                 settingType: "checkbox"
             }
         ],
-        scripts: [ "ProfilesPanel.js" ]
+        scripts: [ "profiler/ProfilesPanel.js" ]
     },
     {
         name: "resources",
@@ -521,7 +521,7 @@ var allDescriptors = [
                 className: "WebInspector.ResourcesPanel.ResourceRevealer"
             }
         ],
-        scripts: [ "ResourcesPanel.js" ]
+        scripts: [ "resources/ResourcesPanel.js" ]
     },
     {
         name: "audits",
@@ -534,7 +534,7 @@ var allDescriptors = [
                 className: "WebInspector.AuditsPanel"
             }
         ],
-        scripts: [ "AuditsPanel.js" ]
+        scripts: [ "audits/AuditsPanel.js" ]
     },
     {
         name: "console",
@@ -590,7 +590,7 @@ var allDescriptors = [
                 settingType: "checkbox"
             }
         ],
-        scripts: [ "ConsolePanel.js" ]
+        scripts: [ "console/ConsolePanel.js" ]
     },
     {
         name: "search",
@@ -618,7 +618,7 @@ var allDescriptors = [
                  ]
              }
         ],
-        scripts: [ "AdvancedSearchView.js" ]
+        scripts: [ "search/AdvancedSearchView.js" ]
     },
     {
         name: "devices",
@@ -632,7 +632,7 @@ var allDescriptors = [
                 className: "WebInspector.DevicesView"
             }
         ],
-        scripts: [ "DevicesView.js" ]
+        scripts: [ "devices/DevicesView.js" ]
     },
     {
         name: "settings",
@@ -657,7 +657,7 @@ var allDescriptors = [
                 className: "WebInspector.ExtensionServer"
             }
         ],
-        scripts: [ "ExtensionServer.js" ]
+        scripts: [ "extensions/ExtensionServer.js" ]
     },
     {
         name: "layers",
@@ -675,7 +675,7 @@ var allDescriptors = [
                 className: "WebInspector.LayersPanel.LayerTreeRevealer"
             }
         ],
-        scripts: [ "LayersPanel.js" ]
+        scripts: [ "layers/LayersPanel.js" ]
     },
     {
         name: "handler-registry",

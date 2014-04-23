@@ -311,11 +311,11 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
     },
 
     /**
-     * @param {number} index  
+     * @param {number} index
      * @param {boolean} makeLast
      */
     _updateSelection: function(index, makeLast)
-    { 
+    {
         var element = this._viewportControl.renderedElementAt(this._selectedIndexInFiltered);
         if (element)
             element.classList.remove("selected");
@@ -502,7 +502,7 @@ WebInspector.JavaScriptOutlineDialog = function(uiSourceCode, selectItemCallback
 
     this._functionItems = [];
     this._selectItemCallback = selectItemCallback;
-    this._outlineWorker = new Worker("ScriptFormatterWorker.js");
+    this._outlineWorker = new Worker("script_formatter_worker/ScriptFormatterWorker.js");
     this._outlineWorker.onmessage = this._didBuildOutlineChunk.bind(this);
     this._outlineWorker.postMessage({ method: "javaScriptOutline", params: { content: uiSourceCode.workingCopy() } });
 }

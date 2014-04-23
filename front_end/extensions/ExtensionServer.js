@@ -29,8 +29,8 @@
  */
 
 
-importScript("ExtensionRegistryStub.js");
 importScript("ExtensionAPI.js");
+importScript("ExtensionRegistryStub.js");
 importScript("ExtensionAuditCategory.js");
 
 /**

@@ -32,8 +32,6 @@
 # This script replaces calls to importScripts with script sources
 # in input script file and dumps result into output script file.
 
-from cStringIO import StringIO
-
 import rjsmin
 import os.path
 import re
@@ -43,14 +41,14 @@ import sys
 def main(argv):
 
     if len(argv) < 3:
-        print('usage: %s input_file imports_dir output_file no_minify' % argv[0])
+        print('usage: %s input_file output_file no_minify' % argv[0])
         return 1
 
     input_file_name = argv[1]
-    imports_dir = argv[2]
-    output_file_name = argv[3]
-    no_minify = len(argv) > 4 and argv[4]
+    output_file_name = argv[2]
+    no_minify = len(argv) > 3 and argv[3]
 
+    imports_dir = os.path.dirname(input_file_name)
     input_file = open(input_file_name, 'r')
     input_script = input_file.read()
     input_file.close()

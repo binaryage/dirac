@@ -124,7 +124,7 @@ WebInspector.ScriptFormatter.prototype = {
     get _worker()
     {
         if (!this._cachedWorker) {
-            this._cachedWorker = new Worker("ScriptFormatterWorker.js");
+            this._cachedWorker = new Worker("script_formatter_worker/ScriptFormatterWorker.js");
             this._cachedWorker.onmessage = /** @type {function(this:Worker)} */ (this._didFormatContent.bind(this));
         }
         return this._cachedWorker;
@@ -200,7 +200,7 @@ WebInspector.IdentityFormatterSourceMapping.prototype = {
      */
     originalToFormatted: function(lineNumber, columnNumber)
     {
-        return [lineNumber, columnNumber || 0]; 
+        return [lineNumber, columnNumber || 0];
     },
 
     /**

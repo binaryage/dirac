@@ -58,18 +58,21 @@ kGrdTemplate = '''<?xml version="1.0" encoding="UTF-8"?>
 
 
 class ParsedArgs:
-    def __init__(self, source_files, image_dirs, output_filename):
+    def __init__(self, source_files, relative_path_dir, image_dirs, output_filename):
         self.source_files = source_files
+        self.relative_path_dir = relative_path_dir
         self.image_dirs = image_dirs
         self.output_filename = output_filename
 
 
 def parse_args(argv):
+    relative_path_dir_position = argv.index('--relative_path_dir')
     images_position = argv.index('--images')
     output_position = argv.index('--output')
-    source_files = argv[:images_position]
+    source_files = argv[:relative_path_dir_position]
+    relative_path_dir = argv[relative_path_dir_position + 1]
     image_dirs = argv[images_position + 1:output_position]
-    return ParsedArgs(source_files, image_dirs, argv[output_position + 1])
+    return ParsedArgs(source_files, relative_path_dir, image_dirs, argv[output_position + 1])
 
 
 def make_name_from_filename(filename):
@@ -78,15 +81,24 @@ def make_name_from_filename(filename):
                     .replace('.', '_')).upper()
 
 
-def add_file_to_grd(grd_doc, filename):
+def add_file_to_grd(grd_doc, relative_filename):
     includes_node = grd_doc.getElementsByTagName('includes')[0]
     includes_node.appendChild(grd_doc.createTextNode('\n      '))
 
     new_include_node = grd_doc.createElement('include')
-    new_include_node.setAttribute('name', make_name_from_filename(filename))
-    new_include_node.setAttribute('file', filename)
+    new_include_node.setAttribute('name', make_name_from_filename(relative_filename))
+    new_include_node.setAttribute('file', relative_filename)
     new_include_node.setAttribute('type', 'BINDATA')
     includes_node.appendChild(new_include_node)
+
+
+def build_relative_filename(relative_path_dir, filename):
+    if relative_path_dir:
+        index = filename.find(relative_path_dir)
+        if index == 0:
+            return filename[len(relative_path_dir) + 1:]
+        return os.path.basename(filename)
+    return filename
 
 
 def main(argv):
@@ -102,8 +114,12 @@ def main(argv):
             raise e
 
     for filename in parsed_args.source_files:
-        shutil.copy(filename, output_directory)
-        add_file_to_grd(doc, os.path.basename(filename))
+        relative_filename = build_relative_filename(parsed_args.relative_path_dir, filename)
+        target_dir = os.path.join(output_directory, os.path.dirname(relative_filename))
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir)
+        shutil.copy(filename, target_dir)
+        add_file_to_grd(doc, relative_filename)
 
     for dirname in parsed_args.image_dirs:
         for filename in os.listdir(dirname):

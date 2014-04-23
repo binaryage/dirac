@@ -60,7 +60,7 @@ WebInspector.DatabaseTableView.prototype = {
     {
         return tableName.replace(/\"/g, "\"\"");
     },
-    
+
     update: function()
     {
         this.database.executeSql("SELECT * FROM \"" + this._escapeTableName(this.tableName) + "\"", this._queryFinished.bind(this), this._queryError.bind(this));

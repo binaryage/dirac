@@ -261,7 +261,7 @@ WebInspector.WatchExpressionsSection.prototype = {
         this.saveExpressions();
         this.update();
     },
-    
+
     _deleteAllExpressions: function()
     {
         this.watchExpressions = [];

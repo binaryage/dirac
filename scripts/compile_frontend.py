@@ -71,18 +71,18 @@ except:
 # the module header list.
 allowed_import_statements_files = [
     "utilities.js",
-    "AdvancedSearchView.js",
-    "ConsolePanel.js",
-    "ElementsPanel.js",
-    "ResourcesPanel.js",
-    "NetworkPanel.js",
-    "SourcesPanel.js",
-    "TimelinePanel.js",
-    "ProfilesPanel.js",
-    "AuditsPanel.js",
-    "LayersPanel.js",
-    "CodeMirrorTextEditor.js",
-    "ExtensionServer.js",
+    "search/AdvancedSearchView.js",
+    "console/ConsolePanel.js",
+    "elements/ElementsPanel.js",
+    "resources/ResourcesPanel.js",
+    "network/NetworkPanel.js",
+    "sources/SourcesPanel.js",
+    "timeline/TimelinePanel.js",
+    "profiler/ProfilesPanel.js",
+    "audits/AuditsPanel.js",
+    "layers/LayersPanel.js",
+    "extensions/ExtensionServer.js",
+    "codemirror/CodeMirrorTextEditor.js",
 ]
 
 type_checked_jsdoc_tags_list = ["param", "return", "type", "enum"]

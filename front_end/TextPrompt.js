@@ -248,7 +248,7 @@ WebInspector.TextPrompt.prototype = {
      */
     onMouseWheel: function(event)
     {
-        // Subclasses can implement. 
+        // Subclasses can implement.
     },
 
     /**

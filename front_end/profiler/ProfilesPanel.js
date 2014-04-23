@@ -1250,7 +1250,7 @@ WebInspector.ProfilesSidebarTreeElement.prototype = {
 }
 
 
-importScript("CPUProfileModel.js");
+importScript("../CPUProfileModel.js");
 importScript("CPUProfileDataGrid.js");
 importScript("CPUProfileBottomUpDataGrid.js");
 importScript("CPUProfileTopDownDataGrid.js");
@@ -1264,6 +1264,5 @@ importScript("HeapSnapshotView.js");
 importScript("ProfileLauncherView.js");
 importScript("CanvasProfileView.js");
 importScript("CanvasReplayStateView.js");
-importScript("PieChart.js");
 
 WebInspector.ProfileTypeRegistry.instance = new WebInspector.ProfileTypeRegistry();

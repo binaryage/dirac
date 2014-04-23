@@ -27,12 +27,12 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-importScripts("utilities.js");
-importScripts("cm/headlesscodemirror.js");
-importScripts("cm/css.js");
-importScripts("cm/javascript.js");
-importScripts("cm/xml.js");
-importScripts("cm/htmlmixed.js");
+importScripts("../utilities.js");
+importScripts("../cm/headlesscodemirror.js");
+importScripts("../cm/css.js");
+importScripts("../cm/javascript.js");
+importScripts("../cm/xml.js");
+importScripts("../cm/htmlmixed.js");
 WebInspector = {};
 FormatterWorker = {
     /**
@@ -499,7 +499,7 @@ function require()
  * @type {!{tokenizer}}
  */
 var exports = { tokenizer: null };
-importScripts("UglifyJS/parse-js.js");
+importScripts("../UglifyJS/parse-js.js");
 var parse = exports;
 
 importScripts("JavaScriptFormatter.js");

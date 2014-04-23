@@ -151,10 +151,10 @@ WebInspector.linkifyStringAsFragment = function(string)
             if (typeof columnNumber !== "undefined")
                 urlNode.columnNumber = columnNumber;
         }
-        
-        return urlNode; 
+
+        return urlNode;
     }
-    
+
     return WebInspector.linkifyStringAsFragmentWithCustomLinkifier(string, linkifier);
 }
 

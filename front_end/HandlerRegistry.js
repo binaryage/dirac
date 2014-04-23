@@ -100,7 +100,7 @@ WebInspector.HandlerRegistry.prototype = {
         InspectorFrontendHost.openInNewTab(url);
     },
 
-    /** 
+    /**
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */
@@ -159,7 +159,7 @@ WebInspector.HandlerRegistry.prototype = {
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Save as..." : "Save As..."), save.bind(null, true));
     },
 
-    /** 
+    /**
      * @param {!WebInspector.ContextMenu} contextMenu
      * @param {!Object} target
      */

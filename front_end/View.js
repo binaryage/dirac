@@ -102,7 +102,7 @@ WebInspector.View.prototype = {
     },
 
     /**
-     * @return {boolean} 
+     * @return {boolean}
      */
     _inNotification: function()
     {

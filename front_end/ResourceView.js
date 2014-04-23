@@ -59,7 +59,7 @@ WebInspector.ResourceView.prototype = {
 WebInspector.ResourceView.hasTextContent = function(resource)
 {
     if (resource.type.isTextType())
-        return true; 
+        return true;
     if (resource.type === WebInspector.resourceTypes.Other)
         return !!resource.content && !resource.contentEncoded;
     return false;

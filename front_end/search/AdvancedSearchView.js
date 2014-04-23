@@ -438,6 +438,5 @@ WebInspector.SearchScope.prototype = {
     createSearchResultsPane: function(searchConfig) { }
 }
 
-importScript("SearchConfig.js");
 importScript("FileBasedSearchResultsPane.js");
 importScript("SourcesSearchScope.js");

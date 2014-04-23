@@ -525,7 +525,7 @@ WebInspector.CSSStyleModel.prototype = {
             this._pendingCommandsMajorState.pop();
             if (!error && majorChange)
                 this._domModel.markUndoableState();
-            
+
             if (!error && userCallback)
                 userCallback(error);
         }

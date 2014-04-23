@@ -118,7 +118,7 @@ WebInspector.FileSystemModel.prototype = {
                 callback(FileError.SECURITY_ERR);
                 return;
             }
-            
+
             callback(errorCode, backendRootEntry);
         }
 
@@ -188,7 +188,7 @@ WebInspector.FileSystemModel.prototype = {
                 callback(FileError.SECURITY_ERR);
                 return;
             }
-            
+
             if (errorCode !== 0) {
                 callback(errorCode);
                 return;
@@ -241,7 +241,7 @@ WebInspector.FileSystemModel.prototype = {
                 callback(FileError.SECURITY_ERR);
                 return;
             }
-            
+
             callback(errorCode, metadata);
         }
 
@@ -284,7 +284,7 @@ WebInspector.FileSystemModel.prototype = {
                     callback(FileError.SECURITY_ERR);
                 return;
             }
-            
+
             if (callback)
                 callback(errorCode, content, charset);
         }
@@ -328,7 +328,7 @@ WebInspector.FileSystemModel.prototype = {
                     callback(FileError.SECURITY_ERR);
                 return;
             }
-            
+
             if (callback)
                 callback(errorCode);
         }

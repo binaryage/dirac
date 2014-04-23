@@ -512,7 +512,7 @@ WebInspector.ExecutionContextList.prototype =
     /**
      * @return {!WebInspector.ExecutionContext}
      */
-    mainWorldContext: function() 
+    mainWorldContext: function()
     {
         return this._executionContexts[0];
     },
@@ -526,7 +526,7 @@ WebInspector.ExecutionContextList.prototype =
         for (var i = 0; i < this._executionContexts.length; ++i) {
             var context = this._executionContexts[i];
             if (!context.isMainWorldContext && context.name === securityOrigin)
-                return context; 
+                return context;
         }
         return null;
     },

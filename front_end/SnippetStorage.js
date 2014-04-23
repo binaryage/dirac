@@ -127,7 +127,7 @@ WebInspector.SnippetStorage.prototype = {
     {
         this._snippets[snippet.id] = snippet;
     },
-    
+
     reset: function()
     {
         this._lastSnippetIdentifierSetting.set(0);
