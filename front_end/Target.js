@@ -14,17 +14,14 @@ WebInspector.Target = function(connection, callback)
 {
     Protocol.Agents.call(this, connection.agentsMap());
     this._connection = connection;
+    /** @type {boolean} */
     this.isMainFrontend = false;
 
-    /**
-     * @type {boolean}
-     */
+    /** @type {boolean} */
     this.canScreencast = false;
     this.pageAgent().canScreencast(this._initializeCapability.bind(this, "canScreencast", null));
 
-    /**
-     * @type {boolean}
-     */
+    /** @type {boolean} */
     this.hasTouchInputs = false;
     this.pageAgent().hasTouchInputs(this._initializeCapability.bind(this, "hasTouchInputs", null));
 
@@ -35,7 +32,10 @@ WebInspector.Target = function(connection, callback)
 }
 
 WebInspector.Target.prototype = {
-
+    /**
+     * @param {string} name
+     * @param {function()|null} callback
+     */
     _initializeCapability: function(name, callback, error, result)
     {
         this[name] = result;
@@ -50,39 +50,48 @@ WebInspector.Target.prototype = {
      */
     _loadedWithCapabilities: function(callback)
     {
+        /** @type {!WebInspector.ConsoleModel} */
         this.consoleModel = new WebInspector.ConsoleModel(this);
-        //This and similar lines are needed for compatibility
+        // This and similar lines are needed for compatibility.
         if (!WebInspector.console)
             WebInspector.console = this.consoleModel;
 
+        /** @type {!WebInspector.NetworkManager} */
         this.networkManager = new WebInspector.NetworkManager(this);
         if (!WebInspector.networkManager)
             WebInspector.networkManager = this.networkManager;
 
+        /** @type {!WebInspector.ResourceTreeModel} */
         this.resourceTreeModel = new WebInspector.ResourceTreeModel(this);
         if (!WebInspector.resourceTreeModel)
             WebInspector.resourceTreeModel = this.resourceTreeModel;
 
+        /** @type {!WebInspector.NetworkLog} */
         this.networkLog = new WebInspector.NetworkLog(this);
         if (!WebInspector.networkLog)
             WebInspector.networkLog = this.networkLog;
 
+        /** @type {!WebInspector.DebuggerModel} */
         this.debuggerModel = new WebInspector.DebuggerModel(this);
         if (!WebInspector.debuggerModel)
             WebInspector.debuggerModel = this.debuggerModel;
 
+        /** @type {!WebInspector.RuntimeModel} */
         this.runtimeModel = new WebInspector.RuntimeModel(this);
         if (!WebInspector.runtimeModel)
             WebInspector.runtimeModel = this.runtimeModel;
 
+        /** @type {!WebInspector.DOMModel} */
         this.domModel = new WebInspector.DOMModel(this);
         if (!WebInspector.domModel)
             WebInspector.domModel = this.domModel;
 
+        /** @type {!WebInspector.CSSStyleModel} */
         this.cssModel = new WebInspector.CSSStyleModel(this);
         if (!WebInspector.cssModel)
             WebInspector.cssModel = this.cssModel;
 
+        /** @type {!WebInspector.WorkerManager} */
         this.workerManager = new WebInspector.WorkerManager(this, this.isMainFrontend);
         if (!WebInspector.workerManager)
             WebInspector.workerManager = this.workerManager;
@@ -90,18 +99,22 @@ WebInspector.Target.prototype = {
         if (this.canProfilePower)
             WebInspector.powerProfiler = new WebInspector.PowerProfiler();
 
+        /** @type {!WebInspector.TimelineManager} */
         this.timelineManager = new WebInspector.TimelineManager(this);
         if (!WebInspector.timelineManager)
             WebInspector.timelineManager = this.timelineManager;
 
+        /** @type {!WebInspector.DatabaseModel} */
         this.databaseModel = new WebInspector.DatabaseModel(this);
         if (!WebInspector.databaseModel)
             WebInspector.databaseModel = this.databaseModel;
 
+        /** @type {!WebInspector.DOMStorageModel} */
         this.domStorageModel = new WebInspector.DOMStorageModel(this);
         if (!WebInspector.domStorageModel)
             WebInspector.domStorageModel = this.domStorageModel;
 
+        /** @type {!WebInspector.CPUProfilerModel} */
         this.cpuProfilerModel = new WebInspector.CPUProfilerModel(this);
         if (!WebInspector.cpuProfilerModel)
             WebInspector.cpuProfilerModel = this.cpuProfilerModel;
@@ -180,6 +193,7 @@ WebInspector.TargetManager = function()
 {
     /** @type {!Array.<!WebInspector.Target>} */
     this._targets = [];
+    /** @type {!Array.<!WebInspector.TargetManager.Observer>} */
     this._observers = [];
 }
 

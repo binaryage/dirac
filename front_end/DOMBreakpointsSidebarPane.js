@@ -149,7 +149,7 @@ WebInspector.DOMBreakpointsSidebarPane.prototype = {
 
     /**
      * @param {!Object} auxData
-     * @param {!WebInspector.DOMNode} node
+     * @param {?WebInspector.DOMNode} node
      * @param {?WebInspector.DOMNode} targetNode
      */
     _doCreateBreakpointHitStatusMessage: function(auxData, node, targetNode, callback)

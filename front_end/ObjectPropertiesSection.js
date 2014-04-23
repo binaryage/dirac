@@ -649,18 +649,19 @@ WebInspector.FunctionScopeMainTreeElement.prototype = {
                 }
 
                 var runtimeModel = this._remoteObject.target().runtimeModel;
-                var scopeRef = isTrueObject ? undefined : new WebInspector.ScopeRef(i, undefined, this._remoteObject.objectId);
-                var remoteObject = runtimeModel.createScopedObject(scope.object, scopeRef);
                 if (isTrueObject) {
-                    var property = runtimeModel.createScopedObject(title, remoteObject);
+                    var remoteObject = runtimeModel.createRemoteObject(scope.object);
+                    var property = new WebInspector.RemoteObjectProperty(title, remoteObject);
+                    property.writable = false;
                     property.parentObject = null;
                     this.appendChild(new this.treeOutline.section.treeElementConstructor(property));
                 } else {
+                    var scopeRef = new WebInspector.ScopeRef(i, undefined, this._remoteObject.objectId);
+                    var remoteObject = runtimeModel.createScopeRemoteObject(scope.object, scopeRef);
                     var scopeTreeElement = new WebInspector.ScopeTreeElement(title, null, remoteObject);
                     this.appendChild(scopeTreeElement);
                 }
             }
-
         }
         this._remoteObject.functionDetails(didGetDetails.bind(this));
     },

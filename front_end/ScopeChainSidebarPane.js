@@ -120,8 +120,12 @@ WebInspector.ScopeChainSidebarPane.prototype = {
             if (!title || title === subtitle)
                 subtitle = undefined;
 
-            var scopeRef = declarativeScope ? new WebInspector.ScopeRef(i, callFrame.id, undefined) : undefined;
-            var scopeObject = callFrame.target().runtimeModel.createScopedObject(scope.object, scopeRef);
+            var runtimeModel = callFrame.target().runtimeModel;
+            if (declarativeScope)
+                var scopeObject = runtimeModel.createScopeRemoteObject(scope.object, new WebInspector.ScopeRef(i, callFrame.id, undefined));
+            else
+                var scopeObject = runtimeModel.createRemoteObject(scope.object);
+
             var section = new WebInspector.ObjectPropertiesSection(scopeObject, title, subtitle, emptyPlaceholder, true, extraProperties, WebInspector.ScopeVariableTreeElement);
             section.editInSelectedCallFrameWhenPaused = true;
             section.pane = this;
