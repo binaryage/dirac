@@ -595,6 +595,11 @@ TestSuite.prototype.testTimelineFrames = function()
     test.takeControl();
 }
 
+TestSuite.prototype.enableTouchEmulation = function()
+{
+    WebInspector.targetManager.activeTarget().domModel.emulateTouchEventObjects(true);
+};
+
 // Regression test for http://webk.it/97466
 TestSuite.prototype.testPageOverlayUpdate = function()
 {
