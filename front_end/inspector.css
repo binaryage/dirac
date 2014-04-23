@@ -819,12 +819,9 @@ body.platform-linux .source-code {
 
 .console-status-bar,
 .console-filters-header {
+    display: flex;
     flex: 0 0 23px;
     overflow: hidden;
-}
-
-.console-status-bar {
-    display: flex;
 }
 
 #console-messages {
