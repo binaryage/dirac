@@ -72,11 +72,6 @@ WebInspector.View.prototype = {
         this._isRoot = true;
     },
 
-    makeLayoutBoundary: function()
-    {
-        this._isLayoutBoundary = true;
-    },
-
     /**
      * @return {?WebInspector.View}
      */
@@ -177,41 +172,6 @@ WebInspector.View.prototype = {
         this._callOnVisibleChildren(this._processOnResize);
     },
 
-    _processDiscardCachedSize: function()
-    {
-        if (this._isLayoutBoundary) {
-            this.element.style.removeProperty("width");
-            this.element.style.removeProperty("height");
-        }
-        this._callOnVisibleChildren(this._processDiscardCachedSize);
-    },
-
-    _cacheSize: function()
-    {
-        this._prepareCacheSize();
-        this._applyCacheSize();
-    },
-
-    _prepareCacheSize: function()
-    {
-        if (this._isLayoutBoundary) {
-            this._cachedOffsetWidth = this.element.offsetWidth;
-            this._cachedOffsetHeight = this.element.offsetHeight;
-        }
-        this._callOnVisibleChildren(this._prepareCacheSize);
-    },
-
-    _applyCacheSize: function()
-    {
-        if (this._isLayoutBoundary) {
-            this.element.style.setProperty("width", this._cachedOffsetWidth + "px");
-            this.element.style.setProperty("height", this._cachedOffsetHeight + "px");
-            delete this._cachedOffsetWidth;
-            delete this._cachedOffsetHeight;
-        }
-        this._callOnVisibleChildren(this._applyCacheSize);
-    },
-
     /**
      * @param {function(this:WebInspector.View)} notification
      */
@@ -284,10 +244,8 @@ WebInspector.View.prototype = {
                 WebInspector.View._originalAppendChild.call(parentElement, this.element);
         }
 
-        if (this._parentIsShowing()) {
+        if (this._parentIsShowing())
             this._processWasShown();
-            this._cacheSize();
-        }
 
         if (this._parentView && this._hasNonZeroConstraints())
             this._parentView.invalidateConstraints();
@@ -302,10 +260,8 @@ WebInspector.View.prototype = {
         if (!parentElement)
             return;
 
-        if (this._parentIsShowing()) {
-            this._processDiscardCachedSize();
+        if (this._parentIsShowing())
             this._processWillHide();
-        }
 
         if (this._hideOnDetach && !overrideHideOnDetach) {
             this.element.classList.remove("visible");
@@ -379,11 +335,9 @@ WebInspector.View.prototype = {
     {
         if (!this.isShowing())
             return;
-        this._processDiscardCachedSize();
         // No matter what notification we are in, dispatching onResize is not needed.
         if (!this._inNotification())
             this._callOnVisibleChildren(this._processOnResize);
-        this._cacheSize();
     },
 
     doLayout: function()
