@@ -305,7 +305,10 @@ WebInspector.ResourceScriptFile.prototype = {
             return false;
         if (typeof this._scriptSource === "undefined")
             return false;
-        return this._uiSourceCode.workingCopy() !== this._scriptSource;
+        if (!this._uiSourceCode.workingCopy().startsWith(this._scriptSource))
+            return true;
+        var suffix = this._uiSourceCode.workingCopy().substr(this._scriptSource.length);
+        return !!suffix.length && !suffix.match(WebInspector.Script.sourceURLRegex);
     },
 
     /**

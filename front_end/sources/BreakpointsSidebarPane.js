@@ -593,7 +593,7 @@ WebInspector.EventListenerBreakpointsSidebarPane.prototype = {
             var breakpointItem = {};
             var title = WebInspector.EventListenerBreakpointsSidebarPane.eventNameForUI(eventName);
 
-            var labelNode = document.createElement("label");
+            labelNode = document.createElement("label");
             labelNode.textContent = title;
 
             breakpointItem.element = new TreeElement(labelNode);

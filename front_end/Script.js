@@ -62,14 +62,15 @@ WebInspector.Script.Events = {
 
 WebInspector.Script.snippetSourceURLPrefix = "snippets:///";
 
+WebInspector.Script.sourceURLRegex = /\n[\040\t]*\/\/[@#]\ssourceURL=\s*(\S*?)\s*$/mg;
+
 /**
  * @param {string} source
  * @return {string}
  */
 WebInspector.Script._trimSourceURLComment = function(source)
 {
-    var sourceURLRegex = /\n[\040\t]*\/\/[@#]\ssourceURL=\s*(\S*?)\s*$/mg;
-    return source.replace(sourceURLRegex, "");
+    return source.replace(WebInspector.Script.sourceURLRegex, "");
 },
 
 
