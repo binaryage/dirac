@@ -612,17 +612,36 @@ WebInspector.SelectUISourceCodeDialog = function(defaultScores)
 {
     WebInspector.SelectionDialogContentProvider.call(this);
 
-    /** @type {!Array.<!WebInspector.UISourceCode>} */
-    this._uiSourceCodes = [];
-    var projects = WebInspector.workspace.projects().filter(this.filterProject.bind(this));
-    for (var i = 0; i < projects.length; ++i)
-        this._uiSourceCodes = this._uiSourceCodes.concat(projects[i].uiSourceCodes());
+    this._populate();
     this._defaultScores = defaultScores;
     this._scorer = new WebInspector.FilePathScoreFunction("");
     WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
+    WebInspector.workspace.addEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._projectWillReset, this);
 }
 
 WebInspector.SelectUISourceCodeDialog.prototype = {
+    _projectWillReset: function(event)
+    {
+        var project = /** @type {!WebInspector.Project} */ (event.data);
+        this._populate(project);
+        this.refresh();
+    },
+
+    /**
+     * @param {!WebInspector.Project=} skipProject
+     */
+    _populate: function(skipProject)
+    {
+        /** @type {!Array.<!WebInspector.UISourceCode>} */
+        this._uiSourceCodes = [];
+        var projects = WebInspector.workspace.projects().filter(this.filterProject.bind(this));
+        for (var i = 0; i < projects.length; ++i) {
+            if (skipProject && projects[i] === skipProject)
+                continue;
+            this._uiSourceCodes = this._uiSourceCodes.concat(projects[i].uiSourceCodes());
+        }
+    },
+
     /**
      * @param {?WebInspector.UISourceCode} uiSourceCode
      * @param {number=} lineNumber
@@ -759,6 +778,7 @@ WebInspector.SelectUISourceCodeDialog.prototype = {
     dispose: function()
     {
         WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAdded, this);
+        WebInspector.workspace.removeEventListener(WebInspector.Workspace.Events.ProjectWillReset, this._projectWillReset, this);
     },
 
     __proto__: WebInspector.SelectionDialogContentProvider.prototype
