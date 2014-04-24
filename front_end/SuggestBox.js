@@ -342,8 +342,10 @@ WebInspector.SuggestBox.prototype = {
         return canShowForSingleItem && completions[0] !== userEnteredText;
     },
 
-    _rememberRowCountPerViewport: function()
+    _ensureRowCountPerViewport: function()
     {
+        if (this._rowCountPerViewport)
+            return;
         if (!this.contentElement.firstChild)
             return;
 
@@ -363,7 +365,7 @@ WebInspector.SuggestBox.prototype = {
             this._updateItems(completions, selectedIndex, userEnteredText);
             this._show();
             this._updateBoxPosition(anchorBox);
-            this._rememberRowCountPerViewport();
+            delete this._rowCountPerViewport;
         } else
             this.hide();
     },
@@ -410,6 +412,7 @@ WebInspector.SuggestBox.prototype = {
      */
     pageUpKeyPressed: function()
     {
+        this._ensureRowCountPerViewport();
         return this._selectClosest(-this._rowCountPerViewport, false);
     },
 
@@ -418,6 +421,7 @@ WebInspector.SuggestBox.prototype = {
      */
     pageDownKeyPressed: function()
     {
+        this._ensureRowCountPerViewport();
         return this._selectClosest(this._rowCountPerViewport, false);
     },
 
