@@ -94,6 +94,8 @@ WebInspector.SuggestBox.prototype = {
      */
     _updateBoxPosition: function(anchorBox)
     {
+        console.assert(this._overlay);
+
         this._anchorBox = anchorBox;
         anchorBox = anchorBox || this._anchorElement.boxInWindow(window);
 
@@ -105,7 +107,8 @@ WebInspector.SuggestBox.prototype = {
 
         // Measure the content element box.
         this.contentElement.style.display = "inline-block";
-        document.body.appendChild(this.contentElement);
+        var measureContainer = this._overlay.element;
+        measureContainer.appendChild(this.contentElement);
         this.contentElement.positionAt(0, 0);
         var contentWidth = this.contentElement.offsetWidth;
         var contentHeight = this.contentElement.offsetHeight;
@@ -145,7 +148,7 @@ WebInspector.SuggestBox.prototype = {
             this._element.classList.add("above-anchor");
         }
 
-        this._element.positionAt(boxX, boxY, container);
+        this._element.positionAt(boxX, boxY);
         this._element.style.width = width + "px";
         this._element.style.height = height + "px";
     },
@@ -168,13 +171,24 @@ WebInspector.SuggestBox.prototype = {
             this._hideTimeoutId = window.setTimeout(this.hide.bind(this), 0);
     },
 
+    _show: function()
+    {
+        if (this.visible())
+            return;
+        this._overlay = new WebInspector.SuggestBox.Overlay();
+        this._overlay.element.appendChild(this._element);
+        this._bodyElement.addEventListener("mousedown", this._maybeHideBound, true);
+    },
+
     hide: function()
     {
         if (!this.visible())
             return;
 
-        this._element.remove();
         this._bodyElement.removeEventListener("mousedown", this._maybeHideBound, true);
+        this._element.remove();
+        this._overlay.dispose();
+        delete this._overlay;
         delete this._selectedElement;
         this._selectedIndex = -1;
     },
@@ -347,11 +361,8 @@ WebInspector.SuggestBox.prototype = {
     {
         if (this._canShowBox(completions, canShowForSingleItem, userEnteredText)) {
             this._updateItems(completions, selectedIndex, userEnteredText);
+            this._show();
             this._updateBoxPosition(anchorBox);
-            if (!this.visible()) {
-                this._bodyElement.appendChild(this._element);
-                this._bodyElement.addEventListener("mousedown", this._maybeHideBound, true);
-            }
             this._rememberRowCountPerViewport();
         } else
             this.hide();
@@ -421,5 +432,34 @@ WebInspector.SuggestBox.prototype = {
         // Report the event as non-handled if there is no selected item,
         // to commit the input or handle it otherwise.
         return hasSelectedItem;
+    }
+}
+
+/**
+ * @constructor
+ */
+WebInspector.SuggestBox.Overlay = function()
+{
+    this.element = document.createElement("div");
+    this.element.classList.add("suggest-box-overlay");
+    this._resize();
+    document.body.appendChild(this.element);
+}
+
+WebInspector.SuggestBox.Overlay.prototype = {
+    _resize: function()
+    {
+        var container = WebInspector.Dialog.modalHostView().element;
+        var containerBox = container.boxInWindow(container.ownerDocument.defaultView);
+
+        this.element.style.left = containerBox.x + "px";
+        this.element.style.top = containerBox.y + "px";
+        this.element.style.height = containerBox.height + "px";
+        this.element.style.width = containerBox.width + "px";
+    },
+
+    dispose: function()
+    {
+        this.element.remove();
     }
 }

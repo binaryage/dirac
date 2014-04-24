@@ -28,6 +28,14 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+.suggest-box-overlay {
+    position: absolute;
+    background-color: transparent;
+    z-index: 1000;
+    pointer-events: none;
+    overflow: hidden;
+}
+
 .suggest-box {
     position: absolute;
     background-color: #FFFFFF;
@@ -35,6 +43,7 @@
     border: 1px solid black;
     padding: 2px;
     z-index: 600;
+    pointer-events: auto;
 }
 
 .suggest-box .container {
