@@ -38,6 +38,7 @@ WebInspector.TimelineManager = function(target)
     WebInspector.TargetAwareObject.call(this, target);
     this._dispatcher = new WebInspector.TimelineDispatcher(this);
     this._enablementCount = 0;
+    this._jsProfilerStarted = false;
     TimelineAgent.enable(WebInspector.experimentsSettings.timelineTracingMode.isEnabled() ? WebInspector.TimelineManager.defaultTracingCategories : "");
 }
 
@@ -70,8 +71,9 @@ WebInspector.TimelineManager.prototype = {
     start: function(maxCallStackDepth, bufferEvents, liveEvents, includeCounters, includeGPUEvents, callback)
     {
         this._enablementCount++;
-        if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled()) {
+        if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled() && maxCallStackDepth) {
             this._configureCpuProfilerSamplingInterval();
+            this._jsProfilerStarted = true;
             ProfilerAgent.start();
         }
         if (this._enablementCount === 1)
@@ -95,8 +97,10 @@ WebInspector.TimelineManager.prototype = {
         var masterProfile = null;
         var callbackBarrier = new CallbackBarrier();
 
-        if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled())
+        if (this._jsProfilerStarted) {
             ProfilerAgent.stop(callbackBarrier.createCallback(profilerCallback));
+            this._jsProfilerStarted = false;
+        }
         if (!this._enablementCount)
             TimelineAgent.stop(callbackBarrier.createCallback(this._processBufferedEvents.bind(this, timelineCallback)));
 
