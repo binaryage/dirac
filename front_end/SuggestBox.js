@@ -67,8 +67,7 @@ WebInspector.SuggestBox = function(suggestBoxDelegate, anchorElement, maxItemsHe
     this._element = anchorElement.ownerDocument.createElement("div");
     this._element.className = "suggest-box";
     this._element.addEventListener("mousedown", this._onBoxMouseDown.bind(this), true);
-    this.containerElement = this._element.createChild("div", "container");
-    this.contentElement = this.containerElement.createChild("div", "content");
+    this.contentElement = this._element.createChild("div", "content");
 }
 
 WebInspector.SuggestBox.prototype = {
@@ -112,7 +111,7 @@ WebInspector.SuggestBox.prototype = {
         var contentWidth = this.contentElement.offsetWidth;
         var contentHeight = this.contentElement.offsetHeight;
         this.contentElement.style.display = "block";
-        this.containerElement.appendChild(this.contentElement);
+        this._element.appendChild(this.contentElement);
 
         const spacer = 6;
         const suggestBoxPaddingX = 21;
@@ -346,7 +345,7 @@ WebInspector.SuggestBox.prototype = {
         if (!this.contentElement.firstChild)
             return;
 
-        this._rowCountPerViewport = Math.floor(this.containerElement.offsetHeight / this.contentElement.firstChild.offsetHeight);
+        this._rowCountPerViewport = Math.floor(this._element.offsetHeight / this.contentElement.firstChild.offsetHeight);
     },
 
     /**

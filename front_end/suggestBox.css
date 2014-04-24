@@ -41,10 +41,11 @@
     background-color: #FFFFFF;
     display: block;
     border: 1px solid rgb(66%, 66%, 66%);
-    padding: 2px;
     z-index: 600;
     pointer-events: auto;
     margin-left: -3px;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
 
 .suggest-box.above-anchor {
@@ -53,16 +54,6 @@
 
 .suggest-box.under-anchor {
    border-radius: 0 5px 5px 5px;
-}
-
-.suggest-box .container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    overflow-x: hidden;
-    overflow-y: auto;
 }
 
 .suggest-box-content-item {
