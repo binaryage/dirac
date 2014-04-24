@@ -98,7 +98,8 @@ WebInspector.Linkifier.linkifyUsingRevealer = function(revealable, text, fallbac
      */
     function clickHandler(event)
     {
-        event.consume(true);
+        event.stopImmediatePropagation();
+        event.preventDefault();
         if (fallbackHref && WebInspector.Linkifier.handleLink(fallbackHref, fallbackLineNumber))
             return;
 
@@ -172,7 +173,8 @@ WebInspector.Linkifier.prototype = {
          */
         function clickHandler(event)
         {
-            event.consume(true);
+            event.stopImmediatePropagation();
+            event.preventDefault();
             if (!anchor.__uiLocation)
                 return;
             if (WebInspector.Linkifier.handleLink(anchor.__uiLocation.url(), anchor.__uiLocation.lineNumber))

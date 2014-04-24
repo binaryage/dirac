@@ -289,27 +289,12 @@ WebInspector.ExecutionContext.prototype = {
     },
 
     /**
-     * @param {!Element} proxyElement
-     * @param {!Range} wordRange
-     * @param {boolean} force
-     * @param {function(!Array.<string>, number=)} completionsReadyCallback
-     */
-    completionsForTextPrompt: function(proxyElement, wordRange, force, completionsReadyCallback)
-    {
-        // Pass less stop characters to rangeOfWord so the range will be a more complete expression.
-        var expressionRange = wordRange.startContainer.rangeOfWord(wordRange.startOffset, " =:[({;,!+-*/&|^<>", proxyElement, "backward");
-        var expressionString = expressionRange.toString();
-        var prefix = wordRange.toString();
-        this._completionsForExpression(expressionString, prefix, force, completionsReadyCallback);
-    },
-
-    /**
      * @param {string} expressionString
      * @param {string} prefix
      * @param {boolean} force
      * @param {function(!Array.<string>, number=)} completionsReadyCallback
      */
-    _completionsForExpression: function(expressionString, prefix, force, completionsReadyCallback)
+    completionsForExpression: function(expressionString, prefix, force, completionsReadyCallback)
     {
         var lastIndex = expressionString.length - 1;
 

@@ -5,7 +5,6 @@
         "sources": [
             "common/modules.js",
             "common/Color.js",
-            "common/DOMExtension.js",
             "common/Geometry.js",
             "common/ModuleManager.js",
             "common/Object.js",
@@ -105,6 +104,7 @@
             "ui/DataGrid.js",
             "ui/Dialog.js",
             "ui/DockController.js",
+            "ui/DOMExtension.js",
             "ui/Drawer.js",
             "ui/DropDownMenu.js",
             "ui/EmptyView.js",

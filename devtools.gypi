@@ -64,7 +64,6 @@
         ],
         'devtools_common_js_files': [
             'front_end/common/Color.js',
-            'front_end/common/DOMExtension.js',
             'front_end/common/Geometry.js',
             'front_end/common/ModuleManager.js',
             'front_end/common/modules.js',
@@ -157,6 +156,7 @@
             'front_end/ui/DataGrid.js',
             'front_end/ui/Dialog.js',
             'front_end/ui/DockController.js',
+            'front_end/ui/DOMExtension.js',
             'front_end/ui/Drawer.js',
             'front_end/ui/DropDownMenu.js',
             'front_end/ui/EmptyView.js',

@@ -53,8 +53,8 @@ Object.values = function(obj)
 }
 
 /**
- * @param {number} n
  * @param {number} m
+ * @param {number} n
  * @return {number}
  */
 function mod(m, n)

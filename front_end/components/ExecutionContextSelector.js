@@ -93,5 +93,10 @@ WebInspector.ExecutionContextSelector.completionsForTextPromptInCurrentContext =
         completionsReadyCallback([]);
         return;
     }
-    executionContext.completionsForTextPrompt(proxyElement, wordRange, force, completionsReadyCallback);
+
+    // Pass less stop characters to rangeOfWord so the range will be a more complete expression.
+    var expressionRange = wordRange.startContainer.rangeOfWord(wordRange.startOffset, " =:[({;,!+-*/&|^<>", proxyElement, "backward");
+    var expressionString = expressionRange.toString();
+    var prefix = wordRange.toString();
+    executionContext.completionsForExpression(expressionString, prefix, force, completionsReadyCallback);
 }
