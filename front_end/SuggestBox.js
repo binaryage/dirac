@@ -249,7 +249,7 @@ WebInspector.SuggestBox.prototype = {
         else
             index = Number.constrain(index, 0, this._length - 1);
 
-        this._selectItem(index);
+        this._selectItem(index, true);
         this._applySuggestion(true);
         return true;
     },
@@ -288,29 +288,26 @@ WebInspector.SuggestBox.prototype = {
 
     /**
      * @param {!Array.<string>} items
-     * @param {number} selectedIndex
      * @param {string} userEnteredText
      */
-    _updateItems: function(items, selectedIndex, userEnteredText)
+    _updateItems: function(items, userEnteredText)
     {
         this._length = items.length;
         this.contentElement.removeChildren();
+        delete this._selectedElement;
 
         for (var i = 0; i < items.length; ++i) {
             var item = items[i];
             var currentItemElement = this._createItemElement(userEnteredText, item);
             this.contentElement.appendChild(currentItemElement);
         }
-
-        this._selectedElement = null;
-        if (typeof selectedIndex === "number")
-            this._selectItem(selectedIndex);
     },
 
     /**
      * @param {number} index
+     * @param {boolean} scrollIntoView
      */
-    _selectItem: function(index)
+    _selectItem: function(index, scrollIntoView)
     {
         if (this._selectedElement)
             this._selectedElement.classList.remove("selected");
@@ -322,7 +319,8 @@ WebInspector.SuggestBox.prototype = {
         this._selectedElement = this.contentElement.children[index];
         this._selectedElement.classList.add("selected");
 
-        this._selectedElement.scrollIntoViewIfNeeded(false);
+        if (scrollIntoView)
+            this._selectedElement.scrollIntoViewIfNeeded(false);
     },
 
     /**
@@ -362,9 +360,10 @@ WebInspector.SuggestBox.prototype = {
     updateSuggestions: function(anchorBox, completions, selectedIndex, canShowForSingleItem, userEnteredText)
     {
         if (this._canShowBox(completions, canShowForSingleItem, userEnteredText)) {
-            this._updateItems(completions, selectedIndex, userEnteredText);
+            this._updateItems(completions, userEnteredText);
             this._show();
             this._updateBoxPosition(anchorBox);
+            this._selectItem(selectedIndex, selectedIndex > 0);
             delete this._rowCountPerViewport;
         } else
             this.hide();
