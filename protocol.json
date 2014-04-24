@@ -1133,7 +1133,8 @@
             },
             {
                 "name": "clearBrowserCache",
-                "description": "Clears browser cache."
+                "description": "Clears browser cache.",
+                "handlers": ["browser", "renderer"]
             },
             {
                 "name": "canClearBrowserCookies",
@@ -1144,7 +1145,8 @@
             },
             {
                 "name": "clearBrowserCookies",
-                "description": "Clears browser cookies."
+                "description": "Clears browser cookies.",
+                "handlers": ["browser", "renderer"]
             },
             {
                 "name": "setCacheDisabled",
