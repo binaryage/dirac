@@ -984,7 +984,7 @@ WebInspector.ArrayGroupingTreeElement.prototype = {
 WebInspector.ObjectPropertyPrompt = function(renderAsBlock)
 {
     WebInspector.TextPrompt.call(this, WebInspector.ExecutionContextSelector.completionsForTextPromptInCurrentContext);
-    this.setSuggestBoxEnabled("generic-suggest");
+    this.setSuggestBoxEnabled(true);
     if (renderAsBlock)
         this.renderAsBlock();
 }

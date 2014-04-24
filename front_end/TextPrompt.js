@@ -57,11 +57,11 @@ WebInspector.TextPrompt.prototype = {
     },
 
     /**
-     * @param {string} className
+     * @param {boolean} suggestBoxEnabled
      */
-    setSuggestBoxEnabled: function(className)
+    setSuggestBoxEnabled: function(suggestBoxEnabled)
     {
-        this._suggestBoxClassName = className;
+        this._suggestBoxEnabled = suggestBoxEnabled;
     },
 
     renderAsBlock: function()
@@ -124,8 +124,8 @@ WebInspector.TextPrompt.prototype = {
         this._element.addEventListener("selectstart", this._boundSelectStart, false);
         this._element.addEventListener("blur", this._boundRemoveSuggestionAids, false);
 
-        if (typeof this._suggestBoxClassName === "string")
-            this._suggestBox = new WebInspector.SuggestBox(this, this._element, this._suggestBoxClassName);
+        if (this._suggestBoxEnabled)
+            this._suggestBox = new WebInspector.SuggestBox(this, this._element);
 
         return this.proxyElement;
     },

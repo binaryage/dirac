@@ -109,7 +109,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     statusBarElement.appendChild(this._showAllMessagesCheckbox.element);
 
     this._registerShortcuts();
-    this.registerRequiredCSS("textPrompt.css");
+    this.registerRequiredCSS("suggestBox.css");
 
     this._messagesElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), false);
 
@@ -119,7 +119,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._consoleMessages = [];
 
     this._prompt = new WebInspector.TextPromptWithHistory(WebInspector.ExecutionContextSelector.completionsForTextPromptInCurrentContext);
-    this._prompt.setSuggestBoxEnabled("generic-suggest");
+    this._prompt.setSuggestBoxEnabled(true);
     this._prompt.renderAsBlock();
     this._prompt.attach(this._promptElement);
     this._prompt.proxyElement.addEventListener("keydown", this._promptKeyDown.bind(this), false);

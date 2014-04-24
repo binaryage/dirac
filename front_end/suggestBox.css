@@ -40,10 +40,19 @@
     position: absolute;
     background-color: #FFFFFF;
     display: block;
-    border: 1px solid black;
+    border: 1px solid rgb(66%, 66%, 66%);
     padding: 2px;
     z-index: 600;
     pointer-events: auto;
+    margin-left: -3px;
+}
+
+.suggest-box.above-anchor {
+   border-radius: 5px 5px 5px 0;
+}
+
+.suggest-box.under-anchor {
+   border-radius: 0 5px 5px 5px;
 }
 
 .suggest-box .container {

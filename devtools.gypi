@@ -239,7 +239,7 @@
             'front_end/sourcesView.css',
             'front_end/spectrum.css',
             'front_end/splitView.css',
-            'front_end/textPrompt.css',
+            'front_end/suggestBox.css',
             'front_end/timelinePanel.css',
             'front_end/canvasProfiler.css',
             'front_end/layersPanel.css',

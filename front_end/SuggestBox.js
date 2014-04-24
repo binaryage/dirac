@@ -52,10 +52,9 @@ WebInspector.SuggestBoxDelegate.prototype = {
  * @constructor
  * @param {!WebInspector.SuggestBoxDelegate} suggestBoxDelegate
  * @param {!Element} anchorElement
- * @param {string=} className
  * @param {number=} maxItemsHeight
  */
-WebInspector.SuggestBox = function(suggestBoxDelegate, anchorElement, className, maxItemsHeight)
+WebInspector.SuggestBox = function(suggestBoxDelegate, anchorElement, maxItemsHeight)
 {
     this._suggestBoxDelegate = suggestBoxDelegate;
     this._anchorElement = anchorElement;
@@ -66,7 +65,7 @@ WebInspector.SuggestBox = function(suggestBoxDelegate, anchorElement, className,
     this._bodyElement = anchorElement.ownerDocument.body;
     this._maybeHideBound = this._maybeHide.bind(this);
     this._element = anchorElement.ownerDocument.createElement("div");
-    this._element.className = "suggest-box " + (className || "");
+    this._element.className = "suggest-box";
     this._element.addEventListener("mousedown", this._onBoxMouseDown.bind(this), true);
     this.containerElement = this._element.createChild("div", "container");
     this.contentElement = this.containerElement.createChild("div", "content");

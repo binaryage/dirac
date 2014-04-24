@@ -49,7 +49,7 @@ WebInspector.ElementsPanel = function()
     WebInspector.Panel.call(this, "elements");
     this.registerRequiredCSS("breadcrumbList.css");
     this.registerRequiredCSS("elementsPanel.css");
-    this.registerRequiredCSS("textPrompt.css");
+    this.registerRequiredCSS("suggestBox.css");
     this.setHideOnDetach();
 
     this._splitView = new WebInspector.SplitView(true, true, "elementsPanelSplitViewState", 325, 325);

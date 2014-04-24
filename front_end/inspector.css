@@ -2665,21 +2665,6 @@ button.record-profile-status-bar-item.toggled-on .glyph:not(.shadow) {
     white-space: pre-wrap;
 }
 
-/* Generic suggest box style */
-
-.suggest-box.generic-suggest {
-    margin-left: -3px;
-    border-color: rgb(66%, 66%, 66%);
-}
-
-.suggest-box.generic-suggest.above-anchor {
-   border-radius: 5px 5px 5px 0;
-}
-
-.suggest-box.generic-suggest.under-anchor {
-   border-radius: 0 5px 5px 5px;
-}
-
 /* Custom popup scrollers */
 
 .custom-popup-horizontal-scroll ::-webkit-scrollbar,
