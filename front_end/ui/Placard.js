@@ -37,6 +37,7 @@ WebInspector.Placard = function(title, subtitle)
     this.subtitleElement = this.element.createChild("div", "subtitle");
     this.titleElement = this.element.createChild("div", "title");
 
+    this._hidden = false;
     this.title = title;
     this.subtitle = subtitle;
     this.selected = false;
@@ -104,6 +105,25 @@ WebInspector.Placard.prototype = {
     toggleSelected: function()
     {
         this.selected = !this.selected;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    isHidden: function()
+    {
+        return this._hidden;
+    },
+
+    /**
+     * @param {boolean} x
+     */
+    setHidden: function(x)
+    {
+        if (this._hidden === x)
+            return;
+        this._hidden = x;
+        this.element.classList.toggle("hidden", x);
     },
 
     discard: function()

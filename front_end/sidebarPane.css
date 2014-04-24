@@ -44,6 +44,11 @@
     color: #888;
 }
 
+.sidebar-pane > .body .placard.dimmed {
+    opacity: 0.6;
+    font-style: italic;
+}
+
 .sidebar-pane > .body .placard + .info {
     border-top: 1px solid rgb(189, 189, 189);
     background-color: rgb(255, 255, 194);
@@ -189,4 +194,12 @@ body.platform-windows .sidebar-pane-subtitle {
     margin-top: 0;
     margin-bottom: 0.25em;
     vertical-align: bottom;
+}
+
+.hidden-placards-message {
+    text-align: center;
+    font-style: italic;
+    padding: 4px;
+    color: #888;
+    background-color: #FFFFC2;
 }

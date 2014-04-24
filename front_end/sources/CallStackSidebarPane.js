@@ -63,10 +63,13 @@ WebInspector.CallStackSidebarPane.prototype = {
         var asyncStackTrace = details.asyncStackTrace;
 
         delete this._statusMessageElement;
+        delete this._hiddenPlacardsMessageElement;
         /** @type {!Array.<!WebInspector.CallStackSidebarPane.Placard>} */
         this.placards = [];
+        this._hiddenPlacards = 0;
 
         this._appendSidebarPlacards(callFrames);
+        var topStackHidden = (this._hiddenPlacards === this.placards.length);
 
         while (asyncStackTrace) {
             var title = asyncStackTrace.description;
@@ -75,10 +78,28 @@ WebInspector.CallStackSidebarPane.prototype = {
             else
                 title = WebInspector.UIString("Async Call");
             var asyncPlacard = new WebInspector.Placard(title, "");
+            asyncPlacard.element.addEventListener("click", this._selectNextVisiblePlacard.bind(this, this.placards.length, false), false);
+            asyncPlacard.element.addEventListener("contextmenu", this._asyncPlacardContextMenu.bind(this, this.placards.length), true);
             asyncPlacard.element.classList.add("placard-label");
             this.bodyElement.appendChild(asyncPlacard.element);
             this._appendSidebarPlacards(asyncStackTrace.callFrames, asyncPlacard);
             asyncStackTrace = asyncStackTrace.asyncStackTrace;
+        }
+
+        if (topStackHidden)
+            this._revealHiddenPlacards();
+        if (this._hiddenPlacards) {
+            var element = document.createElementWithClass("div", "hidden-placards-message");
+            if (this._hiddenPlacards === 1)
+                element.textContent = WebInspector.UIString("1 stack frame is hidden (black-boxed).");
+            else
+                element.textContent = WebInspector.UIString("%d stack frames are hidden (black-boxed).", this._hiddenPlacards);
+            element.createTextChild(" ");
+            var showAllLink = element.createChild("span", "node-link");
+            showAllLink.textContent = WebInspector.UIString("Show");
+            showAllLink.addEventListener("click", this._revealHiddenPlacards.bind(this), false);
+            this.bodyElement.insertBefore(element, this.bodyElement.firstChild);
+            this._hiddenPlacardsMessageElement = element;
         }
     },
 
@@ -88,16 +109,41 @@ WebInspector.CallStackSidebarPane.prototype = {
      */
     _appendSidebarPlacards: function(callFrames, asyncPlacard)
     {
+        var allPlacardsHidden = true;
         for (var i = 0, n = callFrames.length; i < n; ++i) {
-            var placard = new WebInspector.CallStackSidebarPane.Placard(callFrames[i], asyncPlacard);
+            var callFrame = callFrames[i];
+            var placard = new WebInspector.CallStackSidebarPane.Placard(callFrame, asyncPlacard);
             placard.element.addEventListener("click", this._placardSelected.bind(this, placard), false);
             placard.element.addEventListener("contextmenu", this._placardContextMenu.bind(this, placard), true);
-            if (!i && asyncPlacard) {
-                asyncPlacard.element.addEventListener("click", this._placardSelected.bind(this, placard), false);
-                asyncPlacard.element.addEventListener("contextmenu", this._placardContextMenu.bind(this, placard), true);
-            }
             this.placards.push(placard);
             this.bodyElement.appendChild(placard.element);
+
+            if (callFrame.script.isFramework()) {
+                placard.setHidden(true);
+                placard.element.classList.add("dimmed");
+                ++this._hiddenPlacards;
+            } else {
+                allPlacardsHidden = false;
+            }
+        }
+        if (allPlacardsHidden && asyncPlacard)
+            asyncPlacard.setHidden(true);
+    },
+
+    _revealHiddenPlacards: function()
+    {
+        if (!this._hiddenPlacards)
+            return;
+        this._hiddenPlacards = 0;
+        for (var i = 0; i < this.placards.length; ++i) {
+            var placard = this.placards[i];
+            placard.setHidden(false);
+            if (placard._asyncPlacard)
+                placard._asyncPlacard.setHidden(false);
+        }
+        if (this._hiddenPlacardsMessageElement) {
+            this._hiddenPlacardsMessageElement.remove();
+            delete this._hiddenPlacardsMessageElement;
         }
     },
 
@@ -113,6 +159,20 @@ WebInspector.CallStackSidebarPane.prototype = {
 
         contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Copy stack trace" : "Copy Stack Trace"), this._copyStackTrace.bind(this));
         contextMenu.show();
+    },
+
+    /**
+     * @param {number} index
+     */
+    _asyncPlacardContextMenu: function(index, event)
+    {
+        for (; index < this.placards.length; ++index) {
+            var placard = this.placards[index];
+            if (!placard.isHidden()) {
+                this._placardContextMenu(placard, event);
+                break;
+            }
+        }
     },
 
     /**
@@ -148,7 +208,7 @@ WebInspector.CallStackSidebarPane.prototype = {
         }
         this.placards.length = lastSyncPlacardIndex + 1;
         if (shouldSelectTopFrame)
-            this._selectPlacardByIndex(0);
+            this._selectNextVisiblePlacard(0);
     },
 
     /**
@@ -159,6 +219,8 @@ WebInspector.CallStackSidebarPane.prototype = {
         for (var i = 0; i < this.placards.length; ++i) {
             var placard = this.placards[i];
             placard.selected = (placard._callFrame === x);
+            if (placard.selected && placard.isHidden())
+                this._revealHiddenPlacards();
         }
     },
 
@@ -170,7 +232,7 @@ WebInspector.CallStackSidebarPane.prototype = {
         var index = this._selectedCallFrameIndex();
         if (index === -1)
             return false;
-        return this._selectPlacardByIndex(index + 1);
+        return this._selectNextVisiblePlacard(index + 1);
     },
 
     /**
@@ -181,19 +243,25 @@ WebInspector.CallStackSidebarPane.prototype = {
         var index = this._selectedCallFrameIndex();
         if (index === -1)
             return false;
-        return this._selectPlacardByIndex(index - 1);
+        return this._selectNextVisiblePlacard(index - 1, true);
     },
 
     /**
      * @param {number} index
+     * @param {boolean=} backward
      * @return {boolean}
      */
-    _selectPlacardByIndex: function(index)
+    _selectNextVisiblePlacard: function(index, backward)
     {
-        if (index < 0 || index >= this.placards.length)
-            return false;
-        this._placardSelected(this.placards[index]);
-        return true;
+        while (0 <= index && index < this.placards.length) {
+            var placard = this.placards[index];
+            if (!placard.isHidden()) {
+                this._placardSelected(placard);
+                return true;
+            }
+            index += backward ? -1 : 1;
+        }
+        return false;
     },
 
     /**
@@ -224,10 +292,15 @@ WebInspector.CallStackSidebarPane.prototype = {
     _copyStackTrace: function()
     {
         var text = "";
+        var lastPlacard = null;
         for (var i = 0; i < this.placards.length; ++i) {
-            if (i && this.placards[i]._asyncPlacard !== this.placards[i - 1]._asyncPlacard)
-                text += this.placards[i]._asyncPlacard.title + "\n";
-            text += this.placards[i].title + " (" + this.placards[i].subtitle + ")\n";
+            var placard = this.placards[i];
+            if (placard.isHidden())
+                continue;
+            if (lastPlacard && placard._asyncPlacard !== lastPlacard._asyncPlacard)
+                text += placard._asyncPlacard.title + "\n";
+            text += placard.title + " (" + placard.subtitle + ")\n";
+            lastPlacard = placard;
         }
         InspectorFrontendHost.copyText(text);
     },

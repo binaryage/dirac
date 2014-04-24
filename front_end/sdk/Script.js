@@ -229,6 +229,19 @@ WebInspector.Script.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isFramework: function()
+    {
+        if (!WebInspector.experimentsSettings.frameworksDebuggingSupport.isEnabled())
+            return false;
+        if (!WebInspector.settings.skipStackFramesSwitch.get())
+            return false;
+        var regex = WebInspector.settings.skipStackFramesPattern.asRegExp();
+        return regex ? regex.test(this.sourceURL) : false;
+    },
+
+    /**
      * @param {number} lineNumber
      * @param {number=} columnNumber
      * @return {!WebInspector.UILocation}
