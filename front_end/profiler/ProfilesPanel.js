@@ -1250,7 +1250,7 @@ WebInspector.ProfilesSidebarTreeElement.prototype = {
 }
 
 
-importScript("../CPUProfileModel.js");
+importScript("../components/CPUProfileModel.js");
 importScript("CPUProfileDataGrid.js");
 importScript("CPUProfileBottomUpDataGrid.js");
 importScript("CPUProfileTopDownDataGrid.js");

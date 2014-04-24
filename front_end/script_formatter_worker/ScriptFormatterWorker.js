@@ -27,7 +27,7 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-importScripts("../utilities.js");
+importScripts("../common/utilities.js");
 importScripts("../cm/headlesscodemirror.js");
 importScripts("../cm/css.js");
 importScripts("../cm/javascript.js");

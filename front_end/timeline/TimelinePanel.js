@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-importScript("../CPUProfileModel.js");
+importScript("../components/CPUProfileModel.js");
 importScript("CountersGraph.js");
 importScript("MemoryCountersGraph.js");
 importScript("TimelineModel.js");

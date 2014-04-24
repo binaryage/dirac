@@ -30,9 +30,9 @@
 
 WebInspector = {};
 
-importScripts("../../TextUtils.js");
-importScripts("../../UIString.js");
-importScripts("../../utilities.js");
+importScripts("../../common/UIString.js");
+importScripts("../../common/utilities.js");
+importScripts("../../ui/TextUtils.js");
 importScripts("../HeapSnapshotCommon.js");
 importScripts("AllocationProfile.js");
 importScripts("HeapSnapshot.js");

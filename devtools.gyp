@@ -69,7 +69,7 @@
                     'conditions': [
                         ['debug_devtools==1', {
                             'files': [
-                                '<@(core_devtools_files)',
+                                '<@(devtools_core_js_files)',
                                 '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
                                 '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js',
                             ],
@@ -280,6 +280,58 @@
                         ['debug_devtools==1', {
                             'files': [
                                 '<@(devtools_timeline_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/common',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_common_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/sdk',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_sdk_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/ui',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_ui_js_files)',
+                            ],
+                        },
+                        {
+                            'files': [],
+                        }],
+                    ],
+                },
+                {
+                    'destination': '<(PRODUCT_DIR)/resources/inspector/components',
+                    'conditions': [
+                        ['debug_devtools==1', {
+                            'files': [
+                                '<@(devtools_components_js_files)',
                             ],
                         },
                         {
@@ -523,7 +575,7 @@
                         'inputs': [
                             '<@(_script_name)',
                             '<@(_input_page)',
-                            '<@(core_devtools_files)',
+                            '<@(devtools_core_js_files)',
                             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
                             '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js'
                         ],
