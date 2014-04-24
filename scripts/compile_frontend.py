@@ -70,7 +70,6 @@ except:
 # except module headers. Refer to devtools.gyp file for
 # the module header list.
 allowed_import_statements_files = [
-    "utilities.js",
     "search/AdvancedSearchView.js",
     "console/ConsolePanel.js",
     "elements/ElementsPanel.js",
@@ -94,6 +93,7 @@ invalid_type_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*\{.
 
 invalid_type_designator_regex = re.compile(r"@(?:" + type_checked_jsdoc_tags_or + r")\s*.*([?!])=?\}")
 
+importscript_regex = re.compile(r"importScript\(\s*[\"']")
 error_warning_regex = re.compile(r"(?:WARNING|ERROR)")
 
 errors_found = False
@@ -109,12 +109,15 @@ def verify_importScript_usage():
         for file_name in module['sources']:
             if file_name in allowed_import_statements_files:
                 continue
-            sourceFile = open(path.join(devtools_frontend_path, file_name), "r")
-            source = sourceFile.read()
-            sourceFile.close()
-            if "importScript(" in source:
-                print "ERROR: importScript function is allowed in module header files only (found in %s)" % file_name
-                errors_found = True
+            try:
+                with open(path.join(devtools_frontend_path, file_name), "r") as sourceFile:
+                    source = sourceFile.read()
+                    if re.search(importscript_regex, source):
+                        print "ERROR: importScript function call is allowed in module header files only (found in %s)" % file_name
+                        errors_found = True
+            except:
+                print "ERROR: Failed to access %s" % file_name
+                raise
     return errors_found
 
 
