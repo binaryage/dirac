@@ -141,7 +141,6 @@ WebInspector.View.prototype = {
             return;
         this.restoreScrollPositions();
         this._notify(this.wasShown);
-        this._notify(this.onResize);
         this._callOnVisibleChildren(this._processWasShown);
     },
 
@@ -249,6 +248,8 @@ WebInspector.View.prototype = {
 
         if (this._parentView && this._hasNonZeroConstraints())
             this._parentView.invalidateConstraints();
+        else
+            this._processOnResize();
     },
 
     /**

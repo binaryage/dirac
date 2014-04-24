@@ -93,8 +93,12 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorClosed, this._editorClosed.bind(this));
     this._sourcesView.registerShortcuts(this.registerShortcuts.bind(this));
 
-    this._drawerEditorView = new WebInspector.SourcesPanel.DrawerEditorView();
-    this._sourcesView.show(this._drawerEditorView.element);
+    if (WebInspector.experimentsSettings.showEditorInDrawer.isEnabled()) {
+        this._drawerEditorView = new WebInspector.SourcesPanel.DrawerEditorView();
+        this._sourcesView.show(this._drawerEditorView.element);
+    } else {
+        this._sourcesView.show(this.editorView.mainElement());
+    }
 
     this._debugSidebarResizeWidgetElement = document.createElementWithClass("div", "resizer-widget");
     this._debugSidebarResizeWidgetElement.id = "scripts-debug-sidebar-resizer-widget";
@@ -170,16 +174,20 @@ WebInspector.SourcesPanel.prototype = {
 
     wasShown: function()
     {
-        this._drawerEditor()._panelWasShown();
-        this._sourcesView.show(this.editorView.mainElement());
+        if (WebInspector.experimentsSettings.showEditorInDrawer.isEnabled()) {
+            this._drawerEditor()._panelWasShown();
+            this._sourcesView.show(this.editorView.mainElement());
+        }
         WebInspector.Panel.prototype.wasShown.call(this);
     },
 
     willHide: function()
     {
         WebInspector.Panel.prototype.willHide.call(this);
-        this._drawerEditor()._panelWillHide();
-        this._sourcesView.show(this._drawerEditorView.element);
+        if (WebInspector.experimentsSettings.showEditorInDrawer.isEnabled()) {
+            this._drawerEditor()._panelWillHide();
+            this._sourcesView.show(this._drawerEditorView.element);
+        }
     },
 
     /**

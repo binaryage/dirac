@@ -579,6 +579,8 @@ WebInspector.TimelinePanel.prototype = {
 
     _onModeChanged: function()
     {
+        this._stackView.detach();
+
         var isFrameMode = this._overviewModeSetting.get() === WebInspector.TimelinePanel.OverviewMode.Frames;
         this._removeAllModeViews();
         this._overviewControls = [];
@@ -612,6 +614,8 @@ WebInspector.TimelinePanel.prototype = {
         this._overviewPane.setOverviewControls(this._overviewControls);
         this.doResize();
         this._updateSelectionDetails();
+
+        this._stackView.show(this._searchableView.element);
     },
 
     /**

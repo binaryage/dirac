@@ -414,7 +414,6 @@ WebInspector.TabbedPane.prototype = {
         var effectiveTab = this._currentTab || this._tabsHistory[0];
         if (effectiveTab)
             this.selectTab(effectiveTab.id);
-        this.invalidateConstraints();
     },
 
     /**
