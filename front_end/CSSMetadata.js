@@ -523,7 +523,7 @@ WebInspector.CSSMetadata._propertyDataMap = {
     "-webkit-text-emphasis-style": { values: [
         "circle", "filled", "open", "dot", "double-circle", "triangle", "sesame"
     ] },
-    "-webkit-transform": { values: [
+    "transform": { values: [
         "scale", "scaleX", "scaleY", "scale3d", "rotate", "rotateX", "rotateY", "rotateZ", "rotate3d", "skew", "skewX", "skewY",
         "translate", "translateX", "translateY", "translateZ", "translate3d", "matrix", "matrix3d", "perspective"
     ] },
@@ -736,7 +736,7 @@ WebInspector.CSSMetadata.cssPropertiesMetainfoKeySet = function()
     return WebInspector.CSSMetadata._cssPropertiesMetainfoKeySet;
 }
 
-// Weight of CSS properties based their usage on few popular websites https://gist.github.com/3751436
+// Weight of CSS properties based on their usage on a few popular websites: https://gist.github.com/3751436
 WebInspector.CSSMetadata.Weight = {
     "-webkit-animation": 1,
     "-webkit-animation-duration": 1,
@@ -749,7 +749,6 @@ WebInspector.CSSMetadata.Weight = {
     "-webkit-border-vertical-spacing": 1,
     "-webkit-box-shadow": 24,
     "-webkit-font-smoothing": 2,
-    "-webkit-transform": 1,
     "-webkit-transition": 8,
     "-webkit-transition-delay": 7,
     "-webkit-transition-duration": 7,
@@ -845,6 +844,7 @@ WebInspector.CSSMetadata.Weight = {
     "text-shadow": 19,
     "text-transform": 5,
     "top": 71,
+    "transform": 1,
     "unicode-bidi": 1,
     "vertical-align": 37,
     "visibility": 11,
@@ -883,6 +883,8 @@ WebInspector.CSSMetadata.prototype = {
         var index = 0;
         for (var i = 0; i < properties.length; i++) {
             var weight = WebInspector.CSSMetadata.Weight[properties[i]];
+            if (!weight)
+                weight = WebInspector.CSSMetadata.Weight[WebInspector.CSSMetadata.canonicalPropertyName(properties[i])];
             if (weight > maxWeight) {
                 maxWeight = weight;
                 index = i;
