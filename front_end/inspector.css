@@ -253,7 +253,7 @@ body.undocked.platform-mac.inactive .toolbar-background {
 .search-replace {
     -webkit-appearance: none;
     border: 0;
-    padding: 0 2px;
+    padding: 0 3px;
     margin: 0;
     flex: 1;
 }
@@ -322,6 +322,7 @@ body.undocked.platform-mac.inactive .toolbar-background {
     border: 1px solid rgb(163, 163, 163);
     height: 20px;
     border-radius: 2px;
+    margin-left: 1px;
 }
 
 .toolbar-replace-control {
@@ -819,9 +820,12 @@ body.platform-linux .source-code {
 
 .console-status-bar,
 .console-filters-header {
-    display: flex;
     flex: 0 0 23px;
     overflow: hidden;
+}
+
+.console-status-bar {
+    display: flex;
 }
 
 #console-messages {
@@ -2459,7 +2463,7 @@ body.platform-mac .soft-context-menu-item-mouse-over {
 
 .search-drawer-header input[type="text"].search-config-search {
     -webkit-appearance: none;
-    padding: 0 2px;
+    padding: 0 3px;
     margin: 0;
     border: 1px solid rgb(163, 163, 163);
     height: 20px;

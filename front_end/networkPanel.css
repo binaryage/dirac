@@ -47,12 +47,8 @@
     top: 4px;
 }
 
-.network.panel.viewing-resource #network-close-button  {
+.network.panel.viewing-resource #network-close-button {
     display: block;
-}
-
-#network-container {
-    border-top: 1px solid rgb(179, 179, 179);
 }
 
 .network.panel .sidebar {
@@ -329,5 +325,4 @@
 .network-filters-header {
     flex: 0 0 23px;
     padding-right: 4px;
-    padding-lefT: 2px;
 }
