@@ -49,6 +49,7 @@ WebInspector.TabbedPane = function()
     this._tabsById = {};
 
     this._dropDownButton = this._createDropDownButton();
+    WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._zoomChanged, this);
 }
 
 WebInspector.TabbedPane.EventTypes = {
@@ -345,6 +346,17 @@ WebInspector.TabbedPane.prototype = {
     {
         var tab = this._tabsById[id];
         if (tab._setIconClass(iconClass, iconTooltip))
+            this._updateTabElements();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _zoomChanged: function(event)
+    {
+        for (var i = 0; i < this._tabs.length; ++i)
+            delete this._tabs[i]._measuredWidth;
+        if (this.isShowing())
             this._updateTabElements();
     },
 
