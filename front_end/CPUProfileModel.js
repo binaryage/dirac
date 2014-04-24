@@ -540,7 +540,7 @@ WebInspector.CPUFlameChartDataProvider.colorGenerator = function()
 {
     if (!WebInspector.CPUFlameChartDataProvider._colorGenerator) {
         var colorGenerator = new WebInspector.FlameChart.ColorGenerator();
-        colorGenerator.setColorForID("(idle)::0", "hsl(0, 0%, 80%)");
+        colorGenerator.setColorForID("(idle)::0", "hsl(0, 0%, 94%)");
         colorGenerator.setColorForID("(program)::0", "hsl(0, 0%, 80%)");
         colorGenerator.setColorForID("(garbage collector)::0", "hsl(0, 0%, 80%)");
         WebInspector.CPUFlameChartDataProvider._colorGenerator = colorGenerator;
