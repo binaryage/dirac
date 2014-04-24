@@ -1219,20 +1219,7 @@ WebInspector.TimelineTextFilter.prototype = {
      */
     accept: function(record)
     {
-        if (!this._regex)
-            return true;
-
-        var accept = false;
-        /**
-         * @param {!WebInspector.TimelineModel.Record} record
-         * @return {boolean}
-         * @this {!WebInspector.TimelineTextFilter}
-         */
-        function processRecord(record)
-        {
-            return record.testContentMatching(this._regex);
-        }
-        return WebInspector.TimelineModel.forAllRecords([record], processRecord.bind(this));
+        return !this._regex || record.testContentMatching(this._regex);
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype
