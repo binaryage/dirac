@@ -847,7 +847,7 @@ WebInspector.ConsoleView.prototype = {
 
     _jumpToSearchResult: function(index)
     {
-        index %= this._searchResults.length;
+        index = mod(index, this._searchResults.length);
         this._clearCurrentSearchResultHighlight();
         this._currentSearchResultIndex = index;
         this._searchableView.updateCurrentMatchIndex(this._currentSearchResultIndex);
