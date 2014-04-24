@@ -395,18 +395,13 @@ WebInspector.View.prototype = {
             delete WebInspector.View._cssUnloadTimer;
 
             for (cssFile in WebInspector.View._cssFileToVisibleViewCount) {
-                if (WebInspector.View._cssFileToVisibleViewCount.hasOwnProperty(cssFile)
-                    && !WebInspector.View._cssFileToVisibleViewCount[cssFile])
+                if (WebInspector.View._cssFileToVisibleViewCount.hasOwnProperty(cssFile) && !WebInspector.View._cssFileToVisibleViewCount[cssFile])
                     WebInspector.View._cssFileToStyleElement[cssFile].disabled = true;
             }
         }
 
-        if (scheduleUnload) {
-            if (WebInspector.View._cssUnloadTimer)
-                clearTimeout(WebInspector.View._cssUnloadTimer);
-
-            WebInspector.View._cssUnloadTimer = setTimeout(doUnloadCSS, WebInspector.View._cssUnloadTimeout)
-        }
+        if (scheduleUnload && !WebInspector.View._cssUnloadTimer)
+            WebInspector.View._cssUnloadTimer = setTimeout(doUnloadCSS, WebInspector.View._cssUnloadTimeout);
     },
 
     printViewHierarchy: function()
