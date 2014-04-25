@@ -271,6 +271,8 @@ CodeMirror.commands.dismissMultipleSelections = function(codemirror)
     var selections = codemirror.listSelections();
     var selection = selections[0];
     if (selections.length === 1) {
+        if (codemirror._codeMirrorTextEditor._isSearchActive())
+            return CodeMirror.Pass;
         if (WebInspector.CodeMirrorUtils.toRange(selection.anchor, selection.head).isEmpty())
             return CodeMirror.Pass;
         codemirror.setSelection(selection.anchor, selection.anchor, {scroll: false});
@@ -369,6 +371,14 @@ WebInspector.CodeMirrorTextEditor.prototype = {
     indent: function()
     {
         return this._indentationLevel;
+    },
+
+    /**
+     * @return {boolean}
+     */
+    _isSearchActive: function()
+    {
+        return !!this._tokenHighlighter.highlightedRegex();
     },
 
     /**
@@ -989,7 +999,7 @@ WebInspector.CodeMirrorTextEditor.prototype = {
         var start = this._codeMirror.getCursor("anchor");
         var end = this._codeMirror.getCursor("head");
         this._delegate.selectionChanged(WebInspector.CodeMirrorUtils.toRange(start, end));
-        if (!this._tokenHighlighter.highlightedRegex())
+        if (!this._isSearchActive())
             this._codeMirror.operation(this._tokenHighlighter.highlightSelectedTokens.bind(this._tokenHighlighter));
     },
 
