@@ -154,7 +154,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         var records = this._model.records();
         for (var i = 0; i < records.length; ++i) {
             var record = records[i];
-            var thread = record.thread;
+            var thread = record.thread();
             if (thread === "gpu")
                 continue;
             if (!thread) {
@@ -193,7 +193,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 else if (record === this._gpuThreadRecord)
                     level = cpuStackDepth + 2;
                 else if (record.thread)
-                    level += threadBaselines[record.thread];
+                    level += threadBaselines[record.thread()];
                 this._timelineData.entryLevels[i] = level;
             }
         }
@@ -259,7 +259,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         this._timelineData.entryOffsets[index] = startTime - this._zeroTime;
         this._timelineData.entryLevels[index] = level;
         this._timelineData.entryTotalTimes[index] = endTime - startTime;
-        this._entryThreadDepths[record.thread] = Math.max(level, this._entryThreadDepths[record.thread] || 0);
+        this._entryThreadDepths[record.thread()] = Math.max(level, this._entryThreadDepths[record.thread()] || 0);
         return index;
     },
 
@@ -291,7 +291,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (record === this._cpuThreadRecord || record === this._gpuThreadRecord)
             return "#555";
 
-        if (record.type === WebInspector.TimelineModel.RecordType.JSFrame)
+        if (record.type() === WebInspector.TimelineModel.RecordType.JSFrame)
             return WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator().colorForID(record.data["functionName"]);
 
         var category = WebInspector.TimelineUIUtils.categoryForRecord(record);

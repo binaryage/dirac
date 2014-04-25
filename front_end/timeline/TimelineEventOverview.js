@@ -87,7 +87,7 @@ WebInspector.TimelineEventOverview.prototype = {
          */
         function appendRecord(record)
         {
-            if (record.type === WebInspector.TimelineModel.RecordType.BeginFrame)
+            if (record.type() === WebInspector.TimelineModel.RecordType.BeginFrame)
                 return;
             var recordStart = Math.floor((record.startTime() - timeOffset) * scale);
             var recordEnd = Math.ceil((record.endTime() - timeOffset) * scale);
