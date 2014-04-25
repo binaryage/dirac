@@ -34,6 +34,13 @@
         # stored as is. Otherwise, a concatenated file is stored.
         'debug_devtools%': 0,
         'devtools_core_js_files': [
+            '<@(devtools_core_base_js_files)',
+            '<@(devtools_common_js_files)',
+            '<@(devtools_sdk_js_files)',
+            '<@(devtools_ui_js_files)',
+            '<@(devtools_components_js_files)',
+        ],
+        'devtools_core_base_js_files': [
             'front_end/inspector.html',
             'front_end/Tests.js',
             'front_end/EditFileSystemDialog.js',
@@ -56,10 +63,6 @@
             'front_end/tabbedPane.css',
             'front_end/inspectorSyntaxHighlight.css',
             'front_end/popover.css',
-            '<@(devtools_common_js_files)',
-            '<@(devtools_sdk_js_files)',
-            '<@(devtools_ui_js_files)',
-            '<@(devtools_components_js_files)',
             '<@(devtools_standalone_files)',
         ],
         'devtools_common_js_files': [

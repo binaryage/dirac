@@ -40,331 +40,32 @@
                 'devtools_html',
                 'supported_css_properties',
                 'frontend_protocol_sources',
+                'build_audits_module',
+                'build_codemirror_module',
+                'build_core_module',
+                'build_console_module',
+                'build_devices_module',
+                'build_elements_module',
+                'build_extensions_module',
+                'build_layers_module',
+                'build_network_module',
+                'build_profiler_module',
+                'build_resources_module',
+                'build_search_module',
+                'build_sources_module',
+                'build_timeline_module',
+                'build_heap_snapshot_worker_module',
+                'build_script_formatter_worker_module',
+                'build_temp_storage_shared_worker_module',
             ],
             'conditions': [
                 ['debug_devtools==0', {
-                    'dependencies': ['concatenated_devtools_js',
-                                     'concatenated_devtools_console_js',
-                                     'concatenated_devtools_search_js',
-                                     'concatenated_devtools_devices_js',
-                                     'concatenated_devtools_elements_js',
-                                     'concatenated_devtools_resources_js',
-                                     'concatenated_devtools_network_js',
-                                     'concatenated_devtools_extensions_js',
-                                     'concatenated_devtools_sources_js',
-                                     'concatenated_devtools_timeline_js',
-                                     'concatenated_devtools_profiler_js',
-                                     'concatenated_devtools_audits_js',
-                                     'concatenated_devtools_codemirror_js',
-                                     'concatenated_devtools_layers_js',
-                                     'concatenated_heap_snapshot_worker_js',
-                                     'concatenated_script_formatter_worker_js',
-                                     'concatenated_temp_storage_shared_worker_js',
-                                     'concatenated_devtools_css'],
+                    'dependencies': [
+                        'concatenated_devtools_css',
+                    ],
                 }],
             ],
             'copies': [
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_core_js_files)',
-                                '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
-                                '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/audits',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_audits_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/codemirror',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_codemirror_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/console',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_console_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/devices',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_devices_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/elements',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_elements_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/extensions',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_extensions_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/profiler/heap_snapshot_worker',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_heap_snapshot_worker_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/layers',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_layers_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/network',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_network_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/profiler',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_profiler_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/resources',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_resources_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/script_formatter_worker',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_script_formatter_worker_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/search',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_search_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/sources',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_sources_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_temp_storage_shared_worker_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/timeline',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_timeline_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/common',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_common_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/sdk',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_sdk_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/ui',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_ui_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/components',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_components_js_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/UglifyJS',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_uglify_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
-                {
-                    'destination': '<(PRODUCT_DIR)/resources/inspector/cm',
-                    'conditions': [
-                        ['debug_devtools==1', {
-                            'files': [
-                                '<@(devtools_cm_files)',
-                            ],
-                        },
-                        {
-                            'files': [],
-                        }],
-                    ],
-                },
                 {
                     'destination': '<(PRODUCT_DIR)/resources/inspector/Images',
                     'files': [
@@ -408,28 +109,11 @@
             'type': 'none',
             'dependencies': [
                 'devtools_html',
-                'devtools_extension_api'
+                'devtools_extension_api',
+                'devtools_frontend_resources',
             ],
             'conditions': [
                 ['debug_devtools==0', {
-                    'dependencies': ['concatenated_devtools_js',
-                                     'concatenated_devtools_console_js',
-                                     'concatenated_devtools_search_js',
-                                     'concatenated_devtools_devices_js',
-                                     'concatenated_devtools_elements_js',
-                                     'concatenated_devtools_resources_js',
-                                     'concatenated_devtools_network_js',
-                                     'concatenated_devtools_extensions_js',
-                                     'concatenated_devtools_sources_js',
-                                     'concatenated_devtools_timeline_js',
-                                     'concatenated_devtools_profiler_js',
-                                     'concatenated_devtools_audits_js',
-                                     'concatenated_devtools_codemirror_js',
-                                     'concatenated_devtools_layers_js',
-                                     'concatenated_heap_snapshot_worker_js',
-                                     'concatenated_script_formatter_worker_js',
-                                     'concatenated_temp_storage_shared_worker_js',
-                                     'concatenated_devtools_css'],
                     'actions': [{
                         'action_name': 'generate_devtools_grd',
                         'script_name': 'scripts/generate_devtools_grd.py',
@@ -556,20 +240,19 @@
             },
           ]
         },
-    ], # targets
-    'conditions': [
-        ['debug_devtools==0', {
-            'targets': [
-                {
-                    'target_name': 'concatenated_devtools_js',
-                    'type': 'none',
+        # Frontend modules.
+        {
+            'target_name': 'build_core_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'dependencies': [
                         'devtools_html',
                         'supported_css_properties',
                         'frontend_protocol_sources'
                     ],
                     'actions': [{
-                        'action_name': 'concatenate_devtools_js',
+                        'action_name': 'build_core_module',
                         'script_name': 'scripts/concatenate_js_files.py',
                         'input_page': 'front_end/inspector.html',
                         'inputs': [
@@ -585,13 +268,53 @@
                         ],
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/Main.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_search_path)', '<@(_outputs)'],
-                    }],
+                    }]
                 },
-                {
-                    'target_name': 'concatenated_devtools_console_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector',
+                            'files': [
+                                '<@(devtools_core_base_js_files)',
+                                '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
+                                '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js',
+                            ],
+                        },
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/common',
+                            'files': [
+                                '<@(devtools_common_js_files)',
+                            ],
+                        },
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/components',
+                            'files': [
+                                '<@(devtools_components_js_files)',
+                            ],
+                        },
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/sdk',
+                            'files': [
+                                '<@(devtools_sdk_js_files)',
+                            ],
+                        },
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/ui',
+                            'files': [
+                                '<@(devtools_ui_js_files)',
+                            ],
+                        },
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_console_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_devtools_console_js',
+                        'action_name': 'build_console_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/console/ConsolePanel.js',
                         'inputs': [
@@ -602,11 +325,25 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_devtools_search_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/console',
+                            'files': [
+                                '<@(devtools_console_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_search_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_devtools_search_js',
+                        'action_name': 'build_search_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/search/AdvancedSearchView.js',
                         'inputs': [
@@ -617,11 +354,25 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_devtools_devices_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/search',
+                            'files': [
+                                '<@(devtools_search_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_devices_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_devtools_devices_js',
+                        'action_name': 'build_devices_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/devices/DevicesView.js',
                         'inputs': [
@@ -632,11 +383,25 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_devtools_elements_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/devices',
+                            'files': [
+                                '<@(devtools_devices_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_elements_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_devtools_elements_js',
+                        'action_name': 'build_elements_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/elements/ElementsPanel.js',
                         'inputs': [
@@ -647,11 +412,25 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_devtools_resources_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/elements',
+                            'files': [
+                                '<@(devtools_elements_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_resources_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_devtools_resources_js',
+                        'action_name': 'build_resources_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/resources/ResourcesPanel.js',
                         'inputs': [
@@ -662,11 +441,25 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_devtools_network_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/resources',
+                            'files': [
+                                '<@(devtools_resources_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_network_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_devtools_network_js',
+                        'action_name': 'build_network_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/network/NetworkPanel.js',
                         'inputs': [
@@ -677,11 +470,25 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_devtools_extensions_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/network',
+                            'files': [
+                                '<@(devtools_network_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_extensions_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_devtools_extensions_js',
+                        'action_name': 'build_extensions_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/extensions/ExtensionServer.js',
                         'inputs': [
@@ -692,11 +499,25 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_devtools_sources_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/extensions',
+                            'files': [
+                                '<@(devtools_extensions_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_sources_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_devtools_sources_js',
+                        'action_name': 'build_sources_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/sources/SourcesPanel.js',
                         'inputs': [
@@ -707,11 +528,25 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_devtools_timeline_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/sources',
+                            'files': [
+                                '<@(devtools_sources_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_timeline_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_devtools_timeline_js',
+                        'action_name': 'build_timeline_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/timeline/TimelinePanel.js',
                         'inputs': [
@@ -722,11 +557,25 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_devtools_profiler_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/timeline',
+                            'files': [
+                                '<@(devtools_timeline_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_profiler_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_devtools_profiler_js',
+                        'action_name': 'build_profiler_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/profiler/ProfilesPanel.js',
                         'inputs': [
@@ -737,11 +586,25 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_devtools_audits_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/profiler',
+                            'files': [
+                                '<@(devtools_profiler_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_audits_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_devtools_audits_js',
+                        'action_name': 'build_audits_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/audits/AuditsPanel.js',
                         'inputs': [
@@ -752,11 +615,25 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_devtools_codemirror_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/audits',
+                            'files': [
+                                '<@(devtools_audits_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_codemirror_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_devtools_codemirror_js',
+                        'action_name': 'build_codemirror_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/codemirror/CodeMirrorTextEditor.js',
                         'inputs': [
@@ -768,11 +645,31 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_heap_snapshot_worker_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/codemirror',
+                            'files': [
+                                '<@(devtools_codemirror_js_files)',
+                            ],
+                        },
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/cm',
+                            'files': [
+                                '<@(devtools_cm_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_heap_snapshot_worker_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_heap_snapshot_worker_js',
+                        'action_name': 'build_heap_snapshot_worker_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/profiler/heap_snapshot_worker/HeapSnapshotWorker.js',
                         'inputs': [
@@ -784,11 +681,25 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_script_formatter_worker_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/profiler/heap_snapshot_worker',
+                            'files': [
+                                '<@(devtools_heap_snapshot_worker_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_script_formatter_worker_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_script_formatter_worker_js',
+                        'action_name': 'build_script_formatter_worker_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/script_formatter_worker/ScriptFormatterWorker.js',
                         'inputs': [
@@ -800,11 +711,31 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_temp_storage_shared_worker_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/script_formatter_worker',
+                            'files': [
+                                '<@(devtools_script_formatter_worker_js_files)',
+                            ],
+                        },
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/UglifyJS',
+                            'files': [
+                                '<@(devtools_uglify_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_temp_storage_shared_worker_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_temp_storage_shared_worker_js',
+                        'action_name': 'build_temp_storage_shared_worker_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/temp_storage_shared_worker/TempStorageSharedWorker.js',
                         'inputs': [
@@ -815,11 +746,25 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
-                {
-                    'target_name': 'concatenated_devtools_layers_js',
-                    'type': 'none',
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker',
+                            'files': [
+                                '<@(devtools_temp_storage_shared_worker_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_layers_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
                     'actions': [{
-                        'action_name': 'concatenate_devtools_layers_js',
+                        'action_name': 'build_layers_module',
                         'script_name': 'scripts/inline_js_imports.py',
                         'input_file': 'front_end/layers/LayersPanel.js',
                         'inputs': [
@@ -830,6 +775,22 @@
                         'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
                     }],
                 },
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/layers',
+                            'files': [
+                                '<@(devtools_layers_js_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+    ], # targets
+    'conditions': [
+        ['debug_devtools==0', {
+            'targets': [
                 {
                     'target_name': 'concatenated_devtools_css',
                     'type': 'none',
