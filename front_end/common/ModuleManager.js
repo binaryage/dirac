@@ -278,6 +278,11 @@ WebInspector.ModuleManager.ModuleDescriptor = function()
     this.extensions;
 
     /**
+     * @type {!Array.<!string>|undefined}
+     */
+    this.dependencies;
+
+    /**
      * @type {!Array.<string>}
      */
     this.scripts;
@@ -343,6 +348,9 @@ WebInspector.ModuleManager.Module.prototype = {
         }
 
         this._isLoading = true;
+        var dependencies = this._descriptor.dependencies;
+        for (var i = 0; dependencies && i < dependencies.length; ++i)
+            this._manager.loadModule(dependencies[i]);
         var scripts = this._descriptor.scripts;
         for (var i = 0; scripts && i < scripts.length; ++i)
             loadScript(scripts[i]);

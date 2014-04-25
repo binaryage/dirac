@@ -279,34 +279,8 @@ var allDescriptors = [
                 className: "WebInspector.NetworkPanel.RequestRevealer"
             }
         ],
+        dependencies: [ "source_frame" ],
         scripts: [ "network/NetworkPanel.js" ]
-    },
-    {
-        name: "codemirror",
-        extensions: [
-            {
-                type: "@WebInspector.InplaceEditor",
-                className: "WebInspector.CodeMirrorUtils"
-            },
-            {
-              type: "@WebInspector.TokenizerFactory",
-              className: "WebInspector.CodeMirrorUtils.TokenizerFactory"
-            },
-            {
-                type: "ui-setting",
-                section: "Sources",
-                title: "Default indentation",
-                settingName: "textEditorIndent",
-                settingType: "select",
-                options: [
-                    ["2 spaces", "  "],
-                    ["4 spaces", "    "],
-                    ["8 spaces", "        "],
-                    ["Tab character", "\t"]
-                ]
-            }
-        ],
-        scripts: [ "codemirror/CodeMirrorTextEditor.js" ]
     },
     {
         name: "sources",
@@ -458,6 +432,7 @@ var allDescriptors = [
                 className: "WebInspector.SourcesPanel.SkipStackFramePatternSettingDelegate"
             }
         ],
+        dependencies: [ "source_frame" ],
         scripts: [ "sources/SourcesPanel.js" ]
     },
     {
@@ -521,7 +496,35 @@ var allDescriptors = [
                 className: "WebInspector.ResourcesPanel.ResourceRevealer"
             }
         ],
+        dependencies: [ "source_frame" ],
         scripts: [ "resources/ResourcesPanel.js" ]
+    },
+    {
+        name: "source_frame",
+        extensions: [
+            {
+                type: "@WebInspector.InplaceEditor",
+                className: "WebInspector.CodeMirrorUtils"
+            },
+            {
+              type: "@WebInspector.TokenizerFactory",
+              className: "WebInspector.CodeMirrorUtils.TokenizerFactory"
+            },
+            {
+                type: "ui-setting",
+                section: "Sources",
+                title: "Default indentation",
+                settingName: "textEditorIndent",
+                settingType: "select",
+                options: [
+                    ["2 spaces", "  "],
+                    ["4 spaces", "    "],
+                    ["8 spaces", "        "],
+                    ["Tab character", "\t"]
+                ]
+            }
+        ],
+        scripts: [ "source_frame/SourceFrame.js" ]
     },
     {
         name: "audits",
@@ -657,6 +660,7 @@ var allDescriptors = [
                 className: "WebInspector.ExtensionServer"
             }
         ],
+        dependencies: [ "sources" ],
         scripts: [ "extensions/ExtensionServer.js" ]
     },
     {

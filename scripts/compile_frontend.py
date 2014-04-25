@@ -81,7 +81,7 @@ allowed_import_statements_files = [
     "audits/AuditsPanel.js",
     "layers/LayersPanel.js",
     "extensions/ExtensionServer.js",
-    "codemirror/CodeMirrorTextEditor.js",
+    "source_frame/SourceFrame.js",
 ]
 
 type_checked_jsdoc_tags_list = ["param", "return", "type", "enum"]

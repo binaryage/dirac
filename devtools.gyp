@@ -41,7 +41,6 @@
                 'supported_css_properties',
                 'frontend_protocol_sources',
                 'build_audits_module',
-                'build_codemirror_module',
                 'build_core_module',
                 'build_console_module',
                 'build_devices_module',
@@ -52,6 +51,7 @@
                 'build_profiler_module',
                 'build_resources_module',
                 'build_search_module',
+                'build_source_frame_module',
                 'build_sources_module',
                 'build_timeline_module',
                 'build_heap_snapshot_worker_module',
@@ -127,12 +127,12 @@
                             '<(PRODUCT_DIR)/resources/inspector/extensions/ExtensionServer.js',
                             '<(PRODUCT_DIR)/resources/inspector/resources/ResourcesPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/network/NetworkPanel.js',
+                            '<(PRODUCT_DIR)/resources/inspector/source_frame/SourceFrame.js',
                             '<(PRODUCT_DIR)/resources/inspector/sources/SourcesPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/timeline/TimelinePanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/profiler/ProfilesPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/audits/AuditsPanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/layers/LayersPanel.js',
-                            '<(PRODUCT_DIR)/resources/inspector/codemirror/CodeMirrorTextEditor.js',
                             '<(PRODUCT_DIR)/resources/inspector/profiler/heap_snapshot_worker/HeapSnapshotWorker.js',
                             '<(PRODUCT_DIR)/resources/inspector/script_formatter_worker/ScriptFormatterWorker.js',
                             '<(PRODUCT_DIR)/resources/inspector/temp_storage_shared_worker/TempStorageSharedWorker.js',
@@ -512,6 +512,42 @@
             ]
         },
         {
+            'target_name': 'build_source_frame_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
+                    'actions': [{
+                        'action_name': 'build_source_frame_module',
+                        'script_name': 'scripts/inline_js_imports.py',
+                        'input_file': 'front_end/source_frame/SourceFrame.js',
+                        'inputs': [
+                            '<@(_script_name)',
+                            '<@(devtools_source_frame_js_files)',
+                            '<@(devtools_cm_files)',
+                        ],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/source_frame/SourceFrame.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
+                    }],
+                },
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/source_frame',
+                            'files': [
+                                '<@(devtools_source_frame_js_files)',
+                            ],
+                        },
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/cm',
+                            'files': [
+                                '<@(devtools_cm_files)',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
             'target_name': 'build_sources_module',
             'type': 'none',
             'conditions': [
@@ -621,42 +657,6 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/audits',
                             'files': [
                                 '<@(devtools_audits_js_files)',
-                            ],
-                        }
-                    ]
-                }]
-            ]
-        },
-        {
-            'target_name': 'build_codemirror_module',
-            'type': 'none',
-            'conditions': [
-                ['debug_devtools==0', { # Release
-                    'actions': [{
-                        'action_name': 'build_codemirror_module',
-                        'script_name': 'scripts/inline_js_imports.py',
-                        'input_file': 'front_end/codemirror/CodeMirrorTextEditor.js',
-                        'inputs': [
-                            '<@(_script_name)',
-                            '<@(devtools_codemirror_js_files)',
-                            '<@(devtools_cm_files)',
-                        ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/codemirror/CodeMirrorTextEditor.js'],
-                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)'],
-                    }],
-                },
-                { # Debug
-                    'copies': [
-                        {
-                            'destination': '<(PRODUCT_DIR)/resources/inspector/codemirror',
-                            'files': [
-                                '<@(devtools_codemirror_js_files)',
-                            ],
-                        },
-                        {
-                            'destination': '<(PRODUCT_DIR)/resources/inspector/cm',
-                            'files': [
-                                '<@(devtools_cm_files)',
                             ],
                         }
                     ]

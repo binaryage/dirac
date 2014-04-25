@@ -148,14 +148,6 @@
         ]
     },
     {
-        "name": "codemirror",
-        "dependencies": ["common", "ui"],
-        "sources": [
-            "codemirror/CodeMirrorTextEditor.js",
-            "codemirror/CodeMirrorUtils.js"
-        ]
-    },
-    {
         "name": "components",
         "dependencies": ["sdk", "ui"],
         "sources": [
@@ -172,7 +164,8 @@
             "components/InspectElementModeController.js",
             "components/ObjectPopoverHelper.js",
             "components/ObjectPropertiesSection.js",
-            "components/PieChart.js"
+            "components/PieChart.js",
+            "components/WorkerFrontendManager.js"
         ]
     },
     {
@@ -184,19 +177,15 @@
     },
     {
         "name": "source_frame",
-        "dependencies": ["components", "codemirror"],
+        "dependencies": ["components"],
         "sources": [
-            "GoToLineDialog.js",
-            "SourceFrame.js"
-        ]
-    },
-    {
-        "name": "resource_views",
-        "dependencies": ["source_frame"],
-        "sources": [
-            "FontView.js",
-            "ImageView.js",
-            "ResourceView.js"
+            "source_frame/CodeMirrorTextEditor.js",
+            "source_frame/CodeMirrorUtils.js",
+            "source_frame/FontView.js",
+            "source_frame/GoToLineDialog.js",
+            "source_frame/ImageView.js",
+            "source_frame/ResourceView.js",
+            "source_frame/SourceFrame.js"
         ]
     },
     {
@@ -217,7 +206,7 @@
     },
     {
         "name": "network",
-        "dependencies": ["components", "resource_views"],
+        "dependencies": ["components", "source_frame"],
         "sources": [
             "network/NetworkItemView.js",
             "network/RequestCookiesView.js",
@@ -234,7 +223,7 @@
     },
     {
         "name": "resources",
-        "dependencies": ["components", "resource_views"],
+        "dependencies": ["components", "source_frame"],
         "sources": [
             "resources/ApplicationCacheItemsView.js",
             "resources/CookieItemsView.js",
@@ -246,13 +235,6 @@
             "resources/FileSystemView.js",
             "resources/IndexedDBViews.js",
             "resources/ResourcesPanel.js"
-        ]
-    },
-    {
-        "name": "workers",
-        "dependencies": ["components"],
-        "sources": [
-            "WorkerFrontendManager.js"
         ]
     },
     {
@@ -282,7 +264,7 @@
     },
     {
         "name": "sources",
-        "dependencies": ["components", "source_frame", "workers", "console"],
+        "dependencies": ["components", "source_frame"],
         "sources": [
             "sources/BreakpointsSidebarPane.js",
             "sources/CSSSourceFrame.js",
@@ -470,8 +452,7 @@
             "screencast",
             "settings",
             "sources",
-            "sdk",
-            "workers"
+            "sdk"
         ],
         "sources": [
             "Main.js"
@@ -484,14 +465,11 @@
             "common",
             "sdk",
             "ui",
-            "codemirror",
             "components",
             "source_frame",
-            "resource_views",
             "elements",
             "network",
             "resources",
-            "workers",
             "sources",
             "console",
             "timeline",
