@@ -51,23 +51,20 @@ WebInspector.SuggestBoxDelegate.prototype = {
 /**
  * @constructor
  * @param {!WebInspector.SuggestBoxDelegate} suggestBoxDelegate
- * @param {!Element} anchorElement
  * @param {number=} maxItemsHeight
  */
-WebInspector.SuggestBox = function(suggestBoxDelegate, anchorElement, maxItemsHeight)
+WebInspector.SuggestBox = function(suggestBoxDelegate, maxItemsHeight)
 {
     this._suggestBoxDelegate = suggestBoxDelegate;
-    this._anchorElement = anchorElement;
     this._length = 0;
     this._selectedIndex = -1;
     this._selectedElement = null;
     this._maxItemsHeight = maxItemsHeight;
-    this._bodyElement = anchorElement.ownerDocument.body;
+    this._bodyElement = document.body;
     this._maybeHideBound = this._maybeHide.bind(this);
-    this._element = anchorElement.ownerDocument.createElement("div");
+    this._element = document.createElement("div");
     this._element.className = "suggest-box";
     this._element.addEventListener("mousedown", this._onBoxMouseDown.bind(this), true);
-    this.contentElement = this._element.createChild("div", "content");
 }
 
 WebInspector.SuggestBox.prototype = {
@@ -88,67 +85,40 @@ WebInspector.SuggestBox.prototype = {
     },
 
     /**
-     * @param {?AnchorBox=} anchorBox
+     * @param {!AnchorBox} anchorBox
      */
     _updateBoxPosition: function(anchorBox)
     {
         console.assert(this._overlay);
-
-        this._anchorBox = anchorBox;
-        anchorBox = anchorBox || this._anchorElement.boxInWindow(window);
+        if (this._lastAnchorBox && this._lastAnchorBox.equals(anchorBox))
+            return;
+        this._lastAnchorBox = anchorBox;
 
         // Position relative to main DevTools element.
         var container = WebInspector.Dialog.modalHostView().element;
         anchorBox = anchorBox.relativeToElement(container);
         var totalWidth = container.offsetWidth;
         var totalHeight = container.offsetHeight;
-
-        // Measure the content element box.
-        this.contentElement.style.display = "inline-block";
-        var measureContainer = this._overlay.element;
-        measureContainer.appendChild(this.contentElement);
-        this.contentElement.positionAt(0, 0);
-        var contentWidth = this.contentElement.offsetWidth;
-        var contentHeight = this.contentElement.offsetHeight;
-        this.contentElement.style.display = "block";
-        this._element.appendChild(this.contentElement);
-
-        const spacer = 6;
-        const suggestBoxPaddingX = 21;
-        const suggestBoxPaddingY = 2;
-
-        var maxWidth = totalWidth - anchorBox.x - spacer;
-        var width = Math.min(contentWidth, maxWidth - suggestBoxPaddingX) + suggestBoxPaddingX;
-        var paddedWidth = contentWidth + suggestBoxPaddingX;
-        var boxX = anchorBox.x;
-        if (width < paddedWidth) {
-            // Shift the suggest box to the left to accommodate the content without trimming to the container edge.
-            maxWidth = totalWidth - spacer;
-            width = Math.min(contentWidth, maxWidth - suggestBoxPaddingX) + suggestBoxPaddingX;
-            boxX = totalWidth - width;
-        }
-
-        var boxY;
         var aboveHeight = anchorBox.y;
         var underHeight = totalHeight - anchorBox.y - anchorBox.height;
 
-        var maxHeight = this._maxItemsHeight ? contentHeight * this._maxItemsHeight / this._length : Math.max(underHeight, aboveHeight) - spacer;
-        var height = Math.min(contentHeight, maxHeight - suggestBoxPaddingY) + suggestBoxPaddingY;
-        if (underHeight >= aboveHeight) {
-            // Locate the suggest box under the anchorBox.
-            boxY = anchorBox.y + anchorBox.height;
-            this._element.classList.remove("above-anchor");
-            this._element.classList.add("under-anchor");
-        } else {
-            // Locate the suggest box above the anchorBox.
-            boxY = anchorBox.y - height;
-            this._element.classList.remove("under-anchor");
-            this._element.classList.add("above-anchor");
-        }
+        var rowHeight = 17;
+        const spacer = 6;
 
-        this._element.positionAt(boxX, boxY);
-        this._element.style.width = width + "px";
-        this._element.style.height = height + "px";
+        var maxHeight = this._maxItemsHeight ? this._maxItemsHeight * rowHeight : Math.max(underHeight, aboveHeight) - spacer;
+        var under = underHeight >= aboveHeight;
+        this._leftSpacerElement.style.flexBasis = anchorBox.x + "px";
+
+        this._overlay.element.classList.toggle("under-anchor", under);
+
+        if (under) {
+            this._bottomSpacerElement.style.flexBasis = "auto";
+            this._topSpacerElement.style.flexBasis = (anchorBox.y + anchorBox.height) + "px";
+        } else {
+            this._bottomSpacerElement.style.flexBasis = (totalHeight - anchorBox.y) + "px";
+            this._topSpacerElement.style.flexBasis = "auto";
+        }
+        this._element.style.maxHeight = maxHeight + "px";
     },
 
     /**
@@ -174,8 +144,13 @@ WebInspector.SuggestBox.prototype = {
         if (this.visible())
             return;
         this._overlay = new WebInspector.SuggestBox.Overlay();
-        this._overlay.element.appendChild(this._element);
         this._bodyElement.addEventListener("mousedown", this._maybeHideBound, true);
+
+        this._leftSpacerElement = this._overlay.element.createChild("div", "suggest-box-left-spacer");
+        this._horizontalElement = this._overlay.element.createChild("div", "suggest-box-horizontal");
+        this._topSpacerElement = this._horizontalElement.createChild("div", "suggest-box-top-spacer");
+        this._horizontalElement.appendChild(this._element);
+        this._bottomSpacerElement = this._horizontalElement.createChild("div", "suggest-box-bottom-spacer");
     },
 
     hide: function()
@@ -189,6 +164,7 @@ WebInspector.SuggestBox.prototype = {
         delete this._overlay;
         delete this._selectedElement;
         this._selectedIndex = -1;
+        delete this._lastAnchorBox;
     },
 
     removeFromElement: function()
@@ -280,6 +256,7 @@ WebInspector.SuggestBox.prototype = {
             var suffixElement = element.createChild("span", "suffix");
             suffixElement.textContent = text;
         }
+        element.createChild("span", "spacer");
         element.addEventListener("mousedown", this._onItemMouseDown.bind(this), false);
         return element;
     },
@@ -291,13 +268,13 @@ WebInspector.SuggestBox.prototype = {
     _updateItems: function(items, userEnteredText)
     {
         this._length = items.length;
-        this.contentElement.removeChildren();
+        this._element.removeChildren();
         delete this._selectedElement;
 
         for (var i = 0; i < items.length; ++i) {
             var item = items[i];
             var currentItemElement = this._createItemElement(userEnteredText, item);
-            this.contentElement.appendChild(currentItemElement);
+            this._element.appendChild(currentItemElement);
         }
     },
 
@@ -314,7 +291,7 @@ WebInspector.SuggestBox.prototype = {
         if (index < 0)
             return;
 
-        this._selectedElement = this.contentElement.children[index];
+        this._selectedElement = this._element.children[index];
         this._selectedElement.classList.add("selected");
 
         if (scrollIntoView)
@@ -342,14 +319,14 @@ WebInspector.SuggestBox.prototype = {
     {
         if (this._rowCountPerViewport)
             return;
-        if (!this.contentElement.firstChild)
+        if (!this._element.firstChild)
             return;
 
-        this._rowCountPerViewport = Math.floor(this._element.offsetHeight / this.contentElement.firstChild.offsetHeight);
+        this._rowCountPerViewport = Math.floor(this._element.offsetHeight / this._element.firstChild.offsetHeight);
     },
 
     /**
-     * @param {?AnchorBox} anchorBox
+     * @param {!AnchorBox} anchorBox
      * @param {!Array.<string>} completions
      * @param {number} selectedIndex
      * @param {boolean} canShowForSingleItem

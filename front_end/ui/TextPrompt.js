@@ -125,7 +125,7 @@ WebInspector.TextPrompt.prototype = {
         this._element.addEventListener("blur", this._boundRemoveSuggestionAids, false);
 
         if (this._suggestBoxEnabled)
-            this._suggestBox = new WebInspector.SuggestBox(this, this._element);
+            this._suggestBox = new WebInspector.SuggestBox(this);
 
         return this.proxyElement;
     },

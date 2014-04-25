@@ -34,45 +34,71 @@
     z-index: 1000;
     pointer-events: none;
     overflow: hidden;
+    display: flex;
+    flex-direction: row;
 }
 
-.suggest-box {
-    position: absolute;
+.suggest-box-overlay .suggest-box-left-spacer {
+    flex: 0 1 auto;
+}
+
+.suggest-box-overlay .suggest-box-horizontal {
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    max-width: 300px;
+}
+
+.suggest-box-overlay .suggest-box-top-spacer {
+    flex: auto;
+}
+
+.suggest-box-overlay.under-anchor .suggest-box-top-spacer,
+.suggest-box-overlay:not(.under-anchor) .suggest-box-bottom-spacer {
+    flex: 0 0 auto;
+}
+
+.suggest-box-overlay .suggest-box {
     background-color: #FFFFFF;
-    display: block;
     border: 1px solid rgb(66%, 66%, 66%);
-    z-index: 600;
     pointer-events: auto;
     margin-left: -3px;
     overflow-x: hidden;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    flex: 0 0 auto;
+    border-radius: 5px 5px 5px 0;
 }
 
-.suggest-box.above-anchor {
-   border-radius: 5px 5px 5px 0;
+.suggest-box-overlay.under-anchor .suggest-box {
+    border-radius: 0 5px 5px 5px;
 }
 
-.suggest-box.under-anchor {
-   border-radius: 0 5px 5px 5px;
-}
-
-.suggest-box-content-item {
+.suggest-box-overlay .suggest-box .suggest-box-content-item {
     padding: 1px;
     margin: 0;
-    font-size: 11px;
     overflow: hidden;
     text-overflow: ellipsis;
     border: 1px solid transparent;
+    flex: 0 0 auto;
+    padding-right: 0px;
+    white-space: nowrap;
 }
 
-.suggest-box-content-item .prefix {
+.suggest-box-overlay .suggest-box .suggest-box-content-item .prefix {
     font-weight: bold;
 }
 
-.suggest-box-content-item.selected {
+.suggest-box-overlay .suggest-box .suggest-box-content-item .spacer {
+    display: inline-block;
+    width: 20px;
+}
+
+.suggest-box-overlay .suggest-box .suggest-box-content-item.selected {
     background-color: rgba(56, 121, 217, 0.1);
 }
 
-.suggest-box-content-item:hover:not(.selected) {
+.suggest-box-overlay .suggest-box .suggest-box-content-item:hover:not(.selected) {
     border: 1px solid rgb(204, 204, 204);
 }

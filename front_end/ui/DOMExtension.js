@@ -501,6 +501,15 @@ AnchorBox.prototype.relativeToElement = function(element)
 };
 
 /**
+ * @param {?AnchorBox} anchorBox
+ * @return {boolean}
+ */
+AnchorBox.prototype.equals = function(anchorBox)
+{
+    return !!anchorBox && this.x === anchorBox.x && this.y === anchorBox.y && this.width === anchorBox.width && this.height === anchorBox.height;
+};
+
+/**
  * @param {!Window} targetWindow
  * @return {!AnchorBox}
  */

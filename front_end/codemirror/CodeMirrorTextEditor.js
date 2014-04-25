@@ -1848,7 +1848,7 @@ WebInspector.CodeMirrorTextEditor.AutocompleteController.prototype = {
         wordsWithPrefix.sort(sortSuggestions);
 
         if (!this._suggestBox)
-            this._suggestBox = new WebInspector.SuggestBox(this, this._textEditor.element, 6);
+            this._suggestBox = new WebInspector.SuggestBox(this, 6);
         var oldPrefixRange = this._prefixRange;
         this._prefixRange = prefixRange;
         if (!oldPrefixRange || prefixRange.startLine !== oldPrefixRange.startLine || prefixRange.startColumn !== oldPrefixRange.startColumn)

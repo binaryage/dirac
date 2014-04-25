@@ -220,7 +220,7 @@ WebInspector.TextFilterUI = function(supportRegex)
     /** @type {?WebInspector.TextFilterUI.SuggestionBuilder} */
     this._suggestionBuilder = null;
 
-    this._suggestBox = new WebInspector.SuggestBox(this, this._filterElement);
+    this._suggestBox = new WebInspector.SuggestBox(this);
 
     if (this._supportRegex) {
         this._filterElement.classList.add("supports-regex");
@@ -341,7 +341,8 @@ WebInspector.TextFilterUI.prototype = {
                 delete this._suppressSuggestion;
             else
                 this._suggestionBuilder.applySuggestion(this._filterInputElement, suggestions[0], true);
-            this._suggestBox.updateSuggestions(null, suggestions, 0, true, "");
+            var anchorBox = this._filterInputElement.boxInWindow().relativeTo(new AnchorBox(-3, 0));
+            this._suggestBox.updateSuggestions(anchorBox, suggestions, 0, true, "");
         } else {
             this._suggestBox.hide();
         }
