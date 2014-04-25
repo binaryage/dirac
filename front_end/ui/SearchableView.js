@@ -360,17 +360,17 @@ WebInspector.SearchableView.prototype = {
         if (this._searchIsVisible)
             this.cancelSearch();
 
-        this._toggleSearchBar(true);
-
-        this._updateReplaceVisibility();
+        var queryCandidate;
         if (WebInspector.currentFocusElement() !== this._searchInputElement) {
             var selection = window.getSelection();
-            if (selection.rangeCount) {
-                var queryCandidate = selection.toString().replace(/\r?\n.*/, "");
-                if (queryCandidate)
-                    this._searchInputElement.value = queryCandidate;
-            }
+            if (selection.rangeCount)
+                queryCandidate = selection.toString().replace(/\r?\n.*/, "");
         }
+
+        this._toggleSearchBar(true);
+        this._updateReplaceVisibility();
+        if (queryCandidate)
+            this._searchInputElement.value = queryCandidate;
         this._performSearch(false, false);
         this._searchInputElement.focus();
         this._searchInputElement.select();
