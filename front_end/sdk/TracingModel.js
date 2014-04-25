@@ -65,18 +65,36 @@ WebInspector.TracingModel.MetadataEvent = {
     ThreadName: "thread_name"
 }
 
+WebInspector.TracingModel.DevToolsMetadataEventCategory = "disabled-by-default-devtools.timeline";
+
+WebInspector.TracingModel.DevToolsMetadataEvent = {
+    TracingStartedInPage: "TracingStartedInPage",
+    SetLayerTreeId: "SetLayerTreeId"
+};
+
 WebInspector.TracingModel.prototype = {
     /**
-     * @param {string} categoryPatterns
+     * @param {string} categoryFilter
      * @param {string} options
      * @param {function(?string)=} callback
      */
-    start: function(categoryPatterns, options, callback)
+    start: function(categoryFilter, options, callback)
     {
         this.reset();
         var bufferUsageReportingIntervalMs = 500;
-        TracingAgent.start(categoryPatterns, options, bufferUsageReportingIntervalMs, callback);
+        /**
+         * @param {?string} error
+         * @param {string} sessionId
+         * @this {WebInspector.TracingModel}
+         */
+        function callbackWrapper(error, sessionId)
+        {
+            this._sessionId = sessionId;
+            callback(error);
+        }
+        TracingAgent.start(categoryFilter, options, bufferUsageReportingIntervalMs, callbackWrapper.bind(this));
         this._active = true;
+        this._sessionId = null;
     },
 
     /**
@@ -90,6 +108,14 @@ WebInspector.TracingModel.prototype = {
         }
         this._pendingStopCallback = callback;
         TracingAgent.end();
+    },
+
+    /**
+     * @return {?string}
+     */
+    sessionId: function()
+    {
+        return this._sessionId;
     },
 
     /**
@@ -433,11 +459,17 @@ WebInspector.TracingDispatcher = function(tracingModel)
 }
 
 WebInspector.TracingDispatcher.prototype = {
+    /**
+     * @param {number} usage
+     */
     bufferUsage: function(usage)
     {
         this._tracingModel._bufferUsage(usage);
     },
 
+    /**
+     * @param {!Array.<!WebInspector.TracingModel.EventPayload>} data
+     */
     dataCollected: function(data)
     {
         this._tracingModel._eventsCollected(data);

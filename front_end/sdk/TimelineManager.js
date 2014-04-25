@@ -39,7 +39,7 @@ WebInspector.TimelineManager = function(target)
     this._dispatcher = new WebInspector.TimelineDispatcher(this);
     this._enablementCount = 0;
     this._jsProfilerStarted = false;
-    TimelineAgent.enable(WebInspector.experimentsSettings.timelineTracingMode.isEnabled() ? WebInspector.TimelineManager.defaultTracingCategories : "");
+    TimelineAgent.enable();
 }
 
 WebInspector.TimelineManager.EventTypes = {
@@ -48,8 +48,6 @@ WebInspector.TimelineManager.EventTypes = {
     TimelineEventRecorded: "TimelineEventRecorded",
     TimelineProgress: "TimelineProgress"
 }
-
-WebInspector.TimelineManager.defaultTracingCategories = "*,disabled-by-default-cc.debug,disabled-by-default-devtools.timeline";
 
 WebInspector.TimelineManager.prototype = {
     /**

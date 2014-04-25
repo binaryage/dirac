@@ -2773,10 +2773,7 @@
         "commands": [
             {
                 "name": "enable",
-                "description": "Enables timeline. After this call, timeline can be started from within the page (for example upon console.timeline).",
-                "parameters": [
-                    { "name": "traceEventCategoryFilter", "optional": true, "type": "string", "description": "If set, the timeline agent will automatically start tracing with the specified category filter when timeline is started." }
-                ]
+                "description": "Enables timeline. After this call, timeline can be started from within the page (for example upon console.timeline)."
             },
             {
                 "name": "disable",
@@ -4032,13 +4029,15 @@
             {
                 "name": "start",
                 "description": "Start trace events collection.",
-                "async": true,
                 "parameters": [
                     { "name": "categories", "type": "string", "description": "Category/tag filter" },
                     { "name": "options", "type": "string", "description": "Tracing options" },
                     { "name": "bufferUsageReportingInterval", "type": "number", "optional": true, "description": "If set, the agent will issue bufferUsage events at this interval, specified in milliseconds" }
                 ],
-                "handlers": ["browser", "frontend"]
+                "returns": [
+                    { "name": "sessionId", "type": "string", "description": "A system-unique identifier of the tracing session that allows associating of some of the trace events with the inspected page" }
+                ],
+                "handlers": ["browser", "renderer", "frontend"]
             },
             {
                 "name": "end",
@@ -4052,10 +4051,12 @@
                 "parameters": [
                     { "name": "value", "type": "array", "items": { "type": "object" } }
                 ],
+                "description": "Contains an bucket of collected trace events.",
                 "handlers": ["browser", "frontend"]
             },
             {
                 "name": "tracingComplete",
+                "description": "Signals that tracing is stopped and there is no trace buffers pending flush, all data were delivered via dataCollected events.",
                 "handlers": ["browser", "frontend"]
             },
             {

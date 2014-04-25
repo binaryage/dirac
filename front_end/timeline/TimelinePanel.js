@@ -143,6 +143,8 @@ WebInspector.TimelinePanel.headerHeight = 20;
 
 WebInspector.TimelinePanel.durationFilterPresetsMs = [0, 1, 15];
 
+WebInspector.TimelinePanel.defaultTracingCategoryFilter = "*,disabled-by-default-cc.debug,disabled-by-default-devtools.timeline";
+
 WebInspector.TimelinePanel.prototype = {
     /**
      * @return {?WebInspector.SearchableView}
@@ -626,7 +628,7 @@ WebInspector.TimelinePanel.prototype = {
         this._userInitiatedRecording = userInitiated;
         this._model.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get());
         if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled())
-            this._tracingModel().start(WebInspector.TimelineManager.defaultTracingCategories, "");
+            this._tracingModel().start(WebInspector.TimelinePanel.defaultTracingCategoryFilter, "");
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStarted();
 
