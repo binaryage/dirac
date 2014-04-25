@@ -197,10 +197,6 @@ WebInspector.TargetManager = function()
     this._observers = [];
 }
 
-WebInspector.TargetManager.Events = {
-    TargetAdded: "TargetAdded",
-}
-
 WebInspector.TargetManager.prototype = {
 
     /**

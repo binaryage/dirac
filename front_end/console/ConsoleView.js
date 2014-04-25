@@ -53,8 +53,11 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._clearConsoleButton.addEventListener("click", this._requestClearMessages, this);
 
     this._executionContextSelector = new WebInspector.StatusBarComboBox(this._executionContextChanged.bind(this), "console-context");
-    this._topLevelOptionByContextListId = {};
-    this._subOptionsByContextListId = {};
+
+    /**
+     * @type {!Map.<!WebInspector.ExecutionContext, !Element>}
+     */
+    this._optionByExecutionContext = new Map();
 
     this._filter = new WebInspector.ConsoleViewFilter(this);
     this._filter.addEventListener(WebInspector.ConsoleViewFilter.Events.FilterChanged, this._updateMessageList.bind(this));
@@ -156,18 +159,9 @@ WebInspector.ConsoleView.prototype = {
         target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
         target.consoleModel.messages.forEach(appendMessage, this);
 
-        /**
-         * @param {!WebInspector.ExecutionContextList} contextList
-         * @this {WebInspector.ConsoleView}
-         */
-        function loadContextList(contextList)
-        {
-            this._addExecutionContextList(contextList);
-            this._contextListChanged(contextList);
-        }
-        target.runtimeModel.contextLists().forEach(loadContextList, this);
-        target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextListAdded, this._executionContextListAdded, this);
-        target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextListRemoved, this._executionContextListRemoved, this);
+        target.runtimeModel.executionContexts().forEach(this._executionContextCreated, this);
+        target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
+        target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
     },
 
     /**
@@ -178,8 +172,8 @@ WebInspector.ConsoleView.prototype = {
         target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.MessageAdded, this._onConsoleMessageAdded, this);
         target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
         target.consoleModel.removeEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
-        target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextListAdded, this._executionContextListAdded, this);
-        target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextListRemoved, this._executionContextListRemoved, this);
+        target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
+        target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
     },
 
     /**
@@ -209,58 +203,65 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Event} event
+     * @param {!WebInspector.ExecutionContext} executionContext
+     * @return {string}
      */
-    _executionContextListAdded: function(event)
+    _titleFor: function(executionContext)
     {
-        var contextList = /** @type {!WebInspector.ExecutionContextList} */ (event.data);
-        this._addExecutionContextList(contextList);
-    },
-
-    /**
-     * @param {!WebInspector.ExecutionContextList} contextList
-     */
-    _addExecutionContextList: function(contextList)
-    {
-        var maxLength = 50;
-        var topLevelOption = this._executionContextSelector.createOption(contextList.displayName().trimMiddle(maxLength), contextList.url());
-        topLevelOption._executionContext = null;
-        this._topLevelOptionByContextListId[contextList.id()] = topLevelOption;
-        this._subOptionsByContextListId[contextList.id()] = [];
-
-        contextList.addEventListener(WebInspector.ExecutionContextList.EventTypes.Reset, this._contextListReset, this);
-        contextList.addEventListener(WebInspector.ExecutionContextList.EventTypes.ContextAdded, this._contextListChanged.bind(this, contextList));
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _executionContextListRemoved: function(event)
-    {
-        var contextList = /** @type {!WebInspector.ExecutionContextList} */ (event.data);
-
-        this._removeSubOptions(contextList.id());
-        var topLevelOption = this._topLevelOptionByContextListId[contextList.id()];
-        this._executionContextSelector.removeOption(topLevelOption);
-        delete this._topLevelOptionByContextListId[contextList.id()];
-        delete this._subOptionsByContextListId[contextList.id()];
-        this._executionContextChanged();
-    },
-
-    /**
-     * @param {string} contextListId
-     * @return {boolean}
-     */
-    _removeSubOptions: function(contextListId)
-    {
-        var selectedOptionRemoved = false;
-        var subOptions = this._subOptionsByContextListId[contextListId];
-        for (var i = 0; i < subOptions.length; ++i) {
-            selectedOptionRemoved |= this._executionContextSelector.selectedOption() === subOptions[i];
-            this._executionContextSelector.removeOption(subOptions[i]);
+        var result = executionContext.name;
+        if (executionContext.isMainWorldContext && executionContext.frameId) {
+            var frame = executionContext.target().resourceTreeModel.frameForId(executionContext.frameId);
+            result =  frame ? frame.displayName() : result;
         }
-        this._subOptionsByContextListId[contextListId] = [];
-        return selectedOptionRemoved;
+
+        if (!executionContext.isMainWorldContext)
+            result = "\u00a0\u00a0\u00a0\u00a0" + result;
+
+        var maxLength = 50;
+        return result.trimMiddle(maxLength);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onExecutionContextCreated: function(event)
+    {
+        var executionContext = /** @type {!WebInspector.ExecutionContext} */ (event.data);
+        this._executionContextCreated(executionContext);
+    },
+
+    /**
+     * @param {!WebInspector.ExecutionContext} executionContext
+     */
+    _executionContextCreated: function(executionContext)
+    {
+        var newOption = document.createElement("option");
+        newOption.__executionContext = executionContext;
+        newOption.text = this._titleFor(executionContext);
+        this._optionByExecutionContext.put(executionContext, newOption);
+        var sameGroupExists = false;
+        var options = this._executionContextSelector.selectElement().options;
+        var insertBeforeOption = null;
+        for (var i = 0; i < options.length; ++i) {
+            var optionContext = options[i].__executionContext;
+            var isSameGroup = executionContext.target() === optionContext.target() && executionContext.frameId === optionContext.frameId;
+            sameGroupExists |= isSameGroup;
+            if ((isSameGroup && WebInspector.ExecutionContext.comparator(optionContext, executionContext) > 0) || (sameGroupExists && !isSameGroup)) {
+                insertBeforeOption = options[i];
+                break;
+            }
+        }
+        this._executionContextSelector.selectElement().insertBefore(newOption, insertBeforeOption);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onExecutionContextDestroyed: function(event)
+    {
+        var executionContext = /** @type {!WebInspector.ExecutionContext} */ (event.data);
+        var option = this._optionByExecutionContext.remove(executionContext);
+        option.remove();
     },
 
     _executionContextChanged: function()
@@ -278,61 +279,7 @@ WebInspector.ConsoleView.prototype = {
     _currentExecutionContext: function()
     {
         var option = this._executionContextSelector.selectedOption();
-        return option ? option._executionContext : null;
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _contextListReset: function(event)
-    {
-        var contextList = /** @type {!WebInspector.ExecutionContextList} */ (event.data);
-        var option = this._topLevelOptionByContextListId[contextList.id()];
-        var maxLength = 50;
-        option.text = contextList.displayName().trimMiddle(maxLength);
-        option.title = contextList.url();
-
-        var selectedRemoved = this._removeSubOptions(contextList.id());
-
-        if (selectedRemoved) {
-            this._executionContextSelector.select(option);
-            this._executionContextChanged();
-        }
-    },
-
-    /**
-     * @param {!WebInspector.ExecutionContextList} contextList
-     */
-    _contextListChanged: function(contextList)
-    {
-        var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-        var shouldSelectOption = this._removeSubOptions(contextList.id());
-
-        var topLevelOption = this._topLevelOptionByContextListId[contextList.id()];
-        var nextTopLevelOption = topLevelOption.nextSibling;
-        var subOptions = this._subOptionsByContextListId[contextList.id()];
-        var executionContexts = contextList.executionContexts();
-        for (var i = 0; i < executionContexts.length; ++i) {
-            if (executionContexts[i].isMainWorldContext) {
-                topLevelOption._executionContext = executionContexts[i];
-                continue;
-            }
-            var subOption = document.createElement("option");
-            subOption.text = "\u00a0\u00a0\u00a0\u00a0" + executionContexts[i].name;
-            subOption._executionContext = executionContexts[i];
-            this._executionContextSelector.selectElement().insertBefore(subOption, nextTopLevelOption);
-            subOptions.push(subOption);
-
-            if (shouldSelectOption && executionContexts[i] === currentExecutionContext) {
-                this._executionContextSelector.select(subOption);
-                shouldSelectOption = false;
-            }
-        }
-
-        if (shouldSelectOption)
-            this._executionContextSelector.select(topLevelOption);
-
-        this._executionContextChanged();
+        return option ? option.__executionContext : null;
     },
 
     willHide: function()

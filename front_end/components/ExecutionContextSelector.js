@@ -17,15 +17,8 @@ WebInspector.ExecutionContextSelector.prototype = {
      */
     targetAdded: function(target)
     {
-        //FIXME: once we will have plain list here, we will get rid of this check.
-        if (target.isWorkerTarget() && !WebInspector.context.flavor(WebInspector.ExecutionContext)) {
-            WebInspector.context.setFlavor(WebInspector.ExecutionContext, new WebInspector.ExecutionContext(target, undefined, "", true))
-            return;
-        }
-
         target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
-        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameGone, this);
-        target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, this._frameGone, this);
+        target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
     },
 
     /**
@@ -34,38 +27,9 @@ WebInspector.ExecutionContextSelector.prototype = {
     targetRemoved: function(target)
     {
         target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
-        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameGone, this);
-        target.resourceTreeModel.removeEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, this._frameGone, this);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _frameGone: function(event)
-    {
-        var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
-
-        var currentExecutionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
-        if (!currentExecutionContext || currentExecutionContext.target() !== frame.target() || currentExecutionContext.frameId !== frame.id)
-            return;
-
-        var targets = WebInspector.targetManager.targets();
-        var otherContext = null;
-        for (var i = 0; i < targets.length; ++i) {
-            var mainFrame = targets[i].resourceTreeModel.mainFrame;
-            var mainExecutionContextList = targets[i].runtimeModel.contextListByFrame(mainFrame);
-
-            if (!mainExecutionContextList || !mainExecutionContextList.mainWorldContext())
-                continue;
-
-            var mainExecutionContext = mainExecutionContextList.mainWorldContext();
-
-            if (mainExecutionContext.target() !== currentExecutionContext.target() || mainExecutionContext.frameId !== frame.id) {
-                otherContext = mainExecutionContext;
-                break;
-            }
-        }
-        WebInspector.context.setFlavor(WebInspector.ExecutionContext, otherContext);
+        target.runtimeModel.removeEventListener(WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, this._onExecutionContextDestroyed, this);
+        if (WebInspector.context.flavor(WebInspector.ExecutionContext).target() === target)
+            this._currentExecutionContextGone();
     },
 
     /**
@@ -76,6 +40,30 @@ WebInspector.ExecutionContextSelector.prototype = {
         var executionContext = /** @type {!WebInspector.ExecutionContext}*/ (event.data);
         if (!WebInspector.context.flavor(WebInspector.ExecutionContext))
             WebInspector.context.setFlavor(WebInspector.ExecutionContext, executionContext);
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onExecutionContextDestroyed: function(event)
+    {
+        var executionContext = /** @type {!WebInspector.ExecutionContext}*/ (event.data);
+        if (WebInspector.context.flavor(WebInspector.ExecutionContext) === executionContext)
+            this._currentExecutionContextGone();
+    },
+
+    _currentExecutionContextGone: function()
+    {
+        var targets = WebInspector.targetManager.targets();
+        var newContext = null;
+        for (var i = 0; i < targets.length; ++i) {
+            var executionContexts = targets[i].runtimeModel.executionContexts();
+            if (executionContexts.length) {
+                newContext = executionContexts[0];
+                break;
+            }
+        }
+        WebInspector.context.setFlavor(WebInspector.ExecutionContext, newContext);
     }
 
 }

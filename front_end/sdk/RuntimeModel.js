@@ -37,108 +37,57 @@ WebInspector.RuntimeModel = function(target)
 {
     WebInspector.TargetAwareObject.call(this, target);
 
-    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameAdded, this._frameAdded, this);
-    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameNavigated, this._frameNavigated, this);
-    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.FrameDetached, this._frameDetached, this);
-    target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.CachedResourcesLoaded, this._didLoadCachedResources, this);
     this._debuggerModel = target.debuggerModel;
     this._agent = target.runtimeAgent();
-    this._contextListById = {};
+    this.target().registerRuntimeDispatcher(new WebInspector.RuntimeDispatcher(this));
+    this._agent.enable();
+    /**
+     * @type {!Object.<number, !WebInspector.ExecutionContext>}
+     */
+    this._executionContextById = {};
 }
 
 WebInspector.RuntimeModel.Events = {
-    ExecutionContextListAdded: "ExecutionContextListAdded",
-    ExecutionContextListRemoved: "ExecutionContextListRemoved",
     ExecutionContextCreated: "ExecutionContextCreated",
+    ExecutionContextDestroyed: "ExecutionContextDestroyed",
 }
 
 WebInspector.RuntimeModel.prototype = {
 
     /**
-     * @param {string} url
+     * @return {!Array.<!WebInspector.ExecutionContext>}
      */
-    addWorkerContextList: function(url)
+    executionContexts: function()
     {
-        console.assert(this.target().isWorkerTarget(), "Worker context list was added in a non-worker target");
-        var fakeContextList = new WebInspector.WorkerExecutionContextList(this.target(), "worker", url);
-        this._addContextList(fakeContextList);
-        var fakeExecutionContext = new WebInspector.ExecutionContext(this.target(), 0, url, true);
-        fakeContextList._addExecutionContext(fakeExecutionContext);
+        return Object.values(this._executionContextById);
     },
 
     /**
-     * @return {!Array.<!WebInspector.ExecutionContextList>}
+     * @param {!RuntimeAgent.ExecutionContextDescription} context
      */
-    contextLists: function()
-    {
-        return Object.values(this._contextListById);
-    },
-
-    /**
-     * @param {!WebInspector.ResourceTreeFrame} frame
-     * @return {!WebInspector.ExecutionContextList}
-     */
-    contextListByFrame: function(frame)
-    {
-        return this._contextListById[frame.id];
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _frameAdded: function(event)
-    {
-        console.assert(!this.target().isWorkerTarget() ,"Frame was added in a worker target.");
-        var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
-        var contextList = new WebInspector.FrameExecutionContextList(this.target(), frame);
-        this._addContextList(contextList);
-    },
-
-    _addContextList: function(executionContextList)
-    {
-        this._contextListById[executionContextList.id()] = executionContextList;
-        this.dispatchEventToListeners(WebInspector.RuntimeModel.Events.ExecutionContextListAdded, executionContextList);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _frameNavigated: function(event)
-    {
-        console.assert(!this.target().isWorkerTarget() ,"Frame was navigated in worker's target");
-        var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
-        var context = this._contextListById[frame.id];
-        if (context)
-            context._frameNavigated(frame);
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _frameDetached: function(event)
-    {
-        console.assert(!this.target().isWorkerTarget() ,"Frame was detached in worker's target");
-        var frame = /** @type {!WebInspector.ResourceTreeFrame} */ (event.data);
-        var context = this._contextListById[frame.id];
-        if (!context)
-            return;
-        this.dispatchEventToListeners(WebInspector.RuntimeModel.Events.ExecutionContextListRemoved, context);
-        delete this._contextListById[frame.id];
-    },
-
-    _didLoadCachedResources: function()
-    {
-        this.target().registerRuntimeDispatcher(new WebInspector.RuntimeDispatcher(this));
-        this._agent.enable();
-    },
-
     _executionContextCreated: function(context)
     {
-        var contextList = this._contextListById[context.frameId];
-        console.assert(contextList);
         var executionContext = new WebInspector.ExecutionContext(this.target(), context.id, context.name, context.isPageContext, context.frameId);
-        contextList._addExecutionContext(executionContext);
+        this._executionContextById[executionContext.id] = executionContext;
         this.dispatchEventToListeners(WebInspector.RuntimeModel.Events.ExecutionContextCreated, executionContext);
+    },
+
+    /**
+     * @param {number} executionContextId
+     */
+    _executionContextDestroyed: function(executionContextId)
+    {
+        var executionContext = this._executionContextById[executionContextId];
+        delete this._executionContextById[executionContextId];
+        this.dispatchEventToListeners(WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, executionContext);
+    },
+
+    _executionContextsCleared: function()
+    {
+        var contexts = this.executionContexts();
+        this._executionContextById = {};
+        for (var  i = 0; i < contexts.length; ++i)
+            this.dispatchEventToListeners(WebInspector.RuntimeModel.Events.ExecutionContextDestroyed, contexts[i]);
     },
 
     /**
@@ -201,10 +150,12 @@ WebInspector.RuntimeDispatcher.prototype = {
 
     executionContextDestroyed: function(executionContextId)
     {
+        this._runtimeModel._executionContextDestroyed(executionContextId);
     },
 
     executionContextsCleared: function()
     {
+        this._runtimeModel._executionContextsCleared();
     }
 
 }

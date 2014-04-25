@@ -31,15 +31,7 @@ WebInspector.WorkerTargetManager.prototype = {
          */
         function onConnectionReady(connection)
         {
-            this._targetManager.createTarget(connection, workerTargetInitialization)
-        }
-
-        /**
-         * @param {!WebInspector.Target} target
-         */
-        function workerTargetInitialization(target)
-        {
-            target.runtimeModel.addWorkerContextList(data.url);
+            this._targetManager.createTarget(connection)
         }
     }
 

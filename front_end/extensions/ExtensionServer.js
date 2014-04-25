@@ -967,16 +967,26 @@ WebInspector.ExtensionServer.prototype = {
             else if (options.scriptExecutionContext)
                 contextSecurityOrigin = options.scriptExecutionContext;
 
-            var frameContextList = WebInspector.runtimeModel.contextListByFrame(frame);
             var context;
+            var executionContexts = WebInspector.runtimeModel.executionContexts();
             if (contextSecurityOrigin) {
-                context = frameContextList.contextBySecurityOrigin(contextSecurityOrigin);
+                for (var i = 0; i < executionContexts.length; ++i) {
+                    var executionContext = executionContexts[i];
+                    if (executionContext.frameId === frame.id && executionContext.name === contextSecurityOrigin && !executionContext.isMainWorldContext)
+                        context = executionContext;
+
+                }
                 if (!context) {
                     console.warn("The JavaScript context " + contextSecurityOrigin + " was not found in the frame " + frame.url)
                     return this._status.E_NOTFOUND(contextSecurityOrigin)
                 }
             } else {
-                context = frameContextList.mainWorldContext();
+                for (var i = 0; i < executionContexts.length; ++i) {
+                    var executionContext = executionContexts[i];
+                    if (executionContext.frameId === frame.id && executionContext.isMainWorldContext)
+                        context = executionContext;
+
+                }
                 if (!context)
                     return this._status.E_FAILED(frame.url + " has no execution context");
             }
