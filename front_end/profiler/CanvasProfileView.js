@@ -54,7 +54,8 @@ WebInspector.CanvasProfileView = function(profile)
     replayImageContainerView.setMinimumSize(50, 28);
     replayImageContainerView.show(this._imageSplitView.mainElement());
 
-    var replayImageContainer = replayImageContainerView.element;
+    // NOTE: The replayImageContainer can NOT be a flex div (e.g. VBox or SplitView elements)!
+    var replayImageContainer = replayImageContainerView.element.createChild("div");
     replayImageContainer.id = "canvas-replay-image-container";
     this._replayImageElement = replayImageContainer.createChild("img", "canvas-replay-image");
     this._debugInfoElement = replayImageContainer.createChild("div", "canvas-debug-info hidden");
