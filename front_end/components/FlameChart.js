@@ -405,7 +405,7 @@ WebInspector.FlameChart.prototype = {
      */
     _startCanvasDragging: function(event)
     {
-        if (!this._timelineData())
+        if (!this._timelineData() || this._timeWindowRight === Infinity)
             return false;
         this._isDragging = true;
         this._maxDragOffset = 0;
@@ -496,28 +496,32 @@ WebInspector.FlameChart.prototype = {
      */
     _onMouseWheel: function(e)
     {
+        var scrollIsThere = this._totalHeight > this._offsetHeight;
         var windowLeft = this._timeWindowLeft ? this._timeWindowLeft : this._dataProvider.zeroTime();
         var windowRight = this._timeWindowRight !== Infinity ? this._timeWindowRight : this._dataProvider.zeroTime() + this._dataProvider.totalTime();
 
-        if (e.wheelDeltaY) {
-            if (!e.altKey) {
-                const mouseWheelZoomSpeed = 1 / 120;
-                var zoom = Math.pow(1.2, -e.wheelDeltaY * mouseWheelZoomSpeed) - 1;
-                var cursorTime = this._cursorTime(e.offsetX);
-                windowLeft += (windowLeft - cursorTime) * zoom;
-                windowRight += (windowRight - cursorTime) * zoom;
-            } else {
-                this._vScrollElement.scrollTop -= e.wheelDeltaY / 120 * this._offsetHeight / 8;
-            }
-        } else {
-            var shift = e.wheelDeltaX * this._pixelToTime;
+        var panHorizontally = e.wheelDeltaX && !e.shiftKey;
+        var panVertically = scrollIsThere && ((e.wheelDeltaY && !e.shiftKey) || (Math.abs(e.wheelDeltaX) === 120 && !e.shiftKey));
+        if (panVertically) {
+            this._vScrollElement.scrollTop -= e.wheelDeltaY / 120 * this._offsetHeight / 8;
+        } else if (panHorizontally) {
+            var shift = -e.wheelDeltaX * this._pixelToTime;
             shift = Number.constrain(shift, this._zeroTime - windowLeft, this._totalTime + this._zeroTime - windowRight);
             windowLeft += shift;
             windowRight += shift;
+        } else {  // Zoom.
+            const mouseWheelZoomSpeed = 1 / 120;
+            var zoom = Math.pow(1.2, -(e.wheelDeltaY || e.wheelDeltaX) * mouseWheelZoomSpeed) - 1;
+            var cursorTime = this._cursorTime(e.offsetX);
+            windowLeft += (windowLeft - cursorTime) * zoom;
+            windowRight += (windowRight - cursorTime) * zoom;
         }
         windowLeft = Number.constrain(windowLeft, this._zeroTime, this._totalTime + this._zeroTime);
         windowRight = Number.constrain(windowRight, this._zeroTime, this._totalTime + this._zeroTime);
         this._flameChartDelegate.requestWindowTimes(windowLeft, windowRight);
+
+        // Block swipe gesture.
+        e.consume(true);
     },
 
     /**
@@ -739,8 +743,7 @@ WebInspector.FlameChart.prototype = {
         context.restore();
 
         var offsets = this._dataProvider.dividerOffsets(this._calculator.minimumBoundary(), this._calculator.maximumBoundary());
-        if (timelineData.entryOffsets.length)
-            WebInspector.TimelineGrid.drawCanvasGrid(this._canvas, this._calculator, offsets);
+        WebInspector.TimelineGrid.drawCanvasGrid(this._canvas, this._calculator, offsets);
 
         this._updateElementPosition(this._highlightElement, this._highlightedEntryIndex);
         this._updateElementPosition(this._selectedElement, this._selectedEntryIndex);
@@ -909,14 +912,16 @@ WebInspector.FlameChart.prototype = {
 
         this._baseHeight = this._isTopDown ? WebInspector.FlameChart.DividersBarHeight : this._offsetHeight - this._barHeight;
 
-        var totalHeight = this._levelToHeight(this._dataProvider.maxStackDepth());
-        this._vScrollContent.style.height = totalHeight + "px";
+        this._totalHeight = this._levelToHeight(this._dataProvider.maxStackDepth() + 1);
+        this._vScrollContent.style.height = this._totalHeight + "px";
         this._scrollTop = this._vScrollElement.scrollTop;
     },
 
     onResize: function()
     {
-        this._offsetWidth = this.element.offsetWidth - this._vScrollElement.offsetWidth;
+        var showScroll = this._totalHeight > this._offsetHeight;
+        this._vScrollElement.classList.toggle("hidden", !showScroll);
+        this._offsetWidth = this.element.offsetWidth - (WebInspector.isMac() ? 0 : this._vScrollElement.offsetWidth);
         this._offsetHeight = this.element.offsetHeight;
         this._canvas.style.width = this._offsetWidth + "px";
         this._canvas.style.height = this._offsetHeight + "px";

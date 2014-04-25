@@ -143,15 +143,13 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
 
         this._records = [];
         this._entryThreadDepths = {};
-        this._zeroTime = this._model.minimumRecordTime();
+        this._zeroTime = Math.max(0, this._model.minimumRecordTime());
 
         var cpuThreadRecordPayload = { type: WebInspector.TimelineModel.RecordType.Program };
         this._cpuThreadRecord = new WebInspector.TimelineModel.Record(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (cpuThreadRecordPayload), null);
         this._pushRecord(this._cpuThreadRecord, 0, this.zeroTime(), Math.max(this._model.maximumRecordTime(), this.totalTime() + this.zeroTime()));
 
-        var gpuThreadRecordPayload = { type: WebInspector.TimelineModel.RecordType.Program };
-        this._gpuThreadRecord = new WebInspector.TimelineModel.Record(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (gpuThreadRecordPayload), null);
-        this._pushRecord(this._gpuThreadRecord, 0, this.zeroTime(), Math.max(this._model.maximumRecordTime(), this.totalTime() + this.zeroTime()));
+        this._gpuThreadRecord = null;
 
         var records = this._model.records();
         for (var i = 0; i < records.length; ++i) {
@@ -163,33 +161,43 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 for (var j = 0; j < record.children.length; ++j)
                     this._appendRecord(record.children[j], 1);
             } else {
-                this._appendRecord(records[i], 1);
+                var visible = this._appendRecord(records[i], 1);
+                if (visible && !this._gpuThreadRecord) {
+                    var gpuThreadRecordPayload = { type: WebInspector.TimelineModel.RecordType.Program };
+                    this._gpuThreadRecord = new WebInspector.TimelineModel.Record(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (gpuThreadRecordPayload), null);
+                    this._pushRecord(this._gpuThreadRecord, 0, this.zeroTime(), Math.max(this._model.maximumRecordTime(), this.totalTime() + this.zeroTime()));
+                }
             }
         }
 
         var cpuStackDepth = Math.max(4, this._entryThreadDepths[undefined]);
         delete this._entryThreadDepths[undefined];
+        this._maxStackDepth = cpuStackDepth;
 
-        var threadBaselines = {};
-        var threadBaseline = cpuStackDepth + 2;
+        if (this._gpuThreadRecord) {
+            // We have multiple threads, update levels.
+            var threadBaselines = {};
+            var threadBaseline = cpuStackDepth + 2;
 
-        for (var thread in this._entryThreadDepths) {
-            threadBaselines[thread] = threadBaseline;
-            threadBaseline += this._entryThreadDepths[thread];
+            for (var thread in this._entryThreadDepths) {
+                threadBaselines[thread] = threadBaseline;
+                threadBaseline += this._entryThreadDepths[thread];
+            }
+            this._maxStackDepth = threadBaseline;
+
+            for (var i = 0; i < this._records.length; ++i) {
+                var record = this._records[i];
+                var level = this._timelineData.entryLevels[i];
+                if (record === this._cpuThreadRecord)
+                    level = 0;
+                else if (record === this._gpuThreadRecord)
+                    level = cpuStackDepth + 2;
+                else if (record.thread)
+                    level += threadBaselines[record.thread];
+                this._timelineData.entryLevels[i] = level;
+            }
         }
-        this._maxStackDepth = threadBaseline;
 
-        for (var i = 0; i < this._records.length; ++i) {
-            var record = this._records[i];
-            var level = this._timelineData.entryLevels[i];
-            if (record === this._cpuThreadRecord)
-                level = 0;
-            else if (record === this._gpuThreadRecord)
-                level = cpuStackDepth + 2;
-            else if (record.thread)
-                level += threadBaselines[record.thread];
-            this._timelineData.entryLevels[i] = level;
-        }
         return this._timelineData;
     },
 
@@ -220,18 +228,21 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     /**
      * @param {!WebInspector.TimelineModel.Record} record
      * @param {number} level
+     * @return {boolean}
      */
     _appendRecord: function(record, level)
     {
+        var result = false;
         if (!this._model.isVisible(record)) {
             for (var i = 0; i < record.children.length; ++i)
-                this._appendRecord(record.children[i], level);
-            return;
+                result = this._appendRecord(record.children[i], level) || result;
+            return result;
         }
 
         this._pushRecord(record, level, record.startTime, record.endTime);
         for (var i = 0; i < record.children.length; ++i)
             this._appendRecord(record.children[i], level + 1);
+        return true;
     },
 
     /**
