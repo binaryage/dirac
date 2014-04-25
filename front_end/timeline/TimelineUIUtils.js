@@ -96,7 +96,6 @@ WebInspector.TimelineUIUtils._initRecordStyles = function()
     recordStyles[recordTypes.MarkFirstPaint] = { title: WebInspector.UIString("First paint"), category: categories["painting"] };
     recordStyles[recordTypes.TimeStamp] = { title: WebInspector.UIString("Stamp"), category: categories["scripting"] };
     recordStyles[recordTypes.ConsoleTime] = { title: WebInspector.UIString("Console Time"), category: categories["scripting"] };
-    recordStyles[recordTypes.ScheduleResourceRequest] = { title: WebInspector.UIString("Schedule Request"), category: categories["loading"] };
     recordStyles[recordTypes.RequestAnimationFrame] = { title: WebInspector.UIString("Request Animation Frame"), category: categories["scripting"] };
     recordStyles[recordTypes.CancelAnimationFrame] = { title: WebInspector.UIString("Cancel Animation Frame"), category: categories["scripting"] };
     recordStyles[recordTypes.FireAnimationFrame] = { title: WebInspector.UIString("Animation Frame Fired"), category: categories["scripting"] };
@@ -164,7 +163,6 @@ WebInspector.TimelineUIUtils.needsPreviewElement = function(recordType)
         return false;
     const recordTypes = WebInspector.TimelineModel.RecordType;
     switch (recordType) {
-    case recordTypes.ScheduleResourceRequest:
     case recordTypes.ResourceSendRequest:
     case recordTypes.ResourceReceiveResponse:
     case recordTypes.ResourceReceivedData:
@@ -536,7 +534,6 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
             if (record.scriptName)
                 contentHelper.appendLocationRow(WebInspector.UIString("Location"), record.scriptName, record.scriptLine);
             break;
-        case recordTypes.ScheduleResourceRequest:
         case recordTypes.ResourceSendRequest:
         case recordTypes.ResourceReceiveResponse:
         case recordTypes.ResourceReceivedData:
@@ -721,7 +718,6 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier, load
         break;
     case WebInspector.TimelineModel.RecordType.XHRReadyStateChange:
     case WebInspector.TimelineModel.RecordType.XHRLoad:
-    case WebInspector.TimelineModel.RecordType.ScheduleResourceRequest:
     case WebInspector.TimelineModel.RecordType.ResourceSendRequest:
     case WebInspector.TimelineModel.RecordType.ResourceReceivedData:
     case WebInspector.TimelineModel.RecordType.ResourceReceiveResponse:

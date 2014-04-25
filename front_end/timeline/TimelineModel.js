@@ -91,7 +91,6 @@ WebInspector.TimelineModel.RecordType = {
     TimeStamp: "TimeStamp",
     ConsoleTime: "ConsoleTime",
 
-    ScheduleResourceRequest: "ScheduleResourceRequest",
     ResourceSendRequest: "ResourceSendRequest",
     ResourceReceiveResponse: "ResourceReceiveResponse",
     ResourceReceivedData: "ResourceReceivedData",
