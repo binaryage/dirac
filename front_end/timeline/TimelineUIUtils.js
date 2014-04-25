@@ -245,7 +245,7 @@ WebInspector.TimelineUIUtils.recordTitle = function(record, model)
     if (record.type === WebInspector.TimelineModel.RecordType.JSFrame)
         return record.data["functionName"];
     if (WebInspector.TimelineUIUtils.isEventDivider(record)) {
-        var startTime = Number.millisToString(record.startTime - model.minimumRecordTime());
+        var startTime = Number.millisToString(record.startTime() - model.minimumRecordTime());
         return WebInspector.UIString("%s at %s", WebInspector.TimelineUIUtils.recordStyle(record).title, startTime, true);
     }
     return WebInspector.TimelineUIUtils.recordStyle(record).title;
@@ -271,10 +271,10 @@ WebInspector.TimelineUIUtils.aggregateTimeForRecord = function(total, record)
     var children = record.children;
     for (var i = 0; i < children.length; ++i) {
         WebInspector.TimelineUIUtils.aggregateTimeForRecord(total, children[i]);
-        childrenTime += children[i].endTime - children[i].startTime;
+        childrenTime += children[i].endTime() - children[i].startTime();
     }
     var categoryName = WebInspector.TimelineUIUtils.recordStyle(record).category.name;
-    var ownTime = record.endTime - record.startTime - childrenTime;
+    var ownTime = record.endTime() - record.startTime() - childrenTime;
     total[categoryName] = (total[categoryName] || 0) + ownTime;
 }
 
@@ -497,7 +497,7 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
 {
     var fragment = document.createDocumentFragment();
     if (record.children.length)
-        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(record.aggregatedStats, record.category, record.selfTime));
+        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(record.aggregatedStats, record.category(), record.selfTime()));
     else
         fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(record.aggregatedStats));
 
@@ -509,8 +509,8 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
     var relatedNodeLabel;
 
     var contentHelper = new WebInspector.TimelineDetailsContentHelper(record.target(), linkifier, true);
-    contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(record.selfTime, true));
-    contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString(record.startTime - model.minimumRecordTime()));
+    contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(record.selfTime(), true));
+    contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString(record.startTime() - model.minimumRecordTime()));
 
     switch (record.type) {
         case recordTypes.GCEvent:

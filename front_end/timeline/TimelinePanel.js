@@ -851,8 +851,8 @@ WebInspector.TimelinePanel.prototype = {
          */
         function processRecord(record)
         {
-            if (record.endTime < this._windowStartTime ||
-                record.startTime > this._windowEndTime)
+            if (record.endTime() < this._windowStartTime ||
+                record.startTime() > this._windowEndTime)
                 return;
             if (record.testContentMatching(searchRegExp))
                 matches.push(record);
@@ -915,7 +915,7 @@ WebInspector.TimelinePanel.prototype = {
          */
         function compareEndTime(value, task)
         {
-            return value < task.endTime ? -1 : 1;
+            return value < task.endTime() ? -1 : 1;
         }
 
         /**
@@ -923,20 +923,20 @@ WebInspector.TimelinePanel.prototype = {
          */
         function aggregateTimeForRecordWithinWindow(record)
         {
-            if (!record.endTime || record.endTime < startTime || record.startTime > endTime)
+            if (!record.endTime() || record.endTime() < startTime || record.startTime() > endTime)
                 return;
 
             var childrenTime = 0;
             var children = record.children || [];
             for (var i = 0; i < children.length; ++i) {
                 var child = children[i];
-                if (!child.endTime || child.endTime < startTime || child.startTime > endTime)
+                if (!child.endTime() || child.endTime() < startTime || child.startTime() > endTime)
                     continue;
-                childrenTime += Math.min(endTime, child.endTime) - Math.max(startTime, child.startTime);
+                childrenTime += Math.min(endTime, child.endTime()) - Math.max(startTime, child.startTime());
                 aggregateTimeForRecordWithinWindow(child);
             }
             var categoryName = WebInspector.TimelineUIUtils.categoryForRecord(record).name;
-            var ownTime = Math.min(endTime, record.endTime) - Math.max(startTime, record.startTime) - childrenTime;
+            var ownTime = Math.min(endTime, record.endTime()) - Math.max(startTime, record.startTime()) - childrenTime;
             aggregatedStats[categoryName] = (aggregatedStats[categoryName] || 0) + ownTime;
         }
 
@@ -944,7 +944,7 @@ WebInspector.TimelinePanel.prototype = {
         var taskIndex = insertionIndexForObjectInListSortedByFunction(startTime, mainThreadTasks, compareEndTime);
         for (; taskIndex < mainThreadTasks.length; ++taskIndex) {
             var task = mainThreadTasks[taskIndex];
-            if (task.startTime > endTime)
+            if (task.startTime() > endTime)
                 break;
             aggregateTimeForRecordWithinWindow(task);
         }
@@ -1151,7 +1151,7 @@ WebInspector.TimelineCategoryFilter.prototype = {
      */
     accept: function(record)
     {
-        return !record.category.hidden;
+        return !record.category().hidden;
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype
@@ -1183,7 +1183,7 @@ WebInspector.TimelineIsLongFilter.prototype = {
      */
     accept: function(record)
     {
-        return this._minimumRecordDuration ? ((record.endTime - record.startTime) >= this._minimumRecordDuration) : true;
+        return this._minimumRecordDuration ? ((record.endTime() - record.startTime()) >= this._minimumRecordDuration) : true;
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype

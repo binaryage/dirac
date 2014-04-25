@@ -147,17 +147,17 @@ WebInspector.TimelinePresentationModel.prototype = {
         var lastRecord = bucket ? this._coalescingBuckets[bucket] : newParent._presentationChildren.peekLast();
         if (lastRecord && lastRecord._coalesced)
             lastRecord = lastRecord._presentationChildren.peekLast();
-        var startTime = record.startTime;
-        var endTime = record.endTime;
+        var startTime = record.startTime();
+        var endTime = record.endTime();
         if (!lastRecord)
             return null;
         if (lastRecord.record().type !== record.type)
             return null;
         if (!WebInspector.TimelinePresentationModel._coalescingRecords[record.type])
             return null;
-        if (lastRecord.record().endTime + coalescingThresholdMillis < startTime)
+        if (lastRecord.record().endTime() + coalescingThresholdMillis < startTime)
             return null;
-        if (endTime + coalescingThresholdMillis < lastRecord.record().startTime)
+        if (endTime + coalescingThresholdMillis < lastRecord.record().startTime())
             return null;
         if (lastRecord.presentationParent()._coalesced)
             return lastRecord.presentationParent();
@@ -173,7 +173,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         var record = presentationRecord.record();
         var rawRecord = {
             type: record.type,
-            startTime: record.startTime,
+            startTime: record.startTime(),
             data: { }
         };
         if (record.thread)
@@ -207,8 +207,8 @@ WebInspector.TimelinePresentationModel.prototype = {
         var record = presentationRecord.record();
         var parentRecord = presentationRecord._presentationParent.record();
         WebInspector.TimelineUIUtils.aggregateTimeByCategory(parentRecord.aggregatedStats, record.aggregatedStats);
-        if (parentRecord.endTime < record.endTime)
-            parentRecord.endTime = record.endTime;
+        if (parentRecord.endTime() < record.endTime())
+            parentRecord.setEndTime(record.endTime());
     },
 
     /**
@@ -258,7 +258,7 @@ WebInspector.TimelinePresentationModel.prototype = {
                 var record = records[entry.index];
                 ++entry.index;
                 var rawRecord = record.record();
-                if (rawRecord.startTime < this._windowEndTime && rawRecord.endTime > this._windowStartTime) {
+                if (rawRecord.startTime() < this._windowEndTime && rawRecord.endTime() > this._windowStartTime) {
                     if (this._model.isVisible(rawRecord)) {
                         record._presentationParent._expandable = true;
                         if (this._textFilter)

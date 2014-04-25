@@ -81,16 +81,21 @@ WebInspector.TimelineMemoryOverview.prototype = {
         var yFactor = (height - lineWidth) / Math.max(maxUsedHeapSize - minUsedHeapSize, 1);
 
         var histogram = new Array(width);
-        this._model.forAllRecords(function(r) {
-            if (r.type !== WebInspector.TimelineModel.RecordType.UpdateCounters)
+
+        /**
+         * @param {!WebInspector.TimelineModel.Record} record
+         */
+        function processRecord(record) {
+            if (record.type !== WebInspector.TimelineModel.RecordType.UpdateCounters)
                 return;
-            var counters = r.data;
+            var counters = record.data;
             if (!counters.jsHeapSizeUsed)
                 return;
-            var x = Math.round((r.endTime - minTime) * xFactor);
+            var x = Math.round((record.endTime() - minTime) * xFactor);
             var y = Math.round((counters.jsHeapSizeUsed - minUsedHeapSize) * yFactor);
             histogram[x] = Math.max(histogram[x] || 0, y);
-        });
+        }
+        this._model.forAllRecords(processRecord);
 
         var ctx = this._context;
         var heightBeyondView = height + lowerOffset + lineWidth;

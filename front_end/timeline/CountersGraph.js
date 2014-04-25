@@ -185,12 +185,12 @@ WebInspector.CountersGraph.prototype = {
         {
             if (!this._model.isVisible(record))
                 return false;
-            if (record.startTime <= time && time <= record.endTime) {
+            if (record.startTime() <= time && time <= record.endTime()) {
                 recordToReveal = record;
                 return true;
             }
             // If there is no record containing the time than use the latest one before that time.
-            if (!recordToReveal || record.endTime < time && recordToReveal.endTime < record.endTime)
+            if (!recordToReveal || record.endTime() < time && recordToReveal.endTime() < record.endTime())
                 recordToReveal = record;
             return false;
         }

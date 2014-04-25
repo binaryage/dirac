@@ -75,7 +75,7 @@ WebInspector.MemoryCountersGraph.prototype = {
             for (var name in counters) {
                 var counter = this._countersByName[name];
                 if (counter)
-                    counter.appendSample(record.endTime || record.startTime, counters[name]);
+                    counter.appendSample(record.endTime() || record.startTime(), counters[name]);
             }
 
             var gpuMemoryLimitCounterName = "gpuMemoryLimitKB";

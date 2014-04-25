@@ -89,8 +89,8 @@ WebInspector.TimelineEventOverview.prototype = {
         {
             if (record.type === WebInspector.TimelineModel.RecordType.BeginFrame)
                 return;
-            var recordStart = Math.floor((record.startTime - timeOffset) * scale);
-            var recordEnd = Math.ceil((record.endTime - timeOffset) * scale);
+            var recordStart = Math.floor((record.startTime() - timeOffset) * scale);
+            var recordEnd = Math.ceil((record.endTime() - timeOffset) * scale);
             var category = WebInspector.TimelineUIUtils.categoryForRecord(record);
             if (category.overviewStripGroupIndex < 0)
                 return;

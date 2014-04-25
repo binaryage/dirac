@@ -434,7 +434,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
             return null;
         return {
             startTimeOffset: this._toTimelineTime(record.startTime - this._zeroTime),
-            endTimeOffset: this._toTimelineTime(record.endTime  - this._zeroTime)
+            endTimeOffset: this._toTimelineTime(record.endTime()  - this._zeroTime)
         }
     },
 

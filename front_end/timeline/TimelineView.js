@@ -324,7 +324,7 @@ WebInspector.TimelineView.prototype = {
             var presentationChildren = presentationRecord.presentationChildren();
             for (var i = 0; i < presentationChildren.length; ++i)
                 WebInspector.TimelineUIUtils.aggregateTimeByCategory(aggregatedStats, presentationChildren[i].record().aggregatedStats);
-            var idle = presentationRecord.record().endTime - presentationRecord.record().startTime;
+            var idle = presentationRecord.record().endTime() - presentationRecord.record().startTime();
             for (var category in aggregatedStats)
                 idle -= aggregatedStats[category];
             aggregatedStats["idle"] = idle;
@@ -489,8 +489,8 @@ WebInspector.TimelineView.prototype = {
             this._automaticallySizeWindow = false;
             this._selectRecord(null);
             // If we're at the top, always use real timeline start as a left window bound so that expansion arrow padding logic works.
-            var windowStartTime = startIndex ? recordsInWindow[startIndex].record().startTime : this._model.minimumRecordTime();
-            var windowEndTime = recordsInWindow[Math.max(0, lastVisibleLine - 1)].record().endTime;
+            var windowStartTime = startIndex ? recordsInWindow[startIndex].record().startTime() : this._model.minimumRecordTime();
+            var windowEndTime = recordsInWindow[Math.max(0, lastVisibleLine - 1)].record().endTime();
             this._delegate.requestWindowTimes(windowStartTime, windowEndTime);
             recordsInWindow = this._presentationModel.filteredRecords();
             endIndex = Math.min(recordsInWindow.length, lastVisibleLine);
@@ -604,7 +604,7 @@ WebInspector.TimelineView.prototype = {
          */
         function compareEndTime(value, task)
         {
-            return value < task.endTime ? -1 : 1;
+            return value < task.endTime() ? -1 : 1;
         }
 
         var taskIndex = insertionIndexForObjectInListSortedByFunction(startTime, tasks, compareEndTime);
@@ -617,11 +617,11 @@ WebInspector.TimelineView.prototype = {
 
         for (; taskIndex < tasks.length; ++taskIndex) {
             var task = tasks[taskIndex];
-            if (task.startTime > endTime)
+            if (task.startTime() > endTime)
                 break;
 
-            var left = Math.max(0, this._calculator.computePosition(task.startTime) + barOffset - widthAdjustment);
-            var right = Math.min(width, this._calculator.computePosition(task.endTime || 0) + barOffset + widthAdjustment);
+            var left = Math.max(0, this._calculator.computePosition(task.startTime()) + barOffset - widthAdjustment);
+            var right = Math.min(width, this._calculator.computePosition(task.endTime() || 0) + barOffset + widthAdjustment);
 
             if (lastElement) {
                 var gap = Math.floor(left) - Math.ceil(lastRight);
@@ -885,9 +885,9 @@ WebInspector.TimelineCalculator.prototype = {
      */
     computeBarGraphPercentages: function(record)
     {
-        var start = (record.startTime - this._minimumBoundary) / this.boundarySpan() * 100;
-        var end = (record.startTime + record.selfTime - this._minimumBoundary) / this.boundarySpan() * 100;
-        var cpuWidth = (record.endTime - record.startTime) / this.boundarySpan() * 100;
+        var start = (record.startTime() - this._minimumBoundary) / this.boundarySpan() * 100;
+        var end = (record.startTime() + record.selfTime() - this._minimumBoundary) / this.boundarySpan() * 100;
+        var cpuWidth = (record.endTime() - record.startTime()) / this.boundarySpan() * 100;
         return {start: start, end: end, cpuWidth: cpuWidth};
     },
 
@@ -900,7 +900,7 @@ WebInspector.TimelineCalculator.prototype = {
         var percentages = this.computeBarGraphPercentages(record);
         var widthAdjustment = 0;
 
-        var left = this.computePosition(record.startTime);
+        var left = this.computePosition(record.startTime());
         var width = (percentages.end - percentages.start) / 100 * this._workingArea;
         if (width < WebInspector.TimelineCalculator._minWidth) {
             widthAdjustment = WebInspector.TimelineCalculator._minWidth - width;
@@ -1010,7 +1010,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         var record = presentationRecord.record();
         this._offset = offset;
 
-        this.element.className = "timeline-tree-item timeline-category-" + record.category.name;
+        this.element.className = "timeline-tree-item timeline-category-" + record.category().name;
         var paddingLeft = 5;
         var step = -3;
         for (var currentRecord = presentationRecord.presentationParent() ? presentationRecord.presentationParent().presentationParent() : null; currentRecord; currentRecord = currentRecord.presentationParent())
@@ -1146,7 +1146,7 @@ WebInspector.TimelineRecordGraphRow.prototype = {
     {
         this._record = presentationRecord;
         var record = presentationRecord.record();
-        this.element.className = "timeline-graph-side timeline-category-" + record.category.name;
+        this.element.className = "timeline-graph-side timeline-category-" + record.category().name;
         if (record.thread)
             this.element.classList.add("background");
 

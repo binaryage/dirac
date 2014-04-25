@@ -385,7 +385,7 @@ WebInspector.TimelineModel.prototype = {
 
         record._calculateAggregatedStats();
         if (parentRecord)
-            parentRecord._selfTime -= record.endTime - record.startTime;
+            parentRecord._selfTime -= record.endTime() - record.startTime();
         return record;
     },
 
@@ -577,7 +577,7 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
         parentRecord.children.push(this);
     }
 
-    this._selfTime = this.endTime - this.startTime;
+    this._selfTime = this.endTime() - this.startTime();
 
     if (record.data) {
         if (record.data["url"])
@@ -716,7 +716,10 @@ WebInspector.TimelineModel.Record.prototype = {
         return this._model.target();
     },
 
-    get selfTime()
+    /**
+     * @return {number}
+     */
+    selfTime: function()
     {
         return this._selfTime;
     },
@@ -732,7 +735,7 @@ WebInspector.TimelineModel.Record.prototype = {
     /**
      * @return {!WebInspector.TimelineCategory}
      */
-    get category()
+    category: function()
     {
         return WebInspector.TimelineUIUtils.categoryForRecord(this);
     },
@@ -748,7 +751,7 @@ WebInspector.TimelineModel.Record.prototype = {
     /**
      * @return {number}
      */
-    get startTime()
+    startTime: function()
     {
         return this._record.startTime;
     },
@@ -764,12 +767,15 @@ WebInspector.TimelineModel.Record.prototype = {
     /**
      * @return {number}
      */
-    get endTime()
+    endTime: function()
     {
         return this._endTime || this._record.endTime || this._record.startTime;
     },
 
-    set endTime(endTime)
+    /**
+     * @param {number} endTime
+     */
+    setEndTime: function(endTime)
     {
         this._endTime = endTime;
     },
@@ -839,7 +845,7 @@ WebInspector.TimelineModel.Record.prototype = {
             for (var category in child._aggregatedStats)
                 this._aggregatedStats[category] = (this._aggregatedStats[category] || 0) + child._aggregatedStats[category];
         }
-        this._aggregatedStats[this.category.name] = (this._aggregatedStats[this.category.name] || 0) + this._selfTime;
+        this._aggregatedStats[this.category().name] = (this._aggregatedStats[this.category().name] || 0) + this._selfTime;
     },
 
     get aggregatedStats()
@@ -1116,8 +1122,8 @@ WebInspector.TimelineMergingRecordBuffer = function()
 WebInspector.TimelineMergingRecordBuffer.prototype = {
     /**
      * @param {string} thread
-     * @param {!Array.<!TimelineAgent.TimelineEvent>} records
-     * @return {!Array.<!TimelineAgent.TimelineEvent>}
+     * @param {!Array.<!WebInspector.TimelineModel.Record>} records
+     * @return {!Array.<!WebInspector.TimelineModel.Record>}
      */
     process: function(thread, records)
     {
@@ -1126,13 +1132,13 @@ WebInspector.TimelineMergingRecordBuffer.prototype = {
             return [];
         }
         /**
-         * @param {!TimelineAgent.TimelineEvent} a
-         * @param {!TimelineAgent.TimelineEvent} b
+         * @param {!WebInspector.TimelineModel.Record} a
+         * @param {!WebInspector.TimelineModel.Record} b
          */
         function recordTimestampComparator(a, b)
         {
             // Never return 0, as the merge function will squash identical entries.
-            return a.startTime < b.startTime ? -1 : 1;
+            return a.startTime() < b.startTime() ? -1 : 1;
         }
         var result = this._backgroundRecordsBuffer.mergeOrdered(records, recordTimestampComparator);
         this._backgroundRecordsBuffer = [];

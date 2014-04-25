@@ -25,8 +25,8 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
         if (record.type !== WebInspector.TimelineModel.RecordType.FunctionCall &&
             record.type !== WebInspector.TimelineModel.RecordType.EvaluateScript)
             return;
-        var recordStartTime = record.startTime;
-        var recordEndTime = record.endTime;
+        var recordStartTime = record.startTime();
+        var recordEndTime = record.endTime();
         var parentRecord = record;
 
         // FIXME: current children should go into appropriate JS Frame records.
@@ -60,8 +60,8 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
         {
             if (node === idleNode || node === programNode)
                 return;
-            parentRecord.endTime = Math.min(startTime + totalTime, recordEndTime);
-            parentRecord._selfTime = parentRecord.endTime - parentRecord.startTime;
+            parentRecord.setEndTime(Math.min(startTime + totalTime, recordEndTime));
+            parentRecord._selfTime = parentRecord.endTime() - parentRecord.startTime();
             parentRecord = parentRecord.parent;
         }
 

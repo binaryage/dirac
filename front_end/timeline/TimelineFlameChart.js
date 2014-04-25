@@ -239,7 +239,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             return result;
         }
 
-        this._pushRecord(record, level, record.startTime, record.endTime);
+        this._pushRecord(record, level, record.startTime(), record.endTime());
         for (var i = 0; i < record.children.length; ++i)
             this._appendRecord(record.children[i], level + 1);
         return true;
@@ -328,7 +328,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             }
 
             var entryOffset = timelineData.entryOffsets[entryIndex];
-            var barSelf = offsetToPosition(entryOffset + record.selfTime)
+            var barSelf = offsetToPosition(entryOffset + record.selfTime())
 
             context.beginPath();
             context.fillStyle = category.backgroundColor;
@@ -384,8 +384,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         if (record === this._cpuThreadRecord || record === this._gpuThreadRecord)
             return null;
         return {
-            startTimeOffset: record.startTime - this._zeroTime,
-            endTimeOffset: record.endTime - this._zeroTime
+            startTimeOffset: record.startTime() - this._zeroTime,
+            endTimeOffset: record.endTime() - this._zeroTime
         };
     },
 
@@ -508,7 +508,7 @@ WebInspector.TimelineFlameChart.prototype = {
         this._dataProvider.reset();
         if (this._automaticallySizeWindow) {
             var minimumRecordTime = this._model.minimumRecordTime();
-            if (record.startTime > (minimumRecordTime + 1000)) {
+            if (record.startTime() > (minimumRecordTime + 1000)) {
                 this._automaticallySizeWindow = false;
                 this._delegate.requestWindowTimes(minimumRecordTime, minimumRecordTime + 1000);
             }
