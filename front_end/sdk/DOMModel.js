@@ -858,7 +858,7 @@ WebInspector.DOMNode.prototype = {
      */
     boxModel: function(callback)
     {
-        this._agent.getBoxModel(this._domModel._wrapClientCallback(callback));
+        this._agent.getBoxModel(this.id, this._domModel._wrapClientCallback(callback));
     },
 
     __proto__: WebInspector.TargetAware.prototype
