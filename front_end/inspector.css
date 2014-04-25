@@ -990,31 +990,48 @@ body.platform-linux .source-code {
     background-color: rgb(110, 110, 110);
 }
 
-.console-group.collapsed .console-group-title::before {
+.console-message-wrapper.collapsed .console-group-title::before {
     -webkit-mask-position: -4px -96px;
-}
-
-.console-group.collapsed > .console-group-messages {
-    display: none;
 }
 
 .console-group {
     position: relative;
 }
 
-.console-group-bracket {
-    position:absolute;
-    top: 15px;
-    left: 13px;
-    bottom: 5px;
-    width: 3px;
-    border-style: solid;
-    border-color: #A3A3A3;
-    border-width: 0 0 1px 1px;
+.console-message-wrapper {
+    display: flex;
 }
 
-.console-group.collapsed > .console-group-bracket {
-    display: none;
+.console-message-wrapper .nesting-level-marker {
+    width: 14px;
+    flex: 0 0 auto;
+    border-right: 1px solid #A3A3A3;
+    position: relative;
+}
+
+.console-message-wrapper:last-child .nesting-level-marker,
+.console-message-wrapper .nesting-level-marker.group-closed {
+    margin-bottom: 4px;
+}
+
+.console-message-wrapper:last-child .nesting-level-marker::before,
+.console-message-wrapper .nesting-level-marker.group-closed::before
+{
+    content: "";
+}
+
+.console-message-wrapper .nesting-level-marker::before {
+    border-bottom: 1px solid #A3A3A3;
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-left: 100%;
+    width: 3px;
+    height: 100%;
+}
+
+.console-message {
+    flex: 1 1 auto;
 }
 
 .console-error-level .console-message-text,

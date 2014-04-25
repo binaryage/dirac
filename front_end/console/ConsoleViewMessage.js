@@ -33,13 +33,16 @@
  * @extends {WebInspector.TargetAware}
  * @param {!WebInspector.ConsoleMessage} consoleMessage
  * @param {?WebInspector.Linkifier} linkifier
+ * @param {number} nestingLevel
  */
-WebInspector.ConsoleViewMessage = function(consoleMessage, linkifier)
+WebInspector.ConsoleViewMessage = function(consoleMessage, linkifier, nestingLevel)
 {
     WebInspector.TargetAware.call(this, consoleMessage.target());
     this._message = consoleMessage;
     this._linkifier = linkifier;
     this._repeatCount = 1;
+    this._closeGroupDecorationCount = 0;
+    this._nestingLevel = nestingLevel;
 
     /** @type {!Array.<!WebInspector.DataGrid>} */
     this._dataGrids = [];
@@ -891,17 +894,44 @@ WebInspector.ConsoleViewMessage.prototype = {
     },
 
     /**
+     * @return {number}
+     */
+    nestingLevel: function()
+    {
+        return this._nestingLevel;
+    },
+
+    /**
+     * @return {number}
+     */
+    closeGroupDecorationCount: function()
+    {
+        return this._closeGroupDecorationCount;
+    },
+
+    /**
+     * @param {number} count
+     */
+    setCloseGroupDecorationCount: function(count)
+    {
+        this._closeGroupDecorationCount = count;
+        if (!this._element)
+            this.toMessageElement();
+        for (var i = 0, n = this._nestingLevelMarkers.length; i < n; ++i) {
+            var marker = this._nestingLevelMarkers[i];
+            marker.classList.toggle("group-closed", n - i <= count);
+        }
+    },
+
+    /**
      * @return {!Element}
      */
-    toMessageElement: function()
+    contentElement: function()
     {
         if (this._element)
             return this._element;
 
-        var element = document.createElement("div");
-        element.message = this;
-        element.className = "console-message";
-
+        var element = document.createElementWithClass("div", "console-message");
         this._element = element;
 
         switch (this._message.level) {
@@ -932,7 +962,25 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         this.updateTimestamp(WebInspector.settings.consoleTimestampsEnabled.get());
 
-        return element;
+        return this._element;
+    },
+
+    /**
+     * @return {!Element}
+     */
+    toMessageElement: function()
+    {
+        if (this._wrapperElement)
+            return this._wrapperElement;
+
+        this._wrapperElement = document.createElementWithClass("div", "console-message-wrapper");
+        this._nestingLevelMarkers = [];
+        for (var i = 0; i < this._nestingLevel; ++i)
+            this._nestingLevelMarkers.push(this._wrapperElement.createChild("div", "nesting-level-marker"));
+        this._wrapperElement.message = this;
+
+        this._wrapperElement.appendChild(this.contentElement());
+        return this._wrapperElement;
     },
 
     _populateStackTraceTreeElement: function(parentTreeElement)
