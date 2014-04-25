@@ -360,9 +360,9 @@ WebInspector.TimelineModel.prototype = {
 
         var record = this._innerAddRecord(payload, null);
         this._records.push(record);
-        if (record.type() === WebInspector.TimelineModel.RecordType.Program)
+        if (record.type === WebInspector.TimelineModel.RecordType.Program)
             this._mainThreadTasks.push(record);
-        if (record.type() === WebInspector.TimelineModel.RecordType.GPUTask)
+        if (record.type === WebInspector.TimelineModel.RecordType.GPUTask)
             this._gpuThreadTasks.push(record);
 
         this.dispatchEventToListeners(WebInspector.TimelineModel.Events.RecordAdded, record);
@@ -621,7 +621,7 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
     case recordTypes.TimerFire:
         var timerInstalledRecord = bindings._timerRecords[record.data["timerId"]];
         if (timerInstalledRecord) {
-            this.callSiteStackTrace = timerInstalledRecord.stackTrace();
+            this.callSiteStackTrace = timerInstalledRecord.stackTrace;
             this.timeout = timerInstalledRecord.timeout;
             this.singleShot = timerInstalledRecord.singleShot;
         }
@@ -634,7 +634,7 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
     case recordTypes.FireAnimationFrame:
         var requestAnimationRecord = bindings._requestAnimationFrameRecords[record.data["id"]];
         if (requestAnimationRecord)
-            this.callSiteStackTrace = requestAnimationRecord.stackTrace();
+            this.callSiteStackTrace = requestAnimationRecord.stackTrace;
         break;
 
     case recordTypes.ConsoleTime:
@@ -642,40 +642,40 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
         break;
 
     case recordTypes.ScheduleStyleRecalculation:
-        bindings._lastScheduleStyleRecalculation[this.frameId()] = this;
+        bindings._lastScheduleStyleRecalculation[this.frameId] = this;
         break;
 
     case recordTypes.RecalculateStyles:
-        var scheduleStyleRecalculationRecord = bindings._lastScheduleStyleRecalculation[this.frameId()];
+        var scheduleStyleRecalculationRecord = bindings._lastScheduleStyleRecalculation[this.frameId];
         if (!scheduleStyleRecalculationRecord)
             break;
-        this.callSiteStackTrace = scheduleStyleRecalculationRecord.stackTrace();
+        this.callSiteStackTrace = scheduleStyleRecalculationRecord.stackTrace;
         break;
 
     case recordTypes.InvalidateLayout:
         // Consider style recalculation as a reason for layout invalidation,
         // but only if we had no earlier layout invalidation records.
         var styleRecalcStack;
-        if (!bindings._layoutInvalidateStack[this.frameId()]) {
-            if (parentRecord.type() === recordTypes.RecalculateStyles)
+        if (!bindings._layoutInvalidateStack[this.frameId]) {
+            if (parentRecord.type === recordTypes.RecalculateStyles)
                 styleRecalcStack = parentRecord.callSiteStackTrace;
         }
-        bindings._layoutInvalidateStack[this.frameId()] = styleRecalcStack || this.stackTrace;
+        bindings._layoutInvalidateStack[this.frameId] = styleRecalcStack || this.stackTrace;
         break;
 
     case recordTypes.Layout:
-        var layoutInvalidateStack = bindings._layoutInvalidateStack[this.frameId()];
+        var layoutInvalidateStack = bindings._layoutInvalidateStack[this.frameId];
         if (layoutInvalidateStack)
             this.callSiteStackTrace = layoutInvalidateStack;
         if (this.stackTrace)
             this._addWarning(WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
 
-        bindings._layoutInvalidateStack[this.frameId()] = null;
+        bindings._layoutInvalidateStack[this.frameId] = null;
         this.highlightQuad = record.data.root || WebInspector.TimelineModel._quadFromRectData(record.data);
         break;
 
     case recordTypes.AutosizeText:
-        if (record.data.needsRelayout && parentRecord.type() === recordTypes.Layout)
+        if (record.data.needsRelayout && parentRecord.type === recordTypes.Layout)
             parentRecord._addWarning(WebInspector.UIString("Layout required two passes due to text autosizing, consider setting viewport."));
         break;
 
@@ -759,7 +759,7 @@ WebInspector.TimelineModel.Record.prototype = {
     /**
      * @return {string|undefined}
      */
-    thread: function()
+    get thread()
     {
         return this._record.thread;
     },
@@ -791,7 +791,7 @@ WebInspector.TimelineModel.Record.prototype = {
     /**
      * @return {string}
      */
-    type: function()
+    get type()
     {
         return this._record.type;
     },
@@ -799,7 +799,7 @@ WebInspector.TimelineModel.Record.prototype = {
     /**
      * @return {string}
      */
-    frameId: function()
+    get frameId()
     {
         return this._record.frameId || "";
     },
@@ -807,7 +807,7 @@ WebInspector.TimelineModel.Record.prototype = {
     /**
      * @return {?Array.<!ConsoleAgent.CallFrame>}
      */
-    stackTrace: function()
+    get stackTrace()
     {
         if (this._record.stackTrace && this._record.stackTrace.length)
             return this._record.stackTrace;
@@ -848,10 +848,7 @@ WebInspector.TimelineModel.Record.prototype = {
         this._aggregatedStats[this.category().name] = (this._aggregatedStats[this.category().name] || 0) + this._selfTime;
     },
 
-    /**
-     * @return {!Object.<string, number>}
-     */
-    aggregatedStats: function()
+    get aggregatedStats()
     {
         return this._aggregatedStats;
     },

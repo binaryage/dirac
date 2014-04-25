@@ -96,7 +96,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     addRecord: function(record)
     {
         var records;
-        if (record.type() === WebInspector.TimelineModel.RecordType.Program)
+        if (record.type === WebInspector.TimelineModel.RecordType.Program)
             records = record.children;
         else
             records = [record];
@@ -115,7 +115,7 @@ WebInspector.TimelinePresentationModel.prototype = {
 
         // On main thread, only coalesce if the last event is of same type.
         if (parentRecord === this._rootRecord)
-            coalescingBucket = record.thread() ? record.type() : "mainThread";
+            coalescingBucket = record.thread ? record.type : "mainThread";
         var coalescedRecord = this._findCoalescedParent(record, parentRecord, coalescingBucket);
         if (coalescedRecord)
             parentRecord = coalescedRecord;
@@ -151,9 +151,9 @@ WebInspector.TimelinePresentationModel.prototype = {
         var endTime = record.endTime();
         if (!lastRecord)
             return null;
-        if (lastRecord.record().type() !== record.type())
+        if (lastRecord.record().type !== record.type)
             return null;
-        if (!WebInspector.TimelinePresentationModel._coalescingRecords[record.type()])
+        if (!WebInspector.TimelinePresentationModel._coalescingRecords[record.type])
             return null;
         if (lastRecord.record().endTime() + coalescingThresholdMillis < startTime)
             return null;
@@ -172,13 +172,13 @@ WebInspector.TimelinePresentationModel.prototype = {
     {
         var record = presentationRecord.record();
         var rawRecord = {
-            type: record.type(),
+            type: record.type,
             startTime: record.startTime(),
             data: { }
         };
-        if (record.thread())
+        if (record.thread)
             rawRecord.thread = "aggregated";
-        if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp)
+        if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp)
             rawRecord.data["message"] = record.data.message;
 
         var modelRecord = new WebInspector.TimelineModel.Record(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (rawRecord), null);
@@ -194,7 +194,7 @@ WebInspector.TimelinePresentationModel.prototype = {
 
         coalescedRecord._presentationParent = parent;
         parent._presentationChildren[parent._presentationChildren.indexOf(presentationRecord)] = coalescedRecord;
-        WebInspector.TimelineUIUtils.aggregateTimeByCategory(modelRecord.aggregatedStats(), record.aggregatedStats());
+        WebInspector.TimelineUIUtils.aggregateTimeByCategory(modelRecord.aggregatedStats, record.aggregatedStats);
 
         return coalescedRecord;
     },
@@ -206,7 +206,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     {
         var record = presentationRecord.record();
         var parentRecord = presentationRecord._presentationParent.record();
-        WebInspector.TimelineUIUtils.aggregateTimeByCategory(parentRecord.aggregatedStats(), record.aggregatedStats());
+        WebInspector.TimelineUIUtils.aggregateTimeByCategory(parentRecord.aggregatedStats, record.aggregatedStats);
         if (parentRecord.endTime() < record.endTime())
             parentRecord.setEndTime(record.endTime());
     },

@@ -22,8 +22,8 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
      */
     function processRecord(record)
     {
-        if (record.type() !== WebInspector.TimelineModel.RecordType.FunctionCall &&
-            record.type() !== WebInspector.TimelineModel.RecordType.EvaluateScript)
+        if (record.type !== WebInspector.TimelineModel.RecordType.FunctionCall &&
+            record.type !== WebInspector.TimelineModel.RecordType.EvaluateScript)
             return;
         var recordStartTime = record.startTime();
         var recordEndTime = record.endTime();

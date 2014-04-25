@@ -112,7 +112,7 @@ WebInspector.TimelineFrameModel.prototype = {
     addRecord: function(record)
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
-        var programRecord = record.type() === recordTypes.Program ? record : null;
+        var programRecord = record.type === recordTypes.Program ? record : null;
 
         // Start collecting main frame
         if (programRecord) {
@@ -124,9 +124,9 @@ WebInspector.TimelineFrameModel.prototype = {
         if (this._model.bufferEvents())
             records = [record];
         else
-            records = this._mergingBuffer.process(record.thread(), /** type {Array.<!WebInspector.TimelineModel.Record>} */(programRecord ? record.children || [] : [record]));
+            records = this._mergingBuffer.process(record.thread, /** type {Array.<!WebInspector.TimelineModel.Record>} */(programRecord ? record.children || [] : [record]));
         for (var i = 0; i < records.length; ++i) {
-            if (records[i].thread())
+            if (records[i].thread)
                 this._addBackgroundRecord(records[i]);
             else
                 this._addMainThreadRecord(programRecord, records[i]);
@@ -182,13 +182,13 @@ WebInspector.TimelineFrameModel.prototype = {
     _addBackgroundRecord: function(record)
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
-        if (record.type() === recordTypes.BeginFrame)
+        if (record.type === recordTypes.BeginFrame)
             this.handleBeginFrame(record.startTime());
-        else if (record.type() === recordTypes.DrawFrame)
+        else if (record.type === recordTypes.DrawFrame)
             this.handleDrawFrame(record.startTime());
-        else if (record.type() === recordTypes.RequestMainThreadFrame)
+        else if (record.type === recordTypes.RequestMainThreadFrame)
             this.handleRequestMainThreadFrame();
-        else if (record.type() === recordTypes.ActivateLayerTree)
+        else if (record.type === recordTypes.ActivateLayerTree)
             this.handleActivateLayerTree();
 
         if (this._lastFrame)
@@ -202,10 +202,10 @@ WebInspector.TimelineFrameModel.prototype = {
     _addMainThreadRecord: function(programRecord, record)
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
-        if (record.type() === recordTypes.UpdateLayerTree)
+        if (record.type === recordTypes.UpdateLayerTree)
             this._lastLayerTree = record.data["layerTree"] || null;
         if (!this._hasThreadedCompositing) {
-            if (record.type() === recordTypes.BeginFrame)
+            if (record.type === recordTypes.BeginFrame)
                 this._startMainThreadFrame(record.startTime());
 
             if (!this._lastFrame)
@@ -228,7 +228,7 @@ WebInspector.TimelineFrameModel.prototype = {
         if (programRecord.children[0] === record)
             this._deriveOtherTime(programRecord, this._aggregatedMainThreadWork);
 
-        if (record.type() === recordTypes.CompositeLayers) {
+        if (record.type === recordTypes.CompositeLayers) {
             this._aggregatedMainThreadWorkToAttachToBackgroundFrame = this._aggregatedMainThreadWork;
             this._aggregatedMainThreadWork = null;
         }
@@ -291,7 +291,7 @@ WebInspector.TimelineFrameModel.prototype = {
      */
     _findRecordRecursively: function(types, record)
     {
-        if (types.indexOf(record.type()) >= 0)
+        if (types.indexOf(record.type) >= 0)
             return record;
         if (!record.children)
             return null;
