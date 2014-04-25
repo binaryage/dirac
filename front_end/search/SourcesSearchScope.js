@@ -132,7 +132,7 @@ WebInspector.SourcesSearchScope.prototype = {
             return;
         }
 
-        addDirtyFiles();
+        addDirtyFiles.call(this);
 
         if (!files.length) {
             progress.done();
@@ -149,6 +149,9 @@ WebInspector.SourcesSearchScope.prototype = {
         for (var i = 0; i < maxFileContentRequests && i < files.length; ++i)
             scheduleSearchInNextFileOrFinish.call(this);
 
+        /**
+         * @this {WebInspector.SourcesSearchScope}
+         */
         function addDirtyFiles()
         {
             var matchingFiles = StringSet.fromArray(files);
@@ -157,7 +160,7 @@ WebInspector.SourcesSearchScope.prototype = {
                 if (!uiSourceCodes[i].isDirty())
                     continue;
                 var path = uiSourceCodes[i].path();
-                if (!matchingFiles.contains(path))
+                if (!matchingFiles.contains(path) && this._searchConfig.filePathMatchesFileQuery(path))
                     files.push(path);
             }
         }
