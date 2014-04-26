@@ -484,7 +484,7 @@ WebInspector.ConsoleView.prototype = {
         }
         contextMenu.appendCheckboxItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Preserve log upon navigation" : "Preserve Log upon Navigation"), preserveLogItemAction, WebInspector.settings.preserveConsoleLog.get());
 
-        var sourceElement = event.target.enclosingNodeOrSelfWithClass("console-message");
+        var sourceElement = event.target.enclosingNodeOrSelfWithClass("console-message-wrapper");
 
         var filterSubMenu = contextMenu.appendSubMenuItem(WebInspector.UIString("Filter"));
 
