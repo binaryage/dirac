@@ -11,14 +11,16 @@ WebInspector.CPUProfileDataModel = function(profile)
 {
     this.profileHead = profile.head;
     this.samples = profile.samples;
+    this.timestamps = profile.timestamps;
     this.profileStartTime = profile.startTime * 1000;
     this.profileEndTime = profile.endTime * 1000;
-    this._calculateTimes(profile);
-    this._assignParentsInProfile();
     if (this.samples) {
+        this._normalizeSamples();
         this._buildIdToNodeMap();
         this._fixMissingSamples();
     }
+    this._calculateTimes(profile);
+    this._assignParentsInProfile();
 }
 
 WebInspector.CPUProfileDataModel.prototype = {
@@ -68,6 +70,19 @@ WebInspector.CPUProfileDataModel.prototype = {
                     nodesToTraverse.push(child);
             }
         }
+    },
+
+    _normalizeSamples: function()
+    {
+        var timestamps = this.timestamps;
+        // Convert samples from usec to msec
+        for (var i = 0; i < timestamps.length; ++i)
+            timestamps[i] /= 1000;
+        var averageSample = (timestamps.peekLast() - timestamps[0]) / (timestamps.length - 1);
+        // Add an extra timestamp used to calculate the last sample duration.
+        this.timestamps.push(timestamps.peekLast() + averageSample);
+        this.profileStartTime = timestamps[0];
+        this.profileEndTime = timestamps.peekLast();
     },
 
     _buildIdToNodeMap: function()
@@ -155,25 +170,25 @@ WebInspector.CPUProfileDataModel.prototype = {
         if (!this.profileHead)
             return;
 
-        var profileStartTime = this.profileStartTime;
-        startTime = Math.max(startTime || 0, profileStartTime);
+        startTime = startTime || 0;
         stopTime = stopTime || Infinity;
         var samples = this.samples;
+        var timestamps = this.timestamps;
         var idToNode = this._idToNode;
         var gcNode = this.gcNode;
         var samplesCount = samples.length;
-        var samplingInterval = this.samplingInterval;
 
         var openIntervals = [];
         var stackTrace = [];
         var depth = 0;
         var currentInterval;
-        var startIndex = Math.ceil((startTime - profileStartTime) / samplingInterval);
+        var startIndex = timestamps.lowerBound(startTime);
 
         for (var sampleIndex = startIndex; sampleIndex < samplesCount; sampleIndex++) {
-            var sampleTime = sampleIndex * samplingInterval + profileStartTime;
+            var sampleTime = timestamps[sampleIndex];
             if (sampleTime >= stopTime)
                 break;
+            var samplingInterval = timestamps[sampleIndex + 1] - sampleTime;
 
             stackTrace.length = 0;
             for (var node = idToNode[samples[sampleIndex]]; node.parent; node = node.parent)
