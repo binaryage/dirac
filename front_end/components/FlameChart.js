@@ -376,6 +376,8 @@ WebInspector.FlameChart.prototype = {
         var ratio = window.devicePixelRatio;
         this._canvas.width = this._offsetWidth * ratio;
         this._canvas.height = this._offsetHeight * ratio;
+        this._canvas.style.width = this._offsetWidth + "px";
+        this._canvas.style.height = this._offsetHeight + "px";
     },
 
     /**
@@ -923,8 +925,6 @@ WebInspector.FlameChart.prototype = {
         this._vScrollElement.classList.toggle("hidden", !showScroll);
         this._offsetWidth = this.element.offsetWidth - (WebInspector.isMac() ? 0 : this._vScrollElement.offsetWidth);
         this._offsetHeight = this.element.offsetHeight;
-        this._canvas.style.width = this._offsetWidth + "px";
-        this._canvas.style.height = this._offsetHeight + "px";
         this._scheduleUpdate();
     },
 
