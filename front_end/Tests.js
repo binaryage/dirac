@@ -684,7 +684,7 @@ TestSuite.prototype.recordTimeline = function(callback)
     function innerAddRecord(record)
     {
         records.push(record);
-        if (record.type() === "TimeStamp" && record.data.message === "ready")
+        if (record.type() === "TimeStamp" && record.data().message === "ready")
             done();
 
         if (record.children)

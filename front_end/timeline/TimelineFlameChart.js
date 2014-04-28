@@ -292,7 +292,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             return "#555";
 
         if (record.type() === WebInspector.TimelineModel.RecordType.JSFrame)
-            return WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator().colorForID(record.data["functionName"]);
+            return WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator().colorForID(record.data()["functionName"]);
 
         var category = WebInspector.TimelineUIUtils.categoryForRecord(record);
         return category.fillColorStop1;

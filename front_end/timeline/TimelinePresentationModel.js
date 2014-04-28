@@ -179,7 +179,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         if (record.thread())
             rawRecord.thread = "aggregated";
         if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp)
-            rawRecord.data["message"] = record.data.message;
+            rawRecord.data["message"] = record.data().message;
 
         var modelRecord = new WebInspector.TimelineModel.Record(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (rawRecord), null);
         var coalescedRecord = new WebInspector.TimelinePresentationModel.Record(modelRecord, null);

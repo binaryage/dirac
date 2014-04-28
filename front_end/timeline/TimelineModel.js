@@ -561,15 +561,15 @@ WebInspector.TimelineModel.InterRecordBindings.prototype = {
 /**
  * @constructor
  * @param {!WebInspector.TimelineModel} model
- * @param {!TimelineAgent.TimelineEvent} record
+ * @param {!TimelineAgent.TimelineEvent} timelineEvent
  * @param {?WebInspector.TimelineModel.Record} parentRecord
  */
-WebInspector.TimelineModel.Record = function(model, record, parentRecord)
+WebInspector.TimelineModel.Record = function(model, timelineEvent, parentRecord)
 {
     this._model = model;
     var bindings = this._model._bindings;
     this._aggregatedStats = {};
-    this._record = record;
+    this._record = timelineEvent;
     this._children = [];
     if (parentRecord) {
         this.parent = parentRecord;
@@ -578,13 +578,13 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
 
     this._selfTime = this.endTime() - this.startTime();
 
-    if (record.data) {
-        if (record.data["url"])
-            this.url = record.data["url"];
-        if (record.data["scriptName"] || record.data["scriptId"]) {
-            this.scriptId = record.data["scriptId"];
-            this.scriptName = record.data["scriptName"];
-            this.scriptLine = record.data["scriptLine"];
+    if (timelineEvent.data) {
+        if (timelineEvent.data["url"])
+            this.url = timelineEvent.data["url"];
+        if (timelineEvent.data["scriptName"] || timelineEvent.data["scriptId"]) {
+            this.scriptId = timelineEvent.data["scriptId"];
+            this.scriptName = timelineEvent.data["scriptName"];
+            this.scriptLine = timelineEvent.data["scriptLine"];
         }
     }
 
@@ -592,33 +592,33 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
         this.callSiteStackTrace = parentRecord.callSiteStackTrace;
 
     var recordTypes = WebInspector.TimelineModel.RecordType;
-    switch (record.type) {
+    switch (timelineEvent.type) {
     case recordTypes.ResourceSendRequest:
         // Make resource receive record last since request was sent; make finish record last since response received.
-        bindings._sendRequestRecords[record.data["requestId"]] = this;
+        bindings._sendRequestRecords[timelineEvent.data["requestId"]] = this;
         break;
 
     case recordTypes.ResourceReceiveResponse:
-        var sendRequestRecord = bindings._sendRequestRecords[record.data["requestId"]];
+        var sendRequestRecord = bindings._sendRequestRecords[timelineEvent.data["requestId"]];
         if (sendRequestRecord) // False if we started instrumentation in the middle of request.
             this.url = sendRequestRecord.url;
         break;
 
     case recordTypes.ResourceReceivedData:
     case recordTypes.ResourceFinish:
-        var sendRequestRecord = bindings._sendRequestRecords[record.data["requestId"]];
+        var sendRequestRecord = bindings._sendRequestRecords[timelineEvent.data["requestId"]];
         if (sendRequestRecord) // False for main resource.
             this.url = sendRequestRecord.url;
         break;
 
     case recordTypes.TimerInstall:
-        this.timeout = record.data["timeout"];
-        this.singleShot = record.data["singleShot"];
-        bindings._timerRecords[record.data["timerId"]] = this;
+        this.timeout = timelineEvent.data["timeout"];
+        this.singleShot = timelineEvent.data["singleShot"];
+        bindings._timerRecords[timelineEvent.data["timerId"]] = this;
         break;
 
     case recordTypes.TimerFire:
-        var timerInstalledRecord = bindings._timerRecords[record.data["timerId"]];
+        var timerInstalledRecord = bindings._timerRecords[timelineEvent.data["timerId"]];
         if (timerInstalledRecord) {
             this.callSiteStackTrace = timerInstalledRecord.stackTrace();
             this.timeout = timerInstalledRecord.timeout;
@@ -627,17 +627,17 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
         break;
 
     case recordTypes.RequestAnimationFrame:
-        bindings._requestAnimationFrameRecords[record.data["id"]] = this;
+        bindings._requestAnimationFrameRecords[timelineEvent.data["id"]] = this;
         break;
 
     case recordTypes.FireAnimationFrame:
-        var requestAnimationRecord = bindings._requestAnimationFrameRecords[record.data["id"]];
+        var requestAnimationRecord = bindings._requestAnimationFrameRecords[timelineEvent.data["id"]];
         if (requestAnimationRecord)
             this.callSiteStackTrace = requestAnimationRecord.stackTrace();
         break;
 
     case recordTypes.ConsoleTime:
-        var message = record.data["message"];
+        var message = timelineEvent.data["message"];
         break;
 
     case recordTypes.ScheduleStyleRecalculation:
@@ -670,29 +670,29 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
             this._addWarning(WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
 
         bindings._layoutInvalidateStack[this.frameId()] = null;
-        this.highlightQuad = record.data.root || WebInspector.TimelineModel._quadFromRectData(record.data);
+        this.highlightQuad = timelineEvent.data.root || WebInspector.TimelineModel._quadFromRectData(timelineEvent.data);
         break;
 
     case recordTypes.AutosizeText:
-        if (record.data.needsRelayout && parentRecord.type() === recordTypes.Layout)
+        if (timelineEvent.data.needsRelayout && parentRecord.type() === recordTypes.Layout)
             parentRecord._addWarning(WebInspector.UIString("Layout required two passes due to text autosizing, consider setting viewport."));
         break;
 
     case recordTypes.Paint:
-        this.highlightQuad = record.data.clip || WebInspector.TimelineModel._quadFromRectData(record.data);
+        this.highlightQuad = timelineEvent.data.clip || WebInspector.TimelineModel._quadFromRectData(timelineEvent.data);
         break;
 
     case recordTypes.WebSocketCreate:
-        this.webSocketURL = record.data["url"];
-        if (typeof record.data["webSocketProtocol"] !== "undefined")
-            this.webSocketProtocol = record.data["webSocketProtocol"];
-        bindings._webSocketCreateRecords[record.data["identifier"]] = this;
+        this.webSocketURL = timelineEvent.data["url"];
+        if (typeof timelineEvent.data["webSocketProtocol"] !== "undefined")
+            this.webSocketProtocol = timelineEvent.data["webSocketProtocol"];
+        bindings._webSocketCreateRecords[timelineEvent.data["identifier"]] = this;
         break;
 
     case recordTypes.WebSocketSendHandshakeRequest:
     case recordTypes.WebSocketReceiveHandshakeResponse:
     case recordTypes.WebSocketDestroy:
-        var webSocketCreateRecord = bindings._webSocketCreateRecords[record.data["identifier"]];
+        var webSocketCreateRecord = bindings._webSocketCreateRecords[timelineEvent.data["identifier"]];
         if (webSocketCreateRecord) { // False if we started instrumentation in the middle of request.
             this.webSocketURL = webSocketCreateRecord.webSocketURL;
             if (typeof webSocketCreateRecord.webSocketProtocol !== "undefined")
@@ -701,7 +701,7 @@ WebInspector.TimelineModel.Record = function(model, record, parentRecord)
         break;
 
     case recordTypes.EmbedderCallback:
-        this.embedderCallbackName = record.data["callbackName"];
+        this.embedderCallbackName = timelineEvent.data["callbackName"];
         break;
     }
 }
@@ -782,7 +782,7 @@ WebInspector.TimelineModel.Record.prototype = {
     /**
      * @return {!Object}
      */
-    get data()
+    data: function()
     {
         return this._record.data;
     },

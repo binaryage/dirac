@@ -71,7 +71,7 @@ WebInspector.MemoryCountersGraph.prototype = {
         {
             if (record.type() !== WebInspector.TimelineModel.RecordType.UpdateCounters)
                 return;
-            var counters = record.data;
+            var counters = record.data();
             for (var name in counters) {
                 var counter = this._countersByName[name];
                 if (counter)

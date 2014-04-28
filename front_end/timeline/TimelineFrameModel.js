@@ -203,7 +203,7 @@ WebInspector.TimelineFrameModel.prototype = {
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
         if (record.type() === recordTypes.UpdateLayerTree)
-            this._lastLayerTree = record.data["layerTree"] || null;
+            this._lastLayerTree = record.data()["layerTree"] || null;
         if (!this._hasThreadedCompositing) {
             if (record.type() === recordTypes.BeginFrame)
                 this._startMainThreadFrame(record.startTime());

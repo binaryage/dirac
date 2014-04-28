@@ -88,7 +88,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
         function processRecord(record) {
             if (record.type() !== WebInspector.TimelineModel.RecordType.UpdateCounters)
                 return;
-            var counters = record.data;
+            var counters = record.data();
             if (!counters.jsHeapSizeUsed)
                 return;
             var x = Math.round((record.endTime() - minTime) * xFactor);
