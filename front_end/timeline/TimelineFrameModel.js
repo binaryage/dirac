@@ -124,7 +124,7 @@ WebInspector.TimelineFrameModel.prototype = {
         if (this._model.bufferEvents())
             records = [record];
         else
-            records = this._mergingBuffer.process(record.thread(), /** type {Array.<!WebInspector.TimelineModel.Record>} */(programRecord ? record.children || [] : [record]));
+            records = this._mergingBuffer.process(record.thread(), /** type {Array.<!WebInspector.TimelineModel.Record>} */(programRecord ? record.children() || [] : [record]));
         for (var i = 0; i < records.length; ++i) {
             if (records[i].thread())
                 this._addBackgroundRecord(records[i]);
@@ -214,7 +214,7 @@ WebInspector.TimelineFrameModel.prototype = {
             this._lastFrame._addTimeFromRecord(record);
 
             // Account for "other" time at the same time as the first child.
-            if (programRecord.children[0] === record) {
+            if (programRecord.children()[0] === record) {
                 this._deriveOtherTime(programRecord, this._lastFrame.timeByCategory);
                 this._lastFrame._updateCpuTime();
             }
@@ -225,7 +225,7 @@ WebInspector.TimelineFrameModel.prototype = {
             return;
 
         WebInspector.TimelineUIUtils.aggregateTimeForRecord(this._aggregatedMainThreadWork, record);
-        if (programRecord.children[0] === record)
+        if (programRecord.children()[0] === record)
             this._deriveOtherTime(programRecord, this._aggregatedMainThreadWork);
 
         if (record.type() === recordTypes.CompositeLayers) {
@@ -241,8 +241,8 @@ WebInspector.TimelineFrameModel.prototype = {
     _deriveOtherTime: function(programRecord, timeByCategory)
     {
         var accounted = 0;
-        for (var i = 0; i < programRecord.children.length; ++i)
-            accounted += programRecord.children[i].endTime() - programRecord.children[i].startTime();
+        for (var i = 0; i < programRecord.children().length; ++i)
+            accounted += programRecord.children()[i].endTime() - programRecord.children()[i].startTime();
         var otherTime = programRecord.endTime() - programRecord.startTime() - accounted;
         timeByCategory["other"] = (timeByCategory["other"] || 0) + otherTime;
     },
@@ -293,10 +293,10 @@ WebInspector.TimelineFrameModel.prototype = {
     {
         if (types.indexOf(record.type()) >= 0)
             return record;
-        if (!record.children)
+        if (!record.children())
             return null;
-        for (var i = 0; i < record.children.length; ++i) {
-            var result = this._findRecordRecursively(types, record.children[i]);
+        for (var i = 0; i < record.children().length; ++i) {
+            var result = this._findRecordRecursively(types, record.children()[i]);
             if (result)
                 return result;
         }

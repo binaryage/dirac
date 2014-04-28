@@ -687,8 +687,8 @@ TestSuite.prototype.recordTimeline = function(callback)
         if (record.type() === "TimeStamp" && record.data().message === "ready")
             done();
 
-        if (record.children)
-            record.children.forEach(innerAddRecord);
+        if (record.children())
+            record.children().forEach(innerAddRecord);
     }
 
     function done()

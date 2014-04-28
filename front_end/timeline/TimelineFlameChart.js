@@ -158,8 +158,8 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             if (thread === "gpu")
                 continue;
             if (!thread) {
-                for (var j = 0; j < record.children.length; ++j)
-                    this._appendRecord(record.children[j], 1);
+                for (var j = 0; j < record.children().length; ++j)
+                    this._appendRecord(record.children()[j], 1);
             } else {
                 var visible = this._appendRecord(records[i], 1);
                 if (visible && !this._gpuThreadRecord) {
@@ -234,14 +234,14 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
     {
         var result = false;
         if (!this._model.isVisible(record)) {
-            for (var i = 0; i < record.children.length; ++i)
-                result = this._appendRecord(record.children[i], level) || result;
+            for (var i = 0; i < record.children().length; ++i)
+                result = this._appendRecord(record.children()[i], level) || result;
             return result;
         }
 
         this._pushRecord(record, level, record.startTime(), record.endTime());
-        for (var i = 0; i < record.children.length; ++i)
-            this._appendRecord(record.children[i], level + 1);
+        for (var i = 0; i < record.children().length; ++i)
+            this._appendRecord(record.children()[i], level + 1);
         return true;
     },
 
@@ -331,7 +331,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
             context.restore();
         }
 
-        if (record.children.length) {
+        if (record.children().length) {
             var entryOffset = timelineData.entryOffsets[entryIndex];
             var barSelf = offsetToPosition(entryOffset + record.selfTime())
 

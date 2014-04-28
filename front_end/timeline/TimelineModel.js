@@ -141,7 +141,7 @@ WebInspector.TimelineModel.forAllRecords = function(recordsArray, preOrderCallba
             var record = records[i];
             if (preOrderCallback && preOrderCallback(record, depth))
                 return true;
-            if (processRecords(record.children, depth + 1))
+            if (processRecords(record.children(), depth + 1))
                 return true;
             if (postOrderCallback && postOrderCallback(record, depth))
                 return true;
@@ -205,8 +205,8 @@ WebInspector.TimelineModel.prototype = {
                     return true;
             }
 
-            for (var i = 0; i < record.children.length; ++i) {
-                if (processRecord.call(this, record.children[i], visible ? depth + 1 : depth))
+            for (var i = 0; i < record.children().length; ++i) {
+                if (processRecord.call(this, record.children()[i], visible ? depth + 1 : depth))
                     return true;
             }
             return false;
@@ -572,7 +572,7 @@ WebInspector.TimelineModel.Record = function(model, timelineEvent, parentRecord)
     this._children = [];
     if (parentRecord) {
         this.parent = parentRecord;
-        parentRecord.children.push(this);
+        parentRecord.children().push(this);
     }
 
     this._selfTime = this.endTime() - this.startTime();
@@ -720,7 +720,7 @@ WebInspector.TimelineModel.Record.prototype = {
     /**
      * @return {!Array.<!WebInspector.TimelineModel.Record>}
      */
-    get children()
+    children: function()
     {
         return this._children;
     },

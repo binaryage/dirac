@@ -30,7 +30,7 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
         var parentRecord = record;
 
         // FIXME: current children should go into appropriate JS Frame records.
-        record.children.splice(0, record.children.length);
+        record.children().splice(0, record.children().length);
 
         /**
          * @param {number} depth

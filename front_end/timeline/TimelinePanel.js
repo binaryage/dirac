@@ -951,7 +951,7 @@ WebInspector.TimelinePanel.prototype = {
                 return;
 
             var childrenTime = 0;
-            var children = record.children || [];
+            var children = record.children() || [];
             for (var i = 0; i < children.length; ++i) {
                 var child = children[i];
                 if (!child.endTime() || child.endTime() < startTime || child.startTime() > endTime)

@@ -265,7 +265,7 @@ WebInspector.TimelineUIUtils.aggregateTimeByCategory = function(total, addend)
 WebInspector.TimelineUIUtils.aggregateTimeForRecord = function(total, record)
 {
     var childrenTime = 0;
-    var children = record.children;
+    var children = record.children();
     for (var i = 0; i < children.length; ++i) {
         WebInspector.TimelineUIUtils.aggregateTimeForRecord(total, children[i]);
         childrenTime += children[i].endTime() - children[i].startTime();
@@ -493,7 +493,7 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, model, link
 WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(record, model, linkifier, imagePreviewElement, relatedNode, loadedFromFile)
 {
     var fragment = document.createDocumentFragment();
-    if (record.children.length)
+    if (record.children().length)
         fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(record.aggregatedStats(), record.category(), record.selfTime()));
     else
         fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(record.aggregatedStats()));

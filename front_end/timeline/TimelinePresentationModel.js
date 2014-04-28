@@ -97,7 +97,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     {
         var records;
         if (record.type() === WebInspector.TimelineModel.RecordType.Program)
-            records = record.children;
+            records = record.children();
         else
             records = [record];
 
@@ -127,8 +127,8 @@ WebInspector.TimelinePresentationModel.prototype = {
         if (coalescingBucket)
             this._coalescingBuckets[coalescingBucket] = formattedRecord;
 
-        for (var i = 0; record.children && i < record.children.length; ++i)
-            this._innerAddRecord(formattedRecord, record.children[i]);
+        for (var i = 0; record.children() && i < record.children().length; ++i)
+            this._innerAddRecord(formattedRecord, record.children()[i]);
 
         if (parentRecord._coalesced)
             this._updateCoalescingParent(formattedRecord);
