@@ -111,8 +111,11 @@ WebInspector.ParsedURL.splitURL = function(url)
     }
     var result = [origin];
     var splittedPath = folderPath.split("/");
-    for (var i = 1; i < splittedPath.length; ++i)
+    for (var i = 1; i < splittedPath.length; ++i) {
+        if (!splittedPath[i])
+            continue;
         result.push(splittedPath[i]);
+    }
     result.push(name);
     return result;
 }
