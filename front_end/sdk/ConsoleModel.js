@@ -258,6 +258,15 @@ WebInspector.ConsoleMessage.prototype = {
     /**
      * @return {boolean}
      */
+    isGroupStartMessage: function()
+    {
+        return this.type === WebInspector.ConsoleMessage.MessageType.StartGroup ||
+            this.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed;
+    },
+
+    /**
+     * @return {boolean}
+     */
     isErrorOrWarning: function()
     {
         return (this.level === WebInspector.ConsoleMessage.MessageLevel.Warning || this.level === WebInspector.ConsoleMessage.MessageLevel.Error);

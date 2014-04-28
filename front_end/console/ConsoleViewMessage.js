@@ -901,25 +901,25 @@ WebInspector.ConsoleViewMessage.prototype = {
         return this._nestingLevel;
     },
 
-    /**
-     * @return {number}
-     */
-    closeGroupDecorationCount: function()
+    resetCloseGroupDecorationCount: function()
     {
-        return this._closeGroupDecorationCount;
+        this._closeGroupDecorationCount = 0;
+        this._updateCloseGroupDecorations();
     },
 
-    /**
-     * @param {number} count
-     */
-    setCloseGroupDecorationCount: function(count)
+    incrementCloseGroupDecorationCount: function()
     {
-        this._closeGroupDecorationCount = count;
-        if (!this._element)
-            this.toMessageElement();
+        ++this._closeGroupDecorationCount;
+        this._updateCloseGroupDecorations();
+    },
+
+    _updateCloseGroupDecorations: function()
+    {
+        if (!this._nestingLevelMarkers)
+            return;
         for (var i = 0, n = this._nestingLevelMarkers.length; i < n; ++i) {
             var marker = this._nestingLevelMarkers[i];
-            marker.classList.toggle("group-closed", n - i <= count);
+            marker.classList.toggle("group-closed", n - i <= this._closeGroupDecorationCount);
         }
     },
 
@@ -977,6 +977,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         this._nestingLevelMarkers = [];
         for (var i = 0; i < this._nestingLevel; ++i)
             this._nestingLevelMarkers.push(this._wrapperElement.createChild("div", "nesting-level-marker"));
+        this._updateCloseGroupDecorations();
         this._wrapperElement.message = this;
 
         this._wrapperElement.appendChild(this.contentElement());
@@ -1139,4 +1140,52 @@ WebInspector.ConsoleViewMessage.prototype = {
     },
 
     __proto__: WebInspector.TargetAware.prototype
+}
+
+/**
+ * @constructor
+ * @extends {WebInspector.ConsoleViewMessage}
+ * @param {!WebInspector.ConsoleMessage} consoleMessage
+ * @param {?WebInspector.Linkifier} linkifier
+ * @param {number} nestingLevel
+ */
+WebInspector.ConsoleGroupViewMessage = function(consoleMessage, linkifier, nestingLevel)
+{
+    console.assert(consoleMessage.isGroupStartMessage());
+    WebInspector.ConsoleViewMessage.call(this, consoleMessage, linkifier, nestingLevel);
+    this.setCollapsed(consoleMessage.type === WebInspector.ConsoleMessage.MessageType.StartGroupCollapsed);
+}
+
+WebInspector.ConsoleGroupViewMessage.prototype = {
+    /**
+     * @param {boolean} collapsed
+     */
+    setCollapsed: function(collapsed)
+    {
+        this._collapsed = collapsed;
+        if (this._wrapperElement)
+            this._wrapperElement.classList.toggle("collapsed", this._collapsed);
+    },
+
+    /**
+     * @return {boolean}
+     */
+    collapsed: function()
+    {
+       return this._collapsed;
+    },
+
+    /**
+     * @return {!Element}
+     */
+    toMessageElement: function()
+    {
+        if (!this._wrapperElement) {
+            WebInspector.ConsoleViewMessage.prototype.toMessageElement.call(this);
+            this._wrapperElement.classList.toggle("collapsed", this._collapsed);
+        }
+        return this._wrapperElement;
+    },
+
+    __proto__: WebInspector.ConsoleViewMessage.prototype
 }
