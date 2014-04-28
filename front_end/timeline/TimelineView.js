@@ -1016,7 +1016,7 @@ WebInspector.TimelineRecordListRow.prototype = {
         for (var currentRecord = presentationRecord.presentationParent() ? presentationRecord.presentationParent().presentationParent() : null; currentRecord; currentRecord = currentRecord.presentationParent())
             paddingLeft += 12 / (Math.max(1, step++));
         this.element.style.paddingLeft = paddingLeft + "px";
-        if (record.thread)
+        if (record.thread())
             this.element.classList.add("background");
 
         this._typeElement.textContent = record.title();
@@ -1147,7 +1147,7 @@ WebInspector.TimelineRecordGraphRow.prototype = {
         this._record = presentationRecord;
         var record = presentationRecord.record();
         this.element.className = "timeline-graph-side timeline-category-" + record.category().name;
-        if (record.thread)
+        if (record.thread())
             this.element.classList.add("background");
 
         var barPosition = calculator.computeBarGraphWindowPosition(record);

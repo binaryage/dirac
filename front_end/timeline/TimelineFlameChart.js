@@ -192,7 +192,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                     level = 0;
                 else if (record === this._gpuThreadRecord)
                     level = cpuStackDepth + 2;
-                else if (record.thread)
+                else if (record.thread())
                     level += threadBaselines[record.thread()];
                 this._timelineData.entryLevels[i] = level;
             }
