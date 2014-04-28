@@ -574,8 +574,8 @@ TestSuite.prototype.testTimelineFrames = function()
 
         for (var i = 0; i < records.length; ++i) {
             var record = records[i];
-            if (record.type() !== "BeginFrame") {
-                recordsInFrame[record.type()] = (recordsInFrame[record.type()] || 0) + 1;
+            if (record.type !== "BeginFrame") {
+                recordsInFrame[record.type] = (recordsInFrame[record.type] || 0) + 1;
                 continue;
             }
             if (!frameCount++)
@@ -684,7 +684,7 @@ TestSuite.prototype.recordTimeline = function(callback)
     function innerAddRecord(record)
     {
         records.push(record);
-        if (record.type() === "TimeStamp" && record.data.message === "ready")
+        if (record.type === "TimeStamp" && record.data.message === "ready")
             done();
 
         if (record.children)

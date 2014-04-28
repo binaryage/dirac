@@ -1259,7 +1259,7 @@ WebInspector.TimelineHiddenFilter.prototype = {
      */
     accept: function(record)
     {
-        return !this._hiddenRecords[record.type()];
+        return !this._hiddenRecords[record.type];
     },
 
     __proto__: WebInspector.TimelineModel.Filter.prototype

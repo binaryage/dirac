@@ -86,7 +86,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
          * @param {!WebInspector.TimelineModel.Record} record
          */
         function processRecord(record) {
-            if (record.type() !== WebInspector.TimelineModel.RecordType.UpdateCounters)
+            if (record.type !== WebInspector.TimelineModel.RecordType.UpdateCounters)
                 return;
             var counters = record.data;
             if (!counters.jsHeapSizeUsed)
