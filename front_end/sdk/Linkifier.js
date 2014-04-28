@@ -177,7 +177,7 @@ WebInspector.Linkifier.prototype = {
             event.preventDefault();
             if (!anchor.__uiLocation)
                 return;
-            if (WebInspector.Linkifier.handleLink(anchor.__uiLocation.url(), anchor.__uiLocation.lineNumber))
+            if (WebInspector.Linkifier.handleLink(anchor.__uiLocation.uiSourceCode.url, anchor.__uiLocation.lineNumber))
                 return;
             WebInspector.Revealer.reveal(anchor.__uiLocation);
         }

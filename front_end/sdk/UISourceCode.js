@@ -761,14 +761,6 @@ WebInspector.UILocation.prototype = {
     },
 
     /**
-     * @return {?string}
-     */
-    url: function()
-    {
-        return this.uiSourceCode.contentURL();
-    },
-
-    /**
      * @return {string}
      */
     linkText: function()
