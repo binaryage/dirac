@@ -68,6 +68,17 @@ WebInspector.IsolatedFileSystem.errorMessage = function(error)
     return WebInspector.UIString("File system error: %s", msg);
 }
 
+/**
+ * @param {string} fileSystemPath
+ * @return {string}
+ */
+WebInspector.IsolatedFileSystem.normalizePath = function(fileSystemPath)
+{
+    if (WebInspector.isWin())
+        return fileSystemPath.replace(/\\/g, "/");
+    return fileSystemPath;
+}
+
 WebInspector.IsolatedFileSystem.prototype = {
     /**
      * @return {string}
@@ -84,9 +95,7 @@ WebInspector.IsolatedFileSystem.prototype = {
     {
         if (this._normalizedPath)
             return this._normalizedPath;
-        this._normalizedPath = this._path;
-        if (WebInspector.isWin())
-            this._normalizedPath = this._normalizedPath.replace(/\\/g, "/");
+        this._normalizedPath = WebInspector.IsolatedFileSystem.normalizePath(this._path);
         return this._normalizedPath;
     },
 

@@ -92,8 +92,9 @@ WebInspector.FileSystemWorkspaceBinding.prototype = {
     fileSystemPath: function(projectId)
     {
         var fileSystemPath = projectId.substr("filesystem:".length);
-        var boundFileSystem = this._boundFileSystems.get(fileSystemPath);
-        return boundFileSystem.fileSystemPath();
+        var normalizedPath = WebInspector.IsolatedFileSystem.normalizePath(fileSystemPath);
+        var boundFileSystem = this._boundFileSystems.get(normalizedPath);
+        return projectId.substr("filesystem:".length);
     },
 
     /**
