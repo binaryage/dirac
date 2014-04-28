@@ -64,7 +64,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
         var minTime = this._model.minimumRecordTime();
         var maxTime = this._model.maximumRecordTime();
         this._model.forAllRecords(function(r) {
-            if (r.type !== WebInspector.TimelineModel.RecordType.UpdateCounters)
+            if (r.type() !== WebInspector.TimelineModel.RecordType.UpdateCounters)
                 return;
             var counters = r.data;
             if (!counters.jsHeapSizeUsed)
