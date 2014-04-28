@@ -63,15 +63,20 @@ WebInspector.TimelineMemoryOverview.prototype = {
         var minUsedHeapSize = 100000000000;
         var minTime = this._model.minimumRecordTime();
         var maxTime = this._model.maximumRecordTime();
-        this._model.forAllRecords(function(r) {
-            if (r.type() !== WebInspector.TimelineModel.RecordType.UpdateCounters)
+        /**
+         * @param {!WebInspector.TimelineModel.Record} record
+         */
+        function calculateMinMaxSizes(record)
+        {
+            if (record.type() !== WebInspector.TimelineModel.RecordType.UpdateCounters)
                 return;
-            var counters = r.data;
+            var counters = record.data();
             if (!counters.jsHeapSizeUsed)
                 return;
             maxUsedHeapSize = Math.max(maxUsedHeapSize, counters.jsHeapSizeUsed);
             minUsedHeapSize = Math.min(minUsedHeapSize, counters.jsHeapSizeUsed);
-        });
+        }
+        this._model.forAllRecords(calculateMinMaxSizes);
         minUsedHeapSize = Math.min(minUsedHeapSize, maxUsedHeapSize);
 
         var lineWidth = 1;
@@ -85,7 +90,8 @@ WebInspector.TimelineMemoryOverview.prototype = {
         /**
          * @param {!WebInspector.TimelineModel.Record} record
          */
-        function processRecord(record) {
+        function buildHistogram(record)
+        {
             if (record.type() !== WebInspector.TimelineModel.RecordType.UpdateCounters)
                 return;
             var counters = record.data();
@@ -95,7 +101,7 @@ WebInspector.TimelineMemoryOverview.prototype = {
             var y = Math.round((counters.jsHeapSizeUsed - minUsedHeapSize) * yFactor);
             histogram[x] = Math.max(histogram[x] || 0, y);
         }
-        this._model.forAllRecords(processRecord);
+        this._model.forAllRecords(buildHistogram);
 
         var ctx = this._context;
         var heightBeyondView = height + lowerOffset + lineWidth;
