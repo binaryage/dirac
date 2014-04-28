@@ -37,9 +37,17 @@ from __future__ import with_statement
 from HTMLParser import HTMLParser
 from cStringIO import StringIO
 
-import rjsmin
 import os.path
 import sys
+
+rjsmin_path = os.path.abspath(os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "..",
+        "build",
+        "scripts"))
+sys.path.append(rjsmin_path)
+import rjsmin
 
 
 class OrderedJSFilesExtractor(HTMLParser):

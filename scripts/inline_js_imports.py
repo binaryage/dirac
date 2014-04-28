@@ -32,11 +32,18 @@
 # This script replaces calls to importScripts with script sources
 # in input script file and dumps result into output script file.
 
-import rjsmin
 import os.path
 import re
 import sys
 
+rjsmin_path = os.path.abspath(os.path.join(
+        os.path.dirname(__file__),
+        "..",
+        "..",
+        "build",
+        "scripts"))
+sys.path.append(rjsmin_path)
+import rjsmin
 
 def main(argv):
 
