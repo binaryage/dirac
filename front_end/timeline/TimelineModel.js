@@ -65,7 +65,6 @@ WebInspector.TimelineModel.RecordType = {
     InvalidateLayout: "InvalidateLayout",
     Layout: "Layout",
     UpdateLayerTree: "UpdateLayerTree",
-    AutosizeText: "AutosizeText",
     PaintSetup: "PaintSetup",
     Paint: "Paint",
     Rasterize: "Rasterize",
@@ -671,11 +670,6 @@ WebInspector.TimelineModel.Record = function(model, timelineEvent, parentRecord)
 
         bindings._layoutInvalidateStack[this.frameId()] = null;
         this.highlightQuad = timelineEvent.data.root || WebInspector.TimelineModel._quadFromRectData(timelineEvent.data);
-        break;
-
-    case recordTypes.AutosizeText:
-        if (timelineEvent.data.needsRelayout && parentRecord.type() === recordTypes.Layout)
-            parentRecord._addWarning(WebInspector.UIString("Layout required two passes due to text autosizing, consider setting viewport."));
         break;
 
     case recordTypes.Paint:

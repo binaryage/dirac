@@ -69,7 +69,6 @@ WebInspector.TimelineUIUtils._initRecordStyles = function()
     recordStyles[recordTypes.InvalidateLayout] = { title: WebInspector.UIString("Invalidate Layout"), category: categories["rendering"] };
     recordStyles[recordTypes.Layout] = { title: WebInspector.UIString("Layout"), category: categories["rendering"] };
     recordStyles[recordTypes.UpdateLayerTree] = { title: WebInspector.UIString("Update layer tree"), category: categories["rendering"] };
-    recordStyles[recordTypes.AutosizeText] = { title: WebInspector.UIString("Autosize Text"), category: categories["rendering"] };
     recordStyles[recordTypes.PaintSetup] = { title: WebInspector.UIString("Paint Setup"), category: categories["painting"] };
     recordStyles[recordTypes.Paint] = { title: WebInspector.UIString("Paint"), category: categories["painting"] };
     recordStyles[recordTypes.Rasterize] = { title: WebInspector.UIString("Paint"), category: categories["painting"] };
@@ -574,9 +573,6 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
         case recordTypes.Rasterize:
         case recordTypes.ScrollLayer:
             relatedNodeLabel = WebInspector.UIString("Layer root");
-            break;
-        case recordTypes.AutosizeText:
-            relatedNodeLabel = WebInspector.UIString("Root node");
             break;
         case recordTypes.DecodeImage:
         case recordTypes.ResizeImage:
