@@ -459,11 +459,13 @@
 }
 
 #memory-graphs-container .sidebar-tree-section {
-    padding: 3px 0 0 5px;
+    flex: 0 0 24px;
+    padding: 5px 0 0 5px;
 }
 
 .memory-counter-sidebar-info {
-    margin: 5px;
+    flex: 0 0 18px;
+    margin-left: 5px;
     white-space: nowrap;
 }
 
