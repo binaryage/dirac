@@ -69,6 +69,7 @@ WebInspector.TimelineManager.prototype = {
     start: function(maxCallStackDepth, bufferEvents, liveEvents, includeCounters, includeGPUEvents, callback)
     {
         this._enablementCount++;
+        this.target().profilingLock.acquire();
         if (WebInspector.experimentsSettings.timelineJSCPUProfile.isEnabled() && maxCallStackDepth) {
             this._configureCpuProfilerSamplingInterval();
             this._jsProfilerStarted = true;
@@ -102,7 +103,7 @@ WebInspector.TimelineManager.prototype = {
         if (!this._enablementCount)
             TimelineAgent.stop(callbackBarrier.createCallback(this._processBufferedEvents.bind(this, timelineCallback)));
 
-        callbackBarrier.callWhenDone(allDoneCallback);
+        callbackBarrier.callWhenDone(allDoneCallback.bind(this));
 
         /**
          * @param {?Protocol.Error} error
@@ -122,8 +123,12 @@ WebInspector.TimelineManager.prototype = {
             masterProfile = profile;
         }
 
+        /**
+         * @this {WebInspector.TimelineManager}
+         */
         function allDoneCallback()
         {
+            this.target().profilingLock.release();
             callback(masterError, masterProfile);
         }
     },

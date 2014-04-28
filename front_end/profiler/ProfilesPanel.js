@@ -384,6 +384,9 @@ WebInspector.ProfilesPanel = function()
     this.registerRequiredCSS("heapProfiler.css");
     this.registerRequiredCSS("profilesPanel.css");
 
+    this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+    this._target.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
+
     this._searchableView = new WebInspector.SearchableView(this);
 
     var mainView = new WebInspector.VBox();
@@ -561,10 +564,11 @@ WebInspector.ProfilesPanel.prototype = {
      */
     toggleRecordButton: function()
     {
+        if (!this.recordButton.enabled())
+            return true;
         var type = this._selectedProfileType;
         var isProfiling = type.buttonClicked();
-        this.recordButton.toggled = isProfiling;
-        this.recordButton.title = type.buttonTooltip;
+        this._updateRecordButton(isProfiling);
         if (isProfiling) {
             this._launcherView.profileStarted();
             if (type.hasTemporaryView())
@@ -575,10 +579,30 @@ WebInspector.ProfilesPanel.prototype = {
         return true;
     },
 
+    _onProfilingStateChanged: function()
+    {
+        this._updateRecordButton(this.recordButton.toggled);
+    },
+
+    /**
+     * @param {boolean} toggled
+     */
+    _updateRecordButton: function(toggled)
+    {
+        var enable = toggled || !this._target.profilingLock.isAcquired();
+        this.recordButton.setEnabled(enable);
+        this.recordButton.toggled = toggled;
+        if (enable)
+            this.recordButton.title = this._selectedProfileType ? this._selectedProfileType.buttonTooltip : "";
+        else
+            this.recordButton.title = WebInspector.UIString("Another profiler is already active");
+        if (this._selectedProfileType)
+            this._launcherView.updateProfileType(this._selectedProfileType, enable);
+    },
+
     _profileBeingRecordedRemoved: function()
     {
-        this.recordButton.toggled = false;
-        this.recordButton.title = this._selectedProfileType.buttonTooltip;
+        this._updateRecordButton(false);
         this._launcherView.profileFinished();
     },
 
@@ -593,8 +617,7 @@ WebInspector.ProfilesPanel.prototype = {
 
     _updateProfileTypeSpecificUI: function()
     {
-        this.recordButton.title = this._selectedProfileType.buttonTooltip;
-        this._launcherView.updateProfileType(this._selectedProfileType);
+        this._updateRecordButton(this.recordButton.toggled);
         this._profileTypeStatusBarItemsContainer.removeChildren();
         var statusBarItems = this._selectedProfileType.statusBarItems;
         if (statusBarItems) {
@@ -616,9 +639,7 @@ WebInspector.ProfilesPanel.prototype = {
         this.searchCanceled();
 
         this._profileGroups = {};
-        this.recordButton.toggled = false;
-        if (this._selectedProfileType)
-            this.recordButton.title = this._selectedProfileType.buttonTooltip;
+        this._updateRecordButton(false);
         this._launcherView.profileFinished();
 
         this.sidebarTree.element.classList.remove("some-expandable");

@@ -73,6 +73,8 @@ WebInspector.TimelinePanel = function()
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordFilterChanged, this._refreshViews, this);
     this._model.addEventListener(WebInspector.TimelineModel.Events.RecordAdded, this._onRecordAdded, this);
 
+    this._model.target().profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._onProfilingStateChanged, this);
+
     this._categoryFilter = new WebInspector.TimelineCategoryFilter();
     this._durationFilter = new WebInspector.TimelineIsLongFilter();
     this._textFilter = new WebInspector.TimelineTextFilter();
@@ -326,10 +328,11 @@ WebInspector.TimelinePanel.prototype = {
         var panelStatusBarElement = this.element.createChild("div", "panel-status-bar");
         this._statusBarButtons = /** @type {!Array.<!WebInspector.StatusBarItem>} */ ([]);
 
-        this.toggleTimelineButton = new WebInspector.StatusBarButton(WebInspector.UIString("Record"), "record-profile-status-bar-item");
+        this.toggleTimelineButton = new WebInspector.StatusBarButton("", "record-profile-status-bar-item");
         this.toggleTimelineButton.addEventListener("click", this._toggleTimelineButtonClicked, this);
         this._statusBarButtons.push(this.toggleTimelineButton);
         panelStatusBarElement.appendChild(this.toggleTimelineButton.element);
+        this._updateToggleTimelineButton(false);
 
         var clearButton = new WebInspector.StatusBarButton(WebInspector.UIString("Clear"), "clear-status-bar-item");
         clearButton.addEventListener("click", this._onClearButtonClick, this);
@@ -454,7 +457,7 @@ WebInspector.TimelinePanel.prototype = {
         if (this._operationInProgress)
             return null;
         if (this._recordingInProgress()) {
-            this.toggleTimelineButton.toggled = false;
+            this._updateToggleTimelineButton(false);
             this._stopRecording();
         }
         var progressIndicator = new WebInspector.ProgressIndicator();
@@ -646,11 +649,32 @@ WebInspector.TimelinePanel.prototype = {
             this._overviewControls[i].timelineStopped();
     },
 
+    _onProfilingStateChanged: function()
+    {
+        this._updateToggleTimelineButton(this.toggleTimelineButton.toggled);
+    },
+
+    /**
+     * @param {boolean} toggled
+     */
+    _updateToggleTimelineButton: function(toggled)
+    {
+        var enable = toggled || !this._model.target().profilingLock.isAcquired();
+        this.toggleTimelineButton.setEnabled(enable);
+        this.toggleTimelineButton.toggled = toggled;
+        if (enable)
+            this.toggleTimelineButton.title = toggled ? WebInspector.UIString("Stop") : WebInspector.UIString("Record");
+        else
+            this.toggleTimelineButton.title = WebInspector.UIString("Another profiler is already active");
+    },
+
     /**
      * @return {boolean}
      */
     _toggleTimelineButtonClicked: function()
     {
+        if (!this.toggleTimelineButton.enabled())
+            return true;
         if (this._operationInProgress)
             return true;
         if (this._recordingInProgress())
@@ -685,8 +709,7 @@ WebInspector.TimelinePanel.prototype = {
 
     _onRecordingStarted: function()
     {
-        this.toggleTimelineButton.title = WebInspector.UIString("Stop");
-        this.toggleTimelineButton.toggled = true;
+        this._updateToggleTimelineButton(true);
         if (WebInspector.experimentsSettings.timelineNoLiveUpdate.isEnabled())
             this._updateProgress(WebInspector.UIString("%d events collected", 0));
     },
@@ -740,8 +763,7 @@ WebInspector.TimelinePanel.prototype = {
 
     _onRecordingStopped: function()
     {
-        this.toggleTimelineButton.title = WebInspector.UIString("Record");
-        this.toggleTimelineButton.toggled = false;
+        this._updateToggleTimelineButton(false);
         this._hideProgressPane();
     },
 
