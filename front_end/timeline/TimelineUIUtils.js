@@ -116,13 +116,13 @@ WebInspector.TimelineUIUtils._initRecordStyles = function()
 WebInspector.TimelineUIUtils.recordStyle = function(record)
 {
     var recordStyles = WebInspector.TimelineUIUtils._initRecordStyles();
-    var result = recordStyles[record.type];
+    var result = recordStyles[record.type()];
     if (!result) {
         result = {
-            title: WebInspector.UIString("Unknown: %s", record.type),
+            title: WebInspector.UIString("Unknown: %s", record.type()),
             category: WebInspector.TimelineUIUtils.categories()["other"]
         };
-        recordStyles[record.type] = result;
+        recordStyles[record.type()] = result;
     }
     return result;
 }
@@ -142,11 +142,11 @@ WebInspector.TimelineUIUtils.categoryForRecord = function(record)
 WebInspector.TimelineUIUtils.isEventDivider = function(record)
 {
     var recordTypes = WebInspector.TimelineModel.RecordType;
-    if (record.type === recordTypes.TimeStamp)
+    if (record.type() === recordTypes.TimeStamp)
         return true;
-    if (record.type === recordTypes.MarkFirstPaint)
+    if (record.type() === recordTypes.MarkFirstPaint)
         return true;
-    if (record.type === recordTypes.MarkDOMContent || record.type === recordTypes.MarkLoad) {
+    if (record.type() === recordTypes.MarkDOMContent || record.type() === recordTypes.MarkLoad) {
         if (record.data && ((typeof record.data.isMainFrame) === "boolean"))
             return record.data.isMainFrame;
     }
@@ -238,9 +238,9 @@ WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent = function(model,
  */
 WebInspector.TimelineUIUtils.recordTitle = function(record, model)
 {
-    if (record.type === WebInspector.TimelineModel.RecordType.TimeStamp)
+    if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp)
         return record.data["message"];
-    if (record.type === WebInspector.TimelineModel.RecordType.JSFrame)
+    if (record.type() === WebInspector.TimelineModel.RecordType.JSFrame)
         return record.data["functionName"];
     if (WebInspector.TimelineUIUtils.isEventDivider(record)) {
         var startTime = Number.millisToString(record.startTime() - model.minimumRecordTime());
@@ -452,7 +452,7 @@ WebInspector.TimelineUIUtils.generatePopupContent = function(record, model, link
     var relatedNode = null;
 
     var barrier = new CallbackBarrier();
-    if (!imageElement && WebInspector.TimelineUIUtils.needsPreviewElement(record.type))
+    if (!imageElement && WebInspector.TimelineUIUtils.needsPreviewElement(record.type()))
         WebInspector.DOMPresentationUtils.buildImagePreviewContents(record.target(), record.url, false, barrier.createCallback(saveImage));
     if (record.data["backendNodeId"])
         record.target().domModel.pushNodesByBackendIdsToFrontend([record.data["backendNodeId"]], barrier.createCallback(setRelatedNode));
@@ -495,13 +495,13 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
 {
     var fragment = document.createDocumentFragment();
     if (record.children.length)
-        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(record.aggregatedStats, record.category(), record.selfTime()));
+        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(record.aggregatedStats(), record.category(), record.selfTime()));
     else
-        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(record.aggregatedStats));
+        fragment.appendChild(WebInspector.TimelineUIUtils.generatePieChart(record.aggregatedStats()));
 
     const recordTypes = WebInspector.TimelineModel.RecordType;
 
-    // The messages may vary per record type;
+    // The messages may vary per record.type();
     var callSiteStackTraceLabel;
     var callStackLabel;
     var relatedNodeLabel;
@@ -510,7 +510,7 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
     contentHelper.appendTextRow(WebInspector.UIString("Self Time"), Number.millisToString(record.selfTime(), true));
     contentHelper.appendTextRow(WebInspector.UIString("Start Time"), Number.millisToString(record.startTime() - model.minimumRecordTime()));
 
-    switch (record.type) {
+    switch (record.type()) {
         case recordTypes.GCEvent:
             contentHelper.appendTextRow(WebInspector.UIString("Collected"), Number.bytesToString(record.data["usedHeapSizeDelta"]));
             break;
@@ -629,14 +629,14 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
     if (relatedNode)
         contentHelper.appendElementRow(relatedNodeLabel || WebInspector.UIString("Related node"), WebInspector.DOMPresentationUtils.linkifyNodeReference(relatedNode));
 
-    if (record.scriptName && record.type !== recordTypes.FunctionCall)
+    if (record.scriptName && record.type() !== recordTypes.FunctionCall)
         contentHelper.appendLocationRow(WebInspector.UIString("Function Call"), record.scriptName, record.scriptLine);
 
     if (record.callSiteStackTrace)
         contentHelper.appendStackTrace(callSiteStackTraceLabel || WebInspector.UIString("Call Site stack"), record.callSiteStackTrace);
-
-    if (record.stackTrace)
-        contentHelper.appendStackTrace(callStackLabel || WebInspector.UIString("Call Stack"), record.stackTrace);
+    var recordStackTrace = record.stackTrace();
+    if (recordStackTrace)
+        contentHelper.appendStackTrace(callStackLabel || WebInspector.UIString("Call Stack"), recordStackTrace);
 
     if (record.warnings()) {
         var ul = document.createElement("ul");
@@ -677,7 +677,7 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier, load
     var details;
     var detailsText;
 
-    switch (record.type) {
+    switch (record.type()) {
     case WebInspector.TimelineModel.RecordType.GCEvent:
         detailsText = WebInspector.UIString("%s collected", Number.bytesToString(record.data["usedHeapSizeDelta"]));
         break;
@@ -779,8 +779,8 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier, load
      */
     function linkifyTopCallFrame()
     {
-        if (record.stackTrace)
-            return linkifyCallFrame(record.stackTrace[0]);
+        if (record.stackTrace())
+            return linkifyCallFrame(record.stackTrace()[0]);
         if (record.callSiteStackTrace)
             return linkifyCallFrame(record.callSiteStackTrace[0]);
         return null;
