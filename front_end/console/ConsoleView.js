@@ -115,6 +115,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this.registerRequiredCSS("suggestBox.css");
 
     this._messagesElement.addEventListener("contextmenu", this._handleContextMenuEvent.bind(this), false);
+    WebInspector.settings.monitoringXHREnabled.addChangeListener(this._monitoringXHREnabledSettingChanged, this);
 
     this._linkifier = new WebInspector.Linkifier();
 
@@ -574,10 +575,9 @@ WebInspector.ConsoleView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.Target} target
      * @param {!WebInspector.Event} event
      */
-    _monitoringXHREnabledSettingChanged: function(target, event)
+    _monitoringXHREnabledSettingChanged: function(event)
     {
         var enabled = /** @type {boolean} */ (event.data);
         WebInspector.targetManager.targets().forEach(function(target) {target.consoleAgent().setMonitoringXHREnabled(enabled);});
