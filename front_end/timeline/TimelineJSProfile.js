@@ -27,10 +27,8 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
             return;
         var recordStartTime = record.startTime();
         var recordEndTime = record.endTime();
-        var parentRecord = record;
-
-        // FIXME: current children should go into appropriate JS Frame records.
-        record.children().splice(0, record.children().length);
+        var originalChildren = record.children().splice(0);
+        var childIndex = 0;
 
         /**
          * @param {number} depth
@@ -46,7 +44,8 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
                 data: node,
                 startTime: startTime
             };
-            parentRecord = new WebInspector.TimelineModel.Record(timelineModel, event, parentRecord);
+            putOriginalChildrenUpToTime(startTime);
+            record = new WebInspector.TimelineModel.Record(timelineModel, event, record);
         }
 
         /**
@@ -60,12 +59,29 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
         {
             if (node === idleNode || node === programNode)
                 return;
-            parentRecord.setEndTime(Math.min(startTime + totalTime, recordEndTime));
-            parentRecord._selfTime = parentRecord.endTime() - parentRecord.startTime();
-            parentRecord = parentRecord.parent;
+            record.setEndTime(Math.min(startTime + totalTime, recordEndTime));
+            record._selfTime = record.endTime() - record.startTime();
+            putOriginalChildrenUpToTime(record.endTime());
+            record = record.parent;
+        }
+
+        /**
+         * @param {number} endTime
+         */
+        function putOriginalChildrenUpToTime(endTime)
+        {
+            for (; childIndex < originalChildren.length; ++childIndex)  {
+                var child = originalChildren[childIndex];
+                var midTime = (child.startTime() + child.endTime()) / 2;
+                if (midTime >= endTime)
+                    break;
+                child.parent = record;
+                record.children().push(child);
+            }
         }
 
         jsProfileModel.forEachFrame(onOpenFrame, onCloseFrame, recordStartTime, recordEndTime);
+        putOriginalChildrenUpToTime(recordEndTime);
     }
 
     timelineModel.forAllRecords(processRecord);
