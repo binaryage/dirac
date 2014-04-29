@@ -14,13 +14,13 @@ WebInspector.CPUProfileDataModel = function(profile)
     this.timestamps = profile.timestamps;
     this.profileStartTime = profile.startTime * 1000;
     this.profileEndTime = profile.endTime * 1000;
+    this._assignParentsInProfile();
     if (this.samples) {
         this._normalizeSamples();
         this._buildIdToNodeMap();
         this._fixMissingSamples();
     }
     this._calculateTimes(profile);
-    this._assignParentsInProfile();
 }
 
 WebInspector.CPUProfileDataModel.prototype = {
