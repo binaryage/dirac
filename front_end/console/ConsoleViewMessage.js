@@ -30,14 +30,12 @@
 
 /**
  * @constructor
- * @extends {WebInspector.TargetAware}
  * @param {!WebInspector.ConsoleMessage} consoleMessage
  * @param {?WebInspector.Linkifier} linkifier
  * @param {number} nestingLevel
  */
 WebInspector.ConsoleViewMessage = function(consoleMessage, linkifier, nestingLevel)
 {
-    WebInspector.TargetAware.call(this, consoleMessage.target());
     this._message = consoleMessage;
     this._linkifier = linkifier;
     this._repeatCount = 1;
@@ -58,6 +56,14 @@ WebInspector.ConsoleViewMessage = function(consoleMessage, linkifier, nestingLev
 }
 
 WebInspector.ConsoleViewMessage.prototype = {
+    /**
+     * @return {!WebInspector.Target}
+     */
+    _target: function()
+    {
+        return this.consoleMessage().target();
+    },
+
     wasShown: function()
     {
         for (var i = 0; this._dataGrids && i < this._dataGrids.length; ++i) {
@@ -226,12 +232,12 @@ WebInspector.ConsoleViewMessage.prototype = {
         lineNumber = lineNumber ? lineNumber - 1 : 0;
         columnNumber = columnNumber ? columnNumber - 1 : 0;
         if (this._message.source === WebInspector.ConsoleMessage.MessageSource.CSS) {
-            var headerIds = this.target().cssModel.styleSheetIdsForURL(url);
-            var cssLocation = new WebInspector.CSSLocation(this.target(), url, lineNumber, columnNumber);
+            var headerIds = this._target().cssModel.styleSheetIdsForURL(url);
+            var cssLocation = new WebInspector.CSSLocation(this._target(), url, lineNumber, columnNumber);
             return this._linkifier.linkifyCSSLocation(headerIds[0] || null, cssLocation, "console-message-url");
         }
 
-        return this._linkifier.linkifyLocation(this.target(), url, lineNumber, columnNumber, "console-message-url");
+        return this._linkifier.linkifyLocation(this._target(), url, lineNumber, columnNumber, "console-message-url");
     },
 
     /**
@@ -246,7 +252,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         // FIXME(62725): stack trace line/column numbers are one-based.
         var lineNumber = callFrame.lineNumber ? callFrame.lineNumber - 1 : 0;
         var columnNumber = callFrame.columnNumber ? callFrame.columnNumber - 1 : 0;
-        var rawLocation = new WebInspector.DebuggerModel.Location(this.target(), callFrame.scriptId, lineNumber, columnNumber);
+        var rawLocation = new WebInspector.DebuggerModel.Location(this._target(), callFrame.scriptId, lineNumber, columnNumber);
         return this._linkifier.linkifyRawLocation(rawLocation, "console-message-url");
     },
 
@@ -267,7 +273,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         if (!regex)
             return callFrame;
         for (var i = 0; i < stackTrace.length; ++i) {
-            var script = this.target().debuggerModel.scriptForId(stackTrace[i].scriptId);
+            var script = this._target().debuggerModel.scriptForId(stackTrace[i].scriptId);
             if (!script || !regex.test(script.sourceURL))
                 return stackTrace[i].scriptId ? stackTrace[i] : null;
         }
@@ -297,9 +303,9 @@ WebInspector.ConsoleViewMessage.prototype = {
                 continue;
 
             if (typeof parameters[i] === "object")
-                parameters[i] = this.target().runtimeModel.createRemoteObject(parameters[i]);
+                parameters[i] = this._target().runtimeModel.createRemoteObject(parameters[i]);
             else
-                parameters[i] = this.target().runtimeModel.createRemoteObjectFromPrimitiveValue(parameters[i]);
+                parameters[i] = this._target().runtimeModel.createRemoteObjectFromPrimitiveValue(parameters[i]);
         }
 
         // There can be string log and string eval result. We distinguish between them based on message type.
@@ -1138,8 +1144,6 @@ WebInspector.ConsoleViewMessage.prototype = {
     {
         return this._message.messageText;
     },
-
-    __proto__: WebInspector.TargetAware.prototype
 }
 
 /**
