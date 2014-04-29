@@ -1196,7 +1196,8 @@ ol.watch-expressions > li.hovered {
     padding-left: 0 !important;
 }
 
-.console-formatted-number {
+.console-formatted-number,
+.console-formatted-boolean {
     color: rgb(28, 0, 207);
 }
 
