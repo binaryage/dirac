@@ -168,11 +168,6 @@ WebInspector.ProjectSearchConfig.prototype = {
     /**
      * @return {!Array.<string>}
      */
-    fileQueries: function() { },
-
-    /**
-     * @return {!Array.<string>}
-     */
     queries: function() { },
 
     /**
