@@ -90,7 +90,8 @@ WebInspector.TracingModel.prototype = {
         function callbackWrapper(error, sessionId)
         {
             this._sessionId = sessionId;
-            callback(error);
+            if (callback)
+                callback(error);
         }
         TracingAgent.start(categoryFilter, options, bufferUsageReportingIntervalMs, callbackWrapper.bind(this));
         this._active = true;
