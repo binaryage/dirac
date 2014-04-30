@@ -144,6 +144,15 @@ WebInspector.Target.prototype = {
         return !this.isMainFrontend;
     },
 
+    /**
+     * @return {boolean}
+     */
+    isMobile: function()
+    {
+        // FIXME: either add a separate capability or rename canScreencast to isMobile.
+        return this.canScreencast;
+    },
+
     __proto__: Protocol.Agents.prototype
 }
 

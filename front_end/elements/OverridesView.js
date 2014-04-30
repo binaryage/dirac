@@ -198,8 +198,8 @@ WebInspector.OverridesView.DeviceTab = function()
     this.element.classList.add("overrides-device");
 
     this._emulatedDeviceSetting = WebInspector.settings.createSetting("emulatedDevice", "Google Nexus 4");
-    this._emulateDeviceViewportSetting = WebInspector.settings.overrideDeviceMetrics;
-    this._emulateDeviceUserAgentSetting = WebInspector.settings.overrideUserAgent;
+    this._emulateDeviceViewportSetting = WebInspector.overridesSupport.settings.overrideDeviceMetrics;
+    this._emulateDeviceUserAgentSetting = WebInspector.overridesSupport.settings.overrideUserAgent;
 
     this._deviceSelectElement = this.element.createChild("select");
 
@@ -223,13 +223,13 @@ WebInspector.OverridesView.DeviceTab = function()
 
     this._deviceSelectElement.addEventListener("change", this._deviceSelected.bind(this), false);
     this._deviceSelectElement.addEventListener("keypress", this._keyPressed.bind(this), false);
-    this._deviceSelectElement.disabled = WebInspector.OverridesSupport.isInspectingDevice();
+    this._deviceSelectElement.disabled = WebInspector.overridesSupport.isInspectingDevice();
 
     var buttonsBar = this.element.createChild("div");
     var emulateButton = buttonsBar.createChild("button", "settings-tab-text-button");
     emulateButton.textContent = WebInspector.UIString("Emulate");
     emulateButton.addEventListener("click", this._emulateButtonClicked.bind(this), false);
-    emulateButton.disabled = WebInspector.OverridesSupport.isInspectingDevice();
+    emulateButton.disabled = WebInspector.overridesSupport.isInspectingDevice();
 
     var resetButton = buttonsBar.createChild("button", "settings-tab-text-button");
     resetButton.textContent = WebInspector.UIString("Reset");
@@ -437,14 +437,14 @@ WebInspector.OverridesView.DeviceTab.prototype = {
  */
 WebInspector.OverridesView.ViewportTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this, "viewport", WebInspector.UIString("Screen"), [WebInspector.settings.overrideDeviceMetrics, WebInspector.settings.overrideCSSMedia]);
+    WebInspector.OverridesView.Tab.call(this, "viewport", WebInspector.UIString("Screen"), [WebInspector.overridesSupport.settings.overrideDeviceMetrics, WebInspector.overridesSupport.settings.overrideCSSMedia]);
     this.element.classList.add("overrides-viewport");
 
-    const metricsSetting = WebInspector.settings.deviceMetrics.get();
+    const metricsSetting = WebInspector.overridesSupport.settings.deviceMetrics.get();
     var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(metricsSetting);
-    var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate screen"), WebInspector.settings.overrideDeviceMetrics, this._onMetricsCheckboxClicked.bind(this));
-    checkbox.firstChild.disabled = WebInspector.OverridesSupport.isInspectingDevice();
-    WebInspector.settings.deviceMetrics.addChangeListener(this._updateDeviceMetricsElement, this);
+    var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate screen"), WebInspector.overridesSupport.settings.overrideDeviceMetrics, this._onMetricsCheckboxClicked.bind(this));
+    checkbox.firstChild.disabled = WebInspector.overridesSupport.isInspectingDevice();
+    WebInspector.overridesSupport.settings.deviceMetrics.addChangeListener(this._updateDeviceMetricsElement, this);
 
     this.element.appendChild(checkbox);
     this.element.appendChild(this._createDeviceMetricsElement(metrics));
@@ -456,7 +456,7 @@ WebInspector.OverridesView.ViewportTab = function()
     footnoteLink.target = "_blank";
     footnoteLink.createTextChild(WebInspector.UIString("More information about screen emulation"));
 
-    this._onMetricsCheckboxClicked(WebInspector.settings.overrideDeviceMetrics.get());
+    this._onMetricsCheckboxClicked(WebInspector.overridesSupport.settings.overrideDeviceMetrics.get());
 }
 
 WebInspector.OverridesView.ViewportTab.prototype = {
@@ -516,8 +516,8 @@ WebInspector.OverridesView.ViewportTab.prototype = {
 
         if (metrics.isValid()) {
             var value = metrics.toSetting();
-            if (value !== WebInspector.settings.deviceMetrics.get())
-                WebInspector.settings.deviceMetrics.set(value);
+            if (value !== WebInspector.overridesSupport.settings.deviceMetrics.get())
+                WebInspector.overridesSupport.settings.deviceMetrics.set(value);
         }
     },
 
@@ -526,8 +526,8 @@ WebInspector.OverridesView.ViewportTab.prototype = {
      */
     _createDeviceMetricsElement: function(metrics)
     {
-        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.overrideDeviceMetrics);
-        if (WebInspector.OverridesSupport.isInspectingDevice())
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.overrideDeviceMetrics);
+        if (WebInspector.overridesSupport.isInspectingDevice())
             fieldsetElement.disabled = true;
         fieldsetElement.id = "metrics-override-section";
 
@@ -580,10 +580,10 @@ WebInspector.OverridesView.ViewportTab.prototype = {
         this._textAutosizingOverrideCheckbox.checked = metrics.textAutosizing;
         fieldsetElement.appendChild(textAutosizingOverrideElement);
 
-        var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate viewport"), WebInspector.settings.emulateViewport);
+        var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate viewport"), WebInspector.overridesSupport.settings.emulateViewport);
         fieldsetElement.appendChild(checkbox);
 
-        checkbox = this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.settings.deviceFitWindow);
+        checkbox = this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.overridesSupport.settings.deviceFitWindow);
         fieldsetElement.appendChild(checkbox);
 
         return fieldsetElement;
@@ -591,7 +591,7 @@ WebInspector.OverridesView.ViewportTab.prototype = {
 
     _updateDeviceMetricsElement: function()
     {
-        const metricsSetting = WebInspector.settings.deviceMetrics.get();
+        const metricsSetting = WebInspector.overridesSupport.settings.deviceMetrics.get();
         var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(metricsSetting);
 
         if (this._widthOverrideElement.value !== metrics.width)
@@ -610,14 +610,14 @@ WebInspector.OverridesView.ViewportTab.prototype = {
 
     _createMediaEmulationFragment: function()
     {
-        var checkbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("CSS media"), WebInspector.settings.overrideCSSMedia, true);
-        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.overrideCSSMedia);
-        if (WebInspector.OverridesSupport.isInspectingDevice())
+        var checkbox = WebInspector.SettingsUI.createSettingCheckbox(WebInspector.UIString("CSS media"), WebInspector.overridesSupport.settings.overrideCSSMedia, true);
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.overrideCSSMedia);
+        if (WebInspector.overridesSupport.isInspectingDevice())
             fieldsetElement.disabled = true;
 
         var mediaSelectElement = fieldsetElement.createChild("select");
         var mediaTypes = WebInspector.CSSStyleModel.MediaTypes;
-        var defaultMedia = WebInspector.settings.emulatedCSSMedia.get();
+        var defaultMedia = WebInspector.overridesSupport.settings.emulatedCSSMedia.get();
         for (var i = 0; i < mediaTypes.length; ++i) {
             var mediaType = mediaTypes[i];
             if (mediaType === "all") {
@@ -642,7 +642,7 @@ WebInspector.OverridesView.ViewportTab.prototype = {
     _emulateMediaChanged: function(select)
     {
         var media = select.options[select.selectedIndex].value;
-        WebInspector.settings.emulatedCSSMedia.set(media);
+        WebInspector.overridesSupport.settings.emulatedCSSMedia.set(media);
     },
 
     _rangeValueChanged: function()
@@ -663,9 +663,9 @@ WebInspector.OverridesView.ViewportTab.prototype = {
  */
 WebInspector.OverridesView.UserAgentTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this, "user-agent", WebInspector.UIString("User Agent"), [WebInspector.settings.overrideUserAgent]);
+    WebInspector.OverridesView.Tab.call(this, "user-agent", WebInspector.UIString("User Agent"), [WebInspector.overridesSupport.settings.overrideUserAgent]);
     this.element.classList.add("overrides-user-agent");
-    var checkbox = this._createSettingCheckbox(WebInspector.UIString("Spoof user agent"), WebInspector.settings.overrideUserAgent);
+    var checkbox = this._createSettingCheckbox(WebInspector.UIString("Spoof user agent"), WebInspector.overridesSupport.settings.overrideUserAgent);
     this.element.appendChild(checkbox);
     this.element.appendChild(this._createUserAgentSelectRowElement());
 }
@@ -709,10 +709,10 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
      */
     _createUserAgentSelectRowElement: function()
     {
-        var userAgent = WebInspector.settings.userAgent.get();
+        var userAgent = WebInspector.overridesSupport.settings.userAgent.get();
         var userAgents = WebInspector.OverridesView.UserAgentTab._userAgents.concat([[WebInspector.UIString("Other"), "Other"]]);
 
-        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.overrideUserAgent);
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.overrideUserAgent);
 
         this._selectElement = fieldsetElement.createChild("select");
         fieldsetElement.createChild("br");
@@ -741,7 +741,7 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
         }
 
         this._selectElement.addEventListener("change", this._userAgentChanged.bind(this, true), false);
-        WebInspector.settings.userAgent.addChangeListener(this._userAgentSettingChanged, this);
+        WebInspector.overridesSupport.settings.userAgent.addChangeListener(this._userAgentSettingChanged, this);
 
         fieldsetElement.addEventListener("dblclick", textDoubleClicked.bind(this), false);
         this._otherUserAgentElement.addEventListener("blur", textChanged.bind(this), false);
@@ -760,8 +760,8 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
          */
         function textChanged()
         {
-            if (WebInspector.settings.userAgent.get() !== this._otherUserAgentElement.value)
-                WebInspector.settings.userAgent.set(this._otherUserAgentElement.value);
+            if (WebInspector.overridesSupport.settings.userAgent.get() !== this._otherUserAgentElement.value)
+                WebInspector.overridesSupport.settings.userAgent.set(this._otherUserAgentElement.value);
         }
 
         return fieldsetElement;
@@ -774,7 +774,7 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
     {
         var value = this._selectElement.options[this._selectElement.selectedIndex].value;
         if (value !== "Other") {
-            WebInspector.settings.userAgent.set(value);
+            WebInspector.overridesSupport.settings.userAgent.set(value);
             this._otherUserAgentElement.value = value;
             this._otherUserAgentElement.title = value;
             this._otherUserAgentElement.disabled = true;
@@ -786,7 +786,7 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
 
     _userAgentSettingChanged: function()
     {
-        var value = WebInspector.settings.userAgent.get();
+        var value = WebInspector.overridesSupport.settings.userAgent.get();
         var options = this._selectElement.options;
         var foundMatch = false;
         for (var i = 0; i < options.length; ++i) {
@@ -818,11 +818,11 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
  */
 WebInspector.OverridesView.SensorsTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this, "sensors", WebInspector.UIString("Sensors"), [WebInspector.settings.emulateTouchEvents, WebInspector.settings.overrideGeolocation, WebInspector.settings.overrideDeviceOrientation]);
+    WebInspector.OverridesView.Tab.call(this, "sensors", WebInspector.UIString("Sensors"), [WebInspector.overridesSupport.settings.emulateTouchEvents, WebInspector.overridesSupport.settings.overrideGeolocation, WebInspector.overridesSupport.settings.overrideDeviceOrientation]);
     this.element.classList.add("overrides-sensors");
     this.registerRequiredCSS("accelerometer.css");
-    if (!WebInspector.OverridesSupport.hasTouchInputs())
-        this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Emulate touch screen"), WebInspector.settings.emulateTouchEvents));
+    if (!WebInspector.overridesSupport.hasTouchInputs())
+        this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Emulate touch screen"), WebInspector.overridesSupport.settings.emulateTouchEvents));
     this._appendGeolocationOverrideControl();
     this._apendDeviceOrientationOverrideControl();
 }
@@ -830,11 +830,11 @@ WebInspector.OverridesView.SensorsTab = function()
 WebInspector.OverridesView.SensorsTab.prototype = {
     _appendGeolocationOverrideControl: function()
     {
-        const geolocationSetting = WebInspector.settings.geolocationOverride.get();
+        const geolocationSetting = WebInspector.overridesSupport.settings.geolocationOverride.get();
         var geolocation = WebInspector.OverridesSupport.GeolocationPosition.parseSetting(geolocationSetting);
-        this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Emulate geolocation coordinates"), WebInspector.settings.overrideGeolocation, this._geolocationOverrideCheckboxClicked.bind(this)));
+        this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Emulate geolocation coordinates"), WebInspector.overridesSupport.settings.overrideGeolocation, this._geolocationOverrideCheckboxClicked.bind(this)));
         this.element.appendChild(this._createGeolocationOverrideElement(geolocation));
-        this._geolocationOverrideCheckboxClicked(WebInspector.settings.overrideGeolocation.get());
+        this._geolocationOverrideCheckboxClicked(WebInspector.overridesSupport.settings.overrideGeolocation.get());
     },
 
     /**
@@ -866,7 +866,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
         }
 
         var value = geolocation.toSetting();
-        WebInspector.settings.geolocationOverride.set(value);
+        WebInspector.overridesSupport.settings.geolocationOverride.set(value);
     },
 
     /**
@@ -875,7 +875,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
      */
     _createGeolocationOverrideElement: function(geolocation)
     {
-        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.overrideGeolocation);
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.overrideGeolocation);
         fieldsetElement.id = "geolocation-override-section";
 
         var tableElement = fieldsetElement.createChild("table");
@@ -905,11 +905,11 @@ WebInspector.OverridesView.SensorsTab.prototype = {
 
     _apendDeviceOrientationOverrideControl: function()
     {
-        const deviceOrientationSetting = WebInspector.settings.deviceOrientationOverride.get();
+        const deviceOrientationSetting = WebInspector.overridesSupport.settings.deviceOrientationOverride.get();
         var deviceOrientation = WebInspector.OverridesSupport.DeviceOrientation.parseSetting(deviceOrientationSetting);
-        this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Accelerometer"), WebInspector.settings.overrideDeviceOrientation, this._deviceOrientationOverrideCheckboxClicked.bind(this)));
+        this.element.appendChild(this._createSettingCheckbox(WebInspector.UIString("Accelerometer"), WebInspector.overridesSupport.settings.overrideDeviceOrientation, this._deviceOrientationOverrideCheckboxClicked.bind(this)));
         this.element.appendChild(this._createDeviceOrientationOverrideElement(deviceOrientation));
-        this._deviceOrientationOverrideCheckboxClicked(WebInspector.settings.overrideDeviceOrientation.get());
+        this._deviceOrientationOverrideCheckboxClicked(WebInspector.overridesSupport.settings.overrideDeviceOrientation.get());
     },
 
     /**
@@ -950,7 +950,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
             this._setBoxOrientation(deviceOrientation);
 
         var value = deviceOrientation.toSetting();
-        WebInspector.settings.deviceOrientationOverride.set(value);
+        WebInspector.overridesSupport.settings.deviceOrientationOverride.set(value);
     },
 
     /**
@@ -972,7 +972,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
      */
     _createDeviceOrientationOverrideElement: function(deviceOrientation)
     {
-        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.settings.overrideDeviceOrientation);
+        var fieldsetElement = WebInspector.SettingsUI.createSettingFieldset(WebInspector.overridesSupport.settings.overrideDeviceOrientation);
         fieldsetElement.id = "device-orientation-override-section";
         var tableElement = fieldsetElement.createChild("table");
         var rowElement = tableElement.createChild("tr");
@@ -1041,7 +1041,7 @@ WebInspector.OverridesView.SensorsTab.prototype = {
      */
     _onBoxDragStart: function(event)
     {
-        if (!WebInspector.settings.overrideDeviceOrientation.get())
+        if (!WebInspector.overridesSupport.settings.overrideDeviceOrientation.get())
             return false;
 
         this._mouseDownVector = this._calculateRadiusVector(event.x, event.y);

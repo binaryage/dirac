@@ -57,7 +57,7 @@ WebInspector.Main.prototype = {
             configuration = ["main", "elements", "network", "sources", "timeline", "profiles", "resources", "audits", "console", "source_frame", "extensions", "settings", "search"];
             if (WebInspector.experimentsSettings.layersPanel.isEnabled())
                 configuration.push("layers");
-            if (WebInspector.experimentsSettings.devicesPanel.isEnabled() && !WebInspector.queryParam("remoteFrontend"))
+            if (WebInspector.experimentsSettings.devicesPanel.isEnabled())
                 configuration.push("devices");
         }
         WebInspector.moduleManager.registerModules(configuration);
