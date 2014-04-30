@@ -851,7 +851,9 @@ WebInspector.NetworkLogView.prototype = {
             return;
 
         this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.Domain, request.domain);
+        this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.Method, request.requestMethod);
         this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.MimeType, request.mimeType);
+        this._suggestionBuilder.addItem(WebInspector.NetworkPanel.FilterType.StatusCode, "" + request.statusCode);
 
         var responseHeaders = request.responseHeaders;
         for (var i = 0, l = responseHeaders.length; i < l; ++i)
@@ -1376,6 +1378,9 @@ WebInspector.NetworkLogView.prototype = {
         case WebInspector.NetworkPanel.FilterType.HasResponseHeader:
             return WebInspector.NetworkLogView._requestResponseHeaderFilter.bind(null, value);
 
+        case WebInspector.NetworkPanel.FilterType.Method:
+            return WebInspector.NetworkLogView._requestMethodFilter.bind(null, value);
+
         case WebInspector.NetworkPanel.FilterType.MimeType:
             return WebInspector.NetworkLogView._requestMimeTypeFilter.bind(null, value);
 
@@ -1387,6 +1392,9 @@ WebInspector.NetworkLogView.prototype = {
 
         case WebInspector.NetworkPanel.FilterType.SetCookieValue:
             return WebInspector.NetworkLogView._requestSetCookieValueFilter.bind(null, value);
+
+        case WebInspector.NetworkPanel.FilterType.StatusCode:
+            return WebInspector.NetworkLogView._statusCodeFilter.bind(null, value);
         }
         return this._createTextFilter(type + ":" + value);
     },
@@ -1589,6 +1597,16 @@ WebInspector.NetworkLogView._requestResponseHeaderFilter = function(value, reque
  * @param {!WebInspector.NetworkRequest} request
  * @return {boolean}
  */
+WebInspector.NetworkLogView._requestMethodFilter = function(value, request)
+{
+    return request.requestMethod === value;
+}
+
+/**
+ * @param {string} value
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
 WebInspector.NetworkLogView._requestMimeTypeFilter = function(value, request)
 {
     return request.mimeType === value;
@@ -1637,6 +1655,16 @@ WebInspector.NetworkLogView._requestSetCookieValueFilter = function(value, reque
             return false;
     }
     return false;
+}
+
+/**
+ * @param {string} value
+ * @param {!WebInspector.NetworkRequest} request
+ * @return {boolean}
+ */
+WebInspector.NetworkLogView._statusCodeFilter = function(value, request)
+{
+    return ("" + request.statusCode) === value;
 }
 
 /**
@@ -1748,10 +1776,12 @@ WebInspector.NetworkPanel = function()
 WebInspector.NetworkPanel.FilterType = {
     Domain: "Domain",
     HasResponseHeader: "HasResponseHeader",
+    Method: "Method",
     MimeType: "MimeType",
     SetCookieDomain: "SetCookieDomain",
     SetCookieName: "SetCookieName",
-    SetCookieValue: "SetCookieValue"
+    SetCookieValue: "SetCookieValue",
+    StatusCode: "StatusCode"
 };
 
 /** @type {!Array.<string>} */
