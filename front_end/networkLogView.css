@@ -574,12 +574,6 @@
     display: none;
 }
 
-/* Summary */
-
-.network-log-grid.data-grid tr.filler td {
-    padding-bottom: 20px !important;
-}
-
 #network-container {
     overflow-y: auto;
     overflow-x: hidden;
