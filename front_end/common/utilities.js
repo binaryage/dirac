@@ -707,6 +707,10 @@ Object.defineProperty(Uint32Array.prototype, "upperBound", {
     value: Array.prototype.upperBound
 });
 
+Object.defineProperty(Float64Array.prototype, "lowerBound", {
+    value: Array.prototype.lowerBound
+});
+
 Object.defineProperty(Array.prototype, "binaryIndexOf",
 {
     /**

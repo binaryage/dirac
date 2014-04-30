@@ -16,7 +16,7 @@ WebInspector.CPUProfileDataModel = function(profile)
     this.profileEndTime = profile.endTime * 1000;
     this._assignParentsInProfile();
     if (this.samples) {
-        this._normalizeSamples();
+        this._normalizeTimestamps();
         this._buildIdToNodeMap();
         this._fixMissingSamples();
     }
@@ -78,9 +78,21 @@ WebInspector.CPUProfileDataModel.prototype = {
         }
     },
 
-    _normalizeSamples: function()
+    _normalizeTimestamps: function()
     {
         var timestamps = this.timestamps;
+        if (!timestamps) {
+            // Support loading old CPU profiles that are missing timestamps.
+            // Derive timestamps from profile start and stop times.
+            var profileStartTime = this.profileStartTime;
+            var interval = (this.profileEndTime - profileStartTime) / this.samples.length;
+            timestamps = new Float64Array(this.samples.length + 1);
+            for (var i = 0; i < timestamps.length; ++i)
+                timestamps[i] = profileStartTime + i * interval;
+            this.timestamps = timestamps;
+            return;
+        }
+
         // Convert samples from usec to msec
         for (var i = 0; i < timestamps.length; ++i)
             timestamps[i] /= 1000;
