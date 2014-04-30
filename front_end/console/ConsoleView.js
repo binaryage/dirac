@@ -91,6 +91,7 @@ WebInspector.ConsoleView = function(hideContextSelector)
     resetFiltersLink.addEventListener("click", this._filter.reset.bind(this._filter), true);
 
     this._messagesContainer = this._messagesElement.createChild("div", "console-group");
+    this._messagesContainer.classList.add("console-group-messages");
     this._topGroup = WebInspector.ConsoleGroup.createTopGroup();
     this._currentGroup = this._topGroup;
 
