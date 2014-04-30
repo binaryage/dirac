@@ -57,15 +57,21 @@ WebInspector.CPUProfileDataModel.prototype = {
         var head = this.profileHead;
         head.parent = null;
         head.head = null;
+        head.depth = -1;
+        this.maxDepth = 0;
         var nodesToTraverse = [ head ];
         while (nodesToTraverse.length) {
             var parent = nodesToTraverse.pop();
+            var depth = parent.depth + 1;
+            if (depth > this.maxDepth)
+                this.maxDepth = depth;
             var children = parent.children;
             var length = children.length;
             for (var i = 0; i < length; ++i) {
                 var child = children[i];
                 child.head = head;
                 child.parent = parent;
+                child.depth = depth;
                 if (child.children.length)
                     nodesToTraverse.push(child);
             }
@@ -177,66 +183,96 @@ WebInspector.CPUProfileDataModel.prototype = {
         var idToNode = this._idToNode;
         var gcNode = this.gcNode;
         var samplesCount = samples.length;
-
-        var openIntervals = [];
-        var stackTrace = [];
-        var depth = 0;
-        var currentInterval;
         var startIndex = timestamps.lowerBound(startTime);
+        var stackTop = 0;
+        var stackNodes = [];
+        var prevId = this.profileHead.id;
+        var prevHeight = this.profileHead.depth;
+        var sampleTime = timestamps[samplesCount];
+        var gcParentNode = null;
+
+        if (!this._stackStartTimes)
+            this._stackStartTimes = new Float64Array(this.maxDepth + 2);
+        var stackStartTimes = this._stackStartTimes;
+        if (!this._stackChildrenDuration)
+            this._stackChildrenDuration = new Float64Array(this.maxDepth + 2);
+        var stackChildrenDuration = this._stackChildrenDuration;
 
         for (var sampleIndex = startIndex; sampleIndex < samplesCount; sampleIndex++) {
-            var sampleTime = timestamps[sampleIndex];
+            sampleTime = timestamps[sampleIndex];
             if (sampleTime >= stopTime)
                 break;
-            var samplingInterval = timestamps[sampleIndex + 1] - sampleTime;
+            var id = samples[sampleIndex];
+            if (id === prevId)
+                continue;
+            var node = idToNode[id];
+            var prevNode = idToNode[prevId];
 
-            stackTrace.length = 0;
-            for (var node = idToNode[samples[sampleIndex]]; node.parent; node = node.parent)
-                stackTrace.push(node);
-
-            depth = 0;
-            node = stackTrace.pop();
-
-            // GC samples have no stack, so we just put GC node on top of the last recoreded sample.
             if (node === gcNode) {
-                while (depth < openIntervals.length) {
-                    currentInterval = openIntervals[depth];
-                    currentInterval.duration += samplingInterval;
-                    ++depth;
-                }
-                // If previous stack is also GC then just continue.
-                if (openIntervals.length > 0 && openIntervals.peekLast().node === node) {
-                    currentInterval.selfTime += samplingInterval;
-                    continue;
-                }
-            }
-
-            while (node && depth < openIntervals.length && node === openIntervals[depth].node) {
-                currentInterval = openIntervals[depth];
-                currentInterval.duration += samplingInterval;
-                node = stackTrace.pop();
-                ++depth;
-            }
-            while (openIntervals.length > depth) {
-                currentInterval = openIntervals.pop();
-                closeFrameCallback(openIntervals.length, currentInterval.node, currentInterval.startTime, currentInterval.duration, currentInterval.selfTime);
-            }
-            if (!node) {
-                currentInterval.selfTime += samplingInterval;
+                // GC samples have no stack, so we just put GC node on top of the last recorded sample.
+                gcParentNode = prevNode;
+                openFrameCallback(gcParentNode.depth + 1, gcNode, sampleTime);
+                stackStartTimes[++stackTop] = sampleTime;
+                stackChildrenDuration[stackTop] = 0;
+                prevId = id;
                 continue;
             }
-            while (node) {
-                openIntervals.push({node: node, depth: depth, duration: samplingInterval, startTime: sampleTime, selfTime: 0});
-                openFrameCallback(depth, node, sampleTime);
-                node = stackTrace.pop();
-                ++depth;
+            if (prevNode === gcNode) {
+                // end of GC frame
+                var start = stackStartTimes[stackTop];
+                var duration = sampleTime - start;
+                stackChildrenDuration[stackTop - 1] += duration;
+                closeFrameCallback(gcParentNode.depth + 1, gcNode, start, duration, duration - stackChildrenDuration[stackTop]);
+                --stackTop;
+                prevNode = gcParentNode;
+                prevId = prevNode.id;
+                gcParentNode = null;
             }
-            openIntervals.peekLast().selfTime += samplingInterval;
+
+            while (node.depth > prevNode.depth) {
+                stackNodes.push(node);
+                node = node.parent;
+            }
+
+            // Go down to the LCA and close current intervals.
+            while (prevNode !== node) {
+                var start = stackStartTimes[stackTop];
+                var duration = sampleTime - start;
+                stackChildrenDuration[stackTop - 1] += duration;
+                closeFrameCallback(prevNode.depth, prevNode, start, duration, duration - stackChildrenDuration[stackTop]);
+                --stackTop;
+                if (node.depth === prevNode.depth) {
+                    stackNodes.push(node);
+                    node = node.parent;
+                }
+                prevNode = prevNode.parent;
+            }
+
+            // Go up the nodes stack and open new intervals.
+            while (stackNodes.length) {
+                node = stackNodes.pop();
+                openFrameCallback(node.depth, node, sampleTime);
+                stackStartTimes[++stackTop] = sampleTime;
+                stackChildrenDuration[stackTop] = 0;
+            }
+
+            prevId = id;
         }
 
-        while (openIntervals.length) {
-            currentInterval = openIntervals.pop();
-            closeFrameCallback(openIntervals.length, currentInterval.node, currentInterval.startTime, currentInterval.duration, currentInterval.selfTime);
+        if (idToNode[prevId] === gcNode) {
+            var start = stackStartTimes[stackTop];
+            var duration = sampleTime - start;
+            stackChildrenDuration[stackTop - 1] += duration;
+            closeFrameCallback(gcParentNode.depth + 1, node, start, duration, duration - stackChildrenDuration[stackTop]);
+            --stackTop;
+        }
+
+        for (var node = idToNode[prevId]; node.parent; node = node.parent) {
+            var start = stackStartTimes[stackTop];
+            var duration = sampleTime - start;
+            stackChildrenDuration[stackTop - 1] += duration;
+            closeFrameCallback(node.depth, node, start, duration, duration - stackChildrenDuration[stackTop]);
+            --stackTop;
         }
     }
 }
