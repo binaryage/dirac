@@ -29,9 +29,6 @@ WebInspector.Target = function(connection, callback)
         this.powerAgent().canProfilePower(this._initializeCapability.bind(this, "canProfilePower", null));
 
     this.workerAgent().canInspectWorkers(this._initializeCapability.bind(this, "isMainFrontend", this._loadedWithCapabilities.bind(this, callback)));
-
-    /** @type {!WebInspector.Lock} */
-    this.profilingLock = new WebInspector.Lock();
 }
 
 WebInspector.Target.prototype = {

@@ -1373,8 +1373,6 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
         if (this.profileBeingRecorded())
             return;
         this._addNewProfile();
-        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-        target.profilingLock.acquire();
         HeapProfilerAgent.startTrackingHeapObjects(WebInspector.experimentsSettings.allocationProfiler.isEnabled());
     },
 
@@ -1406,8 +1404,6 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
          */
         function didTakeHeapSnapshot(error)
         {
-            var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-            target.profilingLock.release();
             var profile = this._profileBeingRecorded;
             if (!profile)
                 return;

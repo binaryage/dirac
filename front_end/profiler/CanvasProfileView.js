@@ -687,24 +687,19 @@ WebInspector.CanvasProfileType.prototype = {
     _runSingleFrameCapturing: function()
     {
         var frameId = this._selectedFrameId();
-        this._target.profilingLock.acquire();
         CanvasAgent.captureFrame(frameId, this._didStartCapturingFrame.bind(this, frameId));
-        this._target.profilingLock.release();
     },
 
     _startFrameCapturing: function()
     {
         var frameId = this._selectedFrameId();
-        this._target.profilingLock.acquire();
         CanvasAgent.startCapturing(frameId, this._didStartCapturingFrame.bind(this, frameId));
     },
 
     _stopFrameCapturing: function()
     {
-        if (!this._lastProfileHeader) {
-            this._target.profilingLock.release();
+        if (!this._lastProfileHeader)
             return;
-        }
         var profileHeader = this._lastProfileHeader;
         var traceLogId = profileHeader.traceLogId();
         this._lastProfileHeader = null;
@@ -713,7 +708,6 @@ WebInspector.CanvasProfileType.prototype = {
             profileHeader._updateCapturingStatus();
         }
         CanvasAgent.stopCapturing(traceLogId, didStopCapturing);
-        this._target.profilingLock.release();
     },
 
     /**

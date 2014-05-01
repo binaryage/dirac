@@ -47,7 +47,6 @@ WebInspector.ProfileLauncherView = function(profilesPanel)
 
     this._controlButton = this._contentElement.createChild("button", "control-profiling");
     this._controlButton.addEventListener("click", this._controlButtonClicked.bind(this), false);
-    this._recordButtonEnabled = true;
 
     this._loadButton = this._contentElement.createChild("button", "load-profile");
     this._loadButton.textContent = WebInspector.UIString("Load");
@@ -82,11 +81,10 @@ WebInspector.ProfileLauncherView.prototype = {
 
     _updateControls: function()
     {
-        if (this._isEnabled && this._recordButtonEnabled)
+        if (this._isEnabled)
             this._controlButton.removeAttribute("disabled");
         else
             this._controlButton.setAttribute("disabled", "");
-        this._controlButton.title = this._recordButtonEnabled ? "" : WebInspector.UIString("Other profiler is already active");
         if (this._isInstantProfile) {
             this._controlButton.classList.remove("running");
             this._controlButton.textContent = WebInspector.UIString("Take Snapshot");
@@ -113,12 +111,10 @@ WebInspector.ProfileLauncherView.prototype = {
 
     /**
      * @param {!WebInspector.ProfileType} profileType
-     * @param {boolean} recordButtonEnabled
      */
-    updateProfileType: function(profileType, recordButtonEnabled)
+    updateProfileType: function(profileType)
     {
         this._isInstantProfile = profileType.isInstantProfile();
-        this._recordButtonEnabled = recordButtonEnabled;
         this._isEnabled = profileType.isEnabled();
         this._profileTypeId = profileType.id;
         this._updateControls();

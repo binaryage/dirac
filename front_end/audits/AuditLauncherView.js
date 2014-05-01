@@ -63,7 +63,6 @@ WebInspector.AuditLauncherView = function(auditController)
     var target = this._auditController.target();
     target.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestStarted, this._onRequestStarted, this);
     target.networkManager.addEventListener(WebInspector.NetworkManager.EventTypes.RequestFinished, this._onRequestFinished, this);
-    target.profilingLock.addEventListener(WebInspector.Lock.Events.StateChanged, this._updateButton, this);
 
     var defaultSelectedAuditCategory = {};
     defaultSelectedAuditCategory[WebInspector.AuditLauncherView.AllCategoriesKey] = true;
@@ -142,14 +141,10 @@ WebInspector.AuditLauncherView.prototype = {
         this._auditRunning = auditRunning;
         this._updateButton();
         this._toggleUIComponents(this._auditRunning);
-        var target = this._auditController.target();
-        if (this._auditRunning) {
-            target.profilingLock.acquire();
+        if (this._auditRunning)
             this._startAudit();
-        } else {
+        else
             this._stopAudit();
-            target.profilingLock.release();
-        }
     },
 
     _startAudit: function()
@@ -326,11 +321,8 @@ WebInspector.AuditLauncherView.prototype = {
 
     _updateButton: function()
     {
-        var target = this._auditController.target();
-        var enable = this._auditRunning || (this._currentCategoriesCount && !target.profilingLock.isAcquired());
         this._launchButton.textContent = this._auditRunning ? WebInspector.UIString("Stop") : WebInspector.UIString("Run");
-        this._launchButton.disabled = !enable;
-        this._launchButton.title = enable ? "" : WebInspector.UIString("Another profiler is already active");
+        this._launchButton.disabled = !this._currentCategoriesCount;
     },
 
     __proto__: WebInspector.VBox.prototype
