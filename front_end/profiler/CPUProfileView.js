@@ -622,6 +622,7 @@ WebInspector.CPUProfileType.prototype = {
         this._recording = true;
         WebInspector.cpuProfilerModel.setRecording(true);
         WebInspector.userMetrics.ProfilesCPUProfileTaken.record();
+        target.profilingLock.acquire();
         ProfilerAgent.start();
     },
 
@@ -637,6 +638,8 @@ WebInspector.CPUProfileType.prototype = {
          */
         function didStopProfiling(error, profile)
         {
+            var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
+            target.profilingLock.release();
             if (!this._profileBeingRecorded)
                 return;
             this._profileBeingRecorded.setProtocolProfile(profile);
