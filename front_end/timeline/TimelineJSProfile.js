@@ -16,6 +16,7 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
     var jsProfileModel = new WebInspector.CPUProfileDataModel(jsProfile);
     var idleNode = jsProfileModel.idleNode;
     var programNode = jsProfileModel.programNode;
+    var gcNode = jsProfileModel.gcNode;
 
     /**
      * @param {!WebInspector.TimelineModel.Record} record
@@ -37,7 +38,7 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
          */
         function onOpenFrame(depth, node, startTime)
         {
-            if (node === idleNode || node === programNode)
+            if (node === idleNode || node === programNode || node === gcNode)
                 return;
             var event = {
                 type: "JSFrame",
