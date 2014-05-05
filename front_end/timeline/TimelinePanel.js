@@ -644,9 +644,20 @@ WebInspector.TimelinePanel.prototype = {
         this._userInitiatedRecording = false;
         this._model.stopRecording();
         if (this._lazyTracingModel)
-            this._lazyTracingModel.stop(this._refreshViews.bind(this));
+            this._lazyTracingModel.stop(this._onTracingComplete.bind(this));
+
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStopped();
+    },
+
+    _onTracingComplete: function()
+    {
+        if (this._lazyFrameModel) {
+            this._lazyFrameModel.reset();
+            this._lazyFrameModel.addTraceEvents(this._lazyTracingModel);
+            this._overviewPane.update();
+        }
+        this._refreshViews();
     },
 
     _onProfilingStateChanged: function()

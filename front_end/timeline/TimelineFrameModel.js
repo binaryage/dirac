@@ -134,6 +134,38 @@ WebInspector.TimelineFrameModel.prototype = {
     },
 
     /**
+     * @param {!WebInspector.TracingModel} tracingModel
+     */
+    addTraceEvents: function(tracingModel)
+    {
+        // FIXME: we also need to process main thread events, so we can assign time spent by categories
+        // to frames. However, this requires that we can map trace event names to Timeline categories.
+        var events = tracingModel.frameLifecycleEvents();
+        for (var i = 0; i < events.length; ++i)
+            this._addTraceEvent(events[i]);
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     */
+    _addTraceEvent: function(event)
+    {
+        var timestamp = event.startTime / 1000;
+        var eventNames = WebInspector.TracingModel.TraceEventName;
+
+        if (event.name === eventNames.BeginFrame)
+            this.handleBeginFrame(timestamp);
+        else if (event.name === eventNames.DrawFrame)
+            this.handleDrawFrame(timestamp);
+        else if (event.name === eventNames.ActivateLayerTree)
+            this.handleActivateLayerTree();
+        else if (event.name === eventNames.RequestMainThreadFrame)
+            this.handleRequestMainThreadFrame();
+        else if (event.name === eventNames.CompositeLayers)
+            this.handleCompositeLayers();
+    },
+
+    /**
      * @param {number} startTime
      */
     handleBeginFrame: function(startTime)
@@ -174,6 +206,14 @@ WebInspector.TimelineFrameModel.prototype = {
         if (!this._lastFrame)
             return;
         this._mainFrameRequested = true;
+    },
+
+    handleCompositeLayers: function()
+    {
+        if (!this._hasThreadedCompositing || !this._aggregatedMainThreadWork)
+            return;
+        this._aggregatedMainThreadWorkToAttachToBackgroundFrame = this._aggregatedMainThreadWork;
+        this._aggregatedMainThreadWork = null;
     },
 
     /**
@@ -228,10 +268,8 @@ WebInspector.TimelineFrameModel.prototype = {
         if (programRecord.children()[0] === record)
             this._deriveOtherTime(programRecord, this._aggregatedMainThreadWork);
 
-        if (record.type() === recordTypes.CompositeLayers) {
-            this._aggregatedMainThreadWorkToAttachToBackgroundFrame = this._aggregatedMainThreadWork;
-            this._aggregatedMainThreadWork = null;
-        }
+        if (record.type() === recordTypes.CompositeLayers)
+            this.handleCompositeLayers();
     },
 
     /**

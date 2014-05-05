@@ -67,12 +67,49 @@ WebInspector.TracingModel.MetadataEvent = {
 
 WebInspector.TracingModel.DevToolsMetadataEventCategory = "disabled-by-default-devtools.timeline";
 
+WebInspector.TracingModel.FrameLifecycleEventCategory = "cc,devtools";
+
 WebInspector.TracingModel.DevToolsMetadataEvent = {
     TracingStartedInPage: "TracingStartedInPage",
     SetLayerTreeId: "SetLayerTreeId"
 };
 
+WebInspector.TracingModel.TraceEventName = {
+    ActivateLayerTree: "ActivateLayerTree",
+    BeginFrame: "BeginFrame",
+    BeginMainThreadFrame: "BeginMainThreadFrame",
+    CompositeLayers: "CompositeLayers",
+    DrawFrame: "DrawFrame",
+    PaintSetup: "PaintSetup",
+    RasterTask: "RasterTask",
+    RequestMainThreadFrame: "RequestMainThreadFrame"
+};
+
 WebInspector.TracingModel.prototype = {
+    /**
+     * @return {!Array.<!WebInspector.TracingModel.Event>}
+     */
+    inspectedTargetMainThreadEvents: function()
+    {
+        return this._inspectedTargetMainThreadEvents;
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.TracingModel.Event>}
+     */
+    frameLifecycleEvents: function()
+    {
+        /**
+         * @param {!WebInspector.TracingModel.Event} a
+         * @param {!WebInspector.TracingModel.Event} b
+         */
+        function compareStartTime(a, b)
+        {
+            return a.startTime - b.startTime;
+        }
+        return this._frameLifecycleEvents.sort(compareStartTime);
+    },
+
     /**
      * @param {string} categoryFilter
      * @param {string} options
@@ -95,7 +132,6 @@ WebInspector.TracingModel.prototype = {
         }
         TracingAgent.start(categoryFilter, options, bufferUsageReportingIntervalMs, callbackWrapper.bind(this));
         this._active = true;
-        this._sessionId = null;
     },
 
     /**
@@ -150,6 +186,12 @@ WebInspector.TracingModel.prototype = {
         this._processById = {};
         this._minimumRecordTime = null;
         this._maximumRecordTime = null;
+        this._sessionId = null;
+        this._inspectedTargetProcessId = null;
+        this._inspectedTargetMainThread = null;
+        this._inspectedTargetMainThreadEvents = [];
+        this._inspectedTargetLayerTreeHostId = 0;
+        this._frameLifecycleEvents = [];
     },
 
     /**
@@ -175,7 +217,17 @@ WebInspector.TracingModel.prototype = {
                 this._minimumRecordTime = timestamp;
             if (!this._maximumRecordTime || timestamp > this._maximumRecordTime)
                 this._maximumRecordTime = timestamp;
-            thread.addEvent(payload);
+            if (payload.cat === WebInspector.TracingModel.DevToolsMetadataEventCategory)
+                this._processDevToolsMetadataEvent(payload);
+            var event = thread.addEvent(payload);
+            if (!event)
+                return;
+            if (thread === this._inspectedTargetMainThread)
+                this._inspectedTargetMainThreadEvents.push(event);
+            if (payload.cat === WebInspector.TracingModel.FrameLifecycleEventCategory && payload.pid === this._inspectedTargetProcessId &&
+                payload.args && payload.args["layerTreeId"] === this._inspectedTargetLayerTreeId) {
+                this._frameLifecycleEvents.push(event);
+            }
             return;
         }
         switch (payload.name) {
@@ -191,6 +243,23 @@ WebInspector.TracingModel.prototype = {
         case WebInspector.TracingModel.MetadataEvent.ThreadName:
             thread._setName(payload.args["name"]);
             break;
+        }
+    },
+
+     /**
+      * @param {!WebInspector.TracingModel.EventPayload} payload
+      */
+    _processDevToolsMetadataEvent: function(payload)
+    {
+        if (payload.args["sessionId"] !== this._sessionId)
+            return;
+        if (payload.name === WebInspector.TracingModel.DevToolsMetadataEvent.TracingStartedInPage) {
+            var thread = this._processById[payload.pid].threadById(payload.tid)
+            this._inspectedTargetProcessId = payload.pid;
+            this._inspectedTargetMainThread = thread;
+            this._inspectedTargetMainThreadEvents = this._inspectedTargetMainThreadEvents.concat(thread.events());
+        } else if (payload.name === WebInspector.TracingModel.DevToolsMetadataEvent.SetLayerTreeId) {
+            this._inspectedTargetLayerTreeId = payload.args["layerTreeId"];
         }
     },
 
@@ -400,6 +469,7 @@ WebInspector.TracingModel.Thread = function(id)
 WebInspector.TracingModel.Thread.prototype = {
     /**
      * @param {!WebInspector.TracingModel.EventPayload} payload
+     * @return {?WebInspector.TracingModel.Event} event
      */
     addEvent: function(payload)
     {
@@ -412,7 +482,7 @@ WebInspector.TracingModel.Thread.prototype = {
             // Quietly ignore unbalanced close events, they're legit (we could have missed start one).
             if (openEvent)
                 openEvent._complete(payload);
-            return;
+            return null;
         }
 
         var event = new WebInspector.TracingModel.Event(payload, this._stack.length);
@@ -426,6 +496,7 @@ WebInspector.TracingModel.Thread.prototype = {
         if (this._events.length && this._events.peekLast().startTime > event.startTime)
             console.assert(false, "Event is our of order: " + event.name);
         this._events.push(event);
+        return event;
     },
 
     /**

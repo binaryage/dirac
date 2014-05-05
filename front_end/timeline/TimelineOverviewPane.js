@@ -59,12 +59,12 @@ WebInspector.TimelineOverviewPane.Events = {
 WebInspector.TimelineOverviewPane.prototype = {
     wasShown: function()
     {
-        this._update();
+        this.update();
     },
 
     onResize: function()
     {
-        this._update();
+        this.update();
     },
 
     /**
@@ -83,10 +83,10 @@ WebInspector.TimelineOverviewPane.prototype = {
             overviewControls[i].show(this._overviewGrid.element);
         }
         this._overviewControls = overviewControls;
-        this._update();
+        this.update();
     },
 
-    _update: function()
+    update: function()
     {
         delete this._refreshTimeout;
 
@@ -141,7 +141,7 @@ WebInspector.TimelineOverviewPane.prototype = {
         this._overviewGrid.updateDividers(this._overviewCalculator);
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].reset();
-        this._update();
+        this.update();
     },
 
     /**
@@ -191,7 +191,7 @@ WebInspector.TimelineOverviewPane.prototype = {
             return;
         if (!this.isShowing())
             return;
-        this._refreshTimeout = setTimeout(this._update.bind(this), 300);
+        this._refreshTimeout = setTimeout(this.update.bind(this), 300);
     },
 
     __proto__: WebInspector.VBox.prototype
