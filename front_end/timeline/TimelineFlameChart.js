@@ -146,7 +146,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
         this._zeroTime = Math.max(0, this._model.minimumRecordTime());
 
         var cpuThreadRecordPayload = { type: WebInspector.TimelineModel.RecordType.Program };
-        this._cpuThreadRecord = new WebInspector.TimelineModel.Record(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (cpuThreadRecordPayload), null);
+        this._cpuThreadRecord = new WebInspector.TimelineModel.RecordImpl(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (cpuThreadRecordPayload), null);
         this._pushRecord(this._cpuThreadRecord, 0, this.zeroTime(), Math.max(this._model.maximumRecordTime(), this.totalTime() + this.zeroTime()));
 
         this._gpuThreadRecord = null;
@@ -164,7 +164,7 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
                 var visible = this._appendRecord(records[i], 1);
                 if (visible && !this._gpuThreadRecord) {
                     var gpuThreadRecordPayload = { type: WebInspector.TimelineModel.RecordType.Program };
-                    this._gpuThreadRecord = new WebInspector.TimelineModel.Record(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (gpuThreadRecordPayload), null);
+                    this._gpuThreadRecord = new WebInspector.TimelineModel.RecordImpl(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (gpuThreadRecordPayload), null);
                     this._pushRecord(this._gpuThreadRecord, 0, this.zeroTime(), Math.max(this._model.maximumRecordTime(), this.totalTime() + this.zeroTime()));
                 }
             }

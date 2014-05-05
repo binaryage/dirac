@@ -84,7 +84,7 @@ WebInspector.TimelinePresentationModel.prototype = {
     {
         this._recordToPresentationRecord.clear();
         var rootPayload = { type: WebInspector.TimelineModel.RecordType.Root };
-        var rootRecord = new WebInspector.TimelineModel.Record(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (rootPayload), null);
+        var rootRecord = new WebInspector.TimelineModel.RecordImpl(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (rootPayload), null);
         this._rootRecord = new WebInspector.TimelinePresentationModel.Record(rootRecord, null);
         /** @type {!Object.<string, !WebInspector.TimelinePresentationModel.Record>} */
         this._coalescingBuckets = {};
@@ -181,7 +181,7 @@ WebInspector.TimelinePresentationModel.prototype = {
         if (record.type() === WebInspector.TimelineModel.RecordType.TimeStamp)
             rawRecord.data["message"] = record.data().message;
 
-        var modelRecord = new WebInspector.TimelineModel.Record(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (rawRecord), null);
+        var modelRecord = new WebInspector.TimelineModel.RecordImpl(this._model, /** @type {!TimelineAgent.TimelineEvent} */ (rawRecord), null);
         var coalescedRecord = new WebInspector.TimelinePresentationModel.Record(modelRecord, null);
         var parent = presentationRecord._presentationParent;
 

@@ -46,7 +46,7 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
                 startTime: startTime
             };
             putOriginalChildrenUpToTime(startTime);
-            record = new WebInspector.TimelineModel.Record(timelineModel, event, record);
+            record = new WebInspector.TimelineModel.RecordImpl(timelineModel, event, record);
         }
 
         /**

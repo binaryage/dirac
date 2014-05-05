@@ -374,7 +374,7 @@ WebInspector.TimelineModel.prototype = {
      */
     _innerAddRecord: function(payload, parentRecord)
     {
-        var record = new WebInspector.TimelineModel.Record(this, payload, parentRecord);
+        var record = new WebInspector.TimelineModel.RecordImpl(this, payload, parentRecord);
         if (WebInspector.TimelineUIUtils.isEventDivider(record))
             this._eventDividerRecords.push(record);
 
@@ -558,12 +558,135 @@ WebInspector.TimelineModel.InterRecordBindings.prototype = {
 }
 
 /**
+ * @interface
+ */
+WebInspector.TimelineModel.Record = function()
+{
+}
+
+WebInspector.TimelineModel.Record.prototype = {
+    /**
+     * @return {?string}
+     */
+    url: function() { },
+
+    /**
+     * @return {?Array.<!ConsoleAgent.CallFrame>}
+     */
+    callSiteStackTrace: function() { },
+
+    /**
+     * @return {?WebInspector.TimelineModel.Record}
+     */
+    initiator: function() { },
+
+    /**
+     * @return {!WebInspector.Target}
+     */
+    target: function() { },
+
+    /**
+     * @return {number}
+     */
+    selfTime: function() { },
+
+    /**
+     * @return {!Array.<!WebInspector.TimelineModel.Record>}
+     */
+    children: function() { },
+
+    /**
+     * @return {!WebInspector.TimelineCategory}
+     */
+    category: function() { },
+
+    /**
+     * @return {string}
+     */
+    title: function() { },
+
+    /**
+     * @return {number}
+     */
+    startTime: function() { },
+
+    /**
+     * @return {string|undefined}
+     */
+    thread: function() { },
+
+    /**
+     * @return {number}
+     */
+    endTime: function() { },
+
+    /**
+     * @param {number} endTime
+     */
+    setEndTime: function(endTime) { },
+
+    /**
+     * @return {!Object}
+     */
+    data: function() { },
+
+    /**
+     * @return {string}
+     */
+    type: function() { },
+
+    /**
+     * @return {string}
+     */
+    frameId: function() { },
+
+    /**
+     * @return {?Array.<!ConsoleAgent.CallFrame>}
+     */
+    stackTrace: function() { },
+
+    /**
+     * @param {string} key
+     * @return {?Object}
+     */
+    getUserObject: function(key) { },
+
+    /**
+     * @param {string} key
+     * @param {?Object|undefined} value
+     */
+    setUserObject: function(key, value) { },
+
+    /**
+     * @return {!Object.<string, number>}
+     */
+    aggregatedStats: function() { },
+
+    /**
+     * @return {?Array.<string>}
+     */
+    warnings: function() { },
+
+    /**
+     * @return {boolean}
+     */
+    childHasWarnings: function() { },
+
+    /**
+     * @param {!RegExp} regExp
+     * @return {boolean}
+     */
+    testContentMatching: function(regExp) { }
+}
+
+/**
  * @constructor
+ * @implements {WebInspector.TimelineModel.Record}
  * @param {!WebInspector.TimelineModel} model
  * @param {!TimelineAgent.TimelineEvent} timelineEvent
  * @param {?WebInspector.TimelineModel.Record} parentRecord
  */
-WebInspector.TimelineModel.Record = function(model, timelineEvent, parentRecord)
+WebInspector.TimelineModel.RecordImpl = function(model, timelineEvent, parentRecord)
 {
     this._model = model;
     var bindings = this._model._bindings;
@@ -657,7 +780,7 @@ WebInspector.TimelineModel.Record = function(model, timelineEvent, parentRecord)
     }
 }
 
-WebInspector.TimelineModel.Record.prototype = {
+WebInspector.TimelineModel.RecordImpl.prototype = {
     /**
      * @return {?string}
      */
@@ -879,7 +1002,6 @@ WebInspector.TimelineModel.Record.prototype = {
         return regExp.test(tokens.join("|"));
     }
 }
-
 
 /**
  * @constructor
