@@ -314,9 +314,6 @@ WebInspector.TimelinePresentationModel.Record = function(record, parentRecord)
         for (var parent = this._presentationParent; parent && !parent._childHasWarnings; parent = parent._presentationParent)
             parent._childHasWarnings = true;
     }
-
-    if (parentRecord && parentRecord.callSiteStackTrace)
-        this.callSiteStackTrace = parentRecord.callSiteStackTrace;
 }
 
 WebInspector.TimelinePresentationModel.Record.prototype = {
