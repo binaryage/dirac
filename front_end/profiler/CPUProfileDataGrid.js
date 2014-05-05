@@ -70,7 +70,7 @@ WebInspector.ProfileDataGridNode = function(profileNode, owningTree, hasChildren
     }
 
     this.data = {
-        "function": this.functionName,
+        "function": functionName,
         "self-percent": formatPercent(this.selfPercent),
         "self": formatMilliseconds(this.selfTime),
         "total-percent": formatPercent(this.totalPercent),
