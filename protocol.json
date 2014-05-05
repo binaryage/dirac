@@ -2187,14 +2187,6 @@
                 "hidden": true
             },
             {
-                "name": "releaseBackendNodeIds",
-                "parameters": [
-                    { "name": "nodeGroup", "type": "string", "description": "The backend node ids group name." }
-                ],
-                "description": "Requests that group of <code>BackendNodeIds</code> is released.",
-                "hidden": true
-            },
-            {
                 "name": "resolveNode",
                 "parameters": [
                     { "name": "nodeId", "$ref": "NodeId", "description": "Id of the node to resolve." },
