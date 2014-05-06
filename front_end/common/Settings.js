@@ -98,7 +98,6 @@ WebInspector.Settings = function()
     this.pauseOnExceptionEnabled = this.createSetting("pauseOnExceptionEnabled", false);
     this.pauseOnCaughtException = this.createSetting("pauseOnCaughtException", false);
     this.enableAsyncStackTraces = this.createSetting("enableAsyncStackTraces", false);
-    this.allowPastingJavaScript = this.createSetting("allowPastingJavaScript", false);
 }
 
 WebInspector.Settings.prototype = {
