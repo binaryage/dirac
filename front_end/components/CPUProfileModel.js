@@ -56,7 +56,6 @@ WebInspector.CPUProfileDataModel.prototype = {
     {
         var head = this.profileHead;
         head.parent = null;
-        head.head = null;
         head.depth = -1;
         this.maxDepth = 0;
         var nodesToTraverse = [ head ];
@@ -69,7 +68,6 @@ WebInspector.CPUProfileDataModel.prototype = {
             var length = children.length;
             for (var i = 0; i < length; ++i) {
                 var child = children[i];
-                child.head = head;
                 child.parent = parent;
                 child.depth = depth;
                 if (child.children.length)
