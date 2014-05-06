@@ -121,6 +121,7 @@
             "ui/Popover.js",
             "ui/ProgressIndicator.js",
             "ui/PropertiesSection.js",
+            "ui/ResizerWidget.js",
             "ui/SearchableView.js",
             "ui/Section.js",
             "ui/SettingsUI.js",

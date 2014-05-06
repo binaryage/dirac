@@ -170,6 +170,7 @@
             'front_end/ui/Popover.js',
             'front_end/ui/ProgressIndicator.js',
             'front_end/ui/PropertiesSection.js',
+            'front_end/ui/ResizerWidget.js',
             'front_end/ui/SearchableView.js',
             'front_end/ui/Section.js',
             'front_end/ui/SettingsUI.js',
