@@ -207,7 +207,8 @@ WebInspector.LayerTreeModel.prototype = {
                 this._root = layer;
             }
         }
-        this._root._calculateQuad(new WebKitCSSMatrix());
+        if (this._root)
+            this._root._calculateQuad(new WebKitCSSMatrix());
         this._lastPaintRectByLayerId = {};
     },
 

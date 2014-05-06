@@ -3959,6 +3959,16 @@
                 "returns": [
                     { "name": "dataURL", "type": "string", "description": "A data: URL for resulting image." }
                 ]
+            },
+            {
+                "name": "snapshotCommandLog",
+                "parameters": [
+                    { "name": "snapshotId", "$ref": "SnapshotId", "description": "The id of the layer snapshot." }
+                ],
+                "description": "Replays the layer snapshot and returns canvas log.",
+                "returns": [
+                    { "name": "commandLog", "type": "array", "items": { "type": "object" }, "description": "The array of canvas function calls." }
+                ]
             }
         ],
         "events": [
