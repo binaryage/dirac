@@ -422,7 +422,7 @@ WebInspector.ElementsTreeOutline.prototype = {
         }
 
         if (element && element._node)
-            element._node.highlight();
+            this._domModel.highlightDOMNodeWithConfig(element._node.id, { mode: "all", showInfo: !WebInspector.KeyboardShortcut.eventHasCtrlOrMeta(event) });
         else
             this._domModel.hideDOMNodeHighlight();
     },

@@ -1396,11 +1396,25 @@ WebInspector.DOMModel.prototype = {
      */
     highlightDOMNode: function(nodeId, mode, objectId)
     {
+        this.highlightDOMNodeWithConfig(nodeId, { mode: mode }, objectId);
+    },
+
+    /**
+     * @param {!DOMAgent.NodeId=} nodeId
+     * @param {!{mode: (string|undefined), showInfo: (boolean|undefined)}=} config
+     * @param {!RuntimeAgent.RemoteObjectId=} objectId
+     */
+    highlightDOMNodeWithConfig: function(nodeId, config, objectId)
+    {
+        config = config || { mode: "all", showInfo: undefined };
         if (this._hideDOMNodeHighlightTimeout) {
             clearTimeout(this._hideDOMNodeHighlightTimeout);
             delete this._hideDOMNodeHighlightTimeout;
         }
-        this._highlighter.highlightDOMNode(this.nodeForId(nodeId || 0), this._buildHighlightConfig(mode), objectId);
+        var highlightConfig = this._buildHighlightConfig(config.mode);
+        if (typeof config.showInfo !== "undefined")
+            highlightConfig.showInfo = config.showInfo;
+        this._highlighter.highlightDOMNode(this.nodeForId(nodeId || 0), highlightConfig, objectId);
     },
 
     hideDOMNodeHighlight: function()
