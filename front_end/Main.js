@@ -212,7 +212,6 @@ WebInspector.Main.prototype = {
             return;
         }
 
-        InspectorFrontendAPI.dispatchQueryParameters(WebInspector.queryParam("dispatch"));
         new InspectorBackendClass.StubConnection(onConnectionReady);
     },
 

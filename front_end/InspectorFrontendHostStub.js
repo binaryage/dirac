@@ -245,6 +245,11 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     }
 }
 
+// Inherit bindings from the embedder.
+if (top !== window) {
+    window.InspectorFrontendHost = top.InspectorFrontendHost;
+}
+
 if (!window.InspectorFrontendHost) {
     InspectorFrontendHost = new WebInspector.InspectorFrontendHostStub();
 } else {
