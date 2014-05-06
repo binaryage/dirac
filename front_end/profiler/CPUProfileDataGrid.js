@@ -48,34 +48,6 @@ WebInspector.ProfileDataGridNode = function(profileNode, owningTree, hasChildren
     this.functionName = profileNode.functionName;
     this._deoptReason = (!profileNode.deoptReason || profileNode.deoptReason === "no reason") ? "" : profileNode.deoptReason;
     this.url = profileNode.url;
-
-    function formatMilliseconds(time)
-    {
-        return WebInspector.UIString("%.1f\u2009ms", time);
-    }
-    function formatPercent(value)
-    {
-        return WebInspector.UIString("%.2f\u2009%", value);
-    }
-
-    var functionName;
-    if (this._deoptReason) {
-        var content = document.createDocumentFragment();
-        var marker = content.createChild("span", "profile-warn-marker");
-        marker.title = WebInspector.UIString("Not optimized: %s", this._deoptReason);
-        content.createTextChild(this.functionName);
-        functionName = content;
-    } else {
-        functionName = this.functionName;
-    }
-
-    this.data = {
-        "function": functionName,
-        "self-percent": formatPercent(this.selfPercent),
-        "self": formatMilliseconds(this.selfTime),
-        "total-percent": formatPercent(this.totalPercent),
-        "total": formatMilliseconds(this.totalTime),
-    };
 }
 
 WebInspector.ProfileDataGridNode.prototype = {
@@ -141,6 +113,37 @@ WebInspector.ProfileDataGridNode.prototype = {
         }
         cell.appendChild(div);
         return cell;
+    },
+
+    buildData: function()
+    {
+        function formatMilliseconds(time)
+        {
+            return WebInspector.UIString("%.1f\u2009ms", time);
+        }
+        function formatPercent(value)
+        {
+            return WebInspector.UIString("%.2f\u2009%", value);
+        }
+
+        var functionName;
+        if (this._deoptReason) {
+            var content = document.createDocumentFragment();
+            var marker = content.createChild("span", "profile-warn-marker");
+            marker.title = WebInspector.UIString("Not optimized: %s", this._deoptReason);
+            content.createTextChild(this.functionName);
+            functionName = content;
+        } else {
+            functionName = this.functionName;
+        }
+
+        this.data = {
+            "function": functionName,
+            "self-percent": formatPercent(this.selfPercent),
+            "self": formatMilliseconds(this.selfTime),
+            "total-percent": formatPercent(this.totalPercent),
+            "total": formatMilliseconds(this.totalTime),
+        };
     },
 
     select: function(supressSelectedEvent)

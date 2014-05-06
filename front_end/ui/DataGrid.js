@@ -1505,21 +1505,15 @@ WebInspector.DataGridNode.prototype = {
         if (!this.parent)
             return;
 
-        var previousChild = (myIndex > 0 ? this.parent.children[myIndex - 1] : null);
-
-        if (previousChild) {
+        var previousChild = this.parent.children[myIndex - 1] || null;
+        if (previousChild)
             previousChild.nextSibling = this;
-            this.previousSibling = previousChild;
-        } else
-            this.previousSibling = null;
+        this.previousSibling = previousChild;
 
-        var nextChild = this.parent.children[myIndex + 1];
-
-        if (nextChild) {
+        var nextChild = this.parent.children[myIndex + 1] || null;
+        if (nextChild)
             nextChild.previousSibling = this;
-            this.nextSibling = nextChild;
-        } else
-            this.nextSibling = null;
+        this.nextSibling = nextChild;
     },
 
     collapse: function()

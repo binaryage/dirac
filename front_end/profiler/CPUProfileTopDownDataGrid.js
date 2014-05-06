@@ -36,6 +36,7 @@ WebInspector.TopDownProfileDataGridNode = function(profileNode, owningTree)
     WebInspector.ProfileDataGridNode.call(this, profileNode, owningTree, hasChildren);
 
     this._remainingChildren = profileNode.children;
+    this.buildData();
 }
 
 WebInspector.TopDownProfileDataGridNode.prototype = {
