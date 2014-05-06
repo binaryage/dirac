@@ -1916,9 +1916,21 @@
                     { "name": "border", "$ref": "Quad", "description": "Border box" },
                     { "name": "margin", "$ref": "Quad", "description": "Margin box" },
                     { "name": "width", "type": "integer", "description": "Node width" },
-                    { "name": "height", "type": "integer", "description": "Node height" }
+                    { "name": "height", "type": "integer", "description": "Node height" },
+                    { "name": "shapeOutside", "$ref": "ShapeOutsideInfo", "optional": true, "description": "Shape outside coordinates" }
                 ],
                 "description": "Box model."
+            },
+            {
+                "id": "ShapeOutsideInfo",
+                "type": "object",
+                "hidden": true,
+                "properties": [
+                    { "name": "bounds", "$ref": "Quad", "description": "Shape bounds" },
+                    { "name": "shape", "type": "array", "items": { "type": "any"}, "description": "Shape coordinate details" },
+                    { "name": "marginShape", "type": "array", "items": { "type": "any"}, "description": "Margin shape bounds" }
+                ],
+                "description": "CSS Shape Outside details."
             },
             {
                 "id": "Rect",

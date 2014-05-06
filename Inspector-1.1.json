@@ -1833,7 +1833,8 @@
                     { "name": "border", "$ref": "Quad", "description": "Border box" },
                     { "name": "margin", "$ref": "Quad", "description": "Margin box" },
                     { "name": "width", "type": "integer", "description": "Node width" },
-                    { "name": "height", "type": "integer", "description": "Node height" }
+                    { "name": "height", "type": "integer", "description": "Node height" },
+                    { "name": "shapeOutside", "type": "string", "description": "CSS Shape Outside" }
                 ],
                 "description": "Box model."
             },
