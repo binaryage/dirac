@@ -616,13 +616,13 @@ WebInspector.CPUProfileType.prototype = {
         if (this._profileBeingRecorded)
             return;
         var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-        this._profileBeingRecorded = new WebInspector.CPUProfileHeader(target, this);
-        this.addProfile(this._profileBeingRecorded);
-        this._profileBeingRecorded.updateStatus(WebInspector.UIString("Recording\u2026"));
+        var profile = new WebInspector.CPUProfileHeader(target, this);
+        this.setProfileBeingRecorded(profile);
+        this.addProfile(profile);
+        profile.updateStatus(WebInspector.UIString("Recording\u2026"));
         this._recording = true;
         WebInspector.cpuProfilerModel.setRecording(true);
         WebInspector.userMetrics.ProfilesCPUProfileTaken.record();
-        target.profilingLock.acquire();
         ProfilerAgent.start();
     },
 
@@ -638,14 +638,12 @@ WebInspector.CPUProfileType.prototype = {
          */
         function didStopProfiling(error, profile)
         {
-            var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-            target.profilingLock.release();
             if (!this._profileBeingRecorded)
                 return;
             this._profileBeingRecorded.setProtocolProfile(profile);
             this._profileBeingRecorded.updateStatus("");
             var recordedProfile = this._profileBeingRecorded;
-            this._profileBeingRecorded = null;
+            this.setProfileBeingRecorded(null);
             WebInspector.panels.profiles.showProfile(recordedProfile);
         }
         ProfilerAgent.stop(didStopProfiling.bind(this));
@@ -710,8 +708,8 @@ WebInspector.CPUProfileHeader.prototype = {
         this._jsonifiedProfile = null;
         this.updateStatus(WebInspector.UIString("Loaded"), false);
 
-        if (this._profileType._profileBeingRecorded === this)
-            this._profileType._profileBeingRecorded = null;
+        if (this._profileType.profileBeingRecorded() === this)
+            this._profileType.setProfileBeingRecorded(null);
     },
 
     /**

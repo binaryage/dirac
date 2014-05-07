@@ -86,7 +86,7 @@ WebInspector.ProfileLauncherView.prototype = {
             this._controlButton.removeAttribute("disabled");
         else
             this._controlButton.setAttribute("disabled", "");
-        this._controlButton.title = this._recordButtonEnabled ? "" : WebInspector.UIString("Other profiler is already active");
+        this._controlButton.title = this._recordButtonEnabled ? "" : WebInspector.UIString("Another profiler is already active");
         if (this._isInstantProfile) {
             this._controlButton.classList.remove("running");
             this._controlButton.textContent = WebInspector.UIString("Take Snapshot");

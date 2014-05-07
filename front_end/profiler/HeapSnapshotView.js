@@ -1211,9 +1211,10 @@ WebInspector.HeapSnapshotProfileType.prototype = {
         if (this.profileBeingRecorded())
             return;
         var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(target, this);
-        this.addProfile(this._profileBeingRecorded);
-        this._profileBeingRecorded.updateStatus(WebInspector.UIString("Snapshotting\u2026"));
+        var profile = new WebInspector.HeapProfileHeader(target, this);
+        this.setProfileBeingRecorded(profile);
+        this.addProfile(profile);
+        profile.updateStatus(WebInspector.UIString("Snapshotting\u2026"));
 
         /**
          * @param {?string} error
@@ -1224,7 +1225,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
             var profile = this._profileBeingRecorded;
             profile.title = WebInspector.UIString("Snapshot %d", profile.uid);
             profile._finishLoad();
-            this._profileBeingRecorded = null;
+            this.setProfileBeingRecorded(null);
             WebInspector.panels.profiles.showProfile(profile);
             callback();
         }
@@ -1269,7 +1270,7 @@ WebInspector.HeapSnapshotProfileType.prototype = {
     _snapshotReceived: function(profile)
     {
         if (this._profileBeingRecorded === profile)
-            this._profileBeingRecorded = null;
+            this.setProfileBeingRecorded(null);
         this.dispatchEventToListeners(WebInspector.HeapSnapshotProfileType.SnapshotReceived, profile);
     },
 
@@ -1373,15 +1374,13 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
         if (this.profileBeingRecorded())
             return;
         this._addNewProfile();
-        var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-        target.profilingLock.acquire();
         HeapProfilerAgent.startTrackingHeapObjects(WebInspector.experimentsSettings.allocationProfiler.isEnabled());
     },
 
     _addNewProfile: function()
     {
         var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-        this._profileBeingRecorded = new WebInspector.HeapProfileHeader(target, this);
+        this.setProfileBeingRecorded(new WebInspector.HeapProfileHeader(target, this));
         this._lastSeenIndex = -1;
         this._profileSamples = {
             'sizes': [],
@@ -1406,14 +1405,12 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
          */
         function didTakeHeapSnapshot(error)
         {
-            var target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
-            target.profilingLock.release();
             var profile = this._profileBeingRecorded;
             if (!profile)
                 return;
             profile._finishLoad();
             this._profileSamples = null;
-            this._profileBeingRecorded = null;
+            this.setProfileBeingRecorded(null);
             WebInspector.panels.profiles.showProfile(profile);
         }
 
@@ -1448,7 +1445,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
     {
         var wasRecording = this._recording;
         // Clear current profile to avoid stopping backend.
-        this._profileBeingRecorded = null;
+        this.setProfileBeingRecorded(null);
         WebInspector.HeapSnapshotProfileType.prototype.resetProfiles.call(this);
         this._profileSamples = null;
         this._lastSeenIndex = -1;

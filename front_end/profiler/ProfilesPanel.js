@@ -170,7 +170,7 @@ WebInspector.ProfileType.prototype = {
             name = name.substr(0, name.length - this.fileExtension().length);
         var profile = this.createProfileLoadedFromFile(name);
         profile.setFromFile();
-        this._profileBeingRecorded = profile;
+        this.setProfileBeingRecorded(profile);
         this.addProfile(profile);
         profile.loadFromFile(file);
     },
@@ -220,6 +220,18 @@ WebInspector.ProfileType.prototype = {
         return this._profileBeingRecorded;
     },
 
+    /**
+     * @param {?WebInspector.ProfileHeader} profile
+     */
+    setProfileBeingRecorded: function(profile)
+    {
+        if (this._profileBeingRecorded)
+            this._profileBeingRecorded.target().profilingLock.release();
+        if (profile)
+            profile.target().profilingLock.acquire();
+        this._profileBeingRecorded = profile;
+    },
+
     profileBeingRecordedRemoved: function()
     {
     },
@@ -243,7 +255,7 @@ WebInspector.ProfileType.prototype = {
         profile.dispose();
         if (this._profileBeingRecorded === profile) {
             this.profileBeingRecordedRemoved();
-            this._profileBeingRecorded = null;
+            this.setProfileBeingRecorded(null);
         }
     },
 
