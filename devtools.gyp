@@ -165,7 +165,7 @@
                     'actions': [{
                         'action_name': 'generate_devtools_grd',
                         'script_name': 'scripts/generate_devtools_grd.py',
-                        'relative_path_dir': '<(SHARED_INTERMEDIATE_DIR)/devtools',
+                        'relative_path_dir': 'front_end',
                         'input_pages': [
                             '<@(all_devtools_files)',
                             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
