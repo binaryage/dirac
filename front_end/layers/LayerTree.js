@@ -98,7 +98,7 @@ WebInspector.LayerTree.prototype = {
                 console.assert(false, "Duplicate layer id: " + id);
             seenLayers[id] = true;
             var node = this._treeOutline.getCachedTreeElement(layer);
-            var parent = layer === this._model.root() ? this._treeOutline : this._treeOutline.getCachedTreeElement(layer.parent());
+            var parent = layer === this._model.contentRoot() ? this._treeOutline : this._treeOutline.getCachedTreeElement(layer.parent());
             if (!parent)
                 console.assert(false, "Parent is not in the tree");
             if (!node) {
@@ -112,8 +112,8 @@ WebInspector.LayerTree.prototype = {
                 node._update();
             }
         }
-        if (this._model.root())
-            this._model.forEachLayer(updateLayer.bind(this), this._model.root());
+        if (this._model.contentRoot())
+            this._model.forEachLayer(updateLayer.bind(this), this._model.contentRoot());
         // Cleanup layers that don't exist anymore from tree.
         for (var node = /** @type {!TreeElement|!TreeOutline|null} */(this._treeOutline.children[0]); node && !node.root;) {
             if (seenLayers[node.representedObject.id()]) {
