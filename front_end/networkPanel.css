@@ -125,12 +125,10 @@
     white-space: nowrap;
 }
 
-.resource-headers-view .outline-disclosure li.expanded .caution {
-    color: rgb(255, 128, 0);
-}
-
-.resource-headers-view .outline-disclosure li:not(.expanded) .caution {
-    display: none;
+.resource-headers-view .outline-disclosure .caution {
+    margin-left: 4px;
+    display: inline-block;
+    font-weight: bold;
 }
 
 .resource-headers-view .outline-disclosure li.expanded .header-count {

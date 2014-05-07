@@ -345,12 +345,7 @@ WebInspector.RequestHeadersView.prototype = {
         if (this._showRequestHeadersText && headersText)
             this._refreshHeadersText(WebInspector.UIString("Request Headers"), headers.length, headersText, treeElement);
         else
-            this._refreshHeaders(WebInspector.UIString("Request Headers"), headers, treeElement);
-
-        if (headersText === undefined) {
-            var caution = WebInspector.UIString(" CAUTION: Provisional headers are shown.");
-            treeElement.listItemElement.createChild("span", "caution").textContent = caution;
-        }
+            this._refreshHeaders(WebInspector.UIString("Request Headers"), headers, treeElement, headersText === undefined);
 
         if (headersText) {
             var toggleButton = this._createHeadersToggleButton(this._showRequestHeadersText);
@@ -429,14 +424,26 @@ WebInspector.RequestHeadersView.prototype = {
      * @param {string} title
      * @param {!Array.<!WebInspector.NetworkRequest.NameValue>} headers
      * @param {!TreeElement} headersTreeElement
+     * @param {boolean=} showCaution
      */
-    _refreshHeaders: function(title, headers, headersTreeElement)
+    _refreshHeaders: function(title, headers, headersTreeElement, showCaution)
     {
         headersTreeElement.removeChildren();
 
         var length = headers.length;
         this._refreshHeadersTitle(title, headersTreeElement, length);
-        headersTreeElement.hidden = !length;
+
+        if (showCaution) {
+            var cautionText = WebInspector.UIString("Provisional headers are shown");
+            var cautionFragment = document.createDocumentFragment();
+            cautionFragment.createChild("div", "warning-icon-small");
+            cautionFragment.createChild("div", "caution").textContent = cautionText;
+            var cautionTreeElement = new TreeElement(cautionFragment);
+            cautionTreeElement.selectable = false;
+            headersTreeElement.appendChild(cautionTreeElement);
+        }
+
+        headersTreeElement.hidden = !length && !showCaution;
         for (var i = 0; i < length; ++i) {
             var headerTreeElement = new TreeElement(this._formatHeader(headers[i].name, headers[i].value));
             headerTreeElement.selectable = false;
