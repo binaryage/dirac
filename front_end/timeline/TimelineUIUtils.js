@@ -114,17 +114,27 @@ WebInspector.TimelineUIUtils._initRecordStyles = function()
  */
 WebInspector.TimelineUIUtils.recordStyle = function(record)
 {
+    return WebInspector.TimelineUIUtils.styleForTimelineEvent(record.type());
+}
+
+/**
+ * @param {string} type
+ * @return {!{title: string, category: !WebInspector.TimelineCategory}}
+ */
+WebInspector.TimelineUIUtils.styleForTimelineEvent = function(type)
+{
     var recordStyles = WebInspector.TimelineUIUtils._initRecordStyles();
-    var result = recordStyles[record.type()];
+    var result = recordStyles[type];
     if (!result) {
         result = {
-            title: WebInspector.UIString("Unknown: %s", record.type()),
+            title: WebInspector.UIString("Unknown: %s", type),
             category: WebInspector.TimelineUIUtils.categories()["other"]
         };
-        recordStyles[record.type()] = result;
+        recordStyles[type] = result;
     }
     return result;
 }
+
 
 /**
  * @param {!WebInspector.TimelineModel.Record} record

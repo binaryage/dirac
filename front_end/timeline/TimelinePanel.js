@@ -596,7 +596,7 @@ WebInspector.TimelinePanel.prototype = {
             this._overviewControls.push(new WebInspector.TimelineEventOverview(this._model));
 
         if (WebInspector.experimentsSettings.timelineFlameChart.isEnabled() && this._flameChartEnabledSetting.get())
-            this._addModeView(new WebInspector.TimelineFlameChart(this, this._model, this._frameModel()));
+            this._addModeView(new WebInspector.TimelineFlameChart(this, this._model, this._tracingModel(), this._frameModel()));
         else
             this._addModeView(this._timelineView());
 
@@ -630,7 +630,9 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._userInitiatedRecording = userInitiated;
         this._model.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get());
-        if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled())
+        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled())
+            this._tracingModel().start("disabled-by-default-devtools.timeline,devtools", "");
+        else if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled())
             this._tracingModel().start(WebInspector.TimelinePanel.defaultTracingCategoryFilter, "");
         for (var i = 0; i < this._overviewControls.length; ++i)
             this._overviewControls[i].timelineStarted();
