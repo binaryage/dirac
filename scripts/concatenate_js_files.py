@@ -69,17 +69,11 @@ class PathExpander:
         self.paths = paths
 
     def expand(self, filename):
-        last_path = None
-        expanded_name = None
         for path in self.paths:
-            fname = "%s/%s" % (path, filename)
+            fname = os.path.join(path, filename)
             if (os.access(fname, os.F_OK)):
-                if (last_path != None):
-                    raise Exception('Ambiguous file %s: found in %s and %s' %
-                                    (filename, last_path, path))
-                expanded_name = fname
-                last_path = path
-        return expanded_name
+                return fname
+        return None
 
 
 def main(argv):

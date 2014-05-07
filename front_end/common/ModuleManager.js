@@ -138,8 +138,14 @@ WebInspector.ModuleManager.prototype = {
      */
     registerModule: function(moduleName)
     {
-        if (!this._descriptorsMap[moduleName])
-            throw new Error("Module is not defined: " + moduleName + " " + new Error().stack);
+        if (!this._descriptorsMap[moduleName]) {
+            var content = loadResource(moduleName + "/module.json");
+            if (!content)
+                throw new Error("Module is not defined: " + moduleName + " " + new Error().stack);
+            var module = /** @type {!WebInspector.ModuleManager.ModuleDescriptor} */ (self.eval("(" + content + ")"));
+            module["name"] = moduleName;
+            this._descriptorsMap[moduleName] = module;
+        }
         var module = new WebInspector.ModuleManager.Module(this, this._descriptorsMap[moduleName]);
         this._modules.push(module);
         this._modulesMap[moduleName] = module;
@@ -353,7 +359,7 @@ WebInspector.ModuleManager.Module.prototype = {
             this._manager.loadModule(dependencies[i]);
         var scripts = this._descriptor.scripts;
         for (var i = 0; scripts && i < scripts.length; ++i)
-            loadScript(scripts[i]);
+            loadScript(this._name + "/" + scripts[i]);
         this._isLoading = false;
         this._loaded = true;
     }

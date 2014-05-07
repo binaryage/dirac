@@ -1,0 +1,17 @@
+{
+    "extensions": [
+        {
+            "type": "@WebInspector.Panel",
+            "name": "layers",
+            "title": "Layers",
+            "order": 7,
+            "className": "WebInspector.LayersPanel"
+        },
+        {
+            "type": "@WebInspector.Revealer",
+            "contextTypes": ["WebInspector.LayerTreeSnapshot", "WebInspector.TracingLayerSnapshot"],
+            "className": "WebInspector.LayersPanel.LayerTreeRevealer"
+        }
+    ],
+    "scripts": [ "LayersPanel.js" ]
+}

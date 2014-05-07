@@ -1574,12 +1574,30 @@ function loadXHR(url, async, callback)
 var _importedScripts = {};
 
 /**
+ * @param {string} url
+ * @return {string}
+ */
+function loadResource(url)
+{
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, false);
+    var stack = new Error().stack;
+    try {
+        xhr.send(null);
+    } catch (e) {
+        console.error(url + " -> " + stack);
+        throw e;
+    }
+    return xhr.responseText;
+}
+
+/**
  * This function behavior depends on the "debug_devtools" flag value.
  * - In debug mode it loads scripts synchronously via xhr request.
  * - In release mode every occurrence of "importScript" in the js files
- *   that have been white listed in the build system gets replaced with
+ *   that have been whitelisted in the build system gets replaced with
  *   the script source code on the compilation phase.
- *   The build system will throw an exception if it found importScript call
+ *   The build system will throw an exception if it finds an importScript() call
  *   in other files.
  *
  * To load scripts lazily in release mode call "loadScript" function.
@@ -1590,23 +1608,14 @@ function importScript(scriptName)
     var sourceURL = self._importScriptPathPrefix + scriptName;
     if (_importedScripts[sourceURL])
         return;
-    var xhr = new XMLHttpRequest();
     _importedScripts[sourceURL] = true;
-    xhr.open("GET", sourceURL, false);
-    var stack = new Error().stack;
-    try {
-        xhr.send(null);
-    } catch (e) {
-        console.error(scriptName + " -> " + stack);
-        throw e;
-    }
-    if (!xhr.responseText)
+    var scriptSource = loadResource(sourceURL);
+    if (!scriptSource)
         throw "empty response arrived for script '" + sourceURL + "'";
-
     var oldPrefix = self._importScriptPathPrefix;
     self._importScriptPathPrefix += scriptName.substring(0, scriptName.lastIndexOf("/") + 1);
     try {
-        self.eval(xhr.responseText + "\n//# sourceURL=" + sourceURL);
+        self.eval(scriptSource + "\n//# sourceURL=" + sourceURL);
     } finally {
         self._importScriptPathPrefix = oldPrefix;
     }

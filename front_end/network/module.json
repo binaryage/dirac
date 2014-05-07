@@ -1,0 +1,23 @@
+{
+    "extensions": [
+        {
+            "type": "@WebInspector.Panel",
+            "name": "network",
+            "title": "Network",
+            "order": 1,
+            "className": "WebInspector.NetworkPanel"
+        },
+        {
+            "type": "@WebInspector.ContextMenu.Provider",
+            "contextTypes": ["WebInspector.NetworkRequest", "WebInspector.Resource", "WebInspector.UISourceCode"],
+            "className": "WebInspector.NetworkPanel.ContextMenuProvider"
+        },
+        {
+            "type": "@WebInspector.Revealer",
+            "contextTypes": ["WebInspector.NetworkRequest"],
+            "className": "WebInspector.NetworkPanel.RequestRevealer"
+        }
+    ],
+    "dependencies": [ "source_frame" ],
+    "scripts": [ "NetworkPanel.js" ]
+}

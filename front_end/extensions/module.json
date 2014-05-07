@@ -1,0 +1,10 @@
+{
+    "extensions": [
+        {
+            "type": "@WebInspector.ExtensionServerAPI",
+            "className": "WebInspector.ExtensionServer"
+        }
+    ],
+    "dependencies": [ "sources" ],
+    "scripts": [ "ExtensionServer.js" ]
+}

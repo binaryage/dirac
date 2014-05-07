@@ -146,7 +146,7 @@ WebInspector.ShortcutRegistry.prototype = {
             for (var i = 0; bindings && i < bindings.length; ++i) {
                 if (!platformMatches(bindings[i].platform))
                     continue;
-                var shortcuts = bindings[i].shortcut.split(/\s+/);
+                var shortcuts = bindings[i]["shortcut"].split(/\s+/);
                 shortcuts.forEach(registerShortcut.bind(this, extension));
             }
         }

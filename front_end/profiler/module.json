@@ -1,0 +1,31 @@
+{
+    "extensions": [
+        {
+            "type": "@WebInspector.Panel",
+            "name": "profiles",
+            "title": "Profiles",
+            "order": 4,
+            "className": "WebInspector.ProfilesPanel"
+        },
+        {
+            "type": "@WebInspector.ContextMenu.Provider",
+            "contextTypes": ["WebInspector.RemoteObject"],
+            "className": "WebInspector.ProfilesPanel.ContextMenuProvider"
+        },
+        {
+            "type": "ui-setting",
+            "section": "Profiler",
+            "title": "Show advanced heap snapshot properties",
+            "settingName": "showAdvancedHeapSnapshotProperties",
+            "settingType": "checkbox"
+        },
+        {
+            "type": "ui-setting",
+            "section": "Profiler",
+            "title": "High resolution CPU profiling",
+            "settingName": "highResolutionCpuProfiling",
+            "settingType": "checkbox"
+        }
+    ],
+    "scripts": [ "ProfilesPanel.js" ]
+}

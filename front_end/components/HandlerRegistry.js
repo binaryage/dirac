@@ -38,8 +38,6 @@ WebInspector.HandlerRegistry = function(setting)
     this._handlers = {};
     this._setting = setting;
     this._activeHandler = this._setting.get();
-
-    WebInspector.moduleManager.registerModule("handler-registry");
 }
 
 WebInspector.HandlerRegistry.prototype = {

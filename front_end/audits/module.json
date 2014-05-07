@@ -1,0 +1,12 @@
+{
+    "extensions": [
+        {
+            "type": "@WebInspector.Panel",
+            "name": "audits",
+            "title": "Audits",
+            "order": 6,
+            "className": "WebInspector.AuditsPanel"
+        }
+    ],
+    "scripts": [ "AuditsPanel.js" ]
+}

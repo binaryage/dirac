@@ -1,0 +1,9 @@
+{
+    "extensions": [
+        {
+            "type": "@WebInspector.ContextMenu.Provider",
+            "contextTypes": ["WebInspector.UISourceCode", "WebInspector.Resource", "WebInspector.NetworkRequest", "Node"],
+            "className": "WebInspector.HandlerRegistry.ContextMenuProvider"
+        }
+    ]
+}

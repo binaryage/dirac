@@ -51,6 +51,7 @@
                 'build_profiler_module',
                 'build_resources_module',
                 'build_search_module',
+                'build_settings_module',
                 'build_source_frame_module',
                 'build_sources_module',
                 'build_timeline_module',
@@ -249,7 +250,8 @@
                     'dependencies': [
                         'devtools_html',
                         'supported_css_properties',
-                        'frontend_protocol_sources'
+                        'frontend_protocol_sources',
+                        'concatenated_module_descriptors',
                     ],
                     'actions': [{
                         'action_name': 'build_core_module',
@@ -260,11 +262,12 @@
                             '<@(_input_page)',
                             '<@(devtools_core_js_files)',
                             '<(SHARED_INTERMEDIATE_DIR)/blink/InspectorBackendCommands.js',
-                            '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js'
+                            '<(SHARED_INTERMEDIATE_DIR)/blink/SupportedCSSProperties.js',
+                            '<(SHARED_INTERMEDIATE_DIR)/blink/common/modules.js',
                         ],
                         'search_path': [
-                            'front_end',
                             '<(SHARED_INTERMEDIATE_DIR)/blink',
+                            'front_end',
                         ],
                         'outputs': ['<(PRODUCT_DIR)/resources/inspector/Main.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_search_path)', '<@(_outputs)'],
@@ -290,6 +293,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/components',
                             'files': [
                                 '<@(devtools_components_js_files)',
+                                'front_end/components/module.json',
                             ],
                         },
                         {
@@ -302,6 +306,12 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/ui',
                             'files': [
                                 '<@(devtools_ui_js_files)',
+                            ],
+                        },
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/main',
+                            'files': [
+                                'front_end/main/module.json',
                             ],
                         },
                     ]
@@ -331,6 +341,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/console',
                             'files': [
                                 '<@(devtools_console_js_files)',
+                                'front_end/console/module.json',
                             ],
                         }
                     ]
@@ -360,6 +371,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/search',
                             'files': [
                                 '<@(devtools_search_js_files)',
+                                'front_end/search/module.json',
                             ],
                         }
                     ]
@@ -389,6 +401,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/devices',
                             'files': [
                                 '<@(devtools_devices_js_files)',
+                                'front_end/devices/module.json',
                             ],
                         }
                     ]
@@ -418,6 +431,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/elements',
                             'files': [
                                 '<@(devtools_elements_js_files)',
+                                'front_end/elements/module.json',
                             ],
                         }
                     ]
@@ -447,6 +461,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/resources',
                             'files': [
                                 '<@(devtools_resources_js_files)',
+                                'front_end/resources/module.json',
                             ],
                         }
                     ]
@@ -476,6 +491,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/network',
                             'files': [
                                 '<@(devtools_network_js_files)',
+                                'front_end/network/module.json',
                             ],
                         }
                     ]
@@ -505,6 +521,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/extensions',
                             'files': [
                                 '<@(devtools_extensions_js_files)',
+                                'front_end/extensions/module.json',
                             ],
                         }
                     ]
@@ -535,6 +552,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/source_frame',
                             'files': [
                                 '<@(devtools_source_frame_js_files)',
+                                'front_end/source_frame/module.json',
                             ],
                         },
                         {
@@ -570,6 +588,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/sources',
                             'files': [
                                 '<@(devtools_sources_js_files)',
+                                'front_end/sources/module.json',
                             ],
                         }
                     ]
@@ -599,6 +618,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/timeline',
                             'files': [
                                 '<@(devtools_timeline_js_files)',
+                                'front_end/timeline/module.json',
                             ],
                         }
                     ]
@@ -628,6 +648,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/profiler',
                             'files': [
                                 '<@(devtools_profiler_js_files)',
+                                'front_end/profiler/module.json',
                             ],
                         }
                     ]
@@ -657,6 +678,25 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/audits',
                             'files': [
                                 '<@(devtools_audits_js_files)',
+                                'front_end/audits/module.json',
+                            ],
+                        }
+                    ]
+                }]
+            ]
+        },
+        {
+            'target_name': 'build_settings_module',
+            'type': 'none',
+            'conditions': [
+                ['debug_devtools==0', { # Release
+                },
+                { # Debug
+                    'copies': [
+                        {
+                            'destination': '<(PRODUCT_DIR)/resources/inspector/settings',
+                            'files': [
+                                'front_end/settings/module.json',
                             ],
                         }
                     ]
@@ -781,6 +821,7 @@
                             'destination': '<(PRODUCT_DIR)/resources/inspector/layers',
                             'files': [
                                 '<@(devtools_layers_js_files)',
+                                'front_end/layers/module.json',
                             ],
                         }
                     ]
@@ -815,6 +856,40 @@
                         'files': [
                             '<@(devtools_standalone_files)',
                         ],
+                    }],
+                },
+                {
+                    'target_name': 'concatenated_module_descriptors',
+                    'type': 'none',
+                    'actions': [{
+                        'action_name': 'concatenated_module_descriptors',
+                        'script_name': 'scripts/concatenate_module_descriptors.py',
+                        'input_file': ['front_end/common/modules.js'],
+                        'module_json_files': [
+                            'front_end/audits/module.json',
+                            'front_end/components/module.json',
+                            'front_end/console/module.json',
+                            'front_end/devices/module.json',
+                            'front_end/elements/module.json',
+                            'front_end/extensions/module.json',
+                            'front_end/layers/module.json',
+                            'front_end/main/module.json',
+                            'front_end/network/module.json',
+                            'front_end/profiler/module.json',
+                            'front_end/resources/module.json',
+                            'front_end/search/module.json',
+                            'front_end/settings/module.json',
+                            'front_end/source_frame/module.json',
+                            'front_end/sources/module.json',
+                            'front_end/timeline/module.json',
+                        ],
+                        'inputs': [
+                            '<@(_script_name)',
+                            '<@(_input_file)',
+                            '<@(_module_json_files)',
+                        ],
+                        'outputs': ['<(SHARED_INTERMEDIATE_DIR)/blink/common/modules.js'],
+                        'action': ['python', '<@(_script_name)', '<@(_input_file)', '<@(_outputs)', '<@(_module_json_files)'],
                     }],
                 },
             ],

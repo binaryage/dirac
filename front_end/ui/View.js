@@ -51,16 +51,15 @@ WebInspector.View._buildSourceURL = function(cssFile)
     return "\n/*# sourceURL=" + WebInspector.ParsedURL.completeURL(window.location.href, cssFile) + " */";
 }
 
+/**
+ * @param {string} cssFile
+ * @return {!Element}
+ */
 WebInspector.View.createStyleElement = function(cssFile)
 {
-    var styleElement;
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", cssFile, false);
-    xhr.send(null);
-
-    styleElement = document.createElement("style");
+    var styleElement = document.createElement("style");
     styleElement.type = "text/css";
-    styleElement.textContent = xhr.responseText + WebInspector.View._buildSourceURL(cssFile);
+    styleElement.textContent = loadResource(cssFile) + WebInspector.View._buildSourceURL(cssFile);
     document.head.insertBefore(styleElement, document.head.firstChild);
     return styleElement;
 }
