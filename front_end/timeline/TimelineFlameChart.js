@@ -910,10 +910,15 @@ WebInspector.TimelineFlameChart.prototype = {
     },
 
     /**
-     * @param {?WebInspector.TimelineModel.Record|?WebInspector.TracingModel.Event} record
+     * @param {?WebInspector.TimelineSelection} selection
      */
-    setSelectedRecord: function(record)
+    setSelection: function(selection)
     {
+        if (!selection || selection.type() !== WebInspector.TimelineSelection.Type.Record) {
+            this._mainView.setSelectedEntry(-1);
+            return;
+        }
+        var record = selection.object();
         var entryRecords = this._dataProvider._records;
         for (var entryIndex = 0; entryIndex < entryRecords.length; ++entryIndex) {
             if (entryRecords[entryIndex] === record) {
@@ -932,7 +937,7 @@ WebInspector.TimelineFlameChart.prototype = {
         var entryIndex = event.data;
         var record = this._dataProvider._records[entryIndex];
         if (record instanceof WebInspector.TimelineModel.Record)
-            this._delegate.selectRecord(record);
+            this._delegate.select(WebInspector.TimelineSelection.fromRecord(record));
     },
 
     __proto__: WebInspector.VBox.prototype

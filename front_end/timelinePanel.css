@@ -539,7 +539,6 @@
     opacity: 0.8;
     color: black;
     text-align: center;
-    padding-top: 3px;
     z-index: 220;
     pointer-events: auto;
 }
@@ -547,6 +546,12 @@
 .timeline-frame-strip {
     position: absolute;
     height: 19px;
+    padding-top: 3px;
+}
+
+.timeline-frame-strip.selected {
+    background-color: rgb(56, 121, 217);
+    color: white;
 }
 
 #timeline-grid-header {

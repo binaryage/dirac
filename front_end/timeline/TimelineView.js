@@ -46,6 +46,7 @@ WebInspector.TimelineView = function(delegate, model)
     this._presentationModel = new WebInspector.TimelinePresentationModel(model);
     this._calculator = new WebInspector.TimelineCalculator(model);
     this._linkifier = new WebInspector.Linkifier();
+    this._frameStripByFrame = new Map();
 
     this._boundariesAreValid = true;
     this._scrollTop = 0;
@@ -142,16 +143,18 @@ WebInspector.TimelineView.prototype = {
     _updateFrameBars: function(frames)
     {
         var clientWidth = this._graphRowsElementWidth;
-        if (this._frameContainer)
+        if (this._frameContainer) {
             this._frameContainer.removeChildren();
-        else {
+        } else {
             const frameContainerBorderWidth = 1;
             this._frameContainer = document.createElement("div");
             this._frameContainer.classList.add("fill");
             this._frameContainer.classList.add("timeline-frame-container");
             this._frameContainer.style.height = WebInspector.TimelinePanel.rowHeight + frameContainerBorderWidth + "px";
             this._frameContainer.addEventListener("dblclick", this._onFrameDoubleClicked.bind(this), false);
+            this._frameContainer.addEventListener("click", this._onFrameClicked.bind(this), false);
         }
+        this._frameStripByFrame.clear();
 
         var dividers = [];
 
@@ -167,6 +170,7 @@ WebInspector.TimelineView.prototype = {
             frameStrip.style.left = actualStart + "px";
             frameStrip.style.width = width + "px";
             frameStrip._frame = frame;
+            this._frameStripByFrame.put(frame, frameStrip);
 
             const minWidthForFrameInfo = 60;
             if (width > minWidthForFrameInfo)
@@ -190,6 +194,14 @@ WebInspector.TimelineView.prototype = {
         if (!frameBar)
             return;
         this._delegate.requestWindowTimes(frameBar._frame.startTime, frameBar._frame.endTime);
+    },
+
+    _onFrameClicked: function(event)
+    {
+        var frameBar = event.target.enclosingNodeOrSelfWithClass("timeline-frame-strip");
+        if (!frameBar)
+            return;
+        this._delegate.select(WebInspector.TimelineSelection.fromFrame(frameBar._frame));
     },
 
     /**
@@ -312,12 +324,17 @@ WebInspector.TimelineView.prototype = {
         this._scheduleRefresh(preserveBoundaries, userGesture);
     },
 
+    _clearSelection: function()
+    {
+        this._delegate.select(null);
+    },
+
     /**
      * @param {?WebInspector.TimelinePresentationModel.Record} presentationRecord
      */
     _selectRecord: function(presentationRecord)
     {
-        if (presentationRecord && presentationRecord.coalesced()) {
+        if (presentationRecord.coalesced()) {
             // Presentation record does not have model record to highlight.
             this._innerSetSelectedRecord(presentationRecord);
             var aggregatedStats = {};
@@ -332,15 +349,28 @@ WebInspector.TimelineView.prototype = {
             this._delegate.showInDetails(WebInspector.TimelineUIUtils.recordStyle(presentationRecord.record()).title, pieChart);
             return;
         }
-        this._delegate.selectRecord(presentationRecord ? presentationRecord.record() : null);
+        this._delegate.select(WebInspector.TimelineSelection.fromRecord(presentationRecord.record()));
     },
 
     /**
-     * @param {?WebInspector.TimelineModel.Record} record
+     * @param {?WebInspector.TimelineSelection} selection
      */
-    setSelectedRecord: function(record)
+    setSelection: function(selection)
     {
-        this._innerSetSelectedRecord(this._presentationModel.toPresentationRecord(record));
+        if (!selection) {
+            this._innerSetSelectedRecord(null);
+            this._setSelectedFrame(null);
+            return;
+        }
+        if (selection.type() === WebInspector.TimelineSelection.Type.Record) {
+            var record = /** @type {!WebInspector.TimelineModel.Record} */ (selection.object());
+            this._innerSetSelectedRecord(this._presentationModel.toPresentationRecord(record));
+            this._setSelectedFrame(null);
+        } else if (selection.type() === WebInspector.TimelineSelection.Type.Frame) {
+            var frame = /** @type {!WebInspector.TimelineFrame} */ (selection.object());
+            this._innerSetSelectedRecord(null);
+            this._setSelectedFrame(frame);
+        }
     },
 
     /**
@@ -371,6 +401,22 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
+     * @param {?WebInspector.TimelineFrame} frame
+     */
+    _setSelectedFrame: function(frame)
+    {
+        if (this._lastSelectedFrame === frame)
+            return;
+        var oldStripElement = this._lastSelectedFrame && this._frameStripByFrame.get(this._lastSelectedFrame);
+        if (oldStripElement)
+            oldStripElement.classList.remove("selected");
+        var newStripElement = frame && this._frameStripByFrame.get(frame);
+        if (newStripElement)
+            newStripElement.classList.add("selected");
+        this._lastSelectedFrame = frame;
+    },
+
+    /**
      * @param {number} startTime
      * @param {number} endTime
      */
@@ -381,7 +427,7 @@ WebInspector.TimelineView.prototype = {
         this._presentationModel.setWindowTimes(startTime, endTime);
         this._automaticallySizeWindow = false;
         this._invalidateAndScheduleRefresh(false, true);
-        this._selectRecord(null);
+        this._clearSelection();
     },
 
     /**
@@ -487,7 +533,7 @@ WebInspector.TimelineView.prototype = {
         var lastVisibleLine = Math.max(0, Math.floor((visibleBottom - headerHeight) / rowHeight));
         if (this._automaticallySizeWindow && recordsInWindow.length > lastVisibleLine) {
             this._automaticallySizeWindow = false;
-            this._selectRecord(null);
+            this._clearSelection();
             // If we're at the top, always use real timeline start as a left window bound so that expansion arrow padding logic works.
             var windowStartTime = startIndex ? recordsInWindow[startIndex].record().startTime() : this._model.minimumRecordTime();
             var windowEndTime = recordsInWindow[Math.max(0, lastVisibleLine - 1)].record().endTime();
@@ -670,7 +716,7 @@ WebInspector.TimelineView.prototype = {
         var anchor = element.enclosingNodeOrSelfWithClass("timeline-graph-bar");
         if (anchor && anchor._tasksInfo)
             return anchor;
-        return element.enclosingNodeOrSelfWithClass("timeline-frame-strip");
+        return null;
     },
 
     _mouseOut: function()
@@ -802,17 +848,9 @@ WebInspector.TimelineView.prototype = {
      */
     _showPopover: function(anchor, popover)
     {
-        if (anchor.classList.contains("timeline-frame-strip")) {
-            var frame = anchor._frame;
-            popover.show(WebInspector.TimelineUIUtils.generatePopupContentForFrame(frame), anchor);
-        } else if (anchor._tasksInfo) {
-            popover.show(WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent(this._model, anchor._tasksInfo), anchor, null, null, WebInspector.Popover.Orientation.Bottom);
-        }
-
-        function showCallback(popupContent)
-        {
-            popover.show(popupContent, anchor);
-        }
+        if (!anchor._tasksInfo)
+            return;
+        popover.show(WebInspector.TimelineUIUtils.generateMainThreadBarPopupContent(this._model, anchor._tasksInfo), anchor, null, null, WebInspector.Popover.Orientation.Bottom);
     },
 
     _closeRecordDetails: function()

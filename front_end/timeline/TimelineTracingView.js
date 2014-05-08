@@ -95,9 +95,9 @@ WebInspector.TimelineTracingView.prototype = {
     setSidebarSize: function(width) {},
 
     /**
-     * @param {?WebInspector.TimelineModel.Record} record
+     * @param {?WebInspector.TimelineSelection} selection
      */
-    setSelectedRecord: function(record) {},
+    setSelection: function(selection) {},
 
     /**
      * @param {!WebInspector.Event} event

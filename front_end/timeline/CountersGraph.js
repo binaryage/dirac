@@ -195,7 +195,7 @@ WebInspector.CountersGraph.prototype = {
             return false;
         }
         this._model.forAllRecords(null, findRecordToReveal.bind(this));
-        this._delegate.selectRecord(recordToReveal);
+        this._delegate.select(recordToReveal ? WebInspector.TimelineSelection.fromRecord(recordToReveal) : null);
     },
 
     /**
@@ -258,9 +258,9 @@ WebInspector.CountersGraph.prototype = {
     },
 
     /**
-     * @param {?WebInspector.TimelineModel.Record} record
+     * @param {?WebInspector.TimelineSelection} selection
      */
-    setSelectedRecord: function(record)
+    setSelection: function(selection)
     {
     },
 
