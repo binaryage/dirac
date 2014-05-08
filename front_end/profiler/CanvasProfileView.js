@@ -1026,11 +1026,12 @@ WebInspector.CanvasProfileHeader.prototype = {
 
     /**
      * @override
+     * @param {!WebInspector.ProfilesPanel} panel
      * @return {!WebInspector.ProfileSidebarTreeElement}
      */
-    createSidebarTreeElement: function()
+    createSidebarTreeElement: function(panel)
     {
-        return new WebInspector.ProfileSidebarTreeElement(this, "profile-sidebar-tree-item");
+        return new WebInspector.ProfileSidebarTreeElement(panel, this, "profile-sidebar-tree-item");
     },
 
     /**

@@ -250,7 +250,6 @@ InspectorFrontendHost.embedderMessageAck = function(id, error) {}
 var FormatterWorker = {}
 var WebInspector = {}
 
-WebInspector.panels = {};
 WebInspector.devicesModel = {};
 
 WebInspector.reload = function() { }

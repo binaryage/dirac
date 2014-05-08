@@ -108,7 +108,7 @@ WebInspector.Context.prototype = {
 
         var availableFlavors = Set.fromArray(this.flavors());
         extensions.forEach(function(extension) {
-            if (WebInspector.ModuleManager.isExtensionApplicableToContextTypes(extension, availableFlavors))
+            if (WebInspector.moduleManager.isExtensionApplicableToContextTypes(extension, availableFlavors))
                 targetExtensionSet.add(extension);
         });
 

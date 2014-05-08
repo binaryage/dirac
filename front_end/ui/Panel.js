@@ -33,7 +33,6 @@
 WebInspector.Panel = function(name)
 {
     WebInspector.VBox.call(this);
-    WebInspector.panels[name] = this;
 
     this.element.classList.add("panel");
     this.element.classList.add(name);

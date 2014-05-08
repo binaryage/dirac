@@ -335,8 +335,8 @@ WebInspector.Main.prototype = {
         WebInspector.shortcutRegistry = new WebInspector.ShortcutRegistry(WebInspector.actionRegistry);
         this._registerForwardedShortcuts();
 
-        WebInspector.panels = {};
         WebInspector.inspectorView = new WebInspector.InspectorView();
+
         // Screencast controller creates a root view itself.
         if (mainTarget.canScreencast)
             this._screencastController = new WebInspector.ScreencastController();

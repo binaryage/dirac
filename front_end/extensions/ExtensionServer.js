@@ -220,7 +220,7 @@ WebInspector.ExtensionServer.prototype = {
         var id = message.id;
         // The ids are generated on the client API side and must be unique, so the check below
         // shouldn't be hit unless someone is bypassing the API.
-        if (id in this._clientObjects || id in WebInspector.panels)
+        if (id in this._clientObjects || WebInspector.inspectorView.hasPanel(id))
             return this._status.E_EXISTS(id);
 
         var page = this._expandResourcePath(port._extensionOrigin, message.page);

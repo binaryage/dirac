@@ -644,7 +644,7 @@ WebInspector.CPUProfileType.prototype = {
             this._profileBeingRecorded.updateStatus("");
             var recordedProfile = this._profileBeingRecorded;
             this.setProfileBeingRecorded(null);
-            WebInspector.panels.profiles.showProfile(recordedProfile);
+            this.dispatchEventToListeners(WebInspector.ProfileType.Events.ProfileComplete, recordedProfile);
         }
         ProfilerAgent.stop(didStopProfiling.bind(this));
     },
@@ -753,11 +753,12 @@ WebInspector.CPUProfileHeader.prototype = {
 
     /**
      * @override
+     * @param {!WebInspector.ProfilesPanel} panel
      * @return {!WebInspector.ProfileSidebarTreeElement}
      */
-    createSidebarTreeElement: function()
+    createSidebarTreeElement: function(panel)
     {
-        return new WebInspector.ProfileSidebarTreeElement(this, "profile-sidebar-tree-item");
+        return new WebInspector.ProfileSidebarTreeElement(panel, this, "profile-sidebar-tree-item");
     },
 
     /**

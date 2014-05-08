@@ -31,10 +31,13 @@
 /**
  * @constructor
  * @extends {WebInspector.DataGrid}
+ * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
+ * @param {!Array.<!WebInspector.DataGrid.ColumnDescriptor>} columns
  */
-WebInspector.HeapSnapshotSortableDataGrid = function(columns)
+WebInspector.HeapSnapshotSortableDataGrid = function(dataDisplayDelegate, columns)
 {
     WebInspector.DataGrid.call(this, columns);
+    this._dataDisplayDelegate = dataDisplayDelegate;
 
     /**
      * @type {number}
@@ -125,22 +128,30 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
         if (!td)
             return;
         var node = td.heapSnapshotNode;
+
+        /**
+         * @this {WebInspector.HeapSnapshotSortableDataGrid}
+         */
         function revealInDominatorsView()
         {
-            WebInspector.panels.profiles.showObject(node.snapshotNodeId, "Dominators");
+            this._dataDisplayDelegate.showObject(node.snapshotNodeId, "Dominators");
         }
+
+        /**
+         * @this {WebInspector.HeapSnapshotSortableDataGrid}
+         */
         function revealInSummaryView()
         {
-            WebInspector.panels.profiles.showObject(node.snapshotNodeId, "Summary");
+            this._dataDisplayDelegate.showObject(node.snapshotNodeId, "Summary");
         }
-        if(node instanceof WebInspector.HeapSnapshotRetainingObjectNode) {
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Summary view" : "Reveal in Summary View"), revealInSummaryView);
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Dominators view" : "Reveal in Dominators View"), revealInDominatorsView);
-        }
-        else if (node instanceof WebInspector.HeapSnapshotInstanceNode || node instanceof WebInspector.HeapSnapshotObjectNode) {
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Dominators view" : "Reveal in Dominators View"), revealInDominatorsView);
+
+        if (node instanceof WebInspector.HeapSnapshotRetainingObjectNode) {
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Summary view" : "Reveal in Summary View"), revealInSummaryView.bind(this));
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Dominators view" : "Reveal in Dominators View"), revealInDominatorsView.bind(this));
+        } else if (node instanceof WebInspector.HeapSnapshotInstanceNode || node instanceof WebInspector.HeapSnapshotObjectNode) {
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Dominators view" : "Reveal in Dominators View"), revealInDominatorsView.bind(this));
         } else if (node instanceof WebInspector.HeapSnapshotDominatorObjectNode) {
-            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Summary view" : "Reveal in Summary View"), revealInSummaryView);
+            contextMenu.appendItem(WebInspector.UIString(WebInspector.useLowerCaseMenuTitles() ? "Reveal in Summary view" : "Reveal in Summary View"), revealInSummaryView.bind(this));
         }
     },
 
@@ -318,10 +329,12 @@ WebInspector.HeapSnapshotSortableDataGrid.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotSortableDataGrid}
+ * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
+ * @param {!Array.<!WebInspector.DataGrid.ColumnDescriptor>} columns
  */
-WebInspector.HeapSnapshotViewportDataGrid = function(columns)
+WebInspector.HeapSnapshotViewportDataGrid = function(dataDisplayDelegate, columns)
 {
-    WebInspector.HeapSnapshotSortableDataGrid.call(this, columns);
+    WebInspector.HeapSnapshotSortableDataGrid.call(this, dataDisplayDelegate, columns);
     this.scrollContainer.addEventListener("scroll", this._onScroll.bind(this), true);
     /**
      * @type {?WebInspector.HeapSnapshotGridNode}
@@ -606,9 +619,10 @@ WebInspector.HeapSnapshotPaddingNode.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotSortableDataGrid}
+ * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
  * @param {!Array.<!WebInspector.DataGrid.ColumnDescriptor>=} columns
  */
-WebInspector.HeapSnapshotContainmentDataGrid = function(columns)
+WebInspector.HeapSnapshotContainmentDataGrid = function(dataDisplayDelegate, columns)
 {
     columns = columns || [
         {id: "object", title: WebInspector.UIString("Object"), disclosure: true, sortable: true},
@@ -616,7 +630,7 @@ WebInspector.HeapSnapshotContainmentDataGrid = function(columns)
         {id: "shallowSize", title: WebInspector.UIString("Shallow Size"), width: "120px", sortable: true},
         {id: "retainedSize", title: WebInspector.UIString("Retained Size"), width: "120px", sortable: true, sort: WebInspector.DataGrid.Order.Descending}
     ];
-    WebInspector.HeapSnapshotSortableDataGrid.call(this, columns);
+    WebInspector.HeapSnapshotSortableDataGrid.call(this, dataDisplayDelegate, columns);
 }
 
 WebInspector.HeapSnapshotContainmentDataGrid.prototype = {
@@ -652,8 +666,9 @@ WebInspector.HeapSnapshotContainmentDataGrid.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotContainmentDataGrid}
+ * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
  */
-WebInspector.HeapSnapshotRetainmentDataGrid = function()
+WebInspector.HeapSnapshotRetainmentDataGrid = function(dataDisplayDelegate)
 {
     var columns = [
         {id: "object", title: WebInspector.UIString("Object"), disclosure: true, sortable: true},
@@ -661,7 +676,7 @@ WebInspector.HeapSnapshotRetainmentDataGrid = function()
         {id: "shallowSize", title: WebInspector.UIString("Shallow Size"), width: "120px", sortable: true},
         {id: "retainedSize", title: WebInspector.UIString("Retained Size"), width: "120px", sortable: true}
     ];
-    WebInspector.HeapSnapshotContainmentDataGrid.call(this, columns);
+    WebInspector.HeapSnapshotContainmentDataGrid.call(this, dataDisplayDelegate, columns);
 }
 
 WebInspector.HeapSnapshotRetainmentDataGrid.Events = {
@@ -707,8 +722,9 @@ WebInspector.HeapSnapshotRetainmentDataGrid.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotViewportDataGrid}
+ * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
  */
-WebInspector.HeapSnapshotConstructorsDataGrid = function()
+WebInspector.HeapSnapshotConstructorsDataGrid = function(dataDisplayDelegate)
 {
     var columns = [
         {id: "object", title: WebInspector.UIString("Constructor"), disclosure: true, sortable: true},
@@ -717,7 +733,7 @@ WebInspector.HeapSnapshotConstructorsDataGrid = function()
         {id: "shallowSize", title: WebInspector.UIString("Shallow Size"), width: "120px", sortable: true},
         {id: "retainedSize", title: WebInspector.UIString("Retained Size"), width: "120px", sort: WebInspector.DataGrid.Order.Descending, sortable: true}
     ];
-    WebInspector.HeapSnapshotViewportDataGrid.call(this, columns);
+    WebInspector.HeapSnapshotViewportDataGrid.call(this, dataDisplayDelegate, columns);
     this._profileIndex = -1;
 
     this._objectIdToSelect = null;
@@ -865,8 +881,9 @@ WebInspector.HeapSnapshotConstructorsDataGrid.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotViewportDataGrid}
+ * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
  */
-WebInspector.HeapSnapshotDiffDataGrid = function()
+WebInspector.HeapSnapshotDiffDataGrid = function(dataDisplayDelegate)
 {
     var columns = [
         {id: "object", title: WebInspector.UIString("Constructor"), disclosure: true, sortable: true},
@@ -877,7 +894,7 @@ WebInspector.HeapSnapshotDiffDataGrid = function()
         {id: "removedSize", title: WebInspector.UIString("Freed Size"), width: "72px", sortable: true},
         {id: "sizeDelta", title: WebInspector.UIString("Size Delta"), width: "72px", sortable: true}
     ];
-    WebInspector.HeapSnapshotViewportDataGrid.call(this, columns);
+    WebInspector.HeapSnapshotViewportDataGrid.call(this, dataDisplayDelegate, columns);
 }
 
 WebInspector.HeapSnapshotDiffDataGrid.prototype = {
@@ -957,15 +974,16 @@ WebInspector.HeapSnapshotDiffDataGrid.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotSortableDataGrid}
+ * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
  */
-WebInspector.HeapSnapshotDominatorsDataGrid = function()
+WebInspector.HeapSnapshotDominatorsDataGrid = function(dataDisplayDelegate)
 {
     var columns = [
         {id: "object", title: WebInspector.UIString("Object"), disclosure: true, sortable: true},
         {id: "shallowSize", title: WebInspector.UIString("Shallow Size"), width: "120px", sortable: true},
         {id: "retainedSize", title: WebInspector.UIString("Retained Size"), width: "120px", sort: WebInspector.DataGrid.Order.Descending, sortable: true}
     ];
-    WebInspector.HeapSnapshotSortableDataGrid.call(this, columns);
+    WebInspector.HeapSnapshotSortableDataGrid.call(this, dataDisplayDelegate, columns);
     this._objectIdToSelect = null;
 }
 
@@ -1055,8 +1073,9 @@ WebInspector.HeapSnapshotDominatorsDataGrid.prototype = {
 /**
  * @constructor
  * @extends {WebInspector.HeapSnapshotViewportDataGrid}
+ * @param {!WebInspector.ProfileType.DataDisplayDelegate} dataDisplayDelegate
  */
-WebInspector.AllocationDataGrid = function()
+WebInspector.AllocationDataGrid = function(dataDisplayDelegate)
 {
     var columns = [
         {id: "liveCount", title: WebInspector.UIString("Live Count"), width: "72px", sortable: true},
@@ -1065,7 +1084,7 @@ WebInspector.AllocationDataGrid = function()
         {id: "size", title: WebInspector.UIString("Size"), width: "72px", sortable: true, sort: WebInspector.DataGrid.Order.Descending},
         {id: "name", title: WebInspector.UIString("Function"), disclosure: true, sortable: true},
     ];
-    WebInspector.HeapSnapshotViewportDataGrid.call(this, columns);
+    WebInspector.HeapSnapshotViewportDataGrid.call(this, dataDisplayDelegate, columns);
     this._linkifier = new WebInspector.Linkifier();
 }
 

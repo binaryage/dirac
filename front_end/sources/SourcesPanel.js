@@ -1252,6 +1252,25 @@ WebInspector.SourcesPanel.UILocationRevealer.prototype = {
 
 /**
  * @constructor
+ * @implements {WebInspector.Revealer}
+ */
+WebInspector.SourcesPanel.UISourceCodeRevealer = function()
+{
+}
+
+WebInspector.SourcesPanel.UISourceCodeRevealer.prototype = {
+    /**
+     * @param {!Object} uiSourceCode
+     */
+    reveal: function(uiSourceCode)
+    {
+        if (uiSourceCode instanceof WebInspector.UISourceCode)
+            /** @type {!WebInspector.SourcesPanel} */ (WebInspector.inspectorView.panel("sources")).showUISourceCode(uiSourceCode);
+    }
+}
+
+/**
+ * @constructor
  * @implements {WebInspector.ActionDelegate}
  */
 WebInspector.SourcesPanel.ShowGoToSourceDialogActionDelegate = function() {}

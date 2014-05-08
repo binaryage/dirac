@@ -77,7 +77,7 @@ WebInspector.SourcesView = function(workspace, sourcesPanel)
         event.returnValue = WebInspector.UIString("DevTools have unsaved changes that will be permanently lost.");
         WebInspector.inspectorView.showPanel("sources");
         for (var i = 0; i < unsavedSourceCodes.length; ++i)
-            WebInspector.panels.sources.showUISourceCode(unsavedSourceCodes[i]);
+            WebInspector.Revealer.reveal(unsavedSourceCodes[i]);
     }
     window.addEventListener("beforeunload", handleBeforeUnload, true);
 

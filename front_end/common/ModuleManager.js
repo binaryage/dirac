@@ -60,69 +60,6 @@ WebInspector.ModuleManager = function(descriptors)
         this._descriptorsMap[descriptors[i]["name"]] = descriptors[i];
 }
 
-/**
- * @param {!WebInspector.ModuleManager.Extension} extension
- * @param {?function(!Function):boolean} predicate
- */
-WebInspector.ModuleManager._checkExtensionApplicability = function(extension, predicate)
-{
-    if (!predicate)
-        return false;
-    var contextTypes = /** @type {!Array.<string>|undefined} */ (extension.descriptor().contextTypes);
-    if (!contextTypes)
-        return true;
-    for (var i = 0; i < contextTypes.length; ++i) {
-        var contextType = /** @type {!Function} */ (window.eval(contextTypes[i]));
-        var isMatching = predicate(contextType);
-        if (isMatching)
-            return true;
-    }
-    return false;
-}
-
-/**
- * @param {!WebInspector.ModuleManager.Extension} extension
- * @param {?Object} context
- * @return {boolean}
- */
-WebInspector.ModuleManager.isExtensionApplicableToContext = function(extension, context)
-{
-    if (!context)
-        return true;
-    return WebInspector.ModuleManager._checkExtensionApplicability(extension, isInstanceOf);
-
-    /**
-     * @param {!Function} targetType
-     * @return {boolean}
-     */
-    function isInstanceOf(targetType)
-    {
-        return context instanceof targetType;
-    }
-}
-
-/**
- * @param {!WebInspector.ModuleManager.Extension} extension
- * @param {!Set.<!Function>=} currentContextTypes
- * @return {boolean}
- */
-WebInspector.ModuleManager.isExtensionApplicableToContextTypes = function(extension, currentContextTypes)
-{
-    if (!extension.descriptor().contextTypes)
-        return true;
-
-    return WebInspector.ModuleManager._checkExtensionApplicability(extension, currentContextTypes ? isContextTypeKnown : null);
-
-    /**
-     * @param {!Function} targetType
-     * @return {boolean}
-     */
-    function isContextTypeKnown(targetType)
-    {
-        return currentContextTypes.contains(targetType);
-    }
-}
-
 WebInspector.ModuleManager.prototype = {
     /**
      * @param {!Array.<string>} configuration
@@ -157,6 +94,70 @@ WebInspector.ModuleManager.prototype = {
     loadModule: function(moduleName)
     {
         this._modulesMap[moduleName]._load();
+    },
+
+    /**
+     * @param {!WebInspector.ModuleManager.Extension} extension
+     * @param {?function(function(new:Object)):boolean} predicate
+     * @return {boolean}
+     */
+    _checkExtensionApplicability: function(extension, predicate)
+    {
+        if (!predicate)
+            return false;
+        var contextTypes = /** @type {!Array.<string>|undefined} */ (extension.descriptor().contextTypes);
+        if (!contextTypes)
+            return true;
+        for (var i = 0; i < contextTypes.length; ++i) {
+            var contextType = this._resolve(contextTypes[i]);
+            var isMatching = !!contextType && predicate(contextType);
+            if (isMatching)
+                return true;
+        }
+        return false;
+    },
+
+    /**
+     * @param {!WebInspector.ModuleManager.Extension} extension
+     * @param {?Object} context
+     * @return {boolean}
+     */
+    isExtensionApplicableToContext: function(extension, context)
+    {
+        if (!context)
+            return true;
+        return this._checkExtensionApplicability(extension, isInstanceOf);
+
+        /**
+         * @param {!Function} targetType
+         * @return {boolean}
+         */
+        function isInstanceOf(targetType)
+        {
+            return context instanceof targetType;
+        }
+    },
+
+    /**
+     * @param {!WebInspector.ModuleManager.Extension} extension
+     * @param {!Set.<!Function>=} currentContextTypes
+     * @return {boolean}
+     */
+    isExtensionApplicableToContextTypes: function(extension, currentContextTypes)
+    {
+        if (!extension.descriptor().contextTypes)
+            return true;
+
+        return this._checkExtensionApplicability(extension, currentContextTypes ? isContextTypeKnown : null);
+
+        /**
+         * @param {!Function} targetType
+         * @return {boolean}
+         */
+        function isContextTypeKnown(targetType)
+        {
+            return currentContextTypes.contains(targetType);
+        }
     },
 
     /**
@@ -253,10 +254,10 @@ WebInspector.ModuleManager.prototype = {
     /**
      * @return {?function(new:Object)}
      */
-    resolve: function(typeName)
+    _resolve: function(typeName)
     {
         if (!this._cachedTypeClasses[typeName]) {
-            var path = typeName.substring(1).split(".");
+            var path = typeName.split(".");
             var object = window;
             for (var i = 0; object && (i < path.length); ++i)
                 object = object[path[i]];
@@ -265,7 +266,6 @@ WebInspector.ModuleManager.prototype = {
         }
         return this._cachedTypeClasses[typeName];
     }
-
 }
 
 /**
@@ -408,7 +408,7 @@ WebInspector.ModuleManager.Extension.prototype = {
     {
         if (!this._hasTypeClass)
             return null;
-        return this._module._manager.resolve(this._type);
+        return this._module._manager._resolve(this._type.substring(1));
     },
 
     /**
@@ -417,7 +417,7 @@ WebInspector.ModuleManager.Extension.prototype = {
      */
     isApplicable: function(context)
     {
-        return WebInspector.ModuleManager.isExtensionApplicableToContext(this, context);
+        return this._module._manager.isExtensionApplicableToContext(this, context);
     },
 
     /**

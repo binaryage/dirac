@@ -69,6 +69,10 @@ WebInspector.InspectorView = function()
 
     this.appendToRightToolbar(this._drawer.toggleButtonElement());
 
+    this._panels = {};
+    // Used by tests.
+    WebInspector["panels"] = this._panels;
+
     this._history = [];
     this._historyIterator = -1;
     document.addEventListener("keydown", this._keyDown.bind(this), false);
@@ -129,6 +133,15 @@ WebInspector.InspectorView.prototype = {
 
     /**
      * @param {string} panelName
+     * @return {boolean}
+     */
+    hasPanel: function(panelName)
+    {
+        return !!this._panelDescriptors[panelName];
+    },
+
+    /**
+     * @param {string} panelName
      * @return {?WebInspector.Panel}
      */
     panel: function(panelName)
@@ -137,7 +150,10 @@ WebInspector.InspectorView.prototype = {
         var panelOrder = this._tabbedPane.allTabs();
         if (!panelDescriptor && panelOrder.length)
             panelDescriptor = this._panelDescriptors[panelOrder[0]];
-        return panelDescriptor ? panelDescriptor.panel() : null;
+        var panel = panelDescriptor ? panelDescriptor.panel() : null;
+        if (panel)
+            this._panels[panelName] = panel;
+        return panel;
     },
 
     /**
@@ -199,6 +215,7 @@ WebInspector.InspectorView.prototype = {
         if (!panelName)
             return;
         var panel = this._panelDescriptors[this._tabbedPane.selectedTabId].panel();
+        this._panels[panelName] = panel;
         this._tabbedPane.changeTabView(panelName, panel);
 
         this._currentPanel = panel;
@@ -368,7 +385,7 @@ WebInspector.InspectorView.prototype = {
         this._inHistory = true;
         this._historyIterator = newIndex;
         if (!WebInspector.Dialog.currentInstance())
-            this.setCurrentPanel(WebInspector.panels[this._history[this._historyIterator]]);
+            this.setCurrentPanel(this._panels[this._history[this._historyIterator]]);
         delete this._inHistory;
 
         return true;

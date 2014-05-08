@@ -26,6 +26,11 @@
             "className": "WebInspector.SourcesPanel.UILocationRevealer"
         },
         {
+            "type": "@WebInspector.Revealer",
+            "contextTypes": ["WebInspector.UISourceCode"],
+            "className": "WebInspector.SourcesPanel.UISourceCodeRevealer"
+        },
+        {
             "type": "@WebInspector.SourcesView.EditorAction",
             "className": "WebInspector.InplaceFormatterEditorAction"
         },
