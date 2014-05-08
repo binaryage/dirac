@@ -43,8 +43,10 @@ WebInspector.OverridesView = function()
     this._tabbedPane.shrinkableTabs = false;
     this._tabbedPane.verticalTabLayout = true;
 
-    new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
-    new WebInspector.OverridesView.ViewportTab().appendAsTab(this._tabbedPane);
+    if (!WebInspector.overridesSupport.isInspectingDevice()) {
+        new WebInspector.OverridesView.DeviceTab().appendAsTab(this._tabbedPane);
+        new WebInspector.OverridesView.ViewportTab().appendAsTab(this._tabbedPane);
+    }
     new WebInspector.OverridesView.UserAgentTab().appendAsTab(this._tabbedPane);
     new WebInspector.OverridesView.SensorsTab().appendAsTab(this._tabbedPane);
 
@@ -818,7 +820,11 @@ WebInspector.OverridesView.UserAgentTab.prototype = {
  */
 WebInspector.OverridesView.SensorsTab = function()
 {
-    WebInspector.OverridesView.Tab.call(this, "sensors", WebInspector.UIString("Sensors"), [WebInspector.overridesSupport.settings.emulateTouchEvents, WebInspector.overridesSupport.settings.overrideGeolocation, WebInspector.overridesSupport.settings.overrideDeviceOrientation]);
+    var settings = [WebInspector.overridesSupport.settings.overrideGeolocation, WebInspector.overridesSupport.settings.overrideDeviceOrientation];
+    if (!WebInspector.overridesSupport.hasTouchInputs())
+        settings.push(WebInspector.overridesSupport.settings.emulateTouchEvents);
+    WebInspector.OverridesView.Tab.call(this, "sensors", WebInspector.UIString("Sensors"), settings);
+
     this.element.classList.add("overrides-sensors");
     this.registerRequiredCSS("accelerometer.css");
     if (!WebInspector.overridesSupport.hasTouchInputs())

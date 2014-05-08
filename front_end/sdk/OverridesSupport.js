@@ -398,6 +398,11 @@ WebInspector.OverridesSupport.prototype = {
 
     applyInitialOverrides: function()
     {
+        if (!this._target) {
+            this._applyInitialOverridesOnTargetAdded = true;
+            return;
+        }
+
         if (this.settings.overrideDeviceOrientation.get())
             this._deviceOrientationChanged();
 
@@ -441,10 +446,8 @@ WebInspector.OverridesSupport.prototype = {
         var metricsOverrideEnabled = !!(dipWidth && dipHeight);
 
         // Disable override without checks.
-        if (metricsOverrideEnabled && this.isInspectingDevice()) {
-            this._updateDeviceMetricsWarningMessage(WebInspector.UIString("Screen emulation on the device is not available."));
+        if (metricsOverrideEnabled && this.isInspectingDevice())
             return;
-        }
 
         PageAgent.setDeviceMetricsOverride(dipWidth, dipHeight, metricsOverrideEnabled ? metrics.deviceScaleFactor : 0, this.settings.emulateViewport.get(), this.settings.deviceFitWindow.get(), metrics.textAutosizing, metrics.fontScaleFactor(), apiCallback.bind(this));
         this.maybeHasActiveOverridesChanged();
@@ -502,7 +505,7 @@ WebInspector.OverridesSupport.prototype = {
 
     _emulateTouchEventsChanged: function()
     {
-        if (WebInspector.overridesSupport.hasTouchInputs() && this.settings.emulateTouchEvents.get())
+        if (this.hasTouchInputs() && this.settings.emulateTouchEvents.get())
             return;
 
         var emulateTouch = this.settings.emulateTouchEvents.get();
@@ -514,6 +517,9 @@ WebInspector.OverridesSupport.prototype = {
 
     _cssMediaChanged: function()
     {
+        if (this.isInspectingDevice() && this.settings.overrideCSSMedia.get())
+            return;
+
         PageAgent.setEmulatedMedia(this.settings.overrideCSSMedia.get() ? this.settings.emulatedCSSMedia.get() : "");
         var targets = WebInspector.targetManager.targets();
         for (var i = 0; i < targets.length; ++i)
@@ -531,9 +537,13 @@ WebInspector.OverridesSupport.prototype = {
 
     maybeHasActiveOverridesChanged: function()
     {
-        var hasActiveOverrides = this.settings.overrideUserAgent.get() || this.settings.overrideDeviceMetrics.get() ||
-            this.settings.overrideGeolocation.get() || this.settings.overrideDeviceOrientation.get() ||
-            this.settings.emulateTouchEvents.get() || this.settings.overrideCSSMedia.get();
+        var hasActiveOverrides =
+            this.settings.overrideUserAgent.get() ||
+            (this.settings.overrideDeviceMetrics.get() && !this.isInspectingDevice()) ||
+            this.settings.overrideGeolocation.get() ||
+            this.settings.overrideDeviceOrientation.get() ||
+            (this.settings.emulateTouchEvents.get() && !this.hasTouchInputs()) ||
+            (this.settings.overrideCSSMedia.get() && !this.isInspectingDevice());
         if (this._hasActiveOverrides !== hasActiveOverrides) {
             this._hasActiveOverrides = hasActiveOverrides;
             this.dispatchEventToListeners(WebInspector.OverridesSupport.Events.HasActiveOverridesChanged);
@@ -617,6 +627,11 @@ WebInspector.OverridesSupport.prototype = {
 
         this.settings.overrideCSSMedia.addChangeListener(this._cssMediaChanged, this);
         this.settings.emulatedCSSMedia.addChangeListener(this._cssMediaChanged, this);
+
+        if (this._applyInitialOverridesOnTargetAdded) {
+            delete this._applyInitialOverridesOnTargetAdded;
+            this.applyInitialOverrides();
+        }
     },
 
     /**
