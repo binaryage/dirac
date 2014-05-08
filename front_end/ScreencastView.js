@@ -57,9 +57,10 @@ WebInspector.ScreencastView.prototype = {
         this._createNavigationBar();
 
         this._viewportElement = this.element.createChild("div", "screencast-viewport hidden");
-        this._glassPaneElement = this.element.createChild("div", "screencast-glasspane hidden");
+        this._canvasContainerElement = this._viewportElement.createChild("div", "screencast-canvas-container");
+        this._glassPaneElement = this._canvasContainerElement.createChild("div", "screencast-glasspane hidden");
 
-        this._canvasElement = this._viewportElement.createChild("canvas");
+        this._canvasElement = this._canvasContainerElement.createChild("canvas");
         this._canvasElement.tabIndex = 1;
         this._canvasElement.addEventListener("mousedown", this._handleMouseEvent.bind(this), false);
         this._canvasElement.addEventListener("mouseup", this._handleMouseEvent.bind(this), false);
@@ -71,7 +72,7 @@ WebInspector.ScreencastView.prototype = {
         this._canvasElement.addEventListener("keyup", this._handleKeyEvent.bind(this), false);
         this._canvasElement.addEventListener("keypress", this._handleKeyEvent.bind(this), false);
 
-        this._titleElement = this._viewportElement.createChild("div", "screencast-element-title monospace hidden");
+        this._titleElement = this._canvasContainerElement.createChild("div", "screencast-element-title monospace hidden");
         this._tagNameElement = this._titleElement.createChild("span", "screencast-tag-name");
         this._nodeIdElement = this._titleElement.createChild("span", "screencast-node-id");
         this._classNameElement = this._titleElement.createChild("span", "screencast-class-name");
@@ -855,6 +856,8 @@ WebInspector.ScreencastView.prototype = {
     _createNavigationBar: function()
     {
         this._navigationBar = this.element.createChild("div", "toolbar-background screencast-navigation");
+        if (WebInspector.queryParam("hideNavigation"))
+            this._navigationBar.classList.add("hidden");
 
         this._navigationBack = this._navigationBar.createChild("button", "back");
         this._navigationBack.disabled = true;
@@ -924,6 +927,7 @@ WebInspector.ScreencastView.prototype = {
         var match = url.match(WebInspector.ScreencastView._HttpRegex);
         if (match)
             url = match[1];
+        InspectorFrontendHost.inspectedURLChanged(url);
         this._navigationUrl.value = url;
     },
 

@@ -33,14 +33,14 @@
 }
 
 .screencast-navigation {
-    -webkit-flex-direction: row;
-    display: -webkit-flex;
-    height: 25px;
+    flex-direction: row;
+    display: flex;
+    flex: 24px 0 0;
     position: relative;
 }
 
 .screencast-navigation button {
-    -webkit-border-radius: 2px;
+    border-radius: 2px;
     background-color: transparent;
     background-image: -webkit-image-set(
         url(Images/navigationControls.png) 1x,
@@ -50,7 +50,7 @@
     background-repeat: no-repeat;
     border: 1px solid transparent;
     height: 23px;
-    padding: 3px 2px 1px;
+    padding: 2px;
     width: 23px;
 }
 
@@ -102,19 +102,25 @@
 }
 
 .screencast-viewport {
-    border: 20px solid #333;
+    display: flex;
+    border: 1px solid #999;
     border-radius: 20px;
-    position: absolute;
-    top: 36px;
-    left: 10px;
-    right: 10px;
-    bottom: 10px;
+    flex: auto;
+    padding: 20px;
+    margin: 10px;
+    background-color: #eee;
+}
+
+.screencast-canvas-container {
+    flex: auto;
+    display: flex;
+    border: 1px solid #999;
+    position: relative;
 }
 
 .screencast canvas {
-    position: absolute;
-    width: 100%;
-    height: 100%;
+    flex: auto;
+    position: relative;
 }
 
 .screencast-px {
@@ -142,15 +148,15 @@
 }
 
 .screencast-glasspane {
-  -webkit-box-orient: horizontal;
-  -webkit-box-align: center;
-  -webkit-box-pack: center;
-  background-color: rgba(255, 255, 255, 0.8);
-  bottom: 0;
-  display: -webkit-box;
-  left: 0;
   position: absolute;
+  top: 0;
   right: 0;
-  top: 25px;  /* Align with the botton edge of .screencast .navigation. */
+  bottom: 0;
+  left: 0;
+  background-color: rgba(255, 255, 255, 0.8);
   font-size: 30px;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
