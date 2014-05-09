@@ -174,20 +174,11 @@ WebInspector.TracingModel.prototype = {
 
     _tracingComplete: function()
     {
-        this._bindings = new WebInspector.TracingModel.EventBindings(this);
         this._active = false;
         if (!this._pendingStopCallback)
             return;
         this._pendingStopCallback();
         this._pendingStopCallback = null;
-    },
-
-    /**
-     * @return {!WebInspector.TracingModel.EventBindings}
-     */
-    bindings: function()
-    {
-        return this._bindings;
     },
 
     reset: function()
@@ -201,7 +192,6 @@ WebInspector.TracingModel.prototype = {
         this._inspectedTargetMainThreadEvents = [];
         this._inspectedTargetLayerTreeHostId = 0;
         this._frameLifecycleEvents = [];
-        this._bindings = null;
     },
 
     /**
@@ -298,43 +288,6 @@ WebInspector.TracingModel.prototype = {
     },
 
     __proto__: WebInspector.Object.prototype
-}
-
-/**
- * @param {!WebInspector.TracingModel} model
- * @constructor
- */
-WebInspector.TracingModel.EventBindings = function(model)
-{
-    this._eventToWarning = new Map();
-    this._model = model;
-    this._calculateWarnings();
-}
-
-WebInspector.TracingModel.EventBindings.prototype = {
-    /**
-     * @param {!WebInspector.TracingModel.Event} event
-     * @return {string|undefined}
-     */
-    eventWarning: function(event)
-    {
-        return this._eventToWarning.get(event);
-    },
-
-    _calculateWarnings: function()
-    {
-        var events = this._model.inspectedTargetMainThreadEvents();
-        var currentScriptEvent = null;
-        for (var i = 0, length = events.length; i < length; i++) {
-            var event = events[i];
-            if (currentScriptEvent && event.startTime > currentScriptEvent.endTime)
-                currentScriptEvent = null;
-            if (event.name === WebInspector.TimelineModel.RecordType.Layout && currentScriptEvent)
-                this._eventToWarning.put(event, WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
-            if (!currentScriptEvent && (event.name === WebInspector.TimelineModel.RecordType.EvaluateScript || event.name === WebInspector.TimelineModel.RecordType.FunctionCall))
-                currentScriptEvent = event;
-        }
-    }
 }
 
 /**

@@ -137,6 +137,7 @@
             'front_end/sdk/Target.js',
             'front_end/sdk/TempFile.js',
             'front_end/sdk/TimelineManager.js',
+            'front_end/sdk/TracingModel.js',
             'front_end/sdk/UISourceCode.js',
             'front_end/sdk/WorkerManager.js',
             'front_end/sdk/WorkerTargetManager.js',
@@ -364,7 +365,6 @@
             'front_end/timeline/TimelinePowerOverview.js',
             'front_end/timeline/TimelinePanel.js',
             'front_end/timeline/TimelineTracingView.js',
-            'front_end/timeline/TracingModel.js',
         ],
         'devtools_profiler_js_files': [
             'front_end/profiler/CPUProfileBottomUpDataGrid.js',

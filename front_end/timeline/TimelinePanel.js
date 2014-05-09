@@ -46,7 +46,6 @@ importScript("TimelineFlameChart.js");
 importScript("TimelineUIUtils.js");
 importScript("TimelineView.js");
 importScript("TimelineTracingView.js");
-importScript("TracingModel.js");
 
 /**
  * @constructor
