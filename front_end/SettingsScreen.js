@@ -59,6 +59,8 @@ WebInspector.SettingsScreen = function(onHide)
     this._lastSelectedTabSetting = WebInspector.settings.createSetting("lastSelectedSettingsTab", WebInspector.SettingsScreen.Tabs.General);
     this.selectTab(this._lastSelectedTabSetting.get());
     this._tabbedPane.addEventListener(WebInspector.TabbedPane.EventTypes.TabSelected, this._tabSelected, this);
+    this.element.addEventListener("keydown", this._keyDown.bind(this), false);
+    this._developerModeCounter = 0;
 }
 
 /**
@@ -130,6 +132,15 @@ WebInspector.SettingsScreen.prototype = {
     {
         this._onHide();
         WebInspector.HelpScreen.prototype.willHide.call(this);
+    },
+
+    /**
+     * @param {Event} event
+     */
+    _keyDown: function(event)
+    {
+        if (event.keyIdentifier === "Shift" && ++this._developerModeCounter > 5)
+            this.element.classList.add("settings-developer-mode");
     },
 
     __proto__: WebInspector.HelpScreen.prototype
@@ -590,7 +601,8 @@ WebInspector.ExperimentsSettingsTab.prototype = {
         input.addEventListener("click", listener, false);
 
         var p = document.createElement("p");
-        var label = document.createElement("label");
+        p.className = experiment.hidden && !experiment.isEnabled() ? "settings-experiment-hidden" : "";
+        var label = p.createChild("label");
         label.appendChild(input);
         label.appendChild(document.createTextNode(WebInspector.UIString(experiment.title)));
         p.appendChild(label);

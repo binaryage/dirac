@@ -79,7 +79,7 @@ WebInspector.HeapSnapshotView = function(dataDisplayDelegate, profile)
     this._dominatorDataGrid.show(this._dominatorView.element);
     this._dominatorDataGrid.addEventListener(WebInspector.DataGrid.Events.SelectedNode, this._selectionChanged, this);
 
-    if (WebInspector.experimentsSettings.allocationProfiler.isEnabled() && profile.profileType() === WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType) {
+    if (WebInspector.experimentsSettings.heapAllocationProfiler.isEnabled() && profile.profileType() === WebInspector.ProfileTypeRegistry.instance.trackingHeapSnapshotProfileType) {
         this._allocationView = new WebInspector.VBox();
         this._allocationView.setMinimumSize(50, 25);
         this._allocationDataGrid = new WebInspector.AllocationDataGrid(dataDisplayDelegate);
@@ -1375,7 +1375,7 @@ WebInspector.TrackingHeapSnapshotProfileType.prototype = {
         if (this.profileBeingRecorded())
             return;
         this._addNewProfile();
-        HeapProfilerAgent.startTrackingHeapObjects(WebInspector.experimentsSettings.allocationProfiler.isEnabled());
+        HeapProfilerAgent.startTrackingHeapObjects(WebInspector.experimentsSettings.heapAllocationProfiler.isEnabled());
     },
 
     _addNewProfile: function()

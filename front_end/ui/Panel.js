@@ -151,7 +151,7 @@ WebInspector.PanelWithSidebarTree = function(name, defaultWidth)
     this._panelSplitView.show(this.element);
 
     var sidebarView = new WebInspector.VBox();
-    sidebarView.setMinimumSize(Preferences.minSidebarWidth, 25);
+    sidebarView.setMinimumSize(100, 25);
     sidebarView.show(this._panelSplitView.sidebarElement());
 
     this._sidebarElement = sidebarView.element;

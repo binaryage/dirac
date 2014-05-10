@@ -679,3 +679,15 @@ body.platform-mac .help-key {
 .edit-file-system-dialog .section {
     min-width: 400px;
 }
+
+.settings-experiment-hidden {
+    display: none;
+}
+
+.settings-experiment-hidden label {
+    background-color: #ddd;
+}
+
+.settings-developer-mode .settings-experiment-hidden {
+    display: block;
+}

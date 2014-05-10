@@ -83,7 +83,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this.editorView.show(this._splitView.mainElement());
 
     this._navigator = new WebInspector.SourcesNavigator(this._workspace);
-    this._navigator.view.setMinimumSize(Preferences.minSidebarWidth, 25);
+    this._navigator.view.setMinimumSize(100, 25);
     this._navigator.view.show(this.editorView.sidebarElement());
     this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.SourceSelected, this._sourceSelected, this);
     this._navigator.addEventListener(WebInspector.SourcesNavigator.Events.SourceRenamed, this._sourceRenamed, this);
@@ -93,7 +93,7 @@ WebInspector.SourcesPanel = function(workspaceForTest)
     this._sourcesView.addEventListener(WebInspector.SourcesView.Events.EditorClosed, this._editorClosed.bind(this));
     this._sourcesView.registerShortcuts(this.registerShortcuts.bind(this));
 
-    if (WebInspector.experimentsSettings.showEditorInDrawer.isEnabled()) {
+    if (WebInspector.experimentsSettings.editorInDrawer.isEnabled()) {
         this._drawerEditorView = new WebInspector.SourcesPanel.DrawerEditorView();
         this._sourcesView.show(this._drawerEditorView.element);
     } else {
@@ -174,7 +174,7 @@ WebInspector.SourcesPanel.prototype = {
 
     wasShown: function()
     {
-        if (WebInspector.experimentsSettings.showEditorInDrawer.isEnabled()) {
+        if (WebInspector.experimentsSettings.editorInDrawer.isEnabled()) {
             this._drawerEditor()._panelWasShown();
             this._sourcesView.show(this.editorView.mainElement());
         }
@@ -184,7 +184,7 @@ WebInspector.SourcesPanel.prototype = {
     willHide: function()
     {
         WebInspector.Panel.prototype.willHide.call(this);
-        if (WebInspector.experimentsSettings.showEditorInDrawer.isEnabled()) {
+        if (WebInspector.experimentsSettings.editorInDrawer.isEnabled()) {
             this._drawerEditor()._panelWillHide();
             this._sourcesView.show(this._drawerEditorView.element);
         }
@@ -350,7 +350,7 @@ WebInspector.SourcesPanel.prototype = {
      */
     _shouldShowEditorInDrawer: function()
     {
-        return WebInspector.experimentsSettings.showEditorInDrawer.isEnabled() && WebInspector.settings.showEditorInDrawer.get() && WebInspector.inspectorView.isDrawerEditorShown();
+        return WebInspector.experimentsSettings.editorInDrawer.isEnabled() && WebInspector.settings.showEditorInDrawer.get() && WebInspector.inspectorView.isDrawerEditorShown();
     },
 
     /**

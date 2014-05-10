@@ -114,7 +114,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
 
     inspectedURLChanged: function(url)
     {
-        document.title = WebInspector.UIString(Preferences.applicationTitle, url);
+        document.title = WebInspector.UIString("Developer Tools - %s", url);
     },
 
     copyText: function(text)

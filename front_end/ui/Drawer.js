@@ -58,7 +58,7 @@ WebInspector.Drawer = function(splitView)
 
     this._toggleDrawerEditorButton = this._drawerEditorSplitView.createShowHideSidebarButton("editor in drawer", "drawer-editor-show-hide-button");
     this._tabbedPane.element.appendChild(this._toggleDrawerEditorButton.element);
-    if (!WebInspector.experimentsSettings.showEditorInDrawer.isEnabled())
+    if (!WebInspector.experimentsSettings.editorInDrawer.isEnabled())
         this.setDrawerEditorAvailable(false);
 
     splitView.installResizer(this._tabbedPane.headerElement());
@@ -229,7 +229,7 @@ WebInspector.Drawer.prototype = {
 
     _ensureDrawerEditorExistsIfNeeded: function()
     {
-        if (!this._initialPanelWasShown || !this.isShowing() || !this._drawerEditorShownSetting.get() || !WebInspector.experimentsSettings.showEditorInDrawer.isEnabled())
+        if (!this._initialPanelWasShown || !this.isShowing() || !this._drawerEditorShownSetting.get() || !WebInspector.experimentsSettings.editorInDrawer.isEnabled())
             return;
         this._ensureDrawerEditor();
     },
@@ -247,14 +247,14 @@ WebInspector.Drawer.prototype = {
      */
     setDrawerEditorAvailable: function(available)
     {
-        if (!WebInspector.experimentsSettings.showEditorInDrawer.isEnabled())
+        if (!WebInspector.experimentsSettings.editorInDrawer.isEnabled())
             available = false;
         this._toggleDrawerEditorButton.element.classList.toggle("hidden", !available);
     },
 
     showDrawerEditor: function()
     {
-        if (!WebInspector.experimentsSettings.showEditorInDrawer.isEnabled())
+        if (!WebInspector.experimentsSettings.editorInDrawer.isEnabled())
             return;
 
         this._splitView.showBoth();

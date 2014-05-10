@@ -25,7 +25,7 @@ WebInspector.Target = function(connection, callback)
     this.hasTouchInputs = false;
     this.pageAgent().hasTouchInputs(this._initializeCapability.bind(this, "hasTouchInputs", null));
 
-    if (WebInspector.experimentsSettings.powerProfiler.isEnabled())
+    if (WebInspector.experimentsSettings.timelinePowerProfiler.isEnabled())
         this.powerAgent().canProfilePower(this._initializeCapability.bind(this, "canProfilePower", null));
 
     this.workerAgent().canInspectWorkers(this._initializeCapability.bind(this, "isMainFrontend", this._loadedWithCapabilities.bind(this, callback)));
