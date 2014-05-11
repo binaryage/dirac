@@ -923,6 +923,7 @@ WebInspector.FlameChart.prototype = {
     onResize: function()
     {
         this._updateScrollBar();
+        this._scheduleUpdate();
     },
 
     _updateScrollBar: function()
@@ -931,7 +932,6 @@ WebInspector.FlameChart.prototype = {
         this._vScrollElement.classList.toggle("hidden", !showScroll);
         this._offsetWidth = this.element.offsetWidth - (WebInspector.isMac() ? 0 : this._vScrollElement.offsetWidth);
         this._offsetHeight = this.element.offsetHeight;
-        this._scheduleUpdate();
     },
 
     _scheduleUpdate: function()
