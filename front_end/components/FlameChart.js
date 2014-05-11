@@ -502,7 +502,7 @@ WebInspector.FlameChart.prototype = {
         var windowLeft = this._timeWindowLeft ? this._timeWindowLeft : this._dataProvider.zeroTime();
         var windowRight = this._timeWindowRight !== Infinity ? this._timeWindowRight : this._dataProvider.zeroTime() + this._dataProvider.totalTime();
 
-        var panHorizontally = e.wheelDeltaX && !e.shiftKey;
+        var panHorizontally = Math.abs(e.wheelDeltaX) > Math.abs(e.wheelDeltaY) && !e.shiftKey;
         var panVertically = scrollIsThere && ((e.wheelDeltaY && !e.shiftKey) || (Math.abs(e.wheelDeltaX) === 120 && !e.shiftKey));
         if (panVertically) {
             this._vScrollElement.scrollTop -= e.wheelDeltaY / 120 * this._offsetHeight / 8;
@@ -917,9 +917,15 @@ WebInspector.FlameChart.prototype = {
         this._totalHeight = this._levelToHeight(this._dataProvider.maxStackDepth() + 1);
         this._vScrollContent.style.height = this._totalHeight + "px";
         this._scrollTop = this._vScrollElement.scrollTop;
+        this._updateScrollBar();
     },
 
     onResize: function()
+    {
+        this._updateScrollBar();
+    },
+
+    _updateScrollBar: function()
     {
         var showScroll = this._totalHeight > this._offsetHeight;
         this._vScrollElement.classList.toggle("hidden", !showScroll);
