@@ -740,6 +740,7 @@ WebInspector.TimelineFlameChartDataProvider.jsFrameColorGenerator = function()
  * @implements {WebInspector.FlameChartDelegate}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TimelineModel} model
+ * @param {?WebInspector.TracingModel} tracingModel
  * @param {!WebInspector.TimelineFrameModel} frameModel
  */
 WebInspector.TimelineFlameChart = function(delegate, model, tracingModel, frameModel)
@@ -749,7 +750,7 @@ WebInspector.TimelineFlameChart = function(delegate, model, tracingModel, frameM
     this.registerRequiredCSS("flameChart.css");
     this._delegate = delegate;
     this._model = model;
-    this._dataProvider = WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()
+    this._dataProvider = tracingModel
                        ? new WebInspector.TracingBasedTimelineFlameChartDataProvider(tracingModel, frameModel)
                        : new WebInspector.TimelineFlameChartDataProvider(model, frameModel);
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
@@ -887,7 +888,7 @@ WebInspector.TimelineFlameChart.prototype = {
     {
         var entryIndex = event.data;
         var record = this._dataProvider._records[entryIndex];
-        if (record instanceof WebInspector.TimelineModel.Record)
+        if (record instanceof WebInspector.TimelineModel.RecordImpl)
             this._delegate.select(WebInspector.TimelineSelection.fromRecord(record));
     },
 
