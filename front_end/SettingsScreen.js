@@ -135,7 +135,7 @@ WebInspector.SettingsScreen.prototype = {
     },
 
     /**
-     * @param {Event} event
+     * @param {?Event} event
      */
     _keyDown: function(event)
     {
