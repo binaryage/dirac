@@ -11,15 +11,16 @@
  * @extends {WebInspector.VBox}
  * @param {!WebInspector.TimelineModeViewDelegate} delegate
  * @param {!WebInspector.TracingModel} tracingModel
+ * @param {!WebInspector.TimelineModel} modelForZeroTime
  */
-WebInspector.TimelineTracingView = function(delegate, tracingModel)
+WebInspector.TimelineTracingView = function(delegate, tracingModel, modelForZeroTime)
 {
     WebInspector.VBox.call(this);
     this._delegate = delegate;
     this._tracingModel = tracingModel;
     this.element.classList.add("timeline-flamechart");
     this.registerRequiredCSS("flameChart.css");
-    this._dataProvider = new WebInspector.TraceViewFlameChartDataProvider(this._tracingModel);
+    this._dataProvider = new WebInspector.TraceViewFlameChartDataProvider(this._tracingModel, modelForZeroTime);
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
     this._mainView.show(this.element);
     this._mainView.addEventListener(WebInspector.FlameChart.Events.EntrySelected, this._onEntrySelected, this);
@@ -204,12 +205,14 @@ WebInspector.TimelineTracingView.prototype = {
  * @constructor
  * @implements {WebInspector.FlameChartDataProvider}
  * @param {!WebInspector.TracingModel} model
+ * @param {!WebInspector.TimelineModel} timelineModelForZeroTime
  */
-WebInspector.TraceViewFlameChartDataProvider = function(model)
+WebInspector.TraceViewFlameChartDataProvider = function(model, timelineModelForZeroTime)
 {
     WebInspector.FlameChartDataProvider.call(this);
     this._model = model;
-    this._font = "bold 12px " + WebInspector.fontFamily();
+    this._timelineModelForZeroTime = timelineModelForZeroTime;
+    this._font = "12px " + WebInspector.fontFamily();
     this._palette = new WebInspector.TraceViewPalette();
     var dummyEventPayload = {
         cat: "dummy",
@@ -309,7 +312,7 @@ WebInspector.TraceViewFlameChartDataProvider.prototype = {
 
         this._currentLevel = 0;
         this._headerTitles = {};
-        this._zeroTime = this._model.minimumRecordTime() || 0;
+        this._zeroTime = this._timelineModelForZeroTime.minimumRecordTime() * 1000;
         this._timeSpan = Math.max((this._model.maximumRecordTime() || 0) - this._zeroTime, 1000000);
         var processes = this._model.sortedProcesses();
         for (var processIndex = 0; processIndex < processes.length; ++processIndex) {

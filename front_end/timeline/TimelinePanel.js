@@ -613,7 +613,7 @@ WebInspector.TimelinePanel.prototype = {
         }
 
         if (this._captureTracingSetting && this._captureTracingSetting.get())
-            this._addModeView(new WebInspector.TimelineTracingView(this, this._tracingModel()));
+            this._addModeView(new WebInspector.TimelineTracingView(this, this._tracingModel(), this._model));
 
         this._timelineView().setFrameModel(isFrameMode ? this._frameModel() : null);
         this._overviewPane.setOverviewControls(this._overviewControls);
