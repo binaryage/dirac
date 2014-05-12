@@ -117,7 +117,6 @@
             "ui/KeyboardShortcut.js",
             "ui/OverviewGrid.js",
             "ui/Panel.js",
-            "ui/Placard.js",
             "ui/Popover.js",
             "ui/ProgressIndicator.js",
             "ui/PropertiesSection.js",
@@ -131,7 +130,6 @@
             "ui/ShortcutsScreen.js",
             "ui/ShowMoreDataGridNode.js",
             "ui/SoftContextMenu.js",
-            "ui/Spectrum.js",
             "ui/SplitView.js",
             "ui/StackView.js",
             "ui/StatusBarButton.js",
@@ -201,6 +199,7 @@
             "elements/OverridesView.js",
             "elements/PlatformFontsSidebarPane.js",
             "elements/PropertiesSidebarPane.js",
+            "elements/Spectrum.js",
             "elements/StylesSidebarPane.js",
             "elements/RenderingOptionsView.js"
         ]
@@ -275,6 +274,7 @@
             "sources/FilteredItemSelectionDialog.js",
             "sources/JavaScriptSourceFrame.js",
             "sources/NavigatorView.js",
+            "sources/Placard.js",
             "sources/RevisionHistoryView.js",
             "sources/ScopeChainSidebarPane.js",
             "sources/ScriptFormatter.js",
