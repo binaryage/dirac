@@ -44,17 +44,21 @@ def generate_include_tag(resource_path):
 
 
 def write_devtools_html(inspector_file, devtools_file, debug):
+    buildsystemonly_js_written = False
+
     for line in inspector_file:
-        if not debug and '<script ' in line:
-            continue
-        if not debug and '<link ' in line:
-            continue
-        if '</head>' in line and not debug:
-            devtools_file.write(generate_include_tag("inspector.css"))
-            devtools_file.write(generate_include_tag("Main.js"))
+        if not debug:
+            if '<script ' in line or '<link ' in line:
+                continue
+            if '</head>' in line:
+                devtools_file.write(generate_include_tag("inspector.css"))
+                devtools_file.write(generate_include_tag("buildSystemOnly.js"))
+                devtools_file.write(generate_include_tag("Main.js"))
+        else:
+            if not buildsystemonly_js_written and '<script ' in line:
+                devtools_file.write(generate_include_tag("buildSystemOnly.js"))
+                buildsystemonly_js_written = True
         devtools_file.write(line)
-        if '<head>' in line:
-            devtools_file.write(generate_include_tag("buildSystemOnly.js"))
 
 
 def main(argv):
