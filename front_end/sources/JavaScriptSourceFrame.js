@@ -578,7 +578,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         var labelElement = document.createElement("label");
         labelElement.className = "source-frame-breakpoint-message";
         labelElement.htmlFor = "source-frame-breakpoint-condition";
-        labelElement.appendChild(document.createTextNode(WebInspector.UIString("The breakpoint on line %d will stop only if this expression is true:", lineNumber)));
+        labelElement.appendChild(document.createTextNode(WebInspector.UIString("The breakpoint on line %d will stop only if this expression is true:", lineNumber + 1)));
         conditionElement.appendChild(labelElement);
 
         var editorElement = document.createElement("input");
