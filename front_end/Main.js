@@ -52,9 +52,9 @@ WebInspector.Main.prototype = {
     {
         var configuration;
         if (!Capabilities.isMainFrontend) {
-            configuration = ["main", "sources", "timeline", "profiler", "console", "source_frame", "search"];
+            configuration = ["components", "main", "sources", "timeline", "profiler", "console", "source_frame", "search"];
         } else {
-            configuration = ["main", "elements", "network", "sources", "timeline", "profiler", "resources", "audits", "console", "source_frame", "extensions", "settings", "search"];
+            configuration = ["components", "main", "elements", "network", "sources", "timeline", "profiler", "resources", "audits", "console", "source_frame", "extensions", "settings", "search"];
             if (WebInspector.experimentsSettings.layersPanel.isEnabled())
                 configuration.push("layers");
             if (WebInspector.experimentsSettings.devicesPanel.isEnabled())
