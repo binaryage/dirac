@@ -663,8 +663,66 @@ TestSuite.prototype.testPageOverlayUpdate = function()
     this.takeControl();
 }
 
+// Regression test for crbug.com/370035.
+TestSuite.prototype.testDeviceMetricsOverrides = function()
+{
+    const dumpPageMetrics = function()
+    {
+        return JSON.stringify({
+            width: window.innerWidth,
+            height: window.innerHeight,
+            deviceScaleFactor: window.devicePixelRatio
+        });
+    };
 
-/**
+    var test = this;
+
+    function testOverrides(params, metrics, callback)
+    {
+        PageAgent.invoke_setDeviceMetricsOverride(params, getMetrics);
+
+        function getMetrics()
+        {
+            test.evaluateInConsole_("(" + dumpPageMetrics.toString() + ")()", checkMetrics);
+        }
+
+        function checkMetrics(consoleResult)
+        {
+            test.assertEquals('"' + JSON.stringify(metrics) + '"', consoleResult, "Wrong metrics for params: " + JSON.stringify(params));
+            callback();
+        }
+    }
+
+    function step1()
+    {
+        testOverrides({width: 1200, height: 1000, deviceScaleFactor: 1, emulateViewport: false, fitWindow: true}, {width: 1200, height: 1000, deviceScaleFactor: 1}, step2);
+    }
+
+    function step2()
+    {
+        testOverrides({width: 1200, height: 1000, deviceScaleFactor: 1, emulateViewport: false, fitWindow: false}, {width: 1200, height: 1000, deviceScaleFactor: 1}, step3);
+    }
+
+    function step3()
+    {
+        testOverrides({width: 1200, height: 1000, deviceScaleFactor: 3, emulateViewport: false, fitWindow: true}, {width: 1200, height: 1000, deviceScaleFactor: 3}, step4);
+    }
+
+    function step4()
+    {
+        testOverrides({width: 1200, height: 1000, deviceScaleFactor: 3, emulateViewport: false, fitWindow: false}, {width: 1200, height: 1000, deviceScaleFactor: 3}, finish);
+    }
+
+    function finish()
+    {
+        test.releaseControl();
+    }
+
+    step1();
+    test.takeControl();
+};
+
+    /**
  * Records timeline till console.timeStamp("ready"), invokes callback with resulting records.
  * @param {function(!Array.<!Object>)} callback
  */
