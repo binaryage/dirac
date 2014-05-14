@@ -802,6 +802,7 @@ WebInspector.TimelineFlameChart.prototype = {
     {
         this._automaticallySizeWindow = true;
         this._dataProvider.reset();
+        this._mainView.reset();
         this._mainView.setWindowTimes(0, Infinity);
     },
 
