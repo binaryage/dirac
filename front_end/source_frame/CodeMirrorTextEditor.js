@@ -269,6 +269,13 @@ WebInspector.CodeMirrorTextEditor.MaximumNumberOfWhitespacesPerSingleSpan = 16;
 WebInspector.CodeMirrorTextEditor.MaxEditableTextSize = 1024 * 1024 * 10;
 
 WebInspector.CodeMirrorTextEditor.prototype = {
+    dispose: function()
+    {
+        WebInspector.settings.textEditorIndent.removeChangeListener(this._updateEditorIndentation, this);
+        WebInspector.settings.showWhitespacesInEditor.removeChangeListener(this._updateCodeMirrorMode, this);
+        WebInspector.settings.textEditorBracketMatching.removeChangeListener(this._enableBracketMatchingIfNeeded, this);
+    },
+
     _enableBracketMatchingIfNeeded: function()
     {
         this._codeMirror.setOption("autoCloseBrackets", WebInspector.settings.textEditorBracketMatching.get() ? { explode: false } : false);

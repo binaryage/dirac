@@ -282,7 +282,9 @@ WebInspector.TextEditor.prototype = {
      * @param {number} columnNumber
      * @return {?WebInspector.TextEditorPositionHandle}
      */
-    textEditorPositionHandle: function(lineNumber, columnNumber) { }
+    textEditorPositionHandle: function(lineNumber, columnNumber) { },
+
+    dispose: function() { }
 }
 
 /**

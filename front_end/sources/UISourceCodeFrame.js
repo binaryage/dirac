@@ -181,6 +181,8 @@ WebInspector.UISourceCodeFrame.prototype = {
 
     dispose: function()
     {
+        WebInspector.settings.textEditorAutocompletion.removeChangeListener(this._enableAutocompletionIfNeeded, this);
+        this._textEditor.dispose();
         this.detach();
     },
 
