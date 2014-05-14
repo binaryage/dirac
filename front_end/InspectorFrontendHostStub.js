@@ -236,11 +236,17 @@ WebInspector.InspectorFrontendHostStub.prototype = {
     {
     },
 
-    startRemoteDevicesListener: function()
+    /**
+     * @param {string} eventType
+     */
+    subscribe: function(eventType)
     {
     },
 
-    stopRemoteDevicesListener: function()
+    /**
+     * @param {string} eventType
+     */
+    unsubscribe: function(eventType)
     {
     }
 }

@@ -42,7 +42,6 @@
             "sdk/Database.js",
             "sdk/DebuggerModel.js",
             "sdk/DebuggerScriptMapping.js",
-            "sdk/DevicesModel.js",
             "sdk/FileManager.js",
             "sdk/FileSystemMapping.js",
             "sdk/FileSystemModel.js",
@@ -431,6 +430,7 @@
         "dependencies": ["components", "profiler", "timeline", "sources", "input"],
         "sources": [
             "InspectorFrontendAPI.js",
+            "InspectorFrontendEventSink.js",
             "InspectorFrontendHostStub.js"
         ]
     },

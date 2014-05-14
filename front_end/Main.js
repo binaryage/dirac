@@ -266,12 +266,12 @@ WebInspector.Main.prototype = {
 
         WebInspector.zoomManager = new WebInspector.ZoomManager();
 
+        WebInspector.inspectorFrontendEventSink = new WebInspector.InspectorFrontendEventSink();
         InspectorBackend.registerInspectorDispatcher(this);
 
         WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
         WebInspector.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(WebInspector.isolatedFileSystemManager);
         WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
-        WebInspector.devicesModel = new WebInspector.DevicesModel();
 
         if (Capabilities.isMainFrontend) {
             WebInspector.inspectElementModeController = new WebInspector.InspectElementModeController();

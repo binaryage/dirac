@@ -236,8 +236,8 @@ InspectorFrontendHostAPI.prototype.sendMessageToEmbedder = function(message) {}
 InspectorFrontendHostAPI.prototype.setInjectedScriptForOrigin = function(origin, script) {}
 InspectorFrontendHostAPI.prototype.setIsDocked = function(isDocked) {}
 InspectorFrontendHostAPI.prototype.setZoomFactor = function(zoom) {}
-InspectorFrontendHostAPI.prototype.startRemoteDevicesListener = function() {}
-InspectorFrontendHostAPI.prototype.stopRemoteDevicesListener = function() {}
+InspectorFrontendHostAPI.prototype.subscribe = function(eventType) {}
+InspectorFrontendHostAPI.prototype.unsubscribe = function(eventType) {}
 InspectorFrontendHostAPI.prototype.zoomFactor = function() {}
 InspectorFrontendHostAPI.prototype.zoomIn = function() {}
 InspectorFrontendHostAPI.prototype.zoomOut = function() {}
@@ -250,7 +250,8 @@ InspectorFrontendHost.embedderMessageAck = function(id, error) {}
 var FormatterWorker = {}
 var WebInspector = {}
 
-WebInspector.devicesModel = {};
+WebInspector.panels = {};
+WebInspector.inspectorFrontendEventSink = {};
 
 WebInspector.reload = function() { }
 

@@ -25,6 +25,23 @@ WebInspector.DevicesView = function()
 
 WebInspector.DevicesView.MinVersionNewTab = 29;
 
+
+var Adb = {};
+
+/**
+ * @typedef {{adbBrowserChromeVersion:!string, compatibleVersion: boolean, adbBrowserName: !string, source: !string, adbBrowserVersion: !string}}
+ */
+Adb.Browser;
+
+/**
+ * @typedef {{adbModel:!string, adbSerial:!string, browsers:!Array.<!Adb.Browser>, adbPortStatus:!Array.<number>, adbConnected: boolean}}
+ */
+Adb.Device;
+
+WebInspector.DevicesView.Events = {
+    DevicesChanged: "DevicesChanged"
+};
+
 WebInspector.DevicesView.prototype = {
     _onDevicesChanged: function(event)
     {
@@ -157,13 +174,12 @@ WebInspector.DevicesView.prototype = {
 
     willHide: function()
     {
-        WebInspector.devicesModel.removeEventListener(WebInspector.DevicesModel.Events.DevicesChanged, this._onDevicesChanged, this);
+        WebInspector.inspectorFrontendEventSink.removeEventListener(WebInspector.DevicesView.Events.DevicesChanged, this._onDevicesChanged, this);
     },
 
     wasShown: function()
     {
-        WebInspector.devicesModel.addEventListener(WebInspector.DevicesModel.Events.DevicesChanged, this._onDevicesChanged, this);
-        this._updateDeviceList(WebInspector.devicesModel.getDevices());
+        WebInspector.inspectorFrontendEventSink.addEventListener(WebInspector.DevicesView.Events.DevicesChanged, this._onDevicesChanged, this);
     },
 
     __proto__: WebInspector.VBox.prototype
