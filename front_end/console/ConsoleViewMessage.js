@@ -604,13 +604,18 @@ WebInspector.ConsoleViewMessage.prototype = {
                 flatValues.push(rowValue[columnNames[j]]);
         }
 
-        if (!flatValues.length)
-            return element;
+        var dataGridContainer = element.createChild("span");
+        if (!preview.lossless || !flatValues.length) {
+            element.appendChild(this._formatParameter(table, true, false));
+            if (!flatValues.length)
+                return element;
+        }
+
         columnNames.unshift(WebInspector.UIString("(index)"));
         var dataGrid = WebInspector.DataGrid.createSortableDataGrid(columnNames, flatValues);
         dataGrid.renderInline();
         this._dataGrids.push(dataGrid);
-        this._dataGridParents.put(dataGrid, element);
+        this._dataGridParents.put(dataGrid, dataGridContainer);
         return element;
     },
 
