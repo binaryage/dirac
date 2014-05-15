@@ -620,7 +620,43 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
      */
     decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight, offsetToPosition)
     {
-        return false;
+        if (barWidth < 5)
+            return false;
+
+        var record = this._records[entryIndex];
+        var timelineData = this._timelineData;
+
+        var category = WebInspector.TimelineUIUtils.styleForTimelineEvent(record.name).category;
+        // Paint text using white color on dark background.
+        if (text) {
+            context.save();
+            context.fillStyle = "white";
+            context.shadowColor = "rgba(0, 0, 0, 0.1)";
+            context.shadowOffsetX = 1;
+            context.shadowOffsetY = 1;
+            context.font = this._font;
+            context.fillText(text, barX + this.textPadding(), barY + barHeight - this.textBaseline());
+            context.restore();
+        }
+
+        var bindings = this._model.bindings();
+        if (bindings && bindings.eventWarning(record)) {
+            context.save();
+
+            context.rect(barX, barY, barWidth, this.barHeight());
+            context.clip();
+
+            context.beginPath();
+            context.fillStyle = "red";
+            context.moveTo(barX + barWidth - 15, barY + 1);
+            context.lineTo(barX + barWidth - 1, barY + 1);
+            context.lineTo(barX + barWidth - 1, barY + 15);
+            context.fill();
+
+            context.restore();
+        }
+
+        return true;
     },
 
     /**
@@ -629,10 +665,12 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
      */
     forceDecoration: function(entryIndex)
     {
-        return false;
+        var record = this._records[entryIndex];
+        var bindings = this._model.bindings();
+        return !!bindings && !!bindings.eventWarning(record);
     },
 
-    /**
+   /**
      * @param {number} entryIndex
      * @return {?{startTime: number, endTime: number}}
      */
