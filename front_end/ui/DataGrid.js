@@ -101,10 +101,12 @@ WebInspector.DataGrid = function(columnsArray, editCallback, deleteCallback, ref
         cell.columnIdentifier = columnIdentifier;
         this._headerTableHeaders[columnIdentifier] = cell;
 
+        var div = document.createElement("div");
         if (column.titleDOMFragment)
-            cell.appendChild(column.titleDOMFragment);
+            div.appendChild(column.titleDOMFragment);
         else
-            cell.textContent = column.title;
+            div.textContent = column.title;
+        cell.appendChild(div);
 
         if (column.sort) {
             cell.classList.add("sort-" + column.sort);
@@ -1372,13 +1374,15 @@ WebInspector.DataGridNode.prototype = {
         var cell = this.createTD(columnIdentifier);
 
         var data = this.data[columnIdentifier];
-        if (data instanceof Node) {
-            cell.appendChild(data);
-        } else {
-            cell.textContent = data;
+        var div = document.createElement("div");
+        if (data instanceof Node)
+            div.appendChild(data);
+        else {
+            div.textContent = data;
             if (this.dataGrid.columns[columnIdentifier].longText)
-                cell.title = data;
+                div.title = data;
         }
+        cell.appendChild(div);
 
         if (columnIdentifier === this.dataGrid.disclosureColumnIdentifier) {
             cell.classList.add("disclosure");

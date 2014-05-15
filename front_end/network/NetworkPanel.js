@@ -401,8 +401,7 @@ WebInspector.NetworkLogView.prototype = {
         timelineSorting.appendChild(option);
 
         var header = this._dataGrid.headerTableHeader("timeline");
-        header.removeChildren();
-        header.appendChild(timelineSorting);
+        header.replaceChild(timelineSorting, header.firstChild);
 
         timelineSorting.addEventListener("click", function(event) { event.consume() }, false);
         timelineSorting.addEventListener("change", this._sortByTimeline.bind(this), false);
@@ -2414,26 +2413,25 @@ WebInspector.NetworkDataGridNode.prototype = {
     /** override */
     createCells: function()
     {
-        this._nameCell = this._createCell("name");
-        this._methodCell = this._createCell("method");
-        this._statusCell = this._createCell("status");
-        this._schemeCell = this._createCell("scheme");
-        this._domainCell = this._createCell("domain");
-        this._remoteAddressCell = this._createCell("remoteAddress");
-        this._typeCell = this._createCell("type");
-        this._initiatorCell = this._createCell("initiator");
-        this._cookiesCell = this._createCell("cookies");
-        this._setCookiesCell = this._createCell("setCookies");
-        this._sizeCell = this._createCell("size");
-        this._timeCell = this._createCell("time");
+        this._nameCell = this._createDivInTD("name");
+        this._methodCell = this._createDivInTD("method");
+        this._statusCell = this._createDivInTD("status");
+        this._schemeCell = this._createDivInTD("scheme");
+        this._domainCell = this._createDivInTD("domain");
+        this._remoteAddressCell = this._createDivInTD("remoteAddress");
+        this._typeCell = this._createDivInTD("type");
+        this._initiatorCell = this._createDivInTD("initiator");
+        this._cookiesCell = this._createDivInTD("cookies");
+        this._setCookiesCell = this._createDivInTD("setCookies");
+        this._sizeCell = this._createDivInTD("size");
+        this._timeCell = this._createDivInTD("time");
 
         this._responseHeaderCells = {};
         var responseHeaderColumns = WebInspector.NetworkLogView._responseHeaderColumns;
         for (var i = 0; i < responseHeaderColumns.length; ++i)
-            this._responseHeaderCells[responseHeaderColumns[i]] = this._createCell(responseHeaderColumns[i]);
+            this._responseHeaderCells[responseHeaderColumns[i]] = this._createDivInTD(responseHeaderColumns[i]);
 
-        var timelineCell = this._createCell("timeline");
-        this._timelineCell = timelineCell.createChild("div");
+        this._timelineCell = this._createDivInTD("timeline");
         this._createTimelineBar(this._timelineCell);
         this._nameCell.addEventListener("click", this._onClick.bind(this), false);
         this._nameCell.addEventListener("dblclick", this._openInNewTab.bind(this), false);
@@ -2488,11 +2486,12 @@ WebInspector.NetworkDataGridNode.prototype = {
         return this._parentView._allowRequestSelection && !this.isFilteredOut();
     },
 
-    _createCell: function(columnIdentifier)
+    _createDivInTD: function(columnIdentifier)
     {
         var td = this.createTD(columnIdentifier);
+        var div = td.createChild("div");
         this._element.appendChild(td);
-        return td;
+        return div;
     },
 
     /**
@@ -2550,6 +2549,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         if (this._request.cached)
             this._timelineCell.classList.add("resource-cached");
 
+        this._element.classList.add("network-item");
         this._element.classList.toggle("network-error-row", this._isFailed());
         this._updateElementStyleClasses(this._element);
     },
