@@ -81,7 +81,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
     /**
      * @return {number}
      */
-    zeroTime: function()
+    minimumBoundary: function()
     {
         return this._cpuProfile.profileStartTime;
     },
@@ -157,15 +157,15 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         var entryLevels = new Uint8Array(entries.length);
         var entryTotalTimes = new Float32Array(entries.length);
         var entrySelfTimes = new Float32Array(entries.length);
-        var entryOffsets = new Float32Array(entries.length);
-        var zeroTime = this.zeroTime();
+        var entryStartTimes = new Float64Array(entries.length);
+        var minimumBoundary = this.minimumBoundary();
 
         for (var i = 0; i < entries.length; ++i) {
             var entry = entries[i];
             entryNodes[i] = entry.node;
             entryLevels[i] = entry.depth;
             entryTotalTimes[i] = entry.duration;
-            entryOffsets[i] = entry.startTime - zeroTime;
+            entryStartTimes[i] = entry.startTime;
             entrySelfTimes[i] = entry.selfTime;
         }
 
@@ -175,7 +175,7 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
         this._timelineData = {
             entryLevels: entryLevels,
             entryTotalTimes: entryTotalTimes,
-            entryOffsets: entryOffsets,
+            entryStartTimes: entryStartTimes,
         };
 
         /** @type {!Array.<!ProfilerAgent.CPUProfileNode>} */
@@ -286,10 +286,10 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
      * @param {number} barY
      * @param {number} barWidth
      * @param {number} barHeight
-     * @param {function(number):number} offsetToPosition
+     * @param {function(number):number} timeToPosition
      * @return {boolean}
      */
-    decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight, offsetToPosition)
+    decorateEntry: function(entryIndex, context, text, barX, barY, barWidth, barHeight, timeToPosition)
     {
         return false;
     },
@@ -305,14 +305,14 @@ WebInspector.CPUFlameChartDataProvider.prototype = {
 
     /**
      * @param {number} entryIndex
-     * @return {!{startTimeOffset: number, endTimeOffset: number}}
+     * @return {!{startTime: number, endTime: number}}
      */
     highlightTimeRange: function(entryIndex)
     {
-        var startTimeOffset = this._timelineData.entryOffsets[entryIndex];
+        var startTime = this._timelineData.entryStartTimes[entryIndex];
         return {
-            startTimeOffset: startTimeOffset,
-            endTimeOffset: startTimeOffset + this._timelineData.entryTotalTimes[entryIndex]
+            startTime: startTime,
+            endTime: startTime + this._timelineData.entryTotalTimes[entryIndex]
         };
     },
 
@@ -430,7 +430,7 @@ WebInspector.CPUProfileFlameChart.OverviewCalculator.prototype = {
      */
     _updateBoundaries: function(overviewPane)
     {
-        this._minimumBoundaries = overviewPane._dataProvider.zeroTime();
+        this._minimumBoundaries = overviewPane._dataProvider.minimumBoundary();
         var totalTime = overviewPane._dataProvider.totalTime();
         this._maximumBoundaries = this._minimumBoundaries + totalTime;
         this._xScaleFactor = overviewPane._overviewContainer.clientWidth / totalTime;
@@ -524,7 +524,7 @@ WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
      */
     _selectRange: function(timeLeft, timeRight)
     {
-        var startTime = this._dataProvider.zeroTime();
+        var startTime = this._dataProvider.minimumBoundary();
         var totalTime = this._dataProvider.totalTime();
         this._overviewGrid.setWindow((timeLeft - startTime) / totalTime, (timeRight - startTime) / totalTime);
     },
@@ -534,7 +534,7 @@ WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
      */
     _onWindowChanged: function(event)
     {
-        var startTime = this._dataProvider.zeroTime();
+        var startTime = this._dataProvider.minimumBoundary();
         var totalTime = this._dataProvider.totalTime();
         var data = {
             windowTimeLeft: startTime + this._overviewGrid.windowLeft() * totalTime,
@@ -611,17 +611,18 @@ WebInspector.CPUProfileFlameChart.OverviewPane.prototype = {
     {
         var dataProvider = this._dataProvider;
         var timelineData = this._timelineData();
-        var entryOffsets = timelineData.entryOffsets;
+        var entryStartTimes = timelineData.entryStartTimes;
         var entryTotalTimes = timelineData.entryTotalTimes;
         var entryLevels = timelineData.entryLevels;
-        var length = entryOffsets.length;
+        var length = entryStartTimes.length;
+        var minimumBoundary = this._dataProvider.minimumBoundary();
 
         var drawData = new Uint8Array(width);
         var scaleFactor = width / dataProvider.totalTime();
 
         for (var entryIndex = 0; entryIndex < length; ++entryIndex) {
-            var start = Math.floor(entryOffsets[entryIndex] * scaleFactor);
-            var finish = Math.floor((entryOffsets[entryIndex] + entryTotalTimes[entryIndex]) * scaleFactor);
+            var start = Math.floor((entryStartTimes[entryIndex] - minimumBoundary) * scaleFactor);
+            var finish = Math.floor((entryStartTimes[entryIndex] - minimumBoundary + entryTotalTimes[entryIndex]) * scaleFactor);
             for (var x = start; x <= finish; ++x)
                 drawData[x] = Math.max(drawData[x], entryLevels[entryIndex] + 1);
         }
