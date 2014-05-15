@@ -397,6 +397,7 @@ WebInspector.ConsoleViewMessage.prototype = {
             var lossless = this._appendObjectPreview(obj, description, titleElement);
             if (lossless) {
                 elem.appendChild(titleElement);
+                titleElement.addEventListener("contextmenu", this._contextMenuEventFired.bind(this, obj), false);
                 return;
             }
         }
@@ -406,6 +407,16 @@ WebInspector.ConsoleViewMessage.prototype = {
 
         var note = section.titleElement.createChild("span", "object-info-state-note");
         note.title = WebInspector.UIString("Object state below is captured upon first expansion");
+    },
+
+    /**
+     * @param {!WebInspector.RemoteObject} obj
+     */
+    _contextMenuEventFired: function(obj, event)
+    {
+        var contextMenu = new WebInspector.ContextMenu(event);
+        contextMenu.appendApplicableItems(obj);
+        contextMenu.show();
     },
 
     /**
@@ -668,6 +679,7 @@ WebInspector.ConsoleViewMessage.prototype = {
         appendUndefined(elem, length);
 
         elem.appendChild(document.createTextNode("]"));
+        elem.addEventListener("contextmenu", this._contextMenuEventFired.bind(this, array), false);
     },
 
     /**
