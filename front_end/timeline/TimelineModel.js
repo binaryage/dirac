@@ -754,7 +754,7 @@ WebInspector.TimelineModel.RecordImpl = function(model, timelineEvent, parentRec
         if (this._initiator)
             this._callSiteStackTrace = this._initiator.callSiteStackTrace()
         if (this.stackTrace())
-            this._addWarning(WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
+            this.addWarning(WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
 
         bindings._layoutInvalidate[this.frameId()] = null;
         this.highlightQuad = timelineEvent.data.root || WebInspector.TimelineModel._quadFromRectData(timelineEvent.data);
@@ -963,7 +963,7 @@ WebInspector.TimelineModel.RecordImpl.prototype = {
     /**
      * @param {string} message
      */
-    _addWarning: function(message)
+    addWarning: function(message)
     {
         if (this._warnings)
             this._warnings.push(message);

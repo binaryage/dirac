@@ -58,11 +58,14 @@ WebInspector.TimelineJSProfileProcessor.mergeJSProfileIntoTimeline = function(ti
          */
         function onCloseFrame(depth, node, startTime, totalTime, selfTime)
         {
-            if (node === idleNode || node === programNode)
+            if (node === idleNode || node === programNode || node === gcNode)
                 return;
             record.setEndTime(Math.min(startTime + totalTime, recordEndTime));
             record._selfTime = record.endTime() - record.startTime();
             putOriginalChildrenUpToTime(record.endTime());
+            var deoptReason = node.deoptReason;
+            if (deoptReason && deoptReason !== "no reason")
+                record.addWarning(deoptReason);
             record = record.parent;
         }
 
