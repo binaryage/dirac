@@ -1374,15 +1374,13 @@ WebInspector.DataGridNode.prototype = {
         var cell = this.createTD(columnIdentifier);
 
         var data = this.data[columnIdentifier];
-        var div = document.createElement("div");
-        if (data instanceof Node)
-            div.appendChild(data);
-        else {
-            div.textContent = data;
+        if (data instanceof Node) {
+            cell.appendChild(data);
+        } else {
+            cell.textContent = data;
             if (this.dataGrid.columns[columnIdentifier].longText)
-                div.title = data;
+                cell.title = data;
         }
-        cell.appendChild(div);
 
         if (columnIdentifier === this.dataGrid.disclosureColumnIdentifier) {
             cell.classList.add("disclosure");

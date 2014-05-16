@@ -44,20 +44,6 @@
     display: none;
 }
 
-.data-grid th {
-    text-align: left;
-    background-color: rgb(236, 236, 236);
-    border: 1px solid rgb(179, 179, 179);
-    border-top: none;
-    border-right: none;
-    height: 16px;
-    line-height: 16px;
-    font-weight: normal;
-    vertical-align: middle;
-    padding: 0 4px;
-    white-space: nowrap;
-}
-
 .data-grid th.corner,
 .data-grid td.corner,
 .data-grid col.corner {
@@ -102,15 +88,14 @@
     display: table-row;
 }
 
-.data-grid td {
-    vertical-align: top;
+.data-grid td,
+.data-grid th {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
     height: 16px; /* Keep in sync with .data-grid table.data @ background-size */
     line-height: 14px;
-    padding: 1px 4px;
-    white-space: nowrap;
-    overflow: hidden;
     border-left: 1px solid #aaa;
-    -webkit-user-select: text;
 }
 
 .data-grid th:first-child,
@@ -118,10 +103,29 @@
     border-left: none !important;
 }
 
+.data-grid td {
+    vertical-align: top;
+    padding: 1px 4px;
+    -webkit-user-select: text;
+}
+
+.data-grid th {
+    text-align: left;
+    background-color: rgb(236, 236, 236);
+    border-bottom: 1px solid #aaa;
+    font-weight: normal;
+    vertical-align: middle;
+    padding: 0 4px;
+}
+
 .data-grid td > div,
 .data-grid th > div {
     white-space: nowrap;
     text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.data-grid th > div {
     overflow: hidden;
 }
 
