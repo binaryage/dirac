@@ -492,7 +492,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
      */
     excludeFolder: function(path)
     {
-        WebInspector.isolatedFileSystemManager.mapping().addExcludedFolder(this._fileSystem.path(), path);
+        this._fileSystemWorkspaceBinding._isolatedFileSystemManager.mapping().addExcludedFolder(this._fileSystem.path(), path);
     },
 
     /**
@@ -545,7 +545,7 @@ WebInspector.FileSystemWorkspaceBinding.FileSystem.prototype = {
 
     remove: function()
     {
-        WebInspector.isolatedFileSystemManager.removeFileSystem(this._fileSystem.path());
+        this._fileSystemWorkspaceBinding._isolatedFileSystemManager.removeFileSystem(this._fileSystem.path());
     },
 
     /**

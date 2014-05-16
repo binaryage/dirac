@@ -633,6 +633,7 @@ WebInspector.Workspace.prototype = {
         var project = this._projects[projectId];
         if (!project)
             return;
+        project._reset();
         delete this._projects[projectId];
     },
 
