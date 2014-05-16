@@ -58,26 +58,27 @@ kGrdTemplate = '''<?xml version="1.0" encoding="UTF-8"?>
 
 
 class ParsedArgs:
-    def __init__(self, source_files, relative_path_dir, image_dirs, output_filename):
+    def __init__(self, source_files, relative_path_dirs, image_dirs, output_filename):
         self.source_files = source_files
-        self.relative_path_dir = relative_path_dir
+        self.relative_path_dirs = relative_path_dirs
         self.image_dirs = image_dirs
         self.output_filename = output_filename
 
 
 def parse_args(argv):
-    relative_path_dir_position = argv.index('--relative_path_dir')
+    relative_path_dirs_position = argv.index('--relative_path_dirs')
     images_position = argv.index('--images')
     output_position = argv.index('--output')
-    source_files = argv[:relative_path_dir_position]
-    relative_path_dir = argv[relative_path_dir_position + 1]
+    source_files = argv[:relative_path_dirs_position]
+    relative_path_dirs = argv[relative_path_dirs_position + 1:images_position]
     image_dirs = argv[images_position + 1:output_position]
-    return ParsedArgs(source_files, relative_path_dir, image_dirs, argv[output_position + 1])
+    return ParsedArgs(source_files, relative_path_dirs, image_dirs, argv[output_position + 1])
 
 
 def make_name_from_filename(filename):
     return (filename.replace('/', '_')
                     .replace('\\', '_')
+                    .replace('-', '_')
                     .replace('.', '_')).upper()
 
 
@@ -92,13 +93,12 @@ def add_file_to_grd(grd_doc, relative_filename):
     includes_node.appendChild(new_include_node)
 
 
-def build_relative_filename(relative_path_dir, filename):
-    if relative_path_dir:
+def build_relative_filename(relative_path_dirs, filename):
+    for relative_path_dir in relative_path_dirs:
         index = filename.find(relative_path_dir)
         if index == 0:
             return filename[len(relative_path_dir) + 1:]
-        return os.path.basename(filename)
-    return filename
+    return os.path.basename(filename)
 
 
 def main(argv):
@@ -114,7 +114,7 @@ def main(argv):
             raise e
 
     for filename in parsed_args.source_files:
-        relative_filename = build_relative_filename(parsed_args.relative_path_dir, filename)
+        relative_filename = build_relative_filename(parsed_args.relative_path_dirs, filename)
         target_dir = os.path.join(output_directory, os.path.dirname(relative_filename))
         if not os.path.exists(target_dir):
             os.makedirs(target_dir)
