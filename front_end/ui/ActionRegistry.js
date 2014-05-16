@@ -31,6 +31,24 @@ WebInspector.ActionRegistry.prototype = {
     },
 
     /**
+     * @param {!Array.<string>} actionIds
+     * @param {!WebInspector.Context} context
+     * @return {!Array.<string>}
+     */
+    applicableActions: function(actionIds, context)
+    {
+        var extensions = [];
+        actionIds.forEach(function(actionId) {
+           var extension = this._actionsById.get(actionId);
+           if (extension)
+               extensions.push(extension);
+        }, this);
+        return context.applicableExtensions(extensions).values().map(function(extension) {
+            return extension.descriptor()["actionId"];
+        });
+    },
+
+    /**
      * @param {string} actionId
      * @return {boolean}
      */

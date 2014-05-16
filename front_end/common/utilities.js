@@ -1171,7 +1171,7 @@ Set.prototype = {
     /**
      * @return {!Array.<!T>}
      */
-    items: function()
+    values: function()
     {
         var result = new Array(this._size);
         var i = 0;

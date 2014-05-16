@@ -277,7 +277,7 @@ WebInspector.Script.prototype = {
 
     updateLocations: function()
     {
-        var items = this._locations.items();
+        var items = this._locations.values();
         for (var i = 0; i < items.length; ++i)
             items[i].update();
     },
