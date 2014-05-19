@@ -553,18 +553,15 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
         this._enabled = enabled;
         this._condition = condition;
         this._breakpointManager._storage._updateBreakpoint(this);
+        this._resetLocations();
         this._fakeBreakpointAtPrimaryLocation();
-        this._updateInDebugger();
+        this._setInDebugger();
     },
 
     _updateInDebugger: function()
     {
-        var uiSourceCode = this.uiSourceCode();
-        if (!uiSourceCode)
-            return;
-        var scriptFile = uiSourceCode && uiSourceCode.scriptFile();
-        if (this._enabled && !(scriptFile && scriptFile.hasDivergedFromVM()))
-            this._setInDebugger();
+        this._removeFromDebugger();
+        this._setInDebugger();
     },
 
     /**
@@ -580,10 +577,13 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
 
     _setInDebugger: function()
     {
-        this._removeFromDebugger();
-        var uiSourceCode = this._breakpointManager._workspace.uiSourceCode(this._projectId, this._path);
+        var uiSourceCode = this.uiSourceCode();
         if (!uiSourceCode)
             return;
+        var scriptFile = uiSourceCode && uiSourceCode.scriptFile();
+        if (!(this._enabled && !(scriptFile && scriptFile.hasDivergedFromVM())))
+            return;
+
         var rawLocation = uiSourceCode.uiLocationToRawLocation(this._lineNumber, this._columnNumber);
         var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (rawLocation);
         if (debuggerModelLocation)
@@ -598,8 +598,8 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
     */
     _didSetBreakpointInDebugger: function(breakpointId, locations)
     {
+        this._resetLocations();
         if (!breakpointId) {
-            this._resetLocations();
             this._breakpointManager._removeBreakpoint(this, false);
             return;
         }
@@ -612,7 +612,6 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
             return;
         }
 
-        this._resetLocations();
         for (var i = 0; i < locations.length; ++i) {
             var script = locations[i].script();
             var uiLocation = script.rawLocationToUILocation(locations[i].lineNumber, locations[i].columnNumber);
@@ -660,7 +659,6 @@ WebInspector.BreakpointManager.Breakpoint.prototype = {
 
     _fakeBreakpointAtPrimaryLocation: function()
     {
-        this._resetLocations();
         var uiSourceCode = this._breakpointManager._workspace.uiSourceCode(this._projectId, this._path);
         if (!uiSourceCode)
             return;
