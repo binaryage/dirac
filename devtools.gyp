@@ -124,7 +124,7 @@
                         ],
                         'input_pages': [
                             '<(PRODUCT_DIR)/resources/inspector/devtools.html',
-                            '<(PRODUCT_DIR)/resources/inspector/main/Main.js',
+                            '<(PRODUCT_DIR)/resources/inspector/Main.js',
                             '<(PRODUCT_DIR)/resources/inspector/search/AdvancedSearchView.js',
                             '<(PRODUCT_DIR)/resources/inspector/console/ConsolePanel.js',
                             '<(PRODUCT_DIR)/resources/inspector/elements/ElementsPanel.js',
@@ -277,7 +277,7 @@
                             '<(SHARED_INTERMEDIATE_DIR)/blink',
                             'front_end',
                         ],
-                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/main/Main.js'],
+                        'outputs': ['<(PRODUCT_DIR)/resources/inspector/Main.js'],
                         'action': ['python', '<@(_script_name)', '<@(_input_page)', '<@(_search_path)', '<@(_outputs)'],
                     }]
                 },
@@ -319,7 +319,6 @@
                         {
                             'destination': '<(PRODUCT_DIR)/resources/inspector/main',
                             'files': [
-                                '<@(devtools_main_js_files)',
                                 'front_end/main/module.json',
                             ],
                         },
