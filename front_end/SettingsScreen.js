@@ -139,7 +139,8 @@ WebInspector.SettingsScreen.prototype = {
      */
     _keyDown: function(event)
     {
-        if (event.keyIdentifier === "Shift" && ++this._developerModeCounter > 5)
+        var shiftKeyCode = 16;
+        if (event.keyCode === shiftKeyCode && ++this._developerModeCounter > 5)
             this.element.classList.add("settings-developer-mode");
     },
 
