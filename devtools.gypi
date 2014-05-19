@@ -49,7 +49,6 @@
             'front_end/InspectorFrontendEventSink.js',
             'front_end/InspectorFrontendHostStub.js',
             'front_end/jsdifflib.js',
-            'front_end/Main.js',
             'front_end/ScreencastView.js',
             'front_end/SettingsScreen.js',
             'front_end/TestController.js',
@@ -58,6 +57,7 @@
             'front_end/tabbedPane.css',
             'front_end/inspectorSyntaxHighlight.css',
             'front_end/popover.css',
+            '<@(devtools_main_js_files)',
             '<@(devtools_standalone_files)',
         ],
         'devtools_common_js_files': [
@@ -203,12 +203,15 @@
             'front_end/components/ExecutionContextSelector.js',
             'front_end/components/ExtensionServerProxy.js',
             'front_end/components/HandlerRegistry.js',
-            'front_end/components/HelpScreenUntilReload.js',
             'front_end/components/InspectElementModeController.js',
             'front_end/components/NativeBreakpointsSidebarPane.js',
             'front_end/components/ObjectPopoverHelper.js',
             'front_end/components/ObjectPropertiesSection.js',
             'front_end/components/WorkerFrontendManager.js',
+        ],
+        'devtools_main_js_files': [
+            'front_end/main/HelpScreenUntilReload.js',
+            'front_end/main/Main.js',
         ],
         'devtools_module_json_files': [
             'front_end/audits/module.json',

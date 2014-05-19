@@ -34,11 +34,10 @@ import sys
 
 
 def generate_include_tag(resource_path):
-    (dir_name, file_name) = os.path.split(resource_path)
-    if (file_name.endswith('.js')):
-        return '    <script type="text/javascript" src="%s"></script>\n' % file_name
-    elif (file_name.endswith('.css')):
-        return '    <link rel="stylesheet" type="text/css" href="%s">\n' % file_name
+    if (resource_path.endswith('.js')):
+        return '    <script type="text/javascript" src="%s"></script>\n' % resource_path
+    elif (resource_path.endswith('.css')):
+        return '    <link rel="stylesheet" type="text/css" href="%s">\n' % resource_path
     else:
         assert resource_path
 
@@ -50,7 +49,7 @@ def write_devtools_html(inspector_file, devtools_file, debug):
                 continue
             if '</head>' in line:
                 devtools_file.write(generate_include_tag("inspector.css"))
-                devtools_file.write(generate_include_tag("Main.js"))
+                devtools_file.write(generate_include_tag("main/Main.js"))
         devtools_file.write(line)
 
 
