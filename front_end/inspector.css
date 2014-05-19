@@ -208,6 +208,7 @@ body.undocked.platform-mac.inactive .toolbar-background {
     padding-top: 1px;
 }
 
+.toolbar-controls-right #remote-device-count,
 .toolbar-controls-right #error-warning-count,
 .toolbar-controls-right .console-status-bar-item,
 .toolbar-controls-right .settings-status-bar-item,
@@ -715,6 +716,7 @@ body.remote .dock-status-bar-item {
 
 .error-icon-small,
 .warning-icon-small,
+.device-icon-small,
 .red-ball,
 .green-ball,
 .orange-ball {
@@ -728,6 +730,7 @@ body.remote .dock-status-bar-item {
 @media (-webkit-min-device-pixel-ratio: 1.5) {
 .error-icon-small,
 .warning-icon-small,
+.device-icon-small,
 .red-ball,
 .green-ball,
 .orange-ball {
@@ -743,6 +746,10 @@ body.remote .dock-status-bar-item {
     background-position: -202px -107px;
 }
 
+.device-icon-small {
+    background-position: -224px -107px;
+}
+
 .red-ball {
     background-position: -224px -96px;
 }
@@ -755,7 +762,7 @@ body.remote .dock-status-bar-item {
     background-position: -246px -96px;
 }
 
-#error-warning-count {
+#error-warning-count, #remote-device-count {
     display: inline-block;
     padding: 4px 6px 6px 0;
     font-size: 11px;
@@ -764,12 +771,13 @@ body.remote .dock-status-bar-item {
     line-height: 14px;
 }
 
-#error-warning-count:hover {
+#error-warning-count:hover, #remote-device-count:hover {
     border-bottom: 1px solid rgb(96, 96, 96);
 }
 
 #error-warning-count .error-icon-small,
-#error-warning-count .warning-icon-small {
+#error-warning-count .warning-icon-small,
+#remote-device-count .device-icon-small{
     vertical-align: -1px;
     margin-right: 2px;
 }

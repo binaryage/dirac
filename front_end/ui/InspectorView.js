@@ -59,6 +59,12 @@ WebInspector.InspectorView = function()
     this._toolbarElement.appendChild(headerElement);
     this._rightToolbarElement = this._toolbarElement.createChild("div", "toolbar-controls-right");
 
+    if (WebInspector.experimentsSettings.devicesPanel.isEnabled()) {
+        this._remoteDeviceCountElement = this._rightToolbarElement.createChild("div", "hidden");
+        this._remoteDeviceCountElement.addEventListener("click", this.showViewInDrawer.bind(this, "devices"), false);
+        WebInspector.inspectorFrontendEventSink.addEventListener(WebInspector.InspectorView.Events.DeviceCountChanged, this._onDeviceCountChanged, this);
+    }
+
     this._errorWarningCountElement = this._rightToolbarElement.createChild("div", "hidden");
     this._errorWarningCountElement.id = "error-warning-count";
 
@@ -86,6 +92,10 @@ WebInspector.InspectorView = function()
 
     this._loadPanelDesciptors();
 };
+
+WebInspector.InspectorView.Events = {
+    DeviceCountChanged: "DeviceCountChanged"
+}
 
 WebInspector.InspectorView.prototype = {
     _loadPanelDesciptors: function()
@@ -415,13 +425,13 @@ WebInspector.InspectorView.prototype = {
         return this._tabbedPane.headerElement();
     },
 
-    _createImagedCounterElementIfNeeded: function(count, id, styleName)
+    _createImagedCounterElementIfNeeded: function(parent, count, id, styleName)
     {
         if (!count)
             return;
 
-        var imageElement = this._errorWarningCountElement.createChild("div", styleName);
-        var counterElement = this._errorWarningCountElement.createChild("span");
+        var imageElement = parent.createChild("div", styleName);
+        var counterElement = parent.createChild("span");
         counterElement.id = id;
         counterElement.textContent = count;
     },
@@ -439,13 +449,26 @@ WebInspector.InspectorView.prototype = {
         this._errorWarningCountElement.classList.toggle("hidden", !errors && !warnings);
         this._errorWarningCountElement.removeChildren();
 
-        this._createImagedCounterElementIfNeeded(errors, "error-count", "error-icon-small");
-        this._createImagedCounterElementIfNeeded(warnings, "warning-count", "warning-icon-small");
+        this._createImagedCounterElementIfNeeded(this._errorWarningCountElement, errors, "error-count", "error-icon-small");
+        this._createImagedCounterElementIfNeeded(this._errorWarningCountElement, warnings, "warning-count", "warning-icon-small");
 
         var errorString = errors ?  WebInspector.UIString("%d error%s", errors, errors > 1 ? "s" : "") : "";
         var warningString = warnings ?  WebInspector.UIString("%d warning%s", warnings, warnings > 1 ? "s" : "") : "";
         var commaString = errors && warnings ? ", " : "";
         this._errorWarningCountElement.title = errorString + commaString + warningString;
+        this._tabbedPane.headerResized();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onDeviceCountChanged: function(event)
+    {
+        var count = /** @type {number} */(event.data);
+        this._remoteDeviceCountElement.classList.toggle("hidden", !count);
+        this._remoteDeviceCountElement.removeChildren();
+        this._createImagedCounterElementIfNeeded(this._remoteDeviceCountElement, count, "device-count", "device-icon-small");
+        this._remoteDeviceCountElement.title = WebInspector.UIString(((count > 1) ? "%d devices found" : "%d device found"), count);
         this._tabbedPane.headerResized();
     },
 
