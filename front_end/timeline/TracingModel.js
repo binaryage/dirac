@@ -216,6 +216,8 @@ WebInspector.TracingModel.prototype = {
         }
         if (payload.ph === WebInspector.TracingModel.Phase.SnapshotObject) {
             process.addObject(payload);
+            if (payload.pid === this._inspectedTargetProcessId && payload.name === "cc::LayerTreeHostImpl" && parseInt(payload.id, 0) === this._inspectedTargetLayerTreeId)
+                this._frameLifecycleEvents.push(new WebInspector.TracingModel.Event(payload, 0));
             return;
         }
         var thread = process.threadById(payload.tid);
@@ -234,10 +236,8 @@ WebInspector.TracingModel.prototype = {
                 return;
             if (thread === this._inspectedTargetMainThread)
                 this._inspectedTargetMainThreadEvents.push(event);
-            if (payload.cat === WebInspector.TracingModel.FrameLifecycleEventCategory && payload.pid === this._inspectedTargetProcessId &&
-                payload.args && payload.args["layerTreeId"] === this._inspectedTargetLayerTreeId) {
+            if (payload.cat === WebInspector.TracingModel.FrameLifecycleEventCategory && payload.pid === this._inspectedTargetProcessId && payload.args && payload.args["layerTreeId"] === this._inspectedTargetLayerTreeId)
                 this._frameLifecycleEvents.push(event);
-            }
             return;
         }
         switch (payload.name) {

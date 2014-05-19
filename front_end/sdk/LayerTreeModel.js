@@ -36,7 +36,8 @@
         scroll_offset: Array.<number>,
         layer_quad: Array.<number>,
         draws_content: number,
-        transform: Array.<number>
+        transform: Array.<number>,
+        owner_node: number
     }}
 */
 WebInspector.TracingLayerPayload;
@@ -153,10 +154,24 @@ WebInspector.LayerTreeModel.prototype = {
      */
     _resolveNodesAndRepopulate: function(payload)
     {
-        if (payload)
-            this._resolveBackendNodeIdsForLayers(payload, onBackendNodeIdsResolved.bind(this));
-        else
+        if (!payload) {
             onBackendNodeIdsResolved.call(this);
+            return;
+        }
+
+        var idsToResolve = {};
+        var requestedIds = [];
+        for (var i = 0; i < payload.length; ++i) {
+            var backendNodeId = payload[i].backendNodeId;
+            if (!backendNodeId || idsToResolve[backendNodeId] ||
+                (this._backendNodeIdToNodeId[backendNodeId] && this.target().domModel.nodeForId(this._backendNodeIdToNodeId[backendNodeId]))) {
+                continue;
+            }
+            idsToResolve[backendNodeId] = true;
+            requestedIds.push(backendNodeId);
+        }
+        this._resolveBackendNodeIds(requestedIds, onBackendNodeIdsResolved.bind(this));
+
         /**
          * @this {WebInspector.LayerTreeModel}
          */
@@ -182,7 +197,7 @@ WebInspector.LayerTreeModel.prototype = {
         for (var i = 0; i < layers.length; ++i) {
             var layerId = layers[i].layerId;
             var layer = oldLayersById[layerId];
-            if (layer)
+            if (layer instanceof WebInspector.AgentLayer)
                 layer._reset(layers[i]);
             else
                 layer = new WebInspector.AgentLayer(layers[i]);
@@ -217,24 +232,63 @@ WebInspector.LayerTreeModel.prototype = {
      */
     _importTracingLayers: function(root)
     {
-        this._layersById = {};
-        this._contentRoot = null;
-        this._root = this._innerImportTracingLayers(root);
-        this.dispatchEventToListeners(WebInspector.LayerTreeModel.Events.LayerTreeChanged);
+        var idsToResolve = [];
+        this._extractNodeIdsToResolveFromTracingLayers(idsToResolve, {}, root);
+        this._resolveBackendNodeIds(idsToResolve, onBackendNodeIdsResolved.bind(this));
+
+        /**
+         * @this {WebInspector.LayerTreeModel}
+         */
+        function onBackendNodeIdsResolved()
+        {
+            var oldLayersById = this._layersById;
+            this._layersById = {};
+            this._contentRoot = null;
+            this._root = this._innerImportTracingLayers(oldLayersById, root);
+            this.dispatchEventToListeners(WebInspector.LayerTreeModel.Events.LayerTreeChanged);
+        }
     },
 
     /**
+     * @param {!Object.<(string|number), !WebInspector.Layer>} oldLayersById
      * @param {!WebInspector.TracingLayerPayload} payload
      * @return {!WebInspector.TracingLayer}
      */
-    _innerImportTracingLayers: function(payload)
+    _innerImportTracingLayers: function(oldLayersById, payload)
     {
-        var layer = new WebInspector.TracingLayer(payload);
+        var layer;
+        if (oldLayersById[payload.layer_id] instanceof WebInspector.TracingLayer) {
+            layer = /** @type {!WebInspector.TracingLayer} */ (oldLayersById[payload.layer_id]);
+            layer._reset(payload);
+        } else {
+            layer = new WebInspector.TracingLayer(payload);
+        }
+        this._layersById[payload.layer_id] = layer;
         if (!this._contentRoot && payload.draws_content)
             this._contentRoot = layer;
-        for (var i = 0; i < payload.children.length; ++i)
-            layer.addChild(this._innerImportTracingLayers(payload.children[i]));
+
+        if (payload.owner_node && this._backendNodeIdToNodeId[payload.owner_node])
+            layer._setNode(this._target.domModel.nodeForId(this._backendNodeIdToNodeId[payload.owner_node]));
+
+        for (var i = 0; payload.children && i < payload.children.length; ++i)
+            layer.addChild(this._innerImportTracingLayers(oldLayersById, payload.children[i]));
         return layer;
+    },
+
+    /**
+     * @param {!Array.<number>} nodeIdsToResolve
+     * @param {!Object} seenNodeIds
+     * @param {!WebInspector.TracingLayerPayload} payload
+     */
+    _extractNodeIdsToResolveFromTracingLayers: function(nodeIdsToResolve, seenNodeIds, payload)
+    {
+        var backendNodeId = payload.owner_node;
+        if (backendNodeId && !seenNodeIds[backendNodeId] && !(this._backendNodeIdToNodeId[backendNodeId] && this.target().domModel.nodeForId(backendNodeId))) {
+            seenNodeIds[backendNodeId] = true;
+            nodeIdsToResolve.push(backendNodeId);
+        }
+        for (var i = 0; payload.children && i < payload.children.length; ++i)
+            this._extractNodeIdsToResolveFromTracingLayers(nodeIdsToResolve, seenNodeIds, payload.children[i]);
     },
 
     /**
@@ -248,27 +302,17 @@ WebInspector.LayerTreeModel.prototype = {
     },
 
     /**
-     * @param {!Array.<!LayerTreeAgent.Layer>} layers
+     * @param {?Array.<number>} requestedNodeIds
      * @param {function()} callback
      */
-    _resolveBackendNodeIdsForLayers: function(layers, callback)
+    _resolveBackendNodeIds: function(requestedNodeIds, callback)
     {
-        var idsToResolve = {};
-        var requestedIds = [];
-        for (var i = 0; i < layers.length; ++i) {
-            var backendNodeId = layers[i].backendNodeId;
-            if (!backendNodeId || idsToResolve[backendNodeId] ||
-                (this._backendNodeIdToNodeId[backendNodeId] && this.target().domModel.nodeForId(this._backendNodeIdToNodeId[backendNodeId]))) {
-                continue;
-            }
-            idsToResolve[backendNodeId] = true;
-            requestedIds.push(backendNodeId);
-        }
-        if (!requestedIds.length) {
+        if (!requestedNodeIds.length) {
             callback();
             return;
         }
-        this.target().domModel.pushNodesByBackendIdsToFrontend(requestedIds, populateBackendNodeIdMap.bind(this));
+
+        this.target().domModel.pushNodesByBackendIdsToFrontend(requestedNodeIds, populateBackendNodeIdMap.bind(this));
 
         /**
          * @this {WebInspector.LayerTreeModel}
@@ -277,10 +321,10 @@ WebInspector.LayerTreeModel.prototype = {
         function populateBackendNodeIdMap(nodeIds)
         {
             if (nodeIds) {
-                for (var i = 0; i < requestedIds.length; ++i) {
+                for (var i = 0; i < requestedNodeIds.length; ++i) {
                     var nodeId = nodeIds[i];
                     if (nodeId)
-                        this._backendNodeIdToNodeId[requestedIds[i]] = nodeId;
+                        this._backendNodeIdToNodeId[requestedNodeIds[i]] = nodeId;
                 }
             }
             callback();
@@ -304,6 +348,8 @@ WebInspector.LayerTreeModel.prototype = {
 
     _onDocumentUpdated: function()
     {
+        if (!this._enabled)
+            return;
         this.disable();
         this.enable();
     },
@@ -432,7 +478,6 @@ WebInspector.Layer.prototype = {
  */
 WebInspector.AgentLayer = function(layerPayload)
 {
-    this._scrollRects = [];
     this._reset(layerPayload);
 }
 
@@ -641,6 +686,8 @@ WebInspector.AgentLayer.prototype = {
      */
     _reset: function(layerPayload)
     {
+        /** @type {?WebInspector.DOMNode} */
+        this._node = null;
         this._children = [];
         this._parent = null;
         this._paintCount = 0;
@@ -719,19 +766,29 @@ WebInspector.AgentLayer.prototype = {
  */
 WebInspector.TracingLayer = function(payload)
 {
-    this._layerId = String(payload.layer_id);
-    this._offsetX = payload.position[0];
-    this._offsetY = payload.position[1];
-    this._width = payload.bounds.width;
-    this._height = payload.bounds.height;
-    this._children = [];
-    this._parentLayerId = null;
-    this._parent = null;
-    this._quad = payload.layer_quad || [];
-    this._createScrollRects(payload);
+    this._reset(payload);
 }
 
 WebInspector.TracingLayer.prototype = {
+    /**
+     * @param {!WebInspector.TracingLayerPayload} payload
+     */
+    _reset: function(payload)
+    {
+        /** @type {?WebInspector.DOMNode} */
+        this._node = null;
+        this._layerId = String(payload.layer_id);
+        this._offsetX = payload.position[0];
+        this._offsetY = payload.position[1];
+        this._width = payload.bounds.width;
+        this._height = payload.bounds.height;
+        this._children = [];
+        this._parentLayerId = null;
+        this._parent = null;
+        this._quad = payload.layer_quad || [];
+        this._createScrollRects(payload);
+    },
+
     /**
      * @return {string}
      */
@@ -784,12 +841,21 @@ WebInspector.TracingLayer.prototype = {
         child._parentLayerId = this._layerId;
     },
 
+
+    /**
+     * @param {?WebInspector.DOMNode} node
+     */
+    _setNode: function(node)
+    {
+        this._node = node;
+    },
+
     /**
      * @return {?WebInspector.DOMNode}
      */
     node: function()
     {
-        return null;
+        return this._node;
     },
 
     /**
@@ -797,6 +863,10 @@ WebInspector.TracingLayer.prototype = {
      */
     nodeForSelfOrAncestor: function()
     {
+        for (var layer = this; layer; layer = layer._parent) {
+            if (layer._node)
+                return layer._node;
+        }
         return null;
     },
 
