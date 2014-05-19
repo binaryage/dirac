@@ -50,7 +50,7 @@ def write_devtools_html(inspector_file, devtools_file, debug):
                 continue
             if '</head>' in line:
                 devtools_file.write(generate_include_tag("inspector.css"))
-                devtools_file.write(generate_include_tag("Main.js"))
+                devtools_file.write(generate_include_tag("main/Main.js"))
         devtools_file.write(line)
 
 

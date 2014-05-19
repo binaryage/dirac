@@ -157,7 +157,6 @@
             "components/DOMBreakpointsSidebarPane.js",
             "components/DOMPresentationUtils.js",
             "components/ExtensionServerProxy.js",
-            "components/HelpScreenUntilReload.js",
             "components/NativeBreakpointsSidebarPane.js",
             "components/InspectElementModeController.js",
             "components/ObjectPopoverHelper.js",
@@ -456,7 +455,8 @@
             "sdk"
         ],
         "sources": [
-            "Main.js"
+            "main/HelpScreenUntilReload.js",
+            "main/Main.js"
         ]
     },
     {
