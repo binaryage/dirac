@@ -531,7 +531,7 @@
         ],
         'devtools_layers_js_files': [
             'front_end/layers/LayersPanel.js',
-            'front_end/layers/LayerTree.js',
+            'front_end/layers/LayerTreeOutline.js',
             'front_end/layers/Layers3DView.js',
             'front_end/layers/LayerDetailsView.js',
             'front_end/layers/PaintProfilerView.js',

@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-importScript("LayerTree.js");
+importScript("LayerTreeOutline.js");
 importScript("Layers3DView.js");
 importScript("LayerDetailsView.js");
 importScript("PaintProfilerView.js");
@@ -52,9 +52,9 @@ WebInspector.LayersPanel = function()
     this._currentlySelectedLayer = null;
     this._currentlyHoveredLayer = null;
 
-    this._layerTree = new WebInspector.LayerTree(this._model, this.sidebarTree);
-    this._layerTree.addEventListener(WebInspector.LayerTree.Events.LayerSelected, this._onObjectSelected, this);
-    this._layerTree.addEventListener(WebInspector.LayerTree.Events.LayerHovered, this._onObjectHovered, this);
+    this._layerTreeOutline = new WebInspector.LayerTreeOutline(this._model, this.sidebarTree);
+    this._layerTreeOutline.addEventListener(WebInspector.LayerTreeOutline.Events.LayerSelected, this._onObjectSelected, this);
+    this._layerTreeOutline.addEventListener(WebInspector.LayerTreeOutline.Events.LayerHovered, this._onObjectHovered, this);
 
     this._rightSplitView = new WebInspector.SplitView(false, true, "layerDetailsSplitViewState");
     this._rightSplitView.show(this.mainElement());
@@ -164,7 +164,7 @@ WebInspector.LayersPanel.prototype = {
             node.highlightForTwoSeconds();
         else
             this._target.domModel.hideDOMNodeHighlight();
-        this._layerTree.selectLayer(layer);
+        this._layerTreeOutline.selectLayer(layer);
         this._layers3DView.selectObject(activeObject);
         this._layerDetailsView.setObject(activeObject);
     },
@@ -183,7 +183,7 @@ WebInspector.LayersPanel.prototype = {
             node.highlight();
         else
             this._target.domModel.hideDOMNodeHighlight();
-        this._layerTree.hoverLayer(layer);
+        this._layerTreeOutline.hoverLayer(layer);
         this._layers3DView.hoverObject(activeObject);
     },
 

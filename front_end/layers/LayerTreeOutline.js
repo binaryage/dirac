@@ -34,7 +34,7 @@
  * @param {!WebInspector.LayerTreeModel} model
  * @param {!TreeOutline} treeOutline
  */
-WebInspector.LayerTree = function(model, treeOutline)
+WebInspector.LayerTreeOutline = function(model, treeOutline)
 {
     WebInspector.Object.call(this);
     this._model = model;
@@ -49,12 +49,12 @@ WebInspector.LayerTree = function(model, treeOutline)
 /**
  * @enum {string}
  */
-WebInspector.LayerTree.Events = {
+WebInspector.LayerTreeOutline.Events = {
     LayerHovered: "LayerHovered",
     LayerSelected: "LayerSelected"
 }
 
-WebInspector.LayerTree.prototype = {
+WebInspector.LayerTreeOutline.prototype = {
     /**
      * @param {?WebInspector.Layer} layer
      */
@@ -89,7 +89,7 @@ WebInspector.LayerTree.prototype = {
 
         /**
          * @param {!WebInspector.Layer} layer
-         * @this {WebInspector.LayerTree}
+         * @this {WebInspector.LayerTreeOutline}
          */
         function updateLayer(layer)
         {
@@ -136,7 +136,7 @@ WebInspector.LayerTree.prototype = {
         var node = this._treeOutline.treeElementFromPoint(event.pageX, event.pageY);
         if (node === this._lastHoveredNode)
             return;
-        this.dispatchEventToListeners(WebInspector.LayerTree.Events.LayerHovered, node && node.representedObject ? {layer: node.representedObject} : null);
+        this.dispatchEventToListeners(WebInspector.LayerTreeOutline.Events.LayerHovered, node && node.representedObject ? {layer: node.representedObject} : null);
     },
 
     /**
@@ -145,7 +145,7 @@ WebInspector.LayerTree.prototype = {
     _selectedNodeChanged: function(node)
     {
         var layer = /** @type {!WebInspector.Layer} */ (node.representedObject);
-        this.dispatchEventToListeners(WebInspector.LayerTree.Events.LayerSelected, {layer: layer});
+        this.dispatchEventToListeners(WebInspector.LayerTreeOutline.Events.LayerSelected, {layer: layer});
     },
 
     /**
@@ -172,7 +172,7 @@ WebInspector.LayerTree.prototype = {
 
 /**
   * @constructor
-  * @param {!WebInspector.LayerTree} tree
+  * @param {!WebInspector.LayerTreeOutline} tree
   * @param {!WebInspector.Layer} layer
   * @extends {TreeElement}
   */

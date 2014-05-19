@@ -339,7 +339,7 @@
         "dependencies": ["components"],
         "sources": [
             "layers/LayersPanel.js",
-            "layers/LayerTree.js",
+            "layers/LayerTreeOutline.js",
             "layers/Layers3DView.js",
             "layers/LayerDetailsView.js",
             "layers/PaintProfilerView.js",
