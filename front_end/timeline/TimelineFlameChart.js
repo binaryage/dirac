@@ -416,23 +416,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider = function(model, frameM
     this._font = "12px " + WebInspector.fontFamily();
     this._linkifier = new WebInspector.Linkifier();
     this._palette = new WebInspector.TraceViewPalette();
-    var dummyEventPayload = {
-        cat: "dummy",
-        pid: 0,
-        tid: 0,
-        ts: 0,
-        ph: "dummy",
-        name: "dummy",
-        args: {},
-        dur: 0,
-        id: 0,
-        s: ""
-    }
-    this._cpuThreadRecord = new WebInspector.TracingModel.Event(dummyEventPayload, 0);
-    this._cpuThreadRecord.name = WebInspector.UIString("CPU");
-
-    this._gpuThreadRecord = new WebInspector.TracingModel.Event(dummyEventPayload, 0);
-    this._gpuThreadRecord.name = WebInspector.UIString("GPU");
+    this._entryIndexToTitle = {};
 }
 
 WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
@@ -476,7 +460,14 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
     entryTitle: function(entryIndex)
     {
         var record = this._records[entryIndex];
-        return record.name;
+        if (record)
+            return record.name;
+        var title = this._entryIndexToTitle[entryIndex];
+        if (!title) {
+            title = WebInspector.UIString("Unexpected entryIndex %d", entryIndex);
+            console.error(title);
+        }
+        return title;
     },
 
     /**
@@ -509,6 +500,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         this._timelineData = null;
         /** @type {!Array.<!WebInspector.TracingModel.Event>} */
         this._records = [];
+        this._entryIndexToTitle = {};
     },
 
     /**
@@ -532,7 +524,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         this._minimumBoundary = this._model.minimumRecordTime() || 0;
         this._timeSpan = Math.max((this._model.maximumRecordTime() || 0) - this._minimumBoundary, 1000000);
         var tracingModel = this._model;
-        this._appendHeaderRecord("CPU", this._cpuThreadRecord);
+        this._appendHeaderRecord("CPU");
         var events = tracingModel.inspectedTargetMainThreadEvents();
         var maxStackDepth = 0;
         for (var eventIndex = 0; eventIndex < events.length; ++eventIndex) {
@@ -548,7 +540,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         }
         this._currentLevel += maxStackDepth + 1;
 
-        this._appendHeaderRecord("GPU", this._gpuThreadRecord);
+        this._appendHeaderRecord("GPU");
         return this._timelineData;
     },
 
@@ -601,7 +593,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
     entryColor: function(entryIndex)
     {
         var record = this._records[entryIndex];
-        if (this._isHeaderRecord(record))
+        if (!record)
             return "#555";
         var style = WebInspector.TimelineUIUtils.styleForTimelineEvent(record.name);
         return style.category.fillColorStop1;
@@ -623,10 +615,8 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         if (barWidth < 5)
             return false;
 
-        var record = this._records[entryIndex];
         var timelineData = this._timelineData;
 
-        var category = WebInspector.TimelineUIUtils.styleForTimelineEvent(record.name).category;
         // Paint text using white color on dark background.
         if (text) {
             context.save();
@@ -639,8 +629,9 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
             context.restore();
         }
 
+        var record = this._records[entryIndex];
         var bindings = this._model.bindings();
-        if (bindings && bindings.eventWarning(record)) {
+        if (record && bindings && bindings.eventWarning(record)) {
             context.save();
 
             context.rect(barX, barY, barWidth, this.barHeight());
@@ -666,6 +657,8 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
     forceDecoration: function(entryIndex)
     {
         var record = this._records[entryIndex];
+        if (!record)
+            return false;
         var bindings = this._model.bindings();
         return !!bindings && !!bindings.eventWarning(record);
     },
@@ -677,7 +670,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
     highlightTimeRange: function(entryIndex)
     {
         var record = this._records[entryIndex];
-        if (!record || this._isHeaderRecord(record))
+        if (!record)
             return null;
         return {
             startTime: this._toTimelineTime(record.startTime),
@@ -704,15 +697,15 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
 
     /**
      * @param {string} title
-     * @param {!WebInspector.TracingModel.Event} record
      */
-    _appendHeaderRecord: function(title, record)
+    _appendHeaderRecord: function(title)
     {
         var index = this._records.length;
-        this._records.push(record);
+        this._entryIndexToTitle[index] = title;
+        this._records.push(null);
         this._timelineData.entryLevels[index] = this._currentLevel++;
-        this._timelineData.entryTotalTimes[index] = this.totalTime();
-        this._timelineData.entryStartTimes[index] = this._toTimelineTime(0);
+        this._timelineData.entryTotalTimes[index] = this._toTimelineTime(this._timeSpan);
+        this._timelineData.entryStartTimes[index] = this._toTimelineTime(this._minimumBoundary);
     },
 
     /**
@@ -723,7 +716,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
         var index = this._records.length;
         this._records.push(record);
         this._timelineData.entryLevels[index] = this._currentLevel + record.level;
-        this._timelineData.entryTotalTimes[index] = this._toTimelineTime(record.phase === WebInspector.TracingModel.Phase.SnapshotObject ? NaN : record.duration || 0);
+        this._timelineData.entryTotalTimes[index] = this._toTimelineTime(record.duration);
         this._timelineData.entryStartTimes[index] = this._toTimelineTime(record.startTime);
     },
 
@@ -734,14 +727,6 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
     _toTimelineTime: function(time)
     {
         return time / 1000;
-    },
-
-    /**
-     * @param {!WebInspector.TracingModel.Event} record
-     */
-    _isHeaderRecord: function(record)
-    {
-        return record === this._cpuThreadRecord || record === this._gpuThreadRecord;
     },
 
     /**
