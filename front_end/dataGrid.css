@@ -133,11 +133,11 @@
     text-overflow: clip;
 }
 
-.data-grid .center div {
+.data-grid .center {
     text-align: center;
 }
 
-.data-grid .right div {
+.data-grid .right {
     text-align: right;
 }
 
