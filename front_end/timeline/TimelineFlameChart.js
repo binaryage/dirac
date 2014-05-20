@@ -477,22 +477,7 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
      */
     dividerOffsets: function(startTime, endTime)
     {
-        if (endTime - startTime < 16 || endTime - startTime > 300)
-            return null;
-
-        var frames = this._frameModel.filteredFrames(startTime, endTime);
-        if (frames.length > 10)
-            return null;
-
-        if (frames.length < 3)
-            return null;
-
-        var offsets = [];
-        for (var i = 0; i < frames.length; ++i)
-            offsets.push(frames[i].startTime);
-        // Push one more offset so grid will be able to calculate the duration for the last frame.
-        offsets.push(frames.peekLast.endTime)
-        return offsets;
+        return null;
     },
 
     reset: function()
@@ -727,15 +712,6 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
     _toTimelineTime: function(time)
     {
         return time / 1000;
-    },
-
-    /**
-     * @param {number} index
-     * @return {!WebInspector.TracingModel.Event|undefined}
-     */
-    _recordAt: function(index)
-    {
-        return this._records[index];
     }
 }
 
