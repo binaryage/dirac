@@ -563,8 +563,8 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
                 contentHelper.appendTextRow(WebInspector.UIString("Encoded Data Length"), WebInspector.UIString("%d Bytes", recordData["encodedDataLength"]));
             break;
         case recordTypes.EvaluateScript:
-        var url = record.url();
-            if (recordData && url)
+            var url = recordData["url"];
+            if (url)
                 contentHelper.appendLocationRow(WebInspector.UIString("Script"), url, recordData["lineNumber"]);
             break;
         case recordTypes.Paint:
@@ -726,8 +726,8 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier, load
         details = linkifyTopCallFrame();
         break;
     case WebInspector.TimelineModel.RecordType.EvaluateScript:
-        var url = record.url();
-        if (recordData && url)
+        var url = recordData["url"];
+        if (url)
             details = linkifyLocation("", url, recordData["lineNumber"], 0);
         break;
     case WebInspector.TimelineModel.RecordType.XHRReadyStateChange:
