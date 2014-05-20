@@ -10,13 +10,8 @@ WebInspector.InspectedPagePlaceholder = function()
 {
     WebInspector.View.call(this);
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
-    this._margins = { top: false, right: false, bottom: false, left: false };
-    this.setMinimumSize(WebInspector.InspectedPagePlaceholder.Constraints.Width, WebInspector.InspectedPagePlaceholder.Constraints.Height);
-};
-
-WebInspector.InspectedPagePlaceholder.Constraints = {
-    Width: 50,
-    Height: 50
+    this._margins = { top: 0, right: 0, bottom: 0, left: 0 };
+    this.setMinimumSize(50, 50);
 };
 
 WebInspector.InspectedPagePlaceholder.MarginValue = 3;
@@ -24,8 +19,8 @@ WebInspector.InspectedPagePlaceholder.MarginValue = 3;
 WebInspector.InspectedPagePlaceholder.prototype = {
     _findMargins: function()
     {
-        var margins = { top: false, right: false, bottom: false, left: false };
-        var adjacent = { top: true, right: true, bottom: true, left: true};
+        var margins = { top: 0, right: 0, bottom: 0, left: 0 };
+        var adjacent = { top: true, right: true, bottom: true, left: true };
         var view = this;
         while (view.parentView()) {
             var parent = view.parentView();
@@ -34,7 +29,7 @@ WebInspector.InspectedPagePlaceholder.prototype = {
             if (parent instanceof WebInspector.SplitView) {
                 var side = parent.sidebarSide();
                 if (adjacent[side] && !parent.hasCustomResizer())
-                    margins[side] = true;
+                    margins[side] = WebInspector.InspectedPagePlaceholder.MarginValue;
                 adjacent[side] = false;
             }
             view = parent;
@@ -42,23 +37,12 @@ WebInspector.InspectedPagePlaceholder.prototype = {
 
         if (this._margins.top !== margins.top || this._margins.left !== margins.left || this._margins.right !== margins.right || this._margins.bottom !== margins.bottom) {
             this._margins = margins;
-            this._updateMarginValue();
+            this._scheduleUpdate();
         }
-    },
-
-    _updateMarginValue: function()
-    {
-        var marginValue = Math.round(WebInspector.InspectedPagePlaceholder.MarginValue / WebInspector.zoomManager.zoomFactor()) + "px ";
-        var margins = this._margins.top ? marginValue : "0 ";
-        margins += this._margins.right ? marginValue : "0 ";
-        margins += this._margins.bottom ? marginValue : "0 ";
-        margins += this._margins.left ? marginValue : "0 ";
-        this.element.style.margin = margins;
     },
 
     _onZoomChanged: function()
     {
-        this._updateMarginValue();
         this._scheduleUpdate();
     },
 
@@ -78,38 +62,27 @@ WebInspector.InspectedPagePlaceholder.prototype = {
         }
     },
 
+    _dipPageRect: function()
+    {
+        var zoomFactor = WebInspector.zoomManager.zoomFactor();
+        var rect = this.element.getBoundingClientRect();
+        var bodyRect = document.body.getBoundingClientRect();
+
+        var left = Math.max(rect.left * zoomFactor + this._margins.left, bodyRect.left * zoomFactor);
+        var top = Math.max(rect.top * zoomFactor + this._margins.top, bodyRect.top * zoomFactor);
+        var bottom = Math.min(rect.bottom * zoomFactor - this._margins.bottom, bodyRect.bottom * zoomFactor);
+        var right = Math.min(rect.right * zoomFactor - this._margins.right, bodyRect.right * zoomFactor);
+
+        return { x: left, y: top, width: right - left, height: bottom - top };
+    },
+
     _update: function()
     {
         delete this._updateId;
 
-        var zoomFactor = WebInspector.zoomManager.zoomFactor();
-
-        var marginValue = WebInspector.InspectedPagePlaceholder.MarginValue;
-        var insets = {
-            top: this._margins.top ? marginValue : 0,
-            left: this._margins.left ? marginValue : 0,
-            right: this._margins.right ? marginValue : 0,
-            bottom: this._margins.bottom ? marginValue : 0};
-
-        var minSize = {
-            width: WebInspector.InspectedPagePlaceholder.Constraints.Width - Math.round(insets.left * zoomFactor) - Math.round(insets.right * zoomFactor),
-            height: WebInspector.InspectedPagePlaceholder.Constraints.Height - Math.round(insets.top * zoomFactor) - Math.round(insets.bottom * zoomFactor)};
-
-        // This view assumes it's always inside the main split view element, not a sidebar.
-        var view = this;
-        while (view) {
-            if ((view instanceof WebInspector.SplitView) && view.sidebarSide())
-                insets[view.sidebarSide()] += view.preferredSidebarSize();
-            view = view.parentView();
-        }
-
-        var roundedInsets = {
-            top: Math.ceil(insets.top),
-            left: Math.ceil(insets.left),
-            right: Math.ceil(insets.right),
-            bottom: Math.ceil(insets.bottom)};
-
-        InspectorFrontendHost.setContentsResizingStrategy(roundedInsets, minSize);
+        var rect = this._dipPageRect();
+        var bounds = { x: Math.round(rect.x), y: Math.round(rect.y), height: Math.round(rect.height), width: Math.round(rect.width) };
+        InspectorFrontendHost.setInspectedPageBounds(bounds);
     },
 
     __proto__: WebInspector.View.prototype

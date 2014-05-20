@@ -196,6 +196,11 @@ InspectorFrontendHostAPI.prototype.getSelectionForegroundColor = function() {}
 /** @return {boolean} */
 InspectorFrontendHost.isUnderTest = function() {}
 /**
+ * Requests inspected page to be placed atop of the inspector frontend with specified bounds.
+ * @param {{x: number, y: number, width: number, height: number}} bounds
+ */
+InspectorFrontendHostAPI.prototype.setInspectedPageBounds = function(bounds) {}
+/**
  * Requests inspected page to be placed atop of the inspector frontend
  * with passed insets from the frontend sides, respecting minimum size passed.
  * @param {{top: number, left: number, right: number, bottom: number}} insets
