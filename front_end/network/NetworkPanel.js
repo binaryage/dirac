@@ -2546,11 +2546,7 @@ WebInspector.NetworkDataGridNode.prototype = {
         for (var i = 0; i < responseHeaderColumns.length; ++i)
             this._refreshResponseHeaderCell(responseHeaderColumns[i]);
 
-        if (this._request.cached)
-            this._timelineCell.classList.add("resource-cached");
-
-        this._element.classList.toggle("network-error-row", this._isFailed());
-        this._updateElementStyleClasses(this._element);
+        this._updateElementStyleClasses();
     },
 
     /**
@@ -2561,11 +2557,11 @@ WebInspector.NetworkDataGridNode.prototype = {
         return !!this._request.failed || (this._request.statusCode >= 400);
     },
 
-    /**
-     * @param {!Element} element
-     */
-    _updateElementStyleClasses: function(element)
+    _updateElementStyleClasses: function()
     {
+        var element = this._element;
+        element.classList.toggle("network-error-row", this._isFailed());
+        element.classList.toggle("resource-cached", this._request.cached);
         var typeClassName = "network-type-" + this._request.type.name();
         if (!element.classList.contains(typeClassName)) {
             element.removeMatchingStyleClasses("network-type-\\w+");
@@ -2756,7 +2752,6 @@ WebInspector.NetworkDataGridNode.prototype = {
         this._percentages = percentages;
 
         this._barAreaElement.classList.remove("hidden");
-        this._updateElementStyleClasses(this._timelineCell);
 
         this._barLeftElement.style.setProperty("left", percentages.start + "%");
         this._barRightElement.style.setProperty("right", (100 - percentages.end) + "%");
