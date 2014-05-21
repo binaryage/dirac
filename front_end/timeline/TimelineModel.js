@@ -767,10 +767,6 @@ WebInspector.TimelineModel.RecordImpl = function(model, timelineEvent, parentRec
     case recordTypes.WebSocketDestroy:
         this._initiator = bindings._webSocketCreateRecords[timelineEvent.data["identifier"]];
         break;
-
-    case recordTypes.EmbedderCallback:
-        this.embedderCallbackName = timelineEvent.data["callbackName"];
-        break;
     }
 }
 

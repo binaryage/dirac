@@ -629,7 +629,7 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
                 contentHelper.appendTextRow(WebInspector.UIString("Message"), recordData["message"]);
             break;
         case recordTypes.EmbedderCallback:
-            contentHelper.appendTextRow(WebInspector.UIString("Callback Function"), record.embedderCallbackName);
+            contentHelper.appendTextRow(WebInspector.UIString("Callback Function"), recordData["callbackName"]);
             break;
         default:
             var detailsNode = WebInspector.TimelineUIUtils.buildDetailsNode(record, linkifier, loadedFromFile);
