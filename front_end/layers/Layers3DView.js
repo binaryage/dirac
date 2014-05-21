@@ -31,16 +31,12 @@
 /**
  * @constructor
  * @extends {WebInspector.VBox}
- * @param {!WebInspector.LayerTreeModel} model
  */
-WebInspector.Layers3DView = function(model)
+WebInspector.Layers3DView = function()
 {
     WebInspector.VBox.call(this);
     this.element.classList.add("layers-3d-view");
     this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("Not in the composited mode.\nConsider forcing composited mode in Settings."));
-    this._model = model;
-    this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._update, this);
-    this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerPainted, this._onLayerPainted, this);
     this._canvasElement = this.element.createChild("canvas");
     this._transformController = new WebInspector.TransformController(this._canvasElement);
     this._transformController.addEventListener(WebInspector.TransformController.Events.TransformChanged, this._update, this);
@@ -54,6 +50,7 @@ WebInspector.Layers3DView = function(model)
     this._textureForLayer = {};
     this._scrollRectQuadsForLayer = {};
     this._isVisible = {};
+    this._layerTree = null;
     WebInspector.settings.showPaintRects.addChangeListener(this._update, this);
 }
 
@@ -250,8 +247,8 @@ WebInspector.Layers3DView.prototype = {
     _calculateProjectionMatrix: function()
     {
         var rootLayerPadding = 20;
-        var rootWidth = this._model.contentRoot().width();
-        var rootHeight = this._model.contentRoot().height();
+        var rootWidth = this._layerTree.contentRoot().width();
+        var rootHeight = this._layerTree.contentRoot().height();
         var canvasWidth = this._canvasElement.width;
         var canvasHeight = this._canvasElement.height;
         var scaleX = (canvasWidth - rootLayerPadding) / rootWidth;
@@ -503,7 +500,7 @@ WebInspector.Layers3DView.prototype = {
         this._depthByLayerId = {};
         this._isVisible = {};
         var depth = 0;
-        var root = this._model.root();
+        var root = this._layerTree.root();
         var queue = [root];
         this._depthByLayerId[root.id()] = 0;
         this._isVisible[root.id()] = false;
@@ -512,12 +509,21 @@ WebInspector.Layers3DView.prototype = {
             var children = layer.children();
             for (var i = 0; i < children.length; ++i) {
                 this._depthByLayerId[children[i].id()] = ++depth;
-                this._isVisible[children[i].id()] = children[i] === this._model.contentRoot() || this._isVisible[layer.id()];
+                this._isVisible[children[i].id()] = children[i] === this._layerTree.contentRoot() || this._isVisible[layer.id()];
                 queue.push(children[i]);
             }
         }
     },
 
+
+    /**
+     * @param {?WebInspector.LayerTreeBase} layerTree
+     */
+    setLayerTree: function(layerTree)
+    {
+        this._layerTree = layerTree;
+        this._update();
+    },
 
     _update: function()
     {
@@ -525,7 +531,8 @@ WebInspector.Layers3DView.prototype = {
             this._needsUpdate = true;
             return;
         }
-        if (!this._model.contentRoot()) {
+        var contentRoot = this._layerTree && this._layerTree.contentRoot();
+        if (!contentRoot || !this._layerTree.root()) {
             this._emptyView.show(this.element);
             return;
         }
@@ -539,15 +546,7 @@ WebInspector.Layers3DView.prototype = {
         gl.viewport(0, 0, gl.viewportWidth, gl.viewportHeight);
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
-        this._model.forEachLayer(this._drawLayer.bind(this), this._model.root());
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onLayerPainted: function(event)
-    {
-        this._update();
+        this._layerTree.forEachLayer(this._drawLayer.bind(this));
     },
 
     /**
@@ -595,7 +594,7 @@ WebInspector.Layers3DView.prototype = {
      */
     _layerFromEventPoint: function(event)
     {
-        if (!this._model.contentRoot())
+        if (!this._layerTree)
             return null;
         var closestIntersectionPoint = Infinity;
         var closestLayer = null;
@@ -627,7 +626,7 @@ WebInspector.Layers3DView.prototype = {
             }
         }
 
-        this._model.forEachLayer(checkIntersection.bind(this), this._model.root());
+        this._layerTree.forEachLayer(checkIntersection.bind(this));
         return closestLayer;
     },
 

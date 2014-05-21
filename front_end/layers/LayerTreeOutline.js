@@ -31,18 +31,15 @@
 /**
  * @constructor
  * @extends {WebInspector.Object}
- * @param {!WebInspector.LayerTreeModel} model
  * @param {!TreeOutline} treeOutline
  */
-WebInspector.LayerTreeOutline = function(model, treeOutline)
+WebInspector.LayerTreeOutline = function(treeOutline)
 {
     WebInspector.Object.call(this);
-    this._model = model;
     this._treeOutline = treeOutline;
     this._treeOutline.childrenListElement.addEventListener("mousemove", this._onMouseMove.bind(this), false);
     this._treeOutline.childrenListElement.addEventListener("mouseout", this._onMouseMove.bind(this), false);
     this._treeOutline.childrenListElement.addEventListener("contextmenu", this._onContextMenu.bind(this), true);
-    this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._update.bind(this));
     this._lastHoveredNode = null;
 }
 
@@ -83,9 +80,12 @@ WebInspector.LayerTreeOutline.prototype = {
         this._lastHoveredNode = node;
     },
 
-    _update: function()
+    /**
+     * @param {?WebInspector.LayerTreeBase} layerTree
+     */
+    update: function(layerTree)
     {
-        var seenLayers = {};
+        var seenLayers = new Map();
 
         /**
          * @param {!WebInspector.Layer} layer
@@ -93,12 +93,11 @@ WebInspector.LayerTreeOutline.prototype = {
          */
         function updateLayer(layer)
         {
-            var id = layer.id();
-            if (seenLayers[id])
-                console.assert(false, "Duplicate layer id: " + id);
-            seenLayers[id] = true;
+            if (seenLayers.get(layer))
+                console.assert(false, "Duplicate layer: " + layer.id());
+            seenLayers.put(layer, true);
             var node = this._treeOutline.getCachedTreeElement(layer);
-            var parent = layer === this._model.contentRoot() ? this._treeOutline : this._treeOutline.getCachedTreeElement(layer.parent());
+            var parent = layer === layerTree.contentRoot() ? this._treeOutline : this._treeOutline.getCachedTreeElement(layer.parent());
             if (!parent)
                 console.assert(false, "Parent is not in the tree");
             if (!node) {
@@ -112,11 +111,11 @@ WebInspector.LayerTreeOutline.prototype = {
                 node._update();
             }
         }
-        if (this._model.contentRoot())
-            this._model.forEachLayer(updateLayer.bind(this), this._model.contentRoot());
+        if (layerTree && layerTree.contentRoot())
+            layerTree.forEachLayer(updateLayer.bind(this), layerTree.contentRoot());
         // Cleanup layers that don't exist anymore from tree.
-        for (var node = /** @type {!TreeElement|!TreeOutline|null} */(this._treeOutline.children[0]); node && !node.root;) {
-            if (seenLayers[node.representedObject.id()]) {
+        for (var node = /** @type {!TreeElement|!TreeOutline|null} */ (this._treeOutline.children[0]); node && !node.root;) {
+            if (seenLayers.get(node.representedObject)) {
                 node = node.traverseNextTreeElement(false);
             } else {
                 var nextNode = node.nextSibling || node.parent;
@@ -179,7 +178,7 @@ WebInspector.LayerTreeOutline.prototype = {
 WebInspector.LayerTreeElement = function(tree, layer)
 {
     TreeElement.call(this, "", layer);
-    this._layerTree = tree;
+    this._treeOutline = tree;
     this._update();
 }
 
@@ -209,7 +208,7 @@ WebInspector.LayerTreeElement.prototype = {
      */
     onselect: function()
     {
-        this._layerTree._selectedNodeChanged(this);
+        this._treeOutline._selectedNodeChanged(this);
         return false;
     },
 

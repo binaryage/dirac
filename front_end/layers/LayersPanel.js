@@ -49,17 +49,18 @@ WebInspector.LayersPanel = function()
     this._target = /** @type {!WebInspector.Target} */ (WebInspector.targetManager.activeTarget());
     this._model = new WebInspector.LayerTreeModel(this._target);
     this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._onLayerTreeUpdated, this);
+    this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerPainted, this._onLayerPainted, this);
     this._currentlySelectedLayer = null;
     this._currentlyHoveredLayer = null;
 
-    this._layerTreeOutline = new WebInspector.LayerTreeOutline(this._model, this.sidebarTree);
+    this._layerTreeOutline = new WebInspector.LayerTreeOutline(this.sidebarTree);
     this._layerTreeOutline.addEventListener(WebInspector.LayerTreeOutline.Events.LayerSelected, this._onObjectSelected, this);
     this._layerTreeOutline.addEventListener(WebInspector.LayerTreeOutline.Events.LayerHovered, this._onObjectHovered, this);
 
     this._rightSplitView = new WebInspector.SplitView(false, true, "layerDetailsSplitViewState");
     this._rightSplitView.show(this.mainElement());
 
-    this._layers3DView = new WebInspector.Layers3DView(this._model);
+    this._layers3DView = new WebInspector.Layers3DView();
     this._layers3DView.show(this._rightSplitView.mainElement());
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectSelected, this._onObjectSelected, this);
     this._layers3DView.addEventListener(WebInspector.Layers3DView.Events.ObjectHovered, this._onObjectHovered, this);
@@ -69,7 +70,7 @@ WebInspector.LayersPanel = function()
     this._tabbedPane = new WebInspector.TabbedPane();
     this._tabbedPane.show(this._rightSplitView.sidebarElement());
 
-    this._layerDetailsView = new WebInspector.LayerDetailsView(this._model);
+    this._layerDetailsView = new WebInspector.LayerDetailsView();
     this._layerDetailsView.addEventListener(WebInspector.LayerDetailsView.Events.ObjectSelected, this._onObjectSelected, this);
     this._tabbedPane.appendTab(WebInspector.LayersPanel.DetailsViewTabs.Details, WebInspector.UIString("Details"), this._layerDetailsView);
     this._paintProfilerView = new WebInspector.PaintProfilerView(this._model, this._layers3DView);
@@ -103,7 +104,15 @@ WebInspector.LayersPanel.prototype = {
      */
     _showSnapshot: function(snapshot)
     {
-        this._model.setSnapshot(snapshot);
+        var layerTree = new WebInspector.AgentLayerTree(this._target);
+        layerTree.setLayers(snapshot.layers, onLayersSet.bind(this));
+        /**
+         * @this {WebInspector.LayersPanel} this
+         */
+        function onLayersSet()
+        {
+            this._model.setLayerTree(layerTree);
+        }
     },
 
     /**
@@ -111,15 +120,37 @@ WebInspector.LayersPanel.prototype = {
      */
     _showTracingSnapshot: function(snapshot)
     {
-        this._model.setTracingSnapshot(snapshot);
+        var layerTree = new WebInspector.TracingLayerTree(this._target);
+        layerTree.setLayers(snapshot.root, onLayersSet.bind(this));
+        /**
+         * @this {WebInspector.LayersPanel} this
+         */
+        function onLayersSet()
+        {
+            this._model.setLayerTree(layerTree);
+        }
     },
 
     _onLayerTreeUpdated: function()
     {
-        if (this._currentlySelectedLayer && !this._model.layerById(this._currentlySelectedLayer.layer.id()))
+        var layerTree = this._model.layerTree();
+        this._layers3DView.setLayerTree(layerTree);
+        this._layerTreeOutline.update(layerTree);
+        if (this._currentlySelectedLayer && (!layerTree || !layerTree.layerById(this._currentlySelectedLayer.layer.id())))
             this._selectObject(null);
-        if (this._currentlyHoveredLayer && !this._model.layerById(this._currentlyHoveredLayer.layer.id()))
+        if (this._currentlyHoveredLayer && (!layerTree || !layerTree.layerById(this._currentlyHoveredLayer.layer.id())))
             this._hoverObject(null);
+        this._layerDetailsView.update();
+    },
+
+    /**
+     * @param {!WebInspector.Event} event
+     */
+    _onLayerPainted: function(event)
+    {
+        this._layers3DView.setLayerTree(this._model.layerTree());
+        if (this._currentlySelectedLayer && this._currentlySelectedLayer.layer === event.data)
+            this._layerDetailsView.update();
     },
 
     /**

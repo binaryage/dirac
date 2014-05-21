@@ -30,18 +30,14 @@
 
 /**
  * @constructor
- * @param {!WebInspector.LayerTreeModel} model
  * @extends {WebInspector.VBox}
  */
-WebInspector.LayerDetailsView = function(model)
+WebInspector.LayerDetailsView = function()
 {
     WebInspector.VBox.call(this);
     this.element.classList.add("layer-details-view");
     this._emptyView = new WebInspector.EmptyView(WebInspector.UIString("Select a layer to see its details"));
     this._createTable();
-    this._model = model;
-    this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerTreeChanged, this._onLayerTreeUpdated, this);
-    this._model.addEventListener(WebInspector.LayerTreeModel.Events.LayerPainted, this._onLayerPainted, this);
 }
 
 /**
@@ -98,29 +94,13 @@ WebInspector.LayerDetailsView.prototype = {
         this._layer = activeObject ? activeObject.layer : null;
         this._scrollRectIndex = activeObject ? activeObject.scrollRectIndex : null;
         if (this.isShowing())
-            this._update();
+            this.update();
     },
 
     wasShown: function()
     {
         WebInspector.View.prototype.wasShown.call(this);
-        this._update();
-    },
-
-    _onLayerTreeUpdated: function()
-    {
-        if (this.isShowing())
-            this._update();
-    },
-
-    /**
-     * @param {!WebInspector.Event} event
-     */
-    _onLayerPainted: function(event)
-    {
-        var layer = /** @type {!WebInspector.Layer} */ (event.data);
-        if (this._layer === layer)
-            this._paintCountCell.textContent = layer.paintCount();
+        this.update();
     },
 
     /**
@@ -149,7 +129,7 @@ WebInspector.LayerDetailsView.prototype = {
         element.addEventListener("click", this._onScrollRectClicked.bind(this, index), false);
     },
 
-    _update: function()
+    update: function()
     {
         if (!this._layer) {
             this._tableElement.remove();
