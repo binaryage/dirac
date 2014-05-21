@@ -88,6 +88,10 @@ fieldset[disabled] label:hover input {
     display: none !important;
 }
 
+.white-background {
+    background-color: white;
+}
+
 .nowrap,
 .nowrap-below,
 .nowrap-below div,

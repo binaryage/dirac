@@ -86,7 +86,11 @@ WebInspector.Main.prototype = {
         WebInspector.inspectorView.show(this._rootSplitView.sidebarElement());
 
         var inspectedPagePlaceholder = new WebInspector.InspectedPagePlaceholder();
-        inspectedPagePlaceholder.show(this._rootSplitView.mainElement());
+        if (WebInspector.dockController.canDock() && WebInspector.experimentsSettings.responsiveDesign.isEnabled()) {
+            var responsiveDesignView = new WebInspector.ResponsiveDesignView(inspectedPagePlaceholder);
+            responsiveDesignView.show(this._rootSplitView.mainElement());
+        } else
+            inspectedPagePlaceholder.show(this._rootSplitView.mainElement());
 
         WebInspector.dockController.addEventListener(WebInspector.DockController.Events.DockSideChanged, this._updateRootSplitViewOnDockSideChange, this);
         this._updateRootSplitViewOnDockSideChange();
@@ -320,7 +324,6 @@ WebInspector.Main.prototype = {
         WebInspector.scriptSnippetModel = new WebInspector.ScriptSnippetModel(WebInspector.workspace);
 
         WebInspector.overridesSupport = new WebInspector.OverridesSupport();
-        WebInspector.overridesSupport.applyInitialOverrides();
 
         new WebInspector.DebuggerScriptMapping(WebInspector.debuggerModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
         WebInspector.liveEditSupport = new WebInspector.LiveEditSupport(WebInspector.workspace);
@@ -373,15 +376,9 @@ WebInspector.Main.prototype = {
         {
             WebInspector.inspectorView.showInitialPanel();
 
+            WebInspector.overridesSupport.applyInitialOverrides();
             if (WebInspector.overridesSupport.hasActiveOverrides())
                 WebInspector.inspectorView.showViewInDrawer("emulation", true);
-
-            WebInspector.settings.showMetricsRulers.addChangeListener(showRulersChanged);
-            function showRulersChanged()
-            {
-                PageAgent.setShowViewportSizeOnResize(true, WebInspector.settings.showMetricsRulers.get());
-            }
-            showRulersChanged();
 
             if (this._screencastController)
                 this._screencastController.initialize();

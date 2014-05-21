@@ -123,3 +123,24 @@ WebInspector.fontFamily = function()
     }
     return WebInspector._fontFamily;
 }
+
+/**
+ * @return {string}
+ */
+WebInspector.monospaceFontFamily = function()
+{
+    if (WebInspector._monospaceFontFamily)
+        return WebInspector._monospaceFontFamily;
+    switch (WebInspector.platform()) {
+    case "linux":
+        WebInspector._monospaceFontFamily = "dejavu sans mono, monospace";
+        break;
+    case "mac":
+        WebInspector._monospaceFontFamily = "Menlo, monospace";
+        break;
+    case "windows":
+        WebInspector._monospaceFontFamily = "Consolas, monospace";
+        break;
+    }
+    return WebInspector._monospaceFontFamily;
+}

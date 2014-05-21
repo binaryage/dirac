@@ -355,6 +355,14 @@ WebInspector.SplitView.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    isResizable: function()
+    {
+        return this._resizerWidget.isEnabled();
+    },
+
+    /**
      * @param {number} size
      */
     setSidebarSize: function(size)
@@ -557,15 +565,18 @@ WebInspector.SplitView.prototype = {
     _applyConstraints: function(sidebarSize, userAction)
     {
         var totalSize = this._totalSizeDIP();
+        var zoomFactor = WebInspector.zoomManager.zoomFactor();
 
         var constraints = this._sidebarView.constraints();
         var minSidebarSize = this.isVertical() ? constraints.minimum.width : constraints.minimum.height;
         if (!minSidebarSize)
             minSidebarSize = WebInspector.SplitView.MinPadding;
+        minSidebarSize *= zoomFactor;
 
         var preferredSidebarSize = this.isVertical() ? constraints.preferred.width : constraints.preferred.height;
         if (!preferredSidebarSize)
             preferredSidebarSize = WebInspector.SplitView.MinPadding;
+        preferredSidebarSize *= zoomFactor;
         // Allow sidebar to be less than preferred by explicit user action.
         if (sidebarSize < preferredSidebarSize)
             preferredSidebarSize = Math.max(sidebarSize, minSidebarSize);
@@ -574,10 +585,12 @@ WebInspector.SplitView.prototype = {
         var minMainSize = this.isVertical() ? constraints.minimum.width : constraints.minimum.height;
         if (!minMainSize)
             minMainSize = WebInspector.SplitView.MinPadding;
+        minMainSize *= zoomFactor;
 
         var preferredMainSize = this.isVertical() ? constraints.preferred.width : constraints.preferred.height;
         if (!preferredMainSize)
             preferredMainSize = WebInspector.SplitView.MinPadding;
+        preferredMainSize *= zoomFactor;
         var savedMainSize = this.isVertical() ? this._savedVerticalMainSize : this._savedHorizontalMainSize;
         if (typeof savedMainSize !== "undefined")
             preferredMainSize = Math.min(preferredMainSize, savedMainSize);

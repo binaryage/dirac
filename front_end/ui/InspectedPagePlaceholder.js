@@ -9,9 +9,10 @@
 WebInspector.InspectedPagePlaceholder = function()
 {
     WebInspector.View.call(this);
+    this.element.classList.add("white-background");
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
     this._margins = { top: 0, right: 0, bottom: 0, left: 0 };
-    this.setMinimumSize(50, 50);
+    this.restoreMinimumSizeAndMargins();
 };
 
 WebInspector.InspectedPagePlaceholder.MarginValue = 3;
@@ -20,19 +21,22 @@ WebInspector.InspectedPagePlaceholder.prototype = {
     _findMargins: function()
     {
         var margins = { top: 0, right: 0, bottom: 0, left: 0 };
-        var adjacent = { top: true, right: true, bottom: true, left: true };
-        var view = this;
-        while (view.parentView()) {
-            var parent = view.parentView();
-            // This view assumes it's always inside the main split view element, not a sidebar.
-            // Every parent which is not a split view, must be of the same size as this view.
-            if (parent instanceof WebInspector.SplitView) {
-                var side = parent.sidebarSide();
-                if (adjacent[side] && !parent.hasCustomResizer())
-                    margins[side] = WebInspector.InspectedPagePlaceholder.MarginValue;
-                adjacent[side] = false;
+
+        if (this._useMargins) {
+            var adjacent = { top: true, right: true, bottom: true, left: true };
+            var view = this;
+            while (view.parentView()) {
+                var parent = view.parentView();
+                // This view assumes it's always inside the main split view element, not a sidebar.
+                // Every parent which is not a split view, must be of the same size as this view.
+                if (parent instanceof WebInspector.SplitView) {
+                    var side = parent.sidebarSide();
+                    if (adjacent[side] && !parent.hasCustomResizer() && parent.isResizable())
+                        margins[side] = WebInspector.InspectedPagePlaceholder.MarginValue;
+                    adjacent[side] = false;
+                }
+                view = parent;
             }
-            view = parent;
         }
 
         if (this._margins.top !== margins.top || this._margins.left !== margins.left || this._margins.right !== margins.right || this._margins.bottom !== margins.bottom) {
@@ -60,6 +64,41 @@ WebInspector.InspectedPagePlaceholder.prototype = {
                 window.cancelAnimationFrame(this._updateId);
             this._updateId = window.requestAnimationFrame(this._update.bind(this));
         }
+    },
+
+    /**
+     * @return {!Size}
+     */
+    dipPageSize: function()
+    {
+        var rect = this._dipPageRect();
+        return new Size(Math.round(rect.width), Math.round(rect.height));
+    },
+
+    /**
+     * @return {!Size}
+     */
+    cssElementSize: function()
+    {
+        var zoomFactor = WebInspector.zoomManager.zoomFactor();
+        var rect = this.element.getBoundingClientRect();
+        var width = rect.width - (this._margins.left + this._margins.right) / zoomFactor;
+        var height = rect.height - (this._margins.top + this._margins.bottom) / zoomFactor;
+        return new Size(width, height);
+    },
+
+    restoreMinimumSizeAndMargins: function()
+    {
+        this._useMargins = true;
+        this.setMinimumSize(50, 50);
+        this._findMargins();
+    },
+
+    clearMinimumSizeAndMargins: function()
+    {
+        this._useMargins = false;
+        this.setMinimumSize(1, 1);
+        this._findMargins();
     },
 
     _dipPageRect: function()

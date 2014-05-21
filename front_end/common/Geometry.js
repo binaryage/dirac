@@ -170,3 +170,59 @@ WebInspector.Geometry.radToDeg = function(rad)
     return rad * 180 / Math.PI;
 }
 
+
+/**
+ * @constructor
+ * @param {number} width
+ * @param {number} height
+ */
+function Size(width, height)
+{
+    this.width = width;
+    this.height = height;
+}
+
+/**
+ * @param {?Size} size
+ * @return {boolean}
+ */
+Size.prototype.isEqual = function(size)
+{
+    return !!size && this.width === size.width && this.height === size.height;
+};
+
+/**
+ * @param {!Size|number} size
+ * @return {!Size}
+ */
+Size.prototype.widthToMax = function(size)
+{
+    return new Size(Math.max(this.width, (typeof size === "number" ? size : size.width)), this.height);
+};
+
+/**
+ * @param {!Size|number} size
+ * @return {!Size}
+ */
+Size.prototype.addWidth = function(size)
+{
+    return new Size(this.width + (typeof size === "number" ? size : size.width), this.height);
+};
+
+/**
+ * @param {!Size|number} size
+ * @return {!Size}
+ */
+Size.prototype.heightToMax = function(size)
+{
+    return new Size(this.width, Math.max(this.height, (typeof size === "number" ? size : size.height)));
+};
+
+/**
+ * @param {!Size|number} size
+ * @return {!Size}
+ */
+Size.prototype.addHeight = function(size)
+{
+    return new Size(this.width, this.height + (typeof size === "number" ? size : size.height));
+};

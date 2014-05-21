@@ -172,6 +172,13 @@
         ]
     },
     {
+        "name": "responsive_design",
+        "dependencies": ["sdk", "ui"],
+        "sources": [
+            "ResponsiveDesignView.js"
+        ]
+    },
+    {
         "name": "source_frame",
         "dependencies": ["components"],
         "sources": [
@@ -449,6 +456,7 @@
         "dependencies": [
             "elements",
             "host_stub",
+            "responsive_design",
             "screencast",
             "settings",
             "sources",

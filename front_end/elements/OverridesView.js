@@ -80,6 +80,14 @@ WebInspector.OverridesView.prototype = {
 }
 
 /**
+ * @return {boolean}
+ */
+WebInspector.OverridesView.isResponsiveDesignEnabled = function()
+{
+    return WebInspector.dockController.canDock() && WebInspector.experimentsSettings.responsiveDesign.isEnabled();
+};
+
+/**
  * @constructor
  * @extends {WebInspector.VBox}
  * @param {string} id
@@ -558,16 +566,20 @@ WebInspector.OverridesView.ViewportTab.prototype = {
         this._swapDimensionsElement.tabIndex = -1;
         this._heightOverrideElement = this._createInput(cellElement, "metrics-override-height", String(metrics.height), this._applyDeviceMetricsUserInput.bind(this), true);
 
-        rowElement = tableElement.createChild("tr");
-        cellElement = rowElement.createChild("td");
-        cellElement.colSpan = 4;
-        this._widthRangeInput = cellElement.createChild("input");
-        this._widthRangeInput.type = "range";
-        this._widthRangeInput.min = 100;
-        this._widthRangeInput.max = 2000;
-        this._widthRangeInput.addEventListener("change", this._rangeValueChanged.bind(this), false);
-        this._widthRangeInput.addEventListener("input", this._rangeValueChanged.bind(this), false);
-        this._widthRangeInput.value = this._widthOverrideElement.value;
+        if (!WebInspector.OverridesView.isResponsiveDesignEnabled()) {
+            rowElement = tableElement.createChild("tr");
+            cellElement = rowElement.createChild("td");
+            cellElement.colSpan = 4;
+            this._widthRangeInput = cellElement.createChild("input");
+            this._widthRangeInput.type = "range";
+            this._widthRangeInput.min = 100;
+            this._widthRangeInput.max = 2000;
+            this._widthRangeInput.addEventListener("change", this._rangeValueChanged.bind(this), false);
+            this._widthRangeInput.addEventListener("input", this._rangeValueChanged.bind(this), false);
+            this._widthRangeInput.value = this._widthOverrideElement.value;
+        } else {
+            this._widthRangeInput = document.createElement("input");
+        }
 
         rowElement = tableElement.createChild("tr");
         rowElement.title = WebInspector.UIString("Ratio between a device's physical pixels and device-independent pixels.");
@@ -585,8 +597,10 @@ WebInspector.OverridesView.ViewportTab.prototype = {
         var checkbox = this._createSettingCheckbox(WebInspector.UIString("Emulate viewport"), WebInspector.overridesSupport.settings.emulateViewport);
         fieldsetElement.appendChild(checkbox);
 
-        checkbox = this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.overridesSupport.settings.deviceFitWindow);
-        fieldsetElement.appendChild(checkbox);
+        if (!WebInspector.OverridesView.isResponsiveDesignEnabled()) {
+            checkbox = this._createSettingCheckbox(WebInspector.UIString("Shrink to fit"), WebInspector.overridesSupport.settings.deviceFitWindow);
+            fieldsetElement.appendChild(checkbox);
+        }
 
         return fieldsetElement;
     },
@@ -596,15 +610,15 @@ WebInspector.OverridesView.ViewportTab.prototype = {
         const metricsSetting = WebInspector.overridesSupport.settings.deviceMetrics.get();
         var metrics = WebInspector.OverridesSupport.DeviceMetrics.parseSetting(metricsSetting);
 
-        if (this._widthOverrideElement.value !== metrics.width)
+        if (this._widthOverrideElement.value != metrics.width)
             this._widthOverrideElement.value = metrics.width;
         this._muteRangeListener = true;
         if (this._widthRangeInput.value != metrics.width)
             this._widthRangeInput.value = metrics.width;
         delete this._muteRangeListener;
-        if (this._heightOverrideElement.value !== metrics.height)
+        if (this._heightOverrideElement.value != metrics.height)
             this._heightOverrideElement.value = metrics.height;
-        if (this._deviceScaleFactorOverrideElement.value !== metrics.deviceScaleFactor)
+        if (this._deviceScaleFactorOverrideElement.value != metrics.deviceScaleFactor)
             this._deviceScaleFactorOverrideElement.value = metrics.deviceScaleFactor;
         if (this._textAutosizingOverrideCheckbox.checked !== metrics.textAutosizing)
             this._textAutosizingOverrideCheckbox.checked = metrics.textAutosizing;
