@@ -111,6 +111,9 @@ WebInspector.TimelineModel.RecordType = {
     WebSocketDestroy : "WebSocketDestroy",
 
     EmbedderCallback : "EmbedderCallback",
+
+    // Event types used in tracing based timeline only.
+    CallStack: "CallStack",
 }
 
 WebInspector.TimelineModel.Events = {

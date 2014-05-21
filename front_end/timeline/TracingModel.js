@@ -306,9 +306,12 @@ WebInspector.TracingModel.prototype = {
  */
 WebInspector.TracingModel.EventBindings = function(model)
 {
-    this._eventToWarning = new Map();
     this._model = model;
+    this._eventToWarning = new Map();
+    this._eventToInitiator = new Map();
+    this._eventToCallStack = new Map();
     this._calculateWarnings();
+    this._calculateCallStacksAndInitiator();
 }
 
 WebInspector.TracingModel.EventBindings.prototype = {
@@ -319,6 +322,24 @@ WebInspector.TracingModel.EventBindings.prototype = {
     eventWarning: function(event)
     {
         return this._eventToWarning.get(event);
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     * @return {!WebInspector.TracingModel.Event|undefined}
+     */
+    initiator: function(event)
+    {
+        return this._eventToInitiator.get(event);
+    },
+
+    /**
+     * @param {!WebInspector.TracingModel.Event} event
+     * @return {!Array.<!ConsoleAgent.CallFrame>|undefined}
+     */
+    stackTrace: function(event)
+    {
+        return this._eventToCallStack.get(event);
     },
 
     _calculateWarnings: function()
@@ -335,6 +356,92 @@ WebInspector.TracingModel.EventBindings.prototype = {
             }
             if (!currentScriptEvent && (event.name === WebInspector.TimelineModel.RecordType.EvaluateScript || event.name === WebInspector.TimelineModel.RecordType.FunctionCall))
                 currentScriptEvent = event;
+        }
+    },
+
+    _calculateCallStacksAndInitiator: function()
+    {
+        var events = this._model.inspectedTargetMainThreadEvents();
+
+        var sendRequestEvents = {};
+        var timerEvents = {};
+        var requestAnimationFrameEvents = {};
+        var layoutInvalidate = {};
+        var lastScheduleStyleRecalculation = {};
+        var webSocketCreateEvents = {};
+
+        var lastRecalculateStylesEvent = null;
+
+        var recordTypes = WebInspector.TimelineModel.RecordType;
+        for (var i = 0, length = events.length; i < length; i++) {
+            var event = events[i];
+            switch (event.name) {
+            case recordTypes.CallStack:
+                if (i > 0)
+                    this._eventToCallStack.put(events[i - 1], event.args.stack);
+                break
+
+            case recordTypes.ResourceSendRequest:
+                sendRequestEvents[event.args.data["requestId"]] = event;
+                break;
+
+            case recordTypes.ResourceReceiveResponse:
+            case recordTypes.ResourceReceivedData:
+            case recordTypes.ResourceFinish:
+                this._eventToInitiator.put(event, sendRequestEvents[event.args.data["requestId"]]);
+                break;
+
+            case recordTypes.TimerInstall:
+                timerEvents[event.args.data["timerId"]] = event;
+                break;
+
+            case recordTypes.TimerFire:
+                this._eventToInitiator.put(event, timerEvents[event.args.data["timerId"]]);
+                break;
+
+            case recordTypes.RequestAnimationFrame:
+                requestAnimationFrameEvents[event.args.data["id"]] = event;
+                break;
+
+            case recordTypes.FireAnimationFrame:
+                this._eventToInitiator.put(event, requestAnimationFrameEvents[event.args.data["id"]]);
+                break;
+
+            case recordTypes.ScheduleStyleRecalculation:
+                lastScheduleStyleRecalculation[event.args.frame] = event;
+                break;
+
+            case recordTypes.RecalculateStyles:
+                this._eventToInitiator.put(event, lastScheduleStyleRecalculation[event.args.frame]);
+                lastRecalculateStylesEvent = event;
+                break;
+
+            case recordTypes.InvalidateLayout:
+                // Consider style recalculation as a reason for layout invalidation,
+                // but only if we had no earlier layout invalidation records.
+                var layoutInitator = event;
+                var frameId = event.args.frame;
+                if (!layoutInvalidate[frameId] && lastRecalculateStylesEvent && lastRecalculateStylesEvent.endTime >  event.startTime)
+                    layoutInitator = this.initiator(lastRecalculateStylesEvent);
+                layoutInvalidate[frameId] = layoutInitator;
+                break;
+
+            case recordTypes.Layout:
+                var frameId = event.args["beginData"]["frame"];
+                this._eventToInitiator.put(event, layoutInvalidate[frameId]);
+                layoutInvalidate[frameId] = null;
+                break;
+
+            case recordTypes.WebSocketCreate:
+                webSocketCreateEvents[event.args.data["identifier"]] = event;
+                break;
+
+            case recordTypes.WebSocketSendHandshakeRequest:
+            case recordTypes.WebSocketReceiveHandshakeResponse:
+            case recordTypes.WebSocketDestroy:
+                this._eventToInitiator.put(event, webSocketCreateEvents[event.args.data["identifier"]]);
+                break;
+            }
         }
     }
 }
@@ -372,6 +479,13 @@ WebInspector.TracingModel.Event.prototype = {
         if (this.name !== payload.name) {
             console.assert(false, "Open/close event mismatch: " + this.name + " vs. " + payload.name);
             return;
+        }
+        if (payload.args) {
+            for (var name in payload.args) {
+                if (name in this.args)
+                    console.error("Same argument name (" + name +  ") is used for begin and end phases of " + this.name);
+                this.args[name] = payload.args[name];
+            }
         }
         var duration = payload.ts - this.startTime;
         if (duration < 0) {

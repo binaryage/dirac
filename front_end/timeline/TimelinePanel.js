@@ -632,8 +632,12 @@ WebInspector.TimelinePanel.prototype = {
     {
         this._userInitiatedRecording = userInitiated;
         this._model.startRecording(this._captureStacksSetting.get(), this._captureMemorySetting.get());
-        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled())
-            this._tracingModel().start("disabled-by-default-devtools.timeline,devtools", "");
+        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
+            var categories = ["disabled-by-default-devtools.timeline", "devtools"];
+            if (this._captureStacksSetting.get())
+                categories.push("disabled-by-default-devtools.timeline.stack");
+            this._tracingModel().start(categories.join(","), "");
+        }
         else if (WebInspector.experimentsSettings.timelineTracingMode.isEnabled())
             this._tracingModel().start(WebInspector.TimelinePanel.defaultTracingCategoryFilter, "");
         for (var i = 0; i < this._overviewControls.length; ++i)

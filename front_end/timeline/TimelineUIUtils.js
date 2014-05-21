@@ -804,6 +804,147 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier, load
 }
 
 /**
+ * @param {!WebInspector.TracingModel.Event} event
+ * @param {!WebInspector.Linkifier} linkifier
+ * @param {boolean} loadedFromFile
+ * @param {?WebInspector.TracingModel.EventBindings} bindings
+ * @param {!WebInspector.Target} target
+ * @return {?Node}
+ */
+WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent = function(event, linkifier, loadedFromFile, bindings, target)
+{
+    var details;
+    var detailsText;
+    var eventData = event.args.data;
+    switch (event.name) {
+    case WebInspector.TimelineModel.RecordType.GCEvent:
+        var delta = event.args["usedHeapSizeBefore"] - event.args["usedHeapSizeAfter"];
+        detailsText = WebInspector.UIString("%s collected", Number.bytesToString(delta));
+        break;
+    case WebInspector.TimelineModel.RecordType.TimerFire:
+        detailsText = eventData["timerId"];
+        break;
+    case WebInspector.TimelineModel.RecordType.FunctionCall:
+        details = linkifyLocation(eventData["scriptId"], eventData["scriptName"], eventData["scriptLine"], 0);
+        break;
+    case WebInspector.TimelineModel.RecordType.FireAnimationFrame:
+        detailsText = eventData["id"];
+        break;
+    case WebInspector.TimelineModel.RecordType.EventDispatch:
+        detailsText = eventData ? eventData["type"] : null;
+        break;
+    case WebInspector.TimelineModel.RecordType.Paint:
+        var width = WebInspector.TimelineUIUtils._quadWidth(eventData.clip);
+        var height = WebInspector.TimelineUIUtils._quadHeight(eventData.clip);
+        if (width && height)
+            detailsText = WebInspector.UIString("%d\u2009\u00d7\u2009%d", width, height);
+        break;
+    case WebInspector.TimelineModel.RecordType.TimerInstall:
+    case WebInspector.TimelineModel.RecordType.TimerRemove:
+        details = linkifyTopCallFrame();
+        detailsText = eventData["timerId"];
+        break;
+    case WebInspector.TimelineModel.RecordType.RequestAnimationFrame:
+    case WebInspector.TimelineModel.RecordType.CancelAnimationFrame:
+        details = linkifyTopCallFrame();
+        detailsText = eventData["id"];
+        break;
+    case WebInspector.TimelineModel.RecordType.ParseHTML:
+    case WebInspector.TimelineModel.RecordType.RecalculateStyles:
+        details = linkifyTopCallFrame();
+        break;
+    case WebInspector.TimelineModel.RecordType.EvaluateScript:
+        var url = eventData["url"];
+        if (url)
+            details = linkifyLocation("", url, eventData["lineNumber"], 0);
+        break;
+    case WebInspector.TimelineModel.RecordType.XHRReadyStateChange:
+    case WebInspector.TimelineModel.RecordType.XHRLoad:
+    case WebInspector.TimelineModel.RecordType.ResourceSendRequest:
+    case WebInspector.TimelineModel.RecordType.DecodeImage:
+    case WebInspector.TimelineModel.RecordType.ResizeImage:
+        var url = eventData["url"];
+        if (url)
+            detailsText = WebInspector.displayNameForURL(url);
+        break;
+    case WebInspector.TimelineModel.RecordType.ResourceReceivedData:
+    case WebInspector.TimelineModel.RecordType.ResourceReceiveResponse:
+    case WebInspector.TimelineModel.RecordType.ResourceFinish:
+        var initiator = bindings.initiator(event);
+        if (initiator) {
+            var url = initiator.args.data["url"];
+            if (url)
+                detailsText = WebInspector.displayNameForURL(url);
+        }
+        break;
+    case WebInspector.TimelineModel.RecordType.ConsoleTime:
+        detailsText = eventData["message"];
+        break;
+    case WebInspector.TimelineModel.RecordType.EmbedderCallback:
+        detailsText = eventData["callbackName"];
+        break;
+    default:
+        details = linkifyTopCallFrame();
+        break;
+    }
+
+    if (!details && detailsText)
+        details = document.createTextNode(detailsText);
+    return details;
+
+    /**
+     * @param {string} scriptId
+     * @param {string} url
+     * @param {number} lineNumber
+     * @param {number=} columnNumber
+     */
+    function linkifyLocation(scriptId, url, lineNumber, columnNumber)
+    {
+        if (!loadedFromFile && scriptId !== "0") {
+            var location = new WebInspector.DebuggerModel.Location(
+                target,
+                scriptId,
+                lineNumber - 1,
+                (columnNumber || 1) - 1);
+            return linkifier.linkifyRawLocation(location, "timeline-details");
+        }
+
+        if (!url)
+            return null;
+
+        // FIXME(62725): stack trace line/column numbers are one-based.
+        columnNumber = columnNumber ? columnNumber - 1 : 0;
+        return linkifier.linkifyLocation(target, url, lineNumber - 1, columnNumber, "timeline-details");
+    }
+
+    /**
+     * @param {!ConsoleAgent.CallFrame} callFrame
+     */
+    function linkifyCallFrame(callFrame)
+    {
+        return linkifyLocation(callFrame.scriptId, callFrame.url, callFrame.lineNumber, callFrame.columnNumber);
+    }
+
+    /**
+     * @return {?Element}
+     */
+    function linkifyTopCallFrame()
+    {
+        if (!bindings)
+            return null;
+        var stackTrace = bindings.stackTrace(event);
+        if (!stackTrace) {
+            var initiator = bindings.initiator(event);
+            if (initiator)
+                stackTrace = bindings.stackTrace(initiator);
+        }
+        if (!stackTrace || !stackTrace.length)
+            return null;
+        return linkifyCallFrame(stackTrace[0]);
+    }
+}
+
+/**
  * @constructor
  * @extends {WebInspector.Object}
  * @param {string} name

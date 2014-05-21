@@ -407,12 +407,14 @@ WebInspector.TimelineFlameChartDataProvider.prototype = {
  * @implements {WebInspector.FlameChartDataProvider}
  * @param {!WebInspector.TracingModel} model
  * @param {!WebInspector.TimelineFrameModel} frameModel
+ * @param {!WebInspector.Target} target
  */
-WebInspector.TracingBasedTimelineFlameChartDataProvider = function(model, frameModel)
+WebInspector.TracingBasedTimelineFlameChartDataProvider = function(model, frameModel, target)
 {
     WebInspector.FlameChartDataProvider.call(this);
     this._model = model;
     this._frameModel = frameModel;
+    this._target = target;
     this._font = "12px " + WebInspector.fontFamily();
     this._linkifier = new WebInspector.Linkifier();
     this._palette = new WebInspector.TraceViewPalette();
@@ -460,8 +462,12 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
     entryTitle: function(entryIndex)
     {
         var record = this._records[entryIndex];
-        if (record)
-            return record.name;
+        if (record) {
+            var name = WebInspector.TimelineUIUtils.styleForTimelineEvent(record.name).title;
+            // TODO(yurys): support event dividers
+            var details = WebInspector.TimelineUIUtils.buildDetailsNodeForTraceEvent(record, this._linkifier, false, this._model.bindings(), this._target);
+            return details ? WebInspector.UIString("%s (%s)", name, details.textContent) : name;
+        }
         var title = this._entryIndexToTitle[entryIndex];
         if (!title) {
             title = WebInspector.UIString("Unexpected entryIndex %d", entryIndex);
@@ -517,8 +523,8 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
             var category = event.category;
             if (category !== "disabled-by-default-devtools.timeline" && category !== "devtools")
                 continue;
-            if (event.duration) {
-                this._appendRecord(event);
+            if (event.duration || event.phase === WebInspector.TracingModel.Phase.Instant) {
+                this._appendEvent(event);
                 if (maxStackDepth < event.level)
                     maxStackDepth = event.level;
             }
@@ -694,15 +700,15 @@ WebInspector.TracingBasedTimelineFlameChartDataProvider.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TracingModel.Event} record
+     * @param {!WebInspector.TracingModel.Event} event
      */
-    _appendRecord: function(record)
+    _appendEvent: function(event)
     {
         var index = this._records.length;
-        this._records.push(record);
-        this._timelineData.entryLevels[index] = this._currentLevel + record.level;
-        this._timelineData.entryTotalTimes[index] = this._toTimelineTime(record.duration);
-        this._timelineData.entryStartTimes[index] = this._toTimelineTime(record.startTime);
+        this._records.push(event);
+        this._timelineData.entryLevels[index] = this._currentLevel + event.level;
+        this._timelineData.entryTotalTimes[index] = this._toTimelineTime(event.duration || 1000);
+        this._timelineData.entryStartTimes[index] = this._toTimelineTime(event.startTime);
     },
 
     /**
@@ -750,7 +756,7 @@ WebInspector.TimelineFlameChart = function(delegate, model, tracingModel, frameM
     this._delegate = delegate;
     this._model = model;
     this._dataProvider = tracingModel
-                       ? new WebInspector.TracingBasedTimelineFlameChartDataProvider(tracingModel, frameModel)
+                       ? new WebInspector.TracingBasedTimelineFlameChartDataProvider(tracingModel, frameModel, model.target())
                        : new WebInspector.TimelineFlameChartDataProvider(model, frameModel);
     this._mainView = new WebInspector.FlameChart(this._dataProvider, this, true);
     this._mainView.show(this.element);
