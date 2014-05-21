@@ -751,11 +751,6 @@ WebInspector.TimelineModel.RecordImpl = function(model, timelineEvent, parentRec
         bindings._layoutInvalidate[this.frameId()] = null;
         if (this.stackTrace())
             this.addWarning(WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
-        this.highlightQuad = timelineEvent.data.root || WebInspector.TimelineModel._quadFromRectData(timelineEvent.data);
-        break;
-
-    case recordTypes.Paint:
-        this.highlightQuad = timelineEvent.data.clip || WebInspector.TimelineModel._quadFromRectData(timelineEvent.data);
         break;
 
     case recordTypes.WebSocketCreate:
@@ -1238,19 +1233,4 @@ WebInspector.TimelineMergingRecordBuffer.prototype = {
         this._backgroundRecordsBuffer = [];
         return result;
     }
-}
-
-/**
- * @param {!Object} data
- * @return {?Array.<number>}
- */
-WebInspector.TimelineModel._quadFromRectData = function(data)
-{
-    if (typeof data["x"] === "undefined" || typeof data["y"] === "undefined")
-        return null;
-    var x0 = data["x"];
-    var x1 = data["x"] + data["width"];
-    var y0 = data["y"];
-    var y1 = data["y"] + data["height"];
-    return [x0, y0, x1, y0, x1, y1, x0, y1];
 }

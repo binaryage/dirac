@@ -730,9 +730,7 @@ WebInspector.TimelineView.prototype = {
     _mouseMove: function(e)
     {
         var rowElement = e.target.enclosingNodeOrSelfWithClass("timeline-tree-item");
-        if (rowElement && rowElement.row && rowElement.row._record.record().highlightQuad)
-            this._highlightQuad(rowElement.row._record.record());
-        else
+        if (!this._highlightQuad(rowElement))
             this._hideQuadHighlight();
 
         var taskBarElement = e.target.enclosingNodeOrSelfWithClass("timeline-graph-bar");
@@ -823,15 +821,34 @@ WebInspector.TimelineView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.TimelineModel.Record} record
+     * @param {?Element} rowElement
+     * @return {boolean}
      */
-    _highlightQuad: function(record)
+    _highlightQuad: function(rowElement)
     {
+        if (!rowElement || !rowElement.row)
+            return false;
+        var record = rowElement.row._record.record();
         if (this._highlightedQuadRecord === record)
-            return;
+            return true;
         this._highlightedQuadRecord = record;
-        var quad = record.highlightQuad;
+
+        var quad = null;
+        var recordTypes = WebInspector.TimelineModel.RecordType;
+        switch(record.type()) {
+        case recordTypes.Layout:
+            quad = record.data().root;
+            break;
+        case recordTypes.Paint:
+            quad = record.data().clip;
+            break;
+        default:
+            return false;
+        }
+        if (!quad)
+            return false;
         record.target().domAgent().highlightQuad(quad, WebInspector.Color.PageHighlight.Content.toProtocolRGBA(), WebInspector.Color.PageHighlight.ContentOutline.toProtocolRGBA());
+        return true;
     },
 
     _hideQuadHighlight: function()
