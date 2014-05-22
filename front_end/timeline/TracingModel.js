@@ -310,8 +310,7 @@ WebInspector.TracingModel.EventBindings = function(model)
     this._eventToWarning = new Map();
     this._eventToInitiator = new Map();
     this._eventToCallStack = new Map();
-    this._calculateWarnings();
-    this._calculateCallStacksAndInitiator();
+    this._init();
 }
 
 WebInspector.TracingModel.EventBindings.prototype = {
@@ -342,24 +341,7 @@ WebInspector.TracingModel.EventBindings.prototype = {
         return this._eventToCallStack.get(event);
     },
 
-    _calculateWarnings: function()
-    {
-        var events = this._model.inspectedTargetMainThreadEvents();
-        var currentScriptEvent = null;
-        for (var i = 0, length = events.length; i < length; i++) {
-            var event = events[i];
-            if (currentScriptEvent && event.startTime > currentScriptEvent.endTime)
-                currentScriptEvent = null;
-            if (event.name === WebInspector.TimelineModel.RecordType.Layout) {
-                if (currentScriptEvent)
-                    this._eventToWarning.put(event, WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
-            }
-            if (!currentScriptEvent && (event.name === WebInspector.TimelineModel.RecordType.EvaluateScript || event.name === WebInspector.TimelineModel.RecordType.FunctionCall))
-                currentScriptEvent = event;
-        }
-    },
-
-    _calculateCallStacksAndInitiator: function()
+    _init: function()
     {
         var events = this._model.inspectedTargetMainThreadEvents();
 
@@ -371,10 +353,15 @@ WebInspector.TracingModel.EventBindings.prototype = {
         var webSocketCreateEvents = {};
 
         var lastRecalculateStylesEvent = null;
+        var currentScriptEvent = null;
 
         var recordTypes = WebInspector.TimelineModel.RecordType;
         for (var i = 0, length = events.length; i < length; i++) {
             var event = events[i];
+
+            if (currentScriptEvent && event.startTime > currentScriptEvent.endTime)
+                currentScriptEvent = null;
+
             switch (event.name) {
             case recordTypes.CallStack:
                 if (i > 0)
@@ -430,6 +417,8 @@ WebInspector.TracingModel.EventBindings.prototype = {
                 var frameId = event.args["beginData"]["frame"];
                 this._eventToInitiator.put(event, layoutInvalidate[frameId]);
                 layoutInvalidate[frameId] = null;
+                if (currentScriptEvent)
+                    this._eventToWarning.put(event, WebInspector.UIString("Forced synchronous layout is a possible performance bottleneck."));
                 break;
 
             case recordTypes.WebSocketCreate:
@@ -440,6 +429,12 @@ WebInspector.TracingModel.EventBindings.prototype = {
             case recordTypes.WebSocketReceiveHandshakeResponse:
             case recordTypes.WebSocketDestroy:
                 this._eventToInitiator.put(event, webSocketCreateEvents[event.args.data["identifier"]]);
+                break;
+
+            case WebInspector.TimelineModel.RecordType.EvaluateScript:
+            case WebInspector.TimelineModel.RecordType.FunctionCall:
+                if (!currentScriptEvent)
+                    currentScriptEvent = event;
                 break;
             }
         }
