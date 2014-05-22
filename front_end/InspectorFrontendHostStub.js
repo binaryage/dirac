@@ -86,7 +86,7 @@ WebInspector.InspectorFrontendHostStub.prototype = {
         this._windowVisible = false;
     },
 
-    setIsDocked: function(isDocked)
+    setIsDocked: function(isDocked, callback)
     {
     },
 

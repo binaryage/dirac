@@ -13,6 +13,8 @@ WebInspector.InspectedPagePlaceholder = function()
     WebInspector.zoomManager.addEventListener(WebInspector.ZoomManager.Events.ZoomChanged, this._onZoomChanged, this);
     this._margins = { top: 0, right: 0, bottom: 0, left: 0 };
     this.restoreMinimumSizeAndMargins();
+    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.BeforeDockSideChanged, this._beforeDockSideChange, this);
+    WebInspector.dockController.addEventListener(WebInspector.DockController.Events.AfterDockSideChanged, this._afterDockSideChange, this);
 };
 
 WebInspector.InspectedPagePlaceholder.MarginValue = 3;
@@ -58,6 +60,9 @@ WebInspector.InspectedPagePlaceholder.prototype = {
 
     _scheduleUpdate: function()
     {
+        if (this._noUpdates)
+            return;
+
         var dockSide = WebInspector.dockController.dockSide();
         if (dockSide !== WebInspector.DockController.State.Undocked) {
             if (this._updateId)
@@ -118,10 +123,23 @@ WebInspector.InspectedPagePlaceholder.prototype = {
     _update: function()
     {
         delete this._updateId;
+        if (this._noUpdates)
+            return;
 
         var rect = this._dipPageRect();
         var bounds = { x: Math.round(rect.x), y: Math.round(rect.y), height: Math.round(rect.height), width: Math.round(rect.width) };
         InspectorFrontendHost.setInspectedPageBounds(bounds);
+    },
+
+    _beforeDockSideChange: function()
+    {
+        this._noUpdates = true;
+    },
+
+    _afterDockSideChange: function()
+    {
+        this._noUpdates = false;
+        this._scheduleUpdate();
     },
 
     __proto__: WebInspector.View.prototype

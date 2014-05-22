@@ -66,8 +66,13 @@ WebInspector.DockController.State = {
     Undocked: "undocked"
 }
 
+// Use BeforeDockSideChanged to do something before all the UI bits are updated,
+// DockSideChanged to update UI, and AfterDockSideChanged to perform actions
+// after frontend is docked/undocked in the browser.
 WebInspector.DockController.Events = {
-    DockSideChanged: "DockSideChanged"
+    BeforeDockSideChanged: "BeforeDockSideChanged",
+    DockSideChanged: "DockSideChanged",
+    AfterDockSideChanged: "AfterDockSideChanged"
 }
 
 WebInspector.DockController.prototype = {
@@ -111,12 +116,16 @@ WebInspector.DockController.prototype = {
         if (this._dockSide === dockSide)
             return;
 
+        this.dispatchEventToListeners(WebInspector.DockController.Events.BeforeDockSideChanged, dockSide);
+        InspectorFrontendHost.setIsDocked(dockSide !== WebInspector.DockController.State.Undocked, this._setIsDockedResponse.bind(this));
         this._dockSide = dockSide;
         this._updateUI();
         this.dispatchEventToListeners(WebInspector.DockController.Events.DockSideChanged, this._dockSide);
+    },
 
-        if (this._canDock)
-            InspectorFrontendHost.setIsDocked(dockSide !== WebInspector.DockController.State.Undocked);
+    _setIsDockedResponse: function()
+    {
+        this.dispatchEventToListeners(WebInspector.DockController.Events.AfterDockSideChanged, this._dockSide);
     },
 
     _updateUI: function()
