@@ -44,7 +44,7 @@ WebInspector.CSSStyleModel = function(target)
     this._domModel.addEventListener(WebInspector.DOMModel.Events.UndoRedoCompleted, this._undoRedoCompleted, this);
     target.resourceTreeModel.addEventListener(WebInspector.ResourceTreeModel.EventTypes.MainFrameCreatedOrNavigated, this._mainFrameCreatedOrNavigated, this);
     target.registerCSSDispatcher(new WebInspector.CSSDispatcher(this));
-    this._agent.enable();
+    this._agent.enable(this._wasEnabled.bind(this));
     this._resetStyleSheets();
 }
 
@@ -66,6 +66,7 @@ WebInspector.CSSStyleModel.parseRuleMatchArrayPayload = function(cssModel, match
 }
 
 WebInspector.CSSStyleModel.Events = {
+    ModelWasEnabled: "ModelWasEnabled",
     StyleSheetAdded: "StyleSheetAdded",
     StyleSheetChanged: "StyleSheetChanged",
     StyleSheetRemoved: "StyleSheetRemoved",
@@ -75,6 +76,20 @@ WebInspector.CSSStyleModel.Events = {
 WebInspector.CSSStyleModel.MediaTypes = ["all", "braille", "embossed", "handheld", "print", "projection", "screen", "speech", "tty", "tv"];
 
 WebInspector.CSSStyleModel.prototype = {
+    /**
+     * @return {boolean}
+     */
+    isEnabled: function()
+    {
+        return this._isEnabled;
+    },
+
+    _wasEnabled: function()
+    {
+        this._isEnabled = true;
+        this.dispatchEventToListeners(WebInspector.CSSStyleModel.Events.ModelWasEnabled);
+    },
+
     /**
      * @param {!DOMAgent.NodeId} nodeId
      * @param {boolean} needPseudo

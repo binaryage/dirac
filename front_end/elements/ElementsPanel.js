@@ -135,6 +135,7 @@ WebInspector.ElementsPanel.prototype = {
         this._targetToTreeOutline.put(target, treeOutline);
 
         target.domModel.addEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
+        target.cssModel.addEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
 
         // Perform attach if necessary.
         if (this.isShowing())
@@ -152,6 +153,7 @@ WebInspector.ElementsPanel.prototype = {
         treeOutline.element.remove();
 
         target.domModel.removeEventListener(WebInspector.DOMModel.Events.DocumentUpdated, this._documentUpdatedEvent, this);
+        target.cssModel.removeEventListener(WebInspector.CSSStyleModel.Events.ModelWasEnabled, this._updateSidebars, this);
     },
 
     /**
@@ -1066,10 +1068,22 @@ WebInspector.ElementsPanel.prototype = {
     },
 
     /**
+     * @return {boolean}
+     */
+    _cssModelEnabledForSelectedNode: function()
+    {
+        if (!this.selectedDOMNode())
+            return true;
+        return this.selectedDOMNode().target().cssModel.isEnabled();
+    },
+
+    /**
      * @param {boolean=} forceUpdate
      */
     updateStyles: function(forceUpdate)
     {
+        if (!this._cssModelEnabledForSelectedNode())
+            return;
         var stylesSidebarPane = this.sidebarPanes.styles;
         var computedStylePane = this.sidebarPanes.computedStyle;
         if ((!stylesSidebarPane.isShowing() && !computedStylePane.isShowing()) || !stylesSidebarPane.needsUpdate)
@@ -1081,6 +1095,8 @@ WebInspector.ElementsPanel.prototype = {
 
     updateMetrics: function()
     {
+        if (!this._cssModelEnabledForSelectedNode())
+            return;
         var metricsSidebarPane = this.sidebarPanes.metrics;
         if (!metricsSidebarPane.isShowing() || !metricsSidebarPane.needsUpdate)
             return;
@@ -1091,6 +1107,8 @@ WebInspector.ElementsPanel.prototype = {
 
     updatePlatformFonts: function()
     {
+        if (!this._cssModelEnabledForSelectedNode())
+            return;
         var platformFontsSidebar = this.sidebarPanes.platformFonts;
         if (!platformFontsSidebar.isShowing() || !platformFontsSidebar.needsUpdate)
             return;
