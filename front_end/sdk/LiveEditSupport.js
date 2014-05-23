@@ -48,7 +48,7 @@ WebInspector.LiveEditSupport.prototype = {
      */
     uiSourceCodeForLiveEdit: function(uiSourceCode)
     {
-        var rawLocation = uiSourceCode.uiLocationToRawLocation(0, 0);
+        var rawLocation = uiSourceCode.uiLocationToRawLocation(WebInspector.targetManager.targets()[0], 0, 0);
         var debuggerModelLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (rawLocation);
         var script = debuggerModelLocation.script();
         var uiLocation = script.rawLocationToUILocation(0, 0);

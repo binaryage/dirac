@@ -61,8 +61,15 @@ WebInspector.JavaScriptSourceFrame = function(scriptsPanel, uiSourceCode)
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyChanged, this._workingCopyChanged, this);
     this._uiSourceCode.addEventListener(WebInspector.UISourceCode.Events.WorkingCopyCommitted, this._workingCopyCommitted, this);
 
+    /** @type {!Map.<!WebInspector.Target, !WebInspector.ScriptFile>}*/
+    this._scriptFileForTarget = new Map();
     this._registerShortcuts();
-    this._updateScriptFile();
+    var targets = WebInspector.targetManager.targets();
+    for (var i = 0; i < targets.length; ++i) {
+        var scriptFile = uiSourceCode.scriptFileForTarget(targets[i]);
+        if (scriptFile)
+            this._updateScriptFile(targets[i]);
+    }
 }
 
 WebInspector.JavaScriptSourceFrame.prototype = {
@@ -90,8 +97,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _showDivergedInfobar: function()
     {
-        var target = this._scriptFile.target();
-        if (!target)
+        if (this._uiSourceCode.contentType() !== WebInspector.resourceTypes.Script)
             return;
 
         this._divergedInfobarElement = document.createElement("div");
@@ -292,7 +298,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
 
     _workingCopyChanged: function(event)
     {
-        if (this._supportsEnabledBreakpointsWhileEditing() || this._scriptFile)
+        if (this._supportsEnabledBreakpointsWhileEditing() || this._scriptFileForTarget.size())
             return;
 
         if (this._uiSourceCode.isDirty())
@@ -305,9 +311,11 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     {
         if (this._supportsEnabledBreakpointsWhileEditing())
             return;
-        if (this._scriptFile) {
+        if (this._scriptFileForTarget.size()) {
             this._hasCommittedLiveEdit = true;
-            this._scriptFile.commitLiveEdit();
+            var scriptFiles = this._scriptFileForTarget.values();
+            for (var i = 0; i < scriptFiles.length; ++i)
+                scriptFiles[i].commitLiveEdit();
             return;
         }
         this._restoreBreakpointsAfterEditing();
@@ -318,7 +326,7 @@ WebInspector.JavaScriptSourceFrame.prototype = {
         if (this._supportsEnabledBreakpointsWhileEditing())
             return;
         this._updateDivergedInfobar();
-        this._restoreBreakpointsAfterEditing();
+        this._restoreBreakpointsIfConsistentScripts();
     },
 
     _didDivergeFromVM: function()
@@ -349,11 +357,17 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             this._hideDivergedInfobar();
             return;
         }
+
+        var scriptFiles = this._scriptFileForTarget.values();
+        var hasDivergedScript = false;
+        for (var i = 0; i < scriptFiles.length; ++i)
+            hasDivergedScript = hasDivergedScript || scriptFiles[i].hasDivergedFromVM();
+
         if (this._divergedInfobarElement) {
-            if (!this._scriptFile || !this._scriptFile.hasDivergedFromVM() || this._hasCommittedLiveEdit)
+            if (!hasDivergedScript || this._hasCommittedLiveEdit)
                 this._hideDivergedInfobar();
         } else {
-            if (this._scriptFile && this._scriptFile.hasDivergedFromVM() && !this._uiSourceCode.isDirty() && !this._hasCommittedLiveEdit)
+            if (hasDivergedScript && !this._uiSourceCode.isDirty() && !this._hasCommittedLiveEdit)
                 this._showDivergedInfobar();
         }
     },
@@ -361,6 +375,16 @@ WebInspector.JavaScriptSourceFrame.prototype = {
     _supportsEnabledBreakpointsWhileEditing: function()
     {
         return this._uiSourceCode.project().type() === WebInspector.projectTypes.Snippets;
+    },
+
+    _restoreBreakpointsIfConsistentScripts: function()
+    {
+        var scriptFiles = this._scriptFileForTarget.values();
+        for (var i = 0; i < scriptFiles.length; ++i)
+            if (scriptFiles[i].hasDivergedFromVM() || scriptFiles[i].isMergingToVM())
+                return;
+
+        this._restoreBreakpointsAfterEditing();
     },
 
     _restoreBreakpointsAfterEditing: function()
@@ -617,7 +641,12 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             return false;
         if (this._muted)
             return true;
-        return this._scriptFile && (this._scriptFile.isDivergingFromVM() || this._scriptFile.isMergingToVM());
+        var scriptFiles = this._scriptFileForTarget.values();
+        var hasDivergingOrMergingFile = false;
+        for (var i = 0; i < scriptFiles.length; ++i)
+            if (scriptFiles[i].isDivergingFromVM() || scriptFiles[i].isMergingToVM())
+                return true;
+        return false;
     },
 
     _breakpointAdded: function(event)
@@ -671,26 +700,35 @@ WebInspector.JavaScriptSourceFrame.prototype = {
      */
     _onSourceMappingChanged: function(event)
     {
-        this._updateScriptFile();
+        var data = /** @type {{target: !WebInspector.Target}} */ (event.data);
+        this._updateScriptFile(data.target);
     },
 
-    _updateScriptFile: function()
+    /**
+     * @param {!WebInspector.Target} target
+     */
+    _updateScriptFile: function(target)
     {
-        if (this._scriptFile) {
-            this._scriptFile.removeEventListener(WebInspector.ScriptFile.Events.DidMergeToVM, this._didMergeToVM, this);
-            this._scriptFile.removeEventListener(WebInspector.ScriptFile.Events.DidDivergeFromVM, this._didDivergeFromVM, this);
+        var oldScriptFile = this._scriptFileForTarget.get(target);
+        var newScriptFile = this._uiSourceCode.scriptFileForTarget(target);
+        this._scriptFileForTarget.remove(target);
+        if (oldScriptFile) {
+            oldScriptFile.removeEventListener(WebInspector.ScriptFile.Events.DidMergeToVM, this._didMergeToVM, this);
+            oldScriptFile.removeEventListener(WebInspector.ScriptFile.Events.DidDivergeFromVM, this._didDivergeFromVM, this);
             if (this._muted && !this._uiSourceCode.isDirty())
-                this._restoreBreakpointsAfterEditing();
+                this._restoreBreakpointsIfConsistentScripts();
         }
-        delete this._hasCommittedLiveEdit;
-        this._scriptFile = this._uiSourceCode.scriptFile();
-        this._updateDivergedInfobar();
-        if (this._scriptFile) {
-            this._scriptFile.addEventListener(WebInspector.ScriptFile.Events.DidMergeToVM, this._didMergeToVM, this);
-            this._scriptFile.addEventListener(WebInspector.ScriptFile.Events.DidDivergeFromVM, this._didDivergeFromVM, this);
+        if (newScriptFile)
+            this._scriptFileForTarget.put(target, newScriptFile);
 
+        delete this._hasCommittedLiveEdit;
+        this._updateDivergedInfobar();
+
+        if (newScriptFile) {
+            newScriptFile.addEventListener(WebInspector.ScriptFile.Events.DidMergeToVM, this._didMergeToVM, this);
+            newScriptFile.addEventListener(WebInspector.ScriptFile.Events.DidDivergeFromVM, this._didDivergeFromVM, this);
             if (this.loaded)
-                this._scriptFile.checkMapping();
+                newScriptFile.checkMapping();
         }
     },
 
@@ -709,8 +747,9 @@ WebInspector.JavaScriptSourceFrame.prototype = {
             this.addMessageToSource(message.lineNumber, message.originalMessage);
         }
 
-        if (this._scriptFile)
-            this._scriptFile.checkMapping();
+        var scriptFiles = this._scriptFileForTarget.values();
+        for (var i = 0; i < scriptFiles.length; ++i)
+            scriptFiles[i].checkMapping();
     },
 
     /**
@@ -782,7 +821,10 @@ WebInspector.JavaScriptSourceFrame.prototype = {
      */
     _continueToLine: function(lineNumber)
     {
-        var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (this._uiSourceCode.uiLocationToRawLocation(lineNumber, 0));
+        var executionContext = WebInspector.context.flavor(WebInspector.ExecutionContext);
+        if (!executionContext)
+            return;
+        var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (this._uiSourceCode.uiLocationToRawLocation(executionContext.target(), lineNumber, 0));
         rawLocation.continueToLocation();
     },
 

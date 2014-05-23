@@ -36,6 +36,7 @@
  */
 WebInspector.ResourceScriptMapping = function(debuggerModel, workspace)
 {
+    this._target = debuggerModel.target();
     this._debuggerModel = debuggerModel;
     this._workspace = workspace;
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
@@ -56,7 +57,7 @@ WebInspector.ResourceScriptMapping.prototype = {
         var uiSourceCode = this._workspaceUISourceCodeForScript(script);
         if (!uiSourceCode)
             return null;
-        var scriptFile = uiSourceCode.scriptFile();
+        var scriptFile = uiSourceCode.scriptFileForTarget(this._target);
         if (scriptFile && ((scriptFile.hasDivergedFromVM() && !scriptFile.isMergingToVM()) || scriptFile.isDivergingFromVM()))
             return null;
         return uiSourceCode.uiLocation(debuggerModelLocation.lineNumber, debuggerModelLocation.columnNumber || 0);
@@ -168,10 +169,10 @@ WebInspector.ResourceScriptMapping.prototype = {
     {
         console.assert(scripts.length);
         var scriptFile = new WebInspector.ResourceScriptFile(this, uiSourceCode, scripts);
-        uiSourceCode.setScriptFile(scriptFile);
+        uiSourceCode.setScriptFileForTarget(this._target, scriptFile);
         for (var i = 0; i < scripts.length; ++i)
             scripts[i].updateLocations();
-        uiSourceCode.setSourceMapping(this);
+        uiSourceCode.setSourceMappingForTarget(this._target, this);
         this._boundURLs.add(uiSourceCode.url);
     },
 
@@ -180,12 +181,12 @@ WebInspector.ResourceScriptMapping.prototype = {
      */
     _unbindUISourceCode: function(uiSourceCode)
     {
-        var scriptFile = /** @type {!WebInspector.ResourceScriptFile} */ (uiSourceCode.scriptFile());
+        var scriptFile = /** @type {!WebInspector.ResourceScriptFile} */ (uiSourceCode.scriptFileForTarget(this._target));
         if (scriptFile) {
             scriptFile.dispose();
-            uiSourceCode.setScriptFile(null);
+            uiSourceCode.setScriptFileForTarget(this._target, null);
         }
-        uiSourceCode.setSourceMapping(null);
+        uiSourceCode.setSourceMappingForTarget(this._target, null);
     },
 
     _debuggerReset: function()

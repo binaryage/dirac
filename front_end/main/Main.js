@@ -245,8 +245,17 @@ WebInspector.Main.prototype = {
             WebInspector.setToolbarColors(WebInspector.queryParam("toolbarColor"), WebInspector.queryParam("textColor"));
 
         WebInspector.targetManager = new WebInspector.TargetManager();
-        this._executionContextSelector = new WebInspector.ExecutionContextSelector();
         WebInspector.targetManager.createTarget(connection, this._doLoadedDoneWithCapabilities.bind(this));
+        WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
+        WebInspector.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(WebInspector.isolatedFileSystemManager);
+        WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
+        WebInspector.networkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(WebInspector.workspace);
+        new WebInspector.NetworkUISourceCodeProvider(WebInspector.networkWorkspaceBinding, WebInspector.workspace);
+        new WebInspector.PresentationConsoleMessageHelper(WebInspector.workspace);
+        WebInspector.fileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(WebInspector.isolatedFileSystemManager, WebInspector.workspace);
+        WebInspector.breakpointManager = new WebInspector.BreakpointManager(WebInspector.settings.breakpoints, WebInspector.workspace, WebInspector.targetManager);
+        WebInspector.scriptSnippetModel = new WebInspector.ScriptSnippetModel(WebInspector.workspace);
+        this._executionContextSelector = new WebInspector.ExecutionContextSelector();
     },
 
     _doLoadedDoneWithCapabilities: function(mainTarget)
@@ -272,10 +281,6 @@ WebInspector.Main.prototype = {
 
         WebInspector.inspectorFrontendEventSink = new WebInspector.InspectorFrontendEventSink();
         InspectorBackend.registerInspectorDispatcher(this);
-
-        WebInspector.isolatedFileSystemManager = new WebInspector.IsolatedFileSystemManager();
-        WebInspector.isolatedFileSystemDispatcher = new WebInspector.IsolatedFileSystemDispatcher(WebInspector.isolatedFileSystemManager);
-        WebInspector.workspace = new WebInspector.Workspace(WebInspector.isolatedFileSystemManager.mapping());
 
         if (Capabilities.isMainFrontend) {
             WebInspector.inspectElementModeController = new WebInspector.InspectElementModeController();
@@ -314,21 +319,10 @@ WebInspector.Main.prototype = {
 
         new WebInspector.WorkspaceController(WebInspector.workspace);
 
-        WebInspector.fileSystemWorkspaceBinding = new WebInspector.FileSystemWorkspaceBinding(WebInspector.isolatedFileSystemManager, WebInspector.workspace);
-
-        WebInspector.networkWorkspaceBinding = new WebInspector.NetworkWorkspaceBinding(WebInspector.workspace);
-        new WebInspector.NetworkUISourceCodeProvider(WebInspector.networkWorkspaceBinding, WebInspector.workspace);
-
-        WebInspector.breakpointManager = new WebInspector.BreakpointManager(WebInspector.settings.breakpoints, WebInspector.debuggerModel, WebInspector.workspace);
-
-        WebInspector.scriptSnippetModel = new WebInspector.ScriptSnippetModel(WebInspector.workspace);
-
         WebInspector.overridesSupport = new WebInspector.OverridesSupport();
 
-        new WebInspector.DebuggerScriptMapping(WebInspector.debuggerModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
         WebInspector.liveEditSupport = new WebInspector.LiveEditSupport(WebInspector.workspace);
         new WebInspector.CSSStyleSheetMapping(WebInspector.cssModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
-        new WebInspector.PresentationConsoleMessageHelper(WebInspector.workspace);
 
         // Create settings before loading modules.
         WebInspector.settings.initializeBackendSettings();

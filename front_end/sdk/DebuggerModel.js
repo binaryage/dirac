@@ -857,6 +857,14 @@ WebInspector.DebuggerModel.Location.prototype = {
         this._debuggerModel._agent.continueToLocation(this.payload());
     },
 
+    /**
+     * @return {string}
+     */
+    id: function()
+    {
+        return this.target().id() + ":" + this.scriptId + ":" + this.lineNumber + ":" + this.columnNumber
+    },
+
     __proto__: WebInspector.TargetAware.prototype
 }
 

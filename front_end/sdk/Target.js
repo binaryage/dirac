@@ -16,7 +16,7 @@ WebInspector.Target = function(connection, callback)
     this._connection = connection;
     /** @type {boolean} */
     this.isMainFrontend = false;
-
+    this._id = WebInspector.Target._nextId++;
     /** @type {boolean} */
     this.canScreencast = false;
     this.pageAgent().canScreencast(this._initializeCapability.bind(this, "canScreencast", null));
@@ -34,7 +34,18 @@ WebInspector.Target = function(connection, callback)
     this.profilingLock = new WebInspector.Lock();
 }
 
+WebInspector.Target._nextId = 1;
+
 WebInspector.Target.prototype = {
+
+    /**
+     * @return {number}
+     */
+    id: function()
+    {
+        return this._id;
+    },
+
     /**
      * @param {string} name
      * @param {function()|null} callback
@@ -121,6 +132,8 @@ WebInspector.Target.prototype = {
         this.cpuProfilerModel = new WebInspector.CPUProfilerModel(this);
         if (!WebInspector.cpuProfilerModel)
             WebInspector.cpuProfilerModel = this.cpuProfilerModel;
+
+        new WebInspector.DebuggerScriptMapping(this.debuggerModel, WebInspector.workspace, WebInspector.networkWorkspaceBinding);
 
         if (callback)
             callback(this);

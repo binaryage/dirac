@@ -121,7 +121,7 @@ WebInspector.Script.prototype = {
         }
         if (this.scriptId) {
             // Script failed to parse.
-            DebuggerAgent.getScriptSource(this.scriptId, didGetScriptSource.bind(this));
+            this.target().debuggerAgent().getScriptSource(this.scriptId, didGetScriptSource.bind(this));
         } else
             callback("");
     },
@@ -152,7 +152,7 @@ WebInspector.Script.prototype = {
 
         if (this.scriptId) {
             // Script failed to parse.
-            DebuggerAgent.searchInContent(this.scriptId, query, caseSensitive, isRegex, innerCallback);
+            this.target().debuggerAgent().searchInContent(this.scriptId, query, caseSensitive, isRegex, innerCallback);
         } else
             callback([]);
     },
@@ -198,7 +198,7 @@ WebInspector.Script.prototype = {
         newSource = this._appendSourceURLCommentIfNeeded(newSource);
 
         if (this.scriptId)
-            DebuggerAgent.setScriptSource(this.scriptId, newSource, undefined, didEditScriptSource.bind(this));
+            this.target().debuggerAgent().setScriptSource(this.scriptId, newSource, undefined, didEditScriptSource.bind(this));
         else
             callback("Script failed to parse");
     },

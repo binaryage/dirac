@@ -39,10 +39,9 @@ WebInspector.DebuggerScriptMapping = function(debuggerModel, workspace, networkW
     this._defaultMapping = new WebInspector.DefaultScriptMapping(debuggerModel, workspace);
     this._resourceMapping = new WebInspector.ResourceScriptMapping(debuggerModel, workspace);
     this._compilerMapping = new WebInspector.CompilerScriptMapping(debuggerModel, workspace, networkWorkspaceBinding);
-    this._snippetMapping = WebInspector.scriptSnippetModel.scriptMapping;
 
-    WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
-    WebInspector.debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
+    debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.ParsedScriptSource, this._parsedScriptSource, this);
+    debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.FailedToParseScriptSource, this._parsedScriptSource, this);
 }
 
 WebInspector.DebuggerScriptMapping.prototype = {
@@ -55,7 +54,7 @@ WebInspector.DebuggerScriptMapping.prototype = {
         this._defaultMapping.addScript(script);
 
         if (script.isSnippet()) {
-            this._snippetMapping.addScript(script);
+            WebInspector.scriptSnippetModel.addScript(script);
             return;
         }
 

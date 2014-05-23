@@ -52,6 +52,16 @@ WebInspector.UISourceCode = function(project, parentPath, name, originURL, url, 
     /** @type {!Array.<!WebInspector.PresentationConsoleMessage>} */
     this._consoleMessages = [];
 
+    /**
+     * @type {!Map.<!WebInspector.Target, !WebInspector.SourceMapping>}
+     */
+    this._sourceMappingForTarget = new Map();
+
+    /**
+     * @type {!Map.<!WebInspector.Target, !WebInspector.ScriptFile>}
+     */
+    this._scriptFileForTarget = new Map();
+
     /** @type {!Array.<!WebInspector.Revision>} */
     this.history = [];
     if (!this._project.isServiceProject() && this._url)
@@ -214,19 +224,24 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
+     * @param {!WebInspector.Target} target
      * @return {?WebInspector.ScriptFile}
      */
-    scriptFile: function()
+    scriptFileForTarget: function(target)
     {
-        return this._scriptFile;
+        return this._scriptFileForTarget.get(target) || null;
     },
 
     /**
+     * @param {!WebInspector.Target} target
      * @param {?WebInspector.ScriptFile} scriptFile
      */
-    setScriptFile: function(scriptFile)
+    setScriptFileForTarget: function(target, scriptFile)
     {
-        this._scriptFile = scriptFile;
+        if (scriptFile)
+            this._scriptFileForTarget.put(target, scriptFile);
+        else
+            this._scriptFileForTarget.remove(target);
     },
 
     /**
@@ -436,7 +451,7 @@ WebInspector.UISourceCode.prototype = {
         function filterOutStale(historyItem)
         {
             // FIXME: Main frame might not have been loaded yet when uiSourceCodes for snippets are created.
-            if (!WebInspector.resourceTreeModel.mainFrame)
+            if (!WebInspector.resourceTreeModel || !WebInspector.resourceTreeModel.mainFrame)
                 return false;
             return historyItem.loaderId === WebInspector.resourceTreeModel.mainFrame.loaderId;
         }
@@ -659,15 +674,34 @@ WebInspector.UISourceCode.prototype = {
     },
 
     /**
+     * @param {!WebInspector.Target} target
      * @param {number} lineNumber
      * @param {number} columnNumber
      * @return {?WebInspector.RawLocation}
      */
-    uiLocationToRawLocation: function(lineNumber, columnNumber)
+    uiLocationToRawLocation: function(target, lineNumber, columnNumber)
     {
-        if (!this._sourceMapping)
+        var sourceMapping = this._sourceMappingForTarget.get(target);
+        if (!sourceMapping)
             return null;
-        return this._sourceMapping.uiLocationToRawLocation(this, lineNumber, columnNumber);
+        return sourceMapping.uiLocationToRawLocation(this, lineNumber, columnNumber);
+    },
+
+    /**
+     * @param {number} lineNumber
+     * @param {number} columnNumber
+     * @return {!Array.<!WebInspector.RawLocation>}
+     */
+    uiLocationToRawLocations: function(lineNumber, columnNumber)
+    {
+        var result = [];
+        var sourceMappings = this._sourceMappingForTarget.values();
+        for (var i = 0; i < sourceMappings.length; ++i) {
+            var rawLocation = sourceMappings[i].uiLocationToRawLocation(this, lineNumber, columnNumber);
+            if (rawLocation)
+                result.push(rawLocation);
+        }
+        return result;
     },
 
     /**
@@ -707,20 +741,24 @@ WebInspector.UISourceCode.prototype = {
      */
     hasSourceMapping: function()
     {
-        return !!this._sourceMapping;
+        return !!this._sourceMappingForTarget.size();
     },
 
     /**
+     * @param {!WebInspector.Target} target
      * @param {?WebInspector.SourceMapping} sourceMapping
      */
-    setSourceMapping: function(sourceMapping)
+    setSourceMappingForTarget: function(target, sourceMapping)
     {
-        if (this._sourceMapping === sourceMapping)
+        if (this._sourceMappingForTarget.get(target) === sourceMapping)
             return;
-        this._sourceMapping = sourceMapping;
-        var data = {};
-        data.isIdentity = this._sourceMapping && this._sourceMapping.isIdentity();
-        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.SourceMappingChanged, data);
+
+        if (sourceMapping)
+            this._sourceMappingForTarget.put(target, sourceMapping);
+        else
+            this._sourceMappingForTarget.remove(target);
+
+        this.dispatchEventToListeners(WebInspector.UISourceCode.Events.SourceMappingChanged, {target: target, isIdentity: sourceMapping ? sourceMapping.isIdentity() : false});
     },
 
     /**
@@ -753,11 +791,20 @@ WebInspector.UILocation = function(uiSourceCode, lineNumber, columnNumber)
 
 WebInspector.UILocation.prototype = {
     /**
+     * @param {!WebInspector.Target} target
      * @return {?WebInspector.RawLocation}
      */
-    uiLocationToRawLocation: function()
+    uiLocationToRawLocation: function(target)
     {
-        return this.uiSourceCode.uiLocationToRawLocation(this.lineNumber, this.columnNumber);
+        return this.uiSourceCode.uiLocationToRawLocation(target, this.lineNumber, this.columnNumber);
+    },
+
+    /**
+     * @return {!Array.<!WebInspector.RawLocation>}
+     */
+    uiLocationToRawLocations: function()
+    {
+        return this.uiSourceCode.uiLocationToRawLocations(this.lineNumber, this.columnNumber);
     },
 
     /**
@@ -769,7 +816,15 @@ WebInspector.UILocation.prototype = {
         if (typeof this.lineNumber === "number")
             linkText += ":" + (this.lineNumber + 1);
         return linkText;
-    }
+    },
+
+    /**
+     * @return {string}
+     */
+    id: function()
+    {
+        return this.uiSourceCode.uri() + ":" + this.lineNumber + ":" + this.columnNumber;
+    },
 }
 
 /**

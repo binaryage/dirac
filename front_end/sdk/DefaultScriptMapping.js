@@ -38,7 +38,7 @@ WebInspector.DefaultScriptMapping = function(debuggerModel, workspace)
 {
     this._debuggerModel = debuggerModel;
     this._workspace = workspace;
-    this._projectId = "debugger:";
+    this._projectId = "debugger:" + debuggerModel.target().id();
     this._projectDelegate = new WebInspector.DebuggerProjectDelegate(this._workspace, this._projectId, WebInspector.projectTypes.Debugger);
     debuggerModel.addEventListener(WebInspector.DebuggerModel.Events.GlobalObjectCleared, this._debuggerReset, this);
     this._debuggerReset();
@@ -85,7 +85,7 @@ WebInspector.DefaultScriptMapping.prototype = {
         }
         this._uiSourceCodeForScriptId[script.scriptId] = uiSourceCode;
         this._scriptIdForUISourceCode.put(uiSourceCode, script.scriptId);
-        uiSourceCode.setSourceMapping(this);
+        uiSourceCode.setSourceMappingForTarget(this._debuggerModel.target(), this);
         script.pushSourceMapping(this);
         script.addEventListener(WebInspector.Script.Events.ScriptEdited, this._scriptEdited.bind(this, script.scriptId));
     },

@@ -37,6 +37,7 @@
  */
 WebInspector.CompilerScriptMapping = function(debuggerModel, workspace, networkWorkspaceBinding)
 {
+    this._target = debuggerModel.target();
     this._debuggerModel = debuggerModel;
     this._workspace = workspace;
     this._workspace.addEventListener(WebInspector.Workspace.Events.UISourceCodeAdded, this._uiSourceCodeAddedToWorkspace, this);
@@ -136,7 +137,7 @@ WebInspector.CompilerScriptMapping.prototype = {
                 if (uiSourceCode)
                     this._bindUISourceCode(uiSourceCode);
                 else
-                    WebInspector.console.showErrorMessage(WebInspector.UIString("Failed to locate workspace file mapped to URL %s from source map %s", sourceURL, sourceMap.url()));
+                    this._target.consoleModel.showErrorMessage(WebInspector.UIString("Failed to locate workspace file mapped to URL %s from source map %s", sourceURL, sourceMap.url()));
             }
             script.updateLocations();
         }
@@ -155,7 +156,7 @@ WebInspector.CompilerScriptMapping.prototype = {
      */
     _bindUISourceCode: function(uiSourceCode)
     {
-        uiSourceCode.setSourceMapping(this);
+        uiSourceCode.setSourceMappingForTarget(this._target, this);
     },
 
     /**
@@ -163,7 +164,7 @@ WebInspector.CompilerScriptMapping.prototype = {
      */
     _unbindUISourceCode: function(uiSourceCode)
     {
-        uiSourceCode.setSourceMapping(null);
+        uiSourceCode.setSourceMappingForTarget(this._target, null);
     },
 
     /**

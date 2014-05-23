@@ -573,6 +573,14 @@ WebInspector.SASSSourceMapping.prototype = {
     },
 
     /**
+     * @return {!WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._cssModel.target();
+    },
+
+    /**
      * @param {!WebInspector.Event} event
      */
     _uiSourceCodeAdded: function(event)

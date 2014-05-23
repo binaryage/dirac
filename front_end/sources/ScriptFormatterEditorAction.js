@@ -84,7 +84,7 @@ WebInspector.FormatterScriptMapping.prototype = {
         if (uiSourceCode.contentType() === WebInspector.resourceTypes.Document)
             return this._debuggerModel.scriptsForSourceURL(uiSourceCode.url).filter(isInlineScript);
         if (uiSourceCode.contentType() === WebInspector.resourceTypes.Script) {
-            var rawLocation = /** @type {!WebInspector.DebuggerModel.Location} */ (uiSourceCode.uiLocationToRawLocation(0, 0));
+            var rawLocation =  /** @type {!WebInspector.DebuggerModel.Location} */ (uiSourceCode.uiLocationToRawLocation(this._debuggerModel.target(), 0, 0));
             return rawLocation ? [rawLocation.script()] : [];
         }
         return [];
@@ -165,7 +165,7 @@ WebInspector.FormatterScriptMapping.prototype = {
                 this._uiSourceCodes.put(scripts[i], formattedUISourceCode);
                 scripts[i].pushSourceMapping(this);
             }
-            formattedUISourceCode.setSourceMapping(this);
+            formattedUISourceCode.setSourceMappingForTarget(this._debuggerModel.target(), this);
             callback(formattedUISourceCode, formatterMapping);
         }
     },
@@ -188,7 +188,7 @@ WebInspector.FormatterScriptMapping.prototype = {
         }
         this._projectDelegate._removeFormatted(formattedUISourceCode.path());
         return formatData.mapping;
-    },
+    }
 }
 
 /**

@@ -84,6 +84,14 @@ WebInspector.StylesSourceMapping.prototype = {
     },
 
     /**
+     * @return {!WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._cssModel.target();
+    },
+
+    /**
      * @param {!WebInspector.CSSStyleSheetHeader} header
      */
     addHeader: function(header)
