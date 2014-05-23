@@ -307,6 +307,7 @@
         "dependencies": ["components"],
         "sources": [
             "timeline/CountersGraph.js",
+            "timeline/Layers3DView.js",
             "timeline/MemoryCountersGraph.js",
             "timeline/TimelineEventOverview.js",
             "timeline/TimelineFrameModel.js",
@@ -323,7 +324,9 @@
             "timeline/TimelineUIUtils.js",
             "timeline/TimelineView.js",
             "timeline/TimelineTracingView.js",
-            "timeline/TracingModel.js"
+            "timeline/TimelineLayersView.js",
+            "timeline/TracingModel.js",
+            "timeline/TransformController.js"
         ]
     },
     {
@@ -342,14 +345,12 @@
     },
     {
         "name": "layers",
-        "dependencies": ["components"],
+        "dependencies": ["components", "timeline"],
         "sources": [
             "layers/LayersPanel.js",
             "layers/LayerTreeOutline.js",
-            "layers/Layers3DView.js",
             "layers/LayerDetailsView.js",
-            "layers/PaintProfilerView.js",
-            "layers/TransformController.js"
+            "layers/PaintProfilerView.js"
         ]
     },
     {

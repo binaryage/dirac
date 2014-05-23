@@ -56,6 +56,14 @@ WebInspector.TimelineFrameModel._mainFrameMarkers = [
 
 WebInspector.TimelineFrameModel.prototype = {
     /**
+     * @return {!WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._model.target();
+    },
+
+    /**
      * @return {!Array.<!WebInspector.TimelineFrame>}
      */
     frames: function()
@@ -163,6 +171,8 @@ WebInspector.TimelineFrameModel.prototype = {
             this.handleRequestMainThreadFrame();
         else if (event.name === eventNames.CompositeLayers)
             this.handleCompositeLayers();
+        else if (event.name === eventNames.LayerTreeHostImplSnapshot)
+            this.handleLayerTreeSnapshot(new WebInspector.DeferredTracingLayerTree(this.target(), event.args["snapshot"]["active_tree"]["root_layer"]));
     },
 
     /**
@@ -217,6 +227,14 @@ WebInspector.TimelineFrameModel.prototype = {
     },
 
     /**
+     * @param {!WebInspector.DeferredLayerTree} layerTree
+     */
+    handleLayerTreeSnapshot: function(layerTree)
+    {
+        this._lastLayerTree = layerTree;
+    },
+
+    /**
      * @param {!WebInspector.TimelineModel.Record} record
      */
     _addBackgroundRecord: function(record)
@@ -242,8 +260,8 @@ WebInspector.TimelineFrameModel.prototype = {
     _addMainThreadRecord: function(programRecord, record)
     {
         var recordTypes = WebInspector.TimelineModel.RecordType;
-        if (record.type() === recordTypes.UpdateLayerTree)
-            this._lastLayerTree = record.data()["layerTree"] || null;
+        if (record.type() === recordTypes.UpdateLayerTree && record.data()["layerTree"])
+            this.handleLayerTreeSnapshot(new WebInspector.DeferredAgentLayerTree(this.target(), record.data()["layerTree"]));
         if (!this._hasThreadedCompositing) {
             if (record.type() === recordTypes.BeginFrame)
                 this._startMainThreadFrame(record.startTime());
@@ -386,7 +404,7 @@ WebInspector.TimelineFrame = function(startTime, startTimeOffset)
     this.duration = 0;
     this.timeByCategory = {};
     this.cpuTime = 0;
-    /** @type {?Array.<!LayerTreeAgent.Layer>} */
+    /** @type {?WebInspector.DeferredLayerTree} */
     this.layerTree = null;
 }
 
@@ -401,7 +419,7 @@ WebInspector.TimelineFrame.prototype = {
     },
 
     /**
-     * @param {?Array.<!LayerTreeAgent.Layer>} layerTree
+     * @param {?WebInspector.DeferredLayerTree} layerTree
      */
     _setLayerTree: function(layerTree)
     {

@@ -118,15 +118,18 @@ WebInspector.TimelineTracingView.prototype = {
         contentHelper.appendTextRow(WebInspector.UIString("Duration"), Number.millisToString(this._dataProvider._toTimelineTime(record.duration), true));
         if (!Object.isEmpty(record.args))
             contentHelper.appendElementRow(WebInspector.UIString("Arguments"), this._formatArguments(record.args));
+        /**
+         * @this {WebInspector.TimelineTracingView}
+         */
         function reveal()
         {
-            WebInspector.Revealer.reveal(new WebInspector.TracingLayerSnapshot(record.args["snapshot"]["active_tree"]["root_layer"]));
+            WebInspector.Revealer.reveal(new WebInspector.DeferredTracingLayerTree(this._tracingModel.target(), record.args["snapshot"]["active_tree"]["root_layer"]));
         }
         if (record.name === "cc::LayerTreeHostImpl") {
             var link = document.createElement("span");
             link.classList.add("revealable-link");
             link.textContent = "show";
-            link.addEventListener("click", reveal, false);
+            link.addEventListener("click", reveal.bind(this), false);
             contentHelper.appendElementRow(WebInspector.UIString("Layer tree"), link);
         } else if (record.name === "cc::Picture") {
             var div = document.createElement("div");

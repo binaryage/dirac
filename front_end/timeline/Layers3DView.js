@@ -54,6 +54,9 @@ WebInspector.Layers3DView = function()
     WebInspector.settings.showPaintRects.addChangeListener(this._update, this);
 }
 
+/** @typedef {{layer: !WebInspector.Layer, scrollRectIndex: number}|{layer: !WebInspector.Layer}} */
+WebInspector.Layers3DView.ActiveObject;
+
 /**
  * @enum {string}
  */
@@ -141,7 +144,7 @@ WebInspector.Layers3DView.prototype = {
 
     /**
      * @param {!WebInspector.Layers3DView.OutlineType} type
-     * @param {?WebInspector.LayersPanel.ActiveObject} activeObject
+     * @param {?WebInspector.Layers3DView.ActiveObject} activeObject
      */
     _setOutline: function(type, activeObject)
     {
@@ -150,7 +153,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.LayersPanel.ActiveObject} activeObject
+     * @param {?WebInspector.Layers3DView.ActiveObject} activeObject
      */
     hoverObject: function(activeObject)
     {
@@ -158,7 +161,7 @@ WebInspector.Layers3DView.prototype = {
     },
 
     /**
-     * @param {!WebInspector.LayersPanel.ActiveObject} activeObject
+     * @param {?WebInspector.Layers3DView.ActiveObject} activeObject
      */
     selectObject: function(activeObject)
     {
@@ -590,7 +593,7 @@ WebInspector.Layers3DView.prototype = {
 
     /**
      * @param {?Event} event
-     * @return {?WebInspector.LayersPanel.ActiveObject}
+     * @return {?WebInspector.Layers3DView.ActiveObject}
      */
     _layerFromEventPoint: function(event)
     {

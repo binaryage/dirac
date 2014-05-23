@@ -9,9 +9,10 @@
         },
         {
             "type": "@WebInspector.Revealer",
-            "contextTypes": ["WebInspector.LayerTreeSnapshot", "WebInspector.TracingLayerSnapshot"],
+            "contextTypes": ["WebInspector.DeferredLayerTree"],
             "className": "WebInspector.LayersPanel.LayerTreeRevealer"
         }
     ],
+    "dependencies": [ "timeline" ],
     "scripts": [ "LayersPanel.js" ]
 }

@@ -1066,21 +1066,77 @@ WebInspector.TracingLayer.prototype = {
 
 /**
  * @constructor
- * @param {!Array.<!LayerTreeAgent.Layer>} layers
+ * @param {!WebInspector.Target} target
  */
-WebInspector.LayerTreeSnapshot = function(layers)
+WebInspector.DeferredLayerTree = function(target)
 {
-    this.layers = layers;
+    this._target = target;
 }
+
+WebInspector.DeferredLayerTree.prototype = {
+    /**
+     * @param {function(!WebInspector.LayerTreeBase)} callback
+     */
+    resolve: function(callback) { },
+
+    /**
+     * @return {!WebInspector.Target}
+     */
+    target: function()
+    {
+        return this._target;
+    }
+};
 
 /**
  * @constructor
+ * @extends {WebInspector.DeferredLayerTree}
+ * @param {!WebInspector.Target} target
+ * @param {!Array.<!LayerTreeAgent.Layer>} layers
+ */
+WebInspector.DeferredAgentLayerTree = function(target, layers)
+{
+    WebInspector.DeferredLayerTree.call(this, target);
+    this._layers = layers;
+}
+
+WebInspector.DeferredAgentLayerTree.prototype = {
+    /**
+     * @param {function(!WebInspector.LayerTreeBase)} callback
+     */
+    resolve: function(callback)
+    {
+        var result = new WebInspector.AgentLayerTree(this._target);
+        result.setLayers(this._layers, callback.bind(null, result));
+    },
+
+    __proto__: WebInspector.DeferredLayerTree.prototype
+};
+
+/**
+ * @constructor
+ * @extends {WebInspector.DeferredLayerTree}
+ * @param {!WebInspector.Target} target
  * @param {!WebInspector.TracingLayerPayload} root
  */
-WebInspector.TracingLayerSnapshot = function(root)
+WebInspector.DeferredTracingLayerTree = function(target, root)
 {
-    this.root = root;
+    WebInspector.DeferredLayerTree.call(this, target);
+    this._root = root;
 }
+
+WebInspector.DeferredTracingLayerTree.prototype = {
+    /**
+     * @param {function(!WebInspector.LayerTreeBase)} callback
+     */
+    resolve: function(callback)
+    {
+        var result = new WebInspector.TracingLayerTree(this._target);
+        result.setLayers(this._root, callback.bind(null, result));
+    },
+
+    __proto__: WebInspector.DeferredLayerTree.prototype
+};
 
 /**
  * @constructor

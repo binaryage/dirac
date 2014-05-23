@@ -29,10 +29,8 @@
  */
 
 importScript("LayerTreeOutline.js");
-importScript("Layers3DView.js");
 importScript("LayerDetailsView.js");
 importScript("PaintProfilerView.js");
-importScript("TransformController.js");
 
 /**
  * @constructor
@@ -77,9 +75,6 @@ WebInspector.LayersPanel = function()
     this._tabbedPane.appendTab(WebInspector.LayersPanel.DetailsViewTabs.Profiler, WebInspector.UIString("Profiler"), this._paintProfilerView);
 }
 
-/** @typedef {{layer: !WebInspector.Layer, scrollRectIndex: number}|{layer: !WebInspector.Layer}} */
-WebInspector.LayersPanel.ActiveObject;
-
 WebInspector.LayersPanel.DetailsViewTabs = {
     Details: "details",
     Profiler: "profiler"
@@ -100,32 +95,16 @@ WebInspector.LayersPanel.prototype = {
     },
 
     /**
-     * @param {!WebInspector.LayerTreeSnapshot} snapshot
+     * @param {!WebInspector.DeferredLayerTree} deferredLayerTree
      */
-    _showSnapshot: function(snapshot)
+    _showLayerTree: function(deferredLayerTree)
     {
-        var layerTree = new WebInspector.AgentLayerTree(this._target);
-        layerTree.setLayers(snapshot.layers, onLayersSet.bind(this));
+        deferredLayerTree.resolve(onLayersReady.bind(this));
         /**
+         * @param {!WebInspector.LayerTreeBase} layerTree
          * @this {WebInspector.LayersPanel} this
          */
-        function onLayersSet()
-        {
-            this._model.setLayerTree(layerTree);
-        }
-    },
-
-    /**
-     * @param {!WebInspector.TracingLayerSnapshot} snapshot
-     */
-    _showTracingSnapshot: function(snapshot)
-    {
-        var layerTree = new WebInspector.TracingLayerTree(this._target);
-        layerTree.setLayers(snapshot.root, onLayersSet.bind(this));
-        /**
-         * @this {WebInspector.LayersPanel} this
-         */
-        function onLayersSet()
+        function onLayersReady(layerTree)
         {
             this._model.setLayerTree(layerTree);
         }
@@ -158,7 +137,7 @@ WebInspector.LayersPanel.prototype = {
      */
     _onObjectSelected: function(event)
     {
-        var activeObject = /** @type {!WebInspector.LayersPanel.ActiveObject} */ (event.data);
+        var activeObject = /** @type {!WebInspector.Layers3DView.ActiveObject} */ (event.data);
         this._selectObject(activeObject);
     },
 
@@ -167,7 +146,7 @@ WebInspector.LayersPanel.prototype = {
      */
     _onObjectHovered: function(event)
     {
-        var activeObject = /** @type {!WebInspector.LayersPanel.ActiveObject} */ (event.data);
+        var activeObject = /** @type {!WebInspector.Layers3DView.ActiveObject} */ (event.data);
         this._hoverObject(activeObject);
     },
 
@@ -182,7 +161,7 @@ WebInspector.LayersPanel.prototype = {
     },
 
     /**
-     * @param {?WebInspector.LayersPanel.ActiveObject} activeObject
+     * @param {?WebInspector.Layers3DView.ActiveObject} activeObject
      */
     _selectObject: function(activeObject)
     {
@@ -201,7 +180,7 @@ WebInspector.LayersPanel.prototype = {
     },
 
     /**
-     * @param {?WebInspector.LayersPanel.ActiveObject} activeObject
+     * @param {?WebInspector.Layers3DView.ActiveObject} activeObject
      */
     _hoverObject: function(activeObject)
     {
@@ -235,9 +214,9 @@ WebInspector.LayersPanel.LayerTreeRevealer.prototype = {
      */
     reveal: function(snapshotData)
     {
-        if (snapshotData instanceof WebInspector.LayerTreeSnapshot)
-            /** @type {!WebInspector.LayersPanel} */ (WebInspector.inspectorView.showPanel("layers"))._showSnapshot(snapshotData);
-        else if (snapshotData instanceof WebInspector.TracingLayerSnapshot)
-            /** @type {!WebInspector.LayersPanel} */ (WebInspector.inspectorView.showPanel("layers"))._showTracingSnapshot(snapshotData);
+        if (!(snapshotData instanceof WebInspector.DeferredLayerTree))
+            return;
+        var panel = /** @type {!WebInspector.LayersPanel} */ (WebInspector.inspectorView.showPanel("layers"));
+        panel._showLayerTree(/** @type {!WebInspector.DeferredLayerTree} */ (snapshotData));
     }
 }

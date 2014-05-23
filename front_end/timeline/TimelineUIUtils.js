@@ -360,7 +360,11 @@ WebInspector.TimelineUIUtils.generatePieChart = function(aggregatedStats, selfCa
     return element;
 }
 
-WebInspector.TimelineUIUtils.generatePopupContentForFrame = function(frame)
+/**
+ * @param {!WebInspector.TimelineFrameModel} frameModel
+ * @param {!WebInspector.TimelineFrame} frame
+ */
+WebInspector.TimelineUIUtils.generatePopupContentForFrame = function(frameModel, frame)
 {
     var contentHelper = new WebInspector.TimelinePopupContentHelper(WebInspector.UIString("Frame"));
     var durationInMillis = frame.endTime - frame.startTime;
@@ -372,9 +376,8 @@ WebInspector.TimelineUIUtils.generatePopupContentForFrame = function(frame)
     contentHelper.appendElementRow(WebInspector.UIString("Aggregated Time"),
         WebInspector.TimelineUIUtils._generateAggregatedInfo(frame.timeByCategory));
     if (WebInspector.experimentsSettings.layersPanel.isEnabled() && frame.layerTree) {
-        var layerTreeSnapshot = new WebInspector.LayerTreeSnapshot(frame.layerTree);
         contentHelper.appendElementRow(WebInspector.UIString("Layer tree"),
-                                       WebInspector.Linkifier.linkifyUsingRevealer(layerTreeSnapshot, WebInspector.UIString("show")));
+                                       WebInspector.Linkifier.linkifyUsingRevealer(frame.layerTree, WebInspector.UIString("show")));
     }
     return contentHelper.contentTable();
 }

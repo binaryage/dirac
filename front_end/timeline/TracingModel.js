@@ -6,11 +6,11 @@
 
 /**
  * @constructor
- * @extends {WebInspector.Object}
+ * @extends {WebInspector.TargetAwareObject}
  */
-WebInspector.TracingModel = function()
+WebInspector.TracingModel = function(target)
 {
-    WebInspector.Object.call(this);
+    WebInspector.TargetAwareObject.call(this, target);
     this.reset();
     this._active = false;
     InspectorBackend.registerTracingDispatcher(new WebInspector.TracingDispatcher(this));
@@ -82,7 +82,8 @@ WebInspector.TracingModel.TraceEventName = {
     DrawFrame: "DrawFrame",
     PaintSetup: "PaintSetup",
     RasterTask: "RasterTask",
-    RequestMainThreadFrame: "RequestMainThreadFrame"
+    RequestMainThreadFrame: "RequestMainThreadFrame",
+    LayerTreeHostImplSnapshot: "cc::LayerTreeHostImpl"
 };
 
 WebInspector.TracingModel.prototype = {
@@ -297,7 +298,7 @@ WebInspector.TracingModel.prototype = {
         return WebInspector.TracingModel.NamedObject._sort(Object.values(this._processById));
     },
 
-    __proto__: WebInspector.Object.prototype
+    __proto__: WebInspector.TargetAwareObject.prototype
 }
 
 /**

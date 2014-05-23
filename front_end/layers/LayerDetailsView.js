@@ -87,7 +87,7 @@ WebInspector.LayerDetailsView.CompositingReasonDetail = {
 
 WebInspector.LayerDetailsView.prototype = {
     /**
-     * @param {!WebInspector.LayersPanel.ActiveObject} activeObject
+     * @param {!WebInspector.Layers3DView.ActiveObject} activeObject
      */
     setObject: function(activeObject)
     {

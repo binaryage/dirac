@@ -371,6 +371,7 @@
         ],
         'devtools_timeline_js_files': [
             'front_end/timeline/CountersGraph.js',
+            'front_end/timeline/Layers3DView.js',
             'front_end/timeline/MemoryCountersGraph.js',
             'front_end/timeline/TimelineFrameModel.js',
             'front_end/timeline/TimelineJSProfile.js',
@@ -387,7 +388,9 @@
             'front_end/timeline/TimelinePowerOverview.js',
             'front_end/timeline/TimelinePanel.js',
             'front_end/timeline/TimelineTracingView.js',
+            'front_end/timeline/TimelineLayersView.js',
             'front_end/timeline/TracingModel.js',
+            'front_end/timeline/TransformController.js'
         ],
         'devtools_profiler_js_files': [
             'front_end/profiler/CPUProfileBottomUpDataGrid.js',
@@ -537,10 +540,8 @@
         'devtools_layers_js_files': [
             'front_end/layers/LayersPanel.js',
             'front_end/layers/LayerTreeOutline.js',
-            'front_end/layers/Layers3DView.js',
             'front_end/layers/LayerDetailsView.js',
-            'front_end/layers/PaintProfilerView.js',
-            'front_end/layers/TransformController.js',
+            'front_end/layers/PaintProfilerView.js'
         ],
         'devtools_extension_api_files': [
             'front_end/extensions/ExtensionAPI.js',
