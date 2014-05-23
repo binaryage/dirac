@@ -102,6 +102,7 @@
 
 .timeline-view {
     flex: auto;
+    overflow: hidden;
 }
 
 .timeline-view-stack {
