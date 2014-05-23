@@ -1157,6 +1157,7 @@ WebInspector.TimelineSelection = function()
 WebInspector.TimelineSelection.Type = {
     Record: "Record",
     Frame: "Frame",
+    TraceEvent: "TraceEvent",
 };
 
 /**
@@ -1180,6 +1181,18 @@ WebInspector.TimelineSelection.fromFrame = function(frame)
     var selection = new WebInspector.TimelineSelection();
     selection._type = WebInspector.TimelineSelection.Type.Frame;
     selection._object = frame;
+    return selection;
+}
+
+/**
+ * @param {!WebInspector.TracingModel.Event} event
+ * @return {!WebInspector.TimelineSelection}
+ */
+WebInspector.TimelineSelection.fromTraceEvent = function(event)
+{
+    var selection = new WebInspector.TimelineSelection();
+    selection._type = WebInspector.TimelineSelection.Type.TraceEvent;
+    selection._object = event;
     return selection;
 }
 
