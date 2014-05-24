@@ -43,7 +43,7 @@ WebInspector.ScreencastView = function(target)
     this.registerRequiredCSS("screencastView.css");
 };
 
-WebInspector.ScreencastView._bordersSize = 40;
+WebInspector.ScreencastView._bordersSize = 44;
 
 WebInspector.ScreencastView._navBarHeight = 29;
 

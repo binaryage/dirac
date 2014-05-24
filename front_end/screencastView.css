@@ -105,7 +105,7 @@
     display: flex;
     border: 1px solid #999;
     border-radius: 20px;
-    flex: auto;
+    flex: none;
     padding: 20px;
     margin: 10px;
     background-color: #eee;
