@@ -1216,6 +1216,7 @@ WebInspector.TimelineSelection.prototype = {
 
 /**
  * @interface
+ * @extends {WebInspector.EventTarget}
  */
 WebInspector.TimelineModeView = function()
 {

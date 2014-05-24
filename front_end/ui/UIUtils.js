@@ -156,13 +156,16 @@ WebInspector.GlassPane.prototype = {
     dispose: function()
     {
         delete WebInspector._glassPane;
-        if (WebInspector.HelpScreen.isVisible())
-            WebInspector.HelpScreen.focus();
-        else
-            WebInspector.inspectorView.focus();
+        if (WebInspector.GlassPane.DefaultFocusedViewStack.length)
+            WebInspector.GlassPane.DefaultFocusedViewStack[0].focus();
         this.element.remove();
     }
 }
+
+/**
+ * @type {!Array.<!WebInspector.View>}
+ */
+WebInspector.GlassPane.DefaultFocusedViewStack = [];
 
 WebInspector.isBeingEdited = function(node)
 {

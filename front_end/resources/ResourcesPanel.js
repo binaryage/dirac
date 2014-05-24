@@ -391,7 +391,7 @@ WebInspector.ResourcesPanel.prototype = {
         parentListTreeElement.removeChild(treeElement);
         if (wasSelected)
             parentListTreeElement.select();
-        this._domStorageTreeElements.remove(treeElement);
+        this._domStorageTreeElements.remove(domStorage);
         this._domStorageViews.remove(domStorage);
     },
 

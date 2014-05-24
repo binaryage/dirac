@@ -88,6 +88,7 @@ WebInspector.HelpScreen.prototype = {
         if (visibleHelpScreen)
             visibleHelpScreen.hide();
         WebInspector.HelpScreen._visibleScreen = this;
+        WebInspector.GlassPane.DefaultFocusedViewStack.unshift(this);
         this.show(WebInspector.inspectorView.element);
         this.focus();
     },
@@ -98,6 +99,7 @@ WebInspector.HelpScreen.prototype = {
             return;
 
         WebInspector.HelpScreen._visibleScreen = null;
+        WebInspector.GlassPane.DefaultFocusedViewStack.shift();
 
         WebInspector.restoreFocusFromElement(this.element);
         this.detach();

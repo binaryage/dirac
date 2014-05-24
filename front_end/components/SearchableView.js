@@ -180,11 +180,11 @@ WebInspector.SearchableView.prototype = {
     },
 
     /**
-     * @param {!KeyboardEvent} event
+     * @param {?Event} event
      */
     _onKeyDown: function(event)
     {
-        var shortcutKey = WebInspector.KeyboardShortcut.makeKeyFromEvent(event);
+        var shortcutKey = WebInspector.KeyboardShortcut.makeKeyFromEvent(/**@type {!KeyboardEvent}*/(event));
         var handler = this._shortcuts[shortcutKey];
         if (handler && handler(event))
             event.consume(true);
