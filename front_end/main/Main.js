@@ -139,13 +139,34 @@ WebInspector.Main.prototype = {
 
     _loadCompletedForWorkers: function()
     {
-        // Make sure script execution of dedicated worker is resumed and then paused
-        // on the first script statement in case we autoattached to it.
+        // Make sure script execution of dedicated worker or service worker is
+        // resumed and then paused on the first script statement in case we
+        // autoattached to it.
         if (WebInspector.queryParam("workerPaused")) {
+            pauseAndResume.call(this);
+        } else{
+            RuntimeAgent.isRunRequired(isRunRequiredCallback.bind(this));
+        }
+
+        /**
+         * @this {WebInspector.Main}
+         */
+        function isRunRequiredCallback(error, result)
+        {
+            if (result) {
+                pauseAndResume.call(this);
+            } else if (!Capabilities.isMainFrontend) {
+                calculateTitle.call(this);
+            }
+        }
+
+        /**
+         * @this {WebInspector.Main}
+         */
+        function pauseAndResume()
+        {
             DebuggerAgent.pause();
             RuntimeAgent.run(calculateTitle.bind(this));
-        } else if (!Capabilities.isMainFrontend) {
-            calculateTitle.call(this);
         }
 
         /**

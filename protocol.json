@@ -822,6 +822,13 @@
                 "name": "disable",
                 "hidden": true,
                 "description": "Disables reporting of execution contexts creation."
+            },
+            {
+                "name": "isRunRequired",
+                "returns": [
+                    { "name": "result", "type": "boolean", "description": "True if the Runtime is in paused on start state." }
+                ],
+                "hidden": true
             }
         ],
         "events": [
