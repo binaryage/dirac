@@ -324,6 +324,7 @@
             "timeline/TimelineUIUtils.js",
             "timeline/TimelineView.js",
             "timeline/TimelineTracingView.js",
+            "timeline/TimelineTraceEventBindings.js",
             "timeline/TimelineLayersView.js",
             "timeline/TracingModel.js",
             "timeline/TransformController.js"

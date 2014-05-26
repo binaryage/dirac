@@ -46,6 +46,7 @@ importScript("TimelinePowerOverview.js");
 importScript("TimelineFlameChart.js");
 importScript("TimelineUIUtils.js");
 importScript("TimelineView.js");
+importScript("TimelineTraceEventBindings.js");
 importScript("TimelineTracingView.js");
 importScript("TimelineLayersView.js");
 importScript("TracingModel.js");
@@ -261,6 +262,19 @@ WebInspector.TimelinePanel.prototype = {
             this._lazyTracingModel.addEventListener(WebInspector.TracingModel.Events.BufferUsage, this._onTracingBufferUsage, this);
         }
         return this._lazyTracingModel;
+    },
+
+    /**
+     * @return {!WebInspector.TimelineTraceEventBindings}
+     */
+    _traceEventBindings: function()
+    {
+        if (!this._lazyTraceEventBindings) {
+            this._lazyTraceEventBindings = new WebInspector.TimelineTraceEventBindings();
+            if (this._lazyTracingModel)
+                this._lazyTraceEventBindings.setEvents(this._lazyTracingModel.inspectedTargetMainThreadEvents());
+        }
+        return this._lazyTraceEventBindings;
     },
 
     /**
@@ -611,9 +625,14 @@ WebInspector.TimelinePanel.prototype = {
         else
             this._overviewControls.push(new WebInspector.TimelineEventOverview(this._model));
 
-        var tracingModel = WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled() ? this._tracingModel() : null;
+        var tracingModel = null;
+        var traceEventBindings = null;
+        if (WebInspector.experimentsSettings.timelineOnTraceEvents.isEnabled()) {
+            tracingModel = this._tracingModel();
+            traceEventBindings = this._traceEventBindings();
+        }
         if (WebInspector.experimentsSettings.timelineFlameChart.isEnabled() && this._flameChartEnabledSetting.get())
-            this._addModeView(new WebInspector.TimelineFlameChart(this, this._model, tracingModel, this._frameModel()));
+            this._addModeView(new WebInspector.TimelineFlameChart(this, this._model, tracingModel, traceEventBindings, this._frameModel()));
         else
             this._addModeView(this._timelineView());
 
@@ -680,6 +699,8 @@ WebInspector.TimelinePanel.prototype = {
             this._lazyFrameModel.addTraceEvents(this._lazyTracingModel);
             this._overviewPane.update();
         }
+        if (this._lazyTraceEventBindings)
+            this._lazyTraceEventBindings.setEvents(this._lazyTracingModel.inspectedTargetMainThreadEvents());
         this._refreshViews();
     },
 

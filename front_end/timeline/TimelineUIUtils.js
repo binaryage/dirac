@@ -802,7 +802,7 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier, load
  * @param {!WebInspector.TracingModel.Event} event
  * @param {!WebInspector.Linkifier} linkifier
  * @param {boolean} loadedFromFile
- * @param {?WebInspector.TracingModel.EventBindings} bindings
+ * @param {?WebInspector.TimelineTraceEventBindings} bindings
  * @param {!WebInspector.Target} target
  * @return {?Node}
  */
