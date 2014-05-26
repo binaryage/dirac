@@ -572,18 +572,10 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
             break;
         case recordTypes.Paint:
             var clip = recordData["clip"];
-            if (clip) {
-                contentHelper.appendTextRow(WebInspector.UIString("Location"), WebInspector.UIString("(%d, %d)", clip[0], clip[1]));
-                var clipWidth = WebInspector.TimelineUIUtils._quadWidth(clip);
-                var clipHeight = WebInspector.TimelineUIUtils._quadHeight(clip);
-                contentHelper.appendTextRow(WebInspector.UIString("Dimensions"), WebInspector.UIString("%d × %d", clipWidth, clipHeight));
-            } else {
-                // Backward compatibility: older version used x, y, width, height fields directly in data.
-                if (typeof recordData["x"] !== "undefined" && typeof recordData["y"] !== "undefined")
-                    contentHelper.appendTextRow(WebInspector.UIString("Location"), WebInspector.UIString("(%d, %d)", recordData["x"], recordData["y"]));
-                if (typeof recordData["width"] !== "undefined" && typeof recordData["height"] !== "undefined")
-                    contentHelper.appendTextRow(WebInspector.UIString("Dimensions"), WebInspector.UIString("%d\u2009\u00d7\u2009%d", recordData["width"], recordData["height"]));
-            }
+            contentHelper.appendTextRow(WebInspector.UIString("Location"), WebInspector.UIString("(%d, %d)", clip[0], clip[1]));
+            var clipWidth = WebInspector.TimelineUIUtils._quadWidth(clip);
+            var clipHeight = WebInspector.TimelineUIUtils._quadHeight(clip);
+            contentHelper.appendTextRow(WebInspector.UIString("Dimensions"), WebInspector.UIString("%d × %d", clipWidth, clipHeight));
             // Fall-through intended.
 
         case recordTypes.PaintSetup:
@@ -709,8 +701,8 @@ WebInspector.TimelineUIUtils.buildDetailsNode = function(record, linkifier, load
         detailsText = recordData ? recordData["type"] : null;
         break;
     case WebInspector.TimelineModel.RecordType.Paint:
-        var width = recordData.clip ? WebInspector.TimelineUIUtils._quadWidth(recordData.clip) : recordData.width;
-        var height = recordData.clip ? WebInspector.TimelineUIUtils._quadHeight(recordData.clip) : recordData.height;
+        var width = WebInspector.TimelineUIUtils._quadWidth(recordData.clip);
+        var height = WebInspector.TimelineUIUtils._quadHeight(recordData.clip);
         if (width && height)
             detailsText = WebInspector.UIString("%d\u2009\u00d7\u2009%d", width, height);
         break;
