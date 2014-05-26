@@ -533,10 +533,9 @@ WebInspector.TimelineUIUtils._generatePopupContentSynchronously = function(recor
         case recordTypes.TimerInstall:
         case recordTypes.TimerRemove:
             contentHelper.appendTextRow(WebInspector.UIString("Timer ID"), recordData["timerId"]);
-            var initiator = record.initiator() || record;
-            if (typeof recordData["timeout"] === "number") {
+            if (record.type() === recordTypes.TimerInstall) {
                 contentHelper.appendTextRow(WebInspector.UIString("Timeout"), Number.millisToString(recordData["timeout"]));
-                contentHelper.appendTextRow(WebInspector.UIString("Repeats"), recordData["singleShot"]);
+                contentHelper.appendTextRow(WebInspector.UIString("Repeats"), !recordData["singleShot"]);
             }
             break;
         case recordTypes.FireAnimationFrame:
@@ -753,7 +752,8 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
 
     switch (event.name) {
         case recordTypes.GCEvent:
-            contentHelper.appendTextRow(WebInspector.UIString("Collected"), Number.bytesToString(eventData["usedHeapSizeDelta"]));
+            var delta = event.args["usedHeapSizeBefore"] - event.args["usedHeapSizeAfter"];
+            contentHelper.appendTextRow(WebInspector.UIString("Collected"), Number.bytesToString(delta));
             break;
         case recordTypes.TimerFire:
             callSiteStackTraceLabel = WebInspector.UIString("Timer installed");
@@ -762,9 +762,9 @@ WebInspector.TimelineUIUtils._buildTraceEventDetailsSynchronously = function(eve
         case recordTypes.TimerInstall:
         case recordTypes.TimerRemove:
             contentHelper.appendTextRow(WebInspector.UIString("Timer ID"), eventData["timerId"]);
-            if (typeof eventData["timeout"] === "number") {
+            if (event.name === recordTypes.TimerInstall) {
                 contentHelper.appendTextRow(WebInspector.UIString("Timeout"), Number.millisToString(eventData["timeout"]));
-                contentHelper.appendTextRow(WebInspector.UIString("Repeats"), eventData["singleShot"]);
+                contentHelper.appendTextRow(WebInspector.UIString("Repeats"), !eventData["singleShot"]);
             }
             break;
         case recordTypes.FireAnimationFrame:
