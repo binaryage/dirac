@@ -28,10 +28,11 @@
  */
 
 /**
+ * @constructor
  * @extends {WebInspector.VBox}
  * @implements {WebInspector.Searchable}
- * @constructor
  * @implements {WebInspector.TargetManager.Observer}
+ * @implements {WebInspector.ViewportControl.Provider}
  * @param {boolean} hideContextSelector
  */
 WebInspector.ConsoleView = function(hideContextSelector)
@@ -78,20 +79,24 @@ WebInspector.ConsoleView = function(hideContextSelector)
     this._filterBar.setName("consoleView");
     this._filter.addFilters(this._filterBar);
 
-    this._messagesElement = this._contentsElement.createChild("div", "monospace");
+    this._viewport = new WebInspector.ViewportControl(this);
+    this._viewport.setStickToBottom(true);
+    this._viewport.contentElement().classList.add("console-group");
+    this._viewport.contentElement().classList.add("console-group-messages");
+    this._contentsElement.appendChild(this._viewport.element);
+    this._messagesElement = this._viewport.element;
     this._messagesElement.id = "console-messages";
     this._messagesElement.addEventListener("click", this._messagesClicked.bind(this), true);
     this._scrolledToBottom = true;
 
-    this._filterStatusMessageElement = this._messagesElement.createChild("div", "console-message");
+    this._filterStatusMessageElement = document.createElementWithClass("div", "console-message");
+    this._messagesElement.insertBefore(this._filterStatusMessageElement, this._messagesElement.firstChild);
     this._filterStatusTextElement = this._filterStatusMessageElement.createChild("span", "console-info");
     this._filterStatusMessageElement.createTextChild(" ");
     var resetFiltersLink = this._filterStatusMessageElement.createChild("span", "console-info node-link");
     resetFiltersLink.textContent = WebInspector.UIString("Show all messages.");
     resetFiltersLink.addEventListener("click", this._filter.reset.bind(this._filter), true);
 
-    this._messagesContainer = this._messagesElement.createChild("div", "console-group");
-    this._messagesContainer.classList.add("console-group-messages");
     this._topGroup = WebInspector.ConsoleGroup.createTopGroup();
     this._currentGroup = this._topGroup;
 
@@ -138,6 +143,23 @@ WebInspector.ConsoleView = function(hideContextSelector)
 
 WebInspector.ConsoleView.prototype = {
     /**
+     * @return {number}
+     */
+    itemCount: function()
+    {
+        return this._visibleViewMessages.length;
+    },
+
+    /**
+     * @param {number} index
+     * @return {?WebInspector.ViewportElement}
+     */
+    itemElement: function(index)
+    {
+        return this._visibleViewMessages[index];
+    },
+
+    /**
      * @param {!WebInspector.Target} target
      */
     targetAdded: function(target)
@@ -156,6 +178,7 @@ WebInspector.ConsoleView.prototype = {
         target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.ConsoleCleared, this._consoleCleared, this);
         target.consoleModel.addEventListener(WebInspector.ConsoleModel.Events.CommandEvaluated, this._commandEvaluated, this);
         target.consoleModel.messages.forEach(appendMessage, this);
+        this._viewport.invalidate();
 
         target.runtimeModel.executionContexts().forEach(this._executionContextCreated, this);
         target.runtimeModel.addEventListener(WebInspector.RuntimeModel.Events.ExecutionContextCreated, this._onExecutionContextCreated, this);
@@ -288,6 +311,7 @@ WebInspector.ConsoleView.prototype = {
 
     wasShown: function()
     {
+        this._viewport.refresh();
         if (!this._prompt.isCaretInsidePrompt())
             this._prompt.moveCaretToEndOfPrompt();
     },
@@ -325,20 +349,19 @@ WebInspector.ConsoleView.prototype = {
         return !!this._scrollIntoViewTimer;
     },
 
-    _scheduleScrollIntoView: function()
+    _scheduleViewportRefresh: function()
     {
         if (this._scrollIntoViewTimer)
             return;
-
         /**
          * @this {WebInspector.ConsoleView}
          */
         function scrollIntoView()
         {
             delete this._scrollIntoViewTimer;
-            this._messagesElement.scrollTop = this._messagesElement.scrollHeight;
+            this._viewport.invalidate();
         }
-        this._scrollIntoViewTimer = setTimeout(scrollIntoView.bind(this), 20);
+        this._scrollIntoViewTimer = setTimeout(scrollIntoView.bind(this), 50);
     },
 
     _immediatelyScrollIntoView: function()
@@ -351,8 +374,8 @@ WebInspector.ConsoleView.prototype = {
     {
         if (!this._isScrollIntoViewScheduled())
             return;
-
         clearTimeout(this._scrollIntoViewTimer);
+        this._viewport.refresh();
         delete this._scrollIntoViewTimer;
     },
 
@@ -404,6 +427,7 @@ WebInspector.ConsoleView.prototype = {
         var message = /** @type {!WebInspector.ConsoleMessage} */ (event.data);
         var viewMessage = this._createViewMessage(message);
         this._consoleMessageAdded(viewMessage);
+        this._scheduleViewportRefresh();
     },
 
     /**
@@ -419,17 +443,10 @@ WebInspector.ConsoleView.prototype = {
             return;
         }
         if (!this._currentGroup.messagesHidden()) {
-            // this._messagesElement.isScrolledToBottom() is forcing style recalculation.
-            // We just skip it if the scroll action has been scheduled.
-            if (!this._isScrollIntoViewScheduled() && ((viewMessage instanceof WebInspector.ConsoleCommandResult) || this._messagesElement.isScrolledToBottom()))
-                this._scheduleScrollIntoView();
-
             var originatingMessage = viewMessage.consoleMessage().originatingMessage();
             if (lastMessage && originatingMessage && lastMessage.consoleMessage() === originatingMessage)
                 lastMessage.toMessageElement().classList.add("console-adjacent-user-command-result");
 
-            this._messagesContainer.appendChild(viewMessage.toMessageElement());
-            viewMessage.wasShown();
             this._visibleViewMessages.push(viewMessage);
 
             if (this._searchRegex && viewMessage.matchesRegex(this._searchRegex)) {
@@ -551,13 +568,9 @@ WebInspector.ConsoleView.prototype = {
         this._searchResults = [];
         this._hiddenByFilterCount = 0;
         for (var i = 0; i < this._visibleViewMessages.length; ++i) {
-            var visibleMessage = this._visibleViewMessages[i];
-            visibleMessage.willHide();
-            visibleMessage.toMessageElement().remove();
-            visibleMessage.resetCloseGroupDecorationCount();
-            visibleMessage.resetIncrementRepeatCount();
+            this._visibleViewMessages[i].resetCloseGroupDecorationCount();
+            this._visibleViewMessages[i].resetIncrementRepeatCount();
         }
-
         this._visibleViewMessages = [];
         for (var i = 0; i < this._consoleMessages.length; ++i) {
             var viewMessage = this._consoleMessages[i];
@@ -569,6 +582,7 @@ WebInspector.ConsoleView.prototype = {
                 this._hiddenByFilterCount++;
         }
         this._updateFilterStatus();
+        this._viewport.invalidate();
     },
 
     /**
@@ -592,10 +606,7 @@ WebInspector.ConsoleView.prototype = {
             return;
         var consoleGroupViewMessage = groupMessage.parentElement.message;
         consoleGroupViewMessage.setCollapsed(!consoleGroupViewMessage.collapsed());
-        var originalScrollPosition = this._messagesElement.scrollTop;
         this._updateMessageList();
-        this._cancelScheduledScrollIntoView();
-        this._messagesElement.scrollTop = originalScrollPosition;
     },
 
     _registerShortcuts: function()
@@ -964,14 +975,6 @@ WebInspector.ConsoleCommand = function(message, nestingLevel)
 }
 
 WebInspector.ConsoleCommand.prototype = {
-    wasShown: function()
-    {
-    },
-
-    willHide: function()
-    {
-    },
-
     clearHighlight: function()
     {
         var highlightedMessage = this._formattedCommand;

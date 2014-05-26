@@ -54,6 +54,7 @@ WebInspector.FilteredItemSelectionDialog = function(delegate)
 
     this._filteredItems = [];
     this._viewportControl = new WebInspector.ViewportControl(this);
+    this._viewportControl.element.classList.add("fill");
     this._itemElementsContainer = this._viewportControl.element;
     this._itemElementsContainer.classList.add("container");
     this._itemElementsContainer.classList.add("monospace");
@@ -244,7 +245,7 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
                     break;
                 }
             }
-            this._viewportControl.refresh();
+            this._viewportControl.invalidate();
             if (!query)
                 this._selectedIndexInFiltered = 0;
             this._updateSelection(this._selectedIndexInFiltered, false);
@@ -272,6 +273,14 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
         this.element.style.height = shouldShowMatchingItems ? this._dialogHeight + "px" : "auto";
     },
 
+    /**
+     * @return {number}
+     */
+    _rowsPerViewport: function()
+    {
+        return Math.floor(this._viewportControl.element.clientHeight / this._rowHeight);
+    },
+
     _onKeyDown: function(event)
     {
         var newSelectedIndex = this._selectedIndexInFiltered;
@@ -290,12 +299,12 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
             event.consume(true);
             break;
         case WebInspector.KeyboardShortcut.Keys.PageDown.code:
-            newSelectedIndex = Math.min(newSelectedIndex + this._viewportControl.rowsPerViewport(), this._filteredItems.length - 1);
+            newSelectedIndex = Math.min(newSelectedIndex + this._rowsPerViewport(), this._filteredItems.length - 1);
             this._updateSelection(newSelectedIndex, true);
             event.consume(true);
             break;
         case WebInspector.KeyboardShortcut.Keys.PageUp.code:
-            newSelectedIndex = Math.max(newSelectedIndex - this._viewportControl.rowsPerViewport(), 0);
+            newSelectedIndex = Math.max(newSelectedIndex - this._rowsPerViewport(), 0);
             this._updateSelection(newSelectedIndex, false);
             event.consume(true);
             break;
@@ -345,15 +354,17 @@ WebInspector.FilteredItemSelectionDialog.prototype = {
 
     /**
      * @param {number} index
-     * @return {!Element}
+     * @return {!WebInspector.ViewportElement}
      */
     itemElement: function(index)
     {
         var delegateIndex = this._filteredItems[index];
         var element = this._createItemElement(delegateIndex);
+        if (!this._rowHeight)
+            this._rowHeight = element.measurePreferredSize(this._viewportControl.contentElement()).height;
         if (index === this._selectedIndexInFiltered)
             element.classList.add("selected");
-        return element;
+        return new WebInspector.StaticViewportElement(element, this._rowHeight);
     },
 
     __proto__: WebInspector.DialogDelegate.prototype

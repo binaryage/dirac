@@ -30,6 +30,7 @@
 
 /**
  * @constructor
+ * @implements {WebInspector.ViewportElement}
  * @param {!WebInspector.ConsoleMessage} consoleMessage
  * @param {?WebInspector.Linkifier} linkifier
  * @param {number} nestingLevel
@@ -64,6 +65,14 @@ WebInspector.ConsoleViewMessage.prototype = {
         return this.consoleMessage().target();
     },
 
+    /**
+     * @return {!Element}
+     */
+    element: function()
+    {
+        return this.toMessageElement();
+    },
+
     wasShown: function()
     {
         for (var i = 0; this._dataGrids && i < this._dataGrids.length; ++i) {
@@ -76,11 +85,28 @@ WebInspector.ConsoleViewMessage.prototype = {
 
     willHide: function()
     {
+        this._cachedHeight = this.contentElement().clientHeight;
         for (var i = 0; this._dataGrids && i < this._dataGrids.length; ++i) {
             var dataGrid = this._dataGrids[i];
             this._dataGridParents.put(dataGrid, dataGrid.element.parentElement);
             dataGrid.detach();
         }
+    },
+
+    /**
+     * @return {number}
+     */
+    fastHeight: function()
+    {
+        if (this._cachedHeight)
+            return this._cachedHeight;
+        const defaultConsoleRowHeight = 17;
+        if (this._message.type === WebInspector.ConsoleMessage.MessageType.Table) {
+            var table = this._message.parameters[0];
+            if (table && table.preview)
+                return defaultConsoleRowHeight * table.preview.properties.length;
+        }
+        return defaultConsoleRowHeight;
     },
 
     /**
